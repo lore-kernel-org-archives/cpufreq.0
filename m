@@ -1,14 +1,13 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: powernow-k8 frequency fix
-Date: Tue, 24 Feb 2004 09:23:22 +0100
+Subject: Re: Mobile Intel Celeron 2.0 GHz with ICH4 bridge
+Date: Tue, 24 Feb 2004 09:22:22 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040224082322.GB8123@dominikbrodowski.de>
-References: <20040223165248.GA19487@dominikbrodowski.de>
-	<20040223192917.GD269@elf.ucw.cz>
+Message-ID: <20040224082222.GA8123@dominikbrodowski.de>
+References: <20040223213619.GA4634@rap.rap.dk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============70531476514154612=="
+Content-Type: multipart/mixed; boundary="===============56251472389651536=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040223192917.GD269@elf.ucw.cz>
+In-Reply-To: <20040223213619.GA4634@rap.rap.dk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,53 +17,62 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Pavel Machek <pavel@ucw.cz>
+To: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
 Cc: cpufreq@www.linux.org.uk
 
 
---===============70531476514154612==
+--===============56251472389651536==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8P1HSweYDcXXzwPJ"
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
 Content-Disposition: inline
 
 
---8P1HSweYDcXXzwPJ
-Content-Type: text/plain; charset=us-ascii
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 23, 2004 at 08:29:17PM +0100, Pavel Machek wrote:
-> Hi!
+On Mon, Feb 23, 2004 at 10:36:19PM +0100, Keld J=F8rn Simonsen wrote:
+> Hi
 >=20
-> > Thanks for the patch, but please CC cpufreq@www.linux.org.uk in future.
+> I have an Acer Travelmate 233 and I am trying to save some battery
+> power. Is that possible with cpufreq?=20
 >=20
-> Oops, sorry.
+> The CPU is a Mobile Intel Celeron 2.0 GHz and the southbridge is an
+> Intel 82801DB 845G/GL Chipset ISA Bridge (ICH4)
 >=20
-> BTW I'd like to push two following changes. (second hunk is probably
-> already queued with trivial patch monkey -- someone did test it :-). I
-> hope that's okay with you.
+> I run Mandrake 10.0 RC1 with kernel 2.6.2 and cpufreq 1.0.1,
+> unfortunately I get the following message:
+> cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
+> Is this because I am running an outdated version of cpufreq,
+> or just because the CPU is not recognized properly?
 
-Second hunk was also submitted by me to Dave :-), and first hunk is OK with
-me, of course ;-)
+The problem is that you have a Mobile Celeron which does not support
+SpeedStep. All you could get from cpufreq is Clock Throttling,
+(p4-clockmod), but this won't save you much in terms of battery power.
+
+> Are there other ways to save power with this machine, on the CPU?
+ACPI processor support with working C1 and C2 idle states [check
+/proc/acpi/processor/*/power ]
 
 	Dominik
 
---8P1HSweYDcXXzwPJ
+--GvXjxJ+pjyke8COw
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (GNU/Linux)
 
-iD8DBQFAOwn6Z8MDCHJbN8YRArqJAJ4gURC6ArKffyloP3aoTyODmrN6cgCdG9TC
-f/eGGGgT9im4nnPDnIxjvyw=
-=OYB7
+iD8DBQFAOwm+Z8MDCHJbN8YRAtPwAJ9Qrssc4SVWJigo625eijR2htKFNQCeJMhv
+h82pn+oWbgFrf7c0PKRnuFs=
+=l56m
 -----END PGP SIGNATURE-----
 
---8P1HSweYDcXXzwPJ--
+--GvXjxJ+pjyke8COw--
 
 
---===============70531476514154612==
+--===============56251472389651536==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -75,5 +83,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============70531476514154612==--
+--===============56251472389651536==--
 
