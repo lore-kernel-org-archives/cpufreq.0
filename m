@@ -1,12 +1,9 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: post-OLS pending cpufreq patches
-Date: Mon, 2 Aug 2004 15:45:14 -0700
+From: bugme-daemon@osdl.org
+Subject: [Bug 3150] New: modprobe speedstep-centrino fails
+Date: Tue, 3 Aug 2004 03:35:34 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB600283BD34@scsmsx403.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C478E2.60C42F7C"
+Message-ID: <200408031035.i73AZYVh018579@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,198 +13,35 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.de>
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C478E2.60C42F7C
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-
-=20
-
->-----Original Message-----
->From: Dave Jones [mailto:davej@redhat.com]=20
->Sent: Monday, August 02, 2004 1:52 PM
->To: Pallipadi, Venkatesh; cpufreq@www.linux.org.uk
->Subject: Re: post-OLS pending cpufreq patches
->
->On Mon, Aug 02, 2004 at 10:42:31PM +0200, Dominik Brodowski wrote:
-> > On Mon, Aug 02, 2004 at 08:33:50PM +0100, Dave Jones wrote:
-> > >  > - [speedstep-centrino] SMP support [Venkatesh Pallipadi]
-> > >  > 	looks good, IMO, but needs to be adapted to=20
->Jeremey's patch which
-> > >  > 	should go in first, IMO.
-> > >=20
-> > > merged.
-> >=20
-> > Actually, I can't see that in either bk or snapshot...=20
->However, I guess it
-> > needs a bit of re-work after all the changes done in the=20
->past few hours.
->
->Ok, I'm done merging bits for now, and I've just refreshed the patch
->at=20
->http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/cpufreq
->-2004-08-02.diff
->if you have anything else, please send incrementals against that.
->
-
-This patch was completely missing in 2004-08-02.diff.=20
-And it needed some rework too. Here is the updated incremental patch.
-
-Thanks,
-Venki
-
-------_=_NextPart_001_01C478E2.60C42F7C
-Content-Type: application/octet-stream;
-	name="speedstep_centrino.patch"
-Content-Transfer-Encoding: base64
-Content-Description: speedstep_centrino.patch
-Content-Disposition: attachment;
-	filename="speedstep_centrino.patch"
-
-LS0tIGxpbnV4LTIuNi44LXJjMi9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL3NwZWVkc3Rl
-cC1jZW50cmluby5jLm9yZwkyMDA0LTA4LTAyIDE3OjA0OjExLjAwMDAwMDAwMCAtMDcwMAorKysg
-bGludXgtMi42LjgtcmMyL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvc3BlZWRzdGVwLWNl
-bnRyaW5vLmMJMjAwNC0wOC0wMiAxODowMDo0NC4wMDAwMDAwMDAgLTA3MDAKQEAgLTcwLDYgKzcw
-LDcgQEAgc3RhdGljIGludCBjZW50cmlub192ZXJpZnlfY3B1X2lkKGNvbnN0IAogCiAvKiBPcGVy
-YXRpbmcgcG9pbnRzIGZvciBjdXJyZW50IENQVSAqLwogc3RhdGljIHN0cnVjdCBjcHVfbW9kZWwg
-KmNlbnRyaW5vX21vZGVsOworc3RhdGljIGludCAJCWNlbnRyaW5vX2NwdTsKIAogI2lmZGVmIENP
-TkZJR19YODZfU1BFRURTVEVQX0NFTlRSSU5PX1RBQkxFCiAKQEAgLTI3MCwyMSArMjcxLDQ3IEBA
-IHN0YXRpYyBpbnQgY2VudHJpbm9fdmVyaWZ5X2NwdV9pZChjb25zdCAKIAlyZXR1cm4gMDsKIH0K
-IAotLyogRXh0cmFjdCBjbG9jayBpbiBrSHogZnJvbSBQRVJGX0NUTCB2YWx1ZSAqLworLyogVG8g
-YmUgY2FsbGVkIG9ubHkgYWZ0ZXIgY2VudHJpbm9fbW9kZWwgaXMgaW5pdGlhbGl6ZWQgKi8KIHN0
-YXRpYyB1bnNpZ25lZCBleHRyYWN0X2Nsb2NrKHVuc2lnbmVkIG1zcikKIHsKLQltc3IgPSAobXNy
-ID4+IDgpICYgMHhmZjsKLQlyZXR1cm4gbXNyICogMTAwMDAwOworCWludCBpOworCisJLyogCisJ
-ICogRXh0cmFjdCBjbG9jayBpbiBrSHogZnJvbSBQRVJGX0NUTCB2YWx1ZQorCSAqIGZvciBjZW50
-cmlubywgYXMgc29tZSBEU0RUcyBhcmUgYnVnZ3kuCisJICogSWRlYWxseSwgdGhpcyBjYW4gYmUg
-ZG9uZSB1c2luZyB0aGUgYWNwaV9kYXRhIHN0cnVjdHVyZS4KKwkgKi8KKwlpZiAoY2VudHJpbm9f
-Y3B1KSB7CisJCW1zciA9IChtc3IgPj4gOCkgJiAweGZmOworCQlyZXR1cm4gbXNyICogMTAwMDAw
-OworCX0KKworCWlmICgoIWNlbnRyaW5vX21vZGVsKSB8fCAoIWNlbnRyaW5vX21vZGVsLT5vcF9w
-b2ludHMpKQorCQlyZXR1cm4gMDsKKworCW1zciAmPSAweGZmZmY7CisJZm9yIChpID0gMDsgCisJ
-ICAgICBjZW50cmlub19tb2RlbC0+b3BfcG9pbnRzW2ldLmZyZXF1ZW5jeSAhPSBDUFVGUkVRX1RB
-QkxFX0VORDsgCisJICAgICBpKyspIHsKKwkJaWYgKG1zciA9PSBjZW50cmlub19tb2RlbC0+b3Bf
-cG9pbnRzW2ldLmluZGV4KQorCQlyZXR1cm4gY2VudHJpbm9fbW9kZWwtPm9wX3BvaW50c1tpXS5m
-cmVxdWVuY3k7CisJfQorCXJldHVybiAwOwogfQogCiAvKiBSZXR1cm4gdGhlIGN1cnJlbnQgQ1BV
-IGZyZXF1ZW5jeSBpbiBrSHogKi8KIHN0YXRpYyB1bnNpZ25lZCBpbnQgZ2V0X2N1cl9mcmVxKHVu
-c2lnbmVkIGludCBjcHUpCiB7CiAJdW5zaWduZWQgbCwgaDsKLQlpZiAoY3B1KQorCWNwdW1hc2tf
-dCBzYXZlZF9tYXNrOworCisJc2F2ZWRfbWFzayA9IGN1cnJlbnQtPmNwdXNfYWxsb3dlZDsKKwlz
-ZXRfY3B1c19hbGxvd2VkKGN1cnJlbnQsIGNwdW1hc2tfb2ZfY3B1KGNwdSkpOworCWlmIChzbXBf
-cHJvY2Vzc29yX2lkKCkgIT0gY3B1KQogCQlyZXR1cm4gMDsKIAogCXJkbXNyKE1TUl9JQTMyX1BF
-UkZfU1RBVFVTLCBsLCBoKTsKKwlzZXRfY3B1c19hbGxvd2VkKGN1cnJlbnQsIHNhdmVkX21hc2sp
-OwogCXJldHVybiBleHRyYWN0X2Nsb2NrKGwpOwogfQogCkBAIC0yOTYsOCArMzIzLDYgQEAgc3Rh
-dGljIHN0cnVjdCBhY3BpX3Byb2Nlc3Nvcl9wZXJmb3JtYW5jZQogI2luY2x1ZGUgPGxpbnV4L2Fj
-cGkuaD4KICNpbmNsdWRlIDxhY3BpL3Byb2Nlc3Nvci5oPgogCi0jZGVmaW5lIEFDUElfUERDX0NB
-UEFCSUxJVFlfRU5IQU5DRURfU1BFRURTVEVQIDB4MQotCiAvKgogICogY2VudHJpbm9fY3B1X2lu
-aXRfYWNwaSAtIHJlZ2lzdGVyIHdpdGggQUNQSSBQLVN0YXRlcyBsaWJyYXJ5IAogICoKQEAgLTMx
-OCwxMiArMzQzLDEyIEBAIHN0YXRpYyBpbnQgY2VudHJpbm9fY3B1X2luaXRfYWNwaShzdHJ1Y3QK
-ICAgICAgICAgYXJnMC5idWZmZXIucG9pbnRlciA9ICh1OCAqKSBhcmcwX2J1ZjsKICAgICAgICAg
-YXJnMF9idWZbMF0gPSBBQ1BJX1BEQ19SRVZJU0lPTl9JRDsKICAgICAgICAgYXJnMF9idWZbMV0g
-PSAxOwotICAgICAgICBhcmcwX2J1ZlsyXSA9IEFDUElfUERDX0NBUEFCSUxJVFlfRU5IQU5DRURf
-U1BFRURTVEVQOworICAgICAgICBhcmcwX2J1ZlsyXSA9IEFDUElfUERDX0VTVF9DQVBBQklMSVRZ
-X1NNUCB8IEFDUElfUERDX0VTVF9DQVBBQklMSVRZX01TUjsKIAogCXAucGRjID0gJmFyZ19saXN0
-OwogCiAJLyogcmVnaXN0ZXIgd2l0aCBBQ1BJIGNvcmUgKi8KLSAgICAgICAgaWYgKGFjcGlfcHJv
-Y2Vzc29yX3JlZ2lzdGVyX3BlcmZvcm1hbmNlKCZwLCAwKSkKKyAgICAgICAgaWYgKGFjcGlfcHJv
-Y2Vzc29yX3JlZ2lzdGVyX3BlcmZvcm1hbmNlKCZwLCBwb2xpY3ktPmNwdSkpCiAgICAgICAgICAg
-ICAgICAgcmV0dXJuIC1FSU87CiAKIAkvKiB2ZXJpZnkgdGhlIGFjcGlfZGF0YSAqLwpAQCAtMzU4
-LDEzICszODMsNiBAQCBzdGF0aWMgaW50IGNlbnRyaW5vX2NwdV9pbml0X2FjcGkoc3RydWN0CiAJ
-CQlwLnN0YXRlc1tpXS5jb3JlX2ZyZXF1ZW5jeSA9IDA7CiAJCQljb250aW51ZTsKIAkJfQotCi0J
-CWlmIChleHRyYWN0X2Nsb2NrKHAuc3RhdGVzW2ldLmNvbnRyb2wpICE9IAotCQkgICAgKHAuc3Rh
-dGVzW2ldLmNvcmVfZnJlcXVlbmN5ICogMTAwMCkpIHsKLQkJCXByaW50ayhLRVJOX0RFQlVHICJJ
-bnZhbGlkIGVuY29kZWQgZnJlcXVlbmN5XG4iKTsKLQkJCXJlc3VsdCA9IC1FSU5WQUw7Ci0JCQln
-b3RvIGVycl91bnJlZzsKLQkJfQogCX0KIAogCWNlbnRyaW5vX21vZGVsID0ga21hbGxvYyhzaXpl
-b2Yoc3RydWN0IGNwdV9tb2RlbCksIEdGUF9LRVJORUwpOwpAQCAtMzgzLDI0ICs0MDEsMzYgQEAg
-c3RhdGljIGludCBjZW50cmlub19jcHVfaW5pdF9hY3BpKHN0cnVjdAogICAgICAgICAgICAgICAg
-IGdvdG8gZXJyX2tmcmVlOwogICAgICAgICB9CiAKLQljdXJfZnJlcSA9IGdldF9jdXJfZnJlcSgw
-KTsKLQogICAgICAgICBmb3IgKGk9MDsgaTxwLnN0YXRlX2NvdW50OyBpKyspIHsKIAkJY2VudHJp
-bm9fbW9kZWwtPm9wX3BvaW50c1tpXS5pbmRleCA9IHAuc3RhdGVzW2ldLmNvbnRyb2w7CiAJCWNl
-bnRyaW5vX21vZGVsLT5vcF9wb2ludHNbaV0uZnJlcXVlbmN5ID0gcC5zdGF0ZXNbaV0uY29yZV9m
-cmVxdWVuY3kgKiAxMDAwOworCX0KKwljZW50cmlub19tb2RlbC0+b3BfcG9pbnRzW3Auc3RhdGVf
-Y291bnRdLmZyZXF1ZW5jeSA9IENQVUZSRVFfVEFCTEVfRU5EOworCisJY3VyX2ZyZXEgPSBnZXRf
-Y3VyX2ZyZXEocG9saWN5LT5jcHUpOworCisJZm9yIChpPTA7IGk8cC5zdGF0ZV9jb3VudDsgaSsr
-KSB7CisJCWlmIChleHRyYWN0X2Nsb2NrKGNlbnRyaW5vX21vZGVsLT5vcF9wb2ludHNbaV0uaW5k
-ZXgpICE9CisJCSAgICAoY2VudHJpbm9fbW9kZWwtPm9wX3BvaW50c1tpXS5mcmVxdWVuY3kpKSB7
-CisJCQlwcmludGsoS0VSTl9ERUJVRyAiSW52YWxpZCBlbmNvZGVkIGZyZXF1ZW5jeVxuIik7CisJ
-CQlyZXN1bHQgPSAtRUlOVkFMOworCQkJZ290byBlcnJfa2ZyZWVfYWxsOworCQl9CisKIAkJaWYg
-KGN1cl9mcmVxID09IGNlbnRyaW5vX21vZGVsLT5vcF9wb2ludHNbaV0uZnJlcXVlbmN5KQogCQkJ
-cC5zdGF0ZSA9IGk7CiAJCWlmICghcC5zdGF0ZXNbaV0uY29yZV9mcmVxdWVuY3kpCiAJCQljZW50
-cmlub19tb2RlbC0+b3BfcG9pbnRzW2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJ
-RDsKIAl9Ci0JY2VudHJpbm9fbW9kZWwtPm9wX3BvaW50c1twLnN0YXRlX2NvdW50XS5mcmVxdWVu
-Y3kgPSBDUFVGUkVRX1RBQkxFX0VORDsKIAogCXJldHVybiAwOwotCisJCisgZXJyX2tmcmVlX2Fs
-bDoKKwlrZnJlZShjZW50cmlub19tb2RlbC0+b3BfcG9pbnRzKTsKICBlcnJfa2ZyZWU6CiAJa2Zy
-ZWUoY2VudHJpbm9fbW9kZWwpOwogIGVycl91bnJlZzoKLQlhY3BpX3Byb2Nlc3Nvcl91bnJlZ2lz
-dGVyX3BlcmZvcm1hbmNlKCZwLCAwKTsKKwlhY3BpX3Byb2Nlc3Nvcl91bnJlZ2lzdGVyX3BlcmZv
-cm1hbmNlKCZwLCBwb2xpY3ktPmNwdSk7CiAJcmV0dXJuIChyZXN1bHQpOwogfQogI2Vsc2UKQEAg
-LTQxNSw5ICs0NDUsNiBAQCBzdGF0aWMgaW50IGNlbnRyaW5vX2NwdV9pbml0KHN0cnVjdCBjcHVm
-CiAJaW50IHJldDsKIAlpbnQgaTsKIAotCWlmIChwb2xpY3ktPmNwdSAhPSAwKQotCQlyZXR1cm4g
-LUVOT0RFVjsKLQogCS8qIE9ubHkgSW50ZWwgbWFrZXMgRW5oYW5jZWQgU3BlZWRzdGVwLWNhcGFi
-bGUgQ1BVcyAqLwogCWlmIChjcHUtPng4Nl92ZW5kb3IgIT0gWDg2X1ZFTkRPUl9JTlRFTCB8fCAh
-Y3B1X2hhcyhjcHUsIFg4Nl9GRUFUVVJFX0VTVCkpCiAJCXJldHVybiAtRU5PREVWOwpAQCAtNDI2
-LDEzICs0NTMsMjAgQEAgc3RhdGljIGludCBjZW50cmlub19jcHVfaW5pdChzdHJ1Y3QgY3B1Zgog
-CQlpZiAoY2VudHJpbm9fdmVyaWZ5X2NwdV9pZChjcHUsICZjcHVfaWRzW2ldKSkKIAkJCWJyZWFr
-OwogCi0JaWYgKGkgPT0gTl9JRFMpIHsKLQkJcHJpbnRrKEtFUk5fSU5GTyBQRlggImZvdW5kIHVu
-c3VwcG9ydGVkIENQVSB3aXRoIEVuaGFuY2VkIFNwZWVkU3RlcDogIgotCQkgICAgICAgInNlbmQg
-L3Byb2MvY3B1aW5mbyB0byAiIE1BSU5UQUlORVIgIlxuIik7Ci0JCXJldHVybiAtRU5PREVWOwot
-CX0KKwlpZiAoaSAhPSBOX0lEUykKKwkJY2VudHJpbm9fY3B1ID0gMTsKIAogCWlmIChjZW50cmlu
-b19jcHVfaW5pdF9hY3BpKHBvbGljeSkpIHsKKwkJaWYgKHBvbGljeS0+Y3B1ICE9IDApCisJCQly
-ZXR1cm4gLUVOT0RFVjsKKworCQlpZiAoIWNlbnRyaW5vX2NwdSkgeworCQkJcHJpbnRrKEtFUk5f
-SU5GTyBQRlggImZvdW5kIHVuc3VwcG9ydGVkIENQVSB3aXRoICIKKwkJCSJFbmhhbmNlZCBTcGVl
-ZFN0ZXA6IHNlbmQgL3Byb2MvY3B1aW5mbyB0byAiIAorCQkJTUFJTlRBSU5FUiAiXG4iKTsKKwkJ
-CXJldHVybiAtRU5PREVWOworCQl9CisKIAkJaWYgKGNlbnRyaW5vX2NwdV9pbml0X3RhYmxlKHBv
-bGljeSkpIHsKIAkJCXJldHVybiAtRU5PREVWOwogCQl9CkBAIC00NTQsNyArNDg4LDcgQEAgc3Rh
-dGljIGludCBjZW50cmlub19jcHVfaW5pdChzdHJ1Y3QgY3B1ZgogCQl9CiAJfQogCi0JZnJlcSA9
-IGdldF9jdXJfZnJlcSgwKTsKKwlmcmVxID0gZ2V0X2N1cl9mcmVxKHBvbGljeS0+Y3B1KTsKIAog
-CXBvbGljeS0+Z292ZXJub3IgPSBDUFVGUkVRX0RFRkFVTFRfR09WRVJOT1I7CiAJcG9saWN5LT5j
-cHVpbmZvLnRyYW5zaXRpb25fbGF0ZW5jeSA9IDEwMDAwOyAvKiAxMHVTIHRyYW5zaXRpb24gbGF0
-ZW5jeSAqLwpAQCAtNDgxLDcgKzUxNSw3IEBAIHN0YXRpYyBpbnQgY2VudHJpbm9fY3B1X2V4aXQo
-c3RydWN0IGNwdWYKIAogI2lmZGVmIENPTkZJR19YODZfU1BFRURTVEVQX0NFTlRSSU5PX0FDUEkK
-IAlpZiAoIWNlbnRyaW5vX21vZGVsLT5tb2RlbF9uYW1lKSB7Ci0JCWFjcGlfcHJvY2Vzc29yX3Vu
-cmVnaXN0ZXJfcGVyZm9ybWFuY2UoJnAsIDApOworCQlhY3BpX3Byb2Nlc3Nvcl91bnJlZ2lzdGVy
-X3BlcmZvcm1hbmNlKCZwLCBwb2xpY3ktPmNwdSk7CiAJCWtmcmVlKGNlbnRyaW5vX21vZGVsLT5v
-cF9wb2ludHMpOwogCQlrZnJlZShjZW50cmlub19tb2RlbCk7CiAJfQpAQCAtNTE5LDE5ICs1NTMs
-MzUgQEAgc3RhdGljIGludCBjZW50cmlub190YXJnZXQgKHN0cnVjdCBjcHVmcgogCXVuc2lnbmVk
-IGludCAgICBuZXdzdGF0ZSA9IDA7CiAJdW5zaWduZWQgaW50CW1zciwgb2xkbXNyLCBoOwogCXN0
-cnVjdCBjcHVmcmVxX2ZyZXFzCWZyZXFzOworCWNwdW1hc2tfdAkJc2F2ZWRfbWFzazsKKwlpbnQJ
-CQlyZXR2YWw7CiAKIAlpZiAoY2VudHJpbm9fbW9kZWwgPT0gTlVMTCkKIAkJcmV0dXJuIC1FTk9E
-RVY7CiAKKwkvKgorCSAqIFN1cHBvcnQgZm9yIFNNUCBzeXN0ZW1zLgorCSAqIE1ha2Ugc3VyZSB3
-ZSBhcmUgcnVubmluZyBvbiB0aGUgQ1BVIHRoYXQgd2FudHMgdG8gY2hhbmdlIGZyZXF1ZW5jeQor
-CSAqLworCXNhdmVkX21hc2sgPSBjdXJyZW50LT5jcHVzX2FsbG93ZWQ7CisJc2V0X2NwdXNfYWxs
-b3dlZChjdXJyZW50LCBjcHVtYXNrX29mX2NwdShwb2xpY3ktPmNwdSkpOworCWlmIChzbXBfcHJv
-Y2Vzc29yX2lkKCkgIT0gcG9saWN5LT5jcHUpIHsKKwkJcmV0dXJuKC1FQUdBSU4pOworCX0KKwog
-CWlmIChjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV90YXJnZXQocG9saWN5LCBjZW50cmlub19tb2Rl
-bC0+b3BfcG9pbnRzLCB0YXJnZXRfZnJlcSwKLQkJCQkJICAgcmVsYXRpb24sICZuZXdzdGF0ZSkp
-Ci0JCXJldHVybiAtRUlOVkFMOworCQkJCQkgICByZWxhdGlvbiwgJm5ld3N0YXRlKSkgeworCQly
-ZXR2YWwgPSAtRUlOVkFMOworCQlnb3RvIG1pZ3JhdGVfZW5kOworCX0KIAogCW1zciA9IGNlbnRy
-aW5vX21vZGVsLT5vcF9wb2ludHNbbmV3c3RhdGVdLmluZGV4OwogCXJkbXNyKE1TUl9JQTMyX1BF
-UkZfQ1RMLCBvbGRtc3IsIGgpOwogCi0JaWYgKG1zciA9PSAob2xkbXNyICYgMHhmZmZmKSkKLQkJ
-cmV0dXJuIDA7CisJaWYgKG1zciA9PSAob2xkbXNyICYgMHhmZmZmKSkgeworCQlyZXR2YWwgPSAw
-OworCQlnb3RvIG1pZ3JhdGVfZW5kOworCX0KIAogCS8qIEhtLCBvbGQgZnJlcXVlbmN5IGNhbiBl
-aXRoZXIgYmUgdGhlIGxhc3QgdmFsdWUgd2UgcHV0IGluCiAJICAgUEVSRl9DVEwsIG9yIHdoYXRl
-dmVyIGl0IGlzIG5vdy4gVGhlIHRyb3VibGUgaXMgdGhhdCBUTTIKQEAgLTU0NSw3ICs1OTUsNyBA
-QCBzdGF0aWMgaW50IGNlbnRyaW5vX3RhcmdldCAoc3RydWN0IGNwdWZyCiAJICAgVE9ETzogd29y
-ayBvdXQgaG93IHRoZSBUQ0MgaW50ZXJydXB0cyB3b3JrLCBhbmQgdHJ5IHRvCiAJICAgY2F0Y2gg
-dGhlIENQVSBjaGFuZ2luZyB0aGluZ3MgdW5kZXIgdXMuCiAJKi8KLQlmcmVxcy5jcHUgPSAwOwor
-CWZyZXFzLmNwdSA9IHBvbGljeS0+Y3B1OwogCWZyZXFzLm9sZCA9IGV4dHJhY3RfY2xvY2sob2xk
-bXNyKTsKIAlmcmVxcy5uZXcgPSBleHRyYWN0X2Nsb2NrKG1zcik7CiAJCkBAIC01NjQsNyArNjE0
-LDEwIEBAIHN0YXRpYyBpbnQgY2VudHJpbm9fdGFyZ2V0IChzdHJ1Y3QgY3B1ZnIKIAogCWNwdWZy
-ZXFfbm90aWZ5X3RyYW5zaXRpb24oJmZyZXFzLCBDUFVGUkVRX1BPU1RDSEFOR0UpOwogCi0JcmV0
-dXJuIDA7CisJcmV0dmFsID0gMDsKK21pZ3JhdGVfZW5kOgorCXNldF9jcHVzX2FsbG93ZWQoY3Vy
-cmVudCwgc2F2ZWRfbWFzayk7CisJcmV0dXJuIChyZXR2YWwpOwogfQogCiBzdGF0aWMgc3RydWN0
-IGZyZXFfYXR0ciogY2VudHJpbm9fYXR0cltdID0gewo=
-
-------_=_NextPart_001_01C478E2.60C42F7C
-Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+http://bugme.osdl.org/show_bug.cgi?id=3150
 
-------_=_NextPart_001_01C478E2.60C42F7C--
+           Summary: modprobe speedstep-centrino fails
+    Kernel Version: 2.6.7
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: mkrueger@mkru.de
 
+
+Distribution: Debian testing (3.1) 
+Hardware Environment: Laptop ASUS M2N 
+Software Environment: 
+Problem Description: The frequency scaling won't work. This is due to the 
+problem that the module can't be loaded. I don't get a fatal error message. 
+Instead I get an oops and a call trace. 
+ 
+Steps to reproduce: I don't know what to say here. I just compiled the kernel 
+I got from kernel.org. I did not use LAPIC in case this information matters. 
+So after compiling the kernel and the modules I reboot, log in as root and do 
+a modprobe processor; modprobe speedstep-centrino. 
+ 
+Did I miss something? I haven't tried the 2.6.5 kernel which according to some 
+websites seems to work.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
