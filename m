@@ -1,13 +1,13 @@
-From: Daniel Thor Kristjansson <danielk@cat.nyu.edu>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: Dynamic frequency governor
-Date: Mon, 20 Oct 2003 11:40:37 -0400 (EDT)
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <Pine.SOL.4.53.0310201124370.3590@graphics.cat.nyu.edu>
-References: <CFF522B18982EA4481D3A3E23B83141C24B4AA@orsmsx407.jf.intel.com>
-Reply-To: danielk@mrl.nyu.edu
+Date: Mon, 20 Oct 2003 16:39:37 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031020153936.GM2729@redhat.com>
+References: <CFF522B18982EA4481D3A3E23B83141C24B4B0@orsmsx407.jf.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <CFF522B18982EA4481D3A3E23B83141C24B4AA@orsmsx407.jf.intel.com>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <CFF522B18982EA4481D3A3E23B83141C24B4B0@orsmsx407.jf.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,55 +16,59 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Errors-To: cpufreq-bounces@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Moore, Robert" <robert.moore@intel.com>
-Cc: cpufreq@www.linux.org.uk
+Cc: "Walz, Michael" <michael.walz@intel.com>, cpufreq@www.linux.org.uk
+
+On Mon, Oct 20, 2003 at 08:31:08AM -0700, Moore, Robert wrote:
+ > 
+ > I'm planning on integrating the previously released Linux IST (Intel
+ > Speedstep) driver into the CpuFreq architecture.
+
+Cool, but what does it do that the existing cpufreq speedstep drivers don't ?
+
+ > I think that what is gained by having this code in the kernel is that a
+ > very accurate measure of percent CPU utilization can be obtained
+ > directly from the kernel idle handler, and there is less overhead during
+ > the periodic sampling of the current CPU utilization by a timer thread.
+
+I'm not disputing whether or not putting this in the kernel is a good
+or bad thing (for the record, I think it's a good idea), however the
+fact remains, whilst there are folks owning patents on this, it'll
+*never* be acceptable for merging without an exception grant from the
+patent holder.
+
+		Dave
 
 
-I made a list here:
-  http://www.mrl.nyu.edu/~danielk/linux/cpufreq.html
+ > From: Dave Jones [mailto:davej@redhat.com] 
+ > Sent: Sunday, October 19, 2003 6:24 AM
+ > To: Moore, Robert
+ > Cc: cpufreq@www.linux.org.uk
+ > Subject: Re: Dynamic frequency governor
+ > 
+ > On Fri, Oct 17, 2003 at 02:14:38PM -0700, Moore, Robert wrote:
+ >  
+ >  > I've been chartered to implement a multi-state algorithm for Linux;
+ >  > this will be a new governor that adjusts the CPU frequency based upon
+ >  > percent CPU utilization as reported from the kernel idle handler.
+ >  > 
+ >  > Has any work been done (or is being done) in this area?  I don't want
+ > to
+ >  > rewrite the wheel.
+ > 
+ > There are several patents in this area (I think from Hitachi, I forget
+ > exactly) It has come up before on the list, so should be in the
+ > archives.  Unless you can get a grant from the holder that it may be
+ > used in GPL code, this has zero chance of being merged to mainline.
+ > 
+ > 		Dave
+ > 
+ > -- 
+ >  Dave Jones     http://www.codemonkey.org.uk
+---end quoted text---
 
-I just added Jeroen van der Vegt's slowmotion.
-
-I'm going to second everyone else that's written one of these and say
-that it should be in userspace. Before I got to busy, my plan was to
-make a server that ran an interpreted policy from a file. An applet
-running under either kde or gnome would tell it which one to use via a
-unix socket. I can post the latest version I wrote, but it's not
-thread safe and not secure against buffer overflows (which is why I kept
-it to myself).
-
-BTW If you require KDE it already has a system information server that
-will tell you if you are running on battery, and more detailed CPU
-utilization info than uptime will give you. I also allowed setting CPU
-speed based on temperature in addition to battery capacity and uptime,
-sometimes I leave a laptop in my lap where I'm sensitive to a 80 deg
-Centigrade CPU.... So sometimes, for 65C CPU, I can bear a sligtly
-longer compile even if slowing the CPU uses more battery for the
-process, especially if I'm plugged in anyway.
-
--- Daniel
-  << When truth is outlawed; only outlaws will tell the truth. >> - RLiegh
-
-On Fri, 17 Oct 2003, Moore, Robert wrote:
-
-]Hi all,
-]
-]I've been chartered to implement a multi-state algorithm for Linux;
-]this will be a new governor that adjusts the CPU frequency based upon
-]percent CPU utilization as reported from the kernel idle handler.
-]
-]Has any work been done (or is being done) in this area?  I don't want to
-]rewrite the wheel.
-]
-]Thanks,
-]Bob Moore
-]Intel Corporation
-]
-]_______________________________________________
-]Cpufreq mailing list
-]Cpufreq@www.linux.org.uk
-]http://www.linux.org.uk/mailman/listinfo/cpufreq
-]
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
