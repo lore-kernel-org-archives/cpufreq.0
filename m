@@ -1,13 +1,14 @@
-From: aeriksson2@fastmail.fm
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: speedstep_smi & psmouse problems?
-Date: Thu, 20 May 2004 20:20:01 +0200
+Date: Thu, 20 May 2004 20:49:17 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040520182002.7C2984137@latitude.mynet.no-ip.org>
-References: <dongili@supereva.it>
+Message-ID: <20040520184917.GM29214@poupinou.org>
+References: <20040520155506.GH1976@inferi.kami.home>
+	<20040520182002.7C2984137@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: Message from Mattia Dongili <dongili@supereva.it> of "Thu,
-	20 May 2004 17:55:06 +0200." <20040520155506.GH1976@inferi.kami.home> 
+Content-Disposition: inline
+In-Reply-To: <20040520182002.7C2984137@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,23 +20,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: aeriksson2@fastmail.fm
+Cc: cpufreq@www.linux.org.uk
 
+On Thu, May 20, 2004 at 08:20:01PM +0200, aeriksson2@fastmail.fm wrote:
 > 
->doh! sorry, I've been reported many times about the jumpy mouse and 
-it
->was always related to acpi+cpufreqd (and the acpi_workaround option 
-is
->acpi only).
+> So reading the battery status using apm has the same cpu locking/
+> timer/whatever effects as the acpi method has? Is there any chance to 
+> do
+> the reads in a way that's not harmful to the mouse? Or perhaps the
+> mouse driver is too sensitive to timer issues?
 
->Battery reads cannot be disabled with apm as /proc/apm reports all
-> power management informations together.
- 
+It's not exactly a problem of timer issues in a driver.  Just that the
+same chip is used for the ps mouse and battery related stuff.  To be
+more precise, there is good luck that the keyboard controller (which is
+also used in order to control the mouse) is used, via a smbus, to access
+a smart battery in this case.  Then, there may be either:
+- hardware bug, or
+- bug in the firmware for this controller.
 
-So reading the battery status using apm has the same cpu locking/
-timer/whatever effects as the acpi method has? Is there any chance to 
-do
-the reads in a way that's not harmful to the mouse? Or perhaps the
-mouse driver is too sensitive to timer issues?
+-- 
+Bruno Ducrot
 
-/Anders
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
