@@ -1,13 +1,12 @@
-From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
-Subject: Re: ondemand governor
-Date: Sat, 25 Sep 2004 08:41:27 +0200
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: ondemand governor
+Date: Sat, 25 Sep 2004 11:42:32 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040925064127.GB24558@message-id.gmane0305.slipkontur.de>
-References: <88056F38E9E48644A0F562A38C64FB6002F2B01B@scsmsx403.amr.corp.intel.com>
+Message-ID: <88056F38E9E48644A0F562A38C64FB6002F2B0F4@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6002F2B01B@scsmsx403.amr.corp.intel.com>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,42 +17,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@www.linux.org.uk
+To: Stefan Seyfried <seife@gmane0305.slipkontur.de>, cpufreq@www.linux.org.uk
 
-On Fri, Sep 24, 2004 at 04:55:31PM -0700, Pallipadi, Venkatesh wrote:
+>-----Original Message-----
+>From: cpufreq-bounces@www.linux.org.uk=20
+>[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Stefan Seyfried
+>Sent: Friday, September 24, 2004 11:36 PM
+>To: cpufreq@www.linux.org.uk
+>Subject: Re: ondemand governor
+>
+>On Fri, Sep 24, 2004 at 11:29:53PM +0200, Dominik Brodowski wrote:
+>
+>> Unfortunately, only indirectly. Modprobe cpufreq_ondemand and then=20
+>> cat /sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate
+>> The latency can be deduced then.
+>
+>10000
+>=20
 
-> By any chance you have enabled local APIC (timer interrupts) and also
-> using C3-states?
+That means the CPU usage is being checked every 10mS and 100mS for
+Possible increase and decrease in freq, respectively.
 
-C3 -> yes, lapic -> no.
-> 
-> I have one known issue where ondemend doesn't work properly with the
-> above configuartion.
+Try tuning the following.=20
+down_threshold=3D40
+up_threshold=3D60
+sampling_rate=3D100000
+sampling_down_factor=3D1
 
-strolchi:~ # cat /proc/acpi/processor/CPU0/power
-active state:            C3
-default state:           C1
-bus master activity:     00120000
-states:
-    C1:                  promotion[C2] demotion[--] latency[000] usage[04803900]
-    C2:                  promotion[C3] demotion[C1] latency[050] usage[50268288]
-   *C3:                  promotion[--] demotion[C2] latency[050] usage[01882935]
-strolchi:~ # cat /proc/interrupts
-           CPU0
-  0:   61430953          XT-PIC  timer
-  1:      68156          XT-PIC  i8042
-  2:          0          XT-PIC  cascade
-  7:     836390          XT-PIC  Intel 82801DB-ICH4
-  9:         14          XT-PIC  acpi
- 11:     759116          XT-PIC  yenta, yenta, ehci_hcd, uhci_hcd, uhci_hcd, uhci_hcd, eth0
- 12:     652352          XT-PIC  i8042
- 14:     225938          XT-PIC  ide0
- 15:     455716          XT-PIC  ide1
-NMI:          0
-LOC:          0
-ERR:          0
-MIS:          0
--- 
-Stefan Seyfried
+This will make CPU usage checks every 100mS and increase the freq if
+utilization is more than 60% and decrease the freq if utilization is=20
+less than 40%.
+
+Thanks,
+Venki
