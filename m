@@ -1,16 +1,14 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: Help with Installation
-Date: Sat, 3 Apr 2004 17:22:42 +0100
+From: Cyril Wattebled <neurowork@free.fr>
+Subject: Re: Pentium-M minimum clock-freq
+Date: Sun, 4 Apr 2004 07:58:03 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040403172242.D5553@flint.arm.linux.org.uk>
-References: <200404031342.34522.ozeki@simnet.is>
-	<20040403145045.GV19001@poupinou.org>
-	<20040403171633.610cc960.frx@firenze.linux.it>
+Message-ID: <20040404075803.2fdc50ad.neurowork@free.fr>
+References: <200404021824.10912.steffen-hein@gmx.de>
+	<20040402164459.GB7034@dominikbrodowski.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040403171633.610cc960.frx@firenze.linux.it>;
-	from frx@firenze.linux.it on Sat, Apr 03, 2004 at 05:16:33PM +0200
+In-Reply-To: <20040402164459.GB7034@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,35 +19,56 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Francesco Poli <frx@firenze.linux.it>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Sat, Apr 03, 2004 at 05:16:33PM +0200, Francesco Poli wrote:
-> On Sat, 3 Apr 2004 16:50:45 +0200 Bruno Ducrot wrote:
-> 
-> > tar xzvfp cpufreq-...tar.gz
-> > cd cpufreq
-> > ./patchin.sh /path/to/kernel/sources
+
+Hi there, 
+
+On Fri, 2 Apr 2004 18:44:59 +0200
+Dominik Brodowski <linux@dominikbrodowski.de> wrote:
+
+> On Fri, Apr 02, 2004 at 06:24:10PM +0200, Steffen Hein wrote:
+> > I'm currently using Kernel 2.6.4 with a 1.5ghz Pentium-M and the lowest 
+> > frequency supported seems to be around 500mhz. However, under Win$ with 
+> > current speedstep-drivers installed, it goes as low as 98mhz (with some
+> > steps in-between).
 > > 
-> > Do *not* remove the cpufreq directory that was unpacked.
+> > Is there any reason, why these frequencies aren't supported by the current 
+> > speedstep-driver?
 > 
-> Why did you set up such a strange procedure?
-> What are the advantages over a simple patch like the old ones found in
-> http://www.codemonkey.org.uk/projects/cpufreq/   ?
-> 
-> I'd say a gzipped (or bzip2ed) patch file would be much more easy to
-> apply (especially with automatic tools such as Debian kernel-package,
-> that is, make-kpkg), but of course I may be wrong...
-> 
-> Could you please explain the rationale behind such a choice?
+> 'cause the other OS's behaviour is broken, IMHO. It (also) "sells" you 
+> throttling as "speedstep": Throttling means the processor is stopped for 
+> short times. As long as your processor supports at least the C2 idle state, 
+> the system will even consume more energy for any given task if you throttle 
+> the CPU. So I think it's a bad idea. Actual speedstep states for the 1.5ghz 
+> Pentium-M are 600, 800, 1000, 1200, 1400 and 1500 MHz.
 
-We don't have the (massive) resources to be able to generate a patch
-for every single kernel version which someone may want to apply the
-cpufreq code to from the CVS.
+Actually, I have noticed that Windows seems to use Throttling only if the power
+adapter is off-line. On my pentium-m 1.7, it throttles the cpu down to 200 mhz
+unplugged and goes back to 600 mhz when plugged. The other speed steps are the
+same as on linux.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
-                 2.6 Serial core
+> 
+> > Will they be supported in future?
+> 
+> Maybe -- if multiple cpufreq drivers can be loaded and be running at the
+> same time, it'd be possible. I'm not yet sure whether this is a good idea,
+> though.
+
+To my opinion, even if C2 state saves even more power that cpu throttling,
+there's still a very big advantage in lowering the cpu speed for laptop users,
+especially with high speed CPUs: Heat. I have a Pentium-M 1.7 ghz and even if I
+use Linux as my main OS, I had to work on Windows from time to time (happily
+that doesn't happen too often =]) and I have noticed that the laptop really hot
+under linux compared with Windows. During normal use, the meters indicate 48
+degrees Celcius on Linux and only 32 under Windows. So heat is also a thing
+that might be interresting to be considered because it can be very
+unconfortable to use a very hot laptop that burns your knees if you put your
+laptop on them, that makes your hands sweat while typing and so on.
+
+I'm not qualified enough to talk about the technical aspect of the current
+implementation but would it be technicly possible to use C2 state as the main
+speed driver and use throttle on demand, for instance while unplugged to allow
+the laptop to be even cooler ?
+
+Cyril
