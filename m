@@ -1,13 +1,13 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH][powernow-k7] correcting SGTC. Timer is based upon FSB.
-Date: Wed, 14 Apr 2004 11:41:48 +0100
+Subject: Re: [PATCHES] cpufreq_get(), cpufreq->get()
+Date: Wed, 14 Apr 2004 11:52:52 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040414104148.GC24970@redhat.com>
-References: <20040414103646.GB8953@poupinou.org>
+Message-ID: <20040414105250.GE24970@redhat.com>
+References: <20040411215912.GA8160@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040414103646.GB8953@poupinou.org>
+In-Reply-To: <20040411215912.GA8160@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,18 +19,20 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Wed, Apr 14, 2004 at 12:36:46PM +0200, Bruno Ducrot wrote:
- > Hi Dave,
+On Sun, Apr 11, 2004 at 11:59:12PM +0200, Dominik Brodowski wrote:
+
+ > The following patchset is based on the current cpufreq bitkeeper patch
+ > and one important speedstep-centrino patch 
+ > [see http://www.linux.org.uk/mailman/private/cpufreq/2004-April/003499.html ].
  > 
- > I think this patch is needed especially if the FSB is around 166MHz or
- > 200MHz, or else I believe we get instabilities on some K7's motherboard
- > powernow capable (it's called Cool'n Quiet IIRC).
+ > I suggest that this patchset is considered for the 2.6.7 timeframe; 
+ > while the x86 parts seem to be quite straightforward, the arm 
+ > architecture might be affected more heavily: it already relied on 
+ > cpufreq_get(), and I can't verify my changes do even compile. Russell, 
+ > I hope I didn't break anything this time...
 
-Looks good, applied.  It'll turn up in the next -mm.
-
-thanks,
+Lets roll these in after 2.6.6 is out, and they can sit in -mm for a while.
 
 		Dave
