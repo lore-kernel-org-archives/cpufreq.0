@@ -1,14 +1,16 @@
 From: Arjan van de Ven <arjanv@redhat.com>
-Subject: Re: speedstep capability checks
-Date: Mon, 15 Mar 2004 15:20:22 +0100
+Subject: Re: add new p3m model
+Date: Mon, 15 Mar 2004 15:21:01 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040315142022.GA7069@devserv.devel.redhat.com>
-References: <20040314152016.0B04B3F04@latitude.mynet.no-ip.org>
-	<20040315141517.GG8636@dominikbrodowski.de>
+Message-ID: <20040315142101.GB7069@devserv.devel.redhat.com>
+References: <20040308111531.GD14593@devserv.devel.redhat.com>
+	<20040308111531.GD14593@devserv.devel.redhat.com>
+	<20040308133135.GU2869@poupinou.org>
+	<20040314143407.GA21991@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1949531686=="
+Content-Type: multipart/mixed; boundary="===============1476363543=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040315141517.GG8636@dominikbrodowski.de>
+In-Reply-To: <20040314143407.GA21991@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,44 +20,65 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: aeriksson@fastmail.fm, davej@redhat.com, cpufreq@www.linux.org.uk
+To: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
 
---===============1949531686==
+--===============1476363543==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+	protocol="application/pgp-signature"; boundary="cmJC7u66zC7hs+87"
 Content-Disposition: inline
 
 
---HlL+5n6rz5pIUxbD
+--cmJC7u66zC7hs+87
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 
-On Mon, Mar 15, 2004 at 03:15:17PM +0100, Dominik Brodowski wrote:
-> I like this patch -- I've modified it a bit so that it applies to 2.6.4 and
-> also handles Arjan's strange 0x07 Tualatin. Please apply, Dave. 
+On Sun, Mar 14, 2004 at 03:34:07PM +0100, Dominik Brodowski wrote:
+> On Mon, Mar 08, 2004 at 12:15:31PM +0100, Arjan van de Ven wrote:
+> > Hi,
+> > 
+> > the patch below adds support for my laptop (Dell Inspiron 2600) which has
+> > ebx return 7 for the p3 mobile in it....
+> 
+> Can you send a /proc/cpuinfo, please?
 
-Well I don't.
-It's copping out by not autodetecting cases that can reasonably be
-autodetected...
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 11
+model name	: Mobile Intel(R) Celeron(TM) CPU         1200MHz
+stepping	: 4
+cpu MHz		: 1196.449
+cache size	: 256 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 mtrr pge mca cmov pat pse36 mmx fxsr sse
+bogomips	: 2375.68
 
---HlL+5n6rz5pIUxbD
+
+--cmJC7u66zC7hs+87
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.1 (GNU/Linux)
 
-iD8DBQFAVbulxULwo51rQBIRAvYwAKCZPMgdPmuMPy9LxNNQpzsI3JJktgCfXbue
-Gfg3OWXSjajHhDObQpNKd30=
-=+DPu
+iD8DBQFAVbvNxULwo51rQBIRAgewAJ9gZF3LqbHJP1TO8nSsuZIGrzz7aQCfTWrA
+ZDYP/xmc9YQATFGV32oV+BY=
+=NDsr
 -----END PGP SIGNATURE-----
 
---HlL+5n6rz5pIUxbD--
+--cmJC7u66zC7hs+87--
 
 
---===============1949531686==
+--===============1476363543==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -66,5 +89,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============1949531686==--
+--===============1476363543==--
 
