@@ -1,19 +1,11 @@
-From: Marc Singer <elf@buici.com>
-Subject: Re: Athlon 64 complains of frequency mismatch
-Date: Mon, 21 Jun 2004 14:42:36 -0700
+From: paul.devriendt@amd.com
+Subject: RE: Athlon 64 complains of frequency mismatch
+Date: Mon, 21 Jun 2004 23:02:06 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040621214236.GA3858@buici.com>
-References: <20040618185103.GA14909@buici.com>
-	<20040619104456.GA7689@dominikbrodowski.de>
-	<20040619155554.GA32432@buici.com>
-	<20040618185103.GA14909@buici.com>
-	<20040619104456.GA7689@dominikbrodowski.de>
-	<20040619163631.GA1369@buici.com>
-	<20040621202601.GA8064@dominikbrodowski.de>
+Message-ID: <84EA05E2CA77634C82730353CBE3A8431990B9@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040621202601.GA8064@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -24,32 +16,32 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: elf@buici.com, cpufreq@www.linux.org.uk
 
-On Mon, Jun 21, 2004 at 10:26:01PM +0200, Dominik Brodowski wrote:
-> > Is this really helpful?
-> Partly. It shows the values received by the powernow-k8 driver are
-> _completely_ bogus. A standard questions: have you tried a BIOS update?
-
-I looked for one.  I downloaded a BIOS, though I'm not sure it is
-newer than the one installed.  The release notes make no mention of
-powernow or acpi.
-
-> > On rumination, I came to a similar conclusion.  I can do as you ask.
-> > Is this the same as grabbing the dsdt from the /proc/acpi interface
-> > and running it through Intel's decompiler?  That's where I've started
-> > to go.
+> > Partly. It shows the values received by the powernow-k8 driver are
+> > _completely_ bogus. A standard questions: have you tried a 
+> BIOS update?
 > 
-> Not really -- acpi_pdump dumps what's received by the powernow-k8 driver
-> from the ACPI subsystem, while decompiling /proc/acpi/dsdt prints out what's
-> really there in the ACPI tables. In your case, it might indeed be
-> interesting whether a more appropriate P-States part of the DSDT is
-> contained somewhere, which is not initialized properly. Could you
-> disassemble the DSDT, please, and check for _PSS entries (grep -20 _PSS)?
-> 
+> I looked for one.  I downloaded a BIOS, though I'm not sure it is
+> newer than the one installed.  The release notes make no mention of
+> powernow or acpi.
 
-I did fetch it.  There are no entries for _PSS or even PSS.
+> I did fetch it.  There are no entries for _PSS or even PSS.
 
-> Thanks,
-> 	Dominik
+The frequency/voltage values are different for different processor
+models. The way that this is supposed to work is that the BIOS
+provides a table of the frequency/voltage data that the driver 
+uses, thus making the driver independent of the platform.
+
+Obviously if the BIOS does not do this, then the driver has no
+data. I do have a version of the driver that uses hardcoded
+values for my own testing purposes, but the source has to be
+edited to put in the correct values for your particular processor.
+
+I did intend to make this data module parameters, but have not
+had the time to do so yet. You can find the correct data values
+for your processor from the "Power and Thermal" pdfs available 
+on www.amd.com. Let me know if you want a copy of this hardcoded
+driver (or it is easy to modify the driver ourself).
+
+Paul.
