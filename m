@@ -1,16 +1,11 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: 2.4.21 Isn't working for me....
-Date: Wed, 27 Aug 2003 13:11:33 +0200
+From: "Breathnach, Proinnsias (Dublin)" <p_breathnach@ml.com>
+Subject: Question - Duron and Freq Scaling
+Date: Wed, 27 Aug 2003 12:34:26 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030827111133.GK10585@poupinou.org>
-References: <1061872616.27076.47.camel@localhost>
-	<20030826064747.GE10585@poupinou.org>
-	<1061927026.14523.9.camel@localhost>
-	<20030826224727.GA14287@nsk.no-ip.org>
+Message-ID: <A3C83F41488BD61195C3000802252FC105597E91@dubim07742.ie.ml.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20030826224727.GA14287@nsk.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,19 +16,59 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Luciano Miguel Ferreira Rocha <strange@nsk.no-ip.org>
-Cc: cpufreq@www.linux.org.uk, AthlonRob <AthlonRob@axpr.net>
+To: "'cpufreq@www.linux.org.uk'" <cpufreq@www.linux.org.uk>
 
-> I've been using that kernel, but can't get swsusp to work correctly and
-> cpufreq doesn't work that well with my chipset, anyhow, (it's a 440BX,)
-> so test it throughly.
+Hi,
+	Quick question if I may, I have a Sony Vaio (FX 401) laptop ... AMD
+Duron 800
 
-What is the trouble with the 440BX?
+ACPI shows 16 frequency throttling states ... 
 
+[francis@vaio CPU0]$ pwd
+/proc/acpi/processor/CPU0
+[francis@vaio CPU0]$ cat throttling
+state count:             16
+active state:            T0
+states:
+   *T0:                  00%
+    T1:                  06%
+    T2:                  12%
+    T3:                  18%
+    T4:                  24%
+    T5:                  31%
+    T6:                  37%
+    T7:                  43%
+    T8:                  49%
+    T9:                  55%
+    T10:                  62%
+    T11:                  68%
+    T12:                  74%
+    T13:                  80%
+    T14:                  86%
+    T15:                  93%
 
--- 
-Ducrot Bruno
+Yet CPUFreq only notes 5 states ... is there any reason I couldn't use the
+remaining 11 states (Yes  ... .I know that running @ 52MHz or so would be
+painful ...but hey !)
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+powernow: AMD K7 CPU detected.
+powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+powernow: Found PSB header at c00f74d0
+powernow: Table version: 0x12
+powernow: Flags: 0x0 (Mobile voltage regulator)
+powernow: Settling Time: 100 microseconds.
+powernow: Has 28 PST tables. (Only dumping ones relevant to this CPU).
+powernow: PST:11 (@c00f759e)
+powernow:  cpuid: 0x770^Ifsb: 100^ImaxFID: 0xa^Istartvid: 0xa
+powernow:    FID: 0x4 (5.0x [500MHz])^IVID: 0x13 (1.200V)
+powernow:    FID: 0x5 (5.5x [550MHz])^IVID: 0xe (1.300V)
+powernow:    FID: 0x6 (6.0x [600MHz])^IVID: 0xd (1.350V)
+powernow:    FID: 0x8 (7.0x [700MHz])^IVID: 0xb (1.450V)
+powernow:    FID: 0xa (8.0x [800MHz])^IVID: 0xa (1.500V)
+powernow: Minimum speed 500 MHz. Maximum speed 800 MHz.
+
+kernel is 2.4.22 vanilla + cpufreq patch from codemonkey.org.uk (2.4.22-preX
+IIRC)
+
+P
+(This was supposed to be quick !)
