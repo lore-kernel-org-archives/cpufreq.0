@@ -1,8 +1,8 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: [speedstep-piix4] reversions.
-Date: Mon, 14 Jul 2003 14:00:37 +0200
+From: Dominik Brodowski <linux@brodo.de>
+Subject: move kernel/cpufreq.c to drivers/cpufreq/cpufreq.c?
+Date: Mon, 14 Jul 2003 18:55:51 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030714120037.GR22636@poupinou.org>
+Message-ID: <20030714165551.GA1925@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
@@ -17,18 +17,16 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.arm.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-I revert some stuff of speedstep-piix4, since a lot of new stuff seems
-to be broken as hell, and unfortunately, I am taken some vacation (and
-can not be reached for at least 3 weeks from now).
+Back in the early days the whole cpufreq core was located in one file --
+kernel/cpufreq.c. Now, there are several cross-architecture files for
+cpufreq present in drivers/cpufreq. Because of this, I'd favor moving 
+kernel/cpufreq.c to drivers/cpufreq/cpufreq.c.
 
-The ac stuff (at www.poupinou.org) is also updated.
+Also, cpufreq.c could be split up into "notifiers.c" and "cpufreq.c" --
+cpufreq.c can be "modularized" then. It only needs to be "y" on ARM_SA11?0
+and if CONFIG_ACPI_PROCESSOR="y" is (on x86). Is there interest in a patch
+for this, too?
 
-Cheers,
-
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
