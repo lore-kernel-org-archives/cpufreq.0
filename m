@@ -1,11 +1,12 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
+From: Alexander Clouter <alex@digriz.org.uk>
 Subject: Re: [PATCH] (1/3) cpufreq_ondemand - 01_ignore-nice.diff
-Date: Mon, 21 Feb 2005 11:20:51 +0100
-Message-ID: <4219B603.8050403@tremplin-utc.net>
+Date: Mon, 21 Feb 2005 10:27:56 +0000
+Message-ID: <20050221102756.GA4404@inskipp>
 References: <20050220131518.GB4495@inskipp> <4218B768.8020401@tremplin-utc.net>
+	<4219B603.8050403@tremplin-utc.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------040209020507000205090107"
-In-Reply-To: <4218B768.8020401@tremplin-utc.net>
+Content-Type: multipart/mixed; boundary="===============0763680351=="
+In-Reply-To: <4219B603.8050403@tremplin-utc.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,107 +18,83 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: davej@redhat.com, cpufreq@zenii.linux.org.uk, alex-kernel@digriz.org.uk, Alexander Clouter <alex@digriz.org.uk>, linux@dominikbrodowski.de
+Cc: davej@redhat.com, cpufreq@zenii.linux.org.uk, linux@dominikbrodowski.de
 
-This is a multi-part message in MIME format.
---------------040209020507000205090107
-Content-Type: text/plain; charset=UTF-8; format=flowed
+
+--===============0763680351==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7JfCtLOvnd9MIVvH"
+Content-Disposition: inline
+
+
+--7JfCtLOvnd9MIVvH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Eric Piel a =C3=A9crit :
-> Alexander Clouter a =C3=A9crit :
+On Feb 21, Eric Piel wrote:
+>
+> Here is the patch, it does exactly the same functionality but it's=20
+> completly static and therefore much smaller. Just tested on my computer,=
+=20
+> it does the trick.
+>
+I'm happy for this to go ahead as I will want it on always by default,=20
+however you pretty much kill the folk who prefer to 'nice' tasks to prevent=
+=20
+interuption to other applications rather than using it to say "I do not car=
+e=20
+how long this task takes".
+
+I know on our proxy server there are a few rebuilds which we run at a nice'd
+level, not because we do not care how long they take (we want the rebuilds =
+to
+finish as soon as possible) but rather so that squid's performance is not
+affected.
+
+Cheers
+
+Alex
+=20
+> Eric
+> --
+> Avoid the cpufreq ondemand governor to count the nice'd tasks as load=20
+> for the cpu.
 >=20
->> Adds support to cpufreq_ondemand to ignore 'nice' cpu time
->>
-> IMO, this policy should be has lightweight as possible. Why not making=20
-> this feature just hard-coded? Don't count the load that nice'd tasks do=
-,=20
-> period!
+>  cpufreq_ondemand.c |   17 ++++++++++-------
+>  1 files changed, 10 insertions(+), 7 deletions(-)
 >=20
-> It would make the patch 5 lines instead of 50. Every userspace deamon=20
-> have this feature enabled by default, so this is a very reasonable=20
-> trade-off.
->=20
-Here is the patch, it does exactly the same functionality but it's=20
-completly static and therefore much smaller. Just tested on my computer,=20
-it does the trick.
+> Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
+> --
 
-Eric
---
-Avoid the cpufreq ondemand governor to count the nice'd tasks as load=20
-for the cpu.
+--=20
+ _______________________________________=20
+/ You can drive a horse to water, but a \
+\ pencil must be lead.                  /
+ ---------------------------------------=20
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 
-  cpufreq_ondemand.c |   17 ++++++++++-------
-  1 files changed, 10 insertions(+), 7 deletions(-)
+--7JfCtLOvnd9MIVvH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
---
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
 
---------------040209020507000205090107
-Content-Type: text/x-patch;
- name="ondemand-ignore-nice-static.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ondemand-ignore-nice-static.patch"
+iD8DBQFCGbesNv5Ugh/sRBYRAsgPAJ983VALeZDiGE9suVTBv8g1vBF0ywCdF/PI
+WSw7++62kbhiQjZdnU59OcY=
+=csSS
+-----END PGP SIGNATURE-----
 
---- linux-2.6.11-rc4/drivers/cpufreq/cpufreq_ondemand.c.bak	2005-02-06 23:35:41.000000000 +0100
-+++ linux-2.6.11-rc4/drivers/cpufreq/cpufreq_ondemand.c	2005-02-21 11:10:26.000000000 +0100
-@@ -253,7 +253,8 @@ static void dbs_check_cpu(int cpu)
- 
- 	/* Check for frequency increase */
- 	total_idle_ticks = kstat_cpu(cpu).cpustat.idle +
--		kstat_cpu(cpu).cpustat.iowait;
-+		kstat_cpu(cpu).cpustat.iowait +
-+		kstat_cpu(cpu).cpustat.nice;
- 	idle_ticks = total_idle_ticks -
- 		this_dbs_info->prev_cpu_idle_up;
- 	this_dbs_info->prev_cpu_idle_up = total_idle_ticks;
-@@ -269,7 +270,8 @@ static void dbs_check_cpu(int cpu)
- 		j_dbs_info = &per_cpu(cpu_dbs_info, j);
- 		/* Check for frequency increase */
- 		total_idle_ticks = kstat_cpu(j).cpustat.idle +
--			kstat_cpu(j).cpustat.iowait;
-+			kstat_cpu(j).cpustat.iowait +
-+			kstat_cpu(j).cpustat.nice;
- 		tmp_idle_ticks = total_idle_ticks -
- 			j_dbs_info->prev_cpu_idle_up;
- 		j_dbs_info->prev_cpu_idle_up = total_idle_ticks;
-@@ -297,7 +299,8 @@ static void dbs_check_cpu(int cpu)
- 		return;
- 
- 	total_idle_ticks = kstat_cpu(cpu).cpustat.idle +
--		kstat_cpu(cpu).cpustat.iowait;
-+		kstat_cpu(cpu).cpustat.iowait +
-+		kstat_cpu(cpu).cpustat.nice;
- 	idle_ticks = total_idle_ticks -
- 		this_dbs_info->prev_cpu_idle_down;
- 	this_dbs_info->prev_cpu_idle_down = total_idle_ticks;
-@@ -312,7 +315,8 @@ static void dbs_check_cpu(int cpu)
- 		j_dbs_info = &per_cpu(cpu_dbs_info, j);
- 		/* Check for frequency increase */
- 		total_idle_ticks = kstat_cpu(j).cpustat.idle +
--			kstat_cpu(j).cpustat.iowait;
-+			kstat_cpu(j).cpustat.iowait +
-+			kstat_cpu(j).cpustat.nice;
- 		tmp_idle_ticks = total_idle_ticks -
- 			j_dbs_info->prev_cpu_idle_down;
- 		j_dbs_info->prev_cpu_idle_down = total_idle_ticks;
-@@ -398,11 +402,10 @@ static int cpufreq_governor_dbs(struct c
- 			j_dbs_info->cur_policy = policy;
- 		
- 			j_dbs_info->prev_cpu_idle_up = 
--				kstat_cpu(j).cpustat.idle +
--				kstat_cpu(j).cpustat.iowait;
- 			j_dbs_info->prev_cpu_idle_down = 
- 				kstat_cpu(j).cpustat.idle +
--				kstat_cpu(j).cpustat.iowait;
-+				kstat_cpu(j).cpustat.iowait +
-+				kstat_cpu(j).cpustat.nice;
- 		}
- 		this_dbs_info->enable = 1;
- 		sysfs_create_group(&policy->kobj, &dbs_attr_group);
+--7JfCtLOvnd9MIVvH--
 
---------------040209020507000205090107
+
+--===============0763680351==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -128,5 +105,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------040209020507000205090107--
+--===============0763680351==--
 
