@@ -1,10 +1,11 @@
-From: bugme-daemon@osdl.org
-Subject: [Bug 3180] powernowk8 compiles into kernel only if
-	CONFIG_ACPI_PROCESSOR=y
-Date: Wed, 11 Aug 2004 02:14:28 -0700
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: [PATCH] fix powernow-k8 compilation [bug 3180]
+Date: Wed, 11 Aug 2004 12:20:51 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408110914.i7B9ESRs015134@fire-1.osdl.org>
+Message-ID: <20040811102051.GA3536@dominikbrodowski.de>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,22 +15,23 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
-http://bugme.osdl.org/show_bug.cgi?id=3180
+Propagate the new CONFIG_X86_POWERNOW_K8_ACPI to powernow-k8.h to avoid
+compile breakage. Fixes bug 3180.
 
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-
-
-
-------- Additional Comments From linux@brodo.de  2004-08-11 02:14 -------
-Created an attachment (id=3487)
- --> (http://bugme.osdl.org/attachment.cgi?id=3487&action=view)
-propagate CONFIG_X86_POWERNOW_K8_ACPI to powernow-k8.h
-
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	2004-08-11 11:03:03.953517072 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	2004-08-11 11:07:05.916733072 +0200
+@@ -29,7 +29,7 @@
+ 	 * frequency is in kHz */
+ 	struct cpufreq_frequency_table  *powernow_table;
+ 
+-#if defined(CONFIG_ACPI_PROCESSOR) || defined(CONFIG_ACPI_PROCESSOR_MODULE)
++#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+ 	/* the acpi table needs to be kept. it's only available if ACPI was
+ 	 * used to determine valid frequency/vid/fid states */
+ 	struct acpi_processor_performance acpi_data;
