@@ -1,15 +1,13 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: sysfs cpufreq missing in 2.6.0
-Date: Sat, 10 Jan 2004 00:09:04 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: p4-clockmod doesn't seem to allow the highest possible speed
+Date: Sat, 10 Jan 2004 11:15:34 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040109230904.GW14031@poupinou.org>
-References: <3FE86F70.8060908@psu.edu> <20031223164953.GN951@inferi.kami.home>
-	<3FE874D5.4020107@psu.edu>
-	<1072202064.6531.13.camel@dell.linux.box>
+Message-ID: <20040110101534.GA10003@dominikbrodowski.de>
+References: <20040109181851.GA1393@grep.be>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1072202064.6531.13.camel@dell.linux.box>
+In-Reply-To: <20040109181851.GA1393@grep.be>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,26 +19,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: AthlonRob <AthlonRob@axpr.net>
+To: Wouter Verhelst <wouter@grep.be>
 Cc: cpufreq@www.linux.org.uk
 
-On Tue, Dec 23, 2003 at 09:54:24AM -0800, AthlonRob wrote:
-> On Tue, 2003-12-23 at 09:01, Nirmal Govind wrote:
+On Fri, Jan 09, 2004 at 07:18:51PM +0100, Wouter Verhelst wrote:
+> Hi,
 > 
-> > Aah.. thank you! Read it and also found the cpufreq after I mounted 
-> > sysfs. I changed the frequency too - one question: how does one know 
-> > if it's actually working? I see the new frequency in the 
-> > scaling_setspeed file but are there any user tools that show the 
-> > real-time frequency of the processor?
+> I can't seem to get my processor to run at full speed when using the
+> p4-clockmod driver:
 > 
-> cat /proc/cpuinfo ....
+> root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor 
+> userspace
+> root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_max_freq 
+> 2193205
+> root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# echo 2193205 > scaling_setspeed 
+> root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_setspeed 
+> 1925000
 > 
+> What am I missing?
 
-No.  /proc/cpuinfo will only show what 'think' cpufreq internals.
-Use bogomips instead for example, or eventually x86info.
+Which kernel version are you using? What does "dmesg" tell us?
 
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
