@@ -1,11 +1,10 @@
-From: Eric Altendorf <EricAltendorf@orst.edu>
-Subject: CPU-freq for 2.4.21 kernels
-Date: Mon, 28 Jul 2003 12:16:58 -0700
+From: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
+Subject: Usefull Informations
+Date: Tue, 29 Jul 2003 09:04:11 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <200307281216.58545.EricAltendorf@orst.edu>
-Reply-To: EricAltendorf@orst.edu
+Message-ID: <3F261C6B.60207@searchbroker.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -16,16 +15,13 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
 
+Hi,
 
-Is there a patch for CPU-freq for 2.4.21 vanilla kernels?  I haven't 
-been able to find one.
+can this informations maybe help to fix broken PST tables:
 
-To get working swsusp I had to move back from 2.5 to 2.4 but I miss 
-scaling for my crusoe laptop....
+http://www.amd.com.ua/reference/content/40/
 
-Please reply direct as I am not on this list.  Thanks much!
-
-Eric
+Ciao Lars
