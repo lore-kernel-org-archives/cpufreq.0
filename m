@@ -1,16 +1,9 @@
-From: Bas Mevissen <ml@basmevissen.nl>
-Subject: Re: 2.4.22-jl9: speedstep-centrino.o: init_module: No such device
-Date: Wed, 27 Aug 2003 12:31:16 +0200
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq patch,1.55,1.56
+Date: Wed, 27 Aug 2003 11:42:21 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <3F4C8874.60601@basmevissen.nl>
-References: <200308262206.37039.lkml@kcore.org>
-	<20030826203637.GA18392@brodo.de> <200308270743.34643.ml@kcore.org>
-	<20030827062052.GA4468@brodo.de> <3F4C74CE.4090809@basmevissen.nl>
-	<20030827110601.D22441@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-ID: <E19rxkr-0007Xw-7a@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20030827110601.D22441@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,32 +13,38 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: cpufreq@www.linux.org.uk, Dominik Brodowski <linux@brodo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.arm.linux.org.uk
 
-Russell King wrote:
+Update of /mnt/src/cvsroot/cpufreq
+In directory flint:/tmp/cvs-serv28992
 
-> On Wed, Aug 27, 2003 at 11:07:26AM +0200, Bas Mevissen wrote:
-> 
->>Dominik Brodowski wrote:
->>
->>>http://cvs.arm.linux.org.uk [check for the latest LINUX_2_4 nightly build] 
->>
->>The last one on ftp://ftp.linux.org.uk/pub/linux/cpufreq/ dates from Aug 
->>15th. Something wrong there?
-> 
-> 
-> Not that I see - looks fine here.
-> 
-> -rw-r--r--    1 rmk      rmk         63699 Aug 26 03:14 cpufreq-LINUX_2_4-20030826.tar.bz2
-> -rw-r--r--    1 rmk      rmk         79146 Aug 26 03:14 cpufreq-LINUX_2_4-20030826.tar.gz
-> -rw-r--r--    1 rmk      rmk         63692 Aug 27 03:14 cpufreq-LINUX_2_4-20030827.tar.bz2
-> -rw-r--r--    1 rmk      rmk         79154 Aug 27 03:14 cpufreq-LINUX_2_4-20030827.tar.gz
-> 
+Modified Files:
+	patch 
+Log Message:
+Dominik Brodowski: Let's put all cross-arch cpufreq files in one location.
+                   Also, remove the $Id$ tag.
 
-Oh, great. Mozilla's caching or the proxy here is not so smart...
 
-Sorry for the trouble...
-
-Bas.
+Index: patch
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/patch,v
+retrieving revision 1.55
+retrieving revision 1.56
+diff -u -r1.55 -r1.56
+--- patch	28 Feb 2003 16:01:31 -0000	1.55
++++ patch	27 Aug 2003 10:42:18 -0000	1.56
+@@ -0,0 +1,11 @@
++diff -ruN linux-original/kernel/Makefile linux/kernel/Makefile
++--- linux-original/kernel/Makefile	2003-08-26 23:40:13.000000000 +0200
+++++ linux/kernel/Makefile	2003-08-26 23:44:24.000000000 +0200
++@@ -15,7 +15,6 @@
++ obj-$(CONFIG_MODULES) += ksyms.o module.o
++ obj-$(CONFIG_KALLSYMS) += kallsyms.o
++ obj-$(CONFIG_PM) += power/
++-obj-$(CONFIG_CPU_FREQ) += cpufreq.o
++ obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
++ obj-$(CONFIG_COMPAT) += compat.o
++ obj-$(CONFIG_IKCONFIG) += configs.o
