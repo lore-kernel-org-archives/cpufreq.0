@@ -1,11 +1,15 @@
-From: Thomas Renninger <mail@renninger.de>
-Subject: Mobile Celeron with Speedstep ? - speedstep-centrino freezes machine
-Date: Mon, 20 Sep 2004 15:41:05 +0200
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: fix latency for powernow-k7 (was Re: [2.6.9-rc2] ondemand governor
+	not working)
+Date: Mon, 20 Sep 2004 15:56:41 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <414EDDF1.90506@renninger.de>
+Message-ID: <20040920135641.GN16132@poupinou.org>
+References: <88056F38E9E48644A0F562A38C64FB6002E1C76C@scsmsx403.amr.corp.intel.com>
+	<20040917191035.GA8529@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040917191035.GA8529@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,43 +19,49 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: davej@redhat.com
+Cc: cpufreq@www.linux.org.uk
 
 Hi,
 
-I also have a Mobile Celeron (IBM R40e) problem here:
+On Fri, Sep 17, 2004 at 09:10:35PM +0200, Dominik Brodowski wrote:
+> On Wed, Sep 15, 2004 at 03:33:04PM -0700, Pallipadi, Venkatesh wrote:
+> > >Back to the original problem, powernow-k7 is setting transition_latency
+> > >to 1ns, is it sensible?
+> > 
+> > Not sure. I don't have enough expertise in powernow-k7 :).
+> 
+> AFAICS, a multiplication with 1000 is missing somewhere in powernow-k7. Need
+> Davej's insight on this, though.
+> 
 
-I thought Celeron CPUs are not speedstep capable, seems as if I was 
-wrong (ss flag indicates speedstep, right?)...
+Oops, my bad.  Dave, could you please commit this?
 
-On this machine speedstep-centrino freezes machine (shouldn't it already 
-go out at the model name check, or has this been changed?):
+fix ->cpuinfo.transition_latency for powernow-k7
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Mobile Intel(R) Celeron(R) CPU 2.40GHz
-stepping        : 9
-cpu MHz         : 2392.030
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-bogomips        : 4751.36
+Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
 
-I am just compiling kernel -> centrino debug enabled. Hints and 
-suggestions very welcome.
+ linux-2.6/arch/i386/kernel/cpu/cpufreq/powernow-k7.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-     Thomas
+--- linux-2.6/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004/09/20 13:42:35	1.1
++++ linux-2.6/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004/09/20 13:46:51
+@@ -634,7 +634,7 @@ static int __init powernow_cpu_init (str
+ 
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 
+-	policy->cpuinfo.transition_latency = 20 * latency / fsb;
++	policy->cpuinfo.transition_latency = cpufreq_scale(2000000UL, latency, fsb);
+ 
+ 	policy->cur = powernow_get(0);
+ 
 
-P.S.: uname -r
-2.6.8-7-default -> SUSE kernel (no modifications concerning speedstep)
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
