@@ -1,13 +1,18 @@
-From: Marco Aurelio Stelmar Netto <stelmar@cpad.pucrs.br>
-Subject: last alternative : program to consume CPU?!
-Date: Thu, 9 Sep 2004 13:35:56 -0300 (BRT)
+From: Stefan Tomanek <stefan@pico.ruhr.de>
+Subject: Re: static freq table support for Pentium M Dothan
+Date: Thu, 9 Sep 2004 18:41:12 +0000 (UTC)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.58.0409091321560.6133@marfim.cpad.pucrs.br>
-References: <Pine.LNX.4.58.0409091132010.31562@marfim.cpad.pucrs.br>
-	<20040909161313.GA5182@dominikbrodowski.de>
+Message-ID: <loom.20040909T204016-479@post.gmane.org>
+References: <E1Bwu3z-0007gV-4Q@mage.metaparadigm.com>
+	<loom.20040908T215751-536@post.gmane.org>
+	<20040908213140.GA7842@dominikbrodowski.de>
+	<loom.20040908T233809-28@post.gmane.org>
+	<20040908220139.GA8116@dominikbrodowski.de>
+	<loom.20040909T010454-526@post.gmane.org>
+	<20040909085802.GF16132@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040909161313.GA5182@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,46 +22,19 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
 
+Bruno Ducrot <ducrot <at> poupinou.org> writes:
 
-The BIOS of my machine does not support the modification of the CPU speed.
+> It's indeed the SMM interface, not direct hardware access, with also a
+> broken mask (out of spec indeed) for the control register.
 
-My problem is that I have a homogeneous cluster composed of 16 machines
-and I need to perform some tests of my application on a heterogeneous
-cluster. So my first option was to change the cpu speed in the BIOS, but
-failed. The second option was to find some support in the linux itself.
-I have found the cpufreq, but failed. My last option is to implement or
-find a program to consume a percentage of CPU. Do you know where I can
-find a good program to perform this task? Or do you know another alternative
-to solve my problem?
+Ahh, and this is....bad I guess?
 
-Thank you very much for your attention.
+> I guess 'the other OS' may actually use somehow the full eax before doing
+> the outb and then allowing somehow ancient version of speedstep to
+> work...
 
-Marco
-
-On Thu, 9 Sep 2004, Dominik Brodowski wrote:
-
-> On Thu, Sep 09, 2004 at 11:46:35AM -0300, Marco Aurelio Stelmar Netto wrote:
-> >
-> > Hello,
-> >
-> > I have a machine (desktop machine) HP EP-C c10 with a Pentium III
-> > (Coppermine) 1GHz and I'm making some performance tests so I would like
-> > to have the machine processor working at 500 MHz. I have configured the
-> > cpufreq option (kernel 2.6.6) but the cpufreq directory in
-> > /sys/devices/system/cpu/cpu0 does not exist.
-> ...
-> > I don't know if I have made some mistake or my cpu does not support the
-> > cpufreq. I have tried to modify the clock frequency via BIOS, but such an
-> > option is not available. All I want is to modify the clock frequency. It
-> > does not need be on-the-fly.
->
-> A desktop Coppermine Pentium III does not support SpeedStep, so no cpufreq
-> support exists. Possibly you can change the CPU speed in your system BIOS.
->
-> 	Dominik
->
+It uses the whatwhat before doing the somethingsomething?
+Please excuse my incompetence ;-)
