@@ -1,12 +1,13 @@
-From: David Kar-Fai Tam <tamda@eecg.toronto.edu>
-Subject: Re: Dynamic frequency governor
-Date: Mon, 22 Dec 2003 16:41:40 -0500 (EST)
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.44.0312221635550.23136-100000@cat.eecg.toronto.edu>
-References: <Pine.LNX.4.44.0310180228350.14780-100000@cat.eecg.toronto.edu>
+From: "Brown, Len" <len.brown@intel.com>
+Subject: RE: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500 hangs while
+	loading acpi module]
+Date: Tue, 23 Dec 2003 01:31:30 -0500
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <BF1FE1855350A0479097B3A0D2A80EE0CC894B@hdsmsx402.hd.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.44.0310180228350.14780-100000@cat.eecg.toronto.edu>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,37 +16,73 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-Cc: wtsang@dgp.toronto.edu, Catalin Drula <catalin@cs.toronto.edu>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Dominik Brodowski <linux@dominikbrodowski.de>, Martin Schreiber <SchreiberX@Altmuehlnet.de>
+Cc: cpufreq@www.linux.org.uk
 
-On Sat, 18 Oct 2003, David Kar-Fai Tam wrote:
-> I am a graduate student working on a course project involving
-> implementing DVS algorithms on mobile devices.
-> 
-> We (3 graduate students) are attempting to implement several DVS
-> algorithms (as described in various research papers) in Linux 2.6 using
-> the CPUFreq API. According to Dominik Brodowski, we will be attempting to 
-> implement a dynamic governor for the CPUFreq API.
-> We plan to do this in the kernel.
-> 
-> You can check out our project website at
-> http://www.eecg.toronto.edu/~tamda/csc2228/
-> You will find a proposal and a recent progress report.
+This was  http://bugzilla.kernel.org/show_bug.cgi?id=3D1349
+The fix is in current 2.4.24, and the latest ACPI patch for 2.6.0:
 
-Status update:
-We have finished our DVS project.
-If interested, please check out the above website.
-There is a final report, presentation slides describing our
-accomplishments, and source code.
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/
+2.6.0/
 
-We have implemented the AVGn, past, peak, and our own "future" DVS 
-algorithms on kernel 2.6.0-test9.
+Cheers,
+-Len
 
-Thanks.
+Ps. Sorry I didn't reply earlier, I got bounced off this list for a
+spell.
 
---
-David Tam
-tamda@eecg.toronto.edu
+
+> -----Original Message-----
+> From: Dominik Brodowski [mailto:linux@dominikbrodowski.de]=20
+> Sent: Saturday, December 20, 2003 12:15 PM
+> To: Brown, Len
+> Cc: cpufreq@www.linux.org.uk
+> Subject: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500=20
+> hangs while loading acpi module]
+>=20
+>=20
+> Hi Len,
+>=20
+> The patch "[ACPI] GV3 IO port is 16-bits" to the
+> arch/i386/kernel/cpu/cpufreq/acpi.c file broke at least some of=20
+> the GV1/2 support. Any idea on how to fix it up so that it works
+> for both?
+>=20
+> Happy holidays,
+> 	Dominik
+>=20
+> ----- Forwarded message from Martin Schreiber=20
+> <SchreiberX@Altmuehlnet.de> -----
+>=20
+> Subject: Re: hp omnibook xe4500 hangs while loading acpi module
+> From: Martin Schreiber <SchreiberX@Altmuehlnet.de>
+> To: Dominik Brodowski <linux@dominikbrodowski.de>
+> Cc: cpufreq@www.linux.org.uk
+> In-Reply-To: <20031219182737.GE6909@dominikbrodowski.de>
+> X-Mailer: Ximian Evolution 1.4.5=20
+> Date: Sat, 20 Dec 2003 17:13:47 +0100
+>=20
+> the acpi cpufreq (kernel 2.6.0) works now on omnibook xe4500 with the
+> attached patch.
+>=20
+> thanks!
+>=20
+>=20
+>=20
+> On Fri, 2003-12-19 at 19:27, Dominik Brodowski wrote:
+> > Hi,
+> >=20
+> > Can you please try the attached patch (for 2.6.0)? It=20
+> reverts a change
+> > done during the time frame you mention: I assume this patch
+> > "[ACPI] GV3 IO port is 16-bits (Venkatesh Pallipadi)"=20
+> caused the trouble.
+> > Please CC <cpufreq@www.linux.org.uk> in your reply [the=20
+> cpufreq mailing=20
+> > list], so that other cpufreq developers can investigate=20
+> this issue as well.
+> >=20
+> > Thanks,
+> > 	Dominik
