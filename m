@@ -1,14 +1,13 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
-	P-statedriver
-Date: Tue, 21 Oct 2003 22:01:14 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Dynamic frequency governor
+Date: Tue, 21 Oct 2003 21:31:22 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021200114.GB26971@brodo.de>
-References: <CFF522B18982EA4481D3A3E23B83141C24B4BC@orsmsx407.jf.intel.com>
+Message-ID: <20031021203122.GC871@redhat.com>
+References: <CFF522B18982EA4481D3A3E23B83141C24B4B6@orsmsx407.jf.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <CFF522B18982EA4481D3A3E23B83141C24B4BC@orsmsx407.jf.intel.com>
+In-Reply-To: <CFF522B18982EA4481D3A3E23B83141C24B4B6@orsmsx407.jf.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,30 +20,22 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Moore, Robert" <robert.moore@intel.com>
-Cc: "Therien, Guy" <guy.therien@intel.com>, "Grover,
-	Andrew" <andrew.grover@intel.com>, cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org
+Cc: cpufreq@www.linux.org.uk
 
-On Tue, Oct 21, 2003 at 10:12:14AM -0700, Moore, Robert wrote:
-> 
-> This is exactly what I was looking at doing, looks like most of the work
-> is done.  I have some concerns about the actual algorithm used for
-> changing the CPU frequency (20%/80%), but this of course can be tuned.
+On Mon, Oct 20, 2003 at 10:08:17AM -0700, Moore, Robert wrote:
+ > Can you be more specific about who has patents on what?
 
-Well, so write a different governor, and feel free to use Venkatesh's code
-as a base [it's GPLed, after all...]. I prefer to have several different 
-governors available, so that different users with different needs
-can use different "policies".
+http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=6,298,448.WKU.&OS=PN/6,298,448&RS=PN/6,298,448
+Is a good place to start.  Skimming through the references there brings
+up further patents by just about everyone under the sun, including
+Intel.
 
-> I suspect that CPUs that have the capability of changing frequency
-> themselves would not use this particular governor.
+It looks a little murky in my not-professional-legal-person POV.
+If Intel are looking at funding this work, it would be fantastic
+to have their legal folks clear things up to be sure that this is
+safe ground.
 
-They can't -- If the driver for Transmeta CPUs is loaded, 
-cpufreq governors cannot be started.
- 
-> You may want to make the sampling rate configurable at run time.
+		Dave
 
-Such a "tweaking by sysfs" patch can be added later.
-
-	Dominik
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
