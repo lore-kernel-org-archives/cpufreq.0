@@ -1,13 +1,13 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Release 1.00.08 of the AMD64 Frequency Driver
-Date: Sat, 27 Sep 2003 16:41:24 +0100
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: CHOWN PB
+Date: Sun, 28 Sep 2003 13:53:50 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030927154122.GE5507@redhat.com>
-References: <99F2150714F93F448942F9A9F112634C080EF0A6@txexmtae.amd.com>
+Message-ID: <20030928115350.GA9717@brodo.de>
+References: <3F6A35D7.8070605@wanadoo.fr>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <99F2150714F93F448942F9A9F112634C080EF0A6@txexmtae.amd.com>
+In-Reply-To: <3F6A35D7.8070605@wanadoo.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,30 +19,30 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: paul.devriendt@amd.com
-Cc: davej@codemonkey.org.uk, pavel@suse.cz, richard.brunner@amd.com, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk
+To: Toula Michael <keos@wanadoo.fr>
+Cc: cpufreq@www.linux.org.uk
 
-On Fri, Sep 26, 2003 at 06:47:12AM -0500, paul.devriendt@amd.com wrote:
- > Hi Dave,
- > 
- > Attached is a bzipped tar file containing frequency support for 
- > AMD's Athlon 64 and Opteron. There are 2 .c files in the tarball 
- > - one for 2.4 and one for 2.6.
- > 
- > I believe this is it for now, but there will be more updates coming
- > soon. (Sorry, can not define soon). There are some hardware changes
- > coming that will impact this, and also adding code for battery
- > detection with ACPI.
+On Fri, Sep 19, 2003 at 12:46:47AM +0200, Toula Michael wrote:
+> Hi,
+> Ok here is the deal :
+> I would like to allow users from a given group (let say the cpufreq 
+> group) to have write acces to /proc/cpufreq and 
+> /proc/sys/cpu/0/speed...I try the following :
+> 
+> $ chown root:cpufreq /proc/cpufreq
+> $ chmod 664 /proc/cpufreq
+> And then...
+> $ ls -l /proc/cpufreq
+> ...show me that nothing changes.
+> 
+> Any idea on how to solve this problem ? Because login as root every time 
+> I want to change the frequency is quite boring ( I would like to be able 
+> to use button of my window manager to change it), and because of that 
+> other people that use my laptop can change the frequency because they 
+> don't have the root passwd...
+> Thx in advance...
+> Mike
 
-Looks good. I'll merge this to the 2.6 cpufreq tree, and push it to
-Linus over the weekend. (Should go verbatim unless there are last-minute
-compile fixes needed).
+man 8 sudo
 
-Thanks for the various cleanups that were performed on this code.
-
-I'll leave the 2.4 merge to either Bruno.
-
-		Dave
-
--- 
- Dave Jones     http://www.codemonkey.org.uk
+	Dominik
