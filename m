@@ -1,33 +1,38 @@
-From: Colin Marquardt <colin@marquardt-home.de>
-Subject: Re: powernow-k8-acpi driver
-Date: Sun, 07 Mar 2004 14:15:58 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <msgidspam.87ptbox0fl.fsf@schnee.marquardt-home.de>
-References: <20040303215435.GA467@elf.ucw.cz> <20040303222712.GA16874@redhat.com>
- <20040303223510.GE222@elf.ucw.cz> <20040303224841.GB16874@redhat.com>
- <20040303225405.GF222@elf.ucw.cz> <20040303233603.GA18722@redhat.com>
- <20040304000754.GK222@elf.ucw.cz> <20040305191845.GA18926@poupinou.org>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Hey, ya! =))
+Date: Sun, 7 Mar 2004 16:17:58 +0000
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20040307161758.B7065@flint.arm.linux.org.uk>
+References: <eibigtvehppncsdwfga@brodo.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <eibigtvehppncsdwfga@brodo.de>;
+	from linux@brodo.de on Sun, Mar 07, 2004 at 04:34:01PM +0100
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@www.linux.org.uk>
+List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
+List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Bruno Ducrot <poup@poupinou.org> writes:
+On Sun, Mar 07, 2004 at 04:34:01PM +0100, linux@brodo.de wrote:
+> Argh, i  don't  like  the  plaintext :)
+> 
+> pass: 78737
 
-> On Thu, Mar 04, 2004 at 01:07:54AM +0100, Pavel Machek wrote:
->> Ahha. Unfortunately, cpufreq mailing lists are only available to list
->> subscribers. Ouch.
->
-> Yes.  But that a pretty low traffic mailing list anyway, and if really
-> you have to touch to cpufreq, even only for a single driver, you should
-> subscribe so that you know already of changes of cpufreq core which may
-> impact your driver.
+Hrm, blocking these pesky things is proving impossible without major
+modifications to the MTA configuration on this machine. ;(  Please
+put up with these for the time being until I can sort out a solution.
 
-FWIW, the archives are also available via http://gmane.org, in the
-gmane.linux.kernel.cpufreq group.
-
-Cheers,
-  Colin
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
