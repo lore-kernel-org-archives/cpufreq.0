@@ -1,8 +1,8 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
+From: Wouter Verhelst <wouter@grep.be>
 Subject: Re: p4-clockmod doesn't seem to allow the highest possible speed
-Date: Sat, 10 Jan 2004 19:53:08 +0100
+Date: Sat, 10 Jan 2004 20:35:26 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040110185308.GZ14031@poupinou.org>
+Message-ID: <20040110193526.GM10531@grep.be>
 References: <20040109181851.GA1393@grep.be>
 	<20040110101534.GA10003@dominikbrodowski.de>
 	<20040110110800.GA8294@grep.be>
@@ -10,10 +10,11 @@ References: <20040109181851.GA1393@grep.be>
 	<20040110152145.GA10160@grep.be>
 	<20040110154110.GA8735@dominikbrodowski.de>
 	<20040110163212.GD10531@grep.be>
+	<20040110185308.GZ14031@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040110163212.GD10531@grep.be>
+In-Reply-To: <20040110185308.GZ14031@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -25,41 +26,38 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wouter Verhelst <wouter@grep.be>
+To: Ducrot Bruno <ducrot@poupinou.org>
 Cc: cpufreq@www.linux.org.uk
 
-On Sat, Jan 10, 2004 at 05:32:12PM +0100, Wouter Verhelst wrote:
-> On Sat, Jan 10, 2004 at 04:41:10PM +0100, Dominik Brodowski wrote:
-> > On Sat, Jan 10, 2004 at 04:21:45PM +0100, Wouter Verhelst wrote:
-> > > On Sat, Jan 10, 2004 at 02:18:24PM +0100, Dominik Brodowski wrote:
-> > > > On Sat, Jan 10, 2004 at 12:08:00PM +0100, Wouter Verhelst wrote:
-> > > > > Vanilla 2.6.1, but I had the same problem with 2.6.0 (didn't try
-> > > > > p4-clockmod on any kernel before that).
-> > > > 
-> > > > You shouldn't need to use p4-clockmod at all... speedstep-ich is a better
-> > > > choice for your system...
-> > > 
-> > > This doesn't seem to work, it says 'No such device'. I have a VIA 82C686
-> > > south bridge, not an Intel one, so I guess that's the reason.
+On Sat, Jan 10, 2004 at 07:53:08PM +0100, Ducrot Bruno wrote:
+> On Sat, Jan 10, 2004 at 05:32:12PM +0100, Wouter Verhelst wrote:
+> > On Sat, Jan 10, 2004 at 04:41:10PM +0100, Dominik Brodowski wrote:
+> > > Unfortunately, you're right. VIA doesn't publish their spec sheets
+> > > as Intel does, so there's no speedstep-via driver (yet). Maybe
+> > > acpi.ko works?
 > > 
-> > Unfortunately, you're right. VIA doesn't publish their spec sheets as Intel
-> > does, so there's no speedstep-via driver (yet). Maybe acpi.ko works?
+> > It does, but when my CPU is throttled, it makes an uncomfortable
+> > sound at high frequency, so I try to avoid that.
 > 
-> It does, but when my CPU is throttled, it makes an uncomfortable sound
-> at high frequency, so I try to avoid that.
+> Do you mean the processor is at high speed (performance), and throttling
+> is enabled?
 > 
+> So it should not be even surprising.
+> 
+> The P4 is able to throttle itself, so I guess the throttling
+> things done externally by the south bridge would have not even
+> been tested by the platform designer...
 
-Do you mean the processor is at high speed (performance), and throttling
-is enabled?
+Uh, I'm not entirely sure I understand what you mean here. The issue is:
+when I put the processor in some other T-state than T0, it makes noise.
+That happens both when it's in P0 or P1.
 
-So it should not be even surprising.
-
-The P4 is able to throttle itself, so I guess the throttling
-things done externally by the south bridge would have not even
-been tested by the platform designer...
+Not that it matters -- p4-clockmod seems to do it right :)
 
 -- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Wouter Verhelst
+Debian GNU/Linux -- http://www.debian.org
+Nederlandstalige Linux-documentatie -- http://nl.linux.org
+"Stop breathing down my neck." "My breathing is merely a simulation."
+"So is my neck, stop it anyway!"
+  -- Voyager's EMH versus the Prometheus' EMH, stardate 51462.
