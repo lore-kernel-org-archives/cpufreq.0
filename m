@@ -1,7 +1,7 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: acpi-cpufreq.c for 2.4.22?
-Date: Mon, 13 Dec 2004 20:15:18 +0100
-Message-ID: <20041213191518.GC2140@poupinou.org>
+Date: Mon, 13 Dec 2004 21:39:34 +0100
+Message-ID: <20041213203934.GB8195@dominikbrodowski.de>
 References: <Pine.LNX.4.58.0412131106260.5882@antonia.sgowdy.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -27,13 +27,10 @@ On Mon, Dec 13, 2004 at 11:08:15AM -0800, Stephen J. Gowdy wrote:
 > 2.4.22-1.2199.nptl FC1 kernel. The speedstep-centrino in that kernel
 > doesn't support the 2GB Pentium M.
 
-There is a need to backport the acpiperf lib from 2.6 at first.  I will
-look at that this week.
+IIRC you can use the non-cpufreq way by echoing the "P-State" into
+/proc/acpi/processor/*/performance, i.e.
+"echo -n 0 > /proc/acpi/processor/*/performance" for the highest frequency
+value. Please note that this access to frequency states is highly
+deprecated for 2.6. kernels.
 
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
