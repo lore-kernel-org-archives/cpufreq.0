@@ -1,13 +1,11 @@
-From: Doug Sutherland <wearable@cogeco.ca>
-Subject: RE : VIA C3 M10k Nehemiah longhaul support in 2.6.x ?
-Date: Mon, 08 Mar 2004 20:22:41 -0500
+From: BARRE Francois <francois.barre@siemens.com>
+Subject: RE: RE : VIA C3 M10k Nehemiah longhaul support in 2.6.x ?
+Date: Tue, 9 Mar 2004 10:27:14 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <5.1.0.14.2.20040308193045.00a6c0b0@pop.cogeco.ca>
-References: <EFEF4C473088B847B64CD953D2A6A104FE8229@sdso14a.par.siemens .fr>
+Message-ID: <EFEF4C473088B847B64CD953D2A6A10401AD2444@sdso14a.par.siemens.fr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <EFEF4C473088B847B64CD953D2A6A104FE8229@sdso14a.par.siemens .fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,20 +15,47 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: BARRE Francois <francois.barre@siemens.com>, 'Bruno Ducrot' <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Doug Sutherland <wearable@cogeco.ca>
+Cc: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+
+Hello all,
+
+Bruno wrote
+> The sysfs interface (or compatible much more likely) is not ported =
+yet.
+
+Do you mean in 2.6 ? In 2.6 it is 100% functionnal !
+
+Well, anyway I guess I have to do some porting to 2.6.x., basing on the =
+most
+relevant 2.4 version (I think the most relevant is your link, Doug ; I =
+was
+successfully running it on 2.4 some weeks ago..).
+
+I hope it will be of some help.=20
+
+PS : Did anyone here manage to set cpu fan speed by hand ?
+
+-----Message d'origine-----
+De : Doug Sutherland [mailto:wearable@cogeco.ca]=20
+Envoy=E9 : mardi 9 mars 2004 02:23
+=C0 : BARRE Francois; 'Bruno Ducrot'; cpufreq@www.linux.org.uk
+Objet : RE : VIA C3 M10k Nehemiah longhaul support in 2.6.x ?
 
 Fran=E7ois wrote:
 
  > I just tried the current 2.6.3 cpufreq driver for my Nehemiah <snip>
  > With a tiny hack forcing the driver to support the nehemiah (switch
- > (c->x86_model)in longhaul_init() ), I obtain the same results as Bruno
+ > (c->x86_model)in longhaul_init() ), I obtain the same results as =
+Bruno
  > (scaling from 6.5x to 7.5x).
 
 Bruno doesn't have this hardware, I think you're referring to my test
 results of his recent changes to the Nehemiah code. I indicated earlier
 that the min multiplier for nehemiah should be 5x not 6.5x. I can run
-mine at 133x5=3D665Mhz using this alternate (non-kernel) longhaul driver:
+mine at 133x5=3D665Mhz using this alternate (non-kernel) longhaul =
+driver:
 
 http://www3.sympatico.ca/howlettfamily/epia/longhaul-1.2.tar.gz
 
@@ -63,7 +88,8 @@ Ezra               C5C              v2: multipliers and voltage
 Ezra-T             C5M/C5N          v3: multipliers, voltage & FSB
 
 Note: Even though the comments do not mention Nehemiah and v4 longhaul,
-there is code that says if x86_model =3D 9 (Nehemiah) set longhaul =3D 4
+there is code that says if x86_model =3D 9 (Nehemiah) set longhaul =3D =
+4
 
 Now looking at Andrew Howlett's longhaul driver, he expands more
 on these longhaul versions:
