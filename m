@@ -1,8 +1,8 @@
-From: Ducrot Bruno <ducrot@echo.fr>
-Subject: possible trouble with poupinou.org
-Date: Wed, 27 Aug 2003 19:22:18 +0200
+From: Dominik Brodowski <linux@brodo.de>
+Subject: [RFC/CFT] cpufreq updates for 2.6.0-test4
+Date: Wed, 27 Aug 2003 16:22:06 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030827172218.GA19245@neptune.echo-net.net>
+Message-ID: <20030827142206.GA10434@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -17,29 +17,58 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi,
 
-I have to change my ip for poupinou.org, so maybe you can have trouble
-to contact me.  Since I'm not sure of the current status of the AS,
-you may have trouble if you send me email to ducrot@poupinou.org.
+Here are a couple of patches for linux-2.6.0-test4. A complete set can be
+found here:
 
-If (and only if) that happens, please CC me to ducrot@echo.fr
+http://www.brodo.de/cpufreq_tmp/cpufreq-2.6.0-test4-all
 
-Please note that this one is a 'professional' one, and is spamed as
-I am postmaster and newsmaster, so don't abuse.
+Test reports are most welcome.
 
-- -- 
-Ducrot Bruno.
 
-- --  Which is worse:  ignorance or apathy?
-- --  Don't know.  Don't care.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.1 (GNU/Linux)
+Individual patches [not sent to the list due to their size, but available at
+http://www.brodo.de/cpufreq_tmp/ - just add the file name after the slash.]
 
-iD8DBQE/TOjKiZtNKH9GMYcRAp4nAJ4lYgD96UkIxEKbd1a6Wwe85el8oQCfWDc1
-1QV6pjmzD2sg2ex/aGET/iU=
-=GJZ6
------END PGP SIGNATURE-----
+cpufreq-2.6.0-test4-move_cpufreq
+	Move kernel/cpufreq.c to drivers/cpufreq/cpufreq.c and remove $Id$
+	tag.
+
+cpufreq-2.6.0-test4-spelling_fix
+	Documentation spelling fix.
+
+cpufreq-2.6.0-test4-rename_userspace
+	Rename drivers/cpufreq/userspace.c to
+	drivers/cpufreq/cpufreq_userspace.c
+
+cpufreq-2.6.0-test4-fix_userspace
+	Fix a couple of oddities in the userspace governor
+
+cpufreq-2.6.0-test4-separate_governors_core
+	Completely separate governors from policies. Governors are for
+	CPUfreq drivers which have a ->target callback, Polcies are for
+	CPUfreq drivers which have a ->setpolicy callback. Also, the
+	"hardwired" governors "powersave" and "performance" are removed.
+
+cpufreq-2.6.0-test4-separate_governors_governors
+	Add the "performance" and "powersave" governors as modules. Also add
+	a config option so that the default governor [which is loaded and
+	enabled at boot] is started. Note that if you select "performance"
+	here, the CPU will be set to the highest possible frequency even if 
+	the CPU was booted at a lower frequency. If you select "userspace",
+	the frequency will stay the same.
+
+cpufreq-2.6.0-test4-separate_governors_ppc
+cpufreq-2.6.0-test4-separate_governors_sh
+cpufreq-2.6.0-test4-separate_governors_sparc64
+cpufreq-2.6.0-test4-separate_governors_x86
+	Small fixes necessary to separate the governors from policies.
+
+cpufreq-2.6.0-test4-separate_governors_arm
+	These changes allow for easier Kconfig usage on ARM. And more
+	features for SA11x0 users.
+
+
+	Dominik
