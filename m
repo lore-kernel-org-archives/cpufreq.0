@@ -1,12 +1,12 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: [ANN] cpufreqd-1.1
-Date: Mon, 5 Jan 2004 18:42:59 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040105174259.GD946@inferi.kami.home>
-Reply-To: dongili@supereva.it
+From: Francesco Poli <frx@firenze.linux.it>
+Subject: Where are the 2.4.x patches?
+Date: Tue, 6 Jan 2004 22:04:25 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20040106220425.7e6db911.frx@firenze.linux.it>
+Reply-To: CpuFreq <cpufreq@www.linux.org.uk>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
+Content-Type: multipart/mixed; boundary="===============60175465533709627=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,32 +15,61 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: CpuFreq <cpufreq@www.linux.org.uk>
+
+--===============60175465533709627==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	boundary="F0W07Mo37W'sYo=."
+
+--F0W07Mo37W'sYo=.
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
 
-cpufreqd-1.1 has been released.
+Hi everybody!  :)
 
-Over the rc1 it has a bunch of bugfixes (see ChangeLog for details). I
-didn't add the possibility to select resources to poll because I'm in a
-hurry to work on 1.2 which will add more features like support for the
-on_demand governor.
+Since http://www.codemonkey.org.uk/projects/cpufreq/ has been
+unavailable for a fairly long time, can anyone point me to a web (or
+ftp) site where I can find a cpufreq patch against the 2.4.24 kernel?
 
-This release adds 2 major feature like cpu monitoring and PMU support
-and a workaround to avoid reading /proc/acpi/battery/*/info if your ACPI
-implementation is very cpu consuming.
+TNX for your time (and for the great job in cpufreq development!).
+:-)
 
-packages (clean source, debian-src and debian-i386) are available at:
+Please reply to the list as I'm a subscriber.
 
-http://www.sourceforge.net/projects/cpufreqd
-
-cpufreqd is meant to be a replacement of the speedstep applet you can
-find on some other OS, it monitors CPU, battery level, AC state and
-running programs and adjusts the frequency governor according to a set
-of rules specified in the config file.
-
-thanks
 -- 
-mattia
-:wq!
+             |  GnuPG Key ID = DD6DFCF4 | You're compiling a program
+  Francesco  |        Key fingerprint = | and, all of a sudden, boom!
+     Poli    | C979 F34B 27CE 5CD8 DC12 |         -- from APT HOWTO,
+             | 31B5 78F4 279B DD6D FCF4 |             version 1.8.0
+
+
+--F0W07Mo37W'sYo=.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.6 (GNU/Linux)
+
+iD8DBQE/+yLhePQnm91t/PQRAuVyAJ9lQHAzUDTfBDP0L3SRUY/U+9rh+QCgn81a
+SjeBUQaaDrMq2VHgZBv3G2I=
+=QsQk
+-----END PGP SIGNATURE-----
+
+--F0W07Mo37W'sYo=.--
+
+
+
+--===============60175465533709627==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============60175465533709627==--
+
+
