@@ -1,11 +1,22 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 2.6] remove unnecessary check in acpi-cpufreq driver
-Date: Sun, 11 Jan 2004 22:00:59 +0100
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: p4-clockmod doesn't seem to allow the highest possible speed
+Date: Mon, 12 Jan 2004 13:26:13 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040111210059.GA26722@dominikbrodowski.de>
+Message-ID: <20040112122613.GE14031@poupinou.org>
+References: <20040110101534.GA10003@dominikbrodowski.de>
+	<20040110110800.GA8294@grep.be>
+	<20040110131824.GA5010@dominikbrodowski.de>
+	<20040110152145.GA10160@grep.be>
+	<20040110154110.GA8735@dominikbrodowski.de>
+	<20040110163212.GD10531@grep.be>
+	<20040110185308.GZ14031@poupinou.org>
+	<20040110193526.GM10531@grep.be>
+	<20040111173547.GB5485@dominikbrodowski.de>
+	<20040111195619.GA25048@grep.be>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20040111195619.GA25048@grep.be>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,125 +28,51 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: len.brown@intel.com
-Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+To: Wouter Verhelst <wouter@grep.be>
+Cc: cpufreq@www.linux.org.uk
 
-The acpi cpufreq driver includes a test at startup which detects whether
-ACPI P-States are supported on any CPU, and whether transitions work.
-However, this test is faulty: it is only run _after_ the acpi driver is
-registered, causing race situations. Also, it doesn't save anything _as_ the
-driver is already registered. So, it can safely be removed.
+On Sun, Jan 11, 2004 at 08:56:19PM +0100, Wouter Verhelst wrote:
+> On Sun, Jan 11, 2004 at 06:35:47PM +0100, Dominik Brodowski wrote:
+> > On Sat, Jan 10, 2004 at 08:35:26PM +0100, Wouter Verhelst wrote:
+> > > That happens both when it's in P0 or P1.
+> > 
+> > So ACPI works to set the processor in P0 and P1?
+> 
+> Yes.
+> 
+> > If so, you really really should use the ACPI cpufreq driver instead of
+> > the p4-clockmod driver. The former will offer you true "SpeedStep"
+> > support, the latter only some clock modulation which won't save you
+> > much energy as ACPI supports the C2 idle state anyway. 
+> 
+> Ah, so what p4-clockmod does is not SpeedStep?
+> 
+> Hm. That sucks.
 
- arch/i386/kernel/cpu/cpufreq/acpi.c |   74 ++++--------------------------------
- 1 files changed, 10 insertions(+), 64 deletions(-)
+No.  p4-clockmod is not SpeedStep.  Normal.  As Dominik say, p4-clockmod
+is *not* intended for power comsuption issues.
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-01-11 20:50:52.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-01-11 20:57:10.927599960 +0100
-@@ -1,9 +1,9 @@
- /*
-- * acpi_processor_perf.c - ACPI Processor P-States Driver ($Revision: 1.3 $)
-+ * acpi-cpufreq-io.c - ACPI Processor P-States Driver ($Revision: 1.3 $)
-  *
-  *  Copyright (C) 2001, 2002 Andy Grover <andrew.grover@intel.com>
-  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
-- *  Copyright (C) 2002, 2003 Dominik Brodowski <linux@brodo.de>
-+ *  Copyright (C) 2002 - 2004 Dominik Brodowski <linux@brodo.de>
-  *
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  *
-@@ -641,7 +641,6 @@
- acpi_cpufreq_init (void)
- {
- 	int                     result = 0;
--	int                     current_state = 0;
- 	int                     i = 0;
- 	struct acpi_processor   *pr = NULL;
- 	struct acpi_processor_performance *perf = NULL;
-@@ -649,9 +648,6 @@
- 	ACPI_FUNCTION_TRACE("acpi_cpufreq_init");
- 
- 	/* alloc memory */
--	if (performance)
--		return_VALUE(-EBUSY);
--
- 	performance = kmalloc(NR_CPUS * sizeof(struct acpi_processor_performance), GFP_KERNEL);
- 	if (!performance)
- 		return_VALUE(-ENOMEM);
-@@ -669,69 +665,19 @@
- 			result = acpi_processor_get_performance_info(&performance[i]);
- 	}
- 
--	/* test it on one CPU */
--	for (i=0; i<NR_CPUS; i++) {
--		if (!cpu_online(i))
--			continue;
--		pr = performance[i].pr;
--		if (pr && pr->flags.performance)
--			goto found_capable_cpu;
--	}
--	result = -ENODEV;
--	goto err0;
--
-- found_capable_cpu:
--	
-  	result = cpufreq_register_driver(&acpi_cpufreq_driver);
--	if (result) 
--		goto err0;
--	
--	perf = pr->performance;
--	current_state = perf->state;
--
--	if (current_state == pr->limit.state.px) {
--		result = acpi_processor_set_performance(perf, (perf->state_count - 1));
--		if (result) {
--			ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Disabled P-States due to failure while switching.\n"));
--			result = -ENODEV;
--			goto err1;
--		}
--	}
--
--	result = acpi_processor_set_performance(perf, pr->limit.state.px);
- 	if (result) {
--		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Disabled P-States due to failure while switching.\n"));
--		result = -ENODEV;
--		goto err1;
--	}
--	
--	if (current_state != 0) {
--		result = acpi_processor_set_performance(perf, current_state);
--		if (result) {
--			ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Disabled P-States due to failure while switching.\n"));
--			result = -ENODEV;
--			goto err1;
-+		/* unregister struct acpi_processor_performance performance */
-+		for (i=0; i<NR_CPUS; i++) {
-+			if (performance[i].pr) {
-+				performance[i].pr->flags.performance = 0;
-+				performance[i].pr->performance = NULL;
-+				performance[i].pr = NULL;
-+			}
- 		}
-+		kfree(performance);
- 	}
--
--	return_VALUE(0);
--
--	/* error handling */
-- err1:
--	cpufreq_unregister_driver(&acpi_cpufreq_driver);
--	
-- err0:
--	/* unregister struct acpi_processor_performance performance */
--	for (i=0; i<NR_CPUS; i++) {
--		if (performance[i].pr) {
--			performance[i].pr->flags.performance = 0;
--			performance[i].pr->performance = NULL;
--			performance[i].pr = NULL;
--		}
--	}
--	kfree(performance);
- 	
--	printk(KERN_INFO "cpufreq: No CPUs supporting ACPI performance management found.\n");
- 	return_VALUE(result);
- }
+There is normally two reasons for slowing a CPU:
+
+1- change voltage of processor (SpeedStep, Powernow, etc.)
+   The usage for is to get more battery life, or to get less power comsuption
+   for the system.
+
+2- throttling the CPU via clock modulation (P4 only), or by generating
+   a signal which toggle the STP# pin of a CPU.  The usage for it is
+   to cool the CPU instead of turning on/off the CPU fan.  It is also
+   used if the fan is not sufficiant to cool enough the CPU.
+
+1 and 2 do not have the same goal.  The CPUFreq project currently only
+handle case 1- (via policy, governor, etc.).  But I'm thinking about
+designing case 2- for the cpufreq core (there is already something for,
+but it is not exactly what I would expect), and that should rely on
+lm-sensors or/and ACPI thermal.
+
+Cheers,
+
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
