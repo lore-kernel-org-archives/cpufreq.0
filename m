@@ -1,11 +1,14 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: [ANN] Cpufreqd 1.2.0 released
-Date: Sun, 22 Aug 2004 21:11:46 +0200
+From: GoatZilla <goatzilla@gmail.com>
+Subject: Re: Re: Manual PST settings for "unrecognized CPUs"
+Date: Sun, 22 Aug 2004 14:34:00 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040822191146.GB1927@inferi.kami.home>
+Message-ID: <39e34848040822123467f270f9@mail.gmail.com>
+References: <20040822100211.42415.qmail@web86906.mail.ukl.yahoo.com>
+Reply-To: GoatZilla <goatzilla@gmail.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_Part_32_582009.1093203240556"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20040822100211.42415.qmail@web86906.mail.ukl.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,28 +18,90 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
+
+------=_Part_32_582009.1093203240556
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
+Content-Disposition: inline
 
-cpufreqd-1.2.0 has been released.
+Well, I figured it out.  
 
-This release focuses on some add-ons such as support for multiple
-processors, translation between percentage and absolute values for 2.6
-kernels and some major bug-fixes: ACPI support is extended to desktop PCs
-where neither a battery nor an ac_adapter is available (I'm running it
-successfully at home to keep my P4 a little cooler)
+Since I'm under the impression my BIOS doesn't have any of this
+powersaving stuff, I decided to bypass all of that.  The only relevant
+thing to come out of the PSB area is the latency, which I just
+arbitrarily set to 200.  Then I go through the same PST motions as
+before and make sure maxfid and startvid's match up from the
+commandline, and I'm good to go.  I can scale from 300MHz to a slight
+overclock at 1900MHz (to compensate for having set the FSB to 100 to
+reach 300MHz in the first place).
 
-packages (clean source, other coming soon) are available at:
 
-http://www.sourceforge.net/projects/cpufreqd
+Mark Newman:  I think you probably just botched the patch.  Make sure
+you cut and paste the patch from Milz's email properly.
 
-cpufreqd is meant to be a replacement of the speedstep applet you can
-find on some other OS, it monitors CPU, battery level, AC state and
-running programs and adjusts the frequency governor according to a set
-of rules specified in the config file.
 
-thanks and sorry for the noise
--- 
-mattia
-:wq!
+
+On another note...  how come I can't choose the powersave governor to
+be the default governor?  That's actually the one I want to start out
+with.
+
+------=_Part_32_582009.1093203240556
+Content-Type: text/plain; name="cpuinfo.txt"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="cpuinfo.txt"
+
+processor=09: 0
+vendor_id=09: AuthenticAMD
+cpu family=09: 6
+model=09=09: 8
+model name=09: Unknown CPU Typ
+stepping=09: 1
+cpu MHz=09=09: 299.527
+cache size=09: 64 KB
+fdiv_bug=09: no
+hlt_bug=09=09: no
+f00f_bug=09: no
+coma_bug=09: no
+fpu=09=09: yes
+fpu_exception=09: yes
+cpuid level=09: 1
+wp=09=09: yes
+flags=09=09: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov =
+pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow
+bogomips=09: 593.46
+
+processor=09: 0
+vendor_id=09: AuthenticAMD
+cpu family=09: 6
+model=09=09: 8
+model name=09: Unknown CPU Typ
+stepping=09: 1
+cpu MHz=09=09: 1897.009
+cache size=09: 64 KB
+fdiv_bug=09: no
+hlt_bug=09=09: no
+f00f_bug=09: no
+coma_bug=09: no
+fpu=09=09: yes
+fpu_exception=09: yes
+cpuid level=09: 1
+wp=09=09: yes
+flags=09=09: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov =
+pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow
+bogomips=09: 3758.61
+
+
+------=_Part_32_582009.1093203240556
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+------=_Part_32_582009.1093203240556--
+
