@@ -1,12 +1,14 @@
-From: Tom Bruno <crweb@vwords.com>
-Subject: Re: cpu won't stay in powersave mode
-Date: Mon, 15 Dec 2003 15:18:04 +0000
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1071501484.21334.1.camel@localhost>
-Reply-To: crweb@vwords.com
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: patch doesn't apply cleanly on 2.4.22
+Date: Tue, 16 Dec 2003 20:23:20 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031216192320.GF14031@poupinou.org>
+References: <20031215183708.GA656@kukaracha.sotano>
+	<1071516958.30492.64.camel@dell.linux.box>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <1071516958.30492.64.camel@dell.linux.box>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,49 +17,35 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: AthlonRob <AthlonRob@axpr.net>
+Cc: cpufreq@www.linux.org.uk
 
-Sorry, accendtly hit reply instead of send to list.
-
-On Mon, 2003-12-15 at 14:14, Thomas Renninger wrote:
-> Tom Bruno wrote:
+On Mon, Dec 15, 2003 at 11:35:58AM -0800, AthlonRob wrote:
+> On Mon, 2003-12-15 at 10:37, paul wisehart wrote:
 > 
-> >Like i said above if I change it via hand using echo, /proc/cpuinfo
-is
-> >correct, and the cputest reports the correct speed constantly.
-> >
-> >performance mode: 2.4ghz
-> >powersave mode: 1.2ghz
-> >Intel P4-M 2.4ghz
-> >Dell Inspiron 8500 - Bios A05
-> >kernel-2.6.0-test11
-> >  
-> >
-> /proc/cpu_info didn't work for me, too.
-> However it seems to work now(after I changed the governors to be 
-> compiled as modules(or the way around?)).
+> > I have this patch: cpufreq-LINUX_2_4-20031212.tar.bz2
+> > It won't patch cleanly onto a stock kernel.org 2.4.22 kernel-source.
+> > 
+
+Paul: I don't remember exactly when the merge to 2.4.23 was done (look at
+the cpufreq archive, or use cvs log facility), but I think that
+cpufreq-LINUX_2_4-20031208.tar.bz2 is against 2.4.22.
+
+> > Before I get any further, can someone verify that this patch is for 2.4.22, or
+> > should I be using 2.4.23(, or something else?)?
 > 
-I've now tried both as modules, and compiled in, /proc/cpuinfo works
-niether report correctly.
+> Hey Paul-
+> 
+> I'm about 95% certain that patch isn't for 2.4.22... it's going to
+> either be for 2.4.23 or for 2.4.24-pre1.  My money is on 2.4.23.
 
-> If you want to detemine the current real speed of your machine use the
-> procspeed prog I posted some days ago(04.12, 09.12).
-
-yes, that is the program i spoke of.  However, like i said, when
-/proc/cpuinfo is reporting wrong, my system works it's way back to full
-speed even though powersave is in the /sys scaling_governor.
-
-It will report the changed speed (clockdown to 1.2ghz) for about 10
-seconds, and then will start to report again at 2.4ghz even though the
-setting haddn't changed.
+You win ;)
 
 -- 
-Vwords.com Technology Services
- PC and Network Services for Southern Illinois
-  Phone: 618-713-6896
--- 
-Vwords.com Technology Services
- PC and Network Services for Southern Illinois
-  Phone: 618-713-6896
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
