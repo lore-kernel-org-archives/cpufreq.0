@@ -1,9 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k7.c, 1.1.1.2,
-	1.1.1.3
-Date: Tue, 31 Aug 2004 10:36:16 +0100
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq longrun.c,1.1.1.1,1.1.1.2
+Date: Tue, 31 Aug 2004 10:37:47 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1C253o-00025A-6B@flint.arm.linux.org.uk>
+Message-ID: <E1C255H-00025g-8X@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,237 +19,227 @@ Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
 Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv7967
+In directory flint:/tmp/cvs-serv8033
 
 Modified Files:
       Tag: LINUX_2_4
-	powernow-k7.c 
+	longrun.c 
 Log Message:
-backport from 2.6
+backport from 2.6, especially fix a bug for a degenerated case from Dominik
 
 
-Index: powernow-k7.c
+Index: longrun.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c,v
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/longrun.c,v
+retrieving revision 1.1.1.1
 retrieving revision 1.1.1.2
-retrieving revision 1.1.1.3
-diff -u -r1.1.1.2 -r1.1.1.3
---- powernow-k7.c	19 Sep 2003 16:47:43 -0000	1.1.1.2
-+++ powernow-k7.c	31 Aug 2004 09:36:13 -0000	1.1.1.3
-@@ -1,7 +1,7 @@
- /*
-  *  AMD K7 Powernow driver.
-  *  (C) 2003 Dave Jones <davej@codemonkey.org.uk> on behalf of SuSE Labs.
-- *  (C) 2003 Dave Jones <davej@redhat.com>
-+ *  (C) 2003-2004 Dave Jones <davej@redhat.com>
-  *
-  *  Licensed under the terms of the GNU GPL License version 2.
-  *  Based upon datasheets & sample CPUs kindly provided by AMD.
-@@ -68,7 +68,7 @@
- /* divide by 10 to get FID. */
- static int fid_codes[32] = {
-     110, 115, 120, 125, 50, 55, 60, 65,
--    70, 75, 80, 85, 90, 95, 100, 105, 
-+    70, 75, 80, 85, 90, 95, 100, 105,
-     30, 190, 40, 200, 130, 135, 140, 210,
-     150, 225, 160, 165, 170, 180, -1, -1,
- };
-@@ -85,23 +85,25 @@
- static char have_a0;
+diff -u -r1.1.1.1 -r1.1.1.2
+--- longrun.c	25 Aug 2003 14:58:47 -0000	1.1.1.1
++++ longrun.c	31 Aug 2004 09:37:44 -0000	1.1.1.2
+@@ -7,7 +7,7 @@
+  */
  
+ #include <linux/kernel.h>
+-#include <linux/module.h> 
++#include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/cpufreq.h>
+@@ -19,7 +19,7 @@
+ static struct cpufreq_driver	longrun_driver;
  
-+static int check_fsb(unsigned int fsbspeed)
-+{
-+	int delta;
-+	unsigned int f = fsb / 1000;
-+
-+	delta = (fsbspeed > f) ? fsbspeed - f : f - fsbspeed;
-+	return (delta < 5);
-+}
-+
- static int check_powernow(void)
+ /**
+- * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz 
++ * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
+  * values into per cent values. In TMTA microcode, the following is valid:
+  * performance_pctg = (current_freq - low_freq)/(high_freq - low_freq)
+  */
+@@ -33,7 +33,7 @@
+  * Reads the current LongRun policy by access to MSR_TMTA_LONGRUN_FLAGS
+  * and MSR_TMTA_LONGRUN_CTRL
+  */
+-static void longrun_get_policy(struct cpufreq_policy *policy)
++static void __init longrun_get_policy(struct cpufreq_policy *policy)
  {
- 	struct cpuinfo_x86 *c = cpu_data;
- 	unsigned int maxei, eax, ebx, ecx, edx;
+ 	u32 msr_lo, msr_hi;
  
--	if (c->x86_vendor != X86_VENDOR_AMD) {
-+	if (c->x86_vendor != X86_VENDOR_AMD || (c->x86 != 6)) {
- 		printk (KERN_INFO PFX "AMD processor not detected.\n");
- 		return 0;
- 	}
- 
--	if (c->x86 !=6) {
--		printk (KERN_INFO PFX "This module only works with AMD K7 CPUs\n");
--		return 0;
--	}
--
--	printk (KERN_INFO PFX "AMD K7 CPU detected.\n");
--
- 	if ((c->x86_model == 6) && (c->x86_mask == 0)) {
- 		printk (KERN_INFO PFX "K7 660[A0] core detected, enabling errata workarounds\n");
- 		have_a0 = 1;
-@@ -142,7 +144,8 @@
- 
- static int get_ranges (unsigned char *pst)
- {
--	unsigned int j, speed;
-+	unsigned int j;
-+	unsigned int speed;
- 	u8 fid, vid;
- 
- 	powernow_table = kmalloc((sizeof(struct cpufreq_frequency_table) * (number_scales + 1)), GFP_KERNEL);
-@@ -153,20 +156,20 @@
- 	for (j=0 ; j < number_scales; j++) {
- 		fid = *pst++;
- 
--		powernow_table[j].frequency = fsb * fid_codes[fid] * 100;
-+		powernow_table[j].frequency = (fsb * fid_codes[fid]) / 10;
- 		powernow_table[j].index = fid; /* lower 8 bits */
- 
--		speed = fsb * (fid_codes[fid]/10);
-+		speed = powernow_table[j].frequency;
-+
- 		if ((fid_codes[fid] % 10)==5) {
--			speed += fsb/2;
- #if defined(CONFIG_ACPI_PROCESSOR) || defined(CONFIG_ACPI_PROCESSOR_MODULE)
- 			if (have_a0 == 1)
- 				powernow_table[j].frequency = CPUFREQ_ENTRY_INVALID;
- #endif
- 		}
- 
--		dprintk (KERN_INFO PFX "   FID: 0x%x (%d.%dx [%dMHz])\t", fid,
--			fid_codes[fid] / 10, fid_codes[fid] % 10, speed);
-+		dprintk (KERN_INFO PFX "   FID: 0x%x (%d.%dx [%dMHz])  ", fid,
-+			fid_codes[fid] / 10, fid_codes[fid] % 10, speed/1000);
- 
- 		if (speed < minimum_speed)
- 			minimum_speed = speed;
-@@ -178,7 +181,6 @@
- 		dprintk ("VID: 0x%x (%d.%03dV)\n", vid,	mobile_vid_table[vid]/1000,
- 			mobile_vid_table[vid]%1000);
- 	}
--	dprintk ("\n");
- 
- 	powernow_table[number_scales].frequency = CPUFREQ_TABLE_END;
- 	powernow_table[number_scales].index = 0;
-@@ -236,7 +238,7 @@
- 
- 	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
- 	cfid = fidvidstatus.bits.CFID;
--	freqs.old = fsb * fid_codes[cfid] * 100;
-+	freqs.old = fsb * fid_codes[cfid] / 10;
- 	freqs.new = powernow_table[index].frequency;
- 
- 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-@@ -255,7 +257,6 @@
- 		change_VID(vid);
- 		change_FID(fid);
- 	}
+@@ -42,22 +42,27 @@
+ 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+ 	else
+ 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
 -	
- 
- 	if (have_a0 == 1)
- 		local_irq_enable();
-@@ -307,8 +308,6 @@
- 			}
- 			dprintk (KERN_INFO PFX "Settling Time: %d microseconds.\n", psb->settlingtime);
- 			dprintk (KERN_INFO PFX "Has %d PST tables. (Only dumping ones relevant to this CPU).\n", psb->numpst);
--			latency *= 100;	/* SGTC needs to be in units of 10ns */
--
- 			p += sizeof (struct psb_s);
- 
- 			pst = (struct pst_s *) p;
-@@ -317,15 +316,15 @@
- 				pst = (struct pst_s *) p;
- 				number_scales = pst->numpstates;
- 
--				if ((etuple == pst->cpuid) && (maxfid==pst->maxfid) && (startvid==pst->startvid))
-+				if ((etuple == pst->cpuid) && check_fsb(pst->fsbspeed) &&
-+				    (maxfid==pst->maxfid) && (startvid==pst->startvid))
- 				{
- 					dprintk (KERN_INFO PFX "PST:%d (@%p)\n", i, pst);
--					dprintk (KERN_INFO PFX " cpuid: 0x%x\t", pst->cpuid);
--					dprintk ("fsb: %d\t", pst->fsbspeed);
--					dprintk ("maxFID: 0x%x\t", pst->maxfid);
-+					dprintk (KERN_INFO PFX " cpuid: 0x%x  ", pst->cpuid);
-+					dprintk ("fsb: %d  ", pst->fsbspeed);
-+					dprintk ("maxFID: 0x%x  ", pst->maxfid);
- 					dprintk ("startvid: 0x%x\n", pst->startvid);
- 
--					fsb = pst->fsbspeed;
- 					ret = get_ranges ((char *) pst + sizeof (struct pst_s));
- 					return ret;
- 
-@@ -336,7 +335,8 @@
- 				}
- 			}
- 			printk (KERN_INFO PFX "No PST tables match this cpuid (0x%x)\n", etuple);
--			printk ("This is indicative of a broken BIOS. Email davej@redhat.com\n");
-+			printk ("This is indicative of a broken BIOS\n");
 +
- 			return -EINVAL;
- 		}
- 		p++;
-@@ -366,6 +366,33 @@
- 	return cpufreq_frequency_table_verify(policy, powernow_table);
+ 	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
+ 	msr_lo &= 0x0000007F;
+ 	msr_hi &= 0x0000007F;
+ 
+-	policy->min = longrun_low_freq + msr_lo * 
+-		((longrun_high_freq - longrun_low_freq) / 100);
+-	policy->max = longrun_low_freq + msr_hi * 
+-		((longrun_high_freq - longrun_low_freq) / 100);
++	if ( longrun_high_freq <= longrun_low_freq ) {
++		/* Assume degenerate Longrun table */
++		policy->min = policy->max = longrun_high_freq;
++	} else {
++		policy->min = longrun_low_freq + msr_lo * 
++			((longrun_high_freq - longrun_low_freq) / 100);
++		policy->max = longrun_low_freq + msr_hi * 
++			((longrun_high_freq - longrun_low_freq) / 100);
++	}
+ 	policy->cpu = 0;
  }
  
-+/*
-+ * We use the fact that the bus frequency is somehow
-+ * a multiple of 100000/3 khz, then we compute sgtc according
-+ * to this multiple.
-+ * That way, we match more how AMD thinks all of that work.
-+ * We will then get the same kind of behaviour already tested under
-+ * the "well-known" other OS.
-+ */
-+static int __init fixup_sgtc(void)
-+{
-+	unsigned int sgtc;
-+	unsigned int m;
-+
-+	m = fsb / 3333;
-+	if ((m % 10) >= 5)
-+		m += 5;
-+
-+	m /= 10;
-+
-+	sgtc = 100 * m * latency;
-+	sgtc = sgtc / 3;
-+	if (sgtc > 0xfffff) {
-+		printk(KERN_WARNING PFX "SGTC too large %d\n", sgtc);
-+		sgtc = 0xfffff;
-+	}
-+	return sgtc;
-+}
  
- static int __init powernow_cpu_init (struct cpufreq_policy *policy)
+ /**
+  * longrun_set_policy - sets a new CPUFreq policy
+- * @policy - new policy
++ * @policy: new policy
+  *
+  * Sets a new CPUFreq policy on LongRun-capable processors. This function
+  * has to be called with cpufreq_driver locked.
+@@ -70,10 +75,15 @@
+ 	if (!policy)
+ 		return -EINVAL;
+ 
+-	pctg_lo = (policy->min - longrun_low_freq) / 
+-		((longrun_high_freq - longrun_low_freq) / 100);
+-	pctg_hi = (policy->max - longrun_low_freq) / 
+-		((longrun_high_freq - longrun_low_freq) / 100);
++	if ( longrun_high_freq <= longrun_low_freq ) {
++		/* Assume degenerate Longrun table */
++		pctg_lo = pctg_hi = 100;
++	} else {
++		pctg_lo = (policy->min - longrun_low_freq) / 
++			((longrun_high_freq - longrun_low_freq) / 100);
++		pctg_hi = (policy->max - longrun_low_freq) / 
++			((longrun_high_freq - longrun_low_freq) / 100);
++	}
+ 
+ 	if (pctg_hi > 100)
+ 		pctg_hi = 100;
+@@ -106,8 +116,9 @@
+ 
+ /**
+  * longrun_verify_poliy - verifies a new CPUFreq policy
++ * @policy: the policy to verify
+  *
+- * Validates a new CPUFreq policy. This function has to be called with 
++ * Validates a new CPUFreq policy. This function has to be called with
+  * cpufreq_driver locked.
+  */
+ static int longrun_verify_policy(struct cpufreq_policy *policy)
+@@ -116,11 +127,12 @@
+ 		return -EINVAL;
+ 
+ 	policy->cpu = 0;
+-	cpufreq_verify_within_limits(policy, 
+-		policy->cpuinfo.min_freq, 
++	cpufreq_verify_within_limits(policy,
++		policy->cpuinfo.min_freq,
+ 		policy->cpuinfo.max_freq);
+ 
+-	if (policy->policy == CPUFREQ_POLICY_GOVERNOR)
++	if ((policy->policy != CPUFREQ_POLICY_POWERSAVE) &&
++	    (policy->policy != CPUFREQ_POLICY_PERFORMANCE))
+ 		return -EINVAL;
+ 
+ 	return 0;
+@@ -129,18 +141,21 @@
+ 
+ /**
+  * longrun_determine_freqs - determines the lowest and highest possible core frequency
++ * @low_freq: an int to put the lowest frequency into
++ * @high_freq: an int to put the highest frequency into
+  *
+  * Determines the lowest and highest possible core frequencies on this CPU.
+  * This is necessary to calculate the performance percentage according to
+  * TMTA rules:
+  * performance_pctg = (target_freq - low_freq)/(high_freq - low_freq)
+  */
+-static unsigned int __init longrun_determine_freqs(unsigned int *low_freq, 
++static unsigned int __init longrun_determine_freqs(unsigned int *low_freq,
+ 						   unsigned int *high_freq)
  {
-@@ -377,15 +404,27 @@
+ 	u32 msr_lo, msr_hi;
+ 	u32 save_lo, save_hi;
+ 	u32 eax, ebx, ecx, edx;
++	u32 try_hi;
+ 	struct cpuinfo_x86 *c = cpu_data;
  
- 	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
+ 	if (!low_freq || !high_freq)
+@@ -148,9 +163,9 @@
  
-+	/* A K7 with powernow technology is set to max frequency by BIOS */
-+	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
-+	if (!fsb) {
-+		printk(KERN_WARNING PFX "can not determine bus frequency\n");
-+		return -EINVAL;
-+	}
-+	dprintk(KERN_INFO PFX "FSB: %3d.%03d MHz\n", fsb/1000, fsb%1000);
+ 	if (cpu_has(c, X86_FEATURE_LRTI)) {
+ 		/* if the LongRun Table Interface is present, the
+-		 * detection is a bit easier: 
++		 * detection is a bit easier:
+ 		 * For minimum frequency, read out the maximum
+-		 * level (msr_hi), write that into "currently 
++		 * level (msr_hi), write that into "currently
+ 		 * selected level", and read out the frequency.
+ 		 * For maximum frequency, read out level zero.
+ 		 */
+@@ -183,19 +198,21 @@
+ 	 * upper limit to make the calculation more accurate.
+ 	 */
+ 	cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
+-	if (ecx > 90) {
+-		/* set to 0 to 80 perf_pctg */
++	/* try decreasing in 10% steps, some processors react only
++	 * on some barrier values */
++	for (try_hi = 80; try_hi > 0 && ecx > 90; try_hi -=10) {
++		/* set to 0 to try_hi perf_pctg */
+ 		msr_lo &= 0xFFFFFF80;
+ 		msr_hi &= 0xFFFFFF80;
+ 		msr_lo |= 0;
+-		msr_hi |= 80;
++		msr_hi |= try_hi;
+ 		wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
+ 
+ 		/* read out current core MHz and current perf_pctg */
+ 		cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
+ 
+ 		/* restore values */
+-		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);	
++		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);
+ 	}
+ 
+ 	/* performance_pctg = (current_freq - low_freq)/(high_freq - low_freq)
+@@ -209,7 +226,7 @@
+ 	if ((ecx > 95) || (ecx == 0) || (eax < ebx))
+ 		return -EIO;
+ 
+-	edx = (eax - ebx) / (100 - ecx); 
++	edx = (eax - ebx) / (100 - ecx);
+ 	*low_freq = edx * 1000; /* back to kHz */
+ 
+ 	if (*low_freq > *high_freq)
+@@ -219,9 +236,9 @@
+ }
+ 
+ 
+-static int longrun_cpu_init(struct cpufreq_policy *policy)
++static int __init longrun_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int                     result = 0;
++	int result = 0;
+ 
+ 	/* capability check */
+ 	if (policy->cpu != 0)
+@@ -237,7 +254,7 @@
+ 	policy->cpuinfo.max_freq = longrun_high_freq;
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	longrun_get_policy(policy);
+-	
 +
- 	result = powernow_decode_bios(fidvidstatus.bits.MFID, fidvidstatus.bits.SVID);
- 	if (result)
- 		return result;
+ 	return 0;
+ }
  
-+	/* SGTC use the bus clock as timer */
-+	latency = fixup_sgtc();
-+	printk(KERN_INFO PFX "SGTC: %d\n", latency);
-+
- 	printk (KERN_INFO PFX "Minimum speed %d MHz. Maximum speed %d MHz.\n",
--				minimum_speed, maximum_speed);
-+				minimum_speed/1000, maximum_speed/1000);
+@@ -259,7 +276,7 @@
+ {
+ 	struct cpuinfo_x86 *c = cpu_data;
  
- 	policy->policy = CPUFREQ_POLICY_PERFORMANCE;
--	policy->cpuinfo.transition_latency = latency;
-+	policy->cpuinfo.transition_latency = 20 * latency / fsb;
- 	policy->cur = maximum_speed;
- 
- 	return cpufreq_frequency_table_cpuinfo(policy, powernow_table);
+-	if (c->x86_vendor != X86_VENDOR_TRANSMETA || 
++	if (c->x86_vendor != X86_VENDOR_TRANSMETA ||
+ 	    !cpu_has(c, X86_FEATURE_LONGRUN))
+ 		return -ENODEV;
