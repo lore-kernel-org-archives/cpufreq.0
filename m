@@ -1,16 +1,16 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: powernow-k8 updates
-Date: Sun, 14 Mar 2004 17:33:10 +0100
+Subject: Re: add new p3m model
+Date: Sun, 14 Mar 2004 15:34:07 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040314163310.GB24433@dominikbrodowski.de>
-References: <20040309214830.GA1240@elf.ucw.cz>
-	<20040310110941.GC28592@poupinou.org>
-	<20040310113246.GA4775@atrey.karlin.mff.cuni.cz>
-	<20040310134811.GD28592@poupinou.org>
+Message-ID: <20040314143407.GA21991@dominikbrodowski.de>
+References: <20040308111531.GD14593@devserv.devel.redhat.com>
+	<20040308111531.GD14593@devserv.devel.redhat.com>
+	<20040308133135.GU2869@poupinou.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1064813239=="
+Content-Type: multipart/mixed; boundary="===============2119703748=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040310134811.GD28592@poupinou.org>
+In-Reply-To: <20040308111531.GD14593@devserv.devel.redhat.com>
+	<20040308133135.GU2869@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,76 +20,64 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: paul.devriendt@amd.com
-Cc: Pavel Machek <pavel@suse.cz>, ducrot@poupinou.org, Cpufreq mailing list <cpufreq@www.linux.org.uk>, patches@x86-64.org, davej@redhat.com, kernel list <linux-kernel@vger.kernel.org>
+To: Bruno Ducrot <ducrot@poupinou.org>, Arjan van de Ven <arjanv@redhat.com>
+Cc: cpufreq@www.linux.org.uk
 
 
---===============1064813239==
+--===============2119703748==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
+	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
 Content-Disposition: inline
 
 
---XOIedfhf+7KOe/yw
+--n8g4imXOkfNTN/H1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 10, 2004 at 02:48:11PM +0100, Bruno Ducrot wrote:
-> ducrot@poupon:~/kernel/linux-2.6.4-bk-acpi> grep EXPORT drivers/acpi/proc=
-essor.c
-> EXPORT_SYMBOL(acpi_processor_register_performance);
-> EXPORT_SYMBOL(acpi_processor_unregister_performance);
-> EXPORT_SYMBOL(acpi_processor_set_thermal_limit);
+On Mon, Mar 08, 2004 at 12:15:31PM +0100, Arjan van de Ven wrote:
+> Hi,
 >=20
-> So all you need are acpi_processor_register_performance() and
-> acpi_processor_unregister_performance().  I'm pretty sure that those
-> functions are in 2.6.4-rc2.
+> the patch below adds support for my laptop (Dell Inspiron 2600) which has
+> ebx return 7 for the p3 mobile in it....
 
-These functions are indeed in 2.6.3 and 2.6.4 -- and they work fine. If you
-have any questions related to them, please ask me.
-=20
-> If you want to play with those functions, you have to include
-> <acpi/processor.h>, and then you have to register a driver via:
-> acpi_processor_register_performance(&pr, cpu) where:
-> - cpu is the cpu id (point-of-view of Linux, not the acpi cpu id),
-> - pr is a struct acpi_processor_performance (defined in
->   acpi/processor.h).
->=20
-> You will have then for free:
-> - configurations via the acpi_processor_performance structure,
-> - handling of the _PPC object, so that you don't have to care about
->   changes for that in the driver.  That will be done via classic
->   ACPI event notifications to the processor, via the limit interface
->   writen in drivers/acpi/processor.c, and cpufreq notion of notifiers.
+Can you send a /proc/cpuinfo, please?
 
-Minor correction: only the first and last steps are indeed used to handle
-_PPC, IIRC.
+> --- linux-2.6.3/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c~	2004-03-07 =
+15:31:51.305251000 +0100
+> +++ linux-2.6.3/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-07 1=
+5:31:51.305251000 +0100
+> @@ -265,10 +265,10 @@
+>  	case 0x0B: /* Intel PIII [Tualatin] */
+>  		/* cpuid_ebx(1) is 0x04 for desktop PIII,=20
+> -		                   0x06 for mobile PIII-M */
+> +		                   0x06 and 0x07 for mobile PIII-M */
 
-Also, you'll have
-- support for _PDC, if needed
-- proper embedding into ACPI core
-- the /proc/acpi/processor/./performance interface which some still tend to
-   like...
+According to the latest Intel m-PIII-M doc I can find (24530643 of December
+2003), 0x06 is the only valid ebx value. Might this be an engineering
+sample?=20
+
+If we indeed add 0x07 as supported value here, we should at least make sure
+we're "contrary to specification" here.
 
 	Dominik
 
---XOIedfhf+7KOe/yw
+--n8g4imXOkfNTN/H1
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (GNU/Linux)
 
-iD8DBQFAVIlGZ8MDCHJbN8YRAktuAJ9zTn9OfnOElU+tFH24TxnRaI/1zACgjpM7
-iILO3EKJWkjSuI4ovL6rMv0=
-=0m0y
+iD8DBQFAVG1fZ8MDCHJbN8YRArAnAJ93I86HAu6j8DiOHxdNThYev+Uf+wCdETi6
+Sl2LNvWPzWTdYifyctAweCE=
+=5r6v
 -----END PGP SIGNATURE-----
 
---XOIedfhf+7KOe/yw--
+--n8g4imXOkfNTN/H1--
 
 
---===============1064813239==
+--===============2119703748==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -100,5 +88,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============1064813239==--
+--===============2119703748==--
 
