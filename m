@@ -1,12 +1,9 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: cpufreq on-demand governor up_treshold?
-Date: Mon, 14 Mar 2005 23:39:45 +0100
-Message-ID: <20050314223945.GC13378@isilmar.linta.de>
-References: <200503140829.04750.lkml@kcore.org>
-	<42354400.7070500@tremplin-utc.net>
+From: Nebojsa Trpkovic <trxman@gmail.com>
+Subject: high "hi" usage and hang
+Date: Tue, 15 Mar 2005 11:04:39 +0100
+Message-ID: <4236B337.6080703@gmail.com>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <42354400.7070500@tremplin-utc.net>
+Content-Transfer-Encoding: 7bit
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,25 +14,94 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: davej@redhat.com, Jan De Luyck <lkml@kcore.org>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-On Mon, Mar 14, 2005 at 08:57:52AM +0100, Eric Piel wrote:
-> BTW, DaveJ, Dominik, I couldn't find them in the daily-snapshot 
-> available at codemonkey.org.uk. Should I worry, or is it just due to 
-> some latency between your private trees and the public one?
+I've got my system very very slow in one moment, saw "98% hi" in top and 
+next moment system completely hanged. All hapened after turning on 
+powernow-k8 and trying to compile some large gentoo packages.
 
-/me has no official position wrt cpufreq core [except userspace
-cpufrequtils, but I intend to hand this over to somebody else in the next
-few months].
+Is this cpufreq-related at all?
 
-Dave, as maintainer of cpufreq, has a cpufreq bitkeeper tree [http interface
-at http://linux-dj.bkbits.net/ ] which is exported as plain diff daily at
-http://www.codemonkey.org.uk/projects/cpufreq/daily-snapshots/ . This does
-not contain your patches yet, probably because he's still busy with other
-stuff.
-
-Thanks,
-	Dominik
+> Mar 15 10:49:55 master bad: scheduling while atomic!
+> Mar 15 10:49:55 master
+> Mar 15 10:49:55 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:49:55 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:49:55 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:49:55 master bad: scheduling while atomic!
+> Mar 15 10:49:55 master
+> Mar 15 10:49:55 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:49:55 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:49:55 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:49:55 master bad: scheduling while atomic!
+> Mar 15 10:49:55 master
+> Mar 15 10:49:55 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:49:55 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:49:55 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:27 master bad: scheduling while atomic!
+> Mar 15 10:50:27 master
+> Mar 15 10:50:27 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:27 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:27 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:27 master bad: scheduling while atomic!
+> Mar 15 10:50:27 master
+> Mar 15 10:50:27 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:27 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:27 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:27 master /usr/sbin/cron[14337]: (root) CMD (nice -n 19 
+> /root/skripte/rrd_update.pl)
+> Mar 15 10:50:27 master /usr/sbin/cron[14339]: (root) CMD (test -x 
+> /usr/sbin/run-crons && /usr/sbin/run-crons )
+> Mar 15 10:50:29 master bad: scheduling while atomic!
+> Mar 15 10:50:29 master
+> Mar 15 10:50:29 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:29 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:29 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:29 master su(pam_unix)[13662]: session closed for user root
+> Mar 15 10:50:30 master bad: scheduling while atomic!
+> Mar 15 10:50:30 master
+> Mar 15 10:50:30 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:30 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:30 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:32 master bad: scheduling while atomic!
+> Mar 15 10:50:32 master
+> Mar 15 10:50:32 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:32 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:32 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:33 master bad: scheduling while atomic!
+> Mar 15 10:50:33 master
+> Mar 15 10:50:33 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:33 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:33 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:33 master bad: scheduling while atomic!
+> Mar 15 10:50:33 master
+> Mar 15 10:50:33 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:33 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:33 master <ffffffff804d51d3>{_sinittext+467}
+> Mar 15 10:50:33 master bad: scheduling while atomic!
+> Mar 15 10:50:33 master
+> Mar 15 10:50:33 master Call Trace:<ffffffff8039ed5e>{schedule+94} 
+> <ffffffff8010d610>{default_idle+0}
+> Mar 15 10:50:33 master <ffffffff8010d70b>{cpu_idle+107} 
+> <ffffffff804d58df>{start_kernel+495}
+> Mar 15 10:50:33 master <ffffffff804d51d3>{_sinittext+467}
