@@ -1,11 +1,15 @@
-From: paul.devriendt@amd.com
-Subject: RE: Geode NX PowerNow
-Date: Mon, 24 May 2004 08:55:20 -0500
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: speedstep_smi & psmouse problems?
+Date: Tue, 25 May 2004 20:00:07 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <99F2150714F93F448942F9A9F112634C139B0506@txexmtae.amd.com>
+Message-ID: <20040525180007.GH4933@poupinou.org>
+References: <aeriksson2@fastmail.fm>
+	<20040520194800.4DE6A4137@latitude.mynet.no-ip.org>
+	<20040524102240.EF92C3F04@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040524102240.EF92C3F04@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,22 +20,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: davej@redhat.com, linux@dominikbrodowski.de
+Content-Transfer-Encoding: 7bit
+To: aeriksson2@fastmail.fm
 Cc: cpufreq@www.linux.org.uk
 
-> "The NX 1500@6W processor leverages Mobile AMD Athlon(tm) 
-> processor technology"  Sounds like powernow-k7 should work 
-> with some small modifications. I'll bet as long as BIOS has 
-> the right tables, it'll just be a trivial modification to the 
-> cpuid detection routine.
-> 
-> 	Dave
+Hi,
 
-It is indeed an Athlon, in an embedded package. The powernow-k7
-driver ought to work. I will try to dig up the cpuid info to 
-make sure the detection code accepts it. 
+On Mon, May 24, 2004 at 12:22:39PM +0200, aeriksson2@fastmail.fm wrote:
+> Tried that (using proto=exps instead of proto=imps), but no success.
+> Do you know if the psmouse driver can be tweaked to handle this (hw
+> bug, I assume) more gracefully? Given the way the mouse jumps on
+> the screen, It seems a low-pass filter could do some good...
 
-Dominik has a good point about the documentation explaining
-the different AMD processors ... I'll write up something.
+I think it's a bug in the firmware of the embedded controller.  What
+about a bios upgrade + EC firmware upgrade?
 
-Paul.
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
