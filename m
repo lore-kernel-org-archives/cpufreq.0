@@ -1,13 +1,13 @@
 From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: kernel/cpufreq.c, drivers/cpufreq/ or kernel/power/cpufreq/ ?
-Date: Thu, 21 Aug 2003 19:06:05 +0200
+Subject: Re: Cpufreq for 2.4: what is the best source?
+Date: Thu, 21 Aug 2003 19:22:29 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030821170605.GB19292@poupinou.org>
-References: <20030821071832.GA1973@brodo.de>
+Message-ID: <20030821172229.GC19292@poupinou.org>
+References: <3F3CB378.1000607@basmevissen.nl> <20030815154156.GA1029@brodo.de> <3F409E54.20001@basmevissen.nl> <20030818175357.GC1570@brodo.de> <3F44A7DF.4040705@basmevissen.nl>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030821071832.GA1973@brodo.de>
+In-Reply-To: <3F44A7DF.4040705@basmevissen.nl>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,21 +19,13 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: davej@suse.de, mochel@osdl.org, cpufreq@www.linux.org.uk
+To: Bas Mevissen <ml@basmevissen.nl>
+Cc: Dominik Brodowski <linux@brodo.de>, Bas Mevissen <sgm@basmevissen.nl>, Cpufreq@www.linux.org.uk
 
-On Thu, Aug 21, 2003 at 09:18:32AM +0200, Dominik Brodowski wrote:
-> Right now cross-architecture cpufreq files are in
-> drivers/cpufreq/ 	and the cpufreq core is in
-> kernel/cpufreq.c
-> 
-> IMHO these files should move to one destination, and I'd favour
-> drivers/cpufreq/ for that. Or is kernel/power/cpufreq/ a better location for
-> that?
+> (I mean setting the policy with e.g. echo userspace >/proc/cpufreq)
 
-I can't tell for sure (and Pat have certainly more knowledge than me),
-but kernel/power is more appropriate for system power management,
-not for processor power management.
+echo 0%100%userspace > /proc/cpufreq
+
 
 -- 
 Ducrot Bruno
