@@ -1,15 +1,15 @@
-From: aeriksson@fastmail.fm
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: Pentium III Coppermine
-Date: Fri, 15 Oct 2004 12:51:13 +0200
+Date: Fri, 15 Oct 2004 14:26:06 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041015105114.A4EC13F03@latitude.mynet.no-ip.org>
+Message-ID: <20041015122606.GA22405@poupinou.org>
 References: <33222.14179-2631-1010294146-1097668908@email.seznam.cz>
-	<200410141622.05561.hladky.jiri@seznam.cz>
-	<20041014152346.GA7447@dominikbrodowski.de>
-	<200410151241.03188.hladky.jiri@seznam.cz>
+	<1097816814.2125.8.camel@duvel.paparoot.org>
+	<200410151016.26335.hladky.jiri@seznam.cz>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-reply-to: <200410151241.03188.hladky.jiri@seznam.cz> 
+Content-Disposition: inline
+In-Reply-To: <200410151016.26335.hladky.jiri@seznam.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,36 +21,48 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: hladky.jiri@seznam.cz
-Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
+To: Jiri Hladky <hladky.jiri@seznam.cz>
+Cc: ":: paparoot ::" <paparoot@paparoot.org>, cpufreq@www.linux.org.uk
 
-On Fri, 15 Oct 2004 12:41:03 +0200 Jiri Hladky wrote:
->Hi Anders & Dominik,
->
->I have tried to search for CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK is source 
->files
->
->"locate speedstep | grep [.]c$ | xargs grep 
->CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK"
->
->but I had no success. It seems like I have to get new sources for cpufreq? My 
->current kernel is 2.6.5
->
->Thanks a lot!
->Jiri
->
+Hi,
 
-Don't remember exactly when it entered the kernel. It was about that 
-time frame.
+On Fri, Oct 15, 2004 at 10:16:25AM +0200, Jiri Hladky wrote:
+> Hi paparoot,
+> 
+> great! I was not able to find any relevant information about Linux on T22. So 
+> let me use your offer:-)
+> 
+> Is speedstep working on your T22? I have installed SUSE 9.1, but I'm not able 
+> to get  speedstep working. 
+> 
+> modprobe -v speedstep-smi smi_port=0xb2 smi_cmd=0x82 smi_sig=1
+> 
+> does not report any errors, but has also no effect:-(
+> 
+> What did you do to get it working?
 
-You should find:
-#ifdef CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK
-static int relaxed_check = 0;
-#else
-#define relaxed_check 0
-#endif
+Have you recompiled your kernel the way Dominik said you?
 
+BTW, speedstep-detect report that:
 
-in arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
+BIOS support GSIC call:
+        signature: GSIC
+        command port = 0x00b2
+        command =      0x0082
+        event port =   0x00c000b3
+        flags =        0x07d00000
 
-/Anders
+so that you have only to modprobe speedstep-smi without any parameters.
+
+Finally there were people reporting that the old speedstep-piix4
+driver worked, though this driver is not so more supported so I guess
+people using this one do not need it now, or they have not upgraded
+their kernel maybe.
+
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
