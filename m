@@ -1,8 +1,9 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [RFC][PATCH] cpufreq-core: add affected_cpus
-Date: Wed, 29 Sep 2004 23:46:37 +0200
+Subject: [RFC][PATCH] userspace: clarify deprecation of cpufreq_set(),
+	cpufreq_setmax()
+Date: Wed, 29 Sep 2004 23:43:58 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040929214637.GE18564@dominikbrodowski.de>
+Message-ID: <20040929214358.GC18564@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -19,53 +20,111 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Show the CPUs which can only change frequencies at the same time
-in a sysfs file named "affected_cpus". The usefulness of such a file
-was first noted by Zwane Mwaikambo.
+Clarify that cpufreq_set() and cpufreq_setmax() are parts of the 2.4. API 
+to the userspace governor which will be removed soon after 2005-01-01.
 
 Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
---- linux-original/drivers/cpufreq/cpufreq.c	2004-09-29 17:18:24.232382032 +0200
-+++ linux/drivers/cpufreq/cpufreq.c	2004-09-29 17:21:06.694684008 +0200
-@@ -453,6 +453,24 @@
- 	i += sprintf(&buf[i], "\n");
- 	return i;
+diff -ruN linux-original/drivers/cpufreq/cpufreq_userspace.c linux/drivers/cpufreq/cpufreq_userspace.c
+--- linux-original/drivers/cpufreq/cpufreq_userspace.c	2004-09-23 19:07:34.000000000 +0200
++++ linux/drivers/cpufreq/cpufreq_userspace.c	2004-09-26 22:24:49.000000000 +0200
+@@ -94,13 +94,13 @@
+ 
+ 
+ /** 
+- * cpufreq_set - set the CPU frequency
++ * _cpufreq_set - set the CPU frequency
+  * @freq: target frequency in kHz
+  * @cpu: CPU for which the frequency is to be set
+  *
+  * Sets the CPU frequency to freq.
+  */
+-int cpufreq_set(unsigned int freq, unsigned int cpu)
++static int _cpufreq_set(unsigned int freq, unsigned int cpu)
+ {
+ 	int ret = -EINVAL;
+ 
+@@ -129,6 +129,18 @@
+ 	up(&userspace_sem);
+ 	return ret;
  }
-+/**
-+ * show_affected_cpus - show the CPUs affected by each transition
-+ */
-+static ssize_t show_affected_cpus (struct cpufreq_policy * policy, char *buf)
-+{
-+	ssize_t i = 0;
-+	unsigned int cpu;
 +
-+	for_each_cpu_mask(cpu, policy->cpus) {
-+		if (i)
-+			i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), " ");
-+		i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), "%u", cpu);
-+		if (i >= (PAGE_SIZE - 5))
-+		    break;
-+	}
-+	i += sprintf(&buf[i], "\n");
-+	return i;
++
++#ifdef CONFIG_CPU_FREQ_24_API
++
++#warning The /proc/sys/cpu/ and sysctl interface to cpufreq will be removed from the 2.6. kernel series soon after 2005-01-01
++
++static unsigned int warning_print = 0;
++
++int __deprecated cpufreq_set(unsigned int freq, unsigned int cpu)
++{
++	return _cpufreq_set(freq, cpu);
 +}
+ EXPORT_SYMBOL_GPL(cpufreq_set);
  
  
- #define define_one_ro(_name) \
-@@ -480,6 +498,7 @@
- define_one_ro(scaling_available_governors);
- define_one_ro(scaling_driver);
- define_one_ro(scaling_cur_freq);
-+define_one_ro(affected_cpus);
- define_one_rw(scaling_min_freq);
- define_one_rw(scaling_max_freq);
- define_one_rw(scaling_governor);
-@@ -489,6 +508,7 @@
- 	&cpuinfo_max_freq.attr,
- 	&scaling_min_freq.attr,
- 	&scaling_max_freq.attr,
-+	&affected_cpus.attr,
- 	&scaling_governor.attr,
- 	&scaling_driver.attr,
- 	&scaling_available_governors.attr,
+@@ -139,21 +151,14 @@
+  * Sets the CPU frequency to the maximum frequency supported by
+  * this CPU.
+  */
+-int cpufreq_setmax(unsigned int cpu)
++int __deprecated cpufreq_setmax(unsigned int cpu)
+ {
+ 	if (!cpu_is_managed[cpu] || !cpu_online(cpu))
+ 		return -EINVAL;
+-	return cpufreq_set(cpu_max_freq[cpu], cpu);
++	return _cpufreq_set(cpu_max_freq[cpu], cpu);
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_setmax);
+ 
+-
+-#ifdef CONFIG_CPU_FREQ_24_API
+-
+-#warning The /proc/sys/cpu/ and sysctl interface to cpufreq will be removed from the 2.6. kernel series soon after 2005-01-01
+-
+-static unsigned int warning_print = 0;
+-
+ /*********************** cpufreq_sysctl interface ********************/
+ static int
+ cpufreq_procctl(ctl_table *ctl, int write, struct file *filp,
+@@ -186,7 +191,7 @@
+ 		buf[sizeof(buf) - 1] = '\0';
+ 
+ 		freq = simple_strtoul(buf, &p, 0);
+-		cpufreq_set(freq, cpu);
++		_cpufreq_set(freq, cpu);
+ 	} else {
+ 		len = sprintf(buf, "%d\n", cpufreq_get(cpu));
+ 		if (len > left)
+@@ -239,7 +244,7 @@
+ 		if (get_user(freq, (unsigned int __user *)newval))
+ 			return -EFAULT;
+ 
+-		cpufreq_set(freq, cpu);
++		_cpufreq_set(freq, cpu);
+ 	}
+ 	return 1;
+ }
+@@ -494,7 +499,7 @@
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+-	cpufreq_set(freq, policy->cpu);
++	_cpufreq_set(freq, policy->cpu);
+ 
+ 	return count;
+ }
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2004-09-19 13:48:35.000000000 +0200
++++ linux/include/linux/cpufreq.h	2004-09-26 22:21:15.000000000 +0200
+@@ -261,8 +261,8 @@
+  *********************************************************************/
+ #ifdef CONFIG_CPU_FREQ_24_API
+ 
+-int cpufreq_setmax(unsigned int cpu);
+-int cpufreq_set(unsigned int kHz, unsigned int cpu);
++int __deprecated cpufreq_setmax(unsigned int cpu);
++int __deprecated cpufreq_set(unsigned int kHz, unsigned int cpu);
+ 
+ 
+ /* /proc/sys/cpu */
