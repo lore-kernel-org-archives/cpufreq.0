@@ -1,13 +1,13 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: cpufreq and 2.4.
-Date: Mon, 18 Aug 2003 20:00:12 +0200
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: cpufreq and P-IIIM
+Date: Mon, 18 Aug 2003 19:07:10 +0100
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030818180012.GA1824@brodo.de>
-References: <20030817153510.GA2361@brodo.de> <3F40AEC8.3060306@basmevissen.nl>
+Message-ID: <20030818190710.C1737@flint.arm.linux.org.uk>
+References: <m2ptj5fiuc.fsf@tnuctip.rychter.com> <20030818112943.GD18032@poupinou.org> <m2vfsux5ju.fsf@tnuctip.rychter.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <3F40AEC8.3060306@basmevissen.nl>
+In-Reply-To: <m2vfsux5ju.fsf@tnuctip.rychter.com>; from jan@rychter.com on Mon, Aug 18, 2003 at 10:02:29AM -0700
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,34 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bas Mevissen <ml@basmevissen.nl>
-Cc: cpufreq@www.linux.org.uk
+To: Jan Rychter <jan@rychter.com>
+Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-On Mon, Aug 18, 2003 at 12:47:36PM +0200, Bas Mevissen wrote:
-> >B) Difficult-to-understand cpufreq user interfaces
-> >The /proc/cpufreq and /proc/sys/cpu interfaces are difficult to understand
-> >and already deprecated in 2.6. Do we really want them to be added to a
-> >stable kernel release?
-> >
+On Mon, Aug 18, 2003 at 10:02:29AM -0700, Jan Rychter wrote:
+>  Ducrot> That version is way too old anyway.
 > 
-> Well, what then? There is no sysfs in 2.4, so we need something else to 
-> control the beast :-)
+> Huh? That was the latest 2.4 snapshot that I was able to pull from
+> ftp.linux.org.uk: cpufreq-LINUX_2_4-20030816.tar.bz2.
 > 
-> How feasable is it to "port" the sysfs _interface_ to /proc? It would 
-> simplicate matters for users, cpufreqd and documentation as they only 
-> needs to change the "working directory" for 2.4.
-> 
-> (Because sysfs is something completely different than /proc, it would 
-> mean writing new code. But as 2.4 will be in use for a couple of years, 
-> I think it is worth the trouble.)
+> If these are not the 'official' archives and the snapshots are outdated,
+> I'd humbly suggest pulling them off the net, because it confuses
+> people.
 
-This seems to be a somewhat reasonable approach. However, it needs to be
-made clear that this interface will only be available on 2.4. kernels. /proc
-is bloated in 2.4., and so I don't mind, but for 2.6++ it should be aimed at
-removing unneccessary stuff from /proc, so I'd strongly oppose
-forward-porting this interface to 2.6. 
+As far as I'm concerned (as being the guy running the CVS and FTP
+archive) they remain official until the cpufreq maintainers explicitly
+tell me otherwise.
 
-Anyways, anyone willing to write the "cpufreq 2.4. sysfs-emulation /proc
-interface"?
+Maintainers need to either check their changes into the CVS tree or
+tell me that they no longer wish to use CVS, or tell me that they
+want a 2.4-ac branch, or whatever.
 
-	Dominik
+-- 
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html
