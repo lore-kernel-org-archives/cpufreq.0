@@ -1,13 +1,9 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: Pentium-M (Centrino): no power saved?
-Date: Fri, 19 Sep 2003 13:46:36 +0200
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k7.c,1.44,1.45
+Date: Fri, 19 Sep 2003 17:39:23 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030919114636.GT11391@poupinou.org>
-References: <m24qz9r0ko.fsf@tnuctip.rychter.com>
-Mime-Version: 1.0
+Message-ID: <E1A0OHz-0003dq-NJ@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <m24qz9r0ko.fsf@tnuctip.rychter.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,53 +13,98 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jan Rychter <jan@rychter.com>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@lists.arm.linux.org.uk
 
-On Thu, Sep 18, 2003 at 07:09:27PM -0700, Jan Rychter wrote:
-> Hmm. I'm puzzled. I've just done a checkout of the latest CVS version of
-> cpufreq for 2.4, applied it to a 2.4.22 kernel and tried the thing out
-> on a Toshiba SS7/290LNKW laptop.
-> 
-> The speedstep-centrino module loads happily and tells me I have a 900MHz
-> Pentium-M. (this is a family 6 model 9 stepping 5 CPU).
-> 
-> I've tried echo "0%100%powersave" > /proc/cpufreq 
->   and 
->  echo "0%50%powersave" > /proc/cpufreq
-> 
-> and much to my surprise, even though /proc/cpufreq echoes my changes, I
-> can see no resulting changes in power consumption as reported by ACPI
-> battery proc entry.
-> 
-> Other things make a difference: whether the system is able to use C3,
-> display brightness, wireless card, etc. But changing the cpufreq entry
-> doesn't seem to do anything.
-> 
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
+In directory flint:/tmp/cvs-serv13924/linux/arch/i386/kernel/cpufreq
 
-The two use a different API for their stuff.  You just have to
-chose cpufreq (of course!) or ACPI performance states.  Not the 2 at
-the same time.
+Modified Files:
+	powernow-k7.c 
+Log Message:
+Bug fix from current bk:
+	* update davej email.
+	* Add missing config.h includes
+	* Read MSRs before trying to use them in powernow-k7
+	* We need to set SGTC when we change powernow-k7 voltage.
+	* Work around buggy powernow-k7 BIOSes with low settling times.
+	* Powernow-k7 latency timer needs to be in values of 10ns.
+	* Explicitly disable scaling we don't need in powernow-k7
 
-Next, doing
-echo "0%100%powersave" > /proc/cpufreq
-echo "0%50%powersave" > /proc/cpufreq
 
-powersave governor will chose the lowest frequency available for your
-cpu (in the limit you specified).  In both case, you have chosen
-the lowest frequency.
-
-Please note also that if really you use the ACPI perf, and you have
-a thermal zone with passive cooling, then the performance stuff (from
-the thermal zone) may confuse cpufreq.
-
-*BLINK* This is not the case for 2.6, which is well designed in
-that regard *BLINK*
-
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Index: powernow-k7.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c,v
+retrieving revision 1.44
+retrieving revision 1.45
+diff -u -r1.44 -r1.45
+--- powernow-k7.c	19 Aug 2003 13:38:32 -0000	1.44
++++ powernow-k7.c	19 Sep 2003 16:39:20 -0000	1.45
+@@ -1,6 +1,7 @@
+ /*
+  *  AMD K7 Powernow driver.
+  *  (C) 2003 Dave Jones <davej@codemonkey.org.uk> on behalf of SuSE Labs.
++ *  (C) 2003 Dave Jones <davej@redhat.com>
+  *
+  *  Licensed under the terms of the GNU GPL License version 2.
+  *  Based upon datasheets & sample CPUs kindly provided by AMD.
+@@ -13,6 +14,7 @@
+  * - We disable half multipliers if ACPI is used on A0 stepping CPUs.
+  */
+ 
++#include <linux/config.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h> 
+ #include <linux/init.h>
+@@ -190,10 +192,11 @@
+ {
+ 	union msr_fidvidctl fidvidctl;
+ 
++	rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
+ 	if (fidvidctl.bits.FID != fid) {
+-		rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
+ 		fidvidctl.bits.SGTC = latency;
+ 		fidvidctl.bits.FID = fid;
++		fidvidctl.bits.VIDC = 0;
+ 		fidvidctl.bits.FIDC = 1;
+ 		wrmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
+ 	}
+@@ -204,9 +207,11 @@
+ {
+ 	union msr_fidvidctl fidvidctl;
+ 
++	rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
+ 	if (fidvidctl.bits.VID != vid) {
+-		rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
++		fidvidctl.bits.SGTC = latency;
+ 		fidvidctl.bits.VID = vid;
++		fidvidctl.bits.FIDC = 0;
+ 		fidvidctl.bits.VIDC = 1;
+ 		wrmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
+ 	}
+@@ -296,8 +301,14 @@
+ 			dprintk (" voltage regulator)\n");
+ 
+ 			latency = psb->settlingtime;
++			if (latency < 100) {
++				printk (KERN_INFO PFX "BIOS set settling time to %d microseconds."
++						"Should be at least 100. Correcting.\n", latency);
++				latency = 100;
++			}
+ 			dprintk (KERN_INFO PFX "Settling Time: %d microseconds.\n", psb->settlingtime);
+ 			dprintk (KERN_INFO PFX "Has %d PST tables. (Only dumping ones relevant to this CPU).\n", psb->numpst);
++			latency *= 100;	/* SGTC needs to be in units of 10ns */
+ 
+ 			p += sizeof (struct psb_s);
+ 
+@@ -325,6 +336,8 @@
+ 						p+=2;
+ 				}
+ 			}
++			printk (KERN_INFO PFX "No PST tables match this cpuid (0x%x)\n", etuple);
++			printk ("This is indicative of a broken BIOS. Email davej@redhat.com\n");
+ 			return -EINVAL;
+ 		}
+ 		p++;
