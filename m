@@ -1,13 +1,22 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: speedstep capability checks
-Date: Mon, 15 Mar 2004 15:15:17 +0100
+Subject: Re: 2.6.2: P4 ClockMod speed
+Date: Mon, 15 Mar 2004 14:59:27 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040315141517.GG8636@dominikbrodowski.de>
-References: <20040314152016.0B04B3F04@latitude.mynet.no-ip.org>
+Message-ID: <20040315135927.GA10259@dominikbrodowski.de>
+References: <20040216213435.GA9680@dominikbrodowski.de>
+	<20040225174326.GD1214@elf.ucw.cz>
+	<20040216213435.GA9680@dominikbrodowski.de>
+	<40313AA9.1060906@arenanetwork.com.br>
+	<20040217090939.GA9935@dominikbrodowski.de>
+	<403D4BD3.7050703@arenanetwork.com.br>
+	<20040314144402.GA22268@dominikbrodowski.de>
+	<20040314212303.GA1010@elf.ucw.cz>
+	<20040315092639.GD14911@dominikbrodowski.de>
+	<20040315124406.GB29260@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1506559860=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040314152016.0B04B3F04@latitude.mynet.no-ip.org>
+In-Reply-To: <20040315124406.GB29260@atrey.karlin.mff.cuni.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,120 +26,71 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: aeriksson@fastmail.fm, davej@redhat.com, Arjan van de Ven <arjanv@redhat.com>
-Cc: cpufreq@www.linux.org.uk
+To: Pavel Machek <pavel@ucw.cz>
+Cc: dual_bereta_r0x <dual_bereta_r0x@arenanetwork.com.br>, cpufreq@www.linux.org.uk
 
-I like this patch -- I've modified it a bit so that it applies to 2.6.4 and
-also handles Arjan's strange 0x07 Tualatin. Please apply, Dave. 
 
-Thanks,
+--===============1506559860==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Disposition: inline
+
+
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Mar 15, 2004 at 01:44:06PM +0100, Pavel Machek wrote:
+> > On Sun, Mar 14, 2004 at 10:23:04PM +0100, Pavel Machek wrote:
+> > > Hi!
+> > >=20
+> > > > > Hey, that's ugly. Values should be real.
+> > > >=20
+> > > > Indeed. But if they're not known (and cpu_khz _is_ unreliable), wha=
+t should
+> > > > be done?
+> > >=20
+> > > Is it possible to measure cpu_khz with arbitrary precision if we make
+> > > measurement slower? I think so; if cpu_khz is too unreliable, perhaps
+> > > we can make measurement slower but more precise?
+> >=20
+> > cpu_khz may be zero if the PIT is used as primary time source.
+>=20
+> But that's a bug to be fixed, right?
+
+Not necessarily: if the PIT is used and the TSC is disabled [there are some=
+ such
+systems, even modern ones...], you can't use the current cpu_khz detection
+routine. And please don't try to deduce it from BogoMIPS...
 
 	Dominik
 
-On Sun, Mar 14, 2004 at 04:20:15PM +0100, aeriksson@fastmail.fm wrote:
-> 
-> Hi, 
-> 
-> I'm one of the few who has a laptop (Dell L400) which doesn't announce
-> its speedstep capability to the OS the way is should. I made this
-> patch which turns my workaround into a compile time config option
-> which, if enabled, need to be explicitly enabled with a module
-> parameter. That should be non-invasive enough to allow it to be
-> included (I think).
-> 
-> Please have a look at the attached patch (against current cvs), and
-> indicate which improvements may be needed to allow it to be included.
-> 
-> /Anders
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-A few SpeedStep-capable systems don't perform according to specification: the
-CPUID and/or some MSRs don't tell us the CPU is SpeedStep capable even though
-it definitely is. Allow a relaxed checking for two of these issues (Anders' and
-Arjan's notebooks) by a module parameter only available if a config option is
-turned on. This is done to avoid the risk of doing invalid speedstep instructions
-on systems which do not support it, and which might even lead to (hardware) 
-failure.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
 
-Patch originally from Andres Aeriksson (?) aeriksson at fastmail (dot) fm
+iD8DBQFAVba/Z8MDCHJbN8YRAuhLAJ92OIbZ2gNUeX+Z8Ms9QuFXvLH4rQCfWsJX
+VNMsFQbI1t+EiJEoOJEVS8s=
+=etat
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
 
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig linux/arch/i386/kernel/cpu/cpufreq/Kconfig
---- linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-15 13:44:04.186706640 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-15 14:20:56.278417584 +0100
-@@ -176,6 +176,16 @@
- 	depends on (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
- 	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
- 
-+config X86_SPEEDSTEP_RELAXED_CAP_CHECK
-+	bool "Relaxed speedstep capability checks"
-+	depends on (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
-+	help
-+	  Don't perform all checks for a speedstep capable system which would 
-+	  normally be done. Some ancient or strange systems, though speedstep 
-+	  capable, don't always indicate that they are speedstep capable. This 
-+	  option let's the probing code bypass some of those checks if the
-+	  parameter "relaxed_check=1" is passed to the module.
-+
- config X86_LONGRUN
- 	tristate "Transmeta LongRun"
- 	depends on CPU_FREQ
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-15 09:20:50.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-15 14:15:46.835460064 +0100
-@@ -10,6 +10,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/module.h> 
-+#include <linux/moduleparam.h>
- #include <linux/init.h>
- #include <linux/cpufreq.h>
- #include <linux/pci.h>
-@@ -30,6 +31,12 @@
- #define dprintk(msg...) do { } while(0)
- #endif
- 
-+#ifdef CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK
-+static int relaxed_check = 0;
-+#else
-+#define relaxed_check 0
-+#endif
-+
- /*********************************************************************
-  *                   GET PROCESSOR CORE SPEED IN KHZ                 *
-  *********************************************************************/
-@@ -265,6 +272,12 @@
- 		ebx = cpuid_ebx(0x00000001);
- 
- 		ebx &= 0x000000FF;
-+
-+		/* Arjan reported a strange mobile PIII-M where ebx is
-+		   0x07 */
-+		if ((ebx == 0x07) && relaxed_check)
-+			return SPEEDSTEP_PROCESSOR_PIII_T;
-+
- 		if (ebx != 0x06)
- 			return 0;
- 
-@@ -292,7 +305,7 @@
- 		 */
- 		rdmsr(MSR_IA32_PLATFORM_ID, msr_lo, msr_hi);
- 		dprintk(KERN_DEBUG "cpufreq: Coppermine: MSR_IA32_PLATFORM ID is 0x%x, 0x%x\n", msr_lo, msr_hi);
--		if ((msr_hi & (1<<18)) && (msr_hi & (3<<24))) {
-+		if ((msr_hi & (1<<18)) && (relaxed_check ? 1 : (msr_hi & (3<<24)))) {
- 			if (c->x86_mask == 0x01)
- 				return SPEEDSTEP_PROCESSOR_PIII_C_EARLY;
- 			else
-@@ -362,6 +375,11 @@
- }
- EXPORT_SYMBOL_GPL(speedstep_get_freqs);
- 
-+#ifdef CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK
-+module_param(relaxed_check, int, 0444);
-+MODULE_PARM_DESC(relaxed_check, "Don't do all checks for speedstep capability.");
-+#endif
-+
- MODULE_AUTHOR ("Dominik Brodowski <linux@brodo.de>");
- MODULE_DESCRIPTION ("Library for Intel SpeedStep 1 or 2 cpufreq drivers.");
- MODULE_LICENSE ("GPL");
+--===============1506559860==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1506559860==--
+
