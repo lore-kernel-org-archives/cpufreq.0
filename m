@@ -1,15 +1,11 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: SpeedStep New Driver for Pentium III (-M) using SMI interface
-Date: Tue, 2 Sep 2003 19:02:17 +0200
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: cpufreq on ARM - 2.6 problem
+Date: Tue, 2 Sep 2003 18:21:59 +0100
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030902170217.GT4401@poupinou.org>
-References: <871xuzbycu.wl%miura@da-cha.org> <20030902083150.GA3958@brodo.de>
-	<20030902123538.GR4401@poupinou.org>
-	<20030902145452.GA8512@brodo.de>
+Message-ID: <20030902182158.C9345@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030902145452.GA8512@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,24 +17,26 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: Hiroshi Miura <miura@da-cha.org>, Ducrot Bruno <ducrot@arm.linux.org.uk>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Tue, Sep 02, 2003 at 04:54:52PM +0200, Dominik Brodowski wrote:
-> Fantastic, speedstep finally works on my notebook!!! Wow... Congratulations
-> to Bruno Ducrot and Hiroshi Miura. 
+Hi,
 
-Congratulations must go to Miura-san.  He was the one who find at last
-the missing bits (the ownership call) for that work.
+There seems to be a problem with cpufreq on SA11x0 platforms when resuming.
+The effect seems to be a hang.  I suspect that this is caused by the cpufreq
+resume method being a sys device (and therefore called with interrupts off).
+It sets the CPU clock rate, which in turn calls the transition notifier,
+which might (and does) sleep.
 
-Still I am confused for the need to setup the esi to point
-to a string.  That sound like at first as a strange way for obfuscating
-things.
-I really would like some comments from Intel.
+(of course, all this happens when the serial console is disabled because
+its a device not a sysdevice, so getting debug out of the system is nigh
+on impossible.)
 
+I'm not sure what the right way to handle this is, and still ensure that
+all drivers have the right settings for stuff like SDRAM and LCD timings.
+
+I'm also concerned that the backport of 2.6 stuff to 2.4 may introduce
+the same problem into 2.4 kernels.
 
 -- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html
