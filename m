@@ -1,9 +1,10 @@
-From: "Chris Freyer" <chris@thefreyers.net>
-Subject: Repost:  System freeze running powersaved.
-Date: Wed, 05 Jan 2005 18:34:26 -0500
-Message-ID: <E1CmKfa-000Jhs-Bt@server2.anyname.com>
-Reply-To: Chris@TheFreyers.net
+From: Matthew East <matthew.east@gmail.com>
+Subject: celeron *clutches at straws*
+Date: Thu, 6 Jan 2005 00:19:21 +0000
+Message-ID: <3bd91160501051619632315d0@mail.gmail.com>
+Reply-To: Matthew East <matthew.east@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -16,24 +17,39 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hello all.
+Hello all,
 
-I'm having an issue with a new "silent PC" that I built.  I installed 
-SuSE 9.2 Pro without any problems.  But after each reboot, my machine 
-locks up within 10 minutes.  Logs didn't provide any meaningful info, 
-but there *are* ACPI messages in it.  I googled and learned that 
-powersaved might be causing the problem, so I removed it with insserv -
-r powersaved, and now it runs fine.  Nearly 2 weeks uptime now.
+I am aware from searching google that cpufreq does not work on
+celerons. However at the same time I am just looking for clarification
+on something. here is my cpuinfo:
 
-I'm a little confused about how to resolve this.  What is the 
-relationship between powersaved and acpid, apmd, cpufreqd, etc...?  
-Which ones do I need?  
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Mobile Intel(R) Celeron(R) CPU 2.00GHz
+stepping        : 7
+cpu MHz         : 1993.155
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
+bogomips        : 3932.16
 
-FYI:  I have a VIA C3 processor, VIA chipset, and VIA video.  Similar 
-in function to a VIA EPIA motherboard, but made by Matsonic.
+Whereever I look on the internet a Family 15 Model 2 is reported as a
+Pentium 4!! I know that the chips are similar. So what is the truth?
+Is my chip cpufreq capable or not? If not, is there anything else I
+can do to save battery power?
 
-Any assistance is appreciated.
-Chris
+Thanks a lot for your patience.
+
+M
