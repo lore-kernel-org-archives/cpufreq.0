@@ -1,16 +1,15 @@
-From: Norbert Preining <preining@logic.at>
+From: Ducrot Bruno <ducrot@poupinou.org>
 Subject: Re: SpeedStep New Driver for Pentium III (-M) using SMI interface
-Date: Wed, 3 Sep 2003 07:58:25 +0200
+Date: Wed, 3 Sep 2003 09:57:26 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030903055825.GB21721@gamma.logic.tuwien.ac.at>
-References: <871xuzbycu.wl%miura@da-cha.org>
-	<20030902053557.GA28724@gamma.logic.tuwien.ac.at>
-	<87fzjejz9j.wl%miura@da-cha.org>
+Message-ID: <20030903075726.GZ4401@poupinou.org>
+References: <871xuzbycu.wl%miura@da-cha.org> <20030902083150.GA3958@brodo.de>
+	<20030902123538.GR4401@poupinou.org>
+	<20030902145452.GA8512@brodo.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <87fzjejz9j.wl%miura@da-cha.org>
+In-Reply-To: <20030902145452.GA8512@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,28 +19,25 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Hiroshi Miura <miura@da-cha.org>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dominik Brodowski <linux@brodo.de>
+Cc: Hiroshi Miura <miura@da-cha.org>, Ducrot Bruno <ducrot@arm.linux.org.uk>, cpufreq@www.linux.org.uk
 
-On Mit, 03 Sep 2003, Hiroshi Miura wrote:
-> I think you can use speedstep-centrino driver or acpi P-state instead.
+On Tue, Sep 02, 2003 at 04:54:52PM +0200, Dominik Brodowski wrote:
+> the other part of the story is here: the speedstep_smi_get_freqs call does
+> not work on my system -- it returns the ist_info.signature as result, and
+> "0" and "4" as high and low frequency which is obviously bogus. Replacing it
+> with hard-coded values for testing made it go -- BTW, GPO 0 did indeed
+> change again, but changing GPO _alone_ [which is what the speedstep-piix4
+> module does] did not work.
+> 
 
-no, either p4-clockmod or speedstep-ich
+Changing GPO alone still require a read to LVL3.  Think the same
+kind of techno like throttling (hint, hint :)
 
-Best wishes
+-- 
+Ducrot Bruno
 
-Norbert
-
----------------------------------------------------------------------------=
-----
-Norbert Preining <preining AT logic DOT at>         Technische Universit=E4=
-t Wien
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 =
-B094
----------------------------------------------------------------------------=
-----
-KETTERING (n.)
-The marks left on your bottom or thighs after sunbathing on a
-wickerwork chair.
-			--- Douglas Adams, The Meaning of Liff
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
