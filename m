@@ -1,10 +1,16 @@
-From: Johan Braennlund <johan.brannlund@telia.com>
+From: Gregor Hlawacek <lawa@gmx.at>
 Subject: Re: dumb question from curious newbee.
-Date: Fri, 20 Jun 2003 20:29:47 +0200 (CEST)
+Date: Sat, 21 Jun 2003 00:48:45 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <Pine.LNX.4.53.0306202016090.6046@h192n1fls22o1048.telia.com>
+Message-ID: <200306210048.52920.lawa@gmx.at>
 References: <1056093725.15596.2.camel@localhost> <20030620174437.GB1889@brodo.de>
 Mime-Version: 1.0
+Content-Type: multipart/signed;
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1;
+  boundary="Boundary-02=_T948+xHJ5flwoWf";
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
 In-Reply-To: <20030620174437.GB1889@brodo.de>
 Errors-To: cpufreq-admin@www.linux.org.uk
@@ -16,51 +22,52 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-On Fri, 20 Jun 2003, Dominik Brodowski wrote:
-
-> No, there's no frequency scaling for AMD Duron. But maybe throttling (power
-> consumption is reduced linear to processing power) is available - try out
-> ACPI [http://acpi.sf.net for more information]
-
-That's something I've wondered about for a while - precisely what
-determines whether throttling is available? Is that another one of these
-"should only depend on the processor, unless you have a stupid BIOS"
-things? For instance, ACPI tells me that throttling is not available on my
-Athlon XP 1800:
-
-$ cat /proc/acpi/processor/CPU0/info
-processor id:            0
-acpi id:                 1
-bus mastering control:   yes
-power management:        yes
-throttling control:      no
-performance management:  no
-limit interface:         no
+To: Cpufreq@www.linux.org.uk
 
 
-$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 6
-model           : 8
-model name      : mobile AMD Athlon(tm) XP 1800+
-stepping        : 0
-cpu MHz         : 1500.590
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 mmx fxsr sse syscall mp mmxext 3dnowext 3dnow
-bogomips        : 2957.31
+--Boundary-02=_T948+xHJ5flwoWf
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Description: signed data
+Content-Disposition: inline
 
-- Johan
+Am Freitag, 20. Juni 2003 19:44 schrieb Dominik Brodowski:
+> On Fri, Jun 20, 2003 at 09:22:05AM +0200, Japie wrote:
+> > Hello,
+> >
+> > Here's the dumb question; Is my AMD Duron with VIA-KT133 capable of
+> > freq. stepping? (to reduce temp. in my server.)
+>
+> No, there's no frequency scaling for AMD Duron. But maybe throttling
+> (power consumption is reduced linear to processing power) is available -
+> try out ACPI [http://acpi.sf.net for more information]
+
+Maybe I miss understood the whole cpufreq thing. but doesn't the cpufreq=20
+thing do exactly that thing. My AMD Duron 1.1 GHz can be slowed down to=20
+500MHz with your backport from cpufreq to 2.4.19, or did I get something=20
+wrong
+
+Gregor
+
+btw: will there be any backport of powernow-k7 to 2.4.21?
+
+
+=2D-=20
+Gregor Hlawacek                                                  Austria
+http://www.unileoben.ac.at/~m9327555/        May the source be with you!
+ This posting is 100% M$ free. Guaranteed by Tux, the friendly penguin.
+
+--Boundary-02=_T948+xHJ5flwoWf
+Content-Type: application/pgp-signature
+Content-Description: signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.1 (GNU/Linux)
+
+iD8DBQA+849Ter3X+/vN824RAg1KAKCyf2X2oe3JLGJoVr9vDTCHZ9fbAgCfdOtJ
+/R1bhxAzG3Sube3NESL5GIs=
+=sT8Y
+-----END PGP SIGNATURE-----
+
+--Boundary-02=_T948+xHJ5flwoWf--
