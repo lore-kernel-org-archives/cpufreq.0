@@ -1,14 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] speedstep-centrino: hanlde cpu p state propery when
-	resume
-Date: Thu, 23 Sep 2004 10:02:48 +0200
+From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
+Subject: Re: Mobile Celeron with Speedstep ? - speedstep-centrino freezes
+	machine
+Date: Thu, 23 Sep 2004 01:50:31 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040923080248.GA14036@dominikbrodowski.de>
-References: <87acvh7e15.wl%miura@da-cha.org>
+Message-ID: <20040922235030.GA7166@message-id.gmane0305.slipkontur.de>
+References: <414EDDF1.90506@renninger.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <87acvh7e15.wl%miura@da-cha.org>
+In-Reply-To: <414EDDF1.90506@renninger.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,21 +20,39 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hiroshi Miura <miura@da-cha.org>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Thu, Sep 23, 2004 at 02:25:10PM +0900, Hiroshi Miura wrote:
+On Mon, Sep 20, 2004 at 03:41:05PM +0200, Thomas Renninger wrote:
 > Hi,
 > 
-> My note pc, Panasonic Let's Note CF-R3(Pentium M 1.1GHz), troubles when resume.
-> BIOS set cpu p-state as of ac-line state.
-> Centrino driver can not detect change through suspend/resume.
+> I also have a Mobile Celeron (IBM R40e) problem here:
+> 
+> I thought Celeron CPUs are not speedstep capable, seems as if I was 
+> wrong (ss flag indicates speedstep, right?)...
+> 
+> On this machine speedstep-centrino freezes machine (shouldn't it already 
+> go out at the model name check, or has this been changed?):
 
-Actually, it should. Only the (deprecated)
-/proc/acpi/processor/*/performance interface may show a wrong current state,
-/sys/devices/system/cpu/cpu0/cpufreq/{scaling,cpuinfo}_cur_freq should be
-updated by doing a call to ->get().
+this is a P4 celeron, isn't it?
+ 
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 15
+> model           : 2
 
-Oh, and what suspend method are you using?
+15 2 is a Pentium 4 Northwood if i read the code correctly
 
-	Dominik
+> model name      : Mobile Intel(R) Celeron(R) CPU 2.40GHz
+
+
+> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca 
+> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
+
+the ht flag also indicates a p4.
+
+> I am just compiling kernel -> centrino debug enabled. Hints and 
+> suggestions very welcome.
+
+P4 is not centrino, it is crap :-)
+-- 
+Stefan Seyfried
