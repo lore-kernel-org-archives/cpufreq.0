@@ -1,14 +1,12 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: ACPI P-State platform limit [Was: Re: Cpufreq for opteron]
-Date: Wed, 27 Aug 2003 11:16:10 +0200
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq/linux/arch/i386/kernel elanfreq.c, 1.3, NONE longhaul.c,
+	1.39.2.1, NONE p4-clockmod.c, 1.1.2.3, NONE powernow-k6.c,
+	1.13.2.1, NONE powernow-k7.c, 1.6, NONE speedstep.c, 1.7.2.6,
+	NONE thoughts.txt, 1.3.2.1, NONE
+Date: Wed, 27 Aug 2003 10:55:29 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030827091610.GG10585@poupinou.org>
-References: <99F2150714F93F448942F9A9F112634C080EF034@txexmtae.amd.com>
-	<20030827053300.GB4037@brodo.de>
-Mime-Version: 1.0
+Message-ID: <E19rx1V-00073g-Pc@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20030827053300.GB4037@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,38 +16,32 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: pavel@suse.cz, richard.brunner@AMD.com, aj@suse.de, cpufreq@www.linux.org.uk, davej@redhat.com, paul.devriendt@AMD.com, mark.langsdorf@AMD.com
+To: cpufreq@lists.arm.linux.org.uk
 
-On Wed, Aug 27, 2003 at 07:33:00AM +0200, Dominik Brodowski wrote:
-> [removed CC:linux-kernel]
-> 
-> > > I dislike this interaction between ACPI and cpufreq -- it 
-> > > should be done
-> > > more generally. Let's discuss that seperately, though. And if 
-> > > the code is
-> > > dead code at the moment.
-> > 
-> > The dead code has been removed in 1.00.07 of the driver. I am
-> > happy to receive suggestions as to better ways of detecting battery
-> > versus mains power transitions.
-> 
-> Currently, the ACPI P-States cpufreq driver does implement the "platform
-> limit". However, I'm not really excited about how it works -- and especially
-> that it only works with the ACPI P-States cpufreq driver and not with all
-> drivers.
-> 
-> [ A preliminary questions to the AMD people out here: Is the information in 
-> the _PSS of any usage for the powernow-k{7,8} driver? ]
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel
+In directory flint:/tmp/cvs-serv27036
 
-It is documented somewhere.  I was thinking adding some for the 'asus'
-problem as a fallback, but unfortunately it gave bad infos as well
-as the legacy way.
+Removed Files:
+      Tag: LINUX_2_4
+	elanfreq.c longhaul.c p4-clockmod.c powernow-k6.c 
+	powernow-k7.c speedstep.c thoughts.txt 
+Log Message:
+cleaning up old drivers.
 
--- 
-Ducrot Bruno
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+--- elanfreq.c DELETED ---
+
+--- longhaul.c DELETED ---
+
+--- p4-clockmod.c DELETED ---
+
+--- powernow-k6.c DELETED ---
+
+--- powernow-k7.c DELETED ---
+
+--- speedstep.c DELETED ---
+
+--- thoughts.txt DELETED ---
