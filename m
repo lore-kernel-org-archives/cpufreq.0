@@ -1,8 +1,8 @@
 From: Jan Rychter <jan@rychter.com>
-Subject: Pentium-M (Centrino): no power saved?
-Date: Thu, 18 Sep 2003 19:09:27 -0700
+Subject: speedstep-smi works!
+Date: Thu, 18 Sep 2003 23:49:39 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <m24qz9r0ko.fsf@tnuctip.rychter.com>
+Message-ID: <m2isnptgqk.fsf@tnuctip.rychter.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
@@ -18,25 +18,28 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hmm. I'm puzzled. I've just done a checkout of the latest CVS version of
-cpufreq for 2.4, applied it to a 2.4.22 kernel and tried the thing out
-on a Toshiba SS7/290LNKW laptop.
+Hi,
 
-The speedstep-centrino module loads happily and tells me I have a 900MHz
-Pentium-M. (this is a family 6 model 9 stepping 5 CPU).
+Much to my surprise, speedstep-smi that I've tried today "just works" on
+my P-IIIM laptop.
 
-I've tried echo "0%100%powersave" > /proc/cpufreq 
-  and 
- echo "0%50%powersave" > /proc/cpufreq
+For the reference, this is a Sharp Mebius PC-MT1-H5, and the processor
+is:
 
-and much to my surprise, even though /proc/cpufreq echoes my changes, I
-can see no resulting changes in power consumption as reported by ACPI
-battery proc entry.
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 11
+model name      : Intel(R) Pentium(R) III Mobile CPU       750MHz
+stepping        : 1
+cpu MHz         : 348.293
+cache size      : 512 KB
 
-Other things make a difference: whether the system is able to use C3,
-display brightness, wireless card, etc. But changing the cpufreq entry
-doesn't seem to do anything.
+It does say sometimes:
+  cpufreq: change failed
+  cpufreq: change failed
 
-Am I doing something wrong?
+but most of the time it works fine.
+
+Many thanks!
 
 --J.
