@@ -1,9 +1,15 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq patch,1.1.1.6,1.1.1.7
-Date: Thu, 04 Sep 2003 17:16:51 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E19uwmx-0005ji-AQ@flint.arm.linux.org.uk>
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: SpeedStep New Driver for Pentium III (-M) using SMI interface
+Date: Thu, 4 Sep 2003 17:34:52 +0200
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20030904153452.GK4401@poupinou.org>
+References: <871xuzbycu.wl%miura@da-cha.org>
+	<20030904124230.GH4401@poupinou.org>
+	<87ptigsnle.wl%miura@da-cha.org>
+Mime-Version: 1.0
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <87ptigsnle.wl%miura@da-cha.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -12,56 +18,29 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.arm.linux.org.uk
+To: Hiroshi Miura <miura@da-cha.org>
+Cc: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq
-In directory flint:/tmp/cvs-serv22046
+On Thu, Sep 04, 2003 at 10:13:49PM +0900, Hiroshi Miura wrote:
+> 
+> Ok, kernel 2.4 has no hibernation staff,
+> then not so big problem about it.
+> 
+> I didn't test it with apm, so I don't know 
+> what happens. to work-around, user can unload/load the module. 
 
-Modified Files:
-      Tag: LINUX_2_4
-	patch 
-Log Message:
-- *ouch* I forgot the int15 call..
+Most systems with a piii and piix4 are somehow 'old' and work
+like a charm with apm, so I have to fix it (but i need to
+update core at first).
 
+S1 may work also, and is supported by acpi, I guest it should
+be ok, but who knows.
 
-Index: patch
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/patch,v
-retrieving revision 1.1.1.6
-retrieving revision 1.1.1.7
-diff -u -r1.1.1.6 -r1.1.1.7
---- patch	4 Sep 2003 10:54:29 -0000	1.1.1.6
-+++ patch	4 Sep 2003 16:16:48 -0000	1.1.1.7
-@@ -221,6 +221,28 @@
-  tristate 'Toshiba Laptop support' CONFIG_TOSHIBA
-  tristate 'Dell laptop support' CONFIG_I8K
-  
-+--- linux-original/arch/i386/boot/setup.S	Sat Aug  3 02:39:42 2002
-++++ linux/arch/i386/boot/setup.S	Thu Sep  4 18:15:18 2003
-+@@ -483,6 +483,19 @@
-+ 	movw	$0xAA, (0x1ff)			# device present
-+ no_psmouse:
-+ 
-++#if defined(CONFIG_X86_SPEEDSTEP_SMI) || defined(CONFIG_X86_SPEEDSTEP_SMI_MODUL
-++)
-++	movl	$0x0000E980, %eax		# IST Support 
-++	movl	$0x47534943, %edx		# Request value
-++	int	$0x15
-++
-++	movl	%eax, (96)
-++	movl	%ebx, (100)
-++	movl	%ecx, (104)
-++	movl	%edx, (108)
-++#endif
-++
-++
-+ #if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-+ # Then check for an APM BIOS...
-+ 						# %ds points to the bootsector
- --- linux-original/arch/i386/kernel/Makefile	Mon Aug 25 13:44:39 2003
- +++ linux/arch/i386/kernel/Makefile	Thu Sep  4 12:14:03 2003
- @@ -14,7 +14,8 @@
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
