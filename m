@@ -1,14 +1,19 @@
-From: Franco <net.surfer@tiscalinet.it>
-Subject: Re: supported x86 processors?
-Date: Mon, 1 Mar 2004 18:50:34 +0100 (CET)
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [ACPI] [PATCH 1/2] 2.6: use scaling_available_freqs in
+	acpi-cpufreq-ioport driver
+Date: Mon, 1 Mar 2004 18:54:30 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200403011750.i21HoZWC010926@localhost.localdomain>
-References: <20040301155817.GV2869@poupinou.org>
+Message-ID: <20040301175430.GY2869@poupinou.org>
+References: <20040220083149.GA10215@dominikbrodowski.de>
+	<20040224125628.GA438@elf.ucw.cz>
+	<20040224210040.GA8166@dreamcraft.com.au>
+	<20040224221642.GB9145@elf.ucw.cz>
+	<20040226172823.GJ2869@poupinou.org>
+	<20040226215006.GB397@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040301155817.GV2869@poupinou.org> from "Bruno Ducrot" at Mar
-	01, 2004 04:58:17 PM
+Content-Disposition: inline
+In-Reply-To: <20040226215006.GB397@elf.ucw.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,27 +24,53 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tomasz Ciolek <tmc@dreamcraft.com.au>, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-Thanks a lot for the answer.
+On Thu, Feb 26, 2004 at 10:50:06PM +0100, Pavel Machek wrote:
+> On ??t 26-02-04 18:28:23, Bruno Ducrot wrote:
+> > On Tue, Feb 24, 2004 at 11:16:42PM +0100, Pavel Machek wrote:
+> 
+> > > >  have a loook at the "userpace frequency governer" under 2.6.x 
+> > > 
+> > > That's not the same. frequency governor can select frequency *from the
+> > > set provided by BIOS*. I want to override frequency/voltage table from
+> > > bios.
+> > 
+> > It need to be done IMO in a driver, definitely not in cpufreq core, and
+> > worst that may need to be adapted to the acpi perflib certainly (when
+> > all pending patches for will go to mainstream I guess).
+> 
+> Well, it still looks pretty generic to me. Having same code in k7
+> and k8 drivers does not sound right.
 
-Then, the candidates for my application are K7 and non-VIA, non-SiS
-Speeddstep. (K6, K8, VIA C3 are too slow or too expensive).
+That can be shared by the two drivers if that is needed, but I don't
+think that part going to the cpufreq frequency tables.
+But I espected that powernow k7 and k8 are different beasts enough?
+There is no rvo, irt etc. for example in powernow-k7.
 
-> Note that some driver do not support voltage scaling
-> You may take a look to arch/i386/kernel/cpu/cpufreq/ 
+> Anyway, lets see what happens. If acpi mostly solves it, it is not
+> necessary.
+> 
+> > For now, you can adapt with something like the powernow-k7 override
+> > patches at http://www.poupinou.org/cpufreq/powernow-k7/ if really
+> > needed.
+> 
+> > Also, you should check that in fact the acpi perflib stuff will give
+> > you more accurate results.  For the powernow-k7 case, unfortunately, it
+> > sound like that acpi perflib whereas giving good results still could be
+> > problematics for some acer IIRC due to a bad VID for one entry, and then
+> > it may be usefull for them to get the override patch merged IMO.
+> 
+> Hmm, if there's really only _one_ machine to fix, perhaps DMI
+> blacklist is the right solution.
 
-I took a look at the code.
-As to K7, the only mention to voltage are a couple of printk().
-As to P4, I'm not sure I've understood correctly, but seems me
-that voltage scaling is only for mobile chips, is it right?
+Yes, but I guess there are more though.  Just that we don't get enough
+reports yet.
 
-Then, as my application is a desktop PC, are K7 and P4 equivalent?
-(relatively to voltage/frequency scaling)
+-- 
+Bruno Ducrot
 
-Or, is there a chance that one of the two 
-will also get voltage scaling in the future?
-
-Thank you a lot in advance,
-Franco
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
