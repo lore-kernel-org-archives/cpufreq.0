@@ -1,11 +1,17 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] cpu freq groups (policy->cpus) in ondemand governor
-Date: Tue, 2 Nov 2004 09:55:09 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB60033E4702@scsmsx403.amr.corp.intel.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [Bug 3600] New: Cpu recognization fails after upgrade from
+	2.6.7 to 2.6.9
+Date: Tue, 2 Nov 2004 21:10:52 +0000
+Message-ID: <20041102211052.GA32732@redhat.com>
+References: <200410201413.i9KED718023481@fire-1.osdl.org>
+	<20041020154744.GA5372@dreamland.darkstar.lan>
+	<20041020180537.17d0dd7c@paraclito.crema>
+	<20041020165110.GA6992@dreamland.darkstar.lan>
+	<20041021102529.GD22405@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20041021102529.GD22405@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,43 +23,54 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Stefan Seyfried <seife@gmane0305.slipkontur.de>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk
 
->-----Original Message-----
->From: cpufreq-bounces@www.linux.org.uk=20
->[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Stefan Seyfried
->Sent: Tuesday, November 02, 2004 1:34 AM
->To: cpufreq@www.linux.org.uk
->Subject: Re: [PATCH] cpu freq groups (policy->cpus) in=20
->ondemand governor
->
->On Tue, Oct 26, 2004 at 11:39:49AM -0700, Venkatesh Pallipadi wrote:
->=20
->> Now ondemand governor looks at all cpus in policy->cpus and=20
->takes its=20
->> frequency increase/decrease decisions based on most lightly=20
->loaded cpu in=20
->> the group.
->
->Is this a good idea? Assume the pathetic case:
-> - 2 cpus, both in one group
-> - 1 process running at 100% CPU
->   -> only 1 cpu loaded
->      -> the 2nd cpu is idle
->         -> no speed increase.
->
->Or didn't i understand this correctly?
+On Thu, Oct 21, 2004 at 12:25:29PM +0200, Bruno Ducrot wrote:
 
-Actually, you are right. And the patch is right too. But, the=20
-patch description that I typed in was totally opposite to=20
-what I had in my head :(. It should read:
+ > > --- a/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:46:51.000000000 +0200
+ > > +++ b/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:47:06.000000000 +0200
+ > > @@ -597,7 +597,7 @@
+ > >  	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
+ > >  
+ > >  	/* A K7 with powernow technology is set to max frequency by BIOS */
+ > > -	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
+ > > +	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.CFID];
+ > >  	if (!fsb) {
+ > >  		printk(KERN_WARNING PFX "can not determine bus frequency\n");
+ > >  		return -EINVAL;
+ > > 
+ > > 
+ > 
+ > No.  It's wrong.  Though I *much* prefer the form you submit, this will
+ > break other unfortunately, and therefore maxfid have to be used
+ > here for now as per AMD documentation (problem is, your bios is broken
+ > because it do not respect AMD recomandation since after POST the
+ > processor shall be put in max frequencies instead of 800MHz).  In short,
+ > there is a need to choose who would be broken here for now, and
+ > I have to do the one recommanded by AMD.
 
-Now ondemand governor looks at all cpus in policy->cpus and=20
-takes its frequency increase/decrease decisions based on most=20
-busy cpu in the group.
+Since 2.6.9, I've been getting at least one private mail about this
+every few days, so I'd like to get this fixed for 2.6.10.
+Some ideas..
 
-In the patch I am looking at the CPU with least idle time=20
-and depend on it to increase or decrease the frequency.
+- A module parameter to switch between usage of MFID / CFID.
+- If cpu_khz is greater than any of the frequencies in the table
+  we calculate, use CFID.
+  (This might not work as running frequency on battery may be
+   in the list of frequencies we calculate)
+- Construct tables for _both_ MFID and CFID, and merge the
+  results.
 
-Thanks,
-Venki
+ > I'm not sure for now how to implement correctly this, and I don't have
+ > time for now to make free developpements, but when I got time, I will
+ > try to make a workaround (there is also another trouble with the MFID,
+ > since we can not modprobe a second time if the processor is not in max
+ > for example, but I don't think it will be so hard to fix).
+
+That just needs 'restore to max on unload' as longhaul did.
+Maybe we should make a core function that does that on module
+shutdown.
+
+		Dave
