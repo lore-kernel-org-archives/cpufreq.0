@@ -1,11 +1,12 @@
-From: emmel <the_emmel@gmx.net>
-Subject: Weird behaviour
-Date: Tue, 5 Aug 2003 09:17:04 +0200
+From: Vivek Haldar <vhaldar@uci.edu>
+Subject: [App announcement] LAMP: Linux and Managed Power
+Date: Thu, 7 Aug 2003 01:42:38 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <03080509170400.00210@gate>
+Message-ID: <200308070142.38120.vhaldar@uci.edu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
+Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,39 +19,18 @@ List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hello all,
 
-I posted that before: on my Acer Aspire 1302XV (AMD Athlon 1600+) cpufreq=
-=20
-will scale down the frequency when loaded. However, it scales it down far=
- too=20
-much and it's impossible to get back full power without rebooting. Withou=
-t=20
-the powernow-k7 module loaded I have 1400MHz, with it loaded 800/633MHz=20
-(depending on me telling it to use as much or as few power as possible).=20
-Unloading the module doesn't do anything (just removes the interface - i=20
-guess that's how it is supposed to work). So how do I get it to work=20
-correctly? I have the newest BIOS available and I *had* it working correc=
-tly=20
-at one point (but I don't have the kernel configuration for it anymore). =
-Any=20
-suggestions on how to solve that problem are welcome. Oh, I'm using 2.4.2=
-0=20
-with the latest patch for it, but that same problem occurs on 2.5.72 and=20
-2.6.0-test1.
-- --=20
-Michael Filz
+LAMP is a simple user-level tool to adapt CPU frequency to CPU load, to achieve a balance between performance and battery life for laptops.
+ 
+It uses the interface provided by CPUFreq to do frequency scaling guided by CPU load.
 
-GPG 1.2.1 signed
-Fingerprint: 60B4 D8E3 9617 900C 6726  168F D677 5AAD D40F CCE7
-Certserver : ldap://certserver.pgp.com
+http://gandalf.ics.uci.edu/~haldar/lamp/
 
-Hi, I'm a .sig virus. Just copy me to your .signature. And don't worry.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.1 (GNU/Linux)
+Feedback appreciated.
 
-iD8DBQE/L1n41ndardQPzOcRAnUMAKD6CjBDsuwSBXRWn+nCiD8w9sOSVgCfcl5R
-M2cFRZqjEG4p4uRIJ8ujF7s=3D
-=3DChp5
------END PGP SIGNATURE-----
+Enjoy,
+-- 
+Vivek Haldar
+vhaldar@uci.edu
+http://www.ics.uci.edu/~vhaldar
