@@ -1,17 +1,19 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Kronos <kronos@kronoz.cjb.net>
 Subject: Re: [Bug 3600] New: Cpu recognization fails after upgrade from
 	2.6.7 to 2.6.9
-Date: Thu, 21 Oct 2004 12:25:29 +0200
+Date: Thu, 21 Oct 2004 18:10:34 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041021102529.GD22405@poupinou.org>
+Message-ID: <20041021161034.GA4404@dreamland.darkstar.lan>
 References: <200410201413.i9KED718023481@fire-1.osdl.org>
 	<20041020154744.GA5372@dreamland.darkstar.lan>
 	<20041020180537.17d0dd7c@paraclito.crema>
 	<20041020165110.GA6992@dreamland.darkstar.lan>
+	<20041021102529.GD22405@poupinou.org>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20041020165110.GA6992@dreamland.darkstar.lan>
+In-Reply-To: <20041021102529.GD22405@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,62 +25,59 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@kronoz.cjb.net>
-Cc: Daniele Bonomi <dbonomi@crema.unimi.it>, cpufreq@www.linux.org.uk
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk
 
-On Wed, Oct 20, 2004 at 06:51:10PM +0200, Kronos wrote:
-> Il Wed, Oct 20, 2004 at 06:05:37PM +0200, Daniele Bonomi ha scritto: 
-> > On Wed, 20 Oct 2004 17:47:44 +0200 Kronos <kronos@kronoz.cjb.net> wrote:
-> > 
-> > > Hi,
-> > > I saw something similar on my notebook. In my case when the notebook
-> > > is turned on while using battery BIOS sets CPU speed to a frequency
-> > > lower than the defaul (800MHz for me). It seems that powernow driver
-> > > is confused by the BIOS fiddling with CPU speed and fails to load. I
-> > > had the same symptoms: PST not found and wrong min/max frequencies.
+Il Thu, Oct 21, 2004 at 12:25:29PM +0200, Bruno Ducrot ha scritto: 
+> On Wed, Oct 20, 2004 at 06:51:10PM +0200, Kronos wrote:
+> > Il Wed, Oct 20, 2004 at 06:05:37PM +0200, Daniele Bonomi ha scritto: 
+> > > On Wed, 20 Oct 2004 17:47:44 +0200 Kronos <kronos@kronoz.cjb.net> wrote:
 > > > 
-> > > Disabling "Automatic CPU power saving" (or something like that) in the
-> > > BIOS cures the problem for me. Note that this option do not affect
-> > > power management under linux (or windows), it just controls the CPU
-> > > before a real OS comes up.
+> > > > Hi,
+> > > > I saw something similar on my notebook. In my case when the notebook
+> > > > is turned on while using battery BIOS sets CPU speed to a frequency
+> > > > lower than the defaul (800MHz for me). It seems that powernow driver
+> > > > is confused by the BIOS fiddling with CPU speed and fails to load. I
+> > > > had the same symptoms: PST not found and wrong min/max frequencies.
+> > > > 
+> > > > Disabling "Automatic CPU power saving" (or something like that) in the
+> > > > BIOS cures the problem for me. Note that this option do not affect
+> > > > power management under linux (or windows), it just controls the CPU
+> > > > before a real OS comes up.
+> > > 
+> > > I tried but it didn't worked for me.
+> > > For me doesn't work even if i'm plugged in...
 > > 
-> > I tried but it didn't worked for me.
-> > For me doesn't work even if i'm plugged in...
+> > Ok, can you apply this patch to 2.6.9 (and enable debug):
+> > 
+> > --- a/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:46:51.000000000 +0200
+> > +++ b/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:47:06.000000000 +0200
+> > @@ -597,7 +597,7 @@
+> >  	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
+> >  
+> >  	/* A K7 with powernow technology is set to max frequency by BIOS */
+> > -	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
+> > +	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.CFID];
+> >  	if (!fsb) {
+> >  		printk(KERN_WARNING PFX "can not determine bus frequency\n");
+> >  		return -EINVAL;
+> > 
+> > 
 > 
-> Ok, can you apply this patch to 2.6.9 (and enable debug):
-> 
-> --- a/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:46:51.000000000 +0200
-> +++ b/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:47:06.000000000 +0200
-> @@ -597,7 +597,7 @@
->  	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
->  
->  	/* A K7 with powernow technology is set to max frequency by BIOS */
-> -	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
-> +	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.CFID];
->  	if (!fsb) {
->  		printk(KERN_WARNING PFX "can not determine bus frequency\n");
->  		return -EINVAL;
-> 
-> 
+> No.  It's wrong.  Though I *much* prefer the form you submit, this will
+> break other unfortunately, and therefore maxfid have to be used
+> here for now as per AMD documentation (problem is, your bios is broken
+> because it do not respect AMD recomandation since after POST the
+> processor shall be put in max frequencies instead of 800MHz). 
 
-No.  It's wrong.  Though I *much* prefer the form you submit, this will
-break other unfortunately, and therefore maxfid have to be used
-here for now as per AMD documentation (problem is, your bios is broken
-because it do not respect AMD recomandation since after POST the
-processor shall be put in max frequencies instead of 800MHz).  In short,
-there is a need to choose who would be broken here for now, and
-I have to do the one recommanded by AMD.
+Yes I know, I was trying to pin down the problem. I was almost sure that
+the BIOS was changing frequency since I had the same problem, though in
+my case I was able to teach the BIOS to not touch the CPU.
 
-I'm not sure for now how to implement correctly this, and I don't have
-time for now to make free developpements, but when I got time, I will
-try to make a workaround (there is also another trouble with the MFID,
-since we can not modprobe a second time if the processor is not in max
-for example, but I don't think it will be so hard to fix).
-
-Cheers,
-
+Luca
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Home: http://kronoz.cjb.net
+I went to God just to see
+And I was looking at me
+Saw heaven and hell were lies
+When I'm God everyone dies
