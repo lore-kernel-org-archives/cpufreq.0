@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 1/4] speedstep-centrino: move to per-CPU analyzing of CPUs
-Date: Fri, 20 Feb 2004 09:44:25 +0100
+Subject: [PATCH 2.6] remove powernow-k8 warning
+Date: Fri, 20 Feb 2004 14:24:50 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040220084424.GA10473@dominikbrodowski.de>
+Message-ID: <20040220132449.GA7782@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -17,150 +17,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, jeremy@goop.org
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
+Cc: paul.devriendt@amd.com
 
-Move the table matching into an own function; only the FEATURE_EST bit is checked
-in module_init() directly. As cpufreq drivers aren't sticky any longer (see other 
-pending patch sent to cpufreq mailing list a few minutes ago), this will not 
-change user-visible behaviour.
+It's been tested now -- thanks to Redeeman!
 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  106 ++++++++++++---------- 
- 1 files changed, 60 insertions(+), 46 deletions(-)
+http://lkml.org/lkml/2004/2/19/192
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-02-18 10:22:09.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-02-19 16:59:58.093560440 +0100
-@@ -187,6 +187,45 @@
- };
- #undef CPU
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-02-18 14:59:24.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-02-19 22:00:54.187228808 +0100
+@@ -34,10 +34,6 @@
+ #define VERSION "version 1.00.08a"
+ #include "powernow-k8.h"
  
-+static int centrino_cpu_init_table(struct cpufreq_policy *policy)
-+{
-+	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
-+	const struct cpu_model *model;
-+
-+	if (!cpu_has(cpu, X86_FEATURE_EST))
-+		return -ENODEV;
-+
-+	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
-+	   they appear after making sure they use PERF_CTL in the same
-+	   way. */
-+	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
-+	    cpu->x86        != 6 ||
-+	    cpu->x86_model  != 9 ||
-+	    cpu->x86_mask   != 5) {
-+		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
-+		       "send /proc/cpuinfo to " MAINTAINER "\n");
-+		return -ENODEV;
-+	}
-+
-+	for(model = models; model->model_name != NULL; model++)
-+		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
-+			break;
-+	if (model->model_name == NULL) {
-+		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
-+		       "send /proc/cpuinfo to " MAINTAINER "\n",
-+		       cpu->x86_model_id);
-+		return -ENOENT;
-+	}
-+
-+	centrino_model = model;
-+		
-+	printk(KERN_INFO PFX "found \"%s\": max frequency: %dkHz\n",
-+	       model->model_name, model->max_freq);
-+
-+	return 0;
-+}
-+
-+
- /* Extract clock in kHz from PERF_CTL value */
- static unsigned extract_clock(unsigned msr)
- {
-@@ -206,10 +245,30 @@
- static int centrino_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned freq;
-+	unsigned l, h;
- 
--	if (policy->cpu != 0 || centrino_model == NULL)
-+	if (policy->cpu != 0)
- 		return -ENODEV;
- 
-+	if (centrino_cpu_init_table(policy))
-+		return -ENODEV;
-+
-+	/* Check to see if Enhanced SpeedStep is enabled, and try to
-+	   enable it if not. */
-+	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-+		
-+	if (!(l & (1<<16))) {
-+		l |= (1<<16);
-+		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
-+		
-+		/* check to see if it stuck */
-+		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-+		if (!(l & (1<<16))) {
-+			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
-+			return -ENODEV;
-+		}
-+	}
-+
- 	freq = get_cur_freq();
- 
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
-@@ -322,55 +381,10 @@
- static int __init centrino_init(void)
- {
- 	struct cpuinfo_x86 *cpu = cpu_data;
--	const struct cpu_model *model;
--	unsigned l, h;
- 
- 	if (!cpu_has(cpu, X86_FEATURE_EST))
- 		return -ENODEV;
- 
--	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
--	   they appear after making sure they use PERF_CTL in the same
--	   way. */
--	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
--	    cpu->x86        != 6 ||
--	    cpu->x86_model  != 9 ||
--	    cpu->x86_mask   != 5) {
--		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
--		       "send /proc/cpuinfo to " MAINTAINER "\n");
--		return -ENODEV;
--	}
+-#ifdef CONFIG_PREEMPT
+-#warning this driver has not been tested on a preempt system
+-#endif
 -
--	/* Check to see if Enhanced SpeedStep is enabled, and try to
--	   enable it if not. */
--	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--		
--	if (!(l & (1<<16))) {
--		l |= (1<<16);
--		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
--		
--		/* check to see if it stuck */
--		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--		if (!(l & (1<<16))) {
--			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
--			return -ENODEV;
--		}
--	}
--
--	for(model = models; model->model_name != NULL; model++)
--		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
--			break;
--	if (model->model_name == NULL) {
--		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
--		       "send /proc/cpuinfo to " MAINTAINER "\n",
--		       cpu->x86_model_id);
--		return -ENOENT;
--	}
--
--	centrino_model = model;
--		
--	printk(KERN_INFO PFX "found \"%s\": max frequency: %dkHz\n",
--	       model->model_name, model->max_freq);
--
- 	return cpufreq_register_driver(&centrino_driver);
- }
+ static u32 vstable;	/* voltage stabalization time, from PSB, units 20 us */
+ static u32 plllock;	/* pll lock time, from PSB, units 1 us */
+ static u32 numps;	/* number of p-states, from PSB */
