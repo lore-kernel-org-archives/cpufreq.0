@@ -1,13 +1,10 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: cpufreqd + acpi - error message
-Date: Tue, 18 May 2004 10:35:19 +0200
+From: aeriksson2@fastmail.fm
+Subject: speedstep_smi & psmouse problems?
+Date: Thu, 20 May 2004 17:10:10 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040518083519.GA1977@inferi.kami.home>
-References: <99F2150714F93F448942F9A9F112634C1365B7FA@txexmtae.amd.com>
+Message-ID: <20040520151011.6F8694137@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <99F2150714F93F448942F9A9F112634C1365B7FA@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,30 +16,26 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: paul.devriendt@amd.com
-Cc: mark.langsdorf@amd.com, mailonde@gmx.net, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, May 17, 2004 at 06:55:52PM -0500, paul.devriendt@amd.com wrote:
-> I ran into this. libsys_init() in libsys_acpi.c gets upset if
-> the number of batteries is less than 0. The number of batteries
-> being returned is -1. I got it working by just hardcoding the
-> number of batteries to 0 instead, and it seemed happy with that
-> (my machine does not even support batteries, it is a 4P server).
-> 
-> I have not reported it to the maintainers yet, as I am not
-> really sure which code is at fault. It is on my list to look
-> at further and try to decide what ought to be happening here.
-> The -1 return comes from a scandir() call.
 
-I'm sorry, cpufreqd is/was mainly aimed at laptop usage, that's why I
-expect to find something in /proc/acpi/battery/
+installing the 2.6.6 kernel I noticed that the
+CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK workaround is now included
+(thanks!). I took the time to revisit my cpufreqd setup and I
+discovered that there were some config changes I needed to make, and
+that it wasn't currently running. Having fixed that, I noticed that
+everything worked well, and the freq did change as requested. All well
+and good.
 
-I'm now working to make cpufreqd useable on every machine where
-batteries and ac plug have no sense.
+However, now I find that the mouse is jumpy (as was reported in the
+~2.6.2 days) and I get tons of:
 
-In the meantime your hack is the only possible solution.
+psmouse.c: Wheel Mouse at isa0060/serio1/input0 lost synchronization,
+throwing 2 bytes away.
 
-bye
--- 
-mattia
-:wq!
+in the kernel log. Is there a known case of problems between the -smi
+driver's way of doing things, and eg. timing related stuff in the
+psmouse driver? I've disabled cpufreqd and it _seems_ to make the
+mouse healthy again...
+
+/Anders
