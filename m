@@ -1,17 +1,16 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [PATCH] powernow-k7: Userspace PST for Athlon XP-M on
-	desktop	boards
-Date: Tue, 15 Jun 2004 11:27:09 +0200
+From: John Steele Scott <toojays@toojays.net>
+Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
+Date: Wed, 16 Jun 2004 12:04:23 +0930
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040615092709.GN1095@poupinou.org>
-References: <20040614211726.905A94BAAB@nathan.muc.de>
-	<20040614214803.GA17747@dominikbrodowski.de>
-	<1087253151.4456.11.camel@delerium.codemonkey.org.uk>
-	<20040615060454.9AED14BAAD@nathan.muc.de>
+Message-ID: <200406161204.30453.toojays@toojays.net>
+References: <200406051846.50718.toojays@toojays.net>
+	<200406102105.27654.toojays@toojays.net>
+	<1086883926.2977.145.camel@gaston>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <1086883926.2977.145.camel@gaston>
 Content-Disposition: inline
-In-Reply-To: <20040615060454.9AED14BAAD@nathan.muc.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,51 +20,36 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Harald Milz <milz@seneca.muc.de>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: Text/Plain; charset="us-ascii"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>, Christiaan Welvaart <cjw@daneel.dyndns.org>, cpufreq@www.linux.org.uk
 
-On Tue, Jun 15, 2004 at 08:04:54AM +0200, Harald Milz wrote:
-> Dave Jones <davej@redhat.com> wrote:
-> > What's the general consensus on this ? It seems to be an ugly hack for a
-> > minority of users, who seem able to recompile their kernel with a
-> > hardwired table.  Maybe it sounds a little elitist, but if someone
-> 
-> Oh no it's not about a hardwired table. This is why I chose the command
-> line approach. The goal is to have this in the main distribution so that
-> nobody needs to recompile a kernel. 
-> 
-> > can't compile their kernel, should we make it easier to allow them to
-> > potentially do bad things to their processor ?
-> 
-> As far as I can see you can't do bad things to your CPU. The module will
-> not set the multiplier above what the CPU thinks is okay. So no
-> overclocking is possible with the current code. But hey, it's open source.
-> You can override anything within the module, even the CPU's perception of
-> maxfid. You can't keep people from jumping out of a window ... 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-That Dave's point actually.  If someone want to modify powernow-k7,
-because the BIOS is broken, he is free to do so.  It's not that hard and
-anyway such hardwired tables have been posted to this list already.
-The main advantage for this is that the guy have to read at least
-the code, do some search (preferably in this list, perhaps), and
-so he will learn what actually are those funny VID, FID etc.
+On Fri, 11 Jun 2004 01:42 am, Benjamin Herrenschmidt wrote:
+> > I have made a new patch for this, available from:
+> > http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040610.patch
+>
+> Looks good except for some coding style issues ;)
+>
+> Use spaces between } and else for example, there's also an if without a
+> space before the ( and please, name the low level asm function low_* like
+> the other ones, for consistency.
 
-> I am not sure about the "minority" -- I keep hearing many Athlon XP-M
-> notebooks have broken BIOSes. At the moment these folks can't really use
-> powernow-k7 anyway - and for whom else is the module? 
+A new patch which addresses these issues is at:
+http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040616.patch
 
-The recent ACPI stuff do have actually helped already..
+This is functionally identical to the previous patch.
 
-> Has anyone got Bruno's patch? 
+cheers,
 
-http://www.poupinou.org/cpufreq/powernow-k7/
-But it need reworking due to some change in powernow-k7.  And I must
-admit I have now the same kind of concern than Dave anyway.
+John
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: Messages with missing or bad signatures may have been forged or modified in transit!
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+iD8DBQFAz7G10BW7kPcXjRURAmI0AJ0V9d5W//alEDnGyR+Yyq+2RkxZaQCfWS56
+p4aPY2b81DVo22MOsVuxc90=
+=2aBU
+-----END PGP SIGNATURE-----
