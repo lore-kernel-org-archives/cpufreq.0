@@ -1,14 +1,17 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] cpufreq_ondemand
-Date: Mon, 18 Oct 2004 10:54:50 +0200
+From: Jiri Hladky <hladky.jiri@seznam.cz>
+Subject: Re: Pentium III Coppermine
+Date: Mon, 18 Oct 2004 12:31:36 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041018085450.GA26364@dominikbrodowski.de>
-References: <88056F38E9E48644A0F562A38C64FB60031DA073@scsmsx403.amr.corp.intel.com>
-	<20041018083905.GC3311@inskipp.digriz.org.uk>
+Message-ID: <200410181231.36045.hladky.jiri@seznam.cz>
+References: <33222.14179-2631-1010294146-1097668908@email.seznam.cz>
+	<200410151241.03188.hladky.jiri@seznam.cz>
+	<20041016164253.GA8135@dominikbrodowski.de>
+Reply-To: hladky.jiri@seznam.cz
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20041016164253.GA8135@dominikbrodowski.de>
 Content-Disposition: inline
-In-Reply-To: <20041018083905.GC3311@inskipp.digriz.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,31 +22,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexander Clouter <alex-kernel@digriz.org.uk>
-Cc: cpufreq@www.linux.org.uk, Con Kolivas <kernel@kolivas.org>
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: aeriksson@fastmail.fm, cpufreq@www.linux.org.uk
 
-On Mon, Oct 18, 2004 at 09:39:05AM +0100, Alexander Clouter wrote:
-> On Oct 17, Pallipadi, Venkatesh wrote:
-> > 
-> > [snipped]
-> > 
-> > We can never accurately predict freq for some future load. 
-> > Say a CPU capable of 600, 800, 1000, 1200 and 1400 KHz, is 
-> > running at 600 and we have sudden 100% CPU utilization, then 
-> > we cannot precisely say which should be the next freq. It 
-> > can be any of the higher possible freqs. And we felt performance 
-> > should get a higher priority whenever there is some 
-> > tradeoffs like this.
-> > 
-> it took me a while to work out why speed decreasing was 'working' whilst 
-> speed increasing was not with my method; a good hour finding out that the 
-> cpufreq (correctly) goes to the lowest match.
+Hi Anders & Dominik,
 
-Do you mean CPUFREQ_RELATION_L? If so, you can change the behaviour by using
-CPUFREQ_RELATION_H. See include/linux/cpufreq.h
+yesterday, I have compiled kernel 2.6.6 and speedstep is now working just 
+fine! 
 
-#define CPUFREQ_RELATION_L 0  /* lowest frequency at or above target */
-#define CPUFREQ_RELATION_H 1  /* highest frequency below or at target */
+Thank you very much for your help!
+Jiri
 
-	Dominik
+On Saturday 16 October 2004 18:42, Dominik Brodowski wrote:
+> Status: R
+> X-Status: N
+> X-KMail-EncryptionState:
+> X-KMail-SignatureState:
+> X-KMail-MDN-Sent:
+>
+> On Fri, Oct 15, 2004 at 12:41:03PM +0200, Jiri Hladky wrote:
+> > Hi Anders & Dominik,
+> >
+> > I have tried to search for CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK is
+> > source files
+> >
+> > "locate speedstep | grep [.]c$ | xargs grep
+> > CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK"
+> >
+> > but I had no success. It seems like I have to get new sources for
+> > cpufreq? My current kernel is 2.6.5
+>
+> ... and that option got merged into 2.6.6.
+>
+> 	Dominik
