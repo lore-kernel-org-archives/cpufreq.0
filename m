@@ -1,12 +1,9 @@
 From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: [PATCH] transition latency of speedstep-ich
-Date: Sun, 06 Mar 2005 18:06:41 +0100
-Message-ID: <422B38A1.9050706@tremplin-utc.net>
-References: <42069B4D.6090505@tremplin-utc.net>
-	<20050209191515.GA21319@dominikbrodowski.de>
+Subject: [PATCH][1/2] ondemand governor cleanup
+Date: Sun, 06 Mar 2005 19:41:33 +0100
+Message-ID: <422B4EDD.206@tremplin-utc.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------050402010200070909050701"
-In-Reply-To: <20050209191515.GA21319@dominikbrodowski.de>
+Content-Type: multipart/mixed; boundary="------------080501000309000800050504"
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,75 +14,114 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Dominik Brodowski <linux@dominikbrodowski.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 Cc: cpufreq@zenii.linux.org.uk
 
 This is a multi-part message in MIME format.
---------------050402010200070909050701
+--------------080501000309000800050504
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-Dominik Brodowski a =C3=A9crit :
-> On Sun, Feb 06, 2005 at 11:33:49PM +0100, Eric Piel wrote:
-:
->>This patch proposes to consider a CPUFREQ_ETERNAL latency as the maximu=
-m=20
->>possible latency of the governor (10 ms). I think this should be=20
->>conservative enough to be safe with any driver.
-> =20
-> No. CPUFREQ_ETERNAL is there to assert no dynamic frequency governor ru=
-ns
-> with this driver. If a driver is safe to run on dynamic frequency gover=
-nors
-> like ondemand, fix the latency value instead.
->=20
-OK, so here is a patch for vanilla 2.6.11 to set the transition latency=20
-of speedstep-ich (the only driver which I can test in addtion to=20
-p4-clockmod). Actually it was quite hard to find, the intel manual=20
-(29834006.pdf) doesn't assert this latency clearly. From what I=20
-understood the frequency transition could take up to about 40=C2=B5s (p.4=
-4)=20
-while the voltage transition could take up to 100=C2=B5s (p.22 and p.58).=
- So=20
-I put 100=C2=B5s as the transition latency of this driver.
+Hello,
 
-I've tried it on my computer, it works, and the ondemand governor can=20
-now support my hardware!
+Here is a cleanup patch for the ondemand governor (as found in 2.6.11). 
+In dbs_check_cpu(), first the idle ticks of the current CPU are measured 
+and then the idle ticks of all the associated CPUs. This patch 
+factorises the code: all the idle ticks are measured in the same loop.
 
-Hope you like it,
+Note: this was tested only on a computer with one CPU, I don't own any 
+hardware with several CPUs which stick to the same frequency.
+
 Eric
 
 --
-Set the transition latency of speedstep-ich to 100=C2=B5s as described in=
-=20
-intel's manual.
+Ondemand governor cleanup, it factorises the idle ticks measurement.
 
 Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
 --
 
---------------050402010200070909050701
+--------------080501000309000800050504
 Content-Type: text/x-patch;
-	name="speedstep-ich-transition-latency-2.6.11.patch"
+	name="ondemand-cleanup-factorise-idle-measurement-2.6.11.patch"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
-	filename="speedstep-ich-transition-latency-2.6.11.patch"
-Content-Transfer-Encoding: quoted-printable
+	filename="ondemand-cleanup-factorise-idle-measurement-2.6.11.patch"
 
---- linux-2.6.11/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c.orig	2005-0=
-2-07 23:52:55.000000000 +0100
-+++ linux-2.6.11/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2005-03-06 =
-17:51:04.000000000 +0100
-@@ -335,7 +335,8 @@
-=20
- 	/* cpuinfo and default policy values */
- 	policy->governor =3D CPUFREQ_DEFAULT_GOVERNOR;
--	policy->cpuinfo.transition_latency =3D CPUFREQ_ETERNAL;
-+ 	/* Max 100=C2=B5s, according to intel's 29834006.pdf p.22 */
-+	policy->cpuinfo.transition_latency =3D 100000;
- 	policy->cur =3D speed;
-=20
- 	result =3D cpufreq_frequency_table_cpuinfo(policy, speedstep_freqs);
+--- linux-2.6.11/drivers/cpufreq/cpufreq_ondemand.c.bak	2005-02-06 23:35:41.000000000 +0100
++++ linux-2.6.11/drivers/cpufreq/cpufreq_ondemand.c	2005-03-06 19:04:12.000000000 +0100
+@@ -223,7 +223,6 @@ static struct attribute_group dbs_attr_g
+ static void dbs_check_cpu(int cpu)
+ {
+ 	unsigned int idle_ticks, up_idle_ticks, down_idle_ticks;
+-	unsigned int total_idle_ticks;
+ 	unsigned int freq_down_step;
+ 	unsigned int freq_down_sampling_rate;
+ 	static int down_skip[NR_CPUS];
+@@ -252,20 +251,11 @@ static void dbs_check_cpu(int cpu)
+ 	 */
+ 
+ 	/* Check for frequency increase */
+-	total_idle_ticks = kstat_cpu(cpu).cpustat.idle +
+-		kstat_cpu(cpu).cpustat.iowait;
+-	idle_ticks = total_idle_ticks -
+-		this_dbs_info->prev_cpu_idle_up;
+-	this_dbs_info->prev_cpu_idle_up = total_idle_ticks;
+-	
+-
++	idle_ticks = UINT_MAX;
+ 	for_each_cpu_mask(j, policy->cpus) {
+-		unsigned int tmp_idle_ticks;
++		unsigned int tmp_idle_ticks, total_idle_ticks;
+ 		struct cpu_dbs_info_s *j_dbs_info;
+ 
+-		if (j == cpu)
+-			continue;
+-
+ 		j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 		/* Check for frequency increase */
+ 		total_idle_ticks = kstat_cpu(j).cpustat.idle +
+@@ -287,7 +277,7 @@ static void dbs_check_cpu(int cpu)
+ 		__cpufreq_driver_target(policy, policy->max, 
+ 			CPUFREQ_RELATION_H);
+ 		down_skip[cpu] = 0;
+-		this_dbs_info->prev_cpu_idle_down = total_idle_ticks;
++		this_dbs_info->prev_cpu_idle_down = this_dbs_info->prev_cpu_idle_up;
+ 		return;
+ 	}
+ 
+@@ -296,19 +286,11 @@ static void dbs_check_cpu(int cpu)
+ 	if (down_skip[cpu] < dbs_tuners_ins.sampling_down_factor)
+ 		return;
+ 
+-	total_idle_ticks = kstat_cpu(cpu).cpustat.idle +
+-		kstat_cpu(cpu).cpustat.iowait;
+-	idle_ticks = total_idle_ticks -
+-		this_dbs_info->prev_cpu_idle_down;
+-	this_dbs_info->prev_cpu_idle_down = total_idle_ticks;
+-
++	idle_ticks = UINT_MAX;
+ 	for_each_cpu_mask(j, policy->cpus) {
+-		unsigned int tmp_idle_ticks;
++		unsigned int tmp_idle_ticks, total_idle_ticks;
+ 		struct cpu_dbs_info_s *j_dbs_info;
+ 
+-		if (j == cpu)
+-			continue;
+-
+ 		j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 		/* Check for frequency increase */
+ 		total_idle_ticks = kstat_cpu(j).cpustat.idle +
+@@ -330,7 +312,7 @@ static void dbs_check_cpu(int cpu)
+ 	down_idle_ticks = (100 - dbs_tuners_ins.down_threshold) *
+ 			sampling_rate_in_HZ(freq_down_sampling_rate);
+ 
+-	if (idle_ticks > down_idle_ticks ) {
++	if (idle_ticks > down_idle_ticks) {
+ 		freq_down_step = (5 * policy->max) / 100;
+ 
+ 		/* max freq cannot be less than 100. But who knows.... */
 
---------------050402010200070909050701
+--------------080501000309000800050504
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -96,5 +132,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------050402010200070909050701--
+--------------080501000309000800050504--
 
