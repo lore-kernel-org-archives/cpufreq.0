@@ -1,15 +1,15 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPIP-state
-	driver
-Date: Tue, 21 Oct 2003 22:39:00 +0200
+Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
+	P-state driver
+Date: Tue, 21 Oct 2003 22:44:10 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021203900.GG26971@brodo.de>
-References: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
-	<1066766155.a66ff46274f08@carlthompson.net>
+Message-ID: <20031021204410.GH26971@brodo.de>
+References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
+	<1066725533.5237.3.camel@laptop.fenrus.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1066766155.a66ff46274f08@carlthompson.net>
+In-Reply-To: <1066725533.5237.3.camel@laptop.fenrus.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,40 +21,31 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Carl Thompson <cet@carlthompson.net>
-Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, linux-acpi <linux-acpi@intel.com>
+To: Arjan van de Ven <arjanv@redhat.com>
+Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, linux-acpi <linux-acpi@intel.com>, cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, "Pallipadi,
+	Venkatesh" <venkatesh.pallipadi@intel.com>
 
-On Tue, Oct 21, 2003 at 12:55:55PM -0700, Carl Thompson wrote:
-> Quoting "Nakajima, Jun" <jun.nakajima@intel.com>:
-> 
-> > ...
-> 
-> > It's about the frequency of the feedback loop. As we have much lower
-> > latency with P-state transitions, the sampling time can be order of
-> > millisecond (or shorter if meaningful). A userland daemon can have a
-> > high-level policy (preferences, or set of parameters), but it cannot be
-> > part of the real feedback loop. If we combine P-state transitions and
-> > deeper C-state transitions, the situation is worse with a userland
-> > daemon.
-> 
-> You are making the assumption that a higher polling frequency (we'll say
-> 1ms) is in general better than a lower frequency (we'll say 1s).  I submit
-> that it is not.
-> 
-> If I hit a key on my keyboard and your high frequency loop increases CPU
-> speed so that my word processor displays the letter 0.01s faster, is that
-> really beneficial?  If a window renders in 0.2s seconds instead of 0.3s is
-> that a difference I am going to notice?
-> 
-> On the other hand, if I do a kernel compile and it is done 0.999s faster
-> with the higher frequency loop, am I going to miss that second over such a
-> long duration?  (In reality, the compile with the high-frequency loop would
-> probably take longer unless it has near zero overhead).
-> 
-> In my opinion it is wasteful to increase CPU speed unless there is a longer
-> term need for it.
+On Tue, Oct 21, 2003 at 10:38:53AM +0200, Arjan van de Ven wrote:
+> Note that I'm not totally against doing some of this in the kernel; I
+> can well see the point of say, detecting an IRQ overload and based on
+> that, go to max speed in the kernel because it's a situation where
+> userspace doesn't even run; but the patch as is doesn't do any such
+> advanced things...
 
-Different needs, different opinions, different governors...
+Indeed, this driver doesn't do anything like that. However,  I want to point
+out two [of more] reasons why this is the right thing to do:
+
+1.) I'm aware of one embedded system running linux which only has two 
+userspace programs - busybox and cardmgr. All other stuff is handled 
+in the kernel. An effort to remove the dependency on cardmgr is going on
+[ <linux-pcmcia@lists.infradead.org> ]. If this embedded system was
+supporting cpufreq, would you want to do dynamic scaling in the kernel, or
+in userspace?
+
+2.) It's a starting point for more advanced governors which really cannot be
+done in userspace as this would be much too expensive. Having to choose
+between different kernel and different userspace governors seems a bit
+complicated for me. The _cost_ of doing this specific governor in the kernel
+is near zero.
 
 	Dominik
