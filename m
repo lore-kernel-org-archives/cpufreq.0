@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH >=2.6.4] single-line, but KERN_WARNING message in p4-clockmod
-Date: Sat, 14 Feb 2004 17:01:05 +0100
+Subject: [PATCH >=2.6.4] don't stick if all ->init() calls fail
+Date: Sat, 14 Feb 2004 17:02:02 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040214160105.GA7747@dominikbrodowski.de>
+Message-ID: <20040214160202.GB7747@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -20,33 +20,75 @@ Content-Transfer-Encoding: 7bit
 To: davej@redhat.com
 Cc: cpufreq@www.linux.org.uk
 
-As Pavel Machek told me, a single line warning is better, and KERN_DEBUG might
-be missed if reading from /var/log/messages.
+Some cpufreq drivers can only tell whether they work while the per-CPU 
+->init() function is executed [e.g. the acpi driver]. So that cpufreq_driver
+isn't blocked by such stale drivers, unload them unless the driver sets a
+special flag.
 
- arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/cpufreq/cpufreq.c |   24 +++++++++++++++++++++++-
+ include/linux/cpufreq.h   |    6 ++++++
+ 2 files changed, 29 insertions(+), 1 deletion(-)
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-02-13 17:09:58.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-02-14 16:51:47.012905264 +0100
-@@ -181,9 +181,7 @@
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-02-13 17:09:59.000000000 +0100
++++ linux/drivers/cpufreq/cpufreq.c	2004-02-14 16:56:15.799043560 +0100
+@@ -963,6 +963,7 @@
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
  {
- 	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
- 		/* Pentium M */
--		printk(KERN_DEBUG PFX "Warning: Pentium M detected. The speedstep_centrino module\n");
--		printk(KERN_DEBUG PFX "offers voltage scaling in addition of frequency scaling. You\n");
--		printk(KERN_DEBUG PFX "should use that instead of p4-clockmod, if possible.\n");
-+		printk(KERN_WARNING PFX "Warning: Pentium M detected. The speedstep_centrino module offers voltage scaling in addition of frequency scaling. You should use that instead of p4-clockmod, if possible.\n");
- 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
- 	}
+ 	unsigned long flags;
++	int ret;
  
-@@ -193,9 +191,7 @@
- 	}
+ 	if (!driver_data || !driver_data->verify || !driver_data->init ||
+ 	    ((!driver_data->setpolicy) && (!driver_data->target)))
+@@ -976,7 +977,28 @@
+ 	cpufreq_driver = driver_data;
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
  
- 	if (speedstep_detect_processor() == SPEEDSTEP_PROCESSOR_P4M) {
--		printk(KERN_DEBUG PFX "Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq \n");
--		printk(KERN_DEBUG PFX "modules offers voltage scaling in addition of frequency scaling. You\n");
--		printk(KERN_DEBUG PFX "should use either one instead of p4-clockmod, if possible.\n");
-+		printk(KERN_WARNING PFX "Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq modules offers voltage scaling in addition of frequency scaling. You should use either one instead of p4-clockmod, if possible.\n");
- 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4M);
- 	}
+-	return sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
++	ret = sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
++
++	if ((!ret) && !(cpufreq_driver->flags & CPUFREQ_STICKY)) {
++		int i;
++		ret = -ENODEV;
++
++		/* check for at least one working CPU */
++		for (i=0; i<NR_CPUS; i++)
++			if (cpufreq_cpu_data[i])
++				ret = 0;
++
++		/* if all ->init() calls failed, unregister */
++		if (ret) {
++			sysdev_driver_unregister(&cpu_sysdev_class, &cpufreq_sysdev_driver);
++
++			spin_lock_irqsave(&cpufreq_driver_lock, flags);
++			cpufreq_driver = NULL;
++			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
++		}
++	}
++
++	return (ret);
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_register_driver);
+ 
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2004-02-13 19:17:42.000000000 +0100
++++ linux/include/linux/cpufreq.h	2004-02-14 16:39:48.810088688 +0100
+@@ -175,6 +175,7 @@
+ struct cpufreq_driver {
+ 	struct module           *owner;
+ 	char			name[CPUFREQ_NAME_LEN];
++	u8			flags;
+ 
+ 	/* needed by all drivers */
+ 	int	(*init)		(struct cpufreq_policy *policy);
+@@ -192,6 +193,11 @@
+ 	struct freq_attr	**attr;
+ };
+ 
++/* flags */
++
++#define CPUFREQ_STICKY	0x01	/* the driver isn't removed even if 
++				   all ->init() calls failed */
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
