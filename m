@@ -1,11 +1,13 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [2.6. PATCH] Missing default governor choices
-Date: Sun, 29 Aug 2004 14:32:00 +0200
+Subject: Re: speedstep-ich and ich5, [speedstep]
+Date: Sun, 29 Aug 2004 15:26:12 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040829123200.GA16050@dominikbrodowski.de>
+Message-ID: <20040829132612.GA17676@dominikbrodowski.de>
+References: <41225D98.3090709@versanet.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <41225D98.3090709@versanet.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,19 +19,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: goatzilla@gmail.com, cpufreq@www.linux.org.uk
+To: Christian Heimanns <heimanns@versanet.de>
+Cc: cpufreq <cpufreq@www.linux.org.uk>
 
-> What's the reason for the powersave governor not being selectable as
-> default?
+On Tue, Aug 17, 2004 at 09:33:44PM +0200, Christian Heimanns wrote:
+> Hello Dominik
+> 
+> Here are some news:
+> Today I've written a mail to Medion where I asked for a new BIOS. But I 
+> have just a slight hope to get one. I will see and wait.
+> 
+> I changed two settings (self-explanatory) in the BIOS:
+> QuickBoot Mode = Disabled
+> Boot-time Diagnostic Screen = Enabled
+> Now I can see the following boot message from the BIOS directly after 
+> power on my notebook:
+> 
+> ***********************************************************************
+> *                                                                     *
+> * An incompatibility between the system and CPU FSB has been detected.*
+> * You have installed a faster CPU into a system incapable of running  *
+> * it as fast as the CPU is capable of.                                *
+> *                                                                     *
+> * This CPU is not running at it's peak performance                    *
+> *                                                                     *
+> ***********************************************************************
+> 
+> Maybe this is related to our problem?
 
-Because it doesn't matter much: 
-- performance is available during boot so that CPUs starting up at less than
-  100% can be boosted to full performance very soon.
-- userspace is available to keep the CPU speed at what it was at boot, and
-  to allow existing userspace-based setups to work [it offers an equivalent
-  interface compared to the one of the old 2.4. cpufreq interface]
-
-All other settings [including min/max ranges, governor for "continuing" use] can
-and should be done by either a startup script and/or a userspace daemon.
+This is very likely relate to our problem -- it basically tells us "the BIOS
+isn't really aware of the CPU and doesn't know how to handle it". Amazing
+the notebook got selled this way... So, any news from MEDION?
 
 	Dominik
