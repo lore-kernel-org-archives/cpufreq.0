@@ -1,14 +1,12 @@
-From: Gerald Britton <gbritton@alum.mit.edu>
-Subject: Re: cpufreq doesn't keep over suspend/resume
-Date: Mon, 14 Jun 2004 21:32:42 -0400
+From: "Li, Shaohua" <shaohua.li@intel.com>
+Subject: RE: [ACPI] [RFC][PATCH] notify BIOS of cpufreq support (pstate_cnt)
+Date: Tue, 15 Jun 2004 11:40:14 +0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040615013242.GA13338@fog.sekrit.org>
-References: <20040614191225.GA1463@fog.sekrit.org>
-	<20040614202539.GA10796@dominikbrodowski.de>
+Message-ID: <B44D37711ED29844BEA67908EAF36F0315E5FF@pdsmsx401.ccr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040614202539.GA10796@dominikbrodowski.de>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,76 +17,408 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-On Mon, Jun 14, 2004 at 10:25:39PM +0200, Dominik Brodowski wrote:
-> Hi!
-> 
-> On Mon, Jun 14, 2004 at 03:12:25PM -0400, Gerald Britton wrote:
-> > Warning: CPU frequency out of sync: cpufreq and timing core thinks of
-> > 600000, is 1600000 kHz.
-> > 
-> > Also, this warning is somewhat confusing since "of" appears to refer to
-> > "old_freq" rather than actually being a use of the word "of" so it wasn't
-> > entirely clear what it was trying to say at first.
-> 
-> As you seem to be a "native speaker": how should we rephrase this message so
-> it is clear what it is trying to say?
+If AC adapter is disconnected in boot time, loops_per_jiffy, cpu_khz
+will be calculated according to current cpu speed (maybe is not full
+speed). Can this patch handle this situation? After disable BIOS P-state
+control, should loops_per_jiffy be recalculated? (How about look at if
+cpu_khz match any P-state, and adjust according to the difference
+between P-state and P0).
 
-"actual cpu speed 1600000 kHz, cpufreq assumed 600000 kHz" perhaps, I'm not
-sure there's a good concise way to word this.  This is likely a normal state
-on resume though, so screaming about a warning might not be the right solution
-here.  Checking with things, it seems that my thinkpad may infact always resume
-from ACPI S3 with the speed at 1.6Ghz.
-
-> > To reproduce this:
-> > 
-> > 1. Plug in AC power
-> > 2. echo userspace > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> > 3. echo 600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_speed
-> > 4. echo 600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> > 5. echo mem > /sys/power/state
-> > 6. press power button to resume
-> 
-> It's not a bug, it's a feature: the BIOS decides at what speed to boot
-> and/or to resume. Often this depends on whether the AC adapter is plugged in
-> or not. If the system resumes, it tries to go back to the state it was when
-> suspending -- but it's bad if the timing core thinks the CPU runs at full
-> speed when it is only running at half speed, or otherwise. So, upon
-> resuming, cpufreq tries to determine the current speed, and to adapt the
-> timing core and other affected subsystems to the new speed. Once the system
-> is "alive", the previous set _policy_ is restored.
-> 
-> This policy consists of the _governor_ (in your case: userspace) and the min 
-> and max frequencies -- not the actual frequencies echo'ed into
-> scaling_setspeed. So, if you indeed do step 3. above (but with
-> scaling_max_freq not _speed), it should return to run at 600000 kHz (check
-> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
-> ). If not, please say so, and I'll cook up a debug patch to zero in on a
-> possible BUG.
-
-Prior to suspend:
-
-# cat scaling_cur_freq scaling_max_freq scaling_min_freq scaling_setspeed
-600000
-600000
-600000
-600000
-# grep 'cpu MHz' < /proc/cpuinfo
-cpu MHz         : 598.244
-
-After resume:
-
-# cat scaling_cur_freq scaling_max_freq scaling_min_freq scaling_setspeed
-600000
-600000
-600000
-600000
-# grep 'cpu MHz' < /proc/cpuinfo
-cpu MHz         : 1595.318
-
-I was examining the value in /proc/cpuinfo on resume and noticing the
-difference.
-
-				-- Gerald
+Thanks,
+Shaohua
+>-----Original Message-----
+>From: acpi-devel-admin@lists.sourceforge.net [mailto:acpi-devel-
+>admin@lists.sourceforge.net] On Behalf Of Dominik Brodowski
+>Sent: Tuesday, June 15, 2004 5:55 AM
+>To: cpufreq@www.linux.org.uk; acpi-devel@lists.sourceforge.net
+>Subject: [ACPI] [RFC][PATCH] notify BIOS of cpufreq support
+(pstate_cnt)
+>
+>[Follow-up to
+>http://marc.theaimsgroup.com/?l=3Dacpi4linux&m=3D107684287525298&w=3D2
+>which was the last try of getting this right last February]
+>
+>Notify SMM of cpufreq
+>
+>Often, the BIOS changes the CPU frequency if a notebook is
+(dis)connected
+>from its AC adapter. This interferes with a) an user setting the CPU
+>frequency
+>and b) kernel timing code which needs to know loops_per_jiffy, cpu_khz
+etc.
+>
+>So, ACPI 2.0 offers a method to disable such BIOS changes -- writing
+>a value contained in the FADT (pstate_cnt) to the smi_cmd port. This
+patch
+>utilizes this method by doing this write in processor.c.
+>
+>However, most current notebooks only offer 1.0 ACPI tables, where the
+>pstate_cnt entry is marked as "reserved". Unless ACPI is in strict
+mode,
+>the value in this "reserved" field is used as well, but a warning is
+>printed.
+>
+>So, when is the BIOS notified? When should it be notified? The ACPI
+>specification doesn't say much about it. This patch does it if either
+>of the following cpufreq drivers is pretty much done with a successful
+>registration:
+>
+>- acpi
+>- powernow-k7 [if either it is blacklisted or acpi_force is used]
+>- powernow-k8 [if the preferred DSDT method is used -- normally, it
+is...]
+>- speedstep-centrino [if the preferred DSDT method is used -- normally,
+it
+>is...]
+>- speedstep-ich [if the ACPI processor module is built into the kernel.
+>Dave, Arjan: is it in FC?]
+>- speedstep-smi [if the processor module is built into the kernel.
+Dave,
+>Arjan: is it in FC?]
+>
+>There's a small problem with the whole pstate_cnt approach: if there is
+a
+>pyhsical[*] platform limit, it might be necessary to adjust the CPU
+>frequency
+>to avoid serious problems. Unless the BIOS is notified, the BIOS will
+>likely
+>do such adjustments on its own. As it is notified now that the OS is
+>handling
+>P-States, it might be that the BIOS won't handle such serious limits --
+but
+>if the cpufreq driver is "rmmod'ed" in between, it won't be handled.
+This
+>is a serious error, but it will _also_ happen on _any_ OS if:
+>a) the pstate_cnt is written to the BIOS
+>b) the system locks up hard afterwards so that even IRQs are not
+handled
+>any more
+>c) the physical platform limit event occurs
+>
+>However, I'm unsure as to whether we should "lock" the cpufreq driver
+once
+>it called
+>acpi_processor_notify_smm() to minimize the risk mentioned above.
+What's
+>the opinion of the ACPI
+>team at Intel?
+>
+>[*] not the "we-want-to-have-X-hours-of-battery-time-in-that-test" type
+of
+>platform limits...
+>
+>Signed-off-by: Dominik Brodowski <linux@brodo.de>
+>
+> arch/i386/kernel/cpu/cpufreq/acpi.c               |    4 +
+> arch/i386/kernel/cpu/cpufreq/powernow-k7.c        |    3 +
+> arch/i386/kernel/cpu/cpufreq/powernow-k8.c        |    3 +
+> arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    3 +
+> arch/i386/kernel/cpu/cpufreq/speedstep-ich.c      |   10 ++++
+> arch/i386/kernel/cpu/cpufreq/speedstep-smi.c      |   10 ++++
+> drivers/acpi/processor.c                          |   51
+>++++++++++++++++++++++
+> drivers/acpi/tables/tbconvrt.c                    |   10 +++-
+> include/acpi/actbl.h                              |    2
+> include/acpi/processor.h                          |    2
+> 10 files changed, 96 insertions(+), 2 deletions(-)
+>
+>diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c
+>linux/arch/i386/kernel/cpu/cpufreq/acpi.c
+>--- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-06-14
+>21:30:37.137669896 +0200
+>+++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-06-14
+>23:10:07.929971496 +0200
+>@@ -324,6 +324,9 @@
+> 	}
+> 	policy->governor =3D CPUFREQ_DEFAULT_GOVERNOR;
+>
+>+	/* notify BIOS that we exist */
+>+	acpi_processor_notify_smm();
+>+
+> 	/* The current speed is unknown and not detectable by ACPI...
+*/
+> 	policy->cur =3D acpi_cpufreq_guess_freq(data, policy->cpu);
+>
+>@@ -353,6 +356,7 @@
+> 			(u32)
+data->acpi_data.states[i].transition_latency);
+>
+> 	cpufreq_frequency_table_get_attr(data->freq_table, policy->cpu);
+>+
+> 	return_VALUE(result);
+>
+>  err_freqfree:
+>diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+>linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+>--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-06-
+>14 18:20:27.000000000 +0200
+>+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-06-14
+>23:13:31.260060624 +0200
+>@@ -393,6 +393,9 @@
+> 	powernow_table[i].frequency =3D CPUFREQ_TABLE_END;
+> 	powernow_table[i].index =3D 0;
+>
+>+	/* As all looks fine by now, notify BIOS that we exist */
+>+	acpi_processor_notify_smm();
+>+
+> 	return 0;
+>
+> err2:
+>diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+>linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+>--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-06-
+>14 21:29:18.996549152 +0200
+>+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-06-14
+>23:13:14.003683992 +0200
+>@@ -764,6 +764,9 @@
+> 	powernow_table[data->acpi_data.state_count].index =3D 0;
+> 	data->powernow_table =3D powernow_table;
+>
+>+	/* As all looks fine by now, notify BIOS that we exist */
+>+	acpi_processor_notify_smm();
+>+
+> 	/* fill in data */
+> 	data->numps =3D data->acpi_data.state_count;
+> 	print_basics(data);
+>diff -ruN
+linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+>linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+>--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+>	2004-06-14 23:26:56.074710200 +0200
+>+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+2004-06-14
+>23:11:52.340098744 +0200
+>@@ -371,6 +371,9 @@
+>                 goto err_kfree;
+>         }
+>
+>+	/* notify BIOS that we exist */
+>+	acpi_processor_notify_smm();
+>+
+> 	cur_freq =3D get_cur_freq(0);
+>
+>         for (i=3D0; i<p.state_count; i++) {
+>diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+>linux/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+>--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+2004-06-
+>14 21:29:19.047541400 +0200
+>+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-14
+>23:10:53.856989528 +0200
+>@@ -25,6 +25,11 @@
+> #include <linux/pci.h>
+> #include <linux/slab.h>
+>
+>+#ifdef CONFIG_ACPI_PROCESSOR
+>+#include <linux/acpi.h>
+>+#include <acpi/processor.h>
+>+#endif
+>+
+> #include "speedstep-lib.h"
+>
+>
+>@@ -329,6 +334,11 @@
+> 		return result;
+> 	}
+>
+>+#ifdef CONFIG_ACPI_PROCESSOR
+>+	/* notify BIOS that we exist */
+>+	acpi_processor_notify_smm();
+>+#endif
+>+
+> 	/* get current speed setting */
+> 	speed =3D speedstep_get_processor_frequency(speedstep_processor);
+> 	set_cpus_allowed(current, cpus_allowed);
+>diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
+>linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
+>--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
+2004-06-
+>14 21:29:19.102533040 +0200
+>+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2004-06-14
+>23:10:14.806926040 +0200
+>@@ -22,6 +22,11 @@
+> #include <linux/delay.h>
+> #include <asm/ist.h>
+>
+>+#ifdef CONFIG_ACPI_PROCESSOR
+>+#include <linux/acpi.h>
+>+#include <acpi/processor.h>
+>+#endif
+>+
+> #include "speedstep-lib.h"
+>
+> #define PFX "speedstep-smi: "
+>@@ -273,6 +278,11 @@
+> 			dprintk(KERN_INFO PFX "workaround worked.\n");
+> 	}
+>
+>+#ifdef CONFIG_ACPI_PROCESSOR
+>+	/* notify BIOS that we exist */
+>+	acpi_processor_notify_smm();
+>+#endif
+>+
+> 	/* get current speed setting */
+> 	state =3D speedstep_get_state();
+> 	speed =3D speedstep_freqs[state].frequency;
+>diff -ruN linux-original/drivers/acpi/processor.c
+>linux/drivers/acpi/processor.c
+>--- linux-original/drivers/acpi/processor.c	2004-06-14
+>18:20:28.000000000 +0200
+>+++ linux/drivers/acpi/processor.c	2004-06-14 23:29:40.773672152
++0200
+>@@ -1072,6 +1072,57 @@
+> }
+>
+>
+>+int acpi_processor_notify_smm(void) {
+>+	acpi_status		status;
+>+	static int		is_done =3D 0;
+>+
+>+	ACPI_FUNCTION_TRACE("acpi_processor_notify_smm");
+>+
+>+	if (!acpi_processor_ppc_is_init)
+>+		return_VALUE(-EBUSY);
+>+
+>+	/* is_done is set to negative if an error occured,
+>+	 * and to postitive if _no_ error occured, but SMM
+>+	 * was already notified. This avoids double notification
+>+	 * which might lead to unexpected results...
+>+	 */
+>+	if (is_done > 0)
+>+		return_VALUE(0);
+>+	else if (is_done < 0)
+>+		return_VALUE(is_done);
+>+
+>+	is_done =3D -EIO;
+>+
+>+	/* Can't write pstate_cnt to smi_cmd if either value is zero */
+>+	if ((!acpi_fadt.smi_cmd) ||
+>+	    (!acpi_fadt.pstate_cnt)) {
+>+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+>+			"No SMI port or pstate_cnt\n"));
+>+		return_VALUE(0);
+>+	}
+>+
+>+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Writing pstate_cnt [0x%x] to
+smi_cmd
+>[0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
+>+
+>+	/* FADT v1 doesn't support pstate_cnt, many BIOS vendors use
+>+	 * it anyway, so we need to support it... */
+>+	if (acpi_fadt_is_v1) {
+>+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Using v1.0 FADT
+reserved value
+>for pstate_cnt\n"));
+>+	}
+>+
+>+	status =3D acpi_os_write_port (acpi_fadt.smi_cmd,
+>+				     (u32) acpi_fadt.pstate_cnt, 8);
+>+	if (ACPI_FAILURE (status)) {
+>+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
+>+				  "Failed to write pstate_cnt [0x%x] to
+"
+>+				  "smi_cmd [0x%x]\n",
+acpi_fadt.pstate_cnt,
+>acpi_fadt.smi_cmd));
+>+	} else
+>+		is_done =3D 1;
+>+
+>+	return_VALUE(0);
+>+}
+>+EXPORT_SYMBOL(acpi_processor_notify_smm);
+>+
+>+
+> #ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
+> /* /proc/acpi/processor/../performance interface (DEPRECATED) */
+>
+>diff -ruN linux-original/drivers/acpi/tables/tbconvrt.c
+>linux/drivers/acpi/tables/tbconvrt.c
+>--- linux-original/drivers/acpi/tables/tbconvrt.c	2004-06-14
+>18:20:28.000000000 +0200
+>+++ linux/drivers/acpi/tables/tbconvrt.c	2004-06-14
+22:37:57.198487296
+>+0200
+>@@ -50,6 +50,8 @@
+> 	 ACPI_MODULE_NAME    ("tbconvrt")
+>
+>
+>+u8 acpi_fadt_is_v1;
+>+
+>
+>/**********************************************************************
+****
+>*****
+>  *
+>  * FUNCTION:    acpi_tb_get_table_count
+>@@ -212,6 +214,7 @@
+>
+> 	/* ACPI 1.0 FACS */
+> 	/* The BIOS stored FADT should agree with Revision 1.0 */
+>+	acpi_fadt_is_v1 =3D 1;
+>
+> 	/*
+> 	 * Copy the table header and the common part of the tables.
+>@@ -240,9 +243,12 @@
+> 	/*
+> 	 * Processor Performance State Control. This is the value OSPM
+writes
+>to
+> 	 * the SMI_CMD register to assume processor performance state
+control
+>-	 * responsibility. There isn't any equivalence in 1.0, leave it
+>zeroed.
+>+	 * responsibility. There isn't any equivalence in 1.0, but as
+many
+>1.x
+>+	 * ACPI tables contain _PCT and _PSS we also keep this value,
+unless
+>+	 * acpi_strict is set.
+> 	 */
+>-	local_fadt->pstate_cnt =3D 0;
+>+	if (acpi_strict)
+>+		local_fadt->pstate_cnt =3D 0;
+>
+> 	/*
+> 	 * Support for the _CST object and C States change notification.
+>diff -ruN linux-original/include/acpi/actbl.h
+linux/include/acpi/actbl.h
+>--- linux-original/include/acpi/actbl.h	2004-06-14
+18:20:30.000000000
+>+0200
+>+++ linux/include/acpi/actbl.h	2004-06-14 22:37:27.009076784 +0200
+>@@ -343,5 +343,7 @@
+> #include "actbl1.h"   /* Acpi 1.0 table definitions */
+> #include "actbl2.h"   /* Acpi 2.0 table definitions */
+>
+>+extern u8 acpi_fadt_is_v1; /* is set to 1 if FADT is revision 1,
+>+			    * needed for certain workarounds */
+>
+> #endif /* __ACTBL_H__ */
+>diff -ruN linux-original/include/acpi/processor.h
+>linux/include/acpi/processor.h
+>--- linux-original/include/acpi/processor.h	2004-06-14
+>18:20:30.000000000 +0200
+>+++ linux/include/acpi/processor.h	2004-06-14 23:04:16.551389160
++0200
+>@@ -140,4 +140,6 @@
+> 	struct acpi_processor_performance * performance,
+> 	unsigned int cpu);
+>
+>+extern int acpi_processor_notify_smm (void);
+>+
+> #endif
+>
+>
+>-------------------------------------------------------
+>This SF.Net email is sponsored by The 2004 JavaOne(SM) Conference
+>Learn from the experts at JavaOne(SM), Sun's Worldwide Java Developer
+>Conference, June 28 - July 1 at the Moscone Center in San Francisco, CA
+>REGISTER AND SAVE! http://java.sun.com/javaone/sf Priority Code
+NWMGYKND
+>_______________________________________________
+>Acpi-devel mailing list
+>Acpi-devel@lists.sourceforge.net
+>https://lists.sourceforge.net/lists/listinfo/acpi-devel
