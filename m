@@ -1,281 +1,96 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 2.6.4] (4/5) speedstep-centrino: ACPI perflib support
-Date: Mon, 15 Mar 2004 15:15:01 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040315141501.GE8636@dominikbrodowski.de>
+From: Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7BvVK+yQ3ZXh@public.gmane.org>
+Subject: [PATCH 2.6.4] (1/2) acpi-cpufreq driver: guess P-State at startup
+Date: Mon, 15 Mar 2004 15:15:28 +0100
+Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Message-ID: <20040315141528.GI8636@dominikbrodowski.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
 Content-Disposition: inline
+Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
+	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5utDmRdBvX5/5ji9XKYC2TYK4Io4DoRGLOrNAH6kLmebB@public.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@www.linux.org.uk>
-List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
-List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+List-Post: <mailto:acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5utDmRdBvX5/5lLLH9aP38KF1pqr+6INuaA@public.gmane.org>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
+	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5utDmRdBvX5/5R9m/fhtKvoLKtGCp0j7rLg@public.gmane.org>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, cpufreq@www.linux.org.uk
+To: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, cpufreq-1walMZg8u8rXmaaqVzeoHQ@public.gmane.org
 
-Use ACPI _PSS data to determine valid frequency and voltage pairs on Enhanced
-SpeedStep-capable processors. An original form of such ACPI-PentiumM-cpufreq 
-interaction was sent to the cpufreq list by David Moore in June last year; the
-attached patch utilizes his code to set _PDC.
+Len,
 
-The new ACPI "P-States library" is utilized to obtain the correct frequency
-and MSR value pairs for the speedstep-centrino driver. Only if no such proper
-table exists (!CONFIG_ACPI, broken ACPI tables, etc.), fall back to the
-existing hard-coded table.
+Please apply (2.6.{4,5}).
 
-If anyone has a better idea for the Kconfig section, please tell me so.
+Thanks,
+	Dominik
 
-This version of this patch has proper acpi_state setting included, and also
-has a hint in the banner of the centrino_cpu_init_acpi() function, as Jeremey
-Fitzhardinge suggested.
+One big limitation of the ACPI specification is that it's impossible to
+detect the current P-State by reading from ACPI-defined registers. And the
+CPU isn't always at P0 when the system boots. So, try to "guess" the current
+P-State by analyzing cpu_khz.
 
- arch/i386/kernel/cpu/cpufreq/Kconfig              |   15 ++
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  149 +++++++++++++++++++++-
- 2 files changed, 159 insertions(+), 5 deletions(-)
+ arch/i386/kernel/cpu/cpufreq/acpi.c |   35 ++++++++++++++++++++++++++++++-----
+ 1 files changed, 30 insertions(+), 5 deletions(-)
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig linux/arch/i386/kernel/cpu/cpufreq/Kconfig
---- linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-15 09:20:50.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-15 13:37:57.322478480 +0100
-@@ -120,6 +120,21 @@
- 	  
- 	  If in doubt, say N.
- 
-+config X86_SPEEDSTEP_CENTRINO_TABLE
-+	bool
-+	depends on X86_SPEEDSTEP_CENTRINO
-+	default y
-+
-+config X86_SPEEDSTEP_CENTRINO_ACPI
-+	bool "Use ACPI tables to decode valid frequency/voltage pairs (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL
-+	depends on ((X86_SPEEDSTEP_CENTRINO = "m" && ACPI_PROCESSOR) || (X86_SPEEDSTEP_CENTRINO = "y" && ACPI_PROCESSOR = "y"))
-+	help
-+	  Use primarily the information provided in the BIOS ACPI tables
-+	  to determine valid CPU frequency and voltage pairings.
-+
-+	  If in doubt, say Y.
-+
- config X86_SPEEDSTEP_ICH
- 	tristate "Intel Speedstep on ICH-M chipsets (ioport interface)"
- 	depends on CPU_FREQ_TABLE
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-03-15 13:37:32.848199136 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-03-15 13:42:47.769323848 +0100
-@@ -21,6 +21,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/cpufreq.h>
-+#include <linux/config.h>
- 
- #include <asm/msr.h>
- #include <asm/processor.h>
-@@ -46,7 +47,9 @@
- };
- 
- /* Operating points for current CPU */
--static const struct cpu_model *centrino_model;
-+static struct cpu_model *centrino_model;
-+
-+#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
- 
- /* Computes the correct form for IA32_PERF_CTL MSR for a particular
-    frequency/voltage operating point; frequency in MHz, volts in mV.
-@@ -172,7 +175,7 @@
- 
- /* CPU models, their operating frequency range, and freq/voltage
-    operating points */
--static const struct cpu_model models[] = 
-+static struct cpu_model models[] = 
- {
-        _CPU( 900, " 900"),
- 	CPU(1000),
-@@ -190,7 +193,7 @@
- static int centrino_cpu_init_table(struct cpufreq_policy *policy)
- {
- 	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
--	const struct cpu_model *model;
-+	struct cpu_model *model;
- 
- 	if (!cpu_has(cpu, X86_FEATURE_EST))
- 		return -ENODEV;
-@@ -225,6 +228,9 @@
- 	return 0;
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-03-15 09:20:50.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-03-15 13:50:36.152118840 +0100
+@@ -238,6 +238,34 @@
  }
  
-+#else
-+static inline int centrino_cpu_init_table(struct cpufreq_policy *policy) { return -ENODEV; }
-+#endif /* CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE */
  
- /* Extract clock in kHz from PERF_CTL value */
- static unsigned extract_clock(unsigned msr)
-@@ -242,6 +248,117 @@
- 	return extract_clock(l);
- }
- 
-+
-+#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
-+
-+static struct acpi_processor_performance p;
-+
-+#include <linux/acpi.h>
-+#include <acpi/processor.h>
-+
-+#define ACPI_PDC_CAPABILITY_ENHANCED_SPEEDSTEP 0x1
-+
-+/*
-+ * centrino_cpu_init_acpi - register with ACPI P-States library 
-+ *
-+ * Register with the ACPI P-States library (part of drivers/acpi/processor.c)
-+ * in order to determine correct frequency and voltage pairings by reading
-+ * the _PSS of the ACPI DSDT or SSDT tables.
-+ */
-+static int centrino_cpu_init_acpi(struct cpufreq_policy *policy)
++static unsigned long
++acpi_cpufreq_guess_freq (
++	struct cpufreq_acpi_io	*data,
++	unsigned int		cpu)
 +{
-+	union acpi_object		arg0 = {ACPI_TYPE_BUFFER};
-+	u32				arg0_buf[3];
-+	struct acpi_object_list 	arg_list = {1, &arg0};
-+	unsigned long			cur_freq;
-+	int				result = 0, i;
++	if (cpu_khz) {
++		/* search the closest match to cpu_khz */
++		unsigned int i;
++		unsigned long freq;
++		unsigned long freqn = data->acpi_data.states[0].core_frequency * 1000;
 +
-+	/* _PDC settings */
-+        arg0.buffer.length = 12;
-+        arg0.buffer.pointer = (u8 *) arg0_buf;
-+        arg0_buf[0] = ACPI_PDC_REVISION_ID;
-+        arg0_buf[1] = 1;
-+        arg0_buf[2] = ACPI_PDC_CAPABILITY_ENHANCED_SPEEDSTEP;
-+
-+	p.pdc = &arg_list;
-+
-+	/* register with ACPI core */
-+        if (acpi_processor_register_performance(&p, 0))
-+                return -EIO;
-+
-+	/* verify the acpi_data */
-+	if (p.state_count <= 1) {
-+                printk(KERN_DEBUG "No P-States\n");
-+                result = -ENODEV;
-+                goto err_unreg;
-+ 	}
-+
-+	if ((p.control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
-+	    (p.status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
-+		printk(KERN_DEBUG "Invalid control/status registers\n");
-+		result = -EIO;
-+		goto err_unreg;
-+	}
-+
-+	for (i=0; i<p.state_count; i++) {
-+		if (p.states[i].control != p.states[i].status) {
-+			printk(KERN_DEBUG "Different control and status values\n");
-+			result = -EINVAL;
-+			goto err_unreg;
++		for (i=0; i < (data->acpi_data.state_count - 1); i++) {
++			freq = freqn;
++			freqn = data->acpi_data.states[i+1].core_frequency * 1000;
++			if ((2 * cpu_khz) > (freqn + freq)) {
++				data->acpi_data.state = i;
++				return (freq);
++			}
 +		}
-+
-+		if (!p.states[i].core_frequency) {
-+			printk(KERN_DEBUG "Zero core frequency\n");
-+			result = -EINVAL;
-+			goto err_unreg;
-+		}
-+
-+		if (extract_clock(p.states[i].control) != 
-+		    (p.states[i].core_frequency * 1000)) {
-+			printk(KERN_DEBUG "Invalid encoded frequency\n");
-+			result = -EINVAL;
-+			goto err_unreg;
-+		}
-+	}
-+
-+	centrino_model = kmalloc(sizeof(struct cpu_model), GFP_KERNEL);
-+	if (!centrino_model) {
-+		result = -ENOMEM;
-+		goto err_unreg;
-+	}
-+	memset(centrino_model, 0, sizeof(struct cpu_model));
-+
-+	centrino_model->model_name=NULL;
-+	centrino_model->max_freq = p.states[0].core_frequency * 1000;
-+	centrino_model->op_points =  kmalloc(sizeof(struct cpufreq_frequency_table) * 
-+					     (p.state_count + 1), GFP_KERNEL);
-+        if (!centrino_model->op_points) {
-+                result = -ENOMEM;
-+                goto err_kfree;
-+        }
-+
-+	cur_freq = get_cur_freq();
-+
-+        for (i=0; i<p.state_count; i++) {
-+		centrino_model->op_points[i].index = p.states[i].control;
-+		centrino_model->op_points[i].frequency = p.states[i].core_frequency * 1000;
-+		if (cur_freq == centrino_model->op_points[i].frequency)
-+			p.state = i;
-+	}
-+	centrino_model->op_points[p.state_count].frequency = CPUFREQ_TABLE_END;
-+
-+	return 0;
-+
-+ err_kfree:
-+	kfree(centrino_model);
-+ err_unreg:
-+	acpi_processor_unregister_performance(&p, 0);
-+	return (result);
-+}
-+#else
-+static inline int centrino_cpu_init_acpi(struct cpufreq_policy *policy) { return -ENODEV; }
-+#endif
-+
- static int centrino_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned freq;
-@@ -250,8 +367,11 @@
- 	if (policy->cpu != 0)
- 		return -ENODEV;
- 
--	if (centrino_cpu_init_table(policy))
--		return -ENODEV;
-+	if (centrino_cpu_init_acpi(policy)) {
-+		if (centrino_cpu_init_table(policy)) {
-+			return -ENODEV;
-+		}
-+	}
- 
- 	/* Check to see if Enhanced SpeedStep is enabled, and try to
- 	   enable it if not. */
-@@ -281,6 +401,24 @@
- 	return cpufreq_frequency_table_cpuinfo(policy, centrino_model->op_points);
- }
- 
-+static int centrino_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	if (!centrino_model)
-+		return -ENODEV;
-+
-+#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
-+	if (!centrino_model->model_name) {
-+		acpi_processor_unregister_performance(&p, 0);
-+		kfree(centrino_model->op_points);
-+		kfree(centrino_model);
-+	}
-+#endif
-+
-+	centrino_model = NULL;
-+
-+	return 0;
++		data->acpi_data.state = data->acpi_data.state_count - 1;
++		return (freqn);
++	} else
++		/* assume CPU is at P0... */
++		data->acpi_data.state = 0;
++		return data->acpi_data.states[0].core_frequency * 1000;
++	
 +}
 +
- /**
-  * centrino_verify - verifies a new CPUFreq policy
-  * @freq: new policy
-@@ -358,6 +496,7 @@
- 	.name		= "centrino", /* should be speedstep-centrino, 
- 					 but there's a 16 char limit */
- 	.init		= centrino_cpu_init,
-+	.exit		= centrino_cpu_exit,
- 	.verify 	= centrino_verify,
- 	.target 	= centrino_target,
- 	.owner		= THIS_MODULE,
+ static int
+ acpi_cpufreq_cpu_init (
+ 	struct cpufreq_policy   *policy)
+@@ -290,11 +318,8 @@
+ 	}
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 
+-	/* 
+-	 * The current speed is unknown and not detectable by ACPI... argh! Assume 
+-	 * it's P0, it will be set to this value later during initialization.
+-	 */
+-	policy->cur = data->acpi_data.states[0].core_frequency * 1000;
++	/* The current speed is unknown and not detectable by ACPI...  */
++	policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
+ 
+ 	/* table init */
+ 	for (i=0; i<=data->acpi_data.state_count; i++)
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by: IBM Linux Tutorials
+Free Linux tutorial presented by Daniel Robbins, President and CEO of
+GenToo technologies. Learn everything from fundamentals to system
+administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click
