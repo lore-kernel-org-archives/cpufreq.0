@@ -1,9 +1,10 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/include/linux cpufreq.h,1.44,1.45
-Date: Wed, 03 Sep 2003 10:20:04 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E19uTo4-0005du-Rl@flint.arm.linux.org.uk>
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq speedstep-ich.c, 1.5,
+	1.6 speedstep-piix4.c, 1.9, 1.10
+Date: Wed, 03 Sep 2003 08:42:34 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <E19uSHi-0004jV-MD@flint.arm.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -12,43 +13,52 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/include/linux
-In directory flint:/tmp/cvs-serv21659/linux/include/linux
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
+In directory flint:/tmp/cvs-serv18189/linux/arch/i386/kernel/cpufreq
 
 Modified Files:
-	cpufreq.h 
+	speedstep-ich.c speedstep-piix4.c 
 Log Message:
-* add speedstep-smi driver (Hiroshi Miura)
-* clean up speedstep-smi driver (Dominik Brodowski)
-        - fixes a couple of warnings
-        - to run as a module, we need to export ist_info. Also, only show the
-          IST_INFO line in dmesg if speedstep_smi is enabled.
-        - Use  a new ->resume callback in the cpufreq core.
-        - let's call this driver "speedstep-smi" in cpufreq_driver also
-        - if the smi_get_freqs call fails, fall back to the "let's try it out
-          and see what frequency we are at" mechanism. Needed on my notebook (at
-          least).
-* update driver/cpufreq/cpufreq.c
+give correct name to the driver
 
-
-Index: cpufreq.h
+Index: speedstep-ich.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/include/linux/cpufreq.h,v
-retrieving revision 1.44
-retrieving revision 1.45
-diff -u -r1.44 -r1.45
---- cpufreq.h	19 Aug 2003 13:38:33 -0000	1.44
-+++ cpufreq.h	3 Sep 2003 09:20:00 -0000	1.45
-@@ -176,6 +176,7 @@
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-ich.c,v
+retrieving revision 1.5
+retrieving revision 1.6
+diff -u -r1.5 -r1.6
+--- speedstep-ich.c	19 Aug 2003 13:38:32 -0000	1.5
++++ speedstep-ich.c	3 Sep 2003 07:42:31 -0000	1.6
+@@ -309,7 +309,7 @@
  
- 	/* optional */
- 	int	(*exit)		(struct cpufreq_policy *policy);
-+	int	(*resume)	(struct cpufreq_policy *policy);
- 	struct freq_attr	**attr;
- };
+ 
+ static struct cpufreq_driver speedstep_driver = {
+-	.name		= "speedstep",
++	.name		= "speedstep-ich",
+ 	.verify 	= speedstep_verify,
+ 	.target 	= speedstep_target,
+ 	.init		= speedstep_cpu_init,
+
+Index: speedstep-piix4.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-piix4.c,v
+retrieving revision 1.9
+retrieving revision 1.10
+diff -u -r1.9 -r1.10
+--- speedstep-piix4.c	19 Aug 2003 13:44:59 -0000	1.9
++++ speedstep-piix4.c	3 Sep 2003 07:42:31 -0000	1.10
+@@ -281,7 +281,7 @@
+ 
+ 
+ static struct cpufreq_driver speedstep_driver = {
+-	.name		= "speedstep",
++	.name		= "speedstep-piix4",
+ 	.verify 	= speedstep_verify,
+ 	.target 	= speedstep_target,
+ 	.init		= speedstep_cpu_init,
