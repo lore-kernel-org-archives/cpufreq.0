@@ -1,16 +1,12 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Problem with ondemand on Athlon
-Date: Tue, 4 Nov 2003 19:12:27 +0100
+Subject: [PATCH] detect processor speed in p4-clockmod
+Date: Tue, 4 Nov 2003 20:38:01 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031104181227.GA4326@brodo.de>
-References: <200310310434.01311.thierry.lathuille2@libertysurf.fr>
-	<20031031122758.GA2617@inferi.kami.home>
-	<200310310434.01311.thierry.lathuille2@libertysurf.fr>
+Message-ID: <20031104193801.GB4474@brodo.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031031122758.GA2617@inferi.kami.home>
-	<200310310434.01311.thierry.lathuille2@libertysurf.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,92 +17,117 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Lathuille <thierry.lathuille2@libertysurf.fr>, cpufreq@www.linux.org.uk, dongili@supereva.it
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
-Unfortunately, I can't reproduce the problem locally on my p4.
-Can both of you try out the following, please:
+[Note: probably too invasive for 2.6.0-testX]
 
-pass "clock=pit" as a command line argument
+Instead of relying on cpu_khz or user input, decode the appropriate MSR in
+p4_clockmod to detect the maximum frequency of the CPU.
 
-The p4-clockmod driver [currently] needs to be built as a module then, 
-and you need to pass stock_freq as an argument then. AFAIK, no such
-requirement exists for powernow-k7.
-
-Thanks,
 	Dominik
 
-
-On Fri, Oct 31, 2003 at 02:14:32PM +0100, Thierry Lathuille wrote:
-> Hi,
-> 
-> I just tried Venkatesh's ondemand patches for kernel 2.6.0-test8 on my Acer 
-> laptop with Athlon XP1600+.
-> 
-> Everything works fine with performance, powersave and userspace governors, I 
-> can switch between frequencies without problem. 
-> 
-> But echoing "ondemand" to 
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor has unexpected effects:
-> - the keyboard stops working - but the mouse still works, I can use apps in 
-> KDE without problem - as long as I don't need to type anything...
-> - I can't kill any xterm anymore. But the other applications work and can be 
-> killed normally.
-> - trying to reboot hangs the system.
-> 
-> I tried to figure out how far ondemand was executed, and added some debug 
-> messages to yours ; So I got :
-> 
-> ONDEMAND START: cpu0, max 1400000, min500000, cur <the last one>
-> (  then dbs_check_cpu is executed once)
-> ONDEMAND LIMIT: <idem>
-> And then, I don't get anything logged after the call to 
-> down(&dbs_sem);
-> 
-> 
-> I can reproduce the problem every time, whatever the frequency was before.
-> Please tell me what infos you need to help solve the problem !
-> 
-> (BTW : I installed cpufreqd-1.1-rc1 since then : this works perfectly !)
-> 
-> 
-> 
-> Thierry Lathuille
-> 
-> 
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
-> 
-
-On Fri, Oct 31, 2003 at 01:27:59PM +0100, Mattia Dongili wrote:
-> On Fri, Oct 31, 2003 at 02:14:32PM +0100, Thierry Lathuille wrote:
-> > Hi,
-> [...]
-> > But echoing "ondemand" to 
-> > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor has unexpected effects:
-> > - the keyboard stops working - but the mouse still works, I can use apps in 
-> 
-> happens the same here on a P4 1.8GHz with 2.6.0-test9
-> 
-> > - I can't kill any xterm anymore. But the other applications work and can be 
-> > killed normally.
-> > - trying to reboot hangs the system.
-> 
-> I tried from console (no X running). 
-> echoing ondemand > /sys/.../scaling_governor never returns, all the
-> consoles are freezed, keyboard too. I can ssh in and can cat
-> /sys/.../scaling_governor obtaining *ondemand* correctly. The *ondemand*
-> directory is also created. I forgot to check dmesg, I'll check it this
-> evening or tomorrow
-> 
-> I'll add more info when I'll go back home :)
-> -- 
-> mattia
-> :wq!
-> 
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/a=
+rch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-04 15=
+:27:33.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-04 20:23:07.38=
+4393904 +0100
+@@ -48,8 +48,7 @@
+=20
+=20
+ static int has_N44_O17_errata[NR_CPUS];
+-static int stock_freq;
+-
++unsigned int stock_freq;
+=20
+ static int cpufreq_p4_setdc(unsigned int cpu, unsigned int newstate)
+ {
+@@ -175,6 +174,54 @@
+ 	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
+ }
+=20
++/* copied from speedstep_lib, made SMP-compatible */
++static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
++{
++	u32 msr_lo, msr_hi, mult;
++	unsigned int fsb =3D 0;
++
++	if (c->x86 !=3D 0xF) {
++		printk(KERN_DEBUG PFX "Unknown P4. Please send an e-mail to <linux@brodo=
+=2Ede>\n");
++		return 0;
++	}
++
++	rdmsr(0x2c, msr_lo, msr_hi);
++
++	/* printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo=
+, msr_hi); */
++	/* decode the FSB: see IA-32 Intel (C) Architecture Software=20
++	 * Developer's Manual, Volume 3: System Prgramming Guide,
++	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
++	 * Intel Xeon Processors, on page B-4 and B-5.
++	 */
++	if (c->x86_model < 2)
++		fsb =3D 100 * 1000;
++	else {
++		u8 fsb_code =3D (msr_lo >> 16) & 0x7;
++		switch (fsb_code) {
++		case 0:
++			fsb =3D 100 * 1000;
++			break;
++		case 1:
++			fsb =3D 13333 * 10;
++			break;
++		case 2:
++			fsb =3D 200 * 1000;
++			break;
++		}
++	}
++
++	if (!fsb) {
++		printk(KERN_DEBUG PFX "couldn't detect FSB speed. Please send an e-mail =
+to <linux@brodo.de>\n");
++		printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, =
+msr_hi);
++	}
++
++	/* Multiplier. */
++	mult =3D msr_lo >> 24;
++
++	return (fsb * mult);
++}
++
++=20
+=20
+ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ {
+@@ -192,15 +239,10 @@
+ 		has_N44_O17_errata[policy->cpu] =3D 1;
+ 	}
+ =09
+-	/* get frequency */
+-	if (!stock_freq) {
+-		if (cpu_khz)
+-			stock_freq =3D cpu_khz;
+-		else {
+-			printk(KERN_INFO PFX "unknown core frequency - please use module parame=
+ter 'stock_freq'\n");
+-			return -EINVAL;
+-		}
+-	}
++	/* get max frequency */
++	stock_freq =3D cpufreq_p4_get_frequency(c);
++	if (!stock_freq)
++		return -EINVAL;
+=20
+ 	/* table init */
+ 	for (i=3D1; (p4clockmod_table[i].frequency !=3D CPUFREQ_TABLE_END); i++) {
+@@ -269,8 +311,6 @@
+ }
+=20
+=20
+-MODULE_PARM(stock_freq, "i");
+-
+ MODULE_AUTHOR ("Zwane Mwaikambo <zwane@commfireservices.com>");
+ MODULE_DESCRIPTION ("cpufreq driver for Pentium(TM) 4/Xeon(TM)");
+ MODULE_LICENSE ("GPL");
