@@ -1,11 +1,12 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH] disable debugging in Centrino driver
-Date: 22 Jun 2003 23:36:03 -0700
+From: "Grover, Andrew" <andrew.grover@intel.com>
+Subject: RE: [ACPI] _PDC method in DSDT
+Date: Mon, 23 Jun 2003 00:11:49 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1056350162.15250.25.camel@ixodes.goop.org>
+Message-ID: <F760B14C9561B941B89469F59BA3A84725A301@orsmsx401.jf.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-admin@www.linux.org.uk>
+content-class: urn:content-classes:message
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,30 +17,32 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>
+To: David Moore <dcm@acm.org>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-Hi Dave, 
+> From: David Moore [mailto:dcm@acm.org]=20
+> Given this document, I think I have enough information now to patch
+> processor.c to support Enhanced Speedstep on Pentium M for=20
+> those BIOSes
+> that have a correctly written _PDC method in the DSDT.  Would the
+> maintainers of the ACPI driver be willing to accept such a patch?
 
-Can you put this in your tree?  The debug output gets very boring very quickly.
+I don't think so, at least not right now.
 
-Thanks,
-	J
+_PDC is used for the OS to indicate to the firmware (the AML) if it
+supports native CPU perf transitions or not. If it does, then _PCT/_PSS
+returns one thing, if it doesn't, _PCT/_PSS returns something else.
+Typically, if _PDC is not called, the platform will indicate ACPI 2.0
+CPU perf state support instead of native support.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+However, since the recently added non-vendor-supported Pentium M cpufreq
+driver uses hardcoded tables and cpuid instead of relying on ACPI for
+this information anyways, adding _PDC support to processor.c would not
+affect its behavior. If that driver were changed to use ACPI for
+determining platform capabilities, like Windows and our released binary
+driver do, then yes, adding _PDC support would be important.
 
-diff -puN arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~centrino-nodebug arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- local-2.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~centrino-nodebug	2003-06-14 17:48:14.059224839 -0700
-+++ local-2.5-jeremy/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2003-06-14 17:48:14.069224754 -0700
-@@ -29,7 +29,7 @@
- #define PFX		"speedstep-centrino: "
- #define MAINTAINER	"Jeremy Fitzhardinge <jeremy@goop.org>"
- 
--#define CENTRINO_DEBUG
-+/*#define CENTRINO_DEBUG*/
- 
- #ifdef CENTRINO_DEBUG
- #define dprintk(msg...) printk(msg)
+Regards -- Andy
 
-_
+btw my understanding is that _PDC will be actually in the ACPI spec in
+the near future.
