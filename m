@@ -1,12 +1,13 @@
-From: "Moore, Robert" <robert.moore@intel.com>
-Subject: RE: Dynamic frequency governor
-Date: Mon, 20 Oct 2003 09:33:04 -0700
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: speedstep-smi module on Omnibook 6000 (2.6.0-test8)
+Date: Mon, 20 Oct 2003 18:42:42 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <CFF522B18982EA4481D3A3E23B83141C24B4B3@orsmsx407.jf.intel.com>
+Message-ID: <20031020164242.GB13989@poupinou.org>
+References: <20031020010408.GA2379@beefchickenpork.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20031020010408.GA2379@beefchickenpork.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,78 +18,44 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: John Chia <orange@geek.com>
 Cc: cpufreq@www.linux.org.uk
 
+On Sun, Oct 19, 2003 at 09:04:08PM -0400, John Chia wrote:
+> Hi,
+> 
+> Perhaps someone can help me in my quest to get speedstep working on my
+> Omnibook 6000.  It contains the 440BX/ZX/DX/MX chipset, so I assumed it
+> would work with the speedstep-smi module included with Linux.  No, it
+> doesn't.  This is the output I get when inserting the module:
+> 
+> speedstep-smi: signature:0x00008680, command:0x0000e6f5,
+> event:0x00000000, perf_level:0x47534943.
 
-It would be in the kernel as a new governor in the CpuFreq architecture.
-From what I can tell, this has not been done yet; is this true?
+Your bios do not support GSIC call, so there is really bad luck that
+others bios call are ok.
+You can try to force with
+modprobe speedstep-smi smi_cmd=0x82 smi_port=0xb2
+but I doubt that will work (but who knows?).
 
-Bob
+> 
+> Is there anything I can do, probes, utilities or anything, to help
+> someone determine how to get this working?
+> 
+> Thanks in advance,
+> Please cc me on replies,
+> John.
+> 
+> PS. there is a module with support called speedstep-piix4 here:
+> http://www.poupinou.org/cpufreq/speedstep-piix4.html
 
-
------Original Message-----
-From: Dave Jones [mailto:davej@redhat.com]=20
-Sent: Monday, October 20, 2003 8:40 AM
-To: Moore, Robert
-Cc: cpufreq@www.linux.org.uk; Walz, Michael
-Subject: Re: Dynamic frequency governor
-
-On Mon, Oct 20, 2003 at 08:31:08AM -0700, Moore, Robert wrote:
- >=20
- > I'm planning on integrating the previously released Linux IST (Intel
- > Speedstep) driver into the CpuFreq architecture.
-
-Cool, but what does it do that the existing cpufreq speedstep drivers
-don't ?
-
- > I think that what is gained by having this code in the kernel is that
-a
- > very accurate measure of percent CPU utilization can be obtained
- > directly from the kernel idle handler, and there is less overhead
-during
- > the periodic sampling of the current CPU utilization by a timer
-thread.
-
-I'm not disputing whether or not putting this in the kernel is a good
-or bad thing (for the record, I think it's a good idea), however the
-fact remains, whilst there are folks owning patents on this, it'll
-*never* be acceptable for merging without an exception grant from the
-patent holder.
-
-		Dave
+Yes, I know.  I was told it is in cpufreq CVS, btw.
+What say speedstep-detect?
 
 
- > From: Dave Jones [mailto:davej@redhat.com]=20
- > Sent: Sunday, October 19, 2003 6:24 AM
- > To: Moore, Robert
- > Cc: cpufreq@www.linux.org.uk
- > Subject: Re: Dynamic frequency governor
- >=20
- > On Fri, Oct 17, 2003 at 02:14:38PM -0700, Moore, Robert wrote:
- > =20
- >  > I've been chartered to implement a multi-state algorithm for
-Linux;
- >  > this will be a new governor that adjusts the CPU frequency based
-upon
- >  > percent CPU utilization as reported from the kernel idle handler.
- >  >=20
- >  > Has any work been done (or is being done) in this area?  I don't
-want
- > to
- >  > rewrite the wheel.
- >=20
- > There are several patents in this area (I think from Hitachi, I
-forget
- > exactly) It has come up before on the list, so should be in the
- > archives.  Unless you can get a grant from the holder that it may be
- > used in GPL code, this has zero chance of being merged to mainline.
- >=20
- > 		Dave
- >=20
- > --=20
- >  Dave Jones     http://www.codemonkey.org.uk
----end quoted text---
+-- 
+Ducrot Bruno
 
---=20
- Dave Jones     http://www.codemonkey.org.uk
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
