@@ -1,11 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Small cleanups / docs improvements for powernow-k8
-Date: Wed, 20 Oct 2004 20:07:03 +0200
+From: Daniele Bonomi <dbonomi@crema.unimi.it>
+Subject: Re: [Bug 3600] New: Cpu recognization fails after upgrade from
+ 2.6.7 to 2.6.9
+Date: Wed, 20 Oct 2004 21:37:22 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041020180703.GA10469@elf.ucw.cz>
+Message-ID: <20041020213722.3cae81fc@paraclito.crema>
+References: <200410201413.i9KED718023481@fire-1.osdl.org>
+	<20041020154744.GA5372@dreamland.darkstar.lan>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20041020154744.GA5372@dreamland.darkstar.lan>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,115 +20,68 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: paul.devriendt@amd.com, davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
-Cc: Rusty trivial patch monkey Russell <trivial@rustcorp.com.au>
+To: cpufreq@www.linux.org.uk
 
-Hi!
+On Wed, 20 Oct 2004 17:47:44 +0200 Kronos <kronos@kronoz.cjb.net> wrote:
 
-These are very small cleanups / documentation additions. It avoids
-using different names for same fields in different structures. Please
-apply,
+With the patch previously supplied by Kronos things started working as
+well.
+ 
+Output from the "broken" kernel with debug enabled is 
 
-								Pavel
+powernow: PowerNOW! Technology present. Can scale: frequency and
+voltage. powernow: FSB:  49.758 MHz
+powernow: Found PSB header at c00f06f0
+powernow: Table version: 0x12
+powernow: Flags: 0x0 (Mobile voltage regulator)
+powernow: Settling Time: 100 microseconds.
+powernow: Has 8 PST tables. (Only dumping ones relevant to this CPU).
+powernow: No PST tables match this cpuid (0x7a0)
+powernow: This is indicative of a broken BIOS.
+powernow: Trying ACPI perflib
+powernow: acpi:  P0: 2133 MHz 75000 mW 125 uS control 00d058fa SGTC
+13334 powernow:    FID: 0x1a (16.0x [796MHz])  VID: 0x7 (1.650V)
+powernow: acpi:  P1: 1800 MHz 55000 mW 125 uS control 00d05935 SGTC
+13334 powernow:    FID: 0x15 (13.5x [671MHz])  VID: 0x9 (1.550V)
+powernow: acpi:  P2: 1467 MHz 32000 mW 125 uS control 00d059c0 SGTC
+13334 powernow:    FID: 0x0 (11.0x [547MHz])  VID: 0xe (1.300V)
+powernow: acpi:  P3: 1064 MHz 30000 mW 125 uS control 00d059ca SGTC
+13334 powernow:    FID: 0xa (8.0x [398MHz])  VID: 0xe (1.300V)
+powernow: acpi:  P4: 800 MHz 26000 mW 125 uS control 00d059c6 SGTC 13334
+powernow:    FID: 0x6 (6.0x [298MHz])  VID: 0xe (1.300V)
+powernow: Minimum speed 298 MHz. Maximum speed 796 MHz.
+
+now is right
+
+powernow: PowerNOW! Technology present. Can scale:
+frequency and voltage. powernow: FSB: 132.718 MHz
+powernow: Found PSB header at c00f06f0
+powernow: Table version: 0x12
+powernow: Flags: 0x0 (Mobile voltage regulator)
+powernow: Settling Time: 100 microseconds.
+powernow: Has 8 PST tables. (Only dumping ones relevant to this CPU).
+powernow: PST:3 (@c00f0746)
+powernow:  cpuid: 0x7a0  fsb: 133  maxFID: 0x1a  startvid: 0x7
+powernow:    FID: 0x0 (11.0x [1459MHz])  VID: 0xe (1.300V)
+powernow:    FID: 0x1 (11.5x [1526MHz])  VID: 0xd (1.350V)
+powernow:    FID: 0x2 (12.0x [1592MHz])  VID: 0xc (1.400V)
+powernow:    FID: 0x3 (12.5x [1658MHz])  VID: 0xb (1.450V)
+powernow:    FID: 0x14 (13.0x [1725MHz])  VID: 0xa (1.500V)
+powernow:    FID: 0x15 (13.5x [1791MHz])  VID: 0x9 (1.550V)
+powernow:    FID: 0x18 (15.0x [1990MHz])  VID: 0x8 (1.600V)
+powernow:    FID: 0x1a (16.0x [2123MHz])  VID: 0x7 (1.650V)
+powernow: SGTC: 13333
+powernow: Minimum speed 1459 MHz. Maximum speed 2123 MHz.
 
 
---- foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	20 Oct 2004 01:26:30 -0000	1.16
-+++ foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	20 Oct 2004 18:01:03 -0000
-@@ -18,6 +18,9 @@
-  *  Processor information obtained from Chapter 9 (Power and Thermal Management)
-  *  of the "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
-  *  Opteron Processors" available for download from www.amd.com
-+ *
-+ *  Tables for specific CPUs can be infrerred from
-+ *	http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
-  */
- 
- #include <linux/kernel.h>
-@@ -65,7 +68,12 @@
- 	return 1550-vid*25;
- }
- 
--/* Return the vco fid for an input fid */
-+/* Return the vco fid for an input fid
-+ *
-+ * Each "low" fid has corresponding "high" fid, and you can get to "low" fids
-+ * only from corresponding high fids. This returns "high" fid corresponding to
-+ * "low" one.
-+ */
- static u32 convert_fid_to_vco_fid(u32 fid)
- {
- 	if (fid < HI_FID_TABLE_BOTTOM) {
-@@ -309,10 +317,7 @@
- /* Phase 2 - core frequency transition */
- static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid)
- {
--	u32 vcoreqfid;
--	u32 vcocurrfid;
--	u32 vcofiddiff;
--	u32 savevid = data->currvid;
-+	u32 vcoreqfid, vcocurrfid, vcofiddiff, savevid = data->currvid;
- 
- 	if ((reqfid < HI_FID_TABLE_BOTTOM) && (data->currfid < HI_FID_TABLE_BOTTOM)) {
- 		printk(KERN_ERR PFX "ph2: illegal lo-lo transition 0x%x 0x%x\n",
-@@ -501,7 +495,7 @@
- 		    || (pst[j].fid & 1)
- 		    || (j && (pst[j].fid < HI_FID_TABLE_BOTTOM))) {
- 			/* Only first fid is allowed to be in "low" range */
--			printk(KERN_ERR PFX "fid %d invalid : 0x%x\n", j, pst[j].fid);
-+			printk(KERN_ERR PFX "two low fids - %d : 0x%x\n", j, pst[j].fid);
- 			return -EINVAL;
- 		}
- 		if (pst[j].fid < lastfid)
-@@ -621,7 +615,7 @@
- 			return -ENODEV;
- 		}
- 
--		data->vstable = psb->voltagestabilizationtime;
-+		data->vstable = psb->vstable;
- 		dprintk(KERN_INFO PFX "voltage stabilization time: %d(*20us)\n", data->vstable);
- 
- 		dprintk(KERN_DEBUG PFX "flags2: 0x%x\n", psb->flags2);
-@@ -654,7 +648,7 @@
- 		dprintk(KERN_INFO PFX "maxvid: 0x%x\n", psb->maxvid);
- 		maxvid = psb->maxvid;
- 
--		data->numps = psb->numpstates;
-+		data->numps = psb->numps;
- 		dprintk(KERN_INFO PFX "numpstates: 0x%x\n", data->numps);
- 		return fill_powernow_table(data, (struct pst_s *)(psb+1), maxvid);
- 	}
---- foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	23 Aug 2004 02:11:54 -0000	1.8
-+++ foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	20 Oct 2004 17:53:40 -0000
-@@ -21,8 +21,7 @@
- 	u32 plllock; /* pll lock time, units 1 us */
- 
- 	/* keep track of the current fid / vid */
--	u32 currvid;
--	u32 currfid;
-+	u32 currvid, currfid;
- 
- 	/* the powernow_table includes all frequency and vid/fid pairings:
- 	 * fid are the lower 8 bits of the index, vid are the upper 8 bits.
-@@ -152,14 +151,14 @@
- 	u8 signature[10];
- 	u8 tableversion;
- 	u8 flags1;
--	u16 voltagestabilizationtime;
-+	u16 vstable;
- 	u8 flags2;
--	u8 numpst;
-+	u8 num_tables;
- 	u32 cpuid;
- 	u8 plllocktime;
- 	u8 maxfid;
- 	u8 maxvid;
--	u8 numpstates;
-+	u8 numps;
- };
- 
- /* Pairs of fid/vid values are appended to the version 1.4 PSB table. */
+Thank you all very much for the help.
+
+Daniele
+
+
 
 -- 
-People were complaining that M$ turns users into beta-testers...
-...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
+  ,___,	  While most peoples' opinions change, the conviction of their
+  (9v9)   	     correctness never does
+  (_^((\     	Gpg Key at filibusta.crema.unimi.it/~dbonomi/db.asc
+-^-"-"-\\-^--	FP = C613 3CF3 94CD FA27 7900 D16C 3A6E 1CB5 585A CD71
