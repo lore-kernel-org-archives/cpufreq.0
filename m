@@ -1,17 +1,13 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Another mobile stepping - speedstep works fine
-Date: Sat, 21 Aug 2004 01:29:52 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: banias with different (unusual?) model_name
+Date: Fri, 20 Aug 2004 19:19:31 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040821002952.GA8570@redhat.com>
+Message-ID: <1093054772.3043.3.camel@localhost>
 References: <20040820093344.GA2923@akamail.com>
-	<1093008540.30854.37.camel@localhost.localdomain>
-	<1093029685.25283.12.camel@localhost>
-	<20040820193649.GN4148@redhat.com>
-	<1093041229.3043.1.camel@localhost>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1093041229.3043.1.camel@localhost>
+In-Reply-To: <20040820093344.GA2923@akamail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,19 +18,17 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: matthias.brill@akamail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, cpufreq list <cpufreq@www.linux.org.uk>
 
-On Fri, Aug 20, 2004 at 03:33:49PM -0700, Jeremy Fitzhardinge wrote:
- > On Fri, 2004-08-20 at 20:36 +0100, Dave Jones wrote:
- > > ACK. Merged, and queued for next weeks mainline cpufreq patchbomb.
- > 
- > Thanks.  Is that aimed at 2.6.9, or 2.6.8.2?  Sooner the better for me,
- > since a lot of people seem to be mailing me about Dothan...
+On Fri, 2004-08-20 at 11:33 +0200, matthias brill wrote:
+> hi jeremy
+> 
+> i've found a pentium-m banias which reports "Mobile Genuine Intel(R)
+> processor       1400MHz" in /proc/cpuinfo.  this (strange?) signature
+> prevents speedstep-centrino.c from working properly.
 
-I'll ask Linus to pull as soon as he gets back.  My guess is that 2.6.8.2
-would be reserved for anything really critical, so its likely they'll
-turn up in 2.6.9rc1.
+Yeah, there seem to be a few of these around.  I'm just not certain that
+they're identical to "normal" Banias as far as operating points go.
 
-		Dave
+	J
