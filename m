@@ -1,11 +1,12 @@
-From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
-Subject: Re: 2.6.11 cpufreq: Device or resource busy
-Date: Fri, 11 Mar 2005 18:59:49 +0100
-Message-ID: <20050311175949.GC21611@message-id.gmane0305.slipkontur.de>
-References: <20050308222516.GA20370@carfax.org.uk>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.11: USB broken on nforce4, ipv6 still broken, centrino
+ speedstep even more broken than in 2.6.10
+Date: Fri, 11 Mar 2005 17:35:17 -0800
+Message-ID: <20050311173517.7fe95918.akpm@osdl.org>
+References: <20050311202122.GA13205@fefe.de>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20050308222516.GA20370@carfax.org.uk>
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <20050311202122.GA13205@fefe.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,33 +18,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: Felix von Leitner <felix-linuxkernel@fefe.de>
+Cc: cpufreq@ZenII.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Tue, Mar 08, 2005 at 10:25:16PM +0000, Hugo Mills wrote:
->    I've just upgraded my laptop (ASUS M3000 -- see below) from 2.6.10
-> to 2.6.11. It now seems to be unable to load the acpi_cpufreq module:
-> 
-> hrm@joshua:hrm $ sudo modprobe acpi-cpufreq
-> FATAL: Error inserting acpi_cpufreq (/lib/modules/2.6.11-plain/kernel/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.ko): Device or resource busy
+Felix von Leitner <felix-linuxkernel@fefe.de> wrote:
+>
+> Finally Centrino SpeedStep.
+> I have a "Intel(R) Pentium(R) M processor 1.80GHz" in my notebook.
+> Linux does not support it.  This architecture has been out there for
+> months now, and there even was a patch to support it posted here a in
+> October last year or so.  Linux still does not include it.  Until
+> 2.6.11-rc4-bk8 or so, the old patched file from back then still worked.
+> Now it doesn't.  Because some interface changed.  Now what?  Using a
+> Centrino notebook without CPU throttling is completely out of the
+> question.  Linux might as well not boot on it at all.
 
-> CONFIG_X86_ACPI_CPUFREQ=m
-> # CONFIG_X86_POWERNOW_K6 is not set
-> # CONFIG_X86_POWERNOW_K7 is not set
-> # CONFIG_X86_POWERNOW_K8 is not set
-> # CONFIG_X86_GX_SUSPMOD is not set
-> CONFIG_X86_SPEEDSTEP_CENTRINO=y
-> CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
-> CONFIG_X86_SPEEDSTEP_ICH=y
-> # CONFIG_X86_SPEEDSTEP_SMI is not set
-> CONFIG_X86_P4_CLOCKMOD=y
-
-> # CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-> CONFIG_X86_SPEEDSTEP_LIB=y
-> CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK=y
-
-I wonder why you have some of them built in, others as modules and why does
-the stupid P4_CLOCKMOD driver have to be compiled in? I think this one is
-to blame.
--- 
-Stefan Seyfried
+Could you please dig out the old patch, send it?
