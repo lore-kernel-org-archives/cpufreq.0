@@ -1,14 +1,14 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: cpufreq on ARM broken
-Date: Wed, 2 Jun 2004 14:21:53 +0200
+Subject: Re: Speedstep on Intel Pentium M
+Date: Wed, 2 Jun 2004 14:43:45 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040602122153.GB8781@dominikbrodowski.de>
-References: <20040529170151.B3799@flint.arm.linux.org.uk>
-	<1086109894.27727.24.camel@delerium.codemonkey.org.uk>
+Message-ID: <20040602124345.GC9210@dominikbrodowski.de>
+References: <8012937.1086037545966.SLOX.WebMail.wwwrun@thor.yiti.intern>
+	<20040531233542.368b9da0.frx@firenze.linux.it>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1086109894.27727.24.camel@delerium.codemonkey.org.uk>
+In-Reply-To: <20040531233542.368b9da0.frx@firenze.linux.it>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,21 +20,28 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
+To: Francesco Poli <frx@firenze.linux.it>
 Cc: cpufreq@www.linux.org.uk
 
-On Tue, Jun 01, 2004 at 06:11:34PM +0100, Dave Jones wrote:
-> Thoughts ?
-> I've forgotten why we introduced this flag, it appears that this
-> would be the first thing in the tree to actually use it,
-> which makes me sceptical.
+On Mon, May 31, 2004 at 11:35:42PM +0200, Francesco Poli wrote:
+> On Mon, 31 May 2004 23:05:45 +0200 (CEST) Frank Doege wrote:
+> 
+> > i have sucessfully enabled speedfreq using the centrino drivers in the
+> > kernel 2.6.7. My Laptop steps between 600Mhz and 1.2 Ghz, all runs
+> > very fine. The Question i have is why can windows step the processor
+> > to 300Mhz but Linux doesnt ?
+> 
+> As I understand it, Windows throttles the CPU in order to reach that
+> `virtual' 300 MHz clock frequency.
+> But throttling is useless, at least from an energy-saving point of view.
+> It could be useful from a thermal point of view, but, IIRC, ACPI
+> P-states should be better for that.
+> 
+> Cpufreq gurus and kernel hackers are welcome to correct me and/or
+> clarify further...  :p
 
-This flag was introduced when I added the "fail if no proper CPU found"
-feature, which is helpful for the ACPI P-States driver and some other x86
-drivers which only check whether they can run on _any_ CPU in the
-cpu-specific initialization call. To assert backwards-compatibility, this
-flag avoids "automatic unregistration" -- I wasn't aware some drivers do
-need this backwards compatibility, but obviously ARM needs it. So Russell's 
-patch looks to be what's needed, from my perspective.
+All you said is correct :-) Throttling only makes sense, from an
+energy-saving point of view, if P-States == frequency and voltage scaling do
+not provide enough cooling to avoid having to start the CPU fan.
 
 	Dominik
