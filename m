@@ -1,12 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [fwd] CPUFreq chokes on Sempron
-Date: Sun, 9 Jan 2005 23:15:43 +0100
-Message-ID: <20050109221543.GC27515@dominikbrodowski.de>
-References: <m1oefyv94d.fsf@muc.de>
+From: Carl Thompson <cet@carlthompson.net>
+Subject: [ANNOUNCE] CPUSpeed 1.2.1 released!
+Date: Sun, 09 Jan 2005 18:54:12 -0800
+Message-ID: <41E1EE54.2050200@carlthompson.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <m1oefyv94d.fsf@muc.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,37 +15,76 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andi Kleen <ak@muc.de>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@www.linux.org.uk
 
+CPUSpeed 1.2.1 has, at long last, been released. There are many, many 
+new features in this release including even greater efficiency and full 
+multi-processor support. You can grab it at 
+http://carlthompson.net/software/cpuspeed .
 
-> From: Matthew Trent <t3rmin@gmail.com>
-> Subject: CPUFreq chokes on Sempron
-> Date: Sun, 9 Jan 2005 00:09:01 -0800
-> 
-> When loading the powernow-k8 module on any recent kernel (I've tried
-> 2.6.8 through 2.6.10) on my Sempron laptop, I see:
-> powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09e)
-> powernow-k8:    0 : fid 0x8 (1600 MHz), vid 0x6 (1400 mV)
-> powernow-k8:    1 : fid 0x0 (800 MHz), vid 0x18 (950 mV)
-> cpu_init done, current fid 0x8, vid 0x4
-> powernow-k8: vid trans failed, vid 0x3, curr 0x4
-> powernow-k8: transition frequency failed
-> powernow-k8: vid trans failed, vid 0x3, curr 0x4
-> powernow-k8: transition frequency failed
-> 
-> ... and many more of those 'vid trans failed' errors (one every time
-> there's an attempted freq change).
-> 
-> There is a small patch available at...
-> http://ubuntuforums.org/archive/index.php/t-3585.html
-> ...which seems to fix the problem. Should this be included into the
-> kernel officially?
+Some of the current features include:
 
-It is already "queued" in Dave Jones' cpufreq bitkeeper tree for inclusion
-into the mainline kernel, and thus is already in 2.6.10-mm2.
+    * Dynamically adjusts CPU speed and voltage based on demand for CPU
+      (idle/work ratio threshold is user-configurable)
+    * Automatically detects available processor speeds
+    * For normal operation, no configuration or options are necessary.
+      Just run it!
+    * Full multiprocessor support (each CPU separately run-time
+      configurable)
+    * One binary works on both Linux 2.4 with the 'proc' interface and
+      Linux 2.6 with the 'sysfs' interface. No need to recompile if you
+      switch kernels! (proc interface deprecated)
+    * Configurable minimum and maximum allowed speeds
+    * Can reduce CPU speed and voltage if AC power is disconnected from
+      the computer (requires ACPI)
+    * Can maximize CPU speed if AC power is connected to the computer
+      (requires ACPI)
+    * Can reduce CPU speed and voltage if CPU temperature gets too high
+      (Requires ACPI, temperature is user-configurable)
+    * Can be told to lock CPU at minimum or maximum frequency via signals
+    * "nice()'d" processes and those waiting for I/O will not increase
+      CPU speed
+    * Polling interval for CPUs, temperature and AC adapter configurable
+      separately
+    * Crash-proof frequency switching even if you have an outdated
+      version of CPUFreq and a very temperamental CPU (some AMD mobile
+      Athlons in particular)
+    * Handles strange processors with lots of little speed steps
+    * More that I am forgetting...
 
-Thanks,
-	Dominik
+CHANGELOG:
+
+    Version 1.2.1
+
+        * Can now better handle processors with a large number of speed
+          steps (>20)
+        * Configurable maximum and minimum CPU speeds
+        * Option to maximize speed when AC adapter connected
+        * Option to NOT minimize speed when AC adapter disconnected
+        * Consider I/O wait time as idle time
+        * Option to restore previous speed on program exit
+        * Can set polling interval for CPU idle, AC adapter and
+          temperature separately
+        * Better Red Hat / Fedora Core / SuSE script integration
+        * More efficient startup sequence (fewer speed changes necessary)
+        * Full multi-processor support
+        * Try to load default list of drivers if none specified
+
+    Version 1.1
+
+        * One binary works on both 2.4 and 2.5+ kernels
+        * Updated to work with latest sysfs directory structure (tested
+          with 2.5.75)
+        * Now the program is even better at making sure temperamental
+          Athlons don't
+        * crash no matter what state the CPU is in on startup
+        * Simplified things by having just one threshold level instead
+          of two
+        * Replaced floating point math with integer
+
+Remember, you can grab it at http://carlthompson.net/software/cpuspeed .
+
+As always, feedback is welcome.
+
+Carl Thompson
