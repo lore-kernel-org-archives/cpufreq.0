@@ -1,8 +1,9 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: do not leak memory in powernow-k8
-Date: Sat, 3 Jan 2004 13:42:13 +0100
+From: Mattia Dongili <dongili@supereva.it>
+Subject: [ANN] cpufreqd-1.1
+Date: Mon, 5 Jan 2004 18:42:59 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040103124213.GA423@elf.ucw.cz>
+Message-ID: <20040105174259.GD946@inferi.kami.home>
+Reply-To: dongili@supereva.it
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
@@ -17,43 +18,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@zip.com.au>, kernel list <linux-kernel@vger.kernel.org>, Rusty trivial patch monkey Russell <trivial@rustcorp.com.au>, cpufreq@www.linux.org.uk
+To: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
 
-Hi!
+cpufreqd-1.1 has been released.
 
-This prevents memory leak if something goes wrong. Please apply,
+Over the rc1 it has a bunch of bugfixes (see ChangeLog for details). I
+didn't add the possibility to select resources to poll because I'm in a
+hurry to work on 1.2 which will add more features like support for the
+on_demand governor.
 
-								Pavel
+This release adds 2 major feature like cpu monitoring and PMU support
+and a workaround to avoid reading /proc/acpi/battery/*/info if your ACPI
+implementation is very cpu consuming.
 
-Index: linux.new/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-===================================================================
---- linux.new.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-12-25 13:28:48.000000000 +0100
-+++ linux.new/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-12-25 13:29:08.000000000 +0100
-@@ -687,11 +687,13 @@
- 			if (ppst[j].vid < rvo) {	/* vid+rvo >= 0 */
- 				printk(KERN_ERR BFX
- 				       "0 vid exceeded with pstate %d\n", j);
-+				kfree(ppst);
- 				return -ENODEV;
- 			}
- 			if (ppst[j].vid < maxvid+rvo) { /* vid+rvo >= maxvid */
- 				printk(KERN_ERR BFX
- 				       "maxvid exceeded with pstate %d\n", j);
-+				kfree(ppst);
- 				return -ENODEV;
- 			}
- 		}
-@@ -706,7 +708,7 @@
- 
- 		for (j = 0; j < numps; j++)
- 			if ((ppst[j].fid==currfid) && (ppst[j].vid==currvid))
--				return (0);
-+				return 0;
- 
- 		printk(KERN_ERR BFX "currfid/vid do not match PST, ignoring\n");
- 		return 0;
+packages (clean source, debian-src and debian-i386) are available at:
 
+http://www.sourceforge.net/projects/cpufreqd
 
+cpufreqd is meant to be a replacement of the speedstep applet you can
+find on some other OS, it monitors CPU, battery level, AC state and
+running programs and adjusts the frequency governor according to a set
+of rules specified in the config file.
+
+thanks
 -- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+mattia
+:wq!
