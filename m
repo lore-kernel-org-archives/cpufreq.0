@@ -1,12 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
+From: Thiago Guzella <thiago.guzella@gmail.com>
 Subject: Re: powernowk8 error on kernels later than 2.6.5 (long)
-Date: Mon, 29 Nov 2004 23:04:31 +0100
-Message-ID: <20041129220431.GA9167@dominikbrodowski.de>
+Date: Tue, 30 Nov 2004 11:17:47 -0200
+Message-ID: <7608a89f04113005176f7f77a8@mail.gmail.com>
 References: <7608a89f04112912137882bc84@mail.gmail.com>
+	<20041129220431.GA9167@dominikbrodowski.de>
+Reply-To: Thiago Guzella <thiago.guzella@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <7608a89f04112912137882bc84@mail.gmail.com>
+In-Reply-To: <20041129220431.GA9167@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,25 +20,23 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thiago Guzella <thiago.guzella@gmail.com>
-Cc: cpufreq@www.linux.org.uk
+To: linux@dominikbrodowski.de, cpufreq@www.linux.org.uk
 
-Hi,
+> AFAICS it might be the
+> "- [powernow-k8] fix for Mobile Sempron 2800+, Acer Aspire 1362 [Paul Devriendt]"
+> issue again -- the initial frequency/voltage pair is not in the list of
+> supported states exported by the BIOS. The fix for that hasn't reached
+> Linus' or Dave's tree yet; so I wouldn't count on 2.6.10 but on 2.6.11...
 
-On Mon, Nov 29, 2004 at 06:13:57PM -0200, Thiago Guzella wrote:
-> powernow-k8:    0 : fid 0xe (2200 MHz), vid 0x2 (1500 mV)
-> powernow-k8:    1 : fid 0xc (2000 MHz), vid 0x6 (1400 mV)
-> powernow-k8:    2 : fid 0xa (1800 MHz), vid 0xa (1300 mV)
-> powernow-k8:    3 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
-> powernow-k8: cpu_init done, current fid 0xe, vid 0x0
-
-AFAICS it might be the 
-"- [powernow-k8] fix for Mobile Sempron 2800+, Acer Aspire 1362 [Paul Devriendt]"
-issue again -- the initial frequency/voltage pair is not in the list of
-supported states exported by the BIOS. The fix for that hasn't reached
-Linus' or Dave's tree yet; so I wouldn't count on 2.6.10 but on 2.6.11...
+Okay, but what about the error I am getting when trying to start X??
+Any clues on that?? Could it be related to this?
 
 
-Thanks,
-	Dominik
+-- 
+Thiago dos Santos Guzella
+Electrical Enginnering Student - UFMG (www.ufmg.br), Brazil 
+Linux User #354160
+UIN: 13465286. Jabber: tguzella @ jabber.org
+
+"Thou, nature, art my goddess; to thy laws my services are bound..." 
+William Shakespeare
