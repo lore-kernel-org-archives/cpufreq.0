@@ -1,15 +1,13 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: userspace not supported for longrun?
-Date: Wed, 2 Jun 2004 11:30:35 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: Speedstep on Intel Pentium M
+Date: Wed, 2 Jun 2004 14:42:04 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040602093035.GA13782@poupinou.org>
-References: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
-	<20040601093110.GE7926@poupinou.org>
-	<005701c44833$71e8ca30$6900a8c0@DEVELOPER>
+Message-ID: <20040602124204.GB9210@dominikbrodowski.de>
+References: <5069769.1086059486121.SLOX.WebMail.wwwrun@thor.yiti.intern>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <005701c44833$71e8ca30$6900a8c0@DEVELOPER>
+In-Reply-To: <5069769.1086059486121.SLOX.WebMail.wwwrun@thor.yiti.intern>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,49 +19,20 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wayne Wylupski <wayne@connact.com>
-Cc: cpufreq@www.linux.org.uk
+To: Frank Doege <frank@network-steps.de>
+Cc: cpufreq@www.linux.org.uk, Francesco Poli <frx@firenze.linux.it>
 
-On Tue, Jun 01, 2004 at 07:52:05PM -0400, Wayne Wylupski wrote:
-> > It's by choice.  Even though there exist some algo. for which it's seems
-> > there are better choice over the longrun facilities in order to switch
-> > automatically the frequency of the processor, it's hard to get those
-> > algo. to mainline mostly due to some kind of patent issues
-> > apparently.  So for now the longrun driver do not have the facilities to
-> > make what you request.  Would be fine perhaps to add that, but I'm
-> > not sure it's in a high priority item for now.
+On Tue, Jun 01, 2004 at 05:11:26AM +0200, Frank Doege wrote:
+> Morning,
 > 
-> Thank you.  The issue is that Fedora Core 2 ships with 'cpuspeed' as a
-> service, which fails on machines with Crusoe chips because it assumes
-> there's a userspace governor without first checking whether there it is
-> available.
+> thanks for your fast answering. I have an IBM X40 with Pentium 
+> M ULV, when i run Windows i can work over 8 ours but only 6 with
+> linux. Does the Centrino Driver offers voltage scaling ?
 
-Well, I assume it's for a laptop, and I assume you can detect more or
-less if the AC is plugged or not.  Then all you have to do is to change
-between 'powersave' and 'performance' via a little shell script.  For
-example, if you have ACPI, it's should be easy to do so with acpid.
+Yes.
 
+So far, though, Linux doesn't put the CPU into idle mode C4 when the system
+is not used -- a fix for that is not far away. Search bugzilla.kernel.org
+for patches.
 
-> Would it really violate patents if the userspace governor were allowed
-> to work along the existing policies ("powersave" and "performance")?  Or is
-> it that
-> the use of 'cpuspeed' might violate the patent?  Please help me understand
-> this,
-> because I'm going to try to recommend how FC2 should support Crusoe and
-> processors with longrun support.
-
-cpuspeed might violate a patent but I am not sure at 100% (changing
-frequency in a feedback loop is more or less patented IIRC).
-But that not exactly the trouble.  I doubt that cpuspeed
-is better than longrun in order to save more power anyway.
-
-The stuff I'm thinking about have to be done in-kernel as another
-governor, not userspace stuff.
-
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
