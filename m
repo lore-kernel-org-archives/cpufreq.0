@@ -1,12 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 2.6.4] (3/5) speedstep-centrino: move to per-CPU analyzing
-	of CPU data
-Date: Mon, 15 Mar 2004 15:14:57 +0100
+Subject: [PATCHES 2.6.4] pending cpufreq patches
+Date: Mon, 15 Mar 2004 15:14:40 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040315141457.GD8636@dominikbrodowski.de>
+Message-ID: <20040315141440.GA8636@dominikbrodowski.de>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0224969514=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,152 +15,80 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-Move the table matching into an own function; only the FEATURE_EST bit 
-for CPU 0 is checked in module_init() directly. As cpufreq drivers aren't 
-sticky any longer (see other pending patch), this will not change 
-user-visible behaviour.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  106 ++++++++++++---------- 
- 1 files changed, 60 insertions(+), 46 deletions(-)
+--===============0224969514==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
+Content-Disposition: inline
 
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-03-15 09:20:50.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-03-15 13:34:53.885365160 +0100
-@@ -187,6 +187,45 @@
- };
- #undef CPU
- 
-+static int centrino_cpu_init_table(struct cpufreq_policy *policy)
-+{
-+	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
-+	const struct cpu_model *model;
-+
-+	if (!cpu_has(cpu, X86_FEATURE_EST))
-+		return -ENODEV;
-+
-+	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
-+	   they appear after making sure they use PERF_CTL in the same
-+	   way. */
-+	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
-+	    cpu->x86        != 6 ||
-+	    cpu->x86_model  != 9 ||
-+	    cpu->x86_mask   != 5) {
-+		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
-+		       "send /proc/cpuinfo to " MAINTAINER "\n");
-+		return -ENODEV;
-+	}
-+
-+	for(model = models; model->model_name != NULL; model++)
-+		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
-+			break;
-+	if (model->model_name == NULL) {
-+		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
-+		       "send /proc/cpuinfo to " MAINTAINER "\n",
-+		       cpu->x86_model_id);
-+		return -ENOENT;
-+	}
-+
-+	centrino_model = model;
-+		
-+	printk(KERN_INFO PFX "found \"%s\": max frequency: %dkHz\n",
-+	       model->model_name, model->max_freq);
-+
-+	return 0;
-+}
-+
-+
- /* Extract clock in kHz from PERF_CTL value */
- static unsigned extract_clock(unsigned msr)
- {
-@@ -206,10 +245,30 @@
- static int centrino_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned freq;
-+	unsigned l, h;
- 
--	if (policy->cpu != 0 || centrino_model == NULL)
-+	if (policy->cpu != 0)
- 		return -ENODEV;
- 
-+	if (centrino_cpu_init_table(policy))
-+		return -ENODEV;
-+
-+	/* Check to see if Enhanced SpeedStep is enabled, and try to
-+	   enable it if not. */
-+	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-+		
-+	if (!(l & (1<<16))) {
-+		l |= (1<<16);
-+		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
-+		
-+		/* check to see if it stuck */
-+		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
-+		if (!(l & (1<<16))) {
-+			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
-+			return -ENODEV;
-+		}
-+	}
-+
- 	freq = get_cur_freq();
- 
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
-@@ -322,55 +381,10 @@
- static int __init centrino_init(void)
- {
- 	struct cpuinfo_x86 *cpu = cpu_data;
--	const struct cpu_model *model;
--	unsigned l, h;
- 
- 	if (!cpu_has(cpu, X86_FEATURE_EST))
- 		return -ENODEV;
- 
--	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
--	   they appear after making sure they use PERF_CTL in the same
--	   way. */
--	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
--	    cpu->x86        != 6 ||
--	    cpu->x86_model  != 9 ||
--	    cpu->x86_mask   != 5) {
--		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
--		       "send /proc/cpuinfo to " MAINTAINER "\n");
--		return -ENODEV;
--	}
--
--	/* Check to see if Enhanced SpeedStep is enabled, and try to
--	   enable it if not. */
--	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--		
--	if (!(l & (1<<16))) {
--		l |= (1<<16);
--		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
--		
--		/* check to see if it stuck */
--		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--		if (!(l & (1<<16))) {
--			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
--			return -ENODEV;
--		}
--	}
--
--	for(model = models; model->model_name != NULL; model++)
--		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
--			break;
--	if (model->model_name == NULL) {
--		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
--		       "send /proc/cpuinfo to " MAINTAINER "\n",
--		       cpu->x86_model_id);
--		return -ENOENT;
--	}
--
--	centrino_model = model;
--		
--	printk(KERN_INFO PFX "found \"%s\": max frequency: %dkHz\n",
--	       model->model_name, model->max_freq);
--
- 	return cpufreq_register_driver(&centrino_driver);
- }
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi Dave, List,
+
+The following five patches have received no negative discussion (so far) on
+the cpufreq mailing list. They've hardly changed to previously sent variants
+of the patches, so please apply them.
+
+- 1/5: don't stick if all ->init() calls fail
+- 2/5: p4-clockmod: single-line KERN_WARNING message
+- 3/5: speedstep-centrino: move to per-CPU analyzing of cpu_data
+- 4/5: speedstep-centrino: acpi perflib support
+- 5/5: speedstep-centrino: scaling_available_frequencies
+
+Then, I'll send out two (new) patches, an adaption of Andres'
+
+- speedstep capability checks [which includes now a workaround for
+      Arjan's p3m], and
+- off-by-10 error in pentiumM_detect_frequency() in speedstep-lib.c
+
+Please apply these two patches to your BK tree, too.
+
+
+Also, I'll CC the cpufreq mailing list on two patches to the acpi-io cpufreq
+driver, which will be sent to Len Brown for inclusion:
+
+- 1/2: try to determine current P-State at startup
+- 2/2: scaling_available_frequencies
+
+Of interest will be also a third patch sent to Len Brown for inclusion, also
+with CC to cpufreq mailing list:
+
+- Disable SMM access to SpeedStep
+
+
+Thanks,
+	Dominik
+
+--1yeeQ81UyVL57Vl7
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAVbpQZ8MDCHJbN8YRAsluAKCqh/iSBE7R0ytQtN3G6AB4M166JACfeOMS
+RrczOsqTeuaJokd8GhFJDZM=
+=ab8u
+-----END PGP SIGNATURE-----
+
+--1yeeQ81UyVL57Vl7--
+
+
+--===============0224969514==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0224969514==--
+
