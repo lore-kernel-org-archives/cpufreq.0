@@ -1,15 +1,14 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: [PATCH] cpufreq_ondemand
-Date: Mon, 18 Oct 2004 10:59:10 +0200
+Date: Mon, 18 Oct 2004 10:54:50 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041018085910.GB26364@dominikbrodowski.de>
-References: <20041017222916.GA30841@inskipp.digriz.org.uk>
-	<20041018072045.GA17164@dominikbrodowski.de>
-	<20041018082508.GB3311@inskipp.digriz.org.uk>
+Message-ID: <20041018085450.GA26364@dominikbrodowski.de>
+References: <88056F38E9E48644A0F562A38C64FB60031DA073@scsmsx403.amr.corp.intel.com>
+	<20041018083905.GC3311@inskipp.digriz.org.uk>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20041018082508.GB3311@inskipp.digriz.org.uk>
+In-Reply-To: <20041018083905.GC3311@inskipp.digriz.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,37 +21,29 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Alexander Clouter <alex-kernel@digriz.org.uk>
-Cc: cpufreq@www.linux.org.uk
+Cc: cpufreq@www.linux.org.uk, Con Kolivas <kernel@kolivas.org>
 
-On Mon, Oct 18, 2004 at 09:25:08AM +0100, Alexander Clouter wrote:
-> > > 2. controllable through 
-> > > 	/sys/.../ondemand/ignore_nice, you can tell it to consider 'nice' 
-> > > 	time as also idle cpu cycles.  Set it to '1' to treat 'nice' as cpu 
-> > > 	in an active state.
+On Mon, Oct 18, 2004 at 09:39:05AM +0100, Alexander Clouter wrote:
+> On Oct 17, Pallipadi, Venkatesh wrote:
 > > 
-> > Interesting bit, IIRC some userspace tool also does that.
+> > [snipped]
 > > 
-> if I recall they have to munch through the whole of /proc to get this 
-> information; then again there is probably a clean and fast way of pulling 
-> those time values from /proc that I do not know of.
+> > We can never accurately predict freq for some future load. 
+> > Say a CPU capable of 600, 800, 1000, 1200 and 1400 KHz, is 
+> > running at 600 and we have sudden 100% CPU utilization, then 
+> > we cannot precisely say which should be the next freq. It 
+> > can be any of the higher possible freqs. And we felt performance 
+> > should get a higher priority whenever there is some 
+> > tradeoffs like this.
+> > 
+> it took me a while to work out why speed decreasing was 'working' whilst 
+> speed increasing was not with my method; a good hour finding out that the 
+> cpufreq (correctly) goes to the lowest match.
 
-cat /proc/stat should be sufficient to get _all_ nice ticks, if you want to
-only be aware of nice>SOME_THRESHOLD it gets much trickier, and that would
-be even worse in kernel space, AFAICS.
+Do you mean CPUFREQ_RELATION_L? If so, you can change the behaviour by using
+CPUFREQ_RELATION_H. See include/linux/cpufreq.h
 
-> > > 6. debugging (with 'watch -n1 cat /sys/.../ondemand/requested_freq') and 
-> > > 	backwards 'compatibility' to act like the 'userspace' governor is 
-> > > 	avaliable with /sys/.../ondemand/requested_freq if 
-> > > 	'freq_step_percent' is set to zero
-> > 
-> > Please don't do that. Userspace is the governor for userspace frequency
-> > setting; if you want it, switch to userspace, if you want dynamic frequency
-> > selection, use the original ondemand or your governor.
-> > 
-> I thought a few people would grumble about that.  I needed a way to store the 
-> variable speed knob and that struct was the best place for it; looks like me 
-> tarting it up as a 'debugging' feature was not good enough :)
-
-No, definitely not :-)
+#define CPUFREQ_RELATION_L 0  /* lowest frequency at or above target */
+#define CPUFREQ_RELATION_H 1  /* highest frequency below or at target */
 
 	Dominik
