@@ -1,16 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Pentium III Coppermine
-Date: Sat, 16 Oct 2004 18:42:54 +0200
+From: "Stephen Ferlitz" <Business1owner35t5hqkcldcsngjp@yahoo.com>
+Subject: cpufreq, I will even fax you my bank statement to prove this...
+Date: Sun, 17 Oct 2004 04:28:09 -1100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041016164253.GA8135@dominikbrodowski.de>
-References: <33222.14179-2631-1010294146-1097668908@email.seznam.cz>
-	<200410141622.05561.hladky.jiri@seznam.cz>
-	<20041014152346.GA7447@dominikbrodowski.de>
-	<200410151241.03188.hladky.jiri@seznam.cz>
+Message-ID: <3da301c4b45d$e815d680$54cbb631@Business1owner35t5hqkcldcsngjp>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200410151241.03188.hladky.jiri@seznam.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,22 +16,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jiri Hladky <hladky.jiri@seznam.cz>
-Cc: aeriksson@fastmail.fm, cpufreq@www.linux.org.uk
+To: C-Business Partners <cpufreq@www.linux.org.uk>
 
-On Fri, Oct 15, 2004 at 12:41:03PM +0200, Jiri Hladky wrote:
-> Hi Anders & Dominik,
-> 
-> I have tried to search for CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK is source 
-> files
-> 
-> "locate speedstep | grep [.]c$ | xargs grep 
-> CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK"
-> 
-> but I had no success. It seems like I have to get new sources for cpufreq? My 
-> current kernel is 2.6.5
+Fulfill your financial Dreams this Autumn! -NOW!
+cpufreq,  Your 3000 USdollar  I.n.come  per Week!
+Are you willing to invest some money 
+to make 3 grands per week - guaranteed?
 
-... and that option got merged into 2.6.6.
+Tell me, cpufreq,  DID You cash 12,000 bucks last month?
+If  NOT, You NEED to join us T.O.D.A.Y! NO hype - All legal !
+cpufreq - I will even fax you my BANK STATEMENT to prove it!
 
-	Dominik
+Request m.o.r.e Details by sending an email to
+Requester@mighty.co.za
+with "Get Details" in the top line!!
+Make sure to list your Phone Number if you wish to talk to me personally.
+(do NOT click REPLY to this email!)
+
+To  r.e.move, please send an email with "u.n.list" 
+in the subject line to:  unlist@mighty.co.za
+Thanks,
+SV-group
