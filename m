@@ -1,15 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: p4_clockmod or speedstep_ich | acpi?
-Date: Wed, 28 Jan 2004 17:53:06 +0100
+Subject: [PATCH] fix cpufreq_update_policy
+Date: Wed, 28 Jan 2004 22:52:49 +0100
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20040128165306.GB6658@dominikbrodowski.de>
-References: <4011EC55.5030304@sbh.eng.br> <20040124060321.GP25416@poupinou.org>
-	<4015CFE8.1030002@corp.grupos.com.br>
-	<20040127093911.GH25416@poupinou.org>
+Message-ID: <20040128215249.GA4727@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============66710996239430576=="
+Content-Type: multipart/mixed; boundary="===============61332447203462537=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040127093911.GH25416@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,60 +15,56 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+To: davej@redhat.com, cpufreq@www.linux.org.uk
 
 
---===============66710996239430576==
+--===============61332447203462537==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="jq0ap7NbKX2Kqbes"
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
 Content-Disposition: inline
 
 
---jq0ap7NbKX2Kqbes
+--huq684BweRXVnRxX
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 27, 2004 at 10:39:11AM +0100, Ducrot Bruno wrote:
-> On Tue, Jan 27, 2004 at 12:41:44AM -0200, Marcus Grando wrote:
-> > Hi,
-> >=20
-> > But why my kernel show this messages, if celeron not support speedstep-=
-ich?
-> >=20
-> > cpufreq: P4/Xeon(TM) CPU On-Demand Clock Modulation available
-> > cpufreq: Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufr=
-eq
-> > cpufreq: modules offers voltage scaling in addition of frequency=20
-> > scaling. You
-> > cpufreq: should use either one instead of p4-clockmod, if possible.
-> >=20
->=20
-> Because this code was added in order to tell people who have a
-> P4m to take into account the speedstep-ich, etc.  Just that
-> it seems this code is not able to distinguish yet p4m and celerons...
+Fix a brown paper bug in drivers/cpufreq/cpufreq.c which accessed random
+memory instead of the correct struct.
 
-Will take a look at it.
+Please apply,
 
-	Dominik
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cp=
+ufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-01-16 20:30:59.000000000 =
++0100
++++ linux/drivers/cpufreq/cpufreq.c	2004-01-28 22:16:38.099398456 +0100
+@@ -868,7 +868,7 @@
+ 	down(&data->lock);
+=20
+ 	memcpy(&policy,=20
+-	       &data,=20
++	       data,=20
+ 	       sizeof(struct cpufreq_policy));
+ 	policy.min =3D data->user_policy.min;
+ 	policy.max =3D data->user_policy.max;
 
---jq0ap7NbKX2Kqbes
+--huq684BweRXVnRxX
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (GNU/Linux)
 
-iD8DBQFAF+jyZ8MDCHJbN8YRAibOAJ9bBleim2JnCNSlcnPa8seRqBrZawCfTIlI
-P0uryCk1U5mtzL3VHFBX7Vs=
-=cUwa
+iD8DBQFAGC8xZ8MDCHJbN8YRAhdsAJ4oxlfymWxWsbC5KsP4IIXuOFvXaQCghv98
+tBgqDWXLGPrbRYLpORsbyGk=
+=eIMZ
 -----END PGP SIGNATURE-----
 
---jq0ap7NbKX2Kqbes--
+--huq684BweRXVnRxX--
 
 
---===============66710996239430576==
+--===============61332447203462537==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -83,5 +75,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============66710996239430576==--
+--===============61332447203462537==--
 
