@@ -1,16 +1,15 @@
-From: Arjan van de Ven <arjanv@redhat.com>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPIP-state
-	driver
-Date: Wed, 22 Oct 2003 09:18:57 +0200
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031022091857.A25963@devserv.devel.redhat.com>
-References: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: 2.4 kernel patch on debian source 2.4.22
+Date: Wed, 22 Oct 2003 10:21:47 +0200
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031022082147.GL13989@poupinou.org>
+References: <002b01c39676$43910270$0100a8c0@bert>
+	<1066607136.1501.16.camel@carryme.shs>
+	<200310202135.43943.snowfire@blueyonder.co.uk>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>;
-	from jun.nakajima@intel.com on Tue, Oct 21, 2003 at 08:47:51AM
-	-0700
+In-Reply-To: <200310202135.43943.snowfire@blueyonder.co.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,34 +18,28 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-Cc: cpufreq@www.linux.org.uk, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+To: Edward Macfarlane Smith <snowfire@blueyonder.co.uk>
+Cc: Lars Weissflog <L@rs-w.de>, cpufreq@www.linux.org.uk
 
-On Tue, Oct 21, 2003 at 08:47:51AM -0700, Nakajima, Jun wrote:
-> > 
-> > it's all nice code and such, but I still wonder why this can't be done
-> > by a userland policy daemon. The 2.6 kernel has the infrastructure to
-> > give very detailed information to userspace (eg top etc) about idle
-> > percentages...... I didn't see anything in this driver that couldn't
-> be
-> > done from userspace.
-> > 
-> 
-> It's about the frequency of the feedback loop. As we have much lower
-> latency with P-state transitions, the sampling time can be order of
-> millisecond (or shorter if meaningful). A userland daemon can have a
-> high-level policy (preferences, or set of parameters), but it cannot be
-> part of the real feedback loop. If we combine P-state transitions and
-> deeper C-state transitions, the situation is worse with a userland
-> daemon.
+On Mon, Oct 20, 2003 at 09:35:43PM +0100, Edward Macfarlane Smith wrote:
+> I think you just need to add in all the lines that have a "+" without the plus 
+> to the original file after the line with "obj-$(CONFIG_X86_VISWS_APIC)  += 
+> visws_apic.o". There are 4 files that mess up in a similar way if you apply 
+> the patch from the weekend to the 2.4.23-pre7 kernel. It's some other changes 
+> that upset the patch.
+> I presume the cpufreq patch will be updated soon, but if anyone really needs 
+> it I can mail them the modified patches.
+> Regards,
+> Edward
 
+You may try to see -pac kernels at /pub/linux/kernel/people/bero/2.4/
+since this guy try to maintain -ac series.
 
-As I said the CURRENT code doesn't seem to do that. I can see the use of
-in kernel hooks in to thigs; for example the scheduler could do an upcall
-to the cpufreq core if a task uses it's timeslice completely (which would
-be a sign that things need to go to a higher speed). I'd be very
-interested to see things like that.
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
