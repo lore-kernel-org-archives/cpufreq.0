@@ -1,14 +1,13 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Speedstep on Intel Pentium M
-Date: Wed, 2 Jun 2004 14:43:45 +0200
+Subject: Re: userspace not supported for longrun?
+Date: Wed, 2 Jun 2004 14:40:55 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040602124345.GC9210@dominikbrodowski.de>
-References: <8012937.1086037545966.SLOX.WebMail.wwwrun@thor.yiti.intern>
-	<20040531233542.368b9da0.frx@firenze.linux.it>
+Message-ID: <20040602124055.GA9210@dominikbrodowski.de>
+References: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040531233542.368b9da0.frx@firenze.linux.it>
+In-Reply-To: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,28 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Francesco Poli <frx@firenze.linux.it>
+To: Wayne Wylupski <wayne@connact.com>
 Cc: cpufreq@www.linux.org.uk
 
-On Mon, May 31, 2004 at 11:35:42PM +0200, Francesco Poli wrote:
-> On Mon, 31 May 2004 23:05:45 +0200 (CEST) Frank Doege wrote:
-> 
-> > i have sucessfully enabled speedfreq using the centrino drivers in the
-> > kernel 2.6.7. My Laptop steps between 600Mhz and 1.2 Ghz, all runs
-> > very fine. The Question i have is why can windows step the processor
-> > to 300Mhz but Linux doesnt ?
-> 
-> As I understand it, Windows throttles the CPU in order to reach that
-> `virtual' 300 MHz clock frequency.
-> But throttling is useless, at least from an energy-saving point of view.
-> It could be useful from a thermal point of view, but, IIRC, ACPI
-> P-states should be better for that.
-> 
-> Cpufreq gurus and kernel hackers are welcome to correct me and/or
-> clarify further...  :p
+To clarify some things:
 
-All you said is correct :-) Throttling only makes sense, from an
-energy-saving point of view, if P-States == frequency and voltage scaling do
-not provide enough cooling to avoid having to start the CPU fan.
+On Mon, May 31, 2004 at 11:40:26PM -0400, Wayne Wylupski wrote:
+> I've been tracking down an issue with using Fedora Core 2 on a 
+> Transmeta Crusoe TM5800 and it appears a userspace governor is not 
+> supported by cpufreq (the longrun scaling driver has a .setpolicy, 
+> which prevents the userspace governor from being set).
+
+.setpolicy drivers prevent _all_ governors from being set. They don't need
+governors, as they are set to a 
+- frequency range
+and a - policy , e.g. a in-hardware [or microcode] algorithm which decides
+on what speed the CPU should run at within the range specified above.
+
+> Could someone please explain if this is by choice or a bug?  If it's 
+> the latter, could someone explain why, since the CPU itself supports 
+> different frequencies?
+... and the CPU switches between these different frequencies itself, as long
+as they are within the frequency range.
 
 	Dominik
