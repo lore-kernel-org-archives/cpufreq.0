@@ -1,16 +1,23 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: [PATCH 2.6] powernow-k7 acpi support.
-Date: Mon, 9 Feb 2004 19:58:31 +0100
+Date: Tue, 10 Feb 2004 10:03:20 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040209185831.GG13262@poupinou.org>
+Message-ID: <20040210090320.GC10662@dominikbrodowski.de>
 References: <20040209132659.GY13262@poupinou.org>
 	<20040209150519.GA6531@dominikbrodowski.de>
 	<20040209175000.GE13262@poupinou.org>
 	<20040209180553.GA30914@dominikbrodowski.de>
+	<20040209182957.GF13262@poupinou.org>
+	<20040209132659.GY13262@poupinou.org>
+	<20040209150519.GA6531@dominikbrodowski.de>
+	<20040209175000.GE13262@poupinou.org>
+	<20040209180553.GA30914@dominikbrodowski.de>
+	<20040209185831.GG13262@poupinou.org>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============90935659919767664=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040209180553.GA30914@dominikbrodowski.de>
+In-Reply-To: <20040209182957.GF13262@poupinou.org>
+	<20040209185831.GG13262@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,69 +27,53 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.de>
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: davej@redhat.com, cpufreq@www.linux.org.uk
 
-On Mon, Feb 09, 2004 at 07:05:53PM +0100, Dominik Brodowski wrote:
-> On Mon, Feb 09, 2004 at 06:50:00PM +0100, Bruno Ducrot wrote:
-> > 
-> > How about that one?
-> 
-> Looks much better, IMO.
-> 
-> >  By now, I'm a little puzzled with the fsb stuff,
-> > though.  A first idea may be to look into what say ACPI about the
-> > frequency, and deduce the fsb from, but I don't like it.
-> 
-> So you wouldn't like
-> 
-> 	fsb = (acpi_processor_perf->states[i].core_frequency * 10) / fid_codes[fid]
-> 
 
-Ok, you win.  That one is ok ?
+--===============90935659919767664==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="96YOpH+ONegL0A3E"
+Content-Disposition: inline
 
 
---- linux-2.6.3-bk-acpi/arch/i386/kernel/cpu/cpufreq/powernow-k7.c.orig	2004-02-09 19:39:41.000000000 +0100
-+++ linux-2.6.3-bk-acpi/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-02-09 19:58:28.000000000 +0100
-@@ -333,6 +333,7 @@
- {
- 	int i;
- 	int retval = 0;
-+	union powernow_acpi_control_t pc;
- 
- 	if (acpi_processor_perf != NULL)
- 		return -EINVAL;
-@@ -378,12 +379,22 @@
- 
- 	memset(powernow_table, 0, ((number_scales + 1) * sizeof(struct cpufreq_frequency_table)));
- 
--	fsb = 100;	/* XXX fix me */
-+	pc.val = (unsigned long) acpi_processor_perf->states[0].control;
-+	fsb = (10 * (u32) acpi_processor_perf->states[0].core_frequency) / (fid_codes[pc.bits.fid]);
-+	if (fsb > 133)
-+		fsb = 133;
-+	if (fsb < 100)
-+		fsb = 100;
-+
-+	if (100 + 133 < 2*fsb)
-+		fsb = 133;
-+	else
-+		fsb = 100;
-+
- 	latency = 0;
- 
- 	for (i = 0; i < number_scales; i++) {
- 		u8 fid, vid;
--		union powernow_acpi_control_t pc;
- 		unsigned int speed;
- 
- 		pc.val = (unsigned long) acpi_processor_perf->states[i].control;
+--96YOpH+ONegL0A3E
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Mon, Feb 09, 2004 at 07:58:31PM +0100, Bruno Ducrot wrote:
+> Ok, you win.  That one is ok ?
+
+Looks good as well. All we have to decide is where to call these functions,
+though... and Davej has to decide whether he likes it, too :-)
+
+	Dominik
+
+--96YOpH+ONegL0A3E
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAKJ5YZ8MDCHJbN8YRArw4AJ9axAdoMGPoy6PvT4KA4PZ1nPTbPwCfZnhw
+5NBqPjZNWG0noDaPwKZyYgg=
+=oTLa
+-----END PGP SIGNATURE-----
+
+--96YOpH+ONegL0A3E--
 
 
--- 
-Bruno Ducrot
+--===============90935659919767664==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============90935659919767664==--
+
