@@ -1,13 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Throttling vs. idling
-Date: Sat, 11 Sep 2004 20:28:45 +0200
+From: Mick Reed <mickreed@freeshell.org>
+Subject: Panic booting livecd dual opteron powernow
+Date: Mon, 13 Sep 2004 02:16:04 +0000 (UTC)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040911182845.GB8527@dominikbrodowski.de>
-References: <20040911125247.468CE3F04@latitude.mynet.no-ip.org>
+Message-ID: <Pine.NEB.4.60.0409130154330.18088@sverige.freeshell.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040911125247.468CE3F04@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,35 +14,38 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
 Content-Transfer-Encoding: 7bit
-To: aeriksson@fastmail.fm
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
+Cc: mickreed@freeshell.org
 
-On Sat, Sep 11, 2004 at 02:52:46PM +0200, aeriksson@fastmail.fm wrote:
-> 
-> Hi there,
-> 
-> I have this old laptop which can do 500 or 700 MHz. Unfortunately its 
-> acpi stuff is broken so it gets overheated and powers off under heavy 
-> & log compiles. However, I can access and use the throttling 
-> manually...
-> 
-> Now the question. Suppose I want to leave it on with light load 
-> (fetchmail every 5 mins). Would forcing throttling make it colder/
-> consume less power than would the normal idle loop? Normally I run it 
-> om apm mode to avoid the power offs, se I'm really comparing 
-> 
-> 1) idle loop on apm mode, with 500MHz, and
-> 2) idle loop on acpi, heavily throttled, with 500MHz.
-> 
-> Would 2 be a win?
+I am booting the 2004.2 Gentoo livecd and get a panic.  I use the smp 
+kernel, and I have tried turning off ACPI and /or APM in my bios.  Also I 
+have tried different kernl arguments, but it still panics.
 
-As I suppose that the "idling" doesn't work well on your system, throttling
-might indeed be an option. Usually, energy consumption of a CPU being
-throttled is [while it is throttled] approximately equal to C2 idling, IIRC,
-so if C2 works and the CPU load is lower than (1 - throttling_pctg),
-throttling won't get you anything. If C2 doesn't work, though, throttling
-may help.
+noacpi acpi=0 noapm   none of these have helped...
 
-	Dominik
+I can however boot the UP version.  Snippets 
+transcribed below.  Tyan S2881 with latest bios, dual opteron 246.  Any 
+other info I can send let me know.
+
+smp 'dmesg':
+
+powernow-k8: Found 2 AMD Athlon 64 / Opteron processors (version 1.20.08b 
+- March 20, 2004)
+powernow-k8: MP systems not supported by PSB BIOS structure
+Unable to handle kernel NULL pointer dereference at 0000000000000028 RIP:
+<ffffffff80120ada>{powernowk8_verify+10}PML4 0
+Oops: 0000 [1] SMP
+CPU 0
+Pid: 1, comm: swapper Not tainted 2.6.5-gentoo-smp
+...
+Call Trace:<fffffff803b0950>{__cpufreq_set_policy+48} 
+<fffffff803b0acf>{cpufreq_set_policy+79}
+...{cpufreq_add_dev+446}..
+{sysdev_driver_register+135}...
+{powernowk8_init+507}... {do_initcalls+106}... {init+87} ...{child_rip+8}
+{init+0}... {child_rip+0}...
+
+Thanks,
+Mick
