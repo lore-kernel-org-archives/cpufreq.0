@@ -1,15 +1,13 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Anders Eriksson <aeriksson2@fastmail.fm>
 Subject: Re: speedstep_smi & psmouse problems?
-Date: Tue, 25 May 2004 20:00:07 +0200
+Date: Tue, 25 May 2004 21:12:30 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040525180007.GH4933@poupinou.org>
-References: <aeriksson2@fastmail.fm>
-	<20040520194800.4DE6A4137@latitude.mynet.no-ip.org>
-	<20040524102240.EF92C3F04@latitude.mynet.no-ip.org>
+Message-ID: <20040525191231.22F033F04@latitude.mynet.no-ip.org>
+References: <20040525180007.GH4933@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040524102240.EF92C3F04@latitude.mynet.no-ip.org>
+In-Reply-To: Your message of "Tue, 25 May 2004 20:00:07 +0200."
+	<20040525180007.GH4933@poupinou.org> 
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,24 +19,17 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: aeriksson2@fastmail.fm
-Cc: cpufreq@www.linux.org.uk
+To: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-Hi,
+> 
+> I think it's a bug in the firmware of the embedded controller.  What
+> about a bios upgrade + EC firmware upgrade?
+> 
+> Cheers,
+> 
 
-On Mon, May 24, 2004 at 12:22:39PM +0200, aeriksson2@fastmail.fm wrote:
-> Tried that (using proto=exps instead of proto=imps), but no success.
-> Do you know if the psmouse driver can be tweaked to handle this (hw
-> bug, I assume) more gracefully? Given the way the mouse jumps on
-> the screen, It seems a low-pass filter could do some good...
+I checked the BIOS version, and there is no newer version on DELL's
+web (rev A09). What's the keawords to check for to find an EC upgrade?
+That's unchartered territory for me...
 
-I think it's a bug in the firmware of the embedded controller.  What
-about a bios upgrade + EC firmware upgrade?
-
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+/Anders
