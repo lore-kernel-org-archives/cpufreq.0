@@ -1,13 +1,12 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Cpufreq for 2.4: what is the best source?
-Date: Fri, 15 Aug 2003 21:40:32 +0200
+From: Georg Sauthoff <g_sauthoff@web.de>
+Subject: Pentium M and 2.4. kernel: does not work
+Date: Sat, 16 Aug 2003 00:43:30 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030815194032.GB2759@brodo.de>
-References: <3F3CB378.1000607@basmevissen.nl> <20030815154156.GA1029@brodo.de> <200308151853.30238.g_sauthoff@web.de>
+Message-ID: <200308160043.30649.g_sauthoff@web.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200308151853.30238.g_sauthoff@web.de>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,35 +17,28 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Georg Sauthoff <g_sauthoff@web.de>
-Cc: Cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Fri, Aug 15, 2003 at 06:53:30PM +0200, Georg Sauthoff wrote:
-> On Friday 15 August 2003 17:41, Dominik Brodowski wrote:
-> 
-> Hi,
-> 
-> > On Fri, Aug 15, 2003 at 12:18:32PM +0200, Bas Mevissen wrote:
-> 
-> > > What is the best source for CPUFREQ for a 2.4.22-rc2 kernels? Is it the
-> > > 2.4.22-rc2-ac1 kernel version or the 2.4 tarballs on
-> > > ftp://ftp.linux.org.uk/pub/linux/cpufreq/ or the LINUX_2_4 tag from CVS?
-> 
-> > Either 2.4.22-rc2-ac1 or the latest 2.4 backport on www.codemonkey.org.uk -
-> > but as that's offline at the moment, I'd try -ac. Or 2.6.0-test3-bk-current
-> >
-> > :)
-> 
-> unfortunely I can't use -ac 2.4. Kernels ... (because of my hardware and not 
-> 2.6. because of a Cisco VPN). Is (or was) www.codemonkey.org.uk really the 
-> only place, to get the cpufreq backports against vanilla 2.4. kernels?
+Hi,
 
-Yes.
+I am just testing the 2.4.22-pre6 patch from Dominik Brodowski. I applied it 
+to 2.4.22-rc2 (without failures) and selected following options:
+[*] CPU Frequency scaling
+[*]  CPU frequency table helpers
+[*]  "userspace" for userspace frequency scaling
+<*>  Intel Pentium-M Enhanced SpeedStep
 
-> What about cvs? And the ftp location mentioned by Bas Mevissen is outdated?
+So I have /proc/sys/cpu/0/, but "cat speed speed-max speed-min" prints only 0 
+to the console.
 
-The ftp location takes the latest cvs sources. And the CVS sources aren't
-kept up to date for the 2.4. backports.
+A dmesg | grep -i cpu prints this:
+Initializing CPU#0
+Intel machine check reporting enabled on CPU#0.
+CPU:     After generic, caps: a7e9f9bf 00000000 00000000 00000000
+CPU:             Common caps: a7e9f9bf 00000000 00000000 00000000
+CPU: Intel(R) Pentium(R) M processor 1300MHz stepping 05
 
-	Dominik
+Ok, perhaps I oversee something ... 
+
+Regards
+Georg Sauthoff
