@@ -1,9 +1,11 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq speedstep-piix4.c, 1.9,
-	1.9.2.1
-Date: Thu, 28 Aug 2003 14:32:52 +0100
+From: Wilfried Klaebe <wk+cpufreq@orion.toppoint.de>
+Subject: cpufreq-LINUX-20030828.tar.bz2 and linux-2.4.22
+Date: Thu, 28 Aug 2003 15:41:17 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <E19sMtQ-0004qQ-8K@flint.arm.linux.org.uk>
+Message-ID: <20030828134117.GA11495@sigbjoernson.orion.toppoint.de>
+Reply-To: Wilfried Klaebe <wk-reply@orion.toppoint.de>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============53326031620776826=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,31 +16,68 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
+To: cpufreq@www.linux.org.uk
+
+
+--===============53326031620776826==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
+Content-Disposition: inline
+
+
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi!
+
+I got the following errors:
+
+make[2]: Entering directory `/usr/src/kernel/linux-2.4.22/arch/i386/kernel'
+make[2]: *** No rule to make target `speedstep-lib.c', needed by
+        `/usr/src/kernel/linux-2.4.22/include/linux/modules/speedstep-lib.ver'.
+        Stop.
+make[2]: Leaving directory `/usr/src/kernel/linux-2.4.22/arch/i386/kernel'
+make[1]: *** [_sfdep_arch/i386/kernel] Error 2
+make[1]: Leaving directory `/usr/src/kernel/linux-2.4.22'
+make: *** [dep-files] Error 2
+
+I then did a
+
+mv arch/i386/kernel/cpufreq/speedstep-ich.c
+        arch/i386/kernel/cpufreq/speedstep-lib.[ch] arch/i386/kernel/
+
+and it just worked.
+
+Just wanted to tell...
+
+Regards, Wilfried
+
+--ZPt4rx8FFjLCG7dd
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+
+iD8DBQE/TgZ96oPe9ZPf8vERAgfXAJ9G13G5bCpmTt/8wBao5gTZFHDU3gCeOKkK
+RHgwUS53lXRDLJ9+lbuvWbo=
+=Bdck
+-----END PGP SIGNATURE-----
+
+--ZPt4rx8FFjLCG7dd--
+
+
+--===============53326031620776826==
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.arm.linux.org.uk
+Content-Disposition: inline
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv18613/linux/arch/i386/kernel/cpufreq
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-Modified Files:
-      Tag: LINUX_2_4
-	speedstep-piix4.c 
-Log Message:
-add driver speedstep-piix4 in 2.4 series
+--===============53326031620776826==--
 
-Index: speedstep-piix4.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-piix4.c,v
-retrieving revision 1.9
-retrieving revision 1.9.2.1
-diff -u -r1.9 -r1.9.2.1
---- speedstep-piix4.c	19 Aug 2003 13:44:59 -0000	1.9
-+++ speedstep-piix4.c	28 Aug 2003 13:32:49 -0000	1.9.2.1
-@@ -285,7 +285,6 @@
- 	.verify 	= speedstep_verify,
- 	.target 	= speedstep_target,
- 	.init		= speedstep_cpu_init,
--	.owner		= THIS_MODULE,
- };
