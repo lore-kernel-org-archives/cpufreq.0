@@ -1,8 +1,7 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCHES 2/5] speedstep-lib: frequency calculation on
-	early P4s
-Date: Sat, 29 Jan 2005 20:43:03 +0100
-Message-ID: <20050129194303.GB9382@dominikbrodowski.de>
+Subject: [PATCHES 1/5] speedstep-centrino: p4m support
+Date: Sat, 29 Jan 2005 20:42:27 +0100
+Message-ID: <20050129194227.GA9382@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
 Content-Disposition: inline
@@ -21,26 +20,40 @@ Content-Transfer-Encoding: 7bit
 To: davej@redhat.com
 Cc: cpufreq@lists.linux.org.uk
 
-From: Matthias-Christian Ott <matthias.christian@tiscali.de>
+The Pentium 4 - Ms (HT) with CPUID 0xF34 and 0xF41 seem to support
+centrino-like enhanced speedstep; however, no "table" support is possible.
+Therefore, put NULL entries into speedstep-centrino.c
 
-The Pentium4 models 0&1 have a longer MSR_EBC_FREQUENCY_ID register as
-the models 2&3, so the bit shift must be bigger.
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-Signed-off-by: Matthias-Christian Ott <matthias.christian@tiscali.de>
-Signed-off-by: Dominik Brodowski <linux@brodo.de> (coding style cleanups)
-
-Index: 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
+Index: 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
 ===================================================================
---- 2.6.11-rc2+.orig/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-12-25 09:59:47.000000000 +0100
-+++ 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2005-01-29 20:19:02.000000000 +0100
-@@ -160,7 +160,10 @@
- 		printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
+--- 2.6.11-rc2+.orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-01-29 19:39:48.000000000 +0100
++++ 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-01-29 20:16:00.000000000 +0100
+@@ -54,6 +54,8 @@
+ 	CPU_DOTHAN_A1,
+ 	CPU_DOTHAN_A2,
+ 	CPU_DOTHAN_B0,
++	CPU_MP4HT_D0,
++	CPU_MP4HT_E0,
+ };
  
- 	/* Multiplier. */
--	mult = msr_lo >> 24;
-+	if (c->x86_model < 2)
-+		mult = msr_lo >> 27;
-+	else
-+	        mult = msr_lo >> 24;
+ static const struct cpu_id cpu_ids[] = {
+@@ -61,6 +63,8 @@
+ 	[CPU_DOTHAN_A1]	= { 6, 13, 1 },
+ 	[CPU_DOTHAN_A2]	= { 6, 13, 2 },
+ 	[CPU_DOTHAN_B0]	= { 6, 13, 6 },
++	[CPU_MP4HT_D0]	= {15,  3, 4 },
++	[CPU_MP4HT_E0]	= {15,  4, 1 },
+ };
+ #define N_IDS	(sizeof(cpu_ids)/sizeof(cpu_ids[0]))
  
- 	dprintk("P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n", fsb, mult, (fsb * mult));
+@@ -226,6 +230,8 @@
+ 	{ &cpu_ids[CPU_DOTHAN_A1], NULL, 0, NULL },
+ 	{ &cpu_ids[CPU_DOTHAN_A2], NULL, 0, NULL },
+ 	{ &cpu_ids[CPU_DOTHAN_B0], NULL, 0, NULL },
++	{ &cpu_ids[CPU_MP4HT_D0], NULL, 0, NULL },
++	{ &cpu_ids[CPU_MP4HT_E0], NULL, 0, NULL },
+ 
+ 	{ NULL, }
+ };
