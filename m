@@ -1,13 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: powernow-k8 frequency fix
-Date: Mon, 23 Feb 2004 20:29:17 +0100
+From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
+Subject: Mobile Intel Celeron 2.0 GHz with ICH4 bridge
+Date: Mon, 23 Feb 2004 22:36:19 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040223192917.GD269@elf.ucw.cz>
-References: <20040223165248.GA19487@dominikbrodowski.de>
+Message-ID: <20040223213619.GA4634@rap.rap.dk>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040223165248.GA19487@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,46 +17,23 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Hi!
+Hi
 
-> Thanks for the patch, but please CC cpufreq@www.linux.org.uk in future.
+I have an Acer Travelmate 233 and I am trying to save some battery
+power. Is that possible with cpufreq? 
 
-Oops, sorry.
+The CPU is a Mobile Intel Celeron 2.0 GHz and the southbridge is an
+Intel 82801DB 845G/GL Chipset ISA Bridge (ICH4)
 
-BTW I'd like to push two following changes. (second hunk is probably
-already queued with trivial patch monkey -- someone did test it :-). I
-hope that's okay with you.
+I run Mandrake 10.0 RC1 with kernel 2.6.2 and cpufreq 1.0.1,
+unfortunately I get the following message:
+cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
+Is this because I am running an outdated version of cpufreq,
+or just because the CPU is not recognized properly?
 
-								Pavel
+Are there other ways to save power with this machine, on the CPU?
 
---- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-02-23 20:25:06.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-02-23 00:16:04.000000000 +0100
-@@ -8,6 +8,8 @@
-  *
-  *  Based on the powernow-k7.c module written by Dave Jones.
-  *  (C) 2003 Dave Jones <davej@codemonkey.ork.uk> on behalf of SuSE Labs
-+ *  (C) 2004 Dominik Brodowski <linux@brodo.de>
-+ *  (C) 2004 Pavel Machek <pavel@suse.cz>
-  *  Licensed under the terms of the GNU GPL License version 2.
-  *  Based upon datasheets & sample CPUs kindly provided by AMD.
-  *
-@@ -34,10 +36,6 @@
- #define VERSION "version 1.00.08a"
- #include "powernow-k8.h"
- 
--#ifdef CONFIG_PREEMPT
--#warning this driver has not been tested on a preempt system
--#endif
--
- static u32 vstable;	/* voltage stabalization time, from PSB, units 20 us */
- static u32 plllock;	/* pll lock time, from PSB, units 1 us */
- static u32 numps;	/* number of p-states, from PSB */
-
-
-								Pavel
--- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+Best regards
+Keld
