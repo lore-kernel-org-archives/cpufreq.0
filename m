@@ -1,13 +1,14 @@
-From: Oliver Antwerpen <olli@giesskaennchen.de>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: static freq table support for Pentium M Dothan
-Date: Tue, 17 Aug 2004 22:04:32 +0000
+Date: Wed, 18 Aug 2004 11:44:22 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <412280F0.8090900@giesskaennchen.de>
+Message-ID: <20040818094422.GD29560@poupinou.org>
 References: <E1Bwu3z-0007gV-4Q@mage.metaparadigm.com>
+	<412280F0.8090900@giesskaennchen.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <E1Bwu3z-0007gV-4Q@mage.metaparadigm.com>
+Content-Disposition: inline
+In-Reply-To: <412280F0.8090900@giesskaennchen.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,35 +18,29 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Oliver Antwerpen <olli@giesskaennchen.de>
+Cc: cpufreq@www.linux.org.uk
 
 Hi,
 
-Michael Clark wrote:
-> Hi All,
-> 
-> It adds Dothan frequency/voltage tables for processors 715, 725, 735,
-> 745, 755 to support frequency scaling when ACPI is not enabled. It
-> should apply to current BitKeeper (on top of centrino ACPI table support).
+On Tue, Aug 17, 2004 at 10:04:32PM +0000, Oliver Antwerpen wrote:
+> I don't really know what to do. Do I have any advantages using 
+> speedstep-centrino instead of acpi?
 
-I applied the patch to 2.6.8.1-mm1 successfully.
+You may want BOTH actually.  acpi for a more aware power saving idle
+loop (you can gather some statistics from /proc/acpi/processor/*/power)
+and you may want speedstep-centrino in order to lower voltage (and as a
+consequence the frequency of the processor).  You should'nt use the acpi
+performance stuff because it's achieve the exact same thing than the
+speedstep-centrino, but via a call to the BIOS instead to talk directly
+to the hardware (in this case, via known MSRs).
 
-> I personally need this patch as I don't use ACPI so can't use the
-> experimental ACPI freq/voltage tables support as ACPI doesn't work well
-> enough for me on my Thinkpad T42.
+Cheers,
 
-I was using the acpi since now. I'll now give speedstep-centrino a try 
-and see, if the finer granulated frequencies affect my system.
+-- 
+Bruno Ducrot
 
-> It currently lists the B0 steppings only, a line or 2 may need to be added
-> for A1 steppings although in my googling I haven't seen any /proc/cpuinfo
-> output for these, all i've seen are B0 steppings for which i've seen
-> examples of 1.5GHz through 1.8GHz.
-
-I am another example of B0 (using intel 735 1.7GHz/2MB)
-
-I don't really know what to do. Do I have any advantages using 
-speedstep-centrino instead of acpi?
-
-Olli
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
