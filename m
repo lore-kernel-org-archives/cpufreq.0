@@ -1,13 +1,11 @@
-From: =?iso-8859-1?q?mark=20newman?= <emergant2000@yahoo.co.uk>
-Subject: Re: help using Harold Milz patch for PSB overide
-Date: Sat, 28 Aug 2004 22:47:39 +0100 (BST)
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH] Hotplug cpu: fix p4-clockmod
+Date: Sun, 29 Aug 2004 14:57:17 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040828214739.16902.qmail@web86909.mail.ukl.yahoo.com>
-References: <39e3484804082813517f360dbf@mail.gmail.com>
+Message-ID: <20040829125717.GA17032@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <39e3484804082813517f360dbf@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,53 +16,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: GoatZilla <goatzilla@gmail.com>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: zwane@linuxpower.ca, cpufreq@www.linux.org.uk
 
+> This currently oopses when a processor goes offline since it can't
+> schedule itself onto the correct cpu.
 
-Thanks, I'd been looking for that document.
+What's the call trace? Because I don't see why it should happen: if the CPU
+is removed, cpufreq_remove_dev() gets called, which cleans up the governor
+and the device driver -- and I can't see a call to setdc in this code path.
 
+> So we now disable preemption whilst reading or setting the DC.
+Or should we disable CPU hotplug [IIRC there's some callback to temporarily
+do that] in the cpufreq core before calling ->target() or ->get()
 
-I have a feeling I'm missing something too.  I'll post
-again if I figure it out, but at the moment I'm at a
-loss.  I can't even figure out how to track the
-problem.
+> There is a questionable hunk which returns the
+> stock_freq if the processor being read from is offline.
 
-Mark 
+and it would avoid this very very questionable hunk...
 
-
- --- GoatZilla <goatzilla@gmail.com> wrote: 
->
-http://www.tldp.org/HOWTO/Athlon-Powersaving-HOWTO/approaches.html
-> 
-> It's an example of how to use the setpci command,
-> and also happens to
-> be instructions for turning on the bus disconnect
-> feature for
-> squeezing that last bit of energy savings out.  It
-> looks like one of
-> the disconnect bits is in the same register as this
-> p-state transition
-> bit.  Stop to take a look at the command and learn
-> how to use it
-> first, and use it to READ your register value before
-> setting it.
-> 
-> My x86info tells me my FID won't change, but I can
-> still change it
-> somehow.  I never had to do any PCI tweaking to get
-> my FID changes to
-> work.  This may very well be motherboard
-> dependant...  but I still
-> think you've done something else wrong.
-> 
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
->  
-
-
-	
-	
-		
-___________________________________________________________ALL-NEW Yahoo! Messenger - all new features - even more fun!  http://uk.messenger.yahoo.com
+Thanks,
+	Dominik
