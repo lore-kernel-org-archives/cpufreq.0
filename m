@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] update lost-ticks handling
-Date: Mon, 10 May 2004 14:11:30 +0200
+Subject: [PATCH] fix cpufreq_p4_get for new cpu_sibling_mask
+Date: Tue, 11 May 2004 12:19:06 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040510121130.GB16913@dominikbrodowski.de>
+Message-ID: <20040511101906.GA9947@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -19,47 +19,38 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-Avoid scheduling cpufreq_delayed_get_work() twice; but do call it a bit
-earlier.
+Update the newly added cpufreq_p4_get for the change of cpu_sibling_mask to
+cpumask_t in 2.6.6-bk-latest.
 
-diff -ruN linux-original/arch/i386/kernel/timers/timer_tsc.c linux/arch/i386/kernel/timers/timer_tsc.c
---- linux-original/arch/i386/kernel/timers/timer_tsc.c	2004-05-10 09:19:19.126474472 +0200
-+++ linux/arch/i386/kernel/timers/timer_tsc.c	2004-05-10 09:32:27.629603776 +0200
-@@ -244,7 +244,7 @@
- 			clock_fallback();
- 		}
- 		/* ... but give the TSC a fair chance */
--		if (lost_count == 50)
-+		if (lost_count > 25)
- 			cpufreq_delayed_get();
- 	} else
- 		lost_count = 0;
-@@ -331,6 +331,7 @@
- #ifdef CONFIG_CPU_FREQ
- #include <linux/workqueue.h>
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   14 ++++----------
+ 1 files changed, 4 insertions(+), 10 deletions(-)
+
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-05-11 12:16:43.402237520 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-05-11 12:16:08.362564360 +0200
+@@ -268,21 +268,15 @@
  
-+static unsigned int cpufreq_delayed_issched = 0;
- static unsigned int cpufreq_init = 0;
- static struct work_struct cpufreq_delayed_get_work;
- 
-@@ -340,6 +341,7 @@
- 	for_each_online_cpu(cpu) {
- 		cpufreq_get(cpu);
- 	}
-+	cpufreq_delayed_issched = 0;
- }
- 
- /* if we notice lost ticks, schedule a call to cpufreq_get() as it tries
-@@ -348,8 +350,11 @@
-  */
- static inline void cpufreq_delayed_get(void) 
+ static unsigned int cpufreq_p4_get(unsigned int cpu)
  {
--	if (cpufreq_init)
-+	if (cpufreq_init && !cpufreq_delayed_issched) {
-+		cpufreq_delayed_issched = 1;
-+		printk(KERN_DEBUG "Losing some ticks... checking if CPU frequency changed.\n");
- 		schedule_work(&cpufreq_delayed_get_work);
-+	}
- }
+-	unsigned int hyperthreading;
+ 	cpumask_t cpus_allowed, affected_cpu_map;
+ 	u32 l, h;
  
- /* If the CPU frequency is scaled, TSC-based delays will need a different
+-	hyperthreading = 0;
+-
+ 	/* only run on CPU to be set, or on its sibling */
+ 	cpus_allowed = current->cpus_allowed;
+-	affected_cpu_map = cpumask_of_cpu(cpu);
+-#ifdef CONFIG_X86_HT
+-	hyperthreading = ((cpu_has_ht) && (smp_num_siblings == 2));
+-	if (hyperthreading) {
+-		sibling = cpu_sibling_map[cpu];
+-		cpu_set(sibling, affected_cpu_map);
+-	}
++#ifdef CONFIG_SMP
++        affected_cpu_map = cpu_sibling_map[cpu];
++#else
++        affected_cpu_map = cpumask_of_cpu(cpu);
+ #endif
+ 	set_cpus_allowed(current, affected_cpu_map);
+         BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
