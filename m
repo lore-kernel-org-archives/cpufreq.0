@@ -1,17 +1,14 @@
-From: Colin Marquardt <colin@marquardt-home.de>
-Subject: Re: 2.6.3-rc3: "powernow-k8: fid 0 invalid : 0x0"
-Date: Sat, 28 Feb 2004 02:17:53 +0100
+From: Doug Sutherland <wearable@cogeco.ca>
+Subject: Re: VIA C3 M10k Nehemiah longhaul support in 2.6.x ?
+Date: Fri, 27 Feb 2004 20:49:46 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <msgidspam.87eksgypby.fsf@schnee.marquardt-home.de>
-References: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de>
-	<msgidspam.8765dwi1es.fsf@schnee.marquardt-home.de>
-	<20040225085337.GG2869@poupinou.org>
-	<msgidspam.87r7wi3ebm.fsf@schnee.marquardt-home.de>
-	<20040226111221.GI2869@poupinou.org>
+Message-ID: <5.1.0.14.2.20040227203914.00a86e20@pop.cogeco.ca>
+References: <EFEF4C473088B847B64CD953D2A6A104FE8228@sdso14a.par.siemens .fr>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; x-avg-checked=avg-ok-7D8D654D;
+	boundary="=======5D401779======="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040226111221.GI2869@poupinou.org> (Bruno Ducrot's message of
-	"Thu, 26 Feb 2004 12:12:21 +0100")
+In-Reply-To: <EFEF4C473088B847B64CD953D2A6A104FE8228@sdso14a.par.siemens .fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,23 +18,58 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
+To: BARRE Francois <francois.barre@siemens.com>
 Cc: cpufreq@www.linux.org.uk
 
-Bruno Ducrot <ducrot@poupinou.org> writes:
+--=======5D401779=======
+Content-Type: text/plain; x-avg-checked=avg-ok-7D8D654D; charset=iso-8859-1;
+	format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-> I meant that you should always compile with ACPI, not APM because
-> I doubt that APM nor PnP-BIOS and so on is well tested by bios
-> writters for amd64.
+Fran=E7ois wrote:
 
-Oh, understandable. 
+ > [Nehemiah longhaul] Not seems to be supported still in actual
+ > 2.6.3-bk9 version, although it was working on 2.4.x
 
-About my problem, I got answer from Paul saying that powernow-k8 was
-known to be broken in 2.6.3 and that I should use the files from
-2.6.2, and that worked perfectly. And just now, I see the patches
-for 2.6.3 too.
+Are you sure Nehemiah was supported for 2.4 kernels?
+I just patched a 2.4.25 kernel with cpufreq.
+I have a Nehemiah model 9 stepping 4 processor.
 
-Thanks for your help,
-  Colin
+longhaul: Nehemiah unsupported: Waiting on working silicon from VIA before=
+=20
+this is usable.
+
+You had a Nehemiah working with 2.4?
+
+I see all the Nehemiah clock scaling data in the source code
+but when it reaches case: 9 (model 9 - nehemiah) there is a
+the above kernel message.
+
+I couldn't get my nehemiah working with cpufreq :(
+
+But this alternate (non kernel) driver allowed me to
+scale back the clock ...
+
+http://www3.sympatico.ca/howlettfamily/epia/longhaul-1.2.tar.gz
+See this in the viaarena forums
+http://forums.viaarena.com/messageview.cfm?catid=3D4&threadid=3D52209
+
+Please let me know if you get cpufreq working with your nehemiah.
+I'd much rather use the kernel source.
+
+   -- Doug
+
+--=======5D401779=======
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--=======5D401779=======--
+
+
