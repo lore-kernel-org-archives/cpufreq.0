@@ -1,13 +1,13 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Cpufreq question ...
-Date: Sun, 8 Feb 2004 16:40:49 +0100
+Subject: Re: Frequency switch latency
+Date: Sun, 8 Feb 2004 19:16:02 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040208154049.GA19441@dominikbrodowski.de>
-References: <20040205020533.565d7fe6.neurowork@free.fr>
+Message-ID: <20040208181602.GA4891@dominikbrodowski.de>
+References: <200401291206.06389.stefan@buettcher.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============99632511212161701=="
+Content-Type: multipart/mixed; boundary="===============91101450205053958=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040205020533.565d7fe6.neurowork@free.fr>
+In-Reply-To: <200401291206.06389.stefan@buettcher.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,68 +17,66 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Cyril Wattebled <neurowork@free.fr>
+To: Stefan Buettcher <stefan@buettcher.org>
 Cc: cpufreq@www.linux.org.uk
 
 
---===============99632511212161701==
+--===============91101450205053958==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
 Content-Disposition: inline
 
 
---u3/rZRmxL6MmkK24
+--PEIAKu/WMn1b1Hv9
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Feb 05, 2004 at 02:05:33AM +0100, Cyril Wattebled wrote:
-> Hi there,
+On Thu, Jan 29, 2004 at 12:06:06PM +0100, Stefan Buettcher wrote:
+> This is a little off-topic. In case it does not belong here: Sorry.
 >=20
-> I have a centrino 1.7ghz on my sony z1rsp laptop.
-> On linux, cpufreq works like a charm especially with speedfreqd which thr=
-ottles
-> the cpu from 600mhz to 1.7ghz dynamicly.
-> I have however a question that's in my mind for a long time ...
-> On M$ windows, the os is able to throttle the cpu down to 200 mhz which i=
-s enough
-> most of the time, and keep the laptop from been too hot.
-> So I'm wondering why cpufreq detects 600 mhz for a cpu that is able to go=
- below
-> 600mhz. By the way, I'm using enhanced speedstep module. I have tried var=
-ious other
-> modules and only p4-clockmod allowed me to throttle the cpu down to 200 m=
-hz but I
-> heard that p4-clockmod isn't as effective as enhanced speedstep for the p=
-ower management
-> since enhanced speedstep changes voltage values.
-> So is there a way to tweak cpufreq to allow the cpu to be throttled at a =
-lower speed ?
+> I am currently working on a kernel-compiler cooperation for
+> dynamic voltage/frequency scaling. I am doing this for Intel's
+> XScale PXA architecture. It has turned out that changing the
+> frequency on the XScale takes some hundred microseconds,
+> but voltage scaling takes 5-8 milliseconds (I am working with
+> some evaluation board with DVS support). Are there numbers
+> for PowerNow or SpeedStep on the web? I could not find any.
 
-Throttling doesn't save you much or even nothing, and what M$ windows does
-is _wrong_. If the system is idle, the CPU is put into ACPI idle states, and
-they are as effective as throttling is.
+AFAIK, there are no such numbers available even though this is a well-known
+phenomenon. SpeedStep and PowerNow (usually) have fixed frequency/voltage
+pairs with different voltages for different frequencies, so there is no
+difference in latencies between different "states"...
 
+> Another question: I have seen that there are cases in which
+> energy can be saved by not only changing the CPU frequency/
+> voltage but also the memory frequency. This is especially true
+> when a process with high cache efficiency is executed. We
+> simply do not need the memory then. Are there any plans for
+> integrating memory speed into the CPUfreq code sometime in
+> the future?
+
+Not yet... it hasn't even been discussed yet on this list AFAIK.
+Nonetheless, IMO it should at least be interconnected to cpufreq or=20
+even become part of cpufreq.
 
 	Dominik
-
-
---u3/rZRmxL6MmkK24
+--PEIAKu/WMn1b1Hv9
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (GNU/Linux)
 
-iD8DBQFAJliBZ8MDCHJbN8YRAgGnAJ44JCHaAM1V/IWod+P63UYAstb3gQCePevp
-WRUvMw3CsoUIcCzgeztObvk=
-=C+rg
+iD8DBQFAJnziZ8MDCHJbN8YRAiftAJwPe3i+OLEoZqiwLdUwKdgsytTP3wCfS9OV
+C4z1ebp7mNYkHIqJjsiWLfA=
+=DRXH
 -----END PGP SIGNATURE-----
 
---u3/rZRmxL6MmkK24--
+--PEIAKu/WMn1b1Hv9--
 
 
---===============99632511212161701==
+--===============91101450205053958==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -89,5 +87,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============99632511212161701==--
+--===============91101450205053958==--
 
