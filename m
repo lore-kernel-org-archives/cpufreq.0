@@ -1,12 +1,13 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: Can you please try this powernow-k8.c patch ?
-Date: Tue, 16 Nov 2004 21:47:03 +0100
-Message-ID: <20041116204703.GA9138@dominikbrodowski.de>
-References: <200411161753.11367.mpytasz@pai.net.pl>
+Date: Tue, 16 Nov 2004 22:07:12 +0100
+Message-ID: <20041116210712.GA9343@dominikbrodowski.de>
+References: <84EA05E2CA77634C82730353CBE3A84301539DCB@SAUSEXMB1.amd.com>
+	<20041116203853.GV31422@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200411161753.11367.mpytasz@pai.net.pl>
+In-Reply-To: <20041116203853.GV31422@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,16 +20,33 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Micha?? Pytasz <mpytasz@pai.net.pl>
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@www.linux.org.uk
 
-On Tue, Nov 16, 2004 at 05:53:11PM +0000, Micha?? Pytasz wrote:
-> Also I can see in /sys/devices/system/cpu/cpu0/cpufreq a changed value of 
-> frequency, is it possible to see if voltage changes as well?
+On Tue, Nov 16, 2004 at 09:38:53PM +0100, Bruno Ducrot wrote:
+> Could you please test the attached little program?
+>
+> ducrot@poupoune:~/debug/cpufrequtils-0.1-pre2$ sudo ./debug/x86_64/powernow-k8-decode 0
+> cpu 0 currently at 2200 MHz and 1500 mV
+Cool.
 
-AFAICS, your system only supports two frequency states with different
-voltages. Also, the powernow-k8 driver complains if one transition
-(frequency or voltage) fails. So you can be quite sure that the voltage
-changes as well.
+> Dominik, is it OK to put it in your cpufrequtils after review?
+Some review is below. I'd like to get someone from AMD to look over this as
+well, though. It looks to be an excellent addition to the cpufrequtils
+package.
 
+> #include <stdio.h>
+> static int get_fidvid(unsigned int cpu, unsigned int *fid, unsigned int *vid)
+> {
+> 	int err = 1;
+> 	unsigned long long msr;
+just curious: is this correct on 32 and 64 bit build?
+
+> 	if (argc < 2) {
+> 		printf("usage %s cpu\n", argv[0]);
+> 		exit(1);
+please make it default to cpu0 if there is no cpu specified (unless you
+convince me otherwise)
+
+Thanks,
 	Dominik
