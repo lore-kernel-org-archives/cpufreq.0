@@ -1,16 +1,11 @@
-From: Rich Townsend <rhdt@bartol.udel.edu>
-Subject: Re: Dothan VID# identification script (was Re: [ACPI]
- Speedstep-centrino problems)
-Date: Sun, 13 Feb 2005 09:11:59 -0500
-Message-ID: <420F602F.3000303@bartol.udel.edu>
-References: <0FEA36BB2ABDF44FAAFEB7A75367C07A0117DCE4@alaska.condis.es>
-	<420B5CB1.2090804@bartol.udel.edu>
-	<20050210172904.GB6824@isilmar.linta.de>
-	<420E911B.1060405@bartol.udel.edu>
-	<20050213094029.GC8081@dominikbrodowski.de>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: Dothan VID# identification script (was Re: [ACPI]
+	Speedstep-centrino problems)
+Date: Sat, 19 Feb 2005 07:49:13 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB60040DBAD8@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050213094029.GC8081@dominikbrodowski.de>
+Content-Transfer-Encoding: quoted-printable
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,38 +16,43 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Rich Townsend <rhdt@bartol.udel.edu>, Dominik Brodowski <linux@dominikbrodowski.net>
 Cc: cpufreq@ZenII.linux.org.uk, Simon Moore <Simon_Moore@condisline.com>
 
-Dominik Brodowski wrote:
-> On Sat, Feb 12, 2005 at 06:28:27PM -0500, Rich Townsend wrote:
-> 
->>Of course, we can't guarantee that there will always be a match; or that 
->>there won't be duplicate matches. Also, this approach relies on having 
->>ACPI P-states, to build up the frequency/voltage table. However, it 
->>still seems to me to be a pretty robust way of determining the VID# in a 
->>system, and one that could be incorporated into speedstep-centrino. 
->>Dominik, what do you think?
-> 
-> 
-> It indeed seems somewhat robust to me, I'd like to get Venkatesh's input on
-> this, though. "Transient voltages" may pose a problem, though...
 
-Gak, hadn't thought of that.
+>-----Original Message-----
+>From: cpufreq-bounces@ZenII.linux.org.uk=20
+>[mailto:cpufreq-bounces@ZenII.linux.org.uk] On Behalf Of Rich Townsend
+>Sent: Sunday, February 13, 2005 6:12 AM
+>To: Dominik Brodowski
+>Cc: cpufreq@ZenII.linux.org.uk; Simon Moore
+>Subject: Re: Dothan VID# identification script (was Re: [ACPI]=20
+>Speedstep-centrino problems)
+>
+>Dominik Brodowski wrote:
+>> On Sat, Feb 12, 2005 at 06:28:27PM -0500, Rich Townsend wrote:
+>>=20
+>>>Of course, we can't guarantee that there will always be a=20
+>match; or that=20
+>>>there won't be duplicate matches. Also, this approach relies=20
+>on having=20
+>>>ACPI P-states, to build up the frequency/voltage table. However, it=20
+>>>still seems to me to be a pretty robust way of determining=20
+>the VID# in a=20
+>>>system, and one that could be incorporated into speedstep-centrino.=20
+>>>Dominik, what do you think?
+>>=20
+>>=20
+>> It indeed seems somewhat robust to me, I'd like to get=20
+>Venkatesh's input on
+>> this, though. "Transient voltages" may pose a problem, though...
+>
+>Gak, hadn't thought of that.
+>
 
-> 
-> I wouldn't favor for inclusion into speedstep-centrino, though -- one
-> cpufreq driver requiring at first one other to run, then to unload the other
-> with speedstep-centrino taking over... no, that doesn't _feel_ right. I
-> wouldn't vote against including the Dothan tables but only using them if the
-> user passes a parameter "vid=[a-f]", though.
+Actually, if you use CNTL MSR in place of STATUS MSR, you don't have to
+worry about transients.
 
-I concurr. Unless a subset of acpi_cpufreq could be implemented within 
-speedstep-centrino without nasty hackery, you end up with an unpleasant 
-dependency problem. I'll look into adding the vid= option over the 
-Dothan tables patch.
-
-cheers,
-
-Rich
+Thanks,
+Venki
