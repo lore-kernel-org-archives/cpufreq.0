@@ -1,16 +1,13 @@
-From: Zwane Mwaikambo <zwane@linuxpower.ca>
-Subject: Re: [PATCH] Hotplug cpu: fix p4-clockmod
-Date: Wed, 1 Sep 2004 12:18:17 -0400 (EDT)
+From: Francesco Poli <frx@firenze.linux.it>
+Subject: Re: [cpufreq 24] patches
+Date: Tue, 31 Aug 2004 22:29:52 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.58.0409011215110.4378@montezuma.fsmlabs.com>
-References: <20040829125717.GA17032@dominikbrodowski.de>
-	<Pine.LNX.4.58.0408301214120.21527@montezuma.fsmlabs.com>
-	<20040830200407.GB8563@dominikbrodowski.de>
-	<Pine.LNX.4.58.0408301735320.21527@montezuma.fsmlabs.com>
-	<20040830214707.GA9324@dominikbrodowski.de>
+Message-ID: <20040831222952.47ecb90f.frx@firenze.linux.it>
+References: <20040831101349.GV29560@poupinou.org>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0633565558=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040830214707.GA9324@dominikbrodowski.de>
+In-Reply-To: <20040831101349.GV29560@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,25 +17,64 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
+
+--===============0633565558==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="pgp-sha1";
+	boundary="Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP"
+
+--Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: CPU Freq ML <cpufreq@www.linux.org.uk>
 
-On Mon, 30 Aug 2004, Dominik Brodowski wrote:
+On Tue, 31 Aug 2004 12:13:49 +0200 Bruno Ducrot wrote:
 
-> Why? If the CPU is removed [and thus removed from the online map] the device
-> disappears from the kernel's perspective -- so there's no room for the
-> /sys/devices/system/cpu/cpuX/ kobject.
+> Hi,
+> 
+> For those who prefer a patch for 2.4 instead of the cvs stuff
+> (patchin.sh, etc) I put one at:
+> 
+> ftp://ftp.poupinou.org/cpufreq/cpufreq-24-20040831.diff[$EXT]
+> with $EXT in (nothing), .gz, .bz2, and there is now symbolic links
+> cpufreq-24-current.diff[$EXT] to them.
 
-It hasn't disappeared as a device, only that the processor will not
-participate in a number of kernel processes. The kobject has to also stay
-around so that we can online it again.
+Many TNX, your job is very much appreciated!  :)
+I will use it as soon as I upgrade to 2.4.28 (that is, as soon as 2.4.28
+itself is out + the time to go back home, rebuild and install... ^__^ )
 
-> While it is short for p4-clockmod, it isn't sufficiently short for
-> powernow-k8.
 
-Yeah we'll have to go case by case.
+-- 
+             |  GnuPG Key ID = DD6DFCF4 |  $ fortune
+  Francesco  |        Key fingerprint = |  Q: What is purple
+     Poli    | C979 F34B 27CE 5CD8 DC12 |     and commutes?
+             | 31B5 78F4 279B DD6D FCF4 |  A: A boolean grape.
 
-Thanks,
-	Zwane
+--Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFBNN/EePQnm91t/PQRAsQ7AKCtBDqmYD/RyFU6kEcJJhBuu16oCwCgwDck
+rtVHteS69PSyElI5IS3AyM0=
+=AygK
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP--
+
+
+--===============0633565558==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0633565558==--
+
