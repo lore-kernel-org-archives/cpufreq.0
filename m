@@ -1,11 +1,12 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
+From: Alexander Clouter <alex@digriz.org.uk>
 Subject: Re: [PATCH] (1/3) cpufreq_ondemand - 01_ignore-nice.diff
-Date: Sun, 20 Feb 2005 17:14:32 +0100
-Message-ID: <4218B768.8020401@tremplin-utc.net>
+Date: Sun, 20 Feb 2005 18:14:48 +0000
+Message-ID: <20050220181448.GA5277@inskipp>
 References: <20050220131518.GB4495@inskipp>
+	<20050220145350.GD20702@isilmar.linta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050220131518.GB4495@inskipp>
+Content-Type: multipart/mixed; boundary="===============1433853105=="
+In-Reply-To: <20050220145350.GD20702@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,19 +17,93 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Alexander Clouter <alex@digriz.org.uk>
-Cc: davej@redhat.com, cpufreq@zenii.linux.org.uk, alex-kernel@digriz.org.uk, linux@dominikbrodowski.de
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@lists.linux.org.uk, davej@redhat.com
 
-Alexander Clouter a =C3=A9crit :
-> Adds support to cpufreq_ondemand to ignore 'nice' cpu time
+
+--===============1433853105==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="envbJBWh7q8WU6mo"
+Content-Disposition: inline
+
+
+--envbJBWh7q8WU6mo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Morning,
+
+On Feb 20, Dominik Brodowski wrote:
+> On Sun, Feb 20, 2005 at 01:15:18PM +0000, Alexander Clouter wrote:
+> > +			( !dbs_tuners_ins.ignore_nice
+> > +			  ? kstat_cpu(j).cpustat.nice : NULL );
+> NULL is a pointer, 0 is a number. You most probably want "0" here.
 >=20
-IMO, this policy should be has lightweight as possible. Why not making=20
-this feature just hard-coded? Don't count the load that nice'd tasks do,=20
-period!
+> > +				( !dbs_tuners_ins.ignore_nice
+> > +				  ? kstat_cpu(j).cpustat.nice : NULL );
+> dito.
+>=20
+NULL comes out as a nothing, there is no problem in adding NULL to a
+variable; the c-compiler, I have been assured, drops this out (or rather it
+should) as a NOOP.  Of course this is what I have been told, by my flatmate
+whom works with a large number of different compilers for different
+architectures from different software houses, and lives/breathes C
+(concerningly :)
 
-It would make the patch 5 lines instead of 50. Every userspace deamon=20
-have this feature enabled by default, so this is a very reasonable=20
-trade-off.
+Along similar lines, I was told that initialising statics to zero *must* be
+done and not assumed; friends have told me its a 'gcc specific extension'. =
+=20
+Last time I was told this was not necessary...
 
-Eric
+I'm happy for it to be changed on reasons of clarity, but technically there
+should be no problems.  You're the kernel guys and I of course am wielding =
+my
+"talking out my ass" disclaimer, so correct me where necessary :)
+
+Cheers
+
+Alex
+
+--=20
+ _________________________________________=20
+/  A horse breeder has his young colts    \
+| bottle-fed after they're three days     |
+| old. He heard that a foal and his mummy |
+\ are soon parted.                        /
+ -----------------------------------------=20
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+--envbJBWh7q8WU6mo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD4DBQFCGNOYNv5Ugh/sRBYRArKwAJUTPEJtAaT3XYOUT2ZmcZLKuJr+AJ9FnykO
+yK3uvOg1SRusOblG2j7SdQ==
+=MEKm
+-----END PGP SIGNATURE-----
+
+--envbJBWh7q8WU6mo--
+
+
+--===============1433853105==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1433853105==--
+
