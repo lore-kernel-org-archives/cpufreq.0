@@ -1,11 +1,13 @@
-From: Toula Michael <keos@wanadoo.fr>
-Subject: little question
-Date: Fri, 05 Sep 2003 22:46:50 +0200
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <3F58F63A.9070507@wanadoo.fr>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: little question
+Date: Sun, 7 Sep 2003 18:09:33 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20030907170933.GB5958@redhat.com>
+References: <3F58F63A.9070507@wanadoo.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: Quoted-Printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <3F58F63A.9070507@wanadoo.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,31 +16,26 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Toula Michael <keos@wanadoo.fr>
+Cc: cpufreq@www.linux.org.uk
 
-Hi,
-I've got a Sony fr102 laptop with a AthlonXP-powernow 2000+ (1,6 GHZ)
-I use linux 2.4.22 with a daily archive of cpufreq (20030905) and=20
-everything works fine....
-I do a
-$ echo -n "0%0%100%userspace" > /proc/cpufreq
+On Fri, Sep 05, 2003 at 10:46:50PM +0200, Toula Michael wrote:
+ > Ok, so the speed is set, a little ?cat speed? confirms that.
+ > I just would like to know if the core voltage is also set ?
+ > In others words, do the VID change with the FID when I use the userspace 
+ > governor ?
 
-to be able to set the frequency manually.
-Then i do :
-$ cd /proc/sys/cpu/0/
-$ cat speed-min > speed
+Yes, correct VID for specific FID will be used.
 
-Ok, so the speed is set, a little =93cat speed=94 confirms that.
-I just would like to know if the core voltage is also set ?
-In others words, do the VID change with the FID when I use the userspace=20
-governor ?
+ > I think CPUFreq is a great project, but don?t you think it lacks a good 
+ > user-friendly documentation ( I know, I know the source code is the best 
+ > one ;)? Any help appreciated in this area ?
 
-I think CPUFreq is a great project, but don=92t you think it lacks a good=
-=20
-user-friendly documentation ( I know, I know the source code is the best=20
-one ;)? Any help appreciated in this area ?
+Absolutely.
 
-THX for all this very great work
-Mike
+		Dave
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
