@@ -1,13 +1,13 @@
-From: Clement Bourdarias <phneutre@icculus.org>
+From: Dominik Brodowski <linux@brodo.de>
 Subject: Re: [PATCHES 2.5] cpufreq: fix up locking
-Date: Sun, 13 Jul 2003 00:13:23 +0200
+Date: Sun, 13 Jul 2003 00:23:14 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030713001323.28985a97.phneutre@icculus.org>
-References: <20030712215805.GA995@brodo.de>
+Message-ID: <20030712222314.GA2698@brodo.de>
+References: <20030712215805.GA995@brodo.de> <20030713001323.28985a97.phneutre@icculus.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030712215805.GA995@brodo.de>
+Content-Disposition: inline
+In-Reply-To: <20030713001323.28985a97.phneutre@icculus.org>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,30 +18,19 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Clement Bourdarias <phneutre@icculus.org>
+Cc: cpufreq@www.linux.org.uk
 
-Hello,
+Hi Clement,
 
-Will this fix the hard lockups we experienced with Athlons when jumping
-from a low freq to the highest freq ?
-(or is it completely unrelated ?)
-
-Thanks,
-Clement.
-
-On Sat, 12 Jul 2003 23:58:05 +0200
-Dominik Brodowski <linux@brodo.de> wrote:
-
-> Hi all,
+On Sun, Jul 13, 2003 at 12:13:23AM +0200, Clement Bourdarias wrote:
+> Hello,
 > 
-> cpufreq locking was broken. Horribly. And I'm ashamed of it. Really. But
-> these eleven patches[*] try to fix it. Please review, test & apply.
-> 
-> 	Dominik
-> 
-> [*] they don't really depend on the 
-> - cpufreq-2.5.75-bk1-documentation_changes
-> - cpufreq-2.5.75-bk1-fix_compilation_speedstep_debug
-> patches but on the 
-> - cpufreq-2.5.75-bk1-longrun_validate_can_fail
-> patch which I all sent to this list before.
+> Will this fix the hard lockups we experienced with Athlons when jumping
+> from a low freq to the highest freq ?
+> (or is it completely unrelated ?)
+
+This is completely unrelated.
+
+	Dominik
