@@ -1,12 +1,12 @@
-From: Lars =?ISO-8859-15?Q?T=E4uber?= <taeuber@bbaw.de>
-Subject: longhaul
-Date: Mon, 3 May 2004 10:27:06 +0200
+From: David Tam <tamda@eecg.toronto.edu>
+Subject: Re: governor implementations
+Date: Mon, 3 May 2004 10:15:55 -0400 (EDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040503102706.147649c3.taeuber@bbaw.de>
-Reply-To: Lars =?ISO-8859-15?Q?T=E4uber?= <taeuber@informatik.hu-berlin.de>
+Message-ID: <Pine.LNX.4.44.0405031010540.1552-100000@cat.eecg.toronto.edu>
+References: <20040501182359.GE578@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20040501182359.GE578@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,30 +16,34 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@www.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: wtsang@dgp.toronto.edu, cpufreq@www.linux.org.uk, Catalin Drula <catalin@cs.toronto.edu>
 
-Hallo,
+Hi.
+Yes, I guess we should spent a few hours to update them and "massage"
+them into a standard Linux kernel patch & loadable kernel module package.
+Yes, we've been told in the past that floating point arithmetic is bad in
+the kernel.  Thanks for the reminder.
 
-i got the address from the MAINTAINER file from Linux kernel source.
+On Sat, 1 May 2004, Bruno Ducrot wrote:
+> On Thu, Apr 29, 2004 at 09:46:40PM -0400, David Tam wrote:
+> > We did some work along these lines for a grad course project in Dec 2003.
+> > It was done using a development version of Linux kernel 2.6.
+> > Unfortunately, we haven't had time to keep it up to date.
+> > Hopefully, it only requires minor updates.
+> > 
+> > Here is a link to the web page.  You can check out our presentation slides,
+> > final report, and other docs.
+> > http://www.eecg.toronto.edu/~tamda/csc2228/
+> 
+> BTW, do you want to update them (even though you think you don't have
+> time for) in your sparse time?
+> NB: floating arithmetics shall be avoided in kernel land.  It's
+> probably the main issue in your(s) governor(s).
 
-If this address is a list I'm not subscribed.
-
-We've got two computers with the VIA Samuel2 CPU - one in revision 2 and on=
-e in revision 3.
-
-The revision 2 works with the longaul v1 driver on 2.6.5 very good.
-(It's a Elitegroup A900 Desknote)
-The other one doesn't work, it says that the max cpufreq (6??) is higher th=
-an the one at boot time (598). This cpu is a 600MHz on an Epia CL6000. It r=
-uns 24x7 and is passively cooled end therefor we want it to slow down when =
-nothing is to do.
-
-There is a driver that works but only for the 2.4.x kernels.
-http://www3.sympatico.ca/howlettfamily/epia/longhaul.html
-
-Is there a solution for our problem?
-
-
-Best Regards
-Lars T=E4uber
+-- 
+David Tam <tamda@eecg.toronto.edu>
+Graduate Student, ECE Dept, University of Toronto
+http://www.eecg.toronto.edu/~tamda
