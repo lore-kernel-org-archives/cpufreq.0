@@ -1,12 +1,11 @@
-From: Francesco Poli <frx@firenze.linux.it>
-Subject: Where are the 2.4.x patches?
-Date: Tue, 6 Jan 2004 22:04:25 +0100
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20040106220425.7e6db911.frx@firenze.linux.it>
-Reply-To: CpuFreq <cpufreq@www.linux.org.uk>
+From: Wouter Verhelst <wouter@grep.be>
+Subject: p4-clockmod doesn't seem to allow the highest possible speed
+Date: Fri, 9 Jan 2004 19:18:51 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20040109181851.GA1393@grep.be>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============60175465533709627=="
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,61 +14,30 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: CpuFreq <cpufreq@www.linux.org.uk>
-
---===============60175465533709627==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	boundary="F0W07Mo37W'sYo=."
-
---F0W07Mo37W'sYo=.
-Content-Type: text/plain; charset=US-ASCII
+Errors-To: cpufreq-bounces@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hi everybody!  :)
+Hi,
 
-Since http://www.codemonkey.org.uk/projects/cpufreq/ has been
-unavailable for a fairly long time, can anyone point me to a web (or
-ftp) site where I can find a cpufreq patch against the 2.4.24 kernel?
+I can't seem to get my processor to run at full speed when using the
+p4-clockmod driver:
 
-TNX for your time (and for the great job in cpufreq development!).
-:-)
+root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor 
+userspace
+root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_max_freq 
+2193205
+root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# echo 2193205 > scaling_setspeed 
+root@worldmusic:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_setspeed 
+1925000
 
-Please reply to the list as I'm a subscriber.
+What am I missing?
 
 -- 
-             |  GnuPG Key ID = DD6DFCF4 | You're compiling a program
-  Francesco  |        Key fingerprint = | and, all of a sudden, boom!
-     Poli    | C979 F34B 27CE 5CD8 DC12 |         -- from APT HOWTO,
-             | 31B5 78F4 279B DD6D FCF4 |             version 1.8.0
-
-
---F0W07Mo37W'sYo=.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.6 (GNU/Linux)
-
-iD8DBQE/+yLhePQnm91t/PQRAuVyAJ9lQHAzUDTfBDP0L3SRUY/U+9rh+QCgn81a
-SjeBUQaaDrMq2VHgZBv3G2I=
-=QsQk
------END PGP SIGNATURE-----
-
---F0W07Mo37W'sYo=.--
-
-
-
---===============60175465533709627==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---===============60175465533709627==--
-
-
+Wouter Verhelst
+Debian GNU/Linux -- http://www.debian.org
+Nederlandstalige Linux-documentatie -- http://nl.linux.org
+"Stop breathing down my neck." "My breathing is merely a simulation."
+"So is my neck, stop it anyway!"
+  -- Voyager's EMH versus the Prometheus' EMH, stardate 51462.
