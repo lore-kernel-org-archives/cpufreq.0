@@ -1,13 +1,13 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [ACPI] _PDC method in DSDT
-Date: Mon, 23 Jun 2003 15:44:49 +0200
+Subject: Re: How to control the speed?
+Date: Mon, 23 Jun 2003 15:53:40 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030623134449.GC2330@brodo.de>
-References: <F760B14C9561B941B89469F59BA3A84725A301@orsmsx401.jf.intel.com>
+Message-ID: <20030623135340.GG2330@brodo.de>
+References: <200306230047.09481.snowfire@blueyonder.co.uk>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <F760B14C9561B941B89469F59BA3A84725A301@orsmsx401.jf.intel.com>
+In-Reply-To: <200306230047.09481.snowfire@blueyonder.co.uk>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,14 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Grover, Andrew" <andrew.grover@intel.com>
-Cc: David Moore <dcm@acm.org>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+To: Edward Macfarlane Smith <snowfire@blueyonder.co.uk>
+Cc: cpufreq@www.linux.org.uk
 
-On Mon, Jun 23, 2003 at 12:11:49AM -0700, Grover, Andrew wrote:
-> btw my understanding is that _PDC will be actually in the ACPI spec in
-> the near future.
+On Mon, Jun 23, 2003 at 12:47:09AM +0100, Edward Macfarlane Smith wrote:
+> I'm writing a little graphical utility to allow you to specify the default 
+> speed when switching between AC and battery, and also the screen brightness.
+> At the moment it's specifically for my Sony Z1SP, so it will probably end
+> up a mix of ACPI/cpufreq/sonypi.
+>
+> Currently I've got the screen brightness working as it can make some ioctl
+> calls to /dev/sonypi. 
+>
+> I was wondering if there are any ioctls for setting the speed using cpufreq 
+> or should I just open "/proc/cpufreq" and write a string to it?. I'd also
+> like to know how to read the possible speeds, again in an ioctl.
 
-Oh no... a victory for legacy methods... I thought ACPI's philosophy was to
-remove legacy code...
+In 2.5., this is easily possible [scaling_available_frequencies in the
+corresponding sysfs directory], for 2.4., there is no such file but one of
+the cpufreq daemons has some code in it to detect the speeds nonetheless.
+
+All interfaces to cpufreq are either /proc files - sysctl's [sort of
+deprecated] or sysfs files [2.5. only, though]
 
 	Dominik
