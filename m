@@ -1,12 +1,10 @@
-From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
-Subject: Re: [PATCH] cpu freq groups (policy->cpus) in ondemand governor
-Date: Tue, 2 Nov 2004 10:34:27 +0100
-Message-ID: <20041102093427.GA14727@message-id.gmane0305.slipkontur.de>
-References: <20041026113949.A20518@unix-os.sc.intel.com>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: FRV and CPU frequency scaling
+Date: Tue, 2 Nov 2004 13:35:09 +0100
+Message-ID: <20041102123509.GA8259@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20041026113949.A20518@unix-os.sc.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,26 +17,26 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: dhowells@redhat.com
+Cc: davej@redhat.com, uclinux-dev@uclinux.org, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Tue, Oct 26, 2004 at 11:39:49AM -0700, Venkatesh Pallipadi wrote:
- 
-> Now ondemand governor looks at all cpus in policy->cpus and takes its 
-> frequency increase/decrease decisions based on most lightly loaded cpu in 
-> the group.
+While reading through the FRV Documentation patch I stumbled across the file
+"clock.txt" file which says:
 
-Is this a good idea? Assume the pathetic case:
- - 2 cpus, both in one group
- - 1 process running at 100% CPU
-   -> only 1 cpu loaded
-      -> the 2nd cpu is idle
-         -> no speed increase.
++ (*) clock.txt
++
++     A description of the CPU clock scaling interface.
++
 
-Or didn't i understand this correctly?
+Could you use the generic cpufreq core (drivers/cpufreq/) for this, please?
 
-> This patch will not affect systems where policy->cpus contain
-> only one cpu.
+And could you explain the difference between p0, cm and cmode settings to
+me, and how they can be combined, please? Or is the following assumption 
+correct?
 
-That's why it doesn't affect me and why i cannot test it :-))
--- 
-Stefan Seyfried
+The CPU core frequency can only be modified on FR405 CPUs, while p0 and cm 
+are available on all CPUs and allow for modification of the frequency of 
+some sort of external busses.
+
+Thanks,
+	Dominik
