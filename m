@@ -1,300 +1,112 @@
-From: Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH 3/8] Kconfig: cleanup cpufreq menu
-Date: Sat, 29 Jan 2005 23:19:23 +0100 (CET)
-Message-ID: <Pine.LNX.4.61.0501292319140.7641@scrub.home>
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: [PATCH] cpufreq_(ondemand|conservative)
+Date: Sat, 29 Jan 2005 23:20:36 +0000
+Message-ID: <20050129232036.GA5280@inskipp>
+References: <20050123150000.GA3888@inskipp>
+	<20050129200020.GA9542@dominikbrodowski.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261589AbVA2WXg@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============1522479386=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
+In-Reply-To: <20050129200020.GA9542@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>
 Cc: cpufreq@lists.linux.org.uk
 
 
-This properly indents the cpufreq menu.
-Remove CPU_FREQ_TABLE as visible option and use select instead.
+--===============1522479386==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
+Content-Disposition: inline
 
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 
----
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- arch/i386/kernel/cpu/cpufreq/Kconfig |   54 +++++++++++++++--------------------
- drivers/cpufreq/Kconfig              |   20 ++++++------
- 2 files changed, 34 insertions(+), 40 deletions(-)
+Dominik,
 
-Index: linux-2.6.11/arch/i386/kernel/cpu/cpufreq/Kconfig
-===================================================================
---- linux-2.6.11.orig/arch/i386/kernel/cpu/cpufreq/Kconfig	2005-01-29 22:50:43.507928466 +0100
-+++ linux-2.6.11/arch/i386/kernel/cpu/cpufreq/Kconfig	2005-01-29 22:55:57.343872448 +0100
-@@ -6,22 +6,14 @@ menu "CPU Frequency scaling"
- 
- source "drivers/cpufreq/Kconfig"
- 
--config CPU_FREQ_TABLE
--       tristate "CPU frequency table helpers"
--       depends on CPU_FREQ
--       default y
--       help
--         Many CPUFreq drivers use these helpers, so only say N here if
--	 the CPUFreq driver of your choice doesn't need these helpers.
--
--	 If in doubt, say Y.
-+if CPU_FREQ
- 
- comment "CPUFreq processor drivers"
--       depends on CPU_FREQ
- 
- config X86_ACPI_CPUFREQ
- 	tristate "ACPI Processor P-States driver"
--	depends on CPU_FREQ_TABLE && ACPI_PROCESSOR
-+	select CPU_FREQ_TABLE
-+	depends on ACPI_PROCESSOR
- 	help
- 	  This driver adds a CPUFreq driver which utilizes the ACPI
- 	  Processor Performance States.
-@@ -32,7 +24,8 @@ config X86_ACPI_CPUFREQ
- 
- config ELAN_CPUFREQ
- 	tristate "AMD Elan"
--	depends on CPU_FREQ_TABLE && X86_ELAN
-+	select CPU_FREQ_TABLE
-+	depends on X86_ELAN
- 	---help---
- 	  This adds the CPUFreq driver for AMD Elan SC400 and SC410
- 	  processors.
-@@ -47,7 +40,7 @@ config ELAN_CPUFREQ
- 
- config X86_POWERNOW_K6
- 	tristate "AMD Mobile K6-2/K6-3 PowerNow!"
--	depends on CPU_FREQ_TABLE
-+	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for mobile AMD K6-2+ and mobile
- 	  AMD K6-3+ processors.
-@@ -58,7 +51,7 @@ config X86_POWERNOW_K6
- 
- config X86_POWERNOW_K7
- 	tristate "AMD Mobile Athlon/Duron PowerNow!"
--	depends on CPU_FREQ_TABLE
-+	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for mobile AMD K7 mobile processors.
- 
-@@ -68,12 +61,14 @@ config X86_POWERNOW_K7
- 
- config X86_POWERNOW_K7_ACPI
- 	bool
--	depends on ((X86_POWERNOW_K7 = "m" && ACPI_PROCESSOR) || (X86_POWERNOW_K7 = "y" && ACPI_PROCESSOR = "y"))
-+	depends on X86_POWERNOW_K7 && ACPI_PROCESSOR
-+	depends on !(X86_POWERNOW_K7 = y && ACPI_PROCESSOR = m)
- 	default y
- 
- config X86_POWERNOW_K8
- 	tristate "AMD Opteron/Athlon64 PowerNow!"
--	depends on CPU_FREQ_TABLE && EXPERIMENTAL
-+	select CPU_FREQ_TABLE
-+	depends on EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
- 
-@@ -83,12 +78,12 @@ config X86_POWERNOW_K8
- 
- config X86_POWERNOW_K8_ACPI
- 	bool
--	depends on ((X86_POWERNOW_K8 = "m" && ACPI_PROCESSOR) || (X86_POWERNOW_K8 = "y" && ACPI_PROCESSOR = "y"))
-+	depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
-+	depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
- 	default y
- 
- config X86_GX_SUSPMOD
- 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
--	depends on CPU_FREQ
- 	help
- 	 This add the CPUFreq driver for NatSemi Geode processors which
- 	 support suspend modulation.
-@@ -99,7 +94,7 @@ config X86_GX_SUSPMOD
- 
- config X86_SPEEDSTEP_CENTRINO
- 	tristate "Intel Enhanced SpeedStep"
--	depends on CPU_FREQ_TABLE
-+	select CPU_FREQ_TABLE
- 	select X86_SPEEDSTEP_CENTRINO_TABLE if (!X86_SPEEDSTEP_CENTRINO_ACPI)
- 	help
- 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
-@@ -114,8 +109,8 @@ config X86_SPEEDSTEP_CENTRINO
- 
- config X86_SPEEDSTEP_CENTRINO_ACPI
- 	bool "Use ACPI tables to decode valid frequency/voltage pairs"
--	depends on X86_SPEEDSTEP_CENTRINO
--	depends on ((X86_SPEEDSTEP_CENTRINO = "m" && ACPI_PROCESSOR) || (X86_SPEEDSTEP_CENTRINO = "y" && ACPI_PROCESSOR = "y"))
-+	depends on X86_SPEEDSTEP_CENTRINO && ACPI_PROCESSOR
-+	depends on !(X86_SPEEDSTEP_CENTRINO = y && ACPI_PROCESSOR = m)
- 	default y
- 	help
- 	  Use primarily the information provided in the BIOS ACPI tables
-@@ -136,7 +131,7 @@ config X86_SPEEDSTEP_CENTRINO_TABLE
- 
- config X86_SPEEDSTEP_ICH
- 	tristate "Intel Speedstep on ICH-M chipsets (ioport interface)"
--	depends on CPU_FREQ_TABLE
-+	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for certain mobile Intel Pentium III
- 	  (Coppermine), all mobile Intel Pentium III-M (Tualatin) and all
-@@ -149,7 +144,8 @@ config X86_SPEEDSTEP_ICH
- 
- config X86_SPEEDSTEP_SMI
- 	tristate "Intel SpeedStep on 440BX/ZX/MX chipsets (SMI interface)"
--	depends on CPU_FREQ_TABLE && EXPERIMENTAL
-+	select CPU_FREQ_TABLE
-+	depends on EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for certain mobile Intel Pentium III
- 	  (Coppermine), all mobile Intel Pentium III-M (Tualatin)  
-@@ -161,7 +157,7 @@ config X86_SPEEDSTEP_SMI
- 
- config X86_P4_CLOCKMOD
- 	tristate "Intel Pentium 4 clock modulation"
--	depends on CPU_FREQ_TABLE
-+	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for Intel Pentium 4 / XEON
- 	  processors.
-@@ -172,7 +168,7 @@ config X86_P4_CLOCKMOD
- 
- config X86_CPUFREQ_NFORCE2
- 	tristate "nVidia nForce2 FSB changing"
--	depends on CPU_FREQ && EXPERIMENTAL
-+	depends on EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for FSB changing on nVidia nForce2
- 	  platforms.
-@@ -183,7 +179,6 @@ config X86_CPUFREQ_NFORCE2
- 
- config X86_LONGRUN
- 	tristate "Transmeta LongRun"
--	depends on CPU_FREQ
- 	help
- 	  This adds the CPUFreq driver for Transmeta Crusoe and Efficeon processors
- 	  which support LongRun.
-@@ -194,7 +189,7 @@ config X86_LONGRUN
- 
- config X86_LONGHAUL
- 	tristate "VIA Cyrix III Longhaul"
--	depends on CPU_FREQ_TABLE
-+	select CPU_FREQ_TABLE
- 	help
- 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII, 
- 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T 
-@@ -205,7 +200,6 @@ config X86_LONGHAUL
- 	  If in doubt, say N.
- 
- comment "shared options"
--	depends on CPU_FREQ
- 
- config X86_ACPI_CPUFREQ_PROC_INTF
-         bool "/proc/acpi/processor/../performance interface (deprecated)"
-@@ -220,8 +214,7 @@ config X86_ACPI_CPUFREQ_PROC_INTF
- 
- config X86_SPEEDSTEP_LIB
- 	tristate
--	depends on (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
--	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
-+	default X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD
- 
- config X86_SPEEDSTEP_RELAXED_CAP_CHECK
- 	bool "Relaxed speedstep capability checks"
-@@ -233,5 +226,6 @@ config X86_SPEEDSTEP_RELAXED_CAP_CHECK
- 	  option lets the probing code bypass some of those checks if the
- 	  parameter "relaxed_check=1" is passed to the module.
- 
-+endif	# CPU_FREQ
- 
- endmenu
-Index: linux-2.6.11/drivers/cpufreq/Kconfig
-===================================================================
---- linux-2.6.11.orig/drivers/cpufreq/Kconfig	2005-01-29 22:50:43.507928466 +0100
-+++ linux-2.6.11/drivers/cpufreq/Kconfig	2005-01-29 22:55:57.343872448 +0100
-@@ -13,9 +13,13 @@ config CPU_FREQ
- 
- 	  If in doubt, say N.
- 
-+if CPU_FREQ
-+
-+config CPU_FREQ_TABLE
-+       def_tristate m
-+
- config CPU_FREQ_DEBUG
- 	bool "Enable CPUfreq debugging"
--	depends on CPU_FREQ
- 	help
- 	  Say Y here to enable CPUfreq subsystem (including drivers)
- 	  debugging. You will need to activate it via the kernel
-@@ -29,7 +33,7 @@ config CPU_FREQ_DEBUG
- 
- config CPU_FREQ_STAT
-        tristate "CPU frequency translation statistics"
--       depends on CPU_FREQ && CPU_FREQ_TABLE
-+       select CPU_FREQ_TABLE
-        default y
-        help
-          This driver exports CPU frequency statistics information through sysfs
-@@ -37,17 +41,15 @@ config CPU_FREQ_STAT
- 
- config CPU_FREQ_STAT_DETAILS
-        bool "CPU frequency translation statistics details"
--       depends on CPU_FREQ && CPU_FREQ_STAT
--       default n
-+       depends on CPU_FREQ_STAT
-        help
-          This will show detail CPU frequency translation table in sysfs file
-          system
- 
- choice
- 	prompt "Default CPUFreq governor"
--	depends on CPU_FREQ
--	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE if !CPU_FREQ_SA1100 && !CPU_FREQ_SA1110
- 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
-+	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
- 	help
- 	  This option sets which CPUFreq governor shall be loaded at
- 	  startup. If in doubt, select 'performance'.
-@@ -73,7 +75,6 @@ endchoice
- 
- config CPU_FREQ_GOV_PERFORMANCE
-        tristate "'performance' governor"
--       depends on CPU_FREQ
-        help
- 	  This cpufreq governor sets the frequency statically to the
- 	  highest available CPU frequency.
-@@ -82,7 +83,6 @@ config CPU_FREQ_GOV_PERFORMANCE
- 
- config CPU_FREQ_GOV_POWERSAVE
-        tristate "'powersave' governor"
--       depends on CPU_FREQ
-        help
- 	  This cpufreq governor sets the frequency statically to the
- 	  lowest available CPU frequency.
-@@ -91,7 +91,6 @@ config CPU_FREQ_GOV_POWERSAVE
- 
- config CPU_FREQ_GOV_USERSPACE
-        tristate "'userspace' governor for userspace frequency scaling"
--       depends on CPU_FREQ 
-        help
- 	  Enable this cpufreq governor when you either want to set the
- 	  CPU frequency manually or when an userspace program shall
-@@ -104,7 +103,6 @@ config CPU_FREQ_GOV_USERSPACE
- 
- config CPU_FREQ_GOV_ONDEMAND
- 	tristate "'ondemand' cpufreq policy governor"
--	depends on CPU_FREQ
- 	help
- 	  'ondemand' - This driver adds a dynamic cpufreq policy governor.
- 	  The governor does a periodic polling and 
-@@ -116,3 +114,5 @@ config CPU_FREQ_GOV_ONDEMAND
- 	  For details, take a look at linux/Documentation/cpu-freq.
- 
- 	  If in doubt, say N.
-+
-+endif	# CPU_FREQ
+I was starting to wonder if anyone received my patches as so far _zero_
+feekback :)
+
+On Jan 29, Dominik Brodowski wrote:
+> concerning patch #1:
+>=20
+> On Sun, Jan 23, 2005 at 03:00:01PM +0000, Alexander Clouter wrote:
+> > @@ -398,10 +455,10 @@
+> >  	=09
+> >  			j_dbs_info->prev_cpu_idle_up =3D=20
+> >  				kstat_cpu(j).cpustat.idle +
+> > -				kstat_cpu(j).cpustat.iowait;
+> > -			j_dbs_info->prev_cpu_idle_down =3D=20
+> > -				kstat_cpu(j).cpustat.idle +
+> > -				kstat_cpu(j).cpustat.iowait;
+> > +				kstat_cpu(j).cpustat.iowait +
+> > +				kstat_cpu(j).cpustat.nice;
+>=20
+> Why are you adding cpustat.nice here unconditionally? You don't do so in =
+the
+> sysfs write method, so I assume you should make this dependant on=20
+> ignore_nice here as well.
+>=20
+Well by default 'ignore_nice =3D 0' so is there a need?  Look in the next h=
+unk.
+
+I probably have missed something, I am only a sysadmin/perl monkey with a
+lpatop afterall :)
+
+Cheers
+
+Alex
+
+--=20
+ _________________________________________=20
+/ It is wise to keep in mind that neither \
+| success nor failure is ever final.      |
+|                                         |
+\ -- Roger Babson                         /
+ -----------------------------------------=20
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+--mP3DRpeJDSE+ciuQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFB/BpENv5Ugh/sRBYRAhEXAJ9aKbuCA9siEiEO8FOQ/nXuy/YsPwCdE23T
+FYVPvz48Twu3vM93VY3O2p4=
+=iUV6
+-----END PGP SIGNATURE-----
+
+--mP3DRpeJDSE+ciuQ--
+
+
+--===============1522479386==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1522479386==--
+
