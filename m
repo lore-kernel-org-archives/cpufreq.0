@@ -1,13 +1,19 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] 1/3 Dynamic cpufreq governor and updates to ACPI
+From: Carl Thompson <cet@carlthompson.net>
+Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
 	P-state driver
-Date: Tue, 21 Oct 2003 11:57:58 -0700
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB6007791F@scsmsx403.sc.intel.com>
+Date: Tue, 21 Oct 2003 12:23:18 -0700
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <1066764198.5424d9a4ec004@carlthompson.net>
+References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
+	<1066725533.5237.3.camel@laptop.fenrus.com>
+	<20031021095925.GB893@inferi.kami.home>
+	<20031021101737.GA31352@wiggy.net>
+	<20031021105234.GF893@inferi.kami.home>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+In-Reply-To: <20031021105234.GF893@inferi.kami.home>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,46 +22,57 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+To: dongili@supereva.it
+Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 
+I know Linus wrote this but...
 
+> ...
 
-> -----Original Message-----
-> From: Ducrot Bruno [mailto:ducrot@poupinou.org]=20
-> Sent: Tuesday, October 21, 2003 10:56 AM
->=20
-> > It will work any processor=20
-> > that is ACPI compatible and again there are no specific=20
-> > checks for Intel here.
-> >=20
->=20
-> On a K7 with powernow for example, perf_ctrl and perf_data=20
-> will be MSR 0
-> with your patch, that do not make sence.
-> Even if you know the correct MSRs, the values for 'control'=20
-> and 'status'
-> in _PSS packages will be only bit-fields, and they can *not* be
-> written nor read directly to the (correct) MSRs (again for K7=20
-> powernow).
->=20
-> This is because the FfixedHW is only an indication that a CPU specific
-> 'feature' (even though already somehow defined in ACPI like P-state,
-> C-state, etc.) have to be handled by the OS in a non-acpi driver, as
-> per ACPI spec, and that will be dependant of the CPU.
->=20
+> A quote from Peter Anvin:
+>
+>   "What is worse is that the interface is, in my opinion, fundamentally
+>    broken for *ALL* CPUs.  It doesn't present a policy interface to the
+>    kernel, instead it presents a frequency-setting interface and expect
+>    the policy to be done in userspace.  The kernel is the only part of
+> the
+>    system which has sufficient information (idle times of all CPUs, for
+>    example) to do a decent job managing the CPU frequency efficiently.
+>    On Transmeta CPUs this policy should simply be passed down to CMS, of
+>    course; on other CPUs the kernel needs to manage it."
+>
+> In other words: there is no valid way that a _user_ can set the policy
+> right now: the user can set the frequency, but since any sane policy
+> depends on how busy the CPU is, the user isn't even, the right person to
+> _do_ that, since the user doesn't _know_.
 
-Agree with most of your comments.=20
-Current ACPI P-state driver ignored everything other than SYSTEM_IO.
-And we are trying to add support for FIXED_HW. I was unaware of
-any other CPU using ACPI PCT FIXED_HW to mean anything other than
-MSR. As you mentioned, if K7 indeed exports some ACPI-PCT information=20
-to mean something else, then that is a real bug in my patch. I will=20
-add CPU specific abstraction to handle FIXED_HW get/set functions in=20
-the next revision of the patch.=20
+But userspace _can_ know the idle statistics for each CPU.  It's easily read
+from /proc/stat.
 
-Thanks,
--Venkatesh
+> Also note that policy is not just about how busy the CPU is, but also
+> about how _hot_ the CPU is. Again, a user-mode application (that maybe
+> polls the situation every minute or so), simply _cannot_ handle this
+> situation. You need to have the ability to poll the CPU tens of times a
+> second to react to heat events, and clearly user mode cannot do that
+> without impacting performance in a big way.
+
+Well, my "cpuspeed" daemon has been doing exactly this without problems for
+the better part of a year on many laptops tested by me and others.  Polling
+the CPU temperature every second or two seems quite sufficient to head off
+any heat related problems (including on problematic systems like the Sony
+Vaio FXA series).  It doesn't appear to necessary to poll faster on current
+hardware even with severe load spikes.  (Obviously, hardware failures in
+the cooling system are another matter but the CPUs internal protection
+should handle that.)
+
+My cpuspeed daemon uses a negligable amount of CPU so it doesn't seem like a
+terrible solution...
+
+(As mentioned previously, CPUs that change their own speed are a separate
+issue.)
+
+Carl Thompson
+
+> ...
