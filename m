@@ -1,11 +1,11 @@
-From: Nebojsa Trpkovic <trx@inbox.ru>
-Subject: powernow-k8 manual voltage selection ?
-Date: Sun, 19 Dec 2004 04:15:31 +0300
-Message-ID: <E1CfpfX-000ID6-00.trx-inbox-ru@f17.mail.ru>
-Reply-To: Nebojsa Trpkovic <trx@inbox.ru>
+From: Alex Simonov <a_simonov@yahoo.com>
+Subject: Custom powerstates table in powernow-K7 ?
+Date: Sun, 19 Dec 2004 02:57:43 -0800 (PST)
+Message-ID: <20041219105743.31456.qmail@web53908.mail.yahoo.com>
+References: <20041218212452.DFAA849C33@nathan.muc.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20041218212452.DFAA849C33@nathan.muc.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,30 +17,34 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hello.
+Hi all,
 
-I just got my new box and I'm testing it all day long :)
-It's Socket754 AMD Athlon (Newcastle) 3000+. I've spotted that it can run stable (>=1h in prime95) at voltages much lover than it's by default. Default is:
-1.500V @2.0GHz
-1.100V @1.0GHz
-And my tests show something like this (I haven't tested all frequencies yet):
-1.525V @2.5GHz
-1.400V @2.4GHz
-1.325V @2.3GHz
-1.250V @2.2GHz
-1.200V @2.1GHz
-1.150V @2.0GHz  <---
-1.075V @1.9GHz 
-... and so on.
+Is there any simple way to use the powernow-k7
+driver with custom PST? Until now (kernel 2.6.3)
+I've always used to patch the module, hardwiring
+my own PST table for my Mobile Athlon XP 1900+,
+but with 2.6.8 kernels it seems more complex,
+with all this ACPI stuff added to it. It is not
+enough anymore to patch the 
+powernow_decode_bios (int maxfid, int startvid)
+function any more ..:(
 
-My question is: 
-Is there some way (PATCH) to specify manualy voltages for every FID my CPU can run? 
-I don't care if it's command line argument while loading powernow-k8 module or it's some kind of hack within powernow-k8.c source, as long as it works :)
+Could you give me some hints please? May be there
+is opportunity to pass it as a parameter to the
+cpufreq module? Or a way to integrate it in the
+initrd.img?
 
-Thank you.
-Regards,
-Nebojsa
 
-P.S. Don't worry, I wouldn't use exact "minimum" voltage, but for example 1.200 - 1.250V @2.0GHz
+Thanks a lot in advance,
+
+Alex
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Read only the mail you want - Yahoo! Mail SpamGuard. 
+http://promotions.yahoo.com/new_mail 
