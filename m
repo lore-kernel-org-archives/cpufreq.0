@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/drivers/cpufreq userspace.c,1.1.1.1,1.1.1.2
-Date: Thu, 28 Aug 2003 14:42:00 +0100
+Subject: cpufreq patchin.sh,1.1.1.3,1.1.1.4
+Date: Thu, 28 Aug 2003 17:16:41 +0100
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <E19sN2G-0004wa-IZ@flint.arm.linux.org.uk>
+Message-ID: <E19sPRx-0006I7-1Q@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,31 +18,28 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq
-In directory flint:/tmp/cvs-serv18999/linux/drivers/cpufreq
+Update of /mnt/src/cvsroot/cpufreq
+In directory flint:/tmp/cvs-serv24180
 
 Modified Files:
       Tag: LINUX_2_4
-	userspace.c 
+	patchin.sh 
 Log Message:
-fix smp build
+update link for speedstep-piix4
 
-Index: userspace.c
+Index: patchin.sh
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq/userspace.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.1.1.2
-diff -u -r1.1.1.1 -r1.1.1.2
---- userspace.c	25 Aug 2003 14:58:47 -0000	1.1.1.1
-+++ userspace.c	28 Aug 2003 13:41:57 -0000	1.1.1.2
-@@ -17,9 +17,9 @@
- #include <linux/smp.h>
- #include <linux/init.h>
- #include <linux/spinlock.h>
-+#include <linux/cpufreq.h>
- #include <linux/interrupt.h>
- #include <linux/ctype.h>
--#include <linux/cpufreq.h>
- #include <linux/sysctl.h>
- #include <linux/types.h>
- #include <linux/fs.h>
+RCS file: /mnt/src/cvsroot/cpufreq/patchin.sh,v
+retrieving revision 1.1.1.3
+retrieving revision 1.1.1.4
+diff -u -r1.1.1.3 -r1.1.1.4
+--- patchin.sh	27 Aug 2003 14:14:32 -0000	1.1.1.3
++++ patchin.sh	28 Aug 2003 16:16:38 -0000	1.1.1.4
+@@ -32,6 +32,7 @@
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-ich.c $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.c $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.h $1/arch/i386/kernel
++ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-piix4.c $1/arch/i386/kernel
+ 
+ cd $1
+ patch -p1 -i $cpufreq/patch
