@@ -1,11 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: PREEMPT problems in cpufreq/powernow-k8
-Date: Tue, 1 Jun 2004 15:15:53 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: cpufreq on ARM broken
+Date: Tue, 01 Jun 2004 18:11:34 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040601131552.GA614@elf.ucw.cz>
+Message-ID: <1086109894.27727.24.camel@delerium.codemonkey.org.uk>
+References: <20040529170151.B3799@flint.arm.linux.org.uk>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20040529170151.B3799@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,51 +18,54 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: paul.devriendt@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>, kernel list <linux-kernel@vger.kernel.org>
+To: linux@brodo.de
+Cc: cpufreq@www.linux.org.uk
 
-Hi!
+Thoughts ?
+I've forgotten why we introduced this flag, it appears that this
+would be the first thing in the tree to actually use it,
+which makes me sceptical.
 
-I enabled CONFIG_PREEMPT to test swsusp, and it uncovered some
-problems with powernow-k8:
+	Dave
 
 
-md: Autodetecting RAID arrays.
-md: autorun ...
-md: ... autorun DONE.
-VFS: Mounted root (ext2 filesystem) readonly.
-Freeing unused kernel memory: 204k freed
-Debug: sleeping function called from invalid context at include/linux/rwsem.h:43
-in_atomic():1, irqs_disabled():0
-Call Trace:
- [<c011b91a>] __might_sleep+0xaa/0xb8
- [<c0333dd2>] cpufreq_notify_transition+0x32/0x168
- [<c010fd5d>] transition_frequency+0xa1/0x104
- [<c010fe9b>] powernowk8_target+0xdb/0x130
- [<c03337ab>] __cpufreq_driver_target+0x1b/0x20
- [<c03341ea>] cpufreq_governor_performance+0x1e/0x24
- [<c033388a>] __cpufreq_governor+0x6e/0x10c
- [<c0333c5d>] __cpufreq_set_policy+0x139/0x144
- [<c0333cb5>] cpufreq_set_policy+0x4d/0x94
- [<c0334896>] cpufreq_proc_write+0x9e/0xb8
- [<c0142440>] handle_mm_fault+0xc8/0x134
- [<c0119217>] do_page_fault+0x13f/0x4fb
- [<c01190d8>] do_page_fault+0x0/0x4fb
- [<c0175c13>] proc_file_write+0x27/0x34
- [<c014d67c>] vfs_write+0xa0/0xd0
- [<c014d729>] sys_write+0x31/0x4c
- [<c0104ce7>] syscall_call+0x7/0xb
+On Sat, 2004-05-29 at 17:01, Russell King wrote:
 
-Adding 1051304k swap on /dev/hda1.  Priority:-1 extents:1
-
-powernowk8_target does preempt_disable(), and that calls
-cpufreq_notify_transition(). That does down(). Ouch.
-
-Hmm, but on SMP systems frequency really should be changed with
-preempt_disable. How to deal with that?
-							Pavel
-
-[Plus I get some more warnings during swsusp, all seem to be
-powernow-k8 related...]
--- 
-934a471f20d6580d5aad759bf0d97ddc
+> cpufreq doesn't appear to initialise on ARM - cpufreq_register_driver()
+> fails with -ENODEV.
+> 
+> This appears to be because we register cpus at subsys_initcall() time,
+> and cpufreq drivers at arch_initcall() time.  We need cpufreq up and
+> running before any drivers are initialised since their timings depend
+> on the CPU clock rate.
+> 
+> The following patch appears to fix these problems.
+> 
+> --- linux-tolinus/arch/arm/mach-sa1100/cpu-sa1100.c	Fri May 21 00:05:46 2004
+> +++ linux/arch/arm/mach-sa1100/cpu-sa1100.c	Sat May 29 16:19:51 2004
+> @@ -230,8 +230,9 @@
+>  }
+>  
+>  static struct cpufreq_driver sa1100_driver = {
+> -	.flags		= (CPUFREQ_PANIC_OUTOFSYNC | 
+> -			   CPUFREQ_PANIC_RESUME_OUTOFSYNC),
+> +	.flags		= CPUFREQ_STICKY |
+> +			  CPUFREQ_PANIC_OUTOFSYNC | 
+> +			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
+>  	.verify		= sa11x0_verify_speed,
+>  	.target		= sa1100_target,
+>  	.get		= sa11x0_getspeed,
+> --- linux-tolinus/arch/arm/mach-sa1100/cpu-sa1110.c	Fri May 21 00:05:46 2004
+> +++ linux/arch/arm/mach-sa1100/cpu-sa1110.c	Sat May 29 16:19:35 2004
+> @@ -329,8 +329,9 @@
+>  }
+>  
+>  static struct cpufreq_driver sa1110_driver = {
+> -	.flags		= (CPUFREQ_PANIC_OUTOFSYNC | 
+> -			   CPUFREQ_PANIC_RESUME_OUTOFSYNC),
+> +	.flags		= CPUFREQ_STICKY |
+> +			  CPUFREQ_PANIC_OUTOFSYNC | 
+> +			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
+>  	.verify		= sa11x0_verify_speed,
+>  	.target		= sa1110_target,
+>  	.get		= sa11x0_getspeed,
