@@ -1,56 +1,171 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: SMP CPUfreq support in Linux kernel mainline??
-Date: Mon, 31 Jan 2005 21:42:10 +0100
-Message-ID: <20050131204210.GA9676@dominikbrodowski.de>
-References: <E1CvhY8-0007pa-AJ@parcelfarce.linux.theplanet.co.uk>
-	<20050131202725.GM1145@poupinou.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] cpufreq_(ondemand|conservative)
+Date: Mon, 31 Jan 2005 14:37:51 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB6003E65C4B@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20050131202725.GM1145@poupinou.org>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261410AbVAaWiQ@vger.kernel.org>
+Content-class: urn:content-classes:message
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@lists.linux.org.uk
+To: Alexander Clouter <alex@digriz.org.uk>, linux@dominikbrodowski.de
+Cc: linux-kernel@vger.kernel.org, cpufreq@ZenII.linux.org.uk
 
-Hi,
 
-On Mon, Jan 31, 2005 at 09:27:25PM +0100, Bruno Ducrot wrote:
-> On Mon, Jan 31, 2005 at 11:49:09AM -0800, Erich Boleyn wrote:
-> > I am having a problem getting SMP CPUfreq support to function correctly
-> > on recent Linux kernels, and wanted to know if what I am seeing is a
-> > known bug or infrastructure problem.
-It's neither nor, AFAICS.
+Hi Alex,
 
-> > It appears that the cpu TSC (timestamp counter) is getting out of sync
-> > between the two processors,
+Sorry for the late reply. Neat work splitting up all these patches. 
 
-As Bruno has pointed out using his test tool, direct access to TSC will lead
-to inconsistent results.
+>5) cpufreq_ondemand-2.6.11-rc1-mm1-05_safe_down_skip.diff
+>	although I have not noticed any problems without it 
+>being done a 
+>	little alarm bell fires off in my head about how 
+>down_skip really 
+>	should be initialised (what if the cpu-freq is not at a 
+>minimum when 
+>	we start off or ac power is unplugged and we get 
+>policy->min changing 
+>	to a lower value?).  Again a minor patch, if not worth 
+>it obviously 
+>	it can be removed and should also be from cpufreq_conservative
 
-> > yet the Linux kernel isn't trying to correct
-> > for this.  (on Opterons, the TSC runs at core frequency)
+I don't think this patch is required as you are initializing a static
+variable. They should be zero without initialization as well.
 
-However, the TSC timing code inside the Linux kernel tries to adapt for it.
-Check time_cpufreq_notifier() in arch/x86_64/kernel for details. However,
-something seems to fail. And it'd be really great if you could try to debug
-(and possibly even fix) it. A few ideas which come to my mind: do you have
-CONFIG_PREEMPT enabled? If so, could you try with it disabled, please? do
-you have a different timing source available and/or enabled (pmtmr [does it
-even exist for x86_64?], hpet)? Does sleep do nasty tricks with MSRs
-(unlikely), or does some syscall interface fail?
+All patches except the above looks good and ready to go. Can you send
+them individually to cpufreq list, with Signed-off line.
 
-Thanks for your help,
-	Dominik
+Thanks,
+Venki 
+ 
 
-PS: list e-mail adress corrected to lists.linux.org.uk
+>-----Original Message-----
+>From: Alexander Clouter [mailto:alex@digriz.org.uk] 
+>Sent: Sunday, January 23, 2005 7:00 AM
+>To: linux@dominikbrodowski.de; Pallipadi, Venkatesh
+>Cc: linux-kernel@vger.kernel.org; cpufreq@ZenII.linux.org.uk
+>Subject: [PATCH] cpufreq_(ondemand|conservative)
+>
+>Hi All,
+>
+>Well after Dominik reminded me about the updates to 
+>cpufreq_ondemand I had
+>made some time back and also my cpufreq governor called 
+>cpufreq_conservative,
+>I dug out my coffee and started fixing them up for another 
+>round of peer
+>review.  My governor is pretty much a minor rewrite of the 
+>cpufreq_ondemand
+>governor but instead gracefully increases and decreases the 
+>cpufreq which
+>should make it much more suitable for battery power environments.
+>
+>All the patches are for 2.6.11-rc1-mm1 but also apply cleanly to
+>2.6.11-rc1-mm2.  Unfortunately 2.6.11-rc1-mm2 oops'es in key_scancode
+>(drivers/char/keyboard.c) when I presses any keys on my text 
+>console (tty1)
+>after init has loaded so I am waiting till 2.6.11-rc2-mm1 
+>appears before I
+>file a bug report.
+>
+>The 'improvements' I have made to cpufreq_ondemand are:
+>
+>1) cpufreq_ondemand-2.6.11-rc1-mm1-01_ignore-nice.diff
+>	this adds a new parameter in /sys called
+>	/sys/.../cpufreq/ondemand/ignore_nice which by default 
+>is set to '0'.
+>	Any 'nice' tasks running will be considered as idle 
+>time unless you 
+>	set the value in ignore_nice to '1', then it will be simply 
+>	considered as a regular cpu time sucking program.
+>
+>	Last time I did this Venki mentioned some possible corner case 
+>	conditions[1] and so this time I make it recalculate 
+>the idle times 
+>	when the value of ignore_nice is flipped.  If I am 
+>right this should 
+>	fix any possible issues that would have arisen from this...?
+>
+>2) cpufreq_ondemand-2.6.11-rc1-mm1-02_check-rate-and-break-out.diff
+>	a very simple patch which prevents us from changing the 
+>cpufreq from 
+>	'x' to 'x' un-necessarily.  No-one could find any 
+>problems with this 
+>	so it has pretty much remained untouched.
+>
+>3) cpufreq_ondemand-2.6.11-rc1-mm1-03_sys_freq_step.diff
+>	this feature also adds a new parameter in /sys called
+>	/sys/.../cpufreq/ondemand/freq_step which by default is 
+>set to '5'.  
+>	You can change this to any value between '0' (why?) and 
+>'100' to 
+>	alter how much the cpu will change its frequency by on 
+>the way down.
+>
+>4) cpufreq_ondemand-2.6.11-rc1-mm1-04_ignore_steal.diff
+>	I noticed a new cpustat has appeared called 'steal'[2] 
+>which from 
+>	what I can tell should be treated like an iowait stat.  
+>'steal' only 
+>	seems supported by S/390 but I think it should be 
+>'considered'.  This 
+>	is a minor patch and if I have gotten confused then 
+>obviously it 
+>	should be removed (and from cpufreq_conservative)
+>
+>5) cpufreq_ondemand-2.6.11-rc1-mm1-05_safe_down_skip.diff
+>	although I have not noticed any problems without it 
+>being done a 
+>	little alarm bell fires off in my head about how 
+>down_skip really 
+>	should be initialised (what if the cpu-freq is not at a 
+>minimum when 
+>	we start off or ac power is unplugged and we get 
+>policy->min changing 
+>	to a lower value?).  Again a minor patch, if not worth 
+>it obviously 
+>	it can be removed and should also be from cpufreq_conservative
+>
+>Now cpufreq_conservative started off as a copy of 
+>cpufreq_ondemand with all
+>the above patches and then amended from there.  If you install 
+>the patches
+>you can see with a diff (attached for _show_ and not use) that 
+>there is not
+>much in the way of difference between them.  It works by me 
+>creating and
+>initialising an array to each cpu's policy->cur (this could 
+>should be nice in 
+>an SMP environment, bug reports would be appreciated) and then 
+>changing the 
+>contents by freq_step each time we need to increase or 
+>decrease the cpufreq.  
+>This results in a smoother transition on the way up and down.  
+>Also by the 
+>nature of this governor it polls 100 times fewer than cpufreq_ondemand.
+>
+>Let me know what you think, the patches work for me, the 
+>question is do they 
+>work for you :)
+>
+>Cheers all
+>
+>Alex
+>
+>[1] http://marc.theaimsgroup.com/?l=linux-kernel&m=110013659005496&w=2
+>[2] http://marc.theaimsgroup.com/?l=linux-kernel&m=109888788719020&w=2
+>
+>-- 
+> ________________________________________ 
+>/ A foolish consistency is the hobgoblin \
+>| of little minds.                       |
+>|                                        |
+>\ -- Ralph Waldo Emerson                 /
+> ---------------------------------------- 
+>        \   ^__^
+>         \  (oo)\_______
+>            (__)\       )\/\
+>                ||----w |
+>                ||     ||
+>
