@@ -1,13 +1,21 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: inquiry
-Date: Fri, 24 Oct 2003 18:46:01 +0200
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
+	P-state driver
+Date: Fri, 24 Oct 2003 20:22:16 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031024164601.GK28351@poupinou.org>
-References: <000801c39a02$c2e670c0$dd50013d@sachinibnsk>
+Message-ID: <20031024182216.GB28421@brodo.de>
+References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
+	<1066725533.5237.3.camel@laptop.fenrus.com>
+	<20031021095925.GB893@inferi.kami.home>
+	<20031021101737.GA31352@wiggy.net>
+	<20031021105234.GF893@inferi.kami.home>
+	<Pine.SOL.4.53.0310211057060.6187@graphics.cat.nyu.edu>
+	<20031021203215.GE26971@brodo.de>
+	<20031023143242.GH643@openzaurus.ucw.cz>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <000801c39a02$c2e670c0$dd50013d@sachinibnsk>
+In-Reply-To: <20031023143242.GH643@openzaurus.ucw.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,44 +27,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bharadwaj <sachinib_nsk@sancharnet.in>
-Cc: cpufreq@www.linux.org.uk
+To: Pavel Machek <pavel@ucw.cz>
+Cc: danielk@mrl.nyu.edu, Mattia Dongili <dongili@supereva.it>, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Thu, Oct 23, 2003 at 12:19:29PM +0530, Bharadwaj wrote:
-> Sir,
-> I want to change the display of the CPU frequency (If a 
-> 486dx displays frequency of 66MHz can we change it to
-> 100MHz.) not by overclocking but writing it permanently
-> in the CPU it self.I have done this with IDT and winchip
-> brand(O.E.M.for Intel) but the effect was not permanent
-> after giving a cold reboot of long time the processor showed its original frequency and I want to change it to any I think.
-> If you have some information please replay me
+On Thu, Oct 23, 2003 at 04:32:43PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > Yes indeed. She wants to set a cpufreq policy which suits of her needs: 
+> > it consists of a
+> > - minimum frequency	=> not too low [she's plugged in]
+> 
+> I just hope minimum frequency is not going to be
+> honoured in case of overheat.
+>
+> Issue is what happens if user specifies range containing no
+> valid frequency. Kernel currently uses next _higher_
+> frequency, but going for next lower one seems to be
+> important (burning cpus, exploding batteries, ...)
 
-Try this patch:
+Yes, that's one bug my acpi patchset addresses.
 
-
---- arch/i386/kernel/cpu/proc.c	2003/10/24 16:41:47	1.1
-+++ arch/i386/kernel/cpu/proc.c	2003/10/24 16:43:24
-@@ -79,10 +79,13 @@
- 	else
- 		seq_printf(m, "stepping\t: unknown\n");
- 
-+#if 0
- 	if ( cpu_has(c, X86_FEATURE_TSC) ) {
- 		seq_printf(m, "cpu MHz\t\t: %lu.%03lu\n",
- 			cpu_khz / 1000, (cpu_khz % 1000));
- 	}
-+#endif
-+	seq_printf(m, "cpu MHz\t\t: 100.000\n");
- 
- 	/* Cache size */
- 	if (c->x86_cache_size >= 0)
-
-
-Or eventually try to be honest with your customers.
-
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
