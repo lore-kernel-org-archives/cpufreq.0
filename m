@@ -1,13 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [2.6 patch] cpufreq.c: reorder for inlining
-Date: Sun, 11 Jul 2004 11:57:00 +0100
+From: Damien Marchal <marchal@lifl.fr>
+Subject: my dothan didn't work with cpufreq...
+Date: Mon, 12 Jul 2004 22:54:35 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040711105700.GB9714@redhat.com>
-References: <20040711104012.GB4701@fs.tum.de>
+Message-ID: <40F2FA8B.10307@lifl.fr>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040711104012.GB4701@fs.tum.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,23 +15,40 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@fs.tum.de>
-Cc: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@www.linux.org.uk
 
-On Sun, Jul 11, 2004 at 12:40:13PM +0200, Adrian Bunk wrote:
- 
- > The patc below reorders cpufreq.c to move adjust_jiffies before it's 
- > callers.
- > 
- > diffstat output:
- >  drivers/cpufreq/cpufreq.c |  160 +++++++++++++++++++-------------------
- >  1 files changed, 80 insertions(+), 80 deletions(-)
- > 
- > 
- > Signed-off-by: Adrian Bunk <bunk@fs.tum.de>
+Hi,
 
-Applied, Thanks Adrian.
+I have a problem to use cpufreq with my Dothan based computer. During 
+initialisation i get the following message:
 
-		Dave
+speedstep-centrino: found unsupported CPU with Enhanced SpeedStep: send 
+/proc/cpuinfo to Jeremy Fitzhardinge <jeremy@goop.org>
+
+What I did. As i received no feedback I look inside the cpufreq 
+sourcecode that throw the error and I tried to fixed it myself. I 
+compared it with the content of my /proc/cpuinfo:
+
+cpu family      : 6
+model             : 13
+model name   : Intel(R) Pentium(R) M processor 1.50GHz
+stepping        : 6
+cpu MHz         : 1500.834
+cache size      : 64 KB
+
+I located a correct cpu_id cpu_id_dothan_b0 but I wasn't able to locate 
+were is it used (it  seems to differ from the banias  code).
+
+In addition in the centrino_cpu_init_table(struct cpufreq_policy 
+*policy), the loop that detect the processor failed as my processor 
+string contains 1.50Ghz and not 1500Mhz (maybe an issue related to my 
+Asus BIOS).
+
+In fact, I could try to make a patch for making my processor accepted by 
+the centrino checking code, but after this I ignore what will happend as 
+no predefined tables frequency/voltage exists like with the Banias. Will 
+it burn my computer :) or will it nicely use acpi/ich4 in some way ?
+
+Cheers,
+Damien Marchal.
