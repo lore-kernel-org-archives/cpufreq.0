@@ -1,8 +1,9 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Simple cleanups for powernow-k8
-Date: Tue, 16 Nov 2004 13:57:24 +0100
-Message-ID: <20041116125724.GA8105@elf.ucw.cz>
+From: =?utf-8?q?Micha=C5=82_Pytasz?= <mpytasz@pai.net.pl>
+Subject: Re: Can you please try this powernow-k8.c patch ?
+Date: Tue, 16 Nov 2004 17:53:11 +0000
+Message-ID: <200411161753.11367.mpytasz@pai.net.pl>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
@@ -15,81 +16,86 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, paul.devriendt@amd.com
+Content-Type: text/plain; charset="macroman"
+To: cpufreq@www.linux.org.uk
 
-Hi!
+Hello,
 
-This adds some comments where to get more data, puts in same name for
-same variable (numps vs. numpstates, vstable
-vs. voltagestabilizationtime). Please apply,
-								Pavel
+Thanks for the patch, I tried it, here is the rssult:
 
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	14 Nov 2004 04:46:00 -0000	1.18
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	16 Nov 2004 12:54:30 -0000
-@@ -18,6 +18,9 @@
-  *  Processor information obtained from Chapter 9 (Power and Thermal Management)
-  *  of the "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
-  *  Opteron Processors" available for download from www.amd.com
-+ *
-+ *  Tables for specific CPUs can be infrerred from
-+ *	http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
-  */
- 
- #include <linux/kernel.h>
-@@ -618,7 +612,7 @@
- 			return -ENODEV;
- 		}
- 
--		data->vstable = psb->voltagestabilizationtime;
-+		data->vstable = psb->vstable;
- 		dprintk("voltage stabilization time: %d(*20us)\n", data->vstable);
- 
- 		dprintk("flags2: 0x%x\n", psb->flags2);
-@@ -632,9 +626,9 @@
- 		dprintk("isochronous relief time: %d\n", data->irt);
- 		dprintk("maximum voltage step: %d - 0x%x\n", mvs, data->vidmvs);
- 
--		dprintk("numpst: 0x%x\n", psb->numpst);
--		cpst = psb->numpst;
--		if ((psb->cpuid == 0x00000fc0) || (psb->cpuid == 0x00000fe0) ){
-+		dprintk("numpst: 0x%x\n", psb->num_tables);
-+		cpst = psb->num_tables;
-+		if ((psb->cpuid == 0x00000fc0) || (psb->cpuid == 0x00000fe0)) {
- 			thiscpuid = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
- 			if ((thiscpuid == 0x00000fc0) || (thiscpuid == 0x00000fe0) ) {
- 				cpst = 1;
-@@ -651,7 +645,7 @@
- 		dprintk("maxvid: 0x%x\n", psb->maxvid);
- 		maxvid = psb->maxvid;
- 
--		data->numps = psb->numpstates;
-+		data->numps = psb->numps;
- 		dprintk("numpstates: 0x%x\n", data->numps);
- 		return fill_powernow_table(data, (struct pst_s *)(psb+1), maxvid);
- 	}
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	14 Nov 2004 04:46:00 -0000	1.9
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	16 Nov 2004 12:00:44 -0000
-@@ -152,14 +151,14 @@
- 	u8 signature[10];
- 	u8 tableversion;
- 	u8 flags1;
--	u16 voltagestabilizationtime;
-+	u16 vstable;
- 	u8 flags2;
--	u8 numpst;
-+	u8 num_tables;
- 	u32 cpuid;
- 	u8 plllocktime;
- 	u8 maxfid;
- 	u8 maxvid;
--	u8 numpstates;
-+	u8 numps;
- };
- 
- /* Pairs of fid/vid values are appended to the version 1.4 PSB table. */
+powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09e)
+powernow-k8:    0 : fid 0x8, vid 0x6
+powernow-k8:    1 : fid 0x0, vid 0x18
+powernow-k8:    0 : fid 0x8 (1600 MHz), vid 0x6 (1400 mV)
+powernow-k8:    1 : fid 0x0 (800 MHz), vid 0x18 (950 mV)
+powernow-k8: cpu0, init lo 0x608, hi 0x1
+powernow-k8: policy current frequency 1600000 kHz
+powernow-k8: cpu_init done, current fid 0x8, vid 0x6
+powernow-k8: targ: cpu 0, 1600000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 1500000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 1400000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 1300000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 1200000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 1100000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 1000000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 900000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 0
+powernow-k8: table matched fid 0x8, giving vid 0x6
+powernow-k8: target matches current values (fid 0x8, vid 0x6)
+powernow-k8: targ: cpu 0, 800000 kHz, min 800000, max 1600000, relation 0
+powernow-k8: targ: curr fid 0x8, vid 0x6
+powernow-k8: cpu 0 transition to index 1
+powernow-k8: table matched fid 0x0, giving vid 0x18
+powernow-k8: cpu 0, changing to fid 0x0, vid 0x18
+powernow-k8: ph1 (cpu0): start, currfid 0x8, currvid 0x6, reqvid 0x18, rvo =
+0x2
+powernow-k8: ph1 complete, currfid 0x8, currvid 0x6
+powernow-k8: ph2 (cpu0): starting, currfid 0x8, currvid 0x6, reqfid 0x0
+powernow-k8: writing fid 0x0, lo 0x10600, hi 0x190
+powernow-k8: ph2 complete, currfid 0x0, currvid 0x6
+powernow-k8: ph3 (cpu0): starting, currfid 0x0, currvid 0x6
+powernow-k8: writing vid 0x18, lo 0x11800, hi 0x1
+powernow-k8: ph3 complete, currfid 0x0, currvid 0x18
+powernow-k8: transitioned (cpu0): new fid 0x0, vid 0x18
 
--- 
-People were complaining that M$ turns users into beta-testers...
-...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
+Well, it seems to have done the trick for the frequency,
+Thanks very much,=20
+
+Also I can see in /sys/devices/system/cpu/cpu0/cpufreq a changed value of=20
+frequency, is it possible to see if voltage changes as well? Looking at the=
+=20
+log provided, I see, that only frequency seems to be changing (although I=20
+finally seem to get cooler CPU, I can hear the fan reducing RPM, sometimes=
+=20
+turning off at all :))
+
+Micha=C5=82
