@@ -1,9 +1,9 @@
 From: bugme-daemon@osdl.org
-Subject: [Bug 3180] New: powernowk8 compiles into kernel only if
+Subject: [Bug 3180] powernowk8 compiles into kernel only if
 	CONFIG_ACPI_PROCESSOR=y
-Date: Tue, 10 Aug 2004 01:39:07 -0700
+Date: Tue, 10 Aug 2004 05:27:41 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408100839.i7A8d7Ux025451@fire-1.osdl.org>
+Message-ID: <200408101227.i7ACRfa3011647@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,32 +21,15 @@ To: cpufreq@www.linux.org.uk
 
 http://bugme.osdl.org/show_bug.cgi?id=3180
 
-           Summary: powernowk8 compiles into kernel only if
-                    CONFIG_ACPI_PROCESSOR=y
-    Kernel Version: 2.6.7 and 2.6.8-rc4
-            Status: NEW
-          Severity: high
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: taeuber@informatik.hu-berlin.de
 
 
-Distribution: SuSE Linux 9.1 (x86-64)
-Hardware Environment: Tyan single Opteron 140
-Software Environment:
-Problem Description:
-
-powernowk8 doesn't compile into kernel when CONFIG_ACPI_PROCESSOR=m or is not set
-
-it should depend on that in the menuconfig
-
-Steps to reproduce:
-
-mark powernowk8 as compiled into kernel and not acpi_processor or only as module
 
 
-Thanks for your great job any way
-
-Lars
+------- Additional Comments From linux@brodo.de  2004-08-10 05:27 -------
+Does the issue appear in 2.6.8-rc3-mmX, or after applying the latest from
+cpufreq-bk which is contained in this patch:
+http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/cpufreq-2004-08-10.diff
+on top of -rc4?
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
