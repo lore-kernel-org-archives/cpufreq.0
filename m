@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCHES 4/5] speedstep-smi: allow to load it in P4-Ms
-	again
-Date: Sat, 29 Jan 2005 20:43:35 +0100
-Message-ID: <20050129194335.GD9382@dominikbrodowski.de>
+Subject: [PATCHES 2/5] speedstep-lib: frequency calculation on
+	early P4s
+Date: Sat, 29 Jan 2005 20:43:03 +0100
+Message-ID: <20050129194303.GB9382@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
 Content-Disposition: inline
@@ -21,26 +21,26 @@ Content-Transfer-Encoding: 7bit
 To: davej@redhat.com
 Cc: cpufreq@lists.linux.org.uk
 
-The speedstep-smi driver actually works on >=1 notebook with a
-Pentium 4-M CPU where all other cpufreq drivers fail. Therefore,
-allow speedstep-smi on P4Ms again, but warn users of likely failure
+From: Matthias-Christian Ott <matthias.christian@tiscali.de>
 
-Sigend-off-by: Dominik Brodowski <linux@brodo.de>
----
+The Pentium4 models 0&1 have a longer MSR_EBC_FREQUENCY_ID register as
+the models 2&3, so the bit shift must be bigger.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-smi.c |    2 ++
- 1 files changed, 2 insertions(+)
+Signed-off-by: Matthias-Christian Ott <matthias.christian@tiscali.de>
+Signed-off-by: Dominik Brodowski <linux@brodo.de> (coding style cleanups)
 
-Index: 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
+Index: 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
 ===================================================================
---- 2.6.11-rc2+.orig/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2004-12-25 09:59:47.000000000 +0100
-+++ 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2005-01-29 20:32:26.000000000 +0100
-@@ -357,6 +357,8 @@
- 	case SPEEDSTEP_PROCESSOR_PIII_C:
- 	case SPEEDSTEP_PROCESSOR_PIII_C_EARLY:
- 		break;
-+	case SPEEDSTEP_PROCESSOR_P4M:
-+		printk(KERN_INFO "speedstep-smi: you're trying to use this cpufreq driver on a Pentium 4-based CPU. Most likely it will not work.\n");
- 	default:
- 		speedstep_processor = 0;
- 	}
+--- 2.6.11-rc2+.orig/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-12-25 09:59:47.000000000 +0100
++++ 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2005-01-29 20:19:02.000000000 +0100
+@@ -160,7 +160,10 @@
+ 		printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
+ 
+ 	/* Multiplier. */
+-	mult = msr_lo >> 24;
++	if (c->x86_model < 2)
++		mult = msr_lo >> 27;
++	else
++	        mult = msr_lo >> 24;
+ 
+ 	dprintk("P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n", fsb, mult, (fsb * mult));
