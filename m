@@ -1,9 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 4/4] cpufreq "cpu group" awareness: remove FIXME in
-	speedstep-ich
-Date: Sun, 5 Sep 2004 20:23:18 +0200
+Subject: [PATCH 2/4] cpufreq "cpu group" awareness: save sysdev for all CPUs
+Date: Sun, 5 Sep 2004 20:21:06 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040905182318.GD7886@dominikbrodowski.de>
+Message-ID: <20040905182106.GB7886@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -20,32 +19,46 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-Remove the FIXME in speedstep-ich.
-
- arch/i386/kernel/cpu/cpufreq/speedstep-ich.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+Save a copy of each CPU's struct sys_device in drivers/cpufreq/cpufreq.c
+so that symlinks can be removed even outside the specific sys_device's
+->remove() function.
 
 Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-09-05 14:02:52.425927160 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-09-05 14:05:00.900396072 +0200
-@@ -311,16 +311,12 @@
- 	unsigned int speed;
- 	cpumask_t cpus_allowed;
+ drivers/cpufreq/cpufreq.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+)
+
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-09-05 14:02:52.428926704 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2004-09-05 14:03:02.448403512 +0200
+@@ -33,6 +33,14 @@
+ static struct cpufreq_policy	*cpufreq_cpu_data[NR_CPUS];
+ static spinlock_t		cpufreq_driver_lock = SPIN_LOCK_UNLOCKED;
  
--
--	/* capability check */
--	if (policy->cpu != 0) /* FIXME: better support for SMT in cpufreq core. Up until then, it's better to register only one CPU */
--		return -ENODEV;
--
- 	/* only run on CPU to be set, or on its sibling */
--	cpus_allowed = current->cpus_allowed;
- #ifdef CONFIG_SMP
- 	policy->cpus = cpu_sibling_map[policy->cpu];
- #endif
 +
-+	cpus_allowed = current->cpus_allowed;
- 	set_cpus_allowed(current, policy->cpus);
++/* we keep a copy of all ->add'ed CPU's struct sys_device here;
++ * as it is only accessed in ->add and ->remove, no lock or reference
++ * count is necessary.
++ */
++static struct sys_device	*cpu_sys_devices[NR_CPUS];
++
++
+ /* internal prototypes */
+ static int __cpufreq_governor(struct cpufreq_policy *policy, unsigned int event);
+ static void handle_update(void *data);
+@@ -517,6 +525,7 @@
+ 		goto err_out_unregister;
  
- 	/* detect low and high frequency */
+ 	module_put(cpufreq_driver->owner);
++	cpu_sys_devices[cpu] = sys_dev;
+ 	return 0;
+ 
+ 
+@@ -548,6 +557,8 @@
+ 	unsigned long flags;
+ 	struct cpufreq_policy *data;
+ 
++	cpu_sys_devices[cpu] = NULL;
++
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	data = cpufreq_cpu_data[cpu];
