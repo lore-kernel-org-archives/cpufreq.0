@@ -1,16 +1,12 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH 5/8] p4_clockmod: detect speed without relying on
-	cpu_khz or user input
-Date: Fri, 21 Nov 2003 10:56:30 +0100
+From: Simon <simon@highlyillogical.org>
+Subject: 2G P4M won't go above 1.2 - cpuinfo_max_freq too low
+Date: Wed, 26 Nov 2003 17:02:56 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031121095630.GA4148@brodo.de>
-References: <20031119183228.GF20576@brodo.de>
-	<20031119190946.GB5653@redhat.com> <20031120183335.GB4425@brodo.de>
-	<20031121022613.GA15356@redhat.com>
+Message-ID: <200311261702.56907.simon@highlyillogical.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031121022613.GA15356@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,37 +17,45 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Fri, Nov 21, 2003 at 02:26:13AM +0000, Dave Jones wrote:
-> On Thu, Nov 20, 2003 at 07:33:35PM +0100, Dominik Brodowski wrote:
->  > On Wed, Nov 19, 2003 at 07:09:46PM +0000, Dave Jones wrote:
->  > > 
->  > > patch 4/8 introduced what seems to be the exact same code in the speedstep-lib.
->  > > Perhaps it belongs in an fsb.o instead that they can both share ?
->  > > I don't mind duplicating it twice in object code, but having two copies
->  > > in the source seems a bit silly.
->  > 
->  > Usually, I agree to this topic. However, I don't want to create just another
->  > file for just this function, and it doesn't belong to speedstep-lib either
->  > as a plain p4 isn't a valid processor for speedstep-lib. So I'd prefer to
->  > have this source code duplication as an exception here.
-> 
-> Your call. I'm just concerned with the maintainence effort as this
-> routine grows.
-> 
-> As a sidenote, this could be useful outside of cpufreq at some point too.
-> Alan tried adding 'overclocking detection' using these registers a while
-> back. It is very difficult to get correct however, so it never came to
-> anything.  If we took the "perfect is the enemy of 'good enough'" approach
-> and just did these checks for cpus we knew we do it correctly on, this
-> would become feasable to pull off for 2.7.
+Hope I should be posting this here and not on linux-kernel...
 
-Well, for Intel P3s and P4s the MSRs are eithre documented or reverse-
-engineered quite well, so it should be something good to do in 2.7.[*]
+I've just upgraded to 2.6.0-test10 and am trying to use the new cpufreq stuff 
+in there. I had everything working perfectly with 2.4.21-ac2, and the old 
+/proc/cpufreq interface.
 
-	Dominik
+I have a P4 2ghz, but it's not running at over about 1.2ghz here now. If I 
+`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq` it tells me: 
+"1198976". It should go faster than that. Similarly, 
+scaling_available_frequencies says "149872 299744 449616 599488 749360 899232 
+1049104 1198976"
 
-[*] which will hopefully be soon!
+Enabling the old interface in the kernel and doing a `echo -n 
+0%0%100%performance > /proc/cpufreq` doesn't change things either.
+
+Here is my /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.00GHz
+stepping        : 7
+cpu MHz         : 1198.976
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat 
+pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
+bogomips        : 2359.29
+
+Any ideas how to get hold of my extra mhz?
+
+Cheers,
+Simon
