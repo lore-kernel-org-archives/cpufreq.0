@@ -1,16 +1,16 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: Which cpufreq driver is best for ...
-Date: Wed, 3 Sep 2003 17:52:02 +0200
+From: Stefan Gehn <sgehn@gmx.net>
+Subject: Re: Cpufreq and AMD mobile Athlon 4
+Date: Wed, 3 Sep 2003 18:15:09 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030903155202.GG750@inferi.kami.home>
-References: <20030903055749.GA21721@gamma.logic.tuwien.ac.at>
-	<3F55D261.6010407@basmevissen.nl>
-	<20030903143250.GC571@polaris.logic.tuwien.ac.at>
-Reply-To: dongili@supereva.it
+Message-ID: <200309031815.09398.sgehn@gmx.net>
+References: <1062500550.5141.3.camel@riogrande>
+	<20030902220356.329829c1.simplex@freemail.hu>
+	<20030902201722.GD1225@redhat.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+In-Reply-To: <20030902201722.GD1225@redhat.com>
 Content-Disposition: inline
-In-Reply-To: <20030903143250.GC571@polaris.logic.tuwien.ac.at>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,31 +21,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Wed, Sep 03, 2003 at 04:32:50PM +0200, Norbert Preining wrote:
-> On Mit, 03 Sep 2003, Bas Mevissen wrote:
-[...]
-> I have this one running, it it called
-> 	cpudyn(d)
-> and is in debian/sid. Adapts to the load quite fast. Normallz the laptop
-> is in 274MHz mode, but is going up to 2200MHz immediately when I start
-> latex-ing or gcc-ing.
-> 
-> Now, what would be nice, is a cpudyn2 that steps the processor dependend
-> on the load to different speeds.
+On Dienstag September 02 2003 22:17, Dave Jones wrote:
+> On Tue, Sep 02, 2003 at 10:03:56PM +0200, V?lgyi Zolt?n wrote:
+>  > I've got the same problem with my notebook. This is a
+>  > Fujitsu-Siemens Amilo A7600.
+>
+> noted. Can you mail me the dmidecode output too please ?
+> (See http://people.redhat.com/arjanv/dmidecode.c)
+>
+>  > Nothing else.
+>  > But what to do?
+>
+> Is there a BIOS update available you can try ?
+>
+> I really wish I had the time to get sysfs overrides written..
 
-you could try the CVS version of cpufreqd from
-www.sf.net/projects/cpufreqd that support cpu load monitoring in it's
-soon to be released version or
+How to buy you some free time, I need that as well for my ugly Acer Laptop.
 
-http://www.goop.org/~jeremy/speedfreq
-
-or see this old thread:
-http://www.linux.org.uk/mailman/private/cpufreq/2003-March/001862.html
-
-hth
+Bye, Stefan aka mETz
 -- 
-mattia
-:wq!
+sgehn@gmx.net | ICQ#51123152 | Moege der Pinguin mit euch sein
