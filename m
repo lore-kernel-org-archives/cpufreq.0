@@ -1,14 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: 2.6.2: P4 ClockMod speed
-Date: Tue, 17 Feb 2004 10:09:39 +0100
+Subject: [PATCH 2.6] cpufreq: don't stick if all ->init() calls fail
+Date: Fri, 20 Feb 2004 09:41:15 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040217090939.GA9935@dominikbrodowski.de>
-References: <20040216213435.GA9680@dominikbrodowski.de>
-	<40313AA9.1060906@arenanetwork.com.br>
+Message-ID: <20040220084115.GC10215@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1385278321790786=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <40313AA9.1060906@arenanetwork.com.br>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,91 +15,79 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: dual_bereta_r0x <dual_bereta_r0x@arenanetwork.com.br>
-Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
-
-
---===============1385278321790786==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
-Content-Disposition: inline
-
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Feb 16, 2004 at 09:48:25PM +0000, dual_bereta_r0x wrote:
-> >>locked on cpu *real* speed.
-> >
-> >
-> >It's just a change of appearance -- the cpufreq driver uses the theoreti=
-cal
-> >speed of the CPU for its calculations; the actual CPU speed isn't
-> >affected. You can verify this by looking at /proc/cpuinfo which still te=
-lls
-> >3124.376 MHz.
-> >
-> >By doing so it becomes easier to enter different frequencies e.g. into
-> >/sys/devices/system/cpu/cpufreq/scaling_setspeed -- on my desktop, typin=
-g=20
-> >in
-> >1200000 is easier than 12121224... [*]
->=20
-> Sure but if i want to downgrade it, for example, by night, to a lower=20
-> speed, and then next day return it to full power? Will I stuck at 2.4GHz?
-
-No, it will run at the same speed as before -- the ratio between actual
-cpu_khz and cpufreq/scaling_setspeed will always be the same.
-
-> >[*] The _actual_ CPU speed should be used on all cpufreq drivers where t=
-his
-> >specific CPU frequency has implications to external components, e.g. LCD,
-> >memory or pcmcia devices. Where only the _frequency ratio_ is of importa=
-nce
-> >[for loops_per_jiffy and friends] such "rounding" is acceptable, as long=
- as
-> >the ratio is constant.
->=20
-> Indeed. I'll showing in LCD a lower speed than the running.
-
-That's not the point: some hardware (e.g. ARM) needs different memory
-settings and different settings of the LCD controller  for different=20
-CPU frequencies, as the Front Side Bus of the CPU is closely related=20
-to the CPU frequency. On x86, all cpufreq techniques I've
-seen so far do not modify the FSB [*], so memory settings etc. do not need
-to be modified.
-
-	Dominik
-
-[*] or scaling the FSB didn't work...
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAMdpTZ8MDCHJbN8YRAlUUAKCZGP6jqj6zBOVs74bpagAoqDU7cQCfSSoi
-OWNYLud2rchO1xKFuHNBi0o=
-=IjVx
------END PGP SIGNATURE-----
-
---Nq2Wo0NMKNjxTN9z--
-
-
---===============1385278321790786==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Some cpufreq drivers can only tell whether they work while the per-CPU 
+->init() function is executed [e.g. the acpi driver]. So that cpufreq_driver
+isn't blocked by such stale drivers, unload them unless the driver sets a
+special flag.
 
---===============1385278321790786==--
+ drivers/cpufreq/cpufreq.c |   24 +++++++++++++++++++++++-
+ include/linux/cpufreq.h   |    6 ++++++
+ 2 files changed, 29 insertions(+), 1 deletion(-)
 
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-02-18 10:23:31.000000000 +0100
++++ linux/drivers/cpufreq/cpufreq.c	2004-02-18 22:23:54.585475216 +0100
+@@ -963,6 +963,7 @@
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ {
+ 	unsigned long flags;
++	int ret;
+ 
+ 	if (!driver_data || !driver_data->verify || !driver_data->init ||
+ 	    ((!driver_data->setpolicy) && (!driver_data->target)))
+@@ -976,7 +977,28 @@
+ 	cpufreq_driver = driver_data;
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+-	return sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
++	ret = sysdev_driver_register(&cpu_sysdev_class,&cpufreq_sysdev_driver);
++
++	if ((!ret) && !(cpufreq_driver->flags & CPUFREQ_STICKY)) {
++		int i;
++		ret = -ENODEV;
++
++		/* check for at least one working CPU */
++		for (i=0; i<NR_CPUS; i++)
++			if (cpufreq_cpu_data[i])
++				ret = 0;
++
++		/* if all ->init() calls failed, unregister */
++		if (ret) {
++			sysdev_driver_unregister(&cpu_sysdev_class, &cpufreq_sysdev_driver);
++
++			spin_lock_irqsave(&cpufreq_driver_lock, flags);
++			cpufreq_driver = NULL;
++			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
++		}
++	}
++
++	return (ret);
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_register_driver);
+ 
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2004-02-18 22:23:32.453839736 +0100
++++ linux/include/linux/cpufreq.h	2004-02-18 22:23:54.598473240 +0100
+@@ -175,6 +175,7 @@
+ struct cpufreq_driver {
+ 	struct module           *owner;
+ 	char			name[CPUFREQ_NAME_LEN];
++	u8			flags;
+ 
+ 	/* needed by all drivers */
+ 	int	(*init)		(struct cpufreq_policy *policy);
+@@ -192,6 +193,11 @@
+ 	struct freq_attr	**attr;
+ };
+ 
++/* flags */
++
++#define CPUFREQ_STICKY	0x01	/* the driver isn't removed even if 
++				   all ->init() calls failed */
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
