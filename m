@@ -1,7 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCHES 5/5] core: include cleanup
-Date: Sat, 29 Jan 2005 20:43:43 +0100
-Message-ID: <20050129194343.GE9382@dominikbrodowski.de>
+Subject: [PATCHES 4/5] speedstep-smi: allow to load it in P4-Ms
+	again
+Date: Sat, 29 Jan 2005 20:43:35 +0100
+Message-ID: <20050129194335.GD9382@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
 Content-Disposition: inline
@@ -20,70 +21,26 @@ Content-Transfer-Encoding: 7bit
 To: davej@redhat.com
 Cc: cpufreq@lists.linux.org.uk
 
-Move core-related declarations to the new cpufreq_core.h file
-in drivers/cpufreq/.
+The speedstep-smi driver actually works on >=1 notebook with a
+Pentium 4-M CPU where all other cpufreq drivers fail. Therefore,
+allow speedstep-smi on P4Ms again, but warn users of likely failure
 
-Signed-off-by: Dominik Brodowski <linux@brodo.de>
+Sigend-off-by: Dominik Brodowski <linux@brodo.de>
 ---
 
- drivers/cpufreq/cpufreq_core.h  |    6 ++++++
- drivers/cpufreq/cpufreq_stats.c |    2 ++
- include/linux/cpufreq.h         |    8 --------
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ arch/i386/kernel/cpu/cpufreq/speedstep-smi.c |    2 ++
+ 1 files changed, 2 insertions(+)
 
-Index: 2.6.11-rc2+/drivers/cpufreq/cpufreq_core.h
+Index: 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
 ===================================================================
---- 2.6.11-rc2+.orig/drivers/cpufreq/cpufreq_core.h	2005-01-29 20:34:49.000000000 +0100
-+++ 2.6.11-rc2+/drivers/cpufreq/cpufreq_core.h	2005-01-29 20:35:45.000000000 +0100
-@@ -15,7 +15,13 @@
- extern struct list_head			cpufreq_governor_list;
- extern struct semaphore			cpufreq_governor_sem;
- 
-+struct cpufreq_policy *cpufreq_cpu_get (unsigned int cpu);
-+void cpufreq_cpu_put (struct cpufreq_policy *data);
-+
- /* cpufreq_sysfs.c */
- extern struct kobj_type			ktype_cpufreq;
- extern struct freq_attr			cpuinfo_cur_freq;
- extern struct freq_attr			scaling_cur_freq;
-+
-+/* freq_table.c */
-+struct cpufreq_frequency_table *cpufreq_frequency_get_table (unsigned int cpu);
-Index: 2.6.11-rc2+/drivers/cpufreq/cpufreq_stats.c
-===================================================================
---- 2.6.11-rc2+.orig/drivers/cpufreq/cpufreq_stats.c	2005-01-29 20:34:49.000000000 +0100
-+++ 2.6.11-rc2+/drivers/cpufreq/cpufreq_stats.c	2005-01-29 20:35:45.000000000 +0100
-@@ -20,6 +20,8 @@
- #include <linux/kobject.h>
- #include <linux/spinlock.h>
- 
-+#include "cpufreq_core.h"
-+
- static spinlock_t cpufreq_stats_lock;
- 
- #define CPUFREQ_STATDEVICE_ATTR(_name,_mode,_show) \
-Index: 2.6.11-rc2+/include/linux/cpufreq.h
-===================================================================
---- 2.6.11-rc2+.orig/include/linux/cpufreq.h	2005-01-29 20:34:49.000000000 +0100
-+++ 2.6.11-rc2+/include/linux/cpufreq.h	2005-01-29 20:35:45.000000000 +0100
-@@ -3,9 +3,6 @@
-  *
-  *  Copyright (C) 2001 Russell King
-  *            (C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
-- *            
-- *
-- * $Id: cpufreq.h,v 1.36 2003/01/20 17:31:48 db Exp $
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -292,11 +289,6 @@
- 				   unsigned int relation,
- 				   unsigned int *index);
- 
--/* the following 3 funtions are for cpufreq core use only */
--struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
--struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
--void   cpufreq_cpu_put (struct cpufreq_policy *data);
--
- /* the following are really really optional */
- extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+--- 2.6.11-rc2+.orig/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2004-12-25 09:59:47.000000000 +0100
++++ 2.6.11-rc2+/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2005-01-29 20:32:26.000000000 +0100
+@@ -357,6 +357,8 @@
+ 	case SPEEDSTEP_PROCESSOR_PIII_C:
+ 	case SPEEDSTEP_PROCESSOR_PIII_C_EARLY:
+ 		break;
++	case SPEEDSTEP_PROCESSOR_P4M:
++		printk(KERN_INFO "speedstep-smi: you're trying to use this cpufreq driver on a Pentium 4-based CPU. Most likely it will not work.\n");
+ 	default:
+ 		speedstep_processor = 0;
+ 	}
