@@ -1,9 +1,9 @@
-From: "Tehn-Yit Chin" <Tehn-Yit.Chin@greyinnovation.com>
-Subject: Cpufreq for s3c2410
-Date: Tue, 29 Mar 2005 16:22:30 +1000
-Message-ID: <9AEDBAA573BBD346BCF9637D80097D910B4694@greysvr02.GreyInnovation.com>
+From: Michael Pophal <michael.pophal@siemens.com>
+Subject: powernow-k8: Power state transitions not supported
+Date: Tue, 29 Mar 2005 10:43:44 +0200
+Message-ID: <1112085824.3156.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,10 +19,27 @@ Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
 Hi,
+I tried the last 3 days to convince cpufreq to work with my new Semperon
+2600+ (Socket 754).
+I also bought a new mainboard 'MSI K8T Neo-V'. It is a desktop (not
+mobile) processor!
 
-We are looking into porting CPU Freq to the s3c2410. Before we charge
-into it, does any know if a porting effort is currently happening or if
-it has occurred in the past?
+I compiled the kernel with the recommended settings. The result during
+startup:
+powernow-k8: Power state transitions not supported
 
-Thanks,
-Tehn Yit Chin
+It seems to me, that this processor is not supported by cpufreq, isn't
+it?
+
+I want to have a cheap processor, which is able to save power, because
+it is running the whole day. Do you have any recommendation which
+processor I should use. I'm going to change the Semperon 2600+ to try
+another combination (cpu + mainboard). Any hint is hightly apprecitated!
+
+Do you have a Semperon xx00+ (Socket 754) running on this 'Cool'n Quiet'
+mode? Which one works?
+
+Thanks in advance for your assistance!!!
+
+Regards 
+Mike
