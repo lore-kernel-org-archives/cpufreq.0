@@ -1,14 +1,15 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: Cleanups for powernow-k8
-Date: Wed, 14 Jan 2004 10:11:28 +0100
+Date: Wed, 14 Jan 2004 10:25:01 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040114091128.GA11159@dominikbrodowski.de>
+Message-ID: <20040114092501.GA11381@dominikbrodowski.de>
 References: <99F2150714F93F448942F9A9F112634C080EF39F@txexmtae.amd.com>
 	<20040114034237.GT14674@redhat.com>
+	<20040114090138.GB260@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============74623004435525964=="
+Content-Type: multipart/mixed; boundary="===============88833636235763414=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20040114034237.GT14674@redhat.com>
+In-Reply-To: <20040114090138.GB260@elf.ucw.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,72 +19,71 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: Dave Jones <davej@redhat.com>, paul.devriendt@amd.com, pavel@ucw.cz, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, mark.langsdorf@amd.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dave Jones <davej@redhat.com>, paul.devriendt@amd.com, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
 
 
---===============74623004435525964==
+--===============88833636235763414==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5mCyUwZo2JvN/JJP"
+	protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
 Content-Disposition: inline
 
 
---5mCyUwZo2JvN/JJP
+--X1bOJ3K7DJ5YkBrT
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 14, 2004 at 03:42:37AM +0000, Dave Jones wrote:
-> On Tue, Jan 13, 2004 at 09:39:53PM -0600, paul.devriendt@amd.com wrote:
->  > >> Dave had a good idea of a minimal ACPI parser for trying to retriev=
-e the
->  > >> table of p-states from an ACPI BIOS without needing the full AML in=
-terpreter.
->  > >> I will see if I can get that to work in powernow-k8-acpi=20
->  > > =20
->  > > If done properly, that parsing code could be shared by the K7=20
->  > > driver too.
->  >=20
->  > Agreed. Function in a header file? Don't want the drivers attempting to
->  > call each other at runtime.
+On Wed, Jan 14, 2004 at 10:01:39AM +0100, Pavel Machek wrote:
+> Hi!
 >=20
-> Works for me, or shove it out into its own .c file, and have both drivers=
- link against it.
+> >  > >> Dave had a good idea of a minimal ACPI parser for trying to retri=
+eve the
+> >  > >> table of p-states from an ACPI BIOS without needing the full AML =
+interpreter.
+> >  > >> I will see if I can get that to work in powernow-k8-acpi=20
+> >  > > =20
+> >  > > If done properly, that parsing code could be shared by the K7=20
+> >  > > driver too.
+> >  >=20
+> >  > Agreed. Function in a header file? Don't want the drivers attempting=
+ to
+> >  > call each other at runtime.
+> >=20
+> > Works for me, or shove it out into its own .c file, and have both drive=
+rs link against it.
+>=20
+> Would acpi parsing be usefull for non-amd systems, too?
 
-Guys, do you remember my acpi-perflib?[1] Currently, I'm rewriting it so th=
-at
-it isn't so invasive and can be merged more easily during 2.x.[2] It's exac=
-tly
-what you want as base for powernow-k7-acpi and powernow-k8-acpi driver.
+The acpi "performance library", whether it uses the CONFIG_ACPI parser or
+some small independent parser, is (at least) also useful for
 
-However, as it relies on CONFIG_ACPI, an acpi-perflib-no-acpi module which
-exports the same functions, but includes a minimal parser could be added.
-But let's do the easy part (CONFIG_ACPI) first.
+- ACPI 2.0 P-States using I/O-port access [current
+  arch/i386/kernel/cpu/cpufreq/acpi.c driver -- it can be cleaned up by
+  that. In fact, I'm currently working on it.]
 
-[1] http://marc.theaimsgroup.com/?l=3Dacpi4linux&m=3D106547064228222&w=3D2
-[patches are taken down from the website, though...]
-
-[2] http://marc.theaimsgroup.com/?l=3Dacpi4linux&m=3D107398568612489&w=3D2 =
-is a
-first step, another one will be sent out later today.
+- speedstep-centrino driver [can use ACPI info instead of built-in tables]
+  [sample patch based on earlier acpi-perflib patch is in the cpufreq and
+   acpi-devel archives]
 
 	Dominik
 
---5mCyUwZo2JvN/JJP
+--X1bOJ3K7DJ5YkBrT
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (GNU/Linux)
 
-iD8DBQFABQfAZ8MDCHJbN8YRAgjBAJ0RVZwuo+hjsICIAIhxSYigpiLjbgCfcypp
-LmgK8LUme7UY88V/3e8D+yU=
-=d9Tz
+iD8DBQFABQrtZ8MDCHJbN8YRAjbnAJ0a+nBryCp+Kxopt++/el0K/IebvACggM4m
+8xtkleb3YO6sF54QKzXUeGQ=
+=oWEi
 -----END PGP SIGNATURE-----
 
---5mCyUwZo2JvN/JJP--
+--X1bOJ3K7DJ5YkBrT--
 
 
---===============74623004435525964==
+--===============88833636235763414==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -94,5 +94,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============74623004435525964==--
+--===============88833636235763414==--
 
