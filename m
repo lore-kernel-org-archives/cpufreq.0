@@ -1,13 +1,15 @@
 From: Tony Lindgren <tony@atomide.com>
-Subject: Re: powernow-k8-buggy-bios-override-for-266.patch
-Date: Thu, 13 May 2004 08:19:45 -0700
+Subject: Re: [tony@atomide.com: [PATCH] Powernow-k8 buggy BIOS override for
+	2.6.6]
+Date: Thu, 13 May 2004 08:34:01 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040513151945.GA8480@atomide.com>
-References: <20040513144721.GA8015@dominikbrodowski.de>
+Message-ID: <20040513153401.GB8480@atomide.com>
+References: <20040513001628.GA9388@atomide.com>
+	<20040513140501.GG16687@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040513144721.GA8015@dominikbrodowski.de>
+In-Reply-To: <20040513140501.GG16687@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,33 +21,35 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, akpm@osdl.org, cpufreq@www.linux.org.uk, pavel@ucw.cz
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, pavel@ucw.cz
+Cc: cpufreq@www.linux.org.uk
 
-* Dominik Brodowski <linux@dominikbrodowski.de> [040513 07:51]:
-> Tony,
+* Dave Jones <davej@redhat.com> [040513 07:06]:
+> On Wed, May 12, 2004 at 05:16:28PM -0700, Tony Lindgren wrote:
 > 
-> Can you post such patches on the cpufreq mailing list
-> (cpufreq@www.linux.org.uk) too, in future, please?
-
-Oops, sorry, will do.
-
-> > This patch should be safe to apply, even if Pavel's ACPI table check is
-> > added to the driver.
+>  > Following is the updated patch to make the powernow-k8 driver work on 
+>  > machines with buggy BIOS, such as emachines m6805.
+>  > 
+>  > The patch overrides the PST table only if check_pst_table() fails.
+>  > 
+>  > The minimum value for the override is 800MHz, which is the lowest value 
+>  > on all x86_64 systems AFAIK. The max value is the current running value.
+>  > 
+>  > This patch should be safe to apply, even if Pavel's ACPI table check is
+>  > added to the driver. Or does anybody see a problem with it?
 > 
-> Which check? I thought the powernow-k8 driver is quite up to date, Pavel?
+> Does the ACPI fallback not do the right thing ?
 
-Hmmm, maybe it's integrated already? Have to check. But the driver by
-default does not work for me.
+Does not work for me. But looks like that's because I had to turn off 
+ACPI processor module since 2.6.6 since it would hang my system. It could 
+also be that the hang is caused by the powernow-k8. I will check that.
 
-> -	if (query_current_values_with_pending_wait(data)) {
-> -		kfree(powernow_table);
-> -		return -EIO;
-> -	}
-> -
-> 
-> Why do you remove this check?
+> I don't really see the point of limping along with a 2-state PST
+> if we can derive the proper info from the ACPI table.
 
-Just moved it a bit earlier in the code as the values are needed earlier :)
+Sure if the ACPI table check works properly. But even with 2-state PST,
+being able to change from 1800MHz to 800MHz on battery increases the 
+battery life quite a bit. And it does not necessarily require ACPI :)
 
 Regards,
 
