@@ -1,13 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Panic booting livecd dual opteron powernow
-Date: Mon, 13 Sep 2004 21:46:43 +0200
+From: maks attems <janitor@sternwelten.at>
+Subject: Re: Bug#271396: Kernel help typo
+Date: Mon, 13 Sep 2004 23:10:11 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040913194642.GA17985@dominikbrodowski.de>
-References: <84EA05E2CA77634C82730353CBE3A843AA1A32@SAUSEXMB1.amd.com>
+Message-ID: <20040913211011.GB1978@stro.at>
+References: <20040912233809.GA4739@nermel>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A843AA1A32@SAUSEXMB1.amd.com>
+In-Reply-To: <20040912233809.GA4739@nermel>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,32 +19,56 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: mark.langsdorf@amd.com
-Cc: cpufreq@www.linux.org.uk, mickreed@freeshell.org
+To: Gavin Sandie <beach@vicecity.co.uk>, 271396@bugs.debian.org
+Cc: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
-On Mon, Sep 13, 2004 at 08:06:55AM -0500, mark.langsdorf@amd.com wrote:
+On Mon, 13 Sep 2004, Gavin Sandie wrote:
+
+> drivers/cpufreq/Kconfig
 > 
-> That's not supposed to happen.  The driver should fail to load.
+> The help for CONFIG_CPU_FREQ_GOV_POWERSAVE contains a typo.
+> It starts with 'Theis', I think this should be 'This'.
+>
+> I have found a further two typos in the
+> drivers/cpufreq/Kconfig file.
 > 
-> It looks like what is happening is the call to powernowk8_init
-> is succeeding, but the call to powernowk8_init_cpu fails.
-> Then, when powernowk8_verify is called, it tries to dereference
-> the global data structure, which is NULL.
+> The help section for CPU_FREQ_DEFAULT_GOV_USERSPACE and
+> CPU_FREQ_GOV_USERSPACE both have contain 'programm' when I
+> think this should read 'programme'.
 
-I can't see why powernow_k8_verify is being called.
+belows patch corrects found issues.
 
-	ret = cpufreq_driver->init(policy);
-	if (ret)
-		goto err_out;
 
-which means there is no call to verify. 
+--- linux-2.6.9-rc2-orig/drivers/cpufreq/Kconfig	2004-09-13 22:51:22.000000000 +0200
++++ linux-2.6.9-rc2/drivers/cpufreq/Kconfig	2004-09-13 23:04:56.000000000 +0200
+@@ -33,7 +33,7 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
+ 	help
+ 	  Use the CPUFreq governor 'userspace' as default. This allows
+ 	  you to set the CPU frequency manually or when an userspace 
+-	  programm shall be able to set the CPU dynamically without having
++	  programme shall be able to set the CPU dynamically without having
+ 	  to enable the userspace governor manually.
+ 
+ endchoice
+@@ -51,7 +51,7 @@ config CPU_FREQ_GOV_POWERSAVE
+        tristate "'powersave' governor"
+        depends on CPU_FREQ
+        help
+-	  Theis cpufreq governors set the frequency statically to the
++	  This cpufreq governors set the frequency statically to the
+ 	  lowest available CPU frequency.
+ 
+ 	  If in doubt, say Y.
+@@ -61,7 +61,7 @@ config CPU_FREQ_GOV_USERSPACE
+        depends on CPU_FREQ 
+        help
+ 	  Enable this cpufreq governor when you either want to set the
+-	  CPU frequency manually or when an userspace programm shall
++	  CPU frequency manually or when an userspace programme shall
+           be able to set the CPU dynamically, like on LART 
+ 	  <http://www.lart.tudelft.nl/>
+ 
 
-cpufreq_set_policy --> __cpufreq_set_policy -> ->verify() can't be run,
-as cpufreq_cpu_get() will not succeed (kobejct is not registered yet).
-cpufreq_update_policy -> __cpufreq_set_policy -> ->verify() will fail
-because of the same reason.
-
-Therefore, I suspect this vendor-modified kernel has some specific bug in
-it, and see no need for the generic patch.
-
-	Dominik
+--
+maks
+kernel janitor  	http://janitor.kernelnewbies.org/
