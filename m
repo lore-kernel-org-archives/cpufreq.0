@@ -1,16 +1,17 @@
-From: Dave Jones <davej@redhat.com>
+From: "Brian J. Murrell" <brian@interlinx.bc.ca>
 Subject: Re: oops on resume
-Date: Thu, 5 Aug 2004 21:08:57 +0100
+Date: Thu, 05 Aug 2004 16:19:30 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040805200857.GA28775@redhat.com>
+Message-ID: <1091737170.10552.32.camel@pc>
 References: <pan.2004.08.05.19.00.33.11957@interlinx.bc.ca>
 	<20040805192613.GA9008@dominikbrodowski.de>
-	<1091734482.10552.20.camel@pc> <20040805195248.GA32045@redhat.com>
-	<1091736171.10552.26.camel@pc>
+	<1091734482.10552.20.camel@pc>
+	<20040805195248.GA32045@redhat.com> <1091736171.10552.26.camel@pc>
+	<20040805200857.GA28775@redhat.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0899179738=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1091736171.10552.26.camel@pc>
+In-Reply-To: <20040805200857.GA28775@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,60 +21,72 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Brian J. Murrell" <brian@interlinx.bc.ca>
+To: Dave Jones <davej@redhat.com>
 Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
-On Thu, Aug 05, 2004 at 04:02:50PM -0400, Brian J. Murrell wrote:
- > On Thu, 2004-08-05 at 20:52 +0100, Dave Jones wrote:
- > > On Thu, Aug 05, 2004 at 03:34:42PM -0400, Brian J. Murrell wrote:
- > >  > On Thu, 2004-08-05 at 21:26 +0200, Dominik Brodowski wrote:
- > >  > > cat /sys/devices/system/cpu/cpu0/cpufreq/*
- > >  > 
- > >  > Just to be sure you knew which values where for which nodes I did a
- > >  > 
- > >  > grep ".*" /sys/devices/system/cpu/cpu0/cpufreq/*
- > >  > 
- > >  > and got:
- > >  > 
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:1200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:2200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:1200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies:2200000 1200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:userspace performance
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:1200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:speedstep-ich
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:userspace
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:2200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:1200000
- > >  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:1200000
- > > 
- > > 
- > > My guess is that speedstep_get_processor_frequency() is returning null
- > > 
- > > What does /proc/cpuinfo say ?
- > 
- > Right now:
- > 
- > processor       : 0
- > vendor_id       : GenuineIntel
- > cpu family      : 15
- > model           : 2
- > model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.20GHz
 
-Interesting. http://processorfinder.intel.com/scripts/list.asp?ProcFam=826
-shows that this has a 400MHz FSB. speedstep_get_processor_frequency()
-doesn't support that, so that *could* be it. Although that should have
-triggered this message..
+--===============0899179738==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-uSJMAWu5EfqgfQ+W5qO7"
 
-    if (!fsb)
-	        printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
 
-Very odd.
+--=-uSJMAWu5EfqgfQ+W5qO7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- > Do you want shall I enable SPEEDSTEP_DEBUG and see what comes out?
+On Thu, 2004-08-05 at 21:08 +0100, Dave Jones wrote:
+> Although that should have
+> triggered this message..
+>=20
+>     if (!fsb)
+> 	        printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Ple=
+ase send an e-mail to <linux@brodo.de>\n");
 
-Might be useful, though right now, my bets are on an unknown FSB.
+At KERN_DEBUG though.  My /proc/sys/kernel/printk is at:
 
-		Dave
+$ cat /proc/sys/kernel/printk
+6       4       1       7
+
+I don't recall how those 4 fields work.  Will I get KERN_DEBUG on the
+console with those settings?
+
+> Might be useful, though right now, my bets are on an unknown FSB.
+
+Yeah, me too.  Any (one have any) idea how to calculate fsb for that
+sucker?  I may as well throw that code in there too to see if it
+alleviates the problem.
+
+b.
+
+
+--=-uSJMAWu5EfqgfQ+W5qO7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBBEpZSl3EQlGLyuXARAh8TAKCSpqUjiPiAf98wc6j1Gki5uNz64wCaA7Bg
+XGZmnlVN0xcnG4SkSxJh4Uk=
+=4Wge
+-----END PGP SIGNATURE-----
+
+--=-uSJMAWu5EfqgfQ+W5qO7--
+
+
+
+--===============0899179738==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0899179738==--
+
+
