@@ -1,11 +1,13 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: rebased cpufreq patch?
-Date: Mon, 7 Jul 2003 14:34:48 +0200
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: Cpufreq: powernow-k7 weirdness
+Date: Mon, 7 Jul 2003 15:12:52 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030707123448.GA1905@brodo.de>
+Message-ID: <20030707131252.GC7796@poupinou.org>
+References: <tpisqgv58s.fsf@lanthane.pps.jussieu.fr> <20030706184801.GY7796@poupinou.org> <200307062356.01561.lbelli@crema.unimi.it> <200307071129.46683.mflt1@micrologica.com.hk>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <200307071129.46683.mflt1@micrologica.com.hk>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,23 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: anders@trudheim.com
-Cc: davej@suse.de, cpufreq@www.linux.org.uk
+To: Michael Frank <mflt1@micrologica.com.hk>
+Cc: Luigi Belli <lbelli@crema.unimi.it>, cpufreq@www.linux.org.uk
 
-> Hi there,
-> 
-> Is there any chance of getting the CPUFreq patch rebased against
-> 2.4.22-pre3 ?
+> The actual minimum time between steps depends on systems design and can 
+> only be established by watching the (core) voltage on an oscilloscope 
+> while modulating cpufreq/ACPI settings. The time used should be double 
+> or triple the minimum for longterm stability. It would be better if 
+> Mainboard manufacturers would specify this minimum time.
 
-I'll be working on an updated version within the next few days, check
-http://www.codemonkey.org.uk/cpufreq/ for updated patches, please.
+That is suposed to be done via a BIOS table (with signature
+AMDK7PNOW!) for the powernow-k7 driver, but is used for the
+CPU only (I believe), and I guess that anyway this occur
+only when a valid core voltage is applied to the CPU (well,
+I hope).
+But perhaps this table do not give appropriate values on some system?
 
-> I have been using the two patches linux-2.4.20-cpufreq.patch and
-> cpufreq-centrino.patch against 2.4.21-rc7-ac1 since June 12th without
-> any problems. From what I can tell, it is working very well indeed, so
-> if it could be included in -pre4 it'd be great.
+Actually, I was wondering why the _PSS method (from ACPI) give
+a settling time of 125us, instead of 100us for some systems.
 
-IMHO it's no stuff for 2.4.22. Davej/Russell, what's your opinion about 2.4.
-in general?
+-- 
+Ducrot Bruno
 
-	Dominik
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
