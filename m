@@ -1,14 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Cleanups for powernow-k8
-Date: Wed, 14 Jan 2004 00:59:39 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040113235938.GA25158@elf.ucw.cz>
-References: <20040113215149.GA236@elf.ucw.cz>
-	<20040113215918.GK14674@redhat.com>
+Date: Wed, 14 Jan 2004 01:03:52 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20040114000352.GB25158@elf.ucw.cz>
+References: <99F2150714F93F448942F9A9F112634C080EF392@txexmtae.amd.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040113215918.GK14674@redhat.com>
+In-Reply-To: <99F2150714F93F448942F9A9F112634C080EF392@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,40 +16,35 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Pavel Machek <pavel@ucw.cz>, cpufreq@www.linux.org.uk, linux@brodo.de, kernel list <linux-kernel@vger.kernel.org>, paul.devriendt@amd.com
+To: paul.devriendt@amd.com
+Cc: davej@redhat.com, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, pavel@ucw.cz, linux@brodo.de
 
 Hi!
 
->  > and is way too verbose.
+> I have a totally new driver, that I am hoping to release within about
+> a month. (I did target the end of the year, but I got distracted on
+> some other stuff). The new driver :
+>   - uses ACPI to figure out the available p-states. I have seen a *lot*
+>     of buggy BIOSs where the PSB/PST info is wrong or missing,
+>   - uses ACPI to handle battery / mains power transitions,
+> and some other clean ups.
 > 
-> I agree that something like that output belongs more in x86info,
-> or a standalone tool, but I think Paul wanted to keep debugging stuff
-> there for the time being. Maybe silence it, and have it enabled
-> with a 'debug' module param ? Paul ?
+> I would appreciate some advice on a question ... should I leave the old
+> non-ACPI capability there for those people who do not want to enable ACPI
+> in the kernel ? If so, is this a big ifdef, or is there a better way to do
+> it ? Or should I just say that it is dependent on ACPI, got to have
+> ACPI ?
 
-I made sure all the info is still there in dmesg, just on less lines.
+I have strange notebook here, and that one only works reasonably with
+APM (with ACPI: no network IRQs, random mouse problems, random
+shutdowns due to bad temperature readings).
 
->  > @@ -637,6 +629,7 @@
->  >  		}
->  >  
->  >  		if ((numps <= 1) || (batps <= 1)) {
->  > +			/* FIXME: Is this right? I can see one state on battery, two states total as an usefull config */
->  >  			printk(KERN_ERR PFX "only 1 p-state to transition\n");
->  >  			return -ENODEV;
->  >  		}
->  > the test probably should be numps <= 1 only, but it does not matter as
->  > we force numps = batps]
-> 
-> 1 state on battery sounds odd. Buggy BIOS ?
-
-No if you have 1 state on battery but two on AC power. That way you
-*have* to be low power on battery, but can select low or high on
-AC... Ugly hardware, but Intel done this before, and it kind-of makes
-sense.
+I'd suggest to leave old driver there (possibly let me clean it up
+;-)))), and create new powernow-k8-acpi, or powernow-acpi or something
+like that.
 								Pavel
-
 -- 
 When do you have heart between your knees?
