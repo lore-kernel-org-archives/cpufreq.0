@@ -1,11 +1,9 @@
 From: Harald Milz <milz@seneca.muc.de>
 Subject: Re: Manual PST settings for "unrecognized CPUs"
-Date: Thu, 19 Aug 2004 02:05:23 +0200 (CEST)
+Date: Thu, 19 Aug 2004 02:19:10 +0200 (CEST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040819000523.7C4CA4BE98@nathan.muc.de>
-References: <39e3484804081616133c2765ce@mail.gmail.com>
-	<20040817062634.6C2404BE94@nathan.muc.de>
-	<20040817080826.GC29560@poupinou.org>
+Message-ID: <20040819001910.320EE4BE98@nathan.muc.de>
+References: <FE0E4E3EC4669A46A5D2E835957A9FFF169A0699@uranus.wallst.com>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,20 +19,17 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Bruno Ducrot <ducrot@poupinou.org> wrote:
-> Mine is a little bit too old btw, and I guess yours should be used
-> instead for now..
+Davin Carter <davin.carter@wallst.com> wrote:
+> I was able to get a Mobile Athlon 2400 down to ~300 MHZ (the lowest
+> multiplier) without any problem.  Unfortuantely, my core voltage is 1.44
+> volts, there did not seem to be any power savings below 1000 MHZ with my
+> machine.
 
-Well I'm using it right now on a SUSE 9.1 2.6.5-7.104-default
-kernel, together with cpufreqd. Works perfectly fine. The sanity checks
-that are missing from the code are presently in my head ... 
+Are you saying you could get ~300 MHz with 1.44V? Hmmm - interesting. What
+board is it? 
 
-Actually I would like to try to mod my board somehow (being an
-EE I am not too shy modding stuff :-) in order to change VIDs too. The
-A7V8X is infamous for not supporting Vcore < 1.5V which is bad per se. If
-I only knew what actually happens electrically-wise when setting the
-VIDs. Do CPU pins change their logical level? Any insight is appreciated.
+After all power consumption goes linear with clock, and by square with
+Vcore. 
 
 -- 
-Philosophy will clip an angel's wings.
-		-- John Keats
+An exotic journey in downtown Newark is in your future.
