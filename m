@@ -1,14 +1,16 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Best CPU and Chipset for cpufreq?
-Date: Fri, 16 Jan 2004 21:01:34 +0000
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: [ACPI] [PATCH] acpi-cpufreq fixups
+Date: Fri, 16 Jan 2004 22:02:09 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040116210134.GC11919@redhat.com>
-References: <20040114163958.GB1774@acheron.the-domination.com>
-	<20040116113649.p3iyo4gg408gc8c8@carlthompson.net>
+Message-ID: <20040116210209.GD14031@poupinou.org>
+References: <20040115233215.GC5386@dominikbrodowski.de>
+	<20040116140144.GW14031@poupinou.org>
+	<20040116093404.S76365@root.org>
+	<20040116193207.GC14031@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040116113649.p3iyo4gg408gc8c8@carlthompson.net>
+In-Reply-To: <20040116193207.GC14031@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,21 +22,31 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Carl Thompson <cet@carlthompson.net>
-Cc: cpufreq@www.linux.org.uk
+To: Nate Lawson <nate@root.org>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-On Fri, Jan 16, 2004 at 11:36:49AM -0800, Carl Thompson wrote:
- > My current main laptop is an eMachines M5305 and it has been fantastic.  It has
- > an Athlon XP 2200+ that can throttle all the way down to 532MHz.
+On Fri, Jan 16, 2004 at 08:32:07PM +0100, Ducrot Bruno wrote:
+> On Fri, Jan 16, 2004 at 09:35:11AM -0800, Nate Lawson wrote:
+> > On Fri, 16 Jan 2004, Ducrot Bruno wrote:
+> > > > - fix OOPS when PST has core_frequency values of zero
+> > >
+> > > FYI: That one have been fixed by Nate Lawson by calling _INI for processors.
+> > > I don't know if it is in acpi-ca yet.  Of course, it is still safe
+> > > to check if freq is 0.
+> > 
+> > I was told it was in 20031203 but I don't know what Linux kernel version
+> > has that dist.  I haven't checked to be sure since my FreeBSD cpufreq code
+> > is in a rough state right now.  :)
+> 
+> Well, my question was for ACPI-CA.  Now, if that is put in Linux, or not,
+> who cares ;)
+> 
 
-Interesting, I've received reports that model has broken PST tables.
-What BIOS revision do you have ? (dmidecode output would be useful)
+Just checked linus' bk tree.  It's a 20031002.  Well, I must admit
+that I was thinking it was more recent than that.
 
- > Plus, the eMachines laptops are very Linux-friendly, have a widescreen aspect
- > ratio (1280x800) and are very cheap despite being very powerful.
+-- 
+Ducrot Bruno
 
-eMachines have been extremely unhelpful in some cases too.
-When someone pointed out to them they had broken PST tables, they got
-quite annoyed, and blamed it on "Linux not being a real operating system".
-
-		Dave
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
