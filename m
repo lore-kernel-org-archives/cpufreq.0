@@ -1,8 +1,9 @@
-From: bugme-daemon@osdl.org
-Subject: [Bug 3255] New: longhaul: FSB incorrectly guessed (CL-6000E)
-Date: Sat, 21 Aug 2004 05:42:00 -0700
+From: Zwane Mwaikambo <zwane@linuxpower.ca>
+Subject: [PATCH] Hotplug cpu: fix p4-clockmod
+Date: Sat, 21 Aug 2004 10:29:04 -0400 (EDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408211242.i7LCg0Kb029475@fire-1.osdl.org>
+Message-ID: <Pine.LNX.4.58.0408211022090.27390@montezuma.fsmlabs.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -13,77 +14,96 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: CPU Freq ML <cpufreq@www.linux.org.uk>
+Cc: Dave Jones <davej@redhat.com>
 
-http://bugme.osdl.org/show_bug.cgi?id=3255
+This currently oopses when a processor goes offline since it can't
+schedule itself onto the correct cpu. So we now disable preemption whilst
+reading or setting the DC. There is a questionable hunk which returns the
+stock_freq if the processor being read from is offline. The other drivers
+most probably have similar issues so i'll do a seperate careful sweep of
+those as i don't have hardware.
 
-           Summary: longhaul: FSB incorrectly guessed (CL-6000E)
-    Kernel Version: 2.6.8.1
-            Status: NEW
-          Severity: normal
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: Nomad@kotnet.org
+Signed-off-by: Zwane Mwaikambo <zwane@linuxpower.ca>
 
+Index: linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+===================================================================
+RCS file: /home/cvsroot/linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c,v
+retrieving revision 1.1.1.1
+diff -u -p -B -r1.1.1.1 p4-clockmod.c
+--- linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	19 Aug 2004 20:51:36 -0000	1.1.1.1
++++ linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	20 Aug 2004 14:08:27 -0000
+@@ -58,8 +58,11 @@ static int cpufreq_p4_setdc(unsigned int
+ {
+ 	u32 l, h;
 
-VIA CL-6000E
+-	if (!cpu_online(cpu) || (newstate > DC_DISABLE) || (newstate == DC_RESV))
++	preempt_disable();
++	if (!cpu_online(cpu) || (newstate > DC_DISABLE) || (newstate == DC_RESV)) {
++		preempt_enable();
+ 		return -EINVAL;
++	}
 
-cpu family : 6 
-model : 7 
-model name : VIA Samuel 2 
-stepping : 3
+ 	rdmsr(MSR_IA32_THERM_STATUS, l, h);
+ #if 0
+@@ -86,6 +89,7 @@ static int cpufreq_p4_setdc(unsigned int
+ 		wrmsr(MSR_IA32_THERM_CONTROL, l, h);
+ 	}
 
-No matching FSB is found, and thus is set to 0, for which the modules offers no 
-longhaul. 
++	preempt_enable();
+ 	return 0;
+ }
 
-solutions:
+@@ -145,8 +149,6 @@ static int cpufreq_p4_target(struct cpuf
+ 		cpumask_t this_cpu = cpumask_of_cpu(i);
 
-line 252 of longhaul.c:
+ 		set_cpus_allowed(current, this_cpu);
+-		BUG_ON(smp_processor_id() != i);
+-
+ 		cpufreq_p4_setdc(i, p4clockmod_table[newstate].index);
+ 	}
+ 	set_cpus_allowed(current, cpus_allowed);
+@@ -260,6 +262,7 @@ static int cpufreq_p4_cpu_exit(struct cp
 
-if (c->x86_model==6) 
+ static unsigned int cpufreq_p4_get(unsigned int cpu)
+ {
++	unsigned int freq;
+ 	cpumask_t cpus_allowed, affected_cpu_map;
+ 	u32 l, h;
 
-should be: 
+@@ -267,22 +270,25 @@ static unsigned int cpufreq_p4_get(unsig
+         affected_cpu_map = cpumask_of_cpu(cpu);
 
-if (c->x86_model>=6)
+ 	set_cpus_allowed(current, affected_cpu_map);
+-        BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
++	preempt_disable();
++	if (smp_processor_id() != cpu) {
++		freq = stock_freq;
++		goto done;
++	}
 
-This fixes the problem for me. But more general: the problem is that the 
-rounding scheme used does not always work. The cpu-speed (/proc/cpuinfo): 601.
-489 is a bit high (on most CL-6000E it is) and causes the problem. A more 
-general solution is to check if the speed lies within 5% of the guessed value 
-(something like the following):
+ 	rdmsr(MSR_IA32_THERM_CONTROL, l, h);
 
-#define ROUNDING 5 
+-	set_cpus_allowed(current, cpus_allowed);
+-
+ 	if (l & 0x10) {
+ 		l = l >> 1;
+ 		l &= 0x7;
++		freq = stock_freq * l / 8;
+ 	} else
+-		l = DC_DISABLE;
+-
+-	if (l != DC_DISABLE)
+-		return (stock_freq * l / 8);
++		freq = stock_freq;
 
-static int _guess(int guess) 
-{ 
-  int target; 
+-	return stock_freq;
++done:
++	preempt_enable_no_resched();
++	set_cpus_allowed(current, cpus_allowed);
++	return freq;
+ }
 
-  target = ((maxmult/10)*guess); 
-  if (maxmult%10 != 0) 
-  target += (guess/2); 
-
-  return target; 
-} 
-
-
-static int guess_fsb(void) 
-{ 
-  int speed = (cpu_khz/1000); 
-  int i, diff; 
-  int speeds[3] = { 66, 100, 133 }; 
-
-  /* find fsb with ROUNDING procent margin */ 
-  for (i=0; i<3; i++) { 
-    diff = _guess(speeds) - speed; 
-    if(diff < 0) diff = -diff; 
-    if(diff < speed*ROUNDING/100) return speeds; 
-  } 
-
-  /* module will fail to initalize */ 
-  return 0; 
-}
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+ static struct freq_attr* p4clockmod_attr[] = {
