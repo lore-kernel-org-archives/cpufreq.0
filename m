@@ -1,15 +1,16 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: [PATCH 2.6] update passive cooling algorithm
-Date: Mon, 12 Jan 2004 20:11:22 +0100
+Date: Tue, 13 Jan 2004 09:40:39 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040112191122.GK14031@poupinou.org>
+Message-ID: <20040113084039.GA9929@dominikbrodowski.de>
 References: <20040111211255.GA31105@dominikbrodowski.de>
 	<20040112154611.GH14031@poupinou.org>
 	<20040112173922.GA6154@dominikbrodowski.de>
+	<20040112191122.GK14031@poupinou.org>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============45064017045546101=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040112173922.GA6154@dominikbrodowski.de>
+In-Reply-To: <20040112191122.GK14031@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,43 +20,52 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+
+
+--===============45064017045546101==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
+Content-Disposition: inline
+
+
+--zYM0uCDKw75PZbzx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Mon, Jan 12, 2004 at 08:11:22PM +0100, Ducrot Bruno wrote:
+> Yes I know.  But does it offer more 'cooling'?
+
+energy consumption == heat generation [approximately]
+
+	Dominik
+
+--zYM0uCDKw75PZbzx
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAA68HZ8MDCHJbN8YRAvP6AJ47w/vha3nMuPNJuTyIqWK4XEIVBQCfVyEb
+qjOu+7gWZgdEDPQx6a5SKmg=
+=+iaZ
+-----END PGP SIGNATURE-----
+
+--zYM0uCDKw75PZbzx--
+
+
+--===============45064017045546101==
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: len.brown@intel.com, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+Content-Disposition: inline
 
-On Mon, Jan 12, 2004 at 06:39:22PM +0100, Dominik Brodowski wrote:
-> On Mon, Jan 12, 2004 at 04:46:11PM +0100, Ducrot Bruno wrote:
-> > On Sun, Jan 11, 2004 at 10:12:55PM +0100, Dominik Brodowski wrote:
-> > > [Len, could you test and verify this patch, and push it to Linus, please?]
-> > > 
-> > > The current algorithm used by Linux ACPI for passive thermal management has
-> > > two shortcomings:
-> > 
-> > ...
-> > 
-> > > +/* If a passive cooling situation is detected, primarily CPUfreq is used, as it
-> > > + * offers (in most cases) voltage scaling in addition to frequency scaling, and
-> > > + * thus a cubic (instead of linear) reduction of energy. Also, we allow for
-> > > + * _any_ cpufreq driver and not only the acpi-cpufreq driver.
-> > > + */
-> > 
-> > Just a stupid question:
-> > 
-> > What is best if processor heat issues (apart turning on the fan)?
-> > 
-> > Reducing voltage of the processor, but still allowing it to run execution
-> > at 100% (which is the case if the processor is heating), or reduce
-> > amount of time allowed for the processor to execute?
-> 
-> voltage scaling. It offers a much better (quadratic) saving than clock
-> modulation (linear saving). Doing both [and you need to do it, as the CPU
-> won't run with fewer volts at the same frequency] gives you cubic savings.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-Yes I know.  But does it offer more 'cooling'?
+--===============45064017045546101==--
 
-
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
