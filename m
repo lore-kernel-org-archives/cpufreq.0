@@ -1,13 +1,9 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: speedstep-piix4 don't work
-Date: Wed, 9 Jul 2003 12:08:34 +0200
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq speedstep-piix4.c,1.5,1.6
+Date: Fri, 11 Jul 2003 14:11:18 +0100
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030709100834.GP7796@poupinou.org>
-References: <3F0AED86.7040500@theorem.ca> <20030708163556.GM7796@poupinou.org> <3F0B033D.3090709@theorem.ca> <20030708181735.GN7796@poupinou.org> <3F0BB1A5.7040606@theorem.ca>
-Mime-Version: 1.0
+Message-ID: <E19axgE-00076e-Mj@flint.arm.linux.org.uk>
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <3F0BB1A5.7040606@theorem.ca>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,49 +13,62 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kenneth Ho <ken.ho@theorem.ca>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@lists.arm.linux.org.uk
 
-On Wed, Jul 09, 2003 at 02:09:41AM -0400, Kenneth Ho wrote:
-> cpufreq: Coppermine: MSR_IA32_EBL_CR_POWERON is 0x44080020, 0x0
-> cpufreq: Coppermine: MSR_IA32_PLATFORM ID is 0x0, 0x2540000
-> speedstep: gpo port: 0x34 shift: 0x00
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> cntb before: 0x000000e1
-> cntb after:  0x000007e1
-> speedstep: reading ff from port 1034
-> speedstep: new gpo value: 0xff
-> pcntrl before: 0x00001200
-> pcntrl after:  0x00001a06
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> cpufreq: change failed
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> cntb before: 0x000000e1
-> cntb after:  0x000007e1
-> speedstep: reading ff from port 1034
-> speedstep: new gpo value: 0xfe
-> pcntrl before: 0x00001200
-> pcntrl after:  0x00001a06
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> cpufreq: change failed
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
+In directory flint:/tmp/cvs-serv27166
 
-Ok.  Could you remove the lines:
-    145         /* We may have to define a 'good' throttling duty ? */
-    146         pcntrl &= ~(0x7 << 1);
-    147         pcntrl |= (0x3 << 1);
-    148 
+Modified Files:
+	speedstep-piix4.c 
+Log Message:
+- typo fix in a dprintk statement (pcntrl was printed as the same).
+- Touching the CC_EN bit in the PCNTRL IO register seems to be a really bad
+  idea, actually.  That break in fact more systems than it resolve.
+- seems that we do not need to do a dummy read with port 0x80 after all.
 
-That will done exactly the same stuff as the old independant kernel module.
-If that still do not work, well I will be a little puzzled then, but give
-me still dmesg in any case.
 
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Index: speedstep-piix4.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-piix4.c,v
+retrieving revision 1.5
+retrieving revision 1.6
+diff -u -r1.5 -r1.6
+--- speedstep-piix4.c	27 Jun 2003 12:43:57 -0000	1.5
++++ speedstep-piix4.c	11 Jul 2003 13:11:15 -0000	1.6
+@@ -116,14 +116,14 @@
+ 	cntb |= (1 << 5);       /* CPU_SEL = 1 */
+ 
+ 	dprintk(KERN_DEBUG "cntb before: 0x%.8x\n", cntb_save);
+-	dprintk(KERN_DEBUG "cntb after:  0x%.8x\n", cntb_save);
++	dprintk(KERN_DEBUG "cntb after:  0x%.8x\n", cntb);
+ 
+ 	pci_write_config_dword(speedstep_chipset_dev, 0x48, cntb);
+ 
+ 	/* read state */
+ 	value = inb_p(pmbase + gpo_hilo_port);
+ 
+-	/* write new state */
++	/* compute new state */
+ 	value &= ~(1 << gpo_hilo_shift);
+ 	value |= state << gpo_hilo_shift;
+ 
+@@ -139,7 +139,6 @@
+ 	pcntrl |= 1 << 12;              /* STPCLK_EN = 1 */
+ 	pcntrl |= 1 << 11;              /* SLEEP_EN = 1 */
+ 	pcntrl &= ~(1 << 10);           /* BURST_EN = 0 */
+-	pcntrl |= 1 << 9;               /* CC_EN = 1 */
+ 	pcntrl &= ~(1 << 4);            /* THT_EN = 0 */
+ 
+ 	dprintk(KERN_DEBUG "pcntrl before: 0x%.8x\n", pcntrl_save);
+@@ -151,9 +150,6 @@
+ 	outb_p(value, pmbase + gpo_hilo_port);
+ 	wbinvd();
+ 	inb_p(pmbase + 0x15);
+-
+-	/* We may have to do a dummy read after C3. */
+-	inb(0x80);
+ 
+ 	/* cleanup */
