@@ -1,16 +1,21 @@
-From: Christian Heimanns <heimanns@versanet.de>
-Subject: Re: speedstep-ich and ich5, [speedstep]
-Date: Sun, 08 Aug 2004 23:49:55 +0200
+From: "Brian J. Murrell" <brian@interlinx.bc.ca>
+Subject: Re: oops on resume
+Date: Mon, 09 Aug 2004 09:37:46 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <4116A003.600@versanet.de>
-References: <4114D272.6070808@versanet.de>
-	<20040807131432.GA8934@dominikbrodowski.de>
-	<4114E9C1.8070409@versanet.de>
-	<20040808175726.GA15268@dominikbrodowski.de>
+Message-ID: <1092058666.29221.50.camel@pc>
+References: <1091734482.10552.20.camel@pc>
+	<20040805195248.GA32045@redhat.com> <1091736171.10552.26.camel@pc>
+	<20040805200857.GA28775@redhat.com> <1091737170.10552.32.camel@pc>
+	<20040805210916.GB23087@dominikbrodowski.de>
+	<1091814215.10552.133.camel@pc>
+	<20040806175530.GA16167@dominikbrodowski.de>
+	<20040807132449.GA9569@dominikbrodowski.de>
+	<1091905423.29221.1.camel@pc>
+	<20040808162408.GA7986@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1758443571=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040808175726.GA15268@dominikbrodowski.de>
+In-Reply-To: <20040808162408.GA7986@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,52 +25,66 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
 To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: cpufreq <cpufreq@www.linux.org.uk>
+Cc: Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
 
-> oh yes, the patch contained a brown paper bag bug. This new version is
-> also tested by me, so maybe it helps now.
 
-Hmm.... I've compiled kernel-2.6.8-rc3-bk3 with your new version but no=20
-changes for me. I'm able to 'modprobe acpi' now, but I still cannot=20
-change the frequencies when connected to the power supply. If running on=20
-battery it is possible. Is it possible that this is purposed by the=20
-manufacturer?
+--===============1758443571==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vC1Z+5XKMGE14sBeyZJ5"
 
-The output of dmesg tells me nothing new:
-cpufreq: CPU0 - ACPI performance management activated.
-cpufreq: *P0: 3059 MHz, 0 mW, 500 uS
-cpufreq:  P1: 1019 MHz, 0 mW, 500 uS
 
-I still have the feeling that there is something wrong with the=20
-implementation of hyperthreading(HT). I mentioned a time ago that I use=20
-my notebook with HT diabled in the BIOS and no SMP support in the=20
-kernel. With HT enabled and SMP + HT support in the kernel my notebook=20
-will freeze randomly. Don't ask me why....
+--=-vC1Z+5XKMGE14sBeyZJ5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-But ACPI tells me a little difference when I enable/disable HT support=20
-in the BIOS:
-HT enabled: ACPI: Processor [CPU0] (supports C1, 8 throttling states)
-HT disabled: ACPI: Processor [CPU0] (supports C1 C2, 8 throttling states)
+On Sun, 2004-08-08 at 18:24 +0200, Dominik Brodowski wrote:
+>=20
+> Problem is, I don't use the resume funcitonality on my notebook
 
-Throttling works fine as far as I know under both conditions. When HT is=20
-disabled CPU power management seems also to work (switching between C1=20
-and C2). I've also checked the INTEL documentation (25302804.pdf),=20
-Mobile Intel(R) Pentium(R) 4 Processor with 533 MHz System Bus=20
-Datasheet. Is it possibele that the CPU reports as a Mobile CPU but=20
-doesn't support frequency and voltage scaling? I won't open the notebook=20
-to do a 100 percent check what kind of CPU really is build in....
+But surely lots of people are.  If the patch below were necessary and
+correct, would not a lot more people be having the same problem?  Unless
+I am mis-understanding the intent of the patch.  Do you mean it as a
+further test/confirmation that write_seqlock_irq() is the culprit or do
+you mean the patch as the solution to my problem?
 
-I appreciate your support and help
-thanks,
+> Anyways, I've prepared a patch to work around the "local_irq_enable()" ca=
+ll.
+> Could you test it, please?
 
-Christian
+Sure.  I will let you know how it does.
 
---=20
----
-Christian Heimanns
-heimanns@versanet.de
+b.
 
-### Pinguine k=F6nnen nicht fliegen
-- Pinguine st=FCrzen auch nicht ab! ###
+
+--=-vC1Z+5XKMGE14sBeyZJ5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBBF34ql3EQlGLyuXARAvHMAKDLNYM/tA4CG9WAMK59cvDI2SlYNQCeL7J7
+DahD2WHOKghB/l060rAFAL8=
+=hSIr
+-----END PGP SIGNATURE-----
+
+--=-vC1Z+5XKMGE14sBeyZJ5--
+
+
+
+--===============1758443571==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1758443571==--
+
+
