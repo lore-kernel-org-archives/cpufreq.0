@@ -1,12 +1,11 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: Re: [PATCH] (1/3) cpufreq_ondemand - 01_ignore-nice.diff
-Date: Mon, 21 Feb 2005 14:31:51 +0100
-Message-ID: <4219E2C7.1050505@tremplin-utc.net>
-References: <20050220131518.GB4495@inskipp> <4218B768.8020401@tremplin-utc.net>
-	<20050221105055.GD15599@message-id.gmane0305.slipkontur.de>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] (3/3) cpufreq_ondemand - 03_sys_freq_step.diff
+Date: Mon, 21 Feb 2005 16:17:50 +0100
+Message-ID: <20050221151750.GB12182@poupinou.org>
+References: <20050220131808.GD4495@inskipp>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050221105055.GD15599@message-id.gmane0305.slipkontur.de>
+Content-Disposition: inline
+In-Reply-To: <20050220131808.GD4495@inskipp>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,26 +16,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Stefan Seyfried <seife@gmane0305.slipkontur.de>
-Cc: cpufreq@zenii.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: davej@redhat.com, cpufreq@ZenII.linux.org.uk, alex-kernel@digriz.org.uk, linux@dominikbrodowski.de
 
-Stefan Seyfried a =C3=A9crit :
-> On Sun, Feb 20, 2005 at 05:14:32PM +0100, Eric Piel wrote:
-> =20
->=20
->>It would make the patch 5 lines instead of 50. Every userspace deamon=20
->>have this feature enabled by default, so this is a very reasonable=20
->>trade-off.
->=20
->=20
-> I'm sure that you cannot imagine how much beating i have gotten for mak=
-ing
-> CONSIDER_NICE=3Dno the default for the powersaved on SUSE 9.1... :-)
-> It took man-weeks of debating what could be a sensible default for this.
-> This has to be tweakable.
-Well, my point was that if people want different things from the simple=20
-and normal behaviour, they use a userspace deamon... for instance=20
-powersaved .
+On Sun, Feb 20, 2005 at 01:18:08PM +0000, Alexander Clouter wrote:
+> Adds support so that the cpufreq change stepping is no longer fixed at 5% and 
+> can be changed dynamically by the user
+> 
 
-Eric
+The cpufreq core will step to the next available frequency (in both
+direction).  So I failed to see the usefullness for this one.
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
