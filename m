@@ -1,13 +1,12 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: SpeedStep New Driver for Pentium III (-M) using SMI interface
-Date: Tue, 2 Sep 2003 14:35:38 +0200
+From: Mattia Dongili <dongili@supereva.it>
+Subject: More governors
+Date: Tue, 2 Sep 2003 14:07:25 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030902123538.GR4401@poupinou.org>
-References: <871xuzbycu.wl%miura@da-cha.org> <20030902083150.GA3958@brodo.de>
+Message-ID: <20030902120725.GD776@inferi.kami.home>
+Reply-To: dongili@supereva.it
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030902083150.GA3958@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,39 +18,21 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: Hiroshi Miura <miura@da-cha.org>, Ducrot Bruno <ducrot@arm.linux.org.uk>, cpufreq@www.linux.org.uk
+To: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
 
-On Tue, Sep 02, 2003 at 10:31:50AM +0200, Dominik Brodowski wrote:
-> Thanks for this very interesting work. Unfortunately, it doesn't work on my
-> aged notebook, but well, the GPO driver didn't work either....
-> 
+Hi,
 
-Dominik, the command is 0x80 for you, but actually it should be 0x82.
-I do have the exact same trouble with my toshiba.  Try then to pass
-the correct option in order to overide that value.  Unfortunately, I
-don't have my toshiba handy (even though it is ICH based, it
-may be usefull to play with).
+I remember that Dominik started working on 2 more governors using
+particular algorithms to dynamically scale frequencies. 
+Are those available somewhere?
 
-The flags stuff is not actually exploited.
-For mine (and for Dominik) it is 0x07d00100
-whereas Miura-san is 0x0x07d00000
+I'd like to take a look at them and if they need work I'd volunteer for
+it :)
 
-When I receive report from speedstep-detect (and also send
-something called speedtep-bios privatly), if bit 8 == 1, then it do not
-work, but I don't have the ownership stuff, though.  When that
-bit is 0, it may or may not work.  I think it is related to 
-state on battery.
+Note: It's mostly an exercise so don't expect too much :) I'm not that
+familiar with kernel develompent...
 
-More related to the driver: I don't see any special reason to disable
-interrupts in-between the smi call when setting the state.  Also,
-you don't use the speedstep_get_freqs, but use a SMI function for
-that (which is probably more usefull), therefore, there is no
-need to do the notification stuff (it was done only at _init stage,
-and to avoid duplicating codes).
-
+Thaks a lot
 -- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+mattia
+:wq!
