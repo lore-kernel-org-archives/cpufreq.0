@@ -1,9 +1,17 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/drivers/cpufreq userspace.c,1.1.1.2,1.1.1.3
-Date: Thu, 15 Jul 2004 14:08:05 +0100
+From: olgaAr <olgaAr@fuckup.homelinux.com>
+Subject: Re: Help! Cpufreq makes my laptop crash!
+Date: Thu, 15 Jul 2004 16:00:45 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1Bl5y1-0002Md-NG@flint.arm.linux.org.uk>
+Message-ID: <40F68E0D.8000307@fuckup.homelinux.com>
+References: <40F549D5.8030100@fuckup.homelinux.com>
+	<20040714115717.4gsocksks0s8o4wc@carlthompson.net>
+	<40F58B6C.60606@fuckup.homelinux.com>
+	<20040714140944.g0k8c40swcskss8g@carlthompson.net>
+	<20040715095710.GN6326@poupinou.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20040715095710.GN6326@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,43 +21,17 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq
-In directory flint:/tmp/cvs-serv9074
+Hi Carl, hi Bruno,
 
-Modified Files:
-      Tag: LINUX_2_4
-	userspace.c 
-Log Message:
-Fix security hole in proc handler.
- Brad Spengler <spender@grsecurity.net> found an exploitable bug in the proc handler
- of cpufreq, where a user-supplied unsigned int is cast to a signed int and then
- passed on to copy_[to|from]_user() allowing arbitary amounts of memory to be written
- (root only thankfully), or read (as any user).
+I am not quite sure about how to help you. "Testing without the ACPI 
+processor support" - do you mean CONFIG_X86_ACPI_CPUFREQ by that? Or do 
+you refer to CONFIG_ACPI_PROCESSOR?
 
-The Common Vulnerabilities and Exposures project (cve.mitre.org) has assigned
-the name CAN-2004-0228 to this issue.
+Carl: I have just downloaded your version of cpuspeed. Will be testing 
+it in a few minutes' time.
 
-
-
-Index: userspace.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq/Attic/userspace.c,v
-retrieving revision 1.1.1.2
-retrieving revision 1.1.1.3
-diff -u -r1.1.1.2 -r1.1.1.3
---- userspace.c	28 Aug 2003 13:41:57 -0000	1.1.1.2
-+++ userspace.c	15 Jul 2004 13:08:02 -0000	1.1.1.3
-@@ -161,7 +161,7 @@
- {
- 	char buf[16], *p;
- 	int cpu = (int) ctl->extra1;
--	int len, left = *lenp;
-+	size_t len, left = *lenp;
- 
- 	if (!left || (filp->f_pos && !write) || !cpu_online(cpu)) {
- 		*lenp = 0;
+Cheers,
+Oliver
