@@ -1,9 +1,10 @@
-From: Cedric De Wilde <daique@skynet.be>
-Subject: freeze when loadinf powernow-k7
-Date: Fri, 25 Jul 2003 12:18:26 +0200
+From: David  <davidendless@email.it>
+Subject: Powernow-k7 hang on Acer Aspire 1304XC
+Date: Fri, 25 Jul 2003 23:01:15 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030725101826.GA1667@jolinar>
+Message-ID: <200307252301.16017.davidendless@email.it>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
@@ -16,16 +17,22 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hello,
+I experienced hangs when I used powernow-k7, so I started to experiment.
 
-When I try to do a "modprode powernow-k7", my system totally freeze.
-It's a xp-m 2500+(targa xp10), I use the cooker kernel(2.4.21-6mdk)
-which seem to contain the patch from codemonkey(but I can't
-verificate since it's down). Is there a newer patch than
-http://cvs.mandrakesoft.com/cgi-bin/cvsweb.cgi/SPECS/kernel/CT01-2_cpufreq-2.4.22-1.patch?rev=1.1&content-type=text/x-cvsweb-markup
-?
+I found that the computer hangs only when I switch between performance and 
+powersave echoing to scaling_governor, while if I change scaling_max_freq 
+everything works fine.
+So if I set powersave and then I turn back to performance, most of the times 
+the computer hangs, but if I am in performance state and I change 
+scaling_max_freq to 665000 kHz and then I change again scaling_max_freq to 
+1529000 kHz everything works fine (even iterating it)
+The cpu speed really changes in both cases (accordingly to /proc/cpuinfo, 
+bogomips, and monitoring time of execution of a small script I wrote).
 
-Cedric
+My experience maybe means something, maybe not.
+
+Hope this helps solving the problem.
+
+David
