@@ -1,15 +1,16 @@
-From: Dave Jones <davej@redhat.com>
+From: Ducrot Bruno <ducrot@poupinou.org>
 Subject: Re: Dynamic frequency governor
-Date: Mon, 20 Oct 2003 18:32:05 +0100
+Date: Mon, 20 Oct 2003 19:35:09 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031020173205.GG21438@redhat.com>
+Message-ID: <20031020173509.GF13989@poupinou.org>
 References: <CFF522B18982EA4481D3A3E23B83141C24B4B3@orsmsx407.jf.intel.com>
 	<20031020170010.GF21438@redhat.com>
 	<20031020172503.GE13989@poupinou.org>
+	<20031020173205.GG21438@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031020172503.GE13989@poupinou.org>
+In-Reply-To: <20031020173205.GG21438@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,19 +22,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ducrot Bruno <ducrot@poupinou.org>
+To: Dave Jones <davej@redhat.com>
 Cc: "Moore, Robert" <robert.moore@intel.com>, cpufreq@www.linux.org.uk
 
-On Mon, Oct 20, 2003 at 07:25:03PM +0200, Ducrot Bruno wrote:
+On Mon, Oct 20, 2003 at 06:32:05PM +0100, Dave Jones wrote:
+> On Mon, Oct 20, 2003 at 07:25:03PM +0200, Ducrot Bruno wrote:
+> 
+>  > AFAIR, there is no patent if wide system policy which is what Bob want
+>  > to implement.  Only per-process (which is the most fun unfortunately) are
+>  > patented.  That need to be confirmed though (by Alan ?).
+> 
+> I was under the understanding that there was a patent on
+> "recalculate cpu frequency based on idle time" too.
+> 
 
- > AFAIR, there is no patent if wide system policy which is what Bob want
- > to implement.  Only per-process (which is the most fun unfortunately) are
- > patented.  That need to be confirmed though (by Alan ?).
-
-I was under the understanding that there was a patent on
-"recalculate cpu frequency based on idle time" too.
-
-		Dave
+Grumble.  I was probably mistaken.  Sorry.
 
 -- 
- Dave Jones     http://www.codemonkey.org.uk
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
