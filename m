@@ -1,16 +1,14 @@
-From: Ashley Pittman <ashley@quadrics.com>
-Subject: Re: Patch to stop i386 longhaul from deadlocking the kernel
-Date: Thu, 20 Nov 2003 14:12:57 +0000
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1069337577.26134.1366.camel@ashley>
-References: <1068045570.23318.34.camel@ashley>
-	<20031120124613.GA12049@redhat.com>
-	<1069334644.26134.1358.camel@ashley>
-	<20031120134012.GG5653@redhat.com>
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: [PATCH 7/8] latency must be in _nano_seconds
+Date: Thu, 20 Nov 2003 19:31:33 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031120183133.GA4425@brodo.de>
+References: <20031119183330.GH20576@brodo.de>
+	<20031119190725.GA5653@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031120134012.GG5653@redhat.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20031119190725.GA5653@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,63 +17,145 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Dave Jones <davej@redhat.com>
-Cc: cpufreq <cpufreq@www.linux.org.uk>
+Cc: cpufreq@www.linux.org.uk
 
-On Thu, 2003-11-20 at 13:40, Dave Jones wrote:
-> On Thu, Nov 20, 2003 at 01:24:04PM +0000, Ashley Pittman wrote:
->  > The computer is at home today but it's one of the 800Mhz boards, the fsb
->  > is 133, multiplier of 60.  The speed should therefore be 798 but cpu_khz
->  > is reporting it as 800.  Then it's just a case of how many bits you need
->  > to remove of before 798==800.  The result is that they both need to
->  > equal 768.  I've attached a user-space program which demonstrates this
->  > with output.
+On Wed, Nov 19, 2003 at 07:07:25PM +0000, Dave Jones wrote:
+> On Wed, Nov 19, 2003 at 07:33:30PM +0100, Dominik Brodowski wrote:
 > 
-> Right, so the anding is catching the case of overflow, but neglecting
-> underflow. It seems to do the right thing if I change guess_fsb to do this..
+>  >  	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
+>  > diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+>  > --- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 17:06:10.571868800 +0100
+>  > +++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 18:48:10.150551432 +0100
+>  > @@ -386,7 +386,7 @@
+>  >  				minimum_speed, maximum_speed);
+>  >  
+>  >  	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+>  > -	policy->cpuinfo.transition_latency = latency;
+>  > +	policy->cpuinfo.transition_latency = latency * 20;
+>  >  	policy->cur = maximum_speed;
+> 
+> Can we at least get a comment explaining where '20' comes from
+> when we add magic numbers like this? I know, and you know, but
+> it's a little non-obvious, and in six months time, I'll probably
+> have forgotten too 8)
 
-> I need to think about this some more. I'm not entirely comfortable with
-> that, it looks somewhat fragile, though I can see why it works.
+Comment added.
+ 
+>  > diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+>  > --- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 17:07:58.537455536 +0100
+>  > +++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 18:46:57.031667192 +0100
+>  > @@ -959,8 +959,8 @@
+>  >  	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
+>  >  
+>  >  	/* Take a crude guess here. */
+>  > -	pol->cpuinfo.transition_latency = ((rvo + 8) * vstable * VST_UNITS_20US)
+>  > -	    + (3 * (1 << irt) * 10);
+>  > +	pol->cpuinfo.transition_latency = (((rvo + 8) * vstable * VST_UNITS_20US)
+>  > +	    + (3 * (1 << irt) * 10)) * 1000;
+> 
+> Ditto. This one moreso, as its quite complex to begin with.
 
-Isn't the correct thing to do to increase the speed before anding it? 
-That way it will always end up in the right bin.  The following code
-works for me and does feel right.  A value of 0x7 is all thats needed to
-get the right answer on my machine in this case.
+What Paul Devriendt did here I do not know, but I added a comment for the
+factor "1000"...
 
-static int _guess (int guess, int maxmult)
-{
-	int target;
-	
-	target = ((maxmult/10)*guess);
-	if (maxmult%10 != 0)
-		target += (guess/2);
-	target += SPEEDKLUDGE/2;
-	target &= ~SPEEDKLUDGE;
-	printf("Working... guess %d maxmult %d target %d %#x\n",
-	       guess,maxmult,target,target);
-	return target;
-}
+	Dominik
 
-static int guess_fsb(int maxmult)
-{
-	int speed = (cpu_khz/1000);
-	int i;
-	int speeds[3] = { 66, 100, 133 };
-	
-	speed += SPEEDKLUDGE/2;
-	speed &= ~SPEEDKLUDGE;
-	
-	printf("Kludge is %d %#x\n",(int)SPEEDKLUDGE,(int)SPEEDKLUDGE);
-	
-	printf("Speed is %d %#x (%d %#x)\n",
-	       speed,speed,
-	       (cpu_khz/1000),(cpu_khz/1000));
-	
-	for (i=0; i<3; i++) {
-		if (_guess(speeds[i],maxmult) == speed)
-			return speeds[i];
-	}
-	return 0;
-}
+Even though the core stated that cpuinfo.transition_latency needs to be
+in 10^(-9) s, hardly any driver set it to nanoseconds but to microseconds.
+So, fix up the drivers.
+
+ arch/arm/mach-integrator/cpu.c             |    2 +-
+ arch/i386/kernel/cpu/cpufreq/acpi.c        |    4 ++--
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |    2 +-
+ arch/i386/kernel/cpu/cpufreq/powernow-k7.c |    6 +++++-
+ arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    7 ++++---
+ include/linux/cpufreq.h                    |    2 +-
+ 6 files changed, 14 insertions(+), 9 deletions(-)
+
+diff -ruN linux-original/arch/arm/mach-integrator/cpu.c linux/arch/arm/mach-integrator/cpu.c
+--- linux-original/arch/arm/mach-integrator/cpu.c	2003-11-20 19:17:28.489660360 +0100
++++ linux/arch/arm/mach-integrator/cpu.c	2003-11-20 19:17:34.311775264 +0100
+@@ -172,7 +172,7 @@
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.max_freq = 160000;
+ 	policy->cpuinfo.min_freq = 12000;
+-	policy->cpuinfo.transition_latency = 1000; /* 1 ms, assumed */
++	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
+ 	policy->cur = policy->min = policy->max =
+ 		icst525_khz(&cclk_params, vco); /* current freq */
+ 
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-11-20 19:17:28.510657168 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-11-20 19:17:34.312775112 +0100
+@@ -578,8 +578,8 @@
+ 	/* detect transition latency */
+ 	policy->cpuinfo.transition_latency = 0;
+ 	for (i=0;i<perf->state_count;i++) {
+-		if (perf->states[i].transition_latency > policy->cpuinfo.transition_latency)
+-			policy->cpuinfo.transition_latency = perf->states[i].transition_latency;
++		if ((perf->states[i].transition_latency * 1000) > policy->cpuinfo.transition_latency)
++			policy->cpuinfo.transition_latency = perf->states[i].transition_latency * 1000;
+ 	}
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cur = perf->states[pr->limit.state.px].core_frequency * 1000;
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-20 19:17:28.540652608 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-20 19:17:34.312775112 +0100
+@@ -255,7 +255,7 @@
+ 	
+ 	/* cpuinfo and default policy values */
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.transition_latency = 1000;
++	policy->cpuinfo.transition_latency = 1000000; /* assumed */
+ 	policy->cur = stock_freq;
+ 
+ 	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-20 19:17:28.541652456 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-20 19:20:35.230271472 +0100
+@@ -386,7 +386,11 @@
+ 				minimum_speed, maximum_speed);
+ 
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.transition_latency = latency;
++
++	/* latency is in 10 ns (look for SGTC above) for each VID
++	 * and FID transition, so multiply that value with 20 */
++	policy->cpuinfo.transition_latency = latency * 20;
++
+ 	policy->cur = maximum_speed;
+ 
+ 	return cpufreq_frequency_table_cpuinfo(policy, powernow_table);
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-20 19:17:28.591644856 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-20 19:18:45.550945264 +0100
+@@ -958,9 +958,10 @@
+ 
+ 	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 
+-	/* Take a crude guess here. */
+-	pol->cpuinfo.transition_latency = ((rvo + 8) * vstable * VST_UNITS_20US)
+-	    + (3 * (1 << irt) * 10);
++	/* Take a crude guess here. 
++	 * That guess was in microseconds, so multply with 1000 */
++	pol->cpuinfo.transition_latency = (((rvo + 8) * vstable * VST_UNITS_20US)
++	    + (3 * (1 << irt) * 10)) * 1000;
+ 
+ 	if (query_current_values_with_pending_wait())
+ 		return -EIO;
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2003-11-20 19:17:28.695629048 +0100
++++ linux/include/linux/cpufreq.h	2003-11-20 19:17:34.314774808 +0100
+@@ -57,7 +57,7 @@
+ struct cpufreq_cpuinfo {
+ 	unsigned int		max_freq;
+ 	unsigned int		min_freq;
+-	unsigned int		transition_latency; /* in 10^(-9) s */
++	unsigned int		transition_latency; /* in 10^(-9) s = nanoseconds */
+ };
+ 
+ struct cpufreq_real_policy {
