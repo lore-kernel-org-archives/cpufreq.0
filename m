@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq speedstep-piix4.c,1.10,1.11
-Date: Tue, 20 Jan 2004 16:29:18 +0000
+Subject: cpufreq/linux/arch/arm/mach-integrator cpu.c,1.8,1.9
+Date: Tue, 20 Jan 2004 17:03:33 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1Aiykg-0007UR-Ki@flint.arm.linux.org.uk>
+Message-ID: <E1AizHp-0007rl-J1@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,48 +18,27 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv28766/linux/arch/i386/kernel/cpufreq
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator
+In directory flint:/tmp/cvs-serv30228/linux/arch/arm/mach-integrator
 
 Modified Files:
-	speedstep-piix4.c 
+	cpu.c 
 Log Message:
-At last, if people want that speedstep-piix4 to be kept, it should compile.
+Merge with latest davej cpufreq bk tree.
 
-
-Index: speedstep-piix4.c
+Index: cpu.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-piix4.c,v
-retrieving revision 1.10
-retrieving revision 1.11
-diff -u -r1.10 -r1.11
---- speedstep-piix4.c	3 Sep 2003 07:42:31 -0000	1.10
-+++ speedstep-piix4.c	20 Jan 2004 16:29:15 -0000	1.11
-@@ -84,6 +84,8 @@
- 	freqs.old = speedstep_get_processor_frequency(speedstep_processor);
- 	freqs.new = speedstep_freqs[state].frequency;
- 	freqs.cpu = 0; /* speedstep.c is UP only driver */
-+
-+	dprintk(KERN_DEBUG "cpufreq: before %d MHz\n", speedstep_get_processor_frequency(speedstep_processor));
- 	
- 	if (notify)
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-@@ -168,6 +170,8 @@
- 
- 	local_irq_restore(flags);
- 
-+	dprintk(KERN_DEBUG "cpufreq: after %d MHz\n", speedstep_get_processor_frequency(speedstep_processor));
-+
- 	if (speedstep_get_processor_frequency(speedstep_processor) != freqs.old) {
- 		dprintk(KERN_INFO "cpufreq: change to %u MHz succeded\n", (freqs.new / 1000));
- 	} else {
-@@ -270,9 +274,7 @@
- 		(speed == speedstep_freqs[SPEEDSTEP_LOW].frequency) ? "low" : "high",
- 		(speed / 1000));
- 
--	/* cpuinfo and default policy values */
--	policy->policy = (speed == speedstep_freqs[SPEEDSTEP_LOW].frequency) ? 
--		CPUFREQ_POLICY_POWERSAVE : CPUFREQ_POLICY_PERFORMANCE;
-+	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
- 	policy->cur = speed;
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator/cpu.c,v
+retrieving revision 1.8
+retrieving revision 1.9
+diff -u -r1.8 -r1.9
+--- cpu.c	5 Nov 2003 18:27:41 -0000	1.8
++++ cpu.c	20 Jan 2004 17:03:30 -0000	1.9
+@@ -172,7 +172,7 @@
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.max_freq = 160000;
+ 	policy->cpuinfo.min_freq = 12000;
+-	policy->cpuinfo.transition_latency = 1000; /* 1 ms, assumed */
++	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
+ 	policy->cur = policy->min = policy->max =
+ 		icst525_khz(&cclk_params, vco); /* current freq */
