@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/arm/mach-integrator cpu.c,1.8,1.9
-Date: Tue, 20 Jan 2004 17:03:33 +0000
+Subject: cpufreq/linux/drivers/cpufreq Kconfig,1.3,1.4
+Date: Tue, 20 Jan 2004 17:03:35 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1AizHp-0007rl-J1@flint.arm.linux.org.uk>
+Message-ID: <E1AizHr-0007s1-CK@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,27 +18,28 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator
-In directory flint:/tmp/cvs-serv30228/linux/arch/arm/mach-integrator
+Update of /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq
+In directory flint:/tmp/cvs-serv30228/linux/drivers/cpufreq
 
 Modified Files:
-	cpu.c 
+	Kconfig 
 Log Message:
 Merge with latest davej cpufreq bk tree.
 
-Index: cpu.c
+Index: Kconfig
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator/cpu.c,v
-retrieving revision 1.8
-retrieving revision 1.9
-diff -u -r1.8 -r1.9
---- cpu.c	5 Nov 2003 18:27:41 -0000	1.8
-+++ cpu.c	20 Jan 2004 17:03:30 -0000	1.9
-@@ -172,7 +172,7 @@
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.max_freq = 160000;
- 	policy->cpuinfo.min_freq = 12000;
--	policy->cpuinfo.transition_latency = 1000; /* 1 ms, assumed */
-+	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
- 	policy->cur = policy->min = policy->max =
- 		icst525_khz(&cclk_params, vco); /* current freq */
+RCS file: /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq/Kconfig,v
+retrieving revision 1.3
+retrieving revision 1.4
+diff -u -r1.3 -r1.4
+--- Kconfig	5 Nov 2003 18:27:44 -0000	1.3
++++ Kconfig	20 Jan 2004 17:03:32 -0000	1.4
+@@ -74,7 +74,7 @@
+ 	help
+ 	  This enables the /proc/sys/cpu/ sysctl interface for controlling
+ 	  the CPUFreq,"userspace" governor. This is the same interface
+-	  as known from the.4.-kernel patches for CPUFreq, and offers
++	  as known from the 2.4.-kernel patches for CPUFreq, and offers
+ 	  the same functionality as long as "userspace" is the
+ 	  selected governor for the specified CPU.
+ 	
