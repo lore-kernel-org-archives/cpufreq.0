@@ -1,16 +1,10 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: 2.6.11: USB broken on nforce4, ipv6 still broken,
-	centrino speedstep even more broken than in 2.6.10
-Date: Fri, 25 Mar 2005 14:37:24 +0100
-Message-ID: <20050325133724.GZ2298@poupinou.org>
-References: <20050311202122.GA13205@fefe.de>
-	<20050311173517.7fe95918.akpm@osdl.org>
-	<1110599659.12485.279.camel@localhost.localdomain>
-	<20050321163225.4af1c169.akpm@osdl.org>
-	<1111454454.6633.5.camel@linux.site>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: cpufreq issue
+Date: Tue, 29 Mar 2005 12:01:11 +1000
+Message-ID: <1112061671.5768.3.camel@gaston>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <1111454454.6633.5.camel@linux.site>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,58 +16,25 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Adam Belay <abelay@novell.com>
-Cc: Andrew Morton <akpm@osdl.org>, felix-linuxkernel@fefe.de, cpufreq@ZenII.linux.org.uk, linux-kernel@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@lists.linux.org.uk
 
-On Mon, Mar 21, 2005 at 08:20:55PM -0500, Adam Belay wrote:
-> On Mon, 2005-03-21 at 19:32, Andrew Morton wrote:
-> > Adam Belay <abelay@novell.com> wrote:
-> > >
-> > > On Fri, 2005-03-11 at 17:35 -0800, Andrew Morton wrote:
-> > > > Felix von Leitner <felix-linuxkernel@fefe.de> wrote:
-> > > > >
-> > > > > Finally Centrino SpeedStep.
-> > > > > I have a "Intel(R) Pentium(R) M processor 1.80GHz" in my notebook.
-> > > > > Linux does not support it.  This architecture has been out there for
-> > > > > months now, and there even was a patch to support it posted here a in
-> > > > > October last year or so.  Linux still does not include it.  Until
-> > > > > 2.6.11-rc4-bk8 or so, the old patched file from back then still worked.
-> > > > > Now it doesn't.  Because some interface changed.  Now what?  Using a
-> > > > > Centrino notebook without CPU throttling is completely out of the
-> > > > > question.  Linux might as well not boot on it at all.
-> > > > 
-> > > > Could you please dig out the old patch, send it?
-> > > 
-> > > Why not use ACPI for CPU scaling?
-> > > 
-> > 
-> > Felix, did you try this?
-> > 
-> 
-> ACPI is the preferred (and only standardized) method of controlling cpu
-> throttling on x86 systems.
-> 
+Hi !
 
-No.  ACPI is the preferred method in order to *get configuration*
-for cpu frequency and voltage scaling, but it's up to a
-specific processor driver to control frequency (actually I'm
-simplifying things since it's possible to control frequency
-from ACPI only, but only in certain situation).
+I'm trying to solve a long standing cpufreq issue on pmac. That includes
+adding a suspend() callback in addition to the restore one, but that
+also includes the need for me to switch to high speed on suspend. The
+problem is that at this point, IRQs are disabled, which mean that
+calling the notifier will BUG()... However, I must trigger the jiffies
+adjustement...
 
-Throttling is another method to frequency control by throttling
-the processor (and ACPI is then preferred for both configuration
-and controlling how to throttle the processor), but there is
-no voltage scaling at all as for frequency and voltage scaling.
+What do you suggest ? Maybe I could have the core cpufreq suspend()
+routine do a bit like resume(), and so right after it calls my driver
+suspend(), compare the frequency with get() (if any) and update the
+jiffies ? Or what ? The problem is that I need to make sure the machine
+is in high speed before sleep for various HW reasons, and I must make
+sure the jiffies are recalculated properly since some low level stuff
+will rely on udelay() beeing "good enough" before cpufreq gets a chance
+to resume and thus "fixup" the loops_per_jiffies ...
 
-Those far it's up to the OP to activate ACPI even if he do not trust
-ACPI.  It's the only way to get configuration from BIOS if he do not
-want to hardcode a configuration in the speedstep-centrino driver.
-
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Ben.
