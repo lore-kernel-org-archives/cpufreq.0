@@ -1,11 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] speedstep-centrino: ignore 0xffff'ed P-States
-Date: Fri, 30 Jul 2004 17:50:05 +0200
+From: Oliver Antwerpen <olli@giesskaennchen.de>
+Subject: Pentium M 1.7GHz/2MB dothan
+Date: Fri, 30 Jul 2004 19:02:41 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040730155005.GA7759@dominikbrodowski.de>
+Message-ID: <410A7F31.9030604@giesskaennchen.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,40 +15,42 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
-Cc: jeremy@goop.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@www.linux.org.uk
 
-Some ACPI tables contain 0xffff'ed entries for "P-States". This is 
-obviously incorrect according to the ACPI specifications, nonetheless
-it should "just work". So, simply ignore such invalid P-States instead
-of aborting. Thanks to Frederik Reiss for testing (and fixing) this 
-patch.
+Hi there,
 
-Signed-off-by: Dominik Brodowski <linux@brodo.de>
+My CPU isn't recognized by speedstep-centrino, and I can't see why.
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-07-28 19:02:28.271709968 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-07-28 19:38:19.307702792 +0200
-@@ -347,6 +347,12 @@
- 			goto err_unreg;
- 		}
- 
-+		if (p.states[i].core_frequency > p.states[0].core_frequency) {
-+			printk(KERN_DEBUG "P%u has larger frequency than P0, skipping\n", i);
-+			p.states[i].core_frequency = 0;
-+			continue;
-+		}
-+
- 		if (extract_clock(p.states[i].control) != 
- 		    (p.states[i].core_frequency * 1000)) {
- 			printk(KERN_DEBUG "Invalid encoded frequency\n");
-@@ -378,6 +384,8 @@
- 		centrino_model->op_points[i].frequency = p.states[i].core_frequency * 1000;
- 		if (cur_freq == centrino_model->op_points[i].frequency)
- 			p.state = i;
-+		if (!p.states[i].core_frequency)
-+			centrino_model->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
- 	}
- 	centrino_model->op_points[p.state_count].frequency = CPUFREQ_TABLE_END;
+My Kernel:
+
+c80:~# uname -r
+2.6.8-rc2-mm1
+
+
+Here's my cpuinfo:
+
+c80:~# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 13
+model name      : Intel(R) Pentium(R) M processor 1.70GHz
+stepping        : 6
+cpu MHz         : 1696.378
+cache size      : 64 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca 
+cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe tm2 est
+bogomips        : 3366.91
+
+Any idea, what's happening here?
+
+Olli
