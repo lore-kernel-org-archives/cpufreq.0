@@ -1,13 +1,12 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [2.6 patch] small cpufreq cleanup
-Date: Sat, 30 Oct 2004 09:38:43 +0200
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041030073843.GA8075@dominikbrodowski.de>
-References: <20041030072246.GG4374@stusta.de>
+From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
+Subject: Re: [PATCH] cpu freq groups (policy->cpus) in ondemand governor
+Date: Tue, 2 Nov 2004 10:34:27 +0100
+Message-ID: <20041102093427.GA14727@message-id.gmane0305.slipkontur.de>
+References: <20041026113949.A20518@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20041030072246.GG4374@stusta.de>
+In-Reply-To: <20041026113949.A20518@unix-os.sc.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,27 +15,30 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@stusta.de>
-Cc: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
+To: cpufreq@www.linux.org.uk
 
-On Sat, Oct 30, 2004 at 09:22:46AM +0200, Adrian Bunk wrote:
-> the patch below does the following cleanups in the cpufreq code:
-> - remove the __deprecated cpufreq_set{,max} functions that didn't have
->   any users left
+On Tue, Oct 26, 2004 at 11:39:49AM -0700, Venkatesh Pallipadi wrote:
+ 
+> Now ondemand governor looks at all cpus in policy->cpus and takes its 
+> frequency increase/decrease decisions based on most lightly loaded cpu in 
+> the group.
 
-Not yet, the #warning says it'll be removed 2005-01-01.
+Is this a good idea? Assume the pathetic case:
+ - 2 cpus, both in one group
+ - 1 process running at 100% CPU
+   -> only 1 cpu loaded
+      -> the 2nd cpu is idle
+         -> no speed increase.
 
-> - make cpufreq_gov_dbs static
+Or didn't i understand this correctly?
 
-Patch which does that is already in cpufreq-bk.
+> This patch will not affect systems where policy->cpus contain
+> only one cpu.
 
-> cpufreq_driver_target and cpufreq_governor in drivers/cpufreq/cpufreq.c 
-> also both have currently exactly zero in-kernel users, but I left them.
-
-cpufreq_driver_target and/or cpufreq_governor should already be used by some
-code, but aren't yet, but definitely will be useful and used soon.
-
-	Dominik
+That's why it doesn't affect me and why i cannot test it :-))
+-- 
+Stefan Seyfried
