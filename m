@@ -1,12 +1,15 @@
-From: "Moore, Robert" <robert.moore@intel.com>
-Subject: RE: Dynamic frequency governor
-Date: Mon, 20 Oct 2003 10:08:17 -0700
+From: Edward Macfarlane Smith <snowfire@blueyonder.co.uk>
+Subject: Re: 2.4 kernel patch on debian source 2.4.22
+Date: Mon, 20 Oct 2003 21:35:43 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <CFF522B18982EA4481D3A3E23B83141C24B4B6@orsmsx407.jf.intel.com>
+Message-ID: <200310202135.43943.snowfire@blueyonder.co.uk>
+References: <002b01c39676$43910270$0100a8c0@bert>
+	<1066607136.1501.16.camel@carryme.shs>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-content-class: urn:content-classes:message
+In-Reply-To: <1066607136.1501.16.camel@carryme.shs>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,43 +20,98 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@www.linux.org.uk
+To: Lars Weissflog <L@rs-w.de>, cpufreq@www.linux.org.uk
 
-Can you be more specific about who has patents on what?
-Bob
+I think you just need to add in all the lines that have a "+" without the plus 
+to the original file after the line with "obj-$(CONFIG_X86_VISWS_APIC)  += 
+visws_apic.o". There are 4 files that mess up in a similar way if you apply 
+the patch from the weekend to the 2.4.23-pre7 kernel. It's some other changes 
+that upset the patch.
+I presume the cpufreq patch will be updated soon, but if anyone really needs 
+it I can mail them the modified patches.
+Regards,
+Edward
 
-
------Original Message-----
-From: Dave Jones [mailto:davej@redhat.com]=20
-Sent: Monday, October 20, 2003 10:00 AM
-To: Moore, Robert
-Cc: cpufreq@www.linux.org.uk
-Subject: Re: Dynamic frequency governor
-
-On Mon, Oct 20, 2003 at 09:33:04AM -0700, Moore, Robert wrote:
-
- > >From what I can tell, this has not been done yet; is this true?
-
-Correct. For the reason I outlined...
-
- > however the fact remains, whilst there are folks owning patents on
- > this, it'll *never* be acceptable for merging without an exception
- > grant from the patent holder.
-
-Here, and...
-
- > > There are several patents in this area (I think from Hitachi, I
-forget
- > > exactly) It has come up before on the list, so should be in the
- > > archives.  Unless you can get a grant from the holder that it may
-be
- > > used in GPL code, this has zero chance of being merged to mainline.
-
-Here.
-Do I need to quote it a third time ?
-
-		Dave
-
---=20
- Dave Jones     http://www.codemonkey.org.uk
+On Monday 20 October 2003 00:45, Lars Weissflog wrote:
+> Hi Stephen,
+>
+> As far as I remember, all cpufreq-patches are agains the stock kernels
+> from kernel.org. Go there and download the original linux-2.4.2x.tar.bz2
+> (whatever version x is at this moment; I stopped with 2.4.20 for now,
+> waiting to go up to 2.6 when it leaves the -testX state)
+>
+> Then untar those original sources and try to apply the cpufreq-patches
+> against that. Should work. Another way might be to check out the
+> modified kernel sources by Alan Cox. You can get them from the
+> /people/alan tree on kernel.org. They have an -ac attached to the
+> version number and normally include - more or less - the latest
+> acpi-stuff. And maybe they include the cpufreq-stuff as well.
+> But in any case you should be fine with the stock 2.4.2x-sources.
+>
+> Good luck and good night.
+> Lars
+>
+> On Sun, 2003-10-19 at 21:21, Stephen English wrote:
+> > Hi all,
+> > First, thanks to all that contributed to creating this software - it
+> > looks great. However, I can't get it to patch the debian kernel sources I
+> > downloaded. Basically, I get this on a fresh extraction of the kernel:
+> >
+> > bex:/usr/src/cpufreq# ./patchin.sh /usr/src/linux
+> > patching file Documentation/00-INDEX
+> > patching file Documentation/Configure.help
+> > Hunk #1 succeeded at 27057 (offset 80 lines).
+> > Hunk #2 succeeded at 27458 (offset 80 lines).
+> > patching file Makefile
+> > Hunk #1 succeeded at 199 (offset 5 lines).
+> > patching file arch/i386/config.in
+> > Hunk #1 succeeded at 195 (offset 1 line).
+> > patching file arch/i386/boot/setup.S
+> > patching file arch/i386/kernel/Makefile
+> > Hunk #2 FAILED at 44.
+> > 1 out of 2 hunks FAILED -- saving rejects to file
+> > arch/i386/kernel/Makefile.rej
+> > patching file arch/i386/kernel/i386_ksyms.c
+> > patching file arch/i386/kernel/setup.c
+> > Hunk #3 succeeded at 207 (offset 4 lines).
+> > Hunk #4 succeeded at 1150 (offset 10 lines).
+> > patching file arch/i386/kernel/time.c
+> > patching file drivers/Makefile
+> > patching file include/asm-i386/ist.h
+> > patching file include/asm-i386/msr.h
+> > patching file include/asm-i386/smp.h
+> > patching file include/linux/smp.h
+> > bex:/usr/src/cpufreq# cd ..
+> > bex:/usr/src# cat linux/arch/i386/kernel/Makefile.rej
+> > ***************
+> > *** 43,47 ****
+> >   obj-$(CONFIG_X86_LOCAL_APIC)  += mpparse.o apic.o nmi.o
+> >   obj-$(CONFIG_X86_IO_APIC)     += io_apic.o
+> >   obj-$(CONFIG_X86_VISWS_APIC)  += visws_apic.o
+> >
+> >   include $(TOPDIR)/Rules.make
+> > --- 44,60 ----
+> >   obj-$(CONFIG_X86_LOCAL_APIC)  += mpparse.o apic.o nmi.o
+> >   obj-$(CONFIG_X86_IO_APIC)     += io_apic.o
+> >   obj-$(CONFIG_X86_VISWS_APIC)  += visws_apic.o
+> > + obj-$(CONFIG_X86_POWERNOW_K6) += powernow-k6.o
+> > + obj-$(CONFIG_X86_POWERNOW_K7) += powernow-k7.o
+> > + obj-$(CONFIG_X86_POWERNOW_K8) += powernow-k8.o
+> > + obj-$(CONFIG_X86_LONGHAUL)    += longhaul.o
+> > + obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)  += speedstep-centrino.o
+> > + obj-$(CONFIG_X86_SPEEDSTEP_PIIX4)     += speedstep-piix4.o
+> > speedstep-lib.o + obj-$(CONFIG_X86_SPEEDSTEP_SMI)       +=
+> > speedstep-smi.o speedstep-lib.o + obj-$(CONFIG_X86_SPEEDSTEP_ICH)      
+> > += speedstep-ich.o speedstep-lib.o + obj-$(CONFIG_X86_P4_CLOCKMOD) +=
+> > p4-clockmod.o
+> > + obj-$(CONFIG_ELAN_CPUFREQ)    += elanfreq.o
+> > + obj-$(CONFIG_X86_LONGRUN)     += longrun.o
+> > + obj-$(CONFIG_X86_GX_SUSPMOD)  += gx-suspmod.o
+> >
+> >   include $(TOPDIR)/Rules.make
+> >
+> > Any info on how to remedy this would be greatly appreciated.
+> >
+> > Thanks,
+> >
+> > Stephen English
