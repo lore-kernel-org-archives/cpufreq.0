@@ -1,14 +1,9 @@
-From: Ivor Hewitt <ivor@ivor.org>
-Subject: Re: Repost:  System freeze running powersaved.
-Date: Fri, 7 Jan 2005 07:46:45 +0000
-Message-ID: <200501070746.45424.ivor@ivor.org>
-References: <E1CmKfa-000Jhs-Bt@server2.anyname.com>
-	<20050106104216.GA4336@inferi.kami.home>
-	<6.2.0.14.0.20050106235406.02a67fc0@mail.thefreyers.net>
+From: Andi Kleen <ak@suse.de>
+Subject: default ondemand governor
+Date: Fri, 7 Jan 2005 17:33:31 +0100
+Message-ID: <20050107163331.GE9999@wotan.suse.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <6.2.0.14.0.20050106235406.02a67fc0@mail.thefreyers.net>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,36 +16,11 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Friday 07 Jan 2005 05:29, Chris Freyer wrote:
->
-> And if it helps anyone, I wrote a script to output the CPU speed every
-> second or more.  Have fun with it.
->
-> Thanks!!
-> Chris
->
->
-> #! /bin/bash
-> # 2004/01/07
-> # output cpu speed every second or so until terminated.
->
-> while [ true ]; do
->          powersave -r
->
->          #use this line instead if you don't have powersave
->          #grep MHz /proc/cpuinfo | cut -d: -f2
->
->          sleep 1
-> done
->
 
-or you could just:
+Is there any specific reason the ondemand governor cannot be made
+default in .config ? 
 
-watch -n 1 powersave -r
-
-
--- 
-Ivor Hewitt.
-http://www.ivor.it - tech | http://www.ivor.org - hedge
+-Andi
