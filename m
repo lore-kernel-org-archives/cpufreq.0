@@ -1,14 +1,20 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: [PATCH] 1/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Wed, 22 Oct 2003 11:17:47 +0200
+From: Daniel Thor Kristjansson <danielk@cat.nyu.edu>
+Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI P-state
+ driver
+Date: Wed, 22 Oct 2003 11:48:41 -0400 (EDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031022091747.GM13989@poupinou.org>
-References: <88056F38E9E48644A0F562A38C64FB6007791F@scsmsx403.sc.intel.com>
+Message-ID: <Pine.SOL.4.53.0310221123140.9450@graphics.cat.nyu.edu>
+References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
+	<1066725533.5237.3.camel@laptop.fenrus.com>
+	<20031021095925.GB893@inferi.kami.home>
+	<20031021101737.GA31352@wiggy.net>
+	<20031021105234.GF893@inferi.kami.home>
+	<Pine.SOL.4.53.0310211057060.6187@graphics.cat.nyu.edu>
+	<20031021203215.GE26971@brodo.de>
+Reply-To: danielk@mrl.nyu.edu
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007791F@scsmsx403.sc.intel.com>
+In-Reply-To: <20031021203215.GE26971@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,60 +24,82 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+To: Dominik Brodowski <linux@brodo.de>
+Cc: danielk@mrl.nyu.edu, Mattia Dongili <dongili@supereva.it>, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Tue, Oct 21, 2003 at 11:57:58AM -0700, Pallipadi, Venkatesh wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Ducrot Bruno [mailto:ducrot@poupinou.org] 
-> > Sent: Tuesday, October 21, 2003 10:56 AM
-> > 
-> > > It will work any processor 
-> > > that is ACPI compatible and again there are no specific 
-> > > checks for Intel here.
-> > > 
-> > 
-> > On a K7 with powernow for example, perf_ctrl and perf_data 
-> > will be MSR 0
-> > with your patch, that do not make sence.
-> > Even if you know the correct MSRs, the values for 'control' 
-> > and 'status'
-> > in _PSS packages will be only bit-fields, and they can *not* be
-> > written nor read directly to the (correct) MSRs (again for K7 
-> > powernow).
-> > 
-> > This is because the FfixedHW is only an indication that a CPU specific
-> > 'feature' (even though already somehow defined in ACPI like P-state,
-> > C-state, etc.) have to be handled by the OS in a non-acpi driver, as
-> > per ACPI spec, and that will be dependant of the CPU.
-> > 
-> 
-> Agree with most of your comments. 
-> Current ACPI P-state driver ignored everything other than SYSTEM_IO.
-> And we are trying to add support for FIXED_HW. I was unaware of
-> any other CPU using ACPI PCT FIXED_HW to mean anything other than
-> MSR. As you mentioned, if K7 indeed exports some ACPI-PCT information 
-> to mean something else, then that is a real bug in my patch. I will 
-> add CPU specific abstraction to handle FIXED_HW get/set functions in 
-> the next revision of the patch. 
 
-That is why Dominik seperated the acpi cpufreq driver in 2 files in his
-cleanup patch.  Others cpufreq drivers may use acpi to retrieve infos
-if needed.  Even though by now K7 do not support that, it can be changed
-for (the doc. seems to be under NDA, but AMD seems willing to cooperate).
+]> The _user_ shouldn't set the cpu frequency hundred of times a second,
+]> but a userland program should set the priorities. If you are just
+]Wrong. Passing "events" or "information" to cpufreq governors by
+]cpufreq_governor() is much easier, cheaper, and more reliable.
 
-Looking around some other asl, it seems also that if you verify that
-_PCT return FFixedHW, but length and address are both different to 0,
-it may be possible that a generic driver via MSR could work, but there
-is nothing in specs afaik (and specs can be changed if compatible..).
+I think we may actually agree, but I may be wrong.
 
--- 
-Ducrot Bruno
+I have no problem with a governor setting the frequency and voltage
+based on idle or temperature measurements only it can see efficiently.
+But I think you still want more complex things to be decided in userland
+which is more forgiving to programmer error. For instance this patch
+does not allow you to tailor the polling frequency, if someone wrote a
+such a governor that took battery into account my Vaio FXA53 would come
+to a grinding halt as checking the battery through ACPI stops the
+machine cold for about 200 ms. There is no need to poll the battery very
+often, but someone with a fast battery check might do so simply out of
+convenience.
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+]> CPUFreq has been rearchitectured to allow this type of thing,
+]> you can have a governor in the kernel that sets CPU Frequency based on
+]> load within limits specified by a userland program.
+]Wrong again. CPUfreq has been rearchitectured to do this kernel-space.
+]The userspace governor allows setting to specific frequencies by the user
+]["I _want_ 500 MHz and nothing else!"], and it offers backwards
+]compatibility for the first-era cpufreq interface [LART project etc.].
+No, you can set a min and max frequency that the governor is allowed to
+move within. This can be done by a userspace program through the /sys
+interface. You can also use the "userspace" governor, but that's not
+what I'm recommending.
+
+]> ACPI can meantime throttle the CPU if it gets too hot
+]However, frequency scaling is much more efficient on lowering the CPU heat,
+]too.
+Sure, a governor that does goes to the minimum frequency it's userland
+governor has told it it has available to cool the CPU is a good thing.
+Or, even below that if the CPU is near critical. If the CPU gets that
+hot there is something wrong with the userland policy. Until this is
+written, ACPI can act as a backup system to keep the CPU from burning
+up.
+
+]> The user may know things the kernel doesn't such as "this laptop is
+]> burning a hole in my pants." She might want to construct a policy that
+]Yes indeed. She wants to set a cpufreq policy which suits of her needs:
+]it consists of a
+]- minimum frequency	=> not too low [she's plugged in]
+]- maximum frequency	=> 100%
+]- cpufreq governor	=> some kind of yet-to-be-written
+]				dynamic cpufreq governor with
+]				temperature or long-term-statistic
+]				knowledge.
+Why not a sensible governor in the kernel and a userland governor that
+sets the minimum and maximum for desired effect?
+
+]_I_ wouldn't want to run this governor, though -- I want kernel compiles to
+]complete as fast as possible. So, we need different in-kernel governors.
+I think a governor could keep the CPU running at 100% for long enough to
+finish a kernel compile while still slowing down for a really long
+compile like KDE, Mozilla, etc. It might however be too complex for me
+to feel comfortable with it in the kernel.
+
+]Well, the thing one of the cpufreq userspace programs does is really fine:
+]based on low-frequency events [power plug-in, running specific programs,
+]etc.] different cpufreq policies [see above] are selected. No XML file
+]necessary.
+
+Yes, the userspace program can just switch from performance, to
+something in between w/min/max, to powersave. My arguement is just
+against making the "something in between" too complex, by for
+instance taking the low-frequency events into account.
+
+-- Daniel
+  <<McCain was held in a bamboo cage and poked at with sticks for years.
+    That's the kind of guy who should be in the White House.>> -- Anon.
