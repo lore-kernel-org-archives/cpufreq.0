@@ -1,13 +1,14 @@
-From: Zhijian Lu <zl4j@virginia.edu>
-Subject: Re: STPGNT with athlonXP PowerNow
-Date: Wed, 3 Sep 2003 12:41:08 -0400 (Eastern Daylight Time)
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: Which cpufreq driver is best for ...
+Date: Wed, 3 Sep 2003 21:30:41 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <SIMEON.10309031208.A@csisdci19.config.mail.virginia.edu>
-References: <3F55FEF5.7070207@wanadoo.fr>
-Reply-To: Zhijian Lu <zl4j@virginia.edu>
+Message-ID: <20030903193040.GB30360@brodo.de>
+References: <20030903055749.GA21721@gamma.logic.tuwien.ac.at>
+	<3F55D261.6010407@basmevissen.nl>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <3F55FEF5.7070207@wanadoo.fr>
+Content-Disposition: inline
+In-Reply-To: <3F55D261.6010407@basmevissen.nl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,20 +18,39 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Toula Michael <keos@wanadoo.fr>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+To: Bas Mevissen <ml@basmevissen.nl>
+Cc: cpufreq@www.linux.org.uk
 
-Hi,
-I have a question related to this topic:
-Whether the mobile athlonXP will disconnect the bus 
-connection in response to the HLT instruction even ACPI is 
-not installed? Because we observed that the idle power is 
-almost the same no matter what voltage/frequency 
-combination is used(if PLL doesn't stop, the power 
-consumption should be affectecd by the running frequency 
-and voltage)?
+On Wed, Sep 03, 2003 at 01:37:05PM +0200, Bas Mevissen wrote:
+> Norbert Preining wrote:
+> 
+> >Hi!
+> >
+> >Which cpufreq driver is best for 
+> >	Mobile Intel(R) Pentium(R) 4 - M CPU 2.20GHz
+> >I can use the
+> >	p4-clockmod
+> >and the
+> >	speedstep-ich
+> >With the p4-clockmod I can adapt the freq between 274MHz and 2.2GHz,
+> >while with speedstep-ich I can only go between 1.2GHz and 2.2GHz. So I
+> >guess p4-clockmod is superior for my chip/cpu.
+> >
+> 
+> It depends on what you want. If you want to get battery life to the max 
+> (and power consumption/heat production as low as possible), you need 
+> p4-clockmod.
 
-Thanks,
-Zhijian
+Well, if you run CPU hogs, the p4-clockmod driver indeed prolongs battery
+life and reduces heat production. But less work is done, also. So the ratio
+
+	amount of energy
+	----------------
+	amount of work
+
+is better (lower) for the speedstep-ich driver than for the p4-clockmod
+driver.
+
+	Dominik
