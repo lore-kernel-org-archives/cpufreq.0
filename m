@@ -1,14 +1,22 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: [SPEEDSTEP] ALi shouthbridge.  alpha tester wanted.
-Date: Tue, 11 Nov 2003 21:52:42 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031111205242.GP29175@poupinou.org>
-References: <20031106140935.GC21970@poupinou.org>
-	<20031111193200.GJ29175@poupinou.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
+Date: Tue, 11 Nov 2003 22:45:02 +0000
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031111224501.GA30698@redhat.com>
+References: <20031104160816.GA9187@brodo.de>
+	<20031110163209.GP10144@redhat.com>
+	<20031110171533.GS21970@poupinou.org>
+	<20031104160816.GA9187@brodo.de>
+	<20031110163209.GP10144@redhat.com>
+	<20031110171533.GS21970@poupinou.org>
+	<20031110172246.GT10144@redhat.com>
+	<20031110205029.GA7149@brodo.de>
+	<20031110211654.GA10144@redhat.com>
+	<20031111185417.GB4825@brodo.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031111193200.GJ29175@poupinou.org>
+In-Reply-To: <20031111185417.GB4825@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,33 +25,20 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@brodo.de>
+Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-On Tue, Nov 11, 2003 at 08:32:00PM +0100, Ducrot Bruno wrote:
-> On Thu, Nov 06, 2003 at 03:09:35PM +0100, Ducrot Bruno wrote:
-> > 
-> > Can someone please test
-> > ftp://ftp.poupinou.org/cpufreq/speedstep-ali.trunk.diff
-> > 
-> > Note that this is agaist 2.6.0-testX, not 2.4.
-> > 
-> 
-> OK.  It do not work.  Sorry.
-> 
-> What it does is to turn on geyserville functionality on the PMU device,
-> then, (I guess) we can use the geyserville IO register (at pmbase + 0x2f),
-> as for the -ich case.  Unfortunately, that is wrong.  I don't
-> know what to do next.  For people interrested in some registers that
-> have to be looked, get ftp://ftp.poupinou.org/dont_use/README.ali
+On Tue, Nov 11, 2003 at 07:54:17PM +0100, Dominik Brodowski wrote:
+ > BTW, it's not enough for powernow-k7 to divide the BIOS-known latency by 50.
+ > This latency for one VID and one FID transition needs to be multiplied by
+ > the number of p-states minus 1, as that's the actual maximum latency due to
+ > the "one step up/down only" loop, IIRC.
 
-Grumble.  Just found a stupid bug.  Forget that email.  I still
-don't know if that work, though.  Sorry for noise.
+Yoinks, I thought I had merged that patch (so did you judging from
+that last sentence), but it fell through the cracks somehow.
+I'll see if I can dig it out if I still have it.
 
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+		Dave
