@@ -1,15 +1,8 @@
-From: Stefan Tomanek <stefan@pico.ruhr.de>
-Subject: Re: static freq table support for Pentium M Dothan
-Date: Thu, 9 Sep 2004 18:41:12 +0000 (UTC)
+From: mark.langsdorf@amd.com
+Subject: RE: powernow-k8: Two PSTs
+Date: Thu, 9 Sep 2004 14:26:00 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <loom.20040909T204016-479@post.gmane.org>
-References: <E1Bwu3z-0007gV-4Q@mage.metaparadigm.com>
-	<loom.20040908T215751-536@post.gmane.org>
-	<20040908213140.GA7842@dominikbrodowski.de>
-	<loom.20040908T233809-28@post.gmane.org>
-	<20040908220139.GA8116@dominikbrodowski.de>
-	<loom.20040909T010454-526@post.gmane.org>
-	<20040909085802.GF16132@poupinou.org>
+Message-ID: <84EA05E2CA77634C82730353CBE3A843AA1A1E@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -25,16 +18,28 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-Bruno Ducrot <ducrot <at> poupinou.org> writes:
+> At work we recently got about 80 new Athlon64 PCs 
+> (Fujitsu-Siemens Scenic P320, VIA K8M800, Athlon64 3200+ 
+> 512KB L2, newest BIOS Rev 1.02 dated 2004-07-14) and I'm 
+> experimenting with cpufreq to even further lower the heat 
+> generated and power consumption, one of the main reasons why 
+> we chose Athlon64s in the first place.
+> 
+> At first, powernow-k8 wouldn't load because the number of 
+> PSTs was != 1 (actually 2) but after simply commenting out 
+> the numpst check, everything worked as advertised.
+>
+> After subscribing to the list and looking at the archive, I 
+> found Mark Langsdorf's patch and explanation for my problem.
+> (http://www.linux.org.uk/mailman/private/cpufreq/2004-August/0
+04191.html) 
+> It's unfortunate that the archive isn't public but the patch
+> worked perfectly. Is there any chance for this or a similar
+> patch to be submitted for inclusion into the mainline kernel ? 
 
-> It's indeed the SMM interface, not direct hardware access, with also a
-> broken mask (out of spec indeed) for the control register.
+I thought by submitting it to this list I was submitting it
+to the mainline kernel.  If that is not the case, I can post
+it on LKML at any time.
 
-Ahh, and this is....bad I guess?
-
-> I guess 'the other OS' may actually use somehow the full eax before doing
-> the outb and then allowing somehow ancient version of speedstep to
-> work...
-
-It uses the whatwhat before doing the somethingsomething?
-Please excuse my incompetence ;-)
+-Mark Langsdorf
+AMD, Inc.
