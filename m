@@ -1,13 +1,13 @@
-From: =?iso-8859-1?q?Michael_Teichgr=E4ber?= <mt@wmipf.in-berlin.de>
-Subject: Re: /proc/sys/cpu interface and elanfreq on linux 2.4.20
-Date: Wed, 17 Sep 2003 13:56:39 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: VIA C3 problems
+Date: Wed, 17 Sep 2003 18:00:37 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <873cevtyq0.fsf@wmipf.in-berlin.de>
-References: <87znh4e0l2.fsf@wmipf.in-berlin.de> <3F682891.6080600@wanadoo.fr>
+Message-ID: <20030917170037.GA9933@redhat.com>
+References: <20030916104052.53283.qmail@web13504.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <3F682891.6080600@wanadoo.fr> (Toula Michael's message of "Wed,
-	17 Sep 2003 11:25:37 +0200")
+Content-Disposition: inline
+In-Reply-To: <20030916104052.53283.qmail@web13504.mail.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,14 +19,21 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Scott Russ <scott@linuxjihad.com>
+Cc: cpufreq@www.linux.org.uk
 
-Toula Michael <keos@wanadoo.fr> writes:
+On Tue, Sep 16, 2003 at 03:40:52AM -0700, Scott Russ wrote:
+ > I am having problems with using cpufreq.  I used to use it fine and just
+ > recently tried applying it again.  I am using 2.4.22 with the CK-2 patches
+ > (http://members.optusnet.com.au/ckolivas/kernel/).
+ > 
+ > When I modprobe longhaul I get a kernel oops and lsmod shows longhaul as still
+ > initalizing and I can't rmmod.  I also tried the 2.4.22-ac2 patch which
+ > includes cpufreq with the same results.  Any suggestions?
 
-> In fact you just forgot to activate it. To do so (you must be root):
-> $ echo -n "0%0%100%userspace" > /proc/cpufreq
+Known bug, fixed in 2.6, needs backporting to 2.4-ac
 
-Thanks, this made it work.
+		Dave
 
 -- 
-Michael
+ Dave Jones     http://www.codemonkey.org.uk
