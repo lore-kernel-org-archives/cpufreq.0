@@ -1,15 +1,13 @@
-From: tmc@dreamcraft.com.au (Tomasz Ciolek)
-Subject: Re: [ACPI] [PATCH 1/2] 2.6: use scaling_available_freqs in
-	acpi-cpufreq-ioport driver
-Date: Wed, 25 Feb 2004 08:00:40 +1100
+From: Colin Marquardt <colin@marquardt-home.de>
+Subject: Re: 2.6.3-rc3: "powernow-k8: fid 0 invalid : 0x0"
+Date: Tue, 24 Feb 2004 22:59:55 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040224210040.GA8166@dreamcraft.com.au>
-References: <20040220083149.GA10215@dominikbrodowski.de>
-	<20040224125628.GA438@elf.ucw.cz>
+Message-ID: <msgidspam.8765dwi1es.fsf@schnee.marquardt-home.de>
+References: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040224125628.GA438@elf.ucw.cz>
+In-Reply-To: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de> (Colin
+	Marquardt's message of "Tue, 24 Feb 2004 00:16:56 +0100")
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,48 +19,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
- have a loook at the "userpace frequency governer" under 2.6.x 
+Colin Marquardt <colin@marquardt-home.de> writes:
 
- TMC
+> powernow-k8: Found AMD64 processor supporting PowerNow (version 1.00.08a)
+> powernow-k8: voltage stable in 100 usec, ramp voltage offset: 2, isochronous relief time: 3, maximum voltage step: 0
+> powernow-k8: pll lock time: 0x2, maxfid 0xc (2000 MHz), maxvid 0x0
+> powernow-k8: fid 0 invalid : 0x0
+>
+> Everything under /sys/devices/system/cpu/cpu0/ is empty.
 
-On Tue, Feb 24, 2004 at 01:56:28PM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > Export an array of supported frequencies in sysfs
-> > [scaling_available_frequencies]
-> 
-> Would it be possible to export [frequency/voltage] pairs, and allow
-> user to change it?
-> 								Pavel
-> 
-> 
-> 
-> -- 
-> When do you have a heart between your knees?
-> [Johanka's followup: and *two* hearts?]
-> 
-> 
-> -------------------------------------------------------
-> SF.Net is sponsored by: Speed Start Your Linux Apps Now.
-> Build and deploy apps & Web services for Linux with
-> a free DVD software kit from IBM. Click Now!
-> http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click
-> _______________________________________________
-> Acpi-devel mailing list
-> Acpi-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/acpi-devel
+Same with 2.6.3 proper :/
 
--- 
-Tomasz M. Ciolek	
-*******************************************************************************
- tmc at dreamcraft dot com dot au or tmc at goldweb dot com dot au 	
-*******************************************************************************
-	GPG Key ID: 0x41C4C2F0  Key available on www.pgp.net	
-*******************************************************************************
-  Everything falls under the law of change;	
-  Like a dream, a phantom, a bubble, a shadow,
-  like dew of flash of lightning.
-  You should contemplate like this. 
+I also get
+
+apm: BIOS version 1.2 Flags 0x07 (Driver version 1.16ac)
+apm: overridden by ACPI.
+
+Maybe ACPI is somehow disturbing it?
+
+Cheers,
+  Colin
