@@ -1,12 +1,14 @@
-From: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
+From: Arjan van de Ven <arjanv@redhat.com>
 Subject: Re: cpufreq files missing in Linux 2.6.5
-Date: Thu, 20 May 2004 17:16:53 -0700 (PDT)
+Date: Mon, 24 May 2004 10:55:57 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.GSO.4.30.0405201709180.23636-100000@rigel.oac.uci.edu>
-References: <1085097449.18969.1.camel@delerium.codemonkey.org.uk>
+Message-ID: <1085388957.2780.11.camel@laptop.fenrus.com>
+References: <Pine.GSO.4.30.0405201547480.13318-100000@rigel.oac.uci.edu>
+Reply-To: arjanv@redhat.com
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1892357255=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <1085097449.18969.1.camel@delerium.codemonkey.org.uk>
+In-Reply-To: <Pine.GSO.4.30.0405201547480.13318-100000@rigel.oac.uci.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,49 +18,56 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
+To: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
 Cc: cpufreq@www.linux.org.uk
 
-I'm running a Pentium M with enhanced speedstep.
 
-If I type "modprobe -l |grep cpufreq" I get the following:
-
-/lib/modules/2.6.5/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-smi.ko
-/lib/modules/2.6.5/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-lib.ko
-/lib/modules/2.6.5/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-ich.ko
-/lib/modules/2.6.5/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko
-/lib/modules/2.6.5/kernel/arch/i386/kernel/cpu/cpufreq/acpi.ko
-/lib/modules/2.6.5/kernel/drivers/cpufreq/proc_intf.ko
-/lib/modules/2.6.5/kernel/drivers/cpufreq/freq_table.ko
-/lib/modules/2.6.5/kernel/drivers/cpufreq/cpufreq_userspace.ko
-/lib/modules/2.6.5/kernel/drivers/cpufreq/cpufreq_powersave.ko
-
-So it looks like the modules are appearing. I don't understand why the
-files to which you write the CPU frequency are not appearing.
+--===============1892357255==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-zVI9suJvmu56vArtyA2L"
 
 
-On Fri, 21 May 2004, Dave Jones wrote:
+--=-zVI9suJvmu56vArtyA2L
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, 2004-05-20 at 23:56, Vasanth Venkatachalam wrote:
->
-> > 1. The directory /sys/devices/system/cpu/cpu0 exists but is empty; there
-> > is no cpufreq subdirectory inside it.
->
-> Sounds like it didn't detect whatever processor you have.
-> What CPU is it ? cpufreq related msgs from dmesg please ?
-> have you tried modprobe'ing the relevant driver ?
->
-> > 2. There's also no /proc/cpufreq or /proc/sys/cpu/*/speed directory.
->
-> Thats the deprecated 2.4 interface.
->
-> 	Dave
->
->
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
->
+On Fri, 2004-05-21 at 00:56, Vasanth Venkatachalam wrote:
+> Hi everyone,
+>=20
+> I am running Redhat Linux 2.6.5 and manually recompiled the kernel to
+> include the cpufreq modules.
+
+.... which are included in the Fedora kernel already.....
+(some are built in some are modules, but they're basically all there)
+
+--=-zVI9suJvmu56vArtyA2L
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBAsbidxULwo51rQBIRArSIAJ99wmXGMBnUf/2PEdBHjSfyn6Ca4QCgms7F
+H/jT8zg0r5XZlxGVW+Cy05E=
+=xLep
+-----END PGP SIGNATURE-----
+
+--=-zVI9suJvmu56vArtyA2L--
+
+
+
+--===============1892357255==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1892357255==--
+
+
