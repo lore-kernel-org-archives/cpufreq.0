@@ -1,15 +1,14 @@
-From: Dmitry Torokhov <dtor_core@ameritech.net>
-Subject: Re: [ACPI] [PATCHES] ACPI Processor update [idle, throttling,
-	thermal, cpufreq]
-Date: Fri, 5 Sep 2003 00:23:06 -0500
+From: Dominik Brodowski <linux@brodo.de>
+Subject: speedstep-smi into -ac ?
+Date: Fri, 5 Sep 2003 08:54:33 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200309050023.06761.dtor_core@ameritech.net>
-References: <20030904222434.GC6350@brodo.de>
+Message-ID: <20030905065433.GC4003@brodo.de>
+References: <87ekywzjvm.wl%miura@da-cha.org> <20030904232555.GA8650@brodo.de>
+	<87bru0yutb.wl%miura@da-cha.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20030904222434.GC6350@brodo.de>
 Content-Disposition: inline
+In-Reply-To: <87bru0yutb.wl%miura@da-cha.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,54 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@brodo.de>
-Cc: acpi-devel@lists.sourceforge.net, andrew.grover@intel.com, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Hiroshi Miura <miura@da-cha.org>
+Cc: "'cpufreq@www linux org uk'" <cpufreq@www.linux.org.uk>
 
-Dominik,
+On Fri, Sep 05, 2003 at 08:53:36AM +0900, Hiroshi Miura wrote:
+> 
+> At Fri, 5 Sep 2003 01:25:55 +0200,
+> Dominik Brodowski wrote:
+> > 
+> > Actually, I much preferred the original version of your driver. This "event"
+> > stuff can either be done as a seperate governor (different file), or in
+> > userspace (as Bruno has pointed out).
+> > 
+> > What do you think about the patches for your driver I sent you?
+> 
+> I think your patches is better. I cannot test on 440BX/ZX, so it is needed.
+> 
+> My previous post is only to demonstrate event smi function and
+> a sample implementation.
 
-I have couple of concerns regarding P-states IO library, esp. 
-acpi_processor_get_frequency. It seems that ACPI does not allow
-to read current state without setting it first, at least with
-the following code on my notebook I was always getting garbage 
-in the status register:
+What do you think: is the speedstep-smi driver v1 as it is in CVS now ready
+to be pushed to Alan?
 
-+static int
-+acpi_processor_get_current_state(
-+       struct acpi_processor_performance       *perf)
-+{
-+       int     result = 0;
-+       int     i;
-+       u8      value;
-+
-+       ACPI_FUNCTION_TRACE("acpi_processor_get_current_state");
-+
-+       if (!perf->pr->flags.performance)
-+               goto out;
-+
-+       value = inb(perf->status_register);
-+
-+       ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+               "Got 0x%02x from port 0x%04x\n", value, perf->status_register));
-+
-+       for (i = 0; i < perf->state_count; i++) {
-+               if (value == (u8) perf->states[i].status) {
-+                       perf->state = i;
-+                       goto out;
-+               }
-+       }
-+
-+       /* couldn't match our state table - garbage in status register */
-+       ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+               "Bad data 0x%02x in performance status register 0x%04x\n",
-+               value, perf->status_register));
-+       result = -EFAULT;
-+out:
-+       return_VALUE(result);
-+}
-
-I am wondering is it just me, my code or general deficiency.
-
-Also, do you really need to do notify_transition twice 
-(acpi_processor_set_performance)?
-
-Dmitry
+	Dominik
