@@ -1,13 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Fix for longrun.c for degenerate case
-Date: Sun, 9 May 2004 16:16:41 +0200
+Subject: [PATCH] fix speedstep-centrino latency
+Date: Mon, 10 May 2004 14:11:28 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040509141641.GA9335@dominikbrodowski.de>
-References: <409C40B9.6000603@zytor.com>
+Message-ID: <20040510121128.GA16913@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <409C40B9.6000603@zytor.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,36 +17,22 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
+To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-On Fri, May 07, 2004 at 07:06:49PM -0700, H. Peter Anvin wrote:
-> Hi all,
-> 
-> I ran into a system the other day which had a Transmeta processor, but 
-> configured in a degenerate, fixed-frequency configuration. It crashed 
-> booting Fedora Core 2 test 3 due to a division by zero in the longrun 
-> cpufreq driver.  The attached patch fixes this.
+Latency is in nanoseconds -- speedstep-centrino got it wrong
 
-Thanks. I'd suggest that driver initialization should fail instead --
-there's  no reason to keep the cpufreq infrastructure up and running if
-nothing at all can be done, e.g. the frequency is fixed. The attached patch
-(untested due to lack of hardware) should do right that. Dave, please decide
-which patch you prefer, and merge accordingly. 
+ arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-	Dominik
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/longrun.c linux/arch/i386/kernel/cpu/cpufreq/longrun.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/longrun.c	2004-04-28 22:07:55.000000000 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/longrun.c	2004-05-09 16:13:49.272043792 +0200
-@@ -239,6 +239,9 @@
- 	if (result)
- 		return result;
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-05-10 09:19:19.080481464 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-05-10 09:19:30.106805208 +0200
+@@ -431,7 +431,7 @@
+ 	freq = get_cur_freq(0);
  
-+	if (longrun_high_freq <= longrun_low_freq)
-+		return -ENODEV; /* degenerate Longrun table */
-+
- 	/* cpuinfo and default policy values */
- 	policy->cpuinfo.min_freq = longrun_low_freq;
- 	policy->cpuinfo.max_freq = longrun_high_freq;
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.transition_latency = 10; /* 10uS transition latency */
++	policy->cpuinfo.transition_latency = 10000; /* 10uS transition latency */
+ 	policy->cur = freq;
+ 
+ 	dprintk(KERN_INFO PFX "centrino_cpu_init: policy=%d cur=%dkHz\n",
