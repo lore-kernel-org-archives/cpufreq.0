@@ -1,16 +1,12 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [RFC] cpufreqtools
-Date: Mon, 25 Oct 2004 14:42:43 +0200
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: ondemand question?
+Date: Mon, 25 Oct 2004 09:58:48 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041025124242.GA14371@dominikbrodowski.de>
-References: <20041021172227.GA24663@dominikbrodowski.de>
-	<20041025090139.GC2998@inferi.kami.home>
-	<20041025111150.GA7655@dominikbrodowski.de>
-	<20041025121743.GH2998@inferi.kami.home>
+Message-ID: <88056F38E9E48644A0F562A38C64FB60032E52FD@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20041025121743.GH2998@inferi.kami.home>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,32 +17,35 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Nebojsa Trpkovic <trx@inbox.ru>, cpufreq@www.linux.org.uk
 
-On Mon, Oct 25, 2004 at 02:17:43PM +0200, Mattia Dongili wrote:
-> so:
->   if libsysfs present and not --disable-sysfs-interface
->     #define INTERFACE_SYSFS
->   if --enable-proc-interface
->     #define INTERFACE_PROC
-> 
->   if neither INTERFACE_SYSFS nor INTERFACE_PROC are defined
->     fail
-> 
-> does it sound good?
 
-It sounds excellent. Somewhere later
-if (--enable-sysfs-interface) && INTERFACE_SYSFS not defined
-  fail
-if (--disable-proc-interface)
-  ignore -- disabled by default, unless --enable-proc-interface is passed
 
-> Also, do you agree in splitting your package in libcpufreq-VERSION and
-> cpufreqtools (that depends on the former)?
+>-----Original Message-----
+>From: cpufreq-bounces@www.linux.org.uk=20
+>[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Nebojsa Trpkovic
+>Sent: Sunday, October 24, 2004 12:11 PM
+>To: cpufreq@www.linux.org.uk
+>Subject: ondemand question?
+>
+>Can someone tell me how often "ondemand" governor can switch=20
+>between CPU=20
+>frequencies (How often does it poll CPU usage and decide what to do?)
+>
+>
+>Thank you.
+>
 
-Yes, at least for the meantime. They may be re-merged into one before
-{lib,}cpufreq{,tools}-0.1 is released, though...
+The frequency is not fixed. Default freq will depend on what amount of
+time does CPU actually take to change the frequency. And user can change
+this default value within some limits.
 
-Many thanks,
-	Dominik
+Once you start using ondemand governor you will find this (and other
+ondemand tunables here)
+/sys/devices/..../cpufreq/ondemand/sampling_rate
+/sys/devices/..../cpufreq/ondemand/sampling_rate_max
+/sys/devices/..../cpufreq/ondemand/sampling_rate_min
+(all the numbers here are in uS)
+
+Thanks,
+Venki
