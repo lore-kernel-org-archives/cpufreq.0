@@ -1,11 +1,13 @@
 From: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
-Subject: Call4Response: Correct PST table for ATHLONs
-Date: Wed, 02 Jul 2003 09:52:12 +0200
+Subject: Re: Athlon Mobile Support
+Date: Wed, 02 Jul 2003 09:55:40 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <3F028F2C.5020704@searchbroker.de>
+Message-ID: <3F028FFC.8000204@searchbroker.de>
+References: <3F028919.8060402@student.gc.maricopa.edu> <3F0289AA.6090208@searchbroker.de> <3F028E94.8020008@student.gc.maricopa.edu>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
+In-Reply-To: <3F028E94.8020008@student.gc.maricopa.edu>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,16 +19,22 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
+Cc: James Mabry <jamabryl@student.gc.maricopa.edu>
 
-Hello cpufreq-user and developer,
+James Mabry wrote:
 
-can everybody with an correct PST table (diffent FIDs and VIDs) and an 
-ATHLON cpu post the "dmesg" snip (you get this using the dmesg command 
-after the modul is loaded) to this mailing-list...
-Maybe we can setup with this the correct values to the cpufreq driver 
-(the K7 powernow part)...then otherwise the Acer and Sony notebooks 
-doesn't work perfectly :-(
+> Lars Gemeinhardt wrote:
+>
+>> one question - same answer!
+>
+>
+> Oops sorry. Thought the answer I was looking for would be different 
+> than your previous. I'll try it out and report on how things went.
+>
+> Reading more about cpufreq it sounds like this does not provide 
+> voltage regulation? I'm using cpufreq in the hopes to greatly increase 
+> my battery life. Should I expect this as a result? Thanks. 
 
-Thanks in advanced
-
-Ciao Lars
+normaly (if your PST table is correct) both FIDs and VIDs should be 
+regulated - but Sony and Acer PST tables (hold in the BIOS) are not 
+correct ... maybe we can fix this :-) I send therefor a Call4Responce ...
