@@ -1,12 +1,17 @@
-From: David Kar-Fai Tam <tamda@eecg.toronto.edu>
-Subject: Re: Dynamic frequency governor
-Date: Tue, 21 Oct 2003 18:21:37 -0400 (EDT)
+From: mru@kth.se (=?iso-8859-1?q?M=E5ns_Rullg=E5rd?=)
+Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
+ P-state driver
+Date: Wed, 22 Oct 2003 00:27:48 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.44.0310211744210.27611-100000@cat.eecg.toronto.edu>
-References: <20031021203122.GC871@redhat.com>
+Message-ID: <yw1xbrsai5uj.fsf@kth.se>
+References: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
+	<yw1xbrsaeu44.fsf@kth.se>
+	<20031021203037.GB3133@sam-solutions.net> <yw1xoewaiavf.fsf@kth.se>
+	<20031021211119.GE3133@sam-solutions.net> <yw1xfzhmi86r.fsf@kth.se>
+	<20031021215327.GH3133@sam-solutions.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031021203122.GC871@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,37 +21,22 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@www.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
 
-On Tue, 21 Oct 2003, Dave Jones wrote:
-> On Mon, Oct 20, 2003 at 10:08:17AM -0700, Moore, Robert wrote:
->  > Can you be more specific about who has patents on what?
-> 
-> http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=6,298,448.WKU.&OS=PN/6,298,448&RS=PN/6,298,448
-> Is a good place to start.  Skimming through the references there brings
-> up further patents by just about everyone under the sun, including
-> Intel.
+Alexander Bokovoy <ab@altlinux.org> writes:
 
-Here's an idea:
+> If you can boot into 2.4.22 or .23pre with ACPI enabled and can see
 
-I did a quick text search on the website of the above address and I 
-couldn't find "voltage" mentioned anywhere. That is, I couldn't find any 
-mention of dynamic "voltage" scaling as a technique for saving power.
-They only talk about is using the technique of "frequency" scaling to 
-save power.
+I haven't booted a 2.4 kernel in a long time.
 
-With DVS algorithms, we are attempting to dynamically change the voltage 
-to save power. The fact that the frequency varies is just a side effect.
+> /proc/acpi/processor/CPU0/performance, then your processor should be
+> supported by speedstep-ich or speedstep-piix4 modules (don't know which
+> one exactly).
 
-How's that for finding a loop hole? =)
+I was using p4-clockmod.  Doesn't that work?
 
-I don't want to get into a long discussion about whether frequency scaling
-alone can save you energy. I think that we are ultimately trying to vary
-the voltage because only that can really save you energy (quadratically). 
-Maybe we should have named it the CPUVolt API?
-
---
-David Tam
-tamda@eecg.toronto.edu
+--=20
+M=E5ns Rullg=E5rd
+mru@kth.se
