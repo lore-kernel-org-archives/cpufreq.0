@@ -1,11 +1,15 @@
-From: Colin Marquardt <colin@marquardt-home.de>
-Subject: Re: Need output of 'cat /proc/cpuinfo' from everyone
-Date: Thu, 01 Apr 2004 00:25:17 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: powernow-k8: support acpi
+Date: Fri, 2 Apr 2004 00:56:35 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <msgidspam.87n05wk62a.fsf@schnee.marquardt-home.de>
-References: <20040331073444.yemrooko0owwc088@carlthompson.net>
+Message-ID: <20040401235635.GA25744@redhat.com>
+References: <99F2150714F93F448942F9A9F112634C1163C8D7@txexmtae.amd.com>
+	<20040321185417.GA7969@dominikbrodowski.de>
+	<20040326122931.GA321@elf.ucw.cz>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040326122931.GA321@elf.ucw.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,49 +21,45 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@osdl.org>, Bruno Ducrot <ducrot@poupinou.org>, mark.langsdorf@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>, paul.devriendt@amd.com, Dominik Brodowski <linux@dominikbrodowski.de>
 
-Carl Thompson <cet@carlthompson.net> writes:
+On Fri, Mar 26, 2004 at 01:29:32PM +0100, Pavel Machek wrote:
+ > This is new version of powernow-k8 driver. It adds SMP support, and
+ > support for getting tables through ACPI. (ACPI support is really
+ > important, because many machines have broken "legacy" tables). Please
+ > apply,
 
->      I am compiling information on the different models of CPUs, the
-> cpufreq drivers they use and their power management support.  Everyone,
-> please send me the following information for every machine you can get
-> your hands on:
->
-> 1. Output of 'cat /proc/cpuinfo'
+First off, apologies for sitting on this for so long.
+I just made a first-pass attempt at merging this. Most of
+(maybe all?) the simpler bits are in (whitespace changes, typos etc).
+I'll push that out to bkbits soon, so the powernow-k8 diff in the
+next -mm that Andrew builds should be slightly smaller at least.
 
-$ cat /proc/cpuinfo
-processor	: 0
-vendor_id	: AuthenticAMD
-cpu family	: 15
-model		: 4
-model name	: AMD Athlon(tm) 64 Processor 3200+
-stepping	: 8
-cpu MHz		: 797.991
-cache size	: 1024 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 1
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall mmxext lm 3dnowext 3dnow
-bogomips	: 1579.41
+The ACPI stuff I'm pondering.
+Bruno, how does this stuff look to you? Your acpi perflib stuff is
+already in the pending pool (see the diff in the current -mm tree at
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.5-rc3/2.6.5-rc3-mm4/broken-out/bk-cpufreq.patch)
+Would this driver be better off using that ?
 
-> 2. Whether it has a desktop or mobile processor (if you know)
+ > @@ -31,55 +33,47 @@
+ >  #include <asm/io.h>
+ >  #include <asm/delay.h>
+ >  
+ > +#ifdef CONFIG_ACPI
+ > +#define CONFIG_X86_POWERNOW_K8_ACPI
+ > +#endif
+ > +#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+ > +
+ > +#include <linux/acpi.h>
+ > +#include <acpi/processor.h>
+ > +
+ > +#endif /* CONFIG_X86_POWERNOW_K8_ACPI */
 
-Desktop.
+This bit just looks *wrong* to me.  This looks like something
+that really should be sorted out in Kconfig.
 
-> 3. Full name of processor (if you know, ex: 'AMD Mobile Athlon
-> 2200+')
+The rest of the ACPI changes, I'd really like to get Bruno Ducrot's opinion
+on.
 
-Model name above is correct.
-
-> 4. What cpufreq driver works best with the processor (if you know)
-
-Using powernow-k8 from kernel 2.6.4 at the moment.
-
-Cheers,
-  Colin
+		Dave
