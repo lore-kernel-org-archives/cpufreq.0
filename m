@@ -1,14 +1,11 @@
-From: Thiago Guzella <thiago.guzella@gmail.com>
-Subject: Re: powernowk8 error on kernels later than 2.6.5 (long)
-Date: Tue, 30 Nov 2004 11:17:47 -0200
-Message-ID: <7608a89f04113005176f7f77a8@mail.gmail.com>
-References: <7608a89f04112912137882bc84@mail.gmail.com>
-	<20041129220431.GA9167@dominikbrodowski.de>
-Reply-To: Thiago Guzella <thiago.guzella@gmail.com>
+From: "Devriendt, Paul" <paul.devriendt@amd.com>
+Subject: RE: powernow-k8 problem
+Date: Wed, 1 Dec 2004 08:26:47 -0600
+Message-ID: <84EA05E2CA77634C82730353CBE3A8430153A588@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20041129220431.GA9167@dominikbrodowski.de>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,23 +17,33 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: linux@dominikbrodowski.de, cpufreq@www.linux.org.uk
+To: Markus Trippelsdorf <markus@trippelsdorf.de>, cpufreq@www.linux.org.uk
 
-> AFAICS it might be the
-> "- [powernow-k8] fix for Mobile Sempron 2800+, Acer Aspire 1362 [Paul Devriendt]"
-> issue again -- the initial frequency/voltage pair is not in the list of
-> supported states exported by the BIOS. The fix for that hasn't reached
-> Linus' or Dave's tree yet; so I wouldn't count on 2.6.10 but on 2.6.11...
+> However, if I start a CPU intensive program I get this error=20
+> in my dmesg:
+> powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+> powernow-k8: transition frequency failed
+> (repeated ad nauseam)
+> And from thereon my CPU is locked at full speed and never=20
+> scaled back again.
+>=20
+> I'm using a Winchester 3200:
+> powernow-k8: Found 1 AMD Athlon 64 / Opteron processors=20
+> (version 1.00.09b)
+> powernow-k8:    0 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
+> powernow-k8:    1 : fid 0xa (1800 MHz), vid 0x8 (1350 mV)
+> powernow-k8:    2 : fid 0xc (2000 MHz), vid 0x6 (1400 mV)
+> powernow-k8: cpu_init done, current fid 0xc, vid 0x4
+> powernow-k8: ph2 null fid transition 0xc
+>=20
+> Any hints?
+> Thanks in advance.
+>=20
+> Markus
 
-Okay, but what about the error I am getting when trying to start X??
-Any clues on that?? Could it be related to this?
+I am not sure what is going on to cause this transition
+frequency failed. It would be a big help if you could rebuild=20
+the driver for debug and post the system log (dmesg) of this
+failure.=20
 
-
--- 
-Thiago dos Santos Guzella
-Electrical Enginnering Student - UFMG (www.ufmg.br), Brazil 
-Linux User #354160
-UIN: 13465286. Jabber: tguzella @ jabber.org
-
-"Thou, nature, art my goddess; to thy laws my services are bound..." 
-William Shakespeare
+Thanks. Paul.
