@@ -1,54 +1,877 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: powernow-k8-acpi driver
-Date: Fri, 5 Mar 2004 00:16:58 +0100
+Subject: Share more code between pn-k8 and pn-k8-acpi
+Date: Fri, 5 Mar 2004 14:22:57 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040304231658.GD12988@elf.ucw.cz>
-References: <99F2150714F93F448942F9A9F112634C0FD3862D@txexmtae.amd.com>
+Message-ID: <20040305132257.GA7126@elf.ucw.cz>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <99F2150714F93F448942F9A9F112634C0FD3862D@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: richard.brunner@amd.com
-Cc: davej@redhat.com, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, paul.devriendt@amd.com
+To: kernel list <linux-kernel@vger.kernel.org>, paul.devriendt@amd.com, davej@redhat.com, cpufreq@www.linux.org.uk
 
 Hi!
 
-> We stopped paying our lawyers by the number of letters in 
-> copyright notices several months ago, so I think it is ok.
+I added struct percpu to powernow-k8 driver, too, and now a lot more
+code can be easily shared between pn-k8 and pn-k8-acpi drivers. There
+are about 100 more lines of duplicated code, but those are not so easy
+to deal with. Rest of driver is reading tables etc, and seems unique
+to each driver. Plus acpi one includes "ac-power-poller".
+								Pavel
 
-:-)))
-
-Here's one more update. It kills "store structure inside array"
-hack. It compiles, I'll test it shortly.
-
---- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8-acpi.c	2004-03-05 00:08:20.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8-acpi.c	2004-03-05 00:07:26.000000000 +0100
-@@ -45,13 +45,6 @@
+--- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8-acpi.c	2004-03-05 14:08:28.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8-acpi.c	2004-03-05 14:04:37.000000000 +0100
+@@ -37,34 +37,11 @@
+ #include <asm/delay.h>
+ 
+ #define PFX "powernow-k8-acpi: "
+-#define DFX KERN_DEBUG PFX
+-#define IFX KERN_INFO  PFX
+-#define EFX KERN_ERR   PFX
+ 
+ #undef DEBUG
  #define VERSION "Version 1.20.02a"
  #include "powernow-k8.h"
  
--/* byte offsets into the perproc struct */
--#define PP_OFF_NUMPS  0   /* number of p-states      */
--#define PP_OFF_SHARE  1   /* index of shared control */
--#define PP_OFF_CVID   2   /* current voltage id      */
--#define PP_OFF_CFID   3   /* current frequency id    */
--#define PP_OFF_BYTES  4   /* size in bytes           */   
+-struct pstate {    /* info on each performance state, per processor */
+-	u16 freq;  /* frequency is in megahertz */
+-	u8 fid;
+-	u8 vid;
+-	u8 irt;
+-	u8 rvo;
+-	u8 plllock;
+-	u8 vidmvs;
+-	u8 vstable;
+-	u8 pad1;
+-	u16 pad2;
+-};
 -
- struct pstate {    /* info on each performance state, per processor */
- 	u16 freq;  /* frequency is in megahertz */
- 	u8 fid;
-@@ -65,11 +58,15 @@
- 	u16 pad2;
+-struct cpu_power {
+-	int numps;
+-	int cvid;
+-	int cfid;
+-	struct pstate pst[0];
+-};
+-
+ /*
+  * Each processor may have
+  * a different number of entries in its array. I.e., processor 0 may have
+@@ -139,23 +116,6 @@
+ 	return (freq - 800) / 100;
+ }
+ 
+-static int query_current_values_with_pending_wait(struct cpu_power *perproc)
+-{
+-	u32 lo = MSR_S_LO_CHANGE_PENDING;
+-	u32 hi;
+-	u32 i = 0;
+-
+-	while (lo & MSR_S_LO_CHANGE_PENDING) {
+-		if (i++ > 0x1000000) {
+-			printk(EFX "change pending stuck\n");
+-			return 1;
+-		}
+-		rdmsr(MSR_FIDVID_STAT, lo, hi);
+-	}
+-	perproc->cvid = hi & MSR_S_HI_CURRENT_VID;
+-	perproc->cfid = lo & MSR_S_LO_CURRENT_FID;
+-	return 0;
+-}
+ 
+ /* need to init the control msr to a safe value (for each cpu) */
+ static void fidvid_msr_init(void)
+@@ -213,36 +173,6 @@
+ 	return 0;
+ }
+ 
+-static int write_new_vid(struct cpu_power *perproc, u8 vid)
+-{
+-	u32 lo;
+-	u8 savefid = perproc->cfid;
+-
+-	if ((savefid & INVALID_FID_MASK) || (vid & INVALID_VID_MASK)) {
+-		printk(EFX "overflow on vid write\n");
+-		return 1;
+-	}
+-
+-	lo = perproc->cfid | (vid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
+-	dprintk(DFX "cpu%d, writing vid %x, lo %x, hi %x\n",
+-		smp_processor_id(), vid, lo, STOP_GRANT_5NS);
+-	wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
+-	if (query_current_values_with_pending_wait(perproc))
+-		return 1;
+-
+-	if (savefid != perproc->cfid) {
+-		printk(EFX "fid change on vid trans, old %x new %x\n",
+-		       savefid, perproc->cfid);
+-		return 1;
+-	}
+-	if (vid != perproc->cvid) {
+-		printk(EFX "vid trans failed, vid %x, cvid %x\n",
+-		       vid, perproc->cfid);
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+ static int decrease_vid_code_by_step(struct cpu_power *perproc, u32 idx, u8 reqvid, u8 step)
+ {
+ 	struct pstate *pst;
+@@ -309,144 +239,6 @@
+ 	return 0;
+ }
+ 
+-static inline int core_frequency_transition(struct cpu_power *perproc, u32 idx, u8 reqfid)
+-{
+-	u8 vcoreqfid;
+-	u8 vcocurrfid;
+-	u8 vcofiddiff;
+-	u8 savevid = perproc->cvid;
+-
+-	if ((reqfid < HI_FID_TABLE_BOTTOM)
+-	    && (perproc->cfid < HI_FID_TABLE_BOTTOM)) {
+-		printk(EFX "ph2 illegal lo-lo transition %x %x\n",
+-		       reqfid, perproc->cfid);
+-		return 1;
+-	}
+-
+-	if (perproc->cfid == reqfid) {
+-		printk(EFX "ph2 null fid transition %x\n", reqfid );
+-		return 0;
+-	}
+-
+-	dprintk(DFX "ph2 start%d, cfid %x, cvid %x, rfid %x\n",
+-		smp_processor_id(),
+-		perproc->cfid, perproc->cvid, reqfid);
+-
+-	vcoreqfid = convert_fid_to_vfid(reqfid);
+-	vcocurrfid = convert_fid_to_vfid(perproc->cfid);
+-	vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
+-						: vcoreqfid - vcocurrfid;
+-
+-	while (vcofiddiff > FSTEP) {
+-		if (reqfid > perproc->cfid) {
+-			if (perproc->cfid > LO_FID_TABLE_TOP) {
+-				if (write_new_fid(perproc, idx,
+-						  perproc->cfid + FSTEP))
+-					return 1;
+-			} else {
+-				if (write_new_fid(perproc, idx, FSTEP +
+-				     convert_fid_to_vfid(perproc->cfid)))
+-					return 1;
+-			}
+-		} else {
+-			if (write_new_fid(perproc, idx,
+-					  perproc->cfid-FSTEP))
+-				return 1;
+-		}
+-
+-		vcocurrfid = convert_fid_to_vfid(perproc->cfid);
+-		vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
+-						    : vcoreqfid - vcocurrfid;
+-	}
+-	if (write_new_fid(perproc, idx, reqfid))
+-		return 1;
+-	if (query_current_values_with_pending_wait(perproc))
+-		return 1;
+-
+-	if (perproc->cfid != reqfid) {
+-		printk(EFX "ph2 mismatch, failed transn, curr %x, req %x\n",
+-		       perproc->cfid, reqfid);
+-		return 1;
+-	}
+-
+-	if (savevid != perproc->cvid) {
+-		printk(EFX "ph2 vid changed, save %x, curr %x\n", savevid,
+-		       perproc->cvid);
+-		return 1;
+-	}
+-
+-	dprintk(DFX "ph2 complete%d, currfid 0x%x, currvid 0x%x\n",
+-		smp_processor_id(),
+-		perproc->cfid, perproc->cvid);
+-	return 0;
+-}
+-
+-static inline int core_voltage_post_transition(struct cpu_power *perproc, u32 idx, u8 reqvid)
+-{
+-	u8 savefid = perproc->cfid;
+-	u8 savereqvid = reqvid;
+-
+-	dprintk(DFX "ph3 starting%d, cfid 0x%x, cvid 0x%x\n",
+-		smp_processor_id(),
+-		perproc->cfid, perproc->cvid);
+-
+-	if (reqvid != perproc->cvid) {
+-		if (write_new_vid(perproc, reqvid))
+-			return 1;
+-
+-		if (savefid != perproc->cfid) {
+-			printk(EFX "ph3: bad fid change, save %x, curr %x\n",
+-			       savefid, perproc->cfid);
+-			return 1;
+-		}
+-
+-		if (perproc->cvid != reqvid) {
+-			printk(EFX "ph3: failed vid trans\n, req %x, curr %x",
+-			       reqvid, perproc->cvid);
+-			return 1;
+-		}
+-	}
+-	if (query_current_values_with_pending_wait(perproc))
+-		return 1;
+-
+-	if (savereqvid != perproc->cvid) {
+-		dprintk(EFX "ph3 failed, currvid 0x%x\n", perproc->cvid);
+-		return 1;
+-	}
+-
+-	if (savefid != perproc->cfid) {
+-		dprintk(EFX "ph3 failed, currfid changed 0x%x\n",
+-			perproc->cfid);
+-		return 1;
+-	}
+-
+-	dprintk(DFX "ph3 done%d, cfid 0x%x, cvid 0x%x\n",
+-		smp_processor_id(),
+-		perproc->cfid, perproc->cvid);
+-	return 0;
+-}
+-
+-static inline int transition_fid_vid(struct cpu_power *perproc, u32 idx, u8 rfid, u8 rvid)
+-{
+-	if (core_voltage_pre_transition(perproc, idx, rvid))
+-		return 1;
+-	if (core_frequency_transition(perproc, idx, rfid))
+-		return 1;
+-	if (core_voltage_post_transition(perproc, idx, rvid))
+-		return 1;
+-	if (query_current_values_with_pending_wait(perproc))
+-		return 1;
+-	if ((rfid != perproc->cfid) || (rvid != perproc->cvid)) {
+-		printk(EFX "failed%d: req %x %x, curr %x %x\n",
+-		       smp_processor_id(), rfid, rvid,
+-		       perproc->cfid, perproc->cvid);
+-		return 1;
+-	}
+-	dprintk(IFX "transitioned%d: new fid 0x%x, vid 0x%x\n",
+-		smp_processor_id(),
+-		perproc->cfid, perproc->cvid);
+-	return 0;
+-}
+ 
+ /* evaluating this object tells us whether we are using mains or battery */
+ static inline int process_psr(acpi_handle objh)
+--- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-03-05 14:08:27.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-03-05 14:06:43.000000000 +0100
+@@ -72,18 +72,15 @@
+ 	u8 vid;
  };
  
--/* Explanation of the perproc data structures:
-- * static u8 **procs; declared in the .c file is an array of pointers to u8.
-- * There is one such pointer for each cpu in the system.
-- * Each pointer points to 4 u8s (indexed by the PP_OFF constants above),
-- * followed by an array of struct pstate, where each processor may have
+-static inline int core_voltage_pre_transition(u32 reqvid);
+-static inline int core_voltage_post_transition(u32 reqvid);
+-static inline int core_frequency_transition(u32 reqfid);
+-
+ static u32 vstable;	/* voltage stabalization time, from PSB, units 20 us */
+ static u32 plllock;	/* pll lock time, from PSB, units 1 us */
+-static u32 numps;	/* number of p-states, from PSB */
+ static u32 rvo;		/* ramp voltage offset, from PSB */
+ static u32 irt;		/* isochronous relief time, from PSB */
+ static u32 vidmvs;	/* usable value calculated from mvs, from PSB */
+-static u32 currvid;	/* keep track of the current fid / vid */
+-static u32 currfid;
++
++/* We have only one processor, but this way code can be shared */
++static struct cpu_power single_cpu_power;
++static struct cpu_power *perproc = &single_cpu_power;
+ 
+ static struct cpufreq_frequency_table *powernow_table;
+ 
+@@ -110,103 +107,41 @@
+ static u32 batps;	/* limit on the number of p states when on battery */
+ 			/* - set by BIOS in the PSB/PST                    */
+ 
+-/*
+- * Update the global current fid / vid values from the status msr. Returns 1
+- * on error.
+- */
+-static int
+-query_current_values_with_pending_wait(void)
+-{
+-	u32 lo, hi;
+-	u32 i = 0;
+-
+-	lo = MSR_S_LO_CHANGE_PENDING;
+-	while (lo & MSR_S_LO_CHANGE_PENDING) {
+-		if (i++ > 0x1000000) {
+-			printk(KERN_ERR PFX "detected change pending stuck\n");
+-			return 1;
+-		}
+-		rdmsr(MSR_FIDVID_STAT, lo, hi);
+-	}
+-	currvid = hi & MSR_S_HI_CURRENT_VID;
+-	currfid = lo & MSR_S_LO_CURRENT_FID;
+-	return 0;
+-}
+-
+ /* write the new fid value along with the other control fields to the msr */
+ static int
+-write_new_fid(u32 fid)
++write_new_fid(struct cpu_power *perproc, u32 idx, u8 fid)
+ {
+ 	u32 lo;
+-	u32 savevid = currvid;
++	u32 savevid = perproc->cvid;
+ 
+-	if ((fid & INVALID_FID_MASK) || (currvid & INVALID_VID_MASK)) {
++	if ((fid & INVALID_FID_MASK) || (perproc->cvid & INVALID_VID_MASK)) {
+ 		printk(KERN_ERR PFX "internal error - overflow on fid write\n");
+ 		return 1;
+ 	}
+ 
+-	lo = fid | (currvid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
++	lo = fid | (perproc->cvid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
+ 
+ 	dprintk(KERN_DEBUG PFX "writing fid %x, lo %x, hi %x\n",
+ 		fid, lo, plllock * PLL_LOCK_CONVERSION);
+ 
+ 	wrmsr(MSR_FIDVID_CTL, lo, plllock * PLL_LOCK_CONVERSION);
+ 
+-	if (query_current_values_with_pending_wait())
++	if (query_current_values_with_pending_wait(perproc))
+ 		return 1;
+ 
+ 	count_off_irt(irt);
+ 
+-	if (savevid != currvid) {
++	if (savevid != perproc->cvid) {
+ 		printk(KERN_ERR PFX
+-		       "vid changed on fid transition, save %x, currvid %x\n",
+-		       savevid, currvid);
++		       "vid changed on fid transition, save %x, perproc->cvid %x\n",
++		       savevid, perproc->cvid);
+ 		return 1;
+ 	}
+ 
+-	if (fid != currfid) {
++	if (fid != perproc->cfid) {
+ 		printk(KERN_ERR PFX
+-		       "fid transition failed, fid %x, currfid %x\n",
+-		        fid, currfid);
+-		return 1;
+-	}
+-
+-	return 0;
+-}
+-
+-/* Write a new vid to the hardware */
+-static int
+-write_new_vid(u32 vid)
+-{
+-	u32 lo;
+-	u32 savefid = currfid;
+-
+-	if ((currfid & INVALID_FID_MASK) || (vid & INVALID_VID_MASK)) {
+-		printk(KERN_ERR PFX "internal error - overflow on vid write\n");
+-		return 1;
+-	}
+-
+-	lo = currfid | (vid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
+-
+-	dprintk(KERN_DEBUG PFX "writing vid %x, lo %x, hi %x\n",
+-		vid, lo, STOP_GRANT_5NS);
+-
+-	wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
+-
+-	if (query_current_values_with_pending_wait())
+-		return 1;
+-
+-	if (savefid != currfid) {
+-		printk(KERN_ERR PFX
+-		       "fid changed on vid transition, save %x currfid %x\n",
+-		       savefid, currfid);
+-		return 1;
+-	}
+-
+-	if (vid != currvid) {
+-		printk(KERN_ERR PFX
+-		       "vid transition failed, vid %x, currvid %x\n",
+-		       vid, currvid);
++		       "fid transition failed, fid %x, perproc->cfid %x\n",
++		        fid, perproc->cfid);
+ 		return 1;
+ 	}
+ 
+@@ -221,10 +156,10 @@
+ static int
+ decrease_vid_code_by_step(u32 reqvid, u32 step)
+ {
+-	if ((currvid - reqvid) > step)
+-		reqvid = currvid - step;
++	if ((perproc->cvid - reqvid) > step)
++		reqvid = perproc->cvid - step;
+ 
+-	if (write_new_vid(reqvid))
++	if (write_new_vid(perproc, reqvid))
+ 		return 1;
+ 
+ 	count_off_vst(vstable);
+@@ -232,198 +167,51 @@
+ 	return 0;
+ }
+ 
+-/* Change the fid and vid, by the 3 phases. */
+-static inline int
+-transition_fid_vid(u32 reqfid, u32 reqvid)
+-{
+-	if (core_voltage_pre_transition(reqvid))
+-		return 1;
+-	if (core_frequency_transition(reqfid))
+-		return 1;
+-	if (core_voltage_post_transition(reqvid))
+-		return 1;
+-	if (query_current_values_with_pending_wait())
+-		return 1;
+-	if ((reqfid != currfid) || (reqvid != currvid)) {
+-		printk(KERN_ERR PFX "failed: req 0x%x 0x%x, curr 0x%x 0x%x\n",
+-		       reqfid, reqvid, currfid, currvid);
+-		return 1;
+-	}
+-	dprintk(KERN_INFO PFX
+-		"transitioned: new fid 0x%x, vid 0x%x\n", currfid, currvid);
+-	return 0;
+-}
+ 
+ /*
+  * Phase 1 - core voltage transition ... setup appropriate voltage for the
+  * fid transition.
+  */
+ static inline int
+-core_voltage_pre_transition(u32 reqvid)
++core_voltage_pre_transition(struct cpu_power *perproc, u32 idx, u8 reqvid)
+ {
+ 	u32 rvosteps = rvo;
+-	u32 savefid = currfid;
++	u32 savefid = perproc->cfid;
+ 
+ 	dprintk(KERN_DEBUG PFX
+-		"ph1: start, currfid 0x%x, currvid 0x%x, reqvid 0x%x, rvo %x\n",
+-		currfid, currvid, reqvid, rvo);
++		"ph1: start, perproc->cfid 0x%x, perproc->cvid 0x%x, reqvid 0x%x, rvo %x\n",
++		perproc->cfid, perproc->cvid, reqvid, rvo);
+ 
+-	while (currvid > reqvid) {
++	while (perproc->cvid > reqvid) {
+ 		dprintk(KERN_DEBUG PFX "ph1: curr 0x%x, requesting vid 0x%x\n",
+-			currvid, reqvid);
++			perproc->cvid, reqvid);
+ 		if (decrease_vid_code_by_step(reqvid, vidmvs))
+ 			return 1;
+ 	}
+ 
+-	while (rvosteps > 0) {
+-		if (currvid == 0) {
++	while (rvosteps) {
++		if (perproc->cvid == 0) {
+ 			rvosteps = 0;
+ 		} else {
+ 			dprintk(KERN_DEBUG PFX
+ 				"ph1: changing vid for rvo, requesting 0x%x\n",
+-				currvid - 1);
+-			if (decrease_vid_code_by_step(currvid - 1, 1))
++				perproc->cvid - 1);
++			if (decrease_vid_code_by_step(perproc->cvid - 1, 1))
+ 				return 1;
+ 			rvosteps--;
+ 		}
+ 	}
+ 
+-	if (query_current_values_with_pending_wait())
++	if (query_current_values_with_pending_wait(perproc))
+ 		return 1;
+ 
+-	if (savefid != currfid) {
+-		printk(KERN_ERR PFX "ph1 err, currfid changed 0x%x\n", currfid);
+-		return 1;
+-	}
+-
+-	dprintk(KERN_DEBUG PFX "ph1 complete, currfid 0x%x, currvid 0x%x\n",
+-		currfid, currvid);
+-
+-	return 0;
+-}
+-
+-/* Phase 2 - core frequency transition */
+-static inline int
+-core_frequency_transition(u32 reqfid)
+-{
+-	u32 vcoreqfid;
+-	u32 vcocurrfid;
+-	u32 vcofiddiff;
+-	u32 savevid = currvid;
+-
+-	if ((reqfid < HI_FID_TABLE_BOTTOM) && (currfid < HI_FID_TABLE_BOTTOM)) {
+-		printk(KERN_ERR PFX "ph2 illegal lo-lo transition 0x%x 0x%x\n",
+-		       reqfid, currfid);
+-		return 1;
+-	}
+-
+-	if (currfid == reqfid) {
+-		printk(KERN_ERR PFX "ph2 null fid transition 0x%x\n", currfid);
+-		return 0;
+-	}
+-
+-	dprintk(KERN_DEBUG PFX
+-		"ph2 starting, currfid 0x%x, currvid 0x%x, reqfid 0x%x\n",
+-		currfid, currvid, reqfid);
+-
+-	vcoreqfid = convert_fid_to_vfid(reqfid);
+-	vcocurrfid = convert_fid_to_vfid(currfid);
+-	vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
+-	    : vcoreqfid - vcocurrfid;
+-
+-	while (vcofiddiff > 2) {
+-		if (reqfid > currfid) {
+-			if (currfid > LO_FID_TABLE_TOP) {
+-				if (write_new_fid(currfid + 2)) {
+-					return 1;
+-				}
+-			} else {
+-				if (write_new_fid
+-				    (2 + convert_fid_to_vfid(currfid))) {
+-					return 1;
+-				}
+-			}
+-		} else {
+-			if (write_new_fid(currfid - 2))
+-				return 1;
+-		}
+-
+-		vcocurrfid = convert_fid_to_vfid(currfid);
+-		vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
+-		    : vcoreqfid - vcocurrfid;
+-	}
+-
+-	if (write_new_fid(reqfid))
+-		return 1;
+-
+-	if (query_current_values_with_pending_wait())
+-		return 1;
+-
+-	if (currfid != reqfid) {
+-		printk(KERN_ERR PFX
+-		       "ph2 mismatch, failed fid transition, curr %x, req %x\n",
+-		       currfid, reqfid);
+-		return 1;
+-	}
+-
+-	if (savevid != currvid) {
+-		printk(KERN_ERR PFX
+-		       "ph2 vid changed, save %x, curr %x\n", savevid,
+-		       currvid);
+-		return 1;
+-	}
+-
+-	dprintk(KERN_DEBUG PFX "ph2 complete, currfid 0x%x, currvid 0x%x\n",
+-		currfid, currvid);
+-
+-	return 0;
+-}
+-
+-/* Phase 3 - core voltage transition flow ... jump to the final vid. */
+-static inline int
+-core_voltage_post_transition(u32 reqvid)
+-{
+-	u32 savefid = currfid;
+-	u32 savereqvid = reqvid;
+-
+-	dprintk(KERN_DEBUG PFX "ph3 starting, currfid 0x%x, currvid 0x%x\n",
+-		currfid, currvid);
+-
+-	if (reqvid != currvid) {
+-		if (write_new_vid(reqvid))
+-			return 1;
+-
+-		if (savefid != currfid) {
+-			printk(KERN_ERR PFX
+-			       "ph3: bad fid change, save %x, curr %x\n",
+-			       savefid, currfid);
+-			return 1;
+-		}
+-
+-		if (currvid != reqvid) {
+-			printk(KERN_ERR PFX
+-			       "ph3: failed vid transition\n, req %x, curr %x",
+-			       reqvid, currvid);
+-			return 1;
+-		}
+-	}
+-
+-	if (query_current_values_with_pending_wait())
+-		return 1;
+-
+-	if (savereqvid != currvid) {
+-		dprintk(KERN_ERR PFX "ph3 failed, currvid 0x%x\n", currvid);
+-		return 1;
+-	}
+-
+-	if (savefid != currfid) {
+-		dprintk(KERN_ERR PFX "ph3 failed, currfid changed 0x%x\n",
+-			currfid);
++	if (savefid != perproc->cfid) {
++		printk(KERN_ERR PFX "ph1 err, perproc->cfid changed 0x%x\n", perproc->cfid);
+ 		return 1;
+ 	}
+ 
+-	dprintk(KERN_DEBUG PFX "ph3 complete, currfid 0x%x, currvid 0x%x\n",
+-		currfid, currvid);
++	dprintk(KERN_DEBUG PFX "ph1 complete, perproc->cfid 0x%x, perproc->cvid 0x%x\n",
++		perproc->cfid, perproc->cvid);
+ 
+ 	return 0;
+ }
+@@ -433,7 +221,7 @@
+ 	unsigned int j;
+ 	u8 lastfid = 0xFF;
+ 
+-	for (j = 0; j < numps; j++) {
++	for (j = 0; j < perproc->numps; j++) {
+ 		if (pst[j].vid > LEAST_VID) {
+ 			printk(KERN_ERR PFX "vid %d invalid : 0x%x\n", j, pst[j].vid);
+ 			return -EINVAL;
+@@ -518,9 +306,9 @@
+ 		printk(", isochronous relief time: %d", irt);
+ 		printk(", maximum voltage step: %d\n", mvs);
+ 
+-		dprintk(KERN_DEBUG PFX "numpst: 0x%x\n", psb->numpst);
++		dprintk(KERN_DEBUG PFX "perproc->numpst: 0x%x\n", psb->perproc->numpst);
+ 		if (psb->numpst != 1) {
+-			printk(KERN_ERR BFX "numpst must be 1\n");
++			printk(KERN_ERR BFX "perproc->numpst must be 1\n");
+ 			return -ENODEV;
+ 		}
+ 
+@@ -533,26 +321,26 @@
+ 		printk("maxfid 0x%x (%d MHz), maxvid 0x%x\n", 
+ 		       psb->maxfid, freq_from_fid(psb->maxfid), maxvid);
+ 
+-		numps = psb->numpstates;
+-		if (numps < 2) {
++		perproc->numps = psb->numpstates;
++		if (perproc->numps < 2) {
+ 			printk(KERN_ERR BFX "no p states to transition\n");
+ 			return -ENODEV;
+ 		}
+ 
+ 		if (batps == 0) {
+-			batps = numps;
+-		} else if (batps > numps) {
+-			printk(KERN_ERR BFX "batterypstates > numpstates\n");
+-			batps = numps;
++			batps = perproc->numps;
++		} else if (batps > perproc->numps) {
++			printk(KERN_ERR BFX "batterypstates > perproc->numpstates\n");
++			batps = perproc->numps;
+ 		} else {
+ 			printk(KERN_ERR PFX
+ 			       "Restricting operation to %d p-states\n", batps);
+ 			printk(KERN_ERR PFX
+ 			       "Use the ACPI driver to access all %d p-states\n",
+-			       numps);
++			       perproc->numps);
+ 		}
+ 
+-		if (numps <= 1) {
++		if (perproc->numps <= 1) {
+ 			printk(KERN_ERR PFX "only 1 p-state to transition\n");
+ 			return -ENODEV;
+ 		}
+@@ -561,7 +349,7 @@
+ 		if (check_pst_table(pst, maxvid))
+ 			return -EINVAL;
+ 
+-		powernow_table = kmalloc((sizeof(struct cpufreq_frequency_table) * (numps + 1)), GFP_KERNEL);
++		powernow_table = kmalloc((sizeof(struct cpufreq_frequency_table) * (perproc->numps + 1)), GFP_KERNEL);
+ 		if (!powernow_table) {
+ 			printk(KERN_ERR PFX "powernow_table memory alloc failure\n");
+ 			return -ENOMEM;
+@@ -575,7 +363,7 @@
+ 		/* If you want to override your frequency tables, this
+ 		   is right place. */
+ 
+-		for (j = 0; j < numps; j++) {
++		for (j = 0; j < perproc->numps; j++) {
+ 			powernow_table[j].frequency = freq_from_fid(powernow_table[j].index & 0xff)*1000;
+ 			printk(KERN_INFO PFX "   %d : fid 0x%x (%d MHz), vid 0x%x\n", j,
+ 			       powernow_table[j].index & 0xff,
+@@ -583,22 +371,22 @@
+ 			       powernow_table[j].index >> 8);
+ 		}
+ 
+-		powernow_table[numps].frequency = CPUFREQ_TABLE_END;
+-		powernow_table[numps].index = 0;
++		powernow_table[perproc->numps].frequency = CPUFREQ_TABLE_END;
++		powernow_table[perproc->numps].index = 0;
+ 
+-		if (query_current_values_with_pending_wait()) {
++		if (query_current_values_with_pending_wait(perproc)) {
+ 			kfree(powernow_table);
+ 			return -EIO;
+ 		}
+ 
+-		printk(KERN_INFO PFX "currfid 0x%x (%d MHz), currvid 0x%x\n",
+-		       currfid, freq_from_fid(currfid), currvid);
++		printk(KERN_INFO PFX "perproc->cfid 0x%x (%d MHz), perproc->cvid 0x%x\n",
++		       perproc->cfid, freq_from_fid(perproc->cfid), perproc->cvid);
+ 
+-		for (j = 0; j < numps; j++)
+-			if ((pst[j].fid==currfid) && (pst[j].vid==currvid))
++		for (j = 0; j < perproc->numps; j++)
++			if ((pst[j].fid==perproc->cfid) && (pst[j].vid==perproc->cvid))
+ 				return 0;
+ 
+-		printk(KERN_ERR BFX "currfid/vid do not match PST, ignoring\n");
++		printk(KERN_ERR BFX "perproc->cfid/vid do not match PST, ignoring\n");
+ 		return 0;
+ 	}
+ 
+@@ -626,20 +414,20 @@
+ 	dprintk(KERN_DEBUG PFX "table matched fid 0x%x, giving vid 0x%x\n",
+ 		fid, vid);
+ 
+-	if (query_current_values_with_pending_wait())
++	if (query_current_values_with_pending_wait(perproc))
+ 		return 1;
+ 
+-	if ((currvid == vid) && (currfid == fid)) {
++	if ((perproc->cvid == vid) && (perproc->cfid == fid)) {
+ 		dprintk(KERN_DEBUG PFX
+ 			"target matches current values (fid 0x%x, vid 0x%x)\n",
+ 			fid, vid);
+ 		return 0;
+ 	}
+ 
+-	if ((fid < HI_FID_TABLE_BOTTOM) && (currfid < HI_FID_TABLE_BOTTOM)) {
++	if ((fid < HI_FID_TABLE_BOTTOM) && (perproc->cfid < HI_FID_TABLE_BOTTOM)) {
+ 		printk(KERN_ERR PFX
+ 		       "ignoring illegal change in lo freq table-%x to %x\n",
+-		       currfid, fid);
++		       perproc->cfid, fid);
+ 		return 1;
+ 	}
+ 
+@@ -647,13 +435,13 @@
+ 
+ 	freqs.cpu = 0;	/* only true because SMP not supported */
+ 
+-	freqs.old = freq_from_fid(currfid);
++	freqs.old = freq_from_fid(perproc->cfid);
+ 	freqs.new = freq_from_fid(fid);
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 
+-	res = transition_fid_vid(fid, vid);
++	res = transition_fid_vid(perproc, 0, fid, vid);
+ 
+-	freqs.new = freq_from_fid(currfid);
++	freqs.new = freq_from_fid(perproc->cfid);
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 
+ 	return res;
+@@ -663,8 +451,8 @@
+ static int
+ powernowk8_target(struct cpufreq_policy *pol, unsigned targfreq, unsigned relation)
+ {
+-	u32 checkfid = currfid;
+-	u32 checkvid = currvid;
++	u32 checkfid = perproc->cfid;
++	u32 checkvid = perproc->cvid;
+ 	unsigned int newstate;
+ 
+ 	if (pending_bit_stuck()) {
+@@ -675,16 +463,16 @@
+ 	dprintk(KERN_DEBUG PFX "targ: %d kHz, min %d, max %d, relation %d\n",
+ 		targfreq, pol->min, pol->max, relation);
+ 
+-	if (query_current_values_with_pending_wait())
++	if (query_current_values_with_pending_wait(perproc))
+ 		return -EIO;
+ 
+ 	dprintk(KERN_DEBUG PFX "targ: curr fid 0x%x, vid 0x%x\n",
+-		currfid, currvid);
++		perproc->cfid, perproc->cvid);
+ 
+-	if ((checkvid != currvid) || (checkfid != currfid)) {
++	if ((checkvid != perproc->cvid) || (checkfid != perproc->cfid)) {
+ 		printk(KERN_ERR PFX
+ 		       "error - out of sync, fid 0x%x 0x%x, vid 0x%x 0x%x\n",
+-		       checkfid, currfid, checkvid, currvid);
++		       checkfid, perproc->cfid, checkvid, perproc->cvid);
+ 	}
+ 
+ 	if (cpufreq_frequency_table_target(pol, powernow_table, targfreq, relation, &newstate))
+@@ -696,7 +484,7 @@
+ 		return 1;
+ 	}
+ 
+-	pol->cur = 1000 * freq_from_fid(currfid);
++	pol->cur = 1000 * freq_from_fid(perproc->cfid);
+ 
+ 	return 0;
+ }
+@@ -729,10 +517,10 @@
+ 	pol->cpuinfo.transition_latency = (((rvo + 8) * vstable * VST_UNITS_20US)
+ 	    + (3 * (1 << irt) * 10)) * 1000;
+ 
+-	if (query_current_values_with_pending_wait())
++	if (query_current_values_with_pending_wait(perproc))
+ 		return -EIO;
+ 
+-	pol->cur = 1000 * freq_from_fid(currfid);
++	pol->cur = 1000 * freq_from_fid(perproc->cfid);
+ 	dprintk(KERN_DEBUG PFX "policy current frequency %d kHz\n", pol->cur);
+ 
+ 	/* min/max the cpu is capable of */
+@@ -743,7 +531,7 @@
+ 	}
+ 
+ 	printk(KERN_INFO PFX "cpu_init done, current fid 0x%x, vid 0x%x\n",
+-	       currfid, currvid);
++	       perproc->cfid, perproc->cvid);
+ 
+ 	return 0;
+ }
+--- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	2004-03-05 14:08:28.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	2004-03-05 14:02:51.000000000 +0100
+@@ -71,6 +71,10 @@
+ #define dprintk(msg...) do { } while(0)
+ #endif
+ 
++#define DFX KERN_DEBUG PFX
++#define IFX KERN_INFO  PFX
++#define EFX KERN_ERR   PFX
++
+ /* Return a frequency in MHz, given an input fid */
+ static inline u32 freq_from_fid(u8 fid)
+ {
+@@ -150,3 +154,221 @@
+ 	printk(KERN_INFO PFX "Found AMD64 processor (" VERSION ")\n");
+ 	return 1;
+ }
++
++struct pstate {    /* info on each performance state, per processor */
++	u16 freq;  /* frequency is in megahertz */
++	u8 fid;
++	u8 vid;
++	u8 irt;
++	u8 rvo;
++	u8 plllock;
++	u8 vidmvs;
++	u8 vstable;
++	u8 pad1;
++	u16 pad2;
++};
++
 +struct cpu_power {
 +	int numps;
 +	int cvid;
@@ -56,648 +879,203 @@ hack. It compiles, I'll test it shortly.
 +	struct pstate pst[0];
 +};
 +
++static int write_new_fid(struct cpu_power *perproc, u32 idx, u8 fid);
++static inline int core_voltage_pre_transition(struct cpu_power *perproc, u32 idx, u8 rvid);
++
 +/*
-+ * Each processor may have
-  * a different number of entries in its array. I.e., processor 0 may have
-  * 3 pstates, processor 1 may have 5 pstates.
-  */
-@@ -113,7 +110,7 @@
- static int powernowk8_target(struct cpufreq_policy *p, unsigned t, unsigned r);
- static int __init powernowk8_cpu_init(struct cpufreq_policy *p);
- 
--static u8 **procs;                  /* per processor data structure     */
-+static struct cpu_power **procs;    /* per processor data structure     */
- static u32 rstps;                   /* pstates allowed restrictions     */
- static u32 seenrst;                 /* remember old bat restrictions    */
- static int pollflg;	            /* remember the state of the poller, protected by poll_sem */
-@@ -142,7 +139,7 @@
- 	return (freq - 800) / 100;
- }
- 
--static int query_current_values_with_pending_wait(u8 *perproc)
++ * Update the global current fid / vid values from the status msr. Returns 1
++ * on error.
++ */
 +static int query_current_values_with_pending_wait(struct cpu_power *perproc)
- {
- 	u32 lo = MSR_S_LO_CHANGE_PENDING;
- 	u32 hi;
-@@ -155,8 +152,8 @@
- 		}
- 		rdmsr(MSR_FIDVID_STAT, lo, hi);
- 	}
--	perproc[PP_OFF_CVID] = hi & MSR_S_HI_CURRENT_VID;
--	perproc[PP_OFF_CFID] = lo & MSR_S_LO_CURRENT_FID;
++{
++	u32 lo = MSR_S_LO_CHANGE_PENDING;
++	u32 hi;
++	u32 i = 0;
++
++	while (lo & MSR_S_LO_CHANGE_PENDING) {
++		if (i++ > 0x1000000) {
++			printk(EFX "change pending stuck\n");
++			return 1;
++		}
++		rdmsr(MSR_FIDVID_STAT, lo, hi);
++	}
 +	perproc->cvid = hi & MSR_S_HI_CURRENT_VID;
 +	perproc->cfid = lo & MSR_S_LO_CURRENT_FID;
- 	return 0;
- }
- 
-@@ -177,19 +174,18 @@
- 	wrmsr(MSR_FIDVID_CTL, lo, hi);
- }
- 
--static int write_new_fid(u8 *perproc, u32 idx, u8 fid)
-+static int write_new_fid(struct cpu_power *perproc, u32 idx, u8 fid)
- {
- 	u32 lo;
- 	u32 hi;
- 	struct pstate *pst;
--	u8 savevid = perproc[PP_OFF_CVID];
-+	u8 savevid = perproc->cvid;
- 
--	if (idx >= perproc[PP_OFF_NUMPS]) {
-+	if (idx >= perproc->numps) {
- 		printk(EFX "idx overflow fid write\n");
- 		return 1;
- 	}
--	pst = (struct pstate *)(perproc + PP_OFF_BYTES);
--	pst += idx;
-+	pst = &perproc->pst[idx];
- 
- 	if ((fid & INVALID_FID_MASK) || (savevid & INVALID_VID_MASK)) {
- 		printk(EFX "overflow on fid write\n");
-@@ -204,99 +200,98 @@
- 		return 1;
- 	count_off_irt(pst->irt);
- 
--	if (savevid != perproc[PP_OFF_CVID]) {
-+	if (savevid != perproc->cvid) {
- 		printk(EFX "vid change on fid trans, old %x, new %x\n",
--		       savevid, perproc[PP_OFF_CVID]);
-+		       savevid, perproc->cvid);
- 		return 1;
- 	}
--	if (perproc[PP_OFF_CFID] != fid) {
-+	if (perproc->cfid != fid) {
- 		printk(EFX "fid trans failed, targ %x, new %x\n",
--		       fid, perproc[PP_OFF_CFID]);
-+		       fid, perproc->cfid);
- 		return 1;
- 	}
- 	return 0;
- }
- 
--static int write_new_vid(u8 *perproc, u8 vid)
++	return 0;
++}
++
++/* Write a new vid to the hardware */
 +static int write_new_vid(struct cpu_power *perproc, u8 vid)
- {
- 	u32 lo;
--	u8 savefid = perproc[PP_OFF_CFID];
-+	u8 savefid = perproc->cfid;
- 
- 	if ((savefid & INVALID_FID_MASK) || (vid & INVALID_VID_MASK)) {
- 		printk(EFX "overflow on vid write\n");
- 		return 1;
- 	}
- 
--	lo = perproc[PP_OFF_CFID] | (vid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
-+	lo = perproc->cfid | (vid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
- 	dprintk(DFX "cpu%d, writing vid %x, lo %x, hi %x\n",
- 		smp_processor_id(), vid, lo, STOP_GRANT_5NS);
- 	wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
- 	if (query_current_values_with_pending_wait(perproc))
- 		return 1;
- 
--	if (savefid != perproc[PP_OFF_CFID]) {
-+	if (savefid != perproc->cfid) {
- 		printk(EFX "fid change on vid trans, old %x new %x\n",
--		       savefid, perproc[PP_OFF_CFID]);
-+		       savefid, perproc->cfid);
- 		return 1;
- 	}
--	if (vid != perproc[PP_OFF_CVID]) {
-+	if (vid != perproc->cvid) {
- 		printk(EFX "vid trans failed, vid %x, cvid %x\n",
--		       vid, perproc[PP_OFF_CFID]);
-+		       vid, perproc->cfid);
- 		return 1;
- 	}
- 	return 0;
- }
- 
--static int decrease_vid_code_by_step(u8 *perproc, u32 idx, u8 reqvid, u8 step)
-+static int decrease_vid_code_by_step(struct cpu_power *perproc, u32 idx, u8 reqvid, u8 step)
- {
- 	struct pstate *pst;
- 
--	if (idx >= perproc[PP_OFF_NUMPS]) {
-+	if (idx >= perproc->numps) {
- 		printk(EFX "idx overflow vid step\n");
- 		return 1;
- 	}
--	pst = (struct pstate *) (perproc + PP_OFF_BYTES);
--	pst += idx;
-+	pst = &perproc->pst[idx];
- 
- 	if (step == 0)  /* BIOS error if this is the case, but continue */
- 		step = 1;
- 
--	if ((perproc[PP_OFF_CVID] - reqvid) > step)
--		reqvid = perproc[PP_OFF_CVID] - step;
-+	if ((perproc->cvid - reqvid) > step)
-+		reqvid = perproc->cvid - step;
- 	if (write_new_vid(perproc, reqvid))
- 		return 1;
- 	count_off_vst(pst->vstable);
- 	return 0;
- }
- 
--static inline int core_voltage_pre_transition(u8 *perproc, u32 idx, u8 rvid)
-+static inline int core_voltage_pre_transition(struct cpu_power *perproc, u32 idx, u8 rvid)
- {
- 	struct pstate *pst;
- 	u8 rvosteps;
--	u8 savefid = perproc[PP_OFF_CFID];
++{
++	u32 lo;
 +	u8 savefid = perproc->cfid;
 +
-+	pst = &perproc->pst[idx];
- 
--	pst = (struct pstate *) (perproc + PP_OFF_BYTES);
--	pst += idx;
- 	rvosteps = pst->rvo;
- 	dprintk(DFX "ph1 start%d, cfid 0x%x, cvid 0x%x, rvid 0x%x, rvo %x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID], rvid, pst->rvo);
-+		perproc->cfid, perproc->cvid, rvid, pst->rvo);
- 
--	while (perproc[PP_OFF_CVID] > rvid) {
-+	while (perproc->cvid > rvid) {
- 		dprintk(DFX "ph1 curr %x, req vid %x\n",
--			    perproc[PP_OFF_CVID], rvid);
-+			    perproc->cvid, rvid);
- 		if (decrease_vid_code_by_step(perproc, idx, rvid, pst->vidmvs))
- 			return 1;
- 	}
- 
- 	while (rvosteps) {
--		if (perproc[PP_OFF_CVID] == 0) {
-+		if (perproc->cvid == 0) {
- 			rvosteps = 0;
- 		} else {
- 			dprintk(DFX "ph1 changing vid for rvo, req 0x%x\n",
--				perproc[PP_OFF_CVID] - 1);
-+				perproc->cvid - 1);
- 			if (decrease_vid_code_by_step(perproc, idx,
--						perproc[PP_OFF_CVID] - 1, 1))
-+						perproc->cvid - 1, 1))
- 				return 1;
- 			rvosteps--;
- 		}
-@@ -304,62 +299,62 @@
- 	if (query_current_values_with_pending_wait(perproc))
- 		return 1;
- 
--	if (savefid != perproc[PP_OFF_CFID]) {
--		printk(EFX "ph1 err, cfid changed %x\n", perproc[PP_OFF_CFID]);
++	if ((savefid & INVALID_FID_MASK) || (vid & INVALID_VID_MASK)) {
++		printk(EFX "overflow on vid write\n");
++		return 1;
++	}
++
++	lo = perproc->cfid | (vid << MSR_C_LO_VID_SHIFT) | MSR_C_LO_INIT;
++	dprintk(DFX "cpu%d, writing vid %x, lo %x, hi %x\n",
++		smp_processor_id(), vid, lo, STOP_GRANT_5NS);
++	wrmsr(MSR_FIDVID_CTL, lo, STOP_GRANT_5NS);
++	if (query_current_values_with_pending_wait(perproc))
++		return 1;
++
 +	if (savefid != perproc->cfid) {
-+		printk(EFX "ph1 err, cfid changed %x\n", perproc->cfid);
- 		return 1;
- 	}
- 	dprintk(DFX "ph1 done%d, cfid 0x%x, cvid 0x%x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
-+		perproc->cfid, perproc->cvid);
- 	return 0;
- }
- 
--static inline int core_frequency_transition(u8 * perproc, u32 idx, u8 reqfid)
++		printk(EFX "fid change on vid trans, old %x new %x\n",
++		       savefid, perproc->cfid);
++		return 1;
++	}
++	if (vid != perproc->cvid) {
++		printk(EFX "vid trans failed, vid %x, cvid %x\n",
++		       vid, perproc->cfid);
++		return 1;
++	}
++	return 0;
++}
++
++/* Phase 2 */
 +static inline int core_frequency_transition(struct cpu_power *perproc, u32 idx, u8 reqfid)
- {
- 	u8 vcoreqfid;
- 	u8 vcocurrfid;
- 	u8 vcofiddiff;
--	u8 savevid = perproc[PP_OFF_CVID];
++{
++	u8 vcoreqfid;
++	u8 vcocurrfid;
++	u8 vcofiddiff;
 +	u8 savevid = perproc->cvid;
- 
- 	if ((reqfid < HI_FID_TABLE_BOTTOM)
--	    && (perproc[PP_OFF_CFID] < HI_FID_TABLE_BOTTOM)) {
++
++	if ((reqfid < HI_FID_TABLE_BOTTOM)
 +	    && (perproc->cfid < HI_FID_TABLE_BOTTOM)) {
- 		printk(EFX "ph2 illegal lo-lo transition %x %x\n",
--		       reqfid, perproc[PP_OFF_CFID]);
++		printk(EFX "ph2 illegal lo-lo transition %x %x\n",
 +		       reqfid, perproc->cfid);
- 		return 1;
- 	}
- 
--	if (perproc[PP_OFF_CFID] == reqfid) {
++		return 1;
++	}
++
 +	if (perproc->cfid == reqfid) {
- 		printk(EFX "ph2 null fid transition %x\n", reqfid );
- 		return 0;
- 	}
- 
- 	dprintk(DFX "ph2 start%d, cfid %x, cvid %x, rfid %x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID], reqfid);
++		printk(EFX "ph2 null fid transition %x\n", reqfid );
++		return 0;
++	}
++
++	dprintk(DFX "ph2 start%d, cfid %x, cvid %x, rfid %x\n",
++		smp_processor_id(),
 +		perproc->cfid, perproc->cvid, reqfid);
- 
- 	vcoreqfid = convert_fid_to_vfid(reqfid);
--	vcocurrfid = convert_fid_to_vfid(perproc[PP_OFF_CFID]);
++
++	vcoreqfid = convert_fid_to_vfid(reqfid);
 +	vcocurrfid = convert_fid_to_vfid(perproc->cfid);
- 	vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
- 						: vcoreqfid - vcocurrfid;
- 
- 	while (vcofiddiff > FSTEP) {
--		if (reqfid > perproc[PP_OFF_CFID]) {
--			if (perproc[PP_OFF_CFID] > LO_FID_TABLE_TOP) {
++	vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
++						: vcoreqfid - vcocurrfid;
++
++	while (vcofiddiff > FSTEP) {
 +		if (reqfid > perproc->cfid) {
 +			if (perproc->cfid > LO_FID_TABLE_TOP) {
- 				if (write_new_fid(perproc, idx,
--						  perproc[PP_OFF_CFID] + FSTEP))
++				if (write_new_fid(perproc, idx,
 +						  perproc->cfid + FSTEP))
- 					return 1;
- 			} else {
- 				if (write_new_fid(perproc, idx, FSTEP +
--				     convert_fid_to_vfid(perproc[PP_OFF_CFID])))
++					return 1;
++			} else {
++				if (write_new_fid(perproc, idx, FSTEP +
 +				     convert_fid_to_vfid(perproc->cfid)))
- 					return 1;
- 			}
- 		} else {
- 			if (write_new_fid(perproc, idx,
--					  perproc[PP_OFF_CFID]-FSTEP))
++					return 1;
++			}
++		} else {
++			if (write_new_fid(perproc, idx,
 +					  perproc->cfid-FSTEP))
- 				return 1;
- 		}
- 
--		vcocurrfid = convert_fid_to_vfid(perproc[PP_OFF_CFID]);
++				return 1;
++		}
++
 +		vcocurrfid = convert_fid_to_vfid(perproc->cfid);
- 		vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
- 						    : vcoreqfid - vcocurrfid;
- 	}
-@@ -368,70 +363,70 @@
- 	if (query_current_values_with_pending_wait(perproc))
- 		return 1;
- 
--	if (perproc[PP_OFF_CFID] != reqfid) {
++		vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
++						    : vcoreqfid - vcocurrfid;
++	}
++	if (write_new_fid(perproc, idx, reqfid))
++		return 1;
++	if (query_current_values_with_pending_wait(perproc))
++		return 1;
++
 +	if (perproc->cfid != reqfid) {
- 		printk(EFX "ph2 mismatch, failed transn, curr %x, req %x\n",
--		       perproc[PP_OFF_CFID], reqfid);
++		printk(EFX "ph2 mismatch, failed transn, curr %x, req %x\n",
 +		       perproc->cfid, reqfid);
- 		return 1;
- 	}
- 
--	if (savevid != perproc[PP_OFF_CVID]) {
++		return 1;
++	}
++
 +	if (savevid != perproc->cvid) {
- 		printk(EFX "ph2 vid changed, save %x, curr %x\n", savevid,
--		       perproc[PP_OFF_CVID]);
++		printk(EFX "ph2 vid changed, save %x, curr %x\n", savevid,
 +		       perproc->cvid);
- 		return 1;
- 	}
- 
- 	dprintk(DFX "ph2 complete%d, currfid 0x%x, currvid 0x%x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
++		return 1;
++	}
++
++	dprintk(DFX "ph2 complete%d, currfid 0x%x, currvid 0x%x\n",
++		smp_processor_id(),
 +		perproc->cfid, perproc->cvid);
- 	return 0;
- }
- 
--static inline int core_voltage_post_transition(u8 * perproc, u32 idx, u8 reqvid)
++	return 0;
++}
++
++/* Phase 3 - core voltage transition flow ... jump to the final vid. */
 +static inline int core_voltage_post_transition(struct cpu_power *perproc, u32 idx, u8 reqvid)
- {
--	u8 savefid = perproc[PP_OFF_CFID];
++{
 +	u8 savefid = perproc->cfid;
- 	u8 savereqvid = reqvid;
- 
- 	dprintk(DFX "ph3 starting%d, cfid 0x%x, cvid 0x%x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
++	u8 savereqvid = reqvid;
++
++	dprintk(DFX "ph3 starting%d, cfid 0x%x, cvid 0x%x\n",
++		smp_processor_id(),
 +		perproc->cfid, perproc->cvid);
- 
--	if (reqvid != perproc[PP_OFF_CVID]) {
++
 +	if (reqvid != perproc->cvid) {
- 		if (write_new_vid(perproc, reqvid))
- 			return 1;
- 
--		if (savefid != perproc[PP_OFF_CFID]) {
++		if (write_new_vid(perproc, reqvid))
++			return 1;
++
 +		if (savefid != perproc->cfid) {
- 			printk(EFX "ph3: bad fid change, save %x, curr %x\n",
--			       savefid, perproc[PP_OFF_CFID]);
++			printk(EFX "ph3: bad fid change, save %x, curr %x\n",
 +			       savefid, perproc->cfid);
- 			return 1;
- 		}
- 
--		if (perproc[PP_OFF_CVID] != reqvid) {
++			return 1;
++		}
++
 +		if (perproc->cvid != reqvid) {
- 			printk(EFX "ph3: failed vid trans\n, req %x, curr %x",
--			       reqvid, perproc[PP_OFF_CVID]);
++			printk(EFX "ph3: failed vid trans\n, req %x, curr %x",
 +			       reqvid, perproc->cvid);
- 			return 1;
- 		}
- 	}
- 	if (query_current_values_with_pending_wait(perproc))
- 		return 1;
- 
--	if (savereqvid != perproc[PP_OFF_CVID]) {
--		dprintk(EFX "ph3 failed, currvid 0x%x\n", perproc[PP_OFF_CVID]);
++			return 1;
++		}
++	}
++	if (query_current_values_with_pending_wait(perproc))
++		return 1;
++
 +	if (savereqvid != perproc->cvid) {
 +		dprintk(EFX "ph3 failed, currvid 0x%x\n", perproc->cvid);
- 		return 1;
- 	}
- 
--	if (savefid != perproc[PP_OFF_CFID]) {
++		return 1;
++	}
++
 +	if (savefid != perproc->cfid) {
- 		dprintk(EFX "ph3 failed, currfid changed 0x%x\n",
--			perproc[PP_OFF_CFID]);
++		dprintk(EFX "ph3 failed, currfid changed 0x%x\n",
 +			perproc->cfid);
- 		return 1;
- 	}
- 
- 	dprintk(DFX "ph3 done%d, cfid 0x%x, cvid 0x%x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
++		return 1;
++	}
++
++	dprintk(DFX "ph3 done%d, cfid 0x%x, cvid 0x%x\n",
++		smp_processor_id(),
 +		perproc->cfid, perproc->cvid);
- 	return 0;
- }
- 
--static inline int transition_fid_vid(u8 *perproc, u32 idx, u8 rfid, u8 rvid)
++	return 0;
++}
++
++/* Change the fid and vid, by the 3 phases. */
 +static inline int transition_fid_vid(struct cpu_power *perproc, u32 idx, u8 rfid, u8 rvid)
- {
- 	if (core_voltage_pre_transition(perproc, idx, rvid))
- 		return 1;
-@@ -441,15 +436,15 @@
- 		return 1;
- 	if (query_current_values_with_pending_wait(perproc))
- 		return 1;
--	if ((rfid != perproc[PP_OFF_CFID]) || (rvid != perproc[PP_OFF_CVID])) {
++{
++	if (core_voltage_pre_transition(perproc, idx, rvid))
++		return 1;
++	if (core_frequency_transition(perproc, idx, rfid))
++		return 1;
++	if (core_voltage_post_transition(perproc, idx, rvid))
++		return 1;
++	if (query_current_values_with_pending_wait(perproc))
++		return 1;
 +	if ((rfid != perproc->cfid) || (rvid != perproc->cvid)) {
- 		printk(EFX "failed%d: req %x %x, curr %x %x\n",
- 		       smp_processor_id(), rfid, rvid,
--		       perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
++		printk(EFX "failed%d: req %x %x, curr %x %x\n",
++		       smp_processor_id(), rfid, rvid,
 +		       perproc->cfid, perproc->cvid);
- 		return 1;
- 	}
- 	dprintk(IFX "transitioned%d: new fid 0x%x, vid 0x%x\n",
- 		smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
++		return 1;
++	}
++	dprintk(IFX "transitioned%d: new fid 0x%x, vid 0x%x\n",
++		smp_processor_id(),
 +		perproc->cfid, perproc->cvid);
- 	return 0;
- }
- 
-@@ -478,7 +473,7 @@
- static int process_pss(acpi_handle objh, unsigned cpunumb)
- {
- 	struct proc_pss proc;
--	u8 *perproc;
-+	struct cpu_power *perproc;
- 	struct pstate *pst;
- 	u32 pstc;
- 	acpi_status rc;
-@@ -515,15 +510,15 @@
- 		return -ENODEV;
- 	}
- 
--	i = (PP_OFF_BYTES * sizeof(u8)) + (sizeof(struct pstate) * pstc);
-+	i = sizeof(struct cpu_power) + (sizeof(struct pstate) * pstc);
- 	perproc = kmalloc(i, GFP_KERNEL);
- 	if (!perproc) {
- 		printk(EFX "perproc memory alloc failure\n");
- 		return -ENOMEM;
- 	}
- 	memset(perproc, 0, i);
--	pst = (struct pstate *) (perproc + PP_OFF_BYTES);
--	perproc[PP_OFF_NUMPS] = pstc;
-+	pst = &perproc->pst[0];
-+	perproc->numps = pstc;
- 
- 	data = obj->package.elements;
- 	for (i = 0; i < pstc; i++) {
-@@ -685,8 +680,8 @@
- 
- 	for (i = 0; i < num_online_cpus(); i++) {
- 		if (procs[i]) {
--			pst = (struct pstate *) (procs[i] + PP_OFF_BYTES);
--			for (j = 0; j < procs[i][PP_OFF_NUMPS]; j++)
-+			pst = (&procs[i]->pst[0]);
-+			for (j = 0; j < procs[i]->numps; j++)
- 				dprintk(IFX
- 			            "cpu%d: freq %d: fid %x, vid %x, irt %x, "
- 				    "rvo %x, plllock %x, vidmvs %x, vstbl %x\n",
-@@ -727,10 +722,10 @@
- 	return fid_from_freq(freq);
- }
- 
--static int find_match(u8 *perproc, u16 *ptargfreq, u16 *pmin, u16 *pmax,
-+static int find_match(struct cpu_power *perproc, u16 *ptargfreq, u16 *pmin, u16 *pmax,
- 			u8 *pfid, u8 *pvid, u32 *idx)
- {
--	u32 availpstates = perproc[PP_OFF_NUMPS];
-+	u32 availpstates = perproc->numps;
- 	u8 targfid = find_closest_fid(*ptargfreq);
- 	u8 minfid = find_closest_fid(*pmin);
- 	u8 maxfid = find_closest_fid(*pmax);
-@@ -738,7 +733,7 @@
- 	u32 minidx = availpstates - 1;
- 	u32 targidx = 0xffffffff;
- 	int i;
--	struct pstate *pst = (struct pstate *) (perproc + PP_OFF_BYTES);
-+	struct pstate *pst = &perproc->pst[0];
- 
- 	dprintk(DFX "find match: freq %d MHz (%x), min %d (%x), max %d (%x)\n",
- 		*ptargfreq, targfid, *pmin, minfid, *pmax, maxfid);
-@@ -805,7 +800,7 @@
- }
- 
- static inline int
--transition_frequency(u8 *perproc, u16 *preq, u16 *pmin, u16 *pmax)
-+transition_frequency(struct cpu_power *perproc, u16 *preq, u16 *pmin, u16 *pmax)
- {
- 	u32 idx;
- 	int res;
-@@ -819,22 +814,22 @@
- 
- 	if (query_current_values_with_pending_wait(perproc))
- 		return 1;
--	if ((perproc[PP_OFF_CVID] == vid) && (perproc[PP_OFF_CFID] == fid)) {
-+	if ((perproc->cvid == vid) && (perproc->cfid == fid)) {
- 		dprintk(DFX "targ matches curr (fid %x, vid %x)\n", fid, vid);
- 		return 0;
- 	}
- 
- 	if ((fid < HI_FID_TABLE_BOTTOM)
--	    && (perproc[PP_OFF_CFID] < HI_FID_TABLE_BOTTOM)) {
-+	    && (perproc->cfid < HI_FID_TABLE_BOTTOM)) {
- 		printk(EFX "ignoring change in lo freq table: %x to %x\n",
--		       perproc[PP_OFF_CFID], fid);
-+		       perproc->cfid, fid);
- 		return 1;
- 	}
- 
- 	dprintk(DFX "cpu%d to fid %x vid %x\n", smp_processor_id(), fid, vid);
- 
- 	freqs.cpu = smp_processor_id();
--	freqs.old = freq_from_fid(perproc[PP_OFF_CFID]);
-+	freqs.old = freq_from_fid(perproc->cfid);
- 	freqs.new = freq_from_fid(fid);
- 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 
-@@ -842,7 +837,7 @@
- 	res = transition_fid_vid(perproc, idx, fid, vid);
- 	up(&fidvid_sem);
- 
--	freqs.new = freq_from_fid(perproc[PP_OFF_CFID]);
-+	freqs.new = freq_from_fid(perproc->cfid);
- 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 
- 	return res;
-@@ -850,19 +845,19 @@
- 
- static int need_poller(void)   /* if running at a freq only allowed for a/c */
- {
--	u8 *perproc = procs[0];
--	struct pstate *pst = (struct pstate *)(perproc + PP_OFF_BYTES);
-+	struct cpu_power *perproc = procs[0];
-+	struct pstate *pst = &perproc->pst[0];
-         u32 maxidx;
- 
-         if (num_online_cpus() > 1)
- 		return 0;
- 
-         process_ppc(0);
--	if (rstps > perproc[PP_OFF_NUMPS])
-+	if (rstps > perproc->numps)
- 		return 0;
--	maxidx = perproc[PP_OFF_NUMPS] - rstps;
-+	maxidx = perproc->numps - rstps;
- 	pst += maxidx;
--	if (rstps && (perproc[PP_OFF_CFID] > pst->fid ))
-+	if (rstps && (perproc->cfid > pst->fid ))
- 		return 1;
- 	return 0;
- }
-@@ -871,11 +866,11 @@
- static void ac_poller(unsigned long x)  
- {
- 	int pow;
--	u8 *perproc = procs[0];
--	struct pstate *pst = (struct pstate *)(perproc + PP_OFF_BYTES);
--        u32 maxidx = perproc[PP_OFF_NUMPS] - rstps;
-+	struct cpu_power *perproc = procs[0];
-+	struct pstate *pst = &perproc->pst[0];
-+        u32 maxidx = perproc->numps - rstps;
- 	u16 rf = pst[maxidx].freq;
--	u16 minfreq = pst[perproc[PP_OFF_NUMPS]-1].freq;
-+	u16 minfreq = pst[perproc->numps-1].freq;
- 	u16 maxfreq = pst[maxidx].freq;
- 
- 	down(&poll_sem);
-@@ -885,7 +880,7 @@
- 		return;
- 	}
-         process_ppc(0);
--	if (rstps > perproc[PP_OFF_NUMPS]) {
-+	if (rstps > perproc->numps) {
- 		pollflg = POLLER_NOT_RUNNING;
- 		up(&poll_sem);
- 		return;
-@@ -936,7 +931,7 @@
- 	u16 reqfreq = (u16)(targfreq / KHZ);
- 	u16 minfreq = (u16)(pol->min / KHZ);
- 	u16 maxfreq = (u16)(pol->max / KHZ);
--	u8 *perproc;
-+	struct cpu_power *perproc;
- 	u8 checkfid;
- 	u8 checkvid;
- 
-@@ -972,20 +967,20 @@
- 	dprintk(DFX "targ cpu %d, curr cpu %d (mask %lx)\n", pol->cpu,
- 		    smp_processor_id(),	current->cpus_allowed);
- 
--	checkfid = perproc[PP_OFF_CFID];
--	checkvid = perproc[PP_OFF_CVID];
-+	checkfid = perproc->cfid;
-+	checkvid = perproc->cvid;
- 	if (query_current_values_with_pending_wait(perproc)) {
- 		printk(EFX "drv targ fail: change pending bit set\n");
- 		rc = -EIO;
- 		goto targ_exit;
- 	}
- 	dprintk(DFX "targ%d: curr fid %x, vid %x\n", smp_processor_id(),
--		perproc[PP_OFF_CFID], perproc[PP_OFF_CVID]);
--	if ((checkvid != perproc[PP_OFF_CVID])
--	    || (checkfid != perproc[PP_OFF_CFID])) {
-+		perproc->cfid, perproc->cvid);
-+	if ((checkvid != perproc->cvid)
-+	    || (checkfid != perproc->cfid)) {
- 		printk(EFX "error - out of sync, fid %x %x, vid %x %x\n",
--		       checkfid, perproc[PP_OFF_CFID], checkvid,
--		       perproc[PP_OFF_CVID]);
-+		       checkfid, perproc->cfid, checkvid,
-+		       perproc->cvid);
- 	}
- 
- 	if (transition_frequency(perproc, &reqfreq, &minfreq, &maxfreq)) {
-@@ -994,7 +989,7 @@
- 		goto targ_exit;
- 	}
- 
--	pol->cur = kfreq_from_fid(perproc[PP_OFF_CFID]);
-+	pol->cur = kfreq_from_fid(perproc->cfid);
- 
- targ_exit:
- 	preempt_enable_no_resched();
-@@ -1013,7 +1008,7 @@
- 	u16 min = (u16)(pol->min / KHZ);
- 	u16 max = (u16)(pol->max / KHZ);
- 	u16 targ = min;
--	u8 *perproc;
-+	struct cpu_power *perproc;
- 	int res;
- 	u32 idx;
- 	u8 fid;
-@@ -1046,19 +1041,19 @@
- 
- static int __init powernowk8_cpu_init(struct cpufreq_policy *pol)
- {
--	u8 *perproc = procs[smp_processor_id()];
--	struct pstate *pst = (struct pstate *)(perproc + PP_OFF_BYTES);
-+	struct cpu_power *perproc = procs[smp_processor_id()];
-+	struct pstate *pst = &perproc->pst[0];
- 
- 	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	pol->cpuinfo.transition_latency =             /* crude guess */
- 		((pst[0].rvo + 8) * pst[0].vstable * VST_UNITS_20US)
- 		+ (3 * (1 << pst[0].irt) * 10);
- 
--	pol->cur = kfreq_from_fid(perproc[PP_OFF_CFID]);
-+	pol->cur = kfreq_from_fid(perproc->cfid);
- 	dprintk(DFX "policy cfreq %d kHz\n", pol->cur);
- 
- 	/* min/max this cpu is capable of */
--	pol->cpuinfo.min_freq =kfreq_from_fid(pst[perproc[PP_OFF_NUMPS]-1].fid);
-+	pol->cpuinfo.min_freq =kfreq_from_fid(pst[perproc->numps-1].fid);
- 	pol->cpuinfo.max_freq = kfreq_from_fid(pst[0].fid);
- 	pol->min = pol->cpuinfo.min_freq;
- 	pol->max = pol->cpuinfo.max_freq;
-@@ -1068,7 +1063,7 @@
- #ifdef CONFIG_SMP
- static void smp_k8_init( void *retval )
- {
--	u8 *perproc = procs[smp_processor_id()];
-+	struct cpu_power *perproc = procs[smp_processor_id()];
- 	int *rc = (int *)retval;
- 	rc += smp_processor_id();
- 
-@@ -1150,11 +1145,11 @@
- static void __exit powernowk8_exit(void)
- {
- 	int pollwait = num_online_cpus() == 1 ? 1 : 0;
--	u8 *perproc = procs[0];
--	struct pstate *pst = (struct pstate *)(perproc + PP_OFF_BYTES);
--        u32 maxidx = perproc[PP_OFF_NUMPS] - seenrst;
-+	struct cpu_power *perproc = procs[0];
-+	struct pstate *pst = &perproc->pst[0];
-+        u32 maxidx = perproc->numps - seenrst;
- 	u16 rf = pst[maxidx].freq;
--	u16 minfreq = pst[perproc[PP_OFF_NUMPS]-1].freq;
-+	u16 minfreq = pst[perproc->numps-1].freq;
- 	u16 maxfreq = pst[maxidx].freq;
- 
- 	dprintk(IFX "powernowk8_exit, pollflg=%x\n", pollflg);
-@@ -1175,7 +1170,7 @@
- 
- 	/* need to be on a battery frequency when the module is unloaded */
- 	pst += maxidx;
--	if (seenrst && (perproc[PP_OFF_CFID] > pst->fid )) {
-+	if (seenrst && (perproc->cfid > pst->fid )) {
- 		if (POW_BAT == query_ac()) {
- 			dprintk(DFX "unload emergency transition\n" );
-                         transition_frequency(perproc, &rf, &minfreq, &maxfreq);
-
++	return 0;
++}
 
 -- 
 When do you have a heart between your knees?
