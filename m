@@ -1,9 +1,15 @@
-From: bugme-daemon@osdl.org
-Subject: [Bug 3144] modprobe speedstep-smi fails
-Date: Mon, 2 Aug 2004 13:50:58 -0700
+From: Dave Jones <davej@redhat.com>
+Subject: Re: post-OLS pending cpufreq patches
+Date: Mon, 2 Aug 2004 21:52:08 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408022050.i72Kowg5021538@fire-1.osdl.org>
+Message-ID: <20040802205208.GE12724@redhat.com>
+References: <20040727205126.GB9438@dominikbrodowski.de>
+	<20040802193350.GA15740@redhat.com>
+	<20040802204231.GB8795@dominikbrodowski.de>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040802204231.GB8795@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,41 +19,33 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: venkatesh.pallipadi@intel.com, cpufreq@www.linux.org.uk
 
-http://bugme.osdl.org/show_bug.cgi?id=3144
+On Mon, Aug 02, 2004 at 10:42:31PM +0200, Dominik Brodowski wrote:
+ > On Mon, Aug 02, 2004 at 08:33:50PM +0100, Dave Jones wrote:
+ > >  > - [speedstep-centrino] SMP support [Venkatesh Pallipadi]
+ > >  > 	looks good, IMO, but needs to be adapted to Jeremey's patch which
+ > >  > 	should go in first, IMO.
+ > > 
+ > > merged.
+ > 
+ > Actually, I can't see that in either bk or snapshot... However, I guess it
+ > needs a bit of re-work after all the changes done in the past few hours.
 
-linux@brodo.de changed:
+Ok, I'm done merging bits for now, and I've just refreshed the patch
+at http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/cpufreq-2004-08-02.diff
+if you have anything else, please send incrementals against that.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |linux@brodo.de
-             Status|NEW                         |ASSIGNED
+Hmm, actually, there's going to be one more fix needed.
+Something I just merged broke things. (Or I missed a dependancy).
+
+  CC      arch/i386/kernel/cpu/cpufreq/speedstep-ich.o
+  arch/i386/kernel/cpu/cpufreq/speedstep-ich.c: In function `speedstep_target':
+  arch/i386/kernel/cpu/cpufreq/speedstep-ich.c:250: warning: implicit declaration of function `speedstep_get'
+  arch/i386/kernel/cpu/cpufreq/speedstep-ich.c: At top level:
+  arch/i386/kernel/cpu/cpufreq/speedstep-ich.c:363: error: conflicting types  2
 
 
-
-------- Additional Comments From linux@brodo.de  2004-08-02 13:50 -------
-Can you do the following to verify the issue, please?
-
-cd /sys/devices/system/cpu/cpu0/cpufreq
-cat scaling_available_governors
-cat scaling_governor
-cat cpuinfo_min_freq > scaling_min_freq
-cat cpuinfo_max_freq > scaling_max_freq
-echo -n "performance" > scaling_governor
-cat scaling_governor
-cat cpuinfo_cur_freq
-echo -n "powersave" > scaling_governor
-cat scaling_governor
-cat cpuinfo_cur_freq
-echo -n "performance" > scaling_governor
-cat scaling_governor
-cat cpuinfo_cur_freq
-
-Thanks.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+		Dave
