@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH 4/8] speedstep-lib: support for 533 and 800 MHz FSB
-Date: Wed, 19 Nov 2003 19:31:55 +0100
+Subject: TODO list, patches will follow...
+Date: Wed, 19 Nov 2003 19:29:28 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031119183155.GE20576@brodo.de>
+Message-ID: <20031119182928.GA20576@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
@@ -19,73 +19,54 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-I don't know whether there's a P4-M with 533 or 800 MHz FSB out there yet,
-but let's prepare the speedstep-lib for these FSBs anyways.
+Here are a few TODO items I'm aware of for cpufreq in 2.6.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-lib.c |   37 ++++++++++++++++++++++++---
- arch/i386/kernel/cpu/cpufreq/speedstep-lib.h |    2 -
- 2 files changed, 35 insertions(+), 4 deletions(-)
+* denotes a patch exists for 2.6.0-test9 and will be sent out in a few
+moments.
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2003-11-19 17:06:10.572868648 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2003-11-19 17:23:45.817447088 +0100
-@@ -106,14 +106,45 @@
+Merged in cpufreq-bk
+--------------------
+- [speedstep-smi] fail on failure to aquire ownership
+- [speedstep-centrino] 1 GHz Centrino support
+- [powernow-k7] different error message on no PST for CPU
+- [powernow-k8] resolve one #warning
+
+
+2.6.0 / <2.6.2
+--------------
+* [speedstep-smi] Disable smi_detect_freqs() call on systems 
+	which do not support it [BUG #1422]
+* [speedstep-smi] Disable debug output
+* [speedstep-smi] Spelling fix
+* [speedstep-lib] Support for 533 MHz FSB
+* [p4-clockmod] Detect CPU speed without relying on cpu_khz
+* [core] remove unneeded #ifdefs in include/linux/cpufreq.h
+* [core] latency in nanoseconds -- sometimes nanoseconds are used, 
+	sometimes microseconds, sometimes even something else.
+* [speedstep-smi] Do something about "cpufreq: change failed"
+	Cause seems to be DMA by IDE and others. Possible 
+	soultions are mdelay(250), notice to users, ignoring it, 
+	retry etc.
+
+
+>2.6.2 / 2.7
+------------
+- [powernow-k8] make it aware of frequency table helpers
+	Have patches, AMD wanted to look into this
+- [powernow-k7] override for PSTs
+- [acpi-cpufreq] major rewrite
+	patches exist, Len Brown liked them, but not now...
+- [core] split up drivers/cpufreq.c into manageable pieces
+- [core] use ->range() instead of ->setpolicy
+- [longrun] remove special-handling of "policy"
+- [ondemand] merge if patent issue is resolved
+- [core] support of CPU groups (hyperthreading, SMT) 
+	use cpumask_t instead of single CPU number
+- [core] verify ->resume support is OK (I doubt it)
  
- static unsigned int pentium4_get_frequency(void)
- {
--	u32 msr_lo, msr_hi;
-+	struct cpuinfo_x86 *c = &boot_cpu_data;
-+	u32 msr_lo, msr_hi, mult;
-+	unsigned int fsb = 0;
- 
- 	rdmsr(0x2c, msr_lo, msr_hi);
- 
- 	dprintk(KERN_DEBUG "speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
- 
--	msr_lo >>= 24;
--	return (msr_lo * 100000);
-+	/* decode the FSB: see IA-32 Intel (C) Architecture Software 
-+	 * Developer's Manual, Volume 3: System Prgramming Guide,
-+	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
-+	 * Intel Xeon Processors, on page B-4 and B-5.
-+	 */
-+	if (c->x86_model < 2)
-+		fsb = 100 * 1000;
-+	else {
-+		u8 fsb_code = (msr_lo >> 16) & 0x7;
-+		switch (fsb_code) {
-+		case 0:
-+			fsb = 100 * 1000;
-+			break;
-+		case 1:
-+			fsb = 13333 * 10;
-+			break;
-+		case 2:
-+			fsb = 200 * 1000;
-+			break;
-+		}
-+	}
-+
-+	if (!fsb)
-+		printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
-+
-+	/* Multiplier. */
-+	mult = msr_lo >> 24;
-+
-+	dprintk(KERN_DEBUG "speedstep-lib: P4 - FSB %u kHz; Multiplier %u\n", fsb, mult);
-+
-+	return (fsb * mult);
- }
- 
-  
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h	2003-11-19 17:06:10.572868648 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h	2003-11-19 17:23:45.817447088 +0100
-@@ -15,7 +15,7 @@
- #define SPEEDSTEP_PROCESSOR_PIII_C_EARLY	0x00000001  /* Coppermine core */
- #define SPEEDSTEP_PROCESSOR_PIII_C		0x00000002  /* Coppermine core */
- #define SPEEDSTEP_PROCESSOR_PIII_T 		0x00000003  /* Tualatin core */
--#define SPEEDSTEP_PROCESSOR_P4M			0x00000004  /* P4-M with 100 MHz FSB */
-+#define SPEEDSTEP_PROCESSOR_P4M			0x00000004  /* P4-M  */
- 
- /* speedstep states -- only two of them */
+
+2.7
+---
+- [sa1100] move cpufreq_get code to arch/arm/sa1100-specific code
+- [core] remove deprecated interfaces
+	namely proc_intf, /proc/sys/ interface in userspace governor
