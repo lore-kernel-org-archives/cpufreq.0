@@ -1,10 +1,15 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k7.c, 1.1.1.1,
-	1.1.1.2
-Date: Fri, 19 Sep 2003 17:47:46 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1A0OQ6-0003kK-OT@flint.arm.linux.org.uk>
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+From: Jan Rychter <jan@rychter.com>
+Subject: Re: Feature request (was: Pentium 4m kernel 2.4.21)
+Date: Fri, 19 Sep 2003 10:17:17 -0700
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <m21xucsnoi.fsf@tnuctip.rychter.com>
+References: <000001c3694b$6b4eb5d0$0200a8c0@informatik.domaene>
+	<3F473898.4020101@gotiao.com> <3F4746DB.9080303@gotiao.com>
+	<20030826231001.GB31977@brodo.de>
+Mime-Version: 1.0
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20030826231001.GB31977@brodo.de> (Dominik Brodowski's message
+	of "Wed, 27 Aug 2003 01:10:01 +0200")
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,86 +18,24 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.arm.linux.org.uk
+To: Dominik Brodowski <linux@brodo.de>
+Cc: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv14397/linux/arch/i386/kernel/cpufreq
+>>>>> "Dominik" == Dominik Brodowski <linux@brodo.de> writes:
+ Dominik> Oh well, so users want to use 150 MHz instead of 1600 MHz
+ Dominik> now...  
+[...]
 
-Modified Files:
-      Tag: LINUX_2_4
-	powernow-k7.c 
-Log Message:
-Backport some bug fixes from trunk.  This is needed for a correct operation
-of powernow-k7.
+FWIW, nowadays computers are way too fast and powerful. And eat too much
+battery power. My 750MHz Pentium-IIIM is speedstepped down most of the
+time. And I'm really happy with the performance of my Zaurus SL-C760,
+which has an Intel XScale PXA255 (400MHz).
 
+If people who write software actually think about performance (not
+wasting oodles of cycles on GUI animations), then we already have all
+the speed we need...
 
-Index: powernow-k7.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.1.1.2
-diff -u -r1.1.1.1 -r1.1.1.2
---- powernow-k7.c	25 Aug 2003 14:58:47 -0000	1.1.1.1
-+++ powernow-k7.c	19 Sep 2003 16:47:43 -0000	1.1.1.2
-@@ -1,6 +1,7 @@
- /*
-  *  AMD K7 Powernow driver.
-  *  (C) 2003 Dave Jones <davej@codemonkey.org.uk> on behalf of SuSE Labs.
-+ *  (C) 2003 Dave Jones <davej@redhat.com>
-  *
-  *  Licensed under the terms of the GNU GPL License version 2.
-  *  Based upon datasheets & sample CPUs kindly provided by AMD.
-@@ -190,10 +191,11 @@
- {
- 	union msr_fidvidctl fidvidctl;
- 
-+	rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
- 	if (fidvidctl.bits.FID != fid) {
--		rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
- 		fidvidctl.bits.SGTC = latency;
- 		fidvidctl.bits.FID = fid;
-+		fidvidctl.bits.VIDC = 0;
- 		fidvidctl.bits.FIDC = 1;
- 		wrmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
- 	}
-@@ -204,9 +206,11 @@
- {
- 	union msr_fidvidctl fidvidctl;
- 
-+	rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
- 	if (fidvidctl.bits.VID != vid) {
--		rdmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
-+		fidvidctl.bits.SGTC = latency;
- 		fidvidctl.bits.VID = vid;
-+		fidvidctl.bits.FIDC = 0;
- 		fidvidctl.bits.VIDC = 1;
- 		wrmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
- 	}
-@@ -296,8 +300,14 @@
- 			dprintk (" voltage regulator)\n");
- 
- 			latency = psb->settlingtime;
-+			if (latency < 100) {
-+				printk (KERN_INFO PFX "BIOS set settling time to %d microseconds."
-+						"Should be at least 100. Correcting.\n", latency);
-+				latency = 100;
-+			}
- 			dprintk (KERN_INFO PFX "Settling Time: %d microseconds.\n", psb->settlingtime);
- 			dprintk (KERN_INFO PFX "Has %d PST tables. (Only dumping ones relevant to this CPU).\n", psb->numpst);
-+			latency *= 100;	/* SGTC needs to be in units of 10ns */
- 
- 			p += sizeof (struct psb_s);
- 
-@@ -325,6 +335,8 @@
- 						p+=2;
- 				}
- 			}
-+			printk (KERN_INFO PFX "No PST tables match this cpuid (0x%x)\n", etuple);
-+			printk ("This is indicative of a broken BIOS. Email davej@redhat.com\n");
- 			return -EINVAL;
- 		}
- 		p++;
+--J.
