@@ -1,8 +1,12 @@
-From: Matt Domsch <Matt_Domsch@dell.com>
-Subject: [PATCH 2.6.11-rc3] cpufreq-core: reduce warning messages
-Date: Thu, 3 Feb 2005 11:53:52 -0600
-Message-ID: <20050203175352.GA27123@lists.us.dell.com>
+From: Clemens Orthacker <clemenso@sbox.tugraz.at>
+Subject: Re: kernel: acpi-cpufreq: Transition failed
+Date: Fri, 4 Feb 2005 11:26:58 +0100
+Message-ID: <200502041126.58413.clemenso@sbox.tugraz.at>
+References: <200502021158.26890.clemenso@sbox.tugraz.at>
+Reply-To: clemenso@sbox.tugraz.at
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <200502021158.26890.clemenso@sbox.tugraz.at>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,50 +19,17 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@brodo.de>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+To: cpufreq@lists.linux.org.uk
 
-cpufreq core is printing out messages at KERN_WARNING level that the
-core recovers from without intervention, and that the system
-administrator can do nothing about.  Patch below reduces the severity
-of these messages to debug.
+Am Mittwoch, 2. Februar 2005 11:58 schrieb Clemens Orthacker:
+> Pentium4 M
+> acpi-cpufreq driver (userspace governor, powernowd)
+>
 
-Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
+if I change the governor to performance, the frequency changes (from 1200000) 
+to 1900000 without problems..
 
 -- 
-Matt Domsch
-Software Architect
-Dell Linux Solutions linux.dell.com & www.dell.com/linux
-Linux on Dell mailing lists @ http://lists.us.dell.com
-
-===== cpufreq.c 1.94 vs edited =====
---- 1.94/drivers/cpufreq/cpufreq.c	2005-01-20 23:02:15 -06:00
-+++ edited/cpufreq.c	2005-02-03 11:16:16 -06:00
-@@ -258,7 +258,7 @@ void cpufreq_notify_transition(struct cp
- 			    (likely(cpufreq_cpu_data[freqs->cpu]->cur)) &&
- 			    (unlikely(freqs->old != cpufreq_cpu_data[freqs->cpu]->cur)))
- 			{
--				printk(KERN_WARNING "Warning: CPU frequency is %u, "
-+				dprintk("CPU frequency is %u, "
- 				       "cpufreq assumed %u kHz.\n", freqs->old, cpufreq_cpu_data[freqs->cpu]->cur);
- 				freqs->old = cpufreq_cpu_data[freqs->cpu]->cur;
- 			}
-@@ -814,7 +814,7 @@ static void cpufreq_out_of_sync(unsigned
- {
- 	struct cpufreq_freqs freqs;
- 
--	printk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing "
-+	dprintk("CPU frequency out of sync: cpufreq and timing "
- 	       "core thinks of %u, is %u kHz.\n", old_freq, new_freq);
- 
- 	freqs.cpu = cpu;
-@@ -919,7 +919,7 @@ static int cpufreq_resume(struct sys_dev
- 		if (unlikely(cur_freq != cpu_policy->cur)) {
- 			struct cpufreq_freqs freqs;
- 
--			printk(KERN_WARNING "Warning: CPU frequency is %u, "
-+			dprintk("CPU frequency is %u, "
- 			       "cpufreq assumed %u kHz.\n", cur_freq, cpu_policy->cur);
- 
- 			freqs.cpu = cpu;
+| Clemens Orthacker
+| e-mail: ClemensO@sbox.TUGraz.at
+| phone: +43/650/6693393
