@@ -1,15 +1,16 @@
-From: John Steele Scott <toojays@toojays.net>
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-Date: Thu, 10 Jun 2004 21:04:35 +0930
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] 2.6.5 speedstep on P4Ms
+Date: Thu, 10 Jun 2004 17:37:11 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200406102105.27654.toojays@toojays.net>
-References: <200406051846.50718.toojays@toojays.net>
-	<1086452473.12664.36.camel@gaston>
+Message-ID: <20040610153711.GZ13782@poupinou.org>
+References: <40C5F42D.1050107@cern.ch> <20040608153023.GS13782@poupinou.org>
+	<40C6517E.1090708@cern.ch>
+	<20040609154710.GA9482@dominikbrodowski.de>
+	<40C7AF6C.1080408@cern.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <1086452473.12664.36.camel@gaston>
 Content-Disposition: inline
+In-Reply-To: <40C7AF6C.1080408@cern.ch>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,54 +20,62 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: Text/Plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>, Christiaan Welvaart <cjw@daneel.dyndns.org>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: holbling@cpt.univ-mrs.fr
+Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
-=2D----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi,
 
-On Sun, 6 Jun 2004 01:51 am, Benjamin Herrenschmidt wrote:
-> I suggest you also look at the latest Darwin code Apple released, more
-> sepecifically AppleMacRISC2PE. There is some new bits including something
-> about tweaking a bus delay when changing the frequency on these models.
+On Thu, Jun 10, 2004 at 12:46:36AM +0000, Christian Hoelbling wrote:
 
-I had time to have a look at this today (actually, I didn't have time, but =
-I=20
-looked at it anyway :). There is a register in the UniNorth which controls=
-=20
-whether the address acknowledge will be delayed or not. This delay is not=20
-required when running at high speed.
 
-I have made a new patch for this, available from:
-http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040610.patch
+> diff --unified --recursive --new-file linux-2.6.7-rc3/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c linux-2.6.7-rc3.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+> --- linux-2.6.7-rc3/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-09 22:27:18.000000000 +0000
+> +++ linux-2.6.7-rc3.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-10 00:29:54.388186856 +0000
+> @@ -70,6 +70,7 @@
+>   * @notify: whether to call cpufreq_notify_transition for CPU speed changes
+>   *
+>   *   Tries to change the SpeedStep state. 
+> + * Note: notify is a dummy argument. The routine never notifies.
 
-This is a fair bit larger than the previous patch, as I have added a functi=
-on=20
-to the intrepid feature table to control the AACK delay. There is a slight=
-=20
-performance improvement for processes which are bound by memory latency (e.=
-g.=20
-repeatedly cat'ing a 180MB file to /dev/null takes 0.270s with this patch=20
-versus 0.277s with the last one).
+Maybe it's better to kill notify, and modify a little speedstep-smi and speedstep-lib
 
-This patch also accepts the PowerBook5,4 models. One thing that needs check=
-ing=20
-as that the revision of UniNorth on this model is high enough for=20
-intrepid_aack_delay_enable to do its thing. I just assumed that they have t=
-he=20
-same UniNorth, but I will ask in the forum thread which Colin pointed to=20
-earlier tonight.
+Dominik, your though, please?
 
-cheers,
+...
 
-John
-=2D----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: Messages with missing or bad signatures may have been forged or mo=
-dified in transit!
+> +
+> +	for_each_cpu(i) {
+> +	        if (cpu_isset(i, affected_cpu_map)) {
+> +	                freqs.cpu = i;
+> +			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> +		}
+> +	}
 
-iD8DBQFAyEdT0BW7kPcXjRURAvodAJ9tmfQG8xFLV9TsMGbz5rXKlIkaugCcDvz6
-6dHegJ1k4AOaJkGQDbmOCBc=3D
-=3DVbmY
-=2D----END PGP SIGNATURE-----
+What about 
+	for_each_cpu_mask(i, affected_cpu_map) {
+		...
+	}
+instead?
+>  
+>  	/* detect low and high frequency */
+>  	result = speedstep_get_freqs(speedstep_processor,
+> @@ -297,6 +337,9 @@
+>  	if (!speed)
+>  		return -EIO;
+>  
+> +	/* allow to run on any CPU */
+> +	set_cpus_allowed(current, cpus_allowed);
+> +
+
+Something wrong.  I mean, there is a return but the set_cpu_allowed()
+is done after...
+
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
