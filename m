@@ -1,15 +1,13 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
+From: AthlonRob <AthlonRob@axpr.net>
 Subject: Re: 2.4.21 Isn't working for me....
-Date: Tue, 26 Aug 2003 13:29:48 +0200
+Date: 26 Aug 2003 12:41:50 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030826112948.GF10585@poupinou.org>
+Message-ID: <1061926909.14523.5.camel@localhost>
 References: <1061872616.27076.47.camel@localhost>
-	<20030826064747.GE10585@poupinou.org>
-	<3F4B27D6.1000700@wanadoo.fr> <3F4B2E18.9070006@basmevissen.nl>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <3F4B2E18.9070006@basmevissen.nl>
+In-Reply-To: <1061872616.27076.47.camel@localhost>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,32 +18,55 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bas Mevissen <ml@basmevissen.nl>
-Cc: Toula Michael <keos@wanadoo.fr>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Tue, Aug 26, 2003 at 11:53:28AM +0200, Bas Mevissen wrote:
-> Toula Michael wrote:
-> 
-> >
-> >Do the 2.4.22 patch works with linux.2.4.22 final or only with -rc ????
-> >Cheers,
-> >
-> 
-> final is rc4 + makefile patch
-> rc4 is small delta upon rc3
-> 
-> So rc3, rc4 and final probably patch without rejects and rejects with 
-> older versions are likely easy to fix. But if there is no real reason to 
->  use something before 22, please use 2.4.22.
-> 
+On Mon, 2003-08-25 at 21:36, AthlonRob wrote:
+ 
+> I'm trying to get some cpu frequency control over my laptop's CPU with
+> the 2.4.21 kernel.  I'd just jump to 2.6.0-test4, but have a few pieces
+> of hardware that don't have drivers available for the test kernel yet.
 
-To be more precise: this is cpufreq-2.4.22-pre6 from Dave J. (and containing
-lot of updates from Dominik) found in http://www.codemonkey.org.uk/
-with some portions rediffed against 2.4.22-rc4 (which is 2.4.22 in fact).
+I just found http://www.codemonkey.org.uk/projects/cpufreq/ in the
+archives and gave the two patches listed there a shot.
 
--- 
-Ducrot Bruno
+-1 and -2.
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Here are the results I got from that on my make bzImage....
+
+gcc -D__KERNEL__ -I/home/rob/kernel/linux-2.4.21/include -Wall
+-Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
+-fomit-frame-pointer -pipe -mpreferred-stack-boundary=2 -march=i686  
+-nostdinc -iwithprefix include -DKBUILD_BASENAME=cpufreq 
+-DEXPORT_SYMTAB -c cpufreq.c
+In file included from
+/home/rob/kernel/linux-2.4.21/include/linux/irq.h:69,
+                 from
+/home/rob/kernel/linux-2.4.21/include/asm/hardirq.h:6,
+                 from
+/home/rob/kernel/linux-2.4.21/include/linux/interrupt.h:46,
+                 from cpufreq.c:21:
+/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h: In function
+`x86_do_profile':
+/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h:201: `current'
+undeclared (first use in this function)
+/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h:201: (Each undeclared
+identifier is reported only once
+/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h:201: for each
+function it appears in.)
+make[2]: *** [cpufreq.o] Error 1
+make[2]: Leaving directory `/home/rob/kernel/linux-2.4.21/kernel'
+make[1]: *** [first_rule] Error 2
+make[1]: Leaving directory `/home/rob/kernel/linux-2.4.21/kernel'
+make: *** [_dir_kernel] Error 2
+
+I tried fudging around with the files and lines mentioned, but didn't
+get anywhere except more broken...  :-)
+
+Is my system borked?  :-)
+
+I understand the -ac sources contain the cpufreq patch already... do
+y'all know if I will be able to apply preemptive multitasking, low
+latency scheduling, ntfs, and acpi patches I want to add in there?  They
+aren't in the test ran above, FWIW.
+
+Rob  :-)
