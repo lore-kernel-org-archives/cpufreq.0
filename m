@@ -1,14 +1,13 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: A patch to support centrino 1GHz
-Date: Mon, 27 Oct 2003 19:17:42 +0000
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20031027191742.GA4518@redhat.com>
-References: <3F9C805C.4040507@granite.phys.s.u-tokyo.ac.jp>
-	<1067244131.782.1.camel@ixodes.goop.org>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] 3/3 A dynamic cpufreq governor
+Date: Tue, 28 Oct 2003 10:27:20 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031028092720.GB1167@elf.ucw.cz>
+References: <88056F38E9E48644A0F562A38C64FB6007796D@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1067244131.782.1.camel@ixodes.goop.org>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007796D@scsmsx403.sc.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,24 +16,48 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Youichi Aso <aso@granite.phys.s.u-tokyo.ac.jp>, cpufreq list <cpufreq@www.linux.org.uk>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: akpm@osdl.org, Linus Torvalds <torvalds@osdl.org>, cpufreq@www.linux.org.uk, Pavel Machek <pavel@ucw.cz>, "Nakajima,
+	Jun" <jun.nakajima@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 
-On Mon, Oct 27, 2003 at 12:42:11AM -0800, Jeremy Fitzhardinge wrote:
+Hi!
 
- > > This works fine with my laptop.
- > > I looked up the frequency-voltage table for the processor in the revised 
- > > version of Pentium M data sheet, 252612-002.pdf, from Intel.
- > Looks good to me.  Dave, please apply.
+> ondemand3.patch - Adding sysfs interface for cpufreq_ondemand 
+> tunables and making sysfs access by cpufreq governors safe against 
+> removal of the underlying module (from Dominik). 
+> 
+> diffstat ondemand3.patch
+>  cpufreq.c          |   24 ++++++++++++
+>  cpufreq_ondemand.c |  102
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 126 insertions(+)
 
-Done. Linus hasn't been taking things like PCI ID updates and the likes
-for the last few weeks however, so this may have to wait until post 2.6.0
-In the meantime, it'll sit in the cpufreq tree waiting to be pulled.
+Is something word-wrapping your mails?
 
-		Dave
+...
+
+> +/* cpufreq_ondemand Governor Tunables */
+> +#define show_one(file_name, object)
+> \
+> +static ssize_t show_##file_name
+> \
+> +(struct cpufreq_policy *unused, char *buf)
+> \
+> +{
+> \
+> +	return sprintf(buf, "%u\n", dbs_tuners_ins.object);
+> \
+> +}
+> +show_one(sampling_rate, sampling_rate);
+> +show_one(up_threshold, up_threshold);
+> +show_one(down_threshold, down_threshold);
+
+?
+								Pavel
 
 -- 
- Dave Jones     http://www.codemonkey.org.uk
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
