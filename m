@@ -1,11 +1,20 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] cpufreq_(ondemand|conservative) (round three)
-Date: Wed, 10 Nov 2004 17:27:07 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB600351CB3F@scsmsx403.amr.corp.intel.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] Fix cpu recognization if BIOS does not set cpu to max
+	freq [was: Re: [Bug 3600] New: Cpu recognization fails after
+	upgrade from 2.6.7 to 2.6.9]
+Date: Wed, 10 Nov 2004 21:15:02 +0100
+Message-ID: <20041110201502.GC31422@poupinou.org>
+References: <200410201413.i9KED718023481@fire-1.osdl.org>
+	<20041020154744.GA5372@dreamland.darkstar.lan>
+	<20041020180537.17d0dd7c@paraclito.crema>
+	<20041020165110.GA6992@dreamland.darkstar.lan>
+	<20041021102529.GD22405@poupinou.org>
+	<20041023214325.GA13050@dreamland.darkstar.lan>
+	<20041029153544.GA9799@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20041029153544.GA9799@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,36 +26,19 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Alexander Clouter <alex@digriz.org.uk>, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
-Cc: linux@dominikbrodowski.de
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
+> - there's an entry "fsbspeed" in pst_s. Is this useful to determining the
+>   FSB, and then checking whether FSB*CFID makes more sense than FSB*MFID
+>   when comparing it to cpu_khz?
 
-Thanks for the patches. Here are some comments about _ondemand patches.
+There is no such information if you have to configure with acpi...
+Further, fsbspeed is used in order to check if PST is valid by
+comparing with the actual FSB.
 
-(1) 00_consistency patch
-I think it is OK to do this for sampling_rate. But, we may have some
-nasty races / corner conditions if we do this for up_threashold and
-down_threshold. The race I am thinking about is: we check the new
-down_value with old up_value and we may end up finally with
-down_threshold greater than up_threshold.
+-- 
+Bruno Ducrot
 
-(2) 01_ignore-nice
-The idea to have this is good. Somehow I am thinking of some corner
-cases here too.
-If the prev_cpu_idle_up and prev_cpu_idle_down have unconditionally
-include nice and total_ticks includes it conditionally, then we cannot
-do the proper subtract and compare of idle times. Am I missing anything
-here?
-
-(3) 02_check-rate-and-break-out
-This looks good and ready to go.=20
-
-(4) 03_sys_freq_step
-Looks good. One minor issue. Policy->max can change at run time (when
-a/c power and battery power). So behaviour might change if you
-initialize freq_step once instead of checking 5% of max during each
-switching. But, doing it this way should be OK too, as 5% is not a
-strict number.
-
-Thanks,
-Venki
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
