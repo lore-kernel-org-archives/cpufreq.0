@@ -1,9 +1,16 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/include/linux cpufreq.h,1.47,1.48
-Date: Thu, 26 Aug 2004 17:40:23 +0100
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
+	1.6 cpu-sa1110.c, 1.12, 1.13
+Date: Thu, 26 Aug 2004 18:57:32 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1C0NIV-0000MJ-4c@flint.arm.linux.org.uk>
+Message-ID: <20040826165732.GP29560@poupinou.org>
+References: <E1C0KGF-0006od-0A@flint.arm.linux.org.uk>
+	<20040826151034.E21364@flint.arm.linux.org.uk>
+	<20040826151540.F21364@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040826151540.F21364@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,156 +20,88 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
+Cc: davej@redhat.com
 
-Update of /mnt/src/cvsroot/cpufreq/linux/include/linux
-In directory flint:/tmp/cvs-serv1364/linux/include/linux
+On Thu, Aug 26, 2004 at 03:15:40PM +0100, Russell King wrote:
+> On Thu, Aug 26, 2004 at 03:10:34PM +0100, Russell King wrote:
+> > On Thu, Aug 26, 2004 at 02:25:51PM +0100, Ducrot Bruno wrote:
+> > > Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100
+> > > In directory flint:/tmp/cvs-serv26017/linux/arch/arm/mach-sa1100
+> > > @@ -329,8 +329,12 @@
+> > >  }
+> > >  
+> > >  static struct cpufreq_driver sa1110_driver = {
+> > > +	.flags		= CPUFREQ_STICKY |
+> > 
+> > > +			  CPUFREQ_PANIC_OUTOFSYNC | 		<<<<
+> > > +			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,	<<<<
+> > 
+> > Erm, _why_ ?
 
-Modified Files:
-	cpufreq.h 
-Log Message:
-merge with current cpufreq bk tree and 2.6.9-r1
+Because I only merged the latest bk kernel.  I should pay more attention
+in the future..  Sorry.
 
-Index: cpufreq.h
+> > 
+> > This makes very little sense.  If you put the system to sleep at
+> > 147MHz and it normally boots at 206.4MHz, you'll resume at 206.4MHz.
+> > 
+> > It's up to the kernel to reset the clock rate itself.  This is nothing
+> > new - cpufreq has always done this, so why are we adding this new
+> > restriction?
+> > 
+> > It makes zero sense.
+> 
+> And to follow that up, yes, I missed it back in June when I added
+> the CPUFREQ_STICKY here.  However, I was completely unaware that
+> this change had been made back in May 2004.
+> 
+> Can we please route changes to architecture files via the architecture
+> people _before_ merging them.  Pretty please?
+
+Does something like this ok?
+
+Index: linux/arch/arm/mach-sa1100/cpu-sa1100.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/include/linux/cpufreq.h,v
-retrieving revision 1.47
-retrieving revision 1.48
-diff -u -r1.47 -r1.48
---- cpufreq.h	20 Jan 2004 17:03:32 -0000	1.47
-+++ cpufreq.h	26 Aug 2004 16:40:19 -0000	1.48
-@@ -21,6 +21,7 @@
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
- #include <linux/completion.h>
-+#include <linux/workqueue.h>
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1100.c,v
+retrieving revision 1.6
+diff -u -r1.6 cpu-sa1100.c
+--- linux/arch/arm/mach-sa1100/cpu-sa1100.c	26 Aug 2004 13:25:17 -0000	1.6
++++ linux/arch/arm/mach-sa1100/cpu-sa1100.c	26 Aug 2004 16:55:27 -0000
+@@ -230,9 +230,7 @@
+ }
  
- #define CPUFREQ_NAME_LEN 16
+ static struct cpufreq_driver sa1100_driver = {
+-	.flags		= CPUFREQ_STICKY |
+-			  CPUFREQ_PANIC_OUTOFSYNC | 
+-			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
++	.flags		= CPUFREQ_STICKY,
+ 	.verify		= sa11x0_verify_speed,
+ 	.target		= sa1100_target,
+ 	.get		= sa11x0_getspeed,
+Index: linux/arch/arm/mach-sa1100/cpu-sa1110.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c,v
+retrieving revision 1.13
+diff -u -r1.13 cpu-sa1110.c
+--- linux/arch/arm/mach-sa1100/cpu-sa1110.c	26 Aug 2004 13:25:17 -0000	1.13
++++ linux/arch/arm/mach-sa1100/cpu-sa1110.c	26 Aug 2004 16:55:27 -0000
+@@ -329,9 +329,7 @@
+ }
  
-@@ -81,6 +82,9 @@
-  	struct semaphore	lock;   /* CPU ->setpolicy or ->target may
- 					   only be called once a time */
- 
-+	struct work_struct	update; /* if update_policy() needs to be
-+					 * called, but you're in IRQ context */
-+
- 	struct cpufreq_real_policy	user_policy;
- 
- 	struct kobject		kobj;
-@@ -96,11 +100,13 @@
- 
- #define CPUFREQ_PRECHANGE	(0)
- #define CPUFREQ_POSTCHANGE	(1)
-+#define CPUFREQ_RESUMECHANGE	(8)
- 
- struct cpufreq_freqs {
- 	unsigned int cpu;	/* cpu nr */
- 	unsigned int old;
- 	unsigned int new;
-+	u8 flags;		/* flags of cpufreq_driver, see below. */
- };
- 
- 
-@@ -110,24 +116,24 @@
-  * @div:   divisor
-  * @mult:  multiplier
-  *
-- * Needed for loops_per_jiffy and similar calculations.  We do it 
-- * this way to avoid math overflow on 32-bit machines.  This will
-- * become architecture dependent once high-resolution-timer is
-- * merged (or any other thing that introduces sc_math.h).
-  *
-  *    new = old * mult / div
-  */
- static inline unsigned long cpufreq_scale(unsigned long old, u_int div, u_int mult)
- {
--	unsigned long val, carry;
-+#if BITS_PER_LONG == 32
-+
-+	u64 result = ((u64) old) * ((u64) mult);
-+	do_div(result, div);
-+	return (unsigned long) result;
-+
-+#elif BITS_PER_LONG == 64
- 
--	mult /= 100;
--	div  /= 100;
--        val   = (old / div) * mult;
--        carry = old % div;
--	carry = carry * mult / div;
-+	unsigned long result = old * ((u64) mult);
-+	result /= div;
-+	return result;
- 
--	return carry + val;
-+#endif
- };
- 
- /*********************************************************************
-@@ -175,6 +181,7 @@
- struct cpufreq_driver {
- 	struct module           *owner;
- 	char			name[CPUFREQ_NAME_LEN];
-+	u8			flags;
- 
- 	/* needed by all drivers */
- 	int	(*init)		(struct cpufreq_policy *policy);
-@@ -186,12 +193,31 @@
- 				 unsigned int target_freq,
- 				 unsigned int relation);
- 
-+	/* should be defined, if possible */
-+	unsigned int	(*get)	(unsigned int cpu);
-+
- 	/* optional */
- 	int	(*exit)		(struct cpufreq_policy *policy);
- 	int	(*resume)	(struct cpufreq_policy *policy);
- 	struct freq_attr	**attr;
- };
- 
-+/* flags */
-+
-+#define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if 
-+					 * all ->init() calls failed */
-+#define CPUFREQ_CONST_LOOPS 	0x02	/* loops_per_jiffy or other kernel
-+					 * "constants" aren't affected by
-+					 * frequency transitions */
-+#define CPUFREQ_PANIC_OUTOFSYNC	0x04	/* panic if cpufreq's opinion of
-+					 * current frequency differs from
-+					 * actual frequency */
-+#define CPUFREQ_PANIC_RESUME_OUTOFSYNC 0x08 /* panic if cpufreq's opinion of
-+					 * current frequency differs from
-+					 * actual frequency on resume
-+					 * from sleep. */
-+
-+
- int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
- 
-@@ -228,6 +254,9 @@
- int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
- int cpufreq_update_policy(unsigned int cpu);
- 
-+/* query the current CPU frequency (in kHz). If zero, cpufreq couldn't detect it */
-+unsigned int cpufreq_get(unsigned int cpu);
-+
- /* the proc_intf.c needs this */
- int cpufreq_parse_governor (char *str_governor, unsigned int *policy, struct cpufreq_governor **governor);
- 
-@@ -235,13 +264,10 @@
- /*********************************************************************
-  *                      CPUFREQ USERSPACE GOVERNOR                   *
-  *********************************************************************/
--int cpufreq_gov_userspace_init(void);
--
- #ifdef CONFIG_CPU_FREQ_24_API
- 
- int cpufreq_setmax(unsigned int cpu);
- int cpufreq_set(unsigned int kHz, unsigned int cpu);
--unsigned int cpufreq_get(unsigned int cpu);
- 
- 
- /* /proc/sys/cpu */
+ static struct cpufreq_driver sa1110_driver = {
+-	.flags		= CPUFREQ_STICKY |
+-			  CPUFREQ_PANIC_OUTOFSYNC | 
+-			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
++	.flags		= CPUFREQ_STICKY,
+ 	.verify		= sa11x0_verify_speed,
+ 	.target		= sa1110_target,
+ 	.get		= sa11x0_getspeed,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
