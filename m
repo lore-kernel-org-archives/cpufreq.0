@@ -1,14 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: p4_clockmod or speedstep_ich | acpi?
-Date: Wed, 28 Jan 2004 23:41:06 +0100
+From: Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 2.6] update passive cooling algorithm
+Date: 28 Jan 2004 17:43:27 -0500
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20040128224106.GA5987@dominikbrodowski.de>
-References: <4011EC55.5030304@sbh.eng.br> <20040124060321.GP25416@poupinou.org>
-	<4015CFE8.1030002@corp.grupos.com.br>
+Message-ID: <1075329807.2484.97.camel@dhcppc4>
+References: <20040111211255.GA31105@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============40023157313669433=="
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <4015CFE8.1030002@corp.grupos.com.br>
+In-Reply-To: <20040111211255.GA31105@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,181 +17,292 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Marcus Grando <marcus@corp.grupos.com.br>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
-
-
---===============40023157313669433==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uZ3hkaAS1mZxFaxD"
-Content-Disposition: inline
-
-
---uZ3hkaAS1mZxFaxD
-Content-Type: multipart/mixed; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-
-
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Jan 27, 2004 at 12:41:44AM -0200, Marcus Grando wrote:
-> Hi,
->=20
-> But why my kernel show this messages, if celeron not support speedstep-ic=
-h?
->=20
-> cpufreq: P4/Xeon(TM) CPU On-Demand Clock Modulation available
-> cpufreq: Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq
-> cpufreq: modules offers voltage scaling in addition of frequency=20
-> scaling. You
-> cpufreq: should use either one instead of p4-clockmod, if possible.
->=20
-> Regards
->=20
-> Ducrot Bruno wrote:
-> >On Sat, Jan 24, 2004 at 01:53:57AM -0200, Marcus Grando wrote:
-> >
-> >>Hi,
-> >>
-> >>I have a toshiba satellite a10 127, and use p4 clockmod in cpufreq. I=
-=20
-> >>look this kernel messages:
-> >>
-> >>cpufreq: P4/Xeon(TM) CPU On-Demand Clock Modulation available
-> >>cpufreq: Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufr=
-eq
-> >>cpufreq: modules offers voltage scaling in addition of frequency=20
-> >>scaling. You
-> >>cpufreq: should use either one instead of p4-clockmod, if possible.
-> >>
-> >
-> >
-> >...
-> >
-> >>CPU:     After generic identify, caps: bfebf9ff 00000000 00000000 00000=
-000
-> >>CPU:     After vendor identify, caps: bfebf9ff 00000000 00000000 000000=
-00
-> >>CPU: Trace cache: 12K uops, L1 D cache: 8K
-> >>CPU: L2 cache: 256K
-> >>CPU:     After all inits, caps: bfebf9ff 00000000 00000000 00000080
-> >>CPU: Intel Mobile Intel(R) Celeron(R) CPU 2.00GHz stepping 09
-> >
-> >                             ^^^^^^^
-> >		  A celeron is not speedstep capable.
-> >
-
-Could you try out this patch, please?
-
-	Dominik
-
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment;
-	filename="cpufreq-2.6.1-speedstep_lib_fix_p4m_detection"
-Content-Transfer-Encoding: quoted-printable
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux=
-/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-01-16 =
-20:30:36.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-01-28 23:32:49.=
-637733272 +0100
-@@ -184,17 +184,55 @@
- 		if (c->x86_model !=3D 2)
- 			return 0;
-=20
--		if ((c->x86_mask !=3D 4) && /* B-stepping [M-P4-M] */
--			(c->x86_mask !=3D 7) && /* C-stepping [M-P4-M] */
--			(c->x86_mask !=3D 9))   /* D-stepping [M-P4-M or M-P4/533] */
--			return 0;
--
- 		ebx =3D cpuid_ebx(0x00000001);
- 		ebx &=3D 0x000000FF;
--		if ((ebx !=3D 0x0e) && (ebx !=3D 0x0f))
--			return 0;
-=20
--		return SPEEDSTEP_PROCESSOR_P4M;
-+		dprintk(KERN_INFO "ebx value is %x, x86_mask is %x\n", ebx, c->86_mask);
-+
-+		switch (c->x86_mask) {
-+		case 4:=20
-+			/*
-+			 * B-stepping [M-P4-M]=20
-+			 * sample has ebx =3D 0x0f, production has 0x0e.
-+			 */
-+			if ((ebx =3D=3D 0x0e) || (ebx =3D=3D 0x0f))
-+				return SPEEDSTEP_PROCESSOR_P4M;
-+			break;
-+		case 7:=20
-+			/*
-+			 * C-stepping [M-P4-M]
-+			 * needs to have ebx=3D0x0e, else it's a celeron:
-+			 * cf. 25130917.pdf / page 7, footnote 5 even
-+			 * though 25072120.pdf / page 7 doesn't say
-+			 * samples are only of B-stepping...
-+			 */
-+			if (ebx =3D=3D 0x0e)
-+				return SPEEDSTEP_PROCESSOR_P4M;
-+			break;
-+		case 9:
-+			/*
-+			 * D-stepping [M-P4-M or M-P4/533]
-+			 *
-+			 * this is totally strange: CPUID 0x0F29 is
-+			 * used by M-P4-M, M-P4/533 and(!) Celeron CPUs.
-+			 * The latter need to be sorted out as they don't
-+			 * support speedstep.
-+			 * Celerons with CPUID 0x0F29 may have either
-+			 * ebx=3D0x8 or 0xf -- 25130917.pdf doesn't say anything
-+			 * specific.
-+			 * M-P4-Ms may have either ebx=3D0xe or 0xf [see above]
-+			 * M-P4/533 have either ebx=3D0xe or 0xf. [25317607.pdf]
-+			 * So, how to distinguish all those processors with
-+			 * ebx=3D0xf? I don't know. Sort them out, and wait
-+			 * whether someone complains.
-+			 */
-+			if (ebx =3D=3D 0x0e)
-+				return SPEEDSTEP_PROCESSOR_P4M;
-+			break;
-+		default:
-+			break;
-+		}
-+		return 0;
- 	}
-=20
- 	switch (c->x86_model) {
-
---45Z9DzgjV8m4Oswq--
-
---uZ3hkaAS1mZxFaxD
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAGDqCZ8MDCHJbN8YRAh1nAJ95vfad5mnLwMAFXfpOsY58cs0eggCfZRE+
-70wvh8g9LGAxfOoc5FDB8LI=
-=qOeE
------END PGP SIGNATURE-----
-
---uZ3hkaAS1mZxFaxD--
-
-
---===============40023157313669433==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: ACPI Developers <acpi-devel@lists.sourceforge.net>, cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Accepted into ACPI test tree
+http://linux-acpi.bkbits.net/linux-acpi-test-2.6.0
+http://linux-acpi.bkbits.net/linux-acpi-test-2.6.1
+http://linux-acpi.bkbits.net/linux-acpi-test-2.6.2
 
---===============40023157313669433==--
+This means it will be pulled into AKPM's mm tree on the next update.
 
+thanks Dominik,
+-Len
+
+On Sun, 2004-01-11 at 16:12, Dominik Brodowski wrote:
+> [Len, could you test and verify this patch, and push it to Linus, please?]
+> 
+> The current algorithm used by Linux ACPI for passive thermal management has
+> two shortcomings:
+> 
+> - if increasing the CPU processing power as a thermal situation goes away,
+>   throttling states are decreased later than performance states. This is
+>   not wise -- it should be the opposite ordering of going "up".
+> 
+> - only if the ACPI CPUfreq driver is used, performance states are used.
+>   A generalized approach would offer passive cooling even if the ACPI
+>   P-States cpufreq driver cannot be used (faulty BIOS, FixedHW access, etc.)
+> 
+> The attached patch addresses these issues.
+> 
+>  drivers/acpi/processor.c |  182 +++++++++++++++++++++++++++++++++++++----------
+>  1 files changed, 146 insertions(+), 36 deletions(-)
+> 
+> diff -ruN linux-original/drivers/acpi/processor.c linux/drivers/acpi/processor.c
+> --- linux-original/drivers/acpi/processor.c	2004-01-11 20:51:17.000000000 +0100
+> +++ linux/drivers/acpi/processor.c	2004-01-11 21:39:43.000000000 +0100
+> @@ -1091,6 +1091,113 @@
+>  }
+>  
+> 
+> +#ifdef CONFIG_CPU_FREQ
+> +
+> +/* If a passive cooling situation is detected, primarily CPUfreq is used, as it
+> + * offers (in most cases) voltage scaling in addition to frequency scaling, and
+> + * thus a cubic (instead of linear) reduction of energy. Also, we allow for
+> + * _any_ cpufreq driver and not only the acpi-cpufreq driver.
+> + */
+> +
+> +static unsigned int cpufreq_thermal_reduction_pctg[NR_CPUS];
+> +static unsigned int acpi_thermal_cpufreq_is_init = 0;
+> +
+> +
+> +static int cpu_has_cpufreq(unsigned int cpu)
+> +{
+> +	struct cpufreq_policy policy;
+> +	if (!acpi_thermal_cpufreq_is_init)
+> +		return -ENODEV;
+> +	if (!cpufreq_get_policy(&policy, cpu))
+> +		return -ENODEV;
+> +	return 0;
+> +}
+> +
+> +
+> +static int acpi_thermal_cpufreq_increase(unsigned int cpu)
+> +{
+> +	if (!cpu_has_cpufreq)
+> +		return -ENODEV;
+> +
+> +	if (cpufreq_thermal_reduction_pctg[cpu] < 60) {
+> +		cpufreq_thermal_reduction_pctg[cpu] += 20;
+> +		cpufreq_update_policy(cpu);
+> +		return 0;
+> +	}
+> +
+> +	return -ERANGE;
+> +}
+> +
+> +
+> +static int acpi_thermal_cpufreq_decrease(unsigned int cpu)
+> +{
+> +	if (!cpu_has_cpufreq)
+> +		return -ENODEV;
+> +
+> +	if (cpufreq_thermal_reduction_pctg[cpu] >= 20) {
+> +		cpufreq_thermal_reduction_pctg[cpu] -= 20;
+> +		cpufreq_update_policy(cpu);
+> +		return 0;
+> +	}
+> +
+> +	return -ERANGE;
+> +}
+> +
+> +
+> +static int acpi_thermal_cpufreq_notifier(
+> +	struct notifier_block *nb,
+> +	unsigned long event,
+> +	void *data)
+> +{
+> +	struct cpufreq_policy *policy = data;
+> +	unsigned long max_freq = 0;
+> +
+> +	if (event != CPUFREQ_ADJUST)
+> +		goto out;
+> +
+> +	max_freq = (policy->cpuinfo.max_freq * (100 - cpufreq_thermal_reduction_pctg[policy->cpu])) / 100;
+> +
+> +	cpufreq_verify_within_limits(policy, 0, max_freq);
+> +
+> + out:
+> +	return 0;
+> +}
+> +
+> +
+> +static struct notifier_block acpi_thermal_cpufreq_notifier_block = {
+> +	.notifier_call = acpi_thermal_cpufreq_notifier,
+> +};
+> +
+> +
+> +static void acpi_thermal_cpufreq_init(void) {
+> +	int i;
+> +
+> +	for (i=0; i<NR_CPUS; i++)
+> +		cpufreq_thermal_reduction_pctg[i] = 0;
+> +
+> +	i = cpufreq_register_notifier(&acpi_thermal_cpufreq_notifier_block, CPUFREQ_POLICY_NOTIFIER);
+> +	if (!i)
+> +		acpi_thermal_cpufreq_is_init = 1;
+> +}
+> +
+> +static void acpi_thermal_cpufreq_exit(void) {
+> +	if (acpi_thermal_cpufreq_is_init)
+> +		cpufreq_unregister_notifier(&acpi_thermal_cpufreq_notifier_block, CPUFREQ_POLICY_NOTIFIER);
+> +
+> +	acpi_thermal_cpufreq_is_init = 0;
+> +}
+> +
+> +#else /* ! CONFIG_CPU_FREQ */
+> +
+> +static void acpi_thermal_cpufreq_init(void) { return; }
+> +static void acpi_thermal_cpufreq_exit(void) { return; }
+> +static int acpi_thermal_cpufreq_increase(unsigned int cpu) { return -ENODEV; }
+> +static int acpi_thermal_cpufreq_decrease(unsigned int cpu) { return -ENODEV; }
+> +
+> +
+> +#endif
+> +
+> +
+>  int
+>  acpi_processor_set_thermal_limit (
+>  	acpi_handle		handle,
+> @@ -1099,7 +1206,6 @@
+>  	int			result = 0;
+>  	struct acpi_processor	*pr = NULL;
+>  	struct acpi_device	*device = NULL;
+> -	int			px = 0;
+>  	int			tx = 0;
+>  
+>  	ACPI_FUNCTION_TRACE("acpi_processor_set_thermal_limit");
+> @@ -1116,12 +1222,7 @@
+>  	if (!pr)
+>  		return_VALUE(-ENODEV);
+>  
+> -	if (!pr->flags.limit)
+> -		return_VALUE(-ENODEV);
+> -
+>  	/* Thermal limits are always relative to the current Px/Tx state. */
+> -	if (pr->flags.performance)
+> -		pr->limit.thermal.px = pr->performance->state;
+>  	if (pr->flags.throttling)
+>  		pr->limit.thermal.tx = pr->throttling.state;
+>  
+> @@ -1130,26 +1231,27 @@
+>  	 * performance state.
+>  	 */
+>  
+> -	px = pr->limit.thermal.px;
+>  	tx = pr->limit.thermal.tx;
+>  
+>  	switch (type) {
+>  
+>  	case ACPI_PROCESSOR_LIMIT_NONE:
+> -		px = 0;
+> +		do {
+> +			result = acpi_thermal_cpufreq_decrease(pr->id);
+> +		} while (!result);
+>  		tx = 0;
+>  		break;
+>  
+>  	case ACPI_PROCESSOR_LIMIT_INCREMENT:
+> -		if (pr->flags.performance) {
+> -			if (px == (pr->performance->state_count - 1))
+> -				ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
+> +		/* if going up: P-states first, T-states later */
+> +
+> +		result = acpi_thermal_cpufreq_increase(pr->id);
+> +		if (!result)
+> +			goto end;
+> +		else if (result == -ERANGE)
+> +			ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
+>  					"At maximum performance state\n"));
+> -			else {
+> -				px++;
+> -				goto end;
+> -			}
+> -		}
+> +
+>  		if (pr->flags.throttling) {
+>  			if (tx == (pr->throttling.state_count - 1))
+>  				ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
+> @@ -1160,37 +1262,41 @@
+>  		break;
+>  
+>  	case ACPI_PROCESSOR_LIMIT_DECREMENT:
+> -		if (pr->flags.performance) {
+> -			if (px == pr->performance_platform_limit)
+> -				ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
+> -					"At minimum performance state\n"));
+> -			else  {
+> -				px--;
+> -				goto end;
+> -			}
+> -		}
+> +		/* if going down: T-states first, P-states later */
+> +
+>  		if (pr->flags.throttling) {
+>  			if (tx == 0)
+>  				ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
+>  					"At minimum throttling state\n"));
+> -			else
+> +			else {
+>  				tx--;
+> +				goto end;
+> +			}
+>  		}
+> +
+> +		result = acpi_thermal_cpufreq_decrease(pr->id);
+> +		if (result == -ERANGE)
+> +			ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
+> +					"At minimum performance state\n"));
+> +
+>  		break;
+>  	}
+>  
+>  end:
+> -	pr->limit.thermal.px = px;
+> -	pr->limit.thermal.tx = tx;
+> -
+> -	result = acpi_processor_apply_limit(pr);
+> -	if (result)
+> -		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, 
+> -			"Unable to set thermal limit\n"));
+> +	if (pr->flags.throttling) {
+> +		pr->limit.thermal.px = 0;
+> +		pr->limit.thermal.tx = tx;
+>  
+> -	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Thermal limit now (P%d:T%d)\n",
+> -		pr->limit.thermal.px,
+> -		pr->limit.thermal.tx));
+> +		result = acpi_processor_apply_limit(pr);
+> +		if (result)
+> +			ACPI_DEBUG_PRINT((ACPI_DB_ERROR, 
+> +					  "Unable to set thermal limit\n"));
+> +
+> +		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Thermal limit now (P%d:T%d)\n",
+> +				  pr->limit.thermal.px,
+> +				  pr->limit.thermal.tx));
+> +	} else
+> +		result = 0;
+>  
+>  	return_VALUE(result);
+>  }
+> @@ -1813,6 +1919,8 @@
+>  		return_VALUE(-ENODEV);
+>  	}
+>  
+> +	acpi_thermal_cpufreq_init();
+> +
+>  	return_VALUE(0);
+>  }
+>  
+> @@ -1822,6 +1930,8 @@
+>  {
+>  	ACPI_FUNCTION_TRACE("acpi_processor_exit");
+>  
+> +	acpi_thermal_cpufreq_exit();
+> +
+>  	acpi_bus_unregister_driver(&acpi_processor_driver);
+>  
+>  	remove_proc_entry(ACPI_PROCESSOR_CLASS, acpi_root_dir);
