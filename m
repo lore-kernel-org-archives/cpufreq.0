@@ -1,14 +1,12 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] speedstep-centrino: Avoid returning zero freq on
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] speedstep-centrino: Avoid returning zero freq on
 	transient MSR values
-Date: Fri, 10 Dec 2004 15:47:55 +0100
-Message-ID: <20041210144754.GA8259@dominikbrodowski.de>
-References: <20041209172436.A3337@unix-os.sc.intel.com>
-	<1102673495.18051.9.camel@minilith.goop.org>
+Date: Fri, 10 Dec 2004 10:37:09 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB60038B2BFD@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1102673495.18051.9.camel@minilith.goop.org>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,34 +18,42 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Dominik Brodowski <linux@dominikbrodowski.de>, Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: davej@redhat.com, cpufreq list <cpufreq@www.linux.org.uk>
 
-On Fri, Dec 10, 2004 at 02:11:35AM -0800, Jeremy Fitzhardinge wrote:
-> On Thu, 2004-12-09 at 17:24 -0800, Venkatesh Pallipadi wrote:
-> > 
-> > 
-> > On some CPUs, we can see transient MSR values (which are not present in _PSS) in
-> > IA32_PERF_STATUS MSR, while CPU is doing some automatic P-state transition 
-> > (like TM2). 
-> > Current code will return frequency as 0 in such cases. Fix it by retrying the 
-> > get after a delay and use lowest possible frequency as the current frequency 
-> > in worst case.
-> > 
-> > Thanks to Matt Domsch for identifying and root-causing this failure.
-> 
-> Doesn't this suggest there's a more subtle problem?  If the CPU is
-> changing speeds autonomously, then it means the TSC calibration will be
-> broken.  Is there some way of finding out about these transitions?
+>-----Original Message-----
+>From: Dominik Brodowski [mailto:linux@dominikbrodowski.de]=20
+>Sent: Friday, December 10, 2004 6:48 AM
+>To: Jeremy Fitzhardinge
+>Cc: Pallipadi, Venkatesh; davej@redhat.com; cpufreq list
+>Subject: Re: [PATCH] speedstep-centrino: Avoid returning zero=20
+>freq on transient MSR values
+>
+>> Doesn't this suggest there's a more subtle problem?  If the CPU is
+>> changing speeds autonomously, then it means the TSC=20
+>calibration will be
+>> broken.  Is there some way of finding out about these transitions?
+>
+>The TSC runs at a fixed frequency on these CPUs [Venki will=20
+>submit a patch
+>for that soon], so it isn't a problem for the kernel AFAICS.
 
-The TSC runs at a fixed frequency on these CPUs [Venki will submit a patch
-for that soon], so it isn't a problem for the kernel AFAICS.
+Yes. These are Pentium 4 based processsors and with Enhanced Speedstep
+on these processors, tsc rate will not change with CPU frequency change.
 
-> Also, why not just report the actual MSR frequency, rather than looking
-> for a table/_PSS match?  Are the MSR values meaningfully encoded?
+>> Also, why not just report the actual MSR frequency, rather=20
+>than looking
+>> for a table/_PSS match?  Are the MSR values meaningfully encoded?
+>
+>AFAIK, the encoding may be very chip specific.
 
-AFAIK, the encoding may be very chip specific.
+The MSR value encoding is not well defined and can change.=20
+I agree that the udelay in this patch is kind of ugly, as it can slow
+down get_freq(). But, the transient value are uncommon, so we may not go
+through that code path very frequently. Other, way to solve it is to
+look at CONTROL MSR, whenever we have this transient value.
+I will work on a patch from that angle and we can probably pick the
+better of the two patches.
 
 Thanks,
-	Dominik
+Venki
