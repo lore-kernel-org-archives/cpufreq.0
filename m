@@ -1,13 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: userspace not supported for longrun?
-Date: Tue, 1 Jun 2004 11:31:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+Subject: PREEMPT problems in cpufreq/powernow-k8
+Date: Tue, 1 Jun 2004 15:15:53 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040601093110.GE7926@poupinou.org>
-References: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
+Message-ID: <20040601131552.GA614@elf.ucw.cz>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,32 +17,50 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wayne Wylupski <wayne@connact.com>
-Cc: cpufreq@www.linux.org.uk
+To: paul.devriendt@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>, kernel list <linux-kernel@vger.kernel.org>
 
-On Mon, May 31, 2004 at 11:40:26PM -0400, Wayne Wylupski wrote:
-> Hello,
-> 
-> I've been tracking down an issue with using Fedora Core 2 on a 
-> Transmeta Crusoe TM5800 and it appears a userspace governor is not 
-> supported by cpufreq (the longrun scaling driver has a .setpolicy, 
-> which prevents the userspace governor from being set).
-> 
-> Could someone please explain if this is by choice or a bug?  If it's 
-> the latter, could someone explain why, since the CPU itself supports 
-> different frequencies?
-> 
+Hi!
 
-It's by choice.  Even though there exist some algo. for which it's seems
-there are better choice over the longrun facilities in order to switch
-automatically the frequency of the processor, it's hard to get those
-algo. to mainline mostly due to some kind of patent issues
-apparently.  So for now the longrun driver do not have the facilities to
-make what you request.  Would be fine perhaps to add that, but I'm
-not sure it's in a high priority item for now.
+I enabled CONFIG_PREEMPT to test swsusp, and it uncovered some
+problems with powernow-k8:
 
+
+md: Autodetecting RAID arrays.
+md: autorun ...
+md: ... autorun DONE.
+VFS: Mounted root (ext2 filesystem) readonly.
+Freeing unused kernel memory: 204k freed
+Debug: sleeping function called from invalid context at include/linux/rwsem.h:43
+in_atomic():1, irqs_disabled():0
+Call Trace:
+ [<c011b91a>] __might_sleep+0xaa/0xb8
+ [<c0333dd2>] cpufreq_notify_transition+0x32/0x168
+ [<c010fd5d>] transition_frequency+0xa1/0x104
+ [<c010fe9b>] powernowk8_target+0xdb/0x130
+ [<c03337ab>] __cpufreq_driver_target+0x1b/0x20
+ [<c03341ea>] cpufreq_governor_performance+0x1e/0x24
+ [<c033388a>] __cpufreq_governor+0x6e/0x10c
+ [<c0333c5d>] __cpufreq_set_policy+0x139/0x144
+ [<c0333cb5>] cpufreq_set_policy+0x4d/0x94
+ [<c0334896>] cpufreq_proc_write+0x9e/0xb8
+ [<c0142440>] handle_mm_fault+0xc8/0x134
+ [<c0119217>] do_page_fault+0x13f/0x4fb
+ [<c01190d8>] do_page_fault+0x0/0x4fb
+ [<c0175c13>] proc_file_write+0x27/0x34
+ [<c014d67c>] vfs_write+0xa0/0xd0
+ [<c014d729>] sys_write+0x31/0x4c
+ [<c0104ce7>] syscall_call+0x7/0xb
+
+Adding 1051304k swap on /dev/hda1.  Priority:-1 extents:1
+
+powernowk8_target does preempt_disable(), and that calls
+cpufreq_notify_transition(). That does down(). Ouch.
+
+Hmm, but on SMP systems frequency really should be changed with
+preempt_disable. How to deal with that?
+							Pavel
+
+[Plus I get some more warnings during swsusp, all seem to be
+powernow-k8 related...]
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+934a471f20d6580d5aad759bf0d97ddc
