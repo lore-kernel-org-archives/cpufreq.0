@@ -1,14 +1,14 @@
-From: Willy Tarreau <willy@w.ods.org>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: [PATCH] cpufreq_ondemand
-Date: Tue, 19 Oct 2004 07:06:17 +0200
+Date: Tue, 19 Oct 2004 20:22:24 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041019050616.GI19761@alpha.home.local>
-References: <88056F38E9E48644A0F562A38C64FB60031DA073@scsmsx403.amr.corp.intel.com>
-	<20041018083905.GC3311@inskipp.digriz.org.uk>
+Message-ID: <20041019182224.GB22405@poupinou.org>
+References: <20041017222916.GA30841@inskipp.digriz.org.uk>
+	<4172F3C5.8090604@kolivas.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20041018083905.GC3311@inskipp.digriz.org.uk>
+In-Reply-To: <4172F3C5.8090604@kolivas.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,27 +20,32 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Clouter <alex-kernel@digriz.org.uk>
-Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, Con Kolivas <kernel@kolivas.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Alexander Clouter <alex-kernel@digriz.org.uk>, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 
 Hi,
 
-On Mon, Oct 18, 2004 at 09:39:05AM +0100, Alexander Clouter wrote:
-> I'm all for "this really should be done in userspace", but for something like 
-> this I have a nagging feeling that its neater in kernel-space.  Of course the 
-> userspace one has the advantage (I think cpufreqd does it) that you can 
-> decide if you want to increase the freq depending on what applications are 
-> running.
+On Mon, Oct 18, 2004 at 08:35:49AM +1000, Con Kolivas wrote:
+> Alexander Clouter wrote:
+> >>3. (major) the scaling up and down of the cpufreq is now smoother.  I 
+> >>found 
+> >	it really nasty that if it tripped < 20% idle time that the freq was 
+> >	set to 100%.  This code smoothly increases the cpufreq as well as 
+> >	doing a better job of decreasing it too
+> 
+> I'd much prefer it shot up to 100% or else every time the cpu usage went 
+> up there'd be an obvious lag till the machine ran at it's capable speed. 
+>  I very much doubt the small amount of time it spent at 100% speed with 
+> the default design would decrease the battery life significantly as well.
+> 
 
-Well, I've used a very simple daemon I wrote for more than a year now on a
-vaio, and considering that I sometimes wanted to change it or even stop it,
-I clearly prefer it in userspace than in kernel. It was so convenient to
-issue a "killall cpufrqd" whenever I wanted 'time' to return accurate values
-on a particular process, that I cannot imagine what it would have been if it
-had been in the kernel. Moreover, the vaio was unreliable with certain
-intermediate frequencies, and it too me a lot of time to discover this
-(burnBX was the only reliable trigger). I simply had to change a few lines
-in my daemon to use different frequencies and that was all.
+I'm almost ok with your words, but the amd64 do have unacceptable
+latency between min and max freq transition, due to the step-by-step
+requirements (200MHz IIRC).
+Alexander's governor may be then OK for those kind of processors.
 
-Cheers,
-Willy
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
