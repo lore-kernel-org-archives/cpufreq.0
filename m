@@ -1,13 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Franco <net.surfer@tiscalinet.it>
 Subject: Re: supported x86 processors?
-Date: Mon, 1 Mar 2004 16:58:17 +0100
+Date: Mon, 1 Mar 2004 18:50:34 +0100 (CET)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040301155817.GV2869@poupinou.org>
-References: <200402292003.i1TK3VKw012139@localhost.localdomain>
+Message-ID: <200403011750.i21HoZWC010926@localhost.localdomain>
+References: <20040301155817.GV2869@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200402292003.i1TK3VKw012139@localhost.localdomain>
+In-Reply-To: <20040301155817.GV2869@poupinou.org> from "Bruno Ducrot" at Mar
+	01, 2004 04:58:17 PM
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,51 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Franco <net.surfer@tiscali.it>
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@www.linux.org.uk
 
-On Sun, Feb 29, 2004 at 09:03:30PM +0100, Franco wrote:
-> Hello,
-> 
-> could you tell me which x86 processors are well
-> supported by cpufreq, or are likely to be in a 
-> near future?
-> 
-> I've already read Documentation/cpu-freq/user-guide.txt
-> of my 2.6.3 kernel, but it doesn't say which are
-> supported well and which aren't.
-> 
-> Sorry if this message is somehow a repetition,
-> but I fear my previous message was a bit unclear,
-> as I got no answers...
-> 
-> Thank You in advance,
-> Franco
-> 
+Thanks a lot for the answer.
 
-For those I know the most, powernow are well supported (k6 and k8.
-There are trouble to get for everyone documentations for the k7, at
-least for me, but that one is now ok).
-Speedstep are well supported also, but not on all hardware configurations.
-If you have some VIA or SiS southbridges, this won't unlikely work.
-On those systems, though, it may be possible to get it working with
-the generic acpi io driver (not on all old PIII processors though, but
-perhaps on recent PIIIs and P4m, no warranties, though).
+Then, the candidates for my application are K7 and non-VIA, non-SiS
+Speeddstep. (K6, K8, VIA C3 are too slow or too expensive).
 
-For the others, I don't know but believe that all VIA C3 should be
-OK (at least on near future).
+> Note that some driver do not support voltage scaling
+> You may take a look to arch/i386/kernel/cpu/cpufreq/ 
 
-Note that some driver do not support voltage scaling like the
-p4-mod (clock modulation for the p4 in general) or the gx-suspmod
-(geode family and clones) and then those processors should be avoided
-for pure power managements applications.  You may take a look to
-arch/i386/kernel/cpu/cpufreq/ for all the drivers currently supported.
+I took a look at the code.
+As to K7, the only mention to voltage are a couple of printk().
+As to P4, I'm not sure I've understood correctly, but seems me
+that voltage scaling is only for mobile chips, is it right?
 
-Cheers,
+Then, as my application is a desktop PC, are K7 and P4 equivalent?
+(relatively to voltage/frequency scaling)
 
--- 
-Bruno Ducrot
+Or, is there a chance that one of the two 
+will also get voltage scaling in the future?
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Thank you a lot in advance,
+Franco
