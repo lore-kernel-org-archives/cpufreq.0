@@ -1,16 +1,16 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: cpufreq on ARM broken
-Date: Wed, 2 Jun 2004 15:08:59 +0200
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: userspace not supported for longrun?
+Date: Wed, 2 Jun 2004 15:28:04 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040602130859.GA23124@dominikbrodowski.de>
-References: <20040529170151.B3799@flint.arm.linux.org.uk>
-	<1086109894.27727.24.camel@delerium.codemonkey.org.uk>
-	<20040602122153.GB8781@dominikbrodowski.de>
-	<20040602125908.GM1265@redhat.com>
+Message-ID: <20040602132804.GC13782@poupinou.org>
+References: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
+	<20040601093110.GE7926@poupinou.org>
+	<005701c44833$71e8ca30$6900a8c0@DEVELOPER>
+	<20040602121916.GA8781@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040602125908.GM1265@redhat.com>
+In-Reply-To: <20040602121916.GA8781@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,44 +22,34 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@www.linux.org.uk
+To: Wayne Wylupski <wayne@connact.com>, cpufreq@www.linux.org.uk
 
-On Wed, Jun 02, 2004 at 01:59:08PM +0100, Dave Jones wrote:
-> On Wed, Jun 02, 2004 at 02:21:53PM +0200, Dominik Brodowski wrote:
->  > On Tue, Jun 01, 2004 at 06:11:34PM +0100, Dave Jones wrote:
->  > > Thoughts ?
->  > > I've forgotten why we introduced this flag, it appears that this
->  > > would be the first thing in the tree to actually use it,
->  > > which makes me sceptical.
->  > 
->  > This flag was introduced when I added the "fail if no proper CPU found"
->  > feature, which is helpful for the ACPI P-States driver and some other x86
->  > drivers which only check whether they can run on _any_ CPU in the
->  > cpu-specific initialization call.
+On Wed, Jun 02, 2004 at 02:19:17PM +0200, Dominik Brodowski wrote:
+> On Tue, Jun 01, 2004 at 07:52:05PM -0400, Wayne Wylupski wrote:
+> > Thank you.  The issue is that Fedora Core 2 ships with 'cpuspeed' as a
+> > service, which fails on machines with Crusoe chips because it assumes
+> > there's a userspace governor without first checking whether there it is
+> > available.
+> > 
+> > Would it really violate patents if the userspace governor were allowed
+> > to work along the existing policies ("powersave" and "performance")?
 > 
-> So how come grepping for STICKY in arch/i386/kernel/cpu/cpufreq didn't
-> turn anything up?
+> No, that's a purely technical issue: The Crusoe chip can only be set to a
+> _frequency range_, and the chip itself (actually, the Code Morphing
+> Software) decides which actual frequency is best for the current workload.
 
-'cause it is not needed on x86: these drivers shouldn't be sticky. The
-cpufreq drivers are only loaded way after the CPU sys devices are
-registered. So, if the cpufreq driver's init() function fails on _all_ CPUs,
-there's no sense keeping the driver registered. Only if it's unregistered,
-other cpufreq drivers can register...
+You can run a crusoe chip on a fixed frequency.
 
->  > To assert backwards-compatibility, this
->  > flag avoids "automatic unregistration" -- I wasn't aware some drivers do
->  > need this backwards compatibility, but obviously ARM needs it. So Russell's 
->  > patch looks to be what's needed, from my perspective.
-> 
-> Ok, I've no real objection either way. It just seemed odd to have
-> this functionality around, that no-one was using, which just happened
-> to be the right fix.
+Some people also think that on some situation, the longrun will consume
+more power than their algorithm (search for "vertigo OSDI2002", I don't
+remmeber the exact link) for an example.
 
-'cause I missed ARM needed it, so nobody was using it...
+Of course the userspace stuff is completely useless anyway.
 
-> I'll roll this in later, right now there's some corruption in the cpufreq
-> bk tree which the bitmover folks are looking into.
+Cheers,
 
-Thanks,
-	Dominik
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
