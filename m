@@ -1,15 +1,13 @@
-From: Bas Mevissen <ml@basmevissen.nl>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: add new p3m model
-Date: Mon, 08 Mar 2004 13:08:46 +0100
+Date: Mon, 8 Mar 2004 14:31:35 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <404C624E.8010004@basmevissen.nl>
+Message-ID: <20040308133135.GU2869@poupinou.org>
 References: <20040308111531.GD14593@devserv.devel.redhat.com>
-	<404C5D64.5040508@basmevissen.nl>
-	<20040308114602.GF14593@devserv.devel.redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040308114602.GF14593@devserv.devel.redhat.com>
+Content-Disposition: inline
+In-Reply-To: <20040308111531.GD14593@devserv.devel.redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,21 +17,33 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Arjan van de Ven <arjanv@redhat.com>
-Cc: cpufreq mailing list <cpufreq@www.linux.org.uk>
+Cc: cpufreq@www.linux.org.uk
 
-Arjan van de Ven wrote:
-
+On Mon, Mar 08, 2004 at 12:15:31PM +0100, Arjan van de Ven wrote:
+> Hi,
 > 
->>BTW. Is this 0x07 also according specs or just what happens on the i2k6?
+> the patch below adds support for my laptop (Dell Inspiron 2600) which has
+> ebx return 7 for the p3 mobile in it....
 > 
-> I have been unable to find a spec for this unfortionatly. Intel has this
-> like great confusing mess wrt finding docs
 
-OK, then I think this should be in the comment too. Now it looks like it 
-is according spec and that is not sure at this time.
+Sorry, I checked documentations (AN, pentium III mobile specs updates at
+dec. 2003, PIII specs update, etc.), but found nothing.
+Since there is no processor that will return 7 for the brand id, I deduce
+that your processor do not exist at all because Intel can not make
+mistake, isn't it?
 
-Regards,
+Hem, at least, since anyway that do not hurt the case for desktops or
+servers PIII tualatins processors (hopefully, those should return
+only 2 or 4, but who knows, after all), then I guess we can
+accept your patch even if this processor do not exist.
 
-Bas.
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
