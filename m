@@ -1,9 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [RFC][PATCH] (3/4) cpufreq SMT awareness: only register SMT group
-	once
-Date: Fri, 18 Jun 2004 16:43:53 +0200
+Subject: [RFC][PATCH] (1/4) cpufreq SMT awareness: keep affected_cpu_mask
+Date: Fri, 18 Jun 2004 16:42:26 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040618144353.GC8871@dominikbrodowski.de>
+Message-ID: <20040618144226.GA8871@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -18,144 +17,190 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-Only register each "affected_cpu_mask" once, and do symlinks for those 
-CPUs not directly registered.
+The following four patches try to upgrade the SMT or CPU-group 
+awareness of the cpufreq core. On all SMT platforms, and possibly
+on some MP systems, only the frequency of some or even all CPUs 
+can be changed at the same time. So, only register one cpufreq
+(k)object in these cases. In /sys/devices/system/cpu/cpuX, either
+the subdirectory cpufreq is found, or a link -- named "cpufreq",
+of course -- to the appropriate subdirectory.
+
+Neither the UP case nor the user interface should be affected by 
+these changes. Unfortunately, because I only own UP hardware, I 
+couldn't test these changes for the case where they matter most:
+SMT and SMP.
+
+	Dominik
+
+
+Save the "affected_cpu_map" used in SMT-aware drivers in struct 
+cpufreq_policy->(cpumask_t) cpus
 
 Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
- drivers/cpufreq/cpufreq.c |   70 ++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 64 insertions(+), 6 deletions(-)
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c   |   27 +++++++++++++--------------
+ arch/i386/kernel/cpu/cpufreq/speedstep-ich.c |   23 ++++++++---------------
+ include/linux/cpufreq.h                      |    2 ++
+ 3 files changed, 23 insertions(+), 29 deletions(-)
 
-diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
---- linux-original/drivers/cpufreq/cpufreq.c	2004-06-18 16:16:55.774334856 +0200
-+++ linux/drivers/cpufreq/cpufreq.c	2004-06-18 16:19:05.157665600 +0200
-@@ -381,11 +381,21 @@
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-06-16 18:38:40.000000000 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-06-18 15:06:40.798844232 +0200
+@@ -110,7 +110,7 @@
  {
- 	unsigned int cpu = sys_dev->id;
- 	int ret = 0;
-+	unsigned int j;
- 	struct cpufreq_policy new_policy;
- 	struct cpufreq_policy *policy;
- 	struct freq_attr **drv_attr;
- 	unsigned long flags;
+ 	unsigned int    newstate = DC_RESV;
+ 	struct cpufreq_freqs freqs;
+-	cpumask_t cpus_allowed, affected_cpu_map;
++	cpumask_t cpus_allowed;
+ 	int i;
  
-+	/* check whether a different CPU already registered this
-+	 * CPU because it is in the same boat. */
-+	policy = cpufreq_cpu_get(cpu);
-+	if (unlikely(policy)) {
-+		cpu_sys_devices[cpu] = sys_dev;
-+		sysfs_create_link(&sys_dev->kobj, &policy->kobj, "cpufreq");
-+		return 0;
-+	}
-+
- 	if (!try_module_get(cpufreq_driver->owner))
- 		return -EINVAL;
+ 	if (cpufreq_frequency_table_target(policy, &p4clockmod_table[0], target_freq, relation, &newstate))
+@@ -122,18 +122,9 @@
+ 	if (freqs.new == freqs.old)
+ 		return 0;
  
-@@ -397,6 +407,8 @@
- 	memset(policy, 0, sizeof(struct cpufreq_policy));
- 
- 	policy->cpu = cpu;
-+	policy->cpus = cpumask_of_cpu(cpu);
-+
- 	init_MUTEX_LOCKED(&policy->lock);
- 	init_completion(&policy->kobj_unregister);
- 	INIT_WORK(&policy->update, handle_update, (void *)(long)cpu);
-@@ -431,7 +443,8 @@
- 		sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
- 
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--	cpufreq_cpu_data[cpu] = policy;
-+        for_each_cpu_mask(j, policy->cpus)
-+		cpufreq_cpu_data[j] = policy;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	policy->governor = NULL; /* to assure that the starting sequence is
- 				  * run in cpufreq_set_policy */
-@@ -450,7 +463,8 @@
- 
- err_out_unregister:
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
--	cpufreq_cpu_data[cpu] = NULL;
-+        for_each_cpu_mask(j, policy->cpus)
-+		cpufreq_cpu_data[j] = NULL;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	kobject_unregister(&policy->kobj);
-@@ -474,22 +488,60 @@
- {
- 	unsigned int cpu = sys_dev->id;
- 	unsigned long flags;
-+	unsigned int j;
- 	struct cpufreq_policy *data;
- 
--	cpu_sys_devices[cpu] = NULL;
+-	/* switch to physical CPU where state is to be changed*/
+-	cpus_allowed = current->cpus_allowed;
 -
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	data = cpufreq_cpu_data[cpu];
- 
- 	if (!data) {
- 		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		cpu_sys_devices[cpu] = NULL;
- 		return -EINVAL;
+ 	/* only run on CPU to be set, or on its sibling */
+-#ifdef CONFIG_SMP
+-	affected_cpu_map = cpu_sibling_map[policy->cpu];
+-#else
+-	affected_cpu_map = cpumask_of_cpu(policy->cpu);
+-#endif
+-
+ 	/* notifiers */
+-	for_each_cpu_mask(i, affected_cpu_map) {
++	for_each_cpu_mask(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
  	}
- 	cpufreq_cpu_data[cpu] = NULL;
+@@ -141,7 +132,9 @@
+ 	/* run on each logical CPU, see section 13.15.3 of IA32 Intel Architecture Software
+ 	 * Developer's Manual, Volume 3 
+ 	 */
+-	for_each_cpu_mask(i, affected_cpu_map) {
++	cpus_allowed = current->cpus_allowed;
 +
-+	/* if this isn't the CPU which is the parent of the kobj, we
-+	 * only need to unlink, put and exit 
-+	 */
-+	if (unlikely(cpu != data->cpu)) {
-+		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		sysfs_remove_link(&sys_dev->kobj, "cpufreq");
-+		cpu_sys_devices[cpu] = NULL;
-+		cpufreq_cpu_put(data);
-+		return 0;
-+	}
-+
-+	cpu_sys_devices[cpu] = NULL;
-+
-+	if (!kobject_get(&data->kobj)) {
-+		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+ 		return -EFAULT;
-+	}
-+
-+	/* if we have other CPUs still registered, we need to unlink them,
-+	 * or else wait_for_completion below will lock up. Clean the
-+	 * cpufreq_cpu_data[] while holding the lock, and remove the sysfs
-+	 * links afterwards.
-+	 */
-+	if (unlikely(cpus_weight(data->cpus) > 1)) {
-+		for_each_cpu_mask(j, data->cpus) {
-+			if (j == cpu)
-+				continue;
-+			cpufreq_cpu_data[j] = NULL;
-+		}
-+	}
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
++	for_each_cpu_mask(i, policy->cpus) {
+ 		cpumask_t this_cpu = cpumask_of_cpu(i);
  
--	if (!kobject_get(&data->kobj))
--		return -EFAULT;
-+	if (unlikely(cpus_weight(data->cpus) > 1)) {
-+		for_each_cpu_mask(j, data->cpus) {
-+			if (j == cpu)
-+				continue;
-+			
-+			sysfs_remove_link(&cpu_sys_devices[j]->kobj, "cpufreq");
-+			cpufreq_cpu_put(data);
-+		}
-+	}
+ 		set_cpus_allowed(current, this_cpu);
+@@ -152,7 +145,7 @@
+ 	set_cpus_allowed(current, cpus_allowed);
  
- 	if (cpufreq_driver->target)
- 		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-@@ -611,6 +663,12 @@
- 	if (!cpu_policy)
- 		return -EINVAL;
+ 	/* notifiers */
+-	for_each_cpu_mask(i, affected_cpu_map) {
++	for_each_cpu_mask(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -248,6 +241,12 @@
+ 	policy->cpuinfo.transition_latency = 1000000; /* assumed */
+ 	policy->cur = stock_freq;
  
-+	/* only handle each CPU group once */
-+	if (unlikely(cpu_policy->cpu != cpu)) {
-+		cpufreq_cpu_put(cpu_policy);
-+		return 0;
-+	}
++#ifdef CONFIG_SMP
++	policy->cpus = cpu_sibling_map[policy->cpu];
++#else
++	policy->cpus = cpumask_of_cpu(policy->cpu);
++#endif
 +
- 	if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
- 		unsigned int cur_freq = 0;
+ 	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
+ }
+ 
+@@ -267,7 +266,7 @@
+         affected_cpu_map = cpumask_of_cpu(cpu);
+ 
+ 	set_cpus_allowed(current, affected_cpu_map);
+-        BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
++	BUG_ON(smp_processor_id() != cpu);
+ 
+ 	rdmsr(MSR_IA32_THERM_CONTROL, l, h);
+ 
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-16 18:38:40.000000000 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-18 14:59:02.663491392 +0200
+@@ -241,7 +241,7 @@
+ {
+ 	unsigned int	newstate = 0;
+ 	struct cpufreq_freqs freqs;
+-	cpumask_t cpus_allowed, affected_cpu_map;
++	cpumask_t cpus_allowed;
+ 	int i;
+ 
+ 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0], target_freq, relation, &newstate))
+@@ -257,27 +257,20 @@
+ 
+ 	cpus_allowed = current->cpus_allowed;
+ 
+-	/* only run on CPU to be set, or on its sibling */
+-#ifdef CONFIG_SMP
+-	affected_cpu_map = cpu_sibling_map[policy->cpu];
+-#else
+-	affected_cpu_map = cpumask_of_cpu(policy->cpu);
+-#endif
+-
+-	for_each_cpu_mask(i, affected_cpu_map) {
++	for_each_cpu_mask(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 	}
+ 
+ 	/* switch to physical CPU where state is to be changed */
+-	set_cpus_allowed(current, affected_cpu_map);
++	set_cpus_allowed(current, policy->cpus);
+ 
+ 	speedstep_set_state(newstate);
+ 
+ 	/* allow to be run on all CPUs */
+ 	set_cpus_allowed(current, cpus_allowed);
+ 
+-	for_each_cpu_mask(i, affected_cpu_map) {
++	for_each_cpu_mask(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -303,7 +296,7 @@
+ {
+ 	int		result = 0;
+ 	unsigned int	speed;
+-	cpumask_t       cpus_allowed,affected_cpu_map;
++	cpumask_t       cpus_allowed;
+ 
+ 
+ 	/* capability check */
+@@ -313,11 +306,11 @@
+ 	/* only run on CPU to be set, or on its sibling */
+ 	cpus_allowed = current->cpus_allowed;
+ #ifdef CONFIG_SMP
+-	affected_cpu_map = cpu_sibling_map[policy->cpu];
++	policy->cpus = cpu_sibling_map[policy->cpu];
+ #else
+-	affected_cpu_map = cpumask_of_cpu(policy->cpu);
++	policy->cpus = cpumask_of_cpu(policy->cpu);
+ #endif
+-	set_cpus_allowed(current, affected_cpu_map);
++	set_cpus_allowed(current, policy->cpus);
+ 
+ 	/* detect low and high frequency */
+ 	result = speedstep_get_freqs(speedstep_processor,
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2004-06-16 18:38:42.000000000 +0200
++++ linux/include/linux/cpufreq.h	2004-06-18 14:55:28.650026384 +0200
+@@ -22,6 +22,7 @@
+ #include <linux/sysfs.h>
+ #include <linux/completion.h>
+ #include <linux/workqueue.h>
++#include <linux/cpumask.h>
+ 
+ #define CPUFREQ_NAME_LEN 16
+ 
+@@ -69,6 +70,7 @@
+ };
+ 
+ struct cpufreq_policy {
++	cpumask_t		cpus;	/* affected CPUs */
+ 	unsigned int		cpu;    /* cpu nr */
+ 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
