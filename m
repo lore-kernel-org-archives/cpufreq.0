@@ -1,13 +1,14 @@
-From: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
-Subject: Re: Question - Duron and Freq Scaling
-Date: Wed, 27 Aug 2003 13:43:24 +0200
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: 2.4.21 Isn't working for me....
+Date: Wed, 27 Aug 2003 14:31:34 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <3F4C995C.9030902@searchbroker.de>
-References: <A3C83F41488BD61195C3000802252FC105597E91@dubim07742.ie.ml.com>
+Message-ID: <20030827123134.GL10585@poupinou.org>
+References: <1061872616.27076.47.camel@localhost>
+	<1061926909.14523.5.camel@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <A3C83F41488BD61195C3000802252FC105597E91@dubim07742.ie.ml.com>
+Content-Disposition: inline
+In-Reply-To: <1061926909.14523.5.camel@localhost>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,90 +18,28 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Breathnach, Proinnsias (Dublin)" <p_breathnach@ml.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: AthlonRob <AthlonRob@axpr.net>
 Cc: cpufreq@www.linux.org.uk
 
-Breathnach, Proinnsias (Dublin) wrote:
-
->Hi,
->
-Hello,
-
->	Quick question if I may, I have a Sony Vaio (FX 401) laptop ... AMD
->Duron 800
->
->ACPI shows 16 frequency throttling states ... 
->
->[francis@vaio CPU0]$ pwd
->/proc/acpi/processor/CPU0
->[francis@vaio CPU0]$ cat throttling
->state count:             16
->active state:            T0
->states:
->   *T0:                  00%
->    T1:                  06%
->    T2:                  12%
->    T3:                  18%
->    T4:                  24%
->    T5:                  31%
->    T6:                  37%
->    T7:                  43%
->    T8:                  49%
->    T9:                  55%
->    T10:                  62%
->    T11:                  68%
->    T12:                  74%
->    T13:                  80%
->    T14:                  86%
->    T15:                  93%
->
->Yet CPUFreq only notes 5 states ... is there any reason I couldn't use the
->remaining 11 states (Yes  ... .I know that running @ 52MHz or so would be
->painful ...but hey !)
->
-This is an old question - and you get also the old answer: throttling is 
-not the same as cpufreq (with uses the powernow functions from your cpu) 
-- a quick example:
-
-you have a 800 mhz cpu and throttle to 25% then your cpu work 1/4 of the 
-time (with full power) and stops 3/4 of the time like this:
-RSSSRSSSRSSS... (R=run, S=stop)
-if you use cpufreq and the lowest state, then the cpu runs with 500 mhz 
-(inst. of 800) and with only 1.2V (inst. of 1.5) and this saves much 
-more power then the throttle steps ...
-
->
->powernow: AMD K7 CPU detected.
->powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
->powernow: Found PSB header at c00f74d0
->powernow: Table version: 0x12
->powernow: Flags: 0x0 (Mobile voltage regulator)
->powernow: Settling Time: 100 microseconds.
->powernow: Has 28 PST tables. (Only dumping ones relevant to this CPU).
->powernow: PST:11 (@c00f759e)
->powernow:  cpuid: 0x770^Ifsb: 100^ImaxFID: 0xa^Istartvid: 0xa
->powernow:    FID: 0x4 (5.0x [500MHz])^IVID: 0x13 (1.200V)
->powernow:    FID: 0x5 (5.5x [550MHz])^IVID: 0xe (1.300V)
->powernow:    FID: 0x6 (6.0x [600MHz])^IVID: 0xd (1.350V)
->powernow:    FID: 0x8 (7.0x [700MHz])^IVID: 0xb (1.450V)
->powernow:    FID: 0xa (8.0x [800MHz])^IVID: 0xa (1.500V)
->powernow: Minimum speed 500 MHz. Maximum speed 800 MHz.
->
->kernel is 2.4.22 vanilla + cpufreq patch from codemonkey.org.uk (2.4.22-preX
->IIRC)
->
->P
->(This was supposed to be quick !)
+On Tue, Aug 26, 2003 at 12:41:50PM -0700, AthlonRob wrote:
+> On Mon, 2003-08-25 at 21:36, AthlonRob wrote:
 >  
->
-Ciao Lars
+> > I'm trying to get some cpu frequency control over my laptop's CPU with
+> > the 2.4.21 kernel.  I'd just jump to 2.6.0-test4, but have a few pieces
+> > of hardware that don't have drivers available for the test kernel yet.
+> 
+> I just found http://www.codemonkey.org.uk/projects/cpufreq/ in the
+> archives and gave the two patches listed there a shot.
+> 
+> -1 and -2.
+> 
 
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@www.linux.org.uk
->http://www.linux.org.uk/mailman/listinfo/cpufreq
->
->  
->
+Can you reproduce with latest cpufreq and 2.4.22?
+
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
