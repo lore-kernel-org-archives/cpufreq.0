@@ -1,13 +1,9 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Implementation of fast-up algorithm in ondemand governor
-Date: Thu, 6 Nov 2003 07:50:00 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031106065000.GA4188@brodo.de>
-References: <CFF522B18982EA4481D3A3E23B83141C24B53F@orsmsx407.jf.intel.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <CFF522B18982EA4481D3A3E23B83141C24B53F@orsmsx407.jf.intel.com>
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1110.c,1.11,1.12
+Date: Thu, 06 Nov 2003 11:11:47 +0000
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <E1AHi3H-0000Wy-Dk@flint.arm.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,32 +12,37 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@lists.arm.linux.org.uk
 
-On Wed, Nov 05, 2003 at 02:34:07PM -0800, Moore, Robert wrote:
-> 
-> 
-> Will this simple change implement the fast-up algorithm correctly?
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100
+In directory flint:/tmp/cvs-serv1993
 
-"the" fast-up algorithm? Well, it surely _is_ a fast-up algorithm what you
-propose:
+Modified Files:
+	cpu-sa1110.c 
+Log Message:
+Coding style fix.
 
 
-> -	if (idle_ticks < (DBS_RATE / 5))
-> -		cpufreq_driver_target(cpu_dbs_info[cpu].cur_policy,
-> -			cpu_dbs_info[cpu].cur_policy->cur + 1, 
-> -			CPUFREQ_RELATION_L);
-> 
-> +	if (idle_ticks < (DBS_RATE / 5))
-> +		cpufreq_driver_target(cpu_dbs_info[cpu].cur_policy,
-> +			cpu_dbs_info[cpu].cur_policy->max, 
-> +			CPUFREQ_RELATION_L);		
-
-However, please set CPUFREQ_RELATION_H here -- you don't want to go higher
-than cur_policy->max.
-
-	Dominik
+Index: cpu-sa1110.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c,v
+retrieving revision 1.11
+retrieving revision 1.12
+diff -u -r1.11 -r1.12
+--- cpu-sa1110.c	5 Nov 2003 18:27:41 -0000	1.11
++++ cpu-sa1110.c	6 Nov 2003 11:11:44 -0000	1.12
+@@ -271,8 +271,8 @@
+ 	 */
+ 	sdram_set_refresh(2);
+ 	if (!irqs_disabled()) {
+-	set_current_state(TASK_UNINTERRUPTIBLE);
+-	schedule_timeout(20 * HZ / 1000);
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		schedule_timeout(20 * HZ / 1000);
+ 	} else {
+ 		mdelay(20);
+ 	}
