@@ -1,11 +1,16 @@
-From: "Marc.Thierry" <thierry_mar@metz.supelec.fr>
-Subject: Cpufreq on AMD dual opteron 242
-Date: Fri, 2 Jul 2004 09:16:51 CEST
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: powernow-k7: wrong FSB frequency detection
+Date: Fri, 2 Jul 2004 10:58:37 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200407020716.i627GpI19301@esemetz.metz.supelec.fr>
-Reply-To: thierry_mar@metz.supelec.fr
-Content-Transfer-Encoding: 8bit
+Message-ID: <20040702085837.GA9083@dominikbrodowski.de>
+References: <20040701122555.GC24153@master.mivlgu.local>
+	<20040701152803.GF5614@poupinou.org>
+	<20040701163549.GD29214@master.mivlgu.local>
+	<20040701180215.GH5614@poupinou.org>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040701180215.GH5614@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,31 +20,16 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk
 
+On Thu, Jul 01, 2004 at 08:02:15PM +0200, Bruno Ducrot wrote:
+> Dave, could you please apply this patch?  I will provide the workaround
+> for the unfortunate tomorow, after searching who do have the borken
+> bios, and probably yet another powernow boot option :(
 
-Isn't there anoter way to do some frequency scaling with my cpu's ?
+and/or DMI parsing?
 
-Moreover, i've read that some problems where linked to some incompatible bios, couldn't it be the case? (I've got serverBios 3.0)
-
-Marc
-
-Bruno Ducrot wrote:
-> Thanks.  The power management line do have only the 'ts' and 
-> 'ttp' flags
-> ('thermal sensor' and 'thermal trip point') but there is no 
-> 'fid' nor
-> 'vid' (fid is related to frequency control, and vid for 
-> voltage).
-
-> I'm afraid your processors do not support powernow 
-> technology.
-
-> Cheers,
-
-
-
-___________________________________
-NOCC, http://nocc.sourceforge.net
+	Dominik
