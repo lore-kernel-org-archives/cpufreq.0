@@ -1,14 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Which driver for Mobile P4 CPU?
-Date: Thu, 6 Jan 2005 23:28:57 +0100
-Message-ID: <20050106222857.GA8434@dominikbrodowski.de>
-References: <20050105200721.21c6f5f8@bonenpikster.drs.p>
-	<20050106160740.GA10011@dominikbrodowski.de>
-	<20050106230611.490e2127@bonenpikster.drs.p>
+From: Chris Freyer <chris@thefreyers.net>
+Subject: Re: Repost:  System freeze running powersaved.
+Date: Fri, 07 Jan 2005 00:29:55 -0500
+Message-ID: <6.2.0.14.0.20050106235406.02a67fc0@mail.thefreyers.net>
+References: <E1CmKfa-000Jhs-Bt@server2.anyname.com>
+	<20050106104216.GA4336@inferi.kami.home>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20050106230611.490e2127@bonenpikster.drs.p>
+In-Reply-To: <20050106104216.GA4336@inferi.kami.home>
+References: <E1CmKfa-000Jhs-Bt@server2.anyname.com>
+	<20050106104216.GA4336@inferi.kami.home>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,43 +19,42 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 Content-Transfer-Encoding: 7bit
-To: Tim Dijkstra <newsuser@famdijkstra.org>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Thu, Jan 06, 2005 at 11:06:11PM +0100, Tim Dijkstra wrote:
-> On Thu, 6 Jan 2005 17:07:40 +0100
-> Dominik Brodowski <linux@dominikbrodowski.de> wrote:
-> 
-> > Hi,
-> > 
-> > On Wed, Jan 05, 2005 at 08:07:21PM +0100, Tim Dijkstra wrote:
-> > > None of the drivers in the 2.6.10 kernel that have speedstep in
-> > > their name are loadable. Does this mean that my CPU isn't supported
-> > > or I'm a doing something wrong? 
-> > 
-> > Not really. the speedstep-smi is for older (P3) CPUs,
-> > speedstep-centrino for Pentium Ms, and speedstep-ich only works if you
-> > have an Intel chipset in a notebook, which I assume you don't have. So
-> > the acpi driver is the only one left.
-> 
-> OK, and: 
-> model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.00GHz
-> 
-> is just confusing output and has nothing to do with a 'Pentium M',
-> right?
+At 05:42 AM 1/6/2005, you wrote:
+> > FYI:  I have a VIA C3 processor, VIA chipset, and VIA video.  Similar
+> > in function to a VIA EPIA motherboard, but made by Matsonic.
+>
+>You might be interested in this thread[1] then, it seems the problem you
+>reported is similar.
+>
+>[1]:
+>http://www.linux.org.uk/mailman/private/cpufreq/2004-December/004763.html
 
-There are, IIRC:
+Thanks for the URL.  It started me down the right path.  Believe it or not, 
+the problem was solved by building the kernel from the original SuSE 
+sources.  Maybe the kernel (which had been updated by Suse online update) 
+was out of synch with the modules (??).  Don't know for sure.  But 
+powersaved is working now.
 
-mobile Pentium III
-mobile Pentium III - M
-mobile Pentium 4
-mobile Pentium 4 - M
-Pentium M
+And if it helps anyone, I wrote a script to output the CPU speed every 
+second or more.  Have fun with it.
 
-and these are three "classes" of processors (vast simplification, I know,
-but anyways) - pentium 3s, pentium 4s, and pentium M ("centrino")
-processors.
+Thanks!!
+Chris
 
-	Dominik
+
+#! /bin/bash
+# 2004/01/07
+# output cpu speed every second or so until terminated.
+
+while [ true ]; do
+         powersave -r
+
+         #use this line instead if you don't have powersave
+         #grep MHz /proc/cpuinfo | cut -d: -f2
+
+         sleep 1
+done
