@@ -1,17 +1,13 @@
-From: Sven Dowideit <svenud@ozemail.com.au>
-Subject: Re: Dynamic frequency governor
-Date: Tue, 21 Oct 2003 09:28:52 +1000
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1066692531.1159.26.camel@sven>
-References: <CFF522B18982EA4481D3A3E23B83141C24B4B3@orsmsx407.jf.intel.com>
-	<20031020170010.GF21438@redhat.com>
-	<20031020172503.GE13989@poupinou.org>
-	<20031020173205.GG21438@redhat.com>
-	<20031020173509.GF13989@poupinou.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI P-state
+	driver
+Date: Mon, 20 Oct 2003 19:56:07 -0700
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031020173509.GF13989@poupinou.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,37 +16,51 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
-
-Hey guys,
-
-can we avoid the issue completely, by taking something like powertweak,
-which will let you monitor any system value(s), and then use a
-combination of the values the user selected to determine the speed? 
-
-(though on my BX notebook i only get 2 speed, 700Mhz and 850Mhz)
-
-though most of this functionality does not exist in powertweak yet.. I
-still need to add getting values at regular intervals, and some generic
-calculation engine.
-
-the first i will do anyway as i want to provide a graph
+To: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, linux-acpi <linux-acpi@intel.com>
+Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, "Nakajima,
+	Jun" <jun.nakajima@intel.com>, Dominik Brodowski <linux@brodo.de>
 
 
-sven
+Hi,
 
-On Tue, 2003-10-21 at 03:35, Ducrot Bruno wrote:
-> On Mon, Oct 20, 2003 at 06:32:05PM +0100, Dave Jones wrote:
-> > On Mon, Oct 20, 2003 at 07:25:03PM +0200, Ducrot Bruno wrote:
-> > 
-> >  > AFAIR, there is no patent if wide system policy which is what Bob want
-> >  > to implement.  Only per-process (which is the most fun unfortunately) are
-> >  > patented.  That need to be confirmed though (by Alan ?).
-> > 
-> > I was under the understanding that there was a patent on
-> > "recalculate cpu frequency based on idle time" too.
-> > 
-> 
-> Grumble.  I was probably mistaken.  Sorry.
+Most of the latest CPUs (laptop CPUs in particular) have feature=20
+which enable very low latency P-state transitions=20
+(like Enhanced Speedstep Technology-EST). Using this feature,=20
+we can have a lightweight in kernel cpufreq governor,=20
+to vary CPU frequency depending on the CPU usage. The=20
+advantage being low power consumption and also cooler laptops.
+
+Another related change is enhancing the current ACPI P-state=20
+driver to handle:
+EST (and MSR based P-state transitions), make the driver SMP=20
+aware and introduce HT coordination in the driver (HT siblings=20
+share the same CPU frequency).
+
+The patches that follow this mail addresses the above issues.=20
+They are against 2.6-test7 kernel. Many thanks to Dominik for=20
+his comments and suggestions.
+
+The patches will work on all laptops with EST technology=20
+(Centrino) and also on any other system that supports low=20
+latency frequency change.=20
+
+Reviews/testing of patches are most welcome.
+
+Thanks,
+-Venkatesh
+
+
+Patches are split as follows:
+
+Patch 1/3: Changes to ACPI P-state driver, to handle MSR=20
+based transitions frequency transitions and make the driver=20
+SMP aware.
+
+Patch 2/3: Introduce HT-synchronization in the ACPI P-state=20
+Driver, to take care of shared CPU frequency between HT siblings.
+
+Patch 3/3: New dynamic cpufreq driver (called=20
+DemandBasedSwitch driver), which periodically monitors CPU=20
+usage and changes the CPU frequency based on the demand.
