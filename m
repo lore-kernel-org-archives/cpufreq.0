@@ -1,14 +1,15 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: Dynamic frequency governor
-Date: Mon, 20 Oct 2003 19:25:03 +0200
+Date: Mon, 20 Oct 2003 18:32:05 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031020172503.GE13989@poupinou.org>
+Message-ID: <20031020173205.GG21438@redhat.com>
 References: <CFF522B18982EA4481D3A3E23B83141C24B4B3@orsmsx407.jf.intel.com>
 	<20031020170010.GF21438@redhat.com>
+	<20031020172503.GE13989@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031020170010.GF21438@redhat.com>
+In-Reply-To: <20031020172503.GE13989@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,39 +21,19 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
+To: Ducrot Bruno <ducrot@poupinou.org>
 Cc: "Moore, Robert" <robert.moore@intel.com>, cpufreq@www.linux.org.uk
 
-On Mon, Oct 20, 2003 at 06:00:10PM +0100, Dave Jones wrote:
-> On Mon, Oct 20, 2003 at 09:33:04AM -0700, Moore, Robert wrote:
-> 
->  > >From what I can tell, this has not been done yet; is this true?
-> 
-> Correct. For the reason I outlined...
-> 
->  > however the fact remains, whilst there are folks owning patents on
->  > this, it'll *never* be acceptable for merging without an exception
->  > grant from the patent holder.
-> 
-> Here, and...
-> 
->  > > There are several patents in this area (I think from Hitachi, I forget
->  > > exactly) It has come up before on the list, so should be in the
->  > > archives.  Unless you can get a grant from the holder that it may be
->  > > used in GPL code, this has zero chance of being merged to mainline.
-> 
-> Here.
-> Do I need to quote it a third time ?
-> 
-> 		Dave
-> 
+On Mon, Oct 20, 2003 at 07:25:03PM +0200, Ducrot Bruno wrote:
 
-AFAIR, there is no patent if wide system policy which is what Bob want
-to implement.  Only per-process (which is the most fun unfortunately) are
-patented.  That need to be confirmed though (by Alan ?).
+ > AFAIR, there is no patent if wide system policy which is what Bob want
+ > to implement.  Only per-process (which is the most fun unfortunately) are
+ > patented.  That need to be confirmed though (by Alan ?).
+
+I was under the understanding that there was a patent on
+"recalculate cpu frequency based on idle time" too.
+
+		Dave
 
 -- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+ Dave Jones     http://www.codemonkey.org.uk
