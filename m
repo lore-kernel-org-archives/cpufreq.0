@@ -1,9 +1,11 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: [PATCH] ondemand governor clean-ups
-Date: Mon, 07 Feb 2005 00:06:07 +0100
-Message-ID: <4206A2DF.8000304@tremplin-utc.net>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] support for CPUFREQ_ETERNAL drivers by the ondemand
+	governor
+Date: Mon, 7 Feb 2005 10:29:01 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB6003F34443@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------080801040307050902050907"
+Content-Transfer-Encoding: quoted-printable
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,93 +16,68 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Jun Nakajima <jun.nakajima@intel.com>
-Cc: cpufreq@lists.linux.org.uk
-
-This is a multi-part message in MIME format.
---------------080801040307050902050907
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hello,
-
-Having a look at the ondemand governor I noticed some possible trivial 
-and minimal clean-ups.
-
-Here they are:
-- change from sampling_rate_in_HZ() to the official function 
-usecs_to_jiffies().
-- use for_each_online_cpu() to instead of using "if (cpu_online(i))"
-
-Those are just trivial clean-ups, please apply,
-Eric
---
-Trivial ondemand governor clean-ups
-
-Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
---
-
---------------080801040307050902050907
-Content-Type: text/x-patch;
- name="ondemand-cleanup-macro-2.6.11-rc3.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline; filename="ondemand-cleanup-macro-2.6.11-rc3.patch"
-
---- linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c.bak	2005-02-06 23:35:41.000000000 +0100
-+++ linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c	2005-02-06 23:37:15.000000000 +0100
-@@ -281,7 +281,7 @@ static void dbs_check_cpu(int cpu)
- 	/* Scale idle ticks by 100 and compare with up and down ticks */
- 	idle_ticks *= 100;
- 	up_idle_ticks = (100 - dbs_tuners_ins.up_threshold) *
--			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate);
-+			usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
- 
- 	if (idle_ticks < up_idle_ticks) {
- 		__cpufreq_driver_target(policy, policy->max, 
-@@ -328,7 +328,7 @@ static void dbs_check_cpu(int cpu)
- 	freq_down_sampling_rate = dbs_tuners_ins.sampling_rate *
- 		dbs_tuners_ins.sampling_down_factor;
- 	down_idle_ticks = (100 - dbs_tuners_ins.down_threshold) *
--			sampling_rate_in_HZ(freq_down_sampling_rate);
-+			usecs_to_jiffies(freq_down_sampling_rate);
- 
- 	if (idle_ticks > down_idle_ticks ) {
- 		freq_down_step = (5 * policy->max) / 100;
-@@ -348,11 +348,10 @@ static void do_dbs_timer(void *data)
- { 
- 	int i;
- 	down(&dbs_sem);
--	for (i = 0; i < NR_CPUS; i++)
--		if (cpu_online(i))
--			dbs_check_cpu(i);
-+	for_each_online_cpu(i)
-+		dbs_check_cpu(i);
- 	schedule_delayed_work(&dbs_work, 
--			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
-+			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
- 	up(&dbs_sem);
- } 
- 
-@@ -360,7 +359,7 @@ static inline void dbs_timer_init(void)
- {
- 	INIT_WORK(&dbs_work, do_dbs_timer, NULL);
- 	schedule_delayed_work(&dbs_work,
--			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
-+			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
- 	return;
- }
- 
-
---------------080801040307050902050907
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Eric Piel <Eric.Piel@tremplin-utc.net>, "Nakajima, Jun" <jun.nakajima@intel.com>
+Cc: cpufreq@ZenII.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------080801040307050902050907--
+Hi,
 
+The ondemand governor uses the transitions latency information=20
+to set a proper default sampling rate.=20
+For example, if the transitions latency is 100uS, the default=20
+sampling rate used by ondemand governor is 100 mS. So, wrong=20
+assumption about the transition latency can lead to frequent=20
+sampling and overhead in the kernel. Transition Latency doesn't=20
+matter a lot for userspace governors as their sampling rate is=20
+typically much less (few seconds).
+
+I agree that changing CPUFREQ_ETERNAL to 10mS would be safe with=20
+most of the governors and this change would enable such governors=20
+to work with ondemand. But, making this assumption inside=20
+the ondemand governor makes me little nervous. What if some=20
+particular driver has latency more than 10mS (there may not be=20
+any such driver today. But, some new driver can come up in future).=20
+
+I feel better way to workarond this issue is to have one more=20
+intermediate #define, say CPUFREQ_LATENCY_LESS_THAN_1MS defined=20
+to 1MS and use it in place of CPUFREQ_ETERNAL in all the drivers=20
+that know their transition latency is less than this value and =20
+don't know their exact transition latency.
+
+Thanks,
+Venki
+
+>-----Original Message-----
+>From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
+>Sent: Sunday, February 06, 2005 2:34 PM
+>To: Pallipadi, Venkatesh; Nakajima, Jun
+>Cc: cpufreq@ZenII.linux.org.uk
+>Subject: [PATCH] support for CPUFREQ_ETERNAL drivers by the=20
+>ondemand governor
+>
+>Hello,
+>
+>For now the ondemand governor doesn't support the drivers=20
+>which reports=20
+>a transition latency of CPUFREQ_ETERNAL. That's really a=20
+>problem because=20
+>most of the drivers declare such a latency (simply because it's not=20
+>known, not really because the transition will take an eternal time).=20
+>All userspace daemons suport those drivers, they just don't pay=20
+>attention to the transition latency.
+>
+>This patch proposes to consider a CPUFREQ_ETERNAL latency as=20
+>the maximum=20
+>possible latency of the governor (10 ms). I think this should be=20
+>conservative enough to be safe with any driver.
+>
+>Hoping you like it,
+>Eric
+>
+>--
+>Support for CPUFREQ_ETERNAL drivers by the ondemand governor.
+>
+>Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
+>--
+>
