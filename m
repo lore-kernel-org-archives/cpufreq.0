@@ -1,10 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH][RFC] ondemand governor automatic downscaling
-Date: Sun, 6 Mar 2005 17:51:51 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB600426C6EA@scsmsx403.amr.corp.intel.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] cpufreq: allow ondemand governor as default
+Date: Mon, 7 Mar 2005 18:41:50 +0100
+Message-ID: <20050307174150.GC31985@poupinou.org>
+References: <20050304011359.GA32684@aquarid.physics.uwo.ca>
+	<20050306170625.GA2034@isilmar.linta.de>
+	<20050306215106.GA25034@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20050306215106.GA25034@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,53 +18,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: cpufreq@zenii.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
+Cc: Rob Weryk <rjweryk@uwo.ca>, cpufreq@ZenII.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>
 
+On Sun, Mar 06, 2005 at 04:51:06PM -0500, Dave Jones wrote:
+> On Sun, Mar 06, 2005 at 06:06:25PM +0100, Dominik Brodowski wrote:
+> 
+>  > This is not possible yet -- unfortunately. If you set ondemand to be
+>  > "default" but it fails at initialization (it does so for several drivers!),
+>  > cpufreq enters an undefined state
+> 
+> I knew there was a reason for declining this, but couldn't recall
+> what it was (hence I sent Rob to the list when he sent me the patch).
 
->-----Original Message-----
->From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
->Sent: Sunday, March 06, 2005 4:54 PM
->To: Pallipadi, Venkatesh
->Cc: cpufreq@zenii.linux.org.uk
->Subject: Re: [PATCH][RFC] ondemand governor automatic downscaling
->
->Pallipadi, Venkatesh a =E9crit :
->:
->:
->> In particular, this will not work well in the following situation:
->> Assume a server with a constant read/write to disk. Say the=20
->CPU computes
->> something for 40% of time and then issues a I/O and waits=20
->for remaining
->> 60% of time (until I/O is complete). This wait is irrespective of CPU
->> speed. Now if we reduce the frequency to make CPU 70% busy,=20
->and CPU will
->> still wait for IO and overall performance will go down as a result of
->> the frequency slowdown.=20
->> This can still happen with 20-80 policy, but the probablity is less.
->Well, if I understand correctly, we lose time because the harddisk is=20
->waiting for the CPU to do some computing before it can write anything=20
->and the slowest is the CPU, the longer the harddisk will have to wait.=20
->IMHO, this situation seems very unlikely because of all the I/O=20
->virtualisation done by the kernel, including read-ahead and cache. The=20
->harddisk will completely turn asynchronously, 100% of the time, while=20
->the CPU will do computation during 70% of the time instead of=20
->40%, still=20
->having idle time. This shouldn't affect global performance.=20
->Still, I can=20
->be overlooking something, do you have any testcase in mind?
->
+It refuse to load when latency for a state transition is too high (or unknown),
+and if there is only ondemand as governor selected then kernel will likely fail at
+boot time.  It has been stated that its up to the low level drivers to
+provide good information about latencies and therefore it is not
+acceptable to accept to load ondemand if latency is unknown (but I don't
+remember if its acceptable if latency is too high sorry ;)
 
-It was just a theoritical possibility or sort of a corner case.
-But, as you said, that can be handled by having iowait as busy time.
-Probably by having another tuning parameter for iowait time.
+And I dont remember what happens when the driver dont use the frequency
+table helpers (geode) or is already capable for automaticaly
+state switching (longrun).
 
-I will run this patch on couple of SMP systems, with some workload.=20
-I just want to make sure there are no side-effects before pushing=20
-this to the base. I should be able to get back on this in couple of =
-days.=20
+> This has come up about 4-5 times now in the last month or two.
+> Maybe its worth adding a comment to the Kconfig to prevent a 6th time :-)
 
-Thanks again for the patch,
-Venki
+Sure.
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
