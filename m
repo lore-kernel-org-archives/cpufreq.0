@@ -1,14 +1,14 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: 2.4.21 Isn't working for me....
-Date: Wed, 27 Aug 2003 14:31:34 +0200
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: [RFC] yet more file moves
+Date: Wed, 27 Aug 2003 14:41:49 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030827123134.GL10585@poupinou.org>
-References: <1061872616.27076.47.camel@localhost>
-	<1061926909.14523.5.camel@localhost>
+Message-ID: <20030827124149.GC4057@brodo.de>
+References: <20030827060229.GA4315@brodo.de> <3F4C7560.2080409@basmevissen.nl>
+	<20030827110230.GJ10585@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1061926909.14523.5.camel@localhost>
+In-Reply-To: <20030827110230.GJ10585@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,26 +20,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: AthlonRob <AthlonRob@axpr.net>
-Cc: cpufreq@www.linux.org.uk
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: Bas Mevissen <ml@basmevissen.nl>, cpufreq@www.linux.org.uk
 
-On Tue, Aug 26, 2003 at 12:41:50PM -0700, AthlonRob wrote:
-> On Mon, 2003-08-25 at 21:36, AthlonRob wrote:
->  
-> > I'm trying to get some cpu frequency control over my laptop's CPU with
-> > the 2.4.21 kernel.  I'd just jump to 2.6.0-test4, but have a few pieces
-> > of hardware that don't have drivers available for the test kernel yet.
+On Wed, Aug 27, 2003 at 01:02:30PM +0200, Ducrot Bruno wrote:
+> On Wed, Aug 27, 2003 at 11:09:52AM +0200, Bas Mevissen wrote:
+> > Dominik Brodowski wrote:
+> > 
+> > >I hereby suggest that 
+> > >a) for 2.4. and 2.6. drivers/cpufreq/userspace.c is moved to 
+> > >   drivers/cpufreq/cpufreq-userspace.c,
+> > >b) for 2.4, the x86 cpufreq drivers are moved to arch/i386/kernel/cpufreq/
 > 
-> I just found http://www.codemonkey.org.uk/projects/cpufreq/ in the
-> archives and gave the two patches listed there a shot.
-> 
-> -1 and -2.
-> 
+> Dominik: I agreed for b), especially for acpi.c if we want it in 2.4.
+> (BTW, I may commit soon a new version for it, have you done some stuff
+> related to that one?)
 
-Can you reproduce with latest cpufreq and 2.4.22?
+oh yes, I have - but only in my head, but not on my harddisk... So if you
+have done something wrt acpi already, commit it; I'll post my changes for
+comments and/or inclusion when they're ready. Might take a week or two,
+though.
 
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
