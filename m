@@ -1,11 +1,18 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: [RFC/CFT] cpufreq updates for 2.6.0-test4
-Date: Wed, 27 Aug 2003 16:22:06 +0200
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: 2.4.21 Isn't working for me....
+Date: Wed, 27 Aug 2003 16:39:51 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030827142206.GA10434@brodo.de>
+Message-ID: <20030827143951.GP10585@poupinou.org>
+References: <1061872616.27076.47.camel@localhost>
+	<20030826064747.GE10585@poupinou.org>
+	<1061927026.14523.9.camel@localhost>
+	<20030826224727.GA14287@nsk.no-ip.org>
+	<20030827111133.GK10585@poupinou.org>
+	<20030827142908.GA5077@nsk.no-ip.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20030827142908.GA5077@nsk.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,58 +24,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
+To: Luciano Miguel Ferreira Rocha <strange@nsk.no-ip.org>
+Cc: cpufreq@www.linux.org.uk, AthlonRob <AthlonRob@axpr.net>
 
-Hi,
+On Wed, Aug 27, 2003 at 03:29:08PM +0100, Luciano Miguel Ferreira Rocha wrote:
+> On Wed, Aug 27, 2003 at 01:11:33PM +0200, Ducrot Bruno wrote:
+> > > I've been using that kernel, but can't get swsusp to work correctly and
+> > > cpufreq doesn't work that well with my chipset, anyhow, (it's a 440BX,)
+> > > so test it throughly.
+> > 
+> > What is the trouble with the 440BX?
+> 
+> Well, it's a lousy chipset, cpufreq wise.
+> 
+> I had it working with your help some time in the past, using a speedstep.c
+> and playing with the GPO.
+> 
+> But that driver doesn't have the same interface as normal cpufreq and then
+> 2.4.21 merged parts of the AC tree that makes my processor frequency very
+> dynamic, so I end up not using it much.
+> 
+> But I tried the CVS version of cpufreq, but it still doesn't work.
+> As it is, it doesn't have a speedstep.c, only a speedstep-ich, that
+> fails to insert:
+> cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
 
-Here are a couple of patches for linux-2.6.0-test4. A complete set can be
-found here:
+Oops, correct.  I forgot that one.  Sorry.
+Should happens today.
 
-http://www.brodo.de/cpufreq_tmp/cpufreq-2.6.0-test4-all
+-- 
+Ducrot Bruno
 
-Test reports are most welcome.
-
-
-Individual patches [not sent to the list due to their size, but available at
-http://www.brodo.de/cpufreq_tmp/ - just add the file name after the slash.]
-
-cpufreq-2.6.0-test4-move_cpufreq
-	Move kernel/cpufreq.c to drivers/cpufreq/cpufreq.c and remove $Id$
-	tag.
-
-cpufreq-2.6.0-test4-spelling_fix
-	Documentation spelling fix.
-
-cpufreq-2.6.0-test4-rename_userspace
-	Rename drivers/cpufreq/userspace.c to
-	drivers/cpufreq/cpufreq_userspace.c
-
-cpufreq-2.6.0-test4-fix_userspace
-	Fix a couple of oddities in the userspace governor
-
-cpufreq-2.6.0-test4-separate_governors_core
-	Completely separate governors from policies. Governors are for
-	CPUfreq drivers which have a ->target callback, Polcies are for
-	CPUfreq drivers which have a ->setpolicy callback. Also, the
-	"hardwired" governors "powersave" and "performance" are removed.
-
-cpufreq-2.6.0-test4-separate_governors_governors
-	Add the "performance" and "powersave" governors as modules. Also add
-	a config option so that the default governor [which is loaded and
-	enabled at boot] is started. Note that if you select "performance"
-	here, the CPU will be set to the highest possible frequency even if 
-	the CPU was booted at a lower frequency. If you select "userspace",
-	the frequency will stay the same.
-
-cpufreq-2.6.0-test4-separate_governors_ppc
-cpufreq-2.6.0-test4-separate_governors_sh
-cpufreq-2.6.0-test4-separate_governors_sparc64
-cpufreq-2.6.0-test4-separate_governors_x86
-	Small fixes necessary to separate the governors from policies.
-
-cpufreq-2.6.0-test4-separate_governors_arm
-	These changes allow for easier Kconfig usage on ARM. And more
-	features for SA11x0 users.
-
-
-	Dominik
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
