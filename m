@@ -1,10 +1,13 @@
-From: Harald Milz <milz@seneca.muc.de>
-Subject: Re: Manual PST settings for "unrecognized CPUs"
-Date: Thu, 19 Aug 2004 02:19:10 +0200 (CEST)
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: cpufreqd not working help?
+Date: Thu, 19 Aug 2004 10:45:38 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040819001910.320EE4BE98@nathan.muc.de>
-References: <FE0E4E3EC4669A46A5D2E835957A9FFF169A0699@uranus.wallst.com>
+Message-ID: <20040819084538.GG29560@poupinou.org>
+References: <1092840467.30637.202577436@webmail.messagingengine.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <1092840467.30637.202577436@webmail.messagingengine.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,22 +17,31 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Joshua Lowell <joshual@airpost.net>
+Cc: cpufreq@www.linux.org.uk
 
-Davin Carter <davin.carter@wallst.com> wrote:
-> I was able to get a Mobile Athlon 2400 down to ~300 MHZ (the lowest
-> multiplier) without any problem.  Unfortuantely, my core voltage is 1.44
-> volts, there did not seem to be any power savings below 1000 MHZ with my
-> machine.
+Hi,
 
-Are you saying you could get ~300 MHz with 1.44V? Hmmm - interesting. What
-board is it? 
+On Wed, Aug 18, 2004 at 07:47:47AM -0700, Joshua Lowell wrote:
+> Hi, I have a new laptop an hp ze4805, with an amd athlon xp-m 2800+
+> I installed and started:  powernow-k7 module, processor module is
+> loaded, and 
+> cpufreqd is also running. oh ac battery and fan are also running.
+> But when I check /proc/cpuinfo after unplugging the laptop, the bogoimp
+> and 
+> cpu mHz stay the same... no chages are displayed at all.
+> any help would be more than appreciated.
 
-After all power consumption goes linear with clock, and by square with
-Vcore. 
+It's a problem with userspace space, not kernel space.  Please report
+this trouble to the cpufreqd maintainer instead (even though I think
+he is subscribed to this ml).
+
+Cheers,
 
 -- 
-An exotic journey in downtown Newark is in your future.
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
