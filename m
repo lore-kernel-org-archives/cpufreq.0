@@ -1,14 +1,15 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: 2.6.3-rc3: "powernow-k8: fid 0 invalid : 0x0"
-Date: Wed, 25 Feb 2004 09:53:37 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [ACPI] [PATCH 1/2] 2.6: use scaling_available_freqs in
+	acpi-cpufreq-ioport driver
+Date: Tue, 24 Feb 2004 15:43:18 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040225085337.GG2869@poupinou.org>
-References: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de>
-	<msgidspam.8765dwi1es.fsf@schnee.marquardt-home.de>
+Message-ID: <20040224144318.GA9702@dominikbrodowski.de>
+References: <20040220083149.GA10215@dominikbrodowski.de>
+	<20040224125628.GA438@elf.ucw.cz>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============30532261994827259=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <msgidspam.8765dwi1es.fsf@schnee.marquardt-home.de>
+In-Reply-To: <20040224125628.GA438@elf.ucw.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,36 +19,62 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: Pavel Machek <pavel@ucw.cz>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+
+
+--===============30532261994827259==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
+Content-Disposition: inline
+
+
+--h31gzZEtNLTqOjlF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Feb 24, 2004 at 01:56:28PM +0100, Pavel Machek wrote:
+> Hi!
+>=20
+> > Export an array of supported frequencies in sysfs
+> > [scaling_available_frequencies]
+>=20
+> Would it be possible to export [frequency/voltage] pairs, and allow
+> user to change it?
+
+IMO, NO! While this might be a necessity for powernow-k7, the generic acpi-=
+io
+driver should stay clean of such overrides et al. If you need to modify the
+ACPI tables, there are other ways.
+
+	Dominik
+
+--h31gzZEtNLTqOjlF
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAO2MGZ8MDCHJbN8YRAoJlAJwI0z7ED7Y0eMdZC2HNDevULBIf2wCeMN1H
+Xd21LwEyOjqZkcOX/XGmH+w=
+=lrLn
+-----END PGP SIGNATURE-----
+
+--h31gzZEtNLTqOjlF--
+
+
+--===============30532261994827259==
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Colin Marquardt <colin@marquardt-home.de>
-Cc: cpufreq@www.linux.org.uk
+Content-Disposition: inline
 
-On Tue, Feb 24, 2004 at 10:59:55PM +0100, Colin Marquardt wrote:
-> Colin Marquardt <colin@marquardt-home.de> writes:
-> 
-> > powernow-k8: Found AMD64 processor supporting PowerNow (version 1.00.08a)
-> > powernow-k8: voltage stable in 100 usec, ramp voltage offset: 2, isochronous relief time: 3, maximum voltage step: 0
-> > powernow-k8: pll lock time: 0x2, maxfid 0xc (2000 MHz), maxvid 0x0
-> > powernow-k8: fid 0 invalid : 0x0
-> >
-> > Everything under /sys/devices/system/cpu/cpu0/ is empty.
-> 
-> Same with 2.6.3 proper :/
-> 
-> I also get
-> 
-> apm: BIOS version 1.2 Flags 0x07 (Driver version 1.16ac)
-> apm: overridden by ACPI.
-> 
-> Maybe ACPI is somehow disturbing it?
-> 
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-In theory no, but you may consider ACPI especially on amd64
-architectures.
+--===============30532261994827259==--
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
