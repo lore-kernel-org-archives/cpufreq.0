@@ -1,15 +1,13 @@
-From: Morrowind <morrowind@bluscuro.dyndns.org>
+From: Ducrot Bruno <ducrot@poupinou.org>
 Subject: Re: Acer Aspire 1300 buggy BIOS - hardcoded patch
-Date: Tue, 1 Jul 2003 12:12:31 +0200
+Date: Tue, 1 Jul 2003 12:51:54 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030701101231.GA13408@home.net>
-References: <200306301436.29188.lbelli@crema.unimi.it> <20030701005946.5e659273.frx@firenze.linux.it>
-Reply-To: morrowind@bluscuro.dyndns.org
+Message-ID: <20030701105154.GK7796@poupinou.org>
+References: <200306301436.29188.lbelli@crema.unimi.it> <20030630151401.GE7796@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030701005946.5e659273.frx@firenze.linux.it>
+In-Reply-To: <20030630151401.GE7796@poupinou.org>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,26 +17,54 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Luigi Belli <lbelli@crema.unimi.it>
+Cc: cpufreq@www.linux.org.uk
 
-* marted=EC 01 luglio 2003, alle 00:59, Francesco Poli scrive:
-> On Mon, 30 Jun 2003 14:36:29 +0200 Luigi Belli wrote:
->=20
-> BTW, I have just installed a 2.4.21 + cpufreq patch 3 kernel on an Acer
-> Aspire 1302XV (AMD Mobile Athlon XP 1600+. It seems to work (the back
-> fan has stopped spinning so often and the case temperature looks lower).
->=20
-> Does anybody know a simple method to check if the BIOS is buggy or not?
-> Can I run some quick diagnostics?
+On Mon, Jun 30, 2003 at 05:14:01PM +0200, Ducrot Bruno wrote:
+> On Mon, Jun 30, 2003 at 02:36:29PM +0200, Luigi Belli wrote:
+> > I'm one of the owners of an Acer Aspire 1300 series with a buggy BIOS, so I 
+> > decided to hardcode a patch with the correct PST table for my mobile Athlon 
+> > XP 1800+.
+> > I know very little of kernel internals, I only opened powernow-k7.c and tried 
+> > to guess what had to be changed...
+> > For me it works and I decided to post it here for those in my conditions 
+> > waiting for a new bios or a newer cpufreq release.
+> > It's a patch against kernel 2.4.21-ac4.
+> 
+> 
+> I am wondering if the _PCT table (from ACPI) are correct or not.
+> Could you send me a DSDT table, please?  For this, you have to
+> retrieve pmtools from intel site (this should be the latest link):
+> 
+> http://developer.intel.com/technology/iapc/acpi/downloads.htm
+> 
+> 
+> then go to pmtools-20010730/acpidmp/
+> make
+> ./acpidmp DSDT > dsdt
+> gzip dsdt
+> 
+> then send me *privately* the dsdt.gz file.
+> 
+> I will then look if, at least, ACER guy give correct _PCT table.
+> 
 
-Can you send the powernow-k7 debug info?
-I've the same cpu and i need a correct pst table...
+Interresting.  From ACPI point-of-view, you have those states (I reproduce
+only the different frequencies)
 
-thanks
+950 MHz
+750 MHz
+700 MHz
+600 MHz
+500 MHz
 
+Ahem,  seems that not only your PST table is somehow wrong, but it seems
+there is nothing to do with ACPI either, sorry.
 
---=20
-"A volte penso che la prova piu' sicura che esiste da qualche parte una
-forma di vita intelligente e' il fatto che non ha mai tentato di mettersi
-in contatto con noi."
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
