@@ -1,13 +1,14 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 7/8] latency must be in _nano_seconds
-Date: Wed, 19 Nov 2003 19:07:25 +0000
+Subject: Re: [PATCH 5/8] p4_clockmod: detect speed without relying on
+	cpu_khz or user input
+Date: Wed, 19 Nov 2003 19:09:46 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031119190725.GA5653@redhat.com>
-References: <20031119183330.GH20576@brodo.de>
+Message-ID: <20031119190946.GB5653@redhat.com>
+References: <20031119183228.GF20576@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031119183330.GH20576@brodo.de>
+In-Reply-To: <20031119183228.GF20576@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,37 +23,41 @@ Content-Transfer-Encoding: 7bit
 To: Dominik Brodowski <linux@brodo.de>
 Cc: cpufreq@www.linux.org.uk
 
-On Wed, Nov 19, 2003 at 07:33:30PM +0100, Dominik Brodowski wrote:
+On Wed, Nov 19, 2003 at 07:32:28PM +0100, Dominik Brodowski wrote:
 
- >  	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
- > diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
- > --- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 17:06:10.571868800 +0100
- > +++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 18:48:10.150551432 +0100
- > @@ -386,7 +386,7 @@
- >  				minimum_speed, maximum_speed);
- >  
- >  	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- > -	policy->cpuinfo.transition_latency = latency;
- > +	policy->cpuinfo.transition_latency = latency * 20;
- >  	policy->cur = maximum_speed;
+ > +	rdmsr(0x2c, msr_lo, msr_hi);
+ > +
+ > +	/* printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi); */
+ > +	/* decode the FSB: see IA-32 Intel (C) Architecture Software 
+ > +	 * Developer's Manual, Volume 3: System Prgramming Guide,
+ > +	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
+ > +	 * Intel Xeon Processors, on page B-4 and B-5.
+ > +	 */
+ > +	if (c->x86_model < 2)
+ > +		fsb = 100 * 1000;
+ > +	else {
+ > +		u8 fsb_code = (msr_lo >> 16) & 0x7;
+ > +		switch (fsb_code) {
+ > +		case 0:
+ > +			fsb = 100 * 1000;
+ > +			break;
+ > +		case 1:
+ > +			fsb = 13333 * 10;
+ > +			break;
+ > +		case 2:
+ > +			fsb = 200 * 1000;
+ > +			break;
+ > +		}
+ > +	}
+ > +
+ > +	if (!fsb) {
+ > +		printk(KERN_DEBUG PFX "couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
+ > +		printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
+ > +	}
 
-Can we at least get a comment explaining where '20' comes from
-when we add magic numbers like this? I know, and you know, but
-it's a little non-obvious, and in six months time, I'll probably
-have forgotten too 8)
-
- > diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
- > --- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 17:07:58.537455536 +0100
- > +++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 18:46:57.031667192 +0100
- > @@ -959,8 +959,8 @@
- >  	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
- >  
- >  	/* Take a crude guess here. */
- > -	pol->cpuinfo.transition_latency = ((rvo + 8) * vstable * VST_UNITS_20US)
- > -	    + (3 * (1 << irt) * 10);
- > +	pol->cpuinfo.transition_latency = (((rvo + 8) * vstable * VST_UNITS_20US)
- > +	    + (3 * (1 << irt) * 10)) * 1000;
-
-Ditto. This one moreso, as its quite complex to begin with.
+patch 4/8 introduced what seems to be the exact same code in the speedstep-lib.
+Perhaps it belongs in an fsb.o instead that they can both share ?
+I don't mind duplicating it twice in object code, but having two copies
+in the source seems a bit silly.
 
 		Dave
