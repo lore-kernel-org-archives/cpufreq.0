@@ -1,13 +1,12 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Cpufreq hang
-Date: Sat, 19 Jul 2003 22:25:15 +0200
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH] (resend) support for 900MHz Pentium M for
+	speedstep-centrino.c
+Date: 20 Jul 2003 12:16:45 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030719202515.GA731@brodo.de>
-References: <Pine.LNX.4.53.0307161622300.30690@h192n1fls22o1048.telia.com> <20030716145325.GC632@inferi.kami.home> <Pine.LNX.4.53.0307161929430.30922@h192n1fls22o1048.telia.com>
+Message-ID: <1058728605.5980.41.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.53.0307161929430.30922@h192n1fls22o1048.telia.com>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,44 +17,46 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johan Braennlund <johan.brannlund@telia.com>
-Cc: cpufreq@www.linux.org.uk
+To: linux-kernel <linux-kernel@vger.kernel.org>, cpufreq list <cpufreq@www.linux.org.uk>
 
-On Wed, Jul 16, 2003 at 07:53:44PM +0200, Johan Braennlund wrote:
-> 
-> On Wed, 16 Jul 2003, Mattia Dongili wrote:
-> 
-> > can you write directly to /proc/cpufreq without using the daemon?
-> > eg:
-> > echo "0%0%100%performance" > /proc/cpufreq
-> 
-> That works, but if I substitute "powersave" for "performance" the system
-> hangs. In fact, I tried various changes in the above and anything with
-> "performance" works and anything with "powersave" hangs. The kernel I'm
-> using is 2.5.74-mm1, but I've seen cpufreqd hang on other recent 2.5
-> kernels as well, so I imagine the situation would be the same there.
-> 
-> On a 2.4 kernel, all the commands I tried worked.
+The 900MHz Pentium M has two spaces before the frequency:
+"Intel(R) Pentium(R) M processor  900MHz"
 
-Can you please re-test it with 2.6.0-test1, and especially check whether the
-following works:
+This patch adds a 2nd CPU macro (_CPU) which also takes the
+stringified speed so that extra spacing can be added.
 
-a) loading the "userspace" governor [please modprobe it first, of course]
-cd /sys/devices/system/cpu/cpu0/cpufreq/
-echo -n "userspace" > scaling_governor
+	J
 
-b) slowly decrease the current frequency by echoing the corresponding values
-[in kHz!] into scaling_setspeed. You can read the frequency states supported
-by your notebook in the "PST table" which is printed in dmesg. 
+ i386/kernel/cpu/cpufreq/speedstep-centrino.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-c) if these slow transitions work, please change the frequency more
-"randomly", and also try to switch from lowest to highest frequency and
-backwards.
+diff -puN
+arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~centrino-900MHz
+arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+---
+local-2.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~centrino-900MHz	2003-07-12 16:38:45.000000000 -0700
++++
+local-2.5-jeremy/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2003-07-13 00:37:31.000000000 -0700
+@@ -156,14 +156,15 @@ static struct cpufreq_frequency_table op
+ };
+ #undef OP
+ 
+-#define CPU(max)	\
+-	{ "Intel(R) Pentium(R) M processor " #max "MHz", (max)*1000, op_##max
+}
++#define _CPU(max, name)	\
++	{ "Intel(R) Pentium(R) M processor " name "MHz", (max)*1000, op_##max
+}
++#define CPU(max)	_CPU(max, #max)
+ 
+ /* CPU models, their operating frequency range, and freq/voltage
+    operating points */
+ static const struct cpu_model models[] = 
+ {
+-	CPU( 900),
++       _CPU( 900, " 900"),
+ 	CPU(1100),
+ 	CPU(1200),
+ 	CPU(1300),
 
-d) please tell us whether these tests worked, or at what stage [esp. at what
-frequency] it failed. Also, please include the part of "dmesg" where the PST
-table is printed.
-
-Many thanks for testing cpufreq,
-	Dominik
+_
