@@ -1,12 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [2.6.9-rc2] ondemand governor not working
-Date: Wed, 15 Sep 2004 15:33:04 -0700
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [2.6.9-rc2] ondemand governor not working
+Date: Fri, 17 Sep 2004 21:10:35 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB6002E1C76C@scsmsx403.amr.corp.intel.com>
+Message-ID: <20040917191035.GA8529@dominikbrodowski.de>
+References: <88056F38E9E48644A0F562A38C64FB6002E1C76C@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C49B73.F79C59A0"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6002E1C76C@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,105 +17,18 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: kronos@kronoz.cjb.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, davej@redhat.com
 Cc: cpufreq@www.linux.org.uk
 
-This is a multi-part message in MIME format.
+On Wed, Sep 15, 2004 at 03:33:04PM -0700, Pallipadi, Venkatesh wrote:
+> >Back to the original problem, powernow-k7 is setting transition_latency
+> >to 1ns, is it sensible?
+> 
+> Not sure. I don't have enough expertise in powernow-k7 :).
 
-------_=_NextPart_001_01C49B73.F79C59A0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+AFAICS, a multiplication with 1000 is missing somewhere in powernow-k7. Need
+Davej's insight on this, though.
 
-
->-----Original Message-----
->From: Kronos [mailto:kronos@kronoz.cjb.net]=20
->Sent: Wednesday, September 15, 2004 2:11 PM
->To: Pallipadi, Venkatesh
->Cc: cpufreq@www.linux.org.uk
->Subject: Re: [2.6.9-rc2] ondemand governor not working
->
->It works with a latency of 5000usec. It stops working if I go below
->that value.
-
-OK. There was one more divide underflow in ondemand governor.=20
-The attached patch should fix all such instances. And you should be able
-to run with sampling_rate of 1mS.
-
-
->Back to the original problem, powernow-k7 is setting transition_latency
->to 1ns, is it sensible?
-
-Not sure. I don't have enough expertise in powernow-k7 :).
-
-Thanks,
-Venki
-
-
-------_=_NextPart_001_01C49B73.F79C59A0
-Content-Type: application/octet-stream;
-	name="ondemand_latency_lowerlimit_1.patch"
-Content-Transfer-Encoding: base64
-Content-Description: ondemand_latency_lowerlimit_1.patch
-Content-Disposition: attachment; filename="ondemand_latency_lowerlimit_1.patch"
-
-LS0tIGxpbnV4LTIuNi45LXJjMi8vZHJpdmVycy9jcHVmcmVxL2NwdWZyZXFfb25kZW1hbmQuYy5v
-cmcJMjAwNC0wOS0xNSAxMTozMjozOC4wMDAwMDAwMDAgLTA3MDAKKysrIGxpbnV4LTIuNi45LXJj
-Mi8vZHJpdmVycy9jcHVmcmVxL2NwdWZyZXFfb25kZW1hbmQuYwkyMDA0LTA5LTE1IDE3OjA5OjM1
-LjAwMDAwMDAwMCAtMDcwMApAQCAtNTksNyArNTksNyBAQCBzdGF0aWMgdW5zaWduZWQgaW50IAkJ
-CQlkZWZfc2FtcGxpbmdfcmF0CiAjZGVmaW5lIERFRl9TQU1QTElOR19SQVRFX0xBVEVOQ1lfTVVM
-VElQTElFUgkoMTAwMCkKICNkZWZpbmUgREVGX1NBTVBMSU5HX0RPV05fRkFDVE9SCQkoMTApCiAj
-ZGVmaW5lIFRSQU5TSVRJT05fTEFURU5DWV9MSU1JVAkJKDEwICogMTAwMCkKLSNkZWZpbmUgc2Ft
-cGxpbmdfcmF0ZV9pbl9IWih4KQkJCSgoeCAqIEhaKSAvICgxMDAwICogMTAwMCkpCisjZGVmaW5l
-IHNhbXBsaW5nX3JhdGVfaW5fSFooeCkJCQkoKCh4ICogSFopIDwgKDEwMDAgKiAxMDAwKSk/MToo
-KHggKiBIWikgLyAoMTAwMCAqIDEwMDApKSkKIAogc3RhdGljIHZvaWQgZG9fZGJzX3RpbWVyKHZv
-aWQgKmRhdGEpOwogCkBAIC0yNDgsOCArMjQ4LDEwIEBAIHN0YXRpYyB2b2lkIGRic19jaGVja19j
-cHUoaW50IGNwdSkKIAkJdGhpc19kYnNfaW5mby0+cHJldl9jcHVfaWRsZV91cDsKIAl0aGlzX2Ri
-c19pbmZvLT5wcmV2X2NwdV9pZGxlX3VwID0ga3N0YXRfY3B1KGNwdSkuY3B1c3RhdC5pZGxlOwog
-CisJLyogU2NhbGUgaWRsZSB0aWNrcyBieSAxMDAgYW5kIGNvbXBhcmUgd2l0aCB1cCBhbmQgZG93
-biB0aWNrcyAqLworCWlkbGVfdGlja3MgKj0gMTAwOwogCXVwX2lkbGVfdGlja3MgPSAoMTAwIC0g
-ZGJzX3R1bmVyc19pbnMudXBfdGhyZXNob2xkKSAqCi0JCQlzYW1wbGluZ19yYXRlX2luX0haKGRi
-c190dW5lcnNfaW5zLnNhbXBsaW5nX3JhdGUpIC8gMTAwOworCQkJc2FtcGxpbmdfcmF0ZV9pbl9I
-WihkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKTsKIAogCWlmIChpZGxlX3RpY2tzIDwgdXBf
-aWRsZV90aWNrcykgewogCQlfX2NwdWZyZXFfZHJpdmVyX3RhcmdldCh0aGlzX2Ric19pbmZvLT5j
-dXJfcG9saWN5LApAQCAtMjY3LDE2ICsyNjksMjMgQEAgc3RhdGljIHZvaWQgZGJzX2NoZWNrX2Nw
-dShpbnQgY3B1KQogCiAJaWRsZV90aWNrcyA9IGtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaWRsZSAt
-IAogCQl0aGlzX2Ric19pbmZvLT5wcmV2X2NwdV9pZGxlX2Rvd247CisJLyogU2NhbGUgaWRsZSB0
-aWNrcyBieSAxMDAgYW5kIGNvbXBhcmUgd2l0aCB1cCBhbmQgZG93biB0aWNrcyAqLworCWlkbGVf
-dGlja3MgKj0gMTAwOwogCWRvd25fc2tpcFtjcHVdID0gMDsKIAl0aGlzX2Ric19pbmZvLT5wcmV2
-X2NwdV9pZGxlX2Rvd24gPSBrc3RhdF9jcHUoY3B1KS5jcHVzdGF0LmlkbGU7CiAKIAlmcmVxX2Rv
-d25fc2FtcGxpbmdfcmF0ZSA9IGRic190dW5lcnNfaW5zLnNhbXBsaW5nX3JhdGUgKgogCQlkYnNf
-dHVuZXJzX2lucy5zYW1wbGluZ19kb3duX2ZhY3RvcjsKIAlkb3duX2lkbGVfdGlja3MgPSAoMTAw
-IC0gZGJzX3R1bmVyc19pbnMuZG93bl90aHJlc2hvbGQpICoKLQkJCXNhbXBsaW5nX3JhdGVfaW5f
-SFooZnJlcV9kb3duX3NhbXBsaW5nX3JhdGUpIC8gMTAwOworCQkJc2FtcGxpbmdfcmF0ZV9pbl9I
-WihmcmVxX2Rvd25fc2FtcGxpbmdfcmF0ZSk7CiAKIAlpZiAoaWRsZV90aWNrcyA+IGRvd25faWRs
-ZV90aWNrcyApIHsKIAkJZnJlcV9kb3duX3N0ZXAgPSAoNSAqIHRoaXNfZGJzX2luZm8tPmN1cl9w
-b2xpY3ktPm1heCkgLyAxMDA7CisKKwkJLyogbWF4IGZyZXEgY2Fubm90IGJlIGxlc3MgdGhhbiAx
-MDAuIEJ1dCB3aG8ga25vd3MuLi4uICovCisJCWlmICh1bmxpa2VseShmcmVxX2Rvd25fc3RlcCA9
-PSAwKSkKKwkJCWZyZXFfZG93bl9zdGVwID0gNTsKKwogCQlfX2NwdWZyZXFfZHJpdmVyX3Rhcmdl
-dCh0aGlzX2Ric19pbmZvLT5jdXJfcG9saWN5LAogCQkJdGhpc19kYnNfaW5mby0+Y3VyX3BvbGlj
-eS0+Y3VyIC0gZnJlcV9kb3duX3N0ZXAsIAogCQkJQ1BVRlJFUV9SRUxBVElPTl9IKTsKQEAgLTM0
-NCw4ICszNTMsMTQgQEAgc3RhdGljIGludCBjcHVmcmVxX2dvdmVybm9yX2RicyhzdHJ1Y3QgYwog
-CQkgKiBpcyB1c2VkIGZvciBmaXJzdCB0aW1lCiAJCSAqLwogCQlpZiAoZGJzX2VuYWJsZSA9PSAx
-KSB7CisJCQl1bnNpZ25lZCBpbnQgbGF0ZW5jeTsKIAkJCS8qIHBvbGljeSBsYXRlbmN5IGlzIGlu
-IG5TLiBDb252ZXJ0IGl0IHRvIHVTIGZpcnN0ICovCi0JCQlkZWZfc2FtcGxpbmdfcmF0ZSA9IChw
-b2xpY3ktPmNwdWluZm8udHJhbnNpdGlvbl9sYXRlbmN5IC8gMTAwMCkgKgorCisJCQlsYXRlbmN5
-ID0gcG9saWN5LT5jcHVpbmZvLnRyYW5zaXRpb25fbGF0ZW5jeTsKKwkJCWlmIChsYXRlbmN5IDwg
-MTAwMCkKKwkJCQlsYXRlbmN5ID0gMTAwMDsKKworCQkJZGVmX3NhbXBsaW5nX3JhdGUgPSAobGF0
-ZW5jeSAvIDEwMDApICoKIAkJCQkJREVGX1NBTVBMSU5HX1JBVEVfTEFURU5DWV9NVUxUSVBMSUVS
-OwogCQkJZGJzX3R1bmVyc19pbnMuc2FtcGxpbmdfcmF0ZSA9IGRlZl9zYW1wbGluZ19yYXRlOwog
-Cg==
-
-------_=_NextPart_001_01C49B73.F79C59A0
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
-------_=_NextPart_001_01C49B73.F79C59A0--
-
+	Dominik
