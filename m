@@ -1,16 +1,17 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: speedfreq: epia + longhaul + speedfreq + copying large files =
 	freeze
-Date: Thu, 23 Dec 2004 12:05:03 -0800
-Message-ID: <1103832303.16431.60.camel@localhost>
+Date: Thu, 23 Dec 2004 18:33:17 -0500
+Message-ID: <20041223233317.GF32326@redhat.com>
 References: <41C83AA7.6010204@gmx.net> <1103742159.16413.24.camel@localhost>
 	<20041222203136.GB21861@redhat.com>
 	<1103769532.16431.52.camel@localhost>
 	<20041223182424.GA32326@redhat.com>
+	<1103832303.16431.60.camel@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20041223182424.GA32326@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <1103832303.16431.60.camel@localhost>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,28 +23,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: cpufreq list <cpufreq@www.linux.org.uk>
 
-On Thu, 2004-12-23 at 13:24 -0500, Dave Jones wrote:
-> Usually takes a few. I've noticed if I run cpuspeed, it steps it down
-> from 1.2GHz to 500MHz through a half dozen or so steps. Whilst it does
-> this, its stable. If I then kill cpuspeed, its stable.
-> But, if I leave cpuspeed run, and then do something CPU intensive, it
-> tries to jump up to fullspeed quickly (through less steps than
-> it took to scale down), when it does this, it hangs shortly afterwards.
+On Thu, Dec 23, 2004 at 12:05:03PM -0800, Jeremy Fitzhardinge wrote:
 
-Sebastian is reporting the problem with speedfreqd, which will use the
-same number of steps both ways (and, depending on the CPU load curve, at
-the same rate).
+ > Sebastian is reporting the problem with speedfreqd, which will use the
+ > same number of steps both ways (and, depending on the CPU load curve, at
+ > the same rate).
+ > 
+ > Does rate-limiting the transitions help stability?
 
-Does rate-limiting the transitions help stability?
+that's something worth trying maybe.
 
-> We're not doing voltage scaling in longhaul yet, but that shouldn't
-> matter, as we should be booting at max voltage (as we boot at max speed)
+ > > We're not doing voltage scaling in longhaul yet, but that shouldn't
+ > > matter, as we should be booting at max voltage (as we boot at max speed)
+ > 
+ > Is voltage switching complex?  It might be worth trying - its not
+ > something which normally improves stability, but maybe there's some
+ > regulator issue under load changes, or something...
 
-Is voltage switching complex?  It might be worth trying - its not
-something which normally improves stability, but maybe there's some
-regulator issue under load changes, or something...
+With longhaul, its a little more complicated than it is with powernow,
+as theres no bios table telling us which voltage should be used
+for each frequency, and they vary depending on stepping & speed of the part.
+The first version of the longhaul driver did actually do voltage scaling,
+but the 'match the voltage to the speed' code was very crude, and
+assumed that the voltage table was 1:1 with the frequency, which
+worked for the most part, but was far from being 'the right thing'.
 
-	J
+I'm not convinced that adding it back in would fix the stability problems.
+If anything, it would add another variable.
+
+		Dave
