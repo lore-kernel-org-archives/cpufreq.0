@@ -1,14 +1,16 @@
-From: Mark Watts <m.watts@eris.qinetiq.com>
-Subject: Re: Dell Latitude C400 - is this SpeedSetp capable?
-Date: Thu, 15 Jul 2004 08:47:04 +0100
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: Help! Cpufreq makes my laptop crash!
+Date: Thu, 15 Jul 2004 11:57:10 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200407150847.05039.m.watts@eris.qinetiq.com>
-References: <200407131212.17298.m.watts@eris.qinetiq.com>
+Message-ID: <20040715095710.GN6326@poupinou.org>
+References: <40F549D5.8030100@fuckup.homelinux.com>
+	<20040714115717.4gsocksks0s8o4wc@carlthompson.net>
+	<40F58B6C.60606@fuckup.homelinux.com>
+	<20040714140944.g0k8c40swcskss8g@carlthompson.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <200407131212.17298.m.watts@eris.qinetiq.com>
 Content-Disposition: inline
+In-Reply-To: <20040714140944.g0k8c40swcskss8g@carlthompson.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,54 +20,41 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: Text/Plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Carl Thompson <cet@carlthompson.net>
+Cc: olgaAr <olgaAr@fuckup.homelinux.com>, cpufreq@www.linux.org.uk
 
-=2D----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, Jul 14, 2004 at 02:09:44PM -0700, Carl Thompson wrote:
+> 
+> Try my CPUSpeed program and see if it works better for you:
+> 
+>    http://carlthompson.net/software/cpuspeed
+> 
+> Sometimes older mobile Athlons have problems.  Supposedly a workaround is
+> in CPUFreq but maybe it doesn't work right in your case. CPUSpeed has a
+> workaround that might work if this is the problem.
+> 
 
+Hi Carl,
 
-> Subject says it all really...
->
-> I do know that if I boot with no AC power it runs at ~800MHz, but plugging
-> the AC back in changes nothing.
->
->
+I think powernow-k7 do not have trouble for the bug there were some times
+ago.
+I don't think really that your workaround is no more needed, as I said
+you some times ago.
+The problem was that the SGTC that have to be put was wrong (and so the
+processor will resume, but the PLL haven't had enough time to stabilize).
 
-Turns out I needed to load the speedstep_ich module (which I've now compile=
-d=20
-into the kernel).
+I would buy more at that time on a wrong value for the MSR CLK_CTL,
+though I can't be sure at 100% at that time (and I have no documentation
+for that MSR unfortunately), which may introduce an hang when we enter
+the ACPI idle loop.  Maybe if olgaAr can test without the ACPI processor
+support to see what happens.
 
-This doesn't make anything else appear in dmesg but in conjunction with the=
-=20
-mandrake 'cpufreqd' the cpu speed is stepped up/down as I fiddle with the a=
-c=20
-power.
+Cheers,
 
-I currently have the longest lasting (battery life) linux laptop I've used.=
-=2E.=20
-I only had to charge it once in 6hrs use last night :)
-Even the HDD powers down as soon as its finished being used!
+-- 
+Bruno Ducrot
 
-And as for hibernation (to swap) working _flawlwssly_ when I shut the lapto=
-p=20
-lid... what can I say? w00t!
-
-Great job!
-
-Mark.
-
-=2D --=20
-Mark Watts
-Senior Systems Engineer
-QinetiQ Trusted Information Management
-Trusted Solutions and Services group
-GPG Public Key ID: 455420ED
-
-=2D----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFA9jZ4Bn4EFUVUIO0RAgZaAJ9uIbtayQLkokrtPeZBmGGsivmtigCg2cyJ
-3Yh7TakzcuOco1Y45crkzmI=3D
-=3DDrEg
-=2D----END PGP SIGNATURE-----
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
