@@ -1,12 +1,13 @@
-From: Simon <simon@highlyillogical.org>
-Subject: 2G P4M won't go above 1.2 - cpuinfo_max_freq too low
-Date: Wed, 26 Nov 2003 17:02:56 +0000
+From: John Clemens <john@deater.net>
+Subject: Re: CPUSpeed 1.1 released (finally)
+Date: Sun, 30 Nov 2003 19:52:35 -0500 (EST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200311261702.56907.simon@highlyillogical.org>
+Message-ID: <Pine.LNX.4.58.0311301942280.8448@pianoman.cluster.toy>
+References: <1068264857.2c5ff476f0b29@carlthompson.net>
+	<20031110091330.GJ21970@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20031110091330.GJ21970@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,46 +17,43 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
 
-Hope I should be posting this here and not on linux-kernel...
 
-I've just upgraded to 2.6.0-test10 and am trying to use the new cpufreq stuff 
-in there. I had everything working perfectly with 2.4.21-ac2, and the old 
-/proc/cpufreq interface.
+On Mon, 10 Nov 2003, Ducrot Bruno wrote:
 
-I have a P4 2ghz, but it's not running at over about 1.2ghz here now. If I 
-`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq` it tells me: 
-"1198976". It should go faster than that. Similarly, 
-scaling_available_frequencies says "149872 299744 449616 599488 749360 899232 
-1049104 1198976"
+> > * Crash-proof frequency switching even if you have a very tempermental CPU
+> >   (some AMD mobile Athlons in particular)
+>
+> That's no more true those days...
 
-Enabling the old interface in the kernel and doing a `echo -n 
-0%0%100%performance > /proc/cpufreq` doesn't change things either.
+(going through the archives..) I noticed the above, does that mean the
+"athlon giant leap bug" was fixed in the driver?  if so, how? was it the
+below snippit from what went into 2.6.0-test6?
 
-Here is my /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.00GHz
-stepping        : 7
-cpu MHz         : 1198.976
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat 
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-bogomips        : 2359.29
+if so, i'd love to rip the workaround out of powernowd..
+john.c
 
-Any ideas how to get hold of my extra mhz?
+@@ -297,8 +301,14 @@
+	dprintk (" voltage regulator)\n");
 
-Cheers,
-Simon
+	latency = psb->settlingtime;
++ 	if (latency < 100) {
++ 		printk (KERN_INFO PFX "BIOS set settling time to %d microseconds."
++ 		"Should be at least 100. Correcting.\n", latency);
++ 		latency = 100;
++ 	}
+	dprintk (KERN_INFO PFX "Settling Time: %d microseconds.\n", psb->settlingtime);
+	dprintk (KERN_INFO PFX "Has %d PST tables. (Only dumping ones relevant to this CPU).\n", psb->numpst);
++ 	latency *= 100; /* SGTC needs to be in units of 10ns */
+
+	p += sizeof (struct psb_s);
+
+
+-- 
+John Clemens          http://www.deater.net/john
+john@deater.net     ICQ: 7175925, IM: PianoManO8
+      "I Hate Quotes" -- Samuel L. Clemens
