@@ -1,14 +1,13 @@
-From: Sebastian Witt <se.witt@gmx.net>
-Subject: Re: Desktop with DVS
-Date: Sun, 13 Jun 2004 22:40:29 +0200
+From: Marcin =?iso-8859-2?q?Ka=B3u=BFa?= <mk@sekretarka.no-ip.org>
+Subject: help on nforce2 module - strange things happening
+Date: Mon, 14 Jun 2004 19:03:22 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <40CCBBBD.2040709@hasw.net>
-References: <fd1d973998.biciolinux@aliceposta.it> <40CC91A0.2030908@hasw.net>
-	<200406132056.50730.marcin_ml@sekretarka.no-ip.org>
+Message-ID: <200406141903.22656.mk@sekretarka.no-ip.org>
+Reply-To: mk@sekretarka.no-ip.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <200406132056.50730.marcin_ml@sekretarka.no-ip.org>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,30 +17,34 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: marcin_ml@sekretarka.no-ip.org
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
 
-Marcin Ka?uz.a wrote:
- > On Sunday 13 of June 2004 19:40, Sebastian Witt wrote:
- >
- >>Many nForce2-based boards are using a Attansic ATXP1 chip. With this
- >>chip it's possible to dynamically change the processor voltage (Epox
- >>8RDA serie: 1.075V - 2.2V).
- >>
- >>But the nForce2-chipset doesn't support AMD mobile CPUs, so it's maybe
- >>not the best for this.
- >
- > I'm not sure if it's completely true - browsing different forums on 
-NF2 I find
- > sometimes that people have mobile amd + NF2 in their descriptions so 
-maybe it
- > works.
- > You would have to search for such people and talk to them about it
+Hello
+I'm working on that NForce2 cpu fsb changing and I have encountered a strange 
+problem:
 
-Yes, the CPU works in that boards. But the Mobile function (dynamic FID 
-changing) is not (yet?, it seems this functions are not implemented) 
-available on NF2 chipsets.
+When I set the registers from a userspace program (fsbd) (on going through 
+181-180MHz and back)it works if only the system is idle - in fact it works 
+when cpu only is loaded i.e. by cpuburn, but it crashes on hdd activity (I'm 
+running rpmbuild for a test).
 
-Bye,
-Sebastian
+I rewrote the code so that I could use it for both the program and Sebastian's 
+cpufreq module and a strange thing happens - when I go down from 181 to 180, 
+it sets the registers and it's ok, but when I go back and the registers 
+should be set again it crashes whatever the system condition is.
+
+Can anybody help me and tell my what might be happening there differently that 
+causes the code to behave differently in kernelspace and userspace, or what 
+should I try to do? The wierd thing is that it's exactly the same code (the 
+only difference are commands to talk  to pci). Or just a hint where to ask.
+
+The code is here:
+http://dynamic-oc.sourceforge.net/nforce2/
+Sebastian's code is modified only to call my functions. All the regs changing 
+is done in a loop in nforce2_write_regs.
+(I know the code is a bit messy and sorry for that - when it's stable I'll 
+clean it up of course)
+
+Cheers,
+Martin
