@@ -1,10 +1,11 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: [PATCH] Dual-core support for Opteron Processors
-Date: Mon, 7 Feb 2005 15:44:40 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFBC66@SAUSEXMB1.amd.com>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH] Dual-core support for Opteron Processors
+Date: Mon, 7 Feb 2005 23:03:46 +0100
+Message-ID: <20050207220346.GA25122@isilmar.linta.de>
+References: <84EA05E2CA77634C82730353CBE3A84301CFBC66@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C50D5E.3A8612C6"
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFBC66@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,93 +16,23 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: cpufreq@ZenII.linux.org.uk
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C50D5E.3A8612C6
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-
-I tried to send this in a few days ago, but I don't think
-it made it.  Apologies if this is a resend, though.
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-
-------_=_NextPart_001_01C50D5E.3A8612C6
-Content-Type: application/octet-stream;
-	name=dualcore_powernow-k8_2.6.11rc2kb9.patch
-Content-Transfer-Encoding: base64
-Content-Description: dualcore_powernow-k8_2.6.11rc2kb9.patch
-Content-Disposition: attachment;
-	filename=dualcore_powernow-k8_2.6.11rc2kb9.patch
-
-LS0tIGFyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ctazguYy5vcmlnCTIwMDUt
-MDEtMzEgMTY6Mjk6MTkuMDAwMDAwMDAwIC0wNjAwCisrKyBhcmNoL2kzODYva2VybmVsL2NwdS9j
-cHVmcmVxL3Bvd2Vybm93LWs4LmMJMjAwNS0wMS0zMSAxNzo0Njo1Ny43NzQ2Njc2NTYgLTA2MDAK
-QEAgLTQsNyArNCw3IEBACiAgKiAgR05VIGdlbmVyYWwgcHVibGljIGxpY2Vuc2UgdmVyc2lvbiAy
-LiBTZWUgIkNPUFlJTkciIG9yCiAgKiAgaHR0cDovL3d3dy5nbnUub3JnL2xpY2Vuc2VzL2dwbC5o
-dG1sCiAgKgotICogIFN1cHBvcnQgOiBwYXVsLmRldnJpZW5kdEBhbWQuY29tCisgKiAgU3VwcG9y
-dCA6IG1hcmsubGFuZ3Nkb3JmQGFtZC5jb20KICAqCiAgKiAgQmFzZWQgb24gdGhlIHBvd2Vybm93
-LWs3LmMgbW9kdWxlIHdyaXR0ZW4gYnkgRGF2ZSBKb25lcy4KICAqICAoQykgMjAwMyBEYXZlIEpv
-bmVzIDxkYXZlakBjb2RlbW9ua2V5Lm9yZy51az4gb24gYmVoYWxmIG9mIFN1U0UgTGFicwpAQCAt
-MTUsMTIgKzE1LDEzIEBACiAgKgogICogIFZhbHVhYmxlIGlucHV0IGdyYXRlZnVsbHkgcmVjZWl2
-ZWQgZnJvbSBEYXZlIEpvbmVzLCBQYXZlbCBNYWNoZWssCiAgKiAgRG9taW5payBCcm9kb3dza2ks
-IGFuZCBvdGhlcnMuCisgKiAgT3JpZ2luYWxseSBkZXZlbG9wZWQgYnkgUGF1bCBEZXZyaWVuZHQu
-CiAgKiAgUHJvY2Vzc29yIGluZm9ybWF0aW9uIG9idGFpbmVkIGZyb20gQ2hhcHRlciA5IChQb3dl
-ciBhbmQgVGhlcm1hbCBNYW5hZ2VtZW50KQogICogIG9mIHRoZSAiQklPUyBhbmQgS2VybmVsIERl
-dmVsb3BlcidzIEd1aWRlIGZvciB0aGUgQU1EIEF0aGxvbiA2NCBhbmQgQU1ECiAgKiAgT3B0ZXJv
-biBQcm9jZXNzb3JzIiBhdmFpbGFibGUgZm9yIGRvd25sb2FkIGZyb20gd3d3LmFtZC5jb20KICAq
-CiAgKiAgVGFibGVzIGZvciBzcGVjaWZpYyBDUFVzIGNhbiBiZSBpbmZyZXJyZWQgZnJvbQotICoJ
-aHR0cDovL3d3dy5hbWQuY29tL3VzLWVuL2Fzc2V0cy9jb250ZW50X3R5cGUvd2hpdGVfcGFwZXJz
-X2FuZF90ZWNoX2RvY3MvMzA0MzAucGRmCisgKiAgICAgaHR0cDovL3d3dy5hbWQuY29tL3VzLWVu
-L2Fzc2V0cy9jb250ZW50X3R5cGUvd2hpdGVfcGFwZXJzX2FuZF90ZWNoX2RvY3MvMzA0MzAucGRm
-CiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgpAQCAtNDIsNyArNDMsNyBAQAogCiAj
-ZGVmaW5lIFBGWCAicG93ZXJub3ctazg6ICIKICNkZWZpbmUgQkZYIFBGWCAiQklPUyBlcnJvcjog
-IgotI2RlZmluZSBWRVJTSU9OICJ2ZXJzaW9uIDEuMDAuMDllIgorI2RlZmluZSBWRVJTSU9OICJ2
-ZXJzaW9uIDEuNDAuMDIiCiAjaW5jbHVkZSAicG93ZXJub3ctazguaCIKIAogLyogc2VyaWFsaXpl
-IGZyZXEgY2hhbmdlcyAgKi8KQEAgLTg1MywxMSArODU0LDkgQEAgc3RhdGljIGludCB0cmFuc2l0
-aW9uX2ZyZXF1ZW5jeShzdHJ1Y3QgcAogCiAJZnJlcXMub2xkID0gZmluZF9raHpfZnJlcV9mcm9t
-X2ZpZChkYXRhLT5jdXJyZmlkKTsKIAlmcmVxcy5uZXcgPSBmaW5kX2toel9mcmVxX2Zyb21fZmlk
-KGZpZCk7CiAKLQlkb3duKCZmaWR2aWRfc2VtKTsKIAlyZXMgPSB0cmFuc2l0aW9uX2ZpZF92aWQo
-ZGF0YSwgZmlkLCB2aWQpOwotCXVwKCZmaWR2aWRfc2VtKTsKIAogCWZyZXFzLm5ldyA9IGZpbmRf
-a2h6X2ZyZXFfZnJvbV9maWQoZGF0YS0+Y3VycmZpZCk7CiAJY3B1ZnJlcV9ub3RpZnlfdHJhbnNp
-dGlvbigmZnJlcXMsIENQVUZSRVFfUE9TVENIQU5HRSk7CkBAIC05MDEsMjMgKzg5OCwyMiBAQCBz
-dGF0aWMgaW50IHBvd2Vybm93azhfdGFyZ2V0KHN0cnVjdCBjcHVmCiAJZHByaW50aygidGFyZzog
-Y3VyciBmaWQgMHgleCwgdmlkIDB4JXhcbiIsCiAJCWRhdGEtPmN1cnJmaWQsIGRhdGEtPmN1cnJ2
-aWQpOwogCiAJaWYgKGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlX3RhcmdldChwb2wsIGRhdGEtPnBv
-d2Vybm93X3RhYmxlLCB0YXJnZnJlcSwgcmVsYXRpb24sICZuZXdzdGF0ZSkpCiAJCWdvdG8gZXJy
-X291dDsKIAorCWRvd24oJmZpZHZpZF9zZW0pOworCiAJcG93ZXJub3dfazhfYWNwaV9wc3RfdmFs
-dWVzKGRhdGEsIG5ld3N0YXRlKTsKIAogCWlmICh0cmFuc2l0aW9uX2ZyZXF1ZW5jeShkYXRhLCBu
-ZXdzdGF0ZSkpIHsKIAkJcHJpbnRrKEtFUk5fRVJSIFBGWCAidHJhbnNpdGlvbiBmcmVxdWVuY3kg
-ZmFpbGVkXG4iKTsKIAkJcmV0ID0gMTsKKwkJdXAoJmZpZHZpZF9zZW0pOwogCQlnb3RvIGVycl9v
-dXQ7CiAJfQogCisJdXAoJmZpZHZpZF9zZW0pOworCiAJcG9sLT5jdXIgPSBmaW5kX2toel9mcmVx
-X2Zyb21fZmlkKGRhdGEtPmN1cnJmaWQpOwogCXJldCA9IDA7CiAKQEAgLTk1NCw2ICs5NTAsNyBA
-QCBzdGF0aWMgaW50IF9faW5pdCBwb3dlcm5vd2s4X2NwdV9pbml0KHN0CiAJbWVtc2V0KGRhdGEs
-MCxzaXplb2Yoc3RydWN0IHBvd2Vybm93X2s4X2RhdGEpKTsKIAogCWRhdGEtPmNwdSA9IHBvbC0+
-Y3B1OworCXBvbC0+Y3B1cyA9IGNwdV9zaGFyZWRjb3JlX21hcFtkYXRhLT5jcHVdOyAKIAogCWlm
-IChwb3dlcm5vd19rOF9jcHVfaW5pdF9hY3BpKGRhdGEpKSB7CiAJCS8qCkBAIC0xMTI3LDkgKzEw
-OTksMTAgQEAgc3RhdGljIHZvaWQgX19leGl0IHBvd2Vybm93azhfZXhpdCh2b2lkKQogCWNwdWZy
-ZXFfdW5yZWdpc3Rlcl9kcml2ZXIoJmNwdWZyZXFfYW1kNjRfZHJpdmVyKTsKIH0KIAotTU9EVUxF
-X0FVVEhPUigiUGF1bCBEZXZyaWVuZHQgPHBhdWwuZGV2cmllbmR0QGFtZC5jb20+Iik7CitNT0RV
-TEVfQVVUSE9SKCJQYXVsIERldnJpZW5kdCA8cGF1bC5kZXZyaWVuZHRAYW1kLmNvbT4gYW5kIE1h
-cmsgTGFuZ3Nkb3JmIDxtYXJrLmxhbmdzZG9yZkBhbWQuY29tLiIpOwogTU9EVUxFX0RFU0NSSVBU
-SU9OKCJBTUQgQXRobG9uIDY0IGFuZCBPcHRlcm9uIHByb2Nlc3NvciBmcmVxdWVuY3kgZHJpdmVy
-LiIpOwogTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOwogCiBsYXRlX2luaXRjYWxsKHBvd2Vybm93azhf
-aW5pdCk7CiBtb2R1bGVfZXhpdChwb3dlcm5vd2s4X2V4aXQpOworCg==
-
-------_=_NextPart_001_01C50D5E.3A8612C6
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: cpufreq@lists.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Hi,
 
-------_=_NextPart_001_01C50D5E.3A8612C6--
+On Mon, Feb 07, 2005 at 03:44:40PM -0600, Langsdorf, Mark wrote:
+> I tried to send this in a few days ago, but I don't think
+> it made it.
 
+It didn't make it.
 
++       pol->cpus = cpu_sharedcore_map[data->cpu];
+
+I'm sorry but I can't find cpu_sharedcore_map in linus' latest.
+
+	Dominik
+
+PS: list address is cpufreq@lists.linux.org.uk
