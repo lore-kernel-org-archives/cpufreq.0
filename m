@@ -1,9 +1,8 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH 5/8] p4_clockmod: detect speed without relying on cpu_khz or
-	user input
-Date: Wed, 19 Nov 2003 19:32:28 +0100
+Subject: [PATCH 7/8] latency must be in _nano_seconds
+Date: Wed, 19 Nov 2003 19:33:30 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031119183228.GF20576@brodo.de>
+Message-ID: <20031119183330.GH20576@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
@@ -20,107 +19,91 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-Other cpufreq drivers don't rely on cpu_khz, but use the "decoded"/theoretical CPU frequency
-as base for all calculations.
+Even though the core stated that cpuinfo.transition_latency needs to be
+in 10^(-9) s, hardly any driver set it to nanoseconds but to microseconds.
+So, fix up the drivers.
 
- arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   66 +++++++++++++++++++++++------
- 1 files changed, 53 insertions(+), 13 deletions(-)
+ arch/arm/mach-integrator/cpu.c             |    2 +-
+ arch/i386/kernel/cpu/cpufreq/acpi.c        |    4 ++--
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |    2 +-
+ arch/i386/kernel/cpu/cpufreq/powernow-k7.c |    2 +-
+ arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    4 ++--
+ include/linux/cpufreq.h                    |    2 +-
+ 6 files changed, 8 insertions(+), 8 deletions(-)
 
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 17:06:10.569869104 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 18:18:53.114661488 +0100
-@@ -48,8 +48,7 @@
+diff -ruN linux-original/arch/arm/mach-integrator/cpu.c linux/arch/arm/mach-integrator/cpu.c
+--- linux-original/arch/arm/mach-integrator/cpu.c	2003-11-19 17:06:11.554719384 +0100
++++ linux/arch/arm/mach-integrator/cpu.c	2003-11-19 18:43:38.036918992 +0100
+@@ -172,7 +172,7 @@
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.max_freq = 160000;
+ 	policy->cpuinfo.min_freq = 12000;
+-	policy->cpuinfo.transition_latency = 1000; /* 1 ms, assumed */
++	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
+ 	policy->cur = policy->min = policy->max =
+ 		icst525_khz(&cclk_params, vco); /* current freq */
  
- 
- static int has_N44_O17_errata[NR_CPUS];
--static int stock_freq;
--
-+unsigned int stock_freq;
- 
- static int cpufreq_p4_setdc(unsigned int cpu, unsigned int newstate)
- {
-@@ -175,6 +174,54 @@
- 	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
- }
- 
-+/* copied from speedstep_lib, made SMP-compatible */
-+static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
-+{
-+	u32 msr_lo, msr_hi, mult;
-+	unsigned int fsb = 0;
-+
-+	if (c->x86 != 0xF) {
-+		printk(KERN_DEBUG PFX "Unknown P4. Please send an e-mail to <linux@brodo.de>\n");
-+		return 0;
-+	}
-+
-+	rdmsr(0x2c, msr_lo, msr_hi);
-+
-+	/* printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi); */
-+	/* decode the FSB: see IA-32 Intel (C) Architecture Software 
-+	 * Developer's Manual, Volume 3: System Prgramming Guide,
-+	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
-+	 * Intel Xeon Processors, on page B-4 and B-5.
-+	 */
-+	if (c->x86_model < 2)
-+		fsb = 100 * 1000;
-+	else {
-+		u8 fsb_code = (msr_lo >> 16) & 0x7;
-+		switch (fsb_code) {
-+		case 0:
-+			fsb = 100 * 1000;
-+			break;
-+		case 1:
-+			fsb = 13333 * 10;
-+			break;
-+		case 2:
-+			fsb = 200 * 1000;
-+			break;
-+		}
-+	}
-+
-+	if (!fsb) {
-+		printk(KERN_DEBUG PFX "couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
-+		printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
-+	}
-+
-+	/* Multiplier. */
-+	mult = msr_lo >> 24;
-+
-+	return (fsb * mult);
-+}
-+
-+ 
- 
- static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
- {
-@@ -192,15 +239,10 @@
- 		has_N44_O17_errata[policy->cpu] = 1;
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-11-19 17:06:10.570868952 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-11-19 18:46:00.268296536 +0100
+@@ -578,8 +578,8 @@
+ 	/* detect transition latency */
+ 	policy->cpuinfo.transition_latency = 0;
+ 	for (i=0;i<perf->state_count;i++) {
+-		if (perf->states[i].transition_latency > policy->cpuinfo.transition_latency)
+-			policy->cpuinfo.transition_latency = perf->states[i].transition_latency;
++		if ((perf->states[i].transition_latency * 1000) > policy->cpuinfo.transition_latency)
++			policy->cpuinfo.transition_latency = perf->states[i].transition_latency * 1000;
  	}
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cur = perf->states[pr->limit.state.px].core_frequency * 1000;
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 18:22:58.441366160 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 18:44:47.510357424 +0100
+@@ -255,7 +255,7 @@
  	
--	/* get frequency */
--	if (!stock_freq) {
--		if (cpu_khz)
--			stock_freq = cpu_khz;
--		else {
--			printk(KERN_INFO PFX "unknown core frequency - please use module parameter 'stock_freq'\n");
--			return -EINVAL;
--		}
--	}
-+	/* get max frequency */
-+	stock_freq = cpufreq_p4_get_frequency(c);
-+	if (!stock_freq)
-+		return -EINVAL;
+ 	/* cpuinfo and default policy values */
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.transition_latency = 1000;
++	policy->cpuinfo.transition_latency = 1000000; /* assumed */
+ 	policy->cur = stock_freq;
  
- 	/* table init */
- 	for (i=1; (p4clockmod_table[i].frequency != CPUFREQ_TABLE_END); i++) {
-@@ -269,8 +311,6 @@
- }
+ 	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 17:06:10.571868800 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 18:48:10.150551432 +0100
+@@ -386,7 +386,7 @@
+ 				minimum_speed, maximum_speed);
  
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+-	policy->cpuinfo.transition_latency = latency;
++	policy->cpuinfo.transition_latency = latency * 20;
+ 	policy->cur = maximum_speed;
  
--MODULE_PARM(stock_freq, "i");
--
- MODULE_AUTHOR ("Zwane Mwaikambo <zwane@commfireservices.com>");
- MODULE_DESCRIPTION ("cpufreq driver for Pentium(TM) 4/Xeon(TM)");
- MODULE_LICENSE ("GPL");
+ 	return cpufreq_frequency_table_cpuinfo(policy, powernow_table);
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 17:07:58.537455536 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 18:46:57.031667192 +0100
+@@ -959,8 +959,8 @@
+ 	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 
+ 	/* Take a crude guess here. */
+-	pol->cpuinfo.transition_latency = ((rvo + 8) * vstable * VST_UNITS_20US)
+-	    + (3 * (1 << irt) * 10);
++	pol->cpuinfo.transition_latency = (((rvo + 8) * vstable * VST_UNITS_20US)
++	    + (3 * (1 << irt) * 10)) * 1000;
+ 
+ 	if (query_current_values_with_pending_wait())
+ 		return -EIO;
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2003-11-19 18:38:58.586401928 +0100
++++ linux/include/linux/cpufreq.h	2003-11-19 18:42:27.944574648 +0100
+@@ -57,7 +57,7 @@
+ struct cpufreq_cpuinfo {
+ 	unsigned int		max_freq;
+ 	unsigned int		min_freq;
+-	unsigned int		transition_latency; /* in 10^(-9) s */
++	unsigned int		transition_latency; /* in 10^(-9) s = nanoseconds */
+ };
+ 
+ struct cpufreq_real_policy {
