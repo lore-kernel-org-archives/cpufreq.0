@@ -1,29 +1,45 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] cpufreq 2.4 interface removal schedule [Was: Re: [PATCH] add feature-removal-schedule.txt documentation]
-Date: Wed, 12 Jan 2005 10:41:36 -0800
-Message-ID: <20050112184135.GB10599@kroah.com>
-References: <20050106201531.GJ1292@us.ibm.com> <20050106203258.GN26051@parcelfarce.linux.theplanet.co.uk> <20050106210408.GM1292@us.ibm.com> <20050106212417.GQ26051@parcelfarce.linux.theplanet.co.uk> <20050106152621.395f935e.akpm@osdl.org> <20050106235633.GA10110@kroah.com> <41DEC0BF.4010708@osdl.org> <Pine.LNX.4.58.0501070949410.2272@ppc970.osdl.org> <20050107181131.GA29152@kroah.com> <20050111122309.GA12458@dominikbrodowski.de>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Change of cpufreq mailing list address - effective immediately.
+Date: Thu, 13 Jan 2005 21:07:57 +0000
+Message-ID: <20050113210757.B23587@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261351AbVALTxB@vger.kernel.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20050111122309.GA12458@dominikbrodowski.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Resent-To: cpufreq@zenII.linux.org.uk
+Resent-Message-Id: <E1CpDLZ-00070t-6q@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: torvalds@osdl.org, cpufreq@www.linux.org.uk, "Randy.Dunlap" <rddunlap@osdl.org>, Andrew Morton <akpm@osdl.org>, Al Viro <viro@parcelfarce.linux.theplanet.co.uk>, paulmck@us.ibm.com, arjan@infradead.org, linux-kernel@vger.kernel.org, jtk@us.ibm.com, wtaber@us.ibm.com, pbadari@us.ibm.com, markv@us.ibm.com
+To: cpufreq@zenII.linux.org.uk, Linux Kernel List <linux-kernel@vger.kernel.org>
+Cc: davej@codemonkey.org.uk
 
-On Tue, Jan 11, 2005 at 01:23:09PM +0100, Dominik Brodowski wrote:
-> Even though these 2.4. interfaces are already gone in Dave Jones' cpufreq
-> bitkeeper tree, here's a patch which properly announces it in
-> Documentation/feature-removal-schedule.txt:
-> 
-> 
-> Add meaningful content concerning the removal of deprecated interfaces to
-> the cpufreq core.
-> 
-> Signed-off-by: Dominik Brodowski <linux@brodo.de>
+Hi,
 
-Applied, thanks.
+Unfortunately, due to some sudden DNS changes which became effective
+immediately, the cpufreq list has had to be moved to a new domain -
+the list retains it's membership and configuration as before.
 
-greg k-h
+The domain part of all addresses changes from "www.linux.org.uk", to
+"lists.linux.org.uk".
+
+Therefore, cpufreq@www.linux.org.uk becomes cpufreq@lists.linux.org.uk.
+
+Appologies for this no-notice change; it is outside my control.
+
+DaveJ - you may wish to update the MAINTAINERS file with the new
+mailing list address.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
