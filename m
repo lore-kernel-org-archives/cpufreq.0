@@ -1,10 +1,10 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH 7/8] latency must be in _nano_seconds
-Date: Wed, 19 Nov 2003 19:33:30 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031119183330.GH20576@brodo.de>
+Subject: [PATCH 8/8] speedstep-smi: reduce failures
+Date: Wed, 19 Nov 2003 19:34:06 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031119183406.GI20576@brodo.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,96 +14,93 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-Even though the core stated that cpuinfo.transition_latency needs to be
-in 10^(-9) s, hardly any driver set it to nanoseconds but to microseconds.
-So, fix up the drivers.
+Transitions initiated by speedstep-smi currently fail often if system load 
+is high. Bruno Ducrot and I have found out that the failures disappear if 
+DMA is disabled. As disabling (U)DMA isn't something nice, here's a 
+workaround which (almost) always works: retrying the SMI call up to five 
+times, and waiting some time before doing so. Please note that this will 
+completely mess up real-time-critical tasks or dynamic scaling. But 
+speedstep-smi (1st generation of speedstep) wasn't meant to be used
+for that anyway.
 
- arch/arm/mach-integrator/cpu.c             |    2 +-
- arch/i386/kernel/cpu/cpufreq/acpi.c        |    4 ++--
- arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |    2 +-
- arch/i386/kernel/cpu/cpufreq/powernow-k7.c |    2 +-
- arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    4 ++--
- include/linux/cpufreq.h                    |    2 +-
- 6 files changed, 8 insertions(+), 8 deletions(-)
+ arch/i386/kernel/cpu/cpufreq/speedstep-smi.c |   32 +++++++++++++++++++--------
+ 1 files changed, 23 insertions(+), 9 deletions(-)
 
-diff -ruN linux-original/arch/arm/mach-integrator/cpu.c linux/arch/arm/mach-integrator/cpu.c
---- linux-original/arch/arm/mach-integrator/cpu.c	2003-11-19 17:06:11.554719384 +0100
-+++ linux/arch/arm/mach-integrator/cpu.c	2003-11-19 18:43:38.036918992 +0100
-@@ -172,7 +172,7 @@
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.max_freq = 160000;
- 	policy->cpuinfo.min_freq = 12000;
--	policy->cpuinfo.transition_latency = 1000; /* 1 ms, assumed */
-+	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
- 	policy->cur = policy->min = policy->max =
- 		icst525_khz(&cclk_params, vco); /* current freq */
+
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-19 17:22:33.657417080 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-19 19:14:44.153226192 +0100
+@@ -19,6 +19,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/pci.h>
+ #include <linux/slab.h>
++#include <linux/delay.h>
+ #include <asm/ist.h>
  
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-11-19 17:06:10.570868952 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-11-19 18:46:00.268296536 +0100
-@@ -578,8 +578,8 @@
- 	/* detect transition latency */
- 	policy->cpuinfo.transition_latency = 0;
- 	for (i=0;i<perf->state_count;i++) {
--		if (perf->states[i].transition_latency > policy->cpuinfo.transition_latency)
--			policy->cpuinfo.transition_latency = perf->states[i].transition_latency;
-+		if ((perf->states[i].transition_latency * 1000) > policy->cpuinfo.transition_latency)
-+			policy->cpuinfo.transition_latency = perf->states[i].transition_latency * 1000;
+ #include "speedstep-lib.h"
+@@ -51,6 +52,10 @@
+ #define SET_SPEEDSTEP_STATE 2
+ #define GET_SPEEDSTEP_FREQS 4
+ 
++/* how often shall the SMI call be tried if it failed, e.g. because
++ * of DMA activity going on? */
++#define SMI_TRIES 5
++
+ /* DEBUG
+  *   Define it if you want verbose debug output, e.g. for bug reporting
+  */
+@@ -140,10 +145,11 @@
+  */
+ static void speedstep_set_state (unsigned int state, unsigned int notify)
+ {
+-	unsigned int old_state, result, command, new_state;
++	unsigned int old_state, result = 0, command, new_state;
+ 	unsigned long flags;
+ 	struct cpufreq_freqs freqs;
+ 	unsigned int function=SET_SPEEDSTEP_STATE;
++	unsigned int retry = 0;
+ 
+ 	if (state > 0x1)
+ 		return;
+@@ -163,20 +169,28 @@
+ 	local_irq_save(flags);
+ 
+ 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+-	__asm__ __volatile__(
+-		"movl $0, %%edi\n"
+-		"out %%al, (%%dx)\n"
+-		: "=b" (new_state), "=D" (result)
+-		: "a" (command), "b" (function), "c" (state), "d" (smi_port), "S" (0)
+-	);
++
++	do {
++		if (retry) {
++			dprintk(KERN_INFO "cpufreq: retry %u, previous result %u\n", retry, result);
++			mdelay(retry * 50);
++		}
++		retry++;
++		__asm__ __volatile__(
++			"movl $0, %%edi\n"
++			"out %%al, (%%dx)\n"
++			: "=b" (new_state), "=D" (result)
++			: "a" (command), "b" (function), "c" (state), "d" (smi_port), "S" (0)
++			);
++	} while ((new_state != state) && (retry <= SMI_TRIES));
+ 
+ 	/* enable IRQs */
+ 	local_irq_restore(flags);
+ 
+ 	if (new_state == state) {
+-		dprintk(KERN_INFO "cpufreq: change to %u MHz succeeded\n", (freqs.new / 1000));
++		dprintk(KERN_INFO "cpufreq: change to %u MHz succeeded after %u tries with result %u\n", (freqs.new / 1000), retry, result);
+ 	} else {
+-		printk(KERN_ERR "cpufreq: change failed\n");
++		printk(KERN_ERR "cpufreq: change failed with new_state %u and result %u\n", new_state, result);
  	}
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cur = perf->states[pr->limit.state.px].core_frequency * 1000;
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 18:22:58.441366160 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 18:44:47.510357424 +0100
-@@ -255,7 +255,7 @@
- 	
- 	/* cpuinfo and default policy values */
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
--	policy->cpuinfo.transition_latency = 1000;
-+	policy->cpuinfo.transition_latency = 1000000; /* assumed */
- 	policy->cur = stock_freq;
  
- 	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 17:06:10.571868800 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2003-11-19 18:48:10.150551432 +0100
-@@ -386,7 +386,7 @@
- 				minimum_speed, maximum_speed);
- 
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
--	policy->cpuinfo.transition_latency = latency;
-+	policy->cpuinfo.transition_latency = latency * 20;
- 	policy->cur = maximum_speed;
- 
- 	return cpufreq_frequency_table_cpuinfo(policy, powernow_table);
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 17:07:58.537455536 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-19 18:46:57.031667192 +0100
-@@ -959,8 +959,8 @@
- 	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 
- 	/* Take a crude guess here. */
--	pol->cpuinfo.transition_latency = ((rvo + 8) * vstable * VST_UNITS_20US)
--	    + (3 * (1 << irt) * 10);
-+	pol->cpuinfo.transition_latency = (((rvo + 8) * vstable * VST_UNITS_20US)
-+	    + (3 * (1 << irt) * 10)) * 1000;
- 
- 	if (query_current_values_with_pending_wait())
- 		return -EIO;
-diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
---- linux-original/include/linux/cpufreq.h	2003-11-19 18:38:58.586401928 +0100
-+++ linux/include/linux/cpufreq.h	2003-11-19 18:42:27.944574648 +0100
-@@ -57,7 +57,7 @@
- struct cpufreq_cpuinfo {
- 	unsigned int		max_freq;
- 	unsigned int		min_freq;
--	unsigned int		transition_latency; /* in 10^(-9) s */
-+	unsigned int		transition_latency; /* in 10^(-9) s = nanoseconds */
- };
- 
- struct cpufreq_real_policy {
+ 	if (notify)
