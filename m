@@ -1,14 +1,15 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Dynamic frequency governor
-Date: Wed, 22 Oct 2003 00:19:54 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021231953.GB1528@redhat.com>
-References: <20031021203122.GC871@redhat.com>
-	<Pine.LNX.4.44.0310211744210.27611-100000@cat.eecg.toronto.edu>
+From: Carl Thompson <cet@carlthompson.net>
+Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates toACPIP-state
+	driver
+Date: Tue, 21 Oct 2003 17:10:10 -0700
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <1066781410.8fc9a83422a85@carlthompson.net>
+References: <7F740D512C7C1046AB53446D3720017304B038@scsmsx402.sc.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <7F740D512C7C1046AB53446D3720017304B038@scsmsx402.sc.intel.com>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0310211744210.27611-100000@cat.eecg.toronto.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,26 +18,27 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Kar-Fai Tam <tamda@eecg.toronto.edu>
-Cc: cpufreq@www.linux.org.uk
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+Cc: cpufreq@www.linux.org.uk, linux-acpi <linux-acpi@intel.com>, "Mallick,
+	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 
-On Tue, Oct 21, 2003 at 06:21:37PM -0400, David Kar-Fai Tam wrote:
+Quoting "Nakajima, Jun" <jun.nakajima@intel.com>:
 
- > I did a quick text search on the website of the above address and I 
- > couldn't find "voltage" mentioned anywhere. That is, I couldn't find any 
- > mention of dynamic "voltage" scaling as a technique for saving power.
- > They only talk about is using the technique of "frequency" scaling to 
- > save power.
- > 
- > With DVS algorithms, we are attempting to dynamically change the voltage 
- > to save power. The fact that the frequency varies is just a side effect.
+> ...
 
-Not all implementations can scale voltage.
+> Then you can put the CPU in C-state or lower P-state after (or even
+> during) your word processor displays the letter. Even you can type very
+> fast, the CPU is almost idle. Having frequent feedbacks simply provide
+> more chances to save power consumption. Then aggregate saving would make
+> a difference. In addition, penalty of making a wrong decision is cheap.
 
-		Dave
+No, it is _more_ expensive.  With a longer poll interval, the CPU would
+never be changed from the slowest speed because the percent idle over that
+period would be too high.  More chances to switch speeds out of slowest is
+more expensive, not less.
 
--- 
- Dave Jones     http://www.codemonkey.org.uk
+> ...
+
+Carl Thompson
