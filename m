@@ -1,9 +1,9 @@
-From: "Moore, Robert" <robert.moore@intel.com>
-Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
-	P-statedriver
-Date: Tue, 21 Oct 2003 10:12:14 -0700
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] 1/3 Dynamic cpufreq governor and updates to ACPI
+	P-state driver
+Date: Tue, 21 Oct 2003 10:15:31 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <CFF522B18982EA4481D3A3E23B83141C24B4BC@orsmsx407.jf.intel.com>
+Message-ID: <88056F38E9E48644A0F562A38C64FB6007791A@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
@@ -18,29 +18,46 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, linux-acpi <linux-acpi@intel.com>
-Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, "Therien,
-	Guy" <guy.therien@intel.com>, "Grover,
-	Andrew" <andrew.grover@intel.com>, "Nakajima,
-	Jun" <jun.nakajima@intel.com>, Dominik Brodowski <linux@brodo.de>
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
+	Asit K" <asit.k.mallick@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 
 
-This is exactly what I was looking at doing, looks like most of the work
-is done.  I have some concerns about the actual algorithm used for
-changing the CPU frequency (20%/80%), but this of course can be tuned.
+> -----Original Message-----
+> From: Ducrot Bruno [mailto:ducrot@poupinou.org]=20
+>=20
+> There is already a patch from Dominik Brodowski for the apci=20
+> p-state which IMHO
+> is better at least by design. =20
 
-I suspect that CPUs that have the capability of changing frequency
-themselves would not use this particular governor.
+Are you referring to cleanup of ACPI P-state driver by Dominik?
+That patch is indeed nice and clean. But that is mostly=20
+orthogonal to this patch. I mean,=20
+- SMP awareness in P-state driver=20
+- P-state coordination between HT siblings
+will still be required even after Dominik's patch. Though exact=20
+location of these changes will change when applied over Dominik's=20
+patch.
 
-You may want to make the sampling rate configurable at run time.
+There is a small overlap in handling MSR based P-state transitions,=20
+but that is a real minor change in my patch and I am reusing most=20
+of the existing IO based transitions code for MSR based ones.
 
-Bob
+
+> Your do not handle correctly=20
+> other processors
+> than Intel. =20
+
+I am sorry. I do not understand this comment.=20
+- Major part of Patch 1 is adding SMP awareness, which has
+nothing specific to Intel at all.
+- A part of patch 1 adds MSR based transition capability.=20
+This is based on ACPI spec. It will work any processor=20
+that is ACPI compatible and again there are no specific=20
+checks for Intel here.
 
 
------Original Message-----
-From: Pallipadi, Venkatesh=20
-Sent: Monday, October 20, 2003 7:57 PM
-To: cpufreq@www.linux.org.uk; linux-kernel@vger.kernel.org; linux-acpi
-Cc: Mallick, Asit K; Nakajima, Jun; Dominik Brodowski
-Subject: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
-P-statedriver
+> But the HT stuff may be interresting, though.
+
+Thanks.=20
+-Venkatesh
