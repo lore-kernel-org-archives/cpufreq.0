@@ -1,12 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] Driver to export CPUfreq statistic
-Date: Sun, 21 Nov 2004 11:06:58 +0100
-Message-ID: <20041121100658.GB14594@dominikbrodowski.de>
-References: <894E37DECA393E4D9374E0ACBBE7427013C999@pdsmsx402.ccr.corp.intel.com>
+Subject: Re: [PATCH] [RFC] [0/2] powernow-k7.  Recalibrate cpu_khz
+Date: Sun, 21 Nov 2004 10:59:20 +0100
+Message-ID: <20041121095920.GA14594@dominikbrodowski.de>
+References: <20041118161034.GA31422@poupinou.org>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0267357356=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <894E37DECA393E4D9374E0ACBBE7427013C999@pdsmsx402.ccr.corp.intel.com>
+In-Reply-To: <20041118161034.GA31422@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,64 +17,77 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Zou, Nanhai" <nanhai.zou@intel.com>
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@www.linux.org.uk
 
-Hi,
 
-The new patch looks much better to me :-)
-
-Three issues, though:
-
-On Thu, Nov 18, 2004 at 10:41:40AM +0800, Zou, Nanhai wrote:
-> +struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned
-> int cpu)
-> +{
-> +	        return show_table[cpu];
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
-> 
-> Please add a comment above this function that it is only safe to use the
-> data obtained as long as a reference obtained by cpufreq_cpu_get() is
-> held;
-> and you need to copy it to a local place __and__ can't be sure it
-> doesn't
-> change forever.
->
-> ...
->
-> +config CPU_FREQ_STAT
-> +       tristate "CPU frequency translation statistics"
-> +       depends on CPU_FREQ_TABLE
-> +       default y
-> +       help
-> +         This driver exports CPU frequency statistics information
-> through sysfs
-> +         file system
-> +
-> +config CPU_FREQ_STAT_DETAILS
-> +       bool "CPU frequency translation statistics details"
-> +       depends on CPU_FREQ_STAT
-> +       default n
-> +       help
-> +         This will show detail CPU frequency translation table in sysfs
-> file
-> +         system
-> 
-> I'm pondering two things: 
-> a) should we make this dependant on CPU_FREQ_DEBUG?
-> b) should we make CPU_FREQ_STAT_DETAILS available unconditionally?
+--===============0267357356==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tKW2IUtsqtDRztdT"
+Content-Disposition: inline
 
 
-And third: what's the general opinion on whether to merge it
-a) into the kernel sources	_or_
-b) into cpufrequtils (in debug/kernel/ )
+--tKW2IUtsqtDRztdT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The former means it's available much more easily, as no userspace package is
-necessary. The latter has the advantage that interested parties can access
-it, but it does not increase the kernel normally.
+On Thu, Nov 18, 2004 at 05:10:34PM +0100, Bruno Ducrot wrote:
+> Hi,
+>=20
+> Here come two patches in order to fix some issues with powernow-k7.
+>=20
+> The main trouble is that we can't rely on cpu_khz when that one is
+> computed at boot time.  AMD will require that the CPU will be at max
+> frequencies, but some BIOS do not respect this.  More, the BIOS is only
+> required to change the frequency of the processor, but only at POST
+> time.  Some BIOS also do not follow this rule, so that even if the
+> processor is at full speed at POST, it may decide (probably after
+> switching to ACPI or APM mode?) to switch to another frequency.
+>=20
+> The only workaround for this two kind of bugs I see is to recalibrate
+> cpu_khz, but this require discussions with other people, I guess.  The
+> second patch will be the powernow-k7 portion.
+
+Very interesting approach -- and something which might be useful for the
+ACPI cpufreq driver as well: by doing the cpu_khz re-calculation we can
+check whether the speed changed --> finally a ->get() function [and one
+which clearly shows that it may only be accessible to root] can be
+implemented for this driver... Also, on "lost ticks" we might fall back to
+try a cpu_khz re-calculation first...
+
+However, I'd like to have John Stultz input on this -- especially as he
+maintains the timing subsystem. And one problem I see is that we'd need to
+update "loops_per_jiffy" accordingly...
 
 Thanks,
 	Dominik
+
+--tKW2IUtsqtDRztdT
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFBoGb4Z8MDCHJbN8YRAlWGAJ9H4RAJX/JjeKXsm8TiHpTLbyCiIwCdHqjT
+FmgUukeC/L8uFsWy2homfBI=
+=dHNt
+-----END PGP SIGNATURE-----
+
+--tKW2IUtsqtDRztdT--
+
+
+--===============0267357356==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0267357356==--
+
