@@ -1,15 +1,16 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
+Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
 	P-state driver
-Date: Tue, 21 Oct 2003 22:44:10 +0200
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021204410.GH26971@brodo.de>
-References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
-	<1066725533.5237.3.camel@laptop.fenrus.com>
+Date: Tue, 21 Oct 2003 22:47:19 +0200
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031021204719.GI26971@brodo.de>
+References: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
+	<yw1xoewb6lqx.fsf@kth.se>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1066725533.5237.3.camel@laptop.fenrus.com>
+In-Reply-To: <yw1xoewb6lqx.fsf@kth.se>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,34 +19,44 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arjan van de Ven <arjanv@redhat.com>
-Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, linux-acpi <linux-acpi@intel.com>, cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, "Pallipadi,
-	Venkatesh" <venkatesh.pallipadi@intel.com>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mru@kth.se>
+Cc: cpufreq@www.linux.org.uk
 
-On Tue, Oct 21, 2003 at 10:38:53AM +0200, Arjan van de Ven wrote:
-> Note that I'm not totally against doing some of this in the kernel; I
-> can well see the point of say, detecting an IRQ overload and based on
-> that, go to max speed in the kernel because it's a situation where
-> userspace doesn't even run; but the patch as is doesn't do any such
-> advanced things...
+On Tue, Oct 21, 2003 at 10:25:10AM +0200, M=E5ns Rullg=E5rd wrote:
+> "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> writes:
+>=20
+> > Most of the latest CPUs (laptop CPUs in particular) have feature=20
+> > which enable very low latency P-state transitions=20
+> > (like Enhanced Speedstep Technology-EST). Using this feature,=20
+> > we can have a lightweight in kernel cpufreq governor,=20
+> > to vary CPU frequency depending on the CPU usage. The=20
+> > advantage being low power consumption and also cooler laptops.
+>=20
+> So, how does this work?  I'd like to be able to set minimum and
+> maximum clock frequencies to allow
 
-Indeed, this driver doesn't do anything like that. However,  I want to point
-out two [of more] reasons why this is the right thing to do:
+echo "..." > /sys/devices/system/cpu/0/cpufreq/scaling_min_speed
+echo "..." > /sys/devices/system/cpu/0/cpufreq/scaling_max_speed
 
-1.) I'm aware of one embedded system running linux which only has two 
-userspace programs - busybox and cardmgr. All other stuff is handled 
-in the kernel. An effort to remove the dependency on cardmgr is going on
-[ <linux-pcmcia@lists.infradead.org> ]. If this embedded system was
-supporting cpufreq, would you want to do dynamic scaling in the kernel, or
-in userspace?
+>, and CPU utilization thresholds at which to switch frequencies.
 
-2.) It's a starting point for more advanced governors which really cannot be
-done in userspace as this would be much too expensive. Having to choose
-between different kernel and different userspace governors seems a bit
-complicated for me. The _cost_ of doing this specific governor in the kernel
-is near zero.
+select the demandbased governor
 
+echo "demandbased" > /sys/devices/system/cpu/0/cpufreq/scaling_governor
+
+and wait for the inclusion of a sysfs interface to the demandbased govern=
+or
+which lets you override the current switching frequencies of 20% and 80%.
+
+> Is that possible, or is it work yet to be done?=20
+
+Almost done.
+
+> Adjustable polling interval would also be nice.
+
+Should also be adaptable by sysfs. This sysfs interface really will be a
+very useful addition, but it's not top priority.
+=20
 	Dominik
