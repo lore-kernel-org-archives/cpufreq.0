@@ -1,14 +1,9 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: kernel: acpi-cpufreq: Transition failed
-Date: Fri, 4 Feb 2005 21:27:34 +0100
-Message-ID: <20050204202734.GA8030@dominikbrodowski.de>
-References: <200502021158.26890.clemenso@sbox.tugraz.at>
-	<200502021158.26890.clemenso@sbox.tugraz.at>
-	<200502041126.58413.clemenso@sbox.tugraz.at>
+From: Andrew Morton <akpm@osdl.org>
+Subject: speedstep-libc-fix-frequency-multiplier-for-pentium4.patch
+Date: Fri, 4 Feb 2005 16:45:26 -0800
+Message-ID: <20050204164526.3c866dda.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <200502021158.26890.clemenso@sbox.tugraz.at>
-	<200502041126.58413.clemenso@sbox.tugraz.at>
+Content-Transfer-Encoding: 7bit
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,37 +15,37 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Clemens Orthacker <clemenso@sbox.tugraz.at>
+To: Dave Jones <davej@codemonkey.org.uk>
 Cc: cpufreq@lists.linux.org.uk
 
-Hi,
+ack?
 
-On Wed, Feb 02, 2005 at 11:58:26AM +0100, Clemens Orthacker wrote:
-> Since I'm using the 2.6.10 kernel
 
-Did it work correctly when you used earlier kernels than 2.6.10? Even if
-using powernowd?
+From: Matthias-Christian Ott <matthias.christian@tiscali.de>
 
-> I constantly get the following error:
-> kernel: acpi-cpufreq: Transition failed
-> 
-> Pentium4 M
-> acpi-cpufreq driver (userspace governor, powernowd)
-> 
-> Is this a configuration problem?
+The Pentium4 models 0&1 have a longer MSR_EBC_FREQUENCY_ID register as the
+models 2&3, so the bit shift must be bigger.
 
-If speedstep-ich works, you should use that module instead -- other than
-that, this doesn't look like a configuration problem. The BIOS tells us how
-the kernel should ask it for CPU frequency changes; the kernel does it, but
-then the BIOS simply reports "error". It might be that the BIOS does provide
-the kernel with wrong information on what the return value means -- i.e. the 
-kernel thinks it is an error, but in reality it isn't.
+Signed-off-by: Matthias-Christian Ott <matthias.christian@tiscali.de>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
 
-What chipset does your notebook use (plain "lspci" output, please)?
+ 25-akpm/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletion(-)
 
-> (btw. bogomips fails, and I have no idea why..)
-
-I'll investigate that.
-
-	Dominik
+diff -puN arch/i386/kernel/cpu/cpufreq/speedstep-lib.c~speedstep-libc-fix-frequency-multiplier-for-pentium4 arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
+--- 25/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c~speedstep-libc-fix-frequency-multiplier-for-pentium4	2005-02-04 02:35:16.293948136 -0800
++++ 25-akpm/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2005-02-04 02:36:00.366248128 -0800
+@@ -160,7 +160,10 @@ static unsigned int pentium4_get_frequen
+ 		printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
+ 
+ 	/* Multiplier. */
+-	mult = msr_lo >> 24;
++	if (c->x86_model < 2)
++		mult = msr_lo >> 27;
++	else
++		mult = msr_lo >> 24;
+ 
+ 	dprintk("P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n", fsb, mult, (fsb * mult));
+ 
+_
