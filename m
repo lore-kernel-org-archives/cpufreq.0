@@ -1,13 +1,13 @@
-From: Bas Mevissen <ml@basmevissen.nl>
-Subject: Re: Cpufreq for 2.4: what is the best source?
-Date: Thu, 21 Aug 2003 13:07:11 +0200
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: kernel/cpufreq.c, drivers/cpufreq/ or kernel/power/cpufreq/ ?
+Date: Thu, 21 Aug 2003 19:06:05 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <3F44A7DF.4040705@basmevissen.nl>
-References: <3F3CB378.1000607@basmevissen.nl> <20030815154156.GA1029@brodo.de> <3F409E54.20001@basmevissen.nl> <20030818175357.GC1570@brodo.de>
+Message-ID: <20030821170605.GB19292@poupinou.org>
+References: <20030821071832.GA1973@brodo.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030818175357.GC1570@brodo.de>
+Content-Disposition: inline
+In-Reply-To: <20030821071832.GA1973@brodo.de>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,31 +17,26 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Dominik Brodowski <linux@brodo.de>
-Cc: Bas Mevissen <sgm@basmevissen.nl>, Cpufreq@www.linux.org.uk
+Cc: davej@suse.de, mochel@osdl.org, cpufreq@www.linux.org.uk
 
-Dominik Brodowski wrote:
-
->  
-> Already done. As Dave's site isn't yet back online, it can temporarily be
-> accessed at
-> http://www.brodo.de/cpufreq_tmp/cpufreq-2.4.22-rc2-1__.gz
+On Thu, Aug 21, 2003 at 09:18:32AM +0200, Dominik Brodowski wrote:
+> Right now cross-architecture cpufreq files are in
+> drivers/cpufreq/ 	and the cpufreq core is in
+> kernel/cpufreq.c
 > 
+> IMHO these files should move to one destination, and I'd favour
+> drivers/cpufreq/ for that. Or is kernel/power/cpufreq/ a better location for
+> that?
 
-How up to date is this one? It looks like it doesn't work with a ICH4 
-P4-M combination. With 2.6.0-test3 it works out of the box.
+I can't tell for sure (and Pat have certainly more knowledge than me),
+but kernel/power is more appropriate for system power management,
+not for processor power management.
 
-With speedstep_ich.o and (..._lib.o) loaded, I get:
-cd /proc/sys/cpu ; cat *
-2000000 # speed_max, which is correct
-0       # speed_min
-0       # spped_max
+-- 
+Ducrot Bruno
 
-BTW where can I find documentation about how to set a different policy 
-with the patch above? The documentation in the tree deliberately doesn't 
-detail it...
-
-(I mean setting the policy with e.g. echo userspace >/proc/cpufreq)
-
-Bas.
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
