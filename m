@@ -1,15 +1,14 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [new] event mode on speedstep-smi.
-Date: Fri, 5 Sep 2003 08:56:04 +0200
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030905065604.GD4003@brodo.de>
-References: <87ekywzjvm.wl%miura@da-cha.org>
-	<20030904153013.GJ4401@poupinou.org>
-	<87d6egyvfo.wl%miura@da-cha.org>
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: speedstep-smi into -ac ?
+Date: Fri, 5 Sep 2003 10:46:45 +0200
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20030905084645.GO4401@poupinou.org>
+References: <87ekywzjvm.wl%miura@da-cha.org> <20030904232555.GA8650@brodo.de>
+	<87bru0yutb.wl%miura@da-cha.org> <20030905065433.GC4003@brodo.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <87d6egyvfo.wl%miura@da-cha.org>
+In-Reply-To: <20030905065433.GC4003@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,45 +17,39 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hiroshi Miura <miura@da-cha.org>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, "'cpufreq@www linux org uk'" <cpufreq@www.linux.org.uk>
+To: Dominik Brodowski <linux@brodo.de>
+Cc: Hiroshi Miura <miura@da-cha.org>, "'cpufreq@www linux org uk'" <cpufreq@www.linux.org.uk>
 
-On Fri, Sep 05, 2003 at 08:40:11AM +0900, Hiroshi Miura wrote:
-> At Thu, 4 Sep 2003 17:30:13 +0200,
-> Ducrot Bruno wrote:
+On Fri, Sep 05, 2003 at 08:54:33AM +0200, Dominik Brodowski wrote:
+> On Fri, Sep 05, 2003 at 08:53:36AM +0900, Hiroshi Miura wrote:
 > > 
-> > > perf_level:  high 16bit is 0x07d0. this is 2000 in decimal.
-> > > I think this means polling interval is 2000ms.
+> > At Fri, 5 Sep 2003 01:25:55 +0200,
+> > Dominik Brodowski wrote:
 > > > 
-> > > This code is based on my original one.
-> > > Ducrot, How about this?
+> > > Actually, I much preferred the original version of your driver. This "event"
+> > > stuff can either be done as a seperate governor (different file), or in
+> > > userspace (as Bruno has pointed out).
 > > > 
+> > > What do you think about the patches for your driver I sent you?
 > > 
-> > I don't understand the real use for.  Does this permit
-> > to switch from performance to powersave when plug in/out ac?
-> > If yes, you can have the exact same behaviour via acpi and acpid,
-> > with an interrupt driven approach instaead of just polling.
+> > I think your patches is better. I cannot test on 440BX/ZX, so it is needed.
+> > 
+> > My previous post is only to demonstrate event smi function and
+> > a sample implementation.
 > 
-> Yes, now this only switch when plug in/out ac.
-> I am also using acpi/acpid staff to switch it.
-> My posted code is now only experimental.
+> What do you think: is the speedstep-smi driver v1 as it is in CVS now ready
+> to be pushed to Alan?
 > 
-> BTW, I want to understand Enhanced Intel SpeedStep Technology.
-> 
-> I don't know whether 440MX based M-Pentium III-(M) supports 
-> EIST or not, but I have tried to switch to demand based switching mode. 
-> 
-> Someone said this is a point feature of EIST.
-> At least, M-Pentium-III-(M) (Tullantin) is EIST ready.
-> 
-> If SMI interface supported EIST,  I think something 'polling' may be needed.
-> My code is to try this. I am now looking for EIST function call on SMI.
 
-I _think_ that within EIST the demand should be detected by the kernel
-based on its load. If your assumption is right, though, such a governor 
-would be a great addition.
+Warn: I have not implemented the .resume callback.  It need to
+be done correctly in core at first, and it seems to be not so
+well designed at first read (at core, not in the driver).
 
-	Dominik
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
