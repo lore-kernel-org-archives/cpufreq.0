@@ -1,12 +1,10 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: debugging aid [Re: powernow-k8 problem]
-Date: Tue, 16 Nov 2004 22:16:01 +0100
-Message-ID: <20041116211601.GB9393@dominikbrodowski.de>
-References: <84EA05E2CA77634C82730353CBE3A84301539C23@SAUSEXMB1.amd.com>
+Subject: [PATCH] nforce2: use unified cpufreq debug infrastructure
+Date: Tue, 16 Nov 2004 23:04:55 +0100
+Message-ID: <20041116220455.GA7721@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301539C23@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,15 +17,31 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Devriendt, Paul" <paul.devriendt@amd.com>
+To: se.witt@gmx.net
 Cc: cpufreq@www.linux.org.uk
 
->To help verify this, you would need to build the driver for debug (edit the .c file
-> and add #define DEBUG before the include of the powernow-k8.h
-> file). Then it will spew tons more data which will be useful.
+Use the unified cpufreq debug infrastructure in the cpufreq-nforce2 driver.
 
-FYI: from 2.6.10-rc2 on, all you need is to enable CONFIG_CPU_FREQ_DEBUG and
-pass the cpufreq.debug=2 option on the command line (or modify
-/sys/modules/cpufreq/parameters/debug )
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-	Dominik
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c linux/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c	2004-11-16 22:36:44.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c	2004-11-16 22:48:46.973931024 +0100
+@@ -55,16 +55,7 @@
+ MODULE_PARM_DESC(min_fsb,
+                  "Minimum FSB to use, if not defined: current FSB - 50");
+ 
+-/* DEBUG
+- *   Define it if you want verbose debug output, e.g. for bug reporting
+- */
+-//#define NFORCE2_DEBUG
+-
+-#ifdef NFORCE2_DEBUG
+-#define dprintk(msg...) printk(msg)
+-#else
+-#define dprintk(msg...) do { } while(0)
+-#endif
++#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "cpufreq-nforce2", msg)
+ 
+ /*
+  * nforce2_calc_fsb - calculate FSB
