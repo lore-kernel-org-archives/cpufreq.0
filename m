@@ -1,15 +1,9 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [2.4] CVS update?
-Date: Mon, 25 Aug 2003 15:48:04 +0100
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq - Imported sources
+Date: Mon, 25 Aug 2003 15:58:53 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030825154804.A16790@flint.arm.linux.org.uk>
-References: <20030825125909.GA10585@poupinou.org>
-	<20030825143350.GA30810@redhat.com> <3F4A1F91.9010100@yucs.org>
-Mime-Version: 1.0
+Message-ID: <E19rIo1-0004dP-6X@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <3F4A1F91.9010100@yucs.org>;
-	from spotter@yucs.org on Mon, Aug 25, 2003 at 10:39:13AM -0400
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,45 +13,59 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Shaya Potter <spotter@yucs.org>
-Cc: Dave Jones <davej@redhat.com>, Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+To: cpufreq@lists.arm.linux.org.uk
 
-On Mon, Aug 25, 2003 at 10:39:13AM -0400, Shaya Potter wrote:
-> Dave Jones wrote:
-> 
-> > On Mon, Aug 25, 2003 at 02:59:09PM +0200, Ducrot Bruno wrote:
-> >  > There is now a
-> >  > ftp://ftp.poupinou.org/cpufreq/cpufreq-24-20030825.tar.gz
-> >  > ready to be cvs imported, based on your latest stuff.
-> >  > 
-> >  > I would like that one being imported to LINUX_2_4 (after tagging
-> >  > the older one), but maybe people prefer it to be LINUX_2_4_dev
-> >  > or something like that?
-> > 
-> > Hmm, I'd forgotten how much I hated CVS.
-> > 
-> > $ cvs add linux/arch/i386/kernel/cpufreq/speedstep-centrino.c
-> > cvs server: cannot add file on non-branch tag LINUX_2_4
-> > 
-> > Ideas ?
-> 
-> you checked out a tag, not a branch.
-> 
-> cvs update -r "some_branch"
+Update of /mnt/src/cvsroot/cpufreq
+In directory flint:/tmp/cvs-serv17813
 
-LINUX_2_4 is a branch though.
+Log Message:
+import dj codes from latest cpufreq-2.4
 
-However, speedstep-centrino.c pre-exists in the prepository on the trunk.
-Exactly how you get around this problem I don't know - CVS tends to suck
-too badly most of the time for me (which is why I personally hardly use
-it.)
+Status:
 
-Maybe what you need to do is to check out the head speedstep-centrino.c,
-tell cvs to create a branch called "LINUX_2_4" and then commit your 2.4
-version to that branch?
+Vendor Tag:	LINUX_2_4
+Release Tags:	LINUX_2_4_20030825
+		
+C cpufreq/patch
+C cpufreq/TODO
+C cpufreq/patchin.sh
+C cpufreq/linux/Documentation/cpufreq-old
+C cpufreq/linux/Documentation/cpufreq/core.txt
+C cpufreq/linux/Documentation/cpufreq/cpu-drivers.txt
+C cpufreq/linux/Documentation/cpufreq/governors.txt
+C cpufreq/linux/Documentation/cpufreq/index.txt
+C cpufreq/linux/Documentation/cpufreq/user-guide.txt
+C cpufreq/linux/arch/arm/mach-integrator/cpu.c
+C cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1100.c
+C cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/elanfreq.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/gx-suspmod.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/longrun.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/p4-clockmod.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k6.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.h
+C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-centrino.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-ich.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.c
+C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.h
+C cpufreq/linux/drivers/cpufreq/Makefile
+C cpufreq/linux/drivers/cpufreq/freq_table.c
+C cpufreq/linux/drivers/cpufreq/proc_intf.c
+C cpufreq/linux/drivers/cpufreq/userspace.c
+C cpufreq/linux/include/linux/cpufreq.h
+C cpufreq/linux/kernel/cpufreq.c
 
--- 
-Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
-             http://www.arm.linux.org.uk/personal/aboutme.html
+30 conflicts created by this import.
+Use the following command to help the merge:
+
+	cvs checkout -jLINUX_2_4:yesterday -jLINUX_2_4 cpufreq
+
+
+***** Not enough context to create diff for file: -
+***** Not enough context to create diff for file: Imported
+***** Not enough context to create diff for file: sources
