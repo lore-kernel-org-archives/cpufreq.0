@@ -1,14 +1,11 @@
-From: Damien Marchal <marchal@lifl.fr>
-Subject: Re: my dothan didn't work with cpufreq...
-Date: Wed, 14 Jul 2004 12:50:09 +0200
+From: olgaAr <olgaAr@fuckup.homelinux.com>
+Subject: Help! Cpufreq makes my laptop crash!
+Date: Wed, 14 Jul 2004 16:57:25 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <40F50FE1.10405@lifl.fr>
-References: <40F2FA8B.10307@lifl.fr>
-	<20040713094937.GB8124@dominikbrodowski.de>
+Message-ID: <40F549D5.8030100@fuckup.homelinux.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040713094937.GB8124@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,92 +18,66 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
 
-Hi,
+Hello all,
 
-i check my .config and saw that the X86_SPEEDSTEP_CENTRINO_TABLE was 
-always set to Y and it can be changed by make menuconfig.
+I hope someone out there can help me with my problem which I've been
+playing around for quite some time now:
+I have enabled cpufreq and powernow support in my 2.6.7-gentoo-r6
+kernel, and everything works fine so far. I can manually switch between
+different CPU frequencies, my battery all of a sudden lasts longer than
+50 minutes, and I'm happy...
+After some time, however, the system will simply freeze! It can't even
+be pinged from outside any longer! The log files also don't give a hint
+about what might cause the lockups. If, however I tell cpufreq to run my
+cpu at maximum frequency, it runs fine for hours. So what's the deal?
+What causes my lappie to crash when trying to save power?
 
-By manually editing it to N give me a fully functional cpufreq module.
+cpuinfo says this:
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 6
+model           : 8
+model name      : mobile AMD Athlon(tm) XP 1800+
+stepping        : 0
+cpu MHz         : 1526.282
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+cmov pat p
+se36 mmx fxsr sse syscall mp mmxext 3dnowext 3dnow
+bogomips        : 3006.46
 
-Thank for your help.
+and here's lspci, just in case:
+0000:00:00.0 Host bridge: VIA Technologies, Inc. P/KN266 Host Bridge
+0000:00:01.0 PCI bridge: VIA Technologies, Inc. VT8633 [Apollo Pro266 AGP]
+0000:00:09.0 CardBus bridge: ENE Technology Inc CB1410 Cardbus Controller
+0000:00:0a.0 Network controller: Intel Corp.: Unknown device 1043 (rev 04)
+0000:00:0b.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host
+Controller (rev 80)
+0000:00:10.0 USB Controller: VIA Technologies, Inc. USB (rev 80)
+0000:00:10.1 USB Controller: VIA Technologies, Inc. USB (rev 80)
+0000:00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82)
+0000:00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
+0000:00:11.1 IDE interface: VIA Technologies, Inc. VT82C586/B/686A/B
+PIPC Bus Master IDE (rev 06)
+0000:00:11.5 Multimedia audio controller: VIA Technologies, Inc. VT8233
+AC97 Audio Controller (rev 50)
+0000:00:11.6 Communication controller: VIA Technologies, Inc. Intel 537
+[AC97 Modem] (rev 80)
+0000:00:12.0 Ethernet controller: VIA Technologies, Inc. VT6102
+[Rhine-II] (rev 74)
+0000:01:00.0 VGA compatible controller: S3 Inc. VT8751 [ProSavageDDR
+P4M266] VGA Controller
 
-I quickly add an entry for this value in cpufreq/Kconfig:
-----------------------------------------------------------------------------------------------------------------
-config X86_SPEEDSTEP_CENTRINO_TABLE
-        bool "Use predefined frequency/voltage pairs (Banias only)"
-        depends on X86_SPEEDSTEP_CENTRINO
-        default y
-        help
-                This only work for Banias processor. Dothan users must
-                set this to N.
+Sorry for the lengty mail, I just wanted to provide all details needed
+in advance.
 
--------------------------------------------------------------------------------------
-
-Cheers,
-Damien.
-Dominik Brodowski wrote:
-
->Hi,
->
->On Mon, Jul 12, 2004 at 10:54:35PM +0200, Damien Marchal wrote:
->  
->
->>speedstep-centrino: found unsupported CPU with Enhanced SpeedStep: send 
->>/proc/cpuinfo to Jeremy Fitzhardinge <jeremy@goop.org>
->>
->>What I did. As i received no feedback I look inside the cpufreq 
->>sourcecode that throw the error and I tried to fixed it myself. I 
->>compared it with the content of my /proc/cpuinfo:
->>
->>cpu family      : 6
->>model             : 13
->>model name   : Intel(R) Pentium(R) M processor 1.50GHz
->>stepping        : 6
->>cpu MHz         : 1500.834
->>cache size      : 64 KB
->>
->>I located a correct cpu_id cpu_id_dothan_b0 but I wasn't able to locate 
->>were is it used (it  seems to differ from the banias  code).
->>    
->>
->
->Dothan's only work if X86_SPEEDSTEP_CENTRINO_ACPI is enabled in your kernel
->configuartion. Did you enable it? You need to set ACPI_PROCESSOR to "y" if
->you want to use it with SPEEDSTEP_CENTRINO="y", or ACPI_PROCESSOR="y" or
->ACPI_PROCESSOR="m" if you use it with SPEEDSTEP_CENTRINO="m".
->
->  
->
->>In addition in the centrino_cpu_init_table(struct cpufreq_policy 
->>*policy), the loop that detect the processor failed as my processor 
->>string contains 1.50Ghz and not 1500Mhz (maybe an issue related to my 
->>Asus BIOS).
->>    
->>
->
->No, that changed from Banias to Dothan CPUs in general. However, the "table"
->method isn't available for Dothans.
->
->  
->
->>In fact, I could try to make a patch for making my processor accepted by 
->>the centrino checking code, but after this I ignore what will happend as 
->>no predefined tables frequency/voltage exists like with the Banias. Will 
->>it burn my computer :)
->>    
->>
->
->Maybe. The frequency/voltage pairs for Dothans are different to those of
->Banias. A built-in table isn't possible for Dothans, IIRC, as even if you 
->know the CPUID you can't know for 100% which pairs are valid -- it depends
->on some other info not in the CPUID.
->
->If SPEEDSTEP_CENTRINO doesn't work, you can also try out the ACPI P-States
->cpufreq driver -- it tends to work on most Centrino (Banias or Dothan)
->notebooks, offers the same frequency / voltage scalings but a slower
->frequency & voltage scaling path (i.e. transitions take ~100us compared to
->~10us, IIRC).
->
->	Dominik
->  
->
+Thank you very much in advance!
+Oliver Gmelch
