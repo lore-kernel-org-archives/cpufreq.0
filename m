@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@poupinou.org>
 Subject: Re: SpeedStep New Driver for Pentium III (-M) using SMI interface
-Date: Tue, 2 Sep 2003 10:42:00 +0200
+Date: Tue, 2 Sep 2003 14:35:38 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030902084200.GP4401@poupinou.org>
+Message-ID: <20030902123538.GR4401@poupinou.org>
 References: <871xuzbycu.wl%miura@da-cha.org> <20030902083150.GA3958@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -27,10 +27,28 @@ On Tue, Sep 02, 2003 at 10:31:50AM +0200, Dominik Brodowski wrote:
 > aged notebook, but well, the GPO driver didn't work either....
 > 
 
-I guess the ownership stuff need to be explained more.  How to know the
-magic_string stuff for example?  If that can be included in detect-speedstep
-utility...
+Dominik, the command is 0x80 for you, but actually it should be 0x82.
+I do have the exact same trouble with my toshiba.  Try then to pass
+the correct option in order to overide that value.  Unfortunately, I
+don't have my toshiba handy (even though it is ICH based, it
+may be usefull to play with).
 
+The flags stuff is not actually exploited.
+For mine (and for Dominik) it is 0x07d00100
+whereas Miura-san is 0x0x07d00000
+
+When I receive report from speedstep-detect (and also send
+something called speedtep-bios privatly), if bit 8 == 1, then it do not
+work, but I don't have the ownership stuff, though.  When that
+bit is 0, it may or may not work.  I think it is related to 
+state on battery.
+
+More related to the driver: I don't see any special reason to disable
+interrupts in-between the smi call when setting the state.  Also,
+you don't use the speedstep_get_freqs, but use a SMI function for
+that (which is probably more usefull), therefore, there is no
+need to do the notification stuff (it was done only at _init stage,
+and to avoid duplicating codes).
 
 -- 
 Ducrot Bruno
