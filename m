@@ -1,8 +1,7 @@
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] speedstep-centrino: Avoid returning zero freq on transient
-	MSR values
-Date: Thu, 9 Dec 2004 17:24:36 -0800
-Message-ID: <20041209172436.A3337@unix-os.sc.intel.com>
+Subject: [PATCH] quieter speedstep-centrino
+Date: Thu, 9 Dec 2004 17:27:29 -0800
+Message-ID: <20041209172729.B3337@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -23,117 +22,67 @@ Cc: linux@dominikbrodowski.de, cpufreq@www.linux.org.uk
 
 
 
+Patch to remove speedstep-centrino error messages getting printed by default.
+Print them only when debug flags are enabled.
 
-On some CPUs, we can see transient MSR values (which are not present in _PSS) in
-IA32_PERF_STATUS MSR, while CPU is doing some automatic P-state transition 
-(like TM2). 
-Current code will return frequency as 0 in such cases. Fix it by retrying the 
-get after a delay and use lowest possible frequency as the current frequency 
-in worst case.
-
-Thanks to Matt Domsch for identifying and root-causing this failure.
+The reason for this patch is -
+With the multiple drivers model that we have now, any installation will try 
+different drivers one after the other, until one of them succeeds. So, 
+failure to add speedstep-centrino alone doesn't mean error, as some other
+driver (say acpi.ko) can succeed later and system will still be able to use
+speedstep. Printing the error whenever speedstep-centrino fails can confuse 
+the enduser.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
---- linux-2.6.10-rc3/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.org	2004-12-07 18:55:57.000000000 -0800
-+++ linux-2.6.10-rc3/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-12-09 16:18:30.000000000 -0800
-@@ -22,6 +22,8 @@
- #include <linux/init.h>
- #include <linux/cpufreq.h>
- #include <linux/config.h>
-+#include <linux/delay.h>
-+#include <linux/compiler.h>
+--- linux-2.6.10-rc3/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.org	2004-12-07 18:48:19.000000000 -0800
++++ linux-2.6.10-rc3/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-12-07 18:54:09.000000000 -0800
+@@ -239,7 +239,7 @@ static int centrino_cpu_init_table(struc
  
- #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
- #include <linux/acpi.h>
-@@ -277,7 +279,7 @@ static int centrino_verify_cpu_id(const 
- }
+ 	if (model->cpu_id == NULL) {
+ 		/* No match at all */
+-		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
++		dprintk("no support for CPU model \"%s\": "
+ 		       "send /proc/cpuinfo to " MAINTAINER "\n",
+ 		       cpu->x86_model_id);
+ 		return -ENOENT;
+@@ -247,10 +247,10 @@ static int centrino_cpu_init_table(struc
  
- /* To be called only after centrino_model is initialized */
--static unsigned extract_clock(unsigned msr, unsigned int cpu)
-+static unsigned extract_clock(unsigned msr, unsigned int cpu, int failsafe)
- {
- 	int i;
- 
-@@ -299,15 +301,19 @@ static unsigned extract_clock(unsigned m
- 	msr &= 0xffff;
- 	for (i=0;centrino_model[cpu]->op_points[i].frequency != CPUFREQ_TABLE_END; i++) {
- 		if (msr == centrino_model[cpu]->op_points[i].index)
--		return centrino_model[cpu]->op_points[i].frequency;
-+			return centrino_model[cpu]->op_points[i].frequency;
+ 	if (model->op_points == NULL) {
+ 		/* Matched a non-match */
+-		printk(KERN_INFO PFX "no table support for CPU model \"%s\": \n",
++		dprintk("no table support for CPU model \"%s\": \n",
+ 		       cpu->x86_model_id);
+#ifndef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-		printk(KERN_INFO PFX "try compiling with CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI enabled\n");
++		dprintk("try compiling with CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI enabled\n");
+ #endif
+ 		return -ENOENT;
  	}
--	return 0;
-+	if (failsafe)
-+		return centrino_model[cpu]->op_points[i-1].frequency;
-+	else
-+		return 0;
- }
+@@ -352,7 +352,7 @@ static int centrino_cpu_init_acpi(struct
  
- /* Return the current CPU frequency in kHz */
- static unsigned int get_cur_freq(unsigned int cpu)
- {
- 	unsigned l, h;
-+	unsigned clock_freq;
- 	cpumask_t saved_mask;
- 
- 	saved_mask = current->cpus_allowed;
-@@ -316,8 +322,34 @@ static unsigned int get_cur_freq(unsigne
- 		return 0;
- 
- 	rdmsr(MSR_IA32_PERF_STATUS, l, h);
-+	clock_freq = extract_clock(l, cpu, 0);
-+
-+	if (unlikely(clock_freq == 0)) {
-+		/*
-+		 * On some CPUs, we can see transient MSR values (which are
-+		 * not present in _PSS), while CPU is doing some automatic
-+		 * P-state transition (like TM2). Allow CPU to stabilize at
-+		 * some freq and retry.
-+		 * If we continue to see transients for long time, just return
-+		 * the lowest possible frequency as best guess.
-+		 */
-+		int retries = 0;
-+#define MAX_EXTRACT_CLOCK_RETRIES	5
-+		while (clock_freq == 0 && retries < MAX_EXTRACT_CLOCK_RETRIES) {
-+			udelay(100);
-+			retries++;
-+			rdmsr(MSR_IA32_PERF_STATUS, l, h);
-+			clock_freq = extract_clock(l, cpu, 0);
-+		}
-+
-+		if (clock_freq == 0) {
-+			rdmsr(MSR_IA32_PERF_STATUS, l, h);
-+			clock_freq = extract_clock(l, cpu, 1);
-+		}
-+	}
-+
- 	set_cpus_allowed(current, saved_mask);
--	return extract_clock(l, cpu);
-+	return clock_freq;
- }
- 
- 
-@@ -426,10 +458,10 @@ static int centrino_cpu_init_acpi(struct
- 			continue;
- 		}
- 		
--		if (extract_clock(centrino_model[cpu]->op_points[i].index, cpu) !=
-+		if (extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0) !=
- 		    (centrino_model[cpu]->op_points[i].frequency)) {
- 			dprintk("Invalid encoded frequency (%u vs. %u)\n",
--				extract_clock(centrino_model[cpu]->op_points[i].index, cpu),
-+				extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0),
- 				centrino_model[cpu]->op_points[i].frequency);
- 			result = -EINVAL;
- 			goto err_kfree_all;
-@@ -605,8 +637,8 @@ static int centrino_target (struct cpufr
+ 	/* register with ACPI core */
+ 	if (acpi_processor_register_performance(&p, cpu)) {
+-		printk(KERN_INFO PFX "obtaining ACPI data failed\n");
++		dprintk("obtaining ACPI data failed\n");
+ 		return -EIO;
  	}
  
- 	freqs.cpu = cpu;
--	freqs.old = extract_clock(oldmsr, cpu);
--	freqs.new = extract_clock(msr, cpu);
-+	freqs.old = extract_clock(oldmsr, cpu, 0);
-+	freqs.new = extract_clock(msr, cpu, 0);
+@@ -450,7 +450,7 @@ static int centrino_cpu_init_acpi(struct
+ 	kfree(centrino_model[cpu]);
+  err_unreg:
+ 	acpi_processor_unregister_performance(&p, cpu);
+-	printk(KERN_INFO PFX "invalid ACPI data\n");
++	dprintk("invalid ACPI data\n");
+ 	return (result);
+ }
+ #else
+@@ -481,7 +481,7 @@ static int centrino_cpu_init(struct cpuf
+ 			return -ENODEV;
  
- 	dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
- 		target_freq, freqs.old, freqs.new, msr);
+ 		if (!centrino_cpu[policy->cpu]) {
+-			printk(KERN_INFO PFX "found unsupported CPU with "
++			dprintk("found unsupported CPU with "
+ 			"Enhanced SpeedStep: send /proc/cpuinfo to "
+ 			MAINTAINER "\n");
+ 			return -ENODEV;
