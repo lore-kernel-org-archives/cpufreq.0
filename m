@@ -1,13 +1,13 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Strange frequency with p4-m and ich4
-Date: Fri, 27 Feb 2004 14:43:42 +0100
+From: Len Brown <len.brown@intel.com>
+Subject: Re: Mobile Intel Pentium(R) 4 - M CPU 2.60GHz - kernel 2.6.3
+Date: 27 Feb 2004 09:46:52 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040227134342.GO2869@poupinou.org>
-References: <20040226220349.D5BFD23947@ws5-3.us4.outblaze.com>
+Message-ID: <1077893211.22404.184.camel@dhcppc4>
+References: <A6974D8E5F98D511BB910002A50A6647615F3C81@hdsmsx402.hd.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040226220349.D5BFD23947@ws5-3.us4.outblaze.com>
+In-Reply-To: <A6974D8E5F98D511BB910002A50A6647615F3C81@hdsmsx402.hd.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,20 +18,59 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: wel wel <wel@linuxmail.org>
-Cc: cpufreq@www.linux.org.uk
+To: Bob Dobbs <bob_dobbs@linuxmail.org>
+Cc: linux-kernel@vger.kernel.org, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
 
-On Thu, Feb 26, 2004 at 11:03:49PM +0100, wel wel wrote:
-> Six months ago, i purchase a dell inspiron 8500, with a p4-m at 2,2 Ghz and a 845 chipset. I started with gentoo and 2.4.20-gs (with cpufreq patches), but frequency scaling didn't work as well. Next, with 2.6.0-testX, i got the same. Now i'm using 2.6.3-mm3 and i've the same error: at first boot, the os tooks only the processor's 50% (it works at 1,2 Ghz max, 650 in powersave mode). When i reboot, it gets full advantage, 2,2 Ghz with performance mode and 1,2 Ghz in powersave. What can i do to make it works well?. Six months is... so much time waiting, trying and searching for an answer :(.
+Perhaps with ACPI disabled you've left CPU frequency control in the
+hands of SMM (the BIOS)?  That would be consistent with Linux having no
+visibility or conrol over what is going on.  There may be some BIOS
+SETUP options to turn it off.
 
-Because it work.  It's just that the bios shipped with your laptop will
-likely enable throttling.  You can get rid of that if you enable acpi
-processor (well, hopefully. Sometimes brain damaged bios do not allow
-throttling control via OS).
+cheers,
+-Len
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Thu, 2004-02-26 at 19:46, Bob Dobbs wrote:
+> Hello,
+> 
+> I am currently running kernel 2.6.3 on my Dell Inspiron 8500 laptop.
+> I disabled all the ACPI and APM options in the kernel.
+>
+> I have upgraded my bios
+> I have tried from kernel 2.4.23 up to mm and love-sources and my
+> current kernel 2.6.3.
+> 
+> What happens is during heavy loads my cpu drops from 2.60GHz down to
+> 1.20GHz, this happens for a few minutes, say 5 - 10 at the most. But
+> performance while running a game, puts the game into slow motion.
+> (Which  is weird because 1.20GHz should be more than enough to run all
+> of the  games I currently have). I have read up on the documentation
+> in /usr/src/linux/Documentation, under the "power" and "cpu-freq" but
+> after disabling ACPI and such, those options do not seem to work
+> anymore.
+> 
+> I have also tried running a program called "cpufreqd" which launches
+> at boot time, but once again without ACPI enabled in the kernel this
+> seems  not to work either. Also /sys/devices/system/cpu/cpu0/cpufreq/
+> has the following files.
+> 
+> cpuinfo_min_freq
+> cpuinfo_max_freq
+> scaling_min_freq
+> scaling_max_freq
+> 
+> I even tried to echo the options at bootup:
+> 
+> echo 2600000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq &
+> echo 2000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq &
+> 
+> I tried to make those files set at: 2.00GHz min and 2.60GHz max, but
+> something changes them right back to 1.20GHZ no matter what I do.
+> 
+> I am sure I am missing something, but atm I am totally lost.. and I
+> could surely be doing everything wrong to begin with... that is why I
+> am asking for help.
+> 
+> Is there a patch or anything to force the cpu to run at 2.60GHz all
+> the time?
+> 
+> Thank you
