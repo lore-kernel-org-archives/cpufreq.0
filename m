@@ -1,12 +1,11 @@
-From: Gerd Fleischer <GerdFleischer@gmx.de>
-Subject: P4M + VIA chipset
-Date: Sun, 19 Oct 2003 17:19:01 +0200
+From: "Stephen English" <steve@secomputing.co.uk>
+Subject: 2.4 kernel patch on debian source 2.4.22
+Date: Sun, 19 Oct 2003 20:21:52 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200310191719.02395.GerdFleischer@gmx.de>
+Message-ID: <002b01c39676$43910270$0100a8c0@bert>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,9 +18,67 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-Hi,
+Hi all,
+First, thanks to all that contributed to creating this software - it looks
+great. However, I can't get it to patch the debian kernel sources I
+downloaded. Basically, I get this on a fresh extraction of the kernel:
 
-I'm new to this list.
-Are there any chances to get cpufreq to work with a P4M and VIA 8233 chipset?
+bex:/usr/src/cpufreq# ./patchin.sh /usr/src/linux
+patching file Documentation/00-INDEX
+patching file Documentation/Configure.help
+Hunk #1 succeeded at 27057 (offset 80 lines).
+Hunk #2 succeeded at 27458 (offset 80 lines).
+patching file Makefile
+Hunk #1 succeeded at 199 (offset 5 lines).
+patching file arch/i386/config.in
+Hunk #1 succeeded at 195 (offset 1 line).
+patching file arch/i386/boot/setup.S
+patching file arch/i386/kernel/Makefile
+Hunk #2 FAILED at 44.
+1 out of 2 hunks FAILED -- saving rejects to file
+arch/i386/kernel/Makefile.rej
+patching file arch/i386/kernel/i386_ksyms.c
+patching file arch/i386/kernel/setup.c
+Hunk #3 succeeded at 207 (offset 4 lines).
+Hunk #4 succeeded at 1150 (offset 10 lines).
+patching file arch/i386/kernel/time.c
+patching file drivers/Makefile
+patching file include/asm-i386/ist.h
+patching file include/asm-i386/msr.h
+patching file include/asm-i386/smp.h
+patching file include/linux/smp.h
+bex:/usr/src/cpufreq# cd ..
+bex:/usr/src# cat linux/arch/i386/kernel/Makefile.rej
+***************
+*** 43,47 ****
+  obj-$(CONFIG_X86_LOCAL_APIC)  += mpparse.o apic.o nmi.o
+  obj-$(CONFIG_X86_IO_APIC)     += io_apic.o
+  obj-$(CONFIG_X86_VISWS_APIC)  += visws_apic.o
 
-Regards, Gerd Fleischer
+  include $(TOPDIR)/Rules.make
+--- 44,60 ----
+  obj-$(CONFIG_X86_LOCAL_APIC)  += mpparse.o apic.o nmi.o
+  obj-$(CONFIG_X86_IO_APIC)     += io_apic.o
+  obj-$(CONFIG_X86_VISWS_APIC)  += visws_apic.o
++ obj-$(CONFIG_X86_POWERNOW_K6) += powernow-k6.o
++ obj-$(CONFIG_X86_POWERNOW_K7) += powernow-k7.o
++ obj-$(CONFIG_X86_POWERNOW_K8) += powernow-k8.o
++ obj-$(CONFIG_X86_LONGHAUL)    += longhaul.o
++ obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)  += speedstep-centrino.o
++ obj-$(CONFIG_X86_SPEEDSTEP_PIIX4)     += speedstep-piix4.o speedstep-lib.o
++ obj-$(CONFIG_X86_SPEEDSTEP_SMI)       += speedstep-smi.o speedstep-lib.o
++ obj-$(CONFIG_X86_SPEEDSTEP_ICH)       += speedstep-ich.o speedstep-lib.o
++ obj-$(CONFIG_X86_P4_CLOCKMOD) += p4-clockmod.o
++ obj-$(CONFIG_ELAN_CPUFREQ)    += elanfreq.o
++ obj-$(CONFIG_X86_LONGRUN)     += longrun.o
++ obj-$(CONFIG_X86_GX_SUSPMOD)  += gx-suspmod.o
+
+  include $(TOPDIR)/Rules.make
+
+Any info on how to remedy this would be greatly appreciated.
+
+Thanks,
+
+Stephen English
+-- 
+steve@secomputing.co.uk
