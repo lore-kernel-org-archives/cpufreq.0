@@ -1,13 +1,16 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: What AMD CPU is that ???
-Date: Thu, 15 Jan 2004 13:12:15 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040115121215.GS14031@poupinou.org>
-References: <20040114221322.GA2135@seneca.muc.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [ACPI] Re: [PATCH 2.6] update passive cooling algorithm
+Date: Thu, 15 Jan 2004 13:18:33 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20040115121833.GB12963@elf.ucw.cz>
+References: <20040111211255.GA31105@dominikbrodowski.de>
+	<20040112154611.GH14031@poupinou.org>
+	<20040112173922.GA6154@dominikbrodowski.de>
+	<20040112191122.GK14031@poupinou.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040114221322.GA2135@seneca.muc.de>
+In-Reply-To: <20040112191122.GK14031@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,38 +19,51 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Harald Milz <hm@seneca.muc.de>
-Cc: Cpufreq@www.linux.org.uk
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-On Wed, Jan 14, 2004 at 11:13:22PM +0100, Harald Milz wrote:
-> Hi,
+Hi!
+
+> > > > [Len, could you test and verify this patch, and push it to Linus, please?]
+> > > > 
+> > > > The current algorithm used by Linux ACPI for passive thermal management has
+> > > > two shortcomings:
+> > > 
+> > > ...
+> > > 
+> > > > +/* If a passive cooling situation is detected, primarily CPUfreq is used, as it
+> > > > + * offers (in most cases) voltage scaling in addition to frequency scaling, and
+> > > > + * thus a cubic (instead of linear) reduction of energy. Also, we allow for
+> > > > + * _any_ cpufreq driver and not only the acpi-cpufreq driver.
+> > > > + */
+> > > 
+> > > Just a stupid question:
+> > > 
+> > > What is best if processor heat issues (apart turning on the fan)?
+> > > 
+> > > Reducing voltage of the processor, but still allowing it to run execution
+> > > at 100% (which is the case if the processor is heating), or reduce
+> > > amount of time allowed for the processor to execute?
+> > 
+> > voltage scaling. It offers a much better (quadratic) saving than clock
+> > modulation (linear saving). Doing both [and you need to do it, as the CPU
+> > won't run with fewer volts at the same frequency] gives you cubic savings.
 > 
-> I dug a little bit more into my new (alleged?) AMD Athlon XP-M 2400+
-> (Barton) using x86info-1.12a. According to the 512K cache it is
-> indeed a Barton core but I suspect it's not a mobile. Please
-> see the output of x86info and /pro/cpuinfo - the kernel (SuSE
-> 2.4.21-166) says it's a Duron !). Essentially, I can't set
-> the upper and lower frequency using /proc/cpufreq. According to
-> http://fab51.fc2web.com/pc/refs/opn_guide.html, it is indeed a "Mainstream
-> XP-M" (AXMH2400FQQ4C). Any idea why setting FID and VID don't work? What
-> also worries me is the max FID of 13.5 which means I can't run this CPU at
-> 18x100? Does that mean I need to get another board (one with a real FSB133
-> and a BIOS that recognized this CPU)? ACPI won't work here because it's a
-> Asus A7V board that the kernel will force to acpi=oldboot. 
-> 
+> Yes I know.  But does it offer more 'cooling'?
 
-x86info is broken in order to know if you can set VID/FID.
-This processor can only have a mult of 13.5 at max.
+Of course.
 
-For the rest of your question, I don't know.
+If you eat less power, you create less heat. CPU is basically fancy
+"turn-electricity-into-heat" device.
 
-Cheers,
+[Have you seen that "first use of PentiumPro in house appliances"
+picture?]
+
+									Pavel
 
 -- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
