@@ -1,13 +1,11 @@
-From: Clemens Orthacker <clemenso@sbox.tugraz.at>
-Subject: Re: kernel: acpi-cpufreq: Transition failed
-Date: Fri, 4 Feb 2005 11:26:58 +0100
-Message-ID: <200502041126.58413.clemenso@sbox.tugraz.at>
-References: <200502021158.26890.clemenso@sbox.tugraz.at>
-Reply-To: clemenso@sbox.tugraz.at
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH] cpufreq_(ondemand|conservative)
+Date: Fri, 4 Feb 2005 21:39:08 +0100
+Message-ID: <20050204203908.GC8049@dominikbrodowski.de>
+References: <88056F38E9E48644A0F562A38C64FB6003E65CFF@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <200502021158.26890.clemenso@sbox.tugraz.at>
 Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6003E65CFF@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,17 +17,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@lists.linux.org.uk, Alexander Clouter <alex@digriz.org.uk>
 
-Am Mittwoch, 2. Februar 2005 11:58 schrieb Clemens Orthacker:
-> Pentium4 M
-> acpi-cpufreq driver (userspace governor, powernowd)
->
+On Mon, Jan 31, 2005 at 03:40:24PM -0800, Pallipadi, Venkatesh wrote:
+> >> > @@ -398,10 +455,10 @@
+> >> >  		
+> >> >  			j_dbs_info->prev_cpu_idle_up = 
+> >> >  				kstat_cpu(j).cpustat.idle +
+> >> > -				kstat_cpu(j).cpustat.iowait;
+> >> > -			j_dbs_info->prev_cpu_idle_down = 
+> >> > -				kstat_cpu(j).cpustat.idle +
+> >> > -				kstat_cpu(j).cpustat.iowait;
+> >> > +				kstat_cpu(j).cpustat.iowait +
+> >> > +				kstat_cpu(j).cpustat.nice;
+> >> 
+> >> Why are you adding cpustat.nice here unconditionally? You 
+> >don't do so in the
+> >> sysfs write method, so I assume you should make this dependant on 
+> >> ignore_nice here as well.
+> >> 
+> >Well by default 'ignore_nice = 0' so is there a need?  Look in 
+> >the next hunk.
+> >
+> 
+> Probably it is better idea to have a if, even if the default is 0, as
+> If we change the default in future, we don't have to look for all these
+> dependent changes.
 
-if I change the governor to performance, the frequency changes (from 1200000) 
-to 1900000 without problems..
+AFAICS we _do_ need it, as prev_cpu_idle_up is calculated
+	idle time +
+	iowait time +
+	(ignore_nice ? ignore time : NULL)
+in many other places.
 
--- 
-| Clemens Orthacker
-| e-mail: ClemensO@sbox.TUGraz.at
-| phone: +43/650/6693393
+	Dominik
