@@ -1,10 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [ANNOUNCE] cpufrequtils-0.1-pre3
-Date: Sun, 21 Nov 2004 19:55:02 +0100
-Message-ID: <20041121185502.GA9158@dominikbrodowski.de>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] Driver to export CPUfreq statistic
+Date: Sun, 21 Nov 2004 15:15:33 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB6003662062@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,21 +17,60 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>, "Zou, Nanhai" <nanhai.zou@intel.com>
+Cc: cpufreq@www.linux.org.uk
 
-Hi all,
 
-cpufrequtils-0.1-pre3 is out and available at
+>-----Original Message-----
+>From: cpufreq-bounces@www.linux.org.uk=20
+>[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Dominik=20
+>Brodowski
+>Sent: Sunday, November 21, 2004 2:07 AM
+>To: Zou, Nanhai
+>Cc: cpufreq@www.linux.org.uk
+>Subject: Re: [PATCH] Driver to export CPUfreq statistic
+>> +config CPU_FREQ_STAT
+>> +       tristate "CPU frequency translation statistics"
+>> +       depends on CPU_FREQ_TABLE
+>> +       default y
+>> +       help
+>> +         This driver exports CPU frequency statistics information
+>> through sysfs
+>> +         file system
+>> +
+>> +config CPU_FREQ_STAT_DETAILS
+>> +       bool "CPU frequency translation statistics details"
+>> +       depends on CPU_FREQ_STAT
+>> +       default n
+>> +       help
+>> +         This will show detail CPU frequency translation=20
+>table in sysfs
+>> file
+>> +         system
+>>=20
+>> I'm pondering two things:=20
+>> a) should we make this dependant on CPU_FREQ_DEBUG?
+>> b) should we make CPU_FREQ_STAT_DETAILS available unconditionally?
+>
 
-http://www.brodo.de/cpufreq/cpufrequtils-0.1-pre3.tar.bz2 (~400KB)
+I feel this should not be depending on CPU_FREQ debug. Then we can have
+some utility in cpufreq-utils which can display 'top' like output.
+The only reason why we thought of keeping STAT_DETAILS as config is, it
+doesn't strictly follow to /sys output format, with a huge array output.
 
-Changes since -pre2 include i18n support for French and a intel_gsic dump
-program for speedstep-smi by Bruno Ducrot as well as an update to cpufreq.h
-so that C++ programs can be linked against libcpufreq.
 
-Note that you need a working "lrmi" library to compile intel_gsic; the debug
-tools and modules aren't built by default, you need to manually enter the
-debug/{i386,kernel,x86_64} directory and do a "make" there.
+>
+>And third: what's the general opinion on whether to merge it
+>a) into the kernel sources	_or_
+>b) into cpufrequtils (in debug/kernel/ )
+>
+>The former means it's available much more easily, as no=20
+>userspace package is
+>necessary. The latter has the advantage that interested=20
+>parties can access
+>it, but it does not increase the kernel normally.
 
-	Dominik
+I feel this should be in base kernel.
+
+Thanks,
+Venki
