@@ -1,12 +1,20 @@
-From: Christian Hoelbling <christian.holbling@cern.ch>
-Subject: [PATCH] 2.6.5 speedstep on P4Ms
-Date: Fri, 11 Jun 2004 00:30:03 +0000
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] replace for_each_cpu with for_each_cpu_mask (was Re:
+	[PATCH] 2.6.5 speedstep on P4Ms)
+Date: Fri, 11 Jun 2004 11:55:40 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <40C8FD0B.4050108@cern.ch>
-Reply-To: holbling@cpt.univ-mrs.fr
+Message-ID: <20040611095540.GB1095@poupinou.org>
+References: <40C5F42D.1050107@cern.ch> <20040608153023.GS13782@poupinou.org>
+	<40C6517E.1090708@cern.ch>
+	<20040609154710.GA9482@dominikbrodowski.de>
+	<40C7AF6C.1080408@cern.ch> <20040610153711.GZ13782@poupinou.org>
+	<20040610164434.GA14158@dominikbrodowski.de>
+	<20040610200427.GE13782@poupinou.org>
+	<20040610213813.GT7964@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040610213813.GT7964@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,29 +24,36 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@www.linux.org.uk
 
->
->
->>/ i also wonder about one thing, maybe you can help me on that. with the 
->/>/ old speedstep driver, i would have occational hard freezups of my 
->/>/ machine. this seems to be gone (just experimental evidence, since i 
->/>/ didn't have one in a few days now where before they occured about 
->/>/ hourly). so my guess is that something in this patch must have corrected 
->/>/ it. since my machine just has one physical cpu, i really don't 
->/>/ understand what went wrong before.  do you have any idea on that?
->/>/ 
->/
->IMHO the lockup is due to the fact we use local_irq_disable() but it
->should be done more globally.  I believe you may still have some lockup
->still.
->  
->
- i didn't, but that might be pure chance. :-)  so does one have to 
-disable the interrupts on both siblings of a HT CPU seperately? i just 
-don't know how this works.
+On Thu, Jun 10, 2004 at 10:38:14PM +0100, Dave Jones wrote:
+> On Thu, Jun 10, 2004 at 10:04:27PM +0200, Bruno Ducrot wrote:
+> 
+>  > - --- linux-2.6.7-rc3-mm1/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004/06/10 19:54:23	1.1
+>  > +++ linux-2.6.7-rc3-mm1/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004/06/10 19:57:00
+>  > @@ -132,34 +132,28 @@ static int cpufreq_p4_target(struct cpuf
+>  >  #endif
+>  >  
+>  >  	/* notifiers */
+>  > - -	for_each_cpu(i) {
+>  > - -		if (cpu_isset(i, affected_cpu_map)) {
+>  > - -			freqs.cpu = i;
+>  > - -			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+>  > - -		}
+>  > +	for_each_cpu_mask(i, affected_cpu_map) {
+>  > +		freqs.cpu = i;
+>  > +		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+>  >  	}
+> 
+> That's a really funky looking patch. Care to rediff ? 8-)
 
-thanks,
+Something wrong how I configure mutt I guess.  Will resend.
 
-chris
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
