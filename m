@@ -1,11 +1,14 @@
-From: paul.devriendt@amd.com
-Subject: RE: [PATCH 2.6] remove powernow-k8 warning
-Date: Fri, 20 Feb 2004 13:29:06 -0600
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/4] speedstep-centrino: move to per-CPU analyzing of
+	CPUs
+Date: Fri, 20 Feb 2004 15:37:57 -0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <99F2150714F93F448942F9A9F112634C1051569F@txexmtae.amd.com>
+Message-ID: <1077320156.4205.1.camel@localhost.localdomain>
+References: <20040220084424.GA10473@dominikbrodowski.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20040220084424.GA10473@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,45 +19,18 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: linux@dominikbrodowski.de, cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: davej@redhat.com, cpufreq list <cpufreq@www.linux.org.uk>
 
-Hi Dominik,
+On Fri, 2004-02-20 at 00:44, Dominik Brodowski wrote:
+> Move the table matching into an own function; only the FEATURE_EST bit is checked
+> in module_init() directly. As cpufreq drivers aren't sticky any longer (see other 
+> pending patch sent to cpufreq mailing list a few minutes ago), this will not 
+> change user-visible behaviour.
 
-Yes, it works fine on a preempt kernel. Sorry, should 
-have thought to tell you. By the way, MP frequency
-support and ACPI support will be coming your way soon
-(I think the target date to release it to you for
-comments is March 8th, or something like that).
 
-Paul. 
+These all look reasonable to me.  I tried testing the ACPI table change,
+but it isn't obvious about where it gets its frequency table from - it
+might be nice to add a hint to the banner.
 
-> -----Original Message-----
-> From: Dominik Brodowski [mailto:linux@dominikbrodowski.de] 
-> Sent: Friday, February 20, 2004 7:25 AM
-> To: cpufreq@www.linux.org.uk
-> Cc: Devriendt, Paul
-> Subject: [PATCH 2.6] remove powernow-k8 warning
-> 
-> It's been tested now -- thanks to Redeeman!
-> 
-> http://lkml.org/lkml/2004/2/19/192
-> 
-> diff -ruN 
-> linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c 
-> linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-> --- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	
-> 2004-02-18 14:59:24.000000000 +0100
-> +++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	
-> 2004-02-19 22:00:54.187228808 +0100
-> @@ -34,10 +34,6 @@
->  #define VERSION "version 1.00.08a"
->  #include "powernow-k8.h"
->  
-> -#ifdef CONFIG_PREEMPT
-> -#warning this driver has not been tested on a preempt system -#endif
-> -
->  static u32 vstable;	/* voltage stabalization time, from 
-> PSB, units 20 us */
->  static u32 plllock;	/* pll lock time, from PSB, units 1 us */
->  static u32 numps;	/* number of p-states, from PSB */
-> 
+	J
