@@ -1,16 +1,11 @@
-From: Frederik Reiss <frederikreiss@gmx.de>
-Subject: Re: bad ACPI tables for Dothan?
-Date: Wed, 28 Jul 2004 02:32:09 +0200
+From: paul.devriendt@amd.com
+Subject: RE: bad ACPI tables for Dothan?
+Date: Tue, 27 Jul 2004 19:59:23 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <4106F409.6050204@gmx.de>
-References: <410557B4.6060303@gmx.de> <1090872497.8114.3.camel@localhost>	
-	<41061454.90306@gmx.de> <1090965071.16558.2.camel@localhost>	
-	<4106E08D.3000909@gmx.de> <1090970168.16558.7.camel@localhost>	
-	<4106EB87.4010603@gmx.de> <1090973581.16558.13.camel@localhost>
+Message-ID: <84EA05E2CA77634C82730353CBE3A8433F6F22@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <1090973581.16558.13.camel@localhost>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,28 +15,22 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Jeremy Fitzhardinge <jeremy@goop.org>
+Content-Type: text/plain; charset="us-ascii"
+To: jeremy@goop.org, frederikreiss@gmx.de
 Cc: cpufreq@www.linux.org.uk
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> In theory the ACPI tables should work fine for this Dothan, but they
+> seem corrupt.  It seems that centrino_cpu_init_acpi() is getting a
+> 0xffff control register value, and a corresponding 25GHz CPU 
+> core speed.
+> I'm assuming there's someone who knows what this means.
 
-Jeremy Fitzhardinge schrieb:
+I do not *know* the answer, but can offer a comment based on 
+looking at some ACPI tables for AMD processors. I have seen
+some ACPI BIOSs where -1 in an entry seems to mean not valid.
+I.e., instead of telling you there are 4 entries and giving
+you 4 valid sets of data, you get 5 entries of which 1 is filled
+with -1. I added code to the AMD Athlon64 driver to just ignore
+anything that was filled with -1.
 
-| cpufreq folks: Frederik has a Tosiba M30-851 laptop with this CPU:
-
-It's a Toshiba M30-951 ... sorry my fault
-
-
-- --
-Es gibt einen neuen Aufkleber f=FCr die A-Klasse?
-"Ich bremse nicht f=FCr Elche!"
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFBBvQJcLHece3p3gARAowdAJ0UggOhFbzjYwvCafxkQtfvSvaloACgimNe
-e9WuHvwuvTHl6Q5FgfwI/bY=3D
-=3DMcZk
------END PGP SIGNATURE-----
+Paul.
