@@ -1,17 +1,11 @@
-From: Luciano Miguel Ferreira Rocha <strange@nsk.no-ip.org>
-Subject: Re: 2.4.21 Isn't working for me....
-Date: Wed, 27 Aug 2003 15:29:08 +0100
+From: Ducrot Bruno <ducrot@echo.fr>
+Subject: possible trouble with poupinou.org
+Date: Wed, 27 Aug 2003 19:22:18 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030827142908.GA5077@nsk.no-ip.org>
-References: <1061872616.27076.47.camel@localhost>
-	<20030826064747.GE10585@poupinou.org>
-	<1061927026.14523.9.camel@localhost>
-	<20030826224727.GA14287@nsk.no-ip.org>
-	<20030827111133.GK10585@poupinou.org>
+Message-ID: <20030827172218.GA19245@neptune.echo-net.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030827111133.GK10585@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,34 +17,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk, AthlonRob <AthlonRob@axpr.net>
+To: cpufreq@www.linux.org.uk
 
-On Wed, Aug 27, 2003 at 01:11:33PM +0200, Ducrot Bruno wrote:
-> > I've been using that kernel, but can't get swsusp to work correctly and
-> > cpufreq doesn't work that well with my chipset, anyhow, (it's a 440BX,)
-> > so test it throughly.
-> 
-> What is the trouble with the 440BX?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Well, it's a lousy chipset, cpufreq wise.
+I have to change my ip for poupinou.org, so maybe you can have trouble
+to contact me.  Since I'm not sure of the current status of the AS,
+you may have trouble if you send me email to ducrot@poupinou.org.
 
-I had it working with your help some time in the past, using a speedstep.c
-and playing with the GPO.
+If (and only if) that happens, please CC me to ducrot@echo.fr
 
-But that driver doesn't have the same interface as normal cpufreq and then
-2.4.21 merged parts of the AC tree that makes my processor frequency very
-dynamic, so I end up not using it much.
+Please note that this one is a 'professional' one, and is spamed as
+I am postmaster and newsmaster, so don't abuse.
 
-But I tried the CVS version of cpufreq, but it still doesn't work.
-As it is, it doesn't have a speedstep.c, only a speedstep-ich, that
-fails to insert:
-cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
+- -- 
+Ducrot Bruno.
 
-The speedstep.c available on http://www.poupinou.org/cpufreq/index.html
-also fails to insert:
-speedstep.o: unresolved symbol cpufreq_setfunctions
-speedstep.o: unresolved symbol cpufreq_init
+- --  Which is worse:  ignorance or apathy?
+- --  Don't know.  Don't care.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.1 (GNU/Linux)
 
-Regards,
-Luciano Rocha
+iD8DBQE/TOjKiZtNKH9GMYcRAp4nAJ4lYgD96UkIxEKbd1a6Wwe85el8oQCfWDc1
+1QV6pjmzD2sg2ex/aGET/iU=
+=GJZ6
+-----END PGP SIGNATURE-----
