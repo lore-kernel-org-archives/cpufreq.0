@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq longrun.c,1.1.1.1,1.1.1.2
-Date: Tue, 31 Aug 2004 10:37:47 +0100
+Subject: cpufreq patch,1.1.1.11,1.1.1.12
+Date: Tue, 31 Aug 2004 10:59:02 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1C255H-00025g-8X@flint.arm.linux.org.uk>
+Message-ID: <E1C25Pq-0002J4-Hw@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,228 +18,42 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv8033
+Update of /mnt/src/cvsroot/cpufreq
+In directory flint:/tmp/cvs-serv8835
 
 Modified Files:
       Tag: LINUX_2_4
-	longrun.c 
+	patch 
 Log Message:
-backport from 2.6, especially fix a bug for a degenerated case from Dominik
+rediffing against vanilla 2.4.27
 
 
-Index: longrun.c
+Index: patch
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/longrun.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.1.1.2
-diff -u -r1.1.1.1 -r1.1.1.2
---- longrun.c	25 Aug 2003 14:58:47 -0000	1.1.1.1
-+++ longrun.c	31 Aug 2004 09:37:44 -0000	1.1.1.2
-@@ -7,7 +7,7 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/module.h> 
-+#include <linux/module.h>
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/cpufreq.h>
-@@ -19,7 +19,7 @@
- static struct cpufreq_driver	longrun_driver;
- 
- /**
-- * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz 
-+ * longrun_{low,high}_freq is needed for the conversion of cpufreq kHz
-  * values into per cent values. In TMTA microcode, the following is valid:
-  * performance_pctg = (current_freq - low_freq)/(high_freq - low_freq)
-  */
-@@ -33,7 +33,7 @@
-  * Reads the current LongRun policy by access to MSR_TMTA_LONGRUN_FLAGS
-  * and MSR_TMTA_LONGRUN_CTRL
-  */
--static void longrun_get_policy(struct cpufreq_policy *policy)
-+static void __init longrun_get_policy(struct cpufreq_policy *policy)
- {
- 	u32 msr_lo, msr_hi;
- 
-@@ -42,22 +42,27 @@
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
- 	else
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
--	
-+
- 	rdmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
- 	msr_lo &= 0x0000007F;
- 	msr_hi &= 0x0000007F;
- 
--	policy->min = longrun_low_freq + msr_lo * 
--		((longrun_high_freq - longrun_low_freq) / 100);
--	policy->max = longrun_low_freq + msr_hi * 
--		((longrun_high_freq - longrun_low_freq) / 100);
-+	if ( longrun_high_freq <= longrun_low_freq ) {
-+		/* Assume degenerate Longrun table */
-+		policy->min = policy->max = longrun_high_freq;
-+	} else {
-+		policy->min = longrun_low_freq + msr_lo * 
-+			((longrun_high_freq - longrun_low_freq) / 100);
-+		policy->max = longrun_low_freq + msr_hi * 
-+			((longrun_high_freq - longrun_low_freq) / 100);
-+	}
- 	policy->cpu = 0;
- }
- 
- 
- /**
-  * longrun_set_policy - sets a new CPUFreq policy
-- * @policy - new policy
-+ * @policy: new policy
-  *
-  * Sets a new CPUFreq policy on LongRun-capable processors. This function
-  * has to be called with cpufreq_driver locked.
-@@ -70,10 +75,15 @@
- 	if (!policy)
- 		return -EINVAL;
- 
--	pctg_lo = (policy->min - longrun_low_freq) / 
--		((longrun_high_freq - longrun_low_freq) / 100);
--	pctg_hi = (policy->max - longrun_low_freq) / 
--		((longrun_high_freq - longrun_low_freq) / 100);
-+	if ( longrun_high_freq <= longrun_low_freq ) {
-+		/* Assume degenerate Longrun table */
-+		pctg_lo = pctg_hi = 100;
-+	} else {
-+		pctg_lo = (policy->min - longrun_low_freq) / 
-+			((longrun_high_freq - longrun_low_freq) / 100);
-+		pctg_hi = (policy->max - longrun_low_freq) / 
-+			((longrun_high_freq - longrun_low_freq) / 100);
-+	}
- 
- 	if (pctg_hi > 100)
- 		pctg_hi = 100;
-@@ -106,8 +116,9 @@
- 
- /**
-  * longrun_verify_poliy - verifies a new CPUFreq policy
-+ * @policy: the policy to verify
-  *
-- * Validates a new CPUFreq policy. This function has to be called with 
-+ * Validates a new CPUFreq policy. This function has to be called with
-  * cpufreq_driver locked.
-  */
- static int longrun_verify_policy(struct cpufreq_policy *policy)
-@@ -116,11 +127,12 @@
- 		return -EINVAL;
- 
- 	policy->cpu = 0;
--	cpufreq_verify_within_limits(policy, 
--		policy->cpuinfo.min_freq, 
-+	cpufreq_verify_within_limits(policy,
-+		policy->cpuinfo.min_freq,
- 		policy->cpuinfo.max_freq);
- 
--	if (policy->policy == CPUFREQ_POLICY_GOVERNOR)
-+	if ((policy->policy != CPUFREQ_POLICY_POWERSAVE) &&
-+	    (policy->policy != CPUFREQ_POLICY_PERFORMANCE))
- 		return -EINVAL;
- 
- 	return 0;
-@@ -129,18 +141,21 @@
- 
- /**
-  * longrun_determine_freqs - determines the lowest and highest possible core frequency
-+ * @low_freq: an int to put the lowest frequency into
-+ * @high_freq: an int to put the highest frequency into
-  *
-  * Determines the lowest and highest possible core frequencies on this CPU.
-  * This is necessary to calculate the performance percentage according to
-  * TMTA rules:
-  * performance_pctg = (target_freq - low_freq)/(high_freq - low_freq)
-  */
--static unsigned int __init longrun_determine_freqs(unsigned int *low_freq, 
-+static unsigned int __init longrun_determine_freqs(unsigned int *low_freq,
- 						   unsigned int *high_freq)
- {
- 	u32 msr_lo, msr_hi;
- 	u32 save_lo, save_hi;
- 	u32 eax, ebx, ecx, edx;
-+	u32 try_hi;
- 	struct cpuinfo_x86 *c = cpu_data;
- 
- 	if (!low_freq || !high_freq)
-@@ -148,9 +163,9 @@
- 
- 	if (cpu_has(c, X86_FEATURE_LRTI)) {
- 		/* if the LongRun Table Interface is present, the
--		 * detection is a bit easier: 
-+		 * detection is a bit easier:
- 		 * For minimum frequency, read out the maximum
--		 * level (msr_hi), write that into "currently 
-+		 * level (msr_hi), write that into "currently
- 		 * selected level", and read out the frequency.
- 		 * For maximum frequency, read out level zero.
- 		 */
-@@ -183,19 +198,21 @@
- 	 * upper limit to make the calculation more accurate.
- 	 */
- 	cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
--	if (ecx > 90) {
--		/* set to 0 to 80 perf_pctg */
-+	/* try decreasing in 10% steps, some processors react only
-+	 * on some barrier values */
-+	for (try_hi = 80; try_hi > 0 && ecx > 90; try_hi -=10) {
-+		/* set to 0 to try_hi perf_pctg */
- 		msr_lo &= 0xFFFFFF80;
- 		msr_hi &= 0xFFFFFF80;
- 		msr_lo |= 0;
--		msr_hi |= 80;
-+		msr_hi |= try_hi;
- 		wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
- 
- 		/* read out current core MHz and current perf_pctg */
- 		cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
- 
- 		/* restore values */
--		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);	
-+		wrmsr(MSR_TMTA_LONGRUN_CTRL, save_lo, save_hi);
- 	}
- 
- 	/* performance_pctg = (current_freq - low_freq)/(high_freq - low_freq)
-@@ -209,7 +226,7 @@
- 	if ((ecx > 95) || (ecx == 0) || (eax < ebx))
- 		return -EIO;
- 
--	edx = (eax - ebx) / (100 - ecx); 
-+	edx = (eax - ebx) / (100 - ecx);
- 	*low_freq = edx * 1000; /* back to kHz */
- 
- 	if (*low_freq > *high_freq)
-@@ -219,9 +236,9 @@
- }
- 
- 
--static int longrun_cpu_init(struct cpufreq_policy *policy)
-+static int __init longrun_cpu_init(struct cpufreq_policy *policy)
- {
--	int                     result = 0;
-+	int result = 0;
- 
- 	/* capability check */
- 	if (policy->cpu != 0)
-@@ -237,7 +254,7 @@
- 	policy->cpuinfo.max_freq = longrun_high_freq;
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
- 	longrun_get_policy(policy);
--	
-+
- 	return 0;
- }
- 
-@@ -259,7 +276,7 @@
- {
- 	struct cpuinfo_x86 *c = cpu_data;
- 
--	if (c->x86_vendor != X86_VENDOR_TRANSMETA || 
-+	if (c->x86_vendor != X86_VENDOR_TRANSMETA ||
- 	    !cpu_has(c, X86_FEATURE_LONGRUN))
- 		return -ENODEV;
+RCS file: /mnt/src/cvsroot/cpufreq/patch,v
+retrieving revision 1.1.1.11
+retrieving revision 1.1.1.12
+diff -u -r1.1.1.11 -r1.1.1.12
+--- patch	9 Jul 2004 22:02:10 -0000	1.1.1.11
++++ patch	31 Aug 2004 09:58:55 -0000	1.1.1.12
+@@ -9,9 +9,9 @@
+  cpqarray.txt
+  	- info on using Compaq's SMART2 Intelligent Disk Array Controllers.
+  devices.txt
+---- linux.original/Documentation/Configure.help	2004-04-14 15:05:24.000000000 +0200
+-+++ linux/Documentation/Configure.help	2004-07-09 14:30:15.000000000 +0200
+-@@ -28178,16 +28178,6 @@ CONFIG_CPU_ARM926T
++--- linux.original/Documentation/Configure.help	2004/08/31 09:55:20
+++++ linux/Documentation/Configure.help	2004/08/31 09:55:38
++@@ -28322,16 +28322,6 @@
+    Say Y if you want support for the ARM926T processor.
+    Otherwise, say N.
+  
+@@ -28,7 +28,7 @@
+  SiS
+  CONFIG_DRM_SIS
+    Choose this option if you have a SIS graphics card. AGP support is
+-@@ -28603,6 +28593,154 @@ IPMI Watchdog Timer
++@@ -28747,6 +28737,154 @@
+  CONFIG_IPMI_WATCHDOG
+    This enables the IPMI watchdog timer.
