@@ -1,17 +1,12 @@
-From: Alexander Bokovoy <ab@altlinux.org>
-Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Wed, 22 Oct 2003 00:53:28 +0300
+From: David Kar-Fai Tam <tamda@eecg.toronto.edu>
+Subject: Re: Dynamic frequency governor
+Date: Tue, 21 Oct 2003 18:21:37 -0400 (EDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021215327.GH3133@sam-solutions.net>
-References: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
-	<yw1xbrsaeu44.fsf@kth.se> <20031021203037.GB3133@sam-solutions.net>
-	<yw1xoewaiavf.fsf@kth.se> <20031021211119.GE3133@sam-solutions.net>
-	<yw1xfzhmi86r.fsf@kth.se>
+Message-ID: <Pine.LNX.4.44.0310211744210.27611-100000@cat.eecg.toronto.edu>
+References: <20031021203122.GC871@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <yw1xfzhmi86r.fsf@kth.se>
+In-Reply-To: <20031021203122.GC871@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,39 +16,37 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: M?ns Rullg?rd <mru@kth.se>
-Cc: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
+To: cpufreq@www.linux.org.uk
 
-On Tue, Oct 21, 2003 at 11:37:16PM +0200, M?ns Rullg?rd wrote:
-> Alexander Bokovoy <ab@altlinux.org> writes:
+On Tue, 21 Oct 2003, Dave Jones wrote:
+> On Mon, Oct 20, 2003 at 10:08:17AM -0700, Moore, Robert wrote:
+>  > Can you be more specific about who has patents on what?
 > 
-> >> What's your /proc/cpuinfo?  Mine says
-> >> 
-> >> processor	: 0
-> >> vendor_id	: GenuineIntel
-> >> cpu family	: 15
-> >> model	: 2
-> >> model name	: Mobile Intel(R) Pentium(R) 4 - M CPU 1.80GHz
-> >> stepping	: 7
-> 
-> > As I said, it is Centrino-based, with 1.3GHz Pentium M:
-> >
-> > processor	: 0
-> > vendor_id	: GenuineIntel
-> > cpu family	: 6
-> > model		: 9
-> > model name	: Intel(R) Pentium(R) M processor 1300MHz
-> > stepping	: 5
-> 
-> So, mine won't work, or what?
-If you can boot into 2.4.22 or .23pre with ACPI enabled and can see
-/proc/acpi/processor/CPU0/performance, then your processor should be
-supported by speedstep-ich or speedstep-piix4 modules (don't know which
-one exactly).
--- 
-/ Alexander Bokovoy
-Samba Team                      http://www.samba.org/
-ALT Linux Team                  http://www.altlinux.org/
-Midgard Project Ry              http://www.midgard-project.org/
+> http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=6,298,448.WKU.&OS=PN/6,298,448&RS=PN/6,298,448
+> Is a good place to start.  Skimming through the references there brings
+> up further patents by just about everyone under the sun, including
+> Intel.
+
+Here's an idea:
+
+I did a quick text search on the website of the above address and I 
+couldn't find "voltage" mentioned anywhere. That is, I couldn't find any 
+mention of dynamic "voltage" scaling as a technique for saving power.
+They only talk about is using the technique of "frequency" scaling to 
+save power.
+
+With DVS algorithms, we are attempting to dynamically change the voltage 
+to save power. The fact that the frequency varies is just a side effect.
+
+How's that for finding a loop hole? =)
+
+I don't want to get into a long discussion about whether frequency scaling
+alone can save you energy. I think that we are ultimately trying to vary
+the voltage because only that can really save you energy (quadratically). 
+Maybe we should have named it the CPUVolt API?
+
+--
+David Tam
+tamda@eecg.toronto.edu
