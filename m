@@ -1,14 +1,14 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: celeron *clutches at straws*
-Date: Thu, 6 Jan 2005 23:12:40 +0100
-Message-ID: <20050106221240.GA8330@dominikbrodowski.de>
-References: <3bd91160501051619632315d0@mail.gmail.com>
-	<20050106161312.GC10011@dominikbrodowski.de>
-	<3bd9116050106091631b1282d@mail.gmail.com>
+Subject: Re: Which driver for Mobile P4 CPU?
+Date: Thu, 6 Jan 2005 23:28:57 +0100
+Message-ID: <20050106222857.GA8434@dominikbrodowski.de>
+References: <20050105200721.21c6f5f8@bonenpikster.drs.p>
+	<20050106160740.GA10011@dominikbrodowski.de>
+	<20050106230611.490e2127@bonenpikster.drs.p>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <3bd9116050106091631b1282d@mail.gmail.com>
+In-Reply-To: <20050106230611.490e2127@bonenpikster.drs.p>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,32 +21,41 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew East <matthew.east@gmail.com>
+To: Tim Dijkstra <newsuser@famdijkstra.org>
 Cc: cpufreq@www.linux.org.uk
 
-On Thu, Jan 06, 2005 at 05:16:34PM +0000, Matthew East wrote:
-> That is seriously useful thanks very much. I haven't looked in
-> /proc/acpi/processor before! I have found that the C2 state is
-> supported.
+On Thu, Jan 06, 2005 at 11:06:11PM +0100, Tim Dijkstra wrote:
+> On Thu, 6 Jan 2005 17:07:40 +0100
+> Dominik Brodowski <linux@dominikbrodowski.de> wrote:
 > 
-> mdke@kallisto mdke $ cat /proc/acpi/processor/CPU0/power
-> active state:            C2
-> default state:           C1
-> bus master activity:     00000000
-> states:
->     C1:                  promotion[C2] demotion[--] latency[000]
-> usage[07824590]   *C2:                  promotion[--] demotion[C1]
-> latency[002] usage[134432919]
->     C3:                  <not supported>
+> > Hi,
+> > 
+> > On Wed, Jan 05, 2005 at 08:07:21PM +0100, Tim Dijkstra wrote:
+> > > None of the drivers in the 2.6.10 kernel that have speedstep in
+> > > their name are loadable. Does this mean that my CPU isn't supported
+> > > or I'm a doing something wrong? 
+> > 
+> > Not really. the speedstep-smi is for older (P3) CPUs,
+> > speedstep-centrino for Pentium Ms, and speedstep-ich only works if you
+> > have an Intel chipset in a notebook, which I assume you don't have. So
+> > the acpi driver is the only one left.
+> 
+> OK, and: 
+> model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.00GHz
+> 
+> is just confusing output and has nothing to do with a 'Pentium M',
+> right?
 
-Excellent. C3 would have been still better, though...
+There are, IIRC:
 
-> Most useful of all will be your information on throttling, which i
-> will experiment with. The last time I tried using throttling (through
-> some kde gui on a mandrake live disk), it made some strange whining
-> noises ;) Is it wholly safe? Noises make me uneasy...
+mobile Pentium III
+mobile Pentium III - M
+mobile Pentium 4
+mobile Pentium 4 - M
+Pentium M
 
-Search for singing or bad capacitors, throttling, and/or high-pitched noise on 
-the acpi and lkml lists, then you'll read many good posts on this :-)
+and these are three "classes" of processors (vast simplification, I know,
+but anyways) - pentium 3s, pentium 4s, and pentium M ("centrino")
+processors.
 
 	Dominik
