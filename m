@@ -1,11 +1,12 @@
-From: Hendrik Muhs <Hendrik.Muhs@web.de>
-Subject: [Patch] small cleanup for powernow-k7.c
-Date: Thu, 20 Jan 2005 21:38:35 +0100
-Message-ID: <200501202138.35324.Hendrik.Muhs@web.de>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [Patch] small cleanup for powernow-k7.c
+Date: Thu, 20 Jan 2005 20:57:36 -0500
+Message-ID: <20050121015736.GB32430@redhat.com>
+References: <200501202138.35324.Hendrik.Muhs@web.de>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_LbB8BygnIv6UDxm"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@ZenII.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <200501202138.35324.Hendrik.Muhs@web.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,84 +17,51 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk
-
---Boundary-00=_LbB8BygnIv6UDxm
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,
-
-attached is a patch which fixes a wrong entry in the vid table and some 
-comments.
-
-It is broken down from my powernow-k7 patch to manual set multiplier/voltage 
-(for Desktop mainboards which does not have  PST table in their BIOS 
-("Another powernow-k7 patch for Desktop XP-M usage")).
-
-A final question: 
-
-Is something like this absolutly out of question for inclusion in mainline?
-(yes I've read the archives and I have not found a final answer on this)
-
-I see that this feature is not official supported by vendors and although I 
-have implemented some mechanisms which should prevent serious CPU damage it 
-can not (by design) completly safe (system may freeze on some setups).
-
-On the other side their is demand for this feature (not only for me). I do not 
-know what to do with it in the future. If the door for inclusion in mainline 
-is closed I would consider make some kind of source package and 
-forking/renaming the driver so that it can be build independent from kernel.
-
-Hendrik
-
---Boundary-00=_LbB8BygnIv6UDxm
-Content-Type: text/x-diff; charset="us-ascii";
-	name="powernow-k7_smallcleanup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="powernow-k7_smallcleanup.patch"
-
---- linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c.orig	2005-01-20 19:45:56.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2005-01-20 20:11:04.000000000 +0100
-@@ -67,16 +67,20 @@
- #endif
- 
- #ifdef CONFIG_CPU_FREQ_DEBUG
--/* divide by 1000 to get VID. */
-+/* divide by 1000 to get VCore voltage in V. */
- static int mobile_vid_table[32] = {
-     2000, 1950, 1900, 1850, 1800, 1750, 1700, 1650,
-     1600, 1550, 1500, 1450, 1400, 1350, 1300, 0,
-     1275, 1250, 1225, 1200, 1175, 1150, 1125, 1100,
--    1075, 1050, 1024, 1000, 975, 950, 925, 0,
-+    1075, 1050, 1025, 1000, 975, 950, 925, 0,
- };
- #endif
- 
--/* divide by 10 to get FID. */
-+/* divide by 10 to get multiplier.
-+ * 0x19 should maybe 220 not 225 (see CrystalCPUID), but as their are no CPU's 
-+ * with this multiplier (and possibly never will be) it does not matter 
-+ */
-+
- static int fid_codes[32] = {
-     110, 115, 120, 125, 50, 55, 60, 65,
-     70, 75, 80, 85, 90, 95, 100, 105,
-
---Boundary-00=_LbB8BygnIv6UDxm
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Hendrik Muhs <Hendrik.Muhs@web.de>
+Cc: cpufreq@ZenII.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+On Thu, Jan 20, 2005 at 09:38:35PM +0100, Hendrik Muhs wrote:
+ > attached is a patch which fixes a wrong entry in the vid table and some 
+ > comments.
 
---Boundary-00=_LbB8BygnIv6UDxm--
+Thanks, I've merged this, and will send Linus a request to pull again
+soon so this should get into the next -rc release for 2.6.11.
+I didn't merge the bit about CrystalCPUID because I'm not convinced
+its true at all. I just double-checked the document I got from AMD
+which clearly states it's "Reserved for 22.5x"
+I don't know where the crystalcpuid folks got their numbers from, but
+I'm sceptical. I'll check for an updated version of the powernow documentation,
+but afaik, this is the last revision of this doc that was published.
 
+ > A final question: 
+ > 
+ > Is something like this absolutly out of question for inclusion in mainline?
+ > (yes I've read the archives and I have not found a final answer on this)
+ > 
+ > I see that this feature is not official supported by vendors and although I 
+ > have implemented some mechanisms which should prevent serious CPU damage it 
+ > can not (by design) completly safe (system may freeze on some setups).
+
+I've slowly warmed to the *idea* of having some means for supporting
+mobile chips in desktops, as it does seem to be happening more and more
+for some reason. I didn't look at your last patch to be honest, so I can't
+comment on whether its fit for merging before I take a look.
+
+ > On the other side their is demand for this feature (not only for me). I do not 
+ > know what to do with it in the future. If the door for inclusion in mainline 
+ > is closed I would consider make some kind of source package and 
+ > forking/renaming the driver so that it can be build independent from kernel.
+
+Lets see what we can do to get it included.  Maintaining out of tree modules
+is a real pain in the ass for all concerned, including end-users.
+Rather than see endless support requests for 'why wont it build' on cpufreq-list
+I'd rather we did what we could to get things like this included.
+
+I'm holding off on 'feature' type things for 2.6.11 from now on, the next
+round of cpufreq bits going to Linus should be only bug fixes, so hopefully
+by 2.6.12 time, we can close the book on this one. This gives us enough
+time to give it some exposure in Andrew's -mm tree too.
+
+		Dave
