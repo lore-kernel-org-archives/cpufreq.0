@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Cpufreq for opteron
-Date: Wed, 27 Aug 2003 07:13:56 +0200
+Subject: ACPI P-State platform limit [Was: Re: Cpufreq for opteron]
+Date: Wed, 27 Aug 2003 07:33:00 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030827051356.GA4037@brodo.de>
+Message-ID: <20030827053300.GB4037@brodo.de>
 References: <99F2150714F93F448942F9A9F112634C080EF034@txexmtae.amd.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
@@ -20,46 +20,60 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: paul.devriendt@AMD.com
-Cc: pavel@suse.cz, richard.brunner@AMD.com, aj@suse.de, cpufreq@www.linux.org.uk, davej@redhat.com, mark.langsdorf@AMD.com, linux-kernel@vger.kernel.org
+Cc: pavel@suse.cz, richard.brunner@AMD.com, aj@suse.de, cpufreq@www.linux.org.uk, davej@redhat.com, mark.langsdorf@AMD.com
 
-On Tue, Aug 26, 2003 at 07:43:37PM -0500, paul.devriendt@AMD.com wrote:
-> > > +	res = find_match(&targ, &min, &max,
-> > > +			 pol->policy ==
-> > > +			 CPUFREQ_POLICY_POWERSAVE ? SEARCH_DOWN 
-> > : SEARCH_UP, 0,
-> > > +			 0);
-> > 
-> > Why do you check for CPUFREQ_POLICY here??? In a ->target 
-> > class cpufreq
-> > driver[*] you must not worry about the policy, only about min and max
-> > frequency.
-> > 
-> > [*] ->target class cpufreq drivers [cpufreq_driver->target is 
-> > used] have
-> > specific operating frequencies.
-> >     ->setpolicy class cpufreq drivers have operating frequency ranges
-> > [currently only available on Transmeta Crusoe processors]
+[removed CC:linux-kernel]
+
+> > I dislike this interaction between ACPI and cpufreq -- it 
+> > should be done
+> > more generally. Let's discuss that seperately, though. And if 
+> > the code is
+> > dead code at the moment.
 > 
-> If the driver has to expand the range to find a matching frequency, it
-> has to know whether to expand up or down. That comes from policy.
+> The dead code has been removed in 1.00.07 of the driver. I am
+> happy to receive suggestions as to better ways of detecting battery
+> versus mains power transitions.
 
-No. A ->target class cpufreq driver doesn't care about policies. It cares
-about what the governor says [and "powersave" and "performance" are just 
-special governors]. If a driver has to expand the range to find a matching
-frequency, it has to expand _up_. See
-drivers/cpufreq/freq_table.c::cpufreq_frequency_table_verify() and
-section 1.3 of Documentation/cpu-freq/cpu-drivers.txt:
+Currently, the ACPI P-States cpufreq driver does implement the "platform
+limit". However, I'm not really excited about how it works -- and especially
+that it only works with the ACPI P-States cpufreq driver and not with all
+drivers.
 
-"You need to make sure that at least one valid frequency (or operating
-range) is within policy->min and policy->max. If necessary, increase
-policy->max fist, and only if this is no solution, decreas policy->min."
+[ A preliminary questions to the AMD people out here: Is the information in 
+the _PSS of any usage for the powernow-k{7,8} driver? ]
 
-Rationale for this is that cpufreq tries to guarantee at least policy->min
-processing power, independent of the chosen policy or governor.
+The platform limit [ _PPC ] refers to the states defined in _PSS. This means
+that this knowledge can and should be used independent of the cpufreq driver:
+if the _PPC is, let's say, 2, and accoring to _PSS P2 is 1.2 GHz, a
+"platform limit CPUFREQ_POLICY_NOTIFIER". If the _PPC changes, a
+new cpufreq_reevaluate() function should be called:
 
-> I'll look into for the next rev.
+/* cpufreq_reevaluate() - called by policy notifiers if their demands change
+ * @cpu - affected CPU (nr).
+ *
+ * Certain cpufreq policy notifiers have demands which change over time, for
+ * example a different ACPI platform limit aftern an docking/undocking event,
+ * or a dangerously high temperature. When such a demand changes,
+ * cpufreq_reevaluate() shall be called. This function will then try to set
+ * the existing ->min, ->max and ->policy or ->governor combination, and in
+ * this process all policy notifiers are called as usual.
+ *
+ * NOTE #1: this function might_sleep().
+ */
 
-Section 2 of Documentation/cpu-freq/cpu-drivers.txt explains frequency table
-helpers - maybe that helps.
- 
+cpufreq_reevluate(unsigned int cpu)
+{
+	cpufreq_policy * data = cpufreq_cpu_get(cpu);
+
+	if (!data)
+		return -EINVAL;
+
+	cpufreq_set_policy(data);
+
+	cpufreq_cpu_put(cpu);
+}
+
+
+Comments?
+
 	Dominik
