@@ -1,9 +1,9 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 1/2] 2.6: use scaling_available_freqs in acpi-cpufreq-ioport
-	driver
-Date: Fri, 20 Feb 2004 09:31:50 +0100
+Subject: [PATCH 2.6] cpufreq: single-line KERN_WARNING messages in
+	p4-clockmod
+Date: Fri, 20 Feb 2004 09:41:48 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040220083149.GA10215@dominikbrodowski.de>
+Message-ID: <20040220084148.GD10215@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -18,57 +18,45 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: len.brown@intel.com
-Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-Export an array of supported frequencies in sysfs [scaling_available_frequencies]
+Use KERN_WARNING for warning. Thanks to Dave Jones, Pavel Machel and Russell 
+King for their help getting this patch right.
 
- arch/i386/kernel/cpu/cpufreq/acpi.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletion(-)
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-02-18 10:22:09.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-02-18 22:29:03.112571968 +0100
-@@ -306,7 +306,7 @@
- 			data->freq_table[i].frequency = CPUFREQ_TABLE_END;
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-02-18 10:22:09.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-02-18 22:25:23.650935208 +0100
+@@ -181,21 +181,24 @@
+ {
+ 	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
+ 		/* Pentium M */
+-		printk(KERN_DEBUG PFX "Warning: Pentium M detected. The speedstep_centrino module\n");
+-		printk(KERN_DEBUG PFX "offers voltage scaling in addition of frequency scaling. You\n");
+-		printk(KERN_DEBUG PFX "should use that instead of p4-clockmod, if possible.\n");
++		printk(KERN_WARNING PFX "Warning: Pentium M detected. "
++		       "The speedstep_centrino module offers voltage scaling"
++		       " in addition of frequency scaling. You should use "
++		       "that instead of p4-clockmod, if possible.\n");
+ 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
  	}
  
--	result = cpufreq_frequency_table_cpuinfo(policy, &data->freq_table[0]);
-+	result = cpufreq_frequency_table_cpuinfo(policy, data->freq_table);
- 	if (result) {
- 		goto err_freqfree;
+ 	if (c->x86 != 0xF) {
+-		printk(KERN_DEBUG PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
++		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
+ 		return 0;
  	}
-@@ -321,6 +321,7 @@
- 			(u32) data->acpi_data.states[i].power,
- 			(u32) data->acpi_data.states[i].transition_latency);
  
-+	cpufreq_frequency_table_get_attr(data->freq_table, policy->cpu);
- 	return_VALUE(result);
- 
-  err_freqfree:
-@@ -345,6 +346,7 @@
- 	ACPI_FUNCTION_TRACE("acpi_cpufreq_cpu_exit");
- 
- 	if (data) {
-+		cpufreq_frequency_table_put_attr(policy->cpu);
- 		acpi_io_data[policy->cpu] = NULL;
- 		acpi_processor_unregister_performance(&data->acpi_data, policy->cpu);
- 		kfree(data);
-@@ -354,6 +356,11 @@
- }
- 
- 
-+static struct freq_attr* acpi_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
- static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.verify 	= acpi_cpufreq_verify,
- 	.target 	= acpi_cpufreq_target,
-@@ -361,6 +368,7 @@
- 	.exit		= acpi_cpufreq_cpu_exit,
- 	.name		= "acpi-cpufreq",
- 	.owner		= THIS_MODULE,
-+	.attr           = acpi_cpufreq_attr,
- };
+ 	if (speedstep_detect_processor() == SPEEDSTEP_PROCESSOR_P4M) {
+-		printk(KERN_DEBUG PFX "Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq \n");
+-		printk(KERN_DEBUG PFX "modules offers voltage scaling in addition of frequency scaling. You\n");
+-		printk(KERN_DEBUG PFX "should use either one instead of p4-clockmod, if possible.\n");
++		printk(KERN_WARNING PFX "Warning: Pentium 4-M detected. "
++		       "The speedstep-ich or acpi cpufreq modules offers "
++		       "voltage scaling in addition of frequency scaling. "
++		       "You should use either one instead of p4-clockmod, "
++		       "if possible.\n");
+ 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4M);
+ 	}
