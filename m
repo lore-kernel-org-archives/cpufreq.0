@@ -1,11 +1,13 @@
-From: Jens Olav Nygaard <Jens.O.Nygaard@sintef.no>
-Subject: Dual P4 Xeon, will it work?
-Date: Mon, 19 Jan 2004 11:20:11 +0100
+From: Jens Olav Nygaard <jens.o.nygaard@sintef.no>
+Subject: Re: Dual P4 Xeon, will it work?
+Date: Mon, 19 Jan 2004 12:38:05 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <400BAF5B.1080707@sintef.no>
+Message-ID: <400BC19D.7080406@sintef.no>
+References: <400BAF5B.1080707@sintef.no>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+In-Reply-To: <400BAF5B.1080707@sintef.no>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,32 +20,17 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
 
-Hi, sorry if this is a faq, I'm new to the list and
-being somewhat impatient I haven't gone through the
-whole archive yet...
+Sorry to have bothered you all, we actually got it
+to work on the Dell machine... :-)
 
-I'm just wondering if a dual P4 Xeon (specifically
-Asus PC-DL Deluxe w/2xXeon 2.67 GHz w/HT) will
-work with cpufreq. My whole upgrade-scheme hinges
-on this being possible, since the machine is
-supposed to run 24/7, but not as a big heat-plant
-during most of these hours...
+Frequencies differing with a factor 4 produced
+execution time differences of factor 2.6, I
+suppose this has to do with RAM speed bottlenecks
+or something, our test was just to gzip a big file.
 
-My colleague tried on an older Dell dual Xeon 1.7
-GHz, kernel 2.6.0, but he didn't get it to work.
-Now, this could be attributable to both old and
-insufficient hardware, and his attempts not being
-sincere enough, so I don't know...
+Anyway, now I know it works! Great!
 
-Has anyone out there actually seen it working on
-a dual Xeon?
-
-thanks for any replies...
-
-yours
-
-Jens Olav Nygaard
-
+J.O.
 
 
 
