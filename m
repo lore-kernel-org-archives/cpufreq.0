@@ -1,14 +1,15 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: speedstep-smi into -ac ?
-Date: Fri, 5 Sep 2003 08:54:33 +0200
+Subject: Re: [ACPI] [PATCHES] ACPI Processor update [idle, throttling,
+	thermal, cpufreq]
+Date: Fri, 5 Sep 2003 08:52:39 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030905065433.GC4003@brodo.de>
-References: <87ekywzjvm.wl%miura@da-cha.org> <20030904232555.GA8650@brodo.de>
-	<87bru0yutb.wl%miura@da-cha.org>
+Message-ID: <20030905065239.GB4003@brodo.de>
+References: <20030904222434.GC6350@brodo.de>
+	<200309050023.06761.dtor_core@ameritech.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <87bru0yutb.wl%miura@da-cha.org>
+In-Reply-To: <200309050023.06761.dtor_core@ameritech.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,26 +21,161 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hiroshi Miura <miura@da-cha.org>
-Cc: "'cpufreq@www linux org uk'" <cpufreq@www.linux.org.uk>
+To: Dmitry Torokhov <dtor_core@ameritech.net>
+Cc: acpi-devel@lists.sourceforge.net, andrew.grover@intel.com, cpufreq@www.linux.org.uk
 
-On Fri, Sep 05, 2003 at 08:53:36AM +0900, Hiroshi Miura wrote:
-> 
-> At Fri, 5 Sep 2003 01:25:55 +0200,
-> Dominik Brodowski wrote:
-> > 
-> > Actually, I much preferred the original version of your driver. This "event"
-> > stuff can either be done as a seperate governor (different file), or in
-> > userspace (as Bruno has pointed out).
-> > 
-> > What do you think about the patches for your driver I sent you?
-> 
-> I think your patches is better. I cannot test on 440BX/ZX, so it is needed.
-> 
-> My previous post is only to demonstrate event smi function and
-> a sample implementation.
+Dmitry,
 
-What do you think: is the speedstep-smi driver v1 as it is in CVS now ready
-to be pushed to Alan?
+Thanks for your input.
 
-	Dominik
+On Fri, Sep 05, 2003 at 12:23:06AM -0500, Dmitry Torokhov wrote:
+> I have couple of concerns regarding P-states IO library, esp. 
+> acpi_processor_get_frequency. It seems that ACPI does not allow
+> to read current state without setting it first.
+
+Indeed. The specification allows this behaviour. That's really annoying, but
+well...
+
+> Also, do you really need to do notify_transition twice 
+> (acpi_processor_set_performance)?
+
+No, it's a bug.
+
+The attached patch should fix both issues.
+
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi-io-cpufreq.c linux/arch/i386/kernel/cpu/cpufreq/acpi-io-cpufreq.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/acpi-io-cpufreq.c	2003-09-04 21:36:58.000000000 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/acpi-io-cpufreq.c	2003-09-05 08:47:54.302664624 +0200
+@@ -33,6 +33,7 @@
+ #include <asm/io.h>
+ #include <asm/delay.h>
+ #include <asm/uaccess.h>
++#include <asm/timex.h>
+ 
+ #include <linux/acpi.h>
+ #include <acpi/processor.h>
+@@ -54,32 +55,16 @@
+ 	u16 				control_register;
+ 	u16 				status_register;
+ 
++	unsigned long			previous_freq;
+ 	struct cpufreq_frequency_table	*table;
+ };
+ 
+ static struct cpufreq_acpi_io_data acpi_io_data[NR_CPUS];
+ 
+-static unsigned long acpi_processor_get_frequency (
+-	struct cpufreq_acpi_io_data 	*data)
+-{
+-	unsigned int		i;
+-	u16			port;
+-	u8			value;
+-
+-	port = data->status_register;
+-	value = inb(port);
+-
+-	for (i=0; i<data->data->state_count; i++) {
+-		if (value == (u8) data->data->states[i].status)
+-			return (1000 * data->data->states[i].core_frequency);
+-	}
+-
+-	return 0;
+-}
+-
+ static int acpi_processor_set_performance (
+ 	struct cpufreq_acpi_io_data 	*data,
+-	int				state)
++	int				state,
++	unsigned int			notify)
+ {
+ 	u16			port;
+ 	u8			value;
+@@ -88,14 +73,12 @@
+ 
+ 	/* cpufreq frequency struct */
+ 	cpufreq_freqs.cpu = data->cpu;
+-	cpufreq_freqs.old = acpi_processor_get_frequency(data);
++	cpufreq_freqs.old = data->previous_freq;
+ 	cpufreq_freqs.new = data->data->states[state].core_frequency;
+ 
+ 	/* notify cpufreq */
+-	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
+-
+-	/* notify cpufreq */
+-	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
++	if (notify)
++		cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
+ 
+ 	/*
+ 	 * First we write the target state's 'control' value to the
+@@ -129,18 +112,21 @@
+ 	}
+ 
+ 	/* notify cpufreq */
++	if (notify)
+ 	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
+ 
+ 	if (value != data->data->states[state].status) {
+ 		unsigned int tmp = cpufreq_freqs.new;
+ 		cpufreq_freqs.new = cpufreq_freqs.old;
+ 		cpufreq_freqs.old = tmp;
+-		cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
+-		cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
++		if (notify) {
++			cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
++			cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
++		}
+ 		printk(KERN_ERR "Transition failed\n");
+ 		return -EINVAL;
+ 	}
+-
++	data->previous_freq = data->data->states[state].core_frequency * 1000;
+ 	dprintk(KERN_INFO "Transition successful after %d microseconds\n", i * 10);
+ 	return 0;
+ }
+@@ -162,7 +148,7 @@
+ 	if (result)
+ 		return (result);
+ 
+-	return acpi_processor_set_performance (data, next_state);
++	return acpi_processor_set_performance (data, next_state, 1);
+ }
+ 
+ static int acpi_cpufreq_verify (struct cpufreq_policy   *policy)
+@@ -183,6 +169,7 @@
+ 	struct acpi_perflib_data *data;
+ 	struct cpufreq_frequency_table *table;
+ 	unsigned int i;
++	unsigned long tmp_speed;
+ 
+ 	data = acpi_processor_perflib_register (&acpi_cpufreq_perflib_driver,
+ 						 policy->cpu);
+@@ -221,7 +208,29 @@
+ 	acpi_io_data[policy->cpu].status_register = (u16) data->pct_status.address;
+ 	acpi_io_data[policy->cpu].control_register = (u16) data->pct_control.address;
+ 
+-	return 0;
++	/* 
++	 * The ACPI specificiation is broken in the regard that
++	 * it is impossible to detect the _current_ P-State.
++	 * The control_register is only valid _after_ a frequency
++	 * transition.
++	 * So, we try to get the current setting from cpu_khz,
++	 * but to make sure, this state we think the CPU is in
++	 * is also set.
++	 */
++	if (cpu_khz) {
++		tmp_speed = cpu_khz / 100;
++		tmp_speed *= 105;
++	} else {
++		tmp_speed = policy->cpuinfo.max_freq;
++	}
++	result = cpufreq_frequency_table_target(policy, data->table,
++						tmp_speed,
++						CPUFREQ_RELATION_L,
++						&i);
++	if (result)
++		return (result);
++
++	return acpi_processor_set_performance (data, i, 0);
+ }
