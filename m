@@ -1,13 +1,14 @@
-From: Dave Jones <davej@redhat.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: governor implementations
-Date: Fri, 30 Apr 2004 14:27:01 +0100
+Date: Sat, 1 May 2004 20:23:59 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040430132701.GV15737@redhat.com>
-References: <88056F38E9E48644A0F562A38C64FB6001BFE986@scsmsx403.sc.intel.com>
+Message-ID: <20040501182359.GE578@poupinou.org>
+References: <E1BJM2v-0001tP-Nf@www.linux.org.uk>
+	<Pine.LNX.4.44.0404292040380.1552-100000@cat.eecg.toronto.edu>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6001BFE986@scsmsx403.sc.intel.com>
+In-Reply-To: <Pine.LNX.4.44.0404292040380.1552-100000@cat.eecg.toronto.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,18 +20,28 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@www.linux.org.uk, Nickolai Zeldovich <nickolai@cs.stanford.edu>
+To: David Tam <tamda@eecg.toronto.edu>
+Cc: wtsang@dgp.toronto.edu, cpufreq@www.linux.org.uk, Catalin Drula <catalin@cs.toronto.edu>
 
-On Thu, Apr 29, 2004 at 05:37:52PM -0700, Pallipadi, Venkatesh wrote:
+On Thu, Apr 29, 2004 at 09:46:40PM -0400, David Tam wrote:
+> Hi.
+> 
+> We did some work along these lines for a grad course project in Dec 2003.
+> It was done using a development version of Linux kernel 2.6.
+> Unfortunately, we haven't had time to keep it up to date.
+> Hopefully, it only requires minor updates.
+> 
+> Here is a link to the web page.  You can check out our presentation slides,
+> final report, and other docs.
+> http://www.eecg.toronto.edu/~tamda/csc2228/
 
- > Attached is a simple in-kernel CPU frequency governor. This has some
- > minor modification to the one that I had sent on this list, couple of
- > months back.
+BTW, do you want to update them (even though you think you don't have
+time for) in your sparse time?
+NB: floating arithmetics shall be avoided in kernel land.  It's
+probably the main issue in your(s) governor(s).
 
-I have one major concern about this patch.
-http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=6,298,448.WKU.&OS=PN/6,298,448&RS=PN/6,298,448
+-- 
+Bruno Ducrot
 
-What do Intel's legal dept have to say about this?
-
-		Dave
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
