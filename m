@@ -1,17 +1,16 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: cpufreq on ARM broken
-Date: Wed, 2 Jun 2004 22:36:19 +0100
+From: "Wayne Wylupski" <wayne@connact.com>
+Subject: Re: userspace not supported for longrun?
+Date: Thu, 3 Jun 2004 00:18:32 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040602223619.C9322@flint.arm.linux.org.uk>
-References: <20040529170151.B3799@flint.arm.linux.org.uk>
-	<1086109894.27727.24.camel@delerium.codemonkey.org.uk>
-	<20040602122153.GB8781@dominikbrodowski.de>
+Message-ID: <003901c44921$d5229ba0$6900a8c0@DEVELOPER>
+References: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
+	<20040601093110.GE7926@poupinou.org>
+	<005701c44833$71e8ca30$6900a8c0@DEVELOPER>
+	<20040602121916.GA8781@dominikbrodowski.de>
+	<20040602132804.GC13782@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040602122153.GB8781@dominikbrodowski.de>;
-	from linux@dominikbrodowski.de on Wed, Jun 02, 2004 at 02:21:53PM
-	+0200
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,29 +21,12 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk, Bruno Ducrot <ducrot@poupinou.org>
 
-On Wed, Jun 02, 2004 at 02:21:53PM +0200, Dominik Brodowski wrote:
-> On Tue, Jun 01, 2004 at 06:11:34PM +0100, Dave Jones wrote:
-> > Thoughts ?
-> > I've forgotten why we introduced this flag, it appears that this
-> > would be the first thing in the tree to actually use it,
-> > which makes me sceptical.
-> 
-> This flag was introduced when I added the "fail if no proper CPU found"
-> feature, which is helpful for the ACPI P-States driver and some other x86
-> drivers which only check whether they can run on _any_ CPU in the
-> cpu-specific initialization call. To assert backwards-compatibility, this
-> flag avoids "automatic unregistration" -- I wasn't aware some drivers do
-> need this backwards compatibility, but obviously ARM needs it. So Russell's 
-> patch looks to be what's needed, from my perspective.
+Thank you everyone.  It's clear that cpuspeed is the wrong service for
+Crusoe chips, and
+other tools & services should be used instead.  I believe my laptop supports
+ACPI, but I'll
+also check out longrun and cpufreqd as well.
 
-It isn't back-compat.  It's caused by a side effect of how the order of
-initialisation.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
-                 2.6 Serial core
+Wayne
