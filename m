@@ -1,13 +1,13 @@
 From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: frequency scaling for desktop opteron?
-Date: Fri, 16 Apr 2004 13:53:15 +0200
+Subject: Re: Acer Aspire  1350 broken PST
+Date: Fri, 16 Apr 2004 14:05:19 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040416115315.GS8953@poupinou.org>
-References: <Pine.LNX.4.44.0404160359580.21826-100000@sasami.anime.net>
+Message-ID: <20040416120519.GT8953@poupinou.org>
+References: <c5n0ms$7nc$1@sea.gmane.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0404160359580.21826-100000@sasami.anime.net>
+In-Reply-To: <c5n0ms$7nc$1@sea.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,43 +19,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Hollis <spamtrap3074431@anime.net>
-Cc: Cpufreq@www.linux.org.uk
+To: jy <jy454@yahoo.fr>
+Cc: cpufreq@www.linux.org.uk
 
-On Fri, Apr 16, 2004 at 04:05:03AM -0700, Dan Hollis wrote:
-> Does desktop opteron support frequency scaling?
+On Fri, Apr 16, 2004 at 12:00:58AM +0200, jy wrote:
+> I have Acer Aspire 1357LMi laptop with AMD Athlon XP 3000+ and of course 
+> cpufreq don't work
 > 
-> I have Opteron 140 in Tyan Tomcat K8S (S2850).
 
-I think some are able (but I don't know if those are available yet).
+Could you please try latest cpufreq?  it's at
+http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/
 
-> kernel 2.6.5:
-> 
-> $ cat /proc/cpuinfo 
-> processor       : 0
-> vendor_id       : AuthenticAMD
-> cpu family      : 15
-> model           : 5
-> model name      : AMD Opteron(tm) Processor 140
-> stepping        : 8
-> cpu MHz         : 1403.198
-> cache size      : 1024 KB
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 1
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm 3dnowext 3dnow
-> bogomips        : 2760.70
-> TLB size        : 1088 4K pages
-> clflush size    : 64
-> address sizes   : 40 bits physical, 48 bits virtual
-> power management: ts ttp
+with CONFIG_ACPI_PROCESSOR=YES ?
 
-Unfortunately, your processor do not support voltage/frequency scaling:
-the power management say this processor do have "only" 'thermal
-sensor' (the ts flag) and 'thermal trip point' (the ttp flag).
+I would like also that you test dump_psb.c
+
+wget http://poup.poupinou.org/cpufreq/powernow-k7/dump_psb.c
+gcc -O2 -Wall dump_psb.c -o dump_psb
+sudo ./dump_psb 9
+
+in order to check if that model actually do have more PSTs.
 
 Cheers,
+
 
 -- 
 Bruno Ducrot
