@@ -1,13 +1,16 @@
-From: Viktor Radnai <efti@gotiao.com>
-Subject: Re: Dell Inspiron 8200
-Date: Sun, 09 Nov 2003 22:03:35 +1100
+From: Carl Thompson <cet@carlthompson.net>
+Subject: Re: CPUSpeed 1.1 released (finally)
+Date: Sun,  9 Nov 2003 12:00:04 -0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <3FAE1F07.5020305@gotiao.com>
-References: <20031107145510.GH2750@pengutronix.de>
+Message-ID: <1068408004.b7977ea6c60f1@carlthompson.net>
+References: <1068264857.2c5ff476f0b29@carlthompson.net>
+	<1068370287.7434.0.camel@laptop.fenrus.com>
+	<1068371332.7434.3.camel@laptop.fenrus.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031107145510.GH2750@pengutronix.de>
+In-Reply-To: <1068371332.7434.3.camel@laptop.fenrus.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,28 +20,48 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Robert Schwebel <robert@schwebel.de>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: arjanv@redhat.com
+Cc: NERvOus <nervous@nervous.it>, Gerald Teschl <Gerald.Teschl@univie.ac.at>, Christian Zoz <zoz@suse.de>, Enrico Tassi <tassi@cs.unibo.it>, CPUFreq Mailing List <cpufreq@www.linux.org.uk>
 
-I had that problem before with my Dell Inspiron 4150. I was using an 
-older (late 2.5 iirc) kernel. I've found that the ACPI frequency scaling 
-driver was crashing on startup and my 2GHz Pentium 4M was running at 
-700MHz (which could be a BIOS default for saving power, maybe?).
+Quoting Arjan van de Ven <arjanv@redhat.com>:
 
-In any case, it would be useful if you could tell us what cpufreq 
-related settings you configured in your kernel, and any related output 
-from dmesg. It's no point speculating without more information.
+> > ...
 
-Regards,
-Vik
+> > However one minor nitpick: It's not allowed to call fopen() from a
+> > signal handler....... I'll try to work up a patch for this and send it
 
-Robert Schwebel wrote:
-> Hi, 
-> 
-> I just tried 2.6.0-test9 on my Dell Inspiron 8200 Laptop with Debian
-> unstable; it seems like I don't get the full speed any more. The system
-> has a 1.7 GHz Mobile P4, but /proc/cpuinfo only shows 1196.593 MHz (cpu
-> MHz). Any idea what I could try? 
-> 
-> Robert
+It _is_ allowed to call fopen() from a signal handler...  Perhaps what you
+mean is that fopen() is not a reentrant function and non-reentrant
+functions are usually not used in signal handlers?  This is because you
+don't want non-reentrant functions in the main program and in the signal
+handlers to clobber each other.  However, in this case the main program is
+a tight loop that does nothing except raise the ALRM signal so the use of
+non-reentrant functions in the signal handlers will not interfere with
+anything.  The only issue is making sure that the signal handlers cannot
+interrupt each other causing the same problem, and that is why I block all
+of the signals in all of the signal handlers.
+
+> patch attached; it also converts usleep to nanosleep which I've been
+> told is the much better API for this sort of thing anyway.
+
+Well, the problem with usleep() is that it uses SIGALRM in some
+implementations... However, the glibc implementation seems to just to be a
+wrapper around nanosleep() and does not cause issues so I chose usleep()
+because the interface is simpler.  However, I will switch it to nanosleep()
+because there may be some Linux installations that do not use glibc but
+some other C library that has an issue.
+
+> It turns out that the code never really actually set an alarm, but
+> really just raise()'d the signal instead of doing a function call....
+
+Your patch would allow alarm_handler() (called as a regular function) to be
+interrupted by the  hup_handler() handler.  This would actually have the
+opposite affect as intended because both functions use non-reentrant
+functions.
+
+So the short answer is that the logic of the program will stay the same
+because it is not broken but I will switch to using nanosleep().
+
+Thanks,
+Carl Thompson
