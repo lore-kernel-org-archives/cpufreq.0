@@ -1,13 +1,11 @@
-From: AthlonRob <AthlonRob@axpr.net>
-Subject: Re: [RFC] split up cpufreq.c in several files, x86 autoloader
-Date: Fri, 03 Oct 2003 16:23:52 -0700
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <1065223432.13298.16.camel@dell.linux.box>
-References: <20031003223612.GA18181@brodo.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Kconfig help fixes
+Date: Sun, 5 Oct 2003 22:23:23 +0200
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031005202323.GA2366@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20031003223612.GA18181@brodo.de>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,22 +14,50 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, Rusty trivial patch monkey Russell <trivial@rustcorp.com.au>
 
-On Fri, 2003-10-03 at 15:36, Dominik Brodowski wrote:
+Hi!
 
-> For x86 there is a wide choice of cpufreq drivers. Especially for
-> distributions and inexperienced users [no pun intended] it might become more
-> and more difficult to select the best driver: "I got a mobile Pentium-4-M,
-> p4-clockmod or speedstep-ich?" is one good example. Should the detection of
-> the "best" cpufreq driver be made available as an optional(!)
-> "cpufreq-autoload" module in arch/i386/kernel/cpu/cpufreq/?
+This seems to be needed...
+							Pavel
 
-I like that idea, as well as the module idea.
+Index: drivers/cpufreq/Kconfig
+===================================================================
+RCS file: /home/pavel/sf/bitbucket/bkcvs/linux-2.5/drivers/cpufreq/Kconfig,v
+retrieving revision 1.4
+diff -u -r1.4 Kconfig
+--- drivers/cpufreq/Kconfig	5 Sep 2003 19:15:37 -0000	1.4
++++ drivers/cpufreq/Kconfig	5 Oct 2003 20:09:21 -0000
+@@ -6,7 +6,7 @@
+ 	  CPUFreq. Please note that it is recommended to use the sysfs
+ 	  interface instead (which is built automatically). 
+ 	  
+-	  For details, take a look at linux/Documentation/cpufreq. 
++	  For details, take a look at linux/Documentation/cpu-freq. 
+ 	  
+ 	  If in doubt, say N.
+ 
+@@ -64,7 +64,7 @@
+           be able to set the CPU dynamically, like on LART 
+ 	  ( http://www.lart.tudelft.nl/ )
+ 
+-	  For details, take a look at linux/Documentation/cpufreq. 
++	  For details, take a look at linux/Documentation/cpu-freq.
+ 
+ 	  If in doubt, say Y.
+ 
+@@ -78,6 +78,6 @@
+ 	  the same functionality as long as "userspace" is the
+ 	  selected governor for the specified CPU.
+ 	
+-	  For details, take a look at linux/Documentation/cpufreq. 
++	  For details, take a look at linux/Documentation/cpu-freq.
+ 
+ 	  If in doubt, say N.
 
-I would be sure and take in to account, however, Dell laptops not
-wanting to work with some (all?) drivers in this autoload section.
-
-Rob
+-- 
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
