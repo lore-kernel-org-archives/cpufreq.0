@@ -1,13 +1,12 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Can you please try this powernow-k8.c patch ?
-Date: Tue, 16 Nov 2004 21:38:53 +0100
-Message-ID: <20041116203853.GV31422@poupinou.org>
-References: <84EA05E2CA77634C82730353CBE3A84301539DCB@SAUSEXMB1.amd.com>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH] Driver to export CPUfreq statistic
+Date: Tue, 16 Nov 2004 21:42:02 +0100
+Message-ID: <20041116204202.GA9121@dominikbrodowski.de>
+References: <894E37DECA393E4D9374E0ACBBE7427013C98A@pdsmsx402.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="R3G7APHDIzY6R/pk"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301539DCB@SAUSEXMB1.amd.com>
+In-Reply-To: <894E37DECA393E4D9374E0ACBBE7427013C98A@pdsmsx402.ccr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,192 +17,198 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: "Devriendt, Paul" <paul.devriendt@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Zou, Nanhai" <nanhai.zou@intel.com>
 Cc: cpufreq@www.linux.org.uk
 
+Hi,
 
---R3G7APHDIzY6R/pk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Please test and review it.
 
-On Tue, Nov 16, 2004 at 12:32:05PM -0600, Devriendt, Paul wrote:
-> > Well, it seems to have done the trick for the frequency,
-> > Thanks very much, 
-> > 
-> > Also I can see in /sys/devices/system/cpu/cpu0/cpufreq a 
-> > changed value of 
-> > frequency, is it possible to see if voltage changes as well? 
-> > Looking at the 
-> > log provided, I see, that only frequency seems to be changing 
-> > (although I 
-> > finally seem to get cooler CPU, I can hear the fan reducing 
-> > RPM, sometimes 
-> > turning off at all :))
-> 
-> I'm glad it fixed the problem. The voltage is changing, you can
-> see it from the debug log:
-> 
-> > powernow-k8: writing vid 0x18, lo 0x11800, hi 0x1
-> > powernow-k8: ph3 complete, currfid 0x0, currvid 0x18
-> > powernow-k8: transitioned (cpu0): new fid 0x0, vid 0x18
-> 
-> The voltage information is not available from the cpufreq
-> files. The only way I know to see the voltage information is
-> to either switch on debug in the driver or look at the values
-> in the fid/vid status MSR, which is a register that can only
-> be accessed from kernel space.
-
-But MSR can be acceded in userspace via the msr driver.
-
-Could you please test the attached little program?
-
-This give me:
-
-ducrot@poupoune:~/debug/cpufrequtils-0.1-pre2$ cpufreq-info     
-cpufrequtils 0.1-pre2: cpufreq-info (C) Dominik Brodowski 2004
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
-  driver: powernow-k8
-  hardware limits: 1000 MHz - 2.20 GHz
-  available frequency steps: 2.20 GHz, 2.00 GHz, 1000 MHz
-  available cpufreq governors: powersave, userspace, performance
-  current policy: frequency should be within 1000 MHz and 2.20 GHz.
-                  The governor "userspace" may decide which speed to use
-                  within this range.
-  current CPU frequency is 2.20 GHz.
-analyzing CPU 1:
-  driver: powernow-k8
-  hardware limits: 1000 MHz - 2.20 GHz
-  available frequency steps: 2.20 GHz, 2.00 GHz, 1000 MHz
-  available cpufreq governors: powersave, userspace, performance
-  current policy: frequency should be within 1000 MHz and 2.20 GHz.
-                  The governor "userspace" may decide which speed to use
-                  within this range.
-  current CPU frequency is 1000 MHz.
-ducrot@poupoune:~/debug/cpufrequtils-0.1-pre2$ sudo ./debug/x86_64/powernow-k8-decode 0
-cpu 0 currently at 2200 MHz and 1500 mV
-ducrot@poupoune:~/debug/cpufrequtils-0.1-pre2$ sudo ./debug/x86_64/powernow-k8-decode 1
-cpu 1 currently at 1000 MHz and 1100 mV
-
-Dominik, is it OK to put it in your cpufrequtils after review?
-
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
-
---R3G7APHDIzY6R/pk
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="powernow-k8-decode.c"
-
-/*
- *  (C) 2004 Bruno Ducrot <ducrot@poupinou.org>
- *
- *  Licensed under the terms of the GNU GPL License version 2.
- *
- * Based on code found in
- * linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
- * and originally developed by Paul Devriendt
- */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <fcntl.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#define MSR_FIDVID_STATUS	0xc0010042
-
-#define MSR_S_HI_CURRENT_VID	0x0000001f
-#define MSR_S_LO_CURRENT_FID	0x0000003f
-
-static int get_fidvid(unsigned int cpu, unsigned int *fid, unsigned int *vid)
-{
-	int err = 1;
-	unsigned long long msr;
-	int fd;
-	char file[20];
-
-	if (cpu > 32)
-		goto out;
-
-	sprintf(file, "/dev/cpu/%d/msr", cpu);
-
-	fd = open(file, O_RDONLY);
-	if (fd < 0)
-		goto out;
-	lseek(fd, MSR_FIDVID_STATUS, SEEK_CUR);
-	if (read(fd, &msr, 8) != 8)
-		goto err1;
-
-	*fid = ((unsigned int)(msr & 0xffffffffull)) & MSR_S_LO_CURRENT_FID;
-	*vid = ((unsigned int)(msr>>32 & 0xffffffffull)) & MSR_S_HI_CURRENT_VID;
-	err = 0;
-err1:
-	close(fd);
-out:
-	return err;
-}
+A review is first -- it looks good and useful, just a few small issues:
 
 
-/* Return a frequency in MHz, given an input fid */
-static unsigned int find_freq_from_fid(unsigned int fid)
-{
-	        return 800 + (fid * 100);
-}
++static spinlock_t cpufreq_stats_lock = SPIN_LOCK_UNLOCKED;
 
-/* Return a voltage in miliVolts, given an input vid */
-static unsigned int find_millivolts_from_vid(unsigned int vid)
-{
-	        return 1550-vid*25;
-}
+Please use spin_lock_init(&cpufreq_stats_lock) in cpufreq_stats_init()
+instead of SPIN_LOCK_UNLOCKED, please. It's something which helps for the
+"real-time" patches currently under discussion.
 
-int main (int argc, char **argv)
-{
-	int err;
-	int cpu;
-	unsigned int fid, vid;
++#define CPUFREQ_STATDEVICE_ATTR(_name,_mode,_show) \
++static struct cpufreq_stats_attribute _attr_##_name = {\
++	.attr = {.name = __stringify(_name), .mode = _mode, }, \
 
-	if (argc < 2) {
-		printf("usage %s cpu\n", argv[0]);
-		exit(1);
-	}
+AFAICS a ".owner = THIS_MODULE" is missing inside .attr
 
-	cpu = strtoul(argv[1], NULL, 0);
-	err = get_fidvid(cpu, &fid, &vid);
++	struct kobject kobj;
 
-	if (err) {
-		printf("can't get fid, vid from MSR\n");
-		printf("Possible trouble: you don't run a powernow-k8 capable cpu\n");
-		printf("or you are not root, or the msr driver is not present\n");
-		exit(1);
-	}
+Do we need a kobject for this? Could a atrribute_group suffice?
 
-	
-	printf("cpu %d currently at %d MHz and %d mV\n",
-			cpu,
-			find_freq_from_fid(fid),
-			find_millivolts_from_vid(vid));
-	
-	return 0;
-}
++cpufreq_stats_attr_show(struct kobject * kobj,
++		struct attribute *attr, char *buf)
++{
++	struct cpufreq_stats_attribute *cpufreq_stat_attr
++		= (struct cpufreq_stats_attribute *)(attr);
++	struct cpufreq_stats *stat = (struct cpufreq_stats *)kobj;
 
---R3G7APHDIzY6R/pk
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This looks like a hack. Please use "container_of(,,)" instead, possibly in a
+#define -- like
+#define to_pci_bus(n)   container_of(n, struct pci_bus, class_dev)
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
++static struct kobj_type ktype_cpufreq_stats = {
++	.sysfs_ops = &cpufreq_stats_attr_ops,
++	.default_attrs = default_attrs
++};
++
+...
++	for (i = 0;(attr = stat_attrs[i]); i++) {
++		if ((ret = sysfs_create_file(&stat->kobj, &attr->attr)))
++			goto error_out_unregister;
++	}
 
---R3G7APHDIzY6R/pk--
+You can remove this loop (and stat_attrs[]) if you do:
 
+static struct attribute *default_attrs[] = {
+	&_attr_total_trans.attr,
+	&_attr_time_in_state.attr,
+#ifdef CONFIG_CPU_FREQ_STAT_DETAILS 
+	&_attr_trans_table.attr,
+#endif	
+	NULL
+};
+
++	for (i=0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
++		unsigned int freq = table[i].frequency;
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++		count++;
++	}
++
++	alloc_size = count * sizeof(int) + count * sizeof(long long);
++
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	alloc_size += count * count * sizeof(int);
++#endif 
++	stat->max_state = count;
++	stat->time_in_state = kmalloc(alloc_size, GFP_KERNEL);
++	if (!stat->time_in_state) {
++		ret = -ENOMEM;
++		goto error_out_unregister;
++	}
++	memset(stat->time_in_state, 0, alloc_size);
++	stat->freq_table = (unsigned int *)(stat->time_in_state + count);
++
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	stat->trans_table = stat->freq_table + count;
++#endif
++	j = 0;
++	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
++		unsigned int freq = table[i].frequency;
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++		if (freq_table_get_index(stat, freq) == -1) 
++			stat->freq_table[j++] = freq;
++	}
+
+I'm worried a bit about the handling of the frequency table, and asserting
+that it doesn't disappear in between. As you use the one reported to the
+freq table helpers, it may not change during normal operation, and gets
+unregistered during the driver's ->exit() function. Therefore, we need to
+avoid ->exit() being called as long as the frequency table is handled in
+this stats driver. This means:
+
+	... cpufreq_cpu_get()
+	...
+	table = cpufreq_frequency_get_table()
+	/* use table */
+
+	/* from now on the table can't be used directly any more */
+	cpufreq_cpu_put(...)
+
+
++cpufreq_stat_notifier_policy (struct notifier_block *nb, unsigned long val,
++		void *data)
++{
++	int ret;
++	struct cpufreq_policy *policy = data;
++	struct cpufreq_frequency_table *table;
++	unsigned int cpu = policy->cpu;
++	if (val != CPUFREQ_NOTIFY)
++		return 0;
++	table = cpufreq_frequency_get_table(cpu);
++	if (current_freq_tables[cpu] != table) {
++		if (current_freq_tables[cpu])
++			cpufreq_stats_free_table(cpu);
++		if ((ret = cpufreq_stats_create_table(policy, table)))
++			return ret;
++		current_freq_tables[cpu] = table;
+
+
+Uh, do you really want to handle tables changing in between? Those exported
+via freq_table to userspace _may_ not change between registration and
+unregistration. I'm worried more about drivers which either have no
+freq_table, or don't export it (yet) (like pmac_cpufreq).
+
++{
++	int ret;
++	unsigned int cpu;
++	if ((ret = cpufreq
++		return ret;
++	for_each_cpu(cpu)
++		cpufreq_update_policy(cpu);
++	return cpufreq_register_notifier(&notifier_trans_block,
++			CPUFREQ_TRANSITION_NOTIFIER);
+
+This will cause an oops if the register_notifier(POLICY) succeeded, but
+register_notifier(TRANSITION) failed: you'd need to do
+	ret = cpufreq_register_notifier(&notifier_trans_block,
+			CPUFREQ_TRANSITION_NOTIFIER);
+	if (ret)
+		cpufreq_unregister_notifier(&notifier_policy_block,
+					CPUFREQ_POLICY_NOTIFIER)))
+
++struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
++{
++	        return show_table[cpu];
++}
++EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
+
+Please add a comment above this function that it is only safe to use the
+data obtained as long as a reference obtained by cpufreq_cpu_get() is held;
+and you need to copy it to a local place __and__ can't be sure it doesn't
+change forever.
+
++config CPU_FREQ_STAT
++       tristate "CPU frequency translation statistics"
++       depends on CPU_FREQ_TABLE
++       default y
++       help
++         This driver exports CPU frequency statistics information through sysfs
++         file system
++
++config CPU_FREQ_STAT_DETAILS
++       bool "CPU frequency translation statistics details"
++       depends on CPU_FREQ_STAT
++       default n
++       help
++         This will show detail CPU frequency translation table in sysfs file
++         system
+
+I'm pondering two things: 
+a) should we make this dependant on CPU_FREQ_DEBUG?
+b) should we make CPU_FREQ_STAT_DETAILS available unconditionally?
+
+
+ /* the following are really really optional */
++
++struct cpufreq_policy * cpufreq_cpu_get(unsigned int cpu);
++void cpufreq_cpu_put(struct cpufreq_policy *data);
++
+
+Please put these two in a different section, possibly titled
+/* for cpufreq core use only */
+
++struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
+
+... and put this one in that section, too.
