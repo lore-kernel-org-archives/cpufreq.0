@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] Hotplug cpu: fix p4-clockmod
-Date: Sun, 29 Aug 2004 14:57:17 +0200
+Subject: Re: [2.6. PATCH] Missing default governor choices
+Date: Sun, 29 Aug 2004 14:32:00 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040829125717.GA17032@dominikbrodowski.de>
+Message-ID: <20040829123200.GA16050@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -17,23 +17,19 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: zwane@linuxpower.ca, cpufreq@www.linux.org.uk
+To: goatzilla@gmail.com, cpufreq@www.linux.org.uk
 
-> This currently oopses when a processor goes offline since it can't
-> schedule itself onto the correct cpu.
+> What's the reason for the powersave governor not being selectable as
+> default?
 
-What's the call trace? Because I don't see why it should happen: if the CPU
-is removed, cpufreq_remove_dev() gets called, which cleans up the governor
-and the device driver -- and I can't see a call to setdc in this code path.
+Because it doesn't matter much: 
+- performance is available during boot so that CPUs starting up at less than
+  100% can be boosted to full performance very soon.
+- userspace is available to keep the CPU speed at what it was at boot, and
+  to allow existing userspace-based setups to work [it offers an equivalent
+  interface compared to the one of the old 2.4. cpufreq interface]
 
-> So we now disable preemption whilst reading or setting the DC.
-Or should we disable CPU hotplug [IIRC there's some callback to temporarily
-do that] in the cpufreq core before calling ->target() or ->get()
+All other settings [including min/max ranges, governor for "continuing" use] can
+and should be done by either a startup script and/or a userspace daemon.
 
-> There is a questionable hunk which returns the
-> stock_freq if the processor being read from is offline.
-
-and it would avoid this very very questionable hunk...
-
-Thanks,
 	Dominik
