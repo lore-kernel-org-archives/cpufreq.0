@@ -1,28 +1,77 @@
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: powernow-k8-acpi driver
-Date: Thu, 4 Mar 2004 09:38:26 +0000
+Date: Thu, 4 Mar 2004 13:35:23 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040304093826.B6052@flint.arm.linux.org.uk>
-References: <20040303215435.GA467@elf.ucw.cz> <20040303222712.GA16874@redhat.com> <20040303223510.GE222@elf.ucw.cz> <20040303224841.GB16874@redhat.com> <20040303225405.GF222@elf.ucw.cz> <20040303233603.GA18722@redhat.com> <20040304000754.GK222@elf.ucw.cz>
+Message-ID: <20040304123523.GD308@elf.ucw.cz>
+References: <99F2150714F93F448942F9A9F112634C109A392F@txexmtae.amd.com>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20040304000754.GK222@elf.ucw.cz>; from pavel@suse.cz on Thu, Mar 04, 2004 at 01:07:54AM +0100
+In-Reply-To: <99F2150714F93F448942F9A9F112634C109A392F@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@suse.cz>
-Cc: Dave Jones <davej@redhat.com>, Cpufreq mailing list <cpufreq@www.linux.org.uk>, kernel list <linux-kernel@vger.kernel.org>, davej@codemonkey.ork.uk, paul.devriendt@amd.com
+To: paul.devriendt@amd.com
+Cc: davej@redhat.com, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, davej@codemonkey.ork.uk
 
-On Thu, Mar 04, 2004 at 01:07:54AM +0100, Pavel Machek wrote:
-> Ahha. Unfortunately, cpufreq mailing lists are only available to list
-> subscribers. Ouch.
+Hi!
 
-So... subscribe to the list - if you don't actually want to receive
-mail, you can turn on an option which says that.
+> >> you're aware of Dominik/Bruno's work on the 'acpilib'[1] stuff in this 
+> >> area right ? We'll need that anyway for Powernow-k7 and maybe longhaul 
+> >> too and its senseless duplicating this code.
+> > 
+> > That [1] looks like promise of url, but I don't see that url.
+> 
+> No, I am not aware of this, and I think Dominik is out for a few days.
+> If there is some sort of library functionality I can use and eliminate
+> code in the powernow-k8 driver, I will glad make the change to use
+> >> it.
+
+This fixes typo, makes pollflg normal (no need for volatile, it is
+protected by poll_sem) and fixes assignment. Please apply,
+
+								Pavel
+
+--- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8-acpi.c	2004-03-04 13:26:34.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8-acpi.c	2004-03-04 13:24:12.000000000 +0100
+@@ -36,14 +36,14 @@
+ #include <asm/io.h>
+ #include <asm/delay.h>
+ 
+-#define DEBUG
+-#define VERSION "Version 1.20.02, Mar 1, 2004"
++#undef DEBUG
++#define VERSION "Version 1.20.02a"
+ #include "powernow-k8-acpi.h"
+ 
+ static u8 **procs;                  /* per processor data structure     */
+ static u32 rstps;                   /* pstates allowed restrictions     */
+ static u32 seenrst;                 /* remember old bat restrictions    */
+-static volatile int pollflg;        /* remember the state of the poller */
++static int pollflg;	            /* remember the state of the poller, protected by poll_sem */
+ static int acpierr;                 /* retain acpi error across walker  */
+ static acpi_handle ppch;	    /* handle of the ppc object         */
+ static acpi_handle psrh;            /* handle of the acpi power object  */
+@@ -857,7 +857,7 @@
+ 	return 0;
+ }
+ 
+-/* transiion if needed, restart if needed */
++/* transition if needed, restart if needed */
+ static void ac_poller(unsigned long x)  
+ {
+ 	int pow;
+@@ -870,7 +870,7 @@
+ 
+ 	down(&poll_sem);
+ 	if (pollflg == POLLER_UNLOAD) {
+-		pollflg == POLLER_DEAD;
++		pollflg = POLLER_DEAD;
+ 		up(&poll_sem);
+ 		return;
+ 	}
+
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
-                 2.6 Serial core
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
