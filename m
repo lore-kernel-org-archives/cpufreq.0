@@ -1,9 +1,16 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq speedstep.c,1.34,NONE
-Date: Mon, 25 Aug 2003 16:34:51 +0100
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: [2.4] CVS update?
+Date: Mon, 25 Aug 2003 18:36:50 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E19rJMp-0004xw-Hn@flint.arm.linux.org.uk>
+Message-ID: <20030825163650.GD10585@poupinou.org>
+References: <20030825125909.GA10585@poupinou.org>
+	<20030825143350.GA30810@redhat.com>
+	<20030825144326.GC10585@poupinou.org>
+	<20030825144554.GB30810@redhat.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20030825144554.GB30810@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,18 +20,17 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.arm.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv19085/linux/arch/i386/kernel/cpufreq
+> Ok, go wild..  I'm supposed to be on vacation today anyways 8-)
 
-Removed Files:
-      Tag: LINUX_2_4
-	speedstep.c 
-Log Message:
-final merge
+That should be OK now.  The old stuff is tagged linux_2_4_old FYI.
 
---- speedstep.c DELETED ---
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
