@@ -1,16 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: powernow-k8, more updates
-Date: Wed, 17 Mar 2004 20:50:15 +0100
+Date: Wed, 17 Mar 2004 20:52:26 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040317195015.GA287@elf.ucw.cz>
+Message-ID: <20040317195226.GB287@elf.ucw.cz>
 References: <99F2150714F93F448942F9A9F112634C1126A014@txexmtae.amd.com>
 	<20040317100745.GA15284@dominikbrodowski.de>
 	<20040317120409.GA482@elf.ucw.cz>
-	<20040317124432.GA7426@dominikbrodowski.de>
+	<20040317160408.GP28592@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040317124432.GA7426@dominikbrodowski.de>
+In-Reply-To: <20040317160408.GP28592@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,32 +22,41 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: paul.devriendt@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.de>, Cpufreq mailing list <cpufreq@www.linux.org.uk>
 
 Hi!
 
-> On Wed, Mar 17, 2004 at 01:04:09PM +0100, Pavel Machek wrote:
-> > - *  (C) 2003 Dave Jones <davej@codemonkey.ork.uk> on behalf of SuSE Labs
-> > + *  (C) 2003 Dave Jones <davej@codemonkey.org.uk> on behalf of SuSE Labs
+> > Here are few typo fixes [I believe they are applicable to dominik's
+> > latest version]; I cleaned up puinfo_x86 stuff in check_supported_cpu
+> > (no ifdefs any more!) and introduced fill_powernow_table helper. It
+> > makes code nicer, and makes overriding tables way easier (and you get
+> > all the normal checks for your overrident table, so its harder to mess
+> > it up). Notice that values are now for my arima (1.8GHz), and I
+> > basically guessed them, Paul might have better values. Oh and I now
+> > print out frequencies to the user, so that dmesg output is
+> > informative.
+> > 
+> >  
+> >  #if 0
+> > + override:
+> >          /*
+> >  	 * hack for machines without a PSB - as an example values for
+> > -	 * 2.0/1.8/0.8 GHz are hardcoded. You need to assert that these
+> > +	 * 1.8/1.6/0.8 GHz are hardcoded. You need to assert that these
+> >  	 * values are correct and supported by your CPU / motherboard
+> > +	 *
+> ...
+> > -	data->powernow_table = powernow_table;
+> > -
+> > -	return 0;
+> >  #endif
 > 
-> either I'm blind or stupid... what's the difference here?
+> Why not just provide an override from userspace?
 
-Blind. Original email address has .ork. in it.
+Its pretty hard to do, and we actually do not want users overriding
+it. I'd prefer this #if 0 to be killed before mainline merge...
 
-> > +		printk(KERN_INFO PFX "   %d : fid %x (%d MHz), vid %x\n", j,
-> > +		       pst[j].fid, powernow_table[j].frequency/1000, pst[j].vid);
-> 
-> > +
-> > +	printk(KERN_INFO PFX "cfid %x, cvid %x\n", data->currfid, data->currvid);
-> 
-> can we change this to dprintk, please? It avoids some noise....
-
-I agree about the second one. I thought that list of frequencies in
-MHz is probably important enough?
-
-> Other than that, patch looks good to me
-
-Should I edit it and resend?
 								Pavel
 -- 
 When do you have a heart between your knees?
