@@ -1,16 +1,16 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH][powernow-k7] correcting SGTC. Timer is based upon FSB.
-Date: Wed, 14 Apr 2004 21:02:05 +0200
+Subject: Re: give the TSC a fair chance [Was: [PATCHES] cpufreq_get(),
+	cpufreq->get()]
+Date: Wed, 14 Apr 2004 20:54:34 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040414190205.GA20638@dominikbrodowski.de>
-References: <20040414103646.GB8953@poupinou.org>
-	<20040414104148.GC24970@redhat.com>
-	<20040414121857.GC8953@poupinou.org>
-	<20040414174407.GL24970@redhat.com>
+Message-ID: <20040414185434.GB19921@dominikbrodowski.de>
+References: <20040411215912.GA8160@dominikbrodowski.de>
+	<20040412120422.GA7337@dominikbrodowski.de>
+	<1081967060.4705.91.camel@cog.beaverton.ibm.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0403694074=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040414174407.GL24970@redhat.com>
+In-Reply-To: <1081967060.4705.91.camel@cog.beaverton.ibm.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,79 +20,75 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: john stultz <johnstul@us.ibm.com>
+Cc: cpufreq@www.linux.org.uk
+
+
+--===============0403694074==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="XF85m9dhOBO43t/C"
+Content-Disposition: inline
+
+
+--XF85m9dhOBO43t/C
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Apr 14, 2004 at 11:24:21AM -0700, john stultz wrote:
+> On Mon, 2004-04-12 at 05:04, Dominik Brodowski wrote:
+> > However, this patch has one slight chance for a bug: if lost_count reac=
+hes
+> > 50, a call to handle_cpufreq_delayed_work is scheduled, but does not ex=
+ecute
+> > until lost_count reaches 50 again [e.g. when no lost ticks are
+> > detected at the next call, but on the next 50 consecutive calls...]. As
+> > keventd runs at -10 priority I doubt this will happen under normal
+> > circumstances, though.
+>=20
+> I'm not sure I follow this (lost_count =3D=3D 50) bit. You're trying to
+> schedule work only when we've noticed we're missing exactly 50 ticks?
+
+No, not when we're missing exactly 50 ticks, but when we've detected 50
+consecutive times we're missing ticks. That's half of the amount needed
+before TSC is disabled and should mean enough time for cpufreq even under
+heavy load to execute a cpufreq_get() call.=20
+
+> I'm not sure I understand the significance of that value.
+
+It's not really significant, it should be less than what triggers
+clock_fallback();
+though. Note that it needs to be _one_ value instead of (lost_count > 50)
+so that it doesn't get scheduled more than once. As lost_count is only
+inc'ed, this shouldn't be a problem.
+
+	Dominik
+
+--XF85m9dhOBO43t/C
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAfYjqZ8MDCHJbN8YRAl2TAJ9zoz4FW93URcgUojGPzqaacjipJACePVHQ
+Jut9ie4JmrhACUnFd0r1cJ8=
+=xWXs
+-----END PGP SIGNATURE-----
+
+--XF85m9dhOBO43t/C--
+
+
+--===============0403694074==
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+Content-Disposition: inline
 
-On Wed, Apr 14, 2004 at 06:44:07PM +0100, Dave Jones wrote:
-> On Wed, Apr 14, 2004 at 02:18:57PM +0200, Bruno Ducrot wrote:
-> 
->  > I actually wanted to submit also the ACPI integration...
-> 
-> I just tried this out on my Compaq Evo 1015.  It has working
-> PST, so just uses that.  I got curious though, and hardwired it
-> to fall back to the ACPI method. This is what it comes out with on
-> PST..
-> 
-> powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
-> powernow: FSB: 132.525 MHz
-> powernow: Found PSB header at 020f0800
-> powernow: Table version: 0x12
-> powernow: Flags: 0x0 (Mobile voltage regulator)
-> powernow: Settling Time: 100 microseconds.
-> powernow: Has 31 PST tables. (Only dumping ones relevant to this CPU).
-> powernow: PST:26 (@020f09c2)
-> powernow:  cpuid: 0x780 fsb: 133        maxFID: 0xf     startvid: 0x9
-> powernow:    FID: 0x12 (4.0x [530MHz])  VID: 0x13 (1.200V)
-> powernow:    FID: 0x4 (5.0x [662MHz])   VID: 0x13 (1.200V)
-> powernow:    FID: 0x6 (6.0x [795MHz])   VID: 0x13 (1.200V)
-> powernow:    FID: 0xa (8.0x [1060MHz])  VID: 0xd (1.350V)
-> powernow:    FID: 0xf (10.5x [1391MHz]) VID: 0x9 (1.550V)
-> powernow: SGTC: 13333
-> powernow: Minimum speed 530 MHz. Maximum speed 1391 MHz.
-> 
-> And with the hardwired acpi fallback..
-> 
-> powernow: Trying ACPI perflib
-> powernow: acpi:  P0: 1400 MHz, 35000 mW, 125 uS, control 009c412f, status 0000012f, vid: 09 fid: 0f SGTC: 10000
-> powernow:    FID: 0xf (10.5x [13913MHz])        VID: 0x9 (1.550V)
-> powernow: acpi:  P1: 1100 MHz, 15487 mW, 125 uS, control 009c41aa, status 000001aa, vid: 0d fid: 0a SGTC: 10000
-> powernow:    FID: 0xa (8.0x [10600MHz]) VID: 0xd (1.350V)
-> powernow: acpi:  P2: 800 MHz, 12310 mW, 125 uS, control 009c4266, status 00000266, vid: 13 fid: 06 SGTC: 10000
-> powernow:    FID: 0x6 (6.0x [7950MHz])  VID: 0x13 (1.200V)
-> powernow: acpi:  P3: 660 MHz, 12310 mW, 125 uS, control 009c4264, status 00000264, vid: 13 fid: 04 SGTC: 10000
-> powernow:    FID: 0x4 (5.0x [6625MHz])  VID: 0x13 (1.200V)
-> powernow: acpi:  P4: 530 MHz, 10258 mW, 125 uS, control 009c4272, status 00000272, vid: 13 fid: 12 SGTC: 10000
-> powernow:    FID: 0x12 (4.0x [5300MHz]) VID: 0x13 (1.200V)
-> powernow: Minimum speed 530 MHz. Maximum speed 13913 MHz.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-1.) get_ranges() has
-		powernow_table[j].frequency = (fsb * fid_codes[fid]) / 10;
-  powernow_acpi_init() has
-		powernow_table[i].frequency = (fsb * fid_codes[fid]);
+--===============0403694074==--
 
-2.) minimum_speed, maximum_speed, latency should be cleared before
-powernow_acpi_init() is called.
-
---- linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c.original	2004-04-14 20:49:45.483959280 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-04-14 21:01:05.815533160 +0200
-@@ -363,7 +363,7 @@
- 		vid = pc.bits.vid;
- 		fid = pc.bits.fid;
- 
--		powernow_table[i].frequency = (fsb * fid_codes[fid]);
-+		powernow_table[i].frequency = (fsb * fid_codes[fid]) / 10;
- 		powernow_table[i].index = fid; /* lower 8 bits */
- 		powernow_table[i].index |= (vid << 8); /* upper 8 bits */
- 
-@@ -563,6 +563,9 @@
- 		result = powernow_decode_bios(fidvidstatus.bits.MFID, fidvidstatus.bits.SVID);
- 		if (result) {
- 			printk (KERN_INFO PFX "Trying ACPI perflib\n");
-+			maximum_speed = 0;
-+			minimum_speed = -1;
-+			latency = 0;
- 			result = powernow_acpi_init();
- 			if (result) {
- 				printk (KERN_INFO PFX "ACPI and legacy methods failed\n");
