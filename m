@@ -1,9 +1,11 @@
-From: Suihong Liang <s2liang@hopper.math.uwaterloo.ca>
-Subject: gettimeofday() malfunctions when called frequently
-Date: Mon, 16 Aug 2004 16:21:43 -0400 (EDT)
+From: GoatZilla <goatzilla@gmail.com>
+Subject: Manual PST settings for "unrecognized CPUs"
+Date: Mon, 16 Aug 2004 19:13:18 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.GSO.4.58.0408161551170.17523@hopper.math.uwaterloo.ca>
+Message-ID: <39e3484804081616133c2765ce@mail.gmail.com>
+Reply-To: GoatZilla <goatzilla@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,21 +16,27 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-Hi,
+OK, I guess I'll go ahead and jump on the sword here, as I'm sure I'm
+not the only one wondering this.
 
-I think either cpufreq or the 2.4 kernel has a bug. When consecutive calls
-to gettimeofday() are very frequent, say 20ms, I found that 10% chance
-that gettimeofday() returned SMALLER value than in the previous call,
-which should not happen.
+I have a desktop Duron that I've closed off the L5 mobile bridge on,
+and unlocked two L6 bridges so I can set the SoftFID back up to at
+least startup value.  My intent is actually to underclock the CPU to
+reduce power/heat.
 
-The problem exists in (x86): cpufreq of 20040816 on kernel 2.4.27, and
-cpufreq of 20040705 on kernel 2.4.26.
+I've tested the changes with Windows and CPUMSR, and it works really
+well, aside from my inability to change the SoftVID due to lack of
+motherboard support.  Oh, I'm using a regular desktop motherboard.
 
-I've also tried kernel 2.6.7, gettimeofday() worked well.
+Anyways, now I'd like to attempt the same thing with Linux.  
 
-regards.
-suihong
+I'm sure my configuration is going to be completely unrecognized, and
+even if it was, I'm not so sure any PST's would come up.  So I guess
+I'm going to have to add it in myself.
+
+I saw a patch fly by a short while ago where a user added some
+settings for an unrecognized config.  Is this the only way to hack in
+a PST?
