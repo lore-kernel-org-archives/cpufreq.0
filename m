@@ -1,13 +1,10 @@
-From: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
-Subject: Re: Athlon Mobile Support
-Date: Wed, 02 Jul 2003 09:28:42 +0200
+From: Iacopo Spalletti <iacopo@spalletti.it>
+Subject: Re: Athlon Mobile support
+Date: Wed, 02 Jul 2003 09:36:27 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <3F0289AA.6090208@searchbroker.de>
-References: <3F028919.8060402@student.gc.maricopa.edu>
+Message-ID: <6.0.0.10.0.20030702093624.02d62008@posta.spalletti.it>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <3F028919.8060402@student.gc.maricopa.edu>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,44 +15,28 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Cpufreq@www.linux.org.uk
-Cc: James Mabry <jamabryl@student.gc.maricopa.edu>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-James Mabry wrote:
+Il 08.28 02/07/03 +0200, Lars Gemeinhardt ha scritto:
+ >Iacopo Spalletti wrote:
+ >
+ >> I'm using 2.4.21 kernel, acpi-030619 patch and 030702 cvs snapshot of
+ >> cpufreq on a sony notebook (FX905P) with athlon xp 1600+ on board.
+ >> I cannot find a way to enable powernow support for my cpu.
+ >> Config vars are present for K6, speedstep and other processor but not
+ >> for athlon, supported in  older versions of cpufreq
+ >
+ >take this:
+ >
+ >http://www.codemonkey.org.uk/cpufreq/cpufreq-2.4.22-1.gz
+ >
+Great, thanks!
+Works fine now
 
-> Hello,
-> I am also using a Mobile Athlon XP. I got the 
-> cpufreq-LINUX_2_4-20030701.tar.bz2 patch and applied it using 'sh 
-> patchin.sh'. I am not seeing any of the entries in /proc that other 
-> people have using cpufreq. Am I doing something wrong? Are there 
-> better (any) instructions on how to go about using cpufreq? The 
-> users-guide didn't help :(. Thanks.
-> -- 
+Best regards
 
-one question - same answer!
-PLEASE read the list ...
+Iacopo Spalletti
+iacopo@spalletti.it
 
-take this:
-
-http://www.codemonkey.org.uk/cpufreq/cpufreq-2.4.22-1.gz
-
-the cvs one for the 2.4.x kernel is the stable one (see 
-http://www.brodo.de/cpufreq_old/kernel.html), which doesn't include the 
-K7 (alias Athlon)
-The advanced one has support ... and Dave Jones is the new 
-lead-developer ...
-
->
-> Slackware Linux -
-> Find out about the 4S rule.
-> www.slackware-advocacy.org/whyuse.html
->
-> Then try it out for yourself.
-> www.slackware.org
->
->
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
->
+PGP key block: http://www.spalletti.it/pgp  
