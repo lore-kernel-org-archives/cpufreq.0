@@ -1,11 +1,10 @@
-From: Marijan Peh <marijan.peh@freenet.de>
-Subject: Acer 1304xc powernowk7 patch & kernel 2.6.8-rc3-mm1
-Date: Mon, 9 Aug 2004 19:47:39 +0200
+From: Andi Kleen <ak@muc.de>
+Subject: [PATCH] Fix cosmetic issue in powernow-k8 error handling
+Date: Mon, 09 Aug 2004 20:26:38 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040809174739.GA22196@kanta>
+Message-ID: <m3acx4tbfl.fsf@averell.firstfloor.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,75 +16,43 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq_mail_list <cpufreq@www.linux.org.uk>
+To: paul.devriendt@amd.com, cpufreq@www.linux.org.uk
 
-How to implement this patch in kernel 2.6.8-rc3-mm1.
 
-[aspire_patch  text/x-diff (2606 bytes)]
---- a/arch/i386/kernel/powernow-k7.c    2003-06-30 13:40:16.000000000 +0200
-+++ b/arch/i386/kernel/powernow-k7.c    2003-06-30 13:41:19.000000000 +0200
-@@ -167,6 +167,29 @@
-        unsigned int j, speed;
-        u8 fid, vid;
+I tried to load the new SMP capable powernow k8 driver on a machine
+with an too old BIOS. I got a lot of cryptic "init not cpu 0"
+messages until the "MP systems not supported by PSB ..." message.
 
-+/* hardcoded modifies for mobile Athlon xp 1800+ on Acer Aspire 1300
-with buggy bios */+
-+       pst = kmalloc(10*sizeof(unsigned char), GFP_KERNEL);
-+       if (!pst)
-+               return -ENOMEM;
-+
-+       *pst++ = 4;  /*  666 MHz */
-+       *pst++ = 19; /*   1.20 V */
-+       *pst++ = 6;  /*  800 Mhz */
-+       *pst++ = 19; /*   1.20 V */
-+       *pst++ = 10; /* 1066 Mhz */
-+       *pst++ = 19; /*   1.20 V */
-+       *pst++ = 14; /* 1333 Mhz */
-+       *pst++ = 11; /*   1.45 V */
-+       *pst++ = 1;  /* 1533 Mhz */
-+       *pst = 9;    /*   1.55 V */
-+
-+       pst -= 9;
-+
-+       fsb=133;
-+
-+/*************************************************/
-+
-        powernow_table = kmalloc((sizeof(struct cpufreq_frequency_table)
-* (number_scales + 1)), GFP_KERNEL);    if (!powernow_table)
-                return -ENOMEM;
-@@ -187,7 +210,7 @@
- #endif
-                }
+This patch switches the order of the checks around to print the
+other message first. It will be still printed multiple times
+because the cpufreq setup will probe all CPUs, but that's probably
+ok.
+
+BTW I also looked at converting the code to smp_call_function 
+(because Paul complained about the set_cpus_allowed in his OLS
+presentation). But the code would have been more complicated with
+this change so I left it like it is.
+
+-Andi
+
+diff -u linux-2.6.8rc3-amd64/arch/i386/kernel/cpu/cpufreq/powernow-k8.c-o linux-2.6.8rc3-amd64/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+--- linux-2.6.8rc3-amd64/arch/i386/kernel/cpu/cpufreq/powernow-k8.c-o	2004-06-16 12:22:43.000000000 +0200
++++ linux-2.6.8rc3-amd64/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-08-09 19:52:17.000000000 +0200
+@@ -948,13 +948,13 @@
+ 		 * an UP version, and is deprecated by AMD.
+ 		 */
  
--               dprintk (KERN_INFO PFX "   FID: 0x%x (%d.%dx [%dMHz])\t", fid,
-+               dprintk (KERN_INFO PFX "   FID: 0x%x (%d.%dx [%dMHz])  ", fid,
-                        fid_codes[fid] / 10, fid_codes[fid] % 10, speed);
- 
-                if (speed < minimum_speed)
-@@ -328,9 +351,11 @@
-                                if ((etuple == pst->cpuid) && (maxfid==pst->maxfid) &&
-(startvid==pst->startvid))                              {
-                                        dprintk (KERN_INFO PFX "PST:%d (@%p)\n", i,
-pst);-                                  dprintk (KERN_INFO PFX " cpuid: 0x%x\t", pst->
-cpuid);
--                                       dprintk ("fsb: %d\t", pst->fsbspeed);
--                                       dprintk ("maxFID: 0x%x\t", pst->maxfid);
-+                                       dprintk (KERN_INFO PFX " cpuid: 0x%x  ", pst->
-cpuid);
-+                                       /* modified for mobile Athlon XP 1800+ */
-+                                       dprintk ("fsb: %d  ", 133);
-+                                       /***************************************/
-+                                       dprintk ("maxFID: 0x%x  ", pst->maxfid);
-                                        dprintk ("startvid: 0x%x\n", pst->startvid);
- 
-                                        fsb = pst->fsbspeed;
--- end --
-
-I have no programming exp.
-Patch was full functional in older cpufreq code.
-
-Thnx
-
--- 
-http://nymos.dyndns.org/
+-		if (pol->cpu != 0) {
+-			printk(KERN_ERR PFX "init not cpu 0\n");
++		if ((num_online_cpus() != 1) || (num_possible_cpus() != 1)) {
++			printk(KERN_INFO PFX "MP systems not supported by PSB BIOS structure\n");
+ 			kfree(data);
+ 			return -ENODEV;
+ 		}
+-		if ((num_online_cpus() != 1) || (num_possible_cpus() != 1)) {
+-			printk(KERN_INFO PFX "MP systems not supported by PSB BIOS structure\n");
++		if (pol->cpu != 0) {
++			printk(KERN_ERR PFX "init not cpu 0\n");
+ 			kfree(data);
+ 			return -ENODEV;
+ 		}
