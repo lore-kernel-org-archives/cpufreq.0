@@ -1,13 +1,13 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: speedfreq: epia + longhaul + speedfreq + copying large files =
 	freeze
-Date: Wed, 22 Dec 2004 11:02:39 -0800
-Message-ID: <1103742159.16413.24.camel@localhost>
-References: <41C83AA7.6010204@gmx.net>
+Date: Wed, 22 Dec 2004 15:31:36 -0500
+Message-ID: <20041222203136.GB21861@redhat.com>
+References: <41C83AA7.6010204@gmx.net> <1103742159.16413.24.camel@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <41C83AA7.6010204@gmx.net>
+Content-Disposition: inline
+In-Reply-To: <1103742159.16413.24.camel@localhost>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,57 +19,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Sebastian <sebastian_ml@gmx.net>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Sebastian <sebastian_ml@gmx.net>, cpufreq list <cpufreq@www.linux.org.uk>
 
-On Tue, 2004-12-21 at 16:00 +0100, Sebastian wrote:
-> Dear Jeremy,
-> 
-> thanks for your tool! I like it best of all cpufreq daemons,
+On Wed, Dec 22, 2004 at 11:02:39AM -0800, Jeremy Fitzhardinge wrote:
+ > On Tue, 2004-12-21 at 16:00 +0100, Sebastian wrote:
+ > > Dear Jeremy,
+ > > 
+ > > thanks for your tool! I like it best of all cpufreq daemons,
+ > 
+ > Thanks!
+ > 
+ > This problem sounds like a bug in the longhaul driver though, which I
+ > don't really know anything about.  (The system should never crash,
+ > regardless of what speedfreqd does.)  
+ > 
+ > I've cc:d the cpufreq list to see if someone there can help.  Dave?
 
-Thanks!
+Yeah, longhaul is badly broken right now, and tbh, I've no idea
+what on earth is wrong. Speed transitions happen, and work correctly.
+Then a few minutes later, system locks up.
 
-This problem sounds like a bug in the longhaul driver though, which I
-don't really know anything about.  (The system should never crash,
-regardless of what speedfreqd does.)  
+I've been trying all sorts of things, from disabling PCI mastering,
+disabling CPU caches, etc, but nothing seems to help. I'm truly puzzled.
 
-I've cc:d the cpufreq list to see if someone there can help.  Dave?
-
-	J
-
-> Anyway, the Epia board normally runs fine with speedfreq. Frequency gets
-> adjusted between 400Mhz and 600MHz. But when I start cutting
-> advertisements out of the DVB recordings with the VDR software (Video
-> Disk Recorder from Klaus Schmiedinger, www.cadsoft.de/vdr) after a short
-> while it freezes.  The cutting process is simply like copying large
-> files from one folder to another folder on the same partition. Mostly
-> 1.7 to 2.7GB. I tried the following:
-> 
-> 1. Cutting a recording, cpufreq enabled, speedfreq daemon running:
-> 
-> System freeze.
-> 
-> 2. Copying large files manually, cpufreq enabled, speedfreq daemon running:
-> 
-> System freeze.
-> 
-> 3. Cutting a recording, cpufreq enabled, speedfreq daemon disabled:
-> 
-> Works.
-> 
-> 4. Copying large files manually, cpufreq enabled, speedfreq daemon disabled:
-> 
-> Works.
-> 
-> I'd like to add that sometimes I get messages in syslog telling me that
-> speedfreq thought the actual frequency was xxx and discovered that the
-> real frequency was something else. Once that was the last thing in
-> syslog before a freeze. I don't know if this is relevant, because 99% of
-> the freezes the syslog stays like it is, nothing gets added.
-> 
-> The kernel is a vanilla 2.6.9. The Linux Distribution is Gentoo stable. 
-> Flags are "-O2 -march=c3 -fomit-frame-pointer -mmmx -m3dnow -pipe". I 
-> have no 4k stacks, no preemption, no nptl, no perl ithreads.
-> 
-> Maybe speedfreq changing frequencies too fast for the little Epia is the 
-> reason for the freezes? What can I do?
+		Dave
