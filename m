@@ -1,12 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] Driver to export CPUfreq statistic
-Date: Thu, 18 Nov 2004 07:58:54 +0100
-Message-ID: <20041118065854.GA8760@dominikbrodowski.de>
-References: <894E37DECA393E4D9374E0ACBBE7427013C999@pdsmsx402.ccr.corp.intel.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: [PATCH] [RFC] [0/2] powernow-k7.  Recalibrate cpu_khz
+Date: Thu, 18 Nov 2004 17:10:34 +0100
+Message-ID: <20041118161034.GA31422@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <894E37DECA393E4D9374E0ACBBE7427013C999@pdsmsx402.ccr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,17 +17,28 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Zou, Nanhai" <nanhai.zou@intel.com>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Thu, Nov 18, 2004 at 10:41:40AM +0800, Zou, Nanhai wrote:
-> 
-> Thanks for reviewing the patch.
-> I have modified the code.
-> Except that I can't find the CPU_FREQ_DEBUG option in 2.6.9 tree.
-> Where is it?
+Hi,
 
-It got merged into 2.6.10-rc2, @ 2.6.9 it was only in -mm, IIRC.
+Here come two patches in order to fix some issues with powernow-k7.
 
-Thanks,
-	Dominik
+The main trouble is that we can't rely on cpu_khz when that one is
+computed at boot time.  AMD will require that the CPU will be at max
+frequencies, but some BIOS do not respect this.  More, the BIOS is only
+required to change the frequency of the processor, but only at POST
+time.  Some BIOS also do not follow this rule, so that even if the
+processor is at full speed at POST, it may decide (probably after
+switching to ACPI or APM mode?) to switch to another frequency.
+
+The only workaround for this two kind of bugs I see is to recalibrate
+cpu_khz, but this require discussions with other people, I guess.  The
+second patch will be the powernow-k7 portion.
+
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
