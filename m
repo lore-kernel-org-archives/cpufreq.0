@@ -1,12 +1,11 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] Account iowait as idle time in ondemand governor
-Date: Wed, 29 Sep 2004 11:21:26 -0700
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: [RFC][PATCH] cpufreq-core: add affected_cpus
+Date: Wed, 29 Sep 2004 23:46:37 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB6002FE4E81@scsmsx403.amr.corp.intel.com>
+Message-ID: <20040929214637.GE18564@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C4A651.2203DA49"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,97 +15,57 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Dave Jones <davej@redhat.com>
-Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C4A651.2203DA49
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-
-
-This patch changes the idle time accounting in ondemand governor.
-With this patch ondemand governor accounts cpu iowait time as idle time.
-
-Thanks to Stefan Seyfried for identifying this issue.
-
-This patch applies over the previous patch
-[PATCH] prevent various divide underflows in ondemand governor
-
-Dave: Please Apply.
-
-Thanks,
-Venki
-
-------_=_NextPart_001_01C4A651.2203DA49
-Content-Type: application/octet-stream;
-	name="ondemand_iowait.patch"
-Content-Transfer-Encoding: base64
-Content-Description: ondemand_iowait.patch
-Content-Disposition: attachment;
-	filename="ondemand_iowait.patch"
-
-ClRoaXMgcGF0Y2ggY2hhbmdlcyB0aGUgaWRsZSB0aW1lIGFjY291bnRpbmcgaW4gb25kZW1hbmQg
-Z292ZXJub3IuCldpdGggdGhpcyBwYXRjaCBvbmRlbWFuZCBnb3Zlcm5vciBhY2NvdW50cyBjcHUg
-aW93YWl0IHRpbWUgYXMgaWRsZSB0aW1lLgoKVGhhbmtzIHRvIFN0ZWZhbiBTZXlmcmllZCBmb3Ig
-aWRlbnRpZnlpbmcgdGhpcyBpc3N1ZS4KClNpZ25lZC1vZmYtYnk6OiAiVmVua2F0ZXNoIFBhbGxp
-cGFkaSIgPHZlbmthdGVzaC5wYWxsaXBhZGlAaW50ZWwuY29tPgoKLS0tIGxpbnV4LTIuNi45LXJj
-Mi8vZHJpdmVycy9jcHVmcmVxL2NwdWZyZXFfb25kZW1hbmQuYy5vcmcJMjAwNC0wOS0yNSAxOTow
-NjoxMC4wMDAwMDAwMDAgLTA3MDAKKysrIGxpbnV4LTIuNi45LXJjMi8vZHJpdmVycy9jcHVmcmVx
-L2NwdWZyZXFfb25kZW1hbmQuYwkyMDA0LTA5LTI1IDE5OjExOjIxLjAwMDAwMDAwMCAtMDcwMApA
-QCAtMjIxLDYgKzIyMSw3IEBAIHN0YXRpYyBzdHJ1Y3QgYXR0cmlidXRlX2dyb3VwIGRic19hdHRy
-X2cKIHN0YXRpYyB2b2lkIGRic19jaGVja19jcHUoaW50IGNwdSkKIHsKIAl1bnNpZ25lZCBpbnQg
-aWRsZV90aWNrcywgdXBfaWRsZV90aWNrcywgZG93bl9pZGxlX3RpY2tzOworCXVuc2lnbmVkIGlu
-dCB0b3RhbF9pZGxlX3RpY2tzOwogCXVuc2lnbmVkIGludCBmcmVxX2Rvd25fc3RlcDsKIAl1bnNp
-Z25lZCBpbnQgZnJlcV9kb3duX3NhbXBsaW5nX3JhdGU7CiAJc3RhdGljIGludCBkb3duX3NraXBb
-TlJfQ1BVU107CkBAIC0yNDQsOSArMjQ1LDExIEBAIHN0YXRpYyB2b2lkIGRic19jaGVja19jcHUo
-aW50IGNwdSkKIAkgKiA1JSBvZiBtYXhfZnJlcXVlbmN5IAogCSAqLwogCS8qIENoZWNrIGZvciBm
-cmVxdWVuY3kgaW5jcmVhc2UgKi8KLQlpZGxlX3RpY2tzID0ga3N0YXRfY3B1KGNwdSkuY3B1c3Rh
-dC5pZGxlIC0gCisJdG90YWxfaWRsZV90aWNrcyA9IGtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaWRs
-ZSArCisJCWtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaW93YWl0OworCWlkbGVfdGlja3MgPSB0b3Rh
-bF9pZGxlX3RpY2tzIC0gCiAJCXRoaXNfZGJzX2luZm8tPnByZXZfY3B1X2lkbGVfdXA7Ci0JdGhp
-c19kYnNfaW5mby0+cHJldl9jcHVfaWRsZV91cCA9IGtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaWRs
-ZTsKKwl0aGlzX2Ric19pbmZvLT5wcmV2X2NwdV9pZGxlX3VwID0gdG90YWxfaWRsZV90aWNrczsK
-IAogCS8qIFNjYWxlIGlkbGUgdGlja3MgYnkgMTAwIGFuZCBjb21wYXJlIHdpdGggdXAgYW5kIGRv
-d24gdGlja3MgKi8KIAlpZGxlX3RpY2tzICo9IDEwMDsKQEAgLTI1OCw3ICsyNjEsNyBAQCBzdGF0
-aWMgdm9pZCBkYnNfY2hlY2tfY3B1KGludCBjcHUpCiAJCQl0aGlzX2Ric19pbmZvLT5jdXJfcG9s
-aWN5LT5tYXgsIAogCQkJQ1BVRlJFUV9SRUxBVElPTl9IKTsKIAkJZG93bl9za2lwW2NwdV0gPSAw
-OwotCQl0aGlzX2Ric19pbmZvLT5wcmV2X2NwdV9pZGxlX2Rvd24gPSBrc3RhdF9jcHUoY3B1KS5j
-cHVzdGF0LmlkbGU7CisJCXRoaXNfZGJzX2luZm8tPnByZXZfY3B1X2lkbGVfZG93biA9IHRvdGFs
-X2lkbGVfdGlja3M7CiAJCXJldHVybjsKIAl9CiAKQEAgLTI2NywxMiArMjcwLDEyIEBAIHN0YXRp
-YyB2b2lkIGRic19jaGVja19jcHUoaW50IGNwdSkKIAlpZiAoZG93bl9za2lwW2NwdV0gPCBkYnNf
-dHVuZXJzX2lucy5zYW1wbGluZ19kb3duX2ZhY3RvcikKIAkJcmV0dXJuOwogCi0JaWRsZV90aWNr
-cyA9IGtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaWRsZSAtIAorCWlkbGVfdGlja3MgPSB0b3RhbF9p
-ZGxlX3RpY2tzIC0gCiAJCXRoaXNfZGJzX2luZm8tPnByZXZfY3B1X2lkbGVfZG93bjsKIAkvKiBT
-Y2FsZSBpZGxlIHRpY2tzIGJ5IDEwMCBhbmQgY29tcGFyZSB3aXRoIHVwIGFuZCBkb3duIHRpY2tz
-ICovCiAJaWRsZV90aWNrcyAqPSAxMDA7CiAJZG93bl9za2lwW2NwdV0gPSAwOwotCXRoaXNfZGJz
-X2luZm8tPnByZXZfY3B1X2lkbGVfZG93biA9IGtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaWRsZTsK
-Kwl0aGlzX2Ric19pbmZvLT5wcmV2X2NwdV9pZGxlX2Rvd24gPSB0b3RhbF9pZGxlX3RpY2tzOwog
-CiAJZnJlcV9kb3duX3NhbXBsaW5nX3JhdGUgPSBkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRl
-ICoKIAkJZGJzX3R1bmVyc19pbnMuc2FtcGxpbmdfZG93bl9mYWN0b3I7CkBAIC0zNDIsOSArMzQ1
-LDExIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9nb3Zlcm5vcl9kYnMoc3RydWN0IGMKIAkJdGhpc19k
-YnNfaW5mby0+Y3VyX3BvbGljeSA9IHBvbGljeTsKIAkJCiAJCXRoaXNfZGJzX2luZm8tPnByZXZf
-Y3B1X2lkbGVfdXAgPSAKLQkJCQlrc3RhdF9jcHUoY3B1KS5jcHVzdGF0LmlkbGU7CisJCQkJa3N0
-YXRfY3B1KGNwdSkuY3B1c3RhdC5pZGxlICsKKwkJCQlrc3RhdF9jcHUoY3B1KS5jcHVzdGF0Lmlv
-d2FpdDsKIAkJdGhpc19kYnNfaW5mby0+cHJldl9jcHVfaWRsZV9kb3duID0gCi0JCQkJa3N0YXRf
-Y3B1KGNwdSkuY3B1c3RhdC5pZGxlOworCQkJCWtzdGF0X2NwdShjcHUpLmNwdXN0YXQuaWRsZSAr
-CisJCQkJa3N0YXRfY3B1KGNwdSkuY3B1c3RhdC5pb3dhaXQ7CiAJCXRoaXNfZGJzX2luZm8tPmVu
-YWJsZSA9IDE7CiAJCXN5c2ZzX2NyZWF0ZV9ncm91cCgmcG9saWN5LT5rb2JqLCAmZGJzX2F0dHJf
-Z3JvdXApOwogCQlkYnNfZW5hYmxlKys7Cg==
-
-------_=_NextPart_001_01C4A651.2203DA49
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Show the CPUs which can only change frequencies at the same time
+in a sysfs file named "affected_cpus". The usefulness of such a file
+was first noted by Zwane Mwaikambo.
 
-------_=_NextPart_001_01C4A651.2203DA49--
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-09-29 17:18:24.232382032 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2004-09-29 17:21:06.694684008 +0200
+@@ -453,6 +453,24 @@
+ 	i += sprintf(&buf[i], "\n");
+ 	return i;
+ }
++/**
++ * show_affected_cpus - show the CPUs affected by each transition
++ */
++static ssize_t show_affected_cpus (struct cpufreq_policy * policy, char *buf)
++{
++	ssize_t i = 0;
++	unsigned int cpu;
++
++	for_each_cpu_mask(cpu, policy->cpus) {
++		if (i)
++			i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), " ");
++		i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), "%u", cpu);
++		if (i >= (PAGE_SIZE - 5))
++		    break;
++	}
++	i += sprintf(&buf[i], "\n");
++	return i;
++}
+ 
+ 
+ #define define_one_ro(_name) \
+@@ -480,6 +498,7 @@
+ define_one_ro(scaling_available_governors);
+ define_one_ro(scaling_driver);
+ define_one_ro(scaling_cur_freq);
++define_one_ro(affected_cpus);
+ define_one_rw(scaling_min_freq);
+ define_one_rw(scaling_max_freq);
+ define_one_rw(scaling_governor);
+@@ -489,6 +508,7 @@
+ 	&cpuinfo_max_freq.attr,
+ 	&scaling_min_freq.attr,
+ 	&scaling_max_freq.attr,
++	&affected_cpus.attr,
+ 	&scaling_governor.attr,
+ 	&scaling_driver.attr,
+ 	&scaling_available_governors.attr,
