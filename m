@@ -1,15 +1,17 @@
-From: Edward Macfarlane Smith <snowfire@blueyonder.co.uk>
-Subject: Re: 2.4 kernel patch on debian source 2.4.22
-Date: Mon, 20 Oct 2003 21:35:43 +0100
+From: Sven Dowideit <svenud@ozemail.com.au>
+Subject: Re: Dynamic frequency governor
+Date: Tue, 21 Oct 2003 09:28:52 +1000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200310202135.43943.snowfire@blueyonder.co.uk>
-References: <002b01c39676$43910270$0100a8c0@bert>
-	<1066607136.1501.16.camel@carryme.shs>
+Message-ID: <1066692531.1159.26.camel@sven>
+References: <CFF522B18982EA4481D3A3E23B83141C24B4B3@orsmsx407.jf.intel.com>
+	<20031020170010.GF21438@redhat.com>
+	<20031020172503.GE13989@poupinou.org>
+	<20031020173205.GG21438@redhat.com>
+	<20031020173509.GF13989@poupinou.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <1066607136.1501.16.camel@carryme.shs>
-Content-Disposition: inline
+In-Reply-To: <20031020173509.GF13989@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,98 +22,35 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Lars Weissflog <L@rs-w.de>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-I think you just need to add in all the lines that have a "+" without the plus 
-to the original file after the line with "obj-$(CONFIG_X86_VISWS_APIC)  += 
-visws_apic.o". There are 4 files that mess up in a similar way if you apply 
-the patch from the weekend to the 2.4.23-pre7 kernel. It's some other changes 
-that upset the patch.
-I presume the cpufreq patch will be updated soon, but if anyone really needs 
-it I can mail them the modified patches.
-Regards,
-Edward
+Hey guys,
 
-On Monday 20 October 2003 00:45, Lars Weissflog wrote:
-> Hi Stephen,
->
-> As far as I remember, all cpufreq-patches are agains the stock kernels
-> from kernel.org. Go there and download the original linux-2.4.2x.tar.bz2
-> (whatever version x is at this moment; I stopped with 2.4.20 for now,
-> waiting to go up to 2.6 when it leaves the -testX state)
->
-> Then untar those original sources and try to apply the cpufreq-patches
-> against that. Should work. Another way might be to check out the
-> modified kernel sources by Alan Cox. You can get them from the
-> /people/alan tree on kernel.org. They have an -ac attached to the
-> version number and normally include - more or less - the latest
-> acpi-stuff. And maybe they include the cpufreq-stuff as well.
-> But in any case you should be fine with the stock 2.4.2x-sources.
->
-> Good luck and good night.
-> Lars
->
-> On Sun, 2003-10-19 at 21:21, Stephen English wrote:
-> > Hi all,
-> > First, thanks to all that contributed to creating this software - it
-> > looks great. However, I can't get it to patch the debian kernel sources I
-> > downloaded. Basically, I get this on a fresh extraction of the kernel:
-> >
-> > bex:/usr/src/cpufreq# ./patchin.sh /usr/src/linux
-> > patching file Documentation/00-INDEX
-> > patching file Documentation/Configure.help
-> > Hunk #1 succeeded at 27057 (offset 80 lines).
-> > Hunk #2 succeeded at 27458 (offset 80 lines).
-> > patching file Makefile
-> > Hunk #1 succeeded at 199 (offset 5 lines).
-> > patching file arch/i386/config.in
-> > Hunk #1 succeeded at 195 (offset 1 line).
-> > patching file arch/i386/boot/setup.S
-> > patching file arch/i386/kernel/Makefile
-> > Hunk #2 FAILED at 44.
-> > 1 out of 2 hunks FAILED -- saving rejects to file
-> > arch/i386/kernel/Makefile.rej
-> > patching file arch/i386/kernel/i386_ksyms.c
-> > patching file arch/i386/kernel/setup.c
-> > Hunk #3 succeeded at 207 (offset 4 lines).
-> > Hunk #4 succeeded at 1150 (offset 10 lines).
-> > patching file arch/i386/kernel/time.c
-> > patching file drivers/Makefile
-> > patching file include/asm-i386/ist.h
-> > patching file include/asm-i386/msr.h
-> > patching file include/asm-i386/smp.h
-> > patching file include/linux/smp.h
-> > bex:/usr/src/cpufreq# cd ..
-> > bex:/usr/src# cat linux/arch/i386/kernel/Makefile.rej
-> > ***************
-> > *** 43,47 ****
-> >   obj-$(CONFIG_X86_LOCAL_APIC)  += mpparse.o apic.o nmi.o
-> >   obj-$(CONFIG_X86_IO_APIC)     += io_apic.o
-> >   obj-$(CONFIG_X86_VISWS_APIC)  += visws_apic.o
-> >
-> >   include $(TOPDIR)/Rules.make
-> > --- 44,60 ----
-> >   obj-$(CONFIG_X86_LOCAL_APIC)  += mpparse.o apic.o nmi.o
-> >   obj-$(CONFIG_X86_IO_APIC)     += io_apic.o
-> >   obj-$(CONFIG_X86_VISWS_APIC)  += visws_apic.o
-> > + obj-$(CONFIG_X86_POWERNOW_K6) += powernow-k6.o
-> > + obj-$(CONFIG_X86_POWERNOW_K7) += powernow-k7.o
-> > + obj-$(CONFIG_X86_POWERNOW_K8) += powernow-k8.o
-> > + obj-$(CONFIG_X86_LONGHAUL)    += longhaul.o
-> > + obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)  += speedstep-centrino.o
-> > + obj-$(CONFIG_X86_SPEEDSTEP_PIIX4)     += speedstep-piix4.o
-> > speedstep-lib.o + obj-$(CONFIG_X86_SPEEDSTEP_SMI)       +=
-> > speedstep-smi.o speedstep-lib.o + obj-$(CONFIG_X86_SPEEDSTEP_ICH)      
-> > += speedstep-ich.o speedstep-lib.o + obj-$(CONFIG_X86_P4_CLOCKMOD) +=
-> > p4-clockmod.o
-> > + obj-$(CONFIG_ELAN_CPUFREQ)    += elanfreq.o
-> > + obj-$(CONFIG_X86_LONGRUN)     += longrun.o
-> > + obj-$(CONFIG_X86_GX_SUSPMOD)  += gx-suspmod.o
-> >
-> >   include $(TOPDIR)/Rules.make
-> >
-> > Any info on how to remedy this would be greatly appreciated.
-> >
-> > Thanks,
-> >
-> > Stephen English
+can we avoid the issue completely, by taking something like powertweak,
+which will let you monitor any system value(s), and then use a
+combination of the values the user selected to determine the speed? 
+
+(though on my BX notebook i only get 2 speed, 700Mhz and 850Mhz)
+
+though most of this functionality does not exist in powertweak yet.. I
+still need to add getting values at regular intervals, and some generic
+calculation engine.
+
+the first i will do anyway as i want to provide a graph
+
+
+sven
+
+On Tue, 2003-10-21 at 03:35, Ducrot Bruno wrote:
+> On Mon, Oct 20, 2003 at 06:32:05PM +0100, Dave Jones wrote:
+> > On Mon, Oct 20, 2003 at 07:25:03PM +0200, Ducrot Bruno wrote:
+> > 
+> >  > AFAIR, there is no patent if wide system policy which is what Bob want
+> >  > to implement.  Only per-process (which is the most fun unfortunately) are
+> >  > patented.  That need to be confirmed though (by Alan ?).
+> > 
+> > I was under the understanding that there was a patent on
+> > "recalculate cpu frequency based on idle time" too.
+> > 
+> 
+> Grumble.  I was probably mistaken.  Sorry.
