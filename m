@@ -1,15 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Pentium-M minimum clock-freq
-Date: Fri, 2 Apr 2004 19:39:16 +0200
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: powernow-k8: support acpi
+Date: Fri, 2 Apr 2004 20:40:03 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040402173916.GA7499@dominikbrodowski.de>
-References: <200404021824.10912.steffen-hein@gmx.de>
-	<20040402164459.GB7034@dominikbrodowski.de>
-	<200404021926.28812.steffen-hein@gmx.de>
+Message-ID: <20040402184003.GQ19001@poupinou.org>
+References: <99F2150714F93F448942F9A9F112634C11E36B33@txexmtae.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0734980371=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <200404021926.28812.steffen-hein@gmx.de>
+Content-Disposition: inline
+In-Reply-To: <99F2150714F93F448942F9A9F112634C11E36B33@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,83 +17,43 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Steffen Hein <steffen-hein@gmx.de>
-Cc: cpufreq@www.linux.org.uk
-
-
---===============0734980371==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
-Content-Disposition: inline
-
-
---0F1p//8PRICkK4MW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Apr 02, 2004 at 07:26:28PM +0200, Steffen Hein wrote:
-> On Friday 02 April 2004 18:44, Dominik Brodowski wrote:
-> > 'cause the other OS's behaviour is broken, IMHO. It (also) "sells" you
-> > throttling as "speedstep": Throttling means the processor is stopped for
-> > short times.
->=20
-> Is that compareable with the good-old "hlt" instruction?
-
-Yes -- ACPI C1 actually does call hlt, C2 and higher do save more power than
-"hlt"; but it takes a bit more time for the processor to wake up from these
-"deeper sleep" states.
-
-> > Actual speedstep states for the 1.5ghz
-> > Pentium-M are 600, 800, 1000, 1200, 1400 and 1500 MHz.
->=20
-> OK, good to know. I just was confused by the mhz Numbers "the other OS[tm=
-]"=20
-> gave me.
-Many are, unfortunately...
-
-> BTW: I'm not familiar with the current ACPI-style power-management-stuff,=
- but=20
-> would it make sense to use the HLT instruction together with Speedstep? H=
-ow=20
-> can it be enabled on ACPI-systems? ("do cpu idle calls when idle" is=20
-> connected to apm in the kernel) Or isn't it useful anymore with ACPI?
-
-Oh yes, it's very useful if you use ACPI. It's part of the ACPI processor
-module, so if you say CONFIG_ACPI_PROCESSOR=3D"y" it should already work. G=
-rep
-for "ACPI" and you'll find the number of C-States your processor supports.
-Note that this number might change as soon as _CST support is merged (search
-for it on bugzilla.kernel.org if you want to test patches, but chose Bruno's
-as they're better than mine, I guess :-)
-
-	Dominik
-
---0F1p//8PRICkK4MW
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAbaVEZ8MDCHJbN8YRAml7AJkBk4PRwbGnursR/PbyYrrA3MqdjACglp6L
-lIQXZUqXS2SmkpMfe44oxHs=
-=2HF1
------END PGP SIGNATURE-----
-
---0F1p//8PRICkK4MW--
-
-
---===============0734980371==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: paul.devriendt@amd.com
+Cc: akpm@osdl.org, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk, pavel@ucw.cz, davej@redhat.com, linux@dominikbrodowski.de
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+On Fri, Apr 02, 2004 at 10:59:05AM -0600, paul.devriendt@amd.com wrote:
+> > But I can't say for sure which have to be favored: legacy or ACPI.
+> > I don't have enough dump of ACPI tables and PSB/PST from 
+> > machines shipped
+> > with AMD64.
+> > 
+> > Bruno Ducrot
+> 
+> ACPI please ....
+> 
+> 1. It seems that system manufacturers are testing with Windows XP
+> only before shipping their machines. Windows XP uses ACPI, so that
+> is the mechanism that is most likely to have accurate pstate data.
+> 2. We are seeing a lot of broken PSB/PSTs.
+> 3. The PSB/PST does not support SMP in its current form. ACPI does.
+> 4. Current plan is to not have PSB/PST at all for future processors.
+> 5. You need the ACPI support for the _PPC object which gives battery
+> and thermal control.
+> 
+> The downside to making the ACPI favored is that it is newer. But,
+> given the PSB/PST breakages from bad BIOS data, the newer is going
+> to be more robust.
+> 
 
---===============0734980371==--
+I totally agree with you.  The only problem I see is that it's
+possible that AML is so broken that it's not possible to make it
+work under Linux without changing a lot of things in the current ACPI
+interpreter, and that may be hard to get those changes by ACPI linux
+gang.
 
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
