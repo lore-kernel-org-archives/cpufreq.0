@@ -1,16 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: ACPI / cpufreq on Presario R3120
-Date: Sat, 5 Jun 2004 15:46:37 +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
+Date: Sat, 05 Jun 2004 11:21:14 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040605134637.GB9126@dominikbrodowski.de>
-References: <99F2150714F93F448942F9A9F112634C1431B6EA@txexmtae.amd.com>
-	<20040604095945.GI13782@poupinou.org>
-	<20040604152519.GB8490@dominikbrodowski.de>
-	<20040604160732.GJ13782@poupinou.org>
+Message-ID: <1086452473.12664.36.camel@gaston>
+References: <200406051846.50718.toojays@toojays.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040604160732.GJ13782@poupinou.org>
+In-Reply-To: <200406051846.50718.toojays@toojays.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,26 +18,20 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+To: John Steele Scott <toojays@toojays.net>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>, Christiaan Welvaart <cjw@daneel.dyndns.org>, cpufreq@www.linux.org.uk
 
-On Fri, Jun 04, 2004 at 06:07:32PM +0200, Bruno Ducrot wrote:
-> On Fri, Jun 04, 2004 at 05:25:19PM +0200, Dominik Brodowski wrote:
-> > 
-> > Hm. First of all, it looks to be not to be invalid behaviour wrt the ACPI
-> > specification -- even though it doesn't make sense. So, doing this
-> > workaround in drivers/acpi/processor.c would be way more complicated: we'd
-> > need to add a flag "VALID_STATE" [remember, processor.c doesn't know about
-> > frequency table helpers, and I'd like to keep it that way!], check for it in
-> > every ACPI-cpufreq driver [four at the moment], ... -- even though only
-> > _one_ needs such a workaround, AFAICS. And it's really easy in powernow-k8,
+On Sat, 2004-06-05 at 04:15, John Steele Scott wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Well, the spec will claims that p-states are sorted in descending order by
-> typical power dissipation (in the _PSS).  So yes, you are right since this is
-> not worded as 'strict descending order' (but well, this suck imho)..
+> Okay, thanks to some tips from Benjamin Herrenschmidt, I now have a patch 
+> against 2.6.6 which lets you control dynamic frequency scaling on the latest 
+> model iBook G4. I imagine that this same method would apply to the new 
+> PowerBooks as well.
 
-I might agree it is indeed a bug, but it is more easily being handled in the
-individual drivers.
+I suggest you also look at the latest Darwin code Apple released, more
+sepecifically AppleMacRISC2PE. There is some new bits including something
+about tweaking a bus delay when changing the frequency on these models.
 
-	Dominik
+Ben.
