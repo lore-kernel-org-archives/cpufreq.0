@@ -1,7 +1,7 @@
 From: =?iso-8859-2?q?Micha=B3_Pytasz?= <pytasz@lodz.home.pl>
 Subject: powernow-k8 on Athlon64 3200+ (s939) stability problem...
-Date: Tue, 5 Apr 2005 11:28:29 +0200
-Message-ID: <200504051128.29333.pytasz@lodz.home.pl>
+Date: Tue, 5 Apr 2005 11:40:00 +0200
+Message-ID: <200504051140.00798.pytasz@lodz.home.pl>
 References: <88056F38E9E48644A0F562A38C64FB60046298FE@scsmsx403.amr.corp.intel.com>
 Reply-To: pytasz@lodz.home.pl
 Mime-Version: 1.0
@@ -35,8 +35,16 @@ mode:
 Linux 2.6.11-gentoo-r5 #1 Sat Apr 2 21:52:05 CEST 2005 x86_64 AMD Athlon(tm) 
 64 Processor 3200+ AuthenticAMD GNU/Linux
 
+I am not 100% certain about it, but I think it hangs/reboots "on return" to 
+high frequency (or at least when the frequency is low and I start lots of 
+applications or start using gcc)
+
+
 I was wondering how to check if it is a hardware problem (for example too low 
 voltage from mainboard, deffective CPU,... ) or something in the system.
+
+Excuse me for re-posting my message, I was not sure if it had been sent 
+(during some tests system had hung).
 
 All ideas are welcome,
 Michal
