@@ -1,19 +1,15 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Tue, 21 Oct 2003 22:32:15 +0200
+Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPIP-state
+	driver
+Date: Tue, 21 Oct 2003 22:39:00 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021203215.GE26971@brodo.de>
-References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
-	<1066725533.5237.3.camel@laptop.fenrus.com>
-	<20031021095925.GB893@inferi.kami.home>
-	<20031021101737.GA31352@wiggy.net>
-	<20031021105234.GF893@inferi.kami.home>
-	<Pine.SOL.4.53.0310211057060.6187@graphics.cat.nyu.edu>
+Message-ID: <20031021203900.GG26971@brodo.de>
+References: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
+	<1066766155.a66ff46274f08@carlthompson.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.SOL.4.53.0310211057060.6187@graphics.cat.nyu.edu>
+In-Reply-To: <1066766155.a66ff46274f08@carlthompson.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -25,63 +21,40 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: danielk@mrl.nyu.edu
-Cc: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, Mattia Dongili <dongili@supereva.it>
+To: Carl Thompson <cet@carlthompson.net>
+Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, "Mallick,
+	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, linux-acpi <linux-acpi@intel.com>
 
-On Tue, Oct 21, 2003 at 11:36:56AM -0400, Daniel Thor Kristjansson wrote:
+On Tue, Oct 21, 2003 at 12:55:55PM -0700, Carl Thompson wrote:
+> Quoting "Nakajima, Jun" <jun.nakajima@intel.com>:
 > 
-> The _user_ shouldn't set the cpu frequency hundred of times a second,
-> but a userland program should set the priorities. If you are just
-> looking at CPU Temperature and the idle loop for setting your cpu
-> frequency then it's fine to do it in the kernel. But if you are looking
-> at dozens of factors and balancing them it is much safer to do so in
-> userland.
+> > ...
+> 
+> > It's about the frequency of the feedback loop. As we have much lower
+> > latency with P-state transitions, the sampling time can be order of
+> > millisecond (or shorter if meaningful). A userland daemon can have a
+> > high-level policy (preferences, or set of parameters), but it cannot be
+> > part of the real feedback loop. If we combine P-state transitions and
+> > deeper C-state transitions, the situation is worse with a userland
+> > daemon.
+> 
+> You are making the assumption that a higher polling frequency (we'll say
+> 1ms) is in general better than a lower frequency (we'll say 1s).  I submit
+> that it is not.
+> 
+> If I hit a key on my keyboard and your high frequency loop increases CPU
+> speed so that my word processor displays the letter 0.01s faster, is that
+> really beneficial?  If a window renders in 0.2s seconds instead of 0.3s is
+> that a difference I am going to notice?
+> 
+> On the other hand, if I do a kernel compile and it is done 0.999s faster
+> with the higher frequency loop, am I going to miss that second over such a
+> long duration?  (In reality, the compile with the high-frequency loop would
+> probably take longer unless it has near zero overhead).
+> 
+> In my opinion it is wasteful to increase CPU speed unless there is a longer
+> term need for it.
 
-Wrong. Passing "events" or "information" to cpufreq governors by
-cpufreq_governor() is much easier, cheaper, and more reliable. 
-
-> CPUFreq has been rearchitectured to allow this type of thing,
-> you can have a governor in the kernel that sets CPU Frequency based on
-> load within limits specified by a userland program.
-
-Wrong again. CPUfreq has been rearchitectured to do this kernel-space. 
-The userspace governor allows setting to specific frequencies by the user
-["I _want_ 500 MHz and nothing else!"], and it offers backwards
-compatibility for the first-era cpufreq interface [LART project etc.].
-
-> ACPI can meantime throttle the CPU if it gets too hot
-
-However, frequency scaling is much more efficient on lowering the CPU heat,
-too.
-
-> The user may know things the kernel doesn't such as "this laptop is
-> burning a hole in my pants." She might want to construct a policy that
-> doesn't minimize power consumption since she's plugged in, but gives the
-> CPU lots of juice at first when the idle goes down, but then backs off
-> if it detects a long running 100% utilization such as during a long
-> compile.
-
-Yes indeed. She wants to set a cpufreq policy which suits of her needs: 
-it consists of a
-- minimum frequency	=> not too low [she's plugged in]
-- maximum frequency	=> 100%
-- cpufreq governor	=> some kind of yet-to-be-written 
-				dynamic cpufreq governor with
-				temperature or long-term-statistic
-				knowledge.
-
-_I_ wouldn't want to run this governor, though -- I want kernel compiles to
-complete as fast as possible. So, we need different in-kernel governors.
-
-> This would maximize responsiveness in interactive settings but
-> still keep her lap comfortably cool when compiling mozilla. Putting the
-> complexity of policies specified by something like an XML file in the
-> kernel scares me, putting it in a userspace program that communicates
-> with a low level governor is a more comforting thought.
-
-Well, the thing one of the cpufreq userspace programs does is really fine:
-based on low-frequency events [power plug-in, running specific programs,
-etc.] different cpufreq policies [see above] are selected. No XML file
-necessary.
+Different needs, different opinions, different governors...
 
 	Dominik
