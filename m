@@ -1,14 +1,16 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: [new] event mode on speedstep-smi.
-Date: Fri, 5 Sep 2003 16:51:06 +0200
+From: Matt Wright <matt@consultmatt.co.uk>
+Subject: Re: Cpufreq and AMD mobile Athlon 4
+Date: 05 Sep 2003 17:12:17 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030905145106.GE408@poupinou.org>
-References: <87ekywzjvm.wl%miura@da-cha.org> <20030904232555.GA8650@brodo.de>
-	<87bru0yutb.wl%miura@da-cha.org>
+Message-ID: <1062778337.5865.0.camel@riogrande>
+References: <1062500550.5141.3.camel@riogrande>
+	<20030902125908.GB1225@redhat.com>
+	<20030902220356.329829c1.simplex@freemail.hu>
+	<20030902201722.GD1225@redhat.com> <1062626101.4840.0.camel@riogrande>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <87bru0yutb.wl%miura@da-cha.org>
+In-Reply-To: <1062626101.4840.0.camel@riogrande>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,33 +21,46 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Hiroshi Miura <miura@da-cha.org>
-Cc: "'cpufreq@www linux org uk'" <cpufreq@www.linux.org.uk>, Dominik Brodowski <linux@brodo.de>
+To: cpufreq@www.linux.org.uk
 
-On Fri, Sep 05, 2003 at 08:53:36AM +0900, Hiroshi Miura wrote:
+Hey guys,
+
+Any more info on my problem, things I can do etc etc.
+
+Please, any comments are welcome.
+
+Matt
+
+On Wed, 2003-09-03 at 22:55, Matt Wright wrote:
+> Hi guys,
 > 
-> At Fri, 5 Sep 2003 01:25:55 +0200,
-> Dominik Brodowski wrote:
+> See attached the decoded sys oops from my encounters with powernow-k7.
+> 
+> Regards,
+> 
+> Matt
+> 
+> On Tue, 2003-09-02 at 21:17, Dave Jones wrote:
+> > On Tue, Sep 02, 2003 at 10:03:56PM +0200, V?lgyi Zolt?n wrote:
 > > 
-> > Actually, I much preferred the original version of your driver. This "event"
-> > stuff can either be done as a seperate governor (different file), or in
-> > userspace (as Bruno has pointed out).
+> >  > I've got the same problem with my notebook. This is a 
+> >  > Fujitsu-Siemens Amilo A7600.
 > > 
-> > What do you think about the patches for your driver I sent you?
+> > noted. Can you mail me the dmidecode output too please ?
+> > (See http://people.redhat.com/arjanv/dmidecode.c)
+> > 
+> >  > Nothing else.
+> >  > But what to do?
+> > 
+> > Is there a BIOS update available you can try ?
+> > 
+> > I really wish I had the time to get sysfs overrides written..
+> > 
+> > 		Dave
 > 
-> I think your patches is better. I cannot test on 440BX/ZX, so it is needed.
+> ______________________________________________________________________
 > 
-> My previous post is only to demonstrate event smi function and
-> a sample implementation.
-> 
-
-I changed a little my mind though.  If someone want apm (not acpi),
-then he have to poll the ac status via apm, which is probably
-more costly than to do a single inb.
-
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@www.linux.org.uk
+> http://www.linux.org.uk/mailman/listinfo/cpufreq
