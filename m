@@ -1,21 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: powernow-k8: support acpi
-Date: Tue, 6 Apr 2004 16:55:02 +0200
+Subject: [PATCH] don't use speedstep-centrino on unsupported CPUs
+Date: Tue, 6 Apr 2004 17:08:09 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040406145502.GA7307@dominikbrodowski.de>
-References: <99F2150714F93F448942F9A9F112634C1163C8D7@txexmtae.amd.com>
-	<20040321185417.GA7969@dominikbrodowski.de>
-	<20040326122931.GA321@elf.ucw.cz>
-	<20040401235635.GA25744@redhat.com>
-	<20040402162447.GP19001@poupinou.org>
-	<20040402163902.GC5688@redhat.com>
-	<20040402170926.GA289@elf.ucw.cz>
-	<20040406130730.GA5133@redhat.com>
+Message-ID: <20040406150809.GA8795@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="jRHKVT23PllUwdXP"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040406130730.GA5133@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -25,90 +15,64 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Dave Jones <davej@redhat.com>
-Cc: Andrew Morton <akpm@osdl.org>, Bruno Ducrot <ducrot@poupinou.org>, mark.langsdorf@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>, Pavel Machek <pavel@ucw.cz>, paul.devriendt@amd.com
-
-
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue, Apr 06, 2004 at 02:07:30PM +0100, Dave Jones wrote:
-> On Fri, Apr 02, 2004 at 07:09:26PM +0200, Pavel Machek wrote:
-> 
->  > > I'm about to disappear for a day or two. I'll look into integrating whats
->  > > outstanding on Sunday.  Pavel, if you have time between now and then
->  > > to do a diff of whats remaining between your tree and the driver I posted
->  > > this afternoon, that would make my life a little easier.
->  > 
->  > Here it is: (I was not able to locate your changes, so it is possible
->  > I'm reverting some of those; but few extra inlines should not hurt
->  > that bad :-).
-> 
-> Ok, the merge-from-hell is complete (split up into 23 csets).
-> The only diffs between your tree and mine should now be trivial
-> whitespace changes, and some small bits that looked bogus.
-
-Just found a small bug which would leave the preempt count negative(!) in
-special cases. Patch is attached.
-
-> You can grab what I have in my tree pending pushing to Linus at
-> http://www.codemonkey.org.uk/projects/cpufreq/pending.diff
-
-Will
-http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/
-be a permanent institution, or is it just available for the moment?
-
-> One thing outstanding that probably does need fixing. Andi Kleen
-> mentioned on IRC yesterday ..
-> 
-> <f> found a funny bug in the powernow-k8 acpi changes
-> <f> when  acpi is disabled processor.ko won't load, but the new module needs symbols from that
-> <f> i added a hack to keep it loaded anyways
-> 
-> Be nice to get that fixed, and merged before these changes get pushed to mainline.
-
-Hm. Keeping processor.ko loaded seems to be an ugly hack to me. However, I
-can't see a way (yet) how powernow-k8.ko can rely on processor.ko's objects
-but not depend on it if these are not neeeded (psb case).
-
-	Dominik
-
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="cpufreq-2.6.5-fix-jump"
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-04-06 16:41:19.907636632 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-04-06 16:50:54.428296216 +0200
-@@ -848,7 +848,7 @@
- 
- 	if (smp_processor_id() != pol->cpu) {
- 		printk(KERN_ERR "limiting to cpu %u failed\n", pol->cpu);
--		goto err_out;
-+		goto sched_out;
- 	}
- 
- 	/* from this point, do not exit without restoring preempt and cpu */
-@@ -892,6 +892,7 @@
- 
- err_out:
- 	preempt_enable_no_resched();
-+sched_out:
- 	set_cpus_allowed(current, oldmask);
- 	schedule();
- 
-
---jRHKVT23PllUwdXP
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Don't use the ACPI data on CPUs we don't know nothing about.
 
---jRHKVT23PllUwdXP--
-
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-04-06 16:41:19.908636480 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-04-06 17:03:50.263351360 +0200
+@@ -195,21 +195,6 @@
+ 	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
+ 	struct cpu_model *model;
+ 
+-	if (!cpu_has(cpu, X86_FEATURE_EST))
+-		return -ENODEV;
+-
+-	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
+-	   they appear after making sure they use PERF_CTL in the same
+-	   way. */
+-	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
+-	    cpu->x86        != 6 ||
+-	    cpu->x86_model  != 9 ||
+-	    cpu->x86_mask   != 5) {
+-		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
+-		       "send /proc/cpuinfo to " MAINTAINER "\n");
+-		return -ENODEV;
+-	}
+-
+ 	for(model = models; model->model_name != NULL; model++)
+ 		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
+ 			break;
+@@ -361,6 +346,7 @@
+ 
+ static int centrino_cpu_init(struct cpufreq_policy *policy)
+ {
++	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
+ 	unsigned freq;
+ 	unsigned l, h;
+ 	int ret;
+@@ -368,6 +354,21 @@
+ 	if (policy->cpu != 0)
+ 		return -ENODEV;
+ 
++	if (!cpu_has(cpu, X86_FEATURE_EST))
++		return -ENODEV;
++
++	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
++	   they appear after making sure they use PERF_CTL in the same
++	   way. */
++	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
++	    cpu->x86        != 6 ||
++	    cpu->x86_model  != 9 ||
++	    cpu->x86_mask   != 5) {
++		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
++		       "send /proc/cpuinfo to " MAINTAINER "\n");
++		return -ENODEV;
++	}
++
+ 	if (centrino_cpu_init_acpi(policy)) {
+ 		if (centrino_cpu_init_table(policy)) {
+ 			return -ENODEV;
