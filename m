@@ -1,8 +1,13 @@
-From: bugme-daemon@osdl.org
-Subject: [Bug 3872] Bad frequencies detected
-Date: Mon, 6 Dec 2004 06:12:52 -0800
-Message-ID: <200412061412.iB6ECqmv014931@fire-1.osdl.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: longhaul in 2.6.9 hangs VIA EPIA MII12000 when switching
+	frequencies
+Date: Mon, 6 Dec 2004 11:24:52 -0500
+Message-ID: <20041206162452.GA14746@redhat.com>
+References: <e256efa404120516422cb37625@mail.gmail.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <e256efa404120516422cb37625@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,30 +18,47 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: petr@konecny.cc
+Cc: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
-http://bugme.osdl.org/show_bug.cgi?id=3872
+On Sun, Dec 05, 2004 at 04:42:54PM -0800, Petr Konecny wrote:
+ > Hi,
+ > 
+ > the following script hangs my EPIA MII12000 within 5 seconds:
+ > echo userspace >  /sys/devices/system/cpu/cpu0/scaling_governor
+ > while true
+ > do
+ >    echo 532000 > /sys/devices/system/cpu/cpu0/cpufreq
+ >    echo 1197000 >  /sys/devices/system/cpu/cpu0/cpufreq
+ > done
+ > 
+ > When I run powernowd the system also crashes, usually when the
+ > CPU/disk load changes often. Unfortunately this machine is headless so
+ > I have no oops. Even netconsole is silent.
+ > 
+ > scaling_available_frequencies:
+ > 532000 1197000 598000 731000 798000 931000 1064000 665000 864000
+ > 997000 1130000 1197000
+ > 
+ > The motherboard has 1.2 GHz VIA Nehemiah CPU, cpu family 6, stepping 9. 
+ > Loading longhaul prints:
+ > longhaul: VIA C3 'Nehemiah C' [C5N] CPU detected.  Powersaver supported.
+ > 
+ > I can do more tests upon request. Would compiling with debugging
+ > reveal any secrets ?
 
-linux@brodo.de changed:
+Yup, I've managed to repeat this on my own Nehemiah too.
+(For me, if I don't disable 'cpuspeed', the box dies within 5 minutes
+ of use).  The bad news is, I've no idea what the problem is right now :-/
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |linux@brodo.de
-             Status|NEW                         |ASSIGNED
+I'll keep poking at it.  It might be worth trying older versions of
+the longhaul.c from earlier kernels and seeing if it ever worked properly.
+A few months ago, I had a handful of bug reports from users of older C3s,
+but my Nehemiah worked fine iirc. As time has gone on, it seems more
+and more people have found it to be broken.  Either the number of people
+using longhaul.c has increased over time, or the quality of the driver
+has got worse and worse..
 
-
-
-------- Additional Comments From linux@brodo.de  2004-12-06 06:12 -------
-p4-clockmod is useless for this processor, so that doesn't matter [and probably
-you loaded it while the CPU was at 1.6GHz, then the values are correct].
-
-The Pentium 4-M processor only supports two frequency states, so speedstep-ich
-and acpi "only" reporting 1.6 GHz and 2.8GHz is correct. I'd prefer
-speedstep-ich out of these two, as the BIOS exports some invalid data to the
-cpufreq-acpi driver (it shouldn't export the 2.8 GHz state four times...)
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+		Dave
