@@ -1,13 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 Subject: Re: [PATCH] cpufreq: allow ondemand governor as default
-Date: Mon, 7 Mar 2005 18:41:50 +0100
-Message-ID: <20050307174150.GC31985@poupinou.org>
+Date: Mon, 7 Mar 2005 18:57:19 +0100
+Message-ID: <20050307175719.GA23932@isilmar.linta.de>
 References: <20050304011359.GA32684@aquarid.physics.uwo.ca>
 	<20050306170625.GA2034@isilmar.linta.de>
 	<20050306215106.GA25034@redhat.com>
+	<20050307174150.GC31985@poupinou.org>
 Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20050306215106.GA25034@redhat.com>
+In-Reply-To: <20050307174150.GC31985@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,37 +21,29 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: Rob Weryk <rjweryk@uwo.ca>, cpufreq@ZenII.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: Dave Jones <davej@redhat.com>, Rob Weryk <rjweryk@uwo.ca>, cpufreq@ZenII.linux.org.uk
 
-On Sun, Mar 06, 2005 at 04:51:06PM -0500, Dave Jones wrote:
-> On Sun, Mar 06, 2005 at 06:06:25PM +0100, Dominik Brodowski wrote:
-> 
->  > This is not possible yet -- unfortunately. If you set ondemand to be
->  > "default" but it fails at initialization (it does so for several drivers!),
->  > cpufreq enters an undefined state
-> 
-> I knew there was a reason for declining this, but couldn't recall
-> what it was (hence I sent Rob to the list when he sent me the patch).
+On Mon, Mar 07, 2005 at 06:41:50PM +0100, Bruno Ducrot wrote:
+> And I dont remember what happens when the driver dont use the frequency
+> table helpers (geode)
 
-It refuse to load when latency for a state transition is too high (or unknown),
-and if there is only ondemand as governor selected then kernel will likely fail at
-boot time.  It has been stated that its up to the low level drivers to
-provide good information about latencies and therefore it is not
-acceptable to accept to load ondemand if latency is unknown (but I don't
-remember if its acceptable if latency is too high sorry ;)
+frequency table helpers do not enter the picture here; let me draw a
+picture:
 
-And I dont remember what happens when the driver dont use the frequency
-table helpers (geode) or is already capable for automaticaly
-state switching (longrun).
+	.-----------------.                 .-----------------------------.
+	|  cpufreq core   |-----------------|  cpufreq ->target drivers   |
+	|_________________|                 |_____________________________|
+		|					    |
+		|					    |
+	.-----------------.		.-----------------------------------.
+	|   governors     |		| frequency table helpers (optional)|
+	|_________________|		|___________________________________|
 
-> This has come up about 4-5 times now in the last month or two.
-> Maybe its worth adding a comment to the Kconfig to prevent a 6th time :-)
+> or is already capable for automaticaly state switching (longrun).
 
-Sure.
+longrun or, in general, ->range() cpufreq drivers do not need governors at
+all, so we do not need to take anything into account with regard to them.
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Thanks,
+	Dominik
