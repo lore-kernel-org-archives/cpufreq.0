@@ -1,15 +1,13 @@
-From: Daniel Thor Kristjansson <danielk@cat.nyu.edu>
+From: Dave Jones <davej@suse.de>
 Subject: Re: Cpufreq: powernow-k7 weirdness
-Date: Mon, 7 Jul 2003 12:32:22 -0400 (EDT)
+Date: Mon, 7 Jul 2003 19:32:52 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <Pine.SOL.4.53.0307071212001.24298@graphics.cat.nyu.edu>
-References: <tpisqgv58s.fsf@lanthane.pps.jussieu.fr>
- <200307071129.46683.mflt1@micrologica.com.hk> <20030707131252.GC7796@poupinou.org>
- <200307072306.13290.mflt1@micrologica.com.hk>
-Reply-To: danielk@mrl.nyu.edu
+Message-ID: <20030707193252.A9758@suse.de>
+References: <tpisqgv58s.fsf@lanthane.pps.jussieu.fr> <20030706012114.GW7796@poupinou.org> <tpfzlih4si.fsf@helium.pps.jussieu.fr> <20030707133240.GD7796@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <200307072306.13290.mflt1@micrologica.com.hk>
+Content-Disposition: inline
+In-Reply-To: <20030707133240.GD7796@poupinou.org>; from ducrot@poupinou.org on Mon, Jul 07, 2003 at 03:32:40PM +0200
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,76 +17,33 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Frank <mflt1@micrologica.com.hk>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, Luigi Belli <lbelli@crema.unimi.it>, cpufreq@www.linux.org.uk
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: Juliusz Chroboczek <jch@pps.jussieu.fr>, cpufreq@www.linux.org.uk
 
+On Mon, Jul 07, 2003 at 03:32:40PM +0200, Ducrot Bruno wrote:
+ > On Mon, Jul 07, 2003 at 02:58:37PM +0200, Juliusz Chroboczek wrote:
+ > > >> Running stock 2.5.73 (ACPI + preempt) on a Compaq Presario 711, CPU is
+ > > >> a 950MHz mobile Duron.  I'm getting unexpected timings when enabling
+ > > >> cpufreq.
+ > > 
+ > > > There is a little bug in powernow-k7.c
+ > > 
+ > > > ducrot@neptune $  cvs diff -u -r1.42 powernow-k7.c
+ > > 
+ > > Yep, that did it.  Thanks a lot.
+ > > 
+ > > Why don't you push it into 2.5?
+ > 
+ > Well, I supposed it was in linus bk tree.  I will report then.
 
-I'm not a mainboard designer but I play one on TV...
+It's in my cpufreq bitkeeper tree waiting for Linus to pull
+from for about a week. I've been a little preoccupied this weekend
+getting married, so I'll ask him to pull when I get back.
 
-1/ I have had two laptops from Sony's FX series and the later
-   one required three times as much power, but had the same
-   power supply, regulator and batteries.
+        Dave
 
-2/ An EE friend of mine worked at a large computer maker and complained
-   bitterly about designers just cut-n-pasting power supplies and
-   regulators from older designs that had very different power
-   requirements.
-
-I wouldn't be too surprised if a lot of laptops have underpowered power
-supplies. It would be better to give a large timing leeway by default,
-but expose a mechanism for speeding the switching up in the /sys
-filesystem.
-
-Is it possible to do the speed change seperately from the voltage
-scaling? Perhaps when slowing down the CPU, you can slow it down
-immediately, then slowly scale the voltage down. You might also be able
-to scale up the voltage quicker if you do it independently of the
-frequency scaling. A higher frequency is going to lead to the CPU
-drawing more current, It might be better to first charge up the
-capacitors at the new higher voltage so they work for you instead of
-against you.
-
-Ok, I'll go back to lurking..
-
--- Daniel
-  << When truth is outlawed; only outlaws will tell the truth. >> - RLiegh
-
-On Mon, 7 Jul 2003, Michael Frank wrote:
-
-]On Monday 07 July 2003 21:12, Ducrot Bruno wrote:
-]> > The actual minimum time between steps depends on systems design and can
-]> > only be established by watching the (core) voltage on an oscilloscope
-]> > while modulating cpufreq/ACPI settings. The time used should be double
-]> > or triple the minimum for longterm stability. It would be better if
-]> > Mainboard manufacturers would specify this minimum time.
-]>
-]> That is suposed to be done via a BIOS table (with signature
-]> AMDK7PNOW!) for the powernow-k7 driver, but is used for the
-]> CPU only (I believe), and I guess that anyway this occur
-]> only when a valid core voltage is applied to the CPU (well,
-]> I hope).
-]> But perhaps this table do not give appropriate values on some system?
-]>
-]> Actually, I was wondering why the _PSS method (from ACPI) give
-]> a settling time of 125us, instead of 100us for some systems.
-]
-]100us vs 125us won't matter unless the margin is too small already.
-]
-]I don't know anything about the big CPU chip requirements as I have
-]never read a datasheet  on on those big beasts.
-]
-]My comments were related to the (analog side of the) power supply
-]limitations.
-]
-]IMHO mainboard Vcore switchers could do a step in 100us or so, or full scale
-]over 10 steps or so, (weaker) main power supplies would likely have trouble
-]as their switching frequency is much lower. Perhaps a mainboard designer
-]could comment?
-]
-]Regards
-]Michael
-]
-]
-]
+-- 
+| Dave Jones.        http://www.codemonkey.org.uk
+| SuSE Labs
