@@ -1,21 +1,12 @@
-From: Marc Singer <elf@buici.com>
-Subject: Re: Athlon 64 complains of frequency mismatch
-Date: Tue, 22 Jun 2004 10:59:05 -0700
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Adding SMP capability to ACPI cpufreq driver and related bugfixes
+Date: Tue, 22 Jun 2004 17:40:46 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040622175905.GA17408@buici.com>
-References: <20040618185103.GA14909@buici.com>
-	<20040619104456.GA7689@dominikbrodowski.de>
-	<20040619155554.GA32432@buici.com>
-	<20040618185103.GA14909@buici.com>
-	<20040619104456.GA7689@dominikbrodowski.de>
-	<20040619163631.GA1369@buici.com>
-	<20040621202601.GA8064@dominikbrodowski.de>
-	<20040621214236.GA3858@buici.com>
-	<20040622171103.GB8111@dominikbrodowski.de>
+Message-ID: <88056F38E9E48644A0F562A38C64FB60022D150C@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040622171103.GB8111@dominikbrodowski.de>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -26,46 +17,20 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
+Cc: linux-acpi <linux-acpi@intel.com>
 
-On Tue, Jun 22, 2004 at 07:11:03PM +0200, Dominik Brodowski wrote:
-> Also, are there any entries in the BIOS you can toggle which might be
-> related to "Cool&Quiet", "PnP-capable OS", ...?
 
-Bingo.  There is a Cool&Quiet enable option.  The dump module now
-produces this:
+http://bugme.osdl.org/show_bug.cgi?id=3D2615
+And
+http://bugme.osdl.org/show_bug.cgi?id=3D2712
 
-    ACPI: Processor [CPU1] (supports C1, 16 throttling states)
-    number of states: 10
-    acpi_pdump: P0: 2000 MHz, 89000 mW, 125 uS s:0x8c c:0xa020288c
-    acpi_pdump: P1: 1800 MHz, 66000 mW, 125 uS s:0x18a c:0xa020298a
-    acpi_pdump: P2: 1800 MHz, 66000 mW, 125 uS s:0x18a c:0xa020298a
-    acpi_pdump: P3: 1800 MHz, 66000 mW, 125 uS s:0x18a c:0xa020298a
-    acpi_pdump: P4: 1800 MHz, 66000 mW, 125 uS s:0x18a c:0xa020298a
-    acpi_pdump: P5: 800 MHz, 35000 mW, 125 uS s:0x280 c:0xa0202a80
-    acpi_pdump: P6: 800 MHz, 35000 mW, 125 uS s:0x280 c:0xa0202a80
-    acpi_pdump: P7: 800 MHz, 35000 mW, 125 uS s:0x280 c:0xa0202a80
-    acpi_pdump: P8: 800 MHz, 35000 mW, 125 uS s:0x280 c:0xa0202a80
-    acpi_pdump: P9: 800 MHz, 35000 mW, 125 uS s:0x280 c:0xa0202a80
-    control_register:
-    130 12 127 0 0 0 0
-    status_register:
-    130 12 127 0 0 0 0
+has few patches along with detailed descriptions. The objective of these
+patches:
+To add Enhanced Speedstep Technology (EST) support through ACPI cpufreq
+driver, on an SMP system that has EST.
 
-And the powernow-p8 driver loads.
+Comments/feedbacks welcome.
 
-Perhaps this is an addition to the FAQ:
-
- Q609: AMD Cool&Quiet CPU won't load the powernow-k? driver.  Why?
-
- A609: The powernow driver gets it's information about processor
-       states from the BIOS's reported ACPI control data.  If the
-       powernow driver won't load it may be because Cool&Quiet hasn't
-       been enabled in the BIOS.  Make sure that BIOS settings for a
-       PowerNow or a Cool&Quiet option are enabled.
-
-Or, maybe the driver should output a kernel message about BIOS
-settings.
-
-Cheers.
+Thanks,
+Venki
