@@ -1,13 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Francesco Poli <frx@firenze.linux.it>
 Subject: Re: Help with Installation
-Date: Sat, 3 Apr 2004 16:50:45 +0200
+Date: Sat, 3 Apr 2004 17:16:33 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040403145045.GV19001@poupinou.org>
+Message-ID: <20040403171633.610cc960.frx@firenze.linux.it>
 References: <200404031342.34522.ozeki@simnet.is>
+	<20040403145045.GV19001@poupinou.org>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0171607721=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200404031342.34522.ozeki@simnet.is>
+In-Reply-To: <20040403145045.GV19001@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,54 +18,66 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
+
+--===============0171607721==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="pgp-sha1";
+	boundary="Signature=_Sat__3_Apr_2004_17_16_33_+0200_Qh=w=RfZ.5.IDu1J"
+
+--Signature=_Sat__3_Apr_2004_17_16_33_+0200_Qh=w=RfZ.5.IDu1J
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-To: ozeki@simnet.is
-Cc: cpufreq@www.linux.org.uk
 
-On Sat, Apr 03, 2004 at 01:42:34PM +0000, Ozeki San wrote:
-> Hi all,
+On Sat, 3 Apr 2004 16:50:45 +0200 Bruno Ducrot wrote:
+
+> tar xzvfp cpufreq-...tar.gz
+> cd cpufreq
+> ./patchin.sh /path/to/kernel/sources
 > 
-> I'm trying to get trough my first installation of cpufreq and I was wondering 
-> if someone could point me to some more documentation on how to install it.  I 
-> got the cpufreq-LINUX_2_4-20040402.tar.gz tarball for the 2.4.25 kernel.
-> 
-> I'm trying this out on my IBM ThinkPad T41 which I suppose would be using the 
-> speedstep-centrino driver.  The question is : how is the cpufreq package 
-> included in the configuring and compile of the kernel ?
-> 
-> I've been trying to find some sort of an INSTALL file without luck, does 
-> anyone have or know of such a description ?
+> Do *not* remove the cpufreq directory that was unpacked.
 
-tar xzvfp cpufreq-...tar.gz
-cd cpufreq
-./patchin.sh /path/to/kernel/sources
+Why did you set up such a strange procedure?
+What are the advantages over a simple patch like the old ones found in
+http://www.codemonkey.org.uk/projects/cpufreq/   ?
 
-Do *not* remove the cpufreq directory that was unpacked.
-then
+I'd say a gzipped (or bzip2ed) patch file would be much more easy to
+apply (especially with automatic tools such as Debian kernel-package,
+that is, make-kpkg), but of course I may be wrong...
 
-cd /path/to/kernel/sources
-make menuconfig (or your preferred *config).
-
-
-Under 'Processor type and feature' you will have a new
-'CPU Frequency scaling' menu.
-
-Under it:
-
-'CPU Frequency scaling' -> yes
-'CPU frequency table helpers' -> yes
-
-Perhaps 'Support for governing from userspace' -> yes
-(or else most daemon may not work),
-
-Then probably 
-'Intel Pentium-M Enhanced SpeedStep' -> yes or module, as you like.
-
-Cheers,
+Could you please explain the rationale behind such a choice?
 
 -- 
-Bruno Ducrot
+             |  GnuPG Key ID = DD6DFCF4 | You're compiling a program
+  Francesco  |        Key fingerprint = | and, all of a sudden, boom!
+     Poli    | C979 F34B 27CE 5CD8 DC12 |         -- from APT HOWTO,
+             | 31B5 78F4 279B DD6D FCF4 |             version 1.8.0
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+--Signature=_Sat__3_Apr_2004_17_16_33_+0200_Qh=w=RfZ.5.IDu1J
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAbtVWePQnm91t/PQRAsOEAKCaTsRGADIo0kz6z2DqEwo20qlTYQCggb5d
+XCoVaZAoibqHlg5TcGbOsYM=
+=sdgs
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__3_Apr_2004_17_16_33_+0200_Qh=w=RfZ.5.IDu1J--
+
+
+--===============0171607721==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0171607721==--
+
