@@ -1,13 +1,13 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: [ACPI] _PDC method in DSDT
-Date: Mon, 23 Jun 2003 18:11:36 +0200
+From: shane@bogomip.com
+Subject: Re: Transmeta Longrun Support?
+Date: Mon, 23 Jun 2003 10:51:10 -0600
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030623161136.GG19556@poupinou.org>
-References: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com> <20030623133834.GA2330@brodo.de>
+Message-ID: <20030623165110.GD5108@bogomip.com>
+References: <20030622194439.GB5108@bogomip.com> <20030623134842.GE2330@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030623133834.GA2330@brodo.de>
+In-Reply-To: <20030623134842.GE2330@brodo.de>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,32 +20,22 @@ List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Dominik Brodowski <linux@brodo.de>
-Cc: "Grover, Andrew" <andrew.grover@intel.com>, David Moore <dcm@acm.org>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+Cc: cpufreq@www.linux.org.uk
 
-On Mon, Jun 23, 2003 at 03:38:34PM +0200, Dominik Brodowski wrote:
-> On Mon, Jun 23, 2003 at 02:19:27AM -0700, Grover, Andrew wrote:
-> > The spec intended FixedFunctionalHW registers to be an "escape hatch".
-> > FFH means that while ACPI is used for perf state enumeration, the
-> > transitions will be handled in a CPU-specific driver, not via methods
-> > described in the ACPI spec. This division (use ACPI for enum, x for
-> > control) isn't currently supported by cpufreq; ACPI either does both
-> > enum and control, or neither.
-> 
-> But it could easily be added to the cpufreq drivers. For example, the
-> speedstep-centrino driver could call a 
-> 
-> int acpi_get_frequency_table(struct cpufreq_frequency_table **freq_table)
-> 
-> which returns an array with the frequency in freq_table[i].frequency, and
-> some sort of "index" in freq_table[i].index, e.g. what needs to be written
-> into the IA32_PERF_CTL MSR.
-> 
+On Mon, Jun 23, 2003 at 03:48:42PM +0200, Dominik Brodowski wrote:
+> On Sun, Jun 22, 2003 at 01:44:39PM -0600, shane@bogomip.com wrote:
+> > What does the cpufreq driver offer crusoe kernels that the longrun userspace utility can't already do.
+> > 
+> > Just a standard proc interface to the settings?
 
-Yes.  It can be added.  But do we want to add it?  That's the real
-question.
+> AFAIK, yes. I'm not aware of that userspace utility, though. 
+> 	Dominik
 
--- 
-Ducrot Bruno
+http://freshmeat.net/projects/longrun/
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+I initially started using this, when I wasn't aware of the CPUFreq project.
+
+So CPUFreq doesn't modify the vm or do proc monitoring in the kernel to come up 
+with better times to turn on fans and the like?
+
+Shane
