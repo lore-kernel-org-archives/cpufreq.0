@@ -1,12 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Which driver for Mobile P4 CPU?
-Date: Thu, 6 Jan 2005 17:07:40 +0100
-Message-ID: <20050106160740.GA10011@dominikbrodowski.de>
-References: <20050105200721.21c6f5f8@bonenpikster.drs.p>
+Subject: Re: celeron *clutches at straws*
+Date: Thu, 6 Jan 2005 17:13:12 +0100
+Message-ID: <20050106161312.GC10011@dominikbrodowski.de>
+References: <3bd91160501051619632315d0@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20050105200721.21c6f5f8@bonenpikster.drs.p>
+In-Reply-To: <3bd91160501051619632315d0@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,33 +19,51 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tim Dijkstra <newsuser@famdijkstra.org>
+To: Matthew East <matthew.east@gmail.com>
 Cc: cpufreq@www.linux.org.uk
 
-Hi,
-
-On Wed, Jan 05, 2005 at 08:07:21PM +0100, Tim Dijkstra wrote:
-> None of the drivers in the 2.6.10 kernel that have speedstep in their
-> name are loadable. Does this mean that my CPU isn't supported or I'm a
-> doing something wrong? 
-
-Not really. the speedstep-smi is for older (P3) CPUs, speedstep-centrino for
-Pentium Ms, and speedstep-ich only works if you have an Intel chipset in a
-notebook, which I assume you don't have. So the acpi driver is the only one
-left.
-
-> Maybe I shouldn't be complaining, because with acpi-freq I'm able to
-> switch between 1.2 and 2 GHz. I do however get kernel messages like:
+On Thu, Jan 06, 2005 at 12:19:21AM +0000, Matthew East wrote:
+> Hello all,
 > 
-> kernel: acpi-cpufreq: Transition failed
+> I am aware from searching google that cpufreq does not work on
+> celerons. However at the same time I am just looking for clarification
+> on something. here is my cpuinfo:
+> 
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 15
+> model           : 2
+> model name      : Mobile Intel(R) Celeron(R) CPU 2.00GHz
+> stepping        : 7
+> cpu MHz         : 1993.155
+> cache size      : 256 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 2
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
+> bogomips        : 3932.16
+> 
+> Whereever I look on the internet a Family 15 Model 2 is reported as a
+> Pentium 4!! I know that the chips are similar. So what is the truth?
+> Is my chip cpufreq capable or not?
 
-All the time or just once in a while?
+AFAIK no. Even though many parts of the CPU are similar so that they can be
+represented with the same CPUID, Celerons only do have one multiplier so
+SpeedStep is not supported on them.
 
-> Do the specific speedstep-* drivers have some extra features over (are
-> 'better' than) the acpi-cpufreq driver or can just as well work with
-> that?
+> If not, is there anything else I can do to save battery power?
 
-The speedstep-* drivers tend to produce less "transition failed" results,
-and at least for the speedstep-centrino case they also work faster.
+You can use throttling (/proc/acpi/processor/./throttling or the cpufreq -
+p4-clockmod driver) to avoid the CPU heating so much the fan has to be
+enabled / has to turn at a higher speed which causes an increase in energy
+consumption. It doesn't save any real CPU power, though, as the CPU most
+likely is put into a good idle power state already (check for C2 or higher
+in /proc/acpo/processor/./power )
 
 	Dominik
