@@ -1,18 +1,9 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: post-OLS pending cpufreq patches
-Date: Tue, 3 Aug 2004 15:19:47 +0100
+From: bugme-daemon@osdl.org
+Subject: [Bug 3150] modprobe speedstep-centrino fails
+Date: Tue, 3 Aug 2004 07:27:25 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040803141947.GO12724@redhat.com>
-References: <88056F38E9E48644A0F562A38C64FB600283BD34@scsmsx403.amr.corp.intel.com>
-	<20040803124223.GB8574@dominikbrodowski.de>
-	<20040803131729.GL12724@redhat.com>
-	<20040803133010.GA9447@dominikbrodowski.de>
-	<20040803133724.GM12724@redhat.com>
-	<20040803140750.GA10095@dominikbrodowski.de>
-Mime-Version: 1.0
+Message-ID: <200408031427.i73ERPkr006016@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040803140750.GA10095@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,34 +13,23 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Tue, Aug 03, 2004 at 04:07:50PM +0200, Dominik Brodowski wrote:
+http://bugme.osdl.org/show_bug.cgi?id=3150
 
- > >  >  #include <acpi/processor.h>
- > >  > 
- > >  > is only included around ~300, AFAICS [even in Venki's patch]... and if you 
- > >  > move that above to line ~25 [but please only #ifdef'ed], you need to
- > >  > 
- > >  >  #include <linux/acpi.h>
- > >  > 
- > >  > first.
- > >  > 
- > >  > Could you try that out, please?
- > > 
- > > getting closer. just some missing defs introduced by this patch now.
- > 
- > That's the patch to include/acpi/processor.h I was talking about...
- > 
- > but that is actually include/asm/acpi.h, as can be seen here:
- > http://bugzilla.kernel.org/attachment.cgi?id=2919&action=view
- > 
- > Can you try out applying _only_ the hunk for include/asm-i386/acpi.h,
- > please?
+len.brown@intel.com changed:
 
-Yeah, that works.  Or compiles at least, I don't have centrino hardware
-to test this.  I'll check it in, and see who screams.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|cpufreq@www.linux.org.uk    |venkatesh.pallipadi@intel.co
+                   |                            |m
+          Component|cpufreq                     |Power-Processor
+           Category|Power Management            |ACPI
 
-		Dave
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
