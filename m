@@ -1,15 +1,13 @@
-From: Andre Eisenbach <int2str@gmail.com>
+From: Len Brown <len.brown@intel.com>
 Subject: Re: [PATCH] cpufreq_ondemand
-Date: Tue, 19 Oct 2004 22:03:55 -0700
+Date: 20 Oct 2004 03:35:35 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <7f800d9f04101922031be5cfe8@mail.gmail.com>
-References: <20041017222916.GA30841@inskipp.digriz.org.uk>
-	<4172F3C5.8090604@kolivas.org>
-Reply-To: Andre Eisenbach <int2str@gmail.com>
+Message-ID: <1098257735.26595.4308.camel@d845pe>
+References: <7f800d9f04101922031be5cfe8@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <4172F3C5.8090604@kolivas.org>
+In-Reply-To: <7f800d9f04101922031be5cfe8@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,28 +18,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux-kernel@vger.kernel.org, Alexander Clouter <alex-kernel@digriz.org.uk>, cpufreq@www.linux.org.uk
+To: Andre Eisenbach <int2str@gmail.com>
+Cc: Alexander Clouter <alex-kernel@digriz.org.uk>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
 
-On Mon, 18 Oct 2004 08:35:49 +1000, Con Kolivas <kernel@kolivas.org> wrote:
-> I'd much prefer it shot up to 100% or else every time the cpu usage went
-> up there'd be an obvious lag till the machine ran at it's capable speed.
->   I very much doubt the small amount of time it spent at 100% speed with
-> the default design would decrease the battery life significantly as well.
+On Wed, 2004-10-20 at 01:03, Andre Eisenbach wrote:
 
-I like Alexanders idea better and will give it a good try. If the
-speed steps down slowly but shoots up 100% quickly (as it is right
-now), even a small task (like opening a folder, or scrolling down in a
-document) will cause a tiny spike to 100% which takes a while to go
-back down. The result is that the CPU spends most of it's time at 100%
-or calming down. I wrote a small test program on my notebook which
-confirms this.
+> ... If the
+> speed steps down slowly but shoots up 100% quickly (as it is right
+> now), even a small task (like opening a folder, or scrolling down in a
+> document) will cause a tiny spike to 100% which takes a while to go
+> back down. The result is that the CPU spends most of it's time at 100%
+> or calming down. I wrote a small test program on my notebook which
+> confirms this.
 
-It's either or. Either you go up AND down slowly (which I would
-prefer), or you go up and down immediately. But spiking up and slowly
-going back down is not a good combo.
+The question is what POLICY we're trying to implement.  If the goal is
+to to be energy efficient while the user notices no performance hit,
+then fast-up/slow-down is an EXCELLENT strategy.  But if the goal is to
+optimize for power savings at the cost of impacting performance, then
+another strategy may work better.
 
-Alex has my vote, even so I have to give if some more testing.
+The point is that no strategy will be optimal for all policies.  Linux
+needs a global power policy manager that the rest of the system can ask
+about the current policy.  This way sub-systems can (automatically)
+implement whatever local strategies are consistent with that global
+policy.
 
-Cheers,
-    Andre
+-Len
