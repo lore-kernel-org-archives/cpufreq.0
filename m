@@ -1,9 +1,10 @@
-From: Zwane Mwaikambo <zwane@linuxpower.ca>
-Subject: [PATCH] Hotplug cpu: fix p4-clockmod
-Date: Sat, 21 Aug 2004 10:29:04 -0400 (EDT)
+From: =?iso-8859-1?q?mark=20newman?= <emergant2000@yahoo.co.uk>
+Subject: help using Harold Milz patch for PSB overide
+Date: Sat, 21 Aug 2004 16:47:20 +0100 (BST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.58.0408211022090.27390@montezuma.fsmlabs.com>
+Message-ID: <20040821154720.736.qmail@web86901.mail.ukl.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,96 +15,89 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: CPU Freq ML <cpufreq@www.linux.org.uk>
-Cc: Dave Jones <davej@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
 
-This currently oopses when a processor goes offline since it can't
-schedule itself onto the correct cpu. So we now disable preemption whilst
-reading or setting the DC. There is a questionable hunk which returns the
-stock_freq if the processor being read from is offline. The other drivers
-most probably have similar issues so i'll do a seperate careful sweep of
-those as i don't have hardware.
+Hi,
 
-Signed-off-by: Zwane Mwaikambo <zwane@linuxpower.ca>
+I have bought an xpm 2500+ for my epox 8kmm+ matx
+board.  Its in a small case and I'm trying to scale
+the cpu clock to keep heat/noise/power to a minimum in
+my media box
 
-Index: linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-===================================================================
-RCS file: /home/cvsroot/linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c,v
-retrieving revision 1.1.1.1
-diff -u -p -B -r1.1.1.1 p4-clockmod.c
---- linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	19 Aug 2004 20:51:36 -0000	1.1.1.1
-+++ linux-2.6.8.1-mm2/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	20 Aug 2004 14:08:27 -0000
-@@ -58,8 +58,11 @@ static int cpufreq_p4_setdc(unsigned int
- {
- 	u32 l, h;
+I think this is the relevant part of x86info
 
--	if (!cpu_online(cpu) || (newstate > DC_DISABLE) || (newstate == DC_RESV))
-+	preempt_disable();
-+	if (!cpu_online(cpu) || (newstate > DC_DISABLE) || (newstate == DC_RESV)) {
-+		preempt_enable();
- 		return -EINVAL;
-+	}
 
- 	rdmsr(MSR_IA32_THERM_STATUS, l, h);
- #if 0
-@@ -86,6 +89,7 @@ static int cpufreq_p4_setdc(unsigned int
- 		wrmsr(MSR_IA32_THERM_CONTROL, l, h);
- 	}
+PowerNOW! Technology information
+Available features:
+        Temperature sensing diode present.
+        Bus divisor control
+        Voltage ID control
 
-+	preempt_enable();
- 	return 0;
- }
+MSR: 0xc0010041=0x0000000000000000 : 00000000 00000000
+00000000 00000000
+           00000000 00000000 00000000 00000000
+MSR: 0xc0010042=0x000b0b0b00160606 : 00000000 00001011
+00001011 00001011
+           00000000 00010110 00000110 00000110
 
-@@ -145,8 +149,6 @@ static int cpufreq_p4_target(struct cpuf
- 		cpumask_t this_cpu = cpumask_of_cpu(i);
+FID changes won't happen
+VID changes won't happen
+Voltage ID codes: Maximum=1.450V Startup=1.450V
+Currently=1.450V
+Frequency ID codes: Maximum=14.0x Startup=6.0x
+Currently=6.0x
+Decoding BIOS PST tables (maxfid=16, startvid=b)
+Connector type: Socket A (462 Pin PGA)
 
- 		set_cpus_allowed(current, this_cpu);
--		BUG_ON(smp_processor_id() != i);
--
- 		cpufreq_p4_setdc(i, p4clockmod_table[newstate].index);
- 	}
- 	set_cpus_allowed(current, cpus_allowed);
-@@ -260,6 +262,7 @@ static int cpufreq_p4_cpu_exit(struct cp
+I have tried to apply the patch but only the first
+hunk succeeds.  I then did my best to apply it
+manually.  It built but...
 
- static unsigned int cpufreq_p4_get(unsigned int cpu)
- {
-+	unsigned int freq;
- 	cpumask_t cpus_allowed, affected_cpu_map;
- 	u32 l, h;
+My command line looks like this.  I dont know where 
+to get my cpuid from and have omitted voltage settings
 
-@@ -267,22 +270,25 @@ static unsigned int cpufreq_p4_get(unsig
-         affected_cpu_map = cpumask_of_cpu(cpu);
+insmod
+/lib/modules/2.6.7-gentoo-r12/kernel/arch/i386/kernel/cpu/cpufreq/powernow-k7.ko
+mymaxfid=0x15 mynumpstates=6
+myfids=0x15,0x00,0x0a,0x06,0x04,0x12 >> /usr/portage/a
+insmod: error inserting
+'/lib/modules/2.6.7-gentoo-r12/kernel/arch/i386/kernel/cpu/cpufreq/powernow-k7.ko':
+-1 Unknown symbol in module
 
- 	set_cpus_allowed(current, affected_cpu_map);
--        BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
-+	preempt_disable();
-+	if (smp_processor_id() != cpu) {
-+		freq = stock_freq;
-+		goto done;
-+	}
+dmesg
+powernow_k7: Unknown symbol
+cpufreq_frequency_table_target
+powernow_k7: Unknown symbol
+cpufreq_frequency_table_get_attr
+powernow_k7: Unknown symbol
+cpufreq_freq_attr_scaling_available_freqs
+powernow_k7: Unknown symbol
+cpufreq_frequency_table_cpuinfo
+powernow_k7: Unknown symbol
+cpufreq_frequency_table_put_attr
+powernow_k7: Unknown symbol
+cpufreq_frequency_table_verify
 
- 	rdmsr(MSR_IA32_THERM_CONTROL, l, h);
 
--	set_cpus_allowed(current, cpus_allowed);
--
- 	if (l & 0x10) {
- 		l = l >> 1;
- 		l &= 0x7;
-+		freq = stock_freq * l / 8;
- 	} else
--		l = DC_DISABLE;
--
--	if (l != DC_DISABLE)
--		return (stock_freq * l / 8);
-+		freq = stock_freq;
 
--	return stock_freq;
-+done:
-+	preempt_enable_no_resched();
-+	set_cpus_allowed(current, cpus_allowed);
-+	return freq;
- }
+Any help would be appreciated.  The cpu will currently
+only run at 6x as I cant set the multiplier in the
+bios.
 
- static struct freq_attr* p4clockmod_attr[] = {
+Its possible I have misapplied the patch.  If anyone
+could send me their patched powernow-k7.c off list
+that would be a help
+
+I understand this is at my own risk.  I figure as long
+as I monitor temps I should be fairly safe.  I doubt
+my board will allow changes in voltage anyway.
+
+#Mark
+
+
+
+	
+	
+		
+___________________________________________________________ALL-NEW Yahoo! Messenger - all new features - even more fun!  http://uk.messenger.yahoo.com
