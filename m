@@ -1,14 +1,16 @@
-From: GoatZilla <goatzilla@gmail.com>
-Subject: Re: [2.6. PATCH] Missing default governor choices
-Date: Mon, 30 Aug 2004 12:15:50 -0500
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH] cpufreq: 1/4 SMT awareness: save cpumask_t cpus
+Date: Mon, 30 Aug 2004 22:04:38 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <39e348480408301015550c3ad3@mail.gmail.com>
-References: <20040829123200.GA16050@dominikbrodowski.de>
-Reply-To: GoatZilla <goatzilla@gmail.com>
+Message-ID: <20040830200438.GC8563@dominikbrodowski.de>
+References: <88056F38E9E48644A0F562A38C64FB6002A3B8F0@scsmsx403.amr.corp.intel.com>
+	<Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
+	<20040829130134.GC17032@dominikbrodowski.de>
+	<Pine.LNX.4.58.0408301229020.21527@montezuma.fsmlabs.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040829123200.GA16050@dominikbrodowski.de>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0408301229020.21527@montezuma.fsmlabs.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,42 +21,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Zwane Mwaikambo <zwane@linuxpower.ca>
+Cc: davej@redhat.com, cpufreq@www.linux.org.uk
 
-Is there something wrong with wanting powersave activated as soon as possible?
-
-
-If a user wants performance at bootup, he can choose the performance
-governor as default.
-
-If a user wants to maintain the startup speed at bootup, he can choose
-the userspace governor as default.
-
-If a user wants powersaving at bootup...  Too bad, go write a startup script?
-
-
-
-It's not a big issue; I wrote a startup script for it myself.  I was
-just left wondering why I had to write a startup script in the first
-place.
-
-
-
-
-On Sun, 29 Aug 2004 14:32:00 +0200, Dominik Brodowski
-<linux@dominikbrodowski.de> wrote:
-> > What's the reason for the powersave governor not being selectable as
-> > default?
+On Mon, Aug 30, 2004 at 12:45:19PM -0400, Zwane Mwaikambo wrote:
+> On Sun, 29 Aug 2004, Dominik Brodowski wrote:
 > 
-> Because it doesn't matter much:
-> - performance is available during boot so that CPUs starting up at less than
->   100% can be boosted to full performance very soon.
-> - userspace is available to keep the CPU speed at what it was at boot, and
->   to allow existing userspace-based setups to work [it offers an equivalent
->   interface compared to the one of the old 2.4. cpufreq interface]
+> > Actually, I do favor "2" by large, and there simply may not be "dumb"
+> > governors once we propagate the SMT awareness to the cpufreq core. Zwane,
+> > are you aware of my current patch set which aims at the same direction? IIRC
+> > [and my memory might be a bit off after a long vacation], it mostly needs
+> > work from the "governor" perspective -- and testing. Don't have hardware
+> > here...
 > 
-> All other settings [including min/max ranges, governor for "continuing" use] can
-> and should be done by either a startup script and/or a userspace daemon.
-> 
->         Dominik
->
+> Yeah, i saw the patches and indeed the work should be done in the
+> governor, i should be able to help with the testing.
+
+Excellent. Will try to update my patches soon.
+
+Thanks,
+	Dominik
