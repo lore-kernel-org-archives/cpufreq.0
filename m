@@ -1,7 +1,7 @@
 From: Dag Bakke <dag@bakke.com>
 Subject: Re: cpufreq for older Toshibas with P3-M and ALi chipset?
-Date: Mon, 03 Jan 2005 00:34:59 +0100
-Message-ID: <41D88523.4040809@bakke.com>
+Date: Mon, 03 Jan 2005 00:48:19 +0100
+Message-ID: <41D88843.3070606@bakke.com>
 References: <41D8204F.3090108@bakke.com>
 	<20050102174242.GB15802@dominikbrodowski.de>
 Mime-Version: 1.0
@@ -31,12 +31,6 @@ Dominik Brodowski wrote:
 >
 [snip]
 
->>The laptop appears to work with the 'ACPI Processor P-States driver', 
->>but this only gives me two frequencies to choose between. Is this to be 
->>expected?
->>    
->>
->
 >Yes, it is. Mobile Pentium 3 CPU only support two frequency scaling states.
 >The 8 states you're seeing using cpuswitch are throttling states -- i.e. the
 >CPU is stopped for short periods of time. However, during these periods the
@@ -47,19 +41,9 @@ Dominik Brodowski wrote:
 >useless in most cases.
 >  
 >
-I'll test and see how much the drain from the battery changes when using 
-cpuswitch. And compare it with the two P-states. Should have done that 
-anyway.
-
->>None of the cpufreq processor drivers appears to fit the bill for a 
->>PIII-M on an ALi chipset, 
->>
 [snip]
+OK... but this bit....
 
->Except the acpi-cpufreq driver, there is none you can use with this system.
->
->  
->
 >>BTW:
 >>I do notice that if I fiddle with the BIOS settings, I can make the 
 >>laptop boot at "half speed", coming up at 500 MHz instead of 1000. (As 
@@ -73,14 +57,20 @@ anyway.
 >is multiplied inside the CPU) is put to 50%. And unless you find out how
 >this is accessible during a runtime system, there's no chance to combine
 >these two.
->
 >  
 >
-Well, I believe it is just the same function as cpuswitch exploits, 
-because cpuswitch reports the cpu to be running at 'level 4' when I make 
-it boot at 500Mhz.
+...made me thinking...
 
-Thank you for a comprehensive answer, even though it didn't come out as 
-positive as I had hoped!
+Will x86info be fooled by throttling states? Will it report the actual 
+clock, or the effective clock taking 'stops' into account?
+
+Not to distrust you, but I am trying to figure out if the cpuswitch 
+thingy is throttling or multiple FSB frequencies. Because x86info -mhz 
+reports a likely clock frequency for every cpuswitch step. And if 
+/proc/cpuinfo shows the system running at 500 Mhz and 'step 4' and this 
+is due to a new FSB speed...
+I am sure you understand my reasoning.
+
+Not sure it will mean a lot for power consumption anyway..
 
 Dag B.
