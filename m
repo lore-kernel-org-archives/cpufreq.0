@@ -1,13 +1,13 @@
 From: Bas Mevissen <ml@basmevissen.nl>
 Subject: Re: cpufreq and 2.4.
-Date: Mon, 18 Aug 2003 12:14:26 +0200
+Date: Mon, 18 Aug 2003 12:47:36 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <3F40A702.8040103@basmevissen.nl>
-References: <20030817153510.GA2361@brodo.de> <20030818073948.GC18032@poupinou.org>
+Message-ID: <3F40AEC8.3060306@basmevissen.nl>
+References: <20030817153510.GA2361@brodo.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030818073948.GC18032@poupinou.org>
+In-Reply-To: <20030817153510.GA2361@brodo.de>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,30 +18,40 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: Dominik Brodowski <linux@brodo.de>, cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@brodo.de>
+Cc: cpufreq@www.linux.org.uk
 
-Ducrot Bruno wrote:
+Dominik Brodowski wrote:
 
-> 
->>C) No documentation for 2.4. cpufreq user interfaces
->>As they're deprecated, I didn't explain them in the 2.6. kernel
->>Documentation (Documentation/cpu-freq/user.txt). However, if it really
->>should be documented well if it gets into the 2.4. stable series.
->>
->>D) Who?
->>Who is going to do C), and who will keep track of cpufreq-2.4.? 
-> 
-> My poor english prevent me to do C) (but perhaps a kind soul with good
-> french knowledge and good english may assist me ?)
-> I can track cpufreq-2.4 if really needed.
+> A) Previous 2.4. cpufreq included in parts of kernel
+> There _is_ already some cpufreq code in the 2.4. kernel. In arch/arm there
+> are ARM-cpufreq drivers which use the previous 2.4. stable series of cpufreq
+> which nobody uses on x86 any more [I guess]. In 2.6., the ARM cpufreq
+> drivers are updated. However, this isn't included in the current 2.4. 
+> backports.
 > 
 
-I guess my English is better than my French, so I'm happy to assist you 
-with C) :-))
+I think that the 2.4 backports should be as complete as possible. 
+Currently, ARM-linux is on 2.4. But when 2.6 is out, they are very 
+likely to go for 2.6 ASAP as power management is a lot better integrated 
+in 2.6.
 
-I think it to be a good way to learn about cpufreq internals by writing 
-documentation for it.
+> B) Difficult-to-understand cpufreq user interfaces
+> The /proc/cpufreq and /proc/sys/cpu interfaces are difficult to understand
+> and already deprecated in 2.6. Do we really want them to be added to a
+> stable kernel release?
+> 
+
+Well, what then? There is no sysfs in 2.4, so we need something else to 
+control the beast :-)
+
+How feasable is it to "port" the sysfs _interface_ to /proc? It would 
+simplicate matters for users, cpufreqd and documentation as they only 
+needs to change the "working directory" for 2.4.
+
+(Because sysfs is something completely different than /proc, it would 
+mean writing new code. But as 2.4 will be in use for a couple of years, 
+I think it is worth the trouble.)
 
 Regards,
 
