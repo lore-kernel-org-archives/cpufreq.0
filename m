@@ -1,9 +1,14 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k8.c, 1.1.2.2,
-	1.1.2.3
-Date: Mon, 13 Dec 2004 13:31:07 +0000
-Message-ID: <E1CdqI7-00070o-IX@flint.arm.linux.org.uk>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: 2.4 patch and powernow-k8
+Date: Mon, 13 Dec 2004 14:32:24 +0100
+Message-ID: <20041213133224.GA2140@poupinou.org>
+References: <41AF938B.4080204@danhartman.org>
+	<20041203090955.GC9288@dominikbrodowski.de>
+	<41B0D199.9000309@danhartman.org>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <41B0D199.9000309@danhartman.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,35 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: omv <omv@danhartman.org>
+Cc: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv26926/linux/arch/i386/kernel/cpufreq
+On Fri, Dec 03, 2004 at 12:50:33PM -0800, omv wrote:
+> My version (from CVS on sunday, i think)  looked a bit different - the 
+> first block didn't have the __devexit at all, and the second was static 
+> int __exit drc_cpu_exit.   I modified the second block to remove the _exit.
 
-Modified Files:
-      Tag: LINUX_2_4
-	powernow-k8.c 
-Log Message:
-fix compilation as module (from Dominik)
+It's a bit old.  I have to backport the acpilib stuff first.
 
+> 
+> That appeared to do the trick - built fine.  It now looks like
+> 
+> static int drv_cpu_exit (struct cpufreq_policy *pol)
 
-Index: powernow-k8.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k8.c,v
-retrieving revision 1.1.2.2
-retrieving revision 1.1.2.3
-diff -u -r1.1.2.2 -r1.1.2.3
---- powernow-k8.c	2 Mar 2004 10:07:50 -0000	1.1.2.2
-+++ powernow-k8.c	13 Dec 2004 13:31:04 -0000	1.1.2.3
-@@ -759,7 +759,7 @@
- }
- 
- 
--static int __exit drv_cpu_exit (struct cpufreq_policy *pol)
-+static int drv_cpu_exit (struct cpufreq_policy *pol)
- {
- 	if (pol->cpu != 0)
- 		return -EINVAL;
+Commited.  Thanks.
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
