@@ -1,14 +1,16 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: powernow-k8 updates
-Date: Wed, 10 Mar 2004 12:32:46 +0100
+Date: Wed, 10 Mar 2004 14:48:11 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040310113246.GA4775@atrey.karlin.mff.cuni.cz>
+Message-ID: <20040310134811.GD28592@poupinou.org>
 References: <20040309214830.GA1240@elf.ucw.cz>
 	<20040310110941.GC28592@poupinou.org>
+	<20040310113246.GA4775@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="OgqxwSJOaUobr8KG"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040310110941.GC28592@poupinou.org>
+In-Reply-To: <20040310113246.GA4775@atrey.karlin.mff.cuni.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,129 +20,182 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: patches@x86-64.org, davej@redhat.com, kernel list <linux-kernel@vger.kernel.org>, Cpufreq mailing list <cpufreq@www.linux.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: patches@x86-64.org, Cpufreq mailing list <cpufreq@www.linux.org.uk>, kernel list <linux-kernel@vger.kernel.org>, davej@redhat.com
 
-Hi!
 
-> > --- clean/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-02-05 01:53:54.000000000 +0100
-> > +++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-03 23:07:26.000000000 +0100
-> > @@ -93,6 +93,19 @@
-> >  	depends on CPU_FREQ && EXPERIMENTAL
-> >  	help
-> >  	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
-> > +	  It relies on old "PST" tables. Unfortunately, many BIOSes get this table
-> > +	  wrong. 
-> > +
-> > +	  For details, take a look at linux/Documentation/cpu-freq. 
-> > +
-> > +	  If in doubt, say N.
-> > +
-> > +config X86_POWERNOW_K8_ACPI
-> > +	tristate "AMD Opteron/Athlon64 PowerNow! using ACPI"
-> > +	depends on CPU_FREQ && EXPERIMENTAL
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Mar 10, 2004 at 12:32:46PM +0100, Pavel Machek wrote:
+> > If that is not acceptable by AMD, then you have to contact ACPI SIG
+> > at <http://www.acpi.info/> in order to change specs.
 > 
-> Why there is no dependency with ACPI here?
+> Notice that amd's powernow is done through acpi, but does not comply
+> to the acpi specs. That should be okay; in such case its up to AMD to
+> define how it behaves.
 
-I'll fix that.
+Yes, but then, I think that AMD shall contact ACPI SIG in order to
+change specs, or even becoming member of ACPI SIG.
 
-> > +/*
-> > + * Each processor may have
-> > + * a different number of entries in its array. I.e., processor 0 may have
-> > + * 3 pstates, processor 1 may have 5 pstates.
-> > + */
+Note that currently drivers/acpi/processor.c do not check the
+requirement to have the exact same number of pstates for each processor.
+I don't think that nobody want to fix that btw ;)
+
+> > For the last time, why on earth you still do not consider the ACPI
+> > perflib.  Links to the cpufreq-developper mailing list with even a kind
+> > of public access have been posted.  That will eliminate the following
+> > functions amongst other things.  Look at drivers/acpi/processor.c
 > 
-> No.  That will break current ACPI v2.0c specification.  All processors
-> shall have the same number of states.  More, they have to support the
-> same set of pairs of frequency/power consuption.
+> I see that file. It seems to be full of northbridge bugs workarounds,
+> and seems to be handling processor C states. It handles powernow
+> states on machines that do it through acpi. I do not see how I could
+> use it, and I do not see how query_ac could disappear. It might be
+> nice to use same processor/.../performance interface, but it is
+> deprecated anyway. 
 > 
-> If that is not acceptable by AMD, then you have to contact ACPI SIG
-> at <http://www.acpi.info/> in order to change specs.
+> What do I miss?
 
-Notice that amd's powernow is done through acpi, but does not comply
-to the acpi specs. That should be okay; in such case its up to AMD to
-define how it behaves.
+ducrot@poupon:~/kernel/linux-2.6.4-bk-acpi> grep EXPORT drivers/acpi/processor.c
+EXPORT_SYMBOL(acpi_processor_register_performance);
+EXPORT_SYMBOL(acpi_processor_unregister_performance);
+EXPORT_SYMBOL(acpi_processor_set_thermal_limit);
 
+So all you need are acpi_processor_register_performance() and
+acpi_processor_unregister_performance().  I'm pretty sure that those
+functions are in 2.6.4-rc2.
 
-> For the last time, why on earth you still do not consider the ACPI
-> perflib.  Links to the cpufreq-developper mailing list with even a kind
-> of public access have been posted.  That will eliminate the following
-> functions amongst other things.  Look at drivers/acpi/processor.c
+If you want to play with those functions, you have to include
+<acpi/processor.h>, and then you have to register a driver via:
+acpi_processor_register_performance(&pr, cpu) where:
+- cpu is the cpu id (point-of-view of Linux, not the acpi cpu id),
+- pr is a struct acpi_processor_performance (defined in
+  acpi/processor.h).
 
-I see that file. It seems to be full of northbridge bugs workarounds,
-and seems to be handling processor C states. It handles powernow
-states on machines that do it through acpi. I do not see how I could
-use it, and I do not see how query_ac could disappear. It might be
-nice to use same processor/.../performance interface, but it is
-deprecated anyway. 
+You will have then for free:
+- configurations via the acpi_processor_performance structure,
+- handling of the _PPC object, so that you don't have to care about
+  changes for that in the driver.  That will be done via classic
+  ACPI event notifications to the processor, via the limit interface
+  writen in drivers/acpi/processor.c, and cpufreq notion of notifiers.
 
-What do I miss?
+More, you do not have to worry about ACPI initialisation.  At that time,
+the powernow-k8 acpi driver do not even check if ACPI is initialised, or
+up and running, etc, like it is done in the sonypi driver for example.
 
+If you want examples, there were posts for the centrino case, and for
+the powernow-k7, in cpufreq mailing lists.
 
-> > +static u32 query_ac(void)
-> > +{
-> > +	acpi_status rc;
-> > +	unsigned long state;
-> > +
-> > +	if (psrh) {
-> > +		rc = acpi_evaluate_integer(psrh, NULL, NULL, &state);
-> > +		if (ACPI_SUCCESS(rc)) {
-> > +			if (state == 1)
-> > +				return POW_AC;
-> > +			else if (state == 0)
-> > +				return POW_BAT;
-> > +			else
-> > +				printk(EFX "psr state %lx\n", state);
-> > +		}
-> > +		else {
-> > +			printk(EFX "error %x evaluating psr\n", rc );
-> > +		}
-> > +	}
-> > +	return POW_UNK;
-> > +}
-> > +
-> > +/* gives us the (optional) battery/thermal restrictions */
-> > +static int process_ppc(acpi_handle objh)
-> > +{
-> > +	acpi_status rc;
-> > +	unsigned long state;
-> > +
-> > +	if (objh) {
-> > +		ppch = objh;
-> > +	} else {
-> > +		if (ppch) {
-> > +			objh = ppch;
-> > +		} else {
-> > +			rstps = 0;
-> > +			return 0;   
-> > +		}
-> > +	}
-> > +
-> > +	if (num_online_cpus() > 1) {
-> > +		/* For future thermal support (next release?), rstps needs   */
-> > +		/* to be per processor, and handled for the SMP case. Later. */
-> > +		dprintk(EFX "ignoring attempt to restrict pstates for SMP\n");
-> > +	}
-> > +	else {
-> > +		rc = acpi_evaluate_integer(objh, NULL, NULL, &state);
-> > +		if (ACPI_SUCCESS(rc)) {
-> > +			rstps = state & 0x0f;
-> > +			//dprintk(DFX "pstate restrictions %x\n", rstps);
-> > +			if (!seenrst)
-> > +				seenrst = rstps;
-> > +		}
-> > +		else {
-> > +			rstps = 0;
-> > +			printk(EFX "error %x processing ppc\n", rc);
-> > +			return -ENODEV;
-> > +		}
-> > +	}
-> > +	return 0;
-> > +}
-> 
+I used also that stupid module, an hack of an example provided by
+Dominik, in order to write the support for the powernow-k7.
+
+Cheers,
 
 -- 
-Horseback riding is like software...
-...vgf orggre jura vgf serr.
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
+
+--OgqxwSJOaUobr8KG
+Content-Type: text/x-csrc; charset=us-ascii
+Content-Disposition: attachment; filename="test-powernow.c"
+
+/*
+ */
+
+#include <linux/config.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/cpufreq.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+#include <asm/io.h>
+#include <asm/delay.h>
+#include <asm/uaccess.h>
+
+#include <linux/acpi.h>
+#include <acpi/processor.h>
+
+struct acpi_processor_performance p;
+
+union powernow_acpi_control_t {
+	struct {
+		unsigned long fid:5,
+		vid:5,
+		sgtc:20,
+		res1:2;
+	} bits;
+	unsigned long val;
+};
+
+#define ACPI_PDC_REVISION_ID                   0x1
+#define ACPI_PDC_CAPABILITY_ENHANCED_SPEEDSTEP 0x1
+
+static int __init
+acpi_cpufreq_init (void)
+{
+	unsigned int i;
+	struct acpi_pct_register *r;
+	union powernow_acpi_control_t pc;
+
+	if (acpi_processor_register_performance(&p, 0))
+		return -EIO;
+
+	printk("number of states: %d\n", p.state_count);
+	for (i=0; i< p.state_count; i++) {
+		pc.val = (unsigned long) p.states[i].control;
+		printk(KERN_INFO "powernow: %cP%d: %d MHz, %d mW, %d uS, control %08x, status %08x, vid: %02x fid: %02x SGTC: %d\n",
+		       (i == p.state?'*':' '), i,
+		       (u32) p.states[i].core_frequency,
+		       (u32) p.states[i].power,
+		       (u32) p.states[i].transition_latency,
+		       (u32) p.states[i].control,
+		       (u32) p.states[i].status,
+		       pc.bits.vid,
+		       pc.bits.fid,
+		       pc.bits.sgtc);
+
+	}
+
+	printk("control_register:\n");
+	r = &p.control_register;
+	printk("%d %d %d %d %d %d %lld\n", r->descriptor, r->length, r->space_id,
+	       r->bit_width, r->bit_offset, r->reserved, r->address);
+
+	printk("status_register:\n");
+	r = &p.status_register;
+	printk("%d %d %d %d %d %d %lld\n", r->descriptor, r->length, r->space_id,
+	       r->bit_width, r->bit_offset, r->reserved, r->address);
+
+	acpi_processor_unregister_performance(&p, 0);
+
+	return -ENODEV;
+}
+
+
+static void __exit
+acpi_cpufreq_exit (void)
+{
+	return;
+}
+
+
+late_initcall(acpi_cpufreq_init);
+module_exit(acpi_cpufreq_exit);
+
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--OgqxwSJOaUobr8KG--
+
