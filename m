@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: patch-06 [Re: [PATCHES] cpufreq_get(), cpufreq->get()]
-Date: Mon, 12 Apr 2004 00:01:12 +0200
+Subject: patch-02 [Re: [PATCHES] cpufreq_get(), cpufreq->get()]
+Date: Mon, 12 Apr 2004 00:00:08 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040411220112.GE8160@dominikbrodowski.de>
+Message-ID: <20040411220008.GB8160@dominikbrodowski.de>
 References: <20040411215912.GA8160@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -21,94 +21,164 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Handle CPUFREQ_RESUMECHANGE notifications in i386, sparc64, x86_64, sh-sci
-and sa11xx-pcmcia notifiers. sa1100-framebuffer doesn't seem to be able
-to handle frequency transitions behind its back well. So, sa11xx will be marked
-CPUFREQ_PANIC_OUTOFSYNC | CPUFREQ_PANIC_RESUME_OUTOFSYNC in patch 19. Russell,
-do you think sa1100fb will be able to handle such an out of sync situation?
+Move cpufreq_get() from the userspace governor to the core. Contrary to the
+previous implementation, it now calls the cpufreq driver, and reads out the
+_actual_ current frequency, and not the frequency the CPUfreq core _thinks_
+the CPU is running at. Most cpufreq drivers do provide such a "hw get"
+function (only ACPI-io can definitely not be supported, I'm not sure
+about sh, sparc64 and powermac) anyway, and it is useful for other issues
+(see following patches).
 
- arch/i386/kernel/timers/timer_tsc.c |    3 ++-
- arch/sparc64/kernel/time.c          |    3 ++-
- arch/x86_64/kernel/time.c           |    3 ++-
- drivers/char/sh-sci.c               |    3 ++-
- drivers/pcmcia/sa11xx_core.c        |    2 ++
- drivers/serial/sh-sci.c             |    3 ++-
- 6 files changed, 12 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq.c           |   32 +++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq_userspace.c |   42 ++----------------------------------
+ include/linux/cpufreq.h             |    9 +++++--
+ 3 files changed, 41 insertions(+), 42 deletions(-)
 
-
-diff -ruN linux-original/arch/i386/kernel/timers/timer_tsc.c linux/arch/i386/kernel/timers/timer_tsc.c
---- linux-original/arch/i386/kernel/timers/timer_tsc.c	2004-04-04 14:13:49.000000000 +0200
-+++ linux/arch/i386/kernel/timers/timer_tsc.c	2004-04-11 13:28:50.560219864 +0200
-@@ -356,7 +356,8 @@
- 	}
- 
- 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
--	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-+	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-+	    (val == CPUFREQ_RESUMECHANGE)) {
- 		if (variable_tsc)
- 			cpu_data[freq->cpu].loops_per_jiffy = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
- #ifndef CONFIG_SMP
-diff -ruN linux-original/arch/sparc64/kernel/time.c linux/arch/sparc64/kernel/time.c
---- linux-original/arch/sparc64/kernel/time.c	2004-03-12 22:26:56.000000000 +0100
-+++ linux/arch/sparc64/kernel/time.c	2004-04-11 13:29:27.000000000 +0200
-@@ -1035,7 +1035,8 @@
- 		ft->clock_tick_ref = cpu_data(cpu).clock_tick;
- 	}
- 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
--	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-+	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-+	    (val == CPUFREQ_RESUMECHANGE)) {
- 		cpu_data(cpu).udelay_val =
- 			cpufreq_scale(ft->udelay_val_ref,
- 				      ft->ref_freq,
-diff -ruN linux-original/arch/x86_64/kernel/time.c linux/arch/x86_64/kernel/time.c
---- linux-original/arch/x86_64/kernel/time.c	2004-03-12 22:26:57.000000000 +0100
-+++ linux/arch/x86_64/kernel/time.c	2004-04-11 13:30:00.000000000 +0200
-@@ -531,7 +531,8 @@
- 		cpu_khz_ref = cpu_khz;
- 	}
-         if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
--            (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-+            (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-+	    (val == CPUFREQ_RESUMECHANGE)) {
-                 *lpj =
- 		cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
- 
-diff -ruN linux-original/drivers/char/sh-sci.c linux/drivers/char/sh-sci.c
---- linux-original/drivers/char/sh-sci.c	2004-03-12 22:26:59.000000000 +0100
-+++ linux/drivers/char/sh-sci.c	2004-04-11 13:30:57.000000000 +0200
-@@ -1239,7 +1239,8 @@
- 	struct cpufreq_freqs *freqs = p;
- 	int i;
- 
--	if (phase == CPUFREQ_POSTCHANGE) {
-+	if ((phase == CPUFREQ_POSTCHANGE) ||
-+	    (phase == CPUFREQ_RESUMECHANGE)) {
- 		for (i = 0; i < SCI_NPORTS; i++) {
- 			/*
- 			 * This will force a baud rate change in hardware.
-diff -ruN linux-original/drivers/pcmcia/sa11xx_core.c linux/drivers/pcmcia/sa11xx_core.c
---- linux-original/drivers/pcmcia/sa11xx_core.c	2004-04-04 14:13:52.000000000 +0200
-+++ linux/drivers/pcmcia/sa11xx_core.c	2004-04-11 13:32:27.000000000 +0200
-@@ -933,6 +933,8 @@
- 		if (freqs->new < freqs->old)
- 			sa1100_pcmcia_update_mecr(freqs->new);
- 		break;
-+	case CPUFREQ_RESUMECHANGE:
-+		sa1100_pcmcia_update_mecr(freqs->new);
- 	}
- 
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-04-11 16:59:29.868192392 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2004-04-11 17:01:30.297884296 +0200
+@@ -474,6 +474,38 @@
  	return 0;
-diff -ruN linux-original/drivers/serial/sh-sci.c linux/drivers/serial/sh-sci.c
---- linux-original/drivers/serial/sh-sci.c	2004-04-04 14:13:54.000000000 +0200
-+++ linux/drivers/serial/sh-sci.c	2004-04-11 13:33:19.000000000 +0200
-@@ -748,7 +748,8 @@
- 	struct cpufreq_freqs *freqs = p;
- 	int i;
+ }
  
--	if (phase == CPUFREQ_POSTCHANGE) {
-+	if ((phase == CPUFREQ_POSTCHANGE) ||
-+	    (phase == CPUFREQ_RESUMECHANGE)){
- 		for (i = 0; i < SCI_NPORTS; i++) {
- 			struct uart_port *port = &sci_ports[i];
++
++/** 
++ * cpufreq_get - get the current CPU frequency (in kHz)
++ * @cpu: CPU number
++ *
++ * Get the CPU current (static) CPU frequency
++ */
++unsigned int cpufreq_get(unsigned int cpu)
++{
++	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++	unsigned int ret = 0;
++
++	if (!policy)
++		return 0;
++
++	if (!cpufreq_driver->get)
++		goto out;
++
++	down(&policy->lock);
++
++	ret = cpufreq_driver->get(cpu);
++
++	up(&policy->lock);
++
++ out:
++	cpufreq_cpu_put(policy);
++
++	return (ret);
++}
++EXPORT_SYMBOL(cpufreq_get);
++
++
+ /**
+  *	cpufreq_resume - restore the CPU clock frequency after resume
+  *
+diff -ruN linux-original/drivers/cpufreq/cpufreq_userspace.c linux/drivers/cpufreq/cpufreq_userspace.c
+--- linux-original/drivers/cpufreq/cpufreq_userspace.c	2004-04-11 14:48:15.000000000 +0200
++++ linux/drivers/cpufreq/cpufreq_userspace.c	2004-04-11 17:04:23.642531904 +0200
+@@ -145,19 +145,6 @@
+ EXPORT_SYMBOL_GPL(cpufreq_setmax);
+ 
+ 
+-/** 
+- * cpufreq_get - get the current CPU frequency (in kHz)
+- * @cpu: CPU number
+- *
+- * Get the CPU current (static) CPU frequency
+- */
+-unsigned int cpufreq_get(unsigned int cpu)
+-{
+-	return cpu_cur_freq[cpu];
+-}
+-EXPORT_SYMBOL(cpufreq_get);
+-
+-
+ #ifdef CONFIG_CPU_FREQ_24_API
+ 
+ 
+@@ -542,20 +529,6 @@
+ 	return 0;
+ }
+ 
+-/* on ARM SA1100 we need to rely on the values of cpufreq_get() - because 
+- * of this, cpu_cur_freq[] needs to be set early.
+- */
+-#if defined(CONFIG_ARM) && defined(CONFIG_ARCH_SA1100)
+-extern unsigned int sa11x0_getspeed(void);
+-
+-static void cpufreq_sa11x0_compat(void)
+-{
+-	cpu_cur_freq[0] = sa11x0_getspeed();
+-}
+-#else
+-#define cpufreq_sa11x0_compat() do {} while(0)
+-#endif
+-
+ 
+ struct cpufreq_governor cpufreq_gov_userspace = {
+ 	.name		= "userspace",
+@@ -564,21 +537,12 @@
+ };
+ EXPORT_SYMBOL(cpufreq_gov_userspace);
+ 
+-static int already_init = 0;
+-
+-int cpufreq_gov_userspace_init(void)
++static int __init cpufreq_gov_userspace_init(void)
+ {
+-	if (!already_init) {
+-		down(&userspace_sem);
+-		cpufreq_sa11x0_compat();
+-		cpufreq_sysctl_init();
+-		cpufreq_register_notifier(&userspace_cpufreq_notifier_block, CPUFREQ_TRANSITION_NOTIFIER);
+-		already_init = 1;
+-		up(&userspace_sem);
+-	}
++	cpufreq_sysctl_init();
++	cpufreq_register_notifier(&userspace_cpufreq_notifier_block, CPUFREQ_TRANSITION_NOTIFIER);
+ 	return cpufreq_register_governor(&cpufreq_gov_userspace);
+ }
+-EXPORT_SYMBOL(cpufreq_gov_userspace_init);
+ 
+ 
+ static void __exit cpufreq_gov_userspace_exit(void)
+diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
+--- linux-original/include/linux/cpufreq.h	2004-04-11 14:48:29.000000000 +0200
++++ linux/include/linux/cpufreq.h	2004-04-11 17:04:47.436914608 +0200
+@@ -187,6 +187,9 @@
+ 				 unsigned int target_freq,
+ 				 unsigned int relation);
+ 
++	/* should be defined, if possible */
++	unsigned int	(*get)	(unsigned int cpu);
++
+ 	/* optional */
+ 	int	(*exit)		(struct cpufreq_policy *policy);
+ 	int	(*resume)	(struct cpufreq_policy *policy);
+@@ -234,6 +237,9 @@
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+ int cpufreq_update_policy(unsigned int cpu);
+ 
++/* query the current CPU frequency (in kHz). If zero, cpufreq couldn't detect it */
++unsigned int cpufreq_get(unsigned int cpu);
++
+ /* the proc_intf.c needs this */
+ int cpufreq_parse_governor (char *str_governor, unsigned int *policy, struct cpufreq_governor **governor);
+ 
+@@ -241,13 +247,10 @@
+ /*********************************************************************
+  *                      CPUFREQ USERSPACE GOVERNOR                   *
+  *********************************************************************/
+-int cpufreq_gov_userspace_init(void);
+-
+ #ifdef CONFIG_CPU_FREQ_24_API
+ 
+ int cpufreq_setmax(unsigned int cpu);
+ int cpufreq_set(unsigned int kHz, unsigned int cpu);
+-unsigned int cpufreq_get(unsigned int cpu);
+ 
+ 
+ /* /proc/sys/cpu */
