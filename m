@@ -1,10 +1,11 @@
-From: aeriksson@fastmail.fm
-Subject: Speedstep detection fails
-Date: Fri, 19 Dec 2003 23:59:35 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031219225936.D41E43FB2@latitude.mynet.no-ip.org>
+From: paul wisehart <wise@lotech.mine.nu>
+Subject: 2.4.22 preempt,low-lat, _and_ cpufreq
+Date: Fri, 19 Dec 2003 19:04:15 -0500
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031220000415.GA12744@kukaracha.sotano>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,34 +14,34 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
+Hey I got 2.4.22 to compile with preempt, low-lat *AND* cpufreq.
+I don't know why it worked this time.
 
-Hi all,
+There are 2 differences that I can think of.
+1) I downloaded cpufreq out of CVS with the date-modifier that would set 
+   it back to a kernel 2.4.22 version.
+2) I put the cpufreq patch on last. (last time i put it 1st)
 
-Running with the latest cvs, I need to apply the following 
-patch to speedstep-lib to get it to detect properly on my 
-Dell Latitude 400. Anyone see anything wrong with it, or can
-it be applied to the cvs?
+Anyways the kernel compiles, and the cpufreq modules load.
+Now I just have to figure out what what to do with it :)
+(I haven't figures out how to control the cpufreqd daemon yet.)
 
-BR,
-/Anders 
+I was all set to stick with a 2.6 kernel.  I have a working one installed 
+and everything.  But thten I had to configure my winmodem because I'll
+need a modem when Im away for xmas.  Come to find out that the lt_modem
+package only works on 2.4 kernels.  That, and there was the message on 
+the cpufreq about getting an older cpufreq out of CVS.
 
+I'm not sure if its working ,but since the modules I'm pretty optimistic. 
+ 
 
-
-
-
---- ../../cf-2.6/cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.c 2003-08-19 15:38:33.000000000 +0200
-+++ arch/i386/kernel/cpu/cpufreq/speedstep-lib.c        2003-11-10 21:41:12.325084272 +0100
-@@ -200,7 +200,7 @@
-                 */
-                rdmsr(MSR_IA32_PLATFORM_ID, msr_lo, msr_hi);
-                dprintk(KERN_DEBUG "cpufreq: Coppermine: MSR_IA32_PLATFORM ID is 0x%x, 0x%x\n", msr_lo, msr_hi);
--               if ((msr_hi & (1<<18)) && (msr_hi & (3<<24))) {
-+               if ((msr_hi & (1<<18)) ) {
-                        if (c->x86_mask == 0x01)
-                                return SPEEDSTEP_PROCESSOR_PIII_C_EARLY;
-                        else
+-- 
+paul    \  /
+wisehart >/
+   <//////$>
+    |\|\|\
