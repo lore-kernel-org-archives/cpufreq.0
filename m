@@ -1,18 +1,14 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: speedstep-smi into -ac ?
-Date: Mon, 8 Sep 2003 14:30:25 +0200
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [ACPI] [PATCHES] ACPI Processor update [idle, throttling,
+	thermal, cpufreq]
+Date: Mon, 8 Sep 2003 15:29:40 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030908123025.GL408@poupinou.org>
-References: <87ekywzjvm.wl%miura@da-cha.org> <20030904232555.GA8650@brodo.de>
-	<87bru0yutb.wl%miura@da-cha.org> <20030905065433.GC4003@brodo.de>
-	<20030905084645.GO4401@poupinou.org>
-	<20030907185503.GB21291@brodo.de>
-	<20030908083255.GJ408@poupinou.org>
-	<20030908092317.GB1258@brodo.de>
+Message-ID: <20030908132939.GD3944@openzaurus.ucw.cz>
+References: <20030904222434.GC6350@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030908092317.GB1258@brodo.de>
+In-Reply-To: <20030904222434.GC6350@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -25,32 +21,27 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Dominik Brodowski <linux@brodo.de>
-Cc: Hiroshi Miura <miura@da-cha.org>, "'cpufreq@www linux org uk'" <cpufreq@www.linux.org.uk>
+Cc: acpi-devel@lists.sourceforge.net, andrew.grover@intel.com, cpufreq@www.linux.org.uk
 
-On Mon, Sep 08, 2003 at 11:23:17AM +0200, Dominik Brodowski wrote:
-> On Mon, Sep 08, 2003 at 10:32:55AM +0200, Ducrot Bruno wrote:
-> > On Sun, Sep 07, 2003 at 08:55:03PM +0200, Dominik Brodowski wrote:
-> > > On Fri, Sep 05, 2003 at 10:46:45AM +0200, Ducrot Bruno wrote:
-> > > > Warn: I have not implemented the .resume callback.  It need to
-> > > > be done correctly in core at first, and it seems to be not so
-> > > > well designed at first read (at core, not in the driver).
-> > > 
-> > > Why?
-> > > 
-> > 
-> > There is no restore like stuff in 2.4 backport, nor in ac (or
-> > I'm blind).
+Hi!
+
+>http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_thermal_cpufreq
+> 	Use _any_ CPUfreq driver for passive cooling. Implemented by an
+> 	cpufreq policy notifier and cpufreq_update_policy.
+>  
+
+Good - it is going to help a lot on k8 notebooks.
+
+http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_thermal_throttling
+> 	Move throttling into its own submodule, and register it with the new
+> 	passive cooling module. Also, the now-useless "limit" interface is
+> 	removed.
 > 
-> Actually, I meant "why do you consider the ->resume implementation to be 'not
-> so well designed'"?
 
-I'm talking about 2.4, not 2.6.  If I want to make the ->resume stuff
-in 2.4, there is a need to make something like
-drivers/cpufreq/cpufreq::cpufreq_resume
-in 2.4 backport at first.
+Actually I liked to be able to echo 0:7 > limit and conserve battery/
+make sure machine does not overheat  with it...
+
 
 -- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+				Pavel
+Written on sharp zaurus, because my Velo1 broke. If you have Velo you don't need...
