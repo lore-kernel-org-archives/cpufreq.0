@@ -1,9 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 3/4] speedstep-centrino: add scaling_available_frequencies
-	output
-Date: Fri, 20 Feb 2004 09:44:51 +0100
+Subject: [PATCH 1/4] speedstep-centrino: move to per-CPU analyzing of CPUs
+Date: Fri, 20 Feb 2004 09:44:25 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040220084451.GC10473@dominikbrodowski.de>
+Message-ID: <20040220084424.GA10473@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -21,62 +20,147 @@ Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, jeremy@goop.org
 Cc: cpufreq@www.linux.org.uk
 
-Export an array of available frequency settings of the centrino driver.
+Move the table matching into an own function; only the FEATURE_EST bit is checked
+in module_init() directly. As cpufreq drivers aren't sticky any longer (see other 
+pending patch sent to cpufreq mailing list a few minutes ago), this will not 
+change user-visible behaviour.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletion(-)
+ arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  106 ++++++++++++---------- 
+ 1 files changed, 60 insertions(+), 46 deletions(-)
 
 diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-02-19 20:30:31.773949088 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-02-19 20:33:35.825968928 +0100
-@@ -351,6 +351,7 @@
- {
- 	unsigned freq;
- 	unsigned l, h;
-+	int ret;
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-02-18 10:22:09.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-02-19 16:59:58.093560440 +0100
+@@ -187,6 +187,45 @@
+ };
+ #undef CPU
  
- 	if (policy->cpu != 0)
- 		return -ENODEV;
-@@ -386,7 +387,13 @@
- 	dprintk(KERN_INFO PFX "centrino_cpu_init: policy=%d cur=%dkHz\n",
- 		policy->policy, policy->cur);
- 	
--	return cpufreq_frequency_table_cpuinfo(policy, centrino_model->op_points);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, centrino_model->op_points);
-+	if (ret)
-+		return (ret);
++static int centrino_cpu_init_table(struct cpufreq_policy *policy)
++{
++	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
++	const struct cpu_model *model;
 +
-+	cpufreq_frequency_table_get_attr(centrino_model->op_points, policy->cpu);
++	if (!cpu_has(cpu, X86_FEATURE_EST))
++		return -ENODEV;
++
++	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
++	   they appear after making sure they use PERF_CTL in the same
++	   way. */
++	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
++	    cpu->x86        != 6 ||
++	    cpu->x86_model  != 9 ||
++	    cpu->x86_mask   != 5) {
++		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
++		       "send /proc/cpuinfo to " MAINTAINER "\n");
++		return -ENODEV;
++	}
++
++	for(model = models; model->model_name != NULL; model++)
++		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
++			break;
++	if (model->model_name == NULL) {
++		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
++		       "send /proc/cpuinfo to " MAINTAINER "\n",
++		       cpu->x86_model_id);
++		return -ENOENT;
++	}
++
++	centrino_model = model;
++		
++	printk(KERN_INFO PFX "found \"%s\": max frequency: %dkHz\n",
++	       model->model_name, model->max_freq);
 +
 +	return 0;
- }
++}
++
++
+ /* Extract clock in kHz from PERF_CTL value */
+ static unsigned extract_clock(unsigned msr)
+ {
+@@ -206,10 +245,30 @@
+ static int centrino_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned freq;
++	unsigned l, h;
  
- static int centrino_cpu_exit(struct cpufreq_policy *policy)
-@@ -394,6 +401,8 @@
- 	if (!centrino_model)
+-	if (policy->cpu != 0 || centrino_model == NULL)
++	if (policy->cpu != 0)
  		return -ENODEV;
  
-+	cpufreq_frequency_table_put_attr(policy->cpu);
++	if (centrino_cpu_init_table(policy))
++		return -ENODEV;
 +
- #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
- 	if (!centrino_model->model_name) {
- 		acpi_processor_unregister_performance(&p, 0);
-@@ -480,6 +489,11 @@
- 	return 0;
- }
++	/* Check to see if Enhanced SpeedStep is enabled, and try to
++	   enable it if not. */
++	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++		
++	if (!(l & (1<<16))) {
++		l |= (1<<16);
++		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
++		
++		/* check to see if it stuck */
++		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
++		if (!(l & (1<<16))) {
++			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
++			return -ENODEV;
++		}
++	}
++
+ 	freq = get_cur_freq();
  
-+static struct freq_attr* centrino_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
- static struct cpufreq_driver centrino_driver = {
- 	.name		= "centrino", /* should be speedstep-centrino, 
- 					 but there's a 16 char limit */
-@@ -487,6 +501,7 @@
- 	.exit		= centrino_cpu_exit,
- 	.verify 	= centrino_verify,
- 	.target 	= centrino_target,
-+	.attr           = centrino_attr,
- 	.owner		= THIS_MODULE,
- };
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+@@ -322,55 +381,10 @@
+ static int __init centrino_init(void)
+ {
+ 	struct cpuinfo_x86 *cpu = cpu_data;
+-	const struct cpu_model *model;
+-	unsigned l, h;
+ 
+ 	if (!cpu_has(cpu, X86_FEATURE_EST))
+ 		return -ENODEV;
+ 
+-	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
+-	   they appear after making sure they use PERF_CTL in the same
+-	   way. */
+-	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
+-	    cpu->x86        != 6 ||
+-	    cpu->x86_model  != 9 ||
+-	    cpu->x86_mask   != 5) {
+-		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
+-		       "send /proc/cpuinfo to " MAINTAINER "\n");
+-		return -ENODEV;
+-	}
+-
+-	/* Check to see if Enhanced SpeedStep is enabled, and try to
+-	   enable it if not. */
+-	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-		
+-	if (!(l & (1<<16))) {
+-		l |= (1<<16);
+-		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
+-		
+-		/* check to see if it stuck */
+-		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-		if (!(l & (1<<16))) {
+-			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
+-			return -ENODEV;
+-		}
+-	}
+-
+-	for(model = models; model->model_name != NULL; model++)
+-		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
+-			break;
+-	if (model->model_name == NULL) {
+-		printk(KERN_INFO PFX "no support for CPU model \"%s\": "
+-		       "send /proc/cpuinfo to " MAINTAINER "\n",
+-		       cpu->x86_model_id);
+-		return -ENOENT;
+-	}
+-
+-	centrino_model = model;
+-		
+-	printk(KERN_INFO PFX "found \"%s\": max frequency: %dkHz\n",
+-	       model->model_name, model->max_freq);
+-
+ 	return cpufreq_register_driver(&centrino_driver);
+ }
