@@ -1,13 +1,17 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Interl XScale pxa cpufreq driver
-Date: Mon, 22 Mar 2004 17:20:46 +0100
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] powernow-k7: example use for powernow_acpi_init()
+Date: Mon, 22 Mar 2004 19:23:51 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040322162045.GA22806@dominikbrodowski.de>
-References: <120c01c41017$712e04b0$76f02e93@rodin>
+Message-ID: <20040322182351.GY28592@poupinou.org>
+References: <20040322092543.GN28592@poupinou.org>
+	<20040322093851.GO28592@poupinou.org>
+	<20040322095135.GD29733@redhat.com>
+	<20040322123614.GP28592@poupinou.org>
+	<20040322142740.GG29733@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1294148684=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <120c01c41017$712e04b0$76f02e93@rodin>
+Content-Disposition: inline
+In-Reply-To: <20040322142740.GG29733@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,54 +21,49 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Young-Jin Kim <youngjk@davinci.snu.ac.kr>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@www.linux.org.uk
 
+On Mon, Mar 22, 2004 at 02:27:40PM +0000, Dave Jones wrote:
+> On Mon, Mar 22, 2004 at 01:36:14PM +0100, Bruno Ducrot wrote:
+> 
+>  > Indeed.  And making ACPI perflib in case of known broken BIOS via
+>  > DMI may be good (the ASUS should work with that patch, if I read
+>  > correctly the DSDT).  There may be though one little annoying thing for
+>  > the ASUS bug: FSB will be reported at 100MHz whereas it is at
+>  > 133MHz, but it's only cosmetic, I hope.
+> 
+> Hmm, won't that skew the calculated frequencies somewhat ?
 
---===============1294148684==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
-Content-Disposition: inline
+Yes.  The only solution that come in mind is to offer an override at
+boot time unfortunately.  Need though that an ASUS user affected by a
+buggy bios confirm that the values given via ACPI are wrong when
+calculating the FSB.  I'm only a human being, after all.
 
+>  > The real trouble is that I don't know how to retrieve FSB on a
+>  > athlon/duron: MSR_IA32_EBL_CR_POWERON do not give it :(
+> 
+> *nod*. I even looked through the powernow docs hoping that the fsb
+> would be stored in one of those registers, but no.
+> 
+> One thing that I did just find though that is interesting.
+> In the powernow documents, they describe the current/maximum/startup FID
+> and say "multiply by 100 to determine the frequency" which is very odd
+> if there really are 133 bus parts out there.
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I guess that apply only for mobile athlon model 6?
 
-On Mon, Mar 22, 2004 at 11:10:34PM +0900, Young-Jin Kim wrote:
-> And, I want to know if there is a routine of changing the supply voltage in speedstep-ich for Intel Mobile Pentium 4.
+> It does state in another part of the document that the FSB is either 100
+> or 133 MHz, but in bold.. "For mobile applications the FSB is 100 MHz"
+> 
+> Very odd.
 
-It's done by the chipset, changing the relevant bit in the southbridge is
-enough for speedstep-ich.
+Arghhh!  My laptop is running off-spec ;)
 
-	Dominik
+-- 
+Bruno Ducrot
 
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAXxJdZ8MDCHJbN8YRAgfIAJ0fiKLHVXrrNyW5So99RroNFC6+6wCglcqJ
-VptVgeXpyazrXBCiyCyhhQI=
-=lnty
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
-
-
---===============1294148684==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---===============1294148684==--
-
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
