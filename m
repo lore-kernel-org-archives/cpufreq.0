@@ -1,13 +1,15 @@
-From: "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>
-Subject: RE: Acer Aspire 1300 buggy BIOS - hardcoded patch
-Date: Tue, 1 Jul 2003 14:34:02 +0900
+From: Morrowind <morrowind@bluscuro.dyndns.org>
+Subject: Re: Acer Aspire 1300 buggy BIOS - hardcoded patch
+Date: Tue, 1 Jul 2003 12:12:31 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <007101c33f92$6149afa0$6814092b@ADACHIPC>
-References: <200307010144.37902.a.d.y@btinternet.com>
+Message-ID: <20030701101231.GA13408@home.net>
+References: <200306301436.29188.lbelli@crema.unimi.it> <20030701005946.5e659273.frx@firenze.linux.it>
+Reply-To: morrowind@bluscuro.dyndns.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <200307010144.37902.a.d.y@btinternet.com>
+Content-Disposition: inline
+In-Reply-To: <20030701005946.5e659273.frx@firenze.linux.it>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,22 +19,26 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"
-To: 'Alex Young' <a.d.y@btinternet.com>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@www.linux.org.uk
 
-Hi,
- 
-> Now my (possibly stupid) question is:
-> Why are the frequency/voltage settings controlled by the bios?
+* marted=EC 01 luglio 2003, alle 00:59, Francesco Poli scrive:
+> On Mon, 30 Jun 2003 14:36:29 +0200 Luigi Belli wrote:
+>=20
+> BTW, I have just installed a 2.4.21 + cpufreq patch 3 kernel on an Acer
+> Aspire 1302XV (AMD Mobile Athlon XP 1600+. It seems to work (the back
+> fan has stopped spinning so often and the case temperature looks lower).
+>=20
+> Does anybody know a simple method to check if the BIOS is buggy or not?
+> Can I run some quick diagnostics?
 
-It's probably because not all possible settings are necessarily
-tolerable on all systems using same CPU.
-System Vendors are quite careful as to which FID/VID settings they will
-support on their product line.
-Even if VRM is directly connected to CPU Core and thus configurable
-independently of any other components on main board, still various
-things such as TDP, power supply system, body size etc. must be taken
-into acoount, I guess.
+Can you send the powernow-k7 debug info?
+I've the same cpu and i need a correct pst table...
 
-Thanks,
-- Adachi, Kenichi
+thanks
+
+
+--=20
+"A volte penso che la prova piu' sicura che esiste da qualche parte una
+forma di vita intelligente e' il fatto che non ha mai tentato di mettersi
+in contatto con noi."
