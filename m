@@ -1,8 +1,8 @@
 From: bugme-daemon@osdl.org
-Subject: [Bug 3144] New: modprobe speedstep-smi fails
-Date: Sun, 1 Aug 2004 13:34:38 -0700
+Subject: [Bug 3142] Loading speedstep-ich module seg faults
+Date: Sun, 1 Aug 2004 13:50:17 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408012034.i71KYc5b010140@fire-1.osdl.org>
+Message-ID: <200408012050.i71KoHcQ011065@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,29 +18,20 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugme.osdl.org/show_bug.cgi?id=3144
+http://bugme.osdl.org/show_bug.cgi?id=3142
 
-           Summary: modprobe speedstep-smi fails
-    Kernel Version: 2.6.7
-            Status: NEW
-          Severity: normal
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: schwientek@web.de
+linux@brodo.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|cpufreq@www.linux.org.uk    |linux@brodo.de
+             Status|NEW                         |ASSIGNED
 
 
-Distribution:gentoo 
-Hardware Environment: 
-IBM Thinkpad T22, Intel Pentium3 Coppermine Processor 
- 
- 
-bash-2.05b# modprobe speedstep-smi 
-FATAL: Error inserting speedstep_smi 
-(/lib/modules/2.6.7/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-smi.ko): No 
-such device 
- 
-No /proc/cpufreq is created. 
- 
-I  use addional acpi for this laptop.
+
+------- Additional Comments From linux@brodo.de  2004-08-01 13:50 -------
+probably not 2.6.7-plain, but more recent... Patch available at bug # 3012, will
+hopefully reach Linus' tree before 2.6.8.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
