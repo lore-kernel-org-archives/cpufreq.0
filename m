@@ -1,11 +1,12 @@
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] Set CONST_LOOPS flag for P4 with Enhanced Speedstep
-	Technology
-Date: Thu, 30 Dec 2004 15:11:15 -0800
-Message-ID: <20041230151115.A30475@unix-os.sc.intel.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: found unsupported CPU with Enhanced SpeedStep
+Date: Thu, 30 Dec 2004 14:38:14 -0800
+Message-ID: <1104446294.24179.1.camel@localhost>
+References: <20041230014005.GA16358@bittwiddlers.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-+sJ8y/qhLT6renUWIzK+"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20041230014005.GA16358@bittwiddlers.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,121 +17,91 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+To: Matthew Harrell <mharrell-dated-1104802810.0deb6f@bittwiddlers.com>
+Cc: cpufreq list <cpufreq@www.linux.org.uk>
+
+
+--=-+sJ8y/qhLT6renUWIzK+
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com
-Cc: linux@dominikbrodowski.de, cpufreq@www.linux.org.uk
+
+On Wed, 2004-12-29 at 20:40 -0500, Matthew Harrell wrote:
+> Hi.  I get the following message so I figured I would send you an email
+> 
+>   speedstep-centrino: invalid ACPI data
+>   speedstep-centrino: found unsupported CPU with Enhanced SpeedStep: send /proc/cpuinfo to Jeremy Fitzhardinge <jeremy@goop.org>
+> 
+> The cpu info file is attached.  Is there a simple change I can do to get this
+> to work on this laptop?
+
+The "invalid ACPI data" suggests that a BIOS update might help.
+Unfortunately the driver can't do anything for an EST-enabled mobile P4
+without the ACPI data.
+
+I don't know too much about ACPI, so I've cc:'d this to the cpufreq
+mailing list.
+
+	J
+
+--=-+sJ8y/qhLT6renUWIzK+
+Content-Disposition: attachment; filename=cpuinfo.txt
+Content-Type: text/plain; name=cpuinfo.txt; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 15
+model		: 4
+model name	: Mobile Intel(R) Pentium(R) 4 CPU 3.06GHz
+stepping	: 1
+cpu MHz		: 3057.351
+cache size	: 1024 KB
+physical id	: 0
+siblings	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 5
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe pni monitor ds_cpl est tm2 cid xtpr
+bogomips	: 3710.16
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 15
+model		: 4
+model name	: Mobile Intel(R) Pentium(R) 4 CPU 3.06GHz
+stepping	: 1
+cpu MHz		: 3057.351
+cache size	: 1024 KB
+physical id	: 0
+siblings	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 5
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe pni monitor ds_cpl est tm2 cid xtpr
+bogomips	: 3710.16
 
 
-[CPUFREQ] speedstep-centrino and acpi-cpufreq
+--=-+sJ8y/qhLT6renUWIzK+
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-In P4, CPU tsc rate won't change with CPU frequency change while using Enhanced 
-Speedstep Technology. 
-Tested with both speedstep-centrino and acpi-cpufreq on both i386 and x86-64.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+--=-+sJ8y/qhLT6renUWIzK+--
 
---- linux-2.6.10/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c.org	2004-12-30 13:56:29.000000000 -0800
-+++ linux-2.6.10/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c	2004-12-30 14:02:03.000000000 -0800
-@@ -38,6 +38,8 @@
- #include <linux/acpi.h>
- #include <acpi/processor.h>
- 
-+#include "speedstep-est-common.h"
-+
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "acpi-cpufreq", msg)
- 
- MODULE_AUTHOR("Paul Diefenbaugh, Dominik Brodowski");
-@@ -52,6 +54,7 @@ struct cpufreq_acpi_io {
- 
- static struct cpufreq_acpi_io	*acpi_io_data[NR_CPUS];
- 
-+static struct cpufreq_driver acpi_cpufreq_driver;
- 
- static int
- acpi_processor_write_port(
-@@ -368,6 +371,10 @@ acpi_cpufreq_cpu_init (
- 	if (result)
- 		goto err_free;
- 
-+	if (is_const_loops_cpu(cpu)) {
-+		acpi_cpufreq_driver.flags |= CPUFREQ_CONST_LOOPS;
-+	}
-+
- 	/* capability check */
- 	if (data->acpi_data.state_count <= 1) {
- 		dprintk("No P-States\n");
---- linux-2.6.10/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.org	2004-12-30 13:42:14.000000000 -0800
-+++ linux-2.6.10/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-12-30 14:03:44.000000000 -0800
-@@ -32,6 +32,8 @@
- #include <asm/processor.h>
- #include <asm/cpufeature.h>
- 
-+#include "speedstep-est-common.h"
-+
- #define PFX		"speedstep-centrino: "
- #define MAINTAINER	"Jeremy Fitzhardinge <jeremy@goop.org>"
- 
-@@ -74,6 +76,8 @@ static int centrino_verify_cpu_id(const 
- static struct cpu_model *centrino_model;
- static const struct cpu_id *centrino_cpu;
- 
-+static struct cpufreq_driver centrino_driver;
-+
- #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
- 
- /* Computes the correct form for IA32_PERF_CTL MSR for a particular
-@@ -475,6 +479,10 @@ static int centrino_cpu_init(struct cpuf
- 	if (i != N_IDS)
- 		centrino_cpu = &cpu_ids[i];
- 
-+	if (is_const_loops_cpu(policy->cpu)) {
-+		centrino_driver.flags |= CPUFREQ_CONST_LOOPS;
-+	}
-+
- 	if (centrino_cpu_init_acpi(policy)) {
- 		if (policy->cpu != 0)
- 			return -ENODEV;
---- linux-2.6.10/arch/i386/kernel/cpu/cpufreq/speedstep-est-common.h.org	2004-12-30 13:56:07.000000000 -0800
-+++ linux-2.6.10/arch/i386/kernel/cpu/cpufreq/speedstep-est-common.h	2004-12-30 17:22:52.000000000 -0800
-@@ -0,0 +1,40 @@
-+/*
-+ * Routines common for drivers handling Enhanced Speedstep Technology
-+ *  Copyright (C) 2004 Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+static inline int is_const_loops_cpu(unsigned int cpu)
-+{
-+	struct cpuinfo_x86 	*c = cpu_data + cpu;
-+
-+	if (c->x86_vendor != X86_VENDOR_INTEL || !cpu_has(c, X86_FEATURE_EST))
-+		return 0;
-+
-+	/* 
-+	 * on P-4s, the TSC runs with constant frequency independent of cpu freq
-+	 * when we use EST 
-+	 */
-+	if (c->x86 == 0xf)
-+		return 1;
-+
-+	return 0;
-+}
-+
+
