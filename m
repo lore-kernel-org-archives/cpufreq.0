@@ -1,12 +1,13 @@
-From: Stelian Pop <stelian@popies.net>
-Subject: [PATCH 2.6] cpufreq longrun driver fix
-Date: Mon, 5 Apr 2004 17:50:12 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH 2.6] cpufreq longrun driver fix
+Date: Mon, 5 Apr 2004 19:38:35 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040405155012.GI2718@deep-space-9.dsnet>
-Reply-To: Stelian Pop <stelian@popies.net>
+Message-ID: <20040405173835.GA7328@dominikbrodowski.de>
+References: <20040405155012.GI2718@deep-space-9.dsnet>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0551764332=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20040405155012.GI2718@deep-space-9.dsnet>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,57 +17,68 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: Stelian Pop <stelian@popies.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
+
+
+--===============0551764332==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+Content-Disposition: inline
+
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Apr 05, 2004 at 05:50:12PM +0200, Stelian Pop wrote:
+> Hi,
+>=20
+> My TM5600 Crusoe processor, found inside a Sony Vaio C1VE laptop,
+> does not work with the longrun cpufreq driver.
+>=20
+> Upon investigation, the reason is that trying to set the performance=20
+> to 80% in longrun_determine_freqs leaves the performance to 100%.
+> The performance level, at least on this particular model, can be lowered
+> only in 33% steps. And in order to put the performance to 66%, the
+> code should try to set the barrier to 70%.
+>=20
+> The following patch does even more, it tries every value from 80%
+> to 10% in 10% steps, until it succeeds in lowering the performance.
+> I'm not sure this is the best way to do it but in any case,=20
+> it works for me (and should continue to work for everybody else).
+
+Patch looks good to me -- thanks, Stelian!=20
+Dave, could you merge it, please?
+
+Thanks,
+	Dominik
+=20
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAcZmbZ8MDCHJbN8YRAizlAJ9TiNHW/uSPvoifCulsOaeh17lJrQCgiBPj
+E3dQpPIvNLHTI7Kv9L6qs9M=
+=DrFa
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
+
+
+--===============0551764332==
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, linux@brodo.de
+Content-Disposition: inline
 
-Hi,
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-My TM5600 Crusoe processor, found inside a Sony Vaio C1VE laptop,
-does not work with the longrun cpufreq driver.
+--===============0551764332==--
 
-Upon investigation, the reason is that trying to set the performance 
-to 80% in longrun_determine_freqs leaves the performance to 100%.
-The performance level, at least on this particular model, can be lowered
-only in 33% steps. And in order to put the performance to 66%, the
-code should try to set the barrier to 70%.
-
-The following patch does even more, it tries every value from 80%
-to 10% in 10% steps, until it succeeds in lowering the performance.
-I'm not sure this is the best way to do it but in any case, 
-it works for me (and should continue to work for everybody else).
-
-Stelian.
-
-===== arch/i386/kernel/cpu/cpufreq/longrun.c 1.18 vs edited =====
---- 1.18/arch/i386/kernel/cpu/cpufreq/longrun.c	Thu Feb 19 03:48:38 2004
-+++ edited/arch/i386/kernel/cpu/cpufreq/longrun.c	Mon Apr  5 17:06:12 2004
-@@ -142,6 +142,7 @@
- 	u32 msr_lo, msr_hi;
- 	u32 save_lo, save_hi;
- 	u32 eax, ebx, ecx, edx;
-+	u32 try_hi;
- 	struct cpuinfo_x86 *c = cpu_data;
- 
- 	if (!low_freq || !high_freq)
-@@ -184,12 +185,14 @@
- 	 * upper limit to make the calculation more accurate.
- 	 */
- 	cpuid(0x80860007, &eax, &ebx, &ecx, &edx);
--	if (ecx > 90) {
--		/* set to 0 to 80 perf_pctg */
-+	/* try decreasing in 10% steps, some processors react only
-+	 * on some barrier values */
-+	for (try_hi = 80; try_hi > 0 && ecx > 90; try_hi -=10) {
-+		/* set to 0 to try_hi perf_pctg */
- 		msr_lo &= 0xFFFFFF80;
- 		msr_hi &= 0xFFFFFF80;
- 		msr_lo |= 0;
--		msr_hi |= 80;
-+		msr_hi |= try_hi;
- 		wrmsr(MSR_TMTA_LONGRUN_CTRL, msr_lo, msr_hi);
- 
- 		/* read out current core MHz and current perf_pctg */
--- 
-Stelian Pop <stelian@popies.net>
