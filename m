@@ -1,14 +1,10 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Broken PST for Sony Vaio FX-502 with Athlon XP 1900+ fixed !
-Date: Mon, 6 Oct 2003 21:00:57 +0100
+From: Catalin Drula <catalin@cs.toronto.edu>
+Subject: Dynamic-voltage scaling on PDAs (project)
+Date: Tue, 7 Oct 2003 01:30:18 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031006200057.GC1621@redhat.com>
-References: <20031001174844.GH11391@poupinou.org>
-	<20031006153729.32725.qmail@web20806.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.58.0310070127350.22629@epoch.cs>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20031006153729.32725.qmail@web20806.mail.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,32 +14,35 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Simonov <a_simonov@yahoo.com>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, Oct 06, 2003 at 08:37:29AM -0700, Alex Simonov wrote:
+Hi,
 
- > Thank you very much for the advice. I took the
- > powernow-k7.c from the CVS, and compiled it with
- > my "fake" PST. I had to fix only the missing
- > define for the wrmsrl and rdmsrl symbols. So far
- > the powernow scaling for my XP 1900+ seems to
- > work. 
- > Just one question-the x86info utility displays
- > either "Voltage changes wont happen" or Frequency
- > changes wont happen" depending on that if you're
- > changing the speed up or down, because of the
- > CVID and CFID bits set to 0 in each change_fid or
- > change_vid function? Does this mean that VID/FID
- > is not changing? The MSR register values are set
- > anyway, is there any definitive way to make sure
- > if I have the correct voltage output?
+my name is Catalin Drula and I am a Master's student in Computer Science
+at the University of Toronto in Canada. I am doing a project with two
+other classmates for our course "Mobile and Pervasive Computing". The
+theme of this research project is quantifying the energy-savings of using
+a scheduler with dynamic-voltage scaling support. We were planning to do
+this on a PDA (handheld computer) by modifying the Linux kernel scheduler.
 
-Add printk's to change_VID() ?
+The problem we have run into thus far is that there do not seem to be PDAs
+which support dynamic-voltage scaling. There are some that support
+frequency scaling, but none of them seem to support dynamic-voltage
+scaling. Since the whole purpose of our project was to be able to "show"
+our results on a "real" platform we are currently in a dead-end.
 
-		Dave
+Do you know of any PDAs/architectures which support dynamic-voltage
+scaling?
 
--- 
- Dave Jones     http://www.codemonkey.org.uk
+From our investigations, only Transmeta's Crusoe and Intel's XScale
+processors seem to have voltage scaling. However, we do not think that
+there are any PDAs based on Crusoe. The XScale seems to need support from
+the board for voltage-scaling, support which is probably lacking in PDAs.
+
+Any tips/hints would be appreciated.
+
+Thank you very much in advance for your time,
+
+Catalin Drula
