@@ -1,11 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: cleaning flags for mach-integrator
-Date: Tue, 31 Aug 2004 10:49:05 +0200
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: cleaning flags for mach-integrator
+Date: Tue, 31 Aug 2004 10:09:16 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040831084905.GU29560@poupinou.org>
+Message-ID: <20040831100916.A5726@flint.arm.linux.org.uk>
+References: <20040831084905.GU29560@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20040831084905.GU29560@poupinou.org>;
+	from ducrot@poupinou.org on Tue, Aug 31, 2004 at 10:49:05AM +0200
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,34 +20,16 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rmk@arm.linux.org.uk
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@www.linux.org.uk
 
-Hi Russel,
+On Tue, Aug 31, 2004 at 10:49:05AM +0200, Bruno Ducrot wrote:
+> When we are at cleaning stuff, does this patch look ok to you?
 
-When we are at cleaning stuff, does this patch look ok to you?
-
-Of course, I can do something stupid here since I'm not an ARM expert.
-
-Index: linux/arch/arm/mach-integrator/cpu.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator/cpu.c,v
-retrieving revision 1.10
-diff -u -r1.10 cpu.c
---- linux/arch/arm/mach-integrator/cpu.c	26 Aug 2004 13:25:17 -0000	1.10
-+++ linux/arch/arm/mach-integrator/cpu.c	31 Aug 2004 08:41:08 -0000
-@@ -196,6 +196,7 @@
- }
- 
- static struct cpufreq_driver integrator_driver = {
-+	.flags		= CPUFREQ_STICKY,
- 	.verify		= integrator_verify_policy,
- 	.target		= integrator_set_target,
- 	.get		= integrator_get,
-
+Yes, thanks.
 
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
