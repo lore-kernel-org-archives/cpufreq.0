@@ -1,9 +1,15 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq - Imported sources
-Date: Mon, 25 Aug 2003 15:58:53 +0100
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [2.4] CVS update?
+Date: Mon, 25 Aug 2003 16:01:42 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E19rIo1-0004dP-6X@flint.arm.linux.org.uk>
+Message-ID: <20030825150142.GD30810@redhat.com>
+References: <20030825125909.GA10585@poupinou.org>
+	<20030825143350.GA30810@redhat.com> <3F4A1F91.9010100@yucs.org>
+	<20030825154804.A16790@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20030825154804.A16790@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,59 +19,27 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.arm.linux.org.uk
+To: Shaya Potter <spotter@yucs.org>, Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq
-In directory flint:/tmp/cvs-serv17813
+On Mon, Aug 25, 2003 at 03:48:04PM +0100, Russell King wrote:
+ > LINUX_2_4 is a branch though.
 
-Log Message:
-import dj codes from latest cpufreq-2.4
+erk. fscked if I know then. I'll leave it to someone with stronger
+cvs-fu than me.
 
-Status:
+ > However, speedstep-centrino.c pre-exists in the prepository on the trunk.
+ > Exactly how you get around this problem I don't know - CVS tends to suck
+ > too badly most of the time for me (which is why I personally hardly use
+ > it.)
 
-Vendor Tag:	LINUX_2_4
-Release Tags:	LINUX_2_4_20030825
-		
-C cpufreq/patch
-C cpufreq/TODO
-C cpufreq/patchin.sh
-C cpufreq/linux/Documentation/cpufreq-old
-C cpufreq/linux/Documentation/cpufreq/core.txt
-C cpufreq/linux/Documentation/cpufreq/cpu-drivers.txt
-C cpufreq/linux/Documentation/cpufreq/governors.txt
-C cpufreq/linux/Documentation/cpufreq/index.txt
-C cpufreq/linux/Documentation/cpufreq/user-guide.txt
-C cpufreq/linux/arch/arm/mach-integrator/cpu.c
-C cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1100.c
-C cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/elanfreq.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/gx-suspmod.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/longrun.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/p4-clockmod.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k6.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.h
-C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-centrino.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-ich.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.c
-C cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.h
-C cpufreq/linux/drivers/cpufreq/Makefile
-C cpufreq/linux/drivers/cpufreq/freq_table.c
-C cpufreq/linux/drivers/cpufreq/proc_intf.c
-C cpufreq/linux/drivers/cpufreq/userspace.c
-C cpufreq/linux/include/linux/cpufreq.h
-C cpufreq/linux/kernel/cpufreq.c
+Ditto. Most of the cpufreq merges I do with Linus are using bitkeeper
+or gnu patches now, so the CVS is really there for convenience for folks
+who don't want to / can't use bitkeeper afaiac.  If someone else wants to
+volunteer to do the 'keeping cvs in sync' thing, then I'm all for it.
 
-30 conflicts created by this import.
-Use the following command to help the merge:
+		Dave
 
-	cvs checkout -jLINUX_2_4:yesterday -jLINUX_2_4 cpufreq
-
-
-***** Not enough context to create diff for file: -
-***** Not enough context to create diff for file: Imported
-***** Not enough context to create diff for file: sources
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
