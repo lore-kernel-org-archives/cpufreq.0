@@ -1,13 +1,10 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Acer Aspire  1350 broken PST
-Date: Fri, 16 Apr 2004 14:05:19 +0200
+From: wissam <wisss13@yahoo.com>
+Subject: Frequency scaling for Compaq desktop
+Date: Fri, 16 Apr 2004 05:34:03 -0700 (PDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040416120519.GT8953@poupinou.org>
-References: <c5n0ms$7nc$1@sea.gmane.org>
+Message-ID: <20040416123403.32847.qmail@web40505.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <c5n0ms$7nc$1@sea.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,32 +16,40 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jy <jy454@yahoo.fr>
-Cc: cpufreq@www.linux.org.uk
+To: Cpufreq@www.linux.org.uk
 
-On Fri, Apr 16, 2004 at 12:00:58AM +0200, jy wrote:
-> I have Acer Aspire 1357LMi laptop with AMD Athlon XP 3000+ and of course 
-> cpufreq don't work
-> 
+Hi 
+i have a presario 6184ea wiz athlon amd
+and i wonder if frequency scaling works on it
+coz its been some time and i couldnt make it work
 
-Could you please try latest cpufreq?  it's at
-http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/
+cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 6
+model           : 6
+model name      : AMD Athlon(tm) XP 1900+
+stepping        : 2
+cpu MHz         : 1596.314
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8
+apic sep mtrr pge mca cmov pat pse36 mmx fxsr sse
+syscall mp mmxext 3dnowext 3dnow
+bogomips        : 3162.11
 
-with CONFIG_ACPI_PROCESSOR=YES ?
-
-I would like also that you test dump_psb.c
-
-wget http://poup.poupinou.org/cpufreq/powernow-k7/dump_psb.c
-gcc -O2 -Wall dump_psb.c -o dump_psb
-sudo ./dump_psb 9
-
-in order to check if that model actually do have more PSTs.
-
-Cheers,
 
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	
+		
+__________________________________
+Do you Yahoo!?
+Yahoo! Tax Center - File online by April 15th
+http://taxes.yahoo.com/filing.html
