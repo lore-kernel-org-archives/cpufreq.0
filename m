@@ -1,16 +1,16 @@
-From: Carl Thompson <cet@carlthompson.net>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 Subject: Re: cpuspeed daemon
-Date: Mon, 23 Jun 2003 11:42:45 -0700
+Date: 23 Jun 2003 11:48:05 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1056393765.4cc7b6562be56@carlthompson.net>
+Message-ID: <1056394085.5719.2.camel@localhost.localdomain>
 References: <1056238149.30963.394.camel@ixodes.goop.org>
-	<1056238942.38e68448bf0bf@carlthompson.net>
-	<1056346987.15249.21.camel@ixodes.goop.org>
+	 <1056238942.38e68448bf0bf@carlthompson.net>
+	 <1056346987.15249.21.camel@ixodes.goop.org>
+	 <1056393765.4cc7b6562be56@carlthompson.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <1056346987.15249.21.camel@ixodes.goop.org>
-Content-Disposition: inline
+In-Reply-To: <1056393765.4cc7b6562be56@carlthompson.net>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,37 +21,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Carl Thompson <cet@carlthompson.net>
 Cc: cpufreq list <cpufreq@www.linux.org.uk>
 
-Quoting Jeremy Fitzhardinge <jeremy@goop.org>:
+On Mon, 2003-06-23 at 11:42, Carl Thompson wrote:
+> Great minds think alike.  I almost picked "Speed Freq" as my new name before
+> settling on "Speed Daemon" !
 
-> On Sat, 2003-06-21 at 16:42, Carl Thompson wrote:
-> > Darn it, you picked the same name I was using for the new version of
-> > my CPUFreq daemon!  (It was called cpufreq, but I thought that was too
-> > confusing).  Well, since I haven't posted it here under the new name
-> > yet I guess I'll have to find another name...
->
-> Well, I just changed the name to "speedfreq", so you can have cpuspeed
-> if you want.
+Heh.  I think the speed puns are inevitable with this kind of thing.
 
-If you prefer the name "cpuspeed" then you should keep it.  I don't mind
-using a different name.  If you really do prefer "speedfreq" then I'll use
-"cpuspeed" .
+> 
+> > What does your daemon do?
+> 
+> Pretty much the same thing except mine actually does make policy decisions
+> and does not yet have a sophisticated plugin infrastructure like yours.
 
-Great minds think alike.  I almost picked "Speed Freq" as my new name before
-settling on "Speed Daemon" !
+You must be thinking of something other project.  I don't have a plugin
+infrastructure, and I'm hoping to never have one.  I'm just trying to do
+a simple policy enforcement mechanism, on the grounds that there's
+plenty of other people doing policy setting daemon/user interfaces.
 
-> What does your daemon do?
-
-Pretty much the same thing except mine actually does make policy decisions
-and does not yet have a sophisticated plugin infrastructure like yours.
-That is planned (though not as complex) but put off until I can get my
-laptop to actually run the 2.5 kernel.  Currently it monitors CPU usage,
-temperature and the AC adapter and sets the CPU speed accordingly.
-
-I'll try to post an updated version in the next day or so.
-
-> 	J
-
-Carl
+	J
