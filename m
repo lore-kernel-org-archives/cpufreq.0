@@ -1,11 +1,10 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: Re: [PATCH] ondemand governor clean-ups
-Date: Mon, 07 Feb 2005 22:03:37 +0100
-Message-ID: <4207D7A9.807@tremplin-utc.net>
-References: <88056F38E9E48644A0F562A38C64FB6003F34484@scsmsx403.amr.corp.intel.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] ondemand governor clean-ups
+Date: Mon, 7 Feb 2005 13:15:54 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB6003F34677@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------090303030604060507050707"
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6003F34484@scsmsx403.amr.corp.intel.com>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C50D5A.35FADDE9"
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,112 +15,76 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@zenii.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>
+To: davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: cpufreq@zenii.linux.org.uk, Eric Piel <Eric.Piel@tremplin-utc.net>
 
 This is a multi-part message in MIME format.
---------------090303030604060507050707
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Pallipadi, Venkatesh wrote:
->  
-> 
-> Hi,
-> 
-> Thanks for the patch. Looks good. Can you also remove the #define for
-> sampling_rate_in_HZ, as it is no longer required.
-Oops, I had done it but it went wrong when doing the patch. My second 
-tried is attached :-)
+------_=_NextPart_001_01C50D5A.35FADDE9
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Eric
-> 
->>-----Original Message-----
->>From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net] 
->>Sent: Sunday, February 06, 2005 3:06 PM
->>To: Pallipadi, Venkatesh; Nakajima, Jun
->>Cc: cpufreq@ZenII.linux.org.uk
->>Subject: [PATCH] ondemand governor clean-ups
->>
->>Hello,
->>
->>Having a look at the ondemand governor I noticed some possible trivial 
->>and minimal clean-ups.
->>
->>Here they are:
->>- change from sampling_rate_in_HZ() to the official function 
->>usecs_to_jiffies().
->>- use for_each_online_cpu() to instead of using "if (cpu_online(i))"
->>
->>Those are just trivial clean-ups, please apply,
->>Eric
-Oops,
---
-Trivial ondemand governor clean-ups
+=20
+Thanks.
+Dave/Dominik: Please Apply.
+
+- Venki
+
+Trivial ondemand governor clean-ups:
+- change from sampling_rate_in_HZ() to the official function=20
+usecs_to_jiffies().
+- use for_each_online_cpu() to instead of using "if (cpu_online(i))"
 
 Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
---
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
---------------090303030604060507050707
-Content-Type: text/x-patch;
- name="ondemand-cleanup-macro-2.6.11-rc3.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline; filename="ondemand-cleanup-macro-2.6.11-rc3.patch"
+------_=_NextPart_001_01C50D5A.35FADDE9
+Content-Type: application/octet-stream;
+	name="ondemand-cleanup-macro-2.6.11-rc3.patch"
+Content-Transfer-Encoding: base64
+Content-Description: ondemand-cleanup-macro-2.6.11-rc3.patch
+Content-Disposition: attachment;
+	filename="ondemand-cleanup-macro-2.6.11-rc3.patch"
 
---- linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c.bak	2005-02-06 23:35:41.000000000 +0100
-+++ linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c	2005-02-07 21:45:18.000000000 +0100
-@@ -57,7 +57,6 @@ static unsigned int 				def_sampling_rat
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define DEF_SAMPLING_DOWN_FACTOR		(10)
- #define TRANSITION_LATENCY_LIMIT		(10 * 1000)
--#define sampling_rate_in_HZ(x)			(((x * HZ) < (1000 * 1000))?1:((x * HZ) / (1000 * 1000)))
- 
- static void do_dbs_timer(void *data);
- 
-@@ -281,7 +280,7 @@ static void dbs_check_cpu(int cpu)
- 	/* Scale idle ticks by 100 and compare with up and down ticks */
- 	idle_ticks *= 100;
- 	up_idle_ticks = (100 - dbs_tuners_ins.up_threshold) *
--			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate);
-+			usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
- 
- 	if (idle_ticks < up_idle_ticks) {
- 		__cpufreq_driver_target(policy, policy->max, 
-@@ -328,7 +327,7 @@ static void dbs_check_cpu(int cpu)
- 	freq_down_sampling_rate = dbs_tuners_ins.sampling_rate *
- 		dbs_tuners_ins.sampling_down_factor;
- 	down_idle_ticks = (100 - dbs_tuners_ins.down_threshold) *
--			sampling_rate_in_HZ(freq_down_sampling_rate);
-+			usecs_to_jiffies(freq_down_sampling_rate);
- 
- 	if (idle_ticks > down_idle_ticks ) {
- 		freq_down_step = (5 * policy->max) / 100;
-@@ -348,11 +347,10 @@ static void do_dbs_timer(void *data)
- { 
- 	int i;
- 	down(&dbs_sem);
--	for (i = 0; i < NR_CPUS; i++)
--		if (cpu_online(i))
--			dbs_check_cpu(i);
-+	for_each_online_cpu(i)
-+		dbs_check_cpu(i);
- 	schedule_delayed_work(&dbs_work, 
--			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
-+			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
- 	up(&dbs_sem);
- } 
- 
-@@ -360,7 +358,7 @@ static inline void dbs_timer_init(void)
- {
- 	INIT_WORK(&dbs_work, do_dbs_timer, NULL);
- 	schedule_delayed_work(&dbs_work,
--			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
-+			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
- 	return;
- }
- 
+LS0tIGxpbnV4LTIuNi4xMS1yYzMvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXFfb25kZW1hbmQuYy5i
+YWsJMjAwNS0wMi0wNiAyMzozNTo0MS4wMDAwMDAwMDAgKzAxMDANCisrKyBsaW51eC0yLjYuMTEt
+cmMzL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxX29uZGVtYW5kLmMJMjAwNS0wMi0wNyAyMTo0NTox
+OC4wMDAwMDAwMDAgKzAxMDANCkBAIC01Nyw3ICs1Nyw2IEBAIHN0YXRpYyB1bnNpZ25lZCBpbnQg
+CQkJCWRlZl9zYW1wbGluZ19yYXQNCiAjZGVmaW5lIERFRl9TQU1QTElOR19SQVRFX0xBVEVOQ1lf
+TVVMVElQTElFUgkoMTAwMCkNCiAjZGVmaW5lIERFRl9TQU1QTElOR19ET1dOX0ZBQ1RPUgkJKDEw
+KQ0KICNkZWZpbmUgVFJBTlNJVElPTl9MQVRFTkNZX0xJTUlUCQkoMTAgKiAxMDAwKQ0KLSNkZWZp
+bmUgc2FtcGxpbmdfcmF0ZV9pbl9IWih4KQkJCSgoKHggKiBIWikgPCAoMTAwMCAqIDEwMDApKT8x
+OigoeCAqIEhaKSAvICgxMDAwICogMTAwMCkpKQ0KIA0KIHN0YXRpYyB2b2lkIGRvX2Ric190aW1l
+cih2b2lkICpkYXRhKTsNCiANCkBAIC0yODEsNyArMjgwLDcgQEAgc3RhdGljIHZvaWQgZGJzX2No
+ZWNrX2NwdShpbnQgY3B1KQ0KIAkvKiBTY2FsZSBpZGxlIHRpY2tzIGJ5IDEwMCBhbmQgY29tcGFy
+ZSB3aXRoIHVwIGFuZCBkb3duIHRpY2tzICovDQogCWlkbGVfdGlja3MgKj0gMTAwOw0KIAl1cF9p
+ZGxlX3RpY2tzID0gKDEwMCAtIGRic190dW5lcnNfaW5zLnVwX3RocmVzaG9sZCkgKg0KLQkJCXNh
+bXBsaW5nX3JhdGVfaW5fSFooZGJzX3R1bmVyc19pbnMuc2FtcGxpbmdfcmF0ZSk7DQorCQkJdXNl
+Y3NfdG9famlmZmllcyhkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKTsNCiANCiAJaWYgKGlk
+bGVfdGlja3MgPCB1cF9pZGxlX3RpY2tzKSB7DQogCQlfX2NwdWZyZXFfZHJpdmVyX3RhcmdldChw
+b2xpY3ksIHBvbGljeS0+bWF4LCANCkBAIC0zMjgsNyArMzI3LDcgQEAgc3RhdGljIHZvaWQgZGJz
+X2NoZWNrX2NwdShpbnQgY3B1KQ0KIAlmcmVxX2Rvd25fc2FtcGxpbmdfcmF0ZSA9IGRic190dW5l
+cnNfaW5zLnNhbXBsaW5nX3JhdGUgKg0KIAkJZGJzX3R1bmVyc19pbnMuc2FtcGxpbmdfZG93bl9m
+YWN0b3I7DQogCWRvd25faWRsZV90aWNrcyA9ICgxMDAgLSBkYnNfdHVuZXJzX2lucy5kb3duX3Ro
+cmVzaG9sZCkgKg0KLQkJCXNhbXBsaW5nX3JhdGVfaW5fSFooZnJlcV9kb3duX3NhbXBsaW5nX3Jh
+dGUpOw0KKwkJCXVzZWNzX3RvX2ppZmZpZXMoZnJlcV9kb3duX3NhbXBsaW5nX3JhdGUpOw0KIA0K
+IAlpZiAoaWRsZV90aWNrcyA+IGRvd25faWRsZV90aWNrcyApIHsNCiAJCWZyZXFfZG93bl9zdGVw
+ID0gKDUgKiBwb2xpY3ktPm1heCkgLyAxMDA7DQpAQCAtMzQ4LDExICszNDcsMTAgQEAgc3RhdGlj
+IHZvaWQgZG9fZGJzX3RpbWVyKHZvaWQgKmRhdGEpDQogeyANCiAJaW50IGk7DQogCWRvd24oJmRi
+c19zZW0pOw0KLQlmb3IgKGkgPSAwOyBpIDwgTlJfQ1BVUzsgaSsrKQ0KLQkJaWYgKGNwdV9vbmxp
+bmUoaSkpDQotCQkJZGJzX2NoZWNrX2NwdShpKTsNCisJZm9yX2VhY2hfb25saW5lX2NwdShpKQ0K
+KwkJZGJzX2NoZWNrX2NwdShpKTsNCiAJc2NoZWR1bGVfZGVsYXllZF93b3JrKCZkYnNfd29yaywg
+DQotCQkJc2FtcGxpbmdfcmF0ZV9pbl9IWihkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKSk7
+DQorCQkJdXNlY3NfdG9famlmZmllcyhkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKSk7DQog
+CXVwKCZkYnNfc2VtKTsNCiB9IA0KIA0KQEAgLTM2MCw3ICszNTgsNyBAQCBzdGF0aWMgaW5saW5l
+IHZvaWQgZGJzX3RpbWVyX2luaXQodm9pZCkNCiB7DQogCUlOSVRfV09SSygmZGJzX3dvcmssIGRv
+X2Ric190aW1lciwgTlVMTCk7DQogCXNjaGVkdWxlX2RlbGF5ZWRfd29yaygmZGJzX3dvcmssDQot
+CQkJc2FtcGxpbmdfcmF0ZV9pbl9IWihkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKSk7DQor
+CQkJdXNlY3NfdG9famlmZmllcyhkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKSk7DQogCXJl
+dHVybjsNCiB9DQogDQo=
 
---------------090303030604060507050707
+------_=_NextPart_001_01C50D5A.35FADDE9
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -132,5 +95,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------090303030604060507050707--
+------_=_NextPart_001_01C50D5A.35FADDE9--
 
