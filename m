@@ -1,14 +1,13 @@
 From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Fri, 24 Oct 2003 13:27:48 +0200
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20031024112748.GB28351@poupinou.org>
-References: <CFF522B18982EA4481D3A3E23B83141C24B4DF@orsmsx407.jf.intel.com>
+Subject: Re: inquiry
+Date: Fri, 24 Oct 2003 18:46:01 +0200
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031024164601.GK28351@poupinou.org>
+References: <000801c39a02$c2e670c0$dd50013d@sachinibnsk>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <CFF522B18982EA4481D3A3E23B83141C24B4DF@orsmsx407.jf.intel.com>
+In-Reply-To: <000801c39a02$c2e670c0$dd50013d@sachinibnsk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,20 +16,44 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, Pavel Machek <pavel@ucw.cz>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+To: Bharadwaj <sachinib_nsk@sancharnet.in>
+Cc: cpufreq@www.linux.org.uk
 
-On Thu, Oct 23, 2003 at 01:47:49PM -0700, Moore, Robert wrote:
-> 
-> I would vote for "cpufreq_dynamic"
-> 
+On Thu, Oct 23, 2003 at 12:19:29PM +0530, Bharadwaj wrote:
+> Sir,
+> I want to change the display of the CPU frequency (If a 
+> 486dx displays frequency of 66MHz can we change it to
+> 100MHz.) not by overclocking but writing it permanently
+> in the CPU it self.I have done this with IDT and winchip
+> brand(O.E.M.for Intel) but the effect was not permanent
+> after giving a cold reboot of long time the processor showed its original frequency and I want to change it to any I think.
+> If you have some information please replay me
 
-Name is too generic IMHO.  There are a lot
-of other ways to do dynamic switching.
+Try this patch:
+
+
+--- arch/i386/kernel/cpu/proc.c	2003/10/24 16:41:47	1.1
++++ arch/i386/kernel/cpu/proc.c	2003/10/24 16:43:24
+@@ -79,10 +79,13 @@
+ 	else
+ 		seq_printf(m, "stepping\t: unknown\n");
+ 
++#if 0
+ 	if ( cpu_has(c, X86_FEATURE_TSC) ) {
+ 		seq_printf(m, "cpu MHz\t\t: %lu.%03lu\n",
+ 			cpu_khz / 1000, (cpu_khz % 1000));
+ 	}
++#endif
++	seq_printf(m, "cpu MHz\t\t: 100.000\n");
+ 
+ 	/* Cache size */
+ 	if (c->x86_cache_size >= 0)
+
+
+Or eventually try to be honest with your customers.
 
 -- 
 Ducrot Bruno
