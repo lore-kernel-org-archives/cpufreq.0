@@ -1,13 +1,11 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-Date: Sat, 05 Jun 2004 11:21:14 -0500
+From: paul.devriendt@amd.com
+Subject: RE: [PATCH] Re: ACPI / cpufreq on Presario R3120
+Date: Sat, 5 Jun 2004 12:22:25 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1086452473.12664.36.camel@gaston>
-References: <200406051846.50718.toojays@toojays.net>
+Message-ID: <99F2150714F93F448942F9A9F112634C1431BB78@txexmtae.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <200406051846.50718.toojays@toojays.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,20 +16,22 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: John Steele Scott <toojays@toojays.net>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>, Christiaan Welvaart <cjw@daneel.dyndns.org>, cpufreq@www.linux.org.uk
+To: linux@dominikbrodowski.de, khughes@pacific.edu
+Cc: davej@redhat.com, ducrot@poupinou.org, Cpufreq@www.linux.org.uk
 
-On Sat, 2004-06-05 at 04:15, John Steele Scott wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+> > powernow-k8:    0 : fid 0x8 (1600 MHz), vid 0x6 (1400 mV)
+> > powernow-k8:    1 : fid 0x0 (800 MHz), vid 0x18 (950 mV)
+> > powernow-k8: cpu_init done, current fid 0x8, vid 0x6
 > 
-> Okay, thanks to some tips from Benjamin Herrenschmidt, I now have a patch 
-> against 2.6.6 which lets you control dynamic frequency scaling on the latest 
-> model iBook G4. I imagine that this same method would apply to the new 
-> PowerBooks as well.
+> So you only get two P-States? Paul, does this look OK?
+> 
+> 	Dominik
 
-I suggest you also look at the latest Darwin code Apple released, more
-sepecifically AppleMacRISC2PE. There is some new bits including something
-about tweaking a bus delay when changing the frequency on these models.
+It might be correct :)
 
-Ben.
+Processors that have a max frequency of 1600 MHz will indeed only have
+2 pstates. Without knowing the part number, I can not tell what the max
+frequency for this part is, or whether the corresponding voltages are
+correct or not.
+
+Paul.
