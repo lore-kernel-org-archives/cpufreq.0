@@ -1,19 +1,19 @@
 From: Dominik Brodowski <linux@brodo.de>
 Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
 	P-state driver
-Date: Tue, 21 Oct 2003 22:37:36 +0200
+Date: Tue, 21 Oct 2003 22:32:15 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021203736.GF26971@brodo.de>
+Message-ID: <20031021203215.GE26971@brodo.de>
 References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
 	<1066725533.5237.3.camel@laptop.fenrus.com>
 	<20031021095925.GB893@inferi.kami.home>
 	<20031021101737.GA31352@wiggy.net>
 	<20031021105234.GF893@inferi.kami.home>
-	<1066764198.5424d9a4ec004@carlthompson.net>
+	<Pine.SOL.4.53.0310211057060.6187@graphics.cat.nyu.edu>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1066764198.5424d9a4ec004@carlthompson.net>
+In-Reply-To: <Pine.SOL.4.53.0310211057060.6187@graphics.cat.nyu.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -25,27 +25,63 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Carl Thompson <cet@carlthompson.net>
-Cc: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, dongili@supereva.it
+To: danielk@mrl.nyu.edu
+Cc: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, Mattia Dongili <dongili@supereva.it>
 
-On Tue, Oct 21, 2003 at 12:23:18PM -0700, Carl Thompson wrote:
-> > In other words: there is no valid way that a _user_ can set the policy
-> > right now: the user can set the frequency, but since any sane policy
-> > depends on how busy the CPU is, the user isn't even, the right person to
-> > _do_ that, since the user doesn't _know_.
+On Tue, Oct 21, 2003 at 11:36:56AM -0400, Daniel Thor Kristjansson wrote:
 > 
-> But userspace _can_ know the idle statistics for each CPU.  It's easily read
-> from /proc/stat.
+> The _user_ shouldn't set the cpu frequency hundred of times a second,
+> but a userland program should set the priorities. If you are just
+> looking at CPU Temperature and the idle loop for setting your cpu
+> frequency then it's fine to do it in the kernel. But if you are looking
+> at dozens of factors and balancing them it is much safer to do so in
+> userland.
 
-Well, /proc/stat, and kstat_cpu is very inaccurate. There's a project going
-on to get better statistics for usage by cpufreq governors. And you really
-don't want to export all sorts of statistics every, or every tenth timer 
-tick to userspace. But if it's done in kernel-space, and if it's done right,
-it may cost really few percentage points of performance.
+Wrong. Passing "events" or "information" to cpufreq governors by
+cpufreq_governor() is much easier, cheaper, and more reliable. 
 
-Even though the governor proposed by Venkatesh may be done as well in
-userspace [which I doubt], it's only one of several possible dynamic 
-cpufreq governors, most of which will be much faster, leaner and meaner in
-kernel space.
+> CPUFreq has been rearchitectured to allow this type of thing,
+> you can have a governor in the kernel that sets CPU Frequency based on
+> load within limits specified by a userland program.
+
+Wrong again. CPUfreq has been rearchitectured to do this kernel-space. 
+The userspace governor allows setting to specific frequencies by the user
+["I _want_ 500 MHz and nothing else!"], and it offers backwards
+compatibility for the first-era cpufreq interface [LART project etc.].
+
+> ACPI can meantime throttle the CPU if it gets too hot
+
+However, frequency scaling is much more efficient on lowering the CPU heat,
+too.
+
+> The user may know things the kernel doesn't such as "this laptop is
+> burning a hole in my pants." She might want to construct a policy that
+> doesn't minimize power consumption since she's plugged in, but gives the
+> CPU lots of juice at first when the idle goes down, but then backs off
+> if it detects a long running 100% utilization such as during a long
+> compile.
+
+Yes indeed. She wants to set a cpufreq policy which suits of her needs: 
+it consists of a
+- minimum frequency	=> not too low [she's plugged in]
+- maximum frequency	=> 100%
+- cpufreq governor	=> some kind of yet-to-be-written 
+				dynamic cpufreq governor with
+				temperature or long-term-statistic
+				knowledge.
+
+_I_ wouldn't want to run this governor, though -- I want kernel compiles to
+complete as fast as possible. So, we need different in-kernel governors.
+
+> This would maximize responsiveness in interactive settings but
+> still keep her lap comfortably cool when compiling mozilla. Putting the
+> complexity of policies specified by something like an XML file in the
+> kernel scares me, putting it in a userspace program that communicates
+> with a low level governor is a more comforting thought.
+
+Well, the thing one of the cpufreq userspace programs does is really fine:
+based on low-frequency events [power plug-in, running specific programs,
+etc.] different cpufreq policies [see above] are selected. No XML file
+necessary.
 
 	Dominik
