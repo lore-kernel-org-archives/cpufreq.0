@@ -1,13 +1,14 @@
-From: Len Brown <len.brown@intel.com>
-Subject: Re: [PATCH] cpufreq_ondemand
-Date: 20 Oct 2004 03:35:35 -0400
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] Another powernow-k7 patch for Desktop XP-M usage
+Date: Wed, 20 Oct 2004 11:43:04 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1098257735.26595.4308.camel@d845pe>
-References: <7f800d9f04101922031be5cfe8@mail.gmail.com>
+Message-ID: <20041020094304.GC22405@poupinou.org>
+References: <200410121018.20518.Hendrik.Muhs@web.de>
+	<416F0B33.8050700@inbox.ru>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <7f800d9f04101922031be5cfe8@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <416F0B33.8050700@inbox.ru>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,29 +19,26 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Andre Eisenbach <int2str@gmail.com>
-Cc: Alexander Clouter <alex-kernel@digriz.org.uk>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: Nebojsa Trpkovic <trx@inbox.ru>
+Cc: cpufreq@www.linux.org.uk
 
-On Wed, 2004-10-20 at 01:03, Andre Eisenbach wrote:
+Hi,
 
-> ... If the
-> speed steps down slowly but shoots up 100% quickly (as it is right
-> now), even a small task (like opening a folder, or scrolling down in a
-> document) will cause a tiny spike to 100% which takes a while to go
-> back down. The result is that the CPU spends most of it's time at 100%
-> or calming down. I wrote a small test program on my notebook which
-> confirms this.
+On Fri, Oct 15, 2004 at 01:26:43AM +0200, Nebojsa Trpkovic wrote:
+> I had to manualy patch my powernow-k7.c but at the end I was able to 
+> change multiplier on the fly.
+> Only thing that made problems is switching latency and I had to set it 
+> to 850 (or more). Anything below 850 would freez system. Is 850 (or 900) 
+> us a lot?
 
-The question is what POLICY we're trying to implement.  If the goal is
-to to be energy efficient while the user notices no performance hit,
-then fast-up/slow-down is an EXCELLENT strategy.  But if the goal is to
-optimize for power savings at the cost of impacting performance, then
-another strategy may work better.
+It's a very large latency, preventing to actually making any kind
+of dynamic frequencies really usefull, and since there is no voltage
+scaling, it's IMHO not so usefull for power consuption purpose (though
+this may help for cooling purpose).
 
-The point is that no strategy will be optimal for all policies.  Linux
-needs a global power policy manager that the rest of the system can ask
-about the current policy.  This way sub-systems can (automatically)
-implement whatever local strategies are consistent with that global
-policy.
+-- 
+Bruno Ducrot
 
--Len
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
