@@ -1,16 +1,12 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
-	1.6 cpu-sa1110.c, 1.12, 1.13
-Date: Thu, 26 Aug 2004 18:57:32 +0200
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [2.6 PATCH] Missing default governors choices
+Date: Thu, 26 Aug 2004 09:40:08 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040826165732.GP29560@poupinou.org>
-References: <E1C0KGF-0006od-0A@flint.arm.linux.org.uk>
-	<20040826151034.E21364@flint.arm.linux.org.uk>
-	<20040826151540.F21364@flint.arm.linux.org.uk>
+Message-ID: <88056F38E9E48644A0F562A38C64FB6002B5F40B@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040826151540.F21364@flint.arm.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,87 +17,89 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-Cc: davej@redhat.com
+To: Michal Rokos <michal@rokos.info>, cpufreq@www.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
 
-On Thu, Aug 26, 2004 at 03:15:40PM +0100, Russell King wrote:
-> On Thu, Aug 26, 2004 at 03:10:34PM +0100, Russell King wrote:
-> > On Thu, Aug 26, 2004 at 02:25:51PM +0100, Ducrot Bruno wrote:
-> > > Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100
-> > > In directory flint:/tmp/cvs-serv26017/linux/arch/arm/mach-sa1100
-> > > @@ -329,8 +329,12 @@
-> > >  }
-> > >  
-> > >  static struct cpufreq_driver sa1110_driver = {
-> > > +	.flags		= CPUFREQ_STICKY |
-> > 
-> > > +			  CPUFREQ_PANIC_OUTOFSYNC | 		<<<<
-> > > +			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,	<<<<
-> > 
-> > Erm, _why_ ?
 
-Because I only merged the latest bk kernel.  I should pay more attention
-in the future..  Sorry.
 
-> > 
-> > This makes very little sense.  If you put the system to sleep at
-> > 147MHz and it normally boots at 206.4MHz, you'll resume at 206.4MHz.
-> > 
-> > It's up to the kernel to reset the clock rate itself.  This is nothing
-> > new - cpufreq has always done this, so why are we adding this new
-> > restriction?
-> > 
-> > It makes zero sense.
-> 
-> And to follow that up, yes, I missed it back in June when I added
-> the CPUFREQ_STICKY here.  However, I was completely unaware that
-> this change had been made back in May 2004.
-> 
-> Can we please route changes to architecture files via the architecture
-> people _before_ merging them.  Pretty please?
+Ondemand govrenor not being one of the default governors is intentional.
 
-Does something like this ok?
+Ondemand governor is in-kernel cpu frequency governor, that will=20
+Be beneficial for CPUs that supports frequency change with low=20
+transition_latency. If transition_latency is high, the ondemand governor
 
-Index: linux/arch/arm/mach-sa1100/cpu-sa1100.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1100.c,v
-retrieving revision 1.6
-diff -u -r1.6 cpu-sa1100.c
---- linux/arch/arm/mach-sa1100/cpu-sa1100.c	26 Aug 2004 13:25:17 -0000	1.6
-+++ linux/arch/arm/mach-sa1100/cpu-sa1100.c	26 Aug 2004 16:55:27 -0000
-@@ -230,9 +230,7 @@
- }
- 
- static struct cpufreq_driver sa1100_driver = {
--	.flags		= CPUFREQ_STICKY |
--			  CPUFREQ_PANIC_OUTOFSYNC | 
--			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
-+	.flags		= CPUFREQ_STICKY,
- 	.verify		= sa11x0_verify_speed,
- 	.target		= sa1100_target,
- 	.get		= sa11x0_getspeed,
-Index: linux/arch/arm/mach-sa1100/cpu-sa1110.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c,v
-retrieving revision 1.13
-diff -u -r1.13 cpu-sa1110.c
---- linux/arch/arm/mach-sa1100/cpu-sa1110.c	26 Aug 2004 13:25:17 -0000	1.13
-+++ linux/arch/arm/mach-sa1100/cpu-sa1110.c	26 Aug 2004 16:55:27 -0000
-@@ -329,9 +329,7 @@
- }
- 
- static struct cpufreq_driver sa1110_driver = {
--	.flags		= CPUFREQ_STICKY |
--			  CPUFREQ_PANIC_OUTOFSYNC | 
--			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
-+	.flags		= CPUFREQ_STICKY,
- 	.verify		= sa11x0_verify_speed,
- 	.target		= sa1110_target,
- 	.get		= sa11x0_getspeed,
+initialization will fail (User level governor is suggested in this
+case).
+Hence it cannot be used as a default governor.=20
 
--- 
-Bruno Ducrot
+Thanks,
+Venki=20
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+>-----Original Message-----
+>From: cpufreq-bounces@www.linux.org.uk=20
+>[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Michal Rokos
+>Sent: Thursday, August 26, 2004 12:07 AM
+>To: cpufreq@www.linux.org.uk
+>Cc: linux-kernel@vger.kernel.org
+>Subject: [2.6 PATCH] Missing default governors choices
+>
+>Hello,
+>
+>aren't these 2 missing in "Default CPUFreq governor" menu?
+>
+>Thank you.
+>
+> Michal
+>
+>PS: CC to me (I'm off the lists)
+>
+># This is a BitKeeper generated diff -Nru style patch.
+>#
+># ChangeSet
+>#   2004/08/26 08:57:24+02:00 michal@rokos.info=20
+>#   Add missing governors to "Default CPUFreq governor" menu.
+>#=20
+># drivers/cpufreq/Kconfig
+>#   2004/08/26 08:57:13+02:00 michal@rokos.info +16 -0
+>#   Add missing governors to "Default CPUFreq governor" menu.
+>#=20
+>diff -Nru a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>--- a/drivers/cpufreq/Kconfig 2004-08-26 09:00:15 +02:00
+>+++ b/drivers/cpufreq/Kconfig 2004-08-26 09:00:15 +02:00
+>@@ -27,6 +27,14 @@
+>    the frequency statically to the highest frequency supported by
+>    the CPU.
+>=20
+>+config CPU_FREQ_DEFAULT_GOV_POWERSAVE
+>+ bool "powersave"
+>+ select CPU_FREQ_GOV_POWERSAVE
+>+ help
+>+   Use the CPUFreq governor 'powersave' as default. This sets
+>+   the frequency statically to the lowest frequency supported by
+>+   the CPU.
+>+
+> config CPU_FREQ_DEFAULT_GOV_USERSPACE
+>  bool "userspace"
+>  select CPU_FREQ_GOV_USERSPACE
+>@@ -35,6 +43,14 @@
+>    you to set the CPU frequency manually or when an userspace=20
+>    programm shall be able to set the CPU dynamically without having
+>    to enable the userspace governor manually.
+>+
+>+config CPU_FREQ_DEFAULT_GOV_ONDEMAND
+>+ bool "ondemand"
+>+ select CPU_FREQ_GOV_ONDEMAND
+>+ help
+>+   Use the CPUFreq governor 'ondemand' as default. This does
+>+   a periodic polling and changes frequency based on the CPU
+>+   utilization.
+>=20
+> endchoice
+>=20
+>=20
+>
+>_______________________________________________
+>Cpufreq mailing list
+>Cpufreq@www.linux.org.uk
+>http://www.linux.org.uk/mailman/listinfo/cpufreq
+>
