@@ -1,15 +1,15 @@
-From: Daniele Bonomi <dbonomi@crema.unimi.it>
-Subject: Re: [Bug 3600] New: Cpu recognization fails after upgrade from
- 2.6.7 to 2.6.9
-Date: Wed, 20 Oct 2004 21:37:22 +0200
+From: Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH] cpufreq_ondemand
+Date: 20 Oct 2004 17:03:45 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041020213722.3cae81fc@paraclito.crema>
-References: <200410201413.i9KED718023481@fire-1.osdl.org>
-	<20041020154744.GA5372@dreamland.darkstar.lan>
+Message-ID: <1098306225.26605.4345.camel@d845pe>
+References: <7f800d9f04101922031be5cfe8@mail.gmail.com>
+	<1098257735.26595.4308.camel@d845pe>
+	<20041020143057.GA7652@dominikbrodowski.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20041020154744.GA5372@dreamland.darkstar.lan>
+In-Reply-To: <20041020143057.GA7652@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,68 +20,31 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: Andre Eisenbach <int2str@gmail.com>, Alexander Clouter <alex-kernel@digriz.org.uk>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
 
-On Wed, 20 Oct 2004 17:47:44 +0200 Kronos <kronos@kronoz.cjb.net> wrote:
+On Wed, 2004-10-20 at 10:30, Dominik Brodowski wrote:
+> On Wed, Oct 20, 2004 at 03:35:35AM -0400, Len Brown wrote:
 
-With the patch previously supplied by Kronos things started working as
-well.
- 
-Output from the "broken" kernel with debug enabled is 
+> > The question is what POLICY we're trying to implement.
+> 
+> This is why there may be DIFFERENT policies a.k.a. governors in
+> cpufreq.
+....
+> 
+> Put it in userspace, and let it ask the cpufreq core in the kernel to
+> use a specific governor or another depending on what you want. That's
+> what certain userspace daemons / scripts already do, btw.
 
-powernow: PowerNOW! Technology present. Can scale: frequency and
-voltage. powernow: FSB:  49.758 MHz
-powernow: Found PSB header at c00f06f0
-powernow: Table version: 0x12
-powernow: Flags: 0x0 (Mobile voltage regulator)
-powernow: Settling Time: 100 microseconds.
-powernow: Has 8 PST tables. (Only dumping ones relevant to this CPU).
-powernow: No PST tables match this cpuid (0x7a0)
-powernow: This is indicative of a broken BIOS.
-powernow: Trying ACPI perflib
-powernow: acpi:  P0: 2133 MHz 75000 mW 125 uS control 00d058fa SGTC
-13334 powernow:    FID: 0x1a (16.0x [796MHz])  VID: 0x7 (1.650V)
-powernow: acpi:  P1: 1800 MHz 55000 mW 125 uS control 00d05935 SGTC
-13334 powernow:    FID: 0x15 (13.5x [671MHz])  VID: 0x9 (1.550V)
-powernow: acpi:  P2: 1467 MHz 32000 mW 125 uS control 00d059c0 SGTC
-13334 powernow:    FID: 0x0 (11.0x [547MHz])  VID: 0xe (1.300V)
-powernow: acpi:  P3: 1064 MHz 30000 mW 125 uS control 00d059ca SGTC
-13334 powernow:    FID: 0xa (8.0x [398MHz])  VID: 0xe (1.300V)
-powernow: acpi:  P4: 800 MHz 26000 mW 125 uS control 00d059c6 SGTC 13334
-powernow:    FID: 0x6 (6.0x [298MHz])  VID: 0xe (1.300V)
-powernow: Minimum speed 298 MHz. Maximum speed 796 MHz.
+Processors are not the only devices with power management.  When a
+device driver, say USB, or any ACPI or PCI power-managed device,
+recognizes that its device is idle, who does it ask to find out what
+power state to put the hardware in?  Today there is nobody to tell it
+what to do.
 
-now is right
+The user's global desired power policy needs to be represented in the
+kernel where all devices can get at it so they can make low-latency
+policy-based decisions.  It isn't clear that the cpufreq multiple
+governor implementation model would work well for the system as whole.
 
-powernow: PowerNOW! Technology present. Can scale:
-frequency and voltage. powernow: FSB: 132.718 MHz
-powernow: Found PSB header at c00f06f0
-powernow: Table version: 0x12
-powernow: Flags: 0x0 (Mobile voltage regulator)
-powernow: Settling Time: 100 microseconds.
-powernow: Has 8 PST tables. (Only dumping ones relevant to this CPU).
-powernow: PST:3 (@c00f0746)
-powernow:  cpuid: 0x7a0  fsb: 133  maxFID: 0x1a  startvid: 0x7
-powernow:    FID: 0x0 (11.0x [1459MHz])  VID: 0xe (1.300V)
-powernow:    FID: 0x1 (11.5x [1526MHz])  VID: 0xd (1.350V)
-powernow:    FID: 0x2 (12.0x [1592MHz])  VID: 0xc (1.400V)
-powernow:    FID: 0x3 (12.5x [1658MHz])  VID: 0xb (1.450V)
-powernow:    FID: 0x14 (13.0x [1725MHz])  VID: 0xa (1.500V)
-powernow:    FID: 0x15 (13.5x [1791MHz])  VID: 0x9 (1.550V)
-powernow:    FID: 0x18 (15.0x [1990MHz])  VID: 0x8 (1.600V)
-powernow:    FID: 0x1a (16.0x [2123MHz])  VID: 0x7 (1.650V)
-powernow: SGTC: 13333
-powernow: Minimum speed 1459 MHz. Maximum speed 2123 MHz.
-
-
-Thank you all very much for the help.
-
-Daniele
-
-
-
--- 
-  ,___,	  While most peoples' opinions change, the conviction of their
-  (9v9)   	     correctness never does
-  (_^((\     	Gpg Key at filibusta.crema.unimi.it/~dbonomi/db.asc
--^-"-"-\\-^--	FP = C613 3CF3 94CD FA27 7900 D16C 3A6E 1CB5 585A CD71
+-Len
