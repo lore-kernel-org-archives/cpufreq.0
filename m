@@ -1,11 +1,13 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH] remove invalid setting in powernow-k8
-Date: Thu, 2 Oct 2003 17:47:51 +0200
+Subject: Re: Fw: Re: [OOPS] [2.6.0-test5-bk8] cpufreq and sysfs problem...
+Date: Fri, 3 Oct 2003 19:29:56 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031002154751.GA18509@brodo.de>
+Message-ID: <20031003172956.GB4050@brodo.de>
+References: <20030924153746.3b0f6493.akpm@osdl.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20030924153746.3b0f6493.akpm@osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,49 +19,32 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, paul.devriendt@amd.com
+To: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk
+Cc: Ashley Pittman <ashley@quadrics.com>, cpufreq@www.linux.org.uk
 
-The Powernow-K8 cpufreq driver does not yet depend on CPUFreq 
-Frequency Table support - but work is going on in this direction.
-Nevertheless, remove this dependency, but mark this driver as being 
-"experimental".
+Thanks for noticing this. Attached patch [for 2.6.0-test6-bk] should fix it.
 
-Also, fix up the invalid usage of pol->policy in drv_init() and mark it
-with a warning in drv_verify()
+	Dominik
 
- arch/i386/kernel/cpu/cpufreq/Kconfig       |    2 +-
- arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig linux/arch/i386/kernel/cpu/cpufreq/Kconfig
---- linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig	2003-10-02 17:36:39.255184952 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig	2003-10-02 17:40:41.915295008 +0200
-@@ -90,7 +90,7 @@
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2003-10-02 17:36:42.000000000 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2003-10-03 19:09:45.336175240 +0200
+@@ -449,6 +449,9 @@
+ 	if (!kobject_get(&data->kobj))
+ 		return -EFAULT;
  
- config X86_POWERNOW_K8
- 	tristate "AMD Opteron/Athlon64 PowerNow!"
--	depends on CPU_FREQ_TABLE
-+	depends on CPU_FREQ && EXPERIMENTAL
- 	help
- 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
++	if (cpufreq_driver->target)
++		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
++
+ 	kobject_unregister(&data->kobj);
  
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-10-02 17:36:39.256184800 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-10-02 17:40:19.927637640 +0200
-@@ -935,6 +935,7 @@
- 		return -ENODEV;
- 	}
+ 	kobject_put(&data->kobj);
+@@ -459,9 +462,6 @@
+ 	 */
+ 	wait_for_completion(&data->kobj_unregister);
  
-+#warning pol->policy is in undefined state here
- 	res = find_match(&targ, &min, &max,
- 			 pol->policy == CPUFREQ_POLICY_POWERSAVE ?
- 			 SEARCH_DOWN : SEARCH_UP, 0, 0);
-@@ -954,7 +955,7 @@
- 		return -ENODEV;
- 	}
- 
--	pol->policy = CPUFREQ_POLICY_PERFORMANCE; /* boot as fast as we can */
-+	pol->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 
- 	/* Take a crude guess here. */
- 	pol->cpuinfo.transition_latency = ((rvo + 8) * vstable * VST_UNITS_20US)
+-	if (cpufreq_driver->target)
+-		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+-
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(data);
