@@ -1,12 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: default ondemand governor
-Date: Fri, 7 Jan 2005 18:04:48 +0100
-Message-ID: <20050107170448.GA8343@dominikbrodowski.de>
-References: <20050107163331.GE9999@wotan.suse.de>
+From: Andi Kleen <ak@muc.de>
+Subject: [fwd] CPUFreq chokes on Sempron
+Date: Sun, 09 Jan 2005 17:51:30 +0100
+Message-ID: <m1oefyv94d.fsf@muc.de>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-=-="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20050107163331.GE9999@wotan.suse.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,18 +15,54 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
+
+--=-=-=
+
+
+FYI.
+
+
+--=-=-=
+Content-Type: message/rfc822
+Content-Disposition: inline
+
+From: Matthew Trent <t3rmin@gmail.com>
+Subject: CPUFreq chokes on Sempron
+Date: Sun, 9 Jan 2005 00:09:01 -0800
+MIME-Version: 1.0
+
+When loading the powernow-k8 module on any recent kernel (I've tried
+2.6.8 through 2.6.10) on my Sempron laptop, I see:
+powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09e)
+powernow-k8:    0 : fid 0x8 (1600 MHz), vid 0x6 (1400 mV)
+powernow-k8:    1 : fid 0x0 (800 MHz), vid 0x18 (950 mV)
+cpu_init done, current fid 0x8, vid 0x4
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+
+... and many more of those 'vid trans failed' errors (one every time
+there's an attempted freq change).
+
+There is a small patch available at...
+http://ubuntuforums.org/archive/index.php/t-3585.html
+...which seems to fix the problem. Should this be included into the
+kernel officially?
+-- 
+Matthew Trent
+
+--=-=-=
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Andi Kleen <ak@suse.de>
-Cc: cpufreq@www.linux.org.uk
+Content-Disposition: inline
 
-On Fri, Jan 07, 2005 at 05:33:31PM +0100, Andi Kleen wrote:
-> 
-> Is there any specific reason the ondemand governor cannot be made
-> default in .config ? 
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-Yes. It can fail on startup, and then there's no other governor to fall back
-to. It's in my TODO queue, hopefully a patch which will sanitize this will
-be available soon.
+--=-=-=--
 
-	Dominik
