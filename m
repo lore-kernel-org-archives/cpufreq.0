@@ -1,13 +1,12 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Dothan/Centrino cpufreq
-Date: Wed, 09 Jun 2004 19:09:22 -0700
+From: "Zhu, Yi" <yi.zhu@intel.com>
+Subject: how to get Pentium 4 multiplier
+Date: Thu, 10 Jun 2004 13:55:13 +0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1086833362.6427.4.camel@localhost.localdomain>
-References: <20040610013039.21458.qmail@web21002.mail.yahoo.com>
+Message-ID: <3ACA40606221794F80A5670F0AF15F8403BD5535@pdsmsx403>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040610013039.21458.qmail@web21002.mail.yahoo.com>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,52 +17,62 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: athul acharya <nyte2k@yahoo.com>
-Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq list <cpufreq@www.linux.org.uk>
+To: Dave Jones <davej@redhat.com>, Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: cpufreq@www.linux.org.uk
 
-On Wed, 2004-06-09 at 18:30 -0700, athul acharya wrote:
-> Hey,
-> 
-> I originally sent this to linux-kernel and was advised
-> that I'd be better off sending it here. 
-> 
-> I noticed that 2.6.7-rc1 was supposed to have Dothan
-> support for cpufreq, but since neither it nor -rc2
-> worked  on my machine, I decided to take a look at the
-> code and see if I couldn't figure something out.  I
-> saw this:
-> 
-> static const struct cpu_id cpu_id_dothan_a1 = {
->         .x86_vendor = X86_VENDOR_INTEL,
->         .x86 = 6,
->         .x86_model = 13,
->         .x86_mask = 1,
-> };
-> 
-> Attempting to match this against /proc/cpuinfo, I
-> changed it to
-> 
-> static const struct cpu_id cpu_id_dothan_a1 = {
->         .x86_vendor = X86_VENDOR_INTEL,
->         .x86 = 6,
->         .x86_model = 13,
->         .x86_mask = 6,
-> };
-> 
-> This worked, creating
-> /sys/devices/system/cpu/cpu0/cpufreq/ and the whole
-> shebang.  So, the above change needs to be integrated
-> in order for (some?) Dothans to work.
 
-There seems to be a few things which need fixing in the driver, which
-will require a re-org of the various tables:
+Hi,
 
-1. Intel seems to have changed the branding string on Banias (but
-without apparently changing the stepping)
-2. There seems to be two steppings of Dothan
+I found pentium4_get_frequency() uses 24:31 of 0x2c
+(MSR_EBC_FREQUENCY_ID)
+to get Pentium 4 FSB multiplier. There is problem because it is not said
+in the
+IA-32 Intel (C) Architecture Software Developer's Manual, Volume 3:
+System=20
+Prgramming Guide (latest Order Number 253668). So it got the wrong
+number.
 
-I'm a bit hesitant to just assume that both Dothan steppings are
-identical (but since we're currently just extracting the operating
-points from the BIOS, it shouldn't be a big risk).
+$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 1
+model name      : Intel(R) Pentium(R) 4 CPU 2.00GHz
+stepping        : 2
+cpu MHz         : 498.627
+cache size      : 256 KB
 
-	J
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+16200000
+
+I compiled my 2.6.7-rc3 kernel with SPEEDSTEP_DEBUG and dmesg
+gives:
+
+speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0xa201f000 0x0
+speedstep-lib: P4 - FSB 100000 kHz; Multiplier 162
+
+You can find more detailed information here:
+http://bugme.osdl.org/show_bug.cgi?id=3D2754
+
+
+How to resolve?
+
+My proposal is get the frequency by using the brand string
+(x86_model_id)
+for P4 processors. All P4 has the brand string. Because the MSR way
+works
+for P6 and PentiumM, but not for P4.
+
+Any comments?
+
+Thanks,
+-----------------------------------------------------------------
+Opinions expressed are those of the author and do not represent Intel
+Corp.
+
+- Zhu Yi (Chuyee)
+
+GnuPG v1.0.6 (GNU/Linux)
+http://cn.geocities.com/chewie_chuyee/gpg.txt or
+$ gpg --keyserver wwwkeys.pgp.net --recv-keys 71C34820
+1024D/71C34820 C939 2B0B FBCE 1D51 109A  55E5 8650 DB90 71C3 4820=20
