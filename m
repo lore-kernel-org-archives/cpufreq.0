@@ -1,10 +1,16 @@
-From: Gregor von Stangen <gvs@pironet-ndh.com>
-Subject: Mobile P4 3.06 GHz / 533 MHz FSB only detected after dirty patch
-Date: Tue, 16 Sep 2003 12:48:13 +0200 (CEST)
+From: AthlonRob <AthlonRob@axpr.net>
+Subject: Re: Pentium IIIM not recognised
+Date: 16 Sep 2003 11:39:44 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.53.0309161216180.1302@linux.local>
+Message-ID: <1063737584.12318.30.camel@localhost>
+References: <16230.17445.337511.852664@gargle.gargle.HOWL>
+	<20030916091302.GO11391@poupinou.org>
+	<16230.57673.292946.375545@gargle.gargle.HOWL>
+	<20030916102630.GQ11391@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+In-Reply-To: <20030916102630.GQ11391@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,84 +20,19 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-Hello,
+On Tue, 2003-09-16 at 03:26, Ducrot Bruno wrote:
 
-my Mobile P4 3.06 Ghz with 533 MHz FSB (Kernel 2.4.22) is only detected
-after applying a dirty patch to function "speedstep_detect_processor" in
-file speedstep-lib.c:
+> Unfortunately, if you have a dell i8k, speedstep-ich will not work.
+> If you don't have such a dell, perhaps it may work.
 
-/*
-                ebx = cpuid_ebx(0x00000001);
-                ebx &= 0x000000FF;
-                if ((ebx != 0x0e) && (ebx != 0x0f))
-                        return 0;
-*/
+Is this documented somewhere... and why, exactly, is that?
 
-After commenting out the above lines, the routine returns P4M as processor
-type and I can load the module speedstep-ich.
+I wondered why my speedstep-ich wasn't working... I guess that's why. 
+:-)
 
-After loading speedstep-ich, a "cat /proc/cpufreq" shows
+The ACPI cpufreq module seems to work, though.
 
-          minimum CPU frequency  -  maximum CPU frequency  -  policy
-CPU  0      1200000 kHz ( 52 %)  -    2300000 kHz (100 %)  -  performance
-
-but "/proc/cpuinfo" shows
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Genuine Intel(R) CPU 3.06GHz
-stepping        : 9
-cpu MHz         : 3056.507
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
-bogomips        : 6094.84
-
-If I set the cpumode to powersave, a "cat /proc/cpufreq" shows
-
-          minimum CPU frequency  -  maximum CPU frequency  -  policy
-CPU  0      1200000 kHz ( 52 %)  -    2300000 kHz (100 %)  -  powersave
-
-and "/proc/cpuinfo" shows
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Genuine Intel(R) CPU 3.06GHz
-stepping        : 9
-cpu MHz         : 1594.699
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
-bogomips        : 3179.92
-
-So it looks like it works perfectly well for me. Anyway, I'm not too firm
-in assembly language programming of the Pentium and the counters from
-cpufreq seem to be broken after this hack. I'm not sure, if I only had
-luck in hacking the driver and I'd like to know, if there might be a
-better fix for my problem.
-
-Best regards,
-
-  Gregor
+Rob
