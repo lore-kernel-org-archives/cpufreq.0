@@ -1,18 +1,17 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Matthew Harrell <mharrell-dated-1105380159.655dad@bittwiddlers.com>
 Subject: Re: found unsupported CPU with Enhanced SpeedStep
-Date: Wed, 5 Jan 2005 18:24:15 +0100
-Message-ID: <20050105172415.GH19199@poupinou.org>
+Date: Wed, 5 Jan 2005 13:02:32 -0500
+Message-ID: <20050105180232.GA29313@bittwiddlers.com>
 References: <20041230014005.GA16358@bittwiddlers.com>
 	<1104446294.24179.1.camel@localhost>
 	<20050102120729.GB23300@dominikbrodowski.de>
 	<20050105160622.GE19199@poupinou.org>
 	<20050105162234.GA18703@bittwiddlers.com>
-Reply-To: Bruno Ducrot <ducrot@poupinou.org>
+	<20050105172415.GH19199@poupinou.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="3siQDZowHQqNOShm"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20050105162234.GA18703@bittwiddlers.com>
+In-Reply-To: <20050105172415.GH19199@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,163 +22,41 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Matthew Harrell <mharrell-dated-1105374160.f5a808@bittwiddlers.com>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: Matthew Harrell <mharrell-dated-1105374160.f5a808@bittwiddlers.com>, cpufreq list <cpufreq@www.linux.org.uk>
 
+: There is four Load statements in the ssdt.  I need to look what tables 
+: are loaded at run time.
+: 
+: Could you please send to me the result of the attached program
+: when HT mode?
 
---3siQDZowHQqNOShm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Well, I ran it as root both with HT turned on and off.  Both times I got this
 
-On Wed, Jan 05, 2005 at 11:22:34AM -0500, Matthew Harrell wrote:
->   http://alecto.bittwiddlers.com/files/inspiron-5160/dmesg
->   http://alecto.bittwiddlers.com/files/inspiron-5160/dmesg-noht
->   http://alecto.bittwiddlers.com/files/inspiron-5160/dsdt.dat
->   http://alecto.bittwiddlers.com/files/inspiron-5160/dsdt.dsl
->   http://alecto.bittwiddlers.com/files/inspiron-5160/ssdt.dat
->   http://alecto.bittwiddlers.com/files/inspiron-5160/ssdt.dsl
-> 
+        CPU0IST  3ffefbe7 277
+        can't decode CPU0IST
+        CPU1IST  3ffefb60 87
+        can't decode CPU1IST
+        CPU0CST  3ffef988 1d8
+        can't decode CPU0IST
+        CPU1CST  3ffef92c 5c
+        can't decode CPU1IST
 
-There is four Load statements in the ssdt.  I need to look what tables 
-are loaded at run time.
+Some other comments about HT mode.  About 50% of the time when HT is turned on
+the bootup sequence will oops and hang somewhere.  I don't know how to get the
+output from the oops since it never gets to a single user shell.  The rest of
+the time it will boot up fine and work in SMP mode.  The frequency scaling
+seems to work fine but I get a lot of these messages in my log
 
-Could you please send to me the result of the attached program
-when HT mode?
+        acpi-cpufreq: Transition failed
 
-CHeers,
+I don't seem to get those when not running with HT on.
+
+Let me know if there is a different program I can run to get those tables
 
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
-
---3siQDZowHQqNOShm
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="retrive_cpus.c"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-
-struct table {
-	char * name;
-	off_t address;
-	ssize_t len;
-};
-
-static struct table tables[] = {
-	{
-		.name = "CPU0IST ",
-		.address = 0x3FFEFBE7,
-		.len = 0x00000277,
-	},
-	{
-		.name = "CPU1IST ",
-		.address = 0x3FFEFB60,
-		.len = 0x00000087,
-	},
-	{
-		.name = "CPU0CST ",
-		.address = 0x3FFEF988,
-		.len = 0x000001D8,
-	},
-	{
-		.name = "CPU1CST ",
-		.address = 0x0x3FFEF92C,
-		.len = 0x0000005C
-	},
-	{
-		.name = NULL,
-		.address = 0,
-		.len = -1
-	},
-};
-
-static int fd;
-
-static int init_sysmem(void)
-{
-	fd = open("/dev/mem", O_RDONLY);
-	return (fd >= 0);
-}
-
-static int exit_sysmem(void)
-{
-	return (close(fd));
-}
-
-static int decode(struct table *t)
-{
-	char *p;
-	int i;
-	ssize_t count;
-
-	if (fd < 0 || !t)
-		return 1;
-
-	printf("%s %lx %x\n", t->name, t->address, t->len);
-
-	if (lseek(fd, t->address, SEEK_SET) != t->address)
-		return 1;
-
-	p = malloc(t->len);
-	if (!p)
-		return 1;
-	
-	count = read(fd, p, t->len);
-	if (count != t->len) {
-		free(p);
-		return 1;
-	}
-
-	for (i = 0; i < t->len; i++) {
-		if ((i % 16) == 0)
-			printf("\n%p: ", p + i);
-		printf("%.2x ", p[i] & 0xff);
-	}
-	printf("\n");
-	
-	free(p);
-	return 0;
-}
-
-
-int main(void)
-{
-	struct table *t;
-
-	fd = -1;
-	if (!init_sysmem()) {
-		fprintf(stderr, "Can't open /dev/mem for read.  Are you root?\n");
-		exit(1);
-	}
-
-	for (t = &tables[0]; t->name; t++) {
-		if (decode(t)) {
-			printf("can't decode %s\n", t->name);
-		}
-	}
-	exit_sysmem();
-
-	return 0;
-}
-
---3siQDZowHQqNOShm
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---3siQDZowHQqNOShm--
-
+  Matthew Harrell                          There are only 10 types of people in
+  Bit Twiddlers, Inc.                       this world: those who understand
+  mharrell@bittwiddlers.com                 binary and those who don't.
