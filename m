@@ -1,11 +1,13 @@
-From: Christophe Couronne <xof@altern.org>
-Subject: speedstep and deep sleep on celeron-M
-Date: Sat, 18 Sep 2004 10:21:49 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: speedstep and deep sleep on celeron-M
+Date: Sat, 18 Sep 2004 23:58:39 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <414BF01D.4000905@altern.org>
+Message-ID: <20040918215839.GA7717@dominikbrodowski.de>
+References: <414BF01D.4000905@altern.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <414BF01D.4000905@altern.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,55 +17,51 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Christophe Couronne <xof@altern.org>
+Cc: cpufreq@www.linux.org.uk
 
-Hi everybody !
+Hi,
 
-I've just bought a new laptop based on a celeron-M processor (an
-IBM thinkpad R51). According to intel, this family of processor doesn't
-support speedstep, which is replaced by another technology called "deep
-sleep". I can't find more information about it.
+> I've just bought a new laptop based on a celeron-M processor (an
+> IBM thinkpad R51). According to intel, this family of processor doesn't
+> support speedstep, which is replaced by another technology called "deep
+> sleep".
 
-I would like to know if the speedstep functionnality can be enabled
-anyway. The celeron-M processor seems to be based on a pentium-M banias
-(same family, same model id, same stepping) and the p4-clockmod module
-can be loaded (but not the speedstep-centrino). In fact, the celeron-M
-seems to be just a pentium-M banias without speedstep (?) and with a=20
-512Ko L2
-memory cache.
+Uh? SpeedStep replaced by "Deep Sleep"? Where did you find that, ehm, joke? 
 
-When the p4-clockmod is enabled, a new /sys entry is created. below is a
-listing of the directory :
+> I would like to know if the speedstep functionnality can be enabled
+> anyway. The celeron-M processor seems to be based on a pentium-M banias
+> (same family, same model id, same stepping)
 
-brasserie:/sys/devices/system/cpu/cpu0/cpufreq# ls -l
-total 0
--r--------  1 root root    0 2004-09-18 05:17 cpuinfo_cur_freq
--r--r--r--  1 root root 4096 2004-09-18 05:16 cpuinfo_max_freq
--r--r--r--  1 root root 4096 2004-09-18 05:16 cpuinfo_min_freq
--r--r--r--  1 root root 4096 2004-09-18 03:12 scaling_available_frequencies
--r--r--r--  1 root root 4096 2004-09-18 05:22 scaling_available_governors
--r--r--r--  1 root root 4096 2004-09-18 05:22 scaling_cur_freq
--r--r--r--  1 root root 4096 2004-09-18 05:22 scaling_driver
--rw-r--r--  1 root root    0 2004-09-18 03:12 scaling_governor
--rw-r--r--  1 root root 4096 2004-09-18 05:22 scaling_max_freq
--rw-r--r--  1 root root 4096 2004-09-18 05:22 scaling_min_freq
+... but with SpeedStep support not present in the CPU, AFAIK. So there's no
+way to enable celeron-M.
 
-The problem is that the scaling_governor is set to "performance" and
-can't be changed, so the processor always runs at his max frequency.
+> and the p4-clockmod module can be loaded (but not the speedstep-centrino).
+... which only offers frequency modulation instead of frequency scaling, so
+it will only save you minimal amounts of battery power. There should be a
+warning (in dmesg) when loading the p4-clockmod module which informs of 
+this fact.
 
-Is there people which have succeeded to enable power management (deep
-sleep or speedstep) on a Celeron-M based laptop?=20
+> The problem is that the scaling_governor is set to "performance" and
+> can't be changed, so the processor always runs at his max frequency.
 
-Thank you for any information.
+you can only change the CPUfreq governor if more than one is loaded. You can
+see which ones are loaded in scaling_available_governors; and you can load,
+for example, the module "cpufreq_userspace" in case you built the userspace
+cpufreq governor as module.
 
-Best regards.
+> Is there people which have succeeded to enable power management (deep
+> sleep or speedstep) on a Celeron-M based laptop? 
 
-   Christophe Couronne.
+Deep Sleep might be supported (depending on the BIOS in your notebook) by
+the ACPI processor subsystem. It's a form of "idling" which is enabled when
+the CPU has nothing to do, and may be C-State 3. For more information on
+that, check the current ACPI processor information at http://acpi.sf.net;
+also bug #1958 at bugzilla.kernel.org may be of interest as it can enable
+more C-States. However, it depends on the BIOS which CPU Power State (Deep
+Sleep is one of them) is enabled as what C-State. It has nothing to do with
+CPUfreq, though.
 
---=20
-Christophe Couronne=20
-xof@[phplop|calvix|altern].org
-
-* phplop.org - yet another php tribioune !
-* E =3D MC=B2 <=3D> WE =3D WMC=B2 <=3D> Le Week-end, je moule !
+	Dominik
