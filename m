@@ -1,8 +1,8 @@
 From: bugme-daemon@osdl.org
 Subject: [Bug 3144] modprobe speedstep-smi fails
-Date: Mon, 2 Aug 2004 12:05:18 -0700
+Date: Mon, 2 Aug 2004 12:04:21 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408021905.i72J5IMB012551@fire-1.osdl.org>
+Message-ID: <200408021904.i72J4LxF012394@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,23 +24,11 @@ http://bugme.osdl.org/show_bug.cgi?id=3144
 
 
 
-------- Additional Comments From schwientek@web.de  2004-08-02 12:05 -------
-Attached /proc/cpuinfo.  If I trie to load speedstep-smi dmesg tells the  
-following two lines:  
-cpufreq: Coppermine: MSR_IA32_EBL_CR_POWERON is 0x4c080020, 0x0  
-cpufreq: Coppermine: MSR_IA32_PLATFORM ID is 0x0, 0x5d0000  
-  
-I have also tried "paparoots" suggestion, with more success:  
-  
-I can change dynamically (either via speedstep, or manually) the  
-frequencie. /proc/cpuinfo shows the correct values later.  
-/var/log/messages or dmesg shows no error.  
-I think, the "performance mode works also ok.  
-However, a small problem remains:  
-If I set the speed to "powersave" mode, the drivers    choose the same speed  
-as for the performance mode.   
-  
-Steffen  
+------- Additional Comments From schwientek@web.de  2004-08-02 12:04 -------
+Created an attachment (id=3458)
+ --> (http://bugme.osdl.org/attachment.cgi?id=3458&action=view)
+/proc/cpuinfo
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
