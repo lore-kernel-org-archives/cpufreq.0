@@ -1,11 +1,16 @@
-From: paul.devriendt@amd.com
-Subject: RE: [PATCH] BUGFIX for powernow-k8
-Date: Tue, 4 Nov 2003 11:29:15 -0600
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: CPUFreq dynamic speed governor, take 2.
+Date: Tue, 4 Nov 2003 19:18:31 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <99F2150714F93F448942F9A9F112634C080EF215@txexmtae.amd.com>
+Message-ID: <20031104181831.GT21970@poupinou.org>
+References: <88056F38E9E48644A0F562A38C64FB600779D0@scsmsx403.sc.intel.com>
+	<20031103222510.GB3895@brodo.de>
+	<20031104102426.GH21970@poupinou.org>
+	<20031104134246.GA4536@brodo.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20031104134246.GA4536@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,49 +21,40 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: linux@brodo.de, davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, mark.langsdorf@amd.com
+Content-Transfer-Encoding: 7bit
+To: Dominik Brodowski <linux@brodo.de>
+Cc: Jon Anderson <janderson@janderson.ca>, cpufreq@www.linux.org.uk
 
-Ok, thanks Dominik. I am intending to fix the policy stuff to use
-the callbacks in the next major rev of the driver, which I am hoping 
-to get out in December. Paul.
+On Tue, Nov 04, 2003 at 02:42:46PM +0100, Dominik Brodowski wrote:
+> On Tue, Nov 04, 2003 at 11:24:26AM +0100, Ducrot Bruno wrote:
+> > > What about +/- 5 % of cpuinfo->max_freq? or +/- 10 % of (policy->max_freq -
+> > > policy->min_freq). I think the governor does not need to know of supported
+> > > frequencies: the governor says "I need at least n % of processing 
+> > > power" == "I need m bogomips of processing power" == (o, CPUFREQ_RELATION_L)
+> > > or it says "I need no more than..." == (o, CPUFREQ_RELATION_H)
+> > > 
+> > 
+> > Most of the demand based stuff I see seems to need more "I need to 
+> > go up/down one step."  I am not sure that it is a bad design.
+> 
+> What if there are thousand steps, or even more [like for the geode driver]?
+> Then this approach is badly broken.
 
-> -----Original Message-----
-> From: Dominik Brodowski [mailto:linux@brodo.de]
-> Sent: Tuesday, November 04, 2003 8:51 AM
-> To: davej@codemonkey.org.uk; Devriendt, Paul; cpufreq@www.linux.org.uk
-> Subject: [PATCH] BUGFIX for powernow-k8
+that unrelated, but this driver is using the frequency table helper, correct?
+
+> > Or else, you loose probably the speedstep stuff for example (something
+> > like go up 10%, not enough, go up 10%, etc.).
 > 
+> You might miss some intermediate steps if you select a too large interval
+> here. However, there are other algorithms which calculate a "needed CPU
+> percentage" directly, and they won't miss any speedstep state.
 > 
-> Hi Dave, Paul,
-> 
-> Here is an important bugfix for powernow-k8.c in its current form
-> (2.6.0-test9).
-> 
-> Problem description:
-> As the powernow-k8 driver uses the ->target and not the 
-> ->setpolicy callback, cpufreq_policy->policy is always zero. 
-> Checking for it
-> in the powernow-k8 driver always returned "false". So we can 
-> easily remove
-> this invalid check (and the #warning added to denote this).
-> 
-> diff -ruN 
-> linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c 
-> linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-> --- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	
-> 2003-11-04 15:27:33.609957704 +0100
-> +++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	
-> 2003-11-04 15:39:36.410075384 +0100
-> @@ -935,10 +935,8 @@
->  		return -ENODEV;
->  	}
->  
-> -#warning pol->policy is in undefined state here
->  	res = find_match(&targ, &min, &max,
-> -			 pol->policy == CPUFREQ_POLICY_POWERSAVE ?
-> -			 SEARCH_DOWN : SEARCH_UP, 0, 0);
-> +			 SEARCH_DOWN, 0, 0);
->  	if (!res) {
->  		pol->min = min * 1000;
->  		pol->max = max * 1000;
-> 
+
+
+I forgot the CPUFREQ_RELATION_[LH], sorry.
+
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
