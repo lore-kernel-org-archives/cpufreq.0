@@ -1,15 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: cpufreq doesn't keep over suspend/resume
-Date: Tue, 15 Jun 2004 07:10:33 +0200
+From: Harald Milz <milz@seneca.muc.de>
+Subject: Re: [PATCH] powernow-k7: Userspace PST for Athlon XP-M on
+	desktop	boards
+Date: Tue, 15 Jun 2004 08:04:54 +0200 (CEST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040615051033.GB5118@dominikbrodowski.de>
-References: <20040614191225.GA1463@fog.sekrit.org>
-	<20040614202539.GA10796@dominikbrodowski.de>
-	<20040615013242.GA13338@fog.sekrit.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1478715295=="
+Message-ID: <20040615060454.9AED14BAAD@nathan.muc.de>
+References: <20040614211726.905A94BAAB@nathan.muc.de>
+	<20040614214803.GA17747@dominikbrodowski.de>
+	<1087253151.4456.11.camel@delerium.codemonkey.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040615013242.GA13338@fog.sekrit.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,102 +17,34 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Gerald Britton <gbritton@alum.mit.edu>
-Cc: cpufreq@www.linux.org.uk
-
-
---===============1478715295==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
-Content-Disposition: inline
-
-
---7iMSBzlTiPOCCT2k
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jun 14, 2004 at 09:32:42PM -0400, Gerald Britton wrote:
-> On Mon, Jun 14, 2004 at 10:25:39PM +0200, Dominik Brodowski wrote:
-> > Hi!
-> >=20
-> > On Mon, Jun 14, 2004 at 03:12:25PM -0400, Gerald Britton wrote:
-> > > Warning: CPU frequency out of sync: cpufreq and timing core thinks of
-> > > 600000, is 1600000 kHz.
-> > >=20
-> > > Also, this warning is somewhat confusing since "of" appears to refer =
-to
-> > > "old_freq" rather than actually being a use of the word "of" so it wa=
-sn't
-> > > entirely clear what it was trying to say at first.
-> >=20
-> > As you seem to be a "native speaker": how should we rephrase this messa=
-ge so
-> > it is clear what it is trying to say?
->=20
-> "actual cpu speed 1600000 kHz, cpufreq assumed 600000 kHz" perhaps, I'm n=
-ot
-> sure there's a good concise way to word this.  This is likely a normal st=
-ate
-> on resume though, so screaming about a warning might not be the right sol=
-ution
-> here.
-
-Normal but broken, and it definitely needs a warning. In fact, some cpufreq
-drivers on some architectures will even _panic_ on such an event. However,
-the amount of such warnings will likely be reduced once the pstate_cnt patch
-I posted yesterday on this and the acpi-devel lists is merged.
-
-> # cat scaling_cur_freq scaling_max_freq scaling_min_freq scaling_setspeed
-> 600000
-> 600000
-> 600000
-> 600000
-> # grep 'cpu MHz' < /proc/cpuinfo
-> cpu MHz         : 598.244
->=20
-> After resume:
->=20
-> # cat scaling_cur_freq scaling_max_freq scaling_min_freq scaling_setspeed
-> 600000
-> 600000
-> 600000
-> 600000
-> # grep 'cpu MHz' < /proc/cpuinfo
-> cpu MHz         : 1595.318
->=20
-> I was examining the value in /proc/cpuinfo on resume and noticing the
-> difference.
-=2E.. and this constitutes a BUG. Will investigate.
-
-Thanks,
-	Dominik
-
---7iMSBzlTiPOCCT2k
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAzoTJZ8MDCHJbN8YRAi+LAKCfkXLhEpFQN0XplJCQUSSBqMOSBQCfdwV2
-7eBTh8kX9gkKyBqEd9ElvqE=
-=audI
------END PGP SIGNATURE-----
-
---7iMSBzlTiPOCCT2k--
-
-
---===============1478715295==
-Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Dave Jones <davej@redhat.com> wrote:
+> What's the general consensus on this ? It seems to be an ugly hack for a
+> minority of users, who seem able to recompile their kernel with a
+> hardwired table.  Maybe it sounds a little elitist, but if someone
 
---===============1478715295==--
+Oh no it's not about a hardwired table. This is why I chose the command
+line approach. The goal is to have this in the main distribution so that
+nobody needs to recompile a kernel. 
 
+> can't compile their kernel, should we make it easier to allow them to
+> potentially do bad things to their processor ?
+
+As far as I can see you can't do bad things to your CPU. The module will
+not set the multiplier above what the CPU thinks is okay. So no
+overclocking is possible with the current code. But hey, it's open source.
+You can override anything within the module, even the CPU's perception of
+maxfid. You can't keep people from jumping out of a window ... 
+
+I am not sure about the "minority" -- I keep hearing many Athlon XP-M
+notebooks have broken BIOSes. At the moment these folks can't really use
+powernow-k7 anyway - and for whom else is the module? 
+
+Has anyone got Bruno's patch? 
+
+-- 
+A penny saved is ridiculous.
