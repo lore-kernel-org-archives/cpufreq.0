@@ -1,12 +1,14 @@
-From: Zwane Mwaikambo <zwane@linuxpower.ca>
-Subject: RE: [PATCH] cpufreq: 1/4 SMT awareness: save cpumask_t cpus
-Date: Fri, 20 Aug 2004 01:35:10 -0400 (EDT)
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Another mobile stepping - speedstep works fine
+Date: Fri, 20 Aug 2004 12:21:25 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
-References: <88056F38E9E48644A0F562A38C64FB6002A3B8F0@scsmsx403.amr.corp.intel.com>
+Message-ID: <1093029685.25283.12.camel@localhost>
+References: <20040820093344.GA2923@akamail.com>
+	<1093008540.30854.37.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-ABRXYyx97hYzjTJrxAku"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6002A3B8F0@scsmsx403.amr.corp.intel.com>
+In-Reply-To: <1093008540.30854.37.camel@localhost.localdomain>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,30 +18,73 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq list <cpufreq@www.linux.org.uk>
+
+
+--=-ABRXYyx97hYzjTJrxAku
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
-Hi Venkatesh,
+On Fri, 2004-08-20 at 14:29 +0100, Alan Cox wrote:
+> I just added the stepping and ran some testing. Its been running with
+> cpuspeed daemon for a day now and seems fine.
 
-On Wed, 18 Aug 2004, Pallipadi, Venkatesh wrote:
+Thanks.  The driver looks a bit different now, so I've recast the patch.
 
-> 2) Or leave the synchronization overhead to the policy governor.
-> Driver only says a set of CPUs will be affected by the change.
-> It is the responsibility of the governor to take care of
-> SMT synchronization and preventing one CPU slowing down all
-> the other ones. Governor should only write only when all dependent
-> CPUs are idle.
->
-> I think Dominik is thinking of option 2.
-> I see advantages in option 2 as governor can do the synchronization
-> at one place, instead of that being done in each low level driver.
-> But, having said that, with option 2, a dumb governor may not do
-> proper synchronization at all.
-
-Indeed, it 2 would make the most sense especially since we have the
-topology information. I'll generate and test a patch as soon as i can.
+David, could you put this in your tree?
 
 Thanks,
-	Zwane
+	J
+
+--=-ABRXYyx97hYzjTJrxAku
+Content-Disposition: attachment; filename=sc-ac-dothan-a2.patch
+Content-Type: text/x-patch; name=sc-ac-dothan-a2.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+ arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    3 +++
+ 1 files changed, 3 insertions(+)
+
+diff -puN arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~sc-ac-dothan-a2 arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+--- local-2.6/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~sc-ac-dothan-a2	2004-08-20 09:45:21.358254383 -0700
++++ local-2.6-jeremy/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-08-20 09:45:57.315356194 -0700
+@@ -53,12 +53,14 @@ struct cpu_id
+ enum {
+ 	CPU_BANIAS,
+ 	CPU_DOTHAN_A1,
++	CPU_DOTHAN_A2,
+ 	CPU_DOTHAN_B0,
+ };
+ 
+ static const struct cpu_id cpu_ids[] = {
+ 	[CPU_BANIAS]	= { 6,  9, 5 },
+ 	[CPU_DOTHAN_A1]	= { 6, 13, 1 },
++	[CPU_DOTHAN_A2]	= { 6, 13, 2 },
+ 	[CPU_DOTHAN_B0]	= { 6, 13, 6 },
+ };
+ #define N_IDS	(sizeof(cpu_ids)/sizeof(cpu_ids[0]))
+@@ -221,6 +223,7 @@ static struct cpu_model models[] =
+ 
+ 	/* NULL model_name is a wildcard */
+ 	{ &cpu_ids[CPU_DOTHAN_A1], NULL, 0, NULL },
++	{ &cpu_ids[CPU_DOTHAN_A2], NULL, 0, NULL },
+ 	{ &cpu_ids[CPU_DOTHAN_B0], NULL, 0, NULL },
+ 
+ 	{ NULL, }
+
+_
+
+--=-ABRXYyx97hYzjTJrxAku
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--=-ABRXYyx97hYzjTJrxAku--
+
+
