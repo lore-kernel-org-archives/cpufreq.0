@@ -1,8 +1,8 @@
-From: olgaAr <olgaAr@fuckup.homelinux.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: Help! Cpufreq makes my laptop crash!
-Date: Thu, 15 Jul 2004 16:17:38 +0200
+Date: Thu, 15 Jul 2004 16:19:04 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <40F69202.8030508@fuckup.homelinux.com>
+Message-ID: <20040715141904.GQ6326@poupinou.org>
 References: <40F549D5.8030100@fuckup.homelinux.com>
 	<20040714115717.4gsocksks0s8o4wc@carlthompson.net>
 	<40F58B6C.60606@fuckup.homelinux.com>
@@ -11,8 +11,8 @@ References: <40F549D5.8030100@fuckup.homelinux.com>
 	<40F68E0D.8000307@fuckup.homelinux.com>
 	<20040715140507.GP6326@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
 In-Reply-To: <20040715140507.GP6326@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -23,16 +23,32 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Bruno Ducrot <ducrot@poupinou.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: olgaAr <olgaAr@fuckup.homelinux.com>
 Cc: cpufreq@www.linux.org.uk
 
-Hi,
+On Thu, Jul 15, 2004 at 04:05:07PM +0200, Bruno Ducrot wrote:
+> On Thu, Jul 15, 2004 at 04:00:45PM +0200, olgaAr wrote:
+> > Hi Carl, hi Bruno,
+> > 
+> > I am not quite sure about how to help you. "Testing without the ACPI 
+> > processor support" - do you mean CONFIG_X86_ACPI_CPUFREQ by that? Or do 
+> > you refer to CONFIG_ACPI_PROCESSOR?
+> 
+> CONFIG_ACPI_PROCESSOR
+> I was talking about the ACPI idle loop stuff, not frequency change in
+> fact.
 
-Having tried Carl's cpuspeed, I have to regret it didn't help any 
-further. My lappie crashed just as it did with speedfreq before...
-So next thing I'm going to do is compiling a new kernel without 
-CONFIG_ACPI_PROCESSOR. Hope that helps...
+Compile it as a module in fact, then 'modprobe processor' after your
+testings (or after 30 minutes).
+A mobile AMD athlon XP without the ACPI idle loop could potentially
+overheat fast...
 
 Cheers,
-Oliver
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
