@@ -1,18 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Shell script to select the right cpufreq module?
-Date: Thu, 1 Apr 2004 13:48:10 +0100
+From: Colin Marquardt <colin@marquardt-home.de>
+Subject: Re: Need output of 'cat /proc/cpuinfo' from everyone
+Date: Thu, 01 Apr 2004 00:25:17 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040401124810.GA32536@redhat.com>
-References: <4069CA25.2080806@free.fr>
-	<20040330203109.GA7141@dominikbrodowski.de>
-	<20040331073455.q797owk8kwogcccw@carlthompson.net>
-	<20040331154400.GA32308@dominikbrodowski.de>
-	<20040331155938.GF25834@redhat.com>
-	<20040331205256.y2gjkw0404swwk84@carlthompson.net>
+Message-ID: <msgidspam.87n05wk62a.fsf@schnee.marquardt-home.de>
+References: <20040331073444.yemrooko0owwc088@carlthompson.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040331205256.y2gjkw0404swwk84@carlthompson.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -24,21 +17,49 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Carl Thompson <cet@carlthompson.net>
-Cc: cpufreq mailing list <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-On Wed, Mar 31, 2004 at 08:52:56PM -0800, Carl Thompson wrote:
+Carl Thompson <cet@carlthompson.net> writes:
 
- > > > > Fedora Core 2 does not seem to even include the
- > > > > speedstep-ich driver.
- > > > OOOOPS. Dave?
- > >
- > >A grep shows..
- > >CONFIG_X86_SPEEDSTEP_ICH=y
- > >
- > Well, if the module name is supposed to be "speedstep-ich.ko" then I'm
- > not seeing it installed anywhere...
+>      I am compiling information on the different models of CPUs, the
+> cpufreq drivers they use and their power management support.  Everyone,
+> please send me the following information for every machine you can get
+> your hands on:
+>
+> 1. Output of 'cat /proc/cpuinfo'
 
-=y means non-modular. It's compiled in.
+$ cat /proc/cpuinfo
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 4
+model name	: AMD Athlon(tm) 64 Processor 3200+
+stepping	: 8
+cpu MHz		: 797.991
+cache size	: 1024 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 1
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall mmxext lm 3dnowext 3dnow
+bogomips	: 1579.41
 
-		Dave
+> 2. Whether it has a desktop or mobile processor (if you know)
+
+Desktop.
+
+> 3. Full name of processor (if you know, ex: 'AMD Mobile Athlon
+> 2200+')
+
+Model name above is correct.
+
+> 4. What cpufreq driver works best with the processor (if you know)
+
+Using powernow-k8 from kernel 2.6.4 at the moment.
+
+Cheers,
+  Colin
