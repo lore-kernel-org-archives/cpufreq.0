@@ -1,14 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] cpufreq: 1/4 SMT awareness: save cpumask_t cpus
-Date: Sun, 29 Aug 2004 15:01:34 +0200
+Subject: Re: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
+Date: Sun, 29 Aug 2004 14:49:36 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040829130134.GC17032@dominikbrodowski.de>
-References: <88056F38E9E48644A0F562A38C64FB6002A3B8F0@scsmsx403.amr.corp.intel.com>
-	<Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
+Message-ID: <20040829124936.GA16770@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,36 +17,50 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Zwane Mwaikambo <zwane@linuxpower.ca>
-Cc: davej@redhat.com, cpufreq@www.linux.org.uk
+To: rmk@arm.linux.org.uk, cpufreq@www.linux.org.uk
 
-On Fri, Aug 20, 2004 at 01:35:10AM -0400, Zwane Mwaikambo wrote:
-> Hi Venkatesh,
-> 
-> On Wed, 18 Aug 2004, Pallipadi, Venkatesh wrote:
-> 
-> > 2) Or leave the synchronization overhead to the policy governor.
-> > Driver only says a set of CPUs will be affected by the change.
-> > It is the responsibility of the governor to take care of
-> > SMT synchronization and preventing one CPU slowing down all
-> > the other ones. Governor should only write only when all dependent
-> > CPUs are idle.
-> >
-> > I think Dominik is thinking of option 2.
-> > I see advantages in option 2 as governor can do the synchronization
-> > at one place, instead of that being done in each low level driver.
-> > But, having said that, with option 2, a dumb governor may not do
-> > proper synchronization at all.
-> 
-> Indeed, it 2 would make the most sense especially since we have the
-> topology information. I'll generate and test a patch as soon as i can.
+> >  static struct cpufreq_driver sa1110_driver = {
+> > +	.flags		= CPUFREQ_STICKY |
+> > +			  CPUFREQ_PANIC_OUTOFSYNC | 		<<<<
+> > +			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,	<<<<
+>
+> Erm, _why_ ?
+>
+> This makes very little sense.  If you put the system to sleep at
+> 147MHz and it normally boots at 206.4MHz, you'll resume at 206.4MHz.
 
-Actually, I do favor "2" by large, and there simply may not be "dumb"
-governors once we propagate the SMT awareness to the cpufreq core. Zwane,
-are you aware of my current patch set which aims at the same direction? IIRC
-[and my memory might be a bit off after a long vacation], it mostly needs
-work from the "governor" perspective -- and testing. Don't have hardware
-here...
+I added PANIC_OUTOFSYNC because of the following concern: if the CPU 
+clock is different from what the kernel thinks it is, the RAM and LCD
+and PCMCIA and ... timings might be horribly broken, so better bail out as
+soon as this critical state is detetected.
 
-Thanks,
+With regard to PANIC_RESUME_OUTOFSYNC:
+
+> It's up to the kernel to reset the clock rate itself.  This is nothing
+> new - cpufreq has always done this, so why are we adding this new
+> restriction?
+
+cpufreq still does this. However not during sysdev-resume state [because
+notifiers can sleep], but later. This means the problematic discrepancy (see
+above) is there, just for a short period of time. If you think it isn't an
+issue, Bruno's patch to remove both flags is perfectly valid, otherwise
+these flags do make some sense.
+
+> And to follow that up, yes, I missed it back in June when I added
+> the CPUFREQ_STICKY here.  However, I was completely unaware that
+> this change had been made back in May 2004.
+>
+> Can we please route changes to architecture files via the architecture
+> people _before_ merging them.  Pretty please?
+
+Not sending this patch to you for discussion was an oversight, and I
+apologize for not having done so. After the first patch series [April 11th]
+didn't generate negative feedback, I -- incorrectly -- assumed everything
+was in order and asked Dave to merge.
+ 
 	Dominik
+
+
+NB: sorry for the out-of-thread reply. Delivery of cpufreq list e-mail to my
+address stopped during a vacation because my ISP bounced too much (spam)
+mail.
