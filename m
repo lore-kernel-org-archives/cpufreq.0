@@ -1,10 +1,9 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
+From: Wouter Verhelst <wouter@grep.be>
 Subject: Re: p4-clockmod doesn't seem to allow the highest possible speed
-Date: Sun, 11 Jan 2004 21:06:18 +0100
+Date: Sun, 11 Jan 2004 21:24:50 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040111200617.GA25713@dominikbrodowski.de>
-References: <20040110101534.GA10003@dominikbrodowski.de>
-	<20040110110800.GA8294@grep.be>
+Message-ID: <20040111202450.GB25048@grep.be>
+References: <20040110110800.GA8294@grep.be>
 	<20040110131824.GA5010@dominikbrodowski.de>
 	<20040110152145.GA10160@grep.be>
 	<20040110154110.GA8735@dominikbrodowski.de>
@@ -13,10 +12,11 @@ References: <20040110101534.GA10003@dominikbrodowski.de>
 	<20040110193526.GM10531@grep.be>
 	<20040111173547.GB5485@dominikbrodowski.de>
 	<20040111195619.GA25048@grep.be>
+	<20040111200617.GA25713@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============44678247972321161=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20040111195619.GA25048@grep.be>
+Content-Disposition: inline
+In-Reply-To: <20040111200617.GA25713@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -26,98 +26,37 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: Wouter Verhelst <wouter@grep.be>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
-
-
---===============44678247972321161==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
-Content-Disposition: inline
-
-
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, Jan 11, 2004 at 08:56:19PM +0100, Wouter Verhelst wrote:
-> On Sun, Jan 11, 2004 at 06:35:47PM +0100, Dominik Brodowski wrote:
-> > On Sat, Jan 10, 2004 at 08:35:26PM +0100, Wouter Verhelst wrote:
-> > > That happens both when it's in P0 or P1.
-> >=20
-> > So ACPI works to set the processor in P0 and P1?
->=20
-> Yes.
-
-Excellent.
->=20
-> > If so, you really really should use the ACPI cpufreq driver instead of
-> > the p4-clockmod driver. The former will offer you true "SpeedStep"
-> > support, the latter only some clock modulation which won't save you
-> > much energy as ACPI supports the C2 idle state anyway.=20
->=20
-> Ah, so what p4-clockmod does is not SpeedStep?
->=20
-> Hm. That sucks.
-
-No. p4-clockmod stops the CPU for certain short periods of time, it
-"modulates" the CPU frequency.=20
-
-------------------> time  axis
-
-x x x x x x x x x   normal clock ticks
-x x x x - - - - x   50 % frequency modulation [ACPI T-States or P4-clockmod]
-x  x  x  x  x  x    frequency scaling     [ACPI P-States]
-
-Only if the frequency is scaled, the voltage can be scaled also. So only
-that offers the best reduction of energy usage. For details, check the
-cpufreq archives for a lengthy thread with many calculations...
-
-> > > Not that it matters -- p4-clockmod seems to do it right :)
-> >=20
-> > It's not as noisy, indeed. But it's not right -- as long as acpi.ko wor=
-ks.
->=20
-> It mostly does, although I've had lockups when using the /proc interface
-> to switch CPU frequencies -- yes, should've reported that, but I only
-> now remember :)
-
-The /proc/ interface is deprecated, and the acpi module is full of errors
-[I'm working on it, though...]. You should use the /sys-fs interface with
-the acpi.ko module as well.
-
-> That does not change.
-
-Very strange... I'm out of ideas for the moment being.
-
-	Dominik
-
---9jxsPFA5p3P2qPhR
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAAay5Z8MDCHJbN8YRAho5AKCDDZh8RdJts9Cab4d3DHu+GiO+bgCfULwD
-4/5LqBZHowP/jwiRRTLq3/s=
-=gbkE
------END PGP SIGNATURE-----
-
---9jxsPFA5p3P2qPhR--
-
-
---===============44678247972321161==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+On Sun, Jan 11, 2004 at 09:06:18PM +0100, Dominik Brodowski wrote:
+> On Sun, Jan 11, 2004 at 08:56:19PM +0100, Wouter Verhelst wrote:
+> > It mostly does, although I've had lockups when using the /proc interface
+> > to switch CPU frequencies -- yes, should've reported that, but I only
+> > now remember :)
+> 
+> The /proc/ interface is deprecated,
 
---===============44678247972321161==--
+Yes, I know. In fact, it being deprecated is the reason I started
+playing with p4-clockmod in the first place :)
 
+> and the acpi module is full of errors [I'm working on it, though...].
+> You should use the /sys-fs interface with the acpi.ko module as well.
+> 
+> > That does not change.
+> 
+> Very strange... I'm out of ideas for the moment being.
+
+I'm more and more convinced it's got something to do with cpufreqd. I
+shut it down yesterday for about an hour, and nothing happened. Then I
+restarted it, and -surprise- less than a minute later, the CPU was
+throttled below the maximum speed.
+
+-- 
+Wouter Verhelst
+Debian GNU/Linux -- http://www.debian.org
+Nederlandstalige Linux-documentatie -- http://nl.linux.org
+"Stop breathing down my neck." "My breathing is merely a simulation."
+"So is my neck, stop it anyway!"
+  -- Voyager's EMH versus the Prometheus' EMH, stardate 51462.
