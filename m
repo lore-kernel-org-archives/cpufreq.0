@@ -1,16 +1,13 @@
-From: Alexander Bokovoy <ab@altlinux.org>
-Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Wed, 22 Oct 2003 00:11:19 +0300
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates toACPIP-state
+	driver
+Date: Tue, 21 Oct 2003 14:22:44 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031021211119.GE3133@sam-solutions.net>
-References: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
-	<yw1xbrsaeu44.fsf@kth.se> <20031021203037.GB3133@sam-solutions.net>
-	<yw1xoewaiavf.fsf@kth.se>
+Message-ID: <7F740D512C7C1046AB53446D3720017304B038@scsmsx402.sc.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <yw1xoewaiavf.fsf@kth.se>
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,77 +18,56 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: M?ns Rullg?rd <mru@kth.se>
-Cc: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
+To: Carl Thompson <cet@carlthompson.net>
+Cc: cpufreq@www.linux.org.uk, linux-acpi <linux-acpi@intel.com>, "Mallick,
+	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 
-On Tue, Oct 21, 2003 at 10:39:16PM +0200, M?ns Rullg?rd wrote:
-> Alexander Bokovoy <ab@altlinux.org> writes:
-> 
-> >> > Most of the latest CPUs (laptop CPUs in particular) have feature 
-> >> > which enable very low latency P-state transitions 
-> >> > (like Enhanced Speedstep Technology-EST). Using this feature, 
-> >> > we can have a lightweight in kernel cpufreq governor, 
-> >> > to vary CPU frequency depending on the CPU usage. The 
-> >> > advantage being low power consumption and also cooler laptops.
-> >> 
-> >> So, I took this thing for a spin, but it didn't work at all.  I loaded
-> >> the module, and did "echo demandbased > /sys/.../scaling_governor".
-> >> This echo never returned, and the keyboard locked up.  After a little
-> >> while, the fan started running at full speed.  I managed to cut and
-> >> paste into an xterm and start top, which showed nothing unusual.  I
-> >> could shut down and reboot normally.
-> > I applied these patches to stock 2.6.0-test8 and selected 'demandbased' as
-> > default governor. In result, everything worked from the very beginning, my
-> > Centrino-based system went to 600MHz and was upping when load was going
-> > higher during compilation or disk access but went down when load was
-> > lowering. So it works well for me.
-> 
-> What's your /proc/cpuinfo?  Mine says
-> 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 2
-> model name	: Mobile Intel(R) Pentium(R) 4 - M CPU 1.80GHz
-> stepping	: 7
-> cpu MHz		: 2069.912
-> cache size	: 512 KB
-> fdiv_bug	: no
-> hlt_bug		: no
-> f00f_bug	: no
-> coma_bug	: no
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 2
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-> bogomips	: 4087.80
-As I said, it is Centrino-based, with 1.3GHz Pentium M:
+> > It's about the frequency of the feedback loop. As we have much lower
+> > latency with P-state transitions, the sampling time can be order of
+> > millisecond (or shorter if meaningful). A userland daemon can have a
+> > high-level policy (preferences, or set of parameters), but it cannot
+be
+> > part of the real feedback loop. If we combine P-state transitions
+and
+> > deeper C-state transitions, the situation is worse with a userland
+> > daemon.
+>=20
+> You are making the assumption that a higher polling frequency (we'll
+say
+> 1ms) is in general better than a lower frequency (we'll say 1s).  I
+submit
+> that it is not.
+>=20
+> If I hit a key on my keyboard and your high frequency loop increases
+CPU
+> speed so that my word processor displays the letter 0.01s faster, is
+that
+> really beneficial?  If a window renders in 0.2s seconds instead of
+0.3s is
+> that a difference I am going to notice?
+Then you can put the CPU in C-state or lower P-state after (or even
+during) your word processor displays the letter. Even you can type very
+fast, the CPU is almost idle. Having frequent feedbacks simply provide
+more chances to save power consumption. Then aggregate saving would make
+a difference. In addition, penalty of making a wrong decision is cheap.
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 9
-model name	: Intel(R) Pentium(R) M processor 1300MHz
-stepping	: 5
-cpu MHz		: 597.592
-cache size	: 1024 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 tm
-bogomips	: 1192.75
+>=20
+> On the other hand, if I do a kernel compile and it is done 0.999s
+faster
+> with the higher frequency loop, am I going to miss that second over
+such a
+> long duration?  (In reality, the compile with the high-frequency loop
+> would
+> probably take longer unless it has near zero overhead).
+Even if you build a kernel, there are many opportunities for the CPU to
+save power consumption without causing visible performance regression.
 
-Note the current CPU MHz sticking to ~600 -- it is cpufreq's result.
-
--- 
-/ Alexander Bokovoy
-Samba Team                      http://www.samba.org/
-ALT Linux Team                  http://www.altlinux.org/
-Midgard Project Ry              http://www.midgard-project.org/
+>=20
+> In my opinion it is wasteful to increase CPU speed unless there is a
+> longer
+> term need for it.
+>=20
+> > 	Jun
+>=20
+> Carl Thompson
+>=20
