@@ -1,13 +1,16 @@
-From: Colin Marquardt <colin@marquardt-home.de>
-Subject: Re: 2.6.3-rc3: "powernow-k8: fid 0 invalid : 0x0"
-Date: Tue, 24 Feb 2004 22:59:55 +0100
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [ACPI] [PATCH 1/2] 2.6: use scaling_available_freqs in
+	acpi-cpufreq-ioport driver
+Date: Tue, 24 Feb 2004 23:16:42 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <msgidspam.8765dwi1es.fsf@schnee.marquardt-home.de>
-References: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de>
+Message-ID: <20040224221642.GB9145@elf.ucw.cz>
+References: <20040220083149.GA10215@dominikbrodowski.de>
+	<20040224125628.GA438@elf.ucw.cz>
+	<20040224210040.GA8166@dreamcraft.com.au>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de> (Colin
-	Marquardt's message of "Tue, 24 Feb 2004 00:16:56 +0100")
+Content-Disposition: inline
+In-Reply-To: <20040224210040.GA8166@dreamcraft.com.au>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,25 +22,18 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Tomasz Ciolek <tmc@dreamcraft.com.au>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-Colin Marquardt <colin@marquardt-home.de> writes:
+Hi!
 
-> powernow-k8: Found AMD64 processor supporting PowerNow (version 1.00.08a)
-> powernow-k8: voltage stable in 100 usec, ramp voltage offset: 2, isochronous relief time: 3, maximum voltage step: 0
-> powernow-k8: pll lock time: 0x2, maxfid 0xc (2000 MHz), maxvid 0x0
-> powernow-k8: fid 0 invalid : 0x0
->
-> Everything under /sys/devices/system/cpu/cpu0/ is empty.
+>  have a loook at the "userpace frequency governer" under 2.6.x 
 
-Same with 2.6.3 proper :/
+That's not the same. frequency governor can select frequency *from the
+set provided by BIOS*. I want to override frequency/voltage table from
+bios.
 
-I also get
-
-apm: BIOS version 1.2 Flags 0x07 (Driver version 1.16ac)
-apm: overridden by ACPI.
-
-Maybe ACPI is somehow disturbing it?
-
-Cheers,
-  Colin
+								Pavel
+-- 
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
