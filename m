@@ -1,12 +1,9 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: 2.4 patch and powernow-k8
-Date: Fri, 3 Dec 2004 10:09:55 +0100
-Message-ID: <20041203090955.GC9288@dominikbrodowski.de>
-References: <41AF938B.4080204@danhartman.org>
-Mime-Version: 1.0
+From: bugme-daemon@osdl.org
+Subject: [Bug 3855] New: Powernow-k8 doesn't work with 90nm Athlon64@939pin
+	(Winchester)
+Date: Fri, 3 Dec 2004 06:52:47 -0800
+Message-ID: <200412031452.iB3Eql8Z031779@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <41AF938B.4080204@danhartman.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,49 +14,83 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: omv <omv@danhartman.org>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Thu, Dec 02, 2004 at 02:13:31PM -0800, omv wrote:
-> make[1]: Leaving directory `/usr/src/linux-2.4.28/arch/i386/lib'
-> ld -m elf_i386 -T /usr/src/linux-2.4.28/arch/i386/vmlinux.lds -e stext 
-> arch/i386/kernel/head.o arch/i386/kernel/init_task.o init/main.o 
-> init/version.o init/do_mounts.o \
->        --start-group \
->        arch/i386/kernel/kernel.o arch/i386/mm/mm.o kernel/kernel.o 
-> mm/mm.o fs/fs.o ipc/ipc.o \
->         drivers/acpi/acpi.o drivers/char/char.o drivers/block/block.o 
-> drivers/misc/misc.o drivers/net/net.o drivers/char/agp/agp.o 
-> drivers/char/drm/drm.o drivers/ide/idedriver.o drivers/scsi/scsidrv.o 
-> drivers/cdrom/driver.o drivers/pci/driver.o drivers/pcmcia/pcmcia.o 
-> drivers/pnp/pnp.o drivers/video/video.o drivers/media/media.o 
-> drivers/input/inputdrv.o drivers/cpufreq/built-in.o \
->        net/network.o \
->        /usr/src/linux-2.4.28/arch/i386/lib/lib.a 
-> /usr/src/linux-2.4.28/lib/lib.a /usr/src/linux-2.4.28/arch/i386/lib/lib.a \
->        --end-group \
->        -o vmlinux
-> arch/i386/kernel/kernel.o(.data+0x1d80): In function `trampoline_end':
-> : undefined reference to `local symbols in discarded section .text.exit'
-> make: *** [vmlinux] Error 1
-> [root@queue38 linux-2.4.28]#
+http://bugme.osdl.org/show_bug.cgi?id=3855
 
-Could you try out removing the "__devexit_p" in 
-static struct cpufreq_driver cpufreq_amd64_driver = {
-        .verify = powernowk8_verify,
-        .target = powernowk8_target,
-        .init = powernowk8_cpu_init,
-        .exit = __devexit_p(powernowk8_cpu_exit),
-        .get = powernowk8_get,
-, i.e. modifying the .exit line to
-	.exit = powernowk8_cpu_exit
+           Summary: Powernow-k8 doesn't work with 90nm Athlon64@939pin
+                    (Winchester)
+    Kernel Version: 2.6.9
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: malte.d@gmx.net
 
-and remove the __devexit from
-static int __devexit powernowk8_cpu_exit (struct cpufreq_policy *pol)
 
-in powernow-k8.c
+Distribution: Slackware 10.0 
+Hardware Environment: MSI Neo2 Platinum 939 K8 Board + Athlon64 3000+ 
+Winchester 90nm, Socket 939 
+# cat /proc/cpuinfo  
+processor       : 0 
+vendor_id       : AuthenticAMD 
+cpu family      : 15 
+model           : 31 
+model name      : AMD Athlon(tm) 64 Processor 3000+ 
+stepping        : 0 
+cpu MHz         : 1808.320 
+cache size      : 512 KB 
+fdiv_bug        : no 
+hlt_bug         : no 
+f00f_bug        : no 
+coma_bug        : no 
+fpu             : yes 
+fpu_exception   : yes 
+cpuid level     : 1 
+wp              : yes 
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov 
+pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm 3dnowext 3dnow 
+bogomips        : 3579.90 
+ 
+ 
+Problem Description: You cannot change the cpu frequency with this 
+hardware-setup 
+ 
+Steps to reproduce: 
+ 
+# modprobe powernow-k8 
+# dmesg | tail -n 7 
+ACPI: Processor [CPU0] (supports C1) 
+powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09b) 
+powernow-k8:    0 : fid 0xa (1800 MHz), vid 0x6 (1400 mV) 
+powernow-k8:    1 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV) 
+powernow-k8: cpu_init done, current fid 0xa, vid 0x4 
+powernow-k8: vid trans failed, vid 0x3, curr 0x4 
+powernow-k8: transition frequency failed 
+ 
+# ls /sys/devices/system/cpu/cpu0/cpufreq/ 
+cpuinfo_cur_freq               scaling_available_governors  scaling_max_freq 
+cpuinfo_max_freq               scaling_cur_freq             scaling_min_freq 
+cpuinfo_min_freq               scaling_driver               scaling_setspeed 
+scaling_available_frequencies  scaling_governor 
+# cat  /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq               
+1800000 
+# cat  /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies  
+1800000 1000000  
+# echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed  
+ 
+# dmesg | tail -n 9 
+ACPI: Processor [CPU0] (supports C1) 
+powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09b) 
+powernow-k8:    0 : fid 0xa (1800 MHz), vid 0x6 (1400 mV) 
+powernow-k8:    1 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV) 
+powernow-k8: cpu_init done, current fid 0xa, vid 0x4 
+powernow-k8: vid trans failed, vid 0x3, curr 0x4 
+powernow-k8: transition frequency failed 
+powernow-k8: vid trans failed, vid 0x3, curr 0x4 
+powernow-k8: transition frequency failed
 
-Thanks,
-	Dominik
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
