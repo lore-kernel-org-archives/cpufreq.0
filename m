@@ -1,12 +1,16 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: ondemand question?
-Date: Mon, 25 Oct 2004 09:58:48 -0700
+From: Paul Ionescu <i_p_a_u_l@yahoo.com>
+Subject: Re: [RFC] cpufreqtools
+Date: Mon, 25 Oct 2004 13:07:05 +0300
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB60032E52FD@scsmsx403.amr.corp.intel.com>
+Message-ID: <pan.2004.10.25.10.07.03.511563@yahoo.com>
+References: <20041021172227.GA24663@dominikbrodowski.de>
+	<20041022143927.GE22405@poupinou.org>
+	<20041022145738.GA2136@dominikbrodowski.de>
+	<20041022172109.GF22405@poupinou.org>
+	<1098635425.4442.1.camel@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,35 +21,26 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Nebojsa Trpkovic <trx@inbox.ru>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
+Hi Jeremy,
 
+I think too that dbus is the way to go.
+If there is not any big issue with dbus, we should use it for uniformity.
+Why invent a new protocol for this if not really necessary ?
+Consistent UI/policy tools is a nice thing to have.
 
->-----Original Message-----
->From: cpufreq-bounces@www.linux.org.uk=20
->[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Nebojsa Trpkovic
->Sent: Sunday, October 24, 2004 12:11 PM
->To: cpufreq@www.linux.org.uk
->Subject: ondemand question?
->
->Can someone tell me how often "ondemand" governor can switch=20
->between CPU=20
->frequencies (How often does it poll CPU usage and decide what to do?)
->
->
->Thank you.
->
+On Sun, 24 Oct 2004 18:30:25 +0200, Jeremy Fitzhardinge wrote:
 
-The frequency is not fixed. Default freq will depend on what amount of
-time does CPU actually take to change the frequency. And user can change
-this default value within some limits.
-
-Once you start using ondemand governor you will find this (and other
-ondemand tunables here)
-/sys/devices/..../cpufreq/ondemand/sampling_rate
-/sys/devices/..../cpufreq/ondemand/sampling_rate_max
-/sys/devices/..../cpufreq/ondemand/sampling_rate_min
-(all the numbers here are in uS)
-
-Thanks,
-Venki
+> On Fri, 2004-10-22 at 19:21 +0200, Bruno Ducrot wrote:
+>> I do like Jeremy's idea to wrap all sysfs stuff in one deamon, then all
+>> clients (via his library) will communicate with this daemon in order to
+>> set different policies.  So all you care is to secure this daemon, not
+>> random setuid programs that others may wrote.
+> 
+> Yep, that was the intent.  Though I've been thinking of changing it to use
+> dbus rather than its own protocol.  If we can define a dbus protocol
+> everyone is happy with, then we can have other implementations, while
+> having consistent UI/policy tools.
+> 
+> 	J
