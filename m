@@ -1,16 +1,9 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] Hotplug cpu: fix p4-clockmod
-Date: Mon, 30 Aug 2004 23:47:07 +0200
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq/linux/drivers/cpufreq cpufreq.c,1.4,1.5
+Date: Tue, 31 Aug 2004 09:29:20 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040830214707.GA9324@dominikbrodowski.de>
-References: <20040829125717.GA17032@dominikbrodowski.de>
-	<Pine.LNX.4.58.0408301214120.21527@montezuma.fsmlabs.com>
-	<20040830200407.GB8563@dominikbrodowski.de>
-	<Pine.LNX.4.58.0408301735320.21527@montezuma.fsmlabs.com>
-Mime-Version: 1.0
+Message-ID: <E1C2412-0001Nl-7q@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0408301735320.21527@montezuma.fsmlabs.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,46 +13,60 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Zwane Mwaikambo <zwane@linuxpower.ca>
-Cc: CPU Freq ML <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-On Mon, Aug 30, 2004 at 05:41:27PM -0400, Zwane Mwaikambo wrote:
-> On Mon, 30 Aug 2004, Dominik Brodowski wrote:
-> 
-> > > The cpufreq_sysdev_driver stuff only covers device removal and won't cover
-> > > the processor being removed.
-> >
-> > What? If the processor X is removed, the kobject / device of
-> > /sys/devices/system/cpu/cpuX/ will not be unregistered? If that is the case,
-> > then the current cpufreq core indeed is severely broken....
-> 
-> I think i may be misunderstood, i mean it won't handle a processor being
-> removed from the online map.
+Update of /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq
+In directory flint:/tmp/cvs-serv5291/linux/drivers/cpufreq
 
-Why? If the CPU is removed [and thus removed from the online map] the device
-disappears from the kernel's perspective -- so there's no room for the
-/sys/devices/system/cpu/cpuX/ kobject.
+Modified Files:
+	cpufreq.c 
+Log Message:
+The SA1100 and SA1110 platforms can handle situations well where the
+CPU frequency is different to the value the cpufreq (and timing) code
+thinks it is, e.g. when resuming from sleep. So, remove the flags
+noting the opposite.
 
-> > > In order to take care of that you need to either
-> > > disable preemption
-> > ... however, I dislike disabling preemption -- it can cause long latencies,
-> > after all -- and prefer disabling CPU hotplug around calls to ->target() and
-> > ->get()...
-> >
-> > > or hold the cpucontrol semaphore, or you could register
-> > > a cpu online/offline notifier and do the necessary work there.
-> > ... and that cpu online/offline notifier must then do what I thought the
-> > sysfs device ->add()/->remove() calls were doing.
-> 
-> It should just be a matter of holding the semaphore during ->get() and
-> ->target, i go for the preempt_disable a lot of the time to avoid too many
-> contenders for the semaphore and since the preemption critical sections
-> are fairly short.
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.de>
 
-While it is short for p4-clockmod, it isn't sufficiently short for
-powernow-k8.
 
-Thanks,
-	Dominik
+Index: cpufreq.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq/cpufreq.c,v
+retrieving revision 1.4
+retrieving revision 1.5
+diff -u -r1.4 -r1.5
+--- cpufreq.c	26 Aug 2004 13:25:20 -0000	1.4
++++ cpufreq.c	31 Aug 2004 08:29:17 -0000	1.5
+@@ -157,9 +157,6 @@
+ 			    (likely(cpufreq_cpu_data[freqs->cpu]->cur)) &&
+ 			    (unlikely(freqs->old != cpufreq_cpu_data[freqs->cpu]->cur)))
+ 			{
+-				if (cpufreq_driver->flags & CPUFREQ_PANIC_OUTOFSYNC)
+-					panic("CPU Frequency is out of sync.");
+-
+ 				printk(KERN_WARNING "Warning: CPU frequency is %u, "
+ 				       "cpufreq assumed %u kHz.\n", freqs->old, cpufreq_cpu_data[freqs->cpu]->cur);
+ 				freqs->old = cpufreq_cpu_data[freqs->cpu]->cur;
+@@ -603,9 +600,6 @@
+ {
+ 	struct cpufreq_freqs freqs;
+ 
+-	if (cpufreq_driver->flags & CPUFREQ_PANIC_OUTOFSYNC)
+-		panic("CPU Frequency is out of sync.");
+-
+ 	printk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing "
+ 	       "core thinks of %u, is %u kHz.\n", old_freq, new_freq);
+ 
+@@ -695,9 +689,6 @@
+ 
+ 		if (unlikely(cur_freq != cpu_policy->cur)) {
+ 			struct cpufreq_freqs freqs;
+-
+-			if (cpufreq_driver->flags & CPUFREQ_PANIC_RESUME_OUTOFSYNC)
+-				panic("CPU Frequency is out of sync.");
+ 
+ 			printk(KERN_WARNING "Warning: CPU frequency is %u, "
+ 			       "cpufreq assumed %u kHz.\n", cur_freq, cpu_policy->cur);
