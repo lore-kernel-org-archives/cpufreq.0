@@ -1,14 +1,11 @@
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: cpuspeed daemon
-Date: 22 Jun 2003 22:43:07 -0700
+Subject: [PATCH] disable debugging in Centrino driver
+Date: 22 Jun 2003 23:36:03 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1056346987.15249.21.camel@ixodes.goop.org>
-References: <1056238149.30963.394.camel@ixodes.goop.org>
-	 <1056238942.38e68448bf0bf@carlthompson.net>
+Message-ID: <1056350162.15250.25.camel@ixodes.goop.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <1056238942.38e68448bf0bf@carlthompson.net>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,18 +16,30 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: Carl Thompson <cet@carlthompson.net>
+To: Dave Jones <davej@codemonkey.org.uk>
 Cc: cpufreq list <cpufreq@www.linux.org.uk>
 
-On Sat, 2003-06-21 at 16:42, Carl Thompson wrote:
-> Darn it, you picked the same name I was using for the new version of my
-> CPUFreq daemon!  (It was called cpufreq, but I thought that was too
-> confusing).  Well, since I haven't posted it here under the new name yet I
-> guess I'll have to find another name...
+Hi Dave, 
 
-Well, I just changed the name to "speedfreq", so you can have cpuspeed
-if you want.
+Can you put this in your tree?  The debug output gets very boring very quickly.
 
-What does your daemon do?
-
+Thanks,
 	J
+
+ arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~centrino-nodebug arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+--- local-2.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c~centrino-nodebug	2003-06-14 17:48:14.059224839 -0700
++++ local-2.5-jeremy/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2003-06-14 17:48:14.069224754 -0700
+@@ -29,7 +29,7 @@
+ #define PFX		"speedstep-centrino: "
+ #define MAINTAINER	"Jeremy Fitzhardinge <jeremy@goop.org>"
+ 
+-#define CENTRINO_DEBUG
++/*#define CENTRINO_DEBUG*/
+ 
+ #ifdef CENTRINO_DEBUG
+ #define dprintk(msg...) printk(msg)
+
+_
