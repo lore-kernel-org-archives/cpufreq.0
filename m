@@ -1,15 +1,13 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: Problem with ondemand on Athlon
-Date: Tue, 11 Nov 2003 10:51:43 +0100
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: [SPEEDSTEP] ALi shouthbridge.  alpha tester wanted.
+Date: Tue, 11 Nov 2003 20:32:00 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031111095143.GC930@inferi.kami.home>
-References: <20031105182110.GA922@inferi.kami.home>
-	<20031110205912.GB7149@brodo.de>
-Reply-To: dongili@supereva.it
+Message-ID: <20031111193200.GJ29175@poupinou.org>
+References: <20031106140935.GC21970@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031110205912.GB7149@brodo.de>
+In-Reply-To: <20031106140935.GC21970@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,28 +21,25 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Mon, Nov 10, 2003 at 09:59:12PM +0100, Dominik Brodowski wrote:
-> This is really strange... will provide a DEBUG()-printk patch soon, would be
-> great if you could test it then...
-
-of course I can. In the meantime if you can tell a couple of interesting
-functions and variables, I could add some printk-s by myself (if I get
-some spare time before you do)
-
-[...]
-> > > pass "clock=pit" as a command line argument
-> > 
-> > this semms not to be a valid argument here
+On Thu, Nov 06, 2003 at 03:09:35PM +0100, Ducrot Bruno wrote:
 > 
-> ? clock=pit specifies that the PIT should be used instead of the TSC as
-> timing source... so it should be a valid boot argument.
+> Can someone please test
+> ftp://ftp.poupinou.org/cpufreq/speedstep-ali.trunk.diff
+> 
+> Note that this is agaist 2.6.0-testX, not 2.4.
+> 
 
-sorry... my bad. I used it as a p4_clockmod argument and did not
-bothered to check Documentation/kernel-parameters.txt
+OK.  It do not work.  Sorry.
 
-I'll re-test it as soon as possible.
+What it does is to turn on geyserville functionality on the PMU device,
+then, (I guess) we can use the geyserville IO register (at pmbase + 0x2f),
+as for the -ich case.  Unfortunately, that is wrong.  I don't
+know what to do next.  For people interrested in some registers that
+have to be looked, get ftp://ftp.poupinou.org/dont_use/README.ali
 
-bye
+
 -- 
-mattia
-:wq!
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
