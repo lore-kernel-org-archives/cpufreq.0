@@ -1,12 +1,12 @@
-From: mru@kth.se (=?iso-8859-1?q?M=E5ns_Rullg=E5rd?=)
-Subject: Re: [PATCHSET] 0/3 A dynamic cpufreq governor
-Date: Sat, 25 Oct 2003 22:07:59 +0200
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <yw1xfzhhhyhs.fsf@kth.se>
-References: <88056F38E9E48644A0F562A38C64FB6007796A@scsmsx403.sc.intel.com>
+From: Mattia Dongili <dongili@supereva.it>
+Subject: [ANNOUNCE] cpufreqd-1.1-rc1 released
+Date: Sun, 26 Oct 2003 17:57:19 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031026165719.GF871@inferi.kami.home>
+Reply-To: dongili@supereva.it
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,22 +15,31 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@www.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
+Errors-To: cpufreq-bounces@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
 
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> writes:
+cpufreqd-1.1-rc1 has been released.
 
-> This is the "new and improved" version of the patch =20
-> that was sent out earlier this week. Thanks for all the=20
-> feedback/suggestions.
-> (lkml subject line reference for previous thread -
-> "Dynamic cpufreq governor and updates to ACPI P-state driver")
+This release adds 2 major feature like cpu monitoring and PMU support,
+plus a bunch of fixes and a workaround to avoid reading
+/proc/acpi/battery/*/info if your ACPI implementation is very cpu
+consuming.
 
-Is there any way this thing can be made to work on a Pentium 4 M,
-using p4-clockmod for frequency changing?
+packages (clean source, debian-src and debian-i386) are available at:
 
---=20
-M=E5ns Rullg=E5rd
-mru@kth.se
+http://www.sourceforge.net/projects/cpufreqd
+
+cpufreqd is meant to be a replacement of the speedstep applet you can
+find on some other OS, it monitors CPU, battery level, AC state and
+running programs and adjusts the frequency governor according to a set
+of rules specified in the config file.
+
+The only enhancement I'll add before 1.1 is a paremeter to select which
+resources to poll.
+  
+thanks (and sorry for the noise)
+-- 
+mattia
+:wq!
