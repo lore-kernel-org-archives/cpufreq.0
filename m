@@ -1,13 +1,11 @@
 From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k7.c,1.47,1.48
-Date: Wed, 21 Jan 2004 14:20:45 +0100
+Subject: [RFC] cpufreq_get()
+Date: Thu, 22 Jan 2004 20:06:49 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040121132045.GZ25416@poupinou.org>
-References: <E1AjHzy-0001wH-QK@flint.arm.linux.org.uk>
+Message-ID: <20040122190649.GC25416@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <E1AjHzy-0001wH-QK@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,22 +19,28 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Wed, Jan 21, 2004 at 01:02:22PM +0000, Ducrot Bruno wrote:
-> Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-> In directory flint:/tmp/cvs-serv7450/linux/arch/i386/kernel/cpufreq
-> 
-> Modified Files:
-> 	powernow-k7.c 
-> Log Message:
-> linux/arch/i386/kernel/cpufreq/powernow-k7.c
-> 
+I'm planing to add the cpufreq_get() in struct cpufreq_driver,
+but in a hardware fashion, eventually replacing the name by
+something more appropriate.
 
-Actually the log is:
+Rational:
+- almost all drivers that I know (powernow-k7, speedstep-*,
+  longrun, and Im looking the PPC version) can implement it,
+  the only one that I am aware for which it is not possible is
+  the ACPI performance IO driver.
 
-There is now a default attribute if table frequency helper in order to
-show all available frequencies.  Why not using it in powernow-k7?
+- by accessing driver->cpufreq_get() via a sysfs, we can verify if
+  the 3 mains governors works.  Even for longrun, we
+  can verify that the frequency is between min and max.
 
-Sorry.
+- we can compare /proc/cpuinfo with the result of cpufreq_get(),
+  helping in debugging things.
+
+- people may want to monitor the real frequency in their applet,
+  so this help for having a more consistent API (google for 
+  wmlongrun, for example).
+
+- It is required for the ARM architecture anyway.
 
 -- 
 Ducrot Bruno
