@@ -1,13 +1,13 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: How to control the speed?
-Date: Mon, 23 Jun 2003 15:53:40 +0200
+Subject: Re: [ACPI] _PDC method in DSDT
+Date: Mon, 23 Jun 2003 15:38:34 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030623135340.GG2330@brodo.de>
-References: <200306230047.09481.snowfire@blueyonder.co.uk>
+Message-ID: <20030623133834.GA2330@brodo.de>
+References: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200306230047.09481.snowfire@blueyonder.co.uk>
+In-Reply-To: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,27 +19,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Edward Macfarlane Smith <snowfire@blueyonder.co.uk>
-Cc: cpufreq@www.linux.org.uk
+To: "Grover, Andrew" <andrew.grover@intel.com>
+Cc: David Moore <dcm@acm.org>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-On Mon, Jun 23, 2003 at 12:47:09AM +0100, Edward Macfarlane Smith wrote:
-> I'm writing a little graphical utility to allow you to specify the default 
-> speed when switching between AC and battery, and also the screen brightness.
-> At the moment it's specifically for my Sony Z1SP, so it will probably end
-> up a mix of ACPI/cpufreq/sonypi.
->
-> Currently I've got the screen brightness working as it can make some ioctl
-> calls to /dev/sonypi. 
->
-> I was wondering if there are any ioctls for setting the speed using cpufreq 
-> or should I just open "/proc/cpufreq" and write a string to it?. I'd also
-> like to know how to read the possible speeds, again in an ioctl.
+On Mon, Jun 23, 2003 at 02:19:27AM -0700, Grover, Andrew wrote:
+> The spec intended FixedFunctionalHW registers to be an "escape hatch".
+> FFH means that while ACPI is used for perf state enumeration, the
+> transitions will be handled in a CPU-specific driver, not via methods
+> described in the ACPI spec. This division (use ACPI for enum, x for
+> control) isn't currently supported by cpufreq; ACPI either does both
+> enum and control, or neither.
 
-In 2.5., this is easily possible [scaling_available_frequencies in the
-corresponding sysfs directory], for 2.4., there is no such file but one of
-the cpufreq daemons has some code in it to detect the speeds nonetheless.
+But it could easily be added to the cpufreq drivers. For example, the
+speedstep-centrino driver could call a 
 
-All interfaces to cpufreq are either /proc files - sysctl's [sort of
-deprecated] or sysfs files [2.5. only, though]
+int acpi_get_frequency_table(struct cpufreq_frequency_table **freq_table)
+
+which returns an array with the frequency in freq_table[i].frequency, and
+some sort of "index" in freq_table[i].index, e.g. what needs to be written
+into the IA32_PERF_CTL MSR.
+
 
 	Dominik
