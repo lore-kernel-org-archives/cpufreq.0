@@ -1,14 +1,15 @@
-From: Christian Hoelbling <christian.holbling@cern.ch>
-Subject: Re: [PATCH] 2.6.5 speedstep on P4Ms
-Date: Tue, 08 Jun 2004 23:53:34 +0000
+From: Krisztian Mark Szentes <office@lsa.at>
+Subject: Re: cpufreq on TiBook 400 MHz
+Date: Wed, 9 Jun 2004 12:47:51 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <40C6517E.1090708@cern.ch>
-References: <40C5F42D.1050107@cern.ch> <20040608153023.GS13782@poupinou.org>
-Reply-To: holbling@cpt.univ-mrs.fr
+Message-ID: <200406091247.51210.office@lsa.at>
+References: <200305211853.54638.office@lsa.at>
+	<200306121600.06552.office@lsa.at> <1055685144.608.0.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------090806060408030608070604"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040608153023.GS13782@poupinou.org>
+In-Reply-To: <1055685144.608.0.camel@gaston>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,302 +19,121 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: debian-powerpc@lists.debian.org
+Cc: Segher Boessenkool <segher@koffie.nl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, cpufreq@www.linux.org.uk
 
-This is a multi-part message in MIME format.
---------------090806060408030608070604
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Ben
 
-Bruno Ducrot wrote:
+Am Sonntag, 15. Juni 2003 15:52 schrieb Benjamin Herrenschmidt:
+> On Thu, 2003-06-12 at 16:00, Krisztian Mark Szentes wrote:
+> > On Friday 23 May 2003 00:48, Segher Boessenkool wrote:
+> > > Krisztian Mark Szentes wrote:
+> > > > I  wonder why there is no /proc/cpufreq on my Titanium PowerBook G4
+> > > > (400 MHz).
+> > > Because no-one filled in the right values yet.
+> > ...
+> > > I seem to remember the PowerBook3,2 @ 400 has a low speed of
+> > > 300MHz, but I'm not fully sure about that -- better check it
+> > > yourself (apple.com -> developer -> hardware -> all products
+> > > or something like that, it's not too hard to find).
+> >=20
+http://developer.apple.com/techpubs/hardware/Developer_Notes/Macintosh_CPUs=
+-G4/PowerBook_G419Dec00/index.html
+> > says:
+> > "On the PowerBook G4 computer, the slower clock speed is 100 MHz slower=
+=20
+> > than the rated speed: 300 MHz on a 400-MHz model, 400 MHz on a 500 MHz =
 
->On Tue, Jun 08, 2004 at 05:15:25PM +0000, Christian Hoelbling wrote:
->  
->
->>  hi list,
->>
->>i am trying to do a small rewrite of the speedstep-ich driver to 
->>address the following issues:
->>
->>1.) detect all P4M's via the model_id string
->>2.) correctly register drivers on hyperthreading CPU's (and stop 
->>freeze-ups i occasionally had)
->>3.) do P4-clockmod on top of speedstep on P4-Ms
->>    
->>
->
->It would be great if you send 3 differents patches...
->
->Also, I don't think 3) is how thinks should be done.
->It would be much more usefull to allow 2 cpufreq drivers to be loaded.
->I think it's planed for 2.7 btw.
->
->Cheers,
->
->  
->
-thanks alot for your help. here are the patches for 1) and 2) seperately.
+> > model."
+>=20
+> Now, that's strange. I remember we measured 300Mhz for the low speed
+> of the 500Mhz model...=20
 
-for 3): what you say sounds much better than my brutal hack, so i won't 
-post it again. i'd definitely want to try to implement 2 cpufreq 
-drivers, but i fear this is way beyond me at the moment and probably 
-involves design choices i can't make.
+Am Freitag, 23. Mai 2003 11:19 schrieben Sie:
 
-cheers,
+> I'm not sure that will work. On the other hand, I'm pretty sure the freq.
+> switching is _NOT_ supported on this model...
 
-chris
+finally I edited the sources (a version of 2.4.20 lying around here):
+..
+#define DEBUG_FREQ
+..
 
---------------090806060408030608070604
-Content-Type: text/x-patch;
- name="speedstep_patch.2.6.5_detectP4M.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="speedstep_patch.2.6.5_detectP4M.diff"
 
-diff --unified --recursive --new-file linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
---- linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-06-07 20:49:36.000000000 +0000
-+++ linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-06-08 22:56:06.911397232 +0000
-@@ -210,8 +210,17 @@
- 		ebx = cpuid_ebx(0x00000001);
- 		ebx &= 0x000000FF;
- 
--		dprintk(KERN_INFO "ebx value is %x, x86_mask is %x\n", ebx, c->86_mask);
-+		dprintk(KERN_INFO "ebx value is %x\n", ebx);
- 
-+		dprintk(KERN_INFO "model_id is %s\n", c->x86_model_id);
-+		
-+		/*
-+		 * If the x86_model_id string contais "Mobile Intel(R) Pentium(R) 4"
-+                 * omit all other checks and treat the CPU as a M-P4-M
-+		 */
-+		if (strstr(c->x86_model_id,"Mobile Intel(R) Pentium(R) 4") != NULL)
-+		       return SPEEDSTEP_PROCESSOR_P4M;
-+		
- 		switch (c->x86_mask) {
- 		case 4: 
- 			/*
-@@ -248,6 +257,7 @@
- 			 * So, how to distinguish all those processors with
- 			 * ebx=0xf? I don't know. Sort them out, and wait
- 			 * for someone to complain.
-+			 * also, M-P4M HTs actually have ebx=0x8, too
- 			 */
- 			if (ebx == 0x0e)
- 				return SPEEDSTEP_PROCESSOR_P4M;
+=A0 =A0 =A0 =A0/* Else check for TiPb 500 */
+=A0 =A0 =A0 =A0 else if (machine_is_compatible("PowerBook3,2")) {
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Mark:and 400 MHz */
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (cur_freq < 350000 || cur_freq > 550000)
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 hi_freq =3D cur_freq;
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 low_freq =3D 300000;
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 has_freq_ctl =3D 1;
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpufreq_uses_pmu =3D 1;
 
---------------090806060408030608070604
-Content-Type: text/x-patch;
- name="speedstep_patch.2.6.5_SMT.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="speedstep_patch.2.6.5_SMT.diff"
 
-diff --unified --recursive --new-file linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
---- linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-07 20:49:36.000000000 +0000
-+++ linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-06-08 23:34:00.871702720 +0000
-@@ -70,23 +70,52 @@
-  *
-  *   Tries to change the SpeedStep state. 
-  */
--static void speedstep_set_state (unsigned int state, unsigned int notify)
-+static void speedstep_set_state (unsigned int cpu, unsigned int state, unsigned int notify)
- {
- 	u32			pmbase;
- 	u8			pm2_blk;
- 	u8			value;
- 	unsigned long		flags;
- 	struct cpufreq_freqs	freqs;
-+	cpumask_t               cpus_allowed, affected_cpu_map;
-+	int                     hyperthreading = 0;
-+	int                     sibling = 0;
- 
- 	if (!speedstep_chipset_dev || (state > 0x1))
- 		return;
- 
-+	/* switch to physical CPU where state is to be changed*/
-+	cpus_allowed = current->cpus_allowed;
-+
-+	/* only run on CPU to be set, or on its sibling */
-+       affected_cpu_map = cpumask_of_cpu(cpu);
-+#ifdef CONFIG_X86_HT
-+	hyperthreading = ((cpu_has_ht) && (smp_num_siblings == 2));
-+	if (hyperthreading) {
-+		sibling = cpu_sibling_map[cpu];
-+                cpu_set(sibling, affected_cpu_map);
-+	}
-+#endif
-+	set_cpus_allowed(current, affected_cpu_map);
-+        BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
-+
- 	freqs.old = speedstep_get_processor_frequency(speedstep_processor);
- 	freqs.new = speedstep_freqs[state].frequency;
--	freqs.cpu = 0; /* speedstep.c is UP only driver */
--	
--	if (notify)
-+	freqs.cpu = cpu;
-+
-+	/* no transition necessary */
-+	if (freqs.old == freqs.new) {
-+	        set_cpus_allowed(current, cpus_allowed);
-+		return;
-+	}
-+
-+	if (notify) {
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+		if (hyperthreading) {
-+		        freqs.cpu = sibling;
-+			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+		}
-+	}
- 
- 	/* get PMBASE */
- 	pci_read_config_dword(speedstep_chipset_dev, 0x40, &pmbase);
-@@ -142,9 +171,18 @@
- 		printk (KERN_ERR "cpufreq: change failed - I/O error\n");
- 	}
- 
--	if (notify)
--		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	/* allow to be run on all CPUs */
-+	set_cpus_allowed(current, cpus_allowed);
- 
-+	if (notify) {
-+	        /* notifiers */
-+	        cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	        if (hyperthreading) {
-+		        freqs.cpu = cpu;
-+			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+		}
-+		dprintk(KERN_DEBUG "cpufreq: transition on cpu %i from %i kHz to %ikHz completed\n",cpu ,freqs.old ,freqs.new);
-+	}
- 	return;
- }
- 
-@@ -253,7 +291,7 @@
- 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0], target_freq, relation, &newstate))
- 		return -EINVAL;
- 
--	speedstep_set_state(newstate, 1);
-+	speedstep_set_state(policy->cpu, newstate, 1);
- 
- 	return 0;
- }
-@@ -277,12 +315,8 @@
- 	int		result = 0;
- 	unsigned int	speed;
- 
--	/* capability check */
--	if (policy->cpu != 0)
--		return -ENODEV;
--
- 	/* detect low and high frequency */
--	result = speedstep_get_freqs(speedstep_processor,
-+	result = speedstep_get_freqs(policy->cpu,speedstep_processor,
- 				     &speedstep_freqs[SPEEDSTEP_LOW].frequency,
- 				     &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
- 				     &speedstep_set_state);
-diff --unified --recursive --new-file linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
---- linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-06-07 20:49:36.000000000 +0000
-+++ linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-06-08 23:34:50.120215808 +0000
-@@ -310,20 +310,40 @@
-  *                     DETECT SPEEDSTEP SPEEDS                       *
-  *********************************************************************/
- 
--unsigned int speedstep_get_freqs(unsigned int processor,
-+unsigned int speedstep_get_freqs(unsigned int cpu,
-+				  unsigned int processor,
- 				  unsigned int *low_speed,
- 				  unsigned int *high_speed,
--				  void (*set_state) (unsigned int state,
-+				  void (*set_state) (unsigned int cpu,
-+						     unsigned int state,
- 						     unsigned int notify)
- 				 )
- {
- 	unsigned int prev_speed;
- 	unsigned int ret = 0;
- 	unsigned long flags;
-+	cpumask_t cpus_allowed, affected_cpu_map;
-+	int hyperthreading = 0;
-+	int sibling = 0;
- 
- 	if ((!processor) || (!low_speed) || (!high_speed) || (!set_state))
- 		return -EINVAL;
- 
-+	/* switch to physical CPU where state is to be changed*/
-+	cpus_allowed = current->cpus_allowed;
-+
-+	/* only run on CPU to be set, or on its sibling */
-+       affected_cpu_map = cpumask_of_cpu(cpu);
-+#ifdef CONFIG_X86_HT
-+	hyperthreading = ((cpu_has_ht) && (smp_num_siblings == 2));
-+	if (hyperthreading) {
-+		sibling = cpu_sibling_map[cpu];
-+                cpu_set(sibling, affected_cpu_map);
-+	}
-+#endif
-+	set_cpus_allowed(current, affected_cpu_map);
-+        BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
-+
- 	/* get current speed */
- 	prev_speed = speedstep_get_processor_frequency(processor);
- 	if (!prev_speed)
-@@ -332,7 +352,7 @@
- 	local_irq_save(flags);
- 
- 	/* switch to low state */
--	set_state(SPEEDSTEP_LOW, 0);
-+	set_state(cpu, SPEEDSTEP_LOW, 0);
- 	*low_speed = speedstep_get_processor_frequency(processor);
- 	if (!*low_speed) {
- 		ret = -EIO;
-@@ -340,7 +360,7 @@
- 	}
- 
- 	/* switch to high state */
--	set_state(SPEEDSTEP_HIGH, 0);
-+	set_state(cpu, SPEEDSTEP_HIGH, 0);
- 	*high_speed = speedstep_get_processor_frequency(processor);
- 	if (!*high_speed) {
- 		ret = -EIO;
-@@ -354,10 +374,11 @@
- 
- 	/* switch to previous state, if necessary */
- 	if (*high_speed != prev_speed)
--		set_state(SPEEDSTEP_LOW, 0);
-+		set_state(cpu, SPEEDSTEP_LOW, 0);
- 
-  out:
- 	local_irq_restore(flags);
-+	set_cpus_allowed(current, cpus_allowed);
- 	return (ret);
- }
- EXPORT_SYMBOL_GPL(speedstep_get_freqs);
-diff --unified --recursive --new-file linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
---- linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h	2004-06-07 20:49:36.000000000 +0000
-+++ linux-2.6.5.speedstep/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h	2004-06-08 23:34:06.104907152 +0000
-@@ -41,7 +41,7 @@
-  * SPEEDSTEP_LOW; the second argument is zero so that no 
-  * cpufreq_notify_transition calls are initiated.
-  */
--extern unsigned int speedstep_get_freqs(unsigned int processor,
-+extern unsigned int speedstep_get_freqs(unsigned int cpu, unsigned int processor,
- 	  unsigned int *low_speed,
- 	  unsigned int *high_speed,
--	  void (*set_state) (unsigned int state, unsigned int notify));
-+	  void (*set_state) (unsigned int cpu, unsigned int state, unsigned int notify));
+recompiled and fired it up:
+# cat /proc/cpuinfo
+cpu =A0 =A0 =A0 =A0 =A0 =A0 : 7410, altivec supported
+temperature =A0 =A0 : 17-21 C (uncalibrated)
+clock =A0 =A0 =A0 =A0 =A0 : 400MHz
+revision =A0 =A0 =A0 =A0: 17.3 (pvr 800c 1103)
+bogomips =A0 =A0 =A0 =A0: 797.90
+machine =A0 =A0 =A0 =A0 : PowerBook3,2
+motherboard =A0 =A0 : PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+detected as =A0 =A0 : 71 (PowerBook Titanium)
+pmac flags =A0 =A0 =A0: 0000000b
+L2 cache =A0 =A0 =A0 =A0: 1024K unified
+memory =A0 =A0 =A0 =A0 =A0: 512MB
+pmac-generation : NewWorld
+# cat /proc/sys/cpu/0/speed-min > /proc/sys/cpu/0/speed
+# cat /proc/cpuinfo
+cpu =A0 =A0 =A0 =A0 =A0 =A0 : 7410, altivec supported
+temperature =A0 =A0 : 17-21 C (uncalibrated)
+clock =A0 =A0 =A0 =A0 =A0 : 300MHz
+revision =A0 =A0 =A0 =A0: 17.3 (pvr 800c 1103)
+bogomips =A0 =A0 =A0 =A0: 598.42
+machine =A0 =A0 =A0 =A0 : PowerBook3,2
+motherboard =A0 =A0 : PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+detected as =A0 =A0 : 71 (PowerBook Titanium)
+pmac flags =A0 =A0 =A0: 0000000b
+L2 cache =A0 =A0 =A0 =A0: 1024K unified
+memory =A0 =A0 =A0 =A0 =A0: 512MB
+pmac-generation : NewWorld
+# dmesg | tail -3
+HID1, before: a0000000
+HID1, after: 80000000
+Calibrating delay loop... 598.01 BogoMIPS
+# cat /proc/sys/cpu/0/speed-max > /proc/sys/cpu/0/speed
+# cat /proc/cpuinfo
+cpu =A0 =A0 =A0 =A0 =A0 =A0 : 7410, altivec supported
+temperature =A0 =A0 : 18-22 C (uncalibrated)
+clock =A0 =A0 =A0 =A0 =A0 : 400MHz
+revision =A0 =A0 =A0 =A0: 17.3 (pvr 800c 1103)
+bogomips =A0 =A0 =A0 =A0: 797.90
+machine =A0 =A0 =A0 =A0 : PowerBook3,2
+motherboard =A0 =A0 : PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+detected as =A0 =A0 : 71 (PowerBook Titanium)
+pmac flags =A0 =A0 =A0: 0000000b
+L2 cache =A0 =A0 =A0 =A0: 1024K unified
+memory =A0 =A0 =A0 =A0 =A0: 512MB
+pmac-generation : NewWorld
+# dmesg | tail -3
+HID1, before: 80000000
+HID1, after: a0000000
+Calibrating delay loop... 797.90 BogoMIPS
 
---------------090806060408030608070604
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+BTW, the power consumption as displayed by xpmumon changes only by approx. =
 
---------------090806060408030608070604--
+0,5 Watt. I also do not understand why the bogomips numbers are not=20
+exactly the same (598.01 versus 598.42).
 
+Has it convinced you to include the Titanium 400 MHz into the future=20
+cpufreq supported models?
+
+Thank you for your work!
+
+Salut
+
+Mark
