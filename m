@@ -1,13 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Dual P4 Xeon, will it work?
-Date: Mon, 19 Jan 2004 13:48:41 +0100
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: [ACPI] [PATCH] acpi-cpufreq fixups
+Date: Mon, 19 Jan 2004 15:17:03 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040119124841.GA7163@dominikbrodowski.de>
-References: <400BAF5B.1080707@sintef.no> <400BC19D.7080406@sintef.no>
+Message-ID: <20040119141703.GH25416@poupinou.org>
+References: <3ACA40606221794F80A5670F0AF15F8401720CF4@PDSMSX403.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============85045595792963269=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <400BC19D.7080406@sintef.no>
+Content-Disposition: inline
+In-Reply-To: <3ACA40606221794F80A5670F0AF15F8401720CF4@PDSMSX403.ccr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,53 +17,29 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: Jens Olav Nygaard <jens.o.nygaard@sintef.no>
-Cc: cpufreq@www.linux.org.uk
-
-
---===============85045595792963269==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
-Content-Disposition: inline
-
-
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Jan 19, 2004 at 12:38:05PM +0100, Jens Olav Nygaard wrote:
-> Sorry to have bothered you all, we actually got it
-> to work on the Dell machine... :-)
-
-Thanks for letting us know!
-
-	Dominik
-
---sm4nu43k4a2Rpi4c
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAC9IpZ8MDCHJbN8YRAn7AAKConcnVBy1uO8lhT+APLi7oMpl3QACdFUZD
-SViL6/tDmh6a9MSMzaRg5qk=
-=SCsk
------END PGP SIGNATURE-----
-
---sm4nu43k4a2Rpi4c--
-
-
---===============85045595792963269==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: "Yu, Luming" <luming.yu@intel.com>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk, Nate Lawson <nate@root.org>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+On Sun, Jan 18, 2004 at 03:41:32PM +0800, Yu, Luming wrote:
+> > Just checked linus' bk tree.  It's a 20031002.  Well, I must admit
+> > that I was thinking it was more recent than that.
+> > 
+> You can find latest ACPI patch for 2.6 at 
+> http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/
+> 2.6.1/
+> 
 
---===============85045595792963269==--
+Yes I know.  It just that I expected that linus bk contained a more
+recent ACPI version.
 
+I just hope that the issue of getting the most recent, and stable,
+version of ACPI in a stable kernel serie we got the last two years
+do not happen anymore.
+
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
