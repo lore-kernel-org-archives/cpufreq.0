@@ -1,16 +1,14 @@
-From: Zwane Mwaikambo <zwane@linuxpower.ca>
-Subject: Re: add lowpower_idle sysctl
-Date: Thu, 18 Mar 2004 19:43:05 -0500 (EST)
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: speedstep capability checks
+Date: Fri, 19 Mar 2004 12:06:37 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Pine.LNX.4.58.0403181942420.28447@montezuma.fsmlabs.com>
-References: <20040317170436.430acfbe.akpm@osdl.org>
-	<200403180318.i2I3IDF03166@unix-os.sc.intel.com>
-	<20040317192821.1fe90f24.akpm@osdl.org>
-	<Pine.LNX.4.58.0403172237470.28447@montezuma.fsmlabs.com>
-	<405A29EA.6000400@mvista.com>
+Message-ID: <20040319110637.GF28592@poupinou.org>
+References: <20040316163604.GK28592@poupinou.org>
+	<20040318195720.D89C43F04@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <405A29EA.6000400@mvista.com>
+Content-Disposition: inline
+In-Reply-To: <20040318195720.D89C43F04@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,25 +18,45 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: Andrew Morton <akpm@osdl.org>, Kenneth Chen <kenneth.w.chen@intel.com>, linux-ia64@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, CPU Freq ML <cpufreq@www.linux.org.uk>
+To: aeriksson@fastmail.fm
+Cc: Dave Jones <davej@redhat.com>, Arjan van de Ven <arjanv@redhat.com>, cpufreq@www.linux.org.uk
 
-On Thu, 18 Mar 2004, Todd Poynor wrote:
+On Thu, Mar 18, 2004 at 08:57:20PM +0100, aeriksson@fastmail.fm wrote:
+> 
+> 
+> davej@redhat.com said:
+> >> A few SpeedStep-capable systems don't perform according to
+> >> specification: the CPUID and/or some MSRs don't tell us the 
+> >> CPU is SpeedStep capable even though it definitely is.
+> 
+> > Is there nothing in the errata documents about this ? 
+> 
+> <snip>
+> 
+> > I'd merge this really as a last resort, and it's beginning to sound
+> > like we don't really have any options (other than not support those
+> > broken boxes). Ugh. 
+> 
+> 
+> ...and ducrot@poupinou.org replied:
+> > There is nothing in any data sheets for the check anyway, other than
+> > it's not possible to distinguish a PIII (coppermine) with Speedstep
+> > technology from one without Speedstep technology.  There is nothing
+> > in any spec update I'm aware. 
+> 
+> 
+> So, is the patch ok to merge?
 
-> Zwane Mwaikambo wrote:
->
-> >>Set some system-wide integer via a sysctl and let the particular
-> >>architecture decide how best to implement the currently-selected idle mode?
-> >
-> > I'm wondering whether the setting of these magic numbers can't be done
-> > using cpufreq infrastructure.
->
-> I'd vote for using Patrick Mochel's PM subsystem and use a standard set
-> of identifiers that are mapped to a platform-specific idle behavior, in
-> much the same way as platform suspend modes are handled today.  For
-> example, strings echoed to /sys/power/idle could be an interface.  If
-> folks are amenable to this I'd be happy to supply a (generic) patch for it.
+To be more precise: if you look only datasheets and spec update,
+there is no check given, but there is an application note, and there
+is no errata for that AN.
+I still don't understand why for example it hasn't been included
+in any spec update?
 
-Ta, sounds good, give us a look.
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
