@@ -1,16 +1,21 @@
-From: Ivor Hewitt <ivor@ivor.org>
-Subject: Re: Kernel 2.6.7 speedstep-piix4 on vaio
-Date: Mon, 2 Aug 2004 20:44:16 +0000
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: my dothan didn't work with cpufreq...
+Date: Mon, 02 Aug 2004 13:17:53 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408022044.16997.ivor@ivor.org>
-References: <43210.141.228.156.225.1091110800.squirrel@141.228.156.225>
-	<200407302020.50451.ivor@ivor.org>
-	<20040802193141.GB17023@redhat.com>
+Message-ID: <1091477873.18905.1.camel@localhost>
+References: <40F2FA8B.10307@lifl.fr>
+	<20040713094937.GB8124@dominikbrodowski.de>
+	<1090461320.13505.3.camel@localhost>
+	<20040722060437.GA8888@dominikbrodowski.de>
+	<1090479407.4351.6.camel@localhost>
+	<20040722093126.GA8418@dominikbrodowski.de>
+	<1090517665.5267.9.camel@ixodes.goop.org>
+	<20040723193859.GC8441@dominikbrodowski.de>
+	<1090632444.2950.1.camel@localhost> <20040802192608.GA17023@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040802193141.GB17023@redhat.com>
-Content-Disposition: inline
+In-Reply-To: <20040802192608.GA17023@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,31 +27,22 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@www.linux.org.uk
+Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq list <cpufreq@www.linux.org.uk>
 
-On Monday 02 August 2004 19:31, Dave Jones wrote:
+On Mon, 2004-08-02 at 20:26 +0100, Dave Jones wrote:
+> I merged this, but something occurred to me whilst eyeballing
+> the diffs.  Rather than duplicating X86_VENDOR_INTEL in every
+> entry of the struct, how about we check it in one place?
+> 
+> I'm unaware of any vendor planning to duplicate speedstep,
+> but even if AMD/VIA threw away their current implementations
+> in favour of a bit-for-bit compatible implementation, it
+> wouldn't be hard to add an extra if()
 
-> hmm, I wonder if its worth adding DMI matches for certain laptops
-> that need different arguments.
->
->  > Had to set BIOS settings as:-
->  > PnP OS: No
->  > CPU OS Control: Auto
->  > CPU Speed: Auto
->
-> Though it wouldn't help with this, we'd just have to hope for the best.
->
+I had the same thought.  I already added the vendor check at the top of
+the init function, so in theory nothing else should need to look at it.
 
-I think that would be a good thing to do since it is such a common fix 
-(changing the smi_cmd).... although I had tried the smi setting before 
-juggling the bios settings which obviously would stop the fix working.... 
-Although these were the default settings so it would work out of the box 
-normally. I'd been tweaking them before to try and fix an annoying sound card 
-problem! ho hum. Push one bubble down in the wallpaper and another one pops 
-up. :-)
+So, we can just drop the vendor entries in those tables without having
+to do anything else.
 
-Regards,
-
--- 
-Ivor Hewitt.
-http://ivor.org - leylandii hedge -- http://ivor.it - technology
+	J
