@@ -1,16 +1,11 @@
-From: Wouter Verhelst <wouter@grep.be>
-Subject: Re: p4-clockmod doesn't seem to allow the highest possible speed
-Date: Sat, 10 Jan 2004 16:02:52 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: [PATCH] fix up CPU detection in p4-clockmod
+Date: Sat, 10 Jan 2004 16:12:48 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1073746849.1047.14.camel@worldmusic.grep.be>
-References: <20040109181851.GA1393@grep.be>
-	<20040110101534.GA10003@dominikbrodowski.de>
-	<20040110110800.GA8294@grep.be>
-	<20040110131824.GA5010@dominikbrodowski.de>
+Message-ID: <20040110151248.GA7989@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============48518566013358067=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20040110131824.GA5010@dominikbrodowski.de>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,107 +15,193 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: cpufreq@www.linux.org.uk
-
-
---===============48518566013358067==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ReMXRU9xD4jRdCEnvHVQ"
-
-
---=-ReMXRU9xD4jRdCEnvHVQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Op za 10-01-2004, om 14:18 schreef Dominik Brodowski:
-> On Sat, Jan 10, 2004 at 12:08:00PM +0100, Wouter Verhelst wrote:
-> > Vanilla 2.6.1, but I had the same problem with 2.6.0 (didn't try
-> > p4-clockmod on any kernel before that).
->=20
-> You shouldn't need to use p4-clockmod at all... speedstep-ich is a better
-> choice for your system...
-
-Ah? Didn't know. OK, thanks :-)
-
-(when checking the description now, it clearly says "P4-M"; must've
-missed that before)
-
-> Nonetheless, let us find the bug:
->=20
-> > > What does "dmesg" tell us?
-> >=20
-> > 234 lines of output. Seems a bit excessive to put that in this mail, so
-> > I've put it on <http://users.pandora.be/wouter.verhelst/cpufreq.tgz>,
-> > together with the contents of /proc/cpuinfo and my .config. If you need
-> > any further information, please ask.
->=20
-> Thank you very much. Two questions: Do the init scripts modprobe either=20
-> the acpi module (acpi.ko) or the speedstep-ich module (speedstep-ich.ko)
-> anyway?
-
-No. I compiled the ACPI module because I didn't want to convert my
-scripts right away and the speedstep-ich one because I wasn't sure which
-one to choose, but my /etc/modules (which lists modules to be loaded at
-boot time) contained p4-clockmod alone (contained, because it's
-speedstep-ich now ;-)
-
-> What does /proc/cpuinfo say before modprobing p4-clockmod, and
-> after modprobing p4-clockmod?
-
-The only difference with the one you already have is the Mhz number
-(which seems logical). Before it's loaded, it's at 2194.424; Immediately
-after loading p4-clockmod, that number was still the same, but in the
-mean time it went back to 1919.054
-
-Note that I had to reboot my box to unload the module. This is probably
-related to the above, but just in case it isn't: I cannot rmmod the
-p4-clockmod module, trying anyway results in rmmod segfaulting -- at
-least once the frequency has been altered. I didn't reboot again just to
-test that, but if you want, it's no problem.
-
-> Also, could you please uncomment the printk in line 190 of
-> linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c and send me a diff of th=
-e
-> dmesgs?
-
-The extra line reads:
-
-cpufreq: P4 - MSR_EBC_FREQUENCY_ID: 0x16300a16 0x0
-
---=20
-Wouter Verhelst
-Debian GNU/Linux -- http://www.debian.org
-Nederlandstalige Linux-documentatie -- http://nl.linux.org
-Most people have two reasons for doing anything -- a good reason, and
-the real reason
-
---=-ReMXRU9xD4jRdCEnvHVQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Dit berichtdeel is digitaal ondertekend
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBAABOhWgZ1HEtaPf0RAgzKAJoDLWdDaQjCEcX0caLSLw5ccuK6CwCeLri+
-W8+mjtKQ+UiszenyQ50jIck=
-=28Va
------END PGP SIGNATURE-----
-
---=-ReMXRU9xD4jRdCEnvHVQ--
-
-
---===============48518566013358067==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, akpm@osdl.org
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Too many users use the p4-clockmod cpufreq driver instead of the more
+advanced speedstep-centrino, speedstep-ich or even acpi drivers. All of the
+latter (usually) provide voltage scaling, while the p4-clockmod driver only
+offers a variant of frequency scaling. So, warn users if they try out this
+driver instead.
 
---===============48518566013358067==--
+Also, instead of using a local copy, use the speedstep_lib infrastructure
+for detecting the processor speed. Adding the Pentium-M get_frequency
+function to that module only costs about 200 bytes in object size.
 
+ arch/i386/kernel/cpu/cpufreq/Kconfig         |   10 ++--
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c   |   55 ++++++++-------------------
+ arch/i386/kernel/cpu/cpufreq/speedstep-lib.c |   23 +++++++++++
+ arch/i386/kernel/cpu/cpufreq/speedstep-lib.h |    6 ++
+ 4 files changed, 52 insertions(+), 42 deletions(-)
+
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+--- linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-01-10 14:54:45.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-01-10 15:25:20.000000000 +0100
+@@ -145,11 +145,6 @@
+ 
+ 	  If in doubt, say N.
+ 
+-config X86_SPEEDSTEP_LIB
+-	tristate
+-	depends on (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI)
+-	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI)
+-
+ config X86_P4_CLOCKMOD
+ 	tristate "Intel Pentium 4 clock modulation"
+ 	depends on CPU_FREQ_TABLE
+@@ -161,6 +156,11 @@
+ 
+ 	  If in doubt, say N.
+ 
++config X86_SPEEDSTEP_LIB
++	tristate
++	depends on (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
++	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
++
+ config X86_LONGRUN
+ 	tristate "Transmeta LongRun"
+ 	depends on CPU_FREQ
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-01-10 14:54:45.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-01-10 15:41:06.785375544 +0100
+@@ -33,6 +33,8 @@
+ #include <asm/msr.h>
+ #include <asm/timex.h>
+ 
++#include "speedstep-lib.h"
++
+ #define PFX	"cpufreq: "
+ 
+ /*
+@@ -174,51 +176,30 @@
+ 	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
+ }
+ 
+-/* copied from speedstep_lib, made SMP-compatible */
++
+ static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
+ {
+-	u32 msr_lo, msr_hi, mult;
+-	unsigned int fsb = 0;
++	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
++		/* Pentium M */
++		printk(KERN_DEBUG PFX "Warning: Pentium M detected. The speedstep_centrino module\n");
++		printk(KERN_DEBUG PFX "offers voltage scaling in addition of frequency scaling. You\n");
++		printk(KERN_DEBUG PFX "should use that instead of p4-clockmod, if possible.\n");
++		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
++	}
+ 
+ 	if (c->x86 != 0xF) {
+-		printk(KERN_DEBUG PFX "Unknown P4. Please send an e-mail to <linux@brodo.de>\n");
++		printk(KERN_DEBUG PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
+ 		return 0;
+ 	}
+ 
+-	rdmsr(0x2c, msr_lo, msr_hi);
+-
+-	/* printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi); */
+-	/* decode the FSB: see IA-32 Intel (C) Architecture Software 
+-	 * Developer's Manual, Volume 3: System Prgramming Guide,
+-	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
+-	 * Intel Xeon Processors, on page B-4 and B-5.
+-	 */
+-	if (c->x86_model < 2)
+-		fsb = 100 * 1000;
+-	else {
+-		u8 fsb_code = (msr_lo >> 16) & 0x7;
+-		switch (fsb_code) {
+-		case 0:
+-			fsb = 100 * 1000;
+-			break;
+-		case 1:
+-			fsb = 13333 * 10;
+-			break;
+-		case 2:
+-			fsb = 200 * 1000;
+-			break;
+-		}
+-	}
+-
+-	if (!fsb) {
+-		printk(KERN_DEBUG PFX "couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
+-		printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
++	if (speedstep_detect_processor() == SPEEDSTEP_PROCESSOR_P4M) {
++		printk(KERN_DEBUG PFX "Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq \n");
++		printk(KERN_DEBUG PFX "modules offers voltage scaling in addition of frequency scaling. You\n");
++		printk(KERN_DEBUG PFX "should use either one instead of p4-clockmod, if possible.\n");
++		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4M);
+ 	}
+ 
+-	/* Multiplier. */
+-	mult = msr_lo >> 24;
+-
+-	return (fsb * mult);
++	return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4D);
+ }
+ 
+  
+@@ -315,6 +296,6 @@
+ MODULE_DESCRIPTION ("cpufreq driver for Pentium(TM) 4/Xeon(TM)");
+ MODULE_LICENSE ("GPL");
+ 
+-module_init(cpufreq_p4_init);
++late_initcall(cpufreq_p4_init);
+ module_exit(cpufreq_p4_exit);
+ 
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-01-10 14:54:45.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-01-10 15:38:57.991955120 +0100
+@@ -104,6 +104,26 @@
+ }
+ 
+ 
++static unsigned int pentiumM_get_frequency(void)
++{
++	u32     msr_lo, msr_tmp;
++
++	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
++	dprintk(KERN_DEBUG "speedstep-lib: PM - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
++
++	/* see table B-2 of 24547212.pdf */
++	if (msr_lo & 0x00040000) {
++		printk(KERN_DEBUG "speedstep-lib: PM - invalid FSB: 0x%x 0x%x\n", msr_lo, msr_tmp);
++		return 0;
++	}
++
++	msr_tmp = (msr_lo >> 22) & 0x1f;
++	dprintk(KERN_DEBUG "speedstep-lib: bits 22-26 are 0x%x\n", msr_tmp);
++
++	return (msr_tmp * 100 * 10000);
++}
++
++
+ static unsigned int pentium4_get_frequency(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+@@ -151,6 +171,9 @@
+ unsigned int speedstep_get_processor_frequency(unsigned int processor)
+ {
+ 	switch (processor) {
++	case SPEEDSTEP_PROCESSOR_PM:
++		return pentiumM_get_frequency();
++	case SPEEDSTEP_PROCESSOR_P4D:
+ 	case SPEEDSTEP_PROCESSOR_P4M:
+ 		return pentium4_get_frequency();
+ 	case SPEEDSTEP_PROCESSOR_PIII_T:
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h	2004-01-10 14:54:45.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h	2004-01-10 15:26:23.000000000 +0100
+@@ -17,6 +17,12 @@
+ #define SPEEDSTEP_PROCESSOR_PIII_T 		0x00000003  /* Tualatin core */
+ #define SPEEDSTEP_PROCESSOR_P4M			0x00000004  /* P4-M  */
+ 
++/* the following processors are not speedstep-capable and are not auto-detected
++ * in speedstep_detect_processor(). However, their speed can be detected using
++ * the speedstep_get_processor_frequency() call. */
++#define SPEEDSTEP_PROCESSOR_PM			0xFFFFFF03  /* Pentium M  */
++#define SPEEDSTEP_PROCESSOR_P4D			0xFFFFFF04  /* desktop P4  */
++
+ /* speedstep states -- only two of them */
+ 
+ #define SPEEDSTEP_HIGH                  0x00000000
