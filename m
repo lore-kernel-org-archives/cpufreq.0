@@ -1,13 +1,11 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: PowerNowd v.75
-Date: 20 Jul 2003 23:32:28 -0700
+From: emmel <the_emmel@gmx.net>
+Subject: powernow-k7 (again) on 2.4.20
+Date: Mon, 21 Jul 2003 08:30:21 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1058769147.10397.8.camel@ixodes.goop.org>
-References: <Pine.LNX.4.44.0307210029040.18644-100000@pianoman.cluster.toy>
+Message-ID: <03072108302101.00222@gate>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.44.0307210029040.18644-100000@pianoman.cluster.toy>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,42 +16,57 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: John Clemens <john@deater.net>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-On Sun, 2003-07-20 at 21:58, John Clemens wrote:
-> I still think parsing /proc/uptime to get a load average is the wrong
-> heuristic to use.  load average is not cpu usage...
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I know.  It isn't getting load average (which is in /proc/loadavg), but 
-idle time.  The two numbers in /proc/uptime are seconds of uptime and
-seconds of idle uptime.  By polling it, you can pretty easily work out
-how idle the CPU was in your last poll interval.
+I've posted that before, but I've serious trouble with cpufreq. It return=
+s=20
+once loaded it makes the CPU speed drop from 1.4GHz to 800MHz (666 when=20
+throttled). If the kde info thingy is somewhat relyable at all that's for=
+=20
+real - the bogomips drop as well. Returning to 1.4GHz seems impossible=20
+without restarting (I've tried unloading the module). Somehow cpufreq get=
+s=20
+the stupid idea that the CPU is scaleable between 500 and 600MHz which ha=
+s to=20
+be the reason for those odd results. We are talking about a Mobile Athlon=
+ XP=20
+1600+ here, BTW (though it's reported by linux as a 1500+). If you ask me=
+=20
+that's a serious problem. The odd thing, however, is that it didn't happe=
+n=20
+with the same kernel version before. Maybe it depends on some intel code =
+to=20
+work correct (I used to have the CPU in the kernel set to PIII, now it's=20
+correctly at Athlon) or maybe it has something to do with the swsp patch =
+that=20
+I *don't* have applied to my actual kernel. HELP!
+The same odd behavior(sp?) appears with clean 2.5.72 and 2.6.0-test1 kern=
+els.
+- --=20
+emmel <the_emmel@gmx.net>
 
->  That said i think you
-> have a nice daemon there with some good ideas.  If you like, you are
-> welcome to steal the /proc/stat parsing code from powernowd (which, in
-> turn, was stolen mostly from procps).
+Official AGC feedback maniac
 
-I'll have a look at it.  It might be useful to do things like ignore
-niced processes, but on the other hand, who runs seti@home on a battery
-powered laptop?
+"God is playing creatures - and we're the norns."
 
->   It even supports SMP for when
-> CPUfreq gets SMP capability... in theory :).
+"A hundred dead are a tragedy - a hundred thousand are statistics."
 
-The cpufreq core supports SMP, but I don't know if any of the CPUs do. 
-What is your policy for SMP?  Do you compute overall system use and then
-set all the CPUs to some power state which can handle it, or try to work
-out how busy each CPU is and power-control them separately?  
+"I guess you can call yourself lucky." -
+"I could, but Linda suits me a little better... :)
+Things called lucky tend to get hit by trucks."
 
-> I really don't have much of a desire or the time to make a complete
-> product out of powernowd, but i thought it had some pretty cool ideas.  So
-> I just cleaned it up a bit and released it.. to allow others like you to
-> see those ideas and maybe get some use out of them.
+GPG 1.2.1 signed
+Fingerprint: 60B4 D8E3 9617 900C 6726  168F D677 5AAD D40F CCE7
+Certserver : ldap://certserver.pgp.com
 
-I don't have much more to do with speedfreq, except I've been meaning to
-hack of the existing gnome applets into extracting and displaying some
-info.
+Hi, I'm a .sig virus. Just copy me to your .signature. And don't worry.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.1 (GNU/Linux)
 
-	J
+iD8DBQE/G4h91ndardQPzOcRAiOjAKCVDYOIMqAxMfRg6KzP10gJqbpIFwCg76XC
+H2bqYbCAIlW+8mX1VvkoquI=3D
+=3DsYyM
+-----END PGP SIGNATURE-----
