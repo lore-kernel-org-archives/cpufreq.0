@@ -1,14 +1,14 @@
-From: aeriksson2@fastmail.fm
-Subject: Re: speedstep_smi & psmouse problems?
-Date: Mon, 24 May 2004 12:22:39 +0200
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: cpufreq files missing in Linux 2.6.5
+Date: Mon, 24 May 2004 14:21:40 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040524102240.EF92C3F04@latitude.mynet.no-ip.org>
-References: <aeriksson2@fastmail.fm>
+Message-ID: <20040524122140.GA4933@poupinou.org>
+References: <1085097449.18969.1.camel@delerium.codemonkey.org.uk>
+	<Pine.GSO.4.30.0405201709180.23636-100000@rigel.oac.uci.edu>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: Message from Anders Eriksson <aeriksson2@fastmail.fm> of "Thu,
-	20 May 2004 21:47:59 +0200."
-	<20040520194800.4DE6A4137@latitude.mynet.no-ip.org> 
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.30.0405201709180.23636-100000@rigel.oac.uci.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,20 +20,17 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+To: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
+Cc: cpufreq@www.linux.org.uk
+
+On Thu, May 20, 2004 at 05:16:53PM -0700, Vasanth Venkatachalam wrote:
+> I'm running a Pentium M with enhanced speedstep.
+
+'modprobe speedstep-centrino' do not work?
 
 
+-- 
+Bruno Ducrot
 
-> Aha, I see. So it seems I have to choose to use either the battery
-> related stuff, or the new psmouse stuff. I seem to recall seeing some
-> traffic on some option to psmouse.ko which made it work in 'old' or
-> 'absolute' mode or something. I'll check if that's more resilient to
-> bad interactions with battery readings...
-> 
-
-Tried that (using proto=exps instead of proto=imps), but no success.
-Do you know if the psmouse driver can be tweaked to handle this (hw
-bug, I assume) more gracefully? Given the way the mouse jumps on
-the screen, It seems a low-pass filter could do some good...
-
-/Anders
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
