@@ -1,9 +1,9 @@
-From: Tim Dijkstra <newsuser@famdijkstra.org>
-Subject: Which driver for Mobile P4 CPU?
-Date: Wed, 5 Jan 2005 20:07:21 +0100
-Message-ID: <20050105200721.21c6f5f8@bonenpikster.drs.p>
+From: "Chris Freyer" <chris@thefreyers.net>
+Subject: Repost:  System freeze running powersaved.
+Date: Wed, 05 Jan 2005 18:34:26 -0500
+Message-ID: <E1CmKfa-000Jhs-Bt@server2.anyname.com>
+Reply-To: Chris@TheFreyers.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -16,49 +16,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hi,
+Hello all.
 
-Maybe this is a FAQ, but your archive is not really easy searchable. If
-you have pointers to more info, I'm all ears.
+I'm having an issue with a new "silent PC" that I built.  I installed 
+SuSE 9.2 Pro without any problems.  But after each reboot, my machine 
+locks up within 10 minutes.  Logs didn't provide any meaningful info, 
+but there *are* ACPI messages in it.  I googled and learned that 
+powersaved might be causing the problem, so I removed it with insserv -
+r powersaved, and now it runs fine.  Nearly 2 weeks uptime now.
 
-According to the vendor of my laptop (ACER)it has a speedstep-able
-processor.
+I'm a little confused about how to resolve this.  What is the 
+relationship between powersaved and acpid, apmd, cpufreqd, etc...?  
+Which ones do I need?  
 
-tdykstra@bonenpikster:~$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.00GHz
-stepping        : 7
-cpu MHz         : 1196.242
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-bogomips        : 2351.10
+FYI:  I have a VIA C3 processor, VIA chipset, and VIA video.  Similar 
+in function to a VIA EPIA motherboard, but made by Matsonic.
 
-
-None of the drivers in the 2.6.10 kernel that have speedstep in their
-name are loadable. Does this mean that my CPU isn't supported or I'm a
-doing something wrong? 
-
-Maybe I shouldn't be complaining, because with acpi-freq I'm able to
-switch between 1.2 and 2 GHz. I do however get kernel messages like:
-
-kernel: acpi-cpufreq: Transition failed
-
-Do the specific speedstep-* drivers have some extra features over (are
-'better' than) the acpi-cpufreq driver or can just as well work with
-that?
-
-grts Tim
+Any assistance is appreciated.
+Chris
