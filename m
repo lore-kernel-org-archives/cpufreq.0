@@ -1,11 +1,10 @@
-From: Norbert Preining <preining@logic.at>
+From: Ducrot Bruno <ducrot@poupinou.org>
 Subject: Re: SpeedStep New Driver for Pentium III (-M) using SMI interface
-Date: Tue, 2 Sep 2003 07:35:57 +0200
+Date: Tue, 2 Sep 2003 10:18:05 +0200
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030902053557.GA28724@gamma.logic.tuwien.ac.at>
+Message-ID: <20030902081805.GO4401@poupinou.org>
 References: <871xuzbycu.wl%miura@da-cha.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
 In-Reply-To: <871xuzbycu.wl%miura@da-cha.org>
@@ -18,36 +17,44 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Hiroshi Miura <miura@da-cha.org>
-Cc: cpufreq@www.linux.org.uk
+Cc: Ducrot Bruno <ducrot@arm.linux.org.uk>, cpufreq@www.linux.org.uk
 
-On Die, 02 Sep 2003, Hiroshi Miura wrote:
-> It's just an alpha status.  This may be useful with PIIX4 or ICH based M-=
-P-III.
+On Tue, Sep 02, 2003 at 01:36:33PM +0900, Hiroshi Miura wrote:
+> Hi,
+> 
+> I have tried to make the driver which use Intel Speedstep applet's 
+> SMI interface for 3 months. 
+> 
+> This driver is based on the information from
+> 
+> 1. Microsoft Windows XP Document.
+> 	we can get the SMI interface values from ax=E980/int15 BIOS call. 
+> 
+> 2. Intel SpeedStep Applet Document.(from HP.com)
+> 	http://h18007.www1.hp.com/support/files/evonotebook/us/download/10631.html
+> 	" Adds code to request transition ownership when processing 
+> 	the system critical resume message. When a critical hibernate occurs, 
+> 	the Applet does not receive any system level notification. The change forces
+> 	 the Applet to re-acquire transition ownership upon resume from a critical hibernate. "
+> 
+> 	This is informative. This saied that  something 'ownership' call is needed on SMI 
+> 	interface first.
 
-I am ready to try it, but need a patch against 2.4(22,23pre):
+Fine, point 2 actually killed me.  One little question though, the magic string need
+all that?  Are you sure it can not be replaced by something else?  After all, you have
+to download the applet from the OEM, not necessary from Intel.
 
-model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.20GHz
-stepping        : 7
+I need probably to rewritte it a little though (some stuff in speedstep-lib.c
+should be used), but anyway, that one will be commited soon, eventually
+replacing speedstep-piix4 if all tests are ok.
 
-cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
-cpufreq: P4/Xeon(TM) CPU On-Demand Clock Modulation available
+Cheers,
 
-Best wishes
+-- 
+Ducrot Bruno
 
-Norbert
-
----------------------------------------------------------------------------=
-----
-Norbert Preining <preining AT logic DOT at>         Technische Universit=E4=
-t Wien
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 =
-B094
----------------------------------------------------------------------------=
-----
-BEREPPER
-The irrevocable and sturdy fart released in the presence of royalty,
-which sounds quite like a small motorbike passing by (but not enough
-to be confused with one).
-			--- Douglas Adams, The Meaning of Liff
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
