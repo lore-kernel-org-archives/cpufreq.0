@@ -1,11 +1,11 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
-Date: Tue, 4 Nov 2003 17:08:16 +0100
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: speedstep-smi, a start for an howto.
+Date: Tue, 4 Nov 2003 18:01:43 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031104160816.GA9187@brodo.de>
+Message-ID: <20031104170143.GR21970@poupinou.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============79676093675187465=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,66 +15,73 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
-
-
---===============79676093675187465==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
-Content-Disposition: inline
-
-
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-All drivers [davej, can you please verify for powernow-k7?] set the=20
-transition_latency time in microseconds, even though the core demanded
-nanoseconds. Instead of fixing up the drivers, fix up the core...
-
-	Dominik
-
-diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufre=
-q.h
---- linux-original/include/linux/cpufreq.h	2003-11-04 15:27:38.000000000 +0=
-100
-+++ linux/include/linux/cpufreq.h	2003-11-04 16:09:23.547389216 +0100
-@@ -57,7 +57,7 @@
- struct cpufreq_cpuinfo {
- 	unsigned int		max_freq;
- 	unsigned int		min_freq;
--	unsigned int		transition_latency; /* in 10^(-9) s */
-+	unsigned int		transition_latency; /* in 10^(-6) s =3D microseconds */
- };
-=20
- struct cpufreq_real_policy {
-
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.3 (GNU/Linux)
-
-iD8DBQE/p87vZ8MDCHJbN8YRAje3AKCVFznTV3RNkQH5y0IJfOI/4JaPggCdGtZC
-gEG12hWo2GJmdRkUJ5JaePE=
-=44To
------END PGP SIGNATURE-----
-
---vtzGhvizbBRQ85DL--
-
-
---===============79676093675187465==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============79676093675187465==--
+It seems that some BIOS vendor provide false information
+from the int15 values, or even worst do not implement
+at all the int15 stuff.
 
+Unfortunately, some vendor seems to like to actually
+write to the registry instead of the int15, and
+therefore breaking other OS (even Windows XP).
+
+Of course, as any real man, you have
+completely wipped out bad OS, but then you don't have
+anymore that damned registry.  All is lost?  No, of
+course.
+
+A quick way to get it is to go to the driver download
+page of your vendor, take the speedstep applet, then
+unzip it.  There is then good luck that there is a file
+for updating the registry.
+
+That file will give you the correct values
+to pass to the speedstep-smi driver.
+
+An example: for the toshiba 3000-100, there is a
+ssap-tosh3000-win2k.zip
+then:
+unzip ssap-s3000-win2k
+give a me a ''Intel Speed Step Applet' directory.
+
+ls -R under 'Intel Speed Step Applet' gave me:
+
+Intel Speed Step Applet$ ls -R
+.:
+disk1  disk2
+
+./disk1:
+DATA.TAG      Registry.ini  SETUP.INI     _ISDEL.EXE  _sys1.cab   data1.cab  layout.bin  setup.ins  setup.lid
+ISTUnDLL.dll  SETUP.EXE     _INST32I.EX_  _SETUP.DLL  _user1.cab  lang.dat   os.dat      setup.iss
+
+./disk2:
+data2.cab
+
+
+the directory disk1 have a Registry.ini:
+cat disk1/Registry.ini 
+[PRPC]
+Port=0x000000B2
+Command=0x00000082
+Flags=0x10000232
+UserPrefs=0x0000000d
+SystemPrefs=0x00000010
+EventRegister=0x00000000
+SetStateRetry=0x00000400
+AppletTimeout=0x00000078
+PollPeriod=0x000007d0ducrot@neptune:~/t/t$ 
+
+The correct parameter to pass are:
+
+modprobe speedstep_smi smi_port=0xb2 smi_cmd=0x82
+(smi_port is the Port registry, and smi_cmd is the Command).
+
+Hope that help,
+-- 
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
