@@ -1,17 +1,9 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: speedfreq: epia + longhaul + speedfreq + copying large files =
-	freeze
-Date: Thu, 23 Dec 2004 18:33:17 -0500
-Message-ID: <20041223233317.GF32326@redhat.com>
-References: <41C83AA7.6010204@gmx.net> <1103742159.16413.24.camel@localhost>
-	<20041222203136.GB21861@redhat.com>
-	<1103769532.16431.52.camel@localhost>
-	<20041223182424.GA32326@redhat.com>
-	<1103832303.16431.60.camel@localhost>
-Mime-Version: 1.0
+From: bugme-daemon@osdl.org
+Subject: [Bug 3952] New: powernow-k7 driver will NOT compile in kernel or as
+	module
+Date: Sun, 26 Dec 2004 19:30:08 -0800
+Message-ID: <200412270330.iBR3U8Nr020820@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1103832303.16431.60.camel@localhost>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,37 +14,56 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-On Thu, Dec 23, 2004 at 12:05:03PM -0800, Jeremy Fitzhardinge wrote:
+http://bugme.osdl.org/show_bug.cgi?id=3952
 
- > Sebastian is reporting the problem with speedfreqd, which will use the
- > same number of steps both ways (and, depending on the CPU load curve, at
- > the same rate).
- > 
- > Does rate-limiting the transitions help stability?
+           Summary: powernow-k7 driver will NOT compile in kernel or as
+                    module
+    Kernel Version: 2.6.10
+            Status: NEW
+          Severity: blocking
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: akshunj@myrealbox.com
 
-that's something worth trying maybe.
 
- > > We're not doing voltage scaling in longhaul yet, but that shouldn't
- > > matter, as we should be booting at max voltage (as we boot at max speed)
- > 
- > Is voltage switching complex?  It might be worth trying - its not
- > something which normally improves stability, but maybe there's some
- > regulator issue under load changes, or something...
+Distribution: Slackware 10
+Hardware Environment: Averatec 3225HS laptop with AMD XP-Mobile 2000+ precessor
+and VIA chipset
+Software Environment: GCC 3.3
+Problem Description: (error during "make bzImage" with driver in kernel OR
+during "make modules" with driver as module)
 
-With longhaul, its a little more complicated than it is with powernow,
-as theres no bios table telling us which voltage should be used
-for each frequency, and they vary depending on stepping & speed of the part.
-The first version of the longhaul driver did actually do voltage scaling,
-but the 'match the voltage to the speed' code was very crude, and
-assumed that the voltage table was 1:1 with the frequency, which
-worked for the most part, but was far from being 'the right thing'.
+CC      arch/i386/kernel/cpu/cpufreq/powernow-k7.o
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c: In function `powernow_manual_settings':
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:467: error: `mobile_vid_table'
+undeclared (first use in this function)
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:467: error: (Each undeclared
+identifier is reported only once
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:467: error: for each function it
+appears in.)
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c: At top level:
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:831: error: initializer element is
+not constant
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:831: error: (near initialization for
+`__param_arr_multiplier.num')
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:833: error: initializer element is
+not constant
+arch/i386/kernel/cpu/cpufreq/powernow-k7.c:833: error: (near initialization for
+`__param_arr_voltage.num')
+make[3]: *** [arch/i386/kernel/cpu/cpufreq/powernow-k7.o] Error 1
+make[2]: *** [arch/i386/kernel/cpu/cpufreq] Error 2
+make[1]: *** [arch/i386/kernel/cpu] Error 2
+make: *** [arch/i386/kernel] Error 2
 
-I'm not convinced that adding it back in would fix the stability problems.
-If anything, it would add another variable.
+Steps to reproduce: Compile 2.6.10 kernel with cpufreq driver powernow-k7 in
+kernel or as module.
 
-		Dave
+This driver is critical to MANY of the budget laptops running the AMD XP-Mobile.
+ This driver works fine in the 2.6.10-rc3 kernel.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
