@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: patch-04 [Re: [PATCHES] cpufreq_get(), cpufreq->get()]
-Date: Mon, 12 Apr 2004 00:00:26 +0200
+Subject: patch-05 [Re: [PATCHES] cpufreq_get(), cpufreq->get()]
+Date: Mon, 12 Apr 2004 00:00:47 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040411220026.GC8160@dominikbrodowski.de>
+Message-ID: <20040411220047.GD8160@dominikbrodowski.de>
 References: <20040411215912.GA8160@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -21,148 +21,175 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Sometimes we might discover during a call to cpufreq_get() that we're "out of sync",
-meaning the actual CPU frequency changed "behind our back". If this happens, the
-flag CPUFREQ_PANIC_OUTOFSYNC decides what can be done: if it is set, the kernel panic's,
-it it is not set, the cpufreq transition notifiers are informed of this change, and
-a call to cpufreq_update_policy() is scheduled [using the default workqueue] so that
-the user-defined values override BIOS / external interaction.
+(Hopefully) fix cpufreq resume support.
 
- drivers/cpufreq/cpufreq.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |   15 +++++++++++--
- 2 files changed, 63 insertions(+), 2 deletions(-)
+Upon resuming, first CPUfreq hardware support needs to be re-enabled in ceratin cases
+(call to cpufreq_driver->resume()).
 
+Then, two different paths may need to be taken:
+a) frequency during suspend equals frequency during resume ==> everything is fine,
+
+b) frequency differ ==> either we can't handle it, then panic (see flag 
+   CPUFREQ_PANIC_RESUME_OUTOFSYNC). Or we can handle it, then notify all
+   transition notifiers of this frequency change (CPUFREQ_RESUMECHANGE so that they
+   know IRQs are disabled).
+
+At last, a call to cpufreq_update_policy() is scheduled. This asserts that
+that the policy can be updated soon, in case platform limit, thermal and/or other 
+issues make an adjustment necessary.
+
+ Documentation/cpu-freq/core.txt |    4 ++
+ drivers/cpufreq/cpufreq.c       |   63 ++++++++++++++++++++++++----------------
+ include/linux/cpufreq.h         |    5 +++
+ 3 files changed, 47 insertions(+), 25 deletions(-)
+
+diff -ruN linux-original/Documentation/cpu-freq/core.txt linux/Documentation/cpu-freq/core.txt
+--- linux-original/Documentation/cpu-freq/core.txt	2004-04-11 14:47:24.000000000 +0200
++++ linux/Documentation/cpu-freq/core.txt	2004-04-11 17:13:16.571514384 +0200
+@@ -92,3 +92,7 @@
+ cpu	- number of the affected CPU
+ old	- old frequency
+ new	- new frequency
++
++If the cpufreq core detects the frequency has changed while the system
++was suspended, these notifiers are called with CPUFREQ_RESUMECHANGE as
++second argument.
 diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
---- linux-original/drivers/cpufreq/cpufreq.c	2004-04-11 17:08:00.752526168 +0200
-+++ linux/drivers/cpufreq/cpufreq.c	2004-04-11 17:09:54.233274472 +0200
-@@ -362,6 +362,7 @@
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-04-11 17:14:34.836616280 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2004-04-11 17:13:16.572514232 +0200
+@@ -33,8 +33,10 @@
+ static struct cpufreq_policy	*cpufreq_cpu_data[NR_CPUS];
+ static spinlock_t		cpufreq_driver_lock = SPIN_LOCK_UNLOCKED;
+ 
+-/* internal prototype */
++/* internal prototypes */
+ static int __cpufreq_governor(struct cpufreq_policy *policy, unsigned int event);
++static void handle_update(void *data);
++static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci);
+ 
+ 
+ /**
+@@ -362,7 +364,6 @@
  	.release	= cpufreq_sysfs_release,
  };
  
-+static void handle_update(void *data);
+-static void handle_update(void *data);
  
  /**
   * cpufreq_add_dev - add a CPU device
-@@ -388,6 +389,7 @@
- 	policy->cpu = cpu;
- 	init_MUTEX_LOCKED(&policy->lock);
- 	init_completion(&policy->kobj_unregister);
-+	INIT_WORK(&policy->update, handle_update, (void *) cpu);
- 
- 	/* call driver. From then on the cpufreq must be able
- 	 * to accept all calls to ->verify and ->setpolicy for this CPU
-@@ -496,6 +498,39 @@
- }
+@@ -572,10 +573,11 @@
  
  
-+static void handle_update(void *data)
-+{
-+	unsigned int cpu = (unsigned int) data;
-+	cpufreq_update_policy(cpu);
-+}
-+
-+/**
-+ *	cpufreq_out_of_sync - If actual and saved CPU frequency differs, we're in deep trouble.
-+ *	@cpu: cpu number
-+ *	@old_freq: CPU frequency the kernel thinks the CPU runs at
-+ *	@new_freq: CPU frequency the CPU actually runs at
-+ *
-+ *	We adjust to current frequency first, and need to clean up later. So either call
-+ *	to cpufreq_update_policy() or schedule handle_update()).
-+ */
-+static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq, unsigned int new_freq)
-+{
-+	struct cpufreq_freqs freqs;
-+
-+	if (cpufreq_driver->flags & CPUFREQ_PANIC_OUTOFSYNC)
-+		panic("CPU Frequency is out of sync.");
-+
-+	printk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing "
-+	       "core thinks of %u, is %u kHz.\n", old_freq, new_freq);
-+
-+	freqs.cpu = cpu;
-+	freqs.old = old_freq;
-+	freqs.new = new_freq;
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+}
-+
-+
- /** 
-  * cpufreq_get - get the current CPU frequency (in kHz)
-  * @cpu: CPU number
-@@ -517,6 +552,15 @@
- 
- 	ret = cpufreq_driver->get(cpu);
- 
-+	if (ret && policy->cur && !(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) 
-+	{
-+		/* verify no discrepancy between actual and saved value exists */
-+		if (unlikely(ret != policy->cur)) {
-+			cpufreq_out_of_sync(cpu, policy->cur, ret);
-+			schedule_work(&policy->update);
-+		}
-+	}
-+
- 	up(&policy->lock);
- 
-  out:
-@@ -957,6 +1001,9 @@
- 
- static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+ /**
+- *	cpufreq_resume - restore the CPU clock frequency after resume
++ *	cpufreq_resume -  restore proper CPU frequency handling after resume
+  *
+- *	Restore the CPU clock frequency so that our idea of the current
+- *	frequency reflects the actual hardware.
++ *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
++ *	2.) if ->target and !CPUFREQ_CONST_LOOPS: verify we're in sync
++ *	3.) schedule call cpufreq_update_policy() ASAP as interrupts are restored.
+  */
+ static int cpufreq_resume(struct sys_device * sysdev)
  {
-+	if (cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)
-+		return;
-+
- 	if (!l_p_j_ref_freq) {
- 		l_p_j_ref = loops_per_jiffy;
- 		l_p_j_ref_freq = ci->old;
-@@ -1023,6 +1070,9 @@
- 	    ((!driver_data->setpolicy) && (!driver_data->target)))
+@@ -595,25 +597,37 @@
+ 	if (!cpu_policy)
  		return -EINVAL;
  
-+	if (driver_data->setpolicy)
-+		driver_data->flags |= CPUFREQ_CONST_LOOPS;
+-	if (cpufreq_driver->resume)
+-		ret = cpufreq_driver->resume(cpu_policy);
+-	if (ret) {
+-		printk(KERN_ERR "cpufreq: resume failed in ->resume step on CPU %u\n", cpu_policy->cpu);
+-		goto out;
+-	}
++	if (!cpufreq_driver->flags & CPUFREQ_CONST_LOOPS) {
++		unsigned int cur_freq = 0;
+ 
+-	if (cpufreq_driver->setpolicy)
+-		ret = cpufreq_driver->setpolicy(cpu_policy);
+-	else
+-		/* CPUFREQ_RELATION_H or CPUFREQ_RELATION_L have the same effect here, as cpu_policy->cur is known
+-		 * to be a valid and exact target frequency
+-		 */
+-		ret = cpufreq_driver->target(cpu_policy, cpu_policy->cur, CPUFREQ_RELATION_H);
++		if (cpufreq_driver->get)
++			cur_freq = cpufreq_driver->get(cpu_policy->cpu);
+ 
+-	if (ret)
+-		printk(KERN_ERR "cpufreq: resume failed in ->setpolicy/target step on CPU %u\n", cpu_policy->cpu);
++		if (!cur_freq || !cpu_policy->cur) {
++			printk(KERN_ERR "cpufreq: resume failed to assert current frequency is what timing core thinks it is.\n");
++			goto out;
++		}
 +
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	if (cpufreq_driver) {
- 		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
++		if (unlikely(cur_freq != cpu_policy->cur)) {
++			struct cpufreq_freqs freqs;
++
++			if (cpufreq_driver->flags & CPUFREQ_PANIC_RESUME_OUTOFSYNC)
++				panic("CPU Frequency is out of sync.");
++
++			printk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing"
++			       "core thinks of %u, is %u kHz.\n", cpu_policy->cur, cur_freq);
++
++			freqs.cpu = cpu;
++			freqs.old = cpu_policy->cur;
++			freqs.new = cur_freq;
++
++			notifier_call_chain(&cpufreq_transition_notifier_list, CPUFREQ_RESUMECHANGE, &freqs);
++			adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
++		}
++	}
+ 
+ out:
++	schedule_work(&cpu_policy->update);
+ 	cpufreq_cpu_put(cpu_policy);
+ 	return ret;
+ }
+@@ -1009,11 +1023,12 @@
+ 		l_p_j_ref_freq = ci->old;
+ 	}
+ 	if ((val == CPUFREQ_PRECHANGE  && ci->old < ci->new) ||
+-	    (val == CPUFREQ_POSTCHANGE && ci->old > ci->new))
++	    (val == CPUFREQ_POSTCHANGE && ci->old > ci->new) ||
++	    (val == CPUFREQ_RESUMECHANGE))
+ 		loops_per_jiffy = cpufreq_scale(l_p_j_ref, l_p_j_ref_freq, ci->new);
+ }
+ #else
+-#define adjust_jiffies(x...) do {} while (0)
++static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci) { return; }
+ #endif
+ 
+ 
+@@ -1025,9 +1040,7 @@
+  */
+ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
+ {
+-	if (irqs_disabled())
+-		return;   /* Only valid if we're in the resume process where
+-			   * everyone knows what CPU frequency we are at */
++	BUG_ON(irqs_disabled());
+ 
+ 	down_read(&cpufreq_notifier_rwsem);
+ 	switch (state) {
 diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
---- linux-original/include/linux/cpufreq.h	2004-04-11 17:07:17.095163096 +0200
-+++ linux/include/linux/cpufreq.h	2004-04-11 17:10:41.321116032 +0200
-@@ -21,6 +21,7 @@
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
- #include <linux/completion.h>
-+#include <linux/workqueue.h>
+--- linux-original/include/linux/cpufreq.h	2004-04-11 17:14:34.837616128 +0200
++++ linux/include/linux/cpufreq.h	2004-04-11 17:13:49.038578640 +0200
+@@ -100,6 +100,7 @@
  
- #define CPUFREQ_NAME_LEN 16
+ #define CPUFREQ_PRECHANGE	(0)
+ #define CPUFREQ_POSTCHANGE	(1)
++#define CPUFREQ_RESUMECHANGE	(8)
  
-@@ -81,6 +82,9 @@
-  	struct semaphore	lock;   /* CPU ->setpolicy or ->target may
- 					   only be called once a time */
- 
-+	struct work_struct	update; /* if update_policy() needs to be
-+					 * called, but you're in IRQ context */
-+
- 	struct cpufreq_real_policy	user_policy;
- 
- 	struct kobject		kobj;
-@@ -198,8 +202,15 @@
- 
- /* flags */
- 
--#define CPUFREQ_STICKY	0x01	/* the driver isn't removed even if 
--				   all ->init() calls failed */
-+#define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if 
-+					 * all ->init() calls failed */
-+#define CPUFREQ_CONST_LOOPS 	0x02	/* loops_per_jiffy or other kernel
-+					 * "constants" aren't affected by
-+					 * frequency transitions */
-+#define CPUFREQ_PANIC_OUTOFSYNC	0x04	/* panic if cpufreq's opinion of
+ struct cpufreq_freqs {
+ 	unsigned int cpu;	/* cpu nr */
+@@ -210,6 +211,10 @@
+ #define CPUFREQ_PANIC_OUTOFSYNC	0x04	/* panic if cpufreq's opinion of
+ 					 * current frequency differs from
+ 					 * actual frequency */
++#define CPUFREQ_PANIC_RESUME_OUTOFSYNC 0x08 /* panic if cpufreq's opinion of
 +					 * current frequency differs from
-+					 * actual frequency */
-+
++					 * actual frequency on resume
++					 * from sleep. */
+ 
  
  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
