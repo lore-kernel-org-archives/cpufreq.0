@@ -1,15 +1,18 @@
-From: Len Brown <len.brown@intel.com>
-Subject: Re: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500 hangs while
-	loading acpi module]
-Date: 15 Jan 2004 17:15:48 -0500
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [ACPI] Re: [PATCH 2.6] update passive cooling algorithm
+Date: Thu, 15 Jan 2004 23:34:25 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1074204948.3582.2.camel@dhcppc4>
-References: <BF1FE1855350A0479097B3A0D2A80EE0CC894B@hdsmsx402.hd.intel.com>
-	<20031229115624.GA4489@dominikbrodowski.de>
+Message-ID: <20040115223425.GC18488@elf.ucw.cz>
+References: <20040111211255.GA31105@dominikbrodowski.de>
+	<20040112154611.GH14031@poupinou.org>
+	<20040112173922.GA6154@dominikbrodowski.de>
+	<20040112191122.GK14031@poupinou.org>
+	<20040115121833.GB12963@elf.ucw.cz>
+	<20040115134229.GT14031@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031229115624.GA4489@dominikbrodowski.de>
+Content-Disposition: inline
+In-Reply-To: <20040115134229.GT14031@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,33 +23,44 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: Martin Schreiber <SchreiberX@Altmuehlnet.de>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
+Hi!
 
-On Mon, 2003-12-29 at 06:56, Dominik Brodowski wrote:
-> On Tue, Dec 23, 2003 at 01:31:30AM -0500, Brown, Len wrote:
-> > This was  http://bugzilla.kernel.org/show_bug.cgi?id=1349
-> > The fix is in current 2.4.24, and the latest ACPI patch for 2.6.0:
+> > > > voltage scaling. It offers a much better (quadratic) saving than clock
+> > > > modulation (linear saving). Doing both [and you need to do it, as the CPU
+> > > > won't run with fewer volts at the same frequency] gives you cubic savings.
+> > > 
+> > > Yes I know.  But does it offer more 'cooling'?
 > > 
-> > http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/
-> > 2.6.0/
+> > Of course.
 > > 
-> > Cheers,
-> > -Len
+> > If you eat less power, you create less heat. CPU is basically fancy
+> > "turn-electricity-into-heat" device.
 > > 
-> > Ps. Sorry I didn't reply earlier, I got bounced off this list for a
-> > spell.
 > 
-> AFAICS, Veki's patch isn't in acpi-20031203-2.6.0.diff.gz.
+> I don't like certitudes (I was wondering if better heat dissipation
+> in
+
+Sorry.
+
+> case of throttling even if more heat generation, but that not the
+> case).
+
+I guess throttling is way too fast (in kHz range, IIRC), so there
+should not be any strange effects.
+
+> > [Have you seen that "first use of PentiumPro in house appliances"
+> > picture?]
 > 
-> 	Dominik
+> No, but I do have seen some that have burnt in a production server,
+> some years ago...
 
-oops -- looks like i applied it to 24 but didn't roll in the 26 version.
-
-Here's the broken out 26 patch -- it will be rolled in tonight.
-
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/test/2.6.0/20040115170330-processor.patch
-
-thanks,
--Len
+There was a picture of four-plate cooker, with PPro in the middle of
+each plate.
+								Pavel
+-- 
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
