@@ -1,17 +1,16 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Which cpufreq driver is best for ...
-Date: Wed, 3 Sep 2003 23:01:53 +0200
+From: Matt Wright <matt@consultmatt.co.uk>
+Subject: Re: Cpufreq and AMD mobile Athlon 4
+Date: 03 Sep 2003 22:55:02 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030903210153.GA19704@brodo.de>
-References: <20030903055749.GA21721@gamma.logic.tuwien.ac.at>
-	<20030903192749.GA30360@brodo.de>
-	<20030903055749.GA21721@gamma.logic.tuwien.ac.at>
-	<3F55D261.6010407@basmevissen.nl> <20030903193040.GB30360@brodo.de>
-	<20030903195013.GA25291@gamma.logic.tuwien.ac.at>
+Message-ID: <1062626101.4840.0.camel@riogrande>
+References: <1062500550.5141.3.camel@riogrande>
+	<20030902125908.GB1225@redhat.com>
+	<20030902220356.329829c1.simplex@freemail.hu>
+	<20030902201722.GD1225@redhat.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-wxMLV+ZuvpMIXT8T+mF0"
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20030903195013.GA25291@gamma.logic.tuwien.ac.at>
+In-Reply-To: <20030902201722.GD1225@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,148 +20,100 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
+
+
+--=-wxMLV+ZuvpMIXT8T+mF0
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-To: Norbert Preining <preining@logic.at>
-Cc: cpufreq@www.linux.org.uk
 
-Dear Norbert,
+Hi guys,
 
+See attached the decoded sys oops from my encounters with powernow-k7.
 
-> On Mit, 03 Sep 2003, Dominik Brodowski wrote:
-> > No, speedstep-ich is "superior". p4-clockmod only "throttles" the CPU, i.e.
-> > it scales down the frequency but not the voltage. This results in an
-> > approximately linear saving of energy. speedstep-ich also scales the
-> > voltage, which causes much better saving of energy. 
+Regards,
+
+Matt
+
+On Tue, 2003-09-02 at 21:17, Dave Jones wrote:
+> On Tue, Sep 02, 2003 at 10:03:56PM +0200, V?lgyi Zolt?n wrote:
 > 
-> Sorry for the stupid questions, but why there are 8 different cpu
-> frequencies possible with p4-clockmod, while there are only 2 with
-> speedstep-ich?
-
-The difference is the following: 
-
-A.) SpeedStep I: The Front Side Bus (FSB) of your CPU is,
-most likely, 100 MHz. Within the kernel this is multiplied by a certain
-factor to get the CPU frequency. On SpeedStep-capable CPUs there are not one
-but _two_ such multipliers -- with two different factors. This is controlled
-by _one_ input pin to the CPU, and thus offers only two different operating
-frequencies.
-
-B.) Throttling [p4-clockmod]: The CPU only "works" if the clock signal (which
-is produced externally and then modified in the mutliplier) is propagated 
-throughout the CPU. It is possible to block this clock signal for certain 
-periods of time -- so if each char represents a clock tick, the following is
-done when 50% throttling is active:
-xxxx----xxxx----xxxx----xxxx----
-where x denotes the CPU "works" and - denotes where the CPU doesn't do
-anything usefull at all.
-And probably it's easy to stop every eigth or so CPU clock signal, so you
-get 8 different throttling states.
-
-[For informational purposes only:]
-C.) SpeedStep II [what you can find on the "Centrino" Pentium-M processor]:
-It is not an input pin which steers the frequency multiplier, but a "Model
-Specific Register" (MSR), and thus more different frequency multiplier == 
-speed settings are possible.
-
-> > And as long as ACPI C-States "idling" or APM "hlt" instructions work, the
-> > CPU is "throttled"[*] if there is no work to do anyway, so the p4-clockmod
-> > driver doesn't save you anything. The p4-clockmod driver almost only is
-> > useful where ACPI or APM "idling" is borken.
+>  > I've got the same problem with my notebook. This is a 
+>  > Fujitsu-Siemens Amilo A7600.
 > 
-> Does this mean, that with speedstep-ich I do *not* need a
-> cpufreq/speedstep/cpudyn/(insert your favorite) daemon and this is done
-> automatically?
+> noted. Can you mail me the dmidecode output too please ?
+> (See http://people.redhat.com/arjanv/dmidecode.c)
+> 
+>  > Nothing else.
+>  > But what to do?
+> 
+> Is there a BIOS update available you can try ?
+> 
+> I really wish I had the time to get sysfs overrides written..
+> 
+> 		Dave
 
-No, with the _p4-clockmod_ driver you don't need a cpudyn daemon [except -
-see below...]. With _speedstep-ich_ it'd be very usefull.
+--=-wxMLV+ZuvpMIXT8T+mF0
+Content-Disposition: attachment; filename=result
+Content-Type: text/plain; name=result; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-> More detailed: linux-2.4.23-pre2 with cpufreq from cvs: What is the best
-> way to:
-> 	* reduce heat
-> 	* increase battery life
-both aims are effectively the same: the less energy you use, the less heat
-is produced, and the longer the battery lasts.
+Unable to handle kernel NULL pointer dereference at virtual address 00000004
+c019423c
+*pde = 00000000
+Oops: 0000
+CPU:    0
+EIP:    0010:[<c019423c>]    Not tainted
+Using defaults from ksymoops -t elf32-i386 -a i386
+EFLAGS: 00010246
+eax: 00000000   ebx: c3c5df10   ecx: 00000000   edx: 00000000
+esi: 00000000   edi: ffffffff   ebp: 00000000   esp: c3c5debc
+ds: 0018   es: 0018   ss: 0018
+Process bash (pid: 4857, stackpage=c3c5d000)
+Stack: 00000000 c02a2ee0 c3c5df10 c3c5df40 c3c5df10 ccd007e8 c3c5df10 00000000
+       c012860e c3c5df10 c2194898 0000000c c3c5df84 0000001b 00000000 c3c5df40
+       c3c5df10 c0194838 c3c5df10 c3c5df10 0000001b 00000000 00000000 00000000
+Call Trace:    [<ccd007e8>] [<c012860e>] [<c0194838>] [<c015dce0>] [<c013c1d3>]
+  [<c0108dc7>]
+Code: 8b 45 04 31 c9 83 f8 fe 74 1b 83 f8 ff 74 0c 3b 43 04 72 5a
+ 
+>>EIP; c019423c <cpufreq_frequency_table_verify+5c/f0>   <=====
+Trace; ccd007e8 <[powernow-k7]powernow_verify+18/20>
+Trace; c012860e <cpufreq_set_policy+8e/270>
+Trace; c0194838 <cpufreq_proc_write+f8/140>
+Trace; c015dce0 <proc_file_write+40/50>
+Trace; c013c1d3 <sys_write+a3/130>
+Trace; c0108dc7 <system_call+33/38>
+Code;  c019423c <cpufreq_frequency_table_verify+5c/f0>
+00000000 <_EIP>:
+Code;  c019423c <cpufreq_frequency_table_verify+5c/f0>   <=====
+   0:   8b 45 04                  mov    0x4(%ebp),%eax   <=====
+Code;  c019423f <cpufreq_frequency_table_verify+5f/f0>
+   3:   31 c9                     xor    %ecx,%ecx
+Code;  c0194241 <cpufreq_frequency_table_verify+61/f0>
+   5:   83 f8 fe                  cmp    $0xfffffffe,%eax
+Code;  c0194244 <cpufreq_frequency_table_verify+64/f0>
+   8:   74 1b                     je     25 <_EIP+0x25>
+Code;  c0194246 <cpufreq_frequency_table_verify+66/f0>
+   a:   83 f8 ff                  cmp    $0xffffffff,%eax
+Code;  c0194249 <cpufreq_frequency_table_verify+69/f0>
+   d:   74 0c                     je     1b <_EIP+0x1b>
+Code;  c019424b <cpufreq_frequency_table_verify+6b/f0>
+   f:   3b 43 04                  cmp    0x4(%ebx),%eax
+Code;  c019424e <cpufreq_frequency_table_verify+6e/f0>
+  12:   72 5a                     jb     6e <_EIP+0x6e>
 
-> (and still do some work, but I normally do not have big long cpu intense
-> applications running, besides kernel compiling)?
+--=-wxMLV+ZuvpMIXT8T+mF0
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-If you don't mind that the CPU heats up during kernel compiles, the
-speedstep-ich driver is better for your usage.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-> I found for now that having p4-clockmod saves more energy/produces less
-> heat since most of the time the laptop is running in 275MHz (with
-> cpudynd), while with speedstep-ich it is running at 1200MHz.
-
-But as the agressive idling done by ACPI or APM saves as much energy as
-throttling, this shouldn't be a valid assumption.
-
-> Finally: If p4-clockmod only scales down cpu freq, and speedstep-ich
-> scaled down cpu freq *AND* voltage, are there any statistics or other
-> ways to compare battery life/heat production between the two,
-> assuming that for the former the minimal cpu freq is 274MHz and for the
-> later 1200MHz. 
-
-Unfortunately, I don't have the information for your CPU. But, as a good
-example, let's take the 1.0 GHz Pentium-III-M. 
-
-100% CPU-usage, 1.0 GHz, Speedstep-High, no throttling:		34.0 W
-	and let's say the CPU consuming task takes 1 minute to complete.
-	==> for the task you'll need 2.0 kWs [=kJ?] of energy.
-
-100% CPU-usage,	700 MHz, Speedstep-Low, no throttling:		16.1 W
-	--> the CPU consuming task will take 1.43 minutes to complete.
-	==> for the task you'll need 1.4 kWs of energy.
-
-100% CPU usage, 125 MHz, throttling to 12.5%: [*]		 6.2 W
-	--> the CPU consuming task will take 8 minutes to complete.
-	==> for the task you'll need 3.0 kWs of energy.
-
-
-0% CPU usage, 1.0 GHz, SpeedStep-High, throttling doesn't matter: 2.2 W
-
-0% CPU usage, 700 MHz, SpeedStep-Low, throttling doesn't matter:  1.2 W
-
-
-and now let's assume the "needed" CPU capacity is 100 MHz for one second:
-
-10% CPU usage, 1.0 GHz [SpeedStep-High, no throttling, no dynamic switching]:
-	34.0 * 1/10 + 2.2 * 9/10				= 5.38 Ws
-
-14% CPU usage, 700 MHz [SpeedStep-Low, no throttling, no dynamic switching]:
-	16.1 * 1/7 + 1.2 * 6/7					= 3.33 Ws
-
-80% CPU usage, 125 MHz [throttling to 12.5%]
-	2.2 + ([34.0 - 2.2] * 1/8 * 8/10)			= 5.38 Ws
-	==> you don't save anything at all.
-
-10% CPU usage at 1.0GHz for 100ms, then the CPU is dynamically switched to 
-the SpeedStep-Low state. No throttling:
-	34.0 * 1/10 + 1.2 * 9/10				= 4.48 Ws
-	==> this doesn't buy you much, either. This result surprised me too,
-	by the way.
-
-[*] 2.2 + ([34.0 - 2.2] * 1/8)
-
-
-> Concise: Does the speedstep-ich voltage reduction decrease the amount of
-> energy used by a factor 4 (~ 1200/274) so that it is comparable to
-> p4-clockmod?
-
-Wrong question: Mostly you do care about "energy needed for certain amount
-of work". There throttling doesn't save you anything if idling works, but
-"speedstepping" does.
-
-The only two reasons for CPUfreq drivers which "only" do throttling are:
-
-a) The idling mechansim is broken.
-
-b) Reduce the heat. If the CPU only takes 6.2 W instead of 34.0 W, this is
-much. This is a good approach to avoid a burning feeling on your lap when 
-your notebook is compiling, and you don't need the compiled program ASAP.
-But: you won't save any _energy_/battery power [see above].
+--=-wxMLV+ZuvpMIXT8T+mF0--
 
 
-Best wishes to the wonderful city of Vienna,
-
-	Dominik
