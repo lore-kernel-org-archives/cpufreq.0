@@ -1,8 +1,9 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq patch,1.58,1.59
-Date: Thu, 26 Aug 2004 14:25:50 +0100
+Subject: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
+	1.6 cpu-sa1110.c, 1.12, 1.13
+Date: Thu, 26 Aug 2004 14:25:51 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1C0KGE-0006oZ-2m@flint.arm.linux.org.uk>
+Message-ID: <E1C0KGF-0006od-0A@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,34 +19,106 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq
-In directory flint:/tmp/cvs-serv26017
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100
+In directory flint:/tmp/cvs-serv26017/linux/arch/arm/mach-sa1100
 
 Modified Files:
-	patch 
+	cpu-sa1100.c cpu-sa1110.c 
 Log Message:
 merge with current cpufreq bk tree and 2.6.9-r1
 
-Index: patch
+Index: cpu-sa1100.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/patch,v
-retrieving revision 1.58
-retrieving revision 1.59
-diff -u -r1.58 -r1.59
---- patch	5 Nov 2003 18:27:40 -0000	1.58
-+++ patch	26 Aug 2004 13:25:15 -0000	1.59
-@@ -0,0 +1,14 @@
-+--- linux.original/include/asm-i386/acpi.h	2004/08/26 13:13:44
-++++ linux/include/asm-i386/acpi.h	2004/08/26 13:14:33
-+@@ -101,6 +101,11 @@
-+         :"=r"(n_hi), "=r"(n_lo)     \
-+         :"0"(n_hi), "1"(n_lo))
-+ 
-++/*
-++ * Refer Intel ACPI _PDC support document for bit definitions
-++ */
-++#define ACPI_PDC_EST_CAPABILITY_SMP 	0xa
-++#define ACPI_PDC_EST_CAPABILITY_MSR	0x1
-+ 
-+ #ifdef CONFIG_ACPI_BOOT 
-+ extern int acpi_lapic;
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1100.c,v
+retrieving revision 1.5
+retrieving revision 1.6
+diff -u -r1.5 -r1.6
+--- cpu-sa1100.c	5 Nov 2003 18:27:41 -0000	1.5
++++ cpu-sa1100.c	26 Aug 2004 13:25:17 -0000	1.6
+@@ -180,7 +180,7 @@
+ 			 unsigned int target_freq,
+ 			 unsigned int relation)
+ {
+-	unsigned int cur = sa11x0_getspeed();
++	unsigned int cur = sa11x0_getspeed(0);
+ 	unsigned int new_ppcr;
+ 
+ 	struct cpufreq_freqs freqs;
+@@ -221,7 +221,7 @@
+ {
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
+-	policy->cur = policy->min = policy->max = sa11x0_getspeed();
++	policy->cur = policy->min = policy->max = sa11x0_getspeed(0);
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.min_freq = 59000;
+ 	policy->cpuinfo.max_freq = 287000;
+@@ -230,15 +230,18 @@
+ }
+ 
+ static struct cpufreq_driver sa1100_driver = {
++	.flags		= CPUFREQ_STICKY |
++			  CPUFREQ_PANIC_OUTOFSYNC | 
++			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
+ 	.verify		= sa11x0_verify_speed,
+ 	.target		= sa1100_target,
++	.get		= sa11x0_getspeed,
+ 	.init		= sa1100_cpu_init,
+ 	.name		= "sa1100",
+ };
+ 
+ static int __init sa1100_dram_init(void)
+ {
+-	cpufreq_gov_userspace_init();
+  	if ((processor_id & CPU_SA1100_MASK) == CPU_SA1100_ID)
+ 		return cpufreq_register_driver(&sa1100_driver);
+ 	else
+
+Index: cpu-sa1110.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c,v
+retrieving revision 1.12
+retrieving revision 1.13
+diff -u -r1.12 -r1.13
+--- cpu-sa1110.c	6 Nov 2003 11:11:44 -0000	1.12
++++ cpu-sa1110.c	26 Aug 2004 13:25:17 -0000	1.13
+@@ -238,7 +238,7 @@
+ 		return -EINVAL;
+ 	}
+ 
+-	freqs.old = sa11x0_getspeed();
++	freqs.old = sa11x0_getspeed(0);
+ 	freqs.new = sa11x0_ppcr_to_freq(ppcr);
+ 	freqs.cpu = 0;
+ 
+@@ -320,7 +320,7 @@
+ {
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
+-	policy->cur = policy->min = policy->max = sa11x0_getspeed();
++	policy->cur = policy->min = policy->max = sa11x0_getspeed(0);
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.min_freq = 59000;
+ 	policy->cpuinfo.max_freq = 287000;
+@@ -329,8 +329,12 @@
+ }
+ 
+ static struct cpufreq_driver sa1110_driver = {
++	.flags		= CPUFREQ_STICKY |
++			  CPUFREQ_PANIC_OUTOFSYNC | 
++			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
+ 	.verify		= sa11x0_verify_speed,
+ 	.target		= sa1110_target,
++	.get		= sa11x0_getspeed,
+ 	.init		= sa1110_cpu_init,
+ 	.name		= "sa1110",
+ };
+@@ -354,8 +358,6 @@
+ 			sdram->tck, sdram->trcd, sdram->trp,
+ 			sdram->twr, sdram->refresh, sdram->cas_latency);
+ 
+-		cpufreq_gov_userspace_init();
+- 
+ 		memcpy(&sdram_params, sdram, sizeof(sdram_params));
+ 
+ 		return cpufreq_register_driver(&sa1110_driver);
