@@ -1,14 +1,13 @@
-From: Martin Schreiber <SchreiberX@Altmuehlnet.de>
-Subject: Re: hp omnibook xe4500 hangs while loading acpi module
-Date: Sat, 20 Dec 2003 17:13:47 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500 hangs while
+	loading acpi module]
+Date: Sat, 20 Dec 2003 18:14:57 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1071936826.1920.2.camel@martini.martin-schreiber.net>
-References: <1069971885.1071.5.camel@martini.martin-schreiber.net>
-	<20031219182737.GE6909@dominikbrodowski.de>
+Message-ID: <20031220171457.GA5129@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============33331427006155323=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031219182737.GE6909@dominikbrodowski.de>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,23 +17,30 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: Dominik Brodowski <linux@dominikbrodowski.de>
+Content-Type: text/plain; charset="iso-8859-1"
+To: len.brown@intel.com
 Cc: cpufreq@www.linux.org.uk
 
+Hi Len,
 
---===============33331427006155323==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-3Bz+/ItZj17t0e5uw0QX"
+The patch "[ACPI] GV3 IO port is 16-bits" to the
+arch/i386/kernel/cpu/cpufreq/acpi.c file broke at least some of=20
+the GV1/2 support. Any idea on how to fix it up so that it works
+for both?
 
+Happy holidays,
+	Dominik
 
---=-3Bz+/ItZj17t0e5uw0QX
-Content-Type: multipart/mixed; boundary="=-MrftjHy+rTR5ZaLcQaje"
+----- Forwarded message from Martin Schreiber <SchreiberX@Altmuehlnet.de>=
+ -----
 
-
---=-MrftjHy+rTR5ZaLcQaje
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: hp omnibook xe4500 hangs while loading acpi module
+From: Martin Schreiber <SchreiberX@Altmuehlnet.de>
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: cpufreq@www.linux.org.uk
+In-Reply-To: <20031219182737.GE6909@dominikbrodowski.de>
+X-Mailer: Ximian Evolution 1.4.5=20
+Date: Sat, 20 Dec 2003 17:13:47 +0100
 
 the acpi cpufreq (kernel 2.6.0) works now on omnibook xe4500 with the
 attached patch.
@@ -48,10 +54,12 @@ On Fri, 2003-12-19 at 19:27, Dominik Brodowski wrote:
 >=20
 > Can you please try the attached patch (for 2.6.0)? It reverts a change
 > done during the time frame you mention: I assume this patch
-> "[ACPI] GV3 IO port is 16-bits (Venkatesh Pallipadi)" caused the trouble.
-> Please CC <cpufreq@www.linux.org.uk> in your reply [the cpufreq mailing=20
-> list], so that other cpufreq developers can investigate this issue as wel=
-l.
+> "[ACPI] GV3 IO port is 16-bits (Venkatesh Pallipadi)" caused the troubl=
+e.
+> Please CC <cpufreq@www.linux.org.uk> in your reply [the cpufreq mailing=
+=20
+> list], so that other cpufreq developers can investigate this issue as w=
+ell.
 >=20
 > Thanks,
 > 	Dominik
@@ -110,67 +118,57 @@ O- M- V- PS+++ PE+ Y PGP++ t 5+ X R+ tv++ b+ DI- D++
 G e h-- r-- y+
 ------END GEEK CODE BLOCK------
 
---=-MrftjHy+rTR5ZaLcQaje
-Content-Disposition: attachment; filename=revert-geyersville3
-Content-Type: text/plain; name=revert-geyersville3; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-
-LS0tIGxpbnV4L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvYWNwaS5jCTIwMDMtMTAtMTIg
-MTk6NDg6MzkuMDAwMDAwMDAwICswMjAwDQorKysgbGludXgtdG1wL2FyY2gvaTM4Ni9rZXJuZWwv
-Y3B1L2NwdWZyZXEvYWNwaS5jCTIwMDMtMTItMTkgMTc6NDI6MzMuMDc2ODE0MTc2ICswMTAwDQpA
-QCAtMjMxLDcgKzIzMSw3IEBADQogCWludAkJCXN0YXRlKQ0KIHsNCiAJdTE2CQkJcG9ydCA9IDA7
-DQotCXUxNgkJCXZhbHVlID0gMDsNCisJdTgJCQl2YWx1ZSA9IDA7DQogCWludAkJCWkgPSAwOw0K
-IAlzdHJ1Y3QgY3B1ZnJlcV9mcmVxcyAgICBjcHVmcmVxX2ZyZXFzOw0KIA0KQEAgLTI4Miw5ICsy
-ODIsOSBAQA0KIAl2YWx1ZSA9ICh1MTYpIHBlcmYtPnN0YXRlc1tzdGF0ZV0uY29udHJvbDsNCiAN
-CiAJQUNQSV9ERUJVR19QUklOVCgoQUNQSV9EQl9JTkZPLCANCi0JCSJXcml0aW5nIDB4JTA0eCB0
-byBwb3J0IDB4JTA0eFxuIiwgdmFsdWUsIHBvcnQpKTsNCisJCSJXcml0aW5nIDB4JTAyeCB0byBw
-b3J0IDB4JTAyeFxuIiwgdmFsdWUsIHBvcnQpKTsNCiANCi0Jb3V0dyh2YWx1ZSwgcG9ydCk7IA0K
-KwlvdXRiKHZhbHVlLCBwb3J0KTsgDQogDQogCS8qDQogCSAqIFRoZW4gd2UgcmVhZCB0aGUgJ3N0
-YXR1c19yZWdpc3RlcicgYW5kIGNvbXBhcmUgdGhlIHZhbHVlIHdpdGggdGhlDQpAQCAtMjk2LDEx
-ICsyOTYsMTEgQEANCiAJcG9ydCA9IHBlcmYtPnN0YXR1c19yZWdpc3RlcjsNCiANCiAJQUNQSV9E
-RUJVR19QUklOVCgoQUNQSV9EQl9JTkZPLCANCi0JCSJMb29raW5nIGZvciAweCUwNHggZnJvbSBw
-b3J0IDB4JTA0eFxuIiwNCi0JCSh1MTYpIHBlcmYtPnN0YXRlc1tzdGF0ZV0uc3RhdHVzLCBwb3J0
-KSk7DQorCQkiTG9va2luZyBmb3IgMHglMDJ4IGZyb20gcG9ydCAweCUwMnhcbiIsDQorCQkodTgp
-IHBlcmYtPnN0YXRlc1tzdGF0ZV0uc3RhdHVzLCBwb3J0KSk7DQogDQogCWZvciAoaT0wOyBpPDEw
-MDsgaSsrKSB7DQotCQl2YWx1ZSA9IGludyhwb3J0KTsNCisJCXZhbHVlID0gaW5iKHBvcnQpOw0K
-IAkJaWYgKHZhbHVlID09ICh1MTYpIHBlcmYtPnN0YXRlc1tzdGF0ZV0uc3RhdHVzKQ0KIAkJCWJy
-ZWFrOw0KIAkJdWRlbGF5KDEwKTsNCkBAIC0zMDksNyArMzA5LDcgQEANCiAJLyogbm90aWZ5IGNw
-dWZyZXEgKi8NCiAJY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmY3B1ZnJlcV9mcmVxcywgQ1BV
-RlJFUV9QT1NUQ0hBTkdFKTsNCiANCi0JaWYgKHZhbHVlICE9ICh1MTYpIHBlcmYtPnN0YXRlc1tz
-dGF0ZV0uc3RhdHVzKSB7DQorCWlmICh2YWx1ZSAhPSBwZXJmLT5zdGF0ZXNbc3RhdGVdLnN0YXR1
-cykgew0KIAkJdW5zaWduZWQgaW50IHRtcCA9IGNwdWZyZXFfZnJlcXMubmV3Ow0KIAkJY3B1ZnJl
-cV9mcmVxcy5uZXcgPSBjcHVmcmVxX2ZyZXFzLm9sZDsNCiAJCWNwdWZyZXFfZnJlcXMub2xkID0g
-dG1wOw0K
-
---=-MrftjHy+rTR5ZaLcQaje--
-
---=-3Bz+/ItZj17t0e5uw0QX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.3 (GNU/Linux)
-
-iD8DBQA/5HU6ZJRym+9E1msRAtLDAKDfLlrSl7T1GApvS9kjLM6RY5l+PgCfU7Gr
-kJl1CXhSsavEsNui//Weuhw=
-=IQNc
------END PGP SIGNATURE-----
-
---=-3Bz+/ItZj17t0e5uw0QX--
-
-
-
---===============33331427006155323==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---===============33331427006155323==--
+--- linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-10-12 19:48:39.0000000=
+00 +0200
++++ linux-tmp/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-12-19 17:42:33.076=
+814176 +0100
+@@ -231,7 +231,7 @@
+ 	int			state)
+ {
+ 	u16			port =3D 0;
+-	u16			value =3D 0;
++	u8			value =3D 0;
+ 	int			i =3D 0;
+ 	struct cpufreq_freqs    cpufreq_freqs;
+=20
+@@ -282,9 +282,9 @@
+ 	value =3D (u16) perf->states[state].control;
+=20
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
+-		"Writing 0x%04x to port 0x%04x\n", value, port));
++		"Writing 0x%02x to port 0x%02x\n", value, port));
+=20
+-	outw(value, port);=20
++	outb(value, port);=20
+=20
+ 	/*
+ 	 * Then we read the 'status_register' and compare the value with the
+@@ -296,11 +296,11 @@
+ 	port =3D perf->status_register;
+=20
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
+-		"Looking for 0x%04x from port 0x%04x\n",
+-		(u16) perf->states[state].status, port));
++		"Looking for 0x%02x from port 0x%02x\n",
++		(u8) perf->states[state].status, port));
+=20
+ 	for (i=3D0; i<100; i++) {
+-		value =3D inw(port);
++		value =3D inb(port);
+ 		if (value =3D=3D (u16) perf->states[state].status)
+ 			break;
+ 		udelay(10);
+@@ -309,7 +309,7 @@
+ 	/* notify cpufreq */
+ 	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
+=20
+-	if (value !=3D (u16) perf->states[state].status) {
++	if (value !=3D perf->states[state].status) {
+ 		unsigned int tmp =3D cpufreq_freqs.new;
+ 		cpufreq_freqs.new =3D cpufreq_freqs.old;
+ 		cpufreq_freqs.old =3D tmp;
 
 
+
+
+----- End forwarded message -----
