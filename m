@@ -1,14 +1,14 @@
 From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: [cpufreq 24] patches
-Date: Thu, 2 Sep 2004 12:34:22 +0200
+Date: Thu, 2 Sep 2004 12:44:07 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040902103422.GX29560@poupinou.org>
+Message-ID: <20040902104407.GY29560@poupinou.org>
 References: <20040831101349.GV29560@poupinou.org>
-	<20040831222952.47ecb90f.frx@firenze.linux.it>
+	<20040831103656.GA11966@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040831222952.47ecb90f.frx@firenze.linux.it>
+In-Reply-To: <20040831103656.GA11966@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,35 +20,19 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Francesco Poli <frx@firenze.linux.it>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Tue, Aug 31, 2004 at 10:29:52PM +0200, Francesco Poli wrote:
-> On Tue, 31 Aug 2004 12:13:49 +0200 Bruno Ducrot wrote:
+On Tue, Aug 31, 2004 at 12:36:56PM +0200, Dominik Brodowski wrote:
+> On Tue, Aug 31, 2004 at 12:13:49PM +0200, Bruno Ducrot wrote:
 > 
-> > Hi,
-> > 
-> > For those who prefer a patch for 2.4 instead of the cvs stuff
-> > (patchin.sh, etc) I put one at:
-> > 
-> > ftp://ftp.poupinou.org/cpufreq/cpufreq-24-20040831.diff[$EXT]
-> > with $EXT in (nothing), .gz, .bz2, and there is now symbolic links
-> > cpufreq-24-current.diff[$EXT] to them.
-> 
-> Many TNX, your job is very much appreciated!  :)
-> I will use it as soon as I upgrade to 2.4.28 (that is, as soon as 2.4.28
-> itself is out + the time to go back home, rebuild and install... ^__^ )
-> 
+> Thanks for doing the 2.4. work, Bruno,
 
-Well, I just have to do something like this now:
+Thanks, but the main trouble though is that it's only tested by me with
+the powernow-k7 driver.. It should be fine that others test it,
+especially gx-suspmod, longrun and longhaul (I've not yet touched the
+others drivers).
 
-cvs -d :pserver:cvs@pubcvs.arm.linux.org.uk:/mnt/src/cvsroot co -P -RLINUX_2_4 cpufreq
-cd cpufreq
-ln -s /path/to/kernelvanilla/source linux.original
-./patchin.sh linux.original
-cat patch patch_core patch_x86 > cpufreq-xxx.diff
-
-This may even work with other kernels who knows.
+Cheers,
 
 -- 
 Bruno Ducrot
