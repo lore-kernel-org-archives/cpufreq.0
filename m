@@ -1,16 +1,14 @@
 From: Jesper Anderson <jesper@pobox.com>
 Subject: Re: Pentium III Coppermine and 440BX/ZX/DX
-Date: Tue, 17 Feb 2004 12:32:15 +0100
+Date: Tue, 17 Feb 2004 17:27:20 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040217113215.GA11848@acheron.utfors.se>
+Message-ID: <20040217162720.GA1202@acheron.utfors.se>
 References: <20040217005504.GA809@acheron.utfors.se>
 	<20040217095411.GV13262@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
 In-Reply-To: <20040217095411.GV13262@poupinou.org>
-Resent-To: cpufreq@www.linux.org.uk
-Resent-Message-Id: <20040217113422.8B4635A4A4@www.pobox.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,6 +21,7 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk
 
 On Tue, Feb 17, 2004 at 10:54:11AM +0100, Bruno Ducrot wrote:
 > 
@@ -31,9 +30,22 @@ On Tue, Feb 17, 2004 at 10:54:11AM +0100, Bruno Ducrot wrote:
 > 
 > modprobe speedstep-smi smi_cmd=0x82
 
-Thanks. Hmm. I tried that, and the exact same thing happened; ie.
-nothing. I looked manually for the cpufreq interface in /sys and
-/proc, and couldn't find anything. cpufreqd 1.1.1 can't find it
-either.
+Ok, I played around a bit, rebooted, messed about - and suddenly this
+worked. Well, sort of. I now have an interface to read information,
+however, there's no way to set the CPU frequency; I can't find a write
+interface?
+
+# ls /sys/devices/system/cpu/cpu0/cpufreq/
+cpuinfo_max_freq             scaling_driver    scaling_min_freq
+cpuinfo_min_freq             scaling_governor
+scaling_available_governors  scaling_max_freq
+
+No scaling_setspeed interface to be found ...
+
+This is with kernel 2.6.2 mm1. Anything else I can try. or anything I
+missed here?
+
+Thanks very much for the help so far, looks like this might end up
+working!
 
 Jesper
