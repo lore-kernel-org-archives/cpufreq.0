@@ -1,17 +1,18 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: post-OLS pending cpufreq patches
-Date: Tue, 3 Aug 2004 16:07:50 +0200
+Date: Tue, 3 Aug 2004 15:19:47 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040803140750.GA10095@dominikbrodowski.de>
+Message-ID: <20040803141947.GO12724@redhat.com>
 References: <88056F38E9E48644A0F562A38C64FB600283BD34@scsmsx403.amr.corp.intel.com>
 	<20040803124223.GB8574@dominikbrodowski.de>
 	<20040803131729.GL12724@redhat.com>
 	<20040803133010.GA9447@dominikbrodowski.de>
 	<20040803133724.GM12724@redhat.com>
+	<20040803140750.GA10095@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040803133724.GM12724@redhat.com>
+In-Reply-To: <20040803140750.GA10095@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,34 +24,32 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@www.linux.org.uk
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, cpufreq@www.linux.org.uk
 
-On Tue, Aug 03, 2004 at 02:37:24PM +0100, Dave Jones wrote:
-> On Tue, Aug 03, 2004 at 03:30:10PM +0200, Dominik Brodowski wrote:
->  > On Tue, Aug 03, 2004 at 02:17:29PM +0100, Dave Jones wrote:
->  > > In file included from arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c:25:
->  > 
->  >  #include <acpi/processor.h>
->  > 
->  > is only included around ~300, AFAICS [even in Venki's patch]... and if you 
->  > move that above to line ~25 [but please only #ifdef'ed], you need to
->  > 
->  >  #include <linux/acpi.h>
->  > 
->  > first.
->  > 
->  > Could you try that out, please?
-> 
-> getting closer. just some missing defs introduced by this patch now.
+On Tue, Aug 03, 2004 at 04:07:50PM +0200, Dominik Brodowski wrote:
 
-That's the patch to include/acpi/processor.h I was talking about...
+ > >  >  #include <acpi/processor.h>
+ > >  > 
+ > >  > is only included around ~300, AFAICS [even in Venki's patch]... and if you 
+ > >  > move that above to line ~25 [but please only #ifdef'ed], you need to
+ > >  > 
+ > >  >  #include <linux/acpi.h>
+ > >  > 
+ > >  > first.
+ > >  > 
+ > >  > Could you try that out, please?
+ > > 
+ > > getting closer. just some missing defs introduced by this patch now.
+ > 
+ > That's the patch to include/acpi/processor.h I was talking about...
+ > 
+ > but that is actually include/asm/acpi.h, as can be seen here:
+ > http://bugzilla.kernel.org/attachment.cgi?id=2919&action=view
+ > 
+ > Can you try out applying _only_ the hunk for include/asm-i386/acpi.h,
+ > please?
 
-but that is actually include/asm/acpi.h, as can be seen here:
-http://bugzilla.kernel.org/attachment.cgi?id=2919&action=view
+Yeah, that works.  Or compiles at least, I don't have centrino hardware
+to test this.  I'll check it in, and see who screams.
 
-Can you try out applying _only_ the hunk for include/asm-i386/acpi.h,
-please?
-
-Thanks,
-	Dominik
+		Dave
