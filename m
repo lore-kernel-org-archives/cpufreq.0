@@ -1,14 +1,11 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: [RFC] cpufreq_get()
-Date: Fri, 23 Jan 2004 11:03:34 +0100
+From: Johannes Graumann <johannes_graumann@web.de>
+Subject: Crusoe and 2.6.1 confusion
+Date: Fri, 23 Jan 2004 18:07:41 -0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040123100334.GD25416@poupinou.org>
-References: <20040122190649.GC25416@poupinou.org>
-	<20040122205620.GA8012@dominikbrodowski.de>
+Message-ID: <20040123180741.4e7f8452.johannes_graumann@web.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040122205620.GA8012@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,32 +16,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Thu, Jan 22, 2004 at 09:56:20PM +0100, Dominik Brodowski wrote:
-> On Thu, Jan 22, 2004 at 08:06:49PM +0100, Ducrot Bruno wrote:
-> > I'm planing to add the cpufreq_get() in struct cpufreq_driver,
-> > but in a hardware fashion, eventually replacing the name by
-> > something more appropriate.
-> 
-> I appreciate this suggestion.
+Hello,
 
-Fine.
+I'm trying to optimize my 2.6.1 home grown kernel for my fujitsu life
+book, which runs from a Transmeta Crusoe processor. I have learned from
+the debian-laptop list, that this processor doesn't need any Governor or
+cpufreqd, since it does the job by default.
+In my .config I have the following flags set:
+CPU_FREQ
+X86_LONGRUN
 
-> 
-> >   Even for longrun, we
-> >   can verify that the frequency is between min and max.
-> 
-> For ->range() drivers [I intend to rename ->setpolicy() to ->range()], we
-> should leave the ->get() function optional in case the speed isn't
-> detectable.
+CPU_FREQ_DEFAULT_GOV_PERFORMANCE is set as a default - even if the
+Crusoe doesn't need a Governor, I can't get rid of this.
 
-Anyway, this must be optional because the ACPI performance driver can't
-detect speed...
+Is this all I need? Will this create the interface that longrun will
+interact with?
 
--- 
-Ducrot Bruno
+Please help the confused!
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Joh
