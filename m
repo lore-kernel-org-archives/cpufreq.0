@@ -1,15 +1,11 @@
-From: Len Brown <len.brown@intel.com>
-Subject: Re: [ACPI] [PATCH] disable SMM access to SpeedStep using ACPI-FADT
-	pstate_cnt
-Date: 16 Feb 2004 00:46:37 -0500
+From: Dominik Brodowski <mail@dominikbrodowski.de>
+Subject: New PowerManagement - cpufreq category?
+Date: Mon, 16 Feb 2004 09:14:12 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1076910396.2507.41.camel@dhcppc4>
-References: <20040215105712.GB6105@dominikbrodowski.de>
-	<20040215145407.GK13262@poupinou.org>
+Message-ID: <20040216081412.GA8955@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============63233195693655231=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040215145407.GK13262@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,25 +15,58 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: bugme-admin@osdl.org, davej@redhat.com
+Cc: cpufreq@www.linux.org.uk
+
+
+--===============63233195693655231==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+Content-Disposition: inline
+
+
+--BOKacYhQ+x31HxR3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Quoting
+------- Additional Comment #1 From Len Brown  2004-02-14 22:53 -------
+=66rom bug #2081:
+"(we really should have a better category than power-management/other for
+cpufreq stuff)"
+
+
+What do you think about a new component "cpufreq" as part of=20
+"Power Management"?
+
+	Dominik
+
+--BOKacYhQ+x31HxR3
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAMHvUZ8MDCHJbN8YRAgdyAKCG7ahVSehmOTq4jvmOvrBwGqce+QCgk89a
+l9e3QPtjt8YSqHmpkm/yOUU=
+=MUns
+-----END PGP SIGNATURE-----
+
+--BOKacYhQ+x31HxR3--
+
+
+--===============63233195693655231==
 Content-Type: text/plain; charset="us-ascii"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: ACPI Developers <acpi-devel@lists.sourceforge.net>, cpufreq@www.linux.org.uk
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Sun, 2004-02-15 at 09:54, Bruno Ducrot wrote:
-> On Sun, Feb 15, 2004 at 11:57:12AM +0100, Dominik Brodowski wrote:
-> > Disable SMM access to SpeedStep
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-> I would prefer to name it 'take_ownership' or something like that.  I think
-> this is the correct naming.
+--===============63233195693655231==--
 
-We write PSTATE_CNT to SMI_CMD register to "assume processor p-state
-control responsibility".  We're actually just telling SMM that the OS is
-taking over p-states.  This might disable SMM involvement, or may just
-change how SMM is involved -- we can't know which.  So I guess you're
-right, and we end up with something like this:
-
-- acpi_processor_disable_smm
-+ acpi_processor_notify_smm
-
-thanks,
--Len
