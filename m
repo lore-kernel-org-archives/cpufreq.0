@@ -1,11 +1,12 @@
-From: Ivan Kanis <ivank@juliva.com>
-Subject: replacint a Pentium mobility III
-Date: Fri, 17 Oct 2003 19:11:05 +0200
+From: "Moore, Robert" <robert.moore@intel.com>
+Subject: Dynamic frequency governor
+Date: Fri, 17 Oct 2003 14:14:38 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <16272.8873.560930.471165@gargle.gargle.HOWL>
+Message-ID: <CFF522B18982EA4481D3A3E23B83141C24B4AA@orsmsx407.jf.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,24 +19,15 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-Hello,
+Hi all,
 
-I currently have a Pentium III mobility on a Dell Inspiron 8100
-laptop. I can reduce the speed to 70% thanks to cpufreq with the SMI
-interface. It has reduced the fan a bit. The fan still goes on and it
-bothers me. I would to replace that processor. The new processor needs
-to work well with cpufreq and to function with just the heatsink. Do
-you have any suggestions?
+I've been chartered to implement a multi-state algorithm for Linux;
+this will be a new governor that adjusts the CPU frequency based upon
+percent CPU utilization as reported from the kernel idle handler.
 
-Looking forward to your comments.
+Has any work been done (or is being done) in this area?  I don't want to
+rewrite the wheel.
 
-Ivan Kanis
-
-PS: It is quite ironic coming from soneon who has spent years overclocking
-his system!
--- 
-/-----------------------------------------------------------------------------*
-|  Go confidently in the direction of your dreams.   |        Ivan Kanis      |
-|  Live the life you have imagined.                  |   Software Developper  |
-|  (Henry David Thoreau)                             |       www.kanis.cc     |
-*-----------------------------------------------------------------------------/
+Thanks,
+Bob Moore
+Intel Corporation
