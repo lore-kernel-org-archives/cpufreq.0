@@ -1,11 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] cpufreq: fix HT oops on speedstep-ich system
-Date: Mon, 19 Jul 2004 14:10:27 +0200
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: my dothan didn't work with cpufreq...
+Date: Wed, 21 Jul 2004 18:55:20 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040719121026.GA8901@dominikbrodowski.de>
+Message-ID: <1090461320.13505.3.camel@localhost>
+References: <40F2FA8B.10307@lifl.fr>
+	<20040713094937.GB8124@dominikbrodowski.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20040713094937.GB8124@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,43 +19,28 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: cpufreq@www.linux.org.uk
 
-Bugfix for #3012 @ http://bugme.osdl.org/show_bug.cgi?id=3012
+On Tue, 2004-07-13 at 11:49 +0200, Dominik Brodowski wrote:
+> Maybe. The frequency/voltage pairs for Dothans are different to those of
+> Banias. A built-in table isn't possible for Dothans, IIRC, as even if you 
+> know the CPUID you can't know for 100% which pairs are valid -- it depends
+> on some other info not in the CPUID.
 
-The speedstep-ich driver only registers for CPU0 (which is a sane thing to
-do). However, cpufreq_notify_transition() currently assumes the CPU
-specified in the freqs.cpu parameter has actually been registered with the
-CPUfreq core. This is obviously not the case for HT speedstep-ich CPUs,
-causing an OOPS. The long-term solution will be to merge the "cpufreq 
-CPU group awareness patches" already RFC'ed to this list; but they still 
-need a bit of polishing and testing.
+I've been meaning to look into this to see if there's some way to add a
+table method.  It's moderately tricky because there's two steppings of
+Dothan, and the specs are not obvious to me (they seem to list 4
+voltages per frequency point, which is confusing).
 
-Thanks to Boris Fersing for reporting the bug and testing this fix.
+Anyway, I have a good collection of /proc/cpuinfos now, so I can pick
+through them to see what common elements there are.
 
-Signed-off-by: Dominik Brodowski <linux@brodo.de>
+I guess it would also be good to get dumps from the ACPI tables.  What's
+the best way to do that?
 
-diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
---- linux-original/drivers/cpufreq/cpufreq.c	2004-07-16 10:07:44.000000000 +0200
-+++ linux/drivers/cpufreq/cpufreq.c	2004-07-16 10:13:57.757431680 +0200
-@@ -1059,7 +1059,8 @@
- 		 * is not equal to what the cpufreq core thinks is "old frequency".
- 		 */
- 		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
--			if ((likely(cpufreq_cpu_data[freqs->cpu]->cur)) &&
-+			if ((likely(cpufreq_cpu_data[freqs->cpu])) &&
-+			    (likely(cpufreq_cpu_data[freqs->cpu]->cur)) &&
- 			    (unlikely(freqs->old != cpufreq_cpu_data[freqs->cpu]->cur)))
- 			{
- 				if (cpufreq_driver->flags & CPUFREQ_PANIC_OUTOFSYNC)
-@@ -1077,7 +1078,8 @@
- 	case CPUFREQ_POSTCHANGE:
- 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
- 		notifier_call_chain(&cpufreq_transition_notifier_list, CPUFREQ_POSTCHANGE, freqs);
--		cpufreq_cpu_data[freqs->cpu]->cur = freqs->new;
-+		if (likely(cpufreq_cpu_data[freqs->cpu]))
-+			cpufreq_cpu_data[freqs->cpu]->cur = freqs->new;
- 		break;
- 	}
- 	up_read(&cpufreq_notifier_rwsem);
+[ And for those who've mailed me and got nothing back - I'm sorry about
+that.  I have been getting a lot of reports - people seem to be buying a
+lot of laptops... ]
+
+	J
