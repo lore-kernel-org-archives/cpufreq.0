@@ -1,21 +1,15 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: my dothan didn't work with cpufreq...
-Date: Mon, 2 Aug 2004 20:26:08 +0100
+Subject: Re: Kernel 2.6.7 speedstep-piix4 on vaio
+Date: Mon, 2 Aug 2004 20:31:41 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040802192608.GA17023@redhat.com>
-References: <40F2FA8B.10307@lifl.fr>
-	<20040713094937.GB8124@dominikbrodowski.de>
-	<1090461320.13505.3.camel@localhost>
-	<20040722060437.GA8888@dominikbrodowski.de>
-	<1090479407.4351.6.camel@localhost>
-	<20040722093126.GA8418@dominikbrodowski.de>
-	<1090517665.5267.9.camel@ixodes.goop.org>
-	<20040723193859.GC8441@dominikbrodowski.de>
-	<1090632444.2950.1.camel@localhost>
+Message-ID: <20040802193141.GB17023@redhat.com>
+References: <43210.141.228.156.225.1091110800.squirrel@141.228.156.225>
+	<20040729210413.GA7782@dominikbrodowski.de>
+	<200407302020.50451.ivor@ivor.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1090632444.2950.1.camel@localhost>
+In-Reply-To: <200407302020.50451.ivor@ivor.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -27,28 +21,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq list <cpufreq@www.linux.org.uk>
+To: Ivor Hewitt <ivor@ivor.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
-On Fri, Jul 23, 2004 at 06:27:24PM -0700, Jeremy Fitzhardinge wrote:
- > On Fri, 2004-07-23 at 21:38 +0200, Dominik Brodowski wrote: 
- > > Again IIRC, it's less about CodingStyle and more about some GCC 3.?
- > > warnings? Though, gcc 3.3.4 doesn't complain...
- > 
- > You mean the "[idx] = " syntax?
- > 
- > Anyway, having said that, I got it wrong (I had vendor and family
- > switched).  Fixed patch attached.
+On Fri, Jul 30, 2004 at 08:20:49PM +0000, Ivor Hewitt wrote:
+ > On Thursday 29 July 2004 21:04, Dominik Brodowski wrote:
+ > > On Thu, Jul 29, 2004 at 03:20:00PM +0100, Ivor Hewitt wrote:
+ > >
+ > > Therefore, the speedstep-smi driver contains a few tweaks which modify the
+ > > "language" a bit: have you tried passing the module options
+ > > "smi_port=0xb2 smi_cmd=0x82" yet? On several systems, the smi_cmd is set
+ > > wrongly by default.
+ > >
+ > Aha, with the right combination of BIOS settings and the smi_cmd=0x82 setting 
+ > the smi driver works on the Vaio Z600.
 
-I merged this, but something occurred to me whilst eyeballing
-the diffs.  Rather than duplicating X86_VENDOR_INTEL in every
-entry of the struct, how about we check it in one place?
+hmm, I wonder if its worth adding DMI matches for certain laptops
+that need different arguments.
 
-I'm unaware of any vendor planning to duplicate speedstep,
-but even if AMD/VIA threw away their current implementations
-in favour of a bit-for-bit compatible implementation, it
-wouldn't be hard to add an extra if()
+ > Had to set BIOS settings as:-
+ > PnP OS: No
+ > CPU OS Control: Auto
+ > CPU Speed: Auto
 
-comments?
+Though it wouldn't help with this, we'd just have to hope for the best.
 
 		Dave
