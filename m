@@ -1,9 +1,9 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] fix userspace resume support [Was: Re: cpufreq doesn't keep
-	over suspend/resume]
-Date: Thu, 1 Jul 2004 10:36:41 +0200
+Subject: [PATCH] fix double "out-of-sync" warning on resume [Was: Re:
+	cpufreq doesn't keep over suspend/resume]
+Date: Thu, 1 Jul 2004 10:36:01 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040701083641.GB8163@dominikbrodowski.de>
+Message-ID: <20040701083601.GA8163@dominikbrodowski.de>
 References: <20040614191225.GA1463@fog.sekrit.org>
 	<20040614202539.GA10796@dominikbrodowski.de>
 	<20040615013242.GA13338@fog.sekrit.org>
@@ -25,38 +25,47 @@ Content-Transfer-Encoding: 7bit
 To: davej@codemonkey.org.uk, Gerald Britton <gbritton@alum.mit.edu>
 Cc: cpufreq@www.linux.org.uk
 
-Fix resume support in the userspace cpufreq governor: we need to set the
-CPU to the frequency last echo'ed by userspace into this governor's files.
+- Rephrase "out-of-sync" warning (partly) based upon Gerald Britton's suggestion
+- Also update cpufreq's opinion of current cpu frequency upon resume, else the
+  "out-of-sync" warning will appear twice. Thanks to Gerald Britton for noting this.
 
 Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
- drivers/cpufreq/cpufreq_userspace.c |   10 ++++++++++
- 1 files changed, 10 insertions(+)
+ drivers/cpufreq/cpufreq.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff -ruN linux-original/drivers/cpufreq/cpufreq_userspace.c linux/drivers/cpufreq/cpufreq_userspace.c
---- linux-original/drivers/cpufreq/cpufreq_userspace.c	2004-07-01 10:09:24.912587904 +0200
-+++ linux/drivers/cpufreq/cpufreq_userspace.c	2004-07-01 10:32:31.134850088 +0200
-@@ -82,6 +82,13 @@
- {
-         struct cpufreq_freqs *freq = data;
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-07-01 10:09:24.912587904 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2004-07-01 10:15:13.774552824 +0200
+@@ -617,8 +617,8 @@
+ 			if (cpufreq_driver->flags & CPUFREQ_PANIC_RESUME_OUTOFSYNC)
+ 				panic("CPU Frequency is out of sync.");
  
-+	/* Don't update cur_freq if CPU is managed and we're
-+	 * waking up: else we won't remember what frequency 
-+	 * we need to set the CPU to.
-+	 */
-+	if (cpu_is_managed[freq->cpu] && (val == CPUFREQ_RESUMECHANGE))
-+		return 0;
+-			printk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing"
+-			       "core thinks of %u, is %u kHz.\n", cpu_policy->cur, cur_freq);
++			printk(KERN_WARNING "Warning: CPU frequency is %u, "
++			       "cpufreq assumed %u kHz.\n", cur_freq, cpu_policy->cur);
+ 
+ 			freqs.cpu = cpu;
+ 			freqs.old = cpu_policy->cur;
+@@ -626,6 +626,8 @@
+ 
+ 			notifier_call_chain(&cpufreq_transition_notifier_list, CPUFREQ_RESUMECHANGE, &freqs);
+ 			adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
 +
- 	cpu_cur_freq[freq->cpu] = freq->new;
++			cpu_policy->cur = cur_freq;
+ 		}
+ 	}
  
-         return 0;
-@@ -522,6 +529,9 @@
- 		else if (policy->min > cpu_cur_freq[cpu])
- 			__cpufreq_driver_target(&current_policy[cpu], policy->min, 
- 			      CPUFREQ_RELATION_L);
-+		else
-+			__cpufreq_driver_target(&current_policy[cpu], cpu_cur_freq[cpu],
-+			      CPUFREQ_RELATION_L);
- 		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
- 		up(&userspace_sem);
- 		break;
+@@ -1065,9 +1067,8 @@
+ 				if (cpufreq_driver->flags & CPUFREQ_PANIC_OUTOFSYNC)
+ 					panic("CPU Frequency is out of sync.");
+ 
+-				printk(KERN_WARNING "Warning: CPU frequency out of sync: "
+-				       "cpufreq and timing core thinks of %u, is %u kHz.\n", 
+-				       cpufreq_cpu_data[freqs->cpu]->cur, freqs->old);
++				printk(KERN_WARNING "Warning: CPU frequency is %u, "
++				       "cpufreq assumed %u kHz.\n", freqs->old, cpufreq_cpu_data[freqs->cpu]->cur);
+ 				freqs->old = cpufreq_cpu_data[freqs->cpu]->cur;
+ 			}
+ 		}
