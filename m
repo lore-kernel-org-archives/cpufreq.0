@@ -1,11 +1,10 @@
-From: Robos <robos@muon.de>
-Subject: Help regarding epox 8hda3+ mobo
-Date: Thu, 10 Jun 2004 03:19:26 +0200
+From: athul acharya <nyte2k@yahoo.com>
+Subject: Dothan/Centrino cpufreq
+Date: Wed, 9 Jun 2004 18:30:39 -0700 (PDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040610011925.GA1674@muon.de>
+Message-ID: <20040610013039.21458.qmail@web21002.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,33 +16,50 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@www.linux.org.uk
 
-Hi List.
-I'm new to this list but I hope I have prepared as best as I can. I have a
-epox 8hda3+ motherboard with a 3000+ amd64. This is a desktop machine, but
-nevertheless I would like to "cool'n quiet" it. Searching through the
-archives I found nothing regarding this board but managed to pinpoint the
-problem to 
-dmesg: 
-powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09b)
-acpi_processor-0973 [32] acpi_processor_get_per: Error evaluating _PSS
-powernow-k8: BIOS error - no PSB
+Hey,
 
-Oookay. From reading the list archives I saw that version 1.00.09b is rather
-old-ish compared to what's in the list ("version 1.20.08b - March 20,
-2004"). As I am not really a kernel hacker, what do I do? I think I have to
-try|use the powernow-k8-acpi driver, but how do I make this? I use a
-kernel.org vanilla kernel right now. 2.6.7-rc2 to be precise. I just looked
-through the 2.6.7-rc3-mm1 patch, but in there is nothing regarding powernow.
-Is there some patch repository somewhere? Tracking all those patches to 
-patches is a little hard for me...
-Thanks in advance!
-Cheers
-Robos
+I originally sent this to linux-kernel and was advised
+that I'd be better off sending it here. 
+
+I noticed that 2.6.7-rc1 was supposed to have Dothan
+support for cpufreq, but since neither it nor -rc2
+worked  on my machine, I decided to take a look at the
+code and see if I couldn't figure something out.  I
+saw this:
+
+static const struct cpu_id cpu_id_dothan_a1 = {
+        .x86_vendor = X86_VENDOR_INTEL,
+        .x86 = 6,
+        .x86_model = 13,
+        .x86_mask = 1,
+};
+
+Attempting to match this against /proc/cpuinfo, I
+changed it to
+
+static const struct cpu_id cpu_id_dothan_a1 = {
+        .x86_vendor = X86_VENDOR_INTEL,
+        .x86 = 6,
+        .x86_model = 13,
+        .x86_mask = 6,
+};
+
+This worked, creating
+/sys/devices/system/cpu/cpu0/cpufreq/ and the whole
+shebang.  So, the above change needs to be integrated
+in order for (some?) Dothans to work.
+
+Thanks,
+
+Athul Acharya
 
 
--- 
-Robos - 
-gpg --recv-keys --keyserver blackhole.pca.dfn.de 6EEADA09
-It's GNU/Linux dammit! F U M $ !
+	
+		
+__________________________________
+Do you Yahoo!?
+Friends.  Fun.  Try the all-new Yahoo! Messenger.
+http://messenger.yahoo.com/ 
