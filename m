@@ -1,13 +1,13 @@
-From: Mattia Dongili <dongili@supereva.it>
+From: aeriksson2@fastmail.fm
 Subject: Re: speedstep_smi & psmouse problems?
-Date: Thu, 20 May 2004 17:27:03 +0200
+Date: Thu, 20 May 2004 17:40:25 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040520152703.GG1976@inferi.kami.home>
-References: <20040520151011.6F8694137@latitude.mynet.no-ip.org>
+Message-ID: <20040520154025.CAFE24137@latitude.mynet.no-ip.org>
+References: <dongili@supereva.it>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040520151011.6F8694137@latitude.mynet.no-ip.org>
+In-Reply-To: Message from Mattia Dongili <dongili@supereva.it> of "Thu,
+	20 May 2004 17:27:03 +0200." <20040520152703.GG1976@inferi.kami.home> 
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,35 +21,17 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Thu, May 20, 2004 at 05:10:10PM +0200, aeriksson2@fastmail.fm wrote:
-> 
-> installing the 2.6.6 kernel I noticed that the
-> CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK workaround is now included
-> (thanks!). I took the time to revisit my cpufreqd setup and I
-> discovered that there were some config changes I needed to make, and
-> that it wasn't currently running. Having fixed that, I noticed that
-> everything worked well, and the freq did change as requested. All well
-> and good.
-> 
-> However, now I find that the mouse is jumpy (as was reported in the
-> ~2.6.2 days) and I get tons of:
-> 
-> psmouse.c: Wheel Mouse at isa0060/serio1/input0 lost synchronization,
-> throwing 2 bytes away.
-> 
-> in the kernel log. Is there a known case of problems between the -smi
-> driver's way of doing things, and eg. timing related stuff in the
-> psmouse driver? I've disabled cpufreqd and it _seems_ to make the
-> mouse healthy again...
 
-try setting 
-acpi_workaround=1
+> try setting 
+> acpi_workaround=1
+> 
+> reading /proc/acpi/battery/*/info can be very slow (they are also
+> performed with disabled interrupts) and thus your mouse
+> is jumpy. The above option avoids such reads.
+> 
 
-reading /proc/acpi/battery/*/info can be very slow (they are also
-performed with disabled interrupts) and thus your mouse
-is jumpy. The above option avoids such reads.
+I use apm, but I tried it anyway, and it makes no difference. (if I
+switch to acpi, the fans never gets started, so the machine
+emergency-stops in the middle of heavy compiles :-( )
 
-HTH
--- 
-mattia
-:wq!
+/Anders
