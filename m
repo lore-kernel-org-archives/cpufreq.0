@@ -1,13 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: ACPI / cpufreq on Presario R3120
-Date: Thu, 3 Jun 2004 19:25:11 +0200
+From: paul.devriendt@amd.com
+Subject: RE: ACPI / cpufreq on Presario R3120
+Date: Thu, 3 Jun 2004 12:39:35 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040603172511.GG13782@poupinou.org>
-References: <40BF3686.6030701@pacific.edu>
+Message-ID: <99F2150714F93F448942F9A9F112634C13FB52FA@txexmtae.amd.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <40BF3686.6030701@pacific.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,53 +16,37 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ken Hughes <khughes@pacific.edu>
-Cc: Cpufreq@www.linux.org.uk
+To: khughes@pacific.edu, Cpufreq@www.linux.org.uk
 
-Hi,
+ 
+> powernow-k8: Found 1 AMD Athlon 64 / Opteron processors 
+> (version 1.20.08b - March 20, 2004)
+> powernow-k8: Too many lo freq table entries
 
-On Thu, Jun 03, 2004 at 07:32:38AM -0700, Ken Hughes wrote:
-> I've got a Presario with an AMD XP-M 3000+ CPU (a 32-bit K8).
+BIOS produces tables of frequencies/voltages that are
+valid for this processor. With a K8, the lists of valid
+frequencies are split up into 2 tables - the low frequency
+table (<1.6GHz) and the high frequency table (>= 1.6GHz).
 
-You have a AMD64 ?
+The hardware is unable to transition between two low
+frequencies. It can only transition low-high high-low or
+high-high. (See chapter 9 of the BIOS and Kernel Developers
+Guide, available from www.amd.com)
 
-> I can't get the acpi or powernow-k8 modules to load on the
-> 2.6.6 kernel;  loading acpi gives this message:
-> 
->  > acpi_processor_perf-0301 [1219] acpi_cpufreq_cpu_init : Unsupported 
-> address space [127, 127]
-> 
-> and powernow-k8 (with and without Pavel's patches) gives this:
-> 
->  > powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 
-> 1.20.08b - March 20, 2004)
->  > powernow-k8: Too many lo freq table entries
->  > powernow-k8: BIOS error - no PSB
+The driver does not have support for the only way to go
+from low to low, which is low-high-low. This is because 
+BIOSs are not supposed to provide >1 entry from the low
+frequency table. And this, in turn, is because AMD
+processor data sheets only describe a single low frequency
+state as being valid for a given part.
 
-Then it's AMD64, not an XP-M (or else powernow-k8 would not print
-that it found a AMD64 or an Opteron I believe).
+Therefore, you have a broken BIOS. You should report this 
+to the machine manufacturer.
 
-To be sure, what say /proc/cpuinfo ?
+I suggest, as a workaround, that you set CONFIG_ACPI_PROCESSOR
+in the kernel config. This will then use the ACPI objects
+which hopefully are constructed correctly. (I do not think
+you are currently using them, but I'm not sure, you could
+check your current config).
 
-Going back to your problem, can you send to me an acpidmp output, or post a
-link to it?
-
-wget ftp://ftp.kernel.org//pub/linux/kernel/people/lenb/acpi/utils/pmtools-20031210.tar.bz2
-tar xjvfp pmtools-20031210.tar.bz2
-cd pmtools-20031210/acpidmp
-make
-sudo ./acpidmp > acpidmp.out
-bzip2 acpidmp.out 
-
-> I dumped the DSDT but it doesn't seem to have much info on the CPU.
-
-This may be on another ACPI table, likely in SSDT.
-
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Paul.
