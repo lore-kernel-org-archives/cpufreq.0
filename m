@@ -1,14 +1,12 @@
-From: Carl Thompson <cet@carlthompson.net>
-Subject: Re: PST tables and Sonys Bios
-Date: Thu, 17 Jul 2003 09:15:08 -0700
+From: Michael Vallaly <vaio@nolatency.com>
+Subject: 2.6.0-test1 CpuFreq Speedstep Quirks
+Date: Thu, 17 Jul 2003 14:48:42 +0000
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1058458508.bd23a8ad4d31b@carlthompson.net>
-References: <3F1650C3.1030903@searchbroker.de>
+Message-ID: <20030717144842.70a5d7b3.vaio@nolatency.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed;
+ boundary="Multipart_Thu__17_Jul_2003_14:48:42_+0000_08280660"
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <3F1650C3.1030903@searchbroker.de>
-Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,90 +16,148 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"
-To: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
+Cc: vaio@nolatency.com
 
-My Sony Vaios (I no longer have them) both were in the FXA series (same as
-the FX series) and both had completely correct Powernow tables for the
-Mobile Athlon 4 part for both of the BIOSs you mentioned.
+This is a multi-part message in MIME format.
 
-Fact 1: the PSTs weren't broken at all in any BIOS for my Mobile Athlon 4
-CPUs.
+--Multipart_Thu__17_Jul_2003_14:48:42_+0000_08280660
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Fact 2: the PSTs for some models of Mobile Athlon XP started off kinda
-"broken" and got more "broken" with the lastest BIOS.
 
-Fact 3: that BIOS update supposedly fixes several lockup problems due to
-"system conflicts" according to the docs.
 
-Conclusion: my guess is that Sony purposely bumped up the voltage for _some_
-CPUs because they were having system stability problems related to voltage
-scaling with them.  It's possible that the PSTs are like this to actually
-get your machine to run properly.
+Hello, 
 
-You might want to consider that the PST as it is in the BIOS might be
-required to keep your machine from locking up occasionally.  Also rememeber
-that with those PSTs CPUFreq will still scale the CPU speed and save you
-power, it just won't scale voltage too.  Maybe getting the extra few
-minutes of battery power that scaling the voltage might give you isn't
-worth the hassle?
+After testing the 2.6.0-test1 kernel with CPUfreq scaling compiled in (+userspace govenor) I have noticed some changes in the way the kernel detects and prints my CPU information. Along these lines some programs (in peticular, mplayer and xmms) have some issues syncing (apparently time critical / cpu speed critical code.) As of right now these issues only seem to disappear if I run in powersave mode. Im not quite sure if this is a bug or not as I am quite new to cpu frequency scaling issues. If this is not a bug / problem maybe someone can help enlighten me as to what is actually occuring. I would be willing to test anything speedstep / cpufreq related as I have quite a bit of freetime until August 25th. Attached are few screenshots of the interesting quirks with Cpufreq installed. Thanks for you time..
 
-Of course, on those Sonys, the battery life is so crappy that you may be
-willing to put up with some system instability to go longer...
+- Mike
 
-It's also possible that the problem may be Windows specific and Linux /
-CPUFreq work fine scaling the voltage of your processor.
 
-Just some food for though,
-Carl Thompson
+Michael Vallaly
+vaio@nolatency.com
 
-Quoting Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>:
 
-> Hi developer and user,
->
-> Sony Bios (and the PST tables) maybe don't like the powernow feature,
-> because yesterday I have updated my FX705 from Bios (R0117K5) to the
-> latest one (R0121K5) and then I dump all PST tables (with powernow
-> infos) and found that they do not fix the "PST:26" for my CPU (all VIDs
-> are 1.3V), no they change the correct (?) "PST:27" (maybe for the 1600+)
-> from:
->
->  PST:27 (@0x401906ce)
->   cpuid: 0x780    fsb: 100        maxFID: 0x16    startvid: 0x11
->   num of p states in this table: 6
->     FID: 0x4 (5.0x [500MHz])    VID: 0x19 (1.050V)
->     FID: 0x6 (6.0x [600MHz])    VID: 0x19 (1.050V)
->     FID: 0x8 (7.0x [700MHz])    VID: 0x19 (1.050V)
->     FID: 0xc (9.0x [900MHz])    VID: 0x19 (1.050V)
->     FID: 0x0 (11.0x [1100MHz])  VID: 0x15 (1.150V)
->     FID: 0x16 (14.0x [1400MHz]) VID: 0xe (1.300V)
->
-> to:
->
->  PST:27 (@0x401906be)
->   cpuid: 0x780    fsb: 100        maxFID: 0x16    startvid: 0xe
->   num of p states in this table: 6
->     FID: 0x4 (5.0x [500MHz])    VID: 0xe (1.300V)
->     FID: 0x6 (6.0x [600MHz])    VID: 0xe (1.300V)
->     FID: 0xa (8.0x [800MHz])    VID: 0xe (1.300V)
->     FID: 0xe (10.0x [1000MHz])  VID: 0xe (1.300V)
->     FID: 0x2 (12.0x [1200MHz])  VID: 0xe (1.300V)
->     FID: 0x16 (14.0x [1400MHz]) VID: 0xe (1.300V)
->
-> Now the VIDs for this cpu are also all 1.3V :-(
->
-> Is there a chance to include a fix in the powernow-k7 code "for broken
-> PST tables" or should everybody make it's own patch like "Luigi Belli"
-> in "Acer Aspire 1300 buggy BIOS - hardcoded patch"
-> (http://www.linux.org.uk/mailman/private/cpufreq/2003-June/002171.html)?
->
-> Ciao Lars
->
->
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
->
->
+
+
+--Multipart_Thu__17_Jul_2003_14:48:42_+0000_08280660
+Content-Type: application/octet-stream;
+ name="screen.txt"
+Content-Disposition: attachment;
+ filename="screen.txt"
+Content-Transfer-Encoding: base64
+
+Q1BVIElORk8gMi42LjAtdGVzdDEgbm8gQ1BVZnJlcQo9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT0KCnJvb3RAdmFpbzp+JCB1bmFtZSAtYSAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApMaW51eCB2YWlvIDIuNi4wLXRl
+c3QxICMyIFRodSBKdWwgMTcgMTQ6MTU6NTkgVVRDIDIwMDMgaTY4NiB1bmtub3duCnJvb3RAdmFp
+bzp+JCBjYXQgL3Byb2MvY3B1aW5mbyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIApwcm9jZXNzb3IgICAgICAgOiAwCnZlbmRvcl9pZCAgICAgICA6
+IEdlbnVpbmVJbnRlbApjcHUgZmFtaWx5ICAgICAgOiA2Cm1vZGVsICAgICAgICAgICA6IDExCm1v
+ZGVsIG5hbWUgICAgICA6IE1vYmlsZSBJbnRlbChSKSBQZW50aXVtKFIpIElJSSBDUFUgLSBNICAg
+OTAwTUh6CnN0ZXBwaW5nICAgICAgICA6IDQKY3B1IE1IeiAgICAgICAgIDogODk0LjQ0NQpjYWNo
+ZSBzaXplICAgICAgOiA1MTIgS0IKZmRpdl9idWcgICAgICAgIDogbm8KaGx0X2J1ZyAgICAgICAg
+IDogbm8KZjAwZl9idWcgICAgICAgIDogbm8KY29tYV9idWcgICAgICAgIDogbm8KZnB1ICAgICAg
+ICAgICAgIDogeWVzCmZwdV9leGNlcHRpb24gICA6IHllcwpjcHVpZCBsZXZlbCAgICAgOiAyCndw
+ICAgICAgICAgICAgICA6IHllcwpmbGFncyAgICAgICAgICAgOiBmcHUgdm1lIGRlIHBzZSB0c2Mg
+bXNyIHBhZSBtY2UgY3g4IGFwaWMgc2VwIG10cnIgcGdlIG1jYSBjbW92IHBhdCBwc2UzNiBtbXgg
+ZnhzciBzc2UKYm9nb21pcHMgICAgICAgIDogMTc2NS4zNwoKcm9vdEB2YWlvOn4kIC9ib2dvbWlw
+cyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgCkNhbGlicmF0aW5nIGRlbGF5IGxvb3AuLiBvayAtIDg2NC4wMCBCb2dvTWlwcwoKQ1BV
+IElORk8gMi42LjAtdGVzdDEgd2l0aCBDUFVmcmVxCj09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09Cgpyb290QHZhaW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVx
+JCB1bmFtZSAtYSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKTGludXggdmFpbyAyLjYuMC10
+ZXN0MSAjMSBNb24gSnVsIDE0IDE4OjA3OjI2IFVUQyAyMDAzIGk2ODYgdW5rbm93bgpyb290QHZh
+aW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxJCBjYXQgL3Byb2MvY3B1aW5m
+byAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAKcHJvY2Vzc29yICAgICAgIDogMAp2ZW5kb3JfaWQgICAgICAg
+OiBHZW51aW5lSW50ZWwKY3B1IGZhbWlseSAgICAgIDogNgptb2RlbCAgICAgICAgICAgOiAxMQpt
+b2RlbCBuYW1lICAgICAgOiBNb2JpbGUgSW50ZWwoUikgUGVudGl1bShSKSBJSUkgQ1BVIC0gTSAg
+IDkwME1IegpzdGVwcGluZyAgICAgICAgOiA0CmNwdSBNSHogICAgICAgICA6IDQ5Ni44OTEgIDwt
+LS0gUmVwb3J0cyBhIDUwMG1oeiBtYWNoaW5lIHlldCB0aGUgU2NhbGluZ19nb3Zlcm5vciBpcyBz
+ZXQgLyBkZWZhdWx0cyB0byBwZXJmb3JtYW5jZSAgCmNhY2hlIHNpemUgICAgICA6IDUxMiBLQgpm
+ZGl2X2J1ZyAgICAgICAgOiBubwpobHRfYnVnICAgICAgICAgOiBubwpmMDBmX2J1ZyAgICAgICAg
+OiBubwpjb21hX2J1ZyAgICAgICAgOiBubwpmcHUgICAgICAgICAgICAgOiB5ZXMKZnB1X2V4Y2Vw
+dGlvbiAgIDogeWVzCmNwdWlkIGxldmVsICAgICA6IDIKd3AgICAgICAgICAgICAgIDogeWVzCmZs
+YWdzICAgICAgICAgICA6IGZwdSB2bWUgZGUgcHNlIHRzYyBtc3IgcGFlIG1jZSBjeDggYXBpYyBz
+ZXAgbXRyciBwZ2UgbWNhIGNtb3YgcGF0IHBzZTM2IG1teCBmeHNyIHNzZQpib2dvbWlwcyAgICAg
+ICAgOiA5ODAuNzYgIDwtLS0gVGhpcyBudW1iZXIgaGFzIG5ldmVyIGNoYW5nZWQgdGhyb3VnaG91
+dCBteSB0ZXN0aW5nLi4gYXMgc3VjaCBJIGRlY2lkZWQKCQkJCXRvIHVzZSB0aGUgYm9nb21pcHMg
+cHJvZ3JhbSB0byBzaG93IHRoZSBjaGFuZ2UgaW4gQ1BVIGZyZXF1ZW5jeS4gCgpyb290QHZhaW86
+L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxJCBscyAtbCAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAKdG90YWwgMAotci0tci0tci0tICAgIDEgcm9vdCAgICAgcm9vdCAg
+ICAgICAgIDQwOTYgSnVsIDE0IDE4OjI5IGNwdWluZm9fbWF4X2ZyZXEKLXItLXItLXItLSAgICAx
+IHJvb3QgICAgIHJvb3QgICAgICAgICA0MDk2IEp1bCAxNCAxODoyOSBjcHVpbmZvX21pbl9mcmVx
+Ci1yLS1yLS1yLS0gICAgMSByb290ICAgICByb290ICAgICAgICAgNDA5NiBKdWwgMTQgMTg6Mjkg
+c2NhbGluZ19hdmFpbGFibGVfZ292ZXJub3JzCi1yLS1yLS1yLS0gICAgMSByb290ICAgICByb290
+ICAgICAgICAgNDA5NiBKdWwgMTQgMTg6Mjkgc2NhbGluZ19kcml2ZXIKLXJ3LXItLXItLSAgICAx
+IHJvb3QgICAgIHJvb3QgICAgICAgICAgICAwIEp1bCAxNyAxMzozMSBzY2FsaW5nX2dvdmVybm9y
+Ci1ydy1yLS1yLS0gICAgMSByb290ICAgICByb290ICAgICAgICAgNDA5NiBKdWwgMTQgMTg6Mjkg
+c2NhbGluZ19tYXhfZnJlcQotcnctci0tci0tICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgIDQw
+OTYgSnVsIDE0IDE4OjI5IHNjYWxpbmdfbWluX2ZyZXEKCnJvb3RAdmFpbzovc3lzL2RldmljZXMv
+c3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEkIGNhdCAqICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIAo5MDAwMDAKNTAwMDAwCnBlcmZvcm1hbmNlIHBvd2Vyc2F2ZSB1c2Vyc3BhY2UKc3BlZWRz
+dGVwCnBlcmZvcm1hbmNlCjkwMDAwMAo1MDAwMDAKCnJvb3RAdmFpbzovc3lzL2RldmljZXMvc3lz
+dGVtL2NwdS9jcHUwL2NwdWZyZXEkIC9ib2dvbWlwcyAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IApDYWxpYnJhdGluZyBkZWxheSBsb29wLi4gb2sgLSA4NTguMDAgQm9nb01pcHMKCnJvb3RAdmFp
+bzovc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEkIGVjaG8gcG93ZXJzYXZlID4g
+c2NhbGluZ19nb3Zlcm5vciAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIApyb290QHZhaW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1
+MC9jcHVmcmVxJCBjYXQgKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKOTAwMDAwCjUw
+MDAwMApwZXJmb3JtYW5jZSBwb3dlcnNhdmUgdXNlcnNwYWNlCnNwZWVkc3RlcApwb3dlcnNhdmUg
+IDwtLS0gTG9va3MgZ29vZAo5MDAwMDAKNTAwMDAwCgpyb290QHZhaW86L3N5cy9kZXZpY2VzL3N5
+c3RlbS9jcHUvY3B1MC9jcHVmcmVxJCAvYm9nb21pcHMgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAKQ2FsaWJyYXRpbmcgZGVsYXkgbG9vcC4uIG9rIC0gNDc0LjAwIEJvZ29NaXBzICA8LS0tIENQ
+VSBTcGVlZCBjaGFuZ2VkIAoKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KU2NhbGluZ19Hb3Zlcm5vciBzZWVtcyB0byBz
+Y2FsZSB0aGUgcHJvY2Vzc29yLi4gOykKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCkV4YW1wbGUgIzIgdXNpbmcgdXNl
+cnNwYWNlIGRyaXZlcgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cgpyb290QHZh
+aW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxJCBlY2hvIHVzZXJzcGFjZSA+
+IHNjYWxpbmdfZ292ZXJub3IgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAKcm9vdEB2YWlvOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2Nw
+dTAvY3B1ZnJlcSQgbHMgLWwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCnRvdGFsIDAK
+LXItLXItLXItLSAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICA0MDk2IEp1bCAxNCAxODoyOSBj
+cHVpbmZvX21heF9mcmVxCi1yLS1yLS1yLS0gICAgMSByb290ICAgICByb290ICAgICAgICAgNDA5
+NiBKdWwgMTQgMTg6MjkgY3B1aW5mb19taW5fZnJlcQotci0tci0tci0tICAgIDEgcm9vdCAgICAg
+cm9vdCAgICAgICAgIDQwOTYgSnVsIDE0IDE4OjI5IHNjYWxpbmdfYXZhaWxhYmxlX2dvdmVybm9y
+cwotci0tci0tci0tICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgIDQwOTYgSnVsIDE0IDE4OjI5
+IHNjYWxpbmdfZHJpdmVyCi1ydy1yLS1yLS0gICAgMSByb290ICAgICByb290ICAgICAgICAgICAg
+MCBKdWwgMTcgMTM6NDAgc2NhbGluZ19nb3Zlcm5vcgotcnctci0tci0tICAgIDEgcm9vdCAgICAg
+cm9vdCAgICAgICAgIDQwOTYgSnVsIDE0IDE4OjI5IHNjYWxpbmdfbWF4X2ZyZXEKLXJ3LXItLXIt
+LSAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICA0MDk2IEp1bCAxNCAxODoyOSBzY2FsaW5nX21p
+bl9mcmVxCi1ydy1yLS1yLS0gICAgMSByb290ICAgICByb290ICAgICAgICAgNDA5NiBKdWwgMTcg
+MTM6NDAgc2NhbGluZ19zZXRzcGVlZApyb290QHZhaW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUv
+Y3B1MC9jcHVmcmVxJCBjYXQgKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKOTAwMDAw
+CjUwMDAwMApwZXJmb3JtYW5jZSBwb3dlcnNhdmUgdXNlcnNwYWNlCnNwZWVkc3RlcAp1c2Vyc3Bh
+Y2UKOTAwMDAwCjUwMDAwMAo1MDAwMDAKCnJvb3RAdmFpbzovc3lzL2RldmljZXMvc3lzdGVtL2Nw
+dS9jcHUwL2NwdWZyZXEkIC9ib2dvbWlwcyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApDYWxp
+YnJhdGluZyBkZWxheSBsb29wLi4gb2sgLSA0NzAuMDAgQm9nb01pcHMKCnJvb3RAdmFpbzovc3lz
+L2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEkIGVjaG8gOTAwMDAwID4gc2NhbGluZ19z
+ZXRzcGVlZCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIApyb290QHZhaW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVm
+cmVxJCBjYXQgKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKOTAwMDAwCjUwMDAwMApw
+ZXJmb3JtYW5jZSBwb3dlcnNhdmUgdXNlcnNwYWNlCnNwZWVkc3RlcAp1c2Vyc3BhY2UKOTAwMDAw
+CjUwMDAwMAo1MDAwMDAgICAgICAgICAgICAgICAgIDwtLS0tIE5vdGUgdGhlIHNjYWxpbmdfc2V0
+c3BlZWQgZGlkIE5PVCBjaGFuZ2UKCnJvb3RAdmFpbzovc3lzL2RldmljZXMvc3lzdGVtL2NwdS9j
+cHUwL2NwdWZyZXEkIC9ib2dvbWlwcyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApDYWxpYnJh
+dGluZyBkZWxheSBsb29wLi4gb2sgLSA4NjQuMDAgQm9nb01pcHMgICAgPC0tLS0gWWV0IGFwcGFy
+ZW50bHkgdGhlIHByb2Nlc3NvciBzcGVlZCBkaWQuCgo9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KClRoYW5rcyBm
+b3IgeW91ciBoZWxwLi4KCi1NaWtlCgoKCg==
+
+--Multipart_Thu__17_Jul_2003_14:48:42_+0000_08280660--
