@@ -1,12 +1,14 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
-Date: Tue, 11 Nov 2003 11:57:23 -0800
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: [SPEEDSTEP] ALi shouthbridge.  alpha tester wanted.
+Date: Tue, 11 Nov 2003 21:52:42 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB60077A19@scsmsx403.sc.intel.com>
+Message-ID: <20031111205242.GP29175@poupinou.org>
+References: <20031106140935.GC21970@poupinou.org>
+	<20031111193200.GJ29175@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <20031111193200.GJ29175@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,39 +19,31 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@brodo.de>, Dave Jones <davej@redhat.com>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
+On Tue, Nov 11, 2003 at 08:32:00PM +0100, Ducrot Bruno wrote:
+> On Thu, Nov 06, 2003 at 03:09:35PM +0100, Ducrot Bruno wrote:
+> > 
+> > Can someone please test
+> > ftp://ftp.poupinou.org/cpufreq/speedstep-ali.trunk.diff
+> > 
+> > Note that this is agaist 2.6.0-testX, not 2.4.
+> > 
+> 
+> OK.  It do not work.  Sorry.
+> 
+> What it does is to turn on geyserville functionality on the PMU device,
+> then, (I guess) we can use the geyserville IO register (at pmbase + 0x2f),
+> as for the -ich case.  Unfortunately, that is wrong.  I don't
+> know what to do next.  For people interrested in some registers that
+> have to be looked, get ftp://ftp.poupinou.org/dont_use/README.ali
 
+Grumble.  Just found a stupid bug.  Forget that email.  I still
+don't know if that work, though.  Sorry for noise.
 
-> -----Original Message-----
-> From: cpufreq-bounces@www.linux.org.uk=20
-> [mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of=20
-> Dominik Brodowski
-> Sent: Tuesday, November 11, 2003 10:54 AM
-> To: Dave Jones
-> Cc: Ducrot Bruno; cpufreq@www.linux.org.uk
-> Subject: Re: [PATCH][DOCUMENTATION BUGFIX] latency in micro-,=20
-> not nanoseconds
->=20
->=20
-> On Mon, Nov 10, 2003 at 09:16:54PM +0000, Dave Jones wrote:
-> > Ok, I can buy that. But it's not being used at all right=20
-> now, right ?
->=20
-> It is used in the ondemand governor already. Venkatesh knows of the
-> documentation bug and of the powernow-k7 bug, though.
+-- 
+Ducrot Bruno
 
-
-Yes. Current version of ondemand governor is using the transiton=20
-latency to decide whether this policy can be enabled on this CPU=20
-or not. As it does frequent sampling (default - 4 times per sec)
-which may not work well you have higher transition latencies.=20
-I am planning to use transition latency to decide on an=20
-appropriate sampling frequency for that CPU, in next release=20
-of ondemand governor, so that the governor can support wider=20
-range of CPUs (although with different sampling frequencies).
-
-
-Thanks,
--Venkatesh
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
