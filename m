@@ -1,12 +1,14 @@
-From: Stefan Frings <stefan.frings@vodafone.de>
-Subject: powersave governor
-Date: Tue, 3 Aug 2004 19:32:31 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: ACPI / CPUFREQ.
+Date: Tue, 3 Aug 2004 22:51:20 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408031932.32276.stefan.frings@vodafone.de>
+Message-ID: <20040803205120.GB8421@dominikbrodowski.de>
+References: <20040803151010.GQ12724@redhat.com>
+	<1091547688.3473.4.camel@dhcppc4>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <1091547688.3473.4.camel@dhcppc4>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,43 +19,66 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Len Brown <len.brown@intel.com>
+Cc: Dave Jones <davej@redhat.com>, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
 
-I just upgraded my kernel 2.4.21 to 2.6.6 because I want to increase battery 
-power on my notebook. I habe an external energy monitor attached to the power 
-cable of this 
-notebook.
+On Tue, Aug 03, 2004 at 11:41:28AM -0400, Len Brown wrote:
+> On Tue, 2004-08-03 at 11:10, Dave Jones wrote:
+> > At his ACPI talk at OLS, Len mentioned that it would be beneficial
+> > to have ACPI and CPUFREQ working together a little better.
+> > 
+> > Len, care to kick off some thoughts on what pieces you had in mind ?
+> > 
+> > The biggest problem is probably ACPI thinking the CPU should be at a
+> > certain P-state whilst the user has forced it to another with cpufreq.
+> 
+> I think there are 2 major issues.
+> 
+> 1. confusion about best driver to use
+>    this, of course, should be automatic
+>    and should not depend on if the drivers
+>    are built-in or modules.
 
-My notebook has an Amd Athlon64 3000+ processor. It supports 800, 1600 and 
-1800 Mhz clock frequency.
+AFAICS, p4-clockmod should be considered to be removed and put into a
+"pending" state on some external website until a
+"two-cpufreq-drivers-at-a-time,one-throttling,one-scaling-driver"
+implementation is merged.
 
-I measured these values for power consumtion:
+Other than that, only speedstep-centrino.c and acpi.c, the latter of which
+should be renamed IMHO to something like cpufreq-acpi-io.c, are in some
+sort of "conflict". A good startup-script, as well as recommending to use
+modules for cpufreq drivers, should solve this issue completely. Also, more
+extensive Documentation would help.
 
-Kernel 2.4.21                     60W...100W
-Kernel 2.6.6 performance    60W...100W
-Kernel 2.6.6 powersave       40W..60W
+> 2. no coordination between P-states
+>    and T-states.  ACPI currently kicks
+>    in throttling upon high temperature conditions,
+>    but it doesn't make sense to use throttling
+>    unless we're already in the most power-conserving
+>    P-state available.
 
-So the newer kernel helped really much to get a longer battery life.
+AFAICS, this is already done in drivers/acpi/processor.c:
 
-But there is one thing, that I do not understand: In both governor modes 
-(performance and powersave) the speed of programs is the same. I tested it 
-with:
 
-- Compile linux kernel
-- glxgears (a simple graphical benchmark tool without 2D or 3D accelleration)
-- fgl_glxgears (the same graphical benchmark tool with 3D Hardware 
-accelleration)
+in acpi_processor_set_thermal_limit():
+	case ACPI_PROCESSOR_LIMIT_INCREMENT:
+		/* if going up: P-states first, T-states later */
 
-The power consumption is really different but the program speed does not 
-change. Can you tell me if this is normal?
+		result = acpi_thermal_cpufreq_increase(pr->id);
 
-Output of x86info:
+and acpi_thermal_cpufreq_increase() does reduce the CPU frequency
+up to 40% in 20%-steps [hardcoded], independent of the cpufreq driver used
+or whether there's even P-States data in the ACPI tables. IMO the limit of
+"40%" could be overriden if a cpufreq-driver is registered with the ACPI
+P-States library, or even decreased further. The code is there, though.
 
-x86info v1.12b.  Dave Jones 2001-2003
-Feedback to <davej@redhat.com>.
 
-Found 1 CPU
---------------------------------------------------------------------------
-Family: 15 Model: 4 Stepping: 8
-CPU Model : Athlon 64
-Processor name string: AMD Athlon(tm) 64 Processor 3000+
+3.) No coordination between ACPI T-States and frequency scaling.
+
+ACPI T-States should become a cpufreq-throttling-driver once the
+"allow-for-two-drivers" implemenation mentioned above is written, found to
+be sufficient and good, and merged.
+
+Thanks,
+	Dominik
