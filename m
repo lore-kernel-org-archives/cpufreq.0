@@ -1,8 +1,9 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq patch,1.1.1.10,1.1.1.11
-Date: Fri, 09 Jul 2004 23:02:14 +0100
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq longhaul.c, 1.93.2.7,
+	1.93.2.8 longhaul.h, 1.1.2.2, 1.1.2.3
+Date: Fri, 09 Jul 2004 23:36:38 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1Bj3Re-0000Th-G8@flint.arm.linux.org.uk>
+Message-ID: <E1Bj3yw-0000t1-8z@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,284 +19,557 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq
-In directory flint:/tmp/cvs-serv1824
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
+In directory flint:/tmp/cvs-serv3255
 
 Modified Files:
       Tag: LINUX_2_4
-	patch 
+	longhaul.c longhaul.h 
 Log Message:
- * update to kernel 2.4.26
- * fix smp build
+Merge Dave Jones 2.6 driver.  Nehemiah should work now.
 
 
-Index: patch
+Index: longhaul.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/patch,v
-retrieving revision 1.1.1.10
-retrieving revision 1.1.1.11
-diff -u -r1.1.1.10 -r1.1.1.11
---- patch	5 Dec 2003 23:16:59 -0000	1.1.1.10
-+++ patch	9 Jul 2004 22:02:10 -0000	1.1.1.11
-@@ -1,6 +1,6 @@
----- linux-original/Documentation/00-INDEX	2001-08-27 16:44:15.000000000 +0200
--+++ linux/Documentation/00-INDEX	2003-12-05 23:54:51.000000000 +0100
--@@ -52,6 +52,8 @@
-+--- linux.original/Documentation/00-INDEX	2001-08-27 16:44:15.000000000 +0200
-++++ linux/Documentation/00-INDEX	2004-07-09 14:30:15.000000000 +0200
-+@@ -52,6 +52,8 @@ cdrom/
-  	- directory with information on the CD-ROM drivers that Linux has.
-  computone.txt
-  	- info on Computone Intelliport II/Plus Multiport Serial Driver
-@@ -9,9 +9,9 @@
-  cpqarray.txt
-  	- info on using Compaq's SMART2 Intelligent Disk Array Controllers.
-  devices.txt
----- linux-original/Documentation/Configure.help	2003-11-28 19:26:19.000000000 +0100
--+++ linux/Documentation/Configure.help	2003-12-05 23:54:51.000000000 +0100
--@@ -27904,16 +27904,6 @@
-+--- linux.original/Documentation/Configure.help	2004-04-14 15:05:24.000000000 +0200
-++++ linux/Documentation/Configure.help	2004-07-09 14:30:15.000000000 +0200
-+@@ -28178,16 +28178,6 @@ CONFIG_CPU_ARM926T
-    Say Y if you want support for the ARM926T processor.
-    Otherwise, say N.
-  
-@@ -28,7 +28,7 @@
-  SiS
-  CONFIG_DRM_SIS
-    Choose this option if you have a SIS graphics card. AGP support is
--@@ -28321,6 +28311,154 @@
-+@@ -28603,6 +28593,154 @@ IPMI Watchdog Timer
-  CONFIG_IPMI_WATCHDOG
-    This enables the IPMI watchdog timer.
-  
-@@ -183,9 +183,9 @@
-  CRC32 functions
-  CONFIG_CRC32
-    This option is provided for the case where no in-kernel-tree
----- linux-original/Makefile	2003-11-28 19:26:21.000000000 +0100
--+++ linux/Makefile	2003-12-05 23:54:51.000000000 +0100
--@@ -195,6 +195,7 @@
-+--- linux.original/Makefile	2004-04-14 15:05:41.000000000 +0200
-++++ linux/Makefile	2004-07-09 14:30:15.000000000 +0200
-+@@ -194,6 +194,7 @@ DRIVERS-$(CONFIG_BLUEZ) += drivers/bluet
-  DRIVERS-$(CONFIG_HOTPLUG_PCI) += drivers/hotplug/vmlinux-obj.o
-  DRIVERS-$(CONFIG_ISDN_BOOL) += drivers/isdn/vmlinux-obj.o
-  DRIVERS-$(CONFIG_CRYPTO) += crypto/crypto.o
-@@ -193,9 +193,9 @@
-  
-  DRIVERS := $(DRIVERS-y)
-  
----- linux-original/arch/i386/boot/setup.S	2003-11-28 19:26:19.000000000 +0100
--+++ linux/arch/i386/boot/setup.S	2003-12-05 23:54:51.000000000 +0100
--@@ -488,6 +488,18 @@
-+--- linux.original/arch/i386/boot/setup.S	2004-02-18 14:36:30.000000000 +0100
-++++ linux/arch/i386/boot/setup.S	2004-07-09 14:30:15.000000000 +0200
-+@@ -490,6 +490,18 @@ no_mca:
-  	movw	$0xAA, (0x1ff)			# device present
-  no_psmouse:
-  
-@@ -214,9 +214,9 @@
-  #if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-  # Then check for an APM BIOS...
-  						# %ds points to the bootsector
----- linux-original/arch/i386/config.in	2003-11-28 19:26:19.000000000 +0100
--+++ linux/arch/i386/config.in	2003-12-05 23:54:51.000000000 +0100
--@@ -194,6 +194,33 @@
-+--- linux.original/arch/i386/config.in	2004-02-18 14:36:30.000000000 +0100
-++++ linux/arch/i386/config.in	2004-07-09 14:30:15.000000000 +0200
-+@@ -194,6 +194,33 @@ fi
-  
-  bool 'Machine Check Exception' CONFIG_X86_MCE
-  
-@@ -250,9 +250,9 @@
-  tristate 'Toshiba Laptop support' CONFIG_TOSHIBA
-  tristate 'Dell laptop support' CONFIG_I8K
-  
----- linux-original/arch/i386/kernel/Makefile	2003-11-28 19:26:19.000000000 +0100
--+++ linux/arch/i386/kernel/Makefile	2003-12-05 23:58:51.000000000 +0100
--@@ -14,7 +14,8 @@
-+--- linux.original/arch/i386/kernel/Makefile	2003-11-28 19:26:19.000000000 +0100
-++++ linux/arch/i386/kernel/Makefile	2004-07-09 14:30:15.000000000 +0200
-+@@ -14,7 +14,8 @@ all: kernel.o head.o init_task.o
-  
-  O_TARGET := kernel.o
-  
-@@ -262,7 +262,7 @@
-  
-  obj-y	:= process.o semaphore.o signal.o entry.o traps.o irq.o vm86.o \
-  		ptrace.o i8259.o ioport.o ldt.o setup.o time.o sys_i386.o \
--@@ -43,5 +44,17 @@
-+@@ -43,5 +44,17 @@ obj-$(CONFIG_X86_LOCAL_APIC)	+= mpparse.
-  obj-$(CONFIG_X86_IO_APIC)	+= io_apic.o
-  obj-$(CONFIG_X86_VISWS_APIC)	+= visws_apic.o
-  obj-$(CONFIG_EDD)             	+= edd.o
-@@ -280,8 +280,8 @@
- +obj-$(CONFIG_X86_GX_SUSPMOD)	+= gx-suspmod.o  
-  
-  include $(TOPDIR)/Rules.make
----- linux-original/arch/i386/kernel/i386_ksyms.c	2003-11-28 19:26:19.000000000 +0100
--+++ linux/arch/i386/kernel/i386_ksyms.c	2003-12-06 00:00:46.000000000 +0100
-+--- linux.original/arch/i386/kernel/i386_ksyms.c	2004-04-14 15:05:25.000000000 +0200
-++++ linux/arch/i386/kernel/i386_ksyms.c	2004-07-09 15:02:19.000000000 +0200
- @@ -28,6 +28,7 @@
-  #include <asm/desc.h>
-  #include <asm/pgtable.h>
-@@ -290,7 +290,7 @@
-  #include <asm/edd.h>
-  
-  extern void dump_thread(struct pt_regs *, struct user *);
--@@ -50,6 +51,7 @@
-+@@ -50,6 +51,7 @@ extern struct drive_info_struct drive_in
-  EXPORT_SYMBOL(drive_info);
-  #endif
-  
-@@ -298,28 +298,19 @@
-  extern unsigned long get_cmos_time(void);
-  
-  /* platform dependent support */
--@@ -72,7 +74,9 @@
-+@@ -71,8 +73,10 @@ EXPORT_SYMBOL(probe_irq_mask);
-+ EXPORT_SYMBOL(kernel_thread);
-  EXPORT_SYMBOL(pm_idle);
-  EXPORT_SYMBOL(pm_power_off);
-- EXPORT_SYMBOL(get_cmos_time);
- +EXPORT_SYMBOL(cpu_khz);
-+ EXPORT_SYMBOL(get_cmos_time);
-  EXPORT_SYMBOL(apm_info);
- +EXPORT_SYMBOL(ist_info);
-  EXPORT_SYMBOL(gdt);
-  EXPORT_SYMBOL(empty_zero_page);
-  
--@@ -131,7 +135,9 @@
-- EXPORT_SYMBOL(cpu_data);
-- EXPORT_SYMBOL(kernel_flag_cacheline);
-- EXPORT_SYMBOL(smp_num_cpus);
--+EXPORT_SYMBOL(smp_num_siblings);
-- EXPORT_SYMBOL(cpu_online_map);
--+EXPORT_SYMBOL(cpu_sibling_map);
-- EXPORT_SYMBOL_NOVERS(__write_lock_failed);
-- EXPORT_SYMBOL_NOVERS(__read_lock_failed);
-- 
----- linux-original/arch/i386/kernel/setup.c	2003-11-28 19:26:19.000000000 +0100
--+++ linux/arch/i386/kernel/setup.c	2003-12-06 00:02:09.000000000 +0100
-+--- linux.original/arch/i386/kernel/setup.c	2004-04-14 15:05:25.000000000 +0200
-++++ linux/arch/i386/kernel/setup.c	2004-07-09 14:30:15.000000000 +0200
- @@ -120,6 +120,7 @@
-  #include <asm/dma.h>
-  #include <asm/mpspec.h>
-@@ -328,7 +319,7 @@
-  #include <asm/io_apic.h>
-  #include <asm/edd.h>
-  /*
--@@ -158,6 +159,7 @@
-+@@ -158,6 +159,7 @@ static unsigned int highmem_pages __init
-  struct drive_info_struct { char dummy[32]; } drive_info;
-  struct screen_info screen_info;
-  struct apm_info apm_info;
-@@ -336,7 +327,7 @@
-  struct sys_desc_table_struct {
-  	unsigned short length;
-  	unsigned char table[0];
--@@ -201,6 +203,7 @@
-+@@ -202,6 +204,7 @@ extern int blk_nohighio;
-  #define E820_MAP_NR (*(char*) (PARAM+E820NR))
-  #define E820_MAP    ((struct e820entry *) (PARAM+E820MAP))
-  #define APM_BIOS_INFO (*(struct apm_bios_info *) (PARAM+0x40))
-@@ -344,7 +335,7 @@
-  #define DRIVE_INFO (*(struct drive_info_struct *) (PARAM+0x80))
-  #define SYS_DESC_TABLE (*(struct sys_desc_table_struct*)(PARAM+0xa0))
-  #define MOUNT_ROOT_RDONLY (*(unsigned short *) (PARAM+0x1F2))
--@@ -1160,6 +1163,7 @@
-+@@ -1190,6 +1193,7 @@ void __init setup_arch(char **cmdline_p)
-   	drive_info = DRIVE_INFO;
-   	screen_info = SCREEN_INFO;
-  	apm_info.bios = APM_BIOS_INFO;
-@@ -352,8 +343,8 @@
-  	if( SYS_DESC_TABLE.length != 0 ) {
-  		MCA_bus = SYS_DESC_TABLE.table[3] &0x2;
-  		machine_id = SYS_DESC_TABLE.table[0];
----- linux-original/arch/i386/kernel/time.c	2003-11-28 19:26:19.000000000 +0100
--+++ linux/arch/i386/kernel/time.c	2003-12-05 23:54:51.000000000 +0100
-+--- linux.original/arch/i386/kernel/time.c	2004-02-18 14:36:30.000000000 +0100
-++++ linux/arch/i386/kernel/time.c	2004-07-09 14:30:15.000000000 +0200
- @@ -55,6 +55,7 @@
-  #include <linux/mc146818rtc.h>
-  #include <linux/timex.h>
-@@ -362,7 +353,7 @@
-  
-  #include <asm/fixmap.h>
-  #include <asm/cobalt.h>
--@@ -835,6 +836,49 @@
-+@@ -834,6 +835,49 @@ bad_ctc:
-  	return 0;
-  }
-  
-@@ -412,7 +403,7 @@
-  void __init time_init(void)
-  {
-  	extern int x86_udelay_tsc;
--@@ -903,6 +947,9 @@
-+@@ -902,6 +946,9 @@ void __init time_init(void)
-  	                	"0" (eax), "1" (edx));
-  				printk("Detected %lu.%03lu MHz processor.\n", cpu_khz / 1000, cpu_khz % 1000);
-  			}
-@@ -422,8 +413,8 @@
-  		}
-  	}
-  
----- linux-original/drivers/Makefile	2003-11-28 19:26:19.000000000 +0100
--+++ linux/drivers/Makefile	2003-12-06 00:04:30.000000000 +0100
-+--- linux.original/drivers/Makefile	2003-11-28 19:26:19.000000000 +0100
-++++ linux/drivers/Makefile	2004-07-09 14:30:15.000000000 +0200
- @@ -8,12 +8,13 @@
-  
-  mod-subdirs :=	dio hil mtd sbus video macintosh usb input telephony ide \
-@@ -439,8 +430,8 @@
-  subdir-$(CONFIG_DIO)		+= dio
-  subdir-$(CONFIG_PCI)		+= pci
-  subdir-$(CONFIG_GSC)		+= gsc
----- linux-original/include/asm-i386/ist.h	1970-01-01 01:00:00.000000000 +0100
--+++ linux/include/asm-i386/ist.h	2003-12-05 23:54:51.000000000 +0100
-+--- /dev/null	2004-06-22 21:52:41.000000000 +0200
-++++ linux/include/asm-i386/ist.h	2004-07-09 14:30:15.000000000 +0200
- @@ -0,0 +1,32 @@
- +#ifndef _ASM_IST_H
- +#define _ASM_IST_H
-@@ -474,8 +465,8 @@
- +
- +#endif	/* __KERNEL__ */
- +#endif	/* _ASM_IST_H */
----- linux-original/include/asm-i386/msr.h	2003-11-28 19:26:21.000000000 +0100
--+++ linux/include/asm-i386/msr.h	2003-12-05 23:54:51.000000000 +0100
-+--- linux.original/include/asm-i386/msr.h	2003-11-28 19:26:21.000000000 +0100
-++++ linux/include/asm-i386/msr.h	2004-07-09 14:30:15.000000000 +0200
- @@ -17,6 +17,21 @@
-  			  : /* no outputs */ \
-  			  : "c" (msr), "a" (val1), "d" (val2))
-@@ -507,9 +498,9 @@
-  
-  /* Centaur-Hauls/IDT defined MSRs. */
-  #define MSR_IDT_FCR1			0x107
----- linux-original/include/asm-i386/smp.h	2002-11-29 00:53:15.000000000 +0100
--+++ linux/include/asm-i386/smp.h	2003-12-05 23:54:51.000000000 +0100
--@@ -95,6 +95,8 @@
-+--- linux.original/include/asm-i386/smp.h	2002-11-29 00:53:15.000000000 +0100
-++++ linux/include/asm-i386/smp.h	2004-07-09 14:42:36.000000000 +0200
-+@@ -95,6 +95,8 @@ static __inline int logical_smp_processo
-  	return GET_APIC_LOGICAL_ID(*(unsigned long *)(APIC_BASE+APIC_LDR));
-  }
-  
-@@ -518,9 +509,9 @@
-  #endif /* !__ASSEMBLY__ */
-  
-  #define NO_PROC_ID		0xFF		/* No processor magic marker */
----- linux-original/include/linux/smp.h	2001-11-22 20:46:19.000000000 +0100
--+++ linux/include/linux/smp.h	2003-12-05 23:54:51.000000000 +0100
--@@ -86,6 +86,7 @@
-+--- linux.original/include/linux/smp.h	2001-11-22 20:46:19.000000000 +0100
-++++ linux/include/linux/smp.h	2004-07-09 14:42:36.000000000 +0200
-+@@ -86,6 +86,7 @@ extern volatile int smp_msg_id;
-  #define cpu_number_map(cpu)			0
-  #define smp_call_function(func,info,retry,wait)	({ 0; })
-  #define cpu_online_map				1
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.c,v
+retrieving revision 1.93.2.7
+retrieving revision 1.93.2.8
+diff -u -r1.93.2.7 -r1.93.2.8
+--- longhaul.c	13 Apr 2004 15:47:13 -0000	1.93.2.7
++++ longhaul.c	9 Jul 2004 22:36:34 -0000	1.93.2.8
+@@ -32,23 +32,34 @@
+ 
+ #define DEBUG
+ 
+-#ifdef DEBUG
+-#define dprintk(msg...) printk(msg)
+-#else
+-#define dprintk(msg...) do { } while(0)
+-#endif
+-
+ #define PFX "longhaul: "
+ 
+ static unsigned int numscales=16, numvscales;
++static unsigned int fsb;
+ static int minvid, maxvid;
+ static int can_scale_voltage;
++static unsigned int minmult, maxmult;
+ static int vrmrev;
+ 
+ 
+ /* Module parameters */
+ static int dont_scale_voltage;
+-static unsigned int fsb;
++static int debug;
++
++static void dprintk(const char *fmt, ...)
++{
++	char s[256];
++	va_list args;
++
++	if (debug == 0)
++		return;
++
++	va_start(args, fmt);
++	vsprintf(s, fmt, args);
++	printk(s);
++	va_end(args);
++}
++
+ 
+ #define __hlt()     __asm__ __volatile__("hlt": : :"memory")
+ 
+@@ -61,7 +72,7 @@
+ static struct cpufreq_frequency_table *longhaul_table;
+ 
+ 
+-static unsigned int calc_speed (int mult, int fsb)
++static unsigned int calc_speed(int mult, int fsb)
+ {
+ 	int khz;
+ 	khz = (mult/10)*fsb;
+@@ -72,13 +83,13 @@
+ }
+ 
+ 
+-static int longhaul_get_cpu_mult (void)
++static int longhaul_get_cpu_mult(void)
+ {
+ 	unsigned long invalue=0,lo, hi;
+ 
+ 	rdmsr (MSR_IA32_EBL_CR_POWERON, lo, hi);
+ 	invalue = (lo & (1<<22|1<<23|1<<24|1<<25)) >>22;
+-	if (longhaul_version==2) {
++	if (longhaul_version==2 || longhaul_version==3) {
+ 		if (lo & (1<<27))
+ 			invalue+=16;
+ 	}
+@@ -93,7 +104,7 @@
+  * Sets a new clock ratio, and -if applicable- a new Front Side Bus
+  */
+ 
+-static void longhaul_setstate (unsigned int clock_ratio_index)
++static void longhaul_setstate(unsigned int clock_ratio_index)
+ {
+ 	int speed, mult;
+ 	struct cpufreq_freqs freqs;
+@@ -114,8 +125,7 @@
+ 
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 
+-	dprintk (KERN_INFO PFX "FSB:%d Mult:%d.%dx\n", fsb,
+-				mult/10, mult%10);
++	dprintk (KERN_INFO PFX "FSB:%d Mult:%d.%dx\n", fsb, mult/10, mult%10);
+ 
+ 	switch (longhaul_version) {
+ 	case 1:
+@@ -158,6 +168,22 @@
+ 		longhaul.bits.RevisionKey = 3;
+ 		wrmsrl (MSR_VIA_LONGHAUL, longhaul.val);
+ 		break;
++	case 3:
++		rdmsrl (MSR_VIA_LONGHAUL, longhaul.val);
++		longhaul.bits.SoftBusRatio = clock_ratio_index & 0xf;
++		longhaul.bits.SoftBusRatio4 = (clock_ratio_index & 0x10) >> 4;
++		longhaul.bits.EnableSoftBusRatio = 1;
++
++		longhaul.bits.RevisionKey = 0x0;
++
++		wrmsrl(MSR_VIA_LONGHAUL, longhaul.val);
++		__hlt();
++
++		rdmsrl (MSR_VIA_LONGHAUL, longhaul.val);
++		longhaul.bits.EnableSoftBusRatio = 0;
++		longhaul.bits.RevisionKey = 0xf;
++		wrmsrl (MSR_VIA_LONGHAUL, longhaul.val);
++		break;
+ 	}
+ 
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+@@ -174,7 +200,7 @@
+ 
+ #define ROUNDING	0xf
+ 
+-static int _guess (int guess, int maxmult)
++static int _guess(int guess)
+ {
+ 	int target;
+ 
+@@ -187,7 +213,7 @@
+ }
+ 
+ 
+-static int guess_fsb(int maxmult)
++static int guess_fsb(void)
+ {
+ 	int speed = (cpu_khz/1000);
+ 	int i;
+@@ -197,25 +223,25 @@
+ 	speed &= ~ROUNDING;
+ 
+ 	for (i=0; i<3; i++) {
+-		if (_guess(speeds[i],maxmult) == speed)
++		if (_guess(speeds[i]) == speed)
+ 			return speeds[i];
+ 	}
+ 	return 0;
+ }
+ 
+ 
+-static int __init longhaul_get_ranges (void)
++static int __init longhaul_get_ranges(void)
+ {
+ 	struct cpuinfo_x86 *c = cpu_data;
+ 	unsigned long invalue;
+-	unsigned int minmult=0, maxmult=0;
+ 	unsigned int multipliers[32]= {
+ 		50,30,40,100,55,35,45,95,90,70,80,60,120,75,85,65,
+ 		-1,110,120,-1,135,115,125,105,130,150,160,140,-1,155,-1,145 };
+ 	unsigned int j, k = 0;
+ 	union msr_longhaul longhaul;
+ 	unsigned long lo, hi;
+-	unsigned int eblcr_fsb_table[] = { 66, 133, 100, -1 };
++	unsigned int eblcr_fsb_table_v1[] = { 66, 133, 100, -1 };
++	unsigned int eblcr_fsb_table_v2[] = { 133, 100, -1, 66 };
+ 
+ 	switch (longhaul_version) {
+ 	case 1:
+@@ -226,16 +252,14 @@
+ 		rdmsr (MSR_IA32_EBL_CR_POWERON, lo, hi);
+ 		invalue = (lo & (1<<18|1<<19)) >>18;
+ 		if (c->x86_model==6)
+-			fsb = eblcr_fsb_table[invalue];
++			fsb = eblcr_fsb_table_v1[invalue];
+ 		else
+-			fsb = guess_fsb(maxmult);
++			fsb = guess_fsb();
+ 		break;
+ 
+ 	case 2:
+ 		rdmsrl (MSR_VIA_LONGHAUL, longhaul.val);
+ 
+-		//TODO: Nehemiah may have borken MaxMHzBR.
+-		// need to extrapolate from FSB.
+ 		invalue = longhaul.bits.MaxMHzBR;
+ 		if (longhaul.bits.MaxMHzBR4)
+ 			invalue += 16;
+@@ -247,21 +271,38 @@
+ 		else
+ 			minmult = multipliers[invalue];
+ 
+-		switch (longhaul.bits.MaxMHzFSB) {
+-		case 0x0:	fsb=133;
+-				break;
+-		case 0x1:	fsb=100;
+-				break;
+-		case 0x2:	printk (KERN_INFO PFX "Invalid (reserved) FSB!\n");
+-			return -EINVAL;
+-		case 0x3:	fsb=66;
+-				break;
+-		}
++		fsb = eblcr_fsb_table_v2[longhaul.bits.MaxMHzFSB];
++		break;
++
++	case 3:
++		rdmsrl (MSR_VIA_LONGHAUL, longhaul.val);
++
++		/*
++		 * TODO: This code works, but raises a lot of questions.
++		 * - Some Nehemiah's seem to have broken Min/MaxMHzBR's.
++		 *   We get around this by using a hardcoded multiplier of 5.0x
++		 *   for the minimimum speed, and the speed we booted up at for the max.
++		 *   This is done in longhaul_get_cpu_mult() by reading the EBLCR register.
++		 * - According to some VIA documentation EBLCR is only
++		 *   in pre-Nehemiah C3s. How this still works is a mystery.
++		 *   We're possibly using something undocumented and unsupported,
++		 *   But it works, so we don't grumble.
++		 */
++		minmult=50;
++		maxmult=longhaul_get_cpu_mult();
++
++		fsb = eblcr_fsb_table_v2[longhaul.bits.MaxMHzFSB];
+ 		break;
+ 	}
+ 
+ 	dprintk (KERN_INFO PFX "MinMult=%d.%dx MaxMult=%d.%dx\n",
+ 		 minmult/10, minmult%10, maxmult/10, maxmult%10);
++
++	if (fsb == -1) {
++		printk (KERN_INFO PFX "Invalid (reserved) FSB!\n");
++		return -EINVAL;
++	}
++
+ 	highest_speed = calc_speed (maxmult, fsb);
+ 	lowest_speed = calc_speed (minmult,fsb);
+ 	dprintk (KERN_INFO PFX "FSB: %dMHz Lowestspeed=%dMHz Highestspeed=%dMHz\n",
+@@ -363,9 +404,9 @@
+ }
+ 
+ 
+-static int longhaul_target (struct cpufreq_policy *policy,
+-			    unsigned int target_freq,
+-			    unsigned int relation)
++static int longhaul_target(struct cpufreq_policy *policy,
++			   unsigned int target_freq,
++			   unsigned int relation)
+ {
+ 	unsigned int table_index = 0;
+  	unsigned int new_clock_ratio = 0;
+@@ -380,7 +421,16 @@
+ 	return 0;
+ }
+ 
+-static int longhaul_cpu_init (struct cpufreq_policy *policy)
++#if 0
++static unsigned int longhaul_get(unsigned int cpu)
++{
++	if (cpu)
++		return 0;
++	return (calc_speed (longhaul_get_cpu_mult(), fsb));
++}
++#endif
++
++static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpuinfo_x86 *c = cpu_data;
+ 	char *cpuname=NULL;
+@@ -423,11 +473,25 @@
+ 		break;
+ 
+ 	case 9:
+-		cpuname = "C3 'Nehemiah' [C5N]";
+-		longhaul_version=2;
++		longhaul_version=3;
+ 		numscales=32;
+-		memcpy (clock_ratio, nehemiah_clock_ratio, sizeof(nehemiah_clock_ratio));
+-		memcpy (eblcr_table, nehemiah_eblcr, sizeof(nehemiah_eblcr));
++		switch (c->x86_mask) {
++		case 0 ... 1:
++			cpuname = "C3 'Nehemiah A' [C5N]";
++			memcpy (clock_ratio, nehemiah_a_clock_ratio, sizeof(nehemiah_a_clock_ratio));
++			memcpy (eblcr_table, nehemiah_a_eblcr, sizeof(nehemiah_a_eblcr));
++			break;
++		case 2 ... 4:
++			cpuname = "C3 'Nehemiah B' [C5N]";
++			memcpy (clock_ratio, nehemiah_b_clock_ratio, sizeof(nehemiah_b_clock_ratio));
++			memcpy (eblcr_table, nehemiah_b_eblcr, sizeof(nehemiah_b_eblcr));
++			break;
++		case 5 ... 15:
++			cpuname = "C3 'Nehemiah C' [C5N]";
++			memcpy (clock_ratio, nehemiah_c_clock_ratio, sizeof(nehemiah_c_clock_ratio));
++			memcpy (eblcr_table, nehemiah_c_eblcr, sizeof(nehemiah_c_eblcr));
++			break;
++		}
+ 		break;
+ 
+ 	default:
+@@ -467,12 +531,8 @@
+ 		return -ENODEV;
+ 
+ 	switch (c->x86_model) {
+-	case 6 ... 8:
++	case 6 ... 9:
+ 		return cpufreq_register_driver(&longhaul_driver);
+-	case 9:
+-		printk (KERN_INFO PFX "Nehemiah unsupported: Waiting on working silicon "
+-						"from VIA before this is usable.\n");
+-		break;
+ 	default:
+ 		printk (KERN_INFO PFX "Unknown VIA CPU. Contact davej@codemonkey.org.uk\n");
+ 	}
+@@ -486,7 +546,10 @@
+ 	kfree(longhaul_table);
+ }
+ 
+-MODULE_PARM (dont_scale_voltage, "i");
++MODULE_PARM(dont_scale_voltage, "i");
++MODULE_PARM_DESC(dont_scale_voltage, "Don't scale voltage of processor");
++MODULE_PARM(debug, "i");
++MODULE_PARM_DESC(debug, "Dump debugging information.");
+ 
+ MODULE_AUTHOR ("Dave Jones <davej@codemonkey.org.uk>");
+ MODULE_DESCRIPTION ("Longhaul driver for VIA Cyrix processors.");
+
+Index: longhaul.h
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.h,v
+retrieving revision 1.1.2.2
+retrieving revision 1.1.2.3
+diff -u -r1.1.2.2 -r1.1.2.3
+--- longhaul.h	9 Dec 2003 08:58:33 -0000	1.1.2.2
++++ longhaul.h	9 Jul 2004 22:36:34 -0000	1.1.2.3
+@@ -234,14 +234,15 @@
+ 
+ /*
+  * VIA C3 Nehemiah */
+-static int __initdata nehemiah_clock_ratio[32] = {
++ 
++static int __initdata nehemiah_a_clock_ratio[32] = {
+ 	100, /* 0000 -> 10.0x */
+ 	160, /* 0001 -> 16.0x */
+-	-1,  /* 0010 -> RESERVED */
++	-1,  /* 0010 ->  RESERVED */
+ 	90,  /* 0011 ->  9.0x */
+ 	95,  /* 0100 ->  9.5x */
+-	-1,  /* 0101 -> RESERVED */
+-	-1,  /* 0110 -> RESERVED */
++	-1,  /* 0101 ->  RESERVED */
++	-1,  /* 0110 ->  RESERVED */
+ 	55,  /* 0111 ->  5.5x */
+ 	60,  /* 1000 ->  6.0x */
+ 	70,  /* 1001 ->  7.0x */
+@@ -250,8 +251,77 @@
+ 	65,  /* 1100 ->  6.5x */
+ 	75,  /* 1101 ->  7.5x */
+ 	85,  /* 1110 ->  8.5x */
+-	120, /* 1111 ->  12.0x */
++	120, /* 1111 -> 12.0x */
++	100, /* 0000 -> 10.0x */
++	-1,  /* 0001 -> RESERVED */
++	120, /* 0010 -> 12.0x */
++	90,  /* 0011 ->  9.0x */
++	105, /* 0100 -> 10.5x */
++	115, /* 0101 -> 11.5x */
++	125, /* 0110 -> 12.5x */
++	135, /* 0111 -> 13.5x */
++	140, /* 1000 -> 14.0x */
++	150, /* 1001 -> 15.0x */
++	160, /* 1010 -> 16.0x */
++	130, /* 1011 -> 13.0x */
++	145, /* 1100 -> 14.5x */
++	155, /* 1101 -> 15.5x */
++	-1,  /* 1110 -> RESERVED (13.0x) */
++	120, /* 1111 -> 12.0x */
++};
++
++static int __initdata  nehemiah_b_clock_ratio[32] = {
++	100, /* 0000 -> 10.0x */
++	160, /* 0001 -> 16.0x */
++	-1,  /* 0010 ->  RESERVED */
++	90,  /* 0011 ->  9.0x */
++	95,  /* 0100 ->  9.5x */
++	-1,  /* 0101 ->  RESERVED */
++	-1,  /* 0110 ->  RESERVED */
++	55,  /* 0111 ->  5.5x */
++	60,  /* 1000 ->  6.0x */
++	70,  /* 1001 ->  7.0x */
++	80,  /* 1010 ->  8.0x */
++	50,  /* 1011 ->  5.0x */
++	65,  /* 1100 ->  6.5x */
++	75,  /* 1101 ->  7.5x */
++	85,  /* 1110 ->  8.5x */
++	120, /* 1111 -> 12.0x */
++	100, /* 0000 -> 10.0x */
++	110, /* 0001 -> 11.0x */
++	120, /* 0010 -> 12.0x */
++	90,  /* 0011 ->  9.0x */
++	105, /* 0100 -> 10.5x */
++	115, /* 0101 -> 11.5x */
++	125, /* 0110 -> 12.5x */
++	135, /* 0111 -> 13.5x */
++	140, /* 1000 -> 14.0x */
++	150, /* 1001 -> 15.0x */
++	160, /* 1010 -> 16.0x */
++	130, /* 1011 -> 13.0x */
++	145, /* 1100 -> 14.5x */
++	155, /* 1101 -> 15.5x */
++	-1,  /* 1110 -> RESERVED (13.0x) */
++	120, /* 1111 -> 12.0x */
++};
+ 
++static int __initdata  nehemiah_c_clock_ratio[32] = {
++	100, /* 0000 -> 10.0x */
++	160, /* 0001 -> 16.0x */
++	40,  /* 0010 ->  RESERVED */
++	90,  /* 0011 ->  9.0x */
++	95,  /* 0100 ->  9.5x */
++	-1,  /* 0101 ->  RESERVED */
++	45,  /* 0110 ->  RESERVED */
++	55,  /* 0111 ->  5.5x */
++	60,  /* 1000 ->  6.0x */
++	70,  /* 1001 ->  7.0x */
++	80,  /* 1010 ->  8.0x */
++	50,  /* 1011 ->  5.0x */
++	65,  /* 1100 ->  6.5x */
++	75,  /* 1101 ->  7.5x */
++	85,  /* 1110 ->  8.5x */
++	120, /* 1111 -> 12.0x */
+ 	100, /* 0000 -> 10.0x */
+ 	110, /* 0001 -> 11.0x */
+ 	120, /* 0010 -> 12.0x */
+@@ -266,18 +336,53 @@
+ 	130, /* 1011 -> 13.0x */
+ 	145, /* 1100 -> 14.5x */
+ 	155, /* 1101 -> 15.5x */
+-	-1,  /* 1110 -> RESERVED */
++	-1,  /* 1110 -> RESERVED (13.0x) */
+ 	120, /* 1111 -> 12.0x */
+ };
+ 
+-static int __initdata nehemiah_eblcr[32] = {
++static int __initdata nehemiah_a_eblcr[32] = {
+ 	50,  /* 0000 ->  5.0x */
+ 	160, /* 0001 -> 16.0x */
+-	-1,  /* 0010 -> RESERVED */
++	-1,  /* 0010 ->  RESERVED */
+ 	100, /* 0011 -> 10.0x */
+ 	55,  /* 0100 ->  5.5x */
+-	-1,  /* 0101 -> RESERVED */
+-	-1,  /* 0110 -> RESERVED */
++	-1,  /* 0101 ->  RESERVED */
++	-1,  /* 0110 ->  RESERVED */
++	95,  /* 0111 ->  9.5x */
++	90,  /* 1000 ->  9.0x */
++	70,  /* 1001 ->  7.0x */
++	80,  /* 1010 ->  8.0x */
++	60,  /* 1011 ->  6.0x */
++	120, /* 1100 -> 12.0x */
++	75,  /* 1101 ->  7.5x */
++	85,  /* 1110 ->  8.5x */
++	65,  /* 1111 ->  6.5x */
++	90,  /* 0000 ->  9.0x */
++	-1,  /* 0001 -> RESERVED */
++	120, /* 0010 -> 12.0x */
++	100, /* 0011 -> 10.0x */
++	135, /* 0100 -> 13.5x */
++	115, /* 0101 -> 11.5x */
++	125, /* 0110 -> 12.5x */
++	105, /* 0111 -> 10.5x */
++	130, /* 1000 -> 13.0x */
++	150, /* 1001 -> 15.0x */
++	160, /* 1010 -> 16.0x */
++	140, /* 1011 -> 14.0x */
++	120, /* 1100 -> 12.0x */
++	155, /* 1101 -> 15.5x */
++	-1,  /* 1110 -> RESERVED (13.0x) */
++	145 /* 1111 -> 14.5x */
++   /* end of table  */
++};
++static int __initdata nehemiah_b_eblcr[32] = {
++	50,  /* 0000 ->  5.0x */
++	160, /* 0001 -> 16.0x */
++	-1,  /* 0010 ->  RESERVED */
++	100, /* 0011 -> 10.0x */
++	55,  /* 0100 ->  5.5x */
++	-1,  /* 0101 ->  RESERVED */
++	-1,  /* 0110 ->  RESERVED */
+ 	95,  /* 0111 ->  9.5x */
+ 	90,  /* 1000 ->  9.0x */
+ 	70,  /* 1001 ->  7.0x */
+@@ -287,7 +392,6 @@
+ 	75,  /* 1101 ->  7.5x */
+ 	85,  /* 1110 ->  8.5x */
+ 	65,  /* 1111 ->  6.5x */
+-
+ 	90,  /* 0000 ->  9.0x */
+ 	110, /* 0001 -> 11.0x */
+ 	120, /* 0010 -> 12.0x */
+@@ -302,9 +406,46 @@
+ 	140, /* 1011 -> 14.0x */
+ 	120, /* 1100 -> 12.0x */
+ 	155, /* 1101 -> 15.5x */
+-	-1,  /* 1110 -> RESERVED */
+-	-1,  /* 1111 -> RESERVED */
++	-1,  /* 1110 -> RESERVED (13.0x) */
++	145 /* 1111 -> 14.5x */
++	   /* end of table  */
+ };
++static int __initdata nehemiah_c_eblcr[32] = {
++	50,  /* 0000 ->  5.0x */
++	160, /* 0001 -> 16.0x */
++	40,  /* 0010 ->  RESERVED */
++	100, /* 0011 -> 10.0x */
++	55,  /* 0100 ->  5.5x */
++	-1,  /* 0101 ->  RESERVED */
++	45,  /* 0110 ->  RESERVED */
++	95,  /* 0111 ->  9.5x */
++	90,  /* 1000 ->  9.0x */
++	70,  /* 1001 ->  7.0x */
++	80,  /* 1010 ->  8.0x */
++	60,  /* 1011 ->  6.0x */
++	120, /* 1100 -> 12.0x */
++	75,  /* 1101 ->  7.5x */
++	85,  /* 1110 ->  8.5x */
++	65,  /* 1111 ->  6.5x */
++	90,  /* 0000 ->  9.0x */
++	110, /* 0001 -> 11.0x */
++	120, /* 0010 -> 12.0x */
++	100, /* 0011 -> 10.0x */
++	135, /* 0100 -> 13.5x */
++	115, /* 0101 -> 11.5x */
++	125, /* 0110 -> 12.5x */
++	105, /* 0111 -> 10.5x */
++	130, /* 1000 -> 13.0x */
++	150, /* 1001 -> 15.0x */
++	160, /* 1010 -> 16.0x */
++	140, /* 1011 -> 14.0x */
++	120, /* 1100 -> 12.0x */
++	155, /* 1101 -> 15.5x */
++	-1,  /* 1110 -> RESERVED (13.0x) */
++	145 /* 1111 -> 14.5x */
++	  /* end of table  */
++};
++
+ /* 
+  * Voltage scales. Div/Mod by 1000 to get actual voltage.
+  * Which scale to use depends on the VRM type in use.
