@@ -1,11 +1,12 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: 2.4 patch and powernow-k8
-Date: Thu, 2 Dec 2004 18:00:19 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A843AA1C5E@SAUSEXMB1.amd.com>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: 2.4 patch and powernow-k8
+Date: Fri, 3 Dec 2004 10:09:55 +0100
+Message-ID: <20041203090955.GC9288@dominikbrodowski.de>
+References: <41AF938B.4080204@danhartman.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <41AF938B.4080204@danhartman.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,25 +18,48 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: omv <omv@danhartman.org>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: omv <omv@danhartman.org>
+Cc: cpufreq@www.linux.org.uk
 
-> I've been trying to patch cpufreq into a recent 2.4 kernel and having=20
-> some problems.  When I've config'ed powernow-k8 to be static=20
-> linked, I get the below errors. =20
-
+On Thu, Dec 02, 2004 at 02:13:31PM -0800, omv wrote:
+> make[1]: Leaving directory `/usr/src/linux-2.4.28/arch/i386/lib'
+> ld -m elf_i386 -T /usr/src/linux-2.4.28/arch/i386/vmlinux.lds -e stext 
+> arch/i386/kernel/head.o arch/i386/kernel/init_task.o init/main.o 
+> init/version.o init/do_mounts.o \
+>        --start-group \
+>        arch/i386/kernel/kernel.o arch/i386/mm/mm.o kernel/kernel.o 
+> mm/mm.o fs/fs.o ipc/ipc.o \
+>         drivers/acpi/acpi.o drivers/char/char.o drivers/block/block.o 
+> drivers/misc/misc.o drivers/net/net.o drivers/char/agp/agp.o 
+> drivers/char/drm/drm.o drivers/ide/idedriver.o drivers/scsi/scsidrv.o 
+> drivers/cdrom/driver.o drivers/pci/driver.o drivers/pcmcia/pcmcia.o 
+> drivers/pnp/pnp.o drivers/video/video.o drivers/media/media.o 
+> drivers/input/inputdrv.o drivers/cpufreq/built-in.o \
+>        net/network.o \
+>        /usr/src/linux-2.4.28/arch/i386/lib/lib.a 
+> /usr/src/linux-2.4.28/lib/lib.a /usr/src/linux-2.4.28/arch/i386/lib/lib.a \
+>        --end-group \
+>        -o vmlinux
 > arch/i386/kernel/kernel.o(.data+0x1d80): In function `trampoline_end':
-> : undefined reference to `local symbols in discarded section=20
-> .text.exit'
+> : undefined reference to `local symbols in discarded section .text.exit'
 > make: *** [vmlinux] Error 1
+> [root@queue38 linux-2.4.28]#
 
-I can't quite reproduce this error on my AMD64 system, but=20
-I can get something awfully close, in that I see the undefined
-reference error.  I have no idea what the problem is.  It only
-happens when the powernow-k8.c code is compiled, but I can't
-see anything in the code that would produce that.
+Could you try out removing the "__devexit_p" in 
+static struct cpufreq_driver cpufreq_amd64_driver = {
+        .verify = powernowk8_verify,
+        .target = powernowk8_target,
+        .init = powernowk8_cpu_init,
+        .exit = __devexit_p(powernowk8_cpu_exit),
+        .get = powernowk8_get,
+, i.e. modifying the .exit line to
+	.exit = powernowk8_cpu_exit
 
-This is occuring on RHEL3 U2 with gcc-3.2.3.  Anyone have
-any ideas?
+and remove the __devexit from
+static int __devexit powernowk8_cpu_exit (struct cpufreq_policy *pol)
 
--Mark Langsdorf
-AMD, Inc.
+in powernow-k8.c
+
+Thanks,
+	Dominik
