@@ -1,11 +1,12 @@
-From: Carlos Garcia Campos <carlosgc@gnome.org>
-Subject: ANNOUNCE: GNOME CPU Frequency Scaling Monitor 0.3.1
-Date: Wed, 06 Oct 2004 19:02:03 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: [PATCH] acpi-cpufreq: force transitions even if driver thinks CPU
+	is already at given P-State
+Date: Fri, 8 Oct 2004 21:45:58 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1097082123.1067.28.camel@kalptl>
+Message-ID: <20041008194558.GB8562@dominikbrodowski.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1625586533=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,121 +16,43 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: cpufreq@www.linux.org.uk
-
-
---===============1625586533==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-RjXaRrJ2CsxXG/Ma8C07"
-
-
---=-RjXaRrJ2CsxXG/Ma8C07
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Application
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-GNOME CPUFreq Applet 0.3.1
-
-Description
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-GNOME CPUFreq Applet is a CPU Frequency Scaling Monitor for GNOME Panel
-
-Features
-=3D=3D=3D=3D=3D=3D=3D=3D
-
-   * Support for proc or sys filesystems
-   * Support for multiprocessor systems
-
-Prerequisites
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-   * GNOME 2 libraries
-   * GNOME Panel libraries
-   * GNOME-VFS libraries
-   * GConf
-
-Overview of Changes in GNOME CPUFreq Applet 0.3.1
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-  This is mainly a bugfix release
-
-  Bugfixes:
-	* Not always use scaling_cur_freq in frequency selector (Carlos Garcia)
-	* Removed possible duplicated frequencies in the pull down menu (Carlos
-Garcia)
-	* Some other bugfixes and improvements (Carlos Garcia)
-
-Thanks to Joe Flint, Javier Gonzalez, Andrew Lau, etc. for bug reporting
-
-Tarballs can be downloaded from
-
-http://carlosgc.linups.org/files/gnome-cpufreq-applet/gnome-cpufreq-applet-=
-0.3.1.tar.gz
-
-CVS
-   http://cvs.gnome.org/viewcvs/gnome-cpufreq-applet/
-
-GNOME CPUFreq Applet is currently being packaged as part of Debian
-Unstable
-   http://packages.debian.org/unstable/gnome/gnome-cpufreq-applet.html
-
-Screeshots
-   http://carlosgc.linups.org/files/gnome-cpufreq-applet/shots/
-
-Bugs can be reported to
-   carlosgc gnome org
-
-Suggestions, patches, comments, etc can be sent to
-   carlosgc gnome org
-
-GNOME Files
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-http://www.gnomefiles.org/app.php?soft_id=3D71
-
---=20
-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D
- Carlos Garcia Campos a.k.a. KaL
-   elkalmail@yahoo.es
-   carlosgc@gnome.org
-   http://carlosgc.linups.org
-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D-=3D=
-            =20
-PGP key: http://pgp.mit.edu:11371/pks/lookup?op=3Dget&search=3D0x523E6462
-
---=-RjXaRrJ2CsxXG/Ma8C07
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Esta parte del mensaje =?ISO-8859-1?Q?est=E1?= firmada
-	digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD4DBQBBZCUKjxBOalI+ZGIRAoBCAJ9qck6Q77zai5RC+lzrPjAhXjlHbACXXjZV
-YUJdvtpOyBWgVYLPWqeJ3g==
-=exdO
------END PGP SIGNATURE-----
-
---=-RjXaRrJ2CsxXG/Ma8C07--
-
-
-
---===============1625586533==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk, venkatesh.pallipadi@intel.com, davej@redhat.com
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+[applies on top of bk-cpufreq and the 34 patches already pushed]
 
---===============1625586533==--
+As it isn't possible to determine whether the P-state last set is
+still the one currently active in the platform, transitions shouldn't
+abort because the driver thinks the CPU is already at the target state.
+Also, it is good to know with what status a transition failed, so print
+out that value -- that snipped is from Venkates Pallipadi in his test
+patch for bug # 3507.
 
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c linux/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c	2004-09-27 23:11:45.000000000 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c	2004-10-08 21:21:46.947060184 +0200
+@@ -118,12 +118,6 @@
+ 		return (-EAGAIN);
+ 	}
+ 	
+-	if (state == data->acpi_data.state) {
+-		dprintk("Already at target state (P%d)\n", state);
+-		retval = 0;
+-		goto migrate_end;
+-	}
+-
+ 	dprintk("Transitioning from P%d to P%d\n",
+ 		data->acpi_data.state, state);
+ 
+@@ -187,7 +181,7 @@
+ 		cpufreq_freqs.old = tmp;
+ 		cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
+ 		cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
+-		printk(KERN_WARNING "acpi-cpufreq: Transition failed\n");
++		printk(KERN_WARNING "acpi-cpufreq: Transition failed with status 0x%x\n", value);
+ 		retval = -ENODEV;
+ 		goto migrate_end;
+ 	}
