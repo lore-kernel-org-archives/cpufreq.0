@@ -1,11 +1,20 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [ANNOUNCE] cpufrequtils-0.1-pre1
-Date: Thu, 28 Oct 2004 20:45:05 +0200
+Subject: Re: [PATCH] Fix cpu recognization if BIOS does not set cpu to max
+	freq [was: Re: [Bug 3600] New: Cpu recognization fails after
+	upgrade from 2.6.7 to 2.6.9]
+Date: Fri, 29 Oct 2004 17:35:44 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041028184505.GA19970@dominikbrodowski.de>
+Message-ID: <20041029153544.GA9799@dominikbrodowski.de>
+References: <200410201413.i9KED718023481@fire-1.osdl.org>
+	<20041020154744.GA5372@dreamland.darkstar.lan>
+	<20041020180537.17d0dd7c@paraclito.crema>
+	<20041020165110.GA6992@dreamland.darkstar.lan>
+	<20041021102529.GD22405@poupinou.org>
+	<20041023214325.GA13050@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20041023214325.GA13050@dreamland.darkstar.lan>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,113 +26,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Kronos <kronos@kronoz.cjb.net>
+Cc: Dave Jones <davej@redhat.com>, Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-Dear all,
+On Sat, Oct 23, 2004 at 11:43:25PM +0200, Kronos wrote:
+> On some notebooks BIOS fails to set K7 CPUs to the maximum frequency.
+> powernow-k7 fails to load or falls back to ACPI (if available) with
+> wrong values. If a bogus FSB speed is detected a workaround should be
+> used.
+> 
+> Signed-off-by: Luca Tettamanti <kronos@kronoz.cjb.net>
+> 
+> --- a/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-23 22:29:40.000000000 +0200
+> +++ b/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-23 22:39:23.000000000 +0200
+> @@ -598,6 +598,13 @@
+>  
+>  	/* A K7 with powernow technology is set to max frequency by BIOS */
+>  	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
+> +	if (fsb < 99000) {
+> +		/* BIOS did not set the processor to the max frequency.
+> +		 * This does not respect AMD recomandation, but it happens.
+> +		 */
 
-cpufrequtils-0.1-pre1 is out and available at
-http://www.brodo.de/cpufreq/cpufrequtils-0.1-pre1.tar.bz2 (~250KB)
+So if the motherboard allows for modifying the FSB, and I decide to set the
+FSB to 98 MHz, it breaks... What about the following approaches?
 
-Based on the earlier RFC for a "cpufreqtools" package mentioned on this
-mailing list, Mattia Dongili and myself have created this cpufrequtils
-package. It conists of the following elements:
+- yet another DMI table?
 
-
-libcpufreq
-----------
-
-"libcpufreq" is a library which offers a unified access method for userspace 
-tools and programs to the cpufreq core and drivers in the Linux kernel. This
-allows for code reduction in userspace tools, a clean implementation of
-the interaction to the cpufreq core, and support for both the sysfs and proc
-interfaces [depending on configuration, see below]
-
-
-utils
------
-
-"cpufreq-info" determines current cpufreq settings, and provides useful
-debug information to users and bug-hunters.
-"cpufreq-set" allows to set a specific frequency and/or new cpufreq policies
-without having to type "/sys/devices/system/cpu/cpu0/cpufreq" all the time.
-
-
-debug
------
-
-Four debug tools helpful for cpufreq have been merged into this package.
-These are a decoding tool for the MSR settings found on Intel SpeedStep
-Centrino CPUs; a program by Dave Jones to dump the PSB tables for AMD
-PowerNow! support on AMD K7 CPUs; and two kernel modules which allow to dump
-the contents of the cpufreq-related ACPI data as well as one which verifies 
-the correctness of the on-CPU Time Stamp Counter when cpufreq is used. These
-tools are not meant for general usage, so they are not built by default.
-Also, they are x86-specific, so users on different architectures should
-ignore the contents of debug/ for the time being.
-
-
-compilation and installation
-----------------------------
-
-./configure && make
-su
-make install
-
-should suffice on most systems. It builds default libcpufreq,
-cpufreq-set and cpufreq-info files and installs them in /usr/local/lib and
-/usr/local/bin, respectively. Due to the autotoolization by Mattia Dongili
-the standard options to make and make install, like "--prefix=/usr", can be
-passed and (should) work correctly.
-
-
-options and dependencies
-------------------------
-
-./configure by default enables the sysfs interface, but disables the
-deprecated /proc interface to the cpufreq core in the Linux kernel. For
-the sysfs interface to build and work correctly, you need "libsysfs", which
-is part of the "sysfsutils" package. Current requirement is
-	sysfsutils-1.0.0
-or later.
-
-To disable the sysfs interface, pass the option "--disable-sysfs" to
-./configure.
-
-
-To enable the (deprecated) /proc interface support, pass the option
-"--enable-proc" to ./configure.
-
-
-
-TODO
-----
-
-There's still quite some stuff to be done to improve this package in the
-short term:
-- Documentation, man pages
-- internationalization (using gettext, should be in -pre2)
-- init scripts which load the best cpufreq driver on x86 and x86-64
-   architectures
-- verification, bug reports, etc. I'd like to receive a sample output of
-  "cpufreq-info" on non-x86 architectures to verify it works correctly on
-   these architectures; namely x86-64, sparc, ppc, sh and arm.
-
-and in the long term:
-- unified background "daemon" which asserts that no userspace tools conflict
-   with each other on setting cpufreq policies and/or frequencies. Might
-   work using a socket, dbus, or ...
-- some helpers which provide common functions needed by various cpufreq
-   userspace tools (e.g. determining CPU load without programs running
-   nice()d)
-- throttling awareness, once the cpufreq core handles throttling in addition
-   to frequency scaling
-
-
-THANKS
-------
-Many thanks to Mattia Dongili who wrote the autotoolization and
-libtoolization of cpufreq; to Dave Jones for his feedback and his dump_psb
-tool; and to various others commenting on the RFC sent to this list earlier.
+- there's an entry "fsbspeed" in pst_s. Is this useful to determining the
+  FSB, and then checking whether FSB*CFID makes more sense than FSB*MFID
+  when comparing it to cpu_khz?
 
 
 	Dominik
