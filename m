@@ -1,15 +1,15 @@
-From: Luciano Miguel Ferreira Rocha <strange@nsk.no-ip.org>
-Subject: Re: 2.4.21 Isn't working for me....
-Date: Tue, 26 Aug 2003 23:47:27 +0100
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: Cpufreq for opteron
+Date: Wed, 27 Aug 2003 01:02:32 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030826224727.GA14287@nsk.no-ip.org>
-References: <1061872616.27076.47.camel@localhost>
-	<20030826064747.GE10585@poupinou.org>
-	<1061927026.14523.9.camel@localhost>
+Message-ID: <20030826230232.GA31860@brodo.de>
+References: <20030822135946.GA2194@elf.ucw.cz>
+	<20030822144340.GE3111@redhat.com>
+	<20030822200549.GC2327@elf.ucw.cz>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1061927026.14523.9.camel@localhost>
+In-Reply-To: <20030822200549.GC2327@elf.ucw.cz>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,36 +21,112 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: AthlonRob <AthlonRob@axpr.net>
-Cc: cpufreq@www.linux.org.uk
+To: Pavel Machek <pavel@suse.cz>
+Cc: aj@suse.de, richard.brunner@amd.com, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk, Dave Jones <davej@redhat.com>, paul.devriendt@amd.com, kernel list <linux-kernel@vger.kernel.org>
 
-On Tue, Aug 26, 2003 at 12:43:47PM -0700, AthlonRob wrote:
-> On Mon, 2003-08-25 at 23:47, Ducrot Bruno wrote:
+On Fri, Aug 22, 2003 at 10:05:49PM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> > The latest is again 2.4.22, _not_ 2.4.21.
-> 
-> That's the latest from the kernel.org repository, right?  the ones with
-> filenames like cpufreq-LINUX_2_4-20030825.tar.gz?
-> 
-> The codemonkeys ones, with filenames like cpufreq-2.4.21-1.gz are
-> against 2.4.21... right?  :-)
-> 
-> I would go ahead and just upgrade to 2.4.22, except I really need (ok, I
-> don't need, I just really want) preempt, low-latency scheduling, and the
-> latest NTFS drivers in this kernel... and 2.4.22 is still too new for
-> any of those to be available.  :-(
+> Here's an updated version. It is quite a bit shorter, and thats
+> good. Does it look good enough for inclusion?
 
-On http://www.gotontheinter.net/exoops/modules/mydownloads/
-there's a patch with all that, plus cpufreq (I don't know which version),
-for kernel 2.4.22. Plus supermount, etc.
+> +#define VERSION "version 1.00.06 - August 13, 2003"
 
-Actually, I don't know about the NTFS driver, but, as with everything else,
-really, 2.4.22 doesn't change that much and the patches for 2.4.21 would
-probably work with few rejects, correctable by hand.
+If AMD wants it in, let's put it into the /* comment header at the top */ ?
 
-I've been using that kernel, but can't get swsusp to work correctly and
-cpufreq doesn't work that well with my chipset, anyhow, (it's a 440BX,)
-so test it throughly.
+> +#ifdef CONFIG_SMP
+> +#error cpufreq support is disabled for config_smp
+> +#endif
+> +#ifdef CONFIG_PREEMPT
+> +#warning noone tested this on preempt system, beware
+> +#endif
 
-Regards,
-Luciano Rocha
+Actually I doubt an #error and a #warning are necessary here. I'd like to
+hear more about the CONFIG_SMP && CONFIG_CPU_FREQ issues; please discuss
+this on cpufreq@www.linux.org.uk . The #warning is more of an assumption and
+can go away, IMHO.
+
+> +/*
+> +The PSB table supplied by BIOS allows for the definition of the number of
+> +p-states that can be used when running on a/c, and the number of p-states
+> +that can be used when running on battery. This allows laptop manufacturers
+> +to force the system to save power when running from battery. The relationship 
+> +is :
+> +   1 <= number_of_battery_p_states <= maximum_number_of_p_states
+> +
+> +This driver does NOT have the support in it to detect transitions from
+> +a/c power to battery power, and thus trigger the transition to a lower
+> +p-state if required. This is because I need ACPI and the 2.6 kernel to do 
+> +this, and this is a 2.4 kernel driver. Check back for a new improved driver
+> +for the 2.6 kernel soon.
+> +
+> +This code therefore assumes it is on battery at all times, and thus
+> +restricts performance to number_of_battery_p_states. For desktops, 
+> +  number_of_battery_p_states == maximum_number_of_pstates, 
+> +so this is not actually a restriction.
+> +*/
+> +
+> +static u32 batterypstates;	/* limit on the number of p states when on battery */
+> +			   /* - set by BIOS in the PSB/PST                    */
+> +
+> +static int onbattery = 1;	/* Set if running on battery, reset otherwise. */
+> +			   /* Of no relevance unless batterypstates <     */
+> +			   /* numpstates, as defined in the PSB/PST.      */
+
+
+I dislike this interaction between ACPI and cpufreq -- it should be done
+more generally. Let's discuss that seperately, though. And if the code is
+dead code at the moment.
+
+
+> +	if (num_online_cpus() != 1) {
+> +		printk(KERN_ERR PFX "multiprocessor systems not currently supported\n");
+> +		return 0;
+> +	}
+> +
+> +	if (c->x86_vendor != X86_VENDOR_AMD) {
+> +		printk(KERN_INFO PFX "Not an AMD processor\n");
+
+Please don't be so verbose if it's such a clear failing reason. dprintk
+would be enough.
+
+> +		printk(KERN_ERR PFX "AMD Athlon 64 or AMD Opteron processor required\n");
+same here.
+
+> +static int
+> +drv_verify(struct cpufreq_policy *pol)
+> +{
+<snip>
+> +	dprintk(KERN_DEBUG PFX
+> +		"ver: cpu%d, min %d, max %d, cur %d, pol %d (%s)\n", pol->cpu,
+> +		pol->min, pol->max, pol->cur, pol->policy,
+> +		pol->policy ==
+> +		CPUFREQ_POLICY_POWERSAVE ? "psave" : pol->policy ==
+> +		CPUFREQ_POLICY_PERFORMANCE ? "perf" : "unk");
+> +
+> +	if (pol->cpu != 0) {
+> +		printk(KERN_ERR PFX "verify - cpu not 0\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	res = find_match(&targ, &min, &max,
+> +			 pol->policy ==
+> +			 CPUFREQ_POLICY_POWERSAVE ? SEARCH_DOWN : SEARCH_UP, 0,
+> +			 0);
+
+Why do you check for CPUFREQ_POLICY here??? In a ->target class cpufreq
+driver[*] you must not worry about the policy, only about min and max
+frequency.
+
+[*] ->target class cpufreq drivers [cpufreq_driver->target is used] have
+specific operating frequencies.
+    ->setpolicy class cpufreq drivers have operating frequency ranges
+[currently only available on Transmeta Crusoe processors]
+
+
+Also, it'd be great if this driver were converted to use the CPUfreq
+freuqency table helpers -- check drivers/cpufreq/freq_table.c in
+linux-2.6.0-test4. Using it makes the code much cleaner, easier to 
+understand, and less prone to errors.
+
+	Dominik
