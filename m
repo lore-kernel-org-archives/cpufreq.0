@@ -1,9 +1,9 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] 1/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Tue, 21 Oct 2003 10:15:31 -0700
+Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPIP-state
+	driver
+Date: Tue, 21 Oct 2003 10:41:30 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB6007791A@scsmsx403.sc.intel.com>
+Message-ID: <88056F38E9E48644A0F562A38C64FB6007791B@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
@@ -18,46 +18,57 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Ducrot Bruno <ducrot@poupinou.org>
+To: arjanv@redhat.com
 Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
 	Asit K" <asit.k.mallick@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 
 
-> -----Original Message-----
-> From: Ducrot Bruno [mailto:ducrot@poupinou.org]=20
->=20
-> There is already a patch from Dominik Brodowski for the apci=20
-> p-state which IMHO
-> is better at least by design. =20
 
-Are you referring to cleanup of ACPI P-state driver by Dominik?
-That patch is indeed nice and clean. But that is mostly=20
-orthogonal to this patch. I mean,=20
-- SMP awareness in P-state driver=20
-- P-state coordination between HT siblings
-will still be required even after Dominik's patch. Though exact=20
-location of these changes will change when applied over Dominik's=20
-patch.
+We can have a userspace governor and take decisions using
+top, /proc/interrupts etc. But issue is mostly the rate
+at which we want to monitor. In kernel governor can afford
+to do more frequent checks and use the low latency P-state=20
+change feature quite effectively.
 
-There is a small overlap in handling MSR based P-state transitions,=20
-but that is a real minor change in my patch and I am reusing most=20
-of the existing IO based transitions code for MSR based ones.
+The patch does take care of all kinds of loads, process or irq
+as we look at the cpu idle time in kstat. However it waits until
+scheduled work (schedule_work()) gets to run. As you say,=20
+another advantage of having this in kernel is, kernel has=20
+all the information to take such decisions quickly. At present,
+The patch tries to keep this governor simple and cover the=20
+common cases. However, once we have the infrastructure in place,
+further optimizations with more advanced things can be done=20
+based on actual performance data.
 
-
-> Your do not handle correctly=20
-> other processors
-> than Intel. =20
-
-I am sorry. I do not understand this comment.=20
-- Major part of Patch 1 is adding SMP awareness, which has
-nothing specific to Intel at all.
-- A part of patch 1 adds MSR based transition capability.=20
-This is based on ACPI spec. It will work any processor=20
-that is ACPI compatible and again there are no specific=20
-checks for Intel here.
-
-
-> But the HT stuff may be interresting, though.
-
-Thanks.=20
+Thanks,
 -Venkatesh
+
+> -----Original Message-----
+> From: Arjan van de Ven [mailto:arjanv@redhat.com]=20
+> Sent: Tuesday, October 21, 2003 1:39 AM
+> To: Pallipadi, Venkatesh
+> Cc: cpufreq@www.linux.org.uk; linux-kernel@vger.kernel.org;=20
+> linux-acpi; Mallick, Asit K; Nakajima, Jun; Dominik Brodowski
+> Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates=20
+> to ACPIP-state driver
+>=20
+>=20
+> On Tue, 2003-10-21 at 04:56, Pallipadi, Venkatesh wrote:
+> > Patch 3/3: New dynamic cpufreq driver (called=20
+> > DemandBasedSwitch driver), which periodically monitors CPU=20
+> > usage and changes the CPU frequency based on the demand.
+>=20
+>=20
+> it's all nice code and such, but I still wonder why this can't be done
+> by a userland policy daemon. The 2.6 kernel has the infrastructure to
+> give very detailed information to userspace (eg top etc) about idle
+> percentages...... I didn't see anything in this driver that=20
+> couldn't be
+> done from userspace.
+>=20
+> Note that I'm not totally against doing some of this in the kernel; I
+> can well see the point of say, detecting an IRQ overload and based on
+> that, go to max speed in the kernel because it's a situation where
+> userspace doesn't even run; but the patch as is doesn't do any such
+> advanced things...
+>=20
