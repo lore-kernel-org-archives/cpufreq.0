@@ -1,14 +1,14 @@
-From: rutger@nospam.com
+From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: cpufreq and p4 prescott
-Date: Fri, 14 May 2004 23:47:51 +0200
+Date: Sat, 15 May 2004 08:44:34 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040514214751.GA8433@nospam.com>
+Message-ID: <20040515064434.GB8572@dominikbrodowski.de>
 References: <20040513173946.GA8238@dominikbrodowski.de>
-Reply-To: linux-kernel@tux.tmfweb.nl
+	<20040514214751.GA8433@nospam.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040513173946.GA8238@dominikbrodowski.de>
+In-Reply-To: <20040514214751.GA8433@nospam.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,134 +20,76 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, moqua@kurtenba.ch
+To: linux-kernel@tux.tmfweb.nl
+Cc: moqua@kurtenba.ch, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
 
-> > Problem #1 is the speed measurement, as you described. As far as I
-> > understand, p4-clockmod delivers the same external clock to the P4,
-> > but work is not done during every clock tick. E.g. when running at
-> > 12.5% of the maximum frequency, only one tick in eight something is
-> > done.
+On Fri, May 14, 2004 at 11:47:51PM +0200, rutger@nospam.com wrote:
+> > Not necessarily. It's not really every eigth tick where work is done, but
+> > more like 800 ticks where work is done, then 5600 ticks pause, and so on --
+> > the frequency is somewhere in the docs, I forgot the exact value... So I'm
+> > not 100% convinced the measurements you've done do show something broken.
 > 
-> Almost. The Time Stamp Counter (inside the CPU) works with a constant
-> frequency, but only at e.g. each eigth tick the other parts of the CPU do
-> some work.
+> Ah, ok! This makes the measurement next to impossible. Unless we
+> generate instructions of ~900 ticks, which should takes 900 + 5600
+> ticks in case of modulated clock, and 900 ticks in case of
+> non-modulated clock. Something to try...
 
-That's what I meant.
+As I said, I forgot the actual frequency, so 800 ticks is a guess...
 
+> root@localhost /sys/devices/system/cpu/cpu0/cpufreq# cat scaling_available_frequencies 
+> 350000 700000 1050000 1400000 1750000 2100000 2450000 2800000 
+> root@localhost /sys/devices/system/cpu/cpu0/cpufreq# for f in `cat scaling_available_frequencies `; do echo $f >scaling_setspeed ; cat scaling_cur_freq ; done
+> 350000
+> 700000
+> 1050000
+> 1400000
+> 1750000
+> 2100000
+> 2450000
+> 2800000
 > 
-> > Ok, so if it is true that only the work is done part of the ticks,
-> > then all instructions should take more ticks! Therefore, I try to
-> > measure the number of ticks which the 'rdtsc' instruction itself
-> > takes. I take the minimum of 10 runs, to run
-> > instruction-cache-hot. See cpuclockmod.c .
-> > 
-> > This gives '140' cycles in the pre-modulated phase (including some
-> > overhead) when running on an idle system, and 154 or 161 running on a
-> > loaded system (1 thread busy looping). If clock modulation meant
-> > 'skipping ticks', I would expect this number to multiply.
-> 
-> Not necessarily. It's not really every eigth tick where work is done, but
-> more like 800 ticks where work is done, then 5600 ticks pause, and so on --
-> the frequency is somewhere in the docs, I forgot the exact value... So I'm
-> not 100% convinced the measurements you've done do show something broken.
+> Seems to work...
+Hm, could you please do 
 
-Ah, ok! This makes the measurement next to impossible. Unless we
-generate instructions of ~900 ticks, which should takes 900 + 5600
-ticks in case of modulated clock, and 900 ticks in case of
-non-modulated clock. Something to try...
+# for f in `cat scaling_available_frequencies `; do echo $f >scaling_setspeed ; cat cpuinfo_cur_freq ; cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq ; done
 
-> > This doesn't change a thing, which is to be expected since cpufreq
-> > talks to real CPUs.
-> 
-> It should, something _is_ broken in this regard [and I'm working on it, just
-> had sent a RFC to the cpufreq mailing list...]. Maybe this causes some
-> strangeness, especially if you run a userspace cpufreq tool -- but maybe the
-> p4-clockmod hardware is even more strange than I thought it to be, and is
-> per _virtual_ CPU.
-> 
-> Can you please apply the latest cpufreq snapshot from
-> http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/
-> , then the attached patch, and switch the CPU frequencies of both (virtual)
-> CPUs around a bit, and after each switch, 
-> cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
-> cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_cur_freq
-> 
-> and check whether the values are the same you wrote into the specific CPU's
-> scaling_setspeed [if using the userspace governor] file?
+instead? scaling_cur_freq doesn't give as useful _debug_ results as
+cpuinfo_cur_freq, and it's important to get it for _both_ siblings after
+_each_ change
 
-Ok, I applied both patches.
+> Some remarks:
+>  - scaling_governor and scaling_setspeed get length 0 after echo-ing to.
+>    Other files keep the virtual size of 4096.
+That's some sort of sysfs "handling" - don't know about details and
+consequences.
 
-root@localhost /sys/devices/system/cpu/cpu0/cpufreq# cat scaling_available_frequencies 
-350000 700000 1050000 1400000 1750000 2100000 2450000 2800000 
-root@localhost /sys/devices/system/cpu/cpu0/cpufreq# for f in `cat scaling_available_frequencies `; do echo $f >scaling_setspeed ; cat scaling_cur_freq ; done
-350000
-700000
-1050000
-1400000
-1750000
-2100000
-2450000
-2800000
+>  - scaling seems to work reliable now _if_ I repeat the scaling for
+>    each virtual processor and make them the same. It doesn't do
+>    anything useful if I only set cpu0.
 
-Seems to work...
+Maybe because much/more work is done by the other sibling then... however,
+without the test above [cpuinfo_cur_freq for both siblings] I can't say
+much, I'm afraid.
 
-Some remarks:
- - scaling_governor and scaling_setspeed get length 0 after echo-ing to.
-   Other files keep the virtual size of 4096.
+> However, what's the use of p4-clockmod if it doesn't have impact on
+> the temperature and the power consumption of the CPU?
 
- - scaling seems to work reliable now _if_ I repeat the scaling for
-   each virtual processor and make them the same. It doesn't do
-   anything useful if I only set cpu0.
+The use of the p4-clockmod driver is that it puts the CPU into a low-power
+state -- it only has thermal and power consequences, however, if either the
+"idling" does not work, or the processor load is higher than the frequency
+the CPU is put into by p4-clockmod.
 
- - It's far more repeatable now. If I set the speed of virtual CPU0,
-   it really sets it, and only sets CPU0, and not like previously only
-   in 50% of the cases or so.
+> My Asus p4p800 seems to be able to set several voltages and frequences
+> in the BIOS; can those be set runtime?
 
+No. This is motherboard-specific. The P4 does not support _voltage scaling_,
+i.e. runtime voltage adjustment based on current power needs. It also
+doesn't support _frequency scaling_, just (thermal) throttling.
 
-However, what's the use of p4-clockmod if it doesn't have impact on
-the temperature and the power consumption of the CPU?
+> And/or is there any
+> documentation on this? This would make for a much more useful driver.
 
-My Asus p4p800 seems to be able to set several voltages and frequences
-in the BIOS; can those be set runtime? And/or is there any
-documentation on this? This would make for a much more useful driver.
+Unfortunately, p4-clockmod isn't really all that useful -- but that's
+because the hardware doesn't support voltage and/or frequency scaling.
 
-Thanks!
-
-
-> 
-> Many thanks,
-> 	Dominik
-
-> diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-> --- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-05-13 16:52:02.000000000 +0200
-> +++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-05-13 19:36:47.629852152 +0200
-> @@ -68,11 +68,7 @@
->  	cpus_allowed = current->cpus_allowed;
->  
->  	/* only run on CPU to be set, or on its sibling */
-> -#ifdef CONFIG_SMP
-> -	affected_cpu_map = cpu_sibling_map[cpu];
-> -#else
->  	affected_cpu_map = cpumask_of_cpu(cpu);
-> -#endif
->  	set_cpus_allowed(current, affected_cpu_map);
->          BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
->  
-> @@ -273,11 +269,7 @@
->  
->  	/* only run on CPU to be set, or on its sibling */
->  	cpus_allowed = current->cpus_allowed;
-> -#ifdef CONFIG_SMP
-> -        affected_cpu_map = cpu_sibling_map[cpu];
-> -#else
->          affected_cpu_map = cpumask_of_cpu(cpu);
-> -#endif
->  	set_cpus_allowed(current, affected_cpu_map);
->          BUG_ON(!cpu_isset(smp_processor_id(), affected_cpu_map));
->  
-
-
--- 
-Rutger Nijlunsing ---------------------------- rutger ed tux tmfweb nl
-never attribute to a conspiracy which can be explained by incompetence
-----------------------------------------------------------------------
+	Dominik
