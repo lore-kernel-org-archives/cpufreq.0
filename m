@@ -1,18 +1,14 @@
 From: Carl Thompson <cet@carlthompson.net>
-Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
-	P-state driver
-Date: Tue, 21 Oct 2003 12:23:18 -0700
+Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates to
+	ACPIP-state driver
+Date: Tue, 21 Oct 2003 12:55:55 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1066764198.5424d9a4ec004@carlthompson.net>
-References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
-	<1066725533.5237.3.camel@laptop.fenrus.com>
-	<20031021095925.GB893@inferi.kami.home>
-	<20031021101737.GA31352@wiggy.net>
-	<20031021105234.GF893@inferi.kami.home>
+Message-ID: <1066766155.a66ff46274f08@carlthompson.net>
+References: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031021105234.GF893@inferi.kami.home>
+In-Reply-To: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,55 +20,39 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: dongili@supereva.it
-Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+Cc: cpufreq@www.linux.org.uk, linux-acpi <linux-acpi@intel.com>, "Mallick,
+	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
 
-I know Linus wrote this but...
+Quoting "Nakajima, Jun" <jun.nakajima@intel.com>:
 
 > ...
 
-> A quote from Peter Anvin:
->
->   "What is worse is that the interface is, in my opinion, fundamentally
->    broken for *ALL* CPUs.  It doesn't present a policy interface to the
->    kernel, instead it presents a frequency-setting interface and expect
->    the policy to be done in userspace.  The kernel is the only part of
-> the
->    system which has sufficient information (idle times of all CPUs, for
->    example) to do a decent job managing the CPU frequency efficiently.
->    On Transmeta CPUs this policy should simply be passed down to CMS, of
->    course; on other CPUs the kernel needs to manage it."
->
-> In other words: there is no valid way that a _user_ can set the policy
-> right now: the user can set the frequency, but since any sane policy
-> depends on how busy the CPU is, the user isn't even, the right person to
-> _do_ that, since the user doesn't _know_.
+> It's about the frequency of the feedback loop. As we have much lower
+> latency with P-state transitions, the sampling time can be order of
+> millisecond (or shorter if meaningful). A userland daemon can have a
+> high-level policy (preferences, or set of parameters), but it cannot be
+> part of the real feedback loop. If we combine P-state transitions and
+> deeper C-state transitions, the situation is worse with a userland
+> daemon.
 
-But userspace _can_ know the idle statistics for each CPU.  It's easily read
-from /proc/stat.
+You are making the assumption that a higher polling frequency (we'll say
+1ms) is in general better than a lower frequency (we'll say 1s).  I submit
+that it is not.
 
-> Also note that policy is not just about how busy the CPU is, but also
-> about how _hot_ the CPU is. Again, a user-mode application (that maybe
-> polls the situation every minute or so), simply _cannot_ handle this
-> situation. You need to have the ability to poll the CPU tens of times a
-> second to react to heat events, and clearly user mode cannot do that
-> without impacting performance in a big way.
+If I hit a key on my keyboard and your high frequency loop increases CPU
+speed so that my word processor displays the letter 0.01s faster, is that
+really beneficial?  If a window renders in 0.2s seconds instead of 0.3s is
+that a difference I am going to notice?
 
-Well, my "cpuspeed" daemon has been doing exactly this without problems for
-the better part of a year on many laptops tested by me and others.  Polling
-the CPU temperature every second or two seems quite sufficient to head off
-any heat related problems (including on problematic systems like the Sony
-Vaio FXA series).  It doesn't appear to necessary to poll faster on current
-hardware even with severe load spikes.  (Obviously, hardware failures in
-the cooling system are another matter but the CPUs internal protection
-should handle that.)
+On the other hand, if I do a kernel compile and it is done 0.999s faster
+with the higher frequency loop, am I going to miss that second over such a
+long duration?  (In reality, the compile with the high-frequency loop would
+probably take longer unless it has near zero overhead).
 
-My cpuspeed daemon uses a negligable amount of CPU so it doesn't seem like a
-terrible solution...
+In my opinion it is wasteful to increase CPU speed unless there is a longer
+term need for it.
 
-(As mentioned previously, CPUs that change their own speed are a separate
-issue.)
+> 	Jun
 
 Carl Thompson
-
-> ...
