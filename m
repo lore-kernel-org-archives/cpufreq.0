@@ -1,17 +1,14 @@
-From: mru@kth.se (=?iso-8859-1?q?M=E5ns_Rullg=E5rd?=)
-Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
- P-state driver
-Date: Wed, 22 Oct 2003 00:27:48 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Dynamic frequency governor
+Date: Wed, 22 Oct 2003 00:19:54 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <yw1xbrsai5uj.fsf@kth.se>
-References: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
-	<yw1xbrsaeu44.fsf@kth.se>
-	<20031021203037.GB3133@sam-solutions.net> <yw1xoewaiavf.fsf@kth.se>
-	<20031021211119.GE3133@sam-solutions.net> <yw1xfzhmi86r.fsf@kth.se>
-	<20031021215327.GH3133@sam-solutions.net>
+Message-ID: <20031021231953.GB1528@redhat.com>
+References: <20031021203122.GC871@redhat.com>
+	<Pine.LNX.4.44.0310211744210.27611-100000@cat.eecg.toronto.edu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0310211744210.27611-100000@cat.eecg.toronto.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,22 +18,25 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@www.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: David Kar-Fai Tam <tamda@eecg.toronto.edu>
+Cc: cpufreq@www.linux.org.uk
 
-Alexander Bokovoy <ab@altlinux.org> writes:
+On Tue, Oct 21, 2003 at 06:21:37PM -0400, David Kar-Fai Tam wrote:
 
-> If you can boot into 2.4.22 or .23pre with ACPI enabled and can see
+ > I did a quick text search on the website of the above address and I 
+ > couldn't find "voltage" mentioned anywhere. That is, I couldn't find any 
+ > mention of dynamic "voltage" scaling as a technique for saving power.
+ > They only talk about is using the technique of "frequency" scaling to 
+ > save power.
+ > 
+ > With DVS algorithms, we are attempting to dynamically change the voltage 
+ > to save power. The fact that the frequency varies is just a side effect.
 
-I haven't booted a 2.4 kernel in a long time.
+Not all implementations can scale voltage.
 
-> /proc/acpi/processor/CPU0/performance, then your processor should be
-> supported by speedstep-ich or speedstep-piix4 modules (don't know which
-> one exactly).
+		Dave
 
-I was using p4-clockmod.  Doesn't that work?
-
---=20
-M=E5ns Rullg=E5rd
-mru@kth.se
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
