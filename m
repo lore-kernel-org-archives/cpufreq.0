@@ -1,13 +1,12 @@
-From: Anders Eriksson <aeriksson2@fastmail.fm>
-Subject: Re: speedstep_smi & psmouse problems?
-Date: Thu, 20 May 2004 21:47:59 +0200
+From: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
+Subject: cpufreq files missing in Linux 2.6.5
+Date: Thu, 20 May 2004 15:56:39 -0700 (PDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040520194800.4DE6A4137@latitude.mynet.no-ip.org>
-References: <20040520184917.GM29214@poupinou.org>
+Message-ID: <Pine.GSO.4.30.0405201547480.13318-100000@rigel.oac.uci.edu>
+References: <20040520151011.6F8694137@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: Your message of "Thu, 20 May 2004 20:49:17 +0200."
-	<20040520184917.GM29214@poupinou.org> 
+In-Reply-To: <20040520151011.6F8694137@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,23 +16,34 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-> It's not exactly a problem of timer issues in a driver.  Just that the
-> same chip is used for the ps mouse and battery related stuff.  To be
-> more precise, there is good luck that the keyboard controller (which is
-> also used in order to control the mouse) is used, via a smbus, to access
-> a smart battery in this case.  Then, there may be either:
-> - hardware bug, or
-> - bug in the firmware for this controller.
-> 
+Hi everyone,
 
-Aha, I see. So it seems I have to choose to use either the battery
-related stuff, or the new psmouse stuff. I seem to recall seeing some
-traffic on some option to psmouse.ko which made it work in 'old' or
-'absolute' mode or something. I'll check if that's more resilient to
-bad interactions with battery readings...
+I am running Redhat Linux 2.6.5 and manually recompiled the kernel to
+include the cpufreq modules. But I find that some essential files are
+missing.
 
-/Anders
+Namely,
+
+1. The directory /sys/devices/system/cpu/cpu0 exists but is empty; there
+is no cpufreq subdirectory inside it.
+
+2. There's also no /proc/cpufreq or /proc/sys/cpu/*/speed directory.
+
+Yet all the other files (cpufreq.c, proc_intf.c etc) appear in
+the directory /usr/src/linux/drivers/cpufreq.
+
+Can anyone explain why the files in 1 and 2 are not appearing?
+
+Vasanth
+
+*********
+
+Vasanth Venkatachalam                        Office: CS/E 137
+PhD Candidate				     Tel: None
+School of Information and Computer Science   Email: vvenkata@uci.edu
+University of California
+Irvine, CA 92697-3425
