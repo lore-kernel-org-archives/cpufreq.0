@@ -1,9 +1,8 @@
-From: Scott Russ <scott@linuxjihad.com>
-Subject: VIA C3 problems
-Date: Tue, 16 Sep 2003 03:40:52 -0700 (PDT)
+From: Gregor von Stangen <gvs@pironet-ndh.com>
+Subject: Mobile P4 3.06 GHz / 533 MHz FSB only detected after dirty patch
+Date: Tue, 16 Sep 2003 12:48:13 +0200 (CEST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030916104052.53283.qmail@web13504.mail.yahoo.com>
-Reply-To: scott@linuxjihad.com
+Message-ID: <Pine.LNX.4.53.0309161216180.1302@linux.local>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
@@ -15,35 +14,84 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-I am having problems with using cpufreq.  I used to use it fine and just
-recently tried applying it again.  I am using 2.4.22 with the CK-2 patches
-(http://members.optusnet.com.au/ckolivas/kernel/).
+Hello,
 
-When I modprobe longhaul I get a kernel oops and lsmod shows longhaul as still
-initalizing and I can't rmmod.  I also tried the 2.4.22-ac2 patch which
-includes cpufreq with the same results.  Any suggestions?
+my Mobile P4 3.06 Ghz with 533 MHz FSB (Kernel 2.4.22) is only detected
+after applying a dirty patch to function "speedstep_detect_processor" in
+file speedstep-lib.c:
 
-longhaul: VIA CPU detected. Longhaul version 2 supported
-longhaul: MinMult(x10)=30 MaxMult(x10)=60
-longhaul: Lowestspeed=0 Highestspeed=0
-longhaul: FSB:0 Mult(x10):100
-divide error: 0000
-CPU:    0
-EIP:    0010:[<c010c533>]    Not tainted
-EFLAGS: 00010246
-eax: 0051e9fe   ebx: 00001f2c   ecx: 0051e9fe edx: 00000000
-esi: 00000000   edi: 00000000   ebp: 00000000 esp: dde65da8
-ds: 0018   es: 0018   ss: 0018
-Process insmod (pid: 227, stackpage=dde65000)
-Stack: c022f0b0 dde65e38 00000001 c0238804 00000000 c0120f4a c022f0b0 00000001
-       dde65e38 00000000 00000000 dde65e38 c01b37e0 c02a65ac 00000001 dde65e38
-       0000000b 00000000 0000110a dde65e44 00001f2c e01c1411 dde65e38 00000001
-Call Trace:    [<c0120f4a>] [<c01b37e0>] [<e01c1411>] [<e01c1878>] [<c01b3222>]
-  [<c01b32cd>] [<c01b369b>] [<c01b3037>] [<c01b3880>] [<e01c19f4>] [<e01c2240>]
-  [<c0118491>] [<e01c1060>] [<c0106d33>]
-Sep 13 03:35:13 legends kernel:
-Code: f7 f7 89 c1 89 d6 0f af cb 0f af f3 89 f0 31 d2 f7 f7 01 c8
+/*
+                ebx = cpuid_ebx(0x00000001);
+                ebx &= 0x000000FF;
+                if ((ebx != 0x0e) && (ebx != 0x0f))
+                        return 0;
+*/
+
+After commenting out the above lines, the routine returns P4M as processor
+type and I can load the module speedstep-ich.
+
+After loading speedstep-ich, a "cat /proc/cpufreq" shows
+
+          minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0      1200000 kHz ( 52 %)  -    2300000 kHz (100 %)  -  performance
+
+but "/proc/cpuinfo" shows
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Genuine Intel(R) CPU 3.06GHz
+stepping        : 9
+cpu MHz         : 3056.507
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
+bogomips        : 6094.84
+
+If I set the cpumode to powersave, a "cat /proc/cpufreq" shows
+
+          minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0      1200000 kHz ( 52 %)  -    2300000 kHz (100 %)  -  powersave
+
+and "/proc/cpuinfo" shows
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Genuine Intel(R) CPU 3.06GHz
+stepping        : 9
+cpu MHz         : 1594.699
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
+bogomips        : 3179.92
+
+So it looks like it works perfectly well for me. Anyway, I'm not too firm
+in assembly language programming of the Pentium and the counters from
+cpufreq seem to be broken after this hack. I'm not sure, if I only had
+luck in hacking the driver and I'd like to know, if there might be a
+better fix for my problem.
+
+Best regards,
+
+  Gregor
