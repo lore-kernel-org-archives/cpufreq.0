@@ -1,9 +1,9 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] cpufreq: deprecate proc_intf,
-	and inform of removal ~2005-01-01
-Date: Mon, 9 Aug 2004 21:53:58 +0200
+Subject: [PATCH] cpufreq: 2/4 SMT awareness: save struct sys_device for all
+	CPUs
+Date: Mon, 9 Aug 2004 21:54:31 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040809195358.GB9397@dominikbrodowski.de>
+Message-ID: <20040809195431.GE9397@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -20,48 +20,46 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@redhat.com
 
-The /proc/cpufreq interface was deprecated already when cpufreq was merged
-into the kernel. With 2.7. not appearing soon, let's do the same what's
-suggested for devfs and others: inform users of it being deprecated.
+Save a copy of each CPU's struct sys_device in drivers/cpufreq/cpufreq.c
+so that symlinks can be removed even outside the specific sys_device's
+->remove() function.
 
 Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-diff -ruN linux-original/drivers/cpufreq/proc_intf.c linux/drivers/cpufreq/proc_intf.c
---- linux-original/drivers/cpufreq/proc_intf.c	2004-08-05 17:41:41.000000000 +0200
-+++ linux/drivers/cpufreq/proc_intf.c	2004-08-06 22:25:05.974785928 +0200
-@@ -12,9 +12,12 @@
- #include <linux/proc_fs.h>
- #include <asm/uaccess.h>
+ drivers/cpufreq/cpufreq.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+)
+
+diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
+--- linux-original/drivers/cpufreq/cpufreq.c	2004-08-06 21:56:12.671288112 +0200
++++ linux/drivers/cpufreq/cpufreq.c	2004-08-06 21:56:41.100966144 +0200
+@@ -33,6 +33,14 @@
+ static struct cpufreq_policy	*cpufreq_cpu_data[NR_CPUS];
+ static spinlock_t		cpufreq_driver_lock = SPIN_LOCK_UNLOCKED;
  
-+#warning This module will be removed from the 2.6. kernel series soon after 2005-01-01
- 
- #define CPUFREQ_ALL_CPUS		((NR_CPUS))
- 
-+static unsigned int warning_print = 0;
 +
- /**
-  * cpufreq_parse_policy - parse a policy string
-  * @input_string: the string to parse.
-@@ -110,6 +113,11 @@
- 	if (off != 0)
- 		goto end;
++/* we keep a copy of all ->add'ed CPU's struct sys_device here;
++ * as it is only accessed in ->add and ->remove, no lock or reference
++ * count is necessary.
++ */
++static struct sys_device	*cpu_sys_devices[NR_CPUS];
++
++
+ /* internal prototypes */
+ static int __cpufreq_governor(struct cpufreq_policy *policy, unsigned int event);
+ static void handle_update(void *data);
+@@ -520,6 +528,7 @@
+ 		goto err_out_unregister;
  
-+	if (!warning_print) {
-+		warning_print++;
-+		printk(KERN_INFO "Access to /proc/cpufreq is deprecated and will be removed from (new) 2.6. kernels soon after 2005-01-01");
-+	}
+ 	module_put(cpufreq_driver->owner);
++	cpu_sys_devices[cpu] = sys_dev;
+ 	return 0;
+ 
+ 
+@@ -551,6 +560,8 @@
+ 	unsigned long flags;
+ 	struct cpufreq_policy *data;
+ 
++	cpu_sys_devices[cpu] = NULL;
 +
- 	p += sprintf(p, "          minimum CPU frequency  -  maximum CPU frequency  -  policy\n");
- 	for (i=0;i<NR_CPUS;i++) {
- 		if (!cpu_online(i))
-@@ -179,6 +187,11 @@
- 	
- 	if (copy_from_user(proc_string, buffer, count))
- 		return -EFAULT;
-+
-+	if (!warning_print) {
-+		warning_print++;
-+		printk(KERN_INFO "Access to /proc/cpufreq is deprecated and will be removed from (new) 2.6. kernels soon after 2005-01-01");
-+	}
- 	
- 	proc_string[count] = '\0';
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	data = cpufreq_cpu_data[cpu];
