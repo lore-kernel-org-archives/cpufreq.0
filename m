@@ -1,45 +1,79 @@
-From: Felix von Leitner <felix-linuxkernel@fefe.de>
-Subject: Re: 2.6.11: USB broken on nforce4, ipv6 still broken, centrino speedstep even more broken than in 2.6.10
-Date: Fri, 25 Mar 2005 01:17:30 +0100
-Message-ID: <20050325001729.GA30397@codeblau.de>
-References: <20050311202122.GA13205@fefe.de> <20050311173517.7fe95918.akpm@osdl.org> <1110599659.12485.279.camel@localhost.localdomain> <20050321163225.4af1c169.akpm@osdl.org> <1111454454.6633.5.camel@linux.site> <20050322222943.GA10442@codeblau.de> <42434E60.1060209@goop.org>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: 2.6.11: USB broken on nforce4, ipv6 still broken,
+	centrino speedstep even more broken than in 2.6.10
+Date: Fri, 25 Mar 2005 14:37:24 +0100
+Message-ID: <20050325133724.GZ2298@poupinou.org>
+References: <20050311202122.GA13205@fefe.de>
+	<20050311173517.7fe95918.akpm@osdl.org>
+	<1110599659.12485.279.camel@localhost.localdomain>
+	<20050321163225.4af1c169.akpm@osdl.org>
+	<1111454454.6633.5.camel@linux.site>
 Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <42434E60.1060209@goop.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1111454454.6633.5.camel@linux.site>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Adam Belay <abelay@novell.com>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, cpufreq@ZenII.linux.org.uk
+To: Adam Belay <abelay@novell.com>
+Cc: Andrew Morton <akpm@osdl.org>, felix-linuxkernel@fefe.de, cpufreq@ZenII.linux.org.uk, linux-kernel@vger.kernel.org
 
-Thus spake Jeremy Fitzhardinge (jeremy@goop.org):
-> Unfortunately, the Dothans *REQUIRE* some degree of ACPI support; the
-> speedfreq-centrino needs to extract a table from ACPI to know what are
-> valid operating (voltage/frequency) points to use for the CPU.  The
-> patch you're using is definitely wrong in principle, though if it works
-> for you in practice then by all means use it.
+On Mon, Mar 21, 2005 at 08:20:55PM -0500, Adam Belay wrote:
+> On Mon, 2005-03-21 at 19:32, Andrew Morton wrote:
+> > Adam Belay <abelay@novell.com> wrote:
+> > >
+> > > On Fri, 2005-03-11 at 17:35 -0800, Andrew Morton wrote:
+> > > > Felix von Leitner <felix-linuxkernel@fefe.de> wrote:
+> > > > >
+> > > > > Finally Centrino SpeedStep.
+> > > > > I have a "Intel(R) Pentium(R) M processor 1.80GHz" in my notebook.
+> > > > > Linux does not support it.  This architecture has been out there for
+> > > > > months now, and there even was a patch to support it posted here a in
+> > > > > October last year or so.  Linux still does not include it.  Until
+> > > > > 2.6.11-rc4-bk8 or so, the old patched file from back then still worked.
+> > > > > Now it doesn't.  Because some interface changed.  Now what?  Using a
+> > > > > Centrino notebook without CPU throttling is completely out of the
+> > > > > question.  Linux might as well not boot on it at all.
+> > > > 
+> > > > Could you please dig out the old patch, send it?
+> > > 
+> > > Why not use ACPI for CPU scaling?
+> > > 
+> > 
+> > Felix, did you try this?
+> > 
+> 
+> ACPI is the preferred (and only standardized) method of controlling cpu
+> throttling on x86 systems.
+> 
 
-I enabled these:
+No.  ACPI is the preferred method in order to *get configuration*
+for cpu frequency and voltage scaling, but it's up to a
+specific processor driver to control frequency (actually I'm
+simplifying things since it's possible to control frequency
+from ACPI only, but only in certain situation).
 
-  CONFIG_CPU_FREQ=y
-  CONFIG_CPU_FREQ_STAT=y
-  CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-  CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-  CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-  CONFIG_CPU_FREQ_GOV_USERSPACE=y
-  CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-  CONFIG_CPU_FREQ_TABLE=y
-  CONFIG_X86_SPEEDSTEP_CENTRINO=y
-  CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
-  CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+Throttling is another method to frequency control by throttling
+the processor (and ACPI is then preferred for both configuration
+and controlling how to throttle the processor), but there is
+no voltage scaling at all as for frequency and voltage scaling.
 
-It should have worked, shouldn't it?
+Those far it's up to the OP to activate ACPI even if he do not trust
+ACPI.  It's the only way to get configuration from BIOS if he do not
+want to hardcode a configuration in the speedstep-centrino driver.
 
-Well, it did not.  You can look at the kernel messages at
-http://dl.fefe.de/dmesg.gz if that helps.
+Cheers,
 
-No cpufreq, and as far as I can see, no speedstep.
-The fan is running, that's all I can tell.
+-- 
+Bruno Ducrot
 
-Felix
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
