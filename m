@@ -1,16 +1,13 @@
-From: Arjan van de Ven <arjanv@redhat.com>
-Subject: Re: Speedstep on Intel Pentium M
-Date: Tue, 01 Jun 2004 09:29:28 +0200
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: userspace not supported for longrun?
+Date: Tue, 1 Jun 2004 11:31:10 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1086074968.2706.0.camel@laptop.fenrus.com>
-References: <8012937.1086037545966.SLOX.WebMail.wwwrun@thor.yiti.intern>
-	<20040531233542.368b9da0.frx@firenze.linux.it>
-	<5069769.1086059486121.SLOX.WebMail.wwwrun@thor.yiti.intern>
-Reply-To: arjanv@redhat.com
+Message-ID: <20040601093110.GE7926@poupinou.org>
+References: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1468015509=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <5069769.1086059486121.SLOX.WebMail.wwwrun@thor.yiti.intern>
+Content-Disposition: inline
+In-Reply-To: <6BE4F22C-B37D-11D8-B4AF-003065EE23A0@connact.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,62 +17,34 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Frank Doege <frank@network-steps.de>
-Cc: cpufreq@www.linux.org.uk, Francesco Poli <frx@firenze.linux.it>
-
-
---===============1468015509==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-XVUxiDkwH1w28ZT7MWmD"
-
-
---=-XVUxiDkwH1w28ZT7MWmD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2004-06-01 at 05:11, Frank Doege wrote:
-> Morning,
->=20
-> thanks for your fast answering. I have an IBM X40 with Pentium M ULV, whe=
-n i run Windows i can work over 8 ours but only 6 with linux. Does the Cent=
-rino Driver offers voltage scaling ? May be thats the reason that the akku =
-lifes longer under windows.
-
-one thing to try:
-
-echo 5 > /proc/sys/vm/laptop-mode
-
-to enable the kernels laptop mode. That increases battery lifetime for
-me quite a bit..
-
---=-XVUxiDkwH1w28ZT7MWmD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBAvDBXxULwo51rQBIRAiCnAJ9lFktA7Ssg20muCLYfff0NFa0qmQCdHjb7
-mIXAUCqWNFFWUj2ECU3Z3B0=
-=ofZg
------END PGP SIGNATURE-----
-
---=-XVUxiDkwH1w28ZT7MWmD--
-
-
-
---===============1468015509==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Wayne Wylupski <wayne@connact.com>
+Cc: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+On Mon, May 31, 2004 at 11:40:26PM -0400, Wayne Wylupski wrote:
+> Hello,
+> 
+> I've been tracking down an issue with using Fedora Core 2 on a 
+> Transmeta Crusoe TM5800 and it appears a userspace governor is not 
+> supported by cpufreq (the longrun scaling driver has a .setpolicy, 
+> which prevents the userspace governor from being set).
+> 
+> Could someone please explain if this is by choice or a bug?  If it's 
+> the latter, could someone explain why, since the CPU itself supports 
+> different frequencies?
+> 
 
---===============1468015509==--
+It's by choice.  Even though there exist some algo. for which it's seems
+there are better choice over the longrun facilities in order to switch
+automatically the frequency of the processor, it's hard to get those
+algo. to mainline mostly due to some kind of patent issues
+apparently.  So for now the longrun driver do not have the facilities to
+make what you request.  Would be fine perhaps to add that, but I'm
+not sure it's in a high priority item for now.
 
+-- 
+Bruno Ducrot
 
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
