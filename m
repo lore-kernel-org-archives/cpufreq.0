@@ -1,16 +1,14 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] cpufreq: 1/4 SMT awareness: save cpumask_t cpus
-Date: Mon, 30 Aug 2004 22:04:38 +0200
+Subject: Re: [PATCH] Hotplug cpu: fix p4-clockmod
+Date: Mon, 30 Aug 2004 22:04:07 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040830200438.GC8563@dominikbrodowski.de>
-References: <88056F38E9E48644A0F562A38C64FB6002A3B8F0@scsmsx403.amr.corp.intel.com>
-	<Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
-	<20040829130134.GC17032@dominikbrodowski.de>
-	<Pine.LNX.4.58.0408301229020.21527@montezuma.fsmlabs.com>
+Message-ID: <20040830200407.GB8563@dominikbrodowski.de>
+References: <20040829125717.GA17032@dominikbrodowski.de>
+	<Pine.LNX.4.58.0408301214120.21527@montezuma.fsmlabs.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0408301229020.21527@montezuma.fsmlabs.com>
+In-Reply-To: <Pine.LNX.4.58.0408301214120.21527@montezuma.fsmlabs.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,22 +21,46 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Zwane Mwaikambo <zwane@linuxpower.ca>
-Cc: davej@redhat.com, cpufreq@www.linux.org.uk
+Cc: CPU Freq ML <cpufreq@www.linux.org.uk>
 
-On Mon, Aug 30, 2004 at 12:45:19PM -0400, Zwane Mwaikambo wrote:
+On Mon, Aug 30, 2004 at 12:28:44PM -0400, Zwane Mwaikambo wrote:
 > On Sun, 29 Aug 2004, Dominik Brodowski wrote:
 > 
-> > Actually, I do favor "2" by large, and there simply may not be "dumb"
-> > governors once we propagate the SMT awareness to the cpufreq core. Zwane,
-> > are you aware of my current patch set which aims at the same direction? IIRC
-> > [and my memory might be a bit off after a long vacation], it mostly needs
-> > work from the "governor" perspective -- and testing. Don't have hardware
-> > here...
+> > > This currently oopses when a processor goes offline since it can't
+> > > schedule itself onto the correct cpu.
+> >
+> > What's the call trace? Because I don't see why it should happen: if the CPU
+> > is removed, cpufreq_remove_dev() gets called, which cleans up the governor
+> > and the device driver -- and I can't see a call to setdc in this code path.
 > 
-> Yeah, i saw the patches and indeed the work should be done in the
-> governor, i should be able to help with the testing.
+> kernel BUG at arch/i386/kernel/cpu/cpufreq/p4-clockmod.c:148!
 
-Excellent. Will try to update my patches soon.
+Thanks.
+
+> > > So we now disable preemption whilst reading or setting the DC.
+> > Or should we disable CPU hotplug [IIRC there's some callback to temporarily
+> > do that] in the cpufreq core before calling ->target() or ->get()
+> >
+> > > There is a questionable hunk which returns the
+> > > stock_freq if the processor being read from is offline.
+> 
+> The cpufreq_sysdev_driver stuff only covers device removal and won't cover
+> the processor being removed.
+
+What? If the processor X is removed, the kobject / device of
+/sys/devices/system/cpu/cpuX/ will not be unregistered? If that is the case,
+then the current cpufreq core indeed is severely broken....
+
+> In order to take care of that you need to either
+> disable preemption
+... however, I dislike disabling preemption -- it can cause long latencies,
+after all -- and prefer disabling CPU hotplug around calls to ->target() and
+->get()...
+
+> or hold the cpucontrol semaphore, or you could register
+> a cpu online/offline notifier and do the necessary work there.
+... and that cpu online/offline notifier must then do what I thought the
+sysfs device ->add()/->remove() calls were doing.
 
 Thanks,
 	Dominik
