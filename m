@@ -1,9 +1,9 @@
 From: bugme-daemon@osdl.org
 Subject: [Bug 3180] powernowk8 compiles into kernel only if
 	CONFIG_ACPI_PROCESSOR=y
-Date: Wed, 11 Aug 2004 02:14:58 -0700
+Date: Wed, 11 Aug 2004 02:14:28 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200408110914.i7B9EwO3015159@fire-1.osdl.org>
+Message-ID: <200408110914.i7B9ESRs015134@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,13 +21,14 @@ To: cpufreq@www.linux.org.uk
 
 http://bugme.osdl.org/show_bug.cgi?id=3180
 
-linux@brodo.de changed:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |linux@brodo.de
-             Status|NEW                         |ASSIGNED
 
+
+
+------- Additional Comments From linux@brodo.de  2004-08-11 02:14 -------
+Created an attachment (id=3487)
+ --> (http://bugme.osdl.org/attachment.cgi?id=3487&action=view)
+propagate CONFIG_X86_POWERNOW_K8_ACPI to powernow-k8.h
 
 
 ------- You are receiving this mail because: -------
