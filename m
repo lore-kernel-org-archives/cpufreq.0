@@ -1,12 +1,11 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: [ANN] cpufreqd-1.0.1 released
-Date: Thu, 24 Jul 2003 15:03:31 +0200
+From: Francesco Poli <frx@firenze.linux.it>
+Subject: Is www.codemonkey.org.uk offline?
+Date: Thu, 24 Jul 2003 23:46:08 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030724130331.GC637@inferi.kami.home>
-Reply-To: dongili@supereva.it
+Message-ID: <20030724234608.540886f9.frx@firenze.linux.it>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,22 +16,21 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: CPUFreq Mailing List <cpufreq@www.linux.org.uk>
+To: CpuFreq <cpufreq@www.linux.org.uk>
 
+http://www.codemonkey.org.uk/cpufreq has been unusable for (at least)
+the last two days.
 
-cpufreqd-1.0.1 has been released.
+Now it seems its DNS servers are unreachable:
 
-This release mainly focus on fixing linux-2.6 sysfs support
+$ host www.codemonkey.org.uk
+;; connection timed out; no servers could be reached
 
-http://www.sourceforge.net/projects/cpufreqd
+What's happening? Has the official place where to find 2.4.x advanced
+cpufreq patches moved elsewhere? Or is this a temporary problem?
 
-cpufreqd is meant to be a replacement of the speedstep applet you
-can find on some other OS, it monitors battery level, AC state and
-running programs and adjusts the frequency governor according to
-a set of rules specified in the config file.
-
-thanks
 -- 
-mattia
-:wq!
+    Francesco Poli       <frx AT firenze.linux.it>
+======================================================
+You're compiling a program and, all of a sudden, boom!
+  -- from APT HOWTO, version 1.8.0
