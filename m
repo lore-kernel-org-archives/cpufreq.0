@@ -1,10 +1,11 @@
-From: John Clemens <john@deater.net>
-Subject: powernow-k7, something broke in -test3?
-Date: Sun, 10 Aug 2003 22:09:45 -0400 (EDT)
+From: Johan Bilien <jobi@via.ecp.fr>
+Subject: cpufreq and P3 speedstep with 2.6.0-test3 kernel
+Date: Wed, 13 Aug 2003 15:58:36 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <Pine.LNX.4.44.0308102141570.4848-100000@pianoman.cluster.toy>
+Message-ID: <20030813135836.GA28615@via.ecp.fr>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
+Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,71 +15,28 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
+Hi,
 
-powernow-k7's been running fine for me for a while... and it still seems
-to work, but /proc/cpuinfo seems to suddenly be reporting weird results
-since i upgraded from 2.5.75 to 2.6.0-test3 yesterday.  Any ideas? I'm
-guessing this is cosmetic as my system still runs, but running the UAE
-emulator seemed a bit sluggish today.. but that's probably my
-imagination.
+I'm trying to run cpufreq on my IBM laptop Thinkpad T22, with a Pentium
+3 900 (with speedstep). I have a linux 2.6.0-test3 kernel, and have
+speedstep-ich.ko and speedstep-lib.ko compiled as modules. When I insmod
+speedstep-lib, nothing happens. When I insmod speedstep-ich, I get:
 
-The numbers work out to something thinking i have ~77Mhz bus and not a
-100Mhz one.
+FATAL: Error inserting speedstep_ich
+(/lib/modules/2.6.0-test3/kernel/arch/i386/kernel/cpu/cpufreq/\
+speedstep-ich.ko): No such device
 
-john.c -- whose starting to believe he's seeing things.
+Speedstep is set in the BIOS.
 
-Here's a script output session:
+I have nothing in /sys/devices/system/cpu/cpu0, and if I insmod the
+/proc interface I only get the header in /proc/cpufreq.
 
-Script started on Sun Aug 10 21:37:51 2003
-root@diana:/usr/src# dmesg | grep powernow
-powernow: AMD K7 CPU detected.
-powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
-powernow: Found PSB header at c00f7ab0
-powernow: Table version: 0x12
-powernow: Flags: 0x0 (Mobile voltage regulator)
-powernow: Settling Time: 100 microseconds.
-powernow: Has 14 PST tables. (Only dumping ones relevant to this CPU).
-powernow: PST:1 (@c00f7ad2)
-powernow:  cpuid: 0x761 fsb: 100        maxFID: 0xb     startvid: 0xc
-powernow:    FID: 0x10 (3.0x [300MHz])  VID: 0x11 (1.250V)
-powernow:    FID: 0x4 (5.0x [500MHz])   VID: 0x11 (1.250V)
-powernow:    FID: 0x6 (6.0x [600MHz])   VID: 0xd (1.350V)
-powernow:    FID: 0x8 (7.0x [700MHz])   VID: 0xc (1.400V)
-powernow:    FID: 0xb (8.5x [850MHz])   VID: 0xc (1.400V)
-powernow: Minimum speed 300 MHz. Maximum speed 850 MHz.
-root@diana:/usr/src# cat /proc/cpuinfo | grep MHz
-cpu MHz         : 656.600
-root@diana:/usr/src# cd /sys/devices/system/cpu/cpu0/cpufreq/
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor
-userspace
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_setspeed
-850000
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# echo "300000" >
-scaling_setspeed
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_setspeed
-300000
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# cat /proc/cpuinfo | grep
-MHz
-cpu MHz         : 231.741
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# echo "600000" >
-scaling_setspeed
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# cat /proc/cpuinfo | grep
-MHz
-cpu MHz         : 463.482
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# echo "850000" >
-scaling_setspeed
-root@diana:/sys/devices/system/cpu/cpu0/cpufreq# cat /proc/cpuinfo |grep
-MHz
-cpu MHz         : 656.600
-Script done on Sun Aug 10 21:41:14 2003
+Do you have any idea ? Have I misconfigured something ?
 
-john.c
-
+Thanks,
 -- 
-John Clemens          http://www.deater.net/john
-john@deater.net     ICQ: 7175925, IM: PianoManO8
-      "I Hate Quotes" -- Samuel L. Clemens
+Jobi
