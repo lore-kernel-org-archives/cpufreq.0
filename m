@@ -1,14 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: speedstep and deep sleep on celeron-M
-Date: Mon, 20 Sep 2004 12:47:30 +0200
+From: Thomas Renninger <mail@renninger.de>
+Subject: Mobile Celeron with Speedstep ? - speedstep-centrino freezes machine
+Date: Mon, 20 Sep 2004 15:41:05 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040920104730.GK16132@poupinou.org>
-References: <414BF01D.4000905@altern.org>
-	<20040918215839.GA7717@dominikbrodowski.de>
+Message-ID: <414EDDF1.90506@renninger.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040918215839.GA7717@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,31 +15,43 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christophe Couronne <xof@altern.org>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@www.linux.org.uk
 
-On Sat, Sep 18, 2004 at 11:58:39PM +0200, Dominik Brodowski wrote:
-> Hi,
-> 
-> Deep Sleep might be supported (depending on the BIOS in your notebook) by
-> the ACPI processor subsystem. It's a form of "idling" which is enabled when
-> the CPU has nothing to do, and may be C-State 3. For more information on
-> that, check the current ACPI processor information at http://acpi.sf.net;
-> also bug #1958 at bugzilla.kernel.org may be of interest as it can enable
-> more C-States. However, it depends on the BIOS which CPU Power State (Deep
-> Sleep is one of them) is enabled as what C-State. It has nothing to do with
-> CPUfreq, though.
+Hi,
 
+I also have a Mobile Celeron (IBM R40e) problem here:
 
-Actually, deep sleep state is C3, whereas deeper sleep state is supposed
-to be C4 (though it's possible to enter deeper sleep state instead of
-deep sleep state IIRC).
+I thought Celeron CPUs are not speedstep capable, seems as if I was 
+wrong (ss flag indicates speedstep, right?)...
 
-Cheers,
+On this machine speedstep-centrino freezes machine (shouldn't it already 
+go out at the model name check, or has this been changed?):
 
--- 
-Bruno Ducrot
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Mobile Intel(R) Celeron(R) CPU 2.40GHz
+stepping        : 9
+cpu MHz         : 2392.030
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca 
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
+bogomips        : 4751.36
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+I am just compiling kernel -> centrino debug enabled. Hints and 
+suggestions very welcome.
+
+     Thomas
+
+P.S.: uname -r
+2.6.8-7-default -> SUSE kernel (no modifications concerning speedstep)
