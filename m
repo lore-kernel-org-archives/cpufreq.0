@@ -1,14 +1,18 @@
-From: Carl Thompson <cet@carlthompson.net>
-Subject: Re: cpuspeed daemon
-Date: Sat, 21 Jun 2003 16:42:22 -0700
+From: Gregor Hlawacek <lawa@gmx.at>
+Subject: Re: dumb question from curious newbee.
+Date: Sun, 22 Jun 2003 12:18:28 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1056238942.38e68448bf0bf@carlthompson.net>
-References: <1056238149.30963.394.camel@ixodes.goop.org>
+Message-ID: <200306221218.39757.lawa@gmx.at>
+References: <1056093725.15596.2.camel@localhost> <200306210048.52920.lawa@gmx.at> <1056224149.ef4e0e799ffee@carlthompson.net>
 Mime-Version: 1.0
+Content-Type: multipart/signed;
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1;
+  boundary="Boundary-02=_+JY9+NzPkxMieby";
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <1056238149.30963.394.camel@ixodes.goop.org>
-Content-Disposition: inline
+In-Reply-To: <1056224149.ef4e0e799ffee@carlthompson.net>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,37 +22,76 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: cpufreq list <cpufreq@www.linux.org.uk>
+To: Cpufreq@www.linux.org.uk
 
-Darn it, you picked the same name I was using for the new version of my
-CPUFreq daemon!  (It was called cpufreq, but I thought that was too
-confusing).  Well, since I haven't posted it here under the new name yet I
-guess I'll have to find another name...
 
-Carl Thompson
+--Boundary-02=_+JY9+NzPkxMieby
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Description: signed data
+Content-Disposition: inline
 
-Quoting Jeremy Fitzhardinge <jeremy@goop.org>:
+Am Samstag, 21. Juni 2003 21:35 schrieb Carl Thompson:
+> Quoting Gregor Hlawacek <lawa@gmx.at>:
+> > ...
+> >
+> > > No, there's no frequency scaling for AMD Duron. But maybe throttling
+> > > (power consumption is reduced linear to processing power) is
+> > > available
+> >
+> > -
+> >
+> > > try out ACPI [http://acpi.sf.net for more information]
+> >
+> > Maybe I miss understood the whole cpufreq thing. but doesn't the
+> > cpufreq thing do exactly that thing. My AMD Duron 1.1 GHz can be slowed
+> > down to 500MHz with your backport from cpufreq to 2.4.19, or did I get
+> > something wrong
+>
+> The Regular AMD Duron has no support for PowerNow, and hence no support
+> for CPUFreq.  Some versions of the AMD Mobile Duron _do_ have support for
+> PowerNow and CPUFreq.  You probably have an AMD Mobile Duron, not an AMD
+> Duron.  Different chip.
 
-> I've been playing around with a little daemon to manage CPU performance
-> policies.  The intention was not to do some all singing thing which
-> looks at power source, battery life, running processes, etc, etc, but
-> something simple to enforce a single policy; if you want to switch
-> policies, you can do that on the fly.
+=C4hmm  okay your point thats right sorry
+
+Gregor
+
+> Carl Thompson
 >
-> I've only tried it on my Centrino machine, so it has a fair number of
-> performance points to play with.  I'm interested to know if it does
-> anything useful for other chips' power management.
->
-> http://www.goop.org/~jeremy/cpuspeed
->
-> 	J
->
+> > Gregor
+> >
+> > btw: will there be any backport of powernow-k7 to 2.4.21?
+> >
+> >
+> > --
+> > Gregor Hlawacek                                                =20
+> > Austria http://www.unileoben.ac.at/~m9327555/        May the source be
+> > with you! This posting is 100% M$ free. Guaranteed by Tux, the friendly
+> > penguin.
 >
 > _______________________________________________
 > Cpufreq mailing list
 > Cpufreq@www.linux.org.uk
 > http://www.linux.org.uk/mailman/listinfo/cpufreq
->
->
+
+
+=2D-=20
+Gregor Hlawacek                                                  Austria
+http://www.unileoben.ac.at/~m9327555/        May the source be with you!
+ This posting is 100% M$ free. Guaranteed by Tux, the friendly penguin.
+
+--Boundary-02=_+JY9+NzPkxMieby
+Content-Type: application/pgp-signature
+Content-Description: signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.1 (GNU/Linux)
+
+iD4DBQA+9YJ+er3X+/vN824RAlWtAJjfr+tJYsXTM1N+v+st79kgpyctAKCCQlyA
+5KFBovrXTiXAjLSC/dhZzg==
+=7y+3
+-----END PGP SIGNATURE-----
+
+--Boundary-02=_+JY9+NzPkxMieby--
