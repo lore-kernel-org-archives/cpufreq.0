@@ -1,8 +1,9 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH 2/8] speedstep-smi: disable debug output
-Date: Wed, 19 Nov 2003 19:30:58 +0100
+Subject: [PATCH 1/8] speedstep-smi: disable smi_detect_freqs() on buggy
+	systems (bug #1422)
+Date: Wed, 19 Nov 2003 19:30:28 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031119183058.GC20576@brodo.de>
+Message-ID: <20031119183028.GB20576@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
@@ -19,21 +20,32 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-speedstep-smi is getting more and more stable, so disable verbose debug 
-output.
+The SMI call in speedstep_smi_get_freqs causes hangs on certain notebooks. A
+failure of the function itself is non-critical, as a workaround exists.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-smi.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/kernel/cpu/cpufreq/speedstep-smi.c |    6 ++++++
+ 1 files changed, 6 insertions(+)
 
 diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-19 17:15:21.458121360 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-19 17:17:22.171770096 +0100
-@@ -54,7 +54,7 @@
- /* DEBUG
-  *   Define it if you want verbose debug output, e.g. for bug reporting
-  */
--#define SPEEDSTEP_DEBUG
-+//#define SPEEDSTEP_DEBUG
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-19 17:14:02.417137416 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-19 17:14:36.128012584 +0100
+@@ -85,6 +85,9 @@
  
- #ifdef SPEEDSTEP_DEBUG
- #define dprintk(msg...) printk(msg)
+ /**
+  * speedstep_smi_get_freqs - get SpeedStep preferred & current freq.
++ * Only available on later SpeedStep-enabled systems, returns false results or
++ * even hangs [cf. bugme.osdl.org # 1422] on earlier systems. Empirical testing
++ * shows that the latter occurs if !(ist_info.event & 0xFFFF).
+  *
+  */
+ static int speedstep_smi_get_freqs (unsigned int *low, unsigned int *high)
+@@ -93,6 +96,9 @@
+ 	u32 state=0;
+ 	u32 function = GET_SPEEDSTEP_FREQS;
+ 
++	if (!(ist_info.event & 0xFFFF))
++		return -ENODEV;
++
+ 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+ 
+ 	__asm__ __volatile__("movl $0, %%edi\n"
