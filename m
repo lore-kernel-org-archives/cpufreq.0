@@ -1,15 +1,14 @@
-From: Carl Thompson <cet@carlthompson.net>
-Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates to
-	ACPIP-state driver
-Date: Tue, 21 Oct 2003 12:55:55 -0700
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: [PATCH] 1/3 Dynamic cpufreq governor and updates to ACPI
+	P-state driver
+Date: Tue, 21 Oct 2003 21:57:38 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1066766155.a66ff46274f08@carlthompson.net>
-References: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
+Message-ID: <20031021195738.GA26971@brodo.de>
+References: <88056F38E9E48644A0F562A38C64FB6007791A@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <7F740D512C7C1046AB53446D3720017304B031@scsmsx402.sc.intel.com>
 Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007791A@scsmsx403.sc.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,39 +19,35 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-Cc: cpufreq@www.linux.org.uk, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, arjanv@redhat.com, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>
 
-Quoting "Nakajima, Jun" <jun.nakajima@intel.com>:
+On Tue, Oct 21, 2003 at 10:15:31AM -0700, Pallipadi, Venkatesh wrote:
+> 
+> > -----Original Message-----
+> > From: Ducrot Bruno [mailto:ducrot@poupinou.org] 
+> > 
+> > There is already a patch from Dominik Brodowski for the apci 
+> > p-state which IMHO
+> > is better at least by design.  
+> 
+> Are you referring to cleanup of ACPI P-state driver by Dominik?
+> That patch is indeed nice and clean. But that is mostly 
+> orthogonal to this patch. I mean, 
+> - SMP awareness in P-state driver 
+> - P-state coordination between HT siblings
+> will still be required even after Dominik's patch. Though exact 
+> location of these changes will change when applied over Dominik's 
+> patch.
+> 
+> There is a small overlap in handling MSR based P-state transitions, 
+> but that is a real minor change in my patch and I am reusing most 
+> of the existing IO based transitions code for MSR based ones.
 
-> ...
+Indeed there is. However, as 2.6. is in a "stability freeze" right now, my
+pretty invasive cleanup won't have a chance of going in soon. I'd like to
+separate the issues with the p-state driver from the demandbased cpufreq
+governor, though...
 
-> It's about the frequency of the feedback loop. As we have much lower
-> latency with P-state transitions, the sampling time can be order of
-> millisecond (or shorter if meaningful). A userland daemon can have a
-> high-level policy (preferences, or set of parameters), but it cannot be
-> part of the real feedback loop. If we combine P-state transitions and
-> deeper C-state transitions, the situation is worse with a userland
-> daemon.
-
-You are making the assumption that a higher polling frequency (we'll say
-1ms) is in general better than a lower frequency (we'll say 1s).  I submit
-that it is not.
-
-If I hit a key on my keyboard and your high frequency loop increases CPU
-speed so that my word processor displays the letter 0.01s faster, is that
-really beneficial?  If a window renders in 0.2s seconds instead of 0.3s is
-that a difference I am going to notice?
-
-On the other hand, if I do a kernel compile and it is done 0.999s faster
-with the higher frequency loop, am I going to miss that second over such a
-long duration?  (In reality, the compile with the high-frequency loop would
-probably take longer unless it has near zero overhead).
-
-In my opinion it is wasteful to increase CPU speed unless there is a longer
-term need for it.
-
-> 	Jun
-
-Carl Thompson
+	Dominik
