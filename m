@@ -1,8 +1,8 @@
-From: Dave Jones <davej@redhat.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: [RFC] cpufreqtools
-Date: Thu, 21 Oct 2004 19:51:39 +0100
+Date: Fri, 22 Oct 2004 16:39:27 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041021185138.GA22944@redhat.com>
+Message-ID: <20041022143927.GE22405@poupinou.org>
 References: <20041021172227.GA24663@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -20,17 +20,36 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
+Cc: jeremy@goop.org
 
 On Thu, Oct 21, 2004 at 07:22:27PM +0200, Dominik Brodowski wrote:
- 
- > What needs to be done? The first implementation available at
- > 
- > http://www.brodo.de/cpufreq/cpufreqtools-0.1-pre0.tar.bz2 
- > size: 15k
- > [License: GPL v2]
+> Hi all,
+> 
+> The multitude of cpufreq userspace tools is something I like very much: it
+> offers the user the choice to use the tools which suits her needs best.
+> 
+> However, there are three issues which should be addressed, in my humble
+> opinion:
+> 
+> A) A small tool which allows to modify cpufreq settings without having to
+> type e.g. "/sys/devices/system/cpu/cpu0/cpufreq/scaling_set_speed" all the
+> time.
+> 
+> B) A small tool which prints out cpufreq information helpful to developers
+> and interested users.
+> 
+> C) A library, used by A), B) and any other cpufreq userspace tool
+> that wants to do so, which allows for a unified code base on how to
+> determine current cpufreq settings and how to modify or change them.
 
-I had intended long ago to add some cpufreq friendlyness
-to x86info, but lack-of-time got the better of me. It's good to
-have these tools.  Good job.
- 
-		Dave
+
+I think that Jeremy's work being somehow integrated into your utilities.
+I think libspeedfreq.c is a good starting point for point C at least.
+
+(reminder: http://www.goop.org/~jeremy/speedfreq/)
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
