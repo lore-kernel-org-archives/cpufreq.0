@@ -1,14 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500 hangs while
-	loading acpi module]
-Date: Mon, 29 Dec 2003 12:56:24 +0100
+From: Ian McConnell <ian@emit.demon.co.uk>
+Subject: longhaul gives /proc/sys/cpu/0/speed-m{in,max} = 0
+Date: Tue, 30 Dec 2003 13:38:25 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031229115624.GA4489@dominikbrodowski.de>
-References: <BF1FE1855350A0479097B3A0D2A80EE0CC894B@hdsmsx402.hd.intel.com>
+Message-ID: <87n09aa0j2.fsf@emit.demon.co.uk>
+Reply-To: Ian McConnell <ian@emit.demon.co.uk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============53272514949662941=="
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <BF1FE1855350A0479097B3A0D2A80EE0CC894B@hdsmsx402.hd.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,63 +15,89 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-To: "Brown, Len" <len.brown@intel.com>
-Cc: Martin Schreiber <SchreiberX@Altmuehlnet.de>, cpufreq@www.linux.org.uk
-
-
---===============53272514949662941==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
-Content-Disposition: inline
-
-
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Dec 23, 2003 at 01:31:30AM -0500, Brown, Len wrote:
-> This was  http://bugzilla.kernel.org/show_bug.cgi?id=3D1349
-> The fix is in current 2.4.24, and the latest ACPI patch for 2.6.0:
->=20
-> http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/
-> 2.6.0/
->=20
-> Cheers,
-> -Len
->=20
-> Ps. Sorry I didn't reply earlier, I got bounced off this list for a
-> spell.
-
-AFAICS, Veki's patch isn't in acpi-20031203-2.6.0.diff.gz.
-
-	Dominik
-
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQE/8BZoZ8MDCHJbN8YRAnPOAJ9Wh/Hs3wu6baLEBJjzpZTJKu/oAwCfWuy0
-UCczHJjpZ8YA4JEyzORF9kU=
-=FK7r
------END PGP SIGNATURE-----
-
---rwEMma7ioTxnRzrJ--
-
-
---===============53272514949662941==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+I'm trying to set up cpu speed control with my VIA EPIA C3 800Mhz.
 
---===============53272514949662941==--
+> x86info
+Family: 6 Model: 7 Stepping: 8
+CPU Model : VIA C3 (Samuel 2) [C5B]
 
+I downloaded and installed vanilla linux-2.4.23 with
+cpufreq-LINUX_2_4-20031230.tar.gz and setting
+
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_PROC_INTF=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_24_API=y
+# CONFIG_X86_POWERNOW_K6 is not set
+# CONFIG_X86_POWERNOW_K7 is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+CONFIG_X86_LONGHAUL=m
+# CONFIG_X86_SPEEDSTEP_PIIX4 is not set
+# CONFIG_X86_SPEEDSTEP_SMI is not set
+# CONFIG_X86_SPEEDSTEP_ICH is not set
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+# CONFIG_X86_LONGRUN is not set
+# CONFIG_X86_GX_SUSPMOD is not set
+
+
+This seems to work correctly as I get 
+
+longhaul: VIA C3 'Ezra' [C5C] CPU detected. Longhaul v1 supported.
+longhaul: MinMult=3.0x MaxMult=6.0x
+longhaul: FSB: 133MHz Lowestspeed=399MHz Highestspeed=798MHz
+
+> cat /proc/cpufreq 
+          minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0          399 kHz ( 50 %)  -        798 kHz (100 %)  -  performance
+
+however I also have
+
+> more /proc/sys/cpu/0/speed*
+::::::::::::::
+/proc/sys/cpu/0/speed
+::::::::::::::
+0
+::::::::::::::
+/proc/sys/cpu/0/speed-max
+::::::::::::::
+0
+::::::::::::::
+/proc/sys/cpu/0/speed-min
+::::::::::::::
+0
+
+Is this right? speed-min and speed-max are both zero so I can't use any
+of the userspace speed throttling programs such as cpuspeed-1.1.
+Also if /proc/sys/cpu/0/speed = 0, how do I tell what speed my machine is
+running at?
+
+
+Recompiling the kernel with longhaul built in (ie not a module) didn't make
+any difference.
+
+
+I also tried a stock binary kernel 2.6.0, but when I load longhaul.o, the
+machine hangs after printing out:
+
+longhaul: VIA C3 'Ezra' [C5C] CPU detected. Longhaul v1 supported.
+longhaul: MinMult=3.0x MaxMult=6.0x
+longhaul: FSB: 0MHz Lowestspeed=0MHz Highestspeed=0MHz
+longhaul: FSB:0 Mult:10.0x
+
+
+I did have some success with the longhaul and governor modules from
+    http://www3.sympatico.ca/howlettfamily/epia/longhaul-1.2.tar.gz
+The longhaul module worked ok with vanilla 2.4.23, but the governor module
+hangs my machine after a few hours.
+
+
+Unfortunately, I'm a bit stuck as what to try next as both
+   http://blade5.bvu.edu/wiki
+   http://www.codemonkey.org.uk/
+seem to be down now.
