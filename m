@@ -1,15 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: powernow-k7 for XP-M 2400+ CPU
-Date: Wed, 26 May 2004 20:54:34 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: [PATCH] fix panic in powernow_k8_verify on MP but PSB systems
+Date: Wed, 26 May 2004 22:33:47 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040526185434.GP4933@poupinou.org>
-References: <20040525225007.2DCE949C52@nathan.muc.de>
-	<20040526102057.GK4933@poupinou.org>
-	<20040526171938.1920049C55@nathan.muc.de>
+Message-ID: <20040526203347.GA9388@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040526171938.1920049C55@nathan.muc.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,31 +17,23 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Harald Milz <milz@seneca.muc.de>
-Cc: cpufreq@www.linux.org.uk
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, paul.devriendt@amd.com
 
-On Wed, May 26, 2004 at 07:19:38PM +0200, Harald Milz wrote:
-> Bruno Ducrot <ducrot@poupinou.org> wrote:
-> 
-> > a dmesg please for the powernow-k7 stuff?  Not all athlon are powernow
-> > capable at first.
-> 
-> This is why I said "a Athlon 0x7A0 XP-M 2400+" because this is what I have
-> on my board. 
-> 
-> So again, could any kind soul please send me the powernow-k7 dmesg output for
-> his Athlon XP-M 2400+ CPU (cpuid 0x7A0)?
-> 
-> And yes, this straightforward patch _is_ possible. I tried this with some
-> fancy figure I made up but I'd rather use the "correct" ones, and it works. 
+Instead of -ENODEV; powernow_k8_cpu_init returns 0 if it's running on a MP
+system but PSB BIOS is tried... this causes a panic in
+powernow_k8_verify, as can be seen at
+http://forums.gentoo.org/viewtopic.php?t=177423
 
-Yes, I can probably help you somehow.  But send the dmesg at
-first.  You only waste my time if you don't post that damn log.
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+--- linux-2.6.7-rc1/arch/i386/kernel/cpu/cpufreq/powernow-k8.c.original	2004-05-24 15:19:13.000000000 +0200
++++ linux-2.6.7-rc1/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-05-26 22:30:43.404982920 +0200
+@@ -945,7 +945,7 @@
+ 		if ((num_online_cpus() != 1) || (num_possible_cpus() != 1)) {
+ 			printk(KERN_INFO PFX "MP systems not supported by PSB BIOS structure\n");
+ 			kfree(data);
+-			return 0;
++			return -ENODEV;
+ 		}
+ 		rc = find_psb_table(data);
+ 		if (rc) {
