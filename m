@@ -1,13 +1,12 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Cpufreq 2.4.22-pre6 & Pentium M
-Date: 18 Jul 2003 14:39:57 -0700
+From: Francesco Poli <frx@firenze.linux.it>
+Subject: Weird behaviour (cpufreq-2.4.21-2)
+Date: Sat, 19 Jul 2003 00:33:02 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1058564397.17203.10.camel@sherkaner.pao.digeo.com>
-References: <20030718220937.09d2dc67.eglez@ast.cam.ac.uk>
+Message-ID: <20030719003302.1664a98f.frx@firenze.linux.it>
+Reply-To: CpuFreq <cpufreq@www.linux.org.uk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030718220937.09d2dc67.eglez@ast.cam.ac.uk>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,28 +17,44 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: Eduardo Gonzalez-Solares <eglez@ast.cam.ac.uk>
-Cc: Dominik Brodowski <linux@brodo.de>, cpufreq list <cpufreq@www.linux.org.uk>
+To: CpuFreq <cpufreq@www.linux.org.uk>
 
-On Fri, 2003-07-18 at 14:09, Eduardo Gonzalez-Solares wrote:
-> Nothing in dmesg. It seems the problem is in:
-> 
->        if (!cpu_has(cpu, X86_FEATURE_EST))
->                return -ENODEV;
+Hello everybody!  :)
+I installed a 2.4.21 kernel + cpufreq-2.4.21-2 (downloaded
+from http://www.codemonkey.org.uk/cpufreq/) + acpi-20030619-2.4.21
+(downloaded from http://acpi.sourceforge.net/) on an Acer Aspire 1302XV
+(AMD Mobile Athlon XP 1600+). I manually fixed the vid-fid bug in
+powernow-k7.c (as reminded by Carl Thompson in a recent post), activated
+the ACPI-related configuration options, compiled and installed.
 
-I'm not sure who maintains the 2.4 port, but the problem is that the
-core code which sets up the CPU feature bits doesn't know about the
-extended feature word, so it doesn't read the X86_FEATURE_EST bit from
-the CPU.
+Here comes the weird!
 
-The previous versions of this patch used this functional but ugly code:
-        int dummy, ecx;
-        
-        cpuid(1,&dummy,&dummy,&ecx,&dummy);
-        if (!(ecx & (1<<7)))
-        	return -ENODEV;
+When I boot all seems right. The CPU is almost 100% idle and
+$ cat /proc/cpufreq
+          minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0       500000 kHz ( 35 %)  -    1400000 kHz (100 %)  - 
+performance$ cat /proc/acpi/thermal_zone/THRM/temperature
+temperature:              60 C
+And this seems to be able to go on (with temperature slowly
+decreasing!).
 
-Either the new ports of speedstep-centrino.c need to keep using this
-code, or the X86_FEATURE_EST bit needs to be put into cpu_data.
+Then I disconnect the laptop from the electrical network: so I run on
+battery.
+When I go back on AC power, the battery starts charging (as reported by
+the LED and by ACPI). And the temperature goes up towards 80 degrees
+Celsius; the back fan wakes up thus pushing the temperature down again
+to 69 degrees Celsius; then the fan rests and the temperature goes up
+again. This thermal cycle goes on and on, even if the CPU is almost
+totally idle.
 
-    J
+A simple reboot stops this behaviour and, after a while, I get
+$ cat /proc/acpi/thermal_zone/THRM/temperature
+temperature:              57 C
+
+The question is: what's wrong? What did I messed up with?
+
+-- 
+    Francesco Poli       <frx AT firenze.linux.it>
+======================================================
+You're compiling a program and, all of a sudden, boom!
+  -- from APT HOWTO, version 1.8.0
