@@ -1,11 +1,14 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCHES] ACPI Processor update [idle,throttling,thermal,cpufreq]
-Date: Fri, 5 Sep 2003 00:24:34 +0200
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030904222434.GC6350@brodo.de>
+Subject: Re: ACPI P-State platform limit [Was: Re: Cpufreq for opteron]
+Date: Fri, 5 Sep 2003 00:29:04 +0200
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20030904222904.GA6488@brodo.de>
+References: <99F2150714F93F448942F9A9F112634C080EF034@txexmtae.amd.com>
+	<20030827053300.GB4037@brodo.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20030827053300.GB4037@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,90 +17,42 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: acpi-devel@lists.sourceforge.net, andrew.grover@intel.com
-Cc: cpufreq@www.linux.org.uk
+To: paul.devriendt@AMD.com
+Cc: pavel@suse.cz, richard.brunner@AMD.com, aj@suse.de, cpufreq@www.linux.org.uk, davej@redhat.com, mark.langsdorf@AMD.com
 
-Over the last few hours, I've rewritten large portions of ACPI processor
-handling. Due to lack of appropriate hardware, I can hardly test these
-changes, so expect a few rough edges.
+On Wed, Aug 27, 2003 at 07:33:00AM +0200, Dominik Brodowski wrote:
+> [removed CC:linux-kernel]
+> 
+> > > I dislike this interaction between ACPI and cpufreq -- it 
+> > > should be done
+> > > more generally. Let's discuss that seperately, though. And if 
+> > > the code is
+> > > dead code at the moment.
+> > 
+> > The dead code has been removed in 1.00.07 of the driver. I am
+> > happy to receive suggestions as to better ways of detecting battery
+> > versus mains power transitions.
+> 
+> Currently, the ACPI P-States cpufreq driver does implement the "platform
+> limit". However, I'm not really excited about how it works -- and especially
+> that it only works with the ACPI P-States cpufreq driver and not with all
+> drivers.
+> 
+> The platform limit [ _PPC ] refers to the states defined in _PSS. This means
+> that this knowledge can and should be used independent of the cpufreq driver:
+> if the _PPC is, let's say, 2, and accoring to _PSS P2 is 1.2 GHz, a
+> "platform limit CPUFREQ_POLICY_NOTIFIER". If the _PPC changes, a
+> new cpufreq_reevaluate() function should be called:
 
-These patches 
-- a) replace the broken ACPI CPUfreq driver with a better, flexible variant,
-- b) modularize the processor.c code: instead of one large file there are
-     many small files.
-- c) improve passive cooling support
-- d) allow for easy adding of proper locking and ref-counting in processor.c
-
-http://www.brodo.de/cpufreq_tmp/cpufreq-2.6.0-test4-ALL-series1
-	Large CPUfreq update -- needed for other changes
-	[in CPUfreq BK tree, merge with Linus expected soon]
+I named it cpufreq_update_policy() instead, and you can check the
+implementation for it and for the _PPC in:
 
 http://www.brodo.de/cpufreq_tmp/cpufreq-2.6.0-test4-update_policy
-http://www.brodo.de/cpufreq_tmp/cpufreq-2.6.0-test4-Kconfig-speedstep
-	Additional CPUfreq updates -- needed for other changes
-	[Already sent to CPUfreq list]
-
-http://www.brodo.de/cpufreq_tmp/drivermodel-2.6.0-test4-exports
-	Missing EXPORTs in sysdevice -- needed for other changes
-	[Already sent to Patrick]
-
-
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-remove_previous_pstates_implementation
-	The previous arch/i386/kernel/cpu/cpufreq/acpi.c CPUfreq
-	driver was broken, of bad design, and needs to replaced 
-	by something better. But, as a first step, remove all 
-	parts related to P-States from ACPI code.
-
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_submodules
-	Add a "submodule interface" to drivers/acpi/processor.c
-
-	It allows to create other "modules" which access the acpi_handle 
-	for the processor, and which get notified if the event value 
-	maches the value passed in acpi_processor_register_notify.
-
+and                                                                                
 http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_perflib
-	This patch adds a new "P-States library" to drivers/acpi/
 
-	CPUfreq drivers can now easly access the contents of the 
-	_PCT and the _PSS. For example, the speedstep-centrino 
-	driver could be appended so that it passes the appropriate 
-	value to the P-States library which then evaluates _PDC, 
-	and then returns the updated _PCT and _PSS.
-
-	Also, the platform limit is now handled as a cpufreq notifier and
-	as a call to cpufreq_policy_update.
-
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-new_acpi_io_driver
-	This re-adds the acpi P-States I/O driver. It is much smaller,
-	leaner and cleaner.
-
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_idle_submodule
-	This moves the idle handler out of drivers/acpi/processor and into
-	an own module.
-
-	Even if only C1 is available, it is now used. If the user prefers the 
-	default pm_idle, he can unload processor_idle, and still have the other
-	functionality available.
-
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_thermal_submodule
-	This adds a new mechanism to manage passive cooling. Instead of
-	hardcoded -and partly wrong- access to CPUfreq and ACPI 
-	throttling-, add a generic mechanism which other modules can 
-	register with.
-
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_thermal_cpufreq
-	Use _any_ CPUfreq driver for passive cooling. Implemented by an
-	cpufreq policy notifier and cpufreq_update_policy.
- 
-http://www.brodo.de/cpufreq_tmp/acpi-2.6.0-test4-processor_thermal_throttling
-	Move throttling into its own submodule, and register it with the new
-	passive cooling module. Also, the now-useless "limit" interface is
-	removed.
-
-
-Please review, test (carefully), and -if appropriate- merge,
 
 	Dominik
