@@ -1,14 +1,13 @@
-From: Bas Mevissen <bas@basmevissen.nl>
-Subject: Re: Cpufreq for 2.4: what is the best source?
-Date: Tue, 19 Aug 2003 00:08:18 +0200
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: cpufreq CVS [Was: Re: cpufreq and P-IIIM]
+Date: Wed, 20 Aug 2003 13:25:50 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <200308190008.18974.bas@basmevissen.nl>
-References: <3F3CB378.1000607@basmevissen.nl> <3F409E54.20001@basmevissen.nl> <20030818175357.GC1570@brodo.de>
+Message-ID: <20030820112550.GB18308@poupinou.org>
+References: <m2ptj5fiuc.fsf@tnuctip.rychter.com> <20030818112943.GD18032@poupinou.org> <m2vfsux5ju.fsf@tnuctip.rychter.com> <20030818190710.C1737@flint.arm.linux.org.uk> <20030818182137.GA2296@brodo.de> <20030818193349.F1737@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_S5UQ/AcFNlMWuE7"
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030818175357.GC1570@brodo.de>
+Content-Disposition: inline
+In-Reply-To: <20030818193349.F1737@flint.arm.linux.org.uk>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,105 +17,39 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-To: Dominik Brodowski <linux@brodo.de>, Bas Mevissen <ml@basmevissen.nl>
-Cc: Bas Mevissen <sgm@basmevissen.nl>, Cpufreq@www.linux.org.uk
-
-
---Boundary-00=_S5UQ/AcFNlMWuE7
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Dominik Brodowski <linux@brodo.de>
+Cc: cpufreq@www.linux.org.uk, benh@kernel.crashing.org
 
-On Monday 18 August 2003 19:53, Dominik Brodowski wrote:
->
-> Already done. As Dave's site isn't yet back online, it can temporarily be
-> accessed at
-> http://www.brodo.de/cpufreq_tmp/cpufreq-2.4.22-rc2-1__.gz
->
+On Mon, Aug 18, 2003 at 07:33:49PM +0100, Russell King wrote:
+> On Mon, Aug 18, 2003 at 08:21:37PM +0200, Dominik Brodowski wrote:
+> > Also, it is my impression that an external CVS tree is used far less if a
+> > feature is merged into a mainline kernel. If it's not in the kernel, keeping
+> > track of a project without something like CVS is impossible. So I'm really
+> > glad about having had cpufreq-CVS and FTP-archives available. But, for the
+> > future, I don't see such a strong reason for keeping it.
+> 
+> As you're aware (we discussed this at the time when cpufreq was merged
+> into 2.5) that's my POV as well.
+> 
+> That just leaves davej and ducrot to say exactly what they want killed.
+> I'll consider going as far as taring up the CVS tree as it currently
+> stands and putting that on the ftp site for history, if that's what
+> people want.
+> 
 
-Hmmm. A few problems with this patch:
+I don't think that my opinion is so important...
+I would much like to let stuff like it is.  If ARM people agreed,
+we can import the new code in LINUX_2_4 since it is the one that
+may be merged in Marcello tree anyway.
 
-1) double quotes "userspace" governor configuration text confuse make 
-menuconfig. So it shows no help text. Escaping them didn't help, so I made a 
-new text. Note that  this is a problem in the -ac too.
+I would be happy also to get some opinions from PPC people.
 
---- linux-2.4.22-rc2-sgm1/arch/i386/config.in.orig	2003-08-18 
-19:37:12.000000000 +0200
-+++ linux-2.4.22-rc2-sgm1/arch/i386/config.in	2003-08-18 20:32:59.000000000 
-+0200
-@@ -201,7 +201,7 @@
-    bool ' CPU frequency table helpers' CONFIG_CPU_FREQ_TABLE
-    define_bool CONFIG_CPU_FREQ_PROC_INTF y
-    comment 'CPUFreq governors'
--   bool ' "userspace" for userspace frequency scaling' 
-CONFIG_CPU_FREQ_GOV_USERSPACE
-+   bool ' Support for governing from userspace' CONFIG_CPU_FREQ_GOV_USERSPACE
-    define_bool CONFIG_CPU_FREQ_24_API y
-    comment 'CPUFreq processor drivers'
-    dep_tristate ' AMD Mobile K6-2/K6-3 PowerNow!' CONFIG_X86_POWERNOW_K6 
-$CONFIG_CPU_FREQ_TABLE
+Cheers,
 
-2) Compile error from speedstep-lib.c caused by exported symbols. Patch below:
+-- 
+Ducrot Bruno
 
---- linux-2.4.22-rc2-sgm1/arch/i386/kernel/Makefile.orig	2003-08-18 
-20:58:28.000000000 +0200
-+++ linux-2.4.22-rc2-sgm1/arch/i386/kernel/Makefile	2003-08-18 
-21:56:15.000000000 +0200
-@@ -14,7 +14,7 @@
- 
- O_TARGET := kernel.o
- 
--export-objs     := mca.o mtrr.o msr.o cpuid.o microcode.o i386_ksyms.o time.o 
-setup.o
-+export-objs     := mca.o mtrr.o msr.o cpuid.o microcode.o i386_ksyms.o time.o 
-setup.o speedstep-lib.o
- 
- obj-y	:= process.o semaphore.o signal.o entry.o traps.o irq.o vm86.o \
- 		ptrace.o i8259.o ioport.o ldt.o setup.o time.o sys_i386.o \
-
-Files attached for convieniance :-)
-
-Regards,
-
-Bas.
-
---Boundary-00=_S5UQ/AcFNlMWuE7
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="cpufreq_config.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="cpufreq_config.diff"
-
---- linux-2.4.22-rc2-sgm1/arch/i386/config.in.orig	2003-08-18 19:37:12.000000000 +0200
-+++ linux-2.4.22-rc2-sgm1/arch/i386/config.in	2003-08-18 20:32:59.000000000 +0200
-@@ -201,7 +201,7 @@
-    bool ' CPU frequency table helpers' CONFIG_CPU_FREQ_TABLE
-    define_bool CONFIG_CPU_FREQ_PROC_INTF y
-    comment 'CPUFreq governors'
--   bool ' "userspace" for userspace frequency scaling' CONFIG_CPU_FREQ_GOV_USERSPACE
-+   bool ' Support for governing from userspace' CONFIG_CPU_FREQ_GOV_USERSPACE
-    define_bool CONFIG_CPU_FREQ_24_API y
-    comment 'CPUFreq processor drivers'
-    dep_tristate ' AMD Mobile K6-2/K6-3 PowerNow!' CONFIG_X86_POWERNOW_K6 $CONFIG_CPU_FREQ_TABLE
-
---Boundary-00=_S5UQ/AcFNlMWuE7
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="cpufreq_speedstep_lib_build_fix.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="cpufreq_speedstep_lib_build_fix.diff"
-
---- linux-2.4.22-rc2-sgm1/arch/i386/kernel/Makefile.orig	2003-08-18 20:58:28.000000000 +0200
-+++ linux-2.4.22-rc2-sgm1/arch/i386/kernel/Makefile	2003-08-18 21:56:15.000000000 +0200
-@@ -14,7 +14,7 @@
- 
- O_TARGET := kernel.o
- 
--export-objs     := mca.o mtrr.o msr.o cpuid.o microcode.o i386_ksyms.o time.o setup.o
-+export-objs     := mca.o mtrr.o msr.o cpuid.o microcode.o i386_ksyms.o time.o setup.o speedstep-lib.o
- 
- obj-y	:= process.o semaphore.o signal.o entry.o traps.o irq.o vm86.o \
- 		ptrace.o i8259.o ioport.o ldt.o setup.o time.o sys_i386.o \
-
---Boundary-00=_S5UQ/AcFNlMWuE7--
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
