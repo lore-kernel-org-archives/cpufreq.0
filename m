@@ -1,8 +1,9 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH 5/8] core: remove unneeded #ifdefs in include/linux/cpufreq.h
-Date: Wed, 19 Nov 2003 19:32:55 +0100
+Subject: [PATCH 5/8] p4_clockmod: detect speed without relying on cpu_khz or
+	user input
+Date: Wed, 19 Nov 2003 19:32:28 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031119183255.GG20576@brodo.de>
+Message-ID: <20031119183228.GF20576@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
@@ -19,63 +20,107 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-There's no need for some #ifdefs in cpufreq.h
+Other cpufreq drivers don't rely on cpu_khz, but use the "decoded"/theoretical CPU frequency
+as base for all calculations.
 
- include/linux/cpufreq.h |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   66 +++++++++++++++++++++++------
+ 1 files changed, 53 insertions(+), 13 deletions(-)
 
-diff -ruN linux-original/include/linux/cpufreq.h linux/include/linux/cpufreq.h
---- linux-original/include/linux/cpufreq.h	2003-11-19 17:06:19.265547160 +0100
-+++ linux/include/linux/cpufreq.h	2003-11-19 18:34:45.694847288 +0100
-@@ -231,17 +231,18 @@
- /* the proc_intf.c needs this */
- int cpufreq_parse_governor (char *str_governor, unsigned int *policy, struct cpufreq_governor **governor);
+
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 17:06:10.569869104 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2003-11-19 18:18:53.114661488 +0100
+@@ -48,8 +48,7 @@
  
--#if defined(CONFIG_CPU_FREQ_GOV_USERSPACE) || defined(CONFIG_CPU_FREQ_GOV_USERSPACE_MODULE)
-+
- /*********************************************************************
-  *                      CPUFREQ USERSPACE GOVERNOR                   *
-  *********************************************************************/
- int cpufreq_gov_userspace_init(void);
  
-+#ifdef CONFIG_CPU_FREQ_24_API
-+
- int cpufreq_setmax(unsigned int cpu);
- int cpufreq_set(unsigned int kHz, unsigned int cpu);
- unsigned int cpufreq_get(unsigned int cpu);
- 
--#ifdef CONFIG_CPU_FREQ_24_API
- 
- /* /proc/sys/cpu */
- enum {
-@@ -289,8 +290,6 @@
- 
- #endif /* CONFIG_CPU_FREQ_24_API */
- 
--#endif /* CONFIG_CPU_FREQ_GOV_USERSPACE */
+ static int has_N44_O17_errata[NR_CPUS];
+-static int stock_freq;
 -
++unsigned int stock_freq;
  
- /*********************************************************************
-  *                       CPUFREQ DEFAULT GOVERNOR                    *
-@@ -305,6 +304,7 @@
- #define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_userspace
- #endif
+ static int cpufreq_p4_setdc(unsigned int cpu, unsigned int newstate)
+ {
+@@ -175,6 +174,54 @@
+ 	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
+ }
  
++/* copied from speedstep_lib, made SMP-compatible */
++static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
++{
++	u32 msr_lo, msr_hi, mult;
++	unsigned int fsb = 0;
 +
- /*********************************************************************
-  *                     FREQUENCY TABLE HELPERS                       *
-  *********************************************************************/
-@@ -318,7 +318,6 @@
- 				    * order */
- };
++	if (c->x86 != 0xF) {
++		printk(KERN_DEBUG PFX "Unknown P4. Please send an e-mail to <linux@brodo.de>\n");
++		return 0;
++	}
++
++	rdmsr(0x2c, msr_lo, msr_hi);
++
++	/* printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi); */
++	/* decode the FSB: see IA-32 Intel (C) Architecture Software 
++	 * Developer's Manual, Volume 3: System Prgramming Guide,
++	 * revision #12 in Table B-1: MSRs in the Pentium 4 and
++	 * Intel Xeon Processors, on page B-4 and B-5.
++	 */
++	if (c->x86_model < 2)
++		fsb = 100 * 1000;
++	else {
++		u8 fsb_code = (msr_lo >> 16) & 0x7;
++		switch (fsb_code) {
++		case 0:
++			fsb = 100 * 1000;
++			break;
++		case 1:
++			fsb = 13333 * 10;
++			break;
++		case 2:
++			fsb = 200 * 1000;
++			break;
++		}
++	}
++
++	if (!fsb) {
++		printk(KERN_DEBUG PFX "couldn't detect FSB speed. Please send an e-mail to <linux@brodo.de>\n");
++		printk(KERN_DEBUG PFX "P4 - MSR_EBC_FREQUENCY_ID: 0x%x 0x%x\n", msr_lo, msr_hi);
++	}
++
++	/* Multiplier. */
++	mult = msr_lo >> 24;
++
++	return (fsb * mult);
++}
++
++ 
  
--#if defined(CONFIG_CPU_FREQ_TABLE) || defined(CONFIG_CPU_FREQ_TABLE_MODULE)
- int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
- 				    struct cpufreq_frequency_table *table);
+ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ {
+@@ -192,15 +239,10 @@
+ 		has_N44_O17_errata[policy->cpu] = 1;
+ 	}
+ 	
+-	/* get frequency */
+-	if (!stock_freq) {
+-		if (cpu_khz)
+-			stock_freq = cpu_khz;
+-		else {
+-			printk(KERN_INFO PFX "unknown core frequency - please use module parameter 'stock_freq'\n");
+-			return -EINVAL;
+-		}
+-	}
++	/* get max frequency */
++	stock_freq = cpufreq_p4_get_frequency(c);
++	if (!stock_freq)
++		return -EINVAL;
  
-@@ -340,5 +339,4 @@
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
+ 	/* table init */
+ 	for (i=1; (p4clockmod_table[i].frequency != CPUFREQ_TABLE_END); i++) {
+@@ -269,8 +311,6 @@
+ }
  
  
--#endif /* CONFIG_CPU_FREQ_TABLE */
- #endif /* _LINUX_CPUFREQ_H */
+-MODULE_PARM(stock_freq, "i");
+-
+ MODULE_AUTHOR ("Zwane Mwaikambo <zwane@commfireservices.com>");
+ MODULE_DESCRIPTION ("cpufreq driver for Pentium(TM) 4/Xeon(TM)");
+ MODULE_LICENSE ("GPL");
