@@ -1,22 +1,15 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
-Date: Mon, 10 Nov 2003 21:16:54 +0000
+From: Mattia Dongili <dongili@supereva.it>
+Subject: Re: Problem with ondemand on Athlon
+Date: Tue, 11 Nov 2003 10:51:43 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031110211654.GA10144@redhat.com>
-References: <20031104160816.GA9187@brodo.de>
-	<20031110163209.GP10144@redhat.com>
-	<20031104160816.GA9187@brodo.de>
-	<20031110163209.GP10144@redhat.com>
-	<20031110171533.GS21970@poupinou.org>
-	<20031104160816.GA9187@brodo.de>
-	<20031110163209.GP10144@redhat.com>
-	<20031110171533.GS21970@poupinou.org>
-	<20031110172246.GT10144@redhat.com>
-	<20031110205029.GA7149@brodo.de>
+Message-ID: <20031111095143.GC930@inferi.kami.home>
+References: <20031105182110.GA922@inferi.kami.home>
+	<20031110205912.GB7149@brodo.de>
+Reply-To: dongili@supereva.it
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20031110205029.GA7149@brodo.de>
+In-Reply-To: <20031110205912.GB7149@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -28,21 +21,30 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, Nov 10, 2003 at 09:50:29PM +0100, Dominik Brodowski wrote:
+On Mon, Nov 10, 2003 at 09:59:12PM +0100, Dominik Brodowski wrote:
+> This is really strange... will provide a DEBUG()-printk patch soon, would be
+> great if you could test it then...
 
- > > Actually, I'm wondering why we need this at all anyway..
- > 
- > To determine the "cost" of frequency and/or voltage transitions when doing
- > dynamic switching. If the system is unresponsive for too long a period of 
- > time, dynamic switching doesn't make sense [at least when some sort of
- > real-time or "responsiveness" is needed]. Also, the time to needed switch 
- > back to 100% of processing power should be added to the "overhead" idleness
- > on future load calculations of yet-to-be-written load-predicting cpufreq
- > governors.
+of course I can. In the meantime if you can tell a couple of interesting
+functions and variables, I could add some printk-s by myself (if I get
+some spare time before you do)
 
-Ok, I can buy that. But it's not being used at all right now, right ?
+[...]
+> > > pass "clock=pit" as a command line argument
+> > 
+> > this semms not to be a valid argument here
+> 
+> ? clock=pit specifies that the PIT should be used instead of the TSC as
+> timing source... so it should be a valid boot argument.
 
-		Dave
+sorry... my bad. I used it as a p4_clockmod argument and did not
+bothered to check Documentation/kernel-parameters.txt
+
+I'll re-test it as soon as possible.
+
+bye
+-- 
+mattia
+:wq!
