@@ -1,13 +1,11 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: Acer Aspire 1300 buggy BIOS - hardcoded patch
-Date: Tue, 1 Jul 2003 12:51:54 +0200
+From: "=?utf-8?Q?davidendless@email.it?=" <davidendless@email.it>
+Subject: =?iso-8859-1?Q?Re:_Acer_Aspire_1300_buggy_BIOS_-_hardcoded_patch?=
+Date: Tue,  1 Jul 2003 14:24:57 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030701105154.GK7796@poupinou.org>
-References: <200306301436.29188.lbelli@crema.unimi.it> <20030630151401.GE7796@poupinou.org>
+Message-ID: <HHCIHL$1E3F934F29A61EC7E7E81C8DC7239981@email.it>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20030630151401.GE7796@poupinou.org>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,54 +15,18 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Luigi Belli <lbelli@crema.unimi.it>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?utf-8?Q?cpufreq?= <cpufreq@www.linux.org.uk>
 
-On Mon, Jun 30, 2003 at 05:14:01PM +0200, Ducrot Bruno wrote:
-> On Mon, Jun 30, 2003 at 02:36:29PM +0200, Luigi Belli wrote:
-> > I'm one of the owners of an Acer Aspire 1300 series with a buggy BIOS, so I 
-> > decided to hardcode a patch with the correct PST table for my mobile Athlon 
-> > XP 1800+.
-> > I know very little of kernel internals, I only opened powernow-k7.c and tried 
-> > to guess what had to be changed...
-> > For me it works and I decided to post it here for those in my conditions 
-> > waiting for a new bios or a newer cpufreq release.
-> > It's a patch against kernel 2.4.21-ac4.
-> 
-> 
-> I am wondering if the _PCT table (from ACPI) are correct or not.
-> Could you send me a DSDT table, please?  For this, you have to
-> retrieve pmtools from intel site (this should be the latest link):
-> 
-> http://developer.intel.com/technology/iapc/acpi/downloads.htm
-> 
-> 
-> then go to pmtools-20010730/acpidmp/
-> make
-> ./acpidmp DSDT > dsdt
-> gzip dsdt
-> 
-> then send me *privately* the dsdt.gz file.
-> 
-> I will then look if, at least, ACER guy give correct _PCT table.
-> 
+> I'm one of the owners of an Acer Aspire 1300 series with a buggy=0D=0ABIOS, so I=0D=0A> decided to hardcode a patch with the correct PST table for my mobile=0D=0AAthlon=0D=0A> XP 1800+.=0D=0A=0D=0AI tried the patch, and it seemed to work. Then I did some tests and I=0D=0Afound =0D=0Athat in powersave (cat /proc/cpuinfo: cpu MHz 666.705) it runs faster=0D=0Athan at =0D=0Afullspeed (1533.422).=0D=0A=0D=0ATo test speed I used nbench and this simple script (in xterm at=0D=0Afullscreen):=0D=0A=0D=0A$ time for i in `seq 50000`; do echo "aaaa"; done=0D=0A=0D=0AIt took about 2,6 seconds without the powernow-k7 module loaded, the=0D=0Asame time =0D=0Awith module loaded and powersave, and about 3,9 seconds with full=0D=0Apower and =0D=0Amodule loaded.=0D=0A=0D=0AIsn't it strange?=0D=0ADo you have the same behaviour?=0D=0A=0D=0ADavid=0D=0A
 
-Interresting.  From ACPI point-of-view, you have those states (I reproduce
-only the different frequencies)
 
-950 MHz
-750 MHz
-700 MHz
-600 MHz
-500 MHz
 
-Ahem,  seems that not only your PST table is somehow wrong, but it seems
-there is nothing to do with ACPI either, sorry.
+--
+Email.it, the professional e-mail, gratis per te: http://www.email.it/f
 
--- 
-Ducrot Bruno
+Sponsor:
+Natsabe.it la pi=F9 grande erboristeria multimarca online.
+Solo prodotti di altissima qualit=E0.=20
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Clicca qui: http://adv.email.it/cgi-bin/foclick.cgi?mid=3D1308&d=3D1-7
