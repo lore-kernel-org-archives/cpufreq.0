@@ -1,17 +1,12 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Dynamic frequency governor
-Date: Mon, 20 Oct 2003 19:10:11 +0100
+From: "Moore, Robert" <robert.moore@intel.com>
+Subject: RE: Dynamic frequency governor
+Date: Mon, 20 Oct 2003 10:08:17 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031020181011.GA27053@redhat.com>
-References: <CFF522B18982EA4481D3A3E23B83141C24B4B3@orsmsx407.jf.intel.com>
-	<20031020170010.GF21438@redhat.com>
-	<20031020172503.GE13989@poupinou.org>
-	<20031020173205.GG21438@redhat.com>
-	<20031020173509.GF13989@poupinou.org>
+Message-ID: <CFF522B18982EA4481D3A3E23B83141C24B4B6@orsmsx407.jf.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20031020173509.GF13989@poupinou.org>
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,24 +17,43 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: "Moore, Robert" <robert.moore@intel.com>, cpufreq@www.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@www.linux.org.uk
 
-On Mon, Oct 20, 2003 at 07:35:09PM +0200, Ducrot Bruno wrote:
- > >  > AFAIR, there is no patent if wide system policy which is what Bob want
- > >  > to implement.  Only per-process (which is the most fun unfortunately) are
- > >  > patented.  That need to be confirmed though (by Alan ?).
- > > I was under the understanding that there was a patent on
- > > "recalculate cpu frequency based on idle time" too.
- > Grumble.  I was probably mistaken.  Sorry.
- 
-It's not outside the realms of possibility that it's me that was
-mistaken. I've been wrong before, and no doubt will be again at some
-point 8-)   I'd like to be proven wrong on this one 8-)
+Can you be more specific about who has patents on what?
+Bob
+
+
+-----Original Message-----
+From: Dave Jones [mailto:davej@redhat.com]=20
+Sent: Monday, October 20, 2003 10:00 AM
+To: Moore, Robert
+Cc: cpufreq@www.linux.org.uk
+Subject: Re: Dynamic frequency governor
+
+On Mon, Oct 20, 2003 at 09:33:04AM -0700, Moore, Robert wrote:
+
+ > >From what I can tell, this has not been done yet; is this true?
+
+Correct. For the reason I outlined...
+
+ > however the fact remains, whilst there are folks owning patents on
+ > this, it'll *never* be acceptable for merging without an exception
+ > grant from the patent holder.
+
+Here, and...
+
+ > > There are several patents in this area (I think from Hitachi, I
+forget
+ > > exactly) It has come up before on the list, so should be in the
+ > > archives.  Unless you can get a grant from the holder that it may
+be
+ > > used in GPL code, this has zero chance of being merged to mainline.
+
+Here.
+Do I need to quote it a third time ?
 
 		Dave
 
-
--- 
+--=20
  Dave Jones     http://www.codemonkey.org.uk
