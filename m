@@ -1,17 +1,17 @@
-From: "Brian J. Murrell" <brian@interlinx.bc.ca>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: oops on resume
-Date: Thu, 05 Aug 2004 16:19:30 -0400
+Date: Thu, 5 Aug 2004 21:29:41 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1091737170.10552.32.camel@pc>
+Message-ID: <20040805202941.GB28775@redhat.com>
 References: <pan.2004.08.05.19.00.33.11957@interlinx.bc.ca>
 	<20040805192613.GA9008@dominikbrodowski.de>
-	<1091734482.10552.20.camel@pc>
-	<20040805195248.GA32045@redhat.com> <1091736171.10552.26.camel@pc>
-	<20040805200857.GA28775@redhat.com>
+	<1091734482.10552.20.camel@pc> <20040805195248.GA32045@redhat.com>
+	<1091736171.10552.26.camel@pc> <20040805200857.GA28775@redhat.com>
+	<1091737170.10552.32.camel@pc>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0899179738=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040805200857.GA28775@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <1091737170.10552.32.camel@pc>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,72 +21,28 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Dave Jones <davej@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Brian J. Murrell" <brian@interlinx.bc.ca>
 Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
+On Thu, Aug 05, 2004 at 04:19:30PM -0400, Brian J. Murrell wrote:
 
---===============0899179738==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-uSJMAWu5EfqgfQ+W5qO7"
+ > Yeah, me too.  Any (one have any) idea how to calculate fsb for that
+ > sucker?
 
+Hunting for docs on developer.intel.com right now. So far I've turned
+up nothing useful. Can you edit pentium4_get_frequency() in arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
+so that before the switch (fsb_code) {   add a
+		printk ("FSB code = %d\n", fsb_code);
 
---=-uSJMAWu5EfqgfQ+W5qO7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hopefully, Intel are predictable and this is going to be '4'.
 
-On Thu, 2004-08-05 at 21:08 +0100, Dave Jones wrote:
-> Although that should have
-> triggered this message..
->=20
->     if (!fsb)
-> 	        printk(KERN_DEBUG "speedstep-lib: couldn't detect FSB speed. Ple=
-ase send an e-mail to <linux@brodo.de>\n");
+ > I may as well throw that code in there too to see if it
+ > alleviates the problem.
 
-At KERN_DEBUG though.  My /proc/sys/kernel/printk is at:
+reminds me, moving speedstep's dprintk over to the same style
+as longhaul/powernow-k7 should happen sometime, then it's just a
+module parameter away instead of a recompile.
 
-$ cat /proc/sys/kernel/printk
-6       4       1       7
-
-I don't recall how those 4 fields work.  Will I get KERN_DEBUG on the
-console with those settings?
-
-> Might be useful, though right now, my bets are on an unknown FSB.
-
-Yeah, me too.  Any (one have any) idea how to calculate fsb for that
-sucker?  I may as well throw that code in there too to see if it
-alleviates the problem.
-
-b.
-
-
---=-uSJMAWu5EfqgfQ+W5qO7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBBEpZSl3EQlGLyuXARAh8TAKCSpqUjiPiAf98wc6j1Gki5uNz64wCaA7Bg
-XGZmnlVN0xcnG4SkSxJh4Uk=
-=4Wge
------END PGP SIGNATURE-----
-
---=-uSJMAWu5EfqgfQ+W5qO7--
-
-
-
---===============0899179738==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---===============0899179738==--
-
-
+		Dave
