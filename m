@@ -1,10 +1,14 @@
-From: Harald Milz <milz@seneca.muc.de>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: Manual PST settings for "unrecognized CPUs"
-Date: Tue, 17 Aug 2004 08:26:34 +0200 (CEST)
+Date: Tue, 17 Aug 2004 10:08:26 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040817062634.6C2404BE94@nathan.muc.de>
+Message-ID: <20040817080826.GC29560@poupinou.org>
 References: <39e3484804081616133c2765ce@mail.gmail.com>
+	<20040817062634.6C2404BE94@nathan.muc.de>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040817062634.6C2404BE94@nathan.muc.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,30 +18,41 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Harald Milz <milz@seneca.muc.de>
+Cc: cpufreq@www.linux.org.uk
 
-GoatZilla <goatzilla@gmail.com> wrote:
-> I saw a patch fly by a short while ago where a user added some
-> settings for an unrecognized config.  Is this the only way to hack in
-> a PST?
+Hi (I'm back from very long vacation ;)
 
-Actually there were (at least) two patches - Bruno's patch which
-implemented additional /proc fs entries to send frequency settings to, and
-mine which uses command line parameters for the powernow-k7 module. You can
-find them in the ML archive. Internally, they do basically the same thing.
-Mine is a little inferior as far as sanity checks. But It Works For Me
-[TM]. 
+On Tue, Aug 17, 2004 at 08:26:34AM +0200, Harald Milz wrote:
+> GoatZilla <goatzilla@gmail.com> wrote:
+> > I saw a patch fly by a short while ago where a user added some
+> > settings for an unrecognized config.  Is this the only way to hack in
+> > a PST?
+> 
+> Actually there were (at least) two patches - Bruno's patch which
+> implemented additional /proc fs entries to send frequency settings to, and
+> mine which uses command line parameters for the powernow-k7 module. You can
+> find them in the ML archive. Internally, they do basically the same thing.
+> Mine is a little inferior as far as sanity checks. But It Works For Me
+> [TM]. 
+> 
+> Please be advised that you _could_ potentially fry your CPU if you use them
+> :-) But IMHO it's quite unlikely. 
+> 
+> What these patches can't do is set the VID on most (?) desktop boards
+> because of a lack of hardware support. But you should be able to lower the
+> FID to a certain extent, and the power consumption is linearly proportional
+> to the frequency, after all. 
 
-Please be advised that you _could_ potentially fry your CPU if you use them
-:-) But IMHO it's quite unlikely. 
+Mine is a little bit too old btw, and I guess yours should be used
+instead for now..
 
-What these patches can't do is set the VID on most (?) desktop boards
-because of a lack of hardware support. But you should be able to lower the
-FID to a certain extent, and the power consumption is linearly proportional
-to the frequency, after all. 
+Cheers,
 
 -- 
-"Proper Preparation Prevents Poor Performance."
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
