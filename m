@@ -1,13 +1,11 @@
-From: Luigi Belli <lbelli@crema.unimi.it>
-Subject: Re: Acer Aspire 1300 buggy BIOS - hardcoded patch
-Date: Tue, 1 Jul 2003 01:20:18 +0200
+From: Alex Young <a.d.y@btinternet.com>
+Subject: Acer Aspire 1300 buggy BIOS - hardcoded patch
+Date: Tue, 1 Jul 2003 01:44:37 +0100
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <200307010120.19091.lbelli@crema.unimi.it>
-References: <200306301436.29188.lbelli@crema.unimi.it> <20030701005946.5e659273.frx@firenze.linux.it>
+Message-ID: <200307010144.37902.a.d.y@btinternet.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030701005946.5e659273.frx@firenze.linux.it>
 Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,10 +19,34 @@ List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-On Tuesday 01 July 2003 12:59 am, Francesco Poli wrote:
+I have a similar problem with the bios of my sony vaio fx802. It has a mobile 
+athlonxp 1500+ and has the following output from powernow-k7.
 
-> Does anybody know a simple method to check if the BIOS is buggy or not?
+powernow: AMD K7 CPU detected.
+powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+powernow: Found PSB header at c00f74d0
+powernow: Table version: 0x12
+powernow: Flags: 0x0 (Mobile voltage regulator)
+powernow: Settling Time: 100 microseconds.
+powernow: Has 28 PST tables. (Only dumping ones relevant to this CPU).
+powernow: PST:26 (@c00f76ac)
+powernow:  cpuid: 0x780 fsb: 100        maxFID: 0x14    startvid: 0xe
+powernow:    FID: 0x4 (5.0x [500MHz])   VID: 0xe (1.300V)
+powernow:    FID: 0x8 (7.0x [700MHz])   VID: 0xe (1.300V)
+powernow:    FID: 0xc (9.0x [900MHz])   VID: 0xe (1.300V)
+powernow:    FID: 0x0 (11.0x [1100MHz]) VID: 0xe (1.300V)
+powernow:    FID: 0x14 (13.0x [1300MHz])        VID: 0xe (1.300V)
+powernow: Minimum speed 500 MHz. Maximum speed 1300 MHz.
 
-Well... simply look at syslog and see if the frequencies are correct... for my 
-BIOS my cpu has 5 steps: 4 at 500Mhz and 1 at 600Mhz, all at 1,4V.
-That's obviously wrong...
+Now my (possibly stupid) question is:
+Why are the frequency/voltage settings controlled by the bios?
+Surely these values are the same for all processors of the same speed and 
+stepping number. Would it not be possible to obtain the recommended values 
+directly from AMD and use them instead of the ones provided by the bios. Or 
+can the motherboard hardware only generate certain values? 
+
+Incidently does anybody have a athlonxp 1500+ with a 'correct' PST table? If 
+so does voltage scaling make any noticeable difference to temperature or 
+battery life?
+-- 
+Alex Young
