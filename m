@@ -1,14 +1,13 @@
 From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [ACPI] [PATCH] disable SMM access to SpeedStep using ACPI-FADT
-	pstate_cnt
-Date: Sun, 15 Feb 2004 15:54:07 +0100
+Subject: Re: Mobile Intel Pentium 4 + ICH5
+Date: Sun, 15 Feb 2004 15:58:36 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040215145407.GK13262@poupinou.org>
-References: <20040215105712.GB6105@dominikbrodowski.de>
+Message-ID: <20040215145836.GL13262@poupinou.org>
+References: <F760B14C9561B941B89469F59BA3A84702C932BE@orsmsx401.jf.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040215105712.GB6105@dominikbrodowski.de>
+In-Reply-To: <F760B14C9561B941B89469F59BA3A84702C932BE@orsmsx401.jf.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,26 +19,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: len.brown@intel.com, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+To: "Grover, Andrew" <andrew.grover@intel.com>
+Cc: cpufreq mailing list <cpufreq@www.linux.org.uk>
 
-On Sun, Feb 15, 2004 at 11:57:12AM +0100, Dominik Brodowski wrote:
-> Disable SMM access to SpeedStep
+On Fri, Feb 13, 2004 at 01:32:15PM -0800, Grover, Andrew wrote:
+> > > It's a Medion MD40100, for more info on it's internals check
+> > > http://home.conceptsfa.nl/~revdmeer/md40100/
+> > > 
+> > 
+> > Could you please send 'lspci -n' ?
+> > BTW, I don't see an ICH-5 mobile version on intel site yet ?
 > 
-> Often, the BIOS changes the CPU frequency if a notebook is (dis)connected
-> from its AC adapter. This interferes with a) an user setting the CPU frequency
-> and b) kernel timing code which needs to know loops_per_jiffy, cpu_khz etc.
+> ICH5 doesn't come in a mobile version. ICH6 will.
 > 
-> So, ACPI 2.0 offers a method to disable such BIOS changes -- writing
-> a value contained in the FADT (pstate_cnt) to the smi_cmd port. This patch
-> utilizes this method by doing this write in processor.c.
-> 
-> However, most current notebooks only offer 1.0 ACPI tables, where the
-> pstate_cnt entry is marked as "reserved". Whenever there is a _PCT entry
-> in the DSDT, though [and this is only a 2.0 object!], we assume the
-> "reserved" entry to be the pstate_cnt entry [if it isn't zero].
 
-I would prefer to name it 'take_ownership' or something like that.  I think
-this is the correct naming.
+Yes, that what I suspected unfortunately, and I hoped that the OP
+actually made a mistake (that's why I requested from him a lspci -n).
+
+So far, it seems that there are dummy OEMs that ship that chip in their
+mobile products :(
 
 -- 
 Bruno Ducrot
