@@ -1,43 +1,23 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: powernow-k8-acpi driver
-Date: Thu, 4 Mar 2004 00:45:53 +0100
+From: paul.devriendt@amd.com
+Subject: RE: powernow-k8-acpi driver
+Date: Wed, 3 Mar 2004 17:48:46 -0600
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040303234553.GJ222@elf.ucw.cz>
-References: <20040303215435.GA467@elf.ucw.cz> <20040303222712.GA16874@redhat.com> <20040303223510.GE222@elf.ucw.cz> <20040303224841.GB16874@redhat.com> <20040303231143.GH222@elf.ucw.cz> <20040303233939.GB18722@redhat.com>
+Message-ID: <99F2150714F93F448942F9A9F112634C109A392F@txexmtae.amd.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20040303233939.GB18722@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Cpufreq mailing list <cpufreq@www.linux.org.uk>, kernel list <linux-kernel@vger.kernel.org>, paul.devriendt@amd.com
+To: pavel@suse.cz, davej@redhat.com, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, davej@codemonkey.ork.uk
 
-Hi!
-
->  > Dave, could you apply these? That are cleanups from Paul's new version
->  > of driver (killed few unused defines, right names for MSR's
->  > (hopefully!), more linux-like comments). No code changes.
+>> you're aware of Dominik/Bruno's work on the 'acpilib'[1] stuff in this 
+>> area right ? We'll need that anyway for Powernow-k7 and maybe longhaul 
+>> too and its senseless duplicating this code.
 > 
-> Looks trivial enough. I just bounced it forward to Linus directly.
-> (I'm travelling this week, and bitkeeper on a laptop is unfunny)
+> That [1] looks like promise of url, but I don't see that url.
 
-:-)
+No, I am not aware of this, and I think Dominik is out for a few days.
+If there is some sort of library functionality I can use and eliminate
+code in the powernow-k8 driver, I will glad make the change to use it.
 
->  > - *   (c) 2003 Advanced Micro Devices, Inc.
->  > + *   (c) 2003, 2004 Advanced Micro Devices, Inc.
->  >   *  Your use of this code is subject to the terms and conditions of the
->  > - *  GNU general public license version 2. See "../../../COPYING" or
->  > + *  GNU general public license version 2. See "../../../../../COPYING" or
->  >   *  http://www.gnu.org/licenses/gpl.html
->  >   */
-> 
-> This bit seems really silly though, but thats just my opinion 8-)
-> I'd just kill the ../'s completely.
-
-Agreed, I assume AMD lawyers wanted that... If not, perhaps we can
-make it disappear.
-								Pavel
--- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+Paul.
