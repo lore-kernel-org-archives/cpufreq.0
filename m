@@ -1,14 +1,11 @@
-From: Matthias Hannich <dumb@tcpa-info.org>
-Subject: Re: Coppermine, cpufreq
-Date: Thu, 30 Oct 2003 22:08:47 +0100
+From: Fredrik =?iso-8859-1?Q?Sj=F6gren?= <d98-fsj@d.kth.se>
+Subject: Athlon XP 2000+ cpu freq scaling
+Date: Fri, 31 Oct 2003 00:06:31 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <3FA17DDF.5000600@tcpa-info.org>
-References: <3FA11700.8080908@tcpa-info.org>
-	<20031030140910.GH28351@poupinou.org>
+Message-ID: <20031030230631.GM17964@britney>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <20031030140910.GH28351@poupinou.org>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,42 +15,65 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Am 10/30/2003 03:09 PM schrieb Ducrot Bruno:
-> What about a
-> modprobe speedstep-ich
-> instead of insmod?
+Hi!
 
-root:/# modprobe speedstep-ich
-/lib/modules/2.4.22-ac4-486/kernel/arch/i386/kernel/speedstep-ich.o:=20
-init_module: No such device
-Hint: insmod errors can be caused by incorrect module parameters,=20
-including invalid IO or IRQ parameters.
-       You may find more information in syslog or the output from dmesg=20
-(can't find anything there)
+I have an Athlon XP2000+ and I want to make it possible to lower the
+freq in software.
 
-/lib/modules/2.4.22-ac4-486/kernel/arch/i386/kernel/speedstep-ich.o:=20
-insmod=20
-/lib/modules/2.4.22-ac4-486/kernel/arch/i386/kernel/speedstep-ich.o faile=
-d
-/lib/modules/2.4.22-ac4-486/kernel/arch/i386/kernel/speedstep-ich.o:=20
-insmod speedstep-ich failed
+I installed the 2.4.22 kernel with ac4 patch and enabled:
 
-> PS: If modprobe speedstep-ich still  do not work
-> modpbore speedstep-lib
+[*] CPU Frequency scaling
+[*]  CPU frequency table helpers
+--- CPUFreq governors
+[*]  "userspace" for userspace frequency scaling
+--- CPUFreq processor drivers
+<*>  AMD Mobile Athlon/Duron K7 PowerNow! 
 
-No error messages.
+The kernel boots fine but when I do:
 
-> modprobe speedstep-ich
+# cat /proc/cpufreq 
+   minimum CPU frequency  -  maximum CPU frequency  -  policy
 
-The same as above.
+Shouldn't say some frequencys like?
 
-Thanks, Matthias
---=20
-Freundliche Gr=FC=DFe,          ###  http://www.stop1984.com
-Matthias Hannich            ###  nulli@stop1984.com
-                             ###  KeyID: 407A2F69
-Fingerprint: 600D 7E07 105C F674 0C4B  12C2 4DE4 A8DF 407A 2F69
+        minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0       500000 kHz ( 41 %)  -    1200000 kHz (100 %)  -  performance
+
+
+Info about my cpu:
+
+# cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 6
+model           : 8
+model name      : AMD Athlon(tm) XP 1700+
+stepping        : 0
+cpu MHz         : 1488.804
+cache size      : 256 KB
+physical id     : 0
+siblings        : 1
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow
+bogomips        : 2968.78
+
+(Currently it's under clocked but I have tested with it at 2000+ mode)
+
+
+Have I missed something in the kernel?
+
+Please help.
+
+Regards
+Fredrik
