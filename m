@@ -1,14 +1,12 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Bug#271396: Kernel help typo
-Date: Tue, 14 Sep 2004 16:10:44 +0100
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: [2.6.9-rc2] ondemand governor not working
+Date: Wed, 15 Sep 2004 18:32:54 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040914151043.GD13788@redhat.com>
-References: <20040912233809.GA4739@nermel> <20040913211011.GB1978@stro.at>
-	<20040914141117.GZ642@parcelfarce.linux.theplanet.co.uk>
+Message-ID: <20040915163254.GA6657@dreamland.darkstar.lan>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040914141117.GZ642@parcelfarce.linux.theplanet.co.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,25 +18,59 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Wilcox <willy@debian.org>
-Cc: davej@codemonkey.org.uk, maks attems <janitor@sternwelten.at>, 271396@bugs.debian.org, Gavin Sandie <beach@vicecity.co.uk>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Tue, Sep 14, 2004 at 03:11:17PM +0100, Matthew Wilcox wrote:
- > On Mon, Sep 13, 2004 at 11:10:11PM +0200, maks attems wrote:
- > >  	  Use the CPUFreq governor 'userspace' as default. This allows
- > >  	  you to set the CPU frequency manually or when an userspace 
- > > -	  programm shall be able to set the CPU dynamically without having
- > > +	  programme shall be able to set the CPU dynamically without having
- > >  	  to enable the userspace governor manually.
- > 
- > In British English, "programme" refers to a television
- > schedule, "program" refers to something a computer runs, see:
- > http://www.chambersharrap.co.uk/chambers/chref/chref.py/main?query=programme&title=21st
- > 
- > Americans use "program" for everything, so using programme here is wrong
- > for everyone ;-)
+Hi,
+I just tried 2.6.9-rc2 and found out that ondemand governor is not
+working. Sampling rate is set to zero:
 
-'program' is what I plumped for too, and thats whats currently
-in cpufreq-bk.
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate
+0
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate_max
+0
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate_min
+0
 
-		Dave
+This is what I've found out: powernow-k7 sets transition_latency to a
+very low value:
+
+powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+powernow: FSB: 133.902 MHz
+powernow: Found PSB header at c00f0320
+powernow: Table version: 0x12
+powernow: Flags: 0x0 (Mobile voltage regulator)
+powernow: Settling Time: 100 microseconds.
+powernow: Has 1 PST tables. (Only dumping ones relevant to this CPU).
+powernow: PST:0 (@c00f0330)
+powernow:  cpuid: 0x7a0  fsb: 133  maxFID: 0x16  startvid: 0xb
+powernow:    FID: 0x12 (4.0x [535MHz])  VID: 0x13 (1.200V)
+powernow:    FID: 0x6 (6.0x [803MHz])  VID: 0x13 (1.200V)
+powernow:    FID: 0xa (8.0x [1071MHz])  VID: 0x13 (1.200V)
+powernow:    FID: 0xe (10.0x [1339MHz])  VID: 0xe (1.300V)
+powernow:    FID: 0x2 (12.0x [1606MHz])  VID: 0xc (1.400V)
+powernow:    FID: 0x16 (14.0x [1874MHz])  VID: 0xb (1.450V)
+powernow: SGTC: 13333
+powernow: Minimum speed 535 MHz. Maximum speed 1874 MHz.
+
+powernow-k7.c:637:
+
+policy->cpuinfo.transition_latency = 20 * latency / fsb;
+
+transition_latency = 20 * 13333 / 133902 = (int)1.99 = 1
+        
+Since transition_latency is expressed in ns it seems to me a bit low,
+maybe it should be 1ms?
+
+The ondemand governor then does this:
+
+cpufreq_ondemand.c:350
+def_sampling_rate = (policy->cpuinfo.transition_latency / 1000) *
+                                        DEF_SAMPLING_RATE_LATENCY_MULTIPLIER;
+
+transition_latency / 1000 is clearly zero.
+
+Luca
+-- 
+Home: http://kronoz.cjb.net
+"La Via prosegue senza fine."
+	Bilbo Baggins - Il Signore degli Anelli - J.R.R. Tolkien
