@@ -1,16 +1,16 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
-Date: Tue, 31 Aug 2004 23:23:58 +0100
+From: Zwane Mwaikambo <zwane@linuxpower.ca>
+Subject: Re: [PATCH] Hotplug cpu: fix p4-clockmod
+Date: Wed, 1 Sep 2004 12:18:17 -0400 (EDT)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040831222358.GA19600@redhat.com>
-References: <20040829124936.GA16770@dominikbrodowski.de>
-	<20040830152954.A22480@flint.arm.linux.org.uk>
-	<20040830150831.GA9380@dominikbrodowski.de>
-	<20040830171607.C22480@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.58.0409011215110.4378@montezuma.fsmlabs.com>
+References: <20040829125717.GA17032@dominikbrodowski.de>
+	<Pine.LNX.4.58.0408301214120.21527@montezuma.fsmlabs.com>
+	<20040830200407.GB8563@dominikbrodowski.de>
+	<Pine.LNX.4.58.0408301735320.21527@montezuma.fsmlabs.com>
+	<20040830214707.GA9324@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040830171607.C22480@flint.arm.linux.org.uk>
+In-Reply-To: <20040830214707.GA9324@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,27 +20,25 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: CPU Freq ML <cpufreq@www.linux.org.uk>
 
-On Mon, Aug 30, 2004 at 05:16:07PM +0100, Russell King wrote:
- > On Mon, Aug 30, 2004 at 05:08:31PM +0200, Dominik Brodowski wrote:
- > > On Mon, Aug 30, 2004 at 03:29:54PM +0100, Russell King wrote:
- > > > Obviously given this information, this flag needs to be removed from ARM.
- > > > If ARM is the only user, then the flag and associated code needs to be
- > > > completely removed.
- > > 
- > > Who shall "push" this patch upstreams? Dave or Russell?
- > 
- > The patch looks good, thanks.
- > 
- > I think Dave would be better - Dave has been pushing most cpufreq stuff
- > to Linus anyway.  Since this is a bug fix rather than a feature, it's
- > definite 2.6.9-rc material.
+On Mon, 30 Aug 2004, Dominik Brodowski wrote:
 
-Merged. I've a handful of other small bits I'm about to merge,
-and then I'll send Linus a pull request tonight. Should make it in for -rc2
-unless Linus surprises me 8-).
+> Why? If the CPU is removed [and thus removed from the online map] the device
+> disappears from the kernel's perspective -- so there's no room for the
+> /sys/devices/system/cpu/cpuX/ kobject.
 
-		Dave
+It hasn't disappeared as a device, only that the processor will not
+participate in a number of kernel processes. The kobject has to also stay
+around so that we can online it again.
+
+> While it is short for p4-clockmod, it isn't sufficiently short for
+> powernow-k8.
+
+Yeah we'll have to go case by case.
+
+Thanks,
+	Zwane
