@@ -1,23 +1,20 @@
-From: Francesco Poli <frx@firenze.linux.it>
-Subject: Re: Help with Installation
-Date: Wed, 7 Apr 2004 22:26:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: powernow-k8: support acpi
+Date: Thu, 8 Apr 2004 15:11:42 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040407222621.090a0378.frx@firenze.linux.it>
-References: <20040403171633.610cc960.frx@firenze.linux.it>
-	<200404031342.34522.ozeki@simnet.is>
-	<20040403145045.GV19001@poupinou.org>
-	<20040403171633.610cc960.frx@firenze.linux.it>
-	<20040403172242.D5553@flint.arm.linux.org.uk>
-	<20040404195730.6fac6745.frx@firenze.linux.it>
-	<20040404211144.GA9552@dominikbrodowski.de>
-	<20040405222015.4a560be1.frx@firenze.linux.it>
-	<20040405220654.D17303@flint.arm.linux.org.uk>
-	<20040406230134.01c2e4b3.frx@firenze.linux.it>
-	<20040407081133.B2196@flint.arm.linux.org.uk>
+Message-ID: <20040408131142.GA468@openzaurus.ucw.cz>
+References: <99F2150714F93F448942F9A9F112634C1163C8D7@txexmtae.amd.com>
+	<20040321185417.GA7969@dominikbrodowski.de>
+	<20040326122931.GA321@elf.ucw.cz>
+	<20040401235635.GA25744@redhat.com>
+	<20040402162447.GP19001@poupinou.org>
+	<20040402163902.GC5688@redhat.com>
+	<20040402170926.GA289@elf.ucw.cz>
+	<20040406130730.GA5133@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1846718619=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040407081133.B2196@flint.arm.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040406130730.GA5133@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -27,68 +24,41 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: cpufreq@www.linux.org.uk
-
---===============1846718619==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="pgp-sha1";
-	boundary="Signature=_Wed__7_Apr_2004_22_26_21_+0200_YI4q32xX97N+ccSk"
-
---Signature=_Wed__7_Apr_2004_22_26_21_+0200_YI4q32xX97N+ccSk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On Wed, 7 Apr 2004 08:11:33 +0100 Russell King wrote:
-
-> > Wouldn't some shell commands like
-> > 
-> >   tar xzvfp cpufreq-...tar.gz
-> >   cd cpufreq
-> >   ./patchin.sh /path/to/kernel/sources
-> > 
-> > suffice?
-> > I am quoting Bruno Ducrot's instructions... but maybe I don't catch
-> > something important...
-> 
-> That assumes that the CVS has been kept up to date with the latest 2.4
-> kernel.
-
-I see: so some manual adjustments could be necessary and that is why you
-said this should be a manual operation.
-
-TNX for the explanation!
-
--- 
-             |  GnuPG Key ID = DD6DFCF4 | You're compiling a program
-  Francesco  |        Key fingerprint = | and, all of a sudden, boom!
-     Poli    | C979 F34B 27CE 5CD8 DC12 |         -- from APT HOWTO,
-             | 31B5 78F4 279B DD6D FCF4 |             version 1.8.0
-
---Signature=_Wed__7_Apr_2004_22_26_21_+0200_YI4q32xX97N+ccSk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAdGPzePQnm91t/PQRAutLAJ9hkXp4ZueCyrWWzlMnFrN4hT4l1QCgqeBu
-MpdXG2xVsWXrOpAFP5zzzN0=
-=s2zS
------END PGP SIGNATURE-----
-
---Signature=_Wed__7_Apr_2004_22_26_21_+0200_YI4q32xX97N+ccSk--
-
-
---===============1846718619==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Dave Jones <davej@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, Bruno Ducrot <ducrot@poupinou.org>, mark.langsdorf@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>, Pavel Machek <pavel@ucw.cz>, paul.devriendt@amd.com, Dominik Brodowski <linux@dominikbrodowski.de>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Hi!
 
---===============1846718619==--
+>  > > I'm about to disappear for a day or two. I'll look into integrating whats
+>  > > outstanding on Sunday.  Pavel, if you have time between now and then
+>  > > to do a diff of whats remaining between your tree and the driver I posted
+>  > > this afternoon, that would make my life a little easier.
+>  > 
+>  > Here it is: (I was not able to locate your changes, so it is possible
+>  > I'm reverting some of those; but few extra inlines should not hurt
+>  > that bad :-).
+> 
+> Ok, the merge-from-hell is complete (split up into 23 csets).
+> The only diffs between your tree and mine should now be trivial
+> whitespace changes, and some small bits that looked bogus.
 
+Nice job! I thought it is impossible to split at all.
+
+> One thing outstanding that probably does need fixing. Andi Kleen
+> mentioned on IRC yesterday ..
+> 
+> <f> found a funny bug in the powernow-k8 acpi changes
+> <f> when  acpi is disabled processor.ko won't load, but the new module needs symbols from that
+> <f> i added a hack to keep it loaded anyways
+
+I thought about it... Would it be fair to make ACPI support
+in powernow-k8 depend on ACPI_PROCESSOR=y?
+
+We used to have no ACPI support at all, so it still would be strict improvement
+(and unlike other solutions it is one-liner).
+
+				Pavel 
+-- 
+64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
