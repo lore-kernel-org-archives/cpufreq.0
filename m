@@ -1,8 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] fix speedstep-centrino latency
-Date: Mon, 10 May 2004 14:11:28 +0200
+Subject: [PATCH] update lost-ticks handling
+Date: Mon, 10 May 2004 14:11:30 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040510121128.GA16913@dominikbrodowski.de>
+Message-ID: <20040510121130.GB16913@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -19,20 +19,47 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-Latency is in nanoseconds -- speedstep-centrino got it wrong
+Avoid scheduling cpufreq_delayed_get_work() twice; but do call it a bit
+earlier.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-05-10 09:19:19.080481464 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-05-10 09:19:30.106805208 +0200
-@@ -431,7 +431,7 @@
- 	freq = get_cur_freq(0);
+diff -ruN linux-original/arch/i386/kernel/timers/timer_tsc.c linux/arch/i386/kernel/timers/timer_tsc.c
+--- linux-original/arch/i386/kernel/timers/timer_tsc.c	2004-05-10 09:19:19.126474472 +0200
++++ linux/arch/i386/kernel/timers/timer_tsc.c	2004-05-10 09:32:27.629603776 +0200
+@@ -244,7 +244,7 @@
+ 			clock_fallback();
+ 		}
+ 		/* ... but give the TSC a fair chance */
+-		if (lost_count == 50)
++		if (lost_count > 25)
+ 			cpufreq_delayed_get();
+ 	} else
+ 		lost_count = 0;
+@@ -331,6 +331,7 @@
+ #ifdef CONFIG_CPU_FREQ
+ #include <linux/workqueue.h>
  
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
--	policy->cpuinfo.transition_latency = 10; /* 10uS transition latency */
-+	policy->cpuinfo.transition_latency = 10000; /* 10uS transition latency */
- 	policy->cur = freq;
++static unsigned int cpufreq_delayed_issched = 0;
+ static unsigned int cpufreq_init = 0;
+ static struct work_struct cpufreq_delayed_get_work;
  
- 	dprintk(KERN_INFO PFX "centrino_cpu_init: policy=%d cur=%dkHz\n",
+@@ -340,6 +341,7 @@
+ 	for_each_online_cpu(cpu) {
+ 		cpufreq_get(cpu);
+ 	}
++	cpufreq_delayed_issched = 0;
+ }
+ 
+ /* if we notice lost ticks, schedule a call to cpufreq_get() as it tries
+@@ -348,8 +350,11 @@
+  */
+ static inline void cpufreq_delayed_get(void) 
+ {
+-	if (cpufreq_init)
++	if (cpufreq_init && !cpufreq_delayed_issched) {
++		cpufreq_delayed_issched = 1;
++		printk(KERN_DEBUG "Losing some ticks... checking if CPU frequency changed.\n");
+ 		schedule_work(&cpufreq_delayed_get_work);
++	}
+ }
+ 
+ /* If the CPU frequency is scaled, TSC-based delays will need a different
