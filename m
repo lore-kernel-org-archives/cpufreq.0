@@ -1,14 +1,11 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: Cpufreq hang
-Date: Wed, 16 Jul 2003 20:33:20 +0200
+From: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
+Subject: PST tables and Sonys Bios
+Date: Thu, 17 Jul 2003 09:31:15 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030716183320.GB629@inferi.kami.home>
-References: <Pine.LNX.4.53.0307161622300.30690@h192n1fls22o1048.telia.com> <20030716145325.GC632@inferi.kami.home> <Pine.LNX.4.53.0307161929430.30922@h192n1fls22o1048.telia.com>
-Reply-To: dongili@supereva.it
+Message-ID: <3F1650C3.1030903@searchbroker.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.53.0307161929430.30922@h192n1fls22o1048.telia.com>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,26 +15,45 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
 
-On Wed, Jul 16, 2003 at 07:53:44PM +0200, Johan Braennlund wrote:
-> 
-> On Wed, 16 Jul 2003, Mattia Dongili wrote:
-> 
-> > can you write directly to /proc/cpufreq without using the daemon?
-> > eg:
-> > echo "0%0%100%performance" > /proc/cpufreq
-> 
-> That works, but if I substitute "powersave" for "performance" the system
-> hangs. In fact, I tried various changes in the above and anything with
-> "performance" works and anything with "powersave" hangs. The kernel I'm
-> using is 2.5.74-mm1, but I've seen cpufreqd hang on other recent 2.5
-> kernels as well, so I imagine the situation would be the same there.
+Hi developer and user,
 
-so it's most probably a driver issue, anybody from the gurus?
+Sony Bios (and the PST tables) maybe don't like the powernow feature, 
+because yesterday I have updated my FX705 from Bios (R0117K5) to the 
+latest one (R0121K5) and then I dump all PST tables (with powernow 
+infos) and found that they do not fix the "PST:26" for my CPU (all VIDs 
+are 1.3V), no they change the correct (?) "PST:27" (maybe for the 1600+) 
+from:
 
--- 
-mattia
-:wq!
+ PST:27 (@0x401906ce)
+  cpuid: 0x780    fsb: 100        maxFID: 0x16    startvid: 0x11
+  num of p states in this table: 6
+    FID: 0x4 (5.0x [500MHz])    VID: 0x19 (1.050V)
+    FID: 0x6 (6.0x [600MHz])    VID: 0x19 (1.050V)
+    FID: 0x8 (7.0x [700MHz])    VID: 0x19 (1.050V)
+    FID: 0xc (9.0x [900MHz])    VID: 0x19 (1.050V)
+    FID: 0x0 (11.0x [1100MHz])  VID: 0x15 (1.150V)
+    FID: 0x16 (14.0x [1400MHz]) VID: 0xe (1.300V)
+
+to:
+
+ PST:27 (@0x401906be)
+  cpuid: 0x780    fsb: 100        maxFID: 0x16    startvid: 0xe
+  num of p states in this table: 6
+    FID: 0x4 (5.0x [500MHz])    VID: 0xe (1.300V)
+    FID: 0x6 (6.0x [600MHz])    VID: 0xe (1.300V)
+    FID: 0xa (8.0x [800MHz])    VID: 0xe (1.300V)
+    FID: 0xe (10.0x [1000MHz])  VID: 0xe (1.300V)
+    FID: 0x2 (12.0x [1200MHz])  VID: 0xe (1.300V)
+    FID: 0x16 (14.0x [1400MHz]) VID: 0xe (1.300V)
+
+Now the VIDs for this cpu are also all 1.3V :-(
+
+Is there a chance to include a fix in the powernow-k7 code "for broken 
+PST tables" or should everybody make it's own patch like "Luigi Belli" 
+in "Acer Aspire 1300 buggy BIOS - hardcoded patch" 
+(http://www.linux.org.uk/mailman/private/cpufreq/2003-June/002171.html)?
+
+Ciao Lars
