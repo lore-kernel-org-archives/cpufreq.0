@@ -1,14 +1,13 @@
-From: Georg Sauthoff <g_sauthoff@web.de>
-Subject: Re: Pentium M and 2.4. kernel: does not work
-Date: Sat, 16 Aug 2003 10:28:50 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: powernow-k7, something broke in -test3?
+Date: Sat, 16 Aug 2003 14:59:22 +0100
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <200308161028.50976.g_sauthoff@web.de>
-References: <200308160043.30649.g_sauthoff@web.de> <20030815213028.GB1738@brodo.de>
+Message-ID: <20030816135922.GQ22433@redhat.com>
+References: <Pine.LNX.4.44.0308102141570.4848-100000@pianoman.cluster.toy> <Pine.LNX.4.44.0308160115110.27055-100000@pianoman.cluster.toy>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030815213028.GB1738@brodo.de>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0308160115110.27055-100000@pianoman.cluster.toy>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,30 +18,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: John Clemens <john@deater.net>
+Cc: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
-On Friday 15 August 2003 23:30, Dominik Brodowski wrote:
-> That's not a bug, it's a feature. If you want to set the CPU frequency
-> manually, you need to enable this "governor" first. [Other "governors" set
-> to lowest and highest speed permanently (powersave/performance), and there
-> could be many more such "governors" which adapt the CPU frequency to
-> current system load etc. These only need to be written....]
+On Sat, Aug 16, 2003 at 01:24:58AM -0400, John Clemens wrote:
+ > 
+ > Hi Dave,
+ > 
+ > The following patch corrects a minor think-o in your powernow-k7 changes
+ > that went into 2.6.0-test3, and was causing the behavior below.  I don't
+ > think you meant to cache the cfid value before you actually read it in :)
+ > this was causing all speed notifications to think my previous multiplier
+ > was fid_codes[0] (11.0x), and thus screws up loops_per_jiffy, etc..
 
-Ok, I did not do RTMF enough I think ...
+oh boy, how dumb am I.
+Thanks, applied and pushed for 2.6-test4
 
-> So,
-> # echo -n "0%0%100%userspace" > /proc/cpufreq
-             ^^^^^^^^ What does this mean?
+		Dave
 
-> first, then you can use the
-> /proc/sys/cpu/0/speed
-> file to set the CPU speed manually.
-
-Hm, unfortunetly after I set the userspace governor (like above) the 
-/proc/sys/cpu/0/s* gives me 0 again ...
-
-In the kernel logs I don't see any messages from cpufreq. Ok, after a very 
-quick look at the patch sources I don't see printk's there, too.
-
-Regards
-Georg Sauthoff
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
