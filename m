@@ -1,13 +1,18 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: hid-core and cpufreq conflicts
-Date: Sun, 16 May 2004 12:18:21 +0200
+From: Rutger Nijlunsing <rutger.nijlunsing@nospam.com>
+Subject: Re: cpufreq and p4 prescott
+Date: Sun, 16 May 2004 15:20:20 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040516101821.GA8762@dominikbrodowski.de>
-References: <200405160201.38892.jeff@hagen.org>
+Message-ID: <20040516132020.GA14608@nospam.com>
+References: <20040513173946.GA8238@dominikbrodowski.de>
+	<20040514214751.GA8433@nospam.com>
+	<20040515064434.GB8572@dominikbrodowski.de>
+	<20040515105200.GA8095@nospam.com>
+	<20040515194124.GA8212@dominikbrodowski.de>
+Reply-To: linux-kernel@tux.tmfweb.nl
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200405160201.38892.jeff@hagen.org>
+In-Reply-To: <20040515194124.GA8212@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,38 +24,42 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeff Hagen <jeff@hagen.org>
-Cc: cpufreq@www.linux.org.uk, linux-usb-users@lists.sourceforge.net
+To: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, moqua@kurtenba.ch
 
-Hi,
+> > The only thing I could find in Intel's documentation is the max. time
+> > of throttling is 3 microseconds (p.67; 5.2.1 of Prescott
+> > datasheet). So this 3 microseconds should correspond to 5600 ticks or
+> > so...
+> 
+> Can't find it in the datasheets right now, but did find an interesting
+> comment in section 13.15.3 of 24547212.pdf which explains the strange
+> behaviour we're seeing.
 
-On Sun, May 16, 2004 at 02:01:38AM -0700, Jeff Hagen wrote:
-> I have also noticed that the frequency of the processor will not scale below 
-> 1196mhz (processor is a 2.0ghz P4 mobile) when ehci_hcd is loaded, but it 
-> will scale all the way down to 130mhz when this module is not loaded...
+Hm, 13.16.3 in my version, but indeed: all logical processors should
+be put asleep in the same way ;)
 
-If it's a P4 mobile, you should use either the acpi module or the
-speedstep-ich module for frequency scaling, not p4-clockmod for frequency
-throttling. Scaling down to 130Mhz sound strange anyway...
+> 
+> > I know this is not P4 specific, but motherboard specific, but do
+> > you know of modules which use motherboard specific knowledge to scale
+> > the processor?
+> No.
+> > If the BIOS can do it, so should we be able to do it.
+> 
+> Dynamic frequency scaling is (probably) way different from setting a
+> frequency at boot (which is what the BIOS does). Timing issues, settling
+> times, etc. are way too complicated, AFAICS. Even trying to do this might
+> result in severe non-recoverable hardware failures.
 
-> Any ideas on what may be causing the problems?
-p4clockmod may interfere with latencies as the CPU is stopped for short
-periods of time. Maybe I should change arch/i386/kernel/cpu/cpufreq/Kconfig
-to
+Probably true for some motherboards, but Asus got a WinXP program
+called 'AiBooster' which is a program to under/overclock from -50% to
++33% runtime (butt-ugly UI can be seen in
+http://www.asuscom.de/pub/ASUS/mb/sock478/p4p800/AIBooster_u.pdf). Could
+Wine be used (given the right permissions) to run or disect such a
+utility to make underclocking reality under Linux?
 
+*hopeful* Or has Asus released the specification of its motherboard?
 
-config P4CLOCKMOD_ENABLE
-bool "p4-clockmod"
-	help
-	Are you really sure you want to compile the p4-clockmod driver
-	which in most cases does really nothing besides causing pain?
-
-config P4CLOCKMOD_REALLY_ENABLE
-bool "really p4-clockmod?"
-depends on P4CLOCKMOD_ENABLE
-	help
-	Have you really thought about it?
-
-
-
-	Dominik
+-- 
+Rutger Nijlunsing ---------------------------- rutger ed tux tmfweb nl
+never attribute to a conspiracy which can be explained by incompetence
+----------------------------------------------------------------------
