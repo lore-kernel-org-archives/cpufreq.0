@@ -1,15 +1,16 @@
-From: Arjan van de Ven <arjanv@redhat.com>
+From: Mattia Dongili <dongili@supereva.it>
 Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
 	P-state driver
-Date: Tue, 21 Oct 2003 10:38:53 +0200
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <1066725533.5237.3.camel@laptop.fenrus.com>
+Date: Tue, 21 Oct 2003 11:59:26 +0200
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031021095925.GB893@inferi.kami.home>
 References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
-Reply-To: arjanv@redhat.com
+	<1066725533.5237.3.camel@laptop.fenrus.com>
+Reply-To: dongili@supereva.it
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6124666445396576=="
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
+Content-Type: multipart/mixed; boundary="===============397080249422608=="
+Return-path: <cpufreq-bounces@www.linux.org.uk>
+In-Reply-To: <1066725533.5237.3.camel@laptop.fenrus.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,56 +19,61 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>, "Mallick,
-	Asit K" <asit.k.mallick@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+Errors-To: cpufreq-bounces@www.linux.org.uk
+To: cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
 
 
---===============6124666445396576==
+--===============397080249422608==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-S/VVdAcv/ouC+l4UsFx7"
+	protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
+Content-Disposition: inline
 
 
---=-S/VVdAcv/ouC+l4UsFx7
-Content-Type: text/plain
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2003-10-21 at 04:56, Pallipadi, Venkatesh wrote:
-> Patch 3/3: New dynamic cpufreq driver (called=20
-> DemandBasedSwitch driver), which periodically monitors CPU=20
-> usage and changes the CPU frequency based on the demand.
+On Tue, Oct 21, 2003 at 10:38:53AM +0200, Arjan van de Ven wrote:
+> On Tue, 2003-10-21 at 04:56, Pallipadi, Venkatesh wrote:
+> > Patch 3/3: New dynamic cpufreq driver (called=20
+> > DemandBasedSwitch driver), which periodically monitors CPU=20
+> > usage and changes the CPU frequency based on the demand.
+>=20
+>=20
+> it's all nice code and such, but I still wonder why this can't be done
+> by a userland policy daemon. The 2.6 kernel has the infrastructure to
+> give very detailed information to userspace (eg top etc) about idle
+> percentages...... I didn't see anything in this driver that couldn't be
+> done from userspace.
 
+I remember Linus forcing a kernel only policy management:
+http://www.linux.org.uk/mailman/private/cpufreq/2002-August/000865.html
 
-it's all nice code and such, but I still wonder why this can't be done
-by a userland policy daemon. The 2.6 kernel has the infrastructure to
-give very detailed information to userspace (eg top etc) about idle
-percentages...... I didn't see anything in this driver that couldn't be
-done from userspace.
+Also: I think the userspace governor is a workaround to allow userspace
+policies.
 
-Note that I'm not totally against doing some of this in the kernel; I
-can well see the point of say, detecting an IRQ overload and based on
-that, go to max speed in the kernel because it's a situation where
-userspace doesn't even run; but the patch as is doesn't do any such
-advanced things...
+ciao
+--=20
+mattia
+:wq!
 
---=-S/VVdAcv/ouC+l4UsFx7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--XsQoSWH+UP9D9v3l
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.2 (GNU/Linux)
+Version: GnuPG v1.2.3 (GNU/Linux)
 
-iD8DBQA/lPCdxULwo51rQBIRAv5VAJwMsnktwQ29tXjQfg4ErZ8/A74VyACfWT2O
-QCHHEyS3+KWp8/0icuBvGjk=
-=BS2i
+iD8DBQE/lQN9gpRPaOotLEERAhR0AKCLhO55PN1PjYprhSNcct/Afz8B0ACeKjJO
+P+WoP9/yb1+VAErXh03ShN8=
+=Zi7R
 -----END PGP SIGNATURE-----
 
---=-S/VVdAcv/ouC+l4UsFx7--
+--XsQoSWH+UP9D9v3l--
 
 
---===============6124666445396576==
+--===============397080249422608==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -78,5 +84,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============6124666445396576==--
+--===============397080249422608==--
 
