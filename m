@@ -1,10 +1,12 @@
 From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: [PATCH] [RFC] [0/2] powernow-k7.  Recalibrate cpu_khz
-Date: Thu, 18 Nov 2004 17:10:34 +0100
-Message-ID: <20041118161034.GA31422@poupinou.org>
+Subject: [PATCH] [RFC] [2/2] powernow-k7.  Recalibrate cpu_khz.
+Date: Thu, 18 Nov 2004 17:12:58 +0100
+Message-ID: <20041118161258.GC31422@poupinou.org>
+References: <20041118161034.GA31422@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20041118161034.GA31422@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,23 +21,44 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hi,
+We have to recalibrate cpu_khz in order to use the current FID instead the
+max FID since some BIOS do not put the processor at maximum frequency at POST.
+Also, some BIOS will change the processor frequency at our back after cpu_khz
+was calibrate.  Finally, this will fix a long standing bug when we do something
+like this:
+# rmmod powernow-k7
+# modprobe powernow-k7
 
-Here come two patches in order to fix some issues with powernow-k7.
+Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
 
-The main trouble is that we can't rely on cpu_khz when that one is
-computed at boot time.  AMD will require that the CPU will be at max
-frequencies, but some BIOS do not respect this.  More, the BIOS is only
-required to change the frequency of the processor, but only at POST
-time.  Some BIOS also do not follow this rule, so that even if the
-processor is at full speed at POST, it may decide (probably after
-switching to ACPI or APM mode?) to switch to another frequency.
+ arch/i386/kernel/cpu/cpufreq/powernow-k7.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-The only workaround for this two kind of bugs I see is to recalibrate
-cpu_khz, but this require discussions with other people, I guess.  The
-second patch will be the powernow-k7 portion.
-
-Cheers,
+--- linux-2.6.10-rc2/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004/11/18 13:32:09	1.1
++++ linux-2.6.10-rc2/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004/11/18 15:24:01
+@@ -23,6 +23,7 @@
+ #include <linux/dmi.h>
+ 
+ #include <asm/msr.h>
++#include <asm/timer.h>
+ #include <asm/timex.h>
+ #include <asm/io.h>
+ #include <asm/system.h>
+@@ -586,8 +587,12 @@ static int __init powernow_cpu_init (str
+ 
+ 	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
+ 
+-	/* A K7 with powernow technology is set to max frequency by BIOS */
+-	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
++	/* We have to recalibrate cpu_khz unfortunately */
++	result = recalibrate_cpu_khz();
++	if (result)
++		return result;
++
++	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.CFID];
+ 	if (!fsb) {
+ 		printk(KERN_WARNING PFX "can not determine bus frequency\n");
+ 		return -EINVAL;
 
 -- 
 Bruno Ducrot
