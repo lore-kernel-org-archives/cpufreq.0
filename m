@@ -1,18 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: powernow-k8, more updates
-Date: Thu, 18 Mar 2004 23:33:37 +0100
+From: Todd Poynor <tpoynor@mvista.com>
+Subject: Re: add lowpower_idle sysctl
+Date: Thu, 18 Mar 2004 14:59:54 -0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040318223337.GA1532@elf.ucw.cz>
-References: <99F2150714F93F448942F9A9F112634C1126A014@txexmtae.amd.com>
-	<20040317100745.GA15284@dominikbrodowski.de>
-	<20040317120409.GA482@elf.ucw.cz>
-	<20040317124432.GA7426@dominikbrodowski.de>
-	<20040317195015.GA287@elf.ucw.cz>
-	<20040317202541.GA7101@dominikbrodowski.de>
+Message-ID: <405A29EA.6000400@mvista.com>
+References: <20040317170436.430acfbe.akpm@osdl.org>	<200403180318.i2I3IDF03166@unix-os.sc.intel.com>	<20040317192821.1fe90f24.akpm@osdl.org>
+	<Pine.LNX.4.58.0403172237470.28447@montezuma.fsmlabs.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040317202541.GA7101@dominikbrodowski.de>
+In-Reply-To: <Pine.LNX.4.58.0403172237470.28447@montezuma.fsmlabs.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,23 +18,24 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: paul.devriendt@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Zwane Mwaikambo <zwane@linuxpower.ca>
+Cc: Andrew Morton <akpm@osdl.org>, Kenneth Chen <kenneth.w.chen@intel.com>, linux-ia64@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, CPU Freq ML <cpufreq@www.linux.org.uk>
 
-Hi!
+Zwane Mwaikambo wrote:
 
-> > > can we change this to dprintk, please? It avoids some noise....
-> > 
-> > I agree about the second one. I thought that list of frequencies in
-> > MHz is probably important enough?
+>>Set some system-wide integer via a sysctl and let the particular
+>>architecture decide how best to implement the currently-selected idle mode?
 > 
-> Well, you can get this easily enough in
-> /sys/devices/system/cpu/cpu?/scaling_available_frequencies,
-> so I'd say no -- but it's a close call.
+> I'm wondering whether the setting of these magic numbers can't be done
+> using cpufreq infrastructure.
 
-Okay, I guess it does not really matter.
-							Pavel
+I'd vote for using Patrick Mochel's PM subsystem and use a standard set 
+of identifiers that are mapped to a platform-specific idle behavior, in 
+much the same way as platform suspend modes are handled today.  For 
+example, strings echoed to /sys/power/idle could be an interface.  If 
+folks are amenable to this I'd be happy to supply a (generic) patch for it.
+
 -- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+Todd Poynor
+MontaVista Software
