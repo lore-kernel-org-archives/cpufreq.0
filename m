@@ -1,18 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
-Date: Mon, 30 Aug 2004 18:03:09 +0200
+From: GoatZilla <goatzilla@gmail.com>
+Subject: Re: [2.6. PATCH] Missing default governor choices
+Date: Mon, 30 Aug 2004 12:15:50 -0500
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040830160309.GB21260@dominikbrodowski.de>
-References: <20040829124936.GA16770@dominikbrodowski.de>
-	<20040830121923.GR29560@poupinou.org>
-	<20040830131725.GA8355@dominikbrodowski.de>
-	<20040830144940.GS29560@poupinou.org>
-	<20040830150107.GA7953@dominikbrodowski.de>
-	<20040830151620.GT29560@poupinou.org>
+Message-ID: <39e348480408301015550c3ad3@mail.gmail.com>
+References: <20040829123200.GA16050@dominikbrodowski.de>
+Reply-To: GoatZilla <goatzilla@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040830151620.GT29560@poupinou.org>
+In-Reply-To: <20040829123200.GA16050@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,20 +19,42 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, Aug 30, 2004 at 05:16:20PM +0200, Bruno Ducrot wrote:
-> > The detection of changes behind cpufreq's back yes -- but for the
-> > speedstep-ich case, it was supposed to work around critical situations, not
-> > to cause panics... If you see a valid point for the PANIC flag for these
-> > drivers, please explain it to me, though.
-> > 
+Is there something wrong with wanting powersave activated as soon as possible?
+
+
+If a user wants performance at bootup, he can choose the performance
+governor as default.
+
+If a user wants to maintain the startup speed at bootup, he can choose
+the userspace governor as default.
+
+If a user wants powersaving at bootup...  Too bad, go write a startup script?
+
+
+
+It's not a big issue; I wrote a startup script for it myself.  I was
+just left wondering why I had to write a startup script in the first
+place.
+
+
+
+
+On Sun, 29 Aug 2004 14:32:00 +0200, Dominik Brodowski
+<linux@dominikbrodowski.de> wrote:
+> > What's the reason for the powersave governor not being selectable as
+> > default?
 > 
-> My english is too bad: _all_ drivers panics but not speedstep-ich, etc.
-
-The other drivers panicing doesn't seem to be necessary... so I suggest to
-remove these flags alltogether, as done in the patch sent a few minutes ago.
-
-	Dominik
+> Because it doesn't matter much:
+> - performance is available during boot so that CPUs starting up at less than
+>   100% can be boosted to full performance very soon.
+> - userspace is available to keep the CPU speed at what it was at boot, and
+>   to allow existing userspace-based setups to work [it offers an equivalent
+>   interface compared to the one of the old 2.4. cpufreq interface]
+> 
+> All other settings [including min/max ranges, governor for "continuing" use] can
+> and should be done by either a startup script and/or a userspace daemon.
+> 
+>         Dominik
+>
