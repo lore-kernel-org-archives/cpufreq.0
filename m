@@ -1,13 +1,13 @@
 From: Ari Pollak <ajp@aripollak.com>
-Subject: Re: powernow-k8 patch
-Date: Thu, 19 Aug 2004 15:33:26 -0400
+Subject: Re: powernow-k8 won't load on Athlon64
+Date: Thu, 19 Aug 2004 15:53:22 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <41250086.9010203@aripollak.com>
-References: <84EA05E2CA77634C82730353CBE3A84310F330@SAUSEXMB1.amd.com>
+Message-ID: <41250532.6040407@aripollak.com>
+References: <cg2jui$tba$1@sea.gmane.org> <20040819193903.GB17897@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84310F330@SAUSEXMB1.amd.com>
+In-Reply-To: <20040819193903.GB17897@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,7 +20,12 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@www.linux.org.uk
 
-> Actually, I meant the powernow-k8 information.  If it failed
-> to load, it should give some reason why.
-
-The only messages that got output were the 3 I put in my original e-mail.
+> There's quite a backlog of cpufreq bits pending which are due to be
+> merged hopefully next week. (Linus is on vacation right now)
+> 
+> Can you try http://www.codemonkey.org.uk/projects/cpufreq/daily-snapshots/cpufreq-2004-08-19.diff
+> and see if that fixes it for you ? (I think it will)
+> 
+Nope, still doesn't work (no changes in the errors). I had actually 
+looked over that patch briefly earlier but didn't find anything that 
+changed much in powernow-k8, so I hadn't tried it until now.
