@@ -1,13 +1,12 @@
-From: Len Brown <len.brown@intel.com>
-Subject: Re: ACPI / CPUFREQ.
-Date: 03 Aug 2004 11:41:28 -0400
+From: Stefan Frings <stefan.frings@vodafone.de>
+Subject: powersave governor
+Date: Tue, 3 Aug 2004 19:32:31 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1091547688.3473.4.camel@dhcppc4>
-References: <20040803151010.GQ12724@redhat.com>
+Message-ID: <200408031932.32276.stefan.frings@vodafone.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040803151010.GQ12724@redhat.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,30 +17,43 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-On Tue, 2004-08-03 at 11:10, Dave Jones wrote:
-> At his ACPI talk at OLS, Len mentioned that it would be beneficial
-> to have ACPI and CPUFREQ working together a little better.
-> 
-> Len, care to kick off some thoughts on what pieces you had in mind ?
-> 
-> The biggest problem is probably ACPI thinking the CPU should be at a
-> certain P-state whilst the user has forced it to another with cpufreq.
+I just upgraded my kernel 2.4.21 to 2.6.6 because I want to increase battery 
+power on my notebook. I habe an external energy monitor attached to the power 
+cable of this 
+notebook.
 
-I think there are 2 major issues.
+My notebook has an Amd Athlon64 3000+ processor. It supports 800, 1600 and 
+1800 Mhz clock frequency.
 
-1. confusion about best driver to use
-   this, of course, should be automatic
-   and should not depend on if the drivers
-   are built-in or modules.
+I measured these values for power consumtion:
 
-2. no coordination between P-states
-   and T-states.  ACPI currently kicks
-   in throttling upon high temperature conditions,
-   but it doesn't make sense to use throttling
-   unless we're already in the most power-conserving
-   P-state available.
+Kernel 2.4.21                     60W...100W
+Kernel 2.6.6 performance    60W...100W
+Kernel 2.6.6 powersave       40W..60W
 
--Len
+So the newer kernel helped really much to get a longer battery life.
+
+But there is one thing, that I do not understand: In both governor modes 
+(performance and powersave) the speed of programs is the same. I tested it 
+with:
+
+- Compile linux kernel
+- glxgears (a simple graphical benchmark tool without 2D or 3D accelleration)
+- fgl_glxgears (the same graphical benchmark tool with 3D Hardware 
+accelleration)
+
+The power consumption is really different but the program speed does not 
+change. Can you tell me if this is normal?
+
+Output of x86info:
+
+x86info v1.12b.  Dave Jones 2001-2003
+Feedback to <davej@redhat.com>.
+
+Found 1 CPU
+--------------------------------------------------------------------------
+Family: 15 Model: 4 Stepping: 8
+CPU Model : Athlon 64
+Processor name string: AMD Athlon(tm) 64 Processor 3000+
