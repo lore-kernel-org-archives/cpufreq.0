@@ -1,13 +1,13 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Cpufreq for 2.4: what is the best source?
-Date: Mon, 18 Aug 2003 19:53:57 +0200
+Subject: Re: cpufreq and 2.4.
+Date: Mon, 18 Aug 2003 20:00:12 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030818175357.GC1570@brodo.de>
-References: <3F3CB378.1000607@basmevissen.nl> <20030815154156.GA1029@brodo.de> <3F409E54.20001@basmevissen.nl>
+Message-ID: <20030818180012.GA1824@brodo.de>
+References: <20030817153510.GA2361@brodo.de> <3F40AEC8.3060306@basmevissen.nl>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <3F409E54.20001@basmevissen.nl>
+In-Reply-To: <3F40AEC8.3060306@basmevissen.nl>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,27 +20,33 @@ List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bas Mevissen <ml@basmevissen.nl>
-Cc: Bas Mevissen <sgm@basmevissen.nl>, Cpufreq@www.linux.org.uk
+Cc: cpufreq@www.linux.org.uk
 
-On Mon, Aug 18, 2003 at 11:37:24AM +0200, Bas Mevissen wrote:
-> Dominik Brodowski wrote:
-> 
-> >
-> >Either 2.4.22-rc2-ac1 or the latest 2.4 backport on www.codemonkey.org.uk -
-> >but as that's offline at the moment, I'd try -ac. Or 2.6.0-test3-bk-current
-> >:)
+On Mon, Aug 18, 2003 at 12:47:36PM +0200, Bas Mevissen wrote:
+> >B) Difficult-to-understand cpufreq user interfaces
+> >The /proc/cpufreq and /proc/sys/cpu interfaces are difficult to understand
+> >and already deprecated in 2.6. Do we really want them to be added to a
+> >stable kernel release?
 > >
 > 
-> Can someone please make a backport of CPUFREQ to 2.4.22-rc2? The -ac has 
->   a new scheduler (backport from 2.6?) and that breaks swsusp for the 
-> moment. So I would like to go for 2.4.22-rc2 (or later) with the -ac 
-> patches.
+> Well, what then? There is no sysfs in 2.4, so we need something else to 
+> control the beast :-)
 > 
-> It seems that more people are waiting for a 2.4.22+swsusp+cpufreq, so it 
-> is not a waste of time.
+> How feasable is it to "port" the sysfs _interface_ to /proc? It would 
+> simplicate matters for users, cpufreqd and documentation as they only 
+> needs to change the "working directory" for 2.4.
+> 
+> (Because sysfs is something completely different than /proc, it would 
+> mean writing new code. But as 2.4 will be in use for a couple of years, 
+> I think it is worth the trouble.)
 
-Already done. As Dave's site isn't yet back online, it can temporarily be
-accessed at
-http://www.brodo.de/cpufreq_tmp/cpufreq-2.4.22-rc2-1__.gz
+This seems to be a somewhat reasonable approach. However, it needs to be
+made clear that this interface will only be available on 2.4. kernels. /proc
+is bloated in 2.4., and so I don't mind, but for 2.6++ it should be aimed at
+removing unneccessary stuff from /proc, so I'd strongly oppose
+forward-porting this interface to 2.6. 
+
+Anyways, anyone willing to write the "cpufreq 2.4. sysfs-emulation /proc
+interface"?
 
 	Dominik
