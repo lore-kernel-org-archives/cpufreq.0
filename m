@@ -1,12 +1,15 @@
-From: "Ivor Hewitt" <ivor@ivor.org>
-Subject: Kernel 2.6.7 speedstep-piix4 on vaio
-Date: Thu, 29 Jul 2004 15:20:00 +0100 (BST)
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: [PATCH 2.6.8-rc2] speedstep SMT support
+Date: Thu, 29 Jul 2004 18:34:50 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <43210.141.228.156.225.1091110800.squirrel@141.228.156.225>
-Reply-To: ivor@ivor.org
+Message-ID: <20040729163450.GA7947@dominikbrodowski.de>
+References: <4107B8DE.5020401@cern.ch>
+	<20040728172028.GB8678@dominikbrodowski.de>
+	<4108EB34.9060505@cern.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <4108EB34.9060505@cern.ch>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,40 +20,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: holbling@cpt.univ-mrs.fr
+Cc: cpufreq@www.linux.org.uk
 
-Hi,
+On Thu, Jul 29, 2004 at 12:19:00PM +0000, Christian Hoelbling wrote:
+>  hi and thanks alot for your comments!
+You're welcome -- and thanks for your contributions.
 
-Firstly should the speedstep-smi driver be able to work on a Vaio Z600TEK
-(Coppermine P3, 440BX chipset)? I can only get speedstep to work on 2.6 by
-using the old piix4 code. Has anyone else got speedstep going on one of these?
+>  i will gladly do. however, i am a bit afraid of missing some patch - 
+> could you send me a diff of your source tree to a recent vanilla source 
+> so i know where to start from? or is there some repository somewhere 
+> that i don't know about where the cpufreq development sources are kept?
+The current[*] diff between what's in Linus' tree and what's in the "cpufreq
+development sources" a.k.a. cpufreq-bk is available at
+http://www.codemonkey.org.uk/projects/bitkeeper/cpufreq/
 
-For me the speedstep-smi driver fails on this machine with the error:
-"could not detect low and high frequencies by SMI call"
-"could not detect two different speeds -- aborting"
+Without cc'ing this list I'll provide you with a cpufreq-updates-since-2.6.7
+diff in just a moment...
 
-However, I used to have the piix4 driver working on this machine, but this is
-not in the 2.6 kernel tree.
+	Dominik
 
-So... I updated the old copy of the piix4 driver which used the old gpo_hilo
-code to work on kernel 2.6.7. and it now works just fine for me.
-
-The text on the www.poupinou.org site implied that the piix driver was now
-obsolete due to the smi driver.
-
-Given that I now have the piix driver working, should it be possible to make
-the smi driver work? i.e. is the smi just a better way of doing the same thing
-and anything that the old driver did should be possible in the new one?
-
-I'll post my patch to get piix working against 2.6.7, when I get back to a
-network connection.
-
-Regards,
-Ivor.
-
-PS Is there a searchable archive of this list?
-
--- 
-http://ivor.org - leylandii hedge -- http://ivor.it - technology
-
-SquirrelMail - webmail for nuts.
+[*] updated daily... so an offset of 23:59 is possible...
