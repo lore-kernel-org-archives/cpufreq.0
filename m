@@ -1,13 +1,13 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH] 3/3 A dynamic cpufreq governor
-Date: Tue, 28 Oct 2003 10:27:20 +0100
+From: Ashley Pittman <ashley@quadrics.com>
+Subject: Re: Fw: Re: [OOPS] [2.6.0-test5-bk8] cpufreq and sysfs problem...
+Date: Tue, 28 Oct 2003 23:40:30 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031028092720.GB1167@elf.ucw.cz>
-References: <88056F38E9E48644A0F562A38C64FB6007796D@scsmsx403.sc.intel.com>
-Mime-Version: 1.0
+Message-ID: <1D9FC2B6-09A0-11D8-BCAB-000A959E30D2@quadrics.com>
+References: <20031003172956.GB4050@brodo.de>
+Mime-Version: 1.0 (Apple Message framework v552)
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007796D@scsmsx403.sc.intel.com>
+In-Reply-To: <20031003172956.GB4050@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,47 +17,24 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: akpm@osdl.org, Linus Torvalds <torvalds@osdl.org>, cpufreq@www.linux.org.uk, Pavel Machek <pavel@ucw.cz>, "Nakajima,
-	Jun" <jun.nakajima@intel.com>, linux-kernel@vger.kernel.org, Dominik Brodowski <linux@brodo.de>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Dominik Brodowski <linux@brodo.de>
+Cc: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
-Hi!
 
-> ondemand3.patch - Adding sysfs interface for cpufreq_ondemand 
-> tunables and making sysfs access by cpufreq governors safe against 
-> removal of the underlying module (from Dominik). 
-> 
-> diffstat ondemand3.patch
->  cpufreq.c          |   24 ++++++++++++
->  cpufreq_ondemand.c |  102
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 126 insertions(+)
+On Friday, Oct 3, 2003, at 18:29 Europe/London, Dominik Brodowski wrote:
 
-Is something word-wrapping your mails?
+> Thanks for noticing this. Attached patch [for 2.6.0-test6-bk] should 
+> fix it.
 
-...
+Apologies for the delay, this did fix it.
 
-> +/* cpufreq_ondemand Governor Tunables */
-> +#define show_one(file_name, object)
-> \
-> +static ssize_t show_##file_name
-> \
-> +(struct cpufreq_policy *unused, char *buf)
-> \
-> +{
-> \
-> +	return sprintf(buf, "%u\n", dbs_tuners_ins.object);
-> \
-> +}
-> +show_one(sampling_rate, sampling_rate);
-> +show_one(up_threshold, up_threshold);
-> +show_one(down_threshold, down_threshold);
+Ashley,
 
-?
-								Pavel
+--
+   Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
 
--- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+
+---
+Ashley Pittman
+ashley@pittman.co.uk
