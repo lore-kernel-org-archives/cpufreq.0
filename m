@@ -1,11 +1,15 @@
-From: Thaly Palanisamy <thalaps@gerg.tamu.edu>
-Subject: cpufreq driver support for ZFx86 processor
-Date: Wed, 25 Feb 2004 14:33:18 -0600
+From: Colin Marquardt <colin@marquardt-home.de>
+Subject: Re: 2.6.3-rc3: "powernow-k8: fid 0 invalid : 0x0"
+Date: Thu, 26 Feb 2004 00:54:37 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <403D068E.7020104@gerg.tamu.edu>
+Message-ID: <msgidspam.87r7wi3ebm.fsf@schnee.marquardt-home.de>
+References: <msgidspam.87u11h1j4n.fsf@schnee.marquardt-home.de>
+	<msgidspam.8765dwi1es.fsf@schnee.marquardt-home.de>
+	<20040225085337.GG2869@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20040225085337.GG2869@poupinou.org> (Bruno Ducrot's message of
+	"Wed, 25 Feb 2004 09:53:37 +0100")
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,24 +19,30 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; format="flowed"; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk
 
-Hello,
-Does the cpufreq driver support the Zfx86 processor runnix Linux (2.4.21)?
-The ZFx86 is on a PC104 single board computer(Prometheus from Diamond 
-Systems Corporation- DSC). I tried the DSC forum, but no one was aware of.
-I need to slow down the Zfx currently running at 100 MHz to save power.
-Can anybody help me?
-Thanks,
-Thaly
+Bruno Ducrot <ducrot@poupinou.org> writes:
 
--- 
-Thalapathy Palanisamy,
-Electronics Technician II,
-Geochemical and Environmental Research Group,
-Texas A&M University,
-College Station, TX -77845
-Ph: (979) 862-2323 x113
-Fax: (979) 862-1347
-www.gerg.tamu.edu
+> On Tue, Feb 24, 2004 at 10:59:55PM +0100, Colin Marquardt wrote:
+>> Colin Marquardt <colin@marquardt-home.de> writes:
+>> 
+>> > powernow-k8: Found AMD64 processor supporting PowerNow (version 1.00.08a)
+>> > powernow-k8: voltage stable in 100 usec, ramp voltage offset: 2, isochronous relief time: 3, maximum voltage step: 0
+>> > powernow-k8: pll lock time: 0x2, maxfid 0xc (2000 MHz), maxvid 0x0
+>> > powernow-k8: fid 0 invalid : 0x0
+>> >
+>> > Everything under /sys/devices/system/cpu/cpu0/ is empty.
+>> Maybe ACPI is somehow disturbing it?
+>
+> In theory no, but you may consider ACPI especially on amd64
+> architectures.
+
+Thanks for your answer. I now built a kernel without ACPI support,
+alas, nothing has changed. :/  I'll probably have to wait and try
+again from time to time.
+
+Cheers,
+  Colin
