@@ -1,13 +1,14 @@
 From: AthlonRob <AthlonRob@axpr.net>
 Subject: Re: 2.4.21 Isn't working for me....
-Date: 26 Aug 2003 12:41:50 -0700
+Date: 26 Aug 2003 12:43:47 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1061926909.14523.5.camel@localhost>
+Message-ID: <1061927026.14523.9.camel@localhost>
 References: <1061872616.27076.47.camel@localhost>
+	<20030826064747.GE10585@poupinou.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <1061872616.27076.47.camel@localhost>
+In-Reply-To: <20030826064747.GE10585@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,53 +21,22 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@www.linux.org.uk
 
-On Mon, 2003-08-25 at 21:36, AthlonRob wrote:
- 
-> I'm trying to get some cpu frequency control over my laptop's CPU with
-> the 2.4.21 kernel.  I'd just jump to 2.6.0-test4, but have a few pieces
-> of hardware that don't have drivers available for the test kernel yet.
+On Mon, 2003-08-25 at 23:47, Ducrot Bruno wrote:
 
-I just found http://www.codemonkey.org.uk/projects/cpufreq/ in the
-archives and gave the two patches listed there a shot.
+> The latest is again 2.4.22, _not_ 2.4.21.
 
--1 and -2.
+That's the latest from the kernel.org repository, right?  the ones with
+filenames like cpufreq-LINUX_2_4-20030825.tar.gz?
 
-Here are the results I got from that on my make bzImage....
+The codemonkeys ones, with filenames like cpufreq-2.4.21-1.gz are
+against 2.4.21... right?  :-)
 
-gcc -D__KERNEL__ -I/home/rob/kernel/linux-2.4.21/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
--fomit-frame-pointer -pipe -mpreferred-stack-boundary=2 -march=i686  
--nostdinc -iwithprefix include -DKBUILD_BASENAME=cpufreq 
--DEXPORT_SYMTAB -c cpufreq.c
-In file included from
-/home/rob/kernel/linux-2.4.21/include/linux/irq.h:69,
-                 from
-/home/rob/kernel/linux-2.4.21/include/asm/hardirq.h:6,
-                 from
-/home/rob/kernel/linux-2.4.21/include/linux/interrupt.h:46,
-                 from cpufreq.c:21:
-/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h: In function
-`x86_do_profile':
-/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h:201: `current'
-undeclared (first use in this function)
-/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h:201: (Each undeclared
-identifier is reported only once
-/home/rob/kernel/linux-2.4.21/include/asm/hw_irq.h:201: for each
-function it appears in.)
-make[2]: *** [cpufreq.o] Error 1
-make[2]: Leaving directory `/home/rob/kernel/linux-2.4.21/kernel'
-make[1]: *** [first_rule] Error 2
-make[1]: Leaving directory `/home/rob/kernel/linux-2.4.21/kernel'
-make: *** [_dir_kernel] Error 2
+I would go ahead and just upgrade to 2.4.22, except I really need (ok, I
+don't need, I just really want) preempt, low-latency scheduling, and the
+latest NTFS drivers in this kernel... and 2.4.22 is still too new for
+any of those to be available.  :-(
 
-I tried fudging around with the files and lines mentioned, but didn't
-get anywhere except more broken...  :-)
+I suppose I could survive without cpu frequency scaling... but the
+project looks *way super cool* to me.  :-)
 
-Is my system borked?  :-)
-
-I understand the -ac sources contain the cpufreq patch already... do
-y'all know if I will be able to apply preemptive multitasking, low
-latency scheduling, ntfs, and acpi patches I want to add in there?  They
-aren't in the test ran above, FWIW.
-
-Rob  :-)
+Rob
