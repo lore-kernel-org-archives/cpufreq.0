@@ -1,19 +1,20 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Acer Aspire  1350 broken PST
-Date: Mon, 19 Apr 2004 13:54:21 +0200
+Subject: Re: give the TSC a fair chance [Was: [PATCHES] cpufreq_get(),
+	cpufreq->get()]
+Date: Mon, 19 Apr 2004 17:32:20 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040419115421.GA19425@dominikbrodowski.de>
-References: <c5osds$fed$1@sea.gmane.org> <20040416151135.GV8953@poupinou.org>
-	<c5otiu$ime$1@sea.gmane.org> <20040416152432.GW8953@poupinou.org>
-	<c5p3e0$6js$1@sea.gmane.org> <20040416182013.GZ8953@poupinou.org>
-	<20040417093220.GA7975@dominikbrodowski.de>
-	<20040417130021.GB8953@poupinou.org>
-	<20040417165838.GA7553@dominikbrodowski.de>
-	<20040419092624.GA13861@poupinou.org>
+Message-ID: <20040419153220.GD7437@dominikbrodowski.de>
+References: <20040411215912.GA8160@dominikbrodowski.de>
+	<20040412120422.GA7337@dominikbrodowski.de>
+	<1081967060.4705.91.camel@cog.beaverton.ibm.com>
+	<20040414185434.GB19921@dominikbrodowski.de>
+	<1081973006.4705.116.camel@cog.beaverton.ibm.com>
+	<20040414205732.GA7230@dominikbrodowski.de>
+	<1081977876.4705.123.camel@cog.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0189918686=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040419092624.GA13861@poupinou.org>
+Content-Disposition: inline
+In-Reply-To: <1081977876.4705.123.camel@cog.beaverton.ibm.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,68 +24,51 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: jy <jy454@yahoo.fr>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: john stultz <johnstul@us.ibm.com>
+Cc: cpufreq@www.linux.org.uk
 
+On Wed, Apr 14, 2004 at 02:24:36PM -0700, john stultz wrote:
+> On Wed, 2004-04-14 at 13:57, Dominik Brodowski wrote:
+> > On Wed, Apr 14, 2004 at 01:03:27PM -0700, john stultz wrote:
+> > > As for the bug you
+> > > mentioned, I'm not sure I understand how after you've scheduled 
+> > > cpufreq_delayed_get_work() to run it wouldn't run? 
+> > 
+> > It would run, but too late. See below.
+> > 
+> > > So 50 consecutive interrupts occur where we notice we missed ticks, at
+> > > this point we schedule the function. If the next tick we don't notice
+> > > lost interrupts, why would the function not execute?
+> > 
+> > The following must happen:
+> > 50 consecutive interrupts with missed ticks occur
+> > -> handle_cpufreq_get_delayed_work() is scheduled
+> > 0 to 50 more consecutive interrupts with missed ticks must occur,
+> > then one or more interrupts with zero or one missed ticks so that lost_count
+> > is reset to zero, and then
+> > 50 consecutive interrupts with missed ticks again.
+> > _AND_ since the scheduling of handle_cpufreq_get_delayed_work() above
+> > this handler running at -10 priority must not have been called ==> so 
+> > it's really a very unlikely situation.
+> 
+> Hmm. That's still not parsing easily, but I think I get it. Might we
+> want to turn off the consecutive lost tick accounting after we schedule
+> the delayed_work() function, and once that code has executed start
+> again? 
 
---===============0189918686==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
-Content-Disposition: inline
+We could do it, but it wouldn't save us much. And it would delay falling
+back to a "sane" timesource even more...
 
+> And how likely is it that we end up hitting 100 consecutive lost ticks
+> and disable the timesource before the delayed_work function gets to run?
+> Should that watermark get bumped up some?
 
---PNTmBPCT7hxwcZjr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Apr 19, 2004 at 11:26:24AM +0200, Bruno Ducrot wrote:
-> On Sat, Apr 17, 2004 at 06:58:38PM +0200, Dominik Brodowski wrote:
-> >=20
-> > [*] though I do not know whether the timing core would be able to handl=
-e it
-> > generally...
->=20
-> The problem is that AMD64 (and opterons)  processors do have expected
-> behaviour, that is if you change the frequency, TSC clock will change
-> as well, and there are SMP capable processors that are planed IIRC.
-> Also, I think TSC timer will not work properly if powernow-k8 on such
-> system (each processors would have different TSC frequencies),
-> unless heavy changes to the TSC timer code.  I'm not sure if making
-> it work does really matter, there is other good timers (like ACPI-timer)
-> after all.
-
-Even though most, if not all, AMD64 processors have HPET-timers on the
-motherboards, there's still much tsc interaction going on :-(. Will take a
-look at it soon.
+... IMO, no. there's already the need for >= 300 ms[*] of consecutive errors in
+the TSC handling, and that's really much.
 
 	Dominik
 
---PNTmBPCT7hxwcZjr
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAg73tZ8MDCHJbN8YRApdGAKCkHTBIITN5FE2yt3gHnIFRHkumPACghoeg
-vHXHLFHx8U7ZuyDW41EXXqQ=
-=SPTU
------END PGP SIGNATURE-----
-
---PNTmBPCT7hxwcZjr--
-
-
---===============0189918686==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---===============0189918686==--
-
+[*] 100 ticks which reach the code and detect >= 2 * 100 lost ticks ==> 
+>= 300 ticks    ==>     >= 300 ms
