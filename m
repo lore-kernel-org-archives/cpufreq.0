@@ -1,11 +1,13 @@
-From: paul.devriendt@amd.com
+From: Len Brown <len.brown@intel.com>
 Subject: RE: Athlon 64 complains of frequency mismatch
-Date: Wed, 23 Jun 2004 01:07:42 -0700
+Date: 23 Jun 2004 13:52:55 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <84EA05E2CA77634C82730353CBE3A8432698CB@SAUSEXMB1.amd.com>
+Message-ID: <1088013174.4319.302.camel@dhcppc4>
+References: <84EA05E2CA77634C82730353CBE3A8432698C4@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A8432698C4@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,22 +18,29 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: elf@buici.com
-Cc: cpufreq@www.linux.org.uk
+To: paul.devriendt@amd.com, Marc Singer <elf@buici.com>
+Cc: linux@dominikbrodowski.de, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
 
-> > > Or, maybe the driver should output a kernel message about BIOS
-> > > settings.
-> > 
-> > Where is the FAQ ? I would like to read it :)
-> > 
-> > How about having the driver put out a message referring to go 
-> > read the FAQ ?
-> 
-> Hmm.  It's hard to read your response.  If you are being sarcastic
-> then perhaps I need to be more explicit.
+On Wed, 2004-06-23 at 03:43, paul.devriendt@amd.com wrote:
+> I am of the opinion that this is a bug in the ACPI subsystem.
+> The BIOS developers find it easy to always have the space
+> allocated for their tables. They "hide" them by tricks
+> such as changing _PSS to XPSS.
 
-No, I was not being sarcastic. Sorry for the confusion. I was 
-suggesting that the driver should output a message referring to 
-the FAQ rather than a message specifically about BIOS settings.
+Feel free to file an ACPI bug here and I'll be happy to look into it:
+http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+Component: power-processor
 
-Paul.
+It should describe the behaviour of the two configurations
+A. Cool&Quiet enabled in BIOS
+B. Cool & Quiet disabled in BIOS
+and what is unexpected.
+
+It should include the output from acpidmp taken in each configuration.
+acpidmp is available in /usr/sbin/, or in pmtools:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
+
+Only with this can we tell what curve ball the BIOS is throwing.
+
+thanks,
+-Len
