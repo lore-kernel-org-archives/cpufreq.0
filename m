@@ -1,12 +1,13 @@
-From: "Li, Shaohua" <shaohua.li@intel.com>
-Subject: patch for P4 TSC problem
-Date: Thu, 4 Dec 2003 16:47:30 +0800
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: 2G P4M won't go above 1.2 - cpuinfo_max_freq too low
+Date: Thu, 04 Dec 2003 16:35:07 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <571ACEFD467F7749BC50E0A98C17CDD8D5FE20@pdsmsx403.ccr.corp.intel.com>
+Message-ID: <3FCF542B.9040703@suse.de>
+References: <200311261702.56907.simon@highlyillogical.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C3BA43.40B53114"
+Content-Type: multipart/mixed; boundary="------------060308080609010805070606"
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-content-class: urn:content-classes:message
+In-Reply-To: <200311261702.56907.simon@highlyillogical.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,62 +20,137 @@ Errors-To: cpufreq-bounces@www.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
 This is a multi-part message in MIME format.
+--------------060308080609010805070606
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-------_=_NextPart_001_01C3BA43.40B53114
+Simon wrote:
+
+>Enabling the old interface in the kernel and doing a `echo -n 
+>0%0%100%performance > /proc/cpufreq` doesn't change things either.
+>
+>Here is my /proc/cpuinfo
+>model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 2.00GHz
+>cpu MHz         : 1198.976
+>
+>Any ideas how to get hold of my extra mhz?
+>  
+>
+I have the same problem, cpuinfo shows the wrong value!!!
+I get 1200MHz even I set it up to 1800MHz.
+(posted prog calculates the right value, (procspeed))
+
+My values:
+
+cat scaling_setspeed
+1800000
+
+procspeed
+1795.069753 MHz processor.
+
+cat /proc/cpuinfo
+cpu MHz : 1196.427
+
+# HERE I SET NEW SPEED!
+echo 1200000 >scaling_setspeed
+
+procspeed
+1196.468220 MHz processor.
+
+# THIS IS TOTALLY WRONG!
+cat /proc/cpuinfo
+cpu MHz : 797.618
+
+cat scaling_setspeed
+1200000
+
+It seems as if cpuinfo shows the wrong value by the factor 1.5.
+(min_freq: 1200, max_freq: 1800)
+
+kernel: 2.6.0test-11-1
+
+I post a small prog you can mesure your real speed.
+It's called procspeed(think it was part of Carl Thomson's cpufreqd).
+
+I searched for cpuinfo in the archive, but could not find anything.
+I expect that problem related to freq scaling ...
+
+Does anyone know about this?
+
+Maybe this helps, complete cpuinfo:
+
+cat /proc/cpuinfo
+processor : 0
+vendor_id : GenuineIntel
+cpu family : 15
+model : 2
+model name : Intel(R) Pentium(R) 4 Mobile CPU 1.80GHz
+stepping : 4
+cpu MHz : 1196.427
+cache size : 512 KB
+fdiv_bug : no
+hlt_bug : no
+f00f_bug : no
+coma_bug : no
+fpu : yes
+fpu_exception : yes
+cpuid level : 2
+wp : yes
+flags : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat 
+pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
+bogomips : 2334.72
+
+
+Thanks.
+
+Thomas
+
+--------------060308080609010805070606
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-TSC frequency doesn't change under P4 and above when CPU frequency
-changes, which caused some problems. Attached patch will handle this
-problem. How about it?
-
-=20
-
-Thanks,
-
-Shaohua
-
-=20
+ name="procspeed.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="procspeed.c"
 
 
-------_=_NextPart_001_01C3BA43.40B53114
-Content-Type: application/octet-stream;
-	name="tsc.patch"
-Content-Transfer-Encoding: base64
-Content-Description: tsc.patch
-Content-Disposition: attachment;
-	filename="tsc.patch"
+#include <stdio.h>
+#include <sys/time.h>
 
-LS0tIGEvYXJjaC9pMzg2L3RpbWVycy90aW1lcl90c2MuYwkyMDAzLTExLTI1IDE3OjU0OjA2LjAw
-MDAwMDAwMCArMDgwMAorKysgYi9hcmNoL2kzODYvdGltZXJzL3RpbWVyX3RzYy5jCTIwMDMtMTEt
-MjcgMTM6MTU6MzIuMDAwMDAwMDAwICswODAwCkBAIC0zMyw2ICszMyw3IEBACiBleHRlcm4gdm9s
-YXRpbGUgdW5zaWduZWQgbG9uZyBqaWZmaWVzOwogCiBzdGF0aWMgaW50IHVzZV90c2M7CitzdGF0
-aWMgaW50IHZhcmlhYmxlX3RzY19mcmVxID0gMTsKIC8qIE51bWJlciBvZiB1c2VjcyB0aGF0IHRo
-ZSBsYXN0IGludGVycnVwdCB3YXMgZGVsYXllZCAqLwogc3RhdGljIGludCBkZWxheV9hdF9sYXN0
-X2ludGVycnVwdDsKIApAQCAtMzM2LDcgKzMzNyw4IEBACiAJCWNwdV9kYXRhW2ZyZXEtPmNwdV0u
-bG9vcHNfcGVyX2ppZmZ5ID0gY3B1ZnJlcV9zY2FsZShsb29wc19wZXJfamlmZnlfcmVmLCByZWZf
-ZnJlcSwgZnJlcS0+bmV3KTsKICNpZm5kZWYgQ09ORklHX1NNUAogCQlpZiAodXNlX3RzYykgewot
-CQkJZmFzdF9nZXR0aW1lb2Zmc2V0X3F1b3RpZW50ID0gY3B1ZnJlcV9zY2FsZShmYXN0X2dldHRp
-bWVvZmZzZXRfcmVmLCBmcmVxLT5uZXcsIHJlZl9mcmVxKTsKKwkJCWlmICh2YXJpYWJsZV90c2Nf
-ZnJlcSkKKwkJCQlmYXN0X2dldHRpbWVvZmZzZXRfcXVvdGllbnQgPSBjcHVmcmVxX3NjYWxlKGZh
-c3RfZ2V0dGltZW9mZnNldF9yZWYsIGZyZXEtPm5ldywgcmVmX2ZyZXEpOwogCQkJY3B1X2toeiA9
-IGNwdWZyZXFfc2NhbGUoY3B1X2toel9yZWYsIHJlZl9mcmVxLCBmcmVxLT5uZXcpOwogCQkJc2V0
-X2N5YzJuc19zY2FsZShjcHVfa2h6LzEwMDApOwogCQl9CkBAIC0zNTIsNiArMzU0LDEzIEBACiB9
-OwogI2VuZGlmCiAKK3N0YXRpYyB2b2lkIF9faW5pdCBpbml0X3ZhcmlhYmxlX3RzYyh2b2lkKQor
-eworCS8qIFA0IGFuZCBhYm92ZSBDUFUgVFNDIGZyZXEgZG9lc24ndCBjaGFuZ2Ugd2hlbiBDUFUg
-ZnJlcXVlbmN5IGNoYW5nZXMqLworCWlmICgoYm9vdF9jcHVfZGF0YS54ODYgPj0gMTUpICYmIChi
-b290X2NwdV9kYXRhLng4Nl92ZW5kb3IgPT0gWDg2X1ZFTkRPUl9JTlRFTCkpCisJCXZhcmlhYmxl
-X3RzY19mcmVxID0gMDsKKwkvKiBBZGQgc3VwcG9ydCBmb3IgQ1BVIGZyb20gbm9uLWludGVsIHZl
-bmRvciAqLworfQogCiBzdGF0aWMgaW50IF9faW5pdCBpbml0X3RzYyhjaGFyKiBvdmVycmlkZSkK
-IHsKQEAgLTQ0Miw2ICs0NTEsNyBAQAogCQkJCXByaW50aygiRGV0ZWN0ZWQgJWx1LiUwM2x1IE1I
-eiBwcm9jZXNzb3IuXG4iLCBjcHVfa2h6IC8gMTAwMCwgY3B1X2toeiAlIDEwMDApOwogCQkJfQog
-CQkJc2V0X2N5YzJuc19zY2FsZShjcHVfa2h6LzEwMDApOworCQkJaW5pdF92YXJpYWJsZV90c2Mo
-KTsKIAkJCXJldHVybiAwOwogCQl9CiAJfQo=
+__inline__ unsigned long long int rdtsc()
+{
+	unsigned long long int x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	return x;
+}
 
-------_=_NextPart_001_01C3BA43.40B53114
+main ()
+{
+	struct timezone tz;
+        struct timeval tvstart, tvstop;
+        unsigned long long int cycles[2]; /* gotta be 64 bit */
+	unsigned int microseconds; /* total time taken */
+	
+	bzero(&tz, sizeof(tz));
+
+	/* get this function in cached memory */
+	gettimeofday(&tvstart, &tz);
+	cycles[0] = rdtsc();
+	gettimeofday(&tvstart, &tz);
+
+	/* we don't trust that this is any specific length of time */
+	sleep(1);
+	
+	cycles[1] = rdtsc();
+	gettimeofday(&tvstop, &tz);
+	microseconds = ((tvstop.tv_sec-tvstart.tv_sec)*1000000) +
+		(tvstop.tv_usec-tvstart.tv_usec);
+
+	printf("%f MHz processor.\n",
+		(float)(cycles[1]-cycles[0])/microseconds);
+}
+
+
+--------------060308080609010805070606
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -85,5 +161,6 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-------_=_NextPart_001_01C3BA43.40B53114--
+--------------060308080609010805070606--
+
 
