@@ -1,13 +1,13 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Cpufreq 2.4.22-pre6 & Pentium M
-Date: Sat, 19 Jul 2003 08:46:50 +0200
+Subject: Re: Weird behaviour (cpufreq-2.4.21-2)
+Date: Sat, 19 Jul 2003 08:45:28 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030719064650.GB1658@brodo.de>
-References: <20030718220937.09d2dc67.eglez@ast.cam.ac.uk> <1058564397.17203.10.camel@sherkaner.pao.digeo.com>
+Message-ID: <20030719064528.GA1658@brodo.de>
+References: <20030719003302.1664a98f.frx@firenze.linux.it>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1058564397.17203.10.camel@sherkaner.pao.digeo.com>
+In-Reply-To: <20030719003302.1664a98f.frx@firenze.linux.it>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,35 +19,26 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Eduardo Gonzalez-Solares <eglez@ast.cam.ac.uk>, cpufreq list <cpufreq@www.linux.org.uk>
+To: CpuFreq <cpufreq@www.linux.org.uk>, frx@firenze.linux.it
 
-On Fri, Jul 18, 2003 at 02:39:57PM -0700, Jeremy Fitzhardinge wrote:
-> On Fri, 2003-07-18 at 14:09, Eduardo Gonzalez-Solares wrote:
-> > Nothing in dmesg. It seems the problem is in:
-> > 
-> >        if (!cpu_has(cpu, X86_FEATURE_EST))
-> >                return -ENODEV;
+On Sat, Jul 19, 2003 at 12:33:02AM +0200, Francesco Poli wrote:
+> Then I disconnect the laptop from the electrical network: so I run on
+> battery.
+> When I go back on AC power, the battery starts charging (as reported by
+> the LED and by ACPI). And the temperature goes up towards 80 degrees
+> Celsius; the back fan wakes up thus pushing the temperature down again
+> to 69 degrees Celsius; then the fan rests and the temperature goes up
+> again. This thermal cycle goes on and on, even if the CPU is almost
+> totally idle.
 > 
-> I'm not sure who maintains the 2.4 port
-
-/me is not maintaining it, but I'm the culprit for this bug.
-
->, but the problem is that the
-> core code which sets up the CPU feature bits doesn't know about the
-> extended feature word, so it doesn't read the X86_FEATURE_EST bit from
-> the CPU.
+> A simple reboot stops this behaviour and, after a while, I get
+> $ cat /proc/acpi/thermal_zone/THRM/temperature
+> temperature:              57 C
 > 
-> The previous versions of this patch used this functional but ugly code:
->         int dummy, ecx;
->         
->         cpuid(1,&dummy,&dummy,&ecx,&dummy);
->         if (!(ecx & (1<<7)))
->         	return -ENODEV;
-> 
-> Either the new ports of speedstep-centrino.c need to keep using this
-> code, or the X86_FEATURE_EST bit needs to be put into cpu_data.
+> The question is: what's wrong? What did I messed up with?
 
-Will send davej an updated version [for 2.4.22-pre7] early next week.
+Hmmm... might it be that the BIOS meddles with the CPU frequency, too?
+You could compare the output of the "bogomips" tool to detect frequency 
+changes, for example.
 
-       Dominik
+	Dominik
