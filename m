@@ -1,15 +1,13 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: little system-hang when switching frequencies
-Date: Thu, 10 Jun 2004 11:08:15 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: how to get Pentium 4 multiplier
+Date: Thu, 10 Jun 2004 11:07:51 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040610090815.GX13782@poupinou.org>
-References: <1086717641.4311.30.camel@localhost>
-	<20040609155946.GB9482@dominikbrodowski.de>
-	<1086816407.2756.10.camel@localhost>
+Message-ID: <20040610090751.GA3899@dominikbrodowski.de>
+References: <3ACA40606221794F80A5670F0AF15F8403BD5535@pdsmsx403>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1086816407.2756.10.camel@localhost>
+In-Reply-To: <3ACA40606221794F80A5670F0AF15F8403BD5535@pdsmsx403>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,59 +19,34 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Breitner <mail@tombreit.de>
-Cc: cpufreq@www.linux.org.uk
+To: "Zhu, Yi" <yi.zhu@intel.com>
+Cc: Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
 
-On Wed, Jun 09, 2004 at 11:26:47PM +0200, Thomas Breitner wrote:
-> Am Mi, den 09.06.2004 schrieb Dominik Brodowski um 17:59: 
-> > On Tue, Jun 08, 2004 at 08:00:41PM +0200, Thomas Breitner wrote:
-
-...
-
-> Jun  9 21:34:01 localhost kernel: cpufreq: change to 997 MHz succeeded
-> after 1 tries with result 0
-> Jun  9 21:34:17 localhost kernel: cpufreq: retry 1, previous result 0
-> Jun  9 21:34:17 localhost kernel: cpufreq: retry 2, previous result 0
-> Jun  9 21:34:17 localhost kernel: cpufreq: retry 3, previous result 0
-> Jun  9 21:34:17 localhost kernel: cpufreq: retry 4, previous result 0
-> Jun  9 21:34:17 localhost kernel: cpufreq: retry 5, previous result 0
-> Jun  9 21:34:17 localhost kernel: cpufreq: change to 731 MHz succeeded
-> after 6 tries with result 0
-> ---
+On Thu, Jun 10, 2004 at 01:55:13PM +0800, Zhu, Yi wrote:
+> I compiled my 2.6.7-rc3 kernel with SPEEDSTEP_DEBUG and dmesg
+> gives:
 > 
-> i don't understand the meaning of result "0", but it seems that the
-> system needs *only* one - the first - try to switch from low to high
-> frequency - but it needs always 6 retries to switch back.
-> ok, this part is *fixed*, i should buy a new laptop...
+> speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0xa201f000 0x0
+> speedstep-lib: P4 - FSB 100000 kHz; Multiplier 162
+> 
+> You can find more detailed information here:
+> http://bugme.osdl.org/show_bug.cgi?id=2754
 
-It's likely the SMI handler is not able to disable BM arbitration due to
-DMA tranferts somehow.  It may be related to disk io, or sound, etc.
-Then it give up.
+Hm, these are the first (two) reports of invalid entries in
+MSR_EBC_FREQUENCY_ID for p4(m)s -- on many other systems (including but not
+limited to my own) it works fine... maybe this is limited to the D stepping?
 
-...
+> How to resolve?
+> 
+> My proposal is get the frequency by using the brand string
+> (x86_model_id)
+> for P4 processors.
 
-> the same here: i followed your advise, but seemingly trust too much in
-> my laptop (well, it is in fact an inspiron 8100...):
-> changed (rev < 5) in (rev < 4) and ended up immediatly after loading
-> speedstep-ich in a lockup (if thats the technical word for a completly
-> non-respondent system).
+Problem is string parsing is ugly, some P4 processors print their speed,
+IIRC, in MHz, others in GHz, etc. 
 
-For now, I don't have a clue to correct this with this northbridge.
-We should check bus activities somehow before setting ARB_DIS probably.
-I believe it's also needed even for other bridges btw.
+For the p4-clockmod case, we might go back using cpu_khz for determining
+current CPU frequency -- and for speedstep-ich and the p4-m problem reported
+in the bug, I'd like to get more debug info
 
-> but: switching frequencies under the preinstalled win xp works "in both
-> directions". how is this possible when it's the bios which is causing
-> the "little system hang"?
-
-No idea.  BTW, are you sure the frequency change under XP?  If yes,
-there is likely a loop which somehow check BM activities (and is able to
-yield the processor, of course) before calling the SMI handler.
-
-Cheers,
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+	Dominik
