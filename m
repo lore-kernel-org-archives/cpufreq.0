@@ -1,96 +1,136 @@
-From: Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7BvVK+yQ3ZXh@public.gmane.org>
-Subject: [PATCH 2.6.4] (1/2) acpi-cpufreq driver: guess P-State at startup
-Date: Mon, 15 Mar 2004 15:15:28 +0100
-Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Message-ID: <20040315141528.GI8636@dominikbrodowski.de>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: speedstep capability checks
+Date: Mon, 15 Mar 2004 15:15:17 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20040315141517.GG8636@dominikbrodowski.de>
+References: <20040314152016.0B04B3F04@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
-Return-path: <acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5utDmRdBvX5/5ji9XKYC2TYK4Io4DoRGLOrNAH6kLmebB@public.gmane.org>
+In-Reply-To: <20040314152016.0B04B3F04@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
-List-Post: <mailto:acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5utDmRdBvX5/5lLLH9aP38KF1pqr+6INuaA@public.gmane.org>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5utDmRdBvX5/5R9m/fhtKvoLKtGCp0j7rLg@public.gmane.org>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
+List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@www.linux.org.uk>
+List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
+List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, cpufreq-1walMZg8u8rXmaaqVzeoHQ@public.gmane.org
+To: aeriksson@fastmail.fm, davej@redhat.com, Arjan van de Ven <arjanv@redhat.com>
+Cc: cpufreq@www.linux.org.uk
 
-Len,
-
-Please apply (2.6.{4,5}).
+I like this patch -- I've modified it a bit so that it applies to 2.6.4 and
+also handles Arjan's strange 0x07 Tualatin. Please apply, Dave. 
 
 Thanks,
+
 	Dominik
 
-One big limitation of the ACPI specification is that it's impossible to
-detect the current P-State by reading from ACPI-defined registers. And the
-CPU isn't always at P0 when the system boots. So, try to "guess" the current
-P-State by analyzing cpu_khz.
+On Sun, Mar 14, 2004 at 04:20:15PM +0100, aeriksson@fastmail.fm wrote:
+> 
+> Hi, 
+> 
+> I'm one of the few who has a laptop (Dell L400) which doesn't announce
+> its speedstep capability to the OS the way is should. I made this
+> patch which turns my workaround into a compile time config option
+> which, if enabled, need to be explicitly enabled with a module
+> parameter. That should be non-invasive enough to allow it to be
+> included (I think).
+> 
+> Please have a look at the attached patch (against current cvs), and
+> indicate which improvements may be needed to allow it to be included.
+> 
+> /Anders
 
- arch/i386/kernel/cpu/cpufreq/acpi.c |   35 ++++++++++++++++++++++++++++++-----
- 1 files changed, 30 insertions(+), 5 deletions(-)
+A few SpeedStep-capable systems don't perform according to specification: the
+CPUID and/or some MSRs don't tell us the CPU is SpeedStep capable even though
+it definitely is. Allow a relaxed checking for two of these issues (Anders' and
+Arjan's notebooks) by a module parameter only available if a config option is
+turned on. This is done to avoid the risk of doing invalid speedstep instructions
+on systems which do not support it, and which might even lead to (hardware) 
+failure.
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c linux/arch/i386/kernel/cpu/cpufreq/acpi.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-03-15 09:20:50.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/acpi.c	2004-03-15 13:50:36.152118840 +0100
-@@ -238,6 +238,34 @@
+Patch originally from Andres Aeriksson (?) aeriksson at fastmail (dot) fm
+
+
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+--- linux-original/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-15 13:44:04.186706640 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig	2004-03-15 14:20:56.278417584 +0100
+@@ -176,6 +176,16 @@
+ 	depends on (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
+ 	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
+ 
++config X86_SPEEDSTEP_RELAXED_CAP_CHECK
++	bool "Relaxed speedstep capability checks"
++	depends on (X86_SPEEDSTEP_SMI || X86_SPEEDSTEP_ICH)
++	help
++	  Don't perform all checks for a speedstep capable system which would 
++	  normally be done. Some ancient or strange systems, though speedstep 
++	  capable, don't always indicate that they are speedstep capable. This 
++	  option let's the probing code bypass some of those checks if the
++	  parameter "relaxed_check=1" is passed to the module.
++
+ config X86_LONGRUN
+ 	tristate "Transmeta LongRun"
+ 	depends on CPU_FREQ
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-15 09:20:50.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-15 14:15:46.835460064 +0100
+@@ -10,6 +10,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h> 
++#include <linux/moduleparam.h>
+ #include <linux/init.h>
+ #include <linux/cpufreq.h>
+ #include <linux/pci.h>
+@@ -30,6 +31,12 @@
+ #define dprintk(msg...) do { } while(0)
+ #endif
+ 
++#ifdef CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK
++static int relaxed_check = 0;
++#else
++#define relaxed_check 0
++#endif
++
+ /*********************************************************************
+  *                   GET PROCESSOR CORE SPEED IN KHZ                 *
+  *********************************************************************/
+@@ -265,6 +272,12 @@
+ 		ebx = cpuid_ebx(0x00000001);
+ 
+ 		ebx &= 0x000000FF;
++
++		/* Arjan reported a strange mobile PIII-M where ebx is
++		   0x07 */
++		if ((ebx == 0x07) && relaxed_check)
++			return SPEEDSTEP_PROCESSOR_PIII_T;
++
+ 		if (ebx != 0x06)
+ 			return 0;
+ 
+@@ -292,7 +305,7 @@
+ 		 */
+ 		rdmsr(MSR_IA32_PLATFORM_ID, msr_lo, msr_hi);
+ 		dprintk(KERN_DEBUG "cpufreq: Coppermine: MSR_IA32_PLATFORM ID is 0x%x, 0x%x\n", msr_lo, msr_hi);
+-		if ((msr_hi & (1<<18)) && (msr_hi & (3<<24))) {
++		if ((msr_hi & (1<<18)) && (relaxed_check ? 1 : (msr_hi & (3<<24)))) {
+ 			if (c->x86_mask == 0x01)
+ 				return SPEEDSTEP_PROCESSOR_PIII_C_EARLY;
+ 			else
+@@ -362,6 +375,11 @@
  }
+ EXPORT_SYMBOL_GPL(speedstep_get_freqs);
  
- 
-+static unsigned long
-+acpi_cpufreq_guess_freq (
-+	struct cpufreq_acpi_io	*data,
-+	unsigned int		cpu)
-+{
-+	if (cpu_khz) {
-+		/* search the closest match to cpu_khz */
-+		unsigned int i;
-+		unsigned long freq;
-+		unsigned long freqn = data->acpi_data.states[0].core_frequency * 1000;
++#ifdef CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK
++module_param(relaxed_check, int, 0444);
++MODULE_PARM_DESC(relaxed_check, "Don't do all checks for speedstep capability.");
++#endif
 +
-+		for (i=0; i < (data->acpi_data.state_count - 1); i++) {
-+			freq = freqn;
-+			freqn = data->acpi_data.states[i+1].core_frequency * 1000;
-+			if ((2 * cpu_khz) > (freqn + freq)) {
-+				data->acpi_data.state = i;
-+				return (freq);
-+			}
-+		}
-+		data->acpi_data.state = data->acpi_data.state_count - 1;
-+		return (freqn);
-+	} else
-+		/* assume CPU is at P0... */
-+		data->acpi_data.state = 0;
-+		return data->acpi_data.states[0].core_frequency * 1000;
-+	
-+}
-+
- static int
- acpi_cpufreq_cpu_init (
- 	struct cpufreq_policy   *policy)
-@@ -290,11 +318,8 @@
- 	}
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 
--	/* 
--	 * The current speed is unknown and not detectable by ACPI... argh! Assume 
--	 * it's P0, it will be set to this value later during initialization.
--	 */
--	policy->cur = data->acpi_data.states[0].core_frequency * 1000;
-+	/* The current speed is unknown and not detectable by ACPI...  */
-+	policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
- 
- 	/* table init */
- 	for (i=0; i<=data->acpi_data.state_count; i++)
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: IBM Linux Tutorials
-Free Linux tutorial presented by Daniel Robbins, President and CEO of
-GenToo technologies. Learn everything from fundamentals to system
-administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click
+ MODULE_AUTHOR ("Dominik Brodowski <linux@brodo.de>");
+ MODULE_DESCRIPTION ("Library for Intel SpeedStep 1 or 2 cpufreq drivers.");
+ MODULE_LICENSE ("GPL");
