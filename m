@@ -1,13 +1,14 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: speedstep-ich and ich5, [speedstep]
-Date: Sun, 29 Aug 2004 15:26:12 +0200
+Subject: Re: [PATCH] cpufreq: 1/4 SMT awareness: save cpumask_t cpus
+Date: Sun, 29 Aug 2004 15:01:34 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040829132612.GA17676@dominikbrodowski.de>
-References: <41225D98.3090709@versanet.de>
+Message-ID: <20040829130134.GC17032@dominikbrodowski.de>
+References: <88056F38E9E48644A0F562A38C64FB6002A3B8F0@scsmsx403.amr.corp.intel.com>
+	<Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <41225D98.3090709@versanet.de>
+In-Reply-To: <Pine.LNX.4.58.0408200132510.4544@montezuma.fsmlabs.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,36 +20,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christian Heimanns <heimanns@versanet.de>
-Cc: cpufreq <cpufreq@www.linux.org.uk>
+To: Zwane Mwaikambo <zwane@linuxpower.ca>
+Cc: davej@redhat.com, cpufreq@www.linux.org.uk
 
-On Tue, Aug 17, 2004 at 09:33:44PM +0200, Christian Heimanns wrote:
-> Hello Dominik
+On Fri, Aug 20, 2004 at 01:35:10AM -0400, Zwane Mwaikambo wrote:
+> Hi Venkatesh,
 > 
-> Here are some news:
-> Today I've written a mail to Medion where I asked for a new BIOS. But I 
-> have just a slight hope to get one. I will see and wait.
+> On Wed, 18 Aug 2004, Pallipadi, Venkatesh wrote:
 > 
-> I changed two settings (self-explanatory) in the BIOS:
-> QuickBoot Mode = Disabled
-> Boot-time Diagnostic Screen = Enabled
-> Now I can see the following boot message from the BIOS directly after 
-> power on my notebook:
+> > 2) Or leave the synchronization overhead to the policy governor.
+> > Driver only says a set of CPUs will be affected by the change.
+> > It is the responsibility of the governor to take care of
+> > SMT synchronization and preventing one CPU slowing down all
+> > the other ones. Governor should only write only when all dependent
+> > CPUs are idle.
+> >
+> > I think Dominik is thinking of option 2.
+> > I see advantages in option 2 as governor can do the synchronization
+> > at one place, instead of that being done in each low level driver.
+> > But, having said that, with option 2, a dumb governor may not do
+> > proper synchronization at all.
 > 
-> ***********************************************************************
-> *                                                                     *
-> * An incompatibility between the system and CPU FSB has been detected.*
-> * You have installed a faster CPU into a system incapable of running  *
-> * it as fast as the CPU is capable of.                                *
-> *                                                                     *
-> * This CPU is not running at it's peak performance                    *
-> *                                                                     *
-> ***********************************************************************
-> 
-> Maybe this is related to our problem?
+> Indeed, it 2 would make the most sense especially since we have the
+> topology information. I'll generate and test a patch as soon as i can.
 
-This is very likely relate to our problem -- it basically tells us "the BIOS
-isn't really aware of the CPU and doesn't know how to handle it". Amazing
-the notebook got selled this way... So, any news from MEDION?
+Actually, I do favor "2" by large, and there simply may not be "dumb"
+governors once we propagate the SMT awareness to the cpufreq core. Zwane,
+are you aware of my current patch set which aims at the same direction? IIRC
+[and my memory might be a bit off after a long vacation], it mostly needs
+work from the "governor" perspective -- and testing. Don't have hardware
+here...
 
+Thanks,
 	Dominik
