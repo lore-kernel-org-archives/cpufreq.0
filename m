@@ -1,18 +1,13 @@
-From: Jesper Anderson <jesper@pobox.com>
-Subject: Re: Best CPU and Chipset for cpufreq?
-Date: Wed, 14 Jan 2004 23:42:38 +0100
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: What AMD CPU is that ???
+Date: Thu, 15 Jan 2004 13:12:15 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040114224238.GB2625@acheron.the-domination.com>
-References: <20040114163958.GB1774@acheron.the-domination.com>
-	<1074100688.4376.12.camel@firebird.medicina.ub.es>
-	<20040114192225.GA2489@acheron.the-domination.com>
-	<20040114204934.GA18333@piout.net>
-	<20040114215400.GA2625@acheron.the-domination.com>
-	<20040114221840.GA16987@piout.net>
+Message-ID: <20040115121215.GS14031@poupinou.org>
+References: <20040114221322.GA2135@seneca.muc.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040114221840.GA16987@piout.net>
+In-Reply-To: <20040114221322.GA2135@seneca.muc.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -24,36 +19,35 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Harald Milz <hm@seneca.muc.de>
+Cc: Cpufreq@www.linux.org.uk
 
-On Wed, Jan 14, 2004 at 11:18:40PM +0100, Alexandre Belloni wrote:
+On Wed, Jan 14, 2004 at 11:13:22PM +0100, Harald Milz wrote:
+> Hi,
 > 
-> When I wanted to buy a laptop, I first looked at Acer (803 LMi and
-> Ferrari) but finally, after comparing, I found the dell was better
-> (in my point of view).
+> I dug a little bit more into my new (alleged?) AMD Athlon XP-M 2400+
+> (Barton) using x86info-1.12a. According to the 512K cache it is
+> indeed a Barton core but I suspect it's not a mobile. Please
+> see the output of x86info and /pro/cpuinfo - the kernel (SuSE
+> 2.4.21-166) says it's a Duron !). Essentially, I can't set
+> the upper and lower frequency using /proc/cpufreq. According to
+> http://fab51.fc2web.com/pc/refs/opn_guide.html, it is indeed a "Mainstream
+> XP-M" (AXMH2400FQQ4C). Any idea why setting FID and VID don't work? What
+> also worries me is the max FID of 13.5 which means I can't run this CPU at
+> 18x100? Does that mean I need to get another board (one with a real FSB133
+> and a BIOS that recognized this CPU)? ACPI won't work here because it's a
+> Asus A7V board that the kernel will force to acpi=oldboot. 
+> 
 
-Mmm ... just looked it over, and it's a *very* impressive machine.
-Especially considering how good battery performance it can get.
+x86info is broken in order to know if you can set VID/FID.
+This processor can only have a mult of 13.5 at max.
 
-Sadly it's only available with the Nvidia 5200 or Radeon 9600 Ultra
-over here (Sweden); the 5200 is lame-o, and the Radeons have pretty
-bad Linux support (if you don't mind Nvidia closed drivers). Ah well.
+For the rest of your question, I don't know.
 
-And to keep that part (graphics) on topic, it seems the new NVidia
-graphics cards for laptops scale their voltage. That might be
-something that we'll end up needing a driver for. Interesting
-technology, for sure.
+Cheers,
 
-Thanks for the impromptu benchmarking. I'm right now leaning a lot
-more towards one of these instead of an Acer. Just one questions; you
-have the 1.7 GHz one, right? How hot does it get? Do you notice that
-changing with cpu frequency adjustment?
+-- 
+Ducrot Bruno
 
-This (heat dissipation and power consumption in various loads) are the
-things that are really hard to find, and where I find the Linux
-utilities to generally outperform Windows. Or maybe it just is that
-Windows is always using CPU for a lot of background stuff ...
-
-Thanks again,
-
-Jesper
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
