@@ -1,17 +1,11 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: [Bug 3600] New: Cpu recognization fails after upgrade from
-	2.6.7 to 2.6.9
-Date: Wed, 20 Oct 2004 18:51:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Small cleanups / docs improvements for powernow-k8
+Date: Wed, 20 Oct 2004 20:07:03 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041020165110.GA6992@dreamland.darkstar.lan>
-References: <200410201413.i9KED718023481@fire-1.osdl.org>
-	<20041020154744.GA5372@dreamland.darkstar.lan>
-	<20041020180537.17d0dd7c@paraclito.crema>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <20041020180703.GA10469@elf.ucw.cz>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20041020180537.17d0dd7c@paraclito.crema>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,43 +17,114 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniele Bonomi <dbonomi@crema.unimi.it>
-Cc: cpufreq@www.linux.org.uk
+To: paul.devriendt@amd.com, davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
+Cc: Rusty trivial patch monkey Russell <trivial@rustcorp.com.au>
 
-Il Wed, Oct 20, 2004 at 06:05:37PM +0200, Daniele Bonomi ha scritto: 
-> On Wed, 20 Oct 2004 17:47:44 +0200 Kronos <kronos@kronoz.cjb.net> wrote:
-> 
-> > Hi,
-> > I saw something similar on my notebook. In my case when the notebook
-> > is turned on while using battery BIOS sets CPU speed to a frequency
-> > lower than the defaul (800MHz for me). It seems that powernow driver
-> > is confused by the BIOS fiddling with CPU speed and fails to load. I
-> > had the same symptoms: PST not found and wrong min/max frequencies.
-> > 
-> > Disabling "Automatic CPU power saving" (or something like that) in the
-> > BIOS cures the problem for me. Note that this option do not affect
-> > power management under linux (or windows), it just controls the CPU
-> > before a real OS comes up.
-> 
-> I tried but it didn't worked for me.
-> For me doesn't work even if i'm plugged in...
+Hi!
 
-Ok, can you apply this patch to 2.6.9 (and enable debug):
+These are very small cleanups / documentation additions. It avoids
+using different names for same fields in different structures. Please
+apply,
 
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:46:51.000000000 +0200
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-20 18:47:06.000000000 +0200
-@@ -597,7 +597,7 @@
- 	rdmsrl (MSR_K7_FID_VID_STATUS, fidvidstatus.val);
+								Pavel
+
+
+--- foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	20 Oct 2004 01:26:30 -0000	1.16
++++ foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	20 Oct 2004 18:01:03 -0000
+@@ -18,6 +18,9 @@
+  *  Processor information obtained from Chapter 9 (Power and Thermal Management)
+  *  of the "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
+  *  Opteron Processors" available for download from www.amd.com
++ *
++ *  Tables for specific CPUs can be infrerred from
++ *	http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
+  */
  
- 	/* A K7 with powernow technology is set to max frequency by BIOS */
--	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.MFID];
-+	fsb = (10 * cpu_khz) / fid_codes[fidvidstatus.bits.CFID];
- 	if (!fsb) {
- 		printk(KERN_WARNING PFX "can not determine bus frequency\n");
- 		return -EINVAL;
+ #include <linux/kernel.h>
+@@ -65,7 +68,12 @@
+ 	return 1550-vid*25;
+ }
+ 
+-/* Return the vco fid for an input fid */
++/* Return the vco fid for an input fid
++ *
++ * Each "low" fid has corresponding "high" fid, and you can get to "low" fids
++ * only from corresponding high fids. This returns "high" fid corresponding to
++ * "low" one.
++ */
+ static u32 convert_fid_to_vco_fid(u32 fid)
+ {
+ 	if (fid < HI_FID_TABLE_BOTTOM) {
+@@ -309,10 +317,7 @@
+ /* Phase 2 - core frequency transition */
+ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid)
+ {
+-	u32 vcoreqfid;
+-	u32 vcocurrfid;
+-	u32 vcofiddiff;
+-	u32 savevid = data->currvid;
++	u32 vcoreqfid, vcocurrfid, vcofiddiff, savevid = data->currvid;
+ 
+ 	if ((reqfid < HI_FID_TABLE_BOTTOM) && (data->currfid < HI_FID_TABLE_BOTTOM)) {
+ 		printk(KERN_ERR PFX "ph2: illegal lo-lo transition 0x%x 0x%x\n",
+@@ -501,7 +495,7 @@
+ 		    || (pst[j].fid & 1)
+ 		    || (j && (pst[j].fid < HI_FID_TABLE_BOTTOM))) {
+ 			/* Only first fid is allowed to be in "low" range */
+-			printk(KERN_ERR PFX "fid %d invalid : 0x%x\n", j, pst[j].fid);
++			printk(KERN_ERR PFX "two low fids - %d : 0x%x\n", j, pst[j].fid);
+ 			return -EINVAL;
+ 		}
+ 		if (pst[j].fid < lastfid)
+@@ -621,7 +615,7 @@
+ 			return -ENODEV;
+ 		}
+ 
+-		data->vstable = psb->voltagestabilizationtime;
++		data->vstable = psb->vstable;
+ 		dprintk(KERN_INFO PFX "voltage stabilization time: %d(*20us)\n", data->vstable);
+ 
+ 		dprintk(KERN_DEBUG PFX "flags2: 0x%x\n", psb->flags2);
+@@ -654,7 +648,7 @@
+ 		dprintk(KERN_INFO PFX "maxvid: 0x%x\n", psb->maxvid);
+ 		maxvid = psb->maxvid;
+ 
+-		data->numps = psb->numpstates;
++		data->numps = psb->numps;
+ 		dprintk(KERN_INFO PFX "numpstates: 0x%x\n", data->numps);
+ 		return fill_powernow_table(data, (struct pst_s *)(psb+1), maxvid);
+ 	}
+--- foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	23 Aug 2004 02:11:54 -0000	1.8
++++ foo/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	20 Oct 2004 17:53:40 -0000
+@@ -21,8 +21,7 @@
+ 	u32 plllock; /* pll lock time, units 1 us */
+ 
+ 	/* keep track of the current fid / vid */
+-	u32 currvid;
+-	u32 currfid;
++	u32 currvid, currfid;
+ 
+ 	/* the powernow_table includes all frequency and vid/fid pairings:
+ 	 * fid are the lower 8 bits of the index, vid are the upper 8 bits.
+@@ -152,14 +151,14 @@
+ 	u8 signature[10];
+ 	u8 tableversion;
+ 	u8 flags1;
+-	u16 voltagestabilizationtime;
++	u16 vstable;
+ 	u8 flags2;
+-	u8 numpst;
++	u8 num_tables;
+ 	u32 cpuid;
+ 	u8 plllocktime;
+ 	u8 maxfid;
+ 	u8 maxvid;
+-	u8 numpstates;
++	u8 numps;
+ };
+ 
+ /* Pairs of fid/vid values are appended to the version 1.4 PSB table. */
 
-
-Luca
 -- 
-Home: http://kronoz.cjb.net
-Se non puoi convincerli, confondili.
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
