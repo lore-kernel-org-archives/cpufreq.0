@@ -1,15 +1,14 @@
-From: Jesper Anderson <jesper@pobox.com>
-Subject: Re: Pentium III Coppermine and 440BX/ZX/DX
-Date: Tue, 17 Feb 2004 19:49:29 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Re: 2.6.2: P4 ClockMod speed
+Date: Tue, 17 Feb 2004 10:09:39 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040217184929.GB1410@acheron.utfors.se>
-References: <20040217005504.GA809@acheron.utfors.se>
-	<20040217095411.GV13262@poupinou.org>
-	<20040217162720.GA1202@acheron.utfors.se>
+Message-ID: <20040217090939.GA9935@dominikbrodowski.de>
+References: <20040216213435.GA9680@dominikbrodowski.de>
+	<40313AA9.1060906@arenanetwork.com.br>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1385278321790786=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040217162720.GA1202@acheron.utfors.se>
+In-Reply-To: <40313AA9.1060906@arenanetwork.com.br>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,32 +18,91 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: dual_bereta_r0x <dual_bereta_r0x@arenanetwork.com.br>
+Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 
-On Tue, Feb 17, 2004 at 05:27:20PM +0100, Jesper Anderson wrote:
-> On Tue, Feb 17, 2004 at 10:54:11AM +0100, Bruno Ducrot wrote:
-> > 
-> > There is good chance that it work, but I think that you need to pass the
-> > smi_cmd=0x82 to speedstep-smi:
-> > 
-> > modprobe speedstep-smi smi_cmd=0x82
-> 
-> Ok, I played around a bit, rebooted, messed about - and suddenly this
-> worked. Well, sort of. I now have an interface to read information,
-> however, there's no way to set the CPU frequency; I can't find a write
-> interface?
- 
-Now I feel pretty stupid. In my playing around trying to get this to 
-work, I had among other things turned the userspace governor off, and
-forgot to turn it back on. Turning it back on fixed everything, we can
-add the Gateway Solo 3450 to the success stories using speedstep-smi
-with smi_cmd=0x82 added as an argument.
- 
-Now, if I can only get the ACPI interface to see the battery, I'd be a
-lot happier ... but that's a different problem.
- 
-Thank you very much for the help!
- 
-Jesper
+
+--===============1385278321790786==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
+Content-Disposition: inline
+
+
+--Nq2Wo0NMKNjxTN9z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Feb 16, 2004 at 09:48:25PM +0000, dual_bereta_r0x wrote:
+> >>locked on cpu *real* speed.
+> >
+> >
+> >It's just a change of appearance -- the cpufreq driver uses the theoreti=
+cal
+> >speed of the CPU for its calculations; the actual CPU speed isn't
+> >affected. You can verify this by looking at /proc/cpuinfo which still te=
+lls
+> >3124.376 MHz.
+> >
+> >By doing so it becomes easier to enter different frequencies e.g. into
+> >/sys/devices/system/cpu/cpufreq/scaling_setspeed -- on my desktop, typin=
+g=20
+> >in
+> >1200000 is easier than 12121224... [*]
+>=20
+> Sure but if i want to downgrade it, for example, by night, to a lower=20
+> speed, and then next day return it to full power? Will I stuck at 2.4GHz?
+
+No, it will run at the same speed as before -- the ratio between actual
+cpu_khz and cpufreq/scaling_setspeed will always be the same.
+
+> >[*] The _actual_ CPU speed should be used on all cpufreq drivers where t=
+his
+> >specific CPU frequency has implications to external components, e.g. LCD,
+> >memory or pcmcia devices. Where only the _frequency ratio_ is of importa=
+nce
+> >[for loops_per_jiffy and friends] such "rounding" is acceptable, as long=
+ as
+> >the ratio is constant.
+>=20
+> Indeed. I'll showing in LCD a lower speed than the running.
+
+That's not the point: some hardware (e.g. ARM) needs different memory
+settings and different settings of the LCD controller  for different=20
+CPU frequencies, as the Front Side Bus of the CPU is closely related=20
+to the CPU frequency. On x86, all cpufreq techniques I've
+seen so far do not modify the FSB [*], so memory settings etc. do not need
+to be modified.
+
+	Dominik
+
+[*] or scaling the FSB didn't work...
+
+--Nq2Wo0NMKNjxTN9z
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAMdpTZ8MDCHJbN8YRAlUUAKCZGP6jqj6zBOVs74bpagAoqDU7cQCfSSoi
+OWNYLud2rchO1xKFuHNBi0o=
+=IjVx
+-----END PGP SIGNATURE-----
+
+--Nq2Wo0NMKNjxTN9z--
+
+
+--===============1385278321790786==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1385278321790786==--
+
