@@ -1,13 +1,14 @@
-From: Con Kolivas <kernel@kolivas.org>
+From: Alexander Clouter <alex-kernel@digriz.org.uk>
 Subject: Re: [PATCH] cpufreq_ondemand
-Date: Mon, 18 Oct 2004 08:35:49 +1000
+Date: Sun, 17 Oct 2004 23:44:10 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <4172F3C5.8090604@kolivas.org>
+Message-ID: <20041017224410.GA30611@inskipp.digriz.org.uk>
 References: <20041017222916.GA30841@inskipp.digriz.org.uk>
+	<4172F3C5.8090604@kolivas.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0259980284=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20041017222916.GA30841@inskipp.digriz.org.uk>
+In-Reply-To: <4172F3C5.8090604@kolivas.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,20 +18,86 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Alexander Clouter <alex-kernel@digriz.org.uk>
+To: Con Kolivas <kernel@kolivas.org>
 Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 
-Alexander Clouter wrote:
->> 3. (major) the scaling up and down of the cpufreq is now smoother.  I found 
-> 	it really nasty that if it tripped < 20% idle time that the freq was 
-> 	set to 100%.  This code smoothly increases the cpufreq as well as 
-> 	doing a better job of decreasing it too
 
-I'd much prefer it shot up to 100% or else every time the cpu usage went 
-up there'd be an obvious lag till the machine ran at it's capable speed. 
-  I very much doubt the small amount of time it spent at 100% speed with 
-the default design would decrease the battery life significantly as well.
+--===============0259980284==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k1lZvvs/B4yU6o8G"
+Content-Disposition: inline
 
-Cheers,
-Con
+
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Oct 18, Con Kolivas wrote:
+>=20
+> I'd much prefer it shot up to 100% or else every time the cpu usage went=
+=20
+> up there'd be an obvious lag till the machine ran at it's capable speed.=
+=20
+>  I very much doubt the small amount of time it spent at 100% speed with=
+=20
+> the default design would decrease the battery life significantly as well.
+>=20
+The issue I found was that if you are running a process that is io bound, f=
+or
+example, then you may never need to run your cpu at 100%, it will speed up
+bit by bit[1] till it gets to a speed that is fast enough to to deal with it
+without max'ing the cpufreq.
+
+This is after all exactly want most (if not all) the userspace daemons try =
+to=20
+do anyway.
+
+Cheers
+
+Alex
+
+[1] also you might find that the task does not last long enough to warrant=
+=20
+	jumping and lurking at 100% speed anyway
+
+--=20
+ _________________________________________=20
+/ It's always darkest just before it gets \
+\ pitch black.                            /
+ -----------------------------------------=20
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+--k1lZvvs/B4yU6o8G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFBcvW6Nv5Ugh/sRBYRAmHRAJ4/MBihgzwxTRHYQ6m2iGToq2qWlgCgiFzz
+v7vob5jvig48p3dbHFR9+Dk=
+=42EQ
+-----END PGP SIGNATURE-----
+
+--k1lZvvs/B4yU6o8G--
+
+
+--===============0259980284==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0259980284==--
+
