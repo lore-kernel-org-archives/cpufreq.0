@@ -1,17 +1,15 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: Coppermine, cpufreq
-Date: Sun, 2 Nov 2003 14:29:57 +0100
+From: Jan Rychter <jan@rychter.com>
+Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
+ P-state driver
+Date: Sun, 02 Nov 2003 12:28:44 -0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031102132957.GJ21970@poupinou.org>
-References: <3FA11700.8080908@tcpa-info.org>
-	<20031030140910.GH28351@poupinou.org>
-	<3FA17DDF.5000600@tcpa-info.org>
-	<20031031071457.GL28351@poupinou.org>
-	<3FA25853.3030100@tcpa-info.org>
+Message-ID: <m23cd6bjlv.fsf@tnuctip.rychter.com>
+References: <88056F38E9E48644A0F562A38C64FB6007793C@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <3FA25853.3030100@tcpa-info.org>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007793C@scsmsx403.sc.intel.com>
+	(Venkatesh
+	Pallipadi's message of "Wed, 22 Oct 2003 11:21:22 -0700")
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,31 +21,39 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthias Hannich <dumb@tcpa-info.org>
-Cc: cpufreq@www.linux.org.uk
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Mukesh Rajan <megabyte1024@hotmail.com>, linux-acpilinux-acpi@intel.com, cpufreq@www.linux.org.uk
 
-On Fri, Oct 31, 2003 at 01:40:51PM +0100, Matthias Hannich wrote:
-> Am 10/31/2003 08:14 AM schrieb Ducrot Bruno:
-> >>>PS: If modprobe speedstep-ich still  do not work
-> >>>modpbore speedstep-lib
-> >>
-> >>No error messages.
-> >>
-> >>
-> >>>modprobe speedstep-ich
-> >>
-> >
-> >Are you sure you have an ich based system?
-> 
-> 00:00.0 Host bridge: Silicon Integrated Systems [SiS] 630 Host (rev 31)
-> 00:01.0 ISA bridge: Silicon Integrated Systems [SiS] 85C503/5513
-> 
+>>>>> "Venkatesh" == Venkatesh Pallipadi writes:
+ Venkatesh> I do not have any performance numbers taken from actual
+ Venkatesh> probes. We have seen in our testing that the the frequency
+ Venkatesh> does change based on the cpu usage.  For example, on a
+ Venkatesh> Centrino system,
+ Venkatesh> - frequency will be lowest when system is idle
+ Venkatesh> - frequency will be somewhere in the mid-range when you run
+ Venkatesh>   single app like mp3/mpeg player
+ Venkatesh> - frequency will be maximum when you run multiple apps
+ Venkatesh> And with the kind of power savings that comes with these
+ Venkatesh> frequency changes, this behaviour results in longer battery
+ Venkatesh> life. However, as yet I do not have any numbers to quantify
+ Venkatesh> this gain, mainly because I do not have any setup where I
+ Venkatesh> can measure actual power.
+[...]
 
-Due to lack of documentation, and since no body (AFAIC) has even started
-to reverse engeener, the SiS is not supported.
+Interesting. I have done some measurements on a Toshiba S7/290LNKW,
+which has a 900MHz Pentium-M. The results have been posted to this list
+a while ago -- the most surprising one being that the Pentium-M in that
+machine seemed to always consume the same amount of power when idle,
+independent of operating frequency. The frequency only made a difference
+when the CPU was actually doing something (or when I made it not use the
+C3 state by loading usb-uhci).
 
--- 
-Ducrot Bruno
+Another interesting result was that in general, my P-III based laptop
+has lower power consumption than the Centrino-based one. Runs against
+the Centrino advertising campaign.
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+My measurements were done using the ACPI battery status and overall
+seemed to make a lot of sense, except for this little detail. Can
+anybody from Intel confirm that this is the way it is supposed to be?
+
+--J.
