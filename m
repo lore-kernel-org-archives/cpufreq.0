@@ -1,14 +1,14 @@
-From: mru@kth.se (=?iso-8859-1?q?M=E5ns_Rullg=E5rd?=)
-Subject: Re: [PATCHSET] 0/3 Dynamic cpufreq governor and updates to ACPI
- P-state driver
-Date: Tue, 21 Oct 2003 22:39:16 +0200
+From: Dominik Brodowski <linux@brodo.de>
+Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI
+	P-state driver
+Date: Tue, 21 Oct 2003 22:59:13 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <yw1xoewaiavf.fsf@kth.se>
-References: <88056F38E9E48644A0F562A38C64FB60077911@scsmsx403.sc.intel.com>
-	<yw1xbrsaeu44.fsf@kth.se> <20031021203037.GB3133@sam-solutions.net>
+Message-ID: <20031021205913.GK26971@brodo.de>
+References: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB60077914@scsmsx403.sc.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,55 +18,40 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@www.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, cpufreq@www.linux.org.uk, "Nakajima, Jun" <jun.nakajima@intel.com>, linux-acpi <linux-acpi@intel.com>
 
-Alexander Bokovoy <ab@altlinux.org> writes:
+A few comments on this patch.
 
->> > Most of the latest CPUs (laptop CPUs in particular) have feature=20
->> > which enable very low latency P-state transitions=20
->> > (like Enhanced Speedstep Technology-EST). Using this feature,=20
->> > we can have a lightweight in kernel cpufreq governor,=20
->> > to vary CPU frequency depending on the CPU usage. The=20
->> > advantage being low power consumption and also cooler laptops.
->>=20
->> So, I took this thing for a spin, but it didn't work at all.  I loaded
->> the module, and did "echo demandbased > /sys/.../scaling_governor".
->> This echo never returned, and the keyboard locked up.  After a little
->> while, the fan started running at full speed.  I managed to cut and
->> paste into an xterm and start top, which showed nothing unusual.  I
->> could shut down and reboot normally.
-> I applied these patches to stock 2.6.0-test8 and selected 'demandbased' as
-> default governor. In result, everything worked from the very beginning, my
-> Centrino-based system went to 600MHz and was upping when load was going
-> higher during compilation or disk access but went down when load was
-> lowering. So it works well for me.
+> + *  Copyright (C)  2001 Russell King
+> + *            (C)  2002 - 2003 Dominik Brodowski <linux@brodo.de>
 
-What's your /proc/cpuinfo?  Mine says
+As nothing in this driver is from me, please remove my copyright
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 2
-model name	: Mobile Intel(R) Pentium(R) 4 - M CPU 1.80GHz
-stepping	: 7
-cpu MHz		: 2069.912
-cache size	: 512 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36=
- clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid
-bogomips	: 4087.80
+> + * $Id:$
+
+No need for an ID tag -- you can remove that as well.
+
+> +#define DBS_RATE		(HZ/4)	/* timer rate is 250ms */
+> +#define LOW_LATENCY_FREQUENCY_CHANGE_LIMIT 	100 /* in uS */
+That's really low. latency_timer is in 10^(-9) s == ns [see cpufreq.h], so I 
+think you're missing a factor of 1000 here -- but maybe some drivers miss a 
+factor of 1000, too...
+
+> +static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> +				   unsigned int event)
+> +{
+> +	unsigned int cpu = policy->cpu;
+> +
+> +	switch (event) {
+> +	case CPUFREQ_GOV_START:
+> +		if ((!cpu_online(cpu)) || (!try_module_get(THIS_MODULE)) || !policy->cur)
+> +			return -EINVAL;
+
+You needn't worry about try_module_get()/put_module() and friends. That's handled by
+the cpufreq core already.
 
 
-
---=20
-M=E5ns Rullg=E5rd
-mru@kth.se
+	Dominik
