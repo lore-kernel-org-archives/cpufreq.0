@@ -1,13 +1,11 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Fw: Re: [OOPS] [2.6.0-test5-bk8] cpufreq and sysfs problem...
-Date: Fri, 3 Oct 2003 19:29:56 +0200
+Subject: [RFC] split up cpufreq.c in several files, x86 autoloader
+Date: Sat, 4 Oct 2003 00:36:12 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031003172956.GB4050@brodo.de>
-References: <20030924153746.3b0f6493.akpm@osdl.org>
+Message-ID: <20031003223612.GA18181@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030924153746.3b0f6493.akpm@osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,32 +17,49 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk
-Cc: Ashley Pittman <ashley@quadrics.com>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Thanks for noticing this. Attached patch [for 2.6.0-test6-bk] should fix it.
+I've a patch ready which splits up drivers/cpufreq/cpufreq.c into several
+files. Instead of
+
+-rw-r--r--    1 linux    users       26014 2003-10-03 23:31 cpufreq.c
+
+it's this:
+
+-rw-r--r--    1 linux    users       11625 2003-10-04 00:17 cpufreq_core.c
+	driver and device {un}registration. Can be split up further if
+	there's need to do so
+
+-rw-r--r--    1 linux    users        2832 2003-10-04 00:10 cpufreq_governor.c
+	cpufreq_governor and friends, and governor {un}registration
+
+-rw-r--r--    1 linux    users        1221 2003-10-04 00:19 cpufreq.h
+	prototypes for shared variables and functions
+
+-rw-r--r--    1 linux    users        4913 2003-10-04 00:13 cpufreq_notifiers.c
+	cpufreq notifier lists
+
+-rw-r--r--    1 linux    users        7576 2003-10-04 00:14 cpufreq_sysfs.c
+	cpufreq sysfs and kobject handling
+
+
+
+What's the general opinion about such a split-up?
+
+And what does the public think about this:
+Except for a small part [cpufreq_notifiers.c] the rest of the cpufreq core
+could be built as a module. drivers/acpi/processor.ko would depend on it,
+though [until my ACPI patches are accepted, at least], and it couldn't be
+available for a certain ARM architecture IIRC. For x86, it'd make life,
+testing, and developing easier.
+
+
+Third, and last question:
+For x86 there is a wide choice of cpufreq drivers. Especially for
+distributions and inexperienced users [no pun intended] it might become more
+and more difficult to select the best driver: "I got a mobile Pentium-4-M,
+p4-clockmod or speedstep-ich?" is one good example. Should the detection of
+the "best" cpufreq driver be made available as an optional(!)
+"cpufreq-autoload" module in arch/i386/kernel/cpu/cpufreq/?
 
 	Dominik
-
-diff -ruN linux-original/drivers/cpufreq/cpufreq.c linux/drivers/cpufreq/cpufreq.c
---- linux-original/drivers/cpufreq/cpufreq.c	2003-10-02 17:36:42.000000000 +0200
-+++ linux/drivers/cpufreq/cpufreq.c	2003-10-03 19:09:45.336175240 +0200
-@@ -449,6 +449,9 @@
- 	if (!kobject_get(&data->kobj))
- 		return -EFAULT;
- 
-+	if (cpufreq_driver->target)
-+		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-+
- 	kobject_unregister(&data->kobj);
- 
- 	kobject_put(&data->kobj);
-@@ -459,9 +462,6 @@
- 	 */
- 	wait_for_completion(&data->kobj_unregister);
- 
--	if (cpufreq_driver->target)
--		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
--
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(data);
