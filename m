@@ -1,18 +1,12 @@
-From: Francesco Poli <frx@firenze.linux.it>
-Subject: Re: Spam coming from the list
-Date: Mon, 27 Sep 2004 23:39:05 +0200
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: [PATCH] prevent various divide underflows in ondemand governor
+Date: Wed, 29 Sep 2004 11:17:58 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040927233905.23aee787.frx@firenze.linux.it>
-References: <b01d37a4040926074578038cd8@mail.gmail.com>
-	<20040926162447.718973F03@latitude.mynet.no-ip.org>
-	<20040926215157.A11082@flint.arm.linux.org.uk>
-	<20040927142413.60EFC40AA8@nathan.muc.de>
-	<20040927143930.GA6561@redhat.com>
-	<20040927150446.0EEC540AA8@nathan.muc.de>
+Message-ID: <88056F38E9E48644A0F562A38C64FB6002FE4E73@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2117799911=="
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C4A650.A6791EA3"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040927150446.0EEC540AA8@nathan.muc.de>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,65 +16,90 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
---===============2117799911==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="pgp-sha1";
-	boundary="Signature=_Mon__27_Sep_2004_23_39_05_+0200_eLOyJeSCM_S/O_Ij"
+This is a multi-part message in MIME format.
 
---Signature=_Mon__27_Sep_2004_23_39_05_+0200_eLOyJeSCM_S/O_Ij
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On Mon, 27 Sep 2004 17:04:46 +0200 (CEST) Harald Milz wrote:
-
-> > People should not have to be subscribed to a list just to report a
-> > bug. It's annoying as hell every time I come up with random patches,
-> > dig out the contact address out of MAINTAINERS, and send patches to
-> > get a 'you aren't subscribed yadayada' email back.
-> 
-> Understand. The question is which evil is the bigger one ... It's not
-> as if spam were less annoying ;-)
-
-IMHO, making the list moderated for non-subscribers can be a viable
-solution, *as long* as the list-admin is relatively prompt in approving
-any legitimate non-subscriber message.
-
-I personally administer a GNU-Mailman-based list and I setup things that
-way (all subscriber-generated messages pass, all
-non-subscriber-generated messages must be approved to pass): no junk
-mail reaches the list.
-Of course this takes a little effort from me (whenever I receive a
-Mailman-generated advisory that some messages are waiting for approval),
-but I think that the benefits outweight the drawbacks (at least for low
-to medium traffic lists...).
-
-My 2 cents...
+------_=_NextPart_001_01C4A650.A6791EA3
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 
--- 
-             |  GnuPG Key ID = DD6DFCF4 |  $ fortune
-  Francesco  |        Key fingerprint = |  Q: What is purple
-     Poli    | C979 F34B 27CE 5CD8 DC12 |     and commutes?
-             | 31B5 78F4 279B DD6D FCF4 |  A: A boolean grape.
 
---Signature=_Mon__27_Sep_2004_23_39_05_+0200_eLOyJeSCM_S/O_Ij
-Content-Type: application/pgp-signature
+This patch fixes various integer divisions in ondemand governor.=20
+Before the fix, we were underflowing to zero at these divisions,
+resulting in=20
+improper frequency changes by ondemand governor.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+Thanks to Luca for identifying this issue.
 
-iD8DBQFBWIh+ePQnm91t/PQRAvhmAJwP3FhJS9CfYY8Z37b7vfmbxEgkpgCgh+tk
-s2qHisj7JLGCO0/Qx6uV3SI=
-=euEI
------END PGP SIGNATURE-----
+Dave: Please apply.
 
---Signature=_Mon__27_Sep_2004_23_39_05_+0200_eLOyJeSCM_S/O_Ij--
+Thanks,
+Venki
 
+------_=_NextPart_001_01C4A650.A6791EA3
+Content-Type: application/octet-stream;
+	name="ondemand_latency_lowerlimit_1.patch"
+Content-Transfer-Encoding: base64
+Content-Description: ondemand_latency_lowerlimit_1.patch
+Content-Disposition: attachment; filename="ondemand_latency_lowerlimit_1.patch"
 
---===============2117799911==
+ClRoaXMgcGF0Y2ggZml4ZXMgdmFyaW91cyBpbnRlZ2VyIGRpdmlzaW9ucyBpbiBvbmRlbWFuZCBn
+b3Zlcm5vci4gCkJlZm9yZSB0aGUgZml4LCB3ZSB3ZXJlIHVuZGVyZmxvd2luZyB0byB6ZXJvIGF0
+IHRoZXNlIGRpdmlzaW9ucywgcmVzdWx0aW5nIGluIAppbXByb3BlciBmcmVxdWVuY3kgY2hhbmdl
+cyBieSBvbmRlbWFuZCBnb3Zlcm5vci4KClRoYW5rcyB0byBMdWNhIGZvciBpZGVudGlmeWluZyB0
+aGlzIGlzc3VlLgoKU2lnbmVkLW9mZi1ieTo6ICJWZW5rYXRlc2ggUGFsbGlwYWRpIiA8dmVua2F0
+ZXNoLnBhbGxpcGFkaUBpbnRlbC5jb20+CgotLS0gbGludXgtMi42LjktcmMyLy9kcml2ZXJzL2Nw
+dWZyZXEvY3B1ZnJlcV9vbmRlbWFuZC5jLm9yZwkyMDA0LTA5LTE1IDExOjMyOjM4LjAwMDAwMDAw
+MCAtMDcwMAorKysgbGludXgtMi42LjktcmMyLy9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9vbmRl
+bWFuZC5jCTIwMDQtMDktMTUgMTc6MDk6MzUuMDAwMDAwMDAwIC0wNzAwCkBAIC01OSw3ICs1OSw3
+IEBAIHN0YXRpYyB1bnNpZ25lZCBpbnQgCQkJCWRlZl9zYW1wbGluZ19yYXQKICNkZWZpbmUgREVG
+X1NBTVBMSU5HX1JBVEVfTEFURU5DWV9NVUxUSVBMSUVSCSgxMDAwKQogI2RlZmluZSBERUZfU0FN
+UExJTkdfRE9XTl9GQUNUT1IJCSgxMCkKICNkZWZpbmUgVFJBTlNJVElPTl9MQVRFTkNZX0xJTUlU
+CQkoMTAgKiAxMDAwKQotI2RlZmluZSBzYW1wbGluZ19yYXRlX2luX0haKHgpCQkJKCh4ICogSFop
+IC8gKDEwMDAgKiAxMDAwKSkKKyNkZWZpbmUgc2FtcGxpbmdfcmF0ZV9pbl9IWih4KQkJCSgoKHgg
+KiBIWikgPCAoMTAwMCAqIDEwMDApKT8xOigoeCAqIEhaKSAvICgxMDAwICogMTAwMCkpKQogCiBz
+dGF0aWMgdm9pZCBkb19kYnNfdGltZXIodm9pZCAqZGF0YSk7CiAKQEAgLTI0OCw4ICsyNDgsMTAg
+QEAgc3RhdGljIHZvaWQgZGJzX2NoZWNrX2NwdShpbnQgY3B1KQogCQl0aGlzX2Ric19pbmZvLT5w
+cmV2X2NwdV9pZGxlX3VwOwogCXRoaXNfZGJzX2luZm8tPnByZXZfY3B1X2lkbGVfdXAgPSBrc3Rh
+dF9jcHUoY3B1KS5jcHVzdGF0LmlkbGU7CiAKKwkvKiBTY2FsZSBpZGxlIHRpY2tzIGJ5IDEwMCBh
+bmQgY29tcGFyZSB3aXRoIHVwIGFuZCBkb3duIHRpY2tzICovCisJaWRsZV90aWNrcyAqPSAxMDA7
+CiAJdXBfaWRsZV90aWNrcyA9ICgxMDAgLSBkYnNfdHVuZXJzX2lucy51cF90aHJlc2hvbGQpICoK
+LQkJCXNhbXBsaW5nX3JhdGVfaW5fSFooZGJzX3R1bmVyc19pbnMuc2FtcGxpbmdfcmF0ZSkgLyAx
+MDA7CisJCQlzYW1wbGluZ19yYXRlX2luX0haKGRic190dW5lcnNfaW5zLnNhbXBsaW5nX3JhdGUp
+OwogCiAJaWYgKGlkbGVfdGlja3MgPCB1cF9pZGxlX3RpY2tzKSB7CiAJCV9fY3B1ZnJlcV9kcml2
+ZXJfdGFyZ2V0KHRoaXNfZGJzX2luZm8tPmN1cl9wb2xpY3ksCkBAIC0yNjcsMTYgKzI2OSwyMyBA
+QCBzdGF0aWMgdm9pZCBkYnNfY2hlY2tfY3B1KGludCBjcHUpCiAKIAlpZGxlX3RpY2tzID0ga3N0
+YXRfY3B1KGNwdSkuY3B1c3RhdC5pZGxlIC0gCiAJCXRoaXNfZGJzX2luZm8tPnByZXZfY3B1X2lk
+bGVfZG93bjsKKwkvKiBTY2FsZSBpZGxlIHRpY2tzIGJ5IDEwMCBhbmQgY29tcGFyZSB3aXRoIHVw
+IGFuZCBkb3duIHRpY2tzICovCisJaWRsZV90aWNrcyAqPSAxMDA7CiAJZG93bl9za2lwW2NwdV0g
+PSAwOwogCXRoaXNfZGJzX2luZm8tPnByZXZfY3B1X2lkbGVfZG93biA9IGtzdGF0X2NwdShjcHUp
+LmNwdXN0YXQuaWRsZTsKIAogCWZyZXFfZG93bl9zYW1wbGluZ19yYXRlID0gZGJzX3R1bmVyc19p
+bnMuc2FtcGxpbmdfcmF0ZSAqCiAJCWRic190dW5lcnNfaW5zLnNhbXBsaW5nX2Rvd25fZmFjdG9y
+OwogCWRvd25faWRsZV90aWNrcyA9ICgxMDAgLSBkYnNfdHVuZXJzX2lucy5kb3duX3RocmVzaG9s
+ZCkgKgotCQkJc2FtcGxpbmdfcmF0ZV9pbl9IWihmcmVxX2Rvd25fc2FtcGxpbmdfcmF0ZSkgLyAx
+MDA7CisJCQlzYW1wbGluZ19yYXRlX2luX0haKGZyZXFfZG93bl9zYW1wbGluZ19yYXRlKTsKIAog
+CWlmIChpZGxlX3RpY2tzID4gZG93bl9pZGxlX3RpY2tzICkgewogCQlmcmVxX2Rvd25fc3RlcCA9
+ICg1ICogdGhpc19kYnNfaW5mby0+Y3VyX3BvbGljeS0+bWF4KSAvIDEwMDsKKworCQkvKiBtYXgg
+ZnJlcSBjYW5ub3QgYmUgbGVzcyB0aGFuIDEwMC4gQnV0IHdobyBrbm93cy4uLi4gKi8KKwkJaWYg
+KHVubGlrZWx5KGZyZXFfZG93bl9zdGVwID09IDApKQorCQkJZnJlcV9kb3duX3N0ZXAgPSA1Owor
+CiAJCV9fY3B1ZnJlcV9kcml2ZXJfdGFyZ2V0KHRoaXNfZGJzX2luZm8tPmN1cl9wb2xpY3ksCiAJ
+CQl0aGlzX2Ric19pbmZvLT5jdXJfcG9saWN5LT5jdXIgLSBmcmVxX2Rvd25fc3RlcCwgCiAJCQlD
+UFVGUkVRX1JFTEFUSU9OX0gpOwpAQCAtMzQ0LDggKzM1MywxNCBAQCBzdGF0aWMgaW50IGNwdWZy
+ZXFfZ292ZXJub3JfZGJzKHN0cnVjdCBjCiAJCSAqIGlzIHVzZWQgZm9yIGZpcnN0IHRpbWUKIAkJ
+ICovCiAJCWlmIChkYnNfZW5hYmxlID09IDEpIHsKKwkJCXVuc2lnbmVkIGludCBsYXRlbmN5Owog
+CQkJLyogcG9saWN5IGxhdGVuY3kgaXMgaW4gblMuIENvbnZlcnQgaXQgdG8gdVMgZmlyc3QgKi8K
+LQkJCWRlZl9zYW1wbGluZ19yYXRlID0gKHBvbGljeS0+Y3B1aW5mby50cmFuc2l0aW9uX2xhdGVu
+Y3kgLyAxMDAwKSAqCisKKwkJCWxhdGVuY3kgPSBwb2xpY3ktPmNwdWluZm8udHJhbnNpdGlvbl9s
+YXRlbmN5OworCQkJaWYgKGxhdGVuY3kgPCAxMDAwKQorCQkJCWxhdGVuY3kgPSAxMDAwOworCisJ
+CQlkZWZfc2FtcGxpbmdfcmF0ZSA9IChsYXRlbmN5IC8gMTAwMCkgKgogCQkJCQlERUZfU0FNUExJ
+TkdfUkFURV9MQVRFTkNZX01VTFRJUExJRVI7CiAJCQlkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19y
+YXRlID0gZGVmX3NhbXBsaW5nX3JhdGU7CiAK
+
+------_=_NextPart_001_01C4A650.A6791EA3
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -91,5 +110,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============2117799911==--
+------_=_NextPart_001_01C4A650.A6791EA3--
 
