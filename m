@@ -1,11 +1,13 @@
-From: paul.devriendt@amd.com
-Subject: RE: Cleanups for powernow-k8
-Date: Tue, 13 Jan 2004 20:49:28 -0600
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Cleanups for powernow-k8
+Date: Wed, 14 Jan 2004 03:33:26 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <99F2150714F93F448942F9A9F112634C080EF398@txexmtae.amd.com>
+Message-ID: <20040114033326.GR14674@redhat.com>
+References: <99F2150714F93F448942F9A9F112634C080EF398@txexmtae.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <99F2150714F93F448942F9A9F112634C080EF398@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,29 +18,16 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: pavel@ucw.cz
-Cc: davej@redhat.com, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org, linux@brodo.de
+Content-Transfer-Encoding: 7bit
+To: paul.devriendt@amd.com
+Cc: linux-kernel@vger.kernel.org, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk, pavel@ucw.cz, linux@brodo.de
 
-> I'd suggest to leave old driver there (possibly let me clean it up
-> ;-)))), and create new powernow-k8-acpi, or powernow-acpi or something
-> like that.
-> 								Pavel
+On Tue, Jan 13, 2004 at 08:49:28PM -0600, paul.devriendt@amd.com wrote:
 
-Keeping the old driver around for machines without ACPI support or with
-broken ACPI support sounds reasonable to me. Please feel free to clean
-it up. Feel free to send it to me if you want me to test it on additional
-hardware. Dominik sent me some great patches to use the cpufreq table support 
-and remove some redundant code - let me know if you do not have them and
-want me to forward them. They work great.
+ > Dave had a good idea of a minimal ACPI parser for trying to retrieve the
+ > table of p-states from an ACPI BIOS without needing the full AML interpreter.
+ > I will see if I can get that to work in powernow-k8-acpi 
+ 
+If done properly, that parsing code could be shared by the K7 driver too.
 
-powernow-k8-acpi sounds like a fine plan to me. Keeping the k8 in the name 
-is goodness.
-
-Dave had a good idea of a minimal ACPI parser for trying to retrieve the
-table of p-states from an ACPI BIOS without needing the full AML interpreter.
-I will see if I can get that to work in powernow-k8-acpi ... that way, there
-is the best chance of being able to work around a broken BIOS. I hate broken
-BIOSs and would rather see the BIOS vendor fix the BIOS, but that does not
-always seem to happen.
-
-Paul.
+		Dave
