@@ -1,8 +1,8 @@
 From: Marc Singer <elf@buici.com>
 Subject: Re: Athlon 64 complains of frequency mismatch
-Date: Sat, 19 Jun 2004 08:55:54 -0700
+Date: Sat, 19 Jun 2004 09:36:31 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040619155554.GA32432@buici.com>
+Message-ID: <20040619163631.GA1369@buici.com>
 References: <20040618185103.GA14909@buici.com>
 	<20040619104456.GA7689@dominikbrodowski.de>
 Mime-Version: 1.0
@@ -45,8 +45,28 @@ On Sat, Jun 19, 2004 at 12:44:56PM +0200, Dominik Brodowski wrote:
 > modprobe cpufreq-acpi_pdump
 > 
 > and send the dmesg to me?
+> 
+> Thanks,
+> 	Dominik
 
-On rumination, I came to a similar conclusion.  I can do as you ask.
-Is this the same as grabbing the dsdt from the /proc/acpi interface
-and running it through Intel's decompiler?  That's where I've started
-to go.
+It complains of a device not being present and leaves this in the
+dmesg log:
+
+
+number of states: 10
+acpi_pdump: P0: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P1: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P2: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P3: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P4: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P5: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P6: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P7: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P8: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+acpi_pdump: P9: 161061273 MHz, 629145 mW, 10066329 uS s:0x99999999 c:0x99999999
+control_register:
+130 12 127 0 0 0 0
+status_register:
+130 12 127 0 0 0 0
+
+Is this really helpful?
