@@ -1,9 +1,8 @@
-From: James Mabry <jamabryl@student.gc.maricopa.edu>
-Subject: Re: Athlon Mobile Support
-Date: Wed, 02 Jul 2003 00:49:40 -0700
+From: Lars Gemeinhardt <lars.gemeinhardt@searchbroker.de>
+Subject: Call4Response: Correct PST table for ATHLONs
+Date: Wed, 02 Jul 2003 09:52:12 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <3F028E94.8020008@student.gc.maricopa.edu>
-References: <3F028919.8060402@student.gc.maricopa.edu> <3F0289AA.6090208@searchbroker.de>
+Message-ID: <3F028F2C.5020704@searchbroker.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
@@ -17,22 +16,17 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-Lars Gemeinhardt wrote:
+Hello cpufreq-user and developer,
 
-> one question - same answer!
+can everybody with an correct PST table (diffent FIDs and VIDs) and an 
+ATHLON cpu post the "dmesg" snip (you get this using the dmesg command 
+after the modul is loaded) to this mailing-list...
+Maybe we can setup with this the correct values to the cpufreq driver 
+(the K7 powernow part)...then otherwise the Acer and Sony notebooks 
+doesn't work perfectly :-(
 
-Oops sorry. Thought the answer I was looking for would be different than 
-your previous. I'll try it out and report on how things went.
+Thanks in advanced
 
-Reading more about cpufreq it sounds like this does not provide voltage 
-regulation? I'm using cpufreq in the hopes to greatly increase my 
-battery life. Should I expect this as a result? Thanks.
--- 
-Slackware Linux -
-Find out about the 4S rule.
-www.slackware-advocacy.org/whyuse.html
-
-Then try it out for yourself.
-www.slackware.org
+Ciao Lars
