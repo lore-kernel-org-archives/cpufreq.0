@@ -1,16 +1,13 @@
-From: Christophe Couronne <xof@altern.org>
-Subject: Re: speedstep and deep sleep on celeron-M
-Date: Sat, 25 Sep 2004 22:30:49 +0200
+From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
+Subject: Re: ondemand governor
+Date: Sat, 25 Sep 2004 23:59:25 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <4155D579.2020400@altern.org>
-References: <414BF01D.4000905@altern.org>
-	<20040918215839.GA7717@dominikbrodowski.de>
-	<20040920104730.GK16132@poupinou.org>
-	<20040920170709.GB7952@dominikbrodowski.de>
+Message-ID: <20040925215925.GB7424@message-id.gmane0305.slipkontur.de>
+References: <88056F38E9E48644A0F562A38C64FB6002F2B0F4@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040920170709.GB7952@dominikbrodowski.de>
+Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6002F2B0F4@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,33 +17,36 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@www.linux.org.uk
 
-Dominik Brodowski a =E9crit :
+On Sat, Sep 25, 2004 at 11:42:32AM -0700, Pallipadi, Venkatesh wrote:
 
->On Mon, Sep 20, 2004 at 12:47:30PM +0200, Bruno Ducrot wrote:
-> =20
->
->> Actually, deep sleep state is C3, whereas deeper sleep state is supposed
->>
->>to be C4 (though it's possible to enter deeper sleep state instead of
->>deep sleep state IIRC).
->>   =20
->>
->
->Excactly. And Deep Sleep is nothing new, Deeper Sleep is.
->
->	Dominik.
->
-Everything is clearer now. I've succeeded to enable the CPU frequency modul=
-ation with p4-clockmod and the C3 sleep state too. Thanks a lot.
+> >> Unfortunately, only indirectly. Modprobe cpufreq_ondemand and then 
+> >> cat /sys/devices/system/cpu/cpu0/cpufreq/ondemand/sampling_rate
+> >> The latency can be deduced then.
+> >
+> >10000
+> > 
+> 
+> That means the CPU usage is being checked every 10mS and 100mS for
+> Possible increase and decrease in freq, respectively.
+> 
+> Try tuning the following. 
+> down_threshold=40
+> up_threshold=60
+> sampling_rate=100000
+> sampling_down_factor=1
+> 
+> This will make CPU usage checks every 100mS and increase the freq if
+> utilization is more than 60% and decrease the freq if utilization is 
+> less than 40%.
 
-Christophe.
-
---=20
-Christophe Couronne=20
-xof@[phplop|calvix|altern].org
-
-* phplop.org - yet another php tribioune !
-* E =3D MC=B2 <=3D> WE =3D WMC=B2 <=3D> Le Week-end, je moule !
+That's much better (i didn't change up_treshold, 80 is already too
+low IMO :-) but it still goes up with almost no cpu usage often when
+disk is accessed.
+"find /" will push it to 1700 solid.
+-- 
+Stefan Seyfried
