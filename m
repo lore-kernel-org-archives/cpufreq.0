@@ -1,16 +1,9 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Help! Cpufreq makes my laptop crash!
-Date: Thu, 15 Jul 2004 11:57:10 +0200
+From: Ducrot Bruno <ducrot@arm.linux.org.uk>
+Subject: cpufreq/linux/drivers/cpufreq userspace.c,1.1.1.2,1.1.1.3
+Date: Thu, 15 Jul 2004 14:08:05 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040715095710.GN6326@poupinou.org>
-References: <40F549D5.8030100@fuckup.homelinux.com>
-	<20040714115717.4gsocksks0s8o4wc@carlthompson.net>
-	<40F58B6C.60606@fuckup.homelinux.com>
-	<20040714140944.g0k8c40swcskss8g@carlthompson.net>
-Mime-Version: 1.0
+Message-ID: <E1Bl5y1-0002Md-NG@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040714140944.g0k8c40swcskss8g@carlthompson.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,41 +13,43 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Carl Thompson <cet@carlthompson.net>
-Cc: olgaAr <olgaAr@fuckup.homelinux.com>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Wed, Jul 14, 2004 at 02:09:44PM -0700, Carl Thompson wrote:
-> 
-> Try my CPUSpeed program and see if it works better for you:
-> 
->    http://carlthompson.net/software/cpuspeed
-> 
-> Sometimes older mobile Athlons have problems.  Supposedly a workaround is
-> in CPUFreq but maybe it doesn't work right in your case. CPUSpeed has a
-> workaround that might work if this is the problem.
-> 
+Update of /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq
+In directory flint:/tmp/cvs-serv9074
 
-Hi Carl,
+Modified Files:
+      Tag: LINUX_2_4
+	userspace.c 
+Log Message:
+Fix security hole in proc handler.
+ Brad Spengler <spender@grsecurity.net> found an exploitable bug in the proc handler
+ of cpufreq, where a user-supplied unsigned int is cast to a signed int and then
+ passed on to copy_[to|from]_user() allowing arbitary amounts of memory to be written
+ (root only thankfully), or read (as any user).
 
-I think powernow-k7 do not have trouble for the bug there were some times
-ago.
-I don't think really that your workaround is no more needed, as I said
-you some times ago.
-The problem was that the SGTC that have to be put was wrong (and so the
-processor will resume, but the PLL haven't had enough time to stabilize).
+The Common Vulnerabilities and Exposures project (cve.mitre.org) has assigned
+the name CAN-2004-0228 to this issue.
 
-I would buy more at that time on a wrong value for the MSR CLK_CTL,
-though I can't be sure at 100% at that time (and I have no documentation
-for that MSR unfortunately), which may introduce an hang when we enter
-the ACPI idle loop.  Maybe if olgaAr can test without the ACPI processor
-support to see what happens.
 
-Cheers,
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Index: userspace.c
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq/Attic/userspace.c,v
+retrieving revision 1.1.1.2
+retrieving revision 1.1.1.3
+diff -u -r1.1.1.2 -r1.1.1.3
+--- userspace.c	28 Aug 2003 13:41:57 -0000	1.1.1.2
++++ userspace.c	15 Jul 2004 13:08:02 -0000	1.1.1.3
+@@ -161,7 +161,7 @@
+ {
+ 	char buf[16], *p;
+ 	int cpu = (int) ctl->extra1;
+-	int len, left = *lenp;
++	size_t len, left = *lenp;
+ 
+ 	if (!left || (filp->f_pos && !write) || !cpu_online(cpu)) {
+ 		*lenp = 0;
