@@ -1,20 +1,14 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
 Subject: Re: Athlon 64 complains of frequency mismatch
-Date: Tue, 22 Jun 2004 19:11:03 +0200
+Date: Tue, 22 Jun 2004 19:07:50 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040622171103.GB8111@dominikbrodowski.de>
-References: <20040618185103.GA14909@buici.com>
-	<20040619104456.GA7689@dominikbrodowski.de>
-	<20040619155554.GA32432@buici.com>
-	<20040618185103.GA14909@buici.com>
-	<20040619104456.GA7689@dominikbrodowski.de>
-	<20040619163631.GA1369@buici.com>
-	<20040621202601.GA8064@dominikbrodowski.de>
-	<20040621214236.GA3858@buici.com>
+Message-ID: <20040622170750.GA8111@dominikbrodowski.de>
+References: <84EA05E2CA77634C82730353CBE3A8431990F7@SAUSEXMB1.amd.com>
+	<20040622160741.GA15216@buici.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040621214236.GA3858@buici.com>
+In-Reply-To: <20040622160741.GA15216@buici.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -29,51 +23,31 @@ Content-Transfer-Encoding: 7bit
 To: Marc Singer <elf@buici.com>
 Cc: cpufreq@www.linux.org.uk
 
-On Mon, Jun 21, 2004 at 02:42:36PM -0700, Marc Singer wrote:
-> I did fetch it.  There are no entries for _PSS or even PSS.
+On Tue, Jun 22, 2004 at 09:07:41AM -0700, Marc Singer wrote:
+> On Tue, Jun 22, 2004 at 08:26:38AM -0700, paul.devriendt@amd.com wrote:
+> > > Perhaps I'm missing something.  If AMD advertizes Cool&Quiet as does
+> > > this vendor, MSI, then there has to be someplace where this data is
+> > > given to Windows.  Are we talking about the vendor providing a Windows
+> > > driver without including the necessary information in the BIOS?
+> > 
+> > The Windows XP driver gets the information from the same place as
+> > the Linux driver ... the ACPI _PSS object.
+> 
+> And if there is no _PSS ACPI object(s)?
 
-But an entry XPSS which contains these bogus entries...
+It falls back to BIOS PSB -- at least it should...
 
+> > If Windows is able to find the data but Linux can not, then we have
+> > some sort of bug or spec compliance issue.
+> > 
+> > Windows 2000 gets the information from the BIOS PSB table, and the
+> > Linux driver is also capable of using this data (if CONFIG_ACPI_PROCESSOR
+> > is not set, or if ACPI _PSS data can not be found).
+> 
+> I take this to mean that I might see the correct data if I disable the
+> ACPI PROCESSOR module.  Right?
 
-            Name (XPSS, Package (0x03)
-            {
-                Package (0x06)
-                {
-                    0x09999999,
-                    0x00099999,
-                    0x00999999,
-                    0x00999999,
-                    0x99999999,
-                    0x99999999
-                },
-
-                Package (0x06)
-                {
-                    0x09999999,
-                    0x00099999,
-                    0x00999999,
-                    0x00999999,
-                    0x99999999,
-                    0x99999999
-                },
-
-                Package (0x06)
-                {
-                    0x09999999,
-                    0x00099999,
-                    0x00999999,
-                    0x00999999,
-                    0x99999999,
-                    0x99999999
-                }
-            })
-
-
-I'm surprised a) that the BIOS-provided tables contain such obviously bogus
-data, and b) that XPSS is used by the ACPI subsystem instead of reporting
-there is no _PSS.
-
-Also, are there any entries in the BIOS you can toggle which might be
-related to "Cool&Quiet", "PnP-capable OS", ...?
+You can try that, yes, but normally it should already be tried
+automagically.
 
 	Dominik
