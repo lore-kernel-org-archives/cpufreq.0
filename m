@@ -1,10 +1,9 @@
-From: Toula Michael <keos@wanadoo.fr>
-Subject: CHOWN PB
-Date: Fri, 19 Sep 2003 00:46:47 +0200
+From: Jan Rychter <jan@rychter.com>
+Subject: Pentium-M (Centrino): no power saved?
+Date: Thu, 18 Sep 2003 19:09:27 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <3F6A35D7.8070605@wanadoo.fr>
+Message-ID: <m24qz9r0ko.fsf@tnuctip.rychter.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,25 +14,29 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Hi,
-Ok here is the deal :
-I would like to allow users from a given group (let say the cpufreq 
-group) to have write acces to /proc/cpufreq and 
-/proc/sys/cpu/0/speed...I try the following :
+Hmm. I'm puzzled. I've just done a checkout of the latest CVS version of
+cpufreq for 2.4, applied it to a 2.4.22 kernel and tried the thing out
+on a Toshiba SS7/290LNKW laptop.
 
-$ chown root:cpufreq /proc/cpufreq
-$ chmod 664 /proc/cpufreq
-And then...
-$ ls -l /proc/cpufreq
-...show me that nothing changes.
+The speedstep-centrino module loads happily and tells me I have a 900MHz
+Pentium-M. (this is a family 6 model 9 stepping 5 CPU).
 
-Any idea on how to solve this problem ? Because login as root every time 
-I want to change the frequency is quite boring ( I would like to be able 
-to use button of my window manager to change it), and because of that 
-other people that use my laptop can change the frequency because they 
-don't have the root passwd...
-Thx in advance...
-Mike
+I've tried echo "0%100%powersave" > /proc/cpufreq 
+  and 
+ echo "0%50%powersave" > /proc/cpufreq
+
+and much to my surprise, even though /proc/cpufreq echoes my changes, I
+can see no resulting changes in power consumption as reported by ACPI
+battery proc entry.
+
+Other things make a difference: whether the system is able to use C3,
+display brightness, wireless card, etc. But changing the cpufreq entry
+doesn't seem to do anything.
+
+Am I doing something wrong?
+
+--J.
