@@ -1,14 +1,17 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
+From: Luciano Miguel Ferreira Rocha <strange@nsk.no-ip.org>
 Subject: Re: 2.4.21 Isn't working for me....
-Date: Wed, 27 Aug 2003 17:55:03 +0200
+Date: Wed, 27 Aug 2003 15:29:08 +0100
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20030827155503.GR10585@poupinou.org>
+Message-ID: <20030827142908.GA5077@nsk.no-ip.org>
 References: <1061872616.27076.47.camel@localhost>
-	<1061926909.14523.5.camel@localhost>
+	<20030826064747.GE10585@poupinou.org>
+	<1061927026.14523.9.camel@localhost>
+	<20030826224727.GA14287@nsk.no-ip.org>
+	<20030827111133.GK10585@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1061926909.14523.5.camel@localhost>
+In-Reply-To: <20030827111133.GK10585@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,49 +23,34 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: AthlonRob <AthlonRob@axpr.net>
-Cc: cpufreq@www.linux.org.uk
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk, AthlonRob <AthlonRob@axpr.net>
 
-On Tue, Aug 26, 2003 at 12:41:50PM -0700, AthlonRob wrote:
-> On Mon, 2003-08-25 at 21:36, AthlonRob wrote:
->  
-> > I'm trying to get some cpu frequency control over my laptop's CPU with
-> > the 2.4.21 kernel.  I'd just jump to 2.6.0-test4, but have a few pieces
-> > of hardware that don't have drivers available for the test kernel yet.
+On Wed, Aug 27, 2003 at 01:11:33PM +0200, Ducrot Bruno wrote:
+> > I've been using that kernel, but can't get swsusp to work correctly and
+> > cpufreq doesn't work that well with my chipset, anyhow, (it's a 440BX,)
+> > so test it throughly.
 > 
-> I just found http://www.codemonkey.org.uk/projects/cpufreq/ in the
-> archives and gave the two patches listed there a shot.
-> 
+> What is the trouble with the 440BX?
 
-Try this:
+Well, it's a lousy chipset, cpufreq wise.
 
---- linux/drivers/cpufreq/userspace.c	25 Aug 2003 14:58:47 -0000	1.1.1.1
-+++ linux/drivers/cpufreq/userspace.c	27 Aug 2003 15:51:42 -0000
-@@ -17,9 +17,9 @@
- #include <linux/smp.h>
- #include <linux/init.h>
- #include <linux/spinlock.h>
-+#include <linux/cpufreq.h>
- #include <linux/interrupt.h>
- #include <linux/ctype.h>
--#include <linux/cpufreq.h>
- #include <linux/sysctl.h>
- #include <linux/types.h>
- #include <linux/fs.h>
-diff -u -a -r1.1.1.2 cpufreq.h
---- linux/include/linux/cpufreq.h	25 Aug 2003 14:58:47 -0000	1.1.1.2
-+++ linux/include/linux/cpufreq.h	27 Aug 2003 15:51:42 -0000
-@@ -16,6 +16,7 @@
- 
- #include <linux/config.h>
- #include <linux/notifier.h>
-+#include <linux/sched.h>
- #include <linux/threads.h>
- #include <asm/semaphore.h>
- 
+I had it working with your help some time in the past, using a speedstep.c
+and playing with the GPO.
 
--- 
-Ducrot Bruno
+But that driver doesn't have the same interface as normal cpufreq and then
+2.4.21 merged parts of the AC tree that makes my processor frequency very
+dynamic, so I end up not using it much.
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+But I tried the CVS version of cpufreq, but it still doesn't work.
+As it is, it doesn't have a speedstep.c, only a speedstep-ich, that
+fails to insert:
+cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
+
+The speedstep.c available on http://www.poupinou.org/cpufreq/index.html
+also fails to insert:
+speedstep.o: unresolved symbol cpufreq_setfunctions
+speedstep.o: unresolved symbol cpufreq_init
+
+Regards,
+Luciano Rocha
