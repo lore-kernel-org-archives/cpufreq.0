@@ -1,14 +1,16 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: Problem with ondemand on Athlon [and P4 too]
-Date: Fri, 31 Oct 2003 13:27:59 +0100
+From: Matthias Hannich <dumb@tcpa-info.org>
+Subject: Re: Coppermine, cpufreq
+Date: Fri, 31 Oct 2003 13:40:51 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031031122758.GA2617@inferi.kami.home>
-References: <200310310434.01311.thierry.lathuille2@libertysurf.fr>
-Reply-To: dongili@supereva.it
+Message-ID: <3FA25853.3030100@tcpa-info.org>
+References: <3FA11700.8080908@tcpa-info.org>
+	<20031030140910.GH28351@poupinou.org>
+	<3FA17DDF.5000600@tcpa-info.org>
+	<20031031071457.GL28351@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200310310434.01311.thierry.lathuille2@libertysurf.fr>
+In-Reply-To: <20031031071457.GL28351@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,31 +20,39 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Ducrot Bruno <ducrot@poupinou.org>
+Cc: cpufreq@www.linux.org.uk
 
-On Fri, Oct 31, 2003 at 02:14:32PM +0100, Thierry Lathuille wrote:
-> Hi,
-[...]
-> But echoing "ondemand" to 
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor has unexpected effects:
-> - the keyboard stops working - but the mouse still works, I can use apps in 
+Am 10/31/2003 08:14 AM schrieb Ducrot Bruno:
+>>>PS: If modprobe speedstep-ich still  do not work
+>>>modpbore speedstep-lib
+>>
+>>No error messages.
+>>
+>>
+>>>modprobe speedstep-ich
+>>
+> 
+> Are you sure you have an ich based system?
 
-happens the same here on a P4 1.8GHz with 2.6.0-test9
+00:00.0 Host bridge: Silicon Integrated Systems [SiS] 630 Host (rev 31)
+00:01.0 ISA bridge: Silicon Integrated Systems [SiS] 85C503/5513
 
-> - I can't kill any xterm anymore. But the other applications work and can be 
-> killed normally.
-> - trying to reboot hangs the system.
+Sorry, I did completely forgot it.
 
-I tried from console (no X running). 
-echoing ondemand > /sys/.../scaling_governor never returns, all the
-consoles are freezed, keyboard too. I can ssh in and can cat
-/sys/.../scaling_governor obtaining *ondemand* correctly. The *ondemand*
-directory is also created. I forgot to check dmesg, I'll check it this
-evening or tomorrow
+> BIOS DO NOT support GSIC call.  Dumping registers anyway:
+> eax = 0x00008680
+> ebx = 0x00000000
+> ecx = 0x00000000
+> edx = 0x47534943
 
-I'll add more info when I'll go back home :)
+Was exactly what I got.
+
+Thanks,
+Matthias
 -- 
-mattia
-:wq!
+Freundliche Gru"?e,          ###  http://www.stop1984.com
+Matthias Hannich            ###  nulli@stop1984.com
+                             ###  KeyID: 407A2F69
+Fingerprint: 600D 7E07 105C F674 0C4B  12C2 4DE4 A8DF 407A 2F69
