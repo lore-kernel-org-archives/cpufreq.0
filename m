@@ -1,11 +1,13 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: [PATCH] Fix ARM cpufreq governor selection
-Date: Sat, 21 Feb 2004 00:19:16 +0000
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: powernow-k8 frequency fix
+Date: Mon, 23 Feb 2004 20:29:17 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040221001916.E22043@flint.arm.linux.org.uk>
+Message-ID: <20040223192917.GD269@elf.ucw.cz>
+References: <20040223165248.GA19487@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20040223165248.GA19487@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,45 +19,46 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk, David Jones <davej@redhat.com>
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: cpufreq@www.linux.org.uk
 
-The patch below fixes the cpufreq governor selection such that it
-finally works as expected on ARM platforms.
+Hi!
 
-===== arch/arm/Kconfig 1.40 vs edited =====
---- 1.40/arch/arm/Kconfig	Sat Oct  4 14:36:50 2003
-+++ edited/arch/arm/Kconfig	Tue Jan 27 10:53:53 2004
-@@ -336,14 +336,12 @@
- 	bool
- 	depends on CPU_FREQ && SA1100_LART
- 	default y
--	select CPU_FREQ_DEFAULT_GOV_USERSPACE
- 	select CPU_FREQ_24_API if SYSCTL
+> Thanks for the patch, but please CC cpufreq@www.linux.org.uk in future.
+
+Oops, sorry.
+
+BTW I'd like to push two following changes. (second hunk is probably
+already queued with trivial patch monkey -- someone did test it :-). I
+hope that's okay with you.
+
+								Pavel
+
+--- tmp/linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-02-23 20:25:06.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2004-02-23 00:16:04.000000000 +0100
+@@ -8,6 +8,8 @@
+  *
+  *  Based on the powernow-k7.c module written by Dave Jones.
+  *  (C) 2003 Dave Jones <davej@codemonkey.ork.uk> on behalf of SuSE Labs
++ *  (C) 2004 Dominik Brodowski <linux@brodo.de>
++ *  (C) 2004 Pavel Machek <pavel@suse.cz>
+  *  Licensed under the terms of the GNU GPL License version 2.
+  *  Based upon datasheets & sample CPUs kindly provided by AMD.
+  *
+@@ -34,10 +36,6 @@
+ #define VERSION "version 1.00.08a"
+ #include "powernow-k8.h"
  
- config CPU_FREQ_SA1110
- 	bool
- 	depends on CPU_FREQ && (SA1100_ASSABET || SA1100_CERF || SA1100_PT_SYSTEM3)
- 	default y
--	select CPU_FREQ_DEFAULT_GOV_USERSPACE
- 	select CPU_FREQ_24_API if SYSCTL
- 
- config CPU_FREQ_INTEGRATOR
-===== drivers/cpufreq/Kconfig 1.7 vs edited =====
---- 1.7/drivers/cpufreq/Kconfig	Mon Jan  5 18:43:42 2004
-+++ edited/drivers/cpufreq/Kconfig	Tue Jan 27 10:53:48 2004
-@@ -13,7 +13,8 @@
- choice
- 	prompt "Default CPUFreq governor"
- 	depends on CPU_FREQ
--	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-+	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE if !CPU_FREQ_SA1100 && !CPU_FREQ_SA1110
-+	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
- 	help
- 	  This option sets which CPUFreq governor shall be loaded at
- 	  startup. If in doubt, select 'performance'.
+-#ifdef CONFIG_PREEMPT
+-#warning this driver has not been tested on a preempt system
+-#endif
+-
+ static u32 vstable;	/* voltage stabalization time, from PSB, units 20 us */
+ static u32 plllock;	/* pll lock time, from PSB, units 1 us */
+ static u32 numps;	/* number of p-states, from PSB */
 
+
+								Pavel
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
-                 2.6 Serial core
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
