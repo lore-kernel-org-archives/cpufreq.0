@@ -1,16 +1,13 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: [ACPI] [PATCH 1/2] 2.6: use scaling_available_freqs in
-	acpi-cpufreq-ioport driver
-Date: Wed, 25 Feb 2004 11:26:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.2: P4 ClockMod speed
+Date: Wed, 25 Feb 2004 18:43:27 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040225102654.GB214@elf.ucw.cz>
-References: <20040220083149.GA10215@dominikbrodowski.de>
-	<20040224125628.GA438@elf.ucw.cz>
-	<20040224144318.GA9702@dominikbrodowski.de>
+Message-ID: <20040225174326.GD1214@elf.ucw.cz>
+References: <20040216213435.GA9680@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040224144318.GA9702@dominikbrodowski.de>
+In-Reply-To: <20040216213435.GA9680@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,30 +19,27 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: len.brown@intel.com, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+To: dual_bereta_r0x@arenanetwork.com.br, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 
 Hi!
 
-> > > Export an array of supported frequencies in sysfs
-> > > [scaling_available_frequencies]
-> > 
-> > Would it be possible to export [frequency/voltage] pairs, and allow
-> > user to change it?
-> 
-> IMO, NO! While this might be a necessity for powernow-k7, the generic acpi-io
-> driver should stay clean of such overrides et al. If you need to modify the
-> ACPI tables, there are other ways.
+> By doing so it becomes easier to enter different frequencies e.g. into
+> /sys/devices/system/cpu/cpufreq/scaling_setspeed -- on my desktop, typing in
+> 1200000 is easier than 12121224... [*]
+... 
+> [*] The _actual_ CPU speed should be used on all cpufreq drivers where this
+> specific CPU frequency has implications to external components, e.g. LCD,
+> memory or pcmcia devices. Where only the _frequency ratio_ is of importance
+> [for loops_per_jiffy and friends] such "rounding" is acceptable, as long as
+> the ratio is constant.
 
-Well, I know k7 machines that apparently needed override, and I know
-k8 machines that definitely need one. Buggy bioses seem to be quite
-common...
+Hey, that's ugly. Values should be real.
 
-I do not know how buggy tables on intel machines are, but it seems to
-me that overrides should be generic.
-
-[Otoh... that would need tables to contain voltages in some known
-units, probably milivolts. Again that would be good for printouts...]
-
+If you have troubles typing real frequency, you can either use
+/proc/cpufreq and specify values in percent, or modify
+scaling_setspeed to go for nearest lower frequency, or create bash
+scripts "hi_speed" and "low_speed"; but please don't break
+interface....
 								Pavel
 -- 
 When do you have a heart between your knees?
