@@ -1,14 +1,15 @@
-From: GoatZilla <goatzilla@gmail.com>
-Subject: Re: [2.6 PATCH] Missing default governors choices
-Date: Thu, 26 Aug 2004 15:23:24 -0400
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Jean-Baptiste Mayer is out of the office.
+Date: Fri, 27 Aug 2004 12:55:53 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <39e3484804082612234137d865@mail.gmail.com>
-References: <88056F38E9E48644A0F562A38C64FB6002B5F40B@scsmsx403.amr.corp.intel.com>
-Reply-To: GoatZilla <goatzilla@gmail.com>
+Message-ID: <20040827125553.C6402@flint.arm.linux.org.uk>
+References: <OFA1C12F46.AD6C948B-ONC1256EFD.003FE676-C1256EFD.003FE676@fr.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6002B5F40B@scsmsx403.amr.corp.intel.com>
+Content-Disposition: inline
+In-Reply-To: <OFA1C12F46.AD6C948B-ONC1256EFD.003FE676-C1256EFD.003FE676@fr.ibm.com>;
+	from jean-baptiste.mayer@fr.ibm.com on Fri, Aug 27, 2004 at 01:37:57PM
+	+0200
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,102 +20,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-What's the reason for the powersave governor not being selectable as default?
+On Fri, Aug 27, 2004 at 01:37:57PM +0200, Jean-Baptiste Mayer wrote:
+> 
+> 
+> 
+> 
+> I will be out of the office starting  27/08/2004 and will not return until
+> 31/12/2004.
+> 
+> My internship ended on august, 27th. Please contact my former manager.
 
+and was hereby removed from the cpufreq mailing list for having a dumb
+vacation program installed / not disabling their subscription before
+going away.
 
-
-On Thu, 26 Aug 2004 09:40:08 -0700, Pallipadi, Venkatesh
-<venkatesh.pallipadi@intel.com> wrote:
-> 
-> 
-> Ondemand govrenor not being one of the default governors is intentional.
-> 
-> Ondemand governor is in-kernel cpu frequency governor, that will
-> Be beneficial for CPUs that supports frequency change with low
-> transition_latency. If transition_latency is high, the ondemand governor
-> 
-> initialization will fail (User level governor is suggested in this
-> case).
-> Hence it cannot be used as a default governor.
-> 
-> Thanks,
-> Venki
-> 
-> 
-> 
-> >-----Original Message-----
-> >From: cpufreq-bounces@www.linux.org.uk
-> >[mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of Michal Rokos
-> >Sent: Thursday, August 26, 2004 12:07 AM
-> >To: cpufreq@www.linux.org.uk
-> >Cc: linux-kernel@vger.kernel.org
-> >Subject: [2.6 PATCH] Missing default governors choices
-> >
-> >Hello,
-> >
-> >aren't these 2 missing in "Default CPUFreq governor" menu?
-> >
-> >Thank you.
-> >
-> > Michal
-> >
-> >PS: CC to me (I'm off the lists)
-> >
-> ># This is a BitKeeper generated diff -Nru style patch.
-> >#
-> ># ChangeSet
-> >#   2004/08/26 08:57:24+02:00 michal@rokos.info
-> >#   Add missing governors to "Default CPUFreq governor" menu.
-> >#
-> ># drivers/cpufreq/Kconfig
-> >#   2004/08/26 08:57:13+02:00 michal@rokos.info +16 -0
-> >#   Add missing governors to "Default CPUFreq governor" menu.
-> >#
-> >diff -Nru a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> >--- a/drivers/cpufreq/Kconfig 2004-08-26 09:00:15 +02:00
-> >+++ b/drivers/cpufreq/Kconfig 2004-08-26 09:00:15 +02:00
-> >@@ -27,6 +27,14 @@
-> >    the frequency statically to the highest frequency supported by
-> >    the CPU.
-> >
-> >+config CPU_FREQ_DEFAULT_GOV_POWERSAVE
-> >+ bool "powersave"
-> >+ select CPU_FREQ_GOV_POWERSAVE
-> >+ help
-> >+   Use the CPUFreq governor 'powersave' as default. This sets
-> >+   the frequency statically to the lowest frequency supported by
-> >+   the CPU.
-> >+
-> > config CPU_FREQ_DEFAULT_GOV_USERSPACE
-> >  bool "userspace"
-> >  select CPU_FREQ_GOV_USERSPACE
-> >@@ -35,6 +43,14 @@
-> >    you to set the CPU frequency manually or when an userspace
-> >    programm shall be able to set the CPU dynamically without having
-> >    to enable the userspace governor manually.
-> >+
-> >+config CPU_FREQ_DEFAULT_GOV_ONDEMAND
-> >+ bool "ondemand"
-> >+ select CPU_FREQ_GOV_ONDEMAND
-> >+ help
-> >+   Use the CPUFreq governor 'ondemand' as default. This does
-> >+   a periodic polling and changes frequency based on the CPU
-> >+   utilization.
-> >
-> > endchoice
-> >
-> >
-> >
-> >_______________________________________________
-> >Cpufreq mailing list
-> >Cpufreq@www.linux.org.uk
-> >http://www.linux.org.uk/mailman/listinfo/cpufreq
-> >
-> 
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@www.linux.org.uk
-> http://www.linux.org.uk/mailman/listinfo/cpufreq
->
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
