@@ -1,17 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH >=2.6.4] single-line,
-	but KERN_WARNING message in p4-clockmod
-Date: Sat, 14 Feb 2004 19:45:04 +0100
+Subject: [PATCH] disable SMM access to SpeedStep using ACPI-FADT pstate_cnt
+Date: Sun, 15 Feb 2004 11:57:12 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040214184504.GA5635@dominikbrodowski.de>
-References: <20040214160105.GA7747@dominikbrodowski.de>
-	<20040214164142.GA29606@redhat.com>
-	<20040214182330.GA5097@dominikbrodowski.de>
-	<20040214182950.C16829@flint.arm.linux.org.uk>
+Message-ID: <20040215105712.GB6105@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040214182950.C16829@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -23,71 +17,118 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
+To: len.brown@intel.com, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
-On Sat, Feb 14, 2004 at 06:29:50PM +0000, Russell King wrote:
-> On Sat, Feb 14, 2004 at 07:23:30PM +0100, Dominik Brodowski wrote:
-> >  	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
-> >  		/* Pentium M */
-> > -		printk(KERN_DEBUG PFX "Warning: Pentium M detected. The speedstep_centrino module\n");
-> > -		printk(KERN_DEBUG PFX "offers voltage scaling in addition of frequency scaling. You\n");
-> > -		printk(KERN_DEBUG PFX "should use that instead of p4-clockmod, if possible.\n");
-> > +		printk(KERN_WARNING PFX "Warning: Pentium M detected. ");
-> > +		printk("The speedstep_centrino module offers voltage scaling");
-> > +		printk(" in addition of frequency scaling. You should use ");
-> > +		printk("that instead of p4-clockmod, if possible.\n");
-> 
-> I think that's a lot worse for one major reason - you loose the atomicity
-> of printk() if you do that, especially if you use serial console.
-> 
-> I haven't seen this done anywhere else in the kernel... lets not start
-> doing it now.
-> 
-> 		printk(KERN_WARNING PFX "Warning: Pentium M detected. "
-> 		       "The speedstep_centrino module offers voltage scaling "
-> 		       "in addition of frequency scaling. You should use "
-> 		       "that instead of p4-clockmod, if possible.\n");
+Disable SMM access to SpeedStep
 
-Thanks,
-	Dominik
+Often, the BIOS changes the CPU frequency if a notebook is (dis)connected
+from its AC adapter. This interferes with a) an user setting the CPU frequency
+and b) kernel timing code which needs to know loops_per_jiffy, cpu_khz etc.
 
-Use KERN_WARNING for warning. Thanks to Dave Jones, Pavel Machel and Russell 
-King for their help getting this patch right.
+So, ACPI 2.0 offers a method to disable such BIOS changes -- writing
+a value contained in the FADT (pstate_cnt) to the smi_cmd port. This patch
+utilizes this method by doing this write in processor.c.
 
- arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+However, most current notebooks only offer 1.0 ACPI tables, where the
+pstate_cnt entry is marked as "reserved". Whenever there is a _PCT entry
+in the DSDT, though [and this is only a 2.0 object!], we assume the
+"reserved" entry to be the pstate_cnt entry [if it isn't zero].
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-02-14 19:22:23.907928496 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-02-14 19:41:32.135371392 +0100
-@@ -181,21 +181,24 @@
+ drivers/acpi/processor.c       |   61 +++++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/tables/tbconvrt.c |    5 ++-
+ 2 files changed, 64 insertions(+), 2 deletions(-)
+
+diff -ruN linux-original/drivers/acpi/processor.c linux/drivers/acpi/processor.c
+--- linux-original/drivers/acpi/processor.c	2004-02-13 17:09:59.000000000 +0100
++++ linux/drivers/acpi/processor.c	2004-02-15 11:02:40.103481944 +0100
+@@ -2374,6 +2374,65 @@
+ }
+ 
+ 
++#ifdef CONFIG_CPU_FREQ
++/*
++ * acpi_processor_disable_smm - disable BIOS meddling with SpeedStep settings
++ *
++ * By writing pstate_cnt to smi_cmd the BIOS no longer interferes with
++ * the P-States setting of the processor.
++ */
++static void acpi_processor_disable_smm(void) {
++	acpi_status		status;
++	int			i;
++
++	ACPI_FUNCTION_TRACE("acpi_processor_disable_smm");
++
++	/* Can't write pstate_cnt to smi_cmd if either value is zero 
++	 */
++	if ((!acpi_fadt.smi_cmd) ||
++	    (!acpi_fadt.pstate_cnt)) {
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++			"No SMI port or pstate_cnt\n"));
++		return_VOID;
++	}
++
++	/* Don't write pstate_cnt to smi_cmd if there is no support for
++	 * P-States anyway. This is also a safety precaution for ACPI-1.0
++	 * systems.
++	 */
++	for (i=0;i<NR_CPUS;i++) {
++		struct acpi_processor	*pr = processors[i];
++		acpi_handle		handle = NULL;
++
++		if (!pr || !pr->handle)
++			continue;
++
++		status = acpi_get_handle(pr->handle, "_PCT", &handle);
++		if (ACPI_FAILURE(status)) {
++			ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
++				"No _PCT available, so ignore pstate_cnt"));
++			return_VOID;
++		}
++		break;
++	}
++
++	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Writing pstate_cnt [0x%x] to smi_cmd [0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
++
++	status = acpi_os_write_port (acpi_fadt.smi_cmd,
++					(u32) acpi_fadt.pstate_cnt, 8);
++	if (ACPI_FAILURE (status))
++		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
++				"Failed to write pstate_cnt [0x%x] to "
++				"smi_cmd [0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
++
++	return_VOID;
++}
++
++#else
++static void acpi_processor_disable_smm(void) { return; }
++#endif
++
++
+ static int __init
+ acpi_processor_init (void)
  {
- 	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
- 		/* Pentium M */
--		printk(KERN_DEBUG PFX "Warning: Pentium M detected. The speedstep_centrino module\n");
--		printk(KERN_DEBUG PFX "offers voltage scaling in addition of frequency scaling. You\n");
--		printk(KERN_DEBUG PFX "should use that instead of p4-clockmod, if possible.\n");
-+		printk(KERN_WARNING PFX "Warning: Pentium M detected. "
-+		       "The speedstep_centrino module offers voltage scaling"
-+		       " in addition of frequency scaling. You should use "
-+		       "that instead of p4-clockmod, if possible.\n");
- 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
- 	}
+@@ -2398,6 +2457,8 @@
  
- 	if (c->x86 != 0xF) {
--		printk(KERN_DEBUG PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
-+		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
- 		return 0;
- 	}
+ 	acpi_processor_ppc_init();
  
- 	if (speedstep_detect_processor() == SPEEDSTEP_PROCESSOR_P4M) {
--		printk(KERN_DEBUG PFX "Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq \n");
--		printk(KERN_DEBUG PFX "modules offers voltage scaling in addition of frequency scaling. You\n");
--		printk(KERN_DEBUG PFX "should use either one instead of p4-clockmod, if possible.\n");
-+		printk(KERN_WARNING PFX "Warning: Pentium 4-M detected. "
-+		       "The speedstep-ich or acpi cpufreq modules offers "
-+		       "voltage scaling in addition of frequency scaling. "
-+		       "You should use either one instead of p4-clockmod, "
-+		       "if possible.\n");
- 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4M);
- 	}
++	acpi_processor_disable_smm();
++
+ 	return_VALUE(0);
+ }
+ 
+diff -ruN linux-original/drivers/acpi/tables/tbconvrt.c linux/drivers/acpi/tables/tbconvrt.c
+--- linux-original/drivers/acpi/tables/tbconvrt.c	2004-02-13 17:09:59.000000000 +0100
++++ linux/drivers/acpi/tables/tbconvrt.c	2004-02-15 08:12:16.000000000 +0100
+@@ -240,9 +240,10 @@
+ 	/*
+ 	 * Processor Performance State Control. This is the value OSPM writes to
+ 	 * the SMI_CMD register to assume processor performance state control
+-	 * responsibility. There isn't any equivalence in 1.0, leave it zeroed.
++	 * responsibility. There isn't any equivalence in 1.0, but as many 1.x
++	 * ACPI tables contain _PCT and _PSS we also keep this value.
+ 	 */
+-	local_fadt->pstate_cnt = 0;
++	/* local_fadt->pstate_cnt = 0 (reserved2) */
+ 
+ 	/*
+ 	 * Support for the _CST object and C States change notification.
