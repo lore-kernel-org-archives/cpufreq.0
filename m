@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq Kconfig,1.2,NONE
-Date: Wed, 27 Aug 2003 11:12:58 +0100
+Subject: cpufreq patchin.sh,1.1.1.1,1.1.1.2
+Date: Wed, 27 Aug 2003 11:27:12 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E19rxIQ-0007F3-Gs@flint.arm.linux.org.uk>
+Message-ID: <E19rxWC-0007Ow-Bu@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,14 +18,29 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv27835/linux/arch/i386/kernel/cpufreq
+Update of /mnt/src/cvsroot/cpufreq
+In directory flint:/tmp/cvs-serv28440
 
-Removed Files:
+Modified Files:
       Tag: LINUX_2_4
-	Kconfig 
+	patchin.sh 
 Log Message:
-cleanup.
+added the missing longhaul.h (thanks to Domimik).
 
 
---- Kconfig DELETED ---
+Index: patchin.sh
+===================================================================
+RCS file: /mnt/src/cvsroot/cpufreq/patchin.sh,v
+retrieving revision 1.1.1.1
+retrieving revision 1.1.1.2
+diff -u -r1.1.1.1 -r1.1.1.2
+--- patchin.sh	25 Aug 2003 14:58:44 -0000	1.1.1.1
++++ patchin.sh	27 Aug 2003 10:27:09 -0000	1.1.1.2
+@@ -23,6 +23,7 @@
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/elanfreq.c $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/gx-suspmod.c $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.c $1/arch/i386/kernel
++ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.h $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/longrun.c $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/p4-clockmod.c $1/arch/i386/kernel
+ ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k6.c $1/arch/i386/kernel
