@@ -1,21 +1,11 @@
 From: David Moore <dcm@acm.org>
-Subject: Re: [ACPI] _PDC method in DSDT
-Date: 24 Jun 2003 14:47:52 -0700
+Subject: [PATCH] Bugfixes for 2.5.73 cpufreq/acpi.c
+Date: 24 Jun 2003 15:11:39 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1056491271.3979.15.camel@aldebaran.caltech.edu>
-References: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com>
-	 <20030623133834.GA2330@brodo.de> <20030623161136.GG19556@poupinou.org>
-	 <1056388336.15250.62.camel@ixodes.goop.org>
-	 <1056398545.10322.111.camel@aldebaran.caltech.edu>
-	 <20030623213726.GA1317@brodo.de>
-	 <1056417280.10323.148.camel@aldebaran.caltech.edu>
-	 <1056418635.5977.20.camel@sherkaner.pao.digeo.com>
-	 <1056420149.10322.160.camel@aldebaran.caltech.edu>
-	 <20030624091836.GI19556@poupinou.org>
+Message-ID: <1056492699.3979.32.camel@aldebaran.caltech.edu>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030624091836.GI19556@poupinou.org>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -26,47 +16,51 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Dominik Brodowski <linux@brodo.de>, Andrew Grover <andrew.grover@intel.com>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq list <cpufreq@www.linux.org.uk>
+To: cpufreq list <cpufreq@www.linux.org.uk>
 
-On Tue, 2003-06-24 at 02:18, Ducrot Bruno wrote:
-> Then only concern I may have for is still the _PDC method.  It is currently
-> only documented in a MS document.  It is defined as an optional method
-> used by the OS in order to be somehow compatible with older releases
-> of Windows.  But it has the folowing:
-> 
-> Arguments:
-> Arg0 (buffer):
-> DWORD 0:         Revision Id
-> DWORD 1:    Number of capabilities DWORDs in buffer
-> DWORD 2-n:   Capabilities DWORDs, where each bit
-> 	defines capabilities and features supported by the OSPM for
-> 	processor power management.
-> 	The definitions and meaning of each capabilities bit is vendor
-> 	specific, and shared with OSPM by the vendor.
-> 
-> Result Code:
-> None
-> 
-> Then give us now the correct values to be passed for Pentium-M found
-> in Centrino platform, and I will be glad to do the break of cpufreq/acpi.c
-> for you.
-> 
-
-Dword 0 should be 0x1
-Dword 1 should be 0x1
-Dword 2 should be 0x1
-
-The 0x1 in Dword 2 indicates that the driver supports Enhanced
-Speedstep.  In my DSDT, Dwords 0 and 1 are ignored anyway, but the
-values above should be correct.
-
-Feel free to do the split into two files if you think that's the way to
-go.  I'm going to submit my patch to the cpufreq list anyway under a
-separate email, just so it exists for the record.  You might change your
-mind after seeing it.  I also have a patch that fixes a few bugs in the
-current cpufreq/acpi.c.
+Here are a few bug fixes to the ACPI cpufreq driver in 2.5.73.  The
+first two hunks, I am fairly confident that the fix is correct.  The
+first fixes a NULL dereference occurs when
+/proc/acpi/processor/.../performance is written to.  The second fixes a
+bug that causes cpufreq to set the wrong frequencies if the platform
+limit is non-zero.  The third applies the platform limit to be the
+performance limit for ACPI.  This should probably be initialized by a
+call to acpi_processor_apply_limit(), but there is no convenient way to
+call that from cpufreq/acpi.c.  If someone else has a better fix in
+mind, please do that instead.
 
 Regards,
 
 David
+
+--- linux-2.5.73/arch/i386/kernel/cpu/cpufreq/acpi.c.orig	2003-06-23 21:11:19.000000000 -0700
++++ linux-2.5.73/arch/i386/kernel/cpu/cpufreq/acpi.c	2003-06-24 14:29:34.000000000 -0700
+@@ -385,7 +385,8 @@
+         loff_t			*data)
+ {
+ 	int			result = 0;
+-	struct acpi_processor	*pr = (struct acpi_processor *) data;
++	struct seq_file		*m = (struct seq_file *) file->private_data;
++	struct acpi_processor	*pr = (struct acpi_processor *) m->private;
+ 	char			state_string[12] = {'\0'};
+ 	unsigned int            new_state = 0;
+ 	struct cpufreq_policy   policy;
+@@ -484,7 +485,8 @@
+ 	if (result)
+ 		return_VALUE(result);
+ 
+-	result = acpi_processor_set_performance (perf, next_state);
++	result = acpi_processor_set_performance (perf,
++		next_state + perf->pr->limit.state.px);
+ 
+ 	return_VALUE(result);
+ }
+@@ -680,6 +682,8 @@
+ 	goto err0;
+ 
+  found_capable_cpu:
++
++	pr->limit.state.px = pr->performance_platform_limit;
+ 	
+  	result = cpufreq_register_driver(&acpi_cpufreq_driver);
+ 	if (result) 
