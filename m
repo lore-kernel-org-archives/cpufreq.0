@@ -1,11 +1,11 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: Re: [OOPS] [2.6.0-test5-bk8] cpufreq and sysfs problem...
-Date: Wed, 24 Sep 2003 15:37:46 -0700
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20030924153746.3b0f6493.akpm@osdl.org>
+From: paul.devriendt@amd.com
+Subject: RE: Release 1.00.08 of the AMD64 Frequency Driver
+Date: Fri, 26 Sep 2003 06:47:12 -0500
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <99F2150714F93F448942F9A9F112634C080EF0A6@txexmtae.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_000_01C38423.ECE04B70"
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,57 +14,261 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+To: pavel@suse.cz, davej@codemonkey.org.uk
+Cc: richard.brunner@amd.com, mark.langsdorf@amd.com, cpufreq@www.linux.org.uk
+
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
+
+------_=_NextPart_000_01C38423.ECE04B70
+Content-Type: text/plain;
+ charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hi Dave,
+
+Attached is a bzipped tar file containing frequency support for 
+AMD's Athlon 64 and Opteron. There are 2 .c files in the tarball 
+- one for 2.4 and one for 2.6.
+
+I believe this is it for now, but there will be more updates coming
+soon. (Sorry, can not define soon). There are some hardware changes
+coming that will impact this, and also adding code for battery
+detection with ACPI.
+
+Paul.
+
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@suse.cz]
+> Sent: Friday, September 26, 2003 3:40 AM
+> To: Devriendt, Paul
+> Cc: Langsdorf, Mark; Brunner, Richard
+> Subject: Re: Release 1.00.08 of the AMD64 Frequency Driver
+> 
+> 
+> Hi!
+> 
+> > Ok, but Dominik is not around until Oct 2nd. When he gets back,
+> 
+> That's next week :-(.
+> 
+> Anyway Dave Jones is listed as maintainer of cpufreq, so it should be
+> okay to go to Dave, directly, Cc: to cpufreq@www list. Perhaps it is
+> good idea to try sending it with him? [Or should I do the pushing?]
+> 
+> CPU FREQUENCY DRIVERS
+> P:      Dave Jones
+> M:      davej@codemonkey.org.uk
+> L:      cpufreq@www.linux.org.uk
+> W:      http://www.codemonkey.org.uk/cpufreq/
+> S:      Maintained
+> 
+> 
+> 								Pavel
+> -- 
+> When do you have a heart between your knees?
+> [Johanka's followup: and *two* hearts?]
+> 
+
+
+------_=_NextPart_000_01C38423.ECE04B70
+Content-Type: application/octet-stream;
+ name=amd64freq.08.tar.bz2
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename=amd64freq.08.tar.bz2
+
+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
+
+------_=_NextPart_000_01C38423.ECE04B70
 Content-Type: text/plain; charset="us-ascii"
-To: Ashley Pittman <ashley@quadrics.com>
-Cc: cpufreq@www.linux.org.uk
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+------_=_NextPart_000_01C38423.ECE04B70--
 
 
-OK, thanks.  I've copied the cpurfeq guys; hopefully they can fix this one
-up.
-
-
-Begin forwarded message:
-
-Date: Wed, 24 Sep 2003 23:33:18 +0100
-From: Ashley Pittman <ashley@quadrics.com>
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [OOPS] [2.6.0-test5-bk8] cpufreq and sysfs problem...
-
-
-
-Hi,
-
-This problem is entirely reproducible for me, rather than describe it 
-i'm sending you a script that provokes it.  The chip is a via C3 so the 
-longhaul module inserts properly and kinda works.
-
-I suspect the problem is the 'cpufreq_userspace' module not increasing 
-the ref count of the cpufreq directory but it's also possible the 
-problem lies with the sysfs code itself, I can't see any notes about 
-refcounting in the sysfs documentation so I'm not really sure where the 
-answer lies.
-
-In case your not familar with the cpufreq code the longhaul driver 
-creates the sysfs directory, the cpufreq_longhaul module creates a file 
-in that directory.   When the longhaul module is remove the directory 
-should also go but that leaves the file with nowhere to go.
-
-The problem still persists with the latest 2.6.0-test5-bk11 patch.
-
-Ashley,
-
-#!/bin/sh
-modprobe longhaul
-modprobe cpufreq_userspace
-cd /sys/devices/system/cpu/cpu0/cpufreq
-echo userspace > scaling_governor
-ls scaling_setspeed
-# This doesnt fail but look at the $PWD...
-rmmod longhaul
-# Note the $PWD is empty...
-cd
-modprobe longhaul
-echo userspace > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-# This next line segv's, oops the kernel and makes future 'lsmod' hang
-rmmod longhaul
