@@ -1,14 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: cpufreq files missing in Linux 2.6.5
-Date: Mon, 24 May 2004 14:21:40 +0200
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: Geode NX PowerNow
+Date: Mon, 24 May 2004 15:02:26 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040524122140.GA4933@poupinou.org>
-References: <1085097449.18969.1.camel@delerium.codemonkey.org.uk>
-	<Pine.GSO.4.30.0405201709180.23636-100000@rigel.oac.uci.edu>
+Message-ID: <20040524130226.GB7769@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.30.0405201709180.23636-100000@rigel.oac.uci.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,17 +17,18 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
-Cc: cpufreq@www.linux.org.uk
+To: paul.devriendt@amd.com, cpufreq@www.linux.org.uk
 
-On Thu, May 20, 2004 at 05:16:53PM -0700, Vasanth Venkatachalam wrote:
-> I'm running a Pentium M with enhanced speedstep.
+Dear Paul,
 
-'modprobe speedstep-centrino' do not work?
+A few minutes ago I heard of the new Geode NX processors AMD is shipping.
+Reportedly, they contain the "PowerNow!" technology. Is this powernow-k7 or
+powernow-k8? If it's powernow-k8, does check_supported_cpu() detect it? If
+it's powernow-k7, do the CPUID checks in check_powernow() work?
 
+In addition, I think we should clarify some help texts in Kconfig [once the
+issues mentioned above are resolved] to show the differences between
+gx-suspmod and powernow-k{7,8} for Geode NX.
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Thanks,
+	Dominik
