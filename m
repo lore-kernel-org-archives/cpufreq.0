@@ -1,13 +1,13 @@
 From: Dave Jones <davej@suse.de>
-Subject: Re: [PATCH] cpufreq: speedstep-lib, speedstep-ich cleanup
-Date: Thu, 26 Jun 2003 02:48:31 +0200
+Subject: Re: [PATCH] cpufreq: add speedstep support for Intel Mobile Pentium P-4 with 533 MHz FSB
+Date: Thu, 26 Jun 2003 02:51:11 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030626024831.A31502@suse.de>
-References: <20030616200415.GA4279@brodo.de>
+Message-ID: <20030626025111.B31502@suse.de>
+References: <20030624183402.GA10605@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030616200415.GA4279@brodo.de>; from linux@brodo.de on Mon, Jun 16, 2003 at 10:04:15PM +0200
+In-Reply-To: <20030624183402.GA10605@brodo.de>; from linux@brodo.de on Tue, Jun 24, 2003 at 08:34:02PM +0200
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,18 +22,15 @@ Content-Transfer-Encoding: 7bit
 To: Dominik Brodowski <linux@brodo.de>
 Cc: cpufreq@www.linux.org.uk
 
-On Mon, Jun 16, 2003 at 10:04:15PM +0200, Dominik Brodowski wrote:
- > - separate functions which might be useful for speedstep-piix4,
- >   speedstep-via or speedstep-bios into a new speedstep-lib.c.
- > - clean up speedstep-ich as it will only be used for ICH-based chipsets
- >   in future.
- > - remove now-obsolete speedstep_coppermine parameter
+On Tue, Jun 24, 2003 at 08:34:02PM +0200, Dominik Brodowski wrote:
+ > Add support for newest "Mobile Pentium 4-M" and the new "Mobile Pentium 4 with
+ > 533 MHz FSB" processors.
+ > 
+ > Depends on the speedstep-lib patch sent earlier.
 
-Thanks, applied to working tree (I'll merge CVS again after I've
-merged another batch of patches which I've backlogged whilst moving
-house).
+Looks good, applied.
 
-        Dave 
+        Dave
 
 -- 
 | Dave Jones.        http://www.codemonkey.org.uk
