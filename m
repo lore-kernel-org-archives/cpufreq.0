@@ -1,13 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: Kernel 2.6.7 speedstep-piix4 on vaio
-Date: Thu, 29 Jul 2004 23:04:13 +0200
+From: Christian Hoelbling <christian.holbling@cern.ch>
+Subject: Re: [PATCH 2.6.8-rc2] speedstep SMT support
+Date: Fri, 30 Jul 2004 11:36:34 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040729210413.GA7782@dominikbrodowski.de>
-References: <43210.141.228.156.225.1091110800.squirrel@141.228.156.225>
+Message-ID: <410A32C2.3080002@cern.ch>
+References: <4107B8DE.5020401@cern.ch>	<20040728172028.GB8678@dominikbrodowski.de>	<4108EB34.9060505@cern.ch>
+	<20040729163450.GA7947@dominikbrodowski.de>
+Reply-To: Christian.Hoelbling@cpt.univ-mrs.fr
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="------------050803010006060204040609"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <43210.141.228.156.225.1091110800.squirrel@141.228.156.225>
+In-Reply-To: <20040729163450.GA7947@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,37 +19,101 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ivor Hewitt <ivor@ivor.org>
+To: Dominik Brodowski <linux@dominikbrodowski.de>
 Cc: cpufreq@www.linux.org.uk
 
-Hi,
+This is a multi-part message in MIME format.
+--------------050803010006060204040609
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 29, 2004 at 03:20:00PM +0100, Ivor Hewitt wrote:
-> Hi,
-> 
-> Firstly should the speedstep-smi driver be able to work on a Vaio Z600TEK
-> (Coppermine P3, 440BX chipset)?
-Possibly.
+   hi,
 
-> Given that I now have the piix driver working, should it be possible to make
-> the smi driver work? i.e. is the smi just a better way of doing the same thing
-> and anything that the old driver did should be possible in the new one?
+here is the new patch w.r.t. the latest cpufreq-development snapshot 
+(thanks for pointing me to it!). it should make speedstep-ich SMP save 
+(altough that is hypothetical for now).
 
-No, the SMI driver does things differently. the -piix4 driver changes an
-output signal of the southbridge which might or might not be connected to
-the appropriate "intel speedstep logic" to switch speeds. the -smi driver
-tries to talk to the BIOS which knows how to switch speeds, but sometimes
-the BIOS doesn't understand us, as it only understands an undocumented
-language [== undocumented values]...
+ chris
 
-Therefore, the speedstep-smi driver contains a few tweaks which modify the
-"language" a bit: have you tried passing the module options
-"smi_port=0xb2 smi_cmd=0x82" yet? On several systems, the smi_cmd is set
-wrongly by default.
+--------------050803010006060204040609
+Content-Type: text/x-patch;
+ name="speedstep_SMP.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="speedstep_SMP.diff"
 
-> PS Is there a searchable archive of this list?
-Possibly @ gmane, but I don't know how far back that archive goes...
+diff --unified --recursive --new-file linux-2.6.8-rc2-cpufreq/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c linux-2.6.8-rc2-cpufreq.my/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+--- linux-2.6.8-rc2-cpufreq/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-07-26 10:13:07.000000000 +0000
++++ linux-2.6.8-rc2-cpufreq.my/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c	2004-07-30 11:00:59.000000000 +0000
+@@ -247,14 +247,14 @@
+ 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0], target_freq, relation, &newstate))
+ 		return -EINVAL;
+ 
++	freqs.old = speedstep_get(policy->cpu);
++	freqs.new = speedstep_freqs[newstate].frequency;
++	freqs.cpu = policy->cpu;
++
+ 	/* no transition necessary */
+ 	if (freqs.old == freqs.new)
+ 		return 0;
+ 
+-	freqs.old = speedstep_get_processor_frequency(speedstep_processor);
+-	freqs.new = speedstep_freqs[newstate].frequency;
+-	freqs.cpu = policy->cpu;
+-
+ 	cpus_allowed = current->cpus_allowed;
+ 
+ 	/* only run on CPU to be set, or on its sibling */
+@@ -324,14 +324,13 @@
+ 				     &speedstep_freqs[SPEEDSTEP_LOW].frequency,
+ 				     &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
+ 				     &speedstep_set_state);
++	set_cpus_allowed(current, cpus_allowed);
+ 	if (result) {
+-		set_cpus_allowed(current, cpus_allowed);
+ 		return result;
+ 	}
+ 
+ 	/* get current speed setting */
+-	speed = speedstep_get_processor_frequency(speedstep_processor);
+-	set_cpus_allowed(current, cpus_allowed);
++	speed = speedstep_get(policy->cpu);
+ 	if (!speed)
+ 		return -EIO;
+ 
+@@ -362,7 +361,20 @@
+ 
+ static unsigned int speedstep_get(unsigned int cpu)
+ {
+-	return speedstep_get_processor_frequency(speedstep_processor);
++ 	unsigned int	speed;
++	cpumask_t       cpus_allowed,affected_cpu_map;
++ 
++	/* only run on CPU to be set, or on its sibling */
++	cpus_allowed = current->cpus_allowed;
++#ifdef CONFIG_SMP
++	affected_cpu_map = cpu_sibling_map[cpu];
++#else
++	affected_cpu_map = cpumask_of_cpu(cpu);
++#endif
++	set_cpus_allowed(current, affected_cpu_map);
++	speed=speedstep_get_processor_frequency(speedstep_processor);
++	set_cpus_allowed(current, cpus_allowed);
++	return speed;
+ }
+ 
+ static struct freq_attr* speedstep_attr[] = {
 
-	Dominik
+--------------050803010006060204040609
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@www.linux.org.uk
+http://www.linux.org.uk/mailman/listinfo/cpufreq
+
+--------------050803010006060204040609--
+
