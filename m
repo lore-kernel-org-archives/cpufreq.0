@@ -1,14 +1,11 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/4] speedstep-centrino: move to per-CPU analyzing of
-	CPUs
-Date: Fri, 20 Feb 2004 15:37:57 -0800
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: [PATCH] Fix ARM cpufreq governor selection
+Date: Sat, 21 Feb 2004 00:19:16 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1077320156.4205.1.camel@localhost.localdomain>
-References: <20040220084424.GA10473@dominikbrodowski.de>
+Message-ID: <20040221001916.E22043@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040220084424.GA10473@dominikbrodowski.de>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,18 +16,46 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: davej@redhat.com, cpufreq list <cpufreq@www.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk, David Jones <davej@redhat.com>
 
-On Fri, 2004-02-20 at 00:44, Dominik Brodowski wrote:
-> Move the table matching into an own function; only the FEATURE_EST bit is checked
-> in module_init() directly. As cpufreq drivers aren't sticky any longer (see other 
-> pending patch sent to cpufreq mailing list a few minutes ago), this will not 
-> change user-visible behaviour.
+The patch below fixes the cpufreq governor selection such that it
+finally works as expected on ARM platforms.
 
+===== arch/arm/Kconfig 1.40 vs edited =====
+--- 1.40/arch/arm/Kconfig	Sat Oct  4 14:36:50 2003
++++ edited/arch/arm/Kconfig	Tue Jan 27 10:53:53 2004
+@@ -336,14 +336,12 @@
+ 	bool
+ 	depends on CPU_FREQ && SA1100_LART
+ 	default y
+-	select CPU_FREQ_DEFAULT_GOV_USERSPACE
+ 	select CPU_FREQ_24_API if SYSCTL
+ 
+ config CPU_FREQ_SA1110
+ 	bool
+ 	depends on CPU_FREQ && (SA1100_ASSABET || SA1100_CERF || SA1100_PT_SYSTEM3)
+ 	default y
+-	select CPU_FREQ_DEFAULT_GOV_USERSPACE
+ 	select CPU_FREQ_24_API if SYSCTL
+ 
+ config CPU_FREQ_INTEGRATOR
+===== drivers/cpufreq/Kconfig 1.7 vs edited =====
+--- 1.7/drivers/cpufreq/Kconfig	Mon Jan  5 18:43:42 2004
++++ edited/drivers/cpufreq/Kconfig	Tue Jan 27 10:53:48 2004
+@@ -13,7 +13,8 @@
+ choice
+ 	prompt "Default CPUFreq governor"
+ 	depends on CPU_FREQ
+-	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
++	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE if !CPU_FREQ_SA1100 && !CPU_FREQ_SA1110
++	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
+ 	help
+ 	  This option sets which CPUFreq governor shall be loaded at
+ 	  startup. If in doubt, select 'performance'.
 
-These all look reasonable to me.  I tried testing the ACPI table change,
-but it isn't obvious about where it gets its frequency table from - it
-might be nice to add a hint to the banner.
-
-	J
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
