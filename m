@@ -1,13 +1,14 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: banias with different (unusual?) model_name
-Date: Fri, 20 Aug 2004 19:19:31 -0700
+From: cpufreq@roy.de
+Subject: set vcore?
+Date: Sat, 21 Aug 2004 11:28:05 +0200 (CEST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1093054772.3043.3.camel@localhost>
-References: <20040820093344.GA2923@akamail.com>
+Message-ID: <1424.212.202.5.89.1093080485.squirrel@212.202.5.89>
+Reply-To: cpufreq@roy.de
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040820093344.GA2923@akamail.com>
+References: 
+In-Reply-To: 
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,18 +18,29 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: matthias.brill@akamail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, cpufreq list <cpufreq@www.linux.org.uk>
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@www.linux.org.uk
 
-On Fri, 2004-08-20 at 11:33 +0200, matthias brill wrote:
-> hi jeremy
-> 
-> i've found a pentium-m banias which reports "Mobile Genuine Intel(R)
-> processor       1400MHz" in /proc/cpuinfo.  this (strange?) signature
-> prevents speedstep-centrino.c from working properly.
+Hi,
 
-Yeah, there seem to be a few of these around.  I'm just not certain that
-they're identical to "normal" Banias as far as operating points go.
+> ------------------------ Urspr=FCngliche Nachricht
+------------------------- > Betreff: Re: set vcore?
+> Von:     "Dave Jones" <davej@redhat.com>
+> Datum:   Sa, 21.08.2004, 02:34
+> -----------------------------------------------------------------------=
+---
+>
+> On Sat, Aug 21, 2004 at 12:07:38AM +0200, s!mon roy wrote:
+>
+>> is there a way to set the VCore of a cpu by starting or during work?
+>> I want to use a mobile celeron4 in a desktop mainboard wich has no
+>> point in bios to change VCore. so it will set a standard 1.6V VCore
+>> instead of 1.3V.
+>
+> try asking on the cpufreq mailing list cpufreq@www.linux.org.uk
+>
+>		Dave
 
-	J
+best wishes,
+
+simon
