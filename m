@@ -1,11 +1,11 @@
 From: Dominik Brodowski <linux@brodo.de>
-Subject: [PATCH] BUGFIX for powernow-k8
-Date: Tue, 4 Nov 2003 15:51:01 +0100
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20031104145100.GA6517@brodo.de>
+Subject: [PATCH][BUGFIX] speedstep-smi: fail on failure to aquire "ownership"
+Date: Tue, 4 Nov 2003 17:07:28 +0100
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <20031104160728.GA7617@brodo.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============12115048616934709=="
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Type: multipart/mixed; boundary="===============84077044119758559=="
+Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,67 +14,61 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: davej@codemonkey.org.uk, paul.devriendt@amd.com, cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk
 
 
---===============12115048616934709==
+--===============84077044119758559==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
+	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
 Content-Disposition: inline
 
 
---bp/iNruPH9dso1Pn
+--FCuugMFkClbJLl1L
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Dave, Paul,
+Abort if there is a failure in aquiring "ownership" of the SMI speedstep=20
+interface.
 
-Here is an important bugfix for powernow-k8.c in its current form
-(2.6.0-test9).
-
-Problem description:
-As the powernow-k8 driver uses the ->target and not the=20
-->setpolicy callback, cpufreq_policy->policy is always zero. Checking for it
-in the powernow-k8 driver always returned "false". So we can easily remove
-this invalid check (and the #warning added to denote this).
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux/a=
-rch/i386/kernel/cpu/cpufreq/powernow-k8.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-04 15=
-:27:33.609957704 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2003-11-04 15:39:36.41=
-0075384 +0100
-@@ -935,10 +935,8 @@
- 		return -ENODEV;
- 	}
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c linux=
+/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-04 =
+15:27:33.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2003-11-04 16:03:11.=
+247987328 +0100
+@@ -226,8 +226,10 @@
 =20
--#warning pol->policy is in undefined state here
- 	res =3D find_match(&targ, &min, &max,
--			 pol->policy =3D=3D CPUFREQ_POLICY_POWERSAVE ?
--			 SEARCH_DOWN : SEARCH_UP, 0, 0);
-+			 SEARCH_DOWN, 0, 0);
- 	if (!res) {
- 		pol->min =3D min * 1000;
- 		pol->max =3D max * 1000;
+ 	result =3D speedstep_smi_ownership();
+=20
+-	if (result)
++	if (result) {
+ 		dprintk(KERN_INFO "cpufreq: fails an aquiring ownership of a SMI interfa=
+ce.\n");
++		return -EINVAL;
++	}
+=20
+ 	/* detect low and high frequency */
+ 	result =3D speedstep_smi_get_freqs(&speedstep_freqs[SPEEDSTEP_LOW].freque=
+ncy,
 
---bp/iNruPH9dso1Pn
+--FCuugMFkClbJLl1L
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.3 (GNU/Linux)
 
-iD8DBQE/p7zTZ8MDCHJbN8YRAvgGAJwN6eoSZYGwOrh5/caXl0wjA1iRaQCfY9fQ
-JE/6HPhAJhMNcKP6/RUm350=
-=AFnX
+iD8DBQE/p86/Z8MDCHJbN8YRAsXOAJ0U/8453ClNshuUUz8MppInvPLnIQCfQ9yO
+66DOYJtBtlXnWaj+L+f8Xbo=
+=Jvye
 -----END PGP SIGNATURE-----
 
---bp/iNruPH9dso1Pn--
+--FCuugMFkClbJLl1L--
 
 
---===============12115048616934709==
+--===============84077044119758559==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -85,5 +79,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============12115048616934709==--
+--===============84077044119758559==--
 
