@@ -1,11 +1,10 @@
-From: Alexander Clouter <alex@digriz.org.uk>
-Subject: Re: [PATCH] cpufreq_(ondemand|conservative)
-Date: Tue, 1 Feb 2005 09:02:21 +0000
-Message-ID: <20050201090220.GA3992@inskipp>
-References: <88056F38E9E48644A0F562A38C64FB6003E65C4B@scsmsx403.amr.corp.intel.com>
+From: Clemens Orthacker <clemenso@sbox.tugraz.at>
+Subject: kernel: acpi-cpufreq: Transition failed
+Date: Wed, 2 Feb 2005 11:58:26 +0100
+Message-ID: <200502021158.26890.clemenso@sbox.tugraz.at>
+Reply-To: clemenso@sbox.tugraz.at
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1805743894=="
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6003E65C4B@scsmsx403.amr.corp.intel.com>
+Content-Type: multipart/mixed; boundary="===============1170467478=="
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,210 +15,229 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@ZenII.linux.org.uk, linux@dominikbrodowski.de, linux-kernel@vger.kernel.org
+To: cpufreq@lists.linux.org.uk
 
+This is a multipart MIME message, it may require a MIME capable user agent.
+--===============1170467478==
+Content-Type: multipart/signed; micalg=sha1;
+	boundary="--IAIK.SMIME.MAPPER.828A6080--";
+	protocol="application/x-pkcs7-signature"
 
---===============1805743894==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
+This is a multipart MIME message, it may require a MIME capable user agent.
+----IAIK.SMIME.MAPPER.828A6080--
 Content-Disposition: inline
-
-
---2fHTh5uZTiUOsy+g
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Morning Venki,
+Hi!
 
-On Jan 31, Pallipadi, Venkatesh wrote:
->=20
-> Hi Alex,
->=20
-> Sorry for the late reply. Neat work splitting up all these patches.=20
->=20
-Not a problem
+Since I'm using the 2.6.10 kernel I constantly get the following error:
+kernel: acpi-cpufreq: Transition failed
 
-> I don't think this patch is required as you are initializing a static
-> variable. They should be zero without initialization as well.
->=20
-I'll go ahead and fix the lot and then get back to you guys.  Might be a we=
-ek=20
-though as I have just finished moving into my new flat but there are boxes=
+Pentium4 M
+acpi-cpufreq driver (userspace governor, powernowd)
+
+Is this a configuration problem? (i read about this problem in a previous=
 =20
-everywhere and (<insert_sound_of_a_scream/>) no Internet access.
+posting)
 
-Cheers
+Thanks,
+Clemens
 
-Alex
+(btw. bogomips fails, and I have no idea why..)
 
-> All patches except the above looks good and ready to go. Can you send
-> them individually to cpufreq list, with Signed-off line.
->=20
-> Thanks,
-> Venki=20
-> =20
->=20
-> >-----Original Message-----
-> >From: Alexander Clouter [mailto:alex@digriz.org.uk]=20
-> >Sent: Sunday, January 23, 2005 7:00 AM
-> >To: linux@dominikbrodowski.de; Pallipadi, Venkatesh
-> >Cc: linux-kernel@vger.kernel.org; cpufreq@ZenII.linux.org.uk
-> >Subject: [PATCH] cpufreq_(ondemand|conservative)
-> >
-> >Hi All,
-> >
-> >Well after Dominik reminded me about the updates to=20
-> >cpufreq_ondemand I had
-> >made some time back and also my cpufreq governor called=20
-> >cpufreq_conservative,
-> >I dug out my coffee and started fixing them up for another=20
-> >round of peer
-> >review.  My governor is pretty much a minor rewrite of the=20
-> >cpufreq_ondemand
-> >governor but instead gracefully increases and decreases the=20
-> >cpufreq which
-> >should make it much more suitable for battery power environments.
-> >
-> >All the patches are for 2.6.11-rc1-mm1 but also apply cleanly to
-> >2.6.11-rc1-mm2.  Unfortunately 2.6.11-rc1-mm2 oops'es in key_scancode
-> >(drivers/char/keyboard.c) when I presses any keys on my text=20
-> >console (tty1)
-> >after init has loaded so I am waiting till 2.6.11-rc2-mm1=20
-> >appears before I
-> >file a bug report.
-> >
-> >The 'improvements' I have made to cpufreq_ondemand are:
-> >
-> >1) cpufreq_ondemand-2.6.11-rc1-mm1-01_ignore-nice.diff
-> >	this adds a new parameter in /sys called
-> >	/sys/.../cpufreq/ondemand/ignore_nice which by default=20
-> >is set to '0'.
-> >	Any 'nice' tasks running will be considered as idle=20
-> >time unless you=20
-> >	set the value in ignore_nice to '1', then it will be simply=20
-> >	considered as a regular cpu time sucking program.
-> >
-> >	Last time I did this Venki mentioned some possible corner case=20
-> >	conditions[1] and so this time I make it recalculate=20
-> >the idle times=20
-> >	when the value of ignore_nice is flipped.  If I am=20
-> >right this should=20
-> >	fix any possible issues that would have arisen from this...?
-> >
-> >2) cpufreq_ondemand-2.6.11-rc1-mm1-02_check-rate-and-break-out.diff
-> >	a very simple patch which prevents us from changing the=20
-> >cpufreq from=20
-> >	'x' to 'x' un-necessarily.  No-one could find any=20
-> >problems with this=20
-> >	so it has pretty much remained untouched.
-> >
-> >3) cpufreq_ondemand-2.6.11-rc1-mm1-03_sys_freq_step.diff
-> >	this feature also adds a new parameter in /sys called
-> >	/sys/.../cpufreq/ondemand/freq_step which by default is=20
-> >set to '5'. =20
-> >	You can change this to any value between '0' (why?) and=20
-> >'100' to=20
-> >	alter how much the cpu will change its frequency by on=20
-> >the way down.
-> >
-> >4) cpufreq_ondemand-2.6.11-rc1-mm1-04_ignore_steal.diff
-> >	I noticed a new cpustat has appeared called 'steal'[2]=20
-> >which from=20
-> >	what I can tell should be treated like an iowait stat. =20
-> >'steal' only=20
-> >	seems supported by S/390 but I think it should be=20
-> >'considered'.  This=20
-> >	is a minor patch and if I have gotten confused then=20
-> >obviously it=20
-> >	should be removed (and from cpufreq_conservative)
-> >
-> >5) cpufreq_ondemand-2.6.11-rc1-mm1-05_safe_down_skip.diff
-> >	although I have not noticed any problems without it=20
-> >being done a=20
-> >	little alarm bell fires off in my head about how=20
-> >down_skip really=20
-> >	should be initialised (what if the cpu-freq is not at a=20
-> >minimum when=20
-> >	we start off or ac power is unplugged and we get=20
-> >policy->min changing=20
-> >	to a lower value?).  Again a minor patch, if not worth=20
-> >it obviously=20
-> >	it can be removed and should also be from cpufreq_conservative
-> >
-> >Now cpufreq_conservative started off as a copy of=20
-> >cpufreq_ondemand with all
-> >the above patches and then amended from there.  If you install=20
-> >the patches
-> >you can see with a diff (attached for _show_ and not use) that=20
-> >there is not
-> >much in the way of difference between them.  It works by me=20
-> >creating and
-> >initialising an array to each cpu's policy->cur (this could=20
-> >should be nice in=20
-> >an SMP environment, bug reports would be appreciated) and then=20
-> >changing the=20
-> >contents by freq_step each time we need to increase or=20
-> >decrease the cpufreq. =20
-> >This results in a smoother transition on the way up and down. =20
-> >Also by the=20
-> >nature of this governor it polls 100 times fewer than cpufreq_ondemand.
-> >
-> >Let me know what you think, the patches work for me, the=20
-> >question is do they=20
-> >work for you :)
-> >
-> >Cheers all
-> >
-> >Alex
-> >
-> >[1] http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D110013659005496&w=
-=3D2
-> >[2] http://marc.theaimsgroup.com/?l=3Dlinux-kernel&m=3D109888788719020&w=
-=3D2
-> >
-> >--=20
-> > ________________________________________=20
-> >/ A foolish consistency is the hobgoblin \
-> >| of little minds.                       |
-> >|                                        |
-> >\ -- Ralph Waldo Emerson                 /
-> > ----------------------------------------=20
-> >        \   ^__^
-> >         \  (oo)\_______
-> >            (__)\       )\/\
-> >                ||----w |
-> >                ||     ||
-> >
+#
+# Power management options (ACPI, APM)
+#
+CONFIG_PM=3Dy
+# CONFIG_PM_DEBUG is not set
+CONFIG_SOFTWARE_SUSPEND=3Dy
+CONFIG_PM_STD_PARTITION=3D"/dev/hda5"
+
+#
+# ACPI (Advanced Configuration and Power Interface) Support
+#
+CONFIG_ACPI=3Dy
+CONFIG_ACPI_BOOT=3Dy
+CONFIG_ACPI_INTERPRETER=3Dy
+CONFIG_ACPI_SLEEP=3Dy
+CONFIG_ACPI_SLEEP_PROC_FS=3Dy
+CONFIG_ACPI_AC=3Dm
+CONFIG_ACPI_BATTERY=3Dm
+CONFIG_ACPI_BUTTON=3Dm
+CONFIG_ACPI_VIDEO=3Dm
+CONFIG_ACPI_FAN=3Dm
+CONFIG_ACPI_PROCESSOR=3Dm
+CONFIG_ACPI_THERMAL=3Dm
+CONFIG_ACPI_ASUS=3Dm
+# CONFIG_ACPI_IBM is not set
+CONFIG_ACPI_TOSHIBA=3Dm
+CONFIG_ACPI_BLACKLIST_YEAR=3D0
+# CONFIG_ACPI_DEBUG is not set
+CONFIG_ACPI_BUS=3Dy
+CONFIG_ACPI_EC=3Dy
+CONFIG_ACPI_POWER=3Dy
+CONFIG_ACPI_PCI=3Dy
+CONFIG_ACPI_SYSTEM=3Dy
+CONFIG_X86_PM_TIMER=3Dy
+
+#
+# APM (Advanced Power Management) BIOS Support
+#
+# CONFIG_APM is not set
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=3Dy
+# CONFIG_CPU_FREQ_DEBUG is not set
+CONFIG_CPU_FREQ_PROC_INTF=3Dm
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=3Dy
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy
+CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dm
+CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
+# CONFIG_CPU_FREQ_24_API is not set
+CONFIG_CPU_FREQ_GOV_ONDEMAND=3Dm
+CONFIG_CPU_FREQ_TABLE=3Dy
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=3Dm
+# CONFIG_X86_POWERNOW_K6 is not set
+# CONFIG_X86_POWERNOW_K7 is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+# CONFIG_X86_GX_SUSPMOD is not set
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+CONFIG_X86_SPEEDSTEP_ICH=3Dm
+# CONFIG_X86_SPEEDSTEP_SMI is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+# CONFIG_X86_CPUFREQ_NFORCE2 is not set
+# CONFIG_X86_LONGRUN is not set
+# CONFIG_X86_LONGHAUL is not set
+
+#
+# shared options
+#
+# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
+CONFIG_X86_SPEEDSTEP_LIB=3Dm
+CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK=3Dy
+
+
+cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Mobile Intel(R) Pentium(R) 4 - M CPU 1.90GHz
+stepping        : 7
+cpu MHz         : 1196.242
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov =
+pat=20
+pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid xtpr
+bogomips        : 2367.48
 
 --=20
- _____________________=20
-< Nice guys get sick. >
- ---------------------=20
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
+| Clemens Orthacker
+| e-mail: ClemensO@sbox.TUGraz.at
+| phone: +43/650/6693393
 
---2fHTh5uZTiUOsy+g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--=20
+| Clemens Orthacker
+| e-mail: ClemensO@sbox.TUGraz.at
+| phone: +43/650/6693393
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFB/0WcNv5Ugh/sRBYRAujnAJ98yxO16YPsnfZSXGRG/s+kkH5uxQCeNVSu
-o40OIO1HmyJflTbcrAGTZmQ=
-=hqc0
------END PGP SIGNATURE-----
-
---2fHTh5uZTiUOsy+g--
+--=20
+| Clemens Orthacker
+| e-mail: ClemensO@sbox.TUGraz.at
+| phone: +43/650/6693393
 
 
---===============1805743894==
+----IAIK.SMIME.MAPPER.828A6080--
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAA
+oIIJUzCCAtswggJEoAMCAQICAw2YbzANBgkqhkiG9w0BAQQFADBiMQswCQYDVQQG
+EwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoG
+A1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0EwHhcNMDQx
+MjEwMTMwOTMyWhcNMDUxMjEwMTMwOTMyWjBJMR8wHQYDVQQDExZUaGF3dGUgRnJl
+ZW1haWwgTWVtYmVyMSYwJAYJKoZIhvcNAQkBFhdjbGVtZW5zb0BzYm94LnR1Z3Jh
+ei5hdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOYMnFx4y3V1Q+lj
+t8zozx9B6cFTEKow3uxA+1DOXqaz8arqmG6Gt91JjSxNuMfiapyVmhr5ENrhU1kY
+o/9mUS06LSc8KRG30Jff726sCqZ7CZeu0zgoQLpsIXqeMw075mkD3HThtp8u802G
+JCHJms2h7G1Q5f4HHpyA0yCFnhvDS25m16E+mj3AQh19szhy7fPFA0pozyACUKSO
+Gaypv3Zl2xsnCoF8JnpylWsWya+GYZZJV6FIXUBbk8WAaFR53tTZUqk35BQRlaCE
+No/WDGJTxhXaa0KQyP6TP8VJ6735ujLzldhyHH7vT1evCYKgdaki+Q1bugK4L/rl
+jUp3CMkCAwEAAaM0MDIwIgYDVR0RBBswGYEXY2xlbWVuc29Ac2JveC50dWdyYXou
+YXQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQQFAAOBgQAbpc6zXbRXq65edvt+
+KasdLPizUhC9DJq2ZItO/JoI9h0eM3g0uYbG2kjVtqsXl/dau8RdzCbu7bJr7f/j
+g+7xVK/E8457sVUqdzbOeLIW2duXvqUXfwRLxoRahJFpE4E8TH+pG1X17tPU4Sxa
+STSGkl/UvnS5IN1MpyzZd2v4OTCCAz8wggKooAMCAQICAQ0wDQYJKoZIhvcNAQEF
+BQAwgdExCzAJBgNVBAYTAlpBMRUwEwYDVQQIEwxXZXN0ZXJuIENhcGUxEjAQBgNV
+BAcTCUNhcGUgVG93bjEaMBgGA1UEChMRVGhhd3RlIENvbnN1bHRpbmcxKDAmBgNV
+BAsTH0NlcnRpZmljYXRpb24gU2VydmljZXMgRGl2aXNpb24xJDAiBgNVBAMTG1Ro
+YXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBDQTErMCkGCSqGSIb3DQEJARYccGVyc29u
+YWwtZnJlZW1haWxAdGhhd3RlLmNvbTAeFw0wMzA3MTcwMDAwMDBaFw0xMzA3MTYy
+MzU5NTlaMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGlu
+ZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwg
+SXNzdWluZyBDQTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAxKY8VXNV+065
+yplaHmjAdQRwnd/p/6Me7L3N9VvyGna9fww6YfK/Uc4B1OVQCjDXAmNaLIkVcI7d
+yfArhVqqP3FWy688Cwfn8R+RNiQqE88r1fOCdz0Dviv+uxg+B79AgAJk16emu59l
+0cUqVIUPSAR/p7bRPGEEQB5kGXJgt/sCAwEAAaOBlDCBkTASBgNVHRMBAf8ECDAG
+AQH/AgEAMEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwudGhhd3RlLmNvbS9U
+aGF3dGVQZXJzb25hbEZyZWVtYWlsQ0EuY3JsMAsGA1UdDwQEAwIBBjApBgNVHREE
+IjAgpB4wHDEaMBgGA1UEAxMRUHJpdmF0ZUxhYmVsMi0xMzgwDQYJKoZIhvcNAQEF
+BQADgYEASIzRUIPqCy7MDaNmrGcPf6+svsIXoUOWlJ1/TCG4+DYfqi2fNi/A9BxQ
+IJNwPP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa
+9/eH1sYITq726jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8wggMtMIIClqAD
+AgECAgEAMA0GCSqGSIb3DQEBBAUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMM
+V2VzdGVybiBDYXBlMRIwEAYDVQQHEwlDYXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0
+ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9DZXJ0aWZpY2F0aW9uIFNlcnZpY2VzIERp
+dmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgQ0ExKzAp
+BgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20wHhcNOTYw
+MTAxMDAwMDAwWhcNMjAxMjMxMjM1OTU5WjCB0TELMAkGA1UEBhMCWkExFTATBgNV
+BAgTDFdlc3Rlcm4gQ2FwZTESMBAGA1UEBxMJQ2FwZSBUb3duMRowGAYDVQQKExFU
+aGF3dGUgQ29uc3VsdGluZzEoMCYGA1UECxMfQ2VydGlmaWNhdGlvbiBTZXJ2aWNl
+cyBEaXZpc2lvbjEkMCIGA1UEAxMbVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIENB
+MSswKQYJKoZIhvcNAQkBFhxwZXJzb25hbC1mcmVlbWFpbEB0aGF3dGUuY29tMIGf
+MA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUadfUsJRkW3HpR9gMUbbqcpGwhF59
+LQ2PexLfhSV1KHQ6QixjJ5+Ve0vvfhmHHYbqo925zpZkGsIUbkSsfOaP6E0PcR9A
+OKYAo4d49vmUhl6t6sBeduvZFKNdbnp8DKVLVX8GGSl/npom1Wq7OCQIapjHsdqj
+mJH9edvlWsQcuQIDAQABoxMwETAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEB
+BAUAA4GBAMfskn5O+PWWpWdiKqTwTRFg0G+NYFhhrCa7UjVcCM8w+6hKloofYkIj
+jBcP9LpknBesRynfnZhe0mxgcVyirNx54+duAEcftQ0o6AKd5Jr9E/Sm2Xyx+Nxf
+IyYJkYBz0BQb3kOpgyXy5pwvFcr+pquKB3WLDN1RhGvk+NHOd6KBMYICRDCCAkAC
+AQEwaTBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcg
+KFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElz
+c3VpbmcgQ0ECAw2YbzAJBgUrDgMCGgUAoIGxMBgGCSqGSIb3DQEJAzELBgkqhkiG
+9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA1MDIwMjEwNTgyNlowIwYJKoZIhvcNAQkE
+MRYEFGMfRU4XbTbaoCmQVirlDm4dqmHKMFIGCSqGSIb3DQEJDzFFMEMwCgYIKoZI
+hvcNAwcwDgYIKoZIhvcNAwICAgCAMA0GCCqGSIb3DQMCAgFAMA0GCCqGSIb3DQMC
+AgEoMAcGBSsOAwIHMA0GCSqGSIb3DQEBAQUABIIBAFcu3G+tkRVqApFHkJBtG0sX
+4x02xKr4uuHBdlwbaHxvAW2nhIminXvJ/iLmoZb/iGPcTGq3JrIl79vywOXTbmb5
+hEpCgULFzZ0Daer2mtFwd1k99Q8quKUrkHYcDEHUgN5mDVXE+gD3axESLvqKPQYW
+RE/Elai2FP+TwmZwPa9aTq+qekDHYDQXYgDexxRcvrZrvdzGP7kXLW3xgKy1i0ia
+wAMj8AzbGnXqcEAUx+uhp3m+6idv+JU0tgE0qesoblvzqlT/37mfRDGMLKS4dWFu
+2tauCCNr+FtJRBftT9ga6OVPowJvS3jvzMYFKVL96vN2TsWezPMrE4Udwp+ugtcA
+AAAAAAA=
+----IAIK.SMIME.MAPPER.828A6080----
+
+
+
+--===============1170467478==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -230,5 +248,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============1805743894==--
+--===============1170467478==--
+
 
