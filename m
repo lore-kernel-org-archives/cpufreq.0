@@ -1,12 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH] Be careful in speedstep_centrino driver,
-	also if using ACPI perflib
-Date: Fri, 9 Apr 2004 21:43:55 +0200
+From: Davin Carter <davin.carter@wallst.com>
+Subject: Sparc
+Date: Fri, 9 Apr 2004 21:29:15 -0600
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040409194355.GA8288@dominikbrodowski.de>
+Message-ID: <FE0E4E3EC4669A46A5D2E835957A9FFF141D95A8@uranus.wallst.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,67 +16,24 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, cpufreq@www.linux.org.uk
+To: "'cpufreq@www.linux.org.uk'" <cpufreq@www.linux.org.uk>
 
-Don't use the ACPI data on CPUs we don't know nothing about. Semantics may
-have changed, so better be safe than sorry.
+I see sparc64 listed as a supported processor.  Is there a any more
+information on this, as far as which archatectures are supported and power
+gains from using this?
+I would like to use this on aSun Enterprise450 4X250Mhz Sparc64  or
+Enterprise 4000 166 Mhz.  
 
-Please apply,
 
-	Dominik
-
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-04-06 16:41:19.908636480 +0200
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2004-04-06 17:03:50.263351360 +0200
-@@ -195,21 +195,6 @@
- 	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
- 	struct cpu_model *model;
- 
--	if (!cpu_has(cpu, X86_FEATURE_EST))
--		return -ENODEV;
--
--	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
--	   they appear after making sure they use PERF_CTL in the same
--	   way. */
--	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
--	    cpu->x86        != 6 ||
--	    cpu->x86_model  != 9 ||
--	    cpu->x86_mask   != 5) {
--		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
--		       "send /proc/cpuinfo to " MAINTAINER "\n");
--		return -ENODEV;
--	}
--
- 	for(model = models; model->model_name != NULL; model++)
- 		if (strcmp(cpu->x86_model_id, model->model_name) == 0)
- 			break;
-@@ -361,6 +346,7 @@
- 
- static int centrino_cpu_init(struct cpufreq_policy *policy)
- {
-+	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
- 	unsigned freq;
- 	unsigned l, h;
- 	int ret;
-@@ -368,6 +354,21 @@
- 	if (policy->cpu != 0)
- 		return -ENODEV;
- 
-+	if (!cpu_has(cpu, X86_FEATURE_EST))
-+		return -ENODEV;
-+
-+	/* Only Intel Pentium M stepping 5 for now - add new CPUs as
-+	   they appear after making sure they use PERF_CTL in the same
-+	   way. */
-+	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
-+	    cpu->x86        != 6 ||
-+	    cpu->x86_model  != 9 ||
-+	    cpu->x86_mask   != 5) {
-+		printk(KERN_INFO PFX "found unsupported CPU with Enhanced SpeedStep: "
-+		       "send /proc/cpuinfo to " MAINTAINER "\n");
-+		return -ENODEV;
-+	}
-+
- 	if (centrino_cpu_init_acpi(policy)) {
- 		if (centrino_cpu_init_table(policy)) {
- 			return -ENODEV;
+> _________________________________________________________
+> Davin Carter
+> Wall Street On Demand
+> 
+> davin.carter@WallSt.com <mailto:davin.carter@WallSt.com
+> <mailto:davin.carter@WallSt.com> >
+> phone 303.417.9999 x205
+> fax 303.440.2982
+> 
+> 
+> 
+> 
