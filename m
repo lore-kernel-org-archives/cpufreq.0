@@ -1,8 +1,8 @@
 From: bugme-daemon@osdl.org
 Subject: [Bug 3952] powernow-k7 driver will NOT compile in kernel or as
 	module
-Date: Sun, 26 Dec 2004 19:44:52 -0800
-Message-ID: <200412270344.iBR3iqVi021640@fire-1.osdl.org>
+Date: Sun, 26 Dec 2004 23:50:09 -0800
+Message-ID: <200412270750.iBR7o9Fh005031@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,14 +21,14 @@ To: cpufreq@www.linux.org.uk
 
 http://bugme.osdl.org/show_bug.cgi?id=3952
 
-akshunj@myrealbox.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |REJECTED
-         Resolution|                            |INVALID
 
 
+
+
+------- Additional Comments From akpm@digeo.com  2004-12-26 23:50 -------
+Line 467 of powernow-k7.c doesn't refer to mobile_vid_table.  I
+suspect your tree is corrupted.  Please download a new one
+and recheck.  If the problem remains we'll need the .config.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
