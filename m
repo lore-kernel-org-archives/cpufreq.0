@@ -1,14 +1,12 @@
-From: Arjan van de Ven <arjanv@redhat.com>
+From: "Grover, Andrew" <andrew.grover@intel.com>
 Subject: RE: [ACPI] _PDC method in DSDT
-Date: 23 Jun 2003 09:59:11 +0200
+Date: Mon, 23 Jun 2003 02:19:27 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <1056355150.1699.4.camel@laptop.fenrus.com>
-References: <F760B14C9561B941B89469F59BA3A84725A301@orsmsx401.jf.intel.com>
-Reply-To: arjanv@redhat.com
+Message-ID: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-t3Vw/yBdGAmYjQE0u6IG"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <F760B14C9561B941B89469F59BA3A84725A301@orsmsx401.jf.intel.com>
+content-class: urn:content-classes:message
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,35 +16,51 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-To: "Grover, Andrew" <andrew.grover@intel.com>
-Cc: David Moore <dcm@acm.org>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: David Moore <dcm@acm.org>
+Cc: "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
 
+> From: David Moore [mailto:dcm@acm.org]=20
+> My intention was not for processor.c and cpufreq to cooperate, but
+> rather for processor.c to be able to control Enhanced Speedstep solely
+> with P-states -- no cpufreq necessary.  Cpufreq is certainly=20
+> useful for
+> those systems not running the ACPI driver, but in the long=20
+> run, ACPI and
+> processor.c seem to be the right way to get maximum compatibility with
+> many platforms.
 
---=-t3Vw/yBdGAmYjQE0u6IG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I only have two concerns:
+> 1) If the processor is an AMD or a Transmeta, it looks like _PCT may
+> also return FixedHardware registers for their respective power
+> management systems.  Do we need to read cpuid to treat these cases
+> differently in processor.c, or will the blind wrmsr() do the trick?
 
-On Mon, 2003-06-23 at 09:11, Grover, Andrew wrote:
+The spec intended FixedFunctionalHW registers to be an "escape hatch".
+FFH means that while ACPI is used for perf state enumeration, the
+transitions will be handled in a CPU-specific driver, not via methods
+described in the ACPI spec. This division (use ACPI for enum, x for
+control) isn't currently supported by cpufreq; ACPI either does both
+enum and control, or neither.
 
-> However, since the recently added non-vendor-supported Pentium M cpufreq
-> driver uses hardcoded tables and cpuid instead of relying on ACPI for
-> this information anyways, adding _PDC support to processor.c would not
-> affect its behavior. If that driver were changed to use ACPI for
-> determining platform capabilities, like Windows and our released binary
-> driver do, then yes, adding _PDC support would be important.
+It is not safe to assume the CPU-specific mechanism will be the same
+across vendors, or even across models from the same vendor. Indeed, the
+whole point of all this was so these mechanisms could be different, and
+remain proprietary.
 
-Intel is more than welcome to release the linux driver under the GPL :)
+> 2) If this capability is open-source, do you personally have=20
+> a conflict
+> of interest between protecting the binary-only module vs.=20
+> accepting the
+> patch?
 
---=-t3Vw/yBdGAmYjQE0u6IG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Response #1 (practical):
+What patch? The patch you haven't written yet? That may or may not be
+against files I maintain (as opposed to
+arch/i386/kernel/cpu/cpufreq/acpi.c)?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.2 (GNU/Linux)
+Response #2 (philosophical):
+Do you really think a maintainer really has any power? Or just
+responsibility?
 
-iD8DBQA+9rNOxULwo51rQBIRAgAmAJ9lrfozcJujl2Vf385qBaAy6Fi+vQCfZ17h
-3JW6y8JhL+1PY8oPAFlYwvA=
-=uU7I
------END PGP SIGNATURE-----
-
---=-t3Vw/yBdGAmYjQE0u6IG--
+Regards -- Andy
