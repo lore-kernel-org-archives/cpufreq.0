@@ -1,14 +1,11 @@
-From: Carl Thompson <cet@carlthompson.net>
-Subject: Re: CPU Frequency Scaling
-Date: Fri, 03 Sep 2004 06:54:23 -0700
+From: Bryce as root <root@www.linux.org.uk>
+Subject: When exactly should I worry?
+Date: Fri, 3 Sep 2004 16:00:29 +0100 (BST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <4138778F.4090207@carlthompson.net>
-References: <20040901230103.GB4175@ncrfgs3.ncrfgs>	<20040902094839.GW29560@poupinou.org>	<20040902105348.GA2447@inferi.kami.home>	<20040902124151.GZ29560@poupinou.org>	<20040903083450.GA8813@ncrfgs3.ncrfgs>
-	<20040903091725.GE29560@poupinou.org>
+Message-ID: <E1C3FYD-0005fc-EX@www.linux.org.uk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040903091725.GE29560@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,37 +15,42 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
-
-I've been meaning to release a new version of CPUSpeed (which is of 
-course the best).  I'll will definitely have time to do that over the 
-long weekend.  Check the CPUSpeed web site 
-<http://carlthompson.net/software/cpuspeed> often!
-
-BTW I just realized that many of you that are using cpufreqd on recent 
-versions of SuSE Linux are actually using my software.  It seems the 
-folks at SuSE renamed it.  That is unfortunate because there is a 
-different project that uses the cpufreqd name.
-
-Thanks,
-Carl Thompson
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@www.linux.org.uk
+Cc: Russell King <rmk@www.linux.org.uk>
 
 
-Bruno Ducrot wrote:
 
->On Fri, Sep 03, 2004 at 10:34:50AM +0200, ncrfgs wrote:
->  
->
->>BTW which one would you suggest us to use?
->>
->>    
->>
->
->Maybe Carl, Mattia, Jeremy (and probably others) will answer ? :)
->
->Cheers,
->
->  
->
+Linux ZenIV.linux.org.uk 2.6.7-1.494.2.2smp #1 SMP Tue Aug 3 09:59:49 EDT 2004 i686 i686 i386 GNU/Linux
+
+
+My system logs are filled with 
+"Losing some ticks... checking if CPU frequency changed."
+
+prior to this (~15 days), there was none of this in the logs
+
+Kernel messages that might be of relevance. (in no real order)
+Using tsc for high-res timesource
+CPU0: Thermal monitoring enabled
+CPU1: Thermal monitoring enabled
+ENABLING IO-APIC IRQs
+init IO_APIC IRQs
+ IO-APIC (apicid-pin) 2-0, 2-16, 2-17, 2-18, 2-19, 2-20, 2-21, 2-22, 2-23 not co
+nnected.
+..TIMER: vector=0x31 pin1=2 pin2=-1
+Using local APIC timer interrupts.
+calibrating APIC timer ...
+..... CPU clock speed is 3014.0031 MHz.
+..... host bus clock speed is 200.0935 MHz.
+checking TSC synchronization across 2 CPUs: passed.
+Brought up 2 CPUs
+
+There are no kernel messages ahout HPET or PIT.
+lmsensors seem to indicate the CPU is stable at 41degC
+(IF I can trust lmsensors)
+
+Now then...
+how much should /I/ panic or what else should I have included?
+
+Phil
+=--=
