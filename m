@@ -1,13 +1,15 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: Re: speedstep-piix4 don't work
-Date: Tue, 8 Jul 2003 20:17:35 +0200
+From: Carl Thompson <cet@carlthompson.net>
+Subject: Re: Problems with cpufreq on Acer Aspire Notebook
+Date: Tue,  8 Jul 2003 11:35:23 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030708181735.GN7796@poupinou.org>
-References: <3F0AED86.7040500@theorem.ca> <20030708163556.GM7796@poupinou.org> <3F0B033D.3090709@theorem.ca>
+Message-ID: <1057689323.fe0e0f12766eb@carlthompson.net>
+References: <20030708172233.4be9c44b.a_koch@moellinger.hx.uni-paderborn.de>
+	<200307081927.39169.lbelli@crema.unimi.it>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
+In-Reply-To: <200307081927.39169.lbelli@crema.unimi.it>
 Content-Disposition: inline
-In-Reply-To: <3F0B033D.3090709@theorem.ca>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,63 +20,22 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kenneth Ho <ken.ho@theorem.ca>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
+Quoting Luigi Belli <lbelli@crema.unimi.it>:
 
-I can not promise you anything, but can you try the patch attached?
+> On Tuesday 08 July 2003 05:22 pm, Andreas Koch wrote:
+>
+> > I didn't find anything on google so I have to ask here for your help.
+>
+> Don't you know is good practice reading some old messages before
+> posting? I've posted here a patch addressing your problem just a few
+> days ago.
 
-This also add a little bit more debug output (just to check that
-I do it ok for gpo stuff) and the fix may be in the lines
-that look like:
+Mr. Koch made it quite clear in his message that he wanted to search the
+archives, but the archives he used do not allow searching.  It is not
+reasonable to expect him to just randomly read messages from the archive
+until he finds what he is looking for without a search function.  So
+instead of flaming him maybe you could just answer his question?
 
-	pcntrl |= 1 << 9;               /* CC_EN = 1 */
-and
-	pcntrl |= (0x3 << 1);
-
-
---- linux-2.4.21-ac4/arch/i386/kernel/speedstep-piix4.c	2003/07/08 18:01:49	1.1
-+++ linux-2.4.21-ac4/arch/i386/kernel/speedstep-piix4.c	2003/07/08 18:08:17
-@@ -123,9 +123,11 @@
- 	/* read state */
- 	value = inb_p(pmbase + gpo_hilo_port);
- 
-+	dprintk(KERN_DEBUG "speedstep: reading %.2x from port %.4x\n", value, pmbase + gpo_hilo_port);
- 	/* compute new state */
- 	value &= ~(1 << gpo_hilo_shift);
- 	value |= state << gpo_hilo_shift;
-+	dprintk(KERN_DEBUG "speedstep: new gpo value: 0x%.2x\n", value);
- 
- 	/* disable bus master arbitration */
- 	pm2_blk = inb(0x22);
-@@ -139,12 +141,12 @@
- 	pcntrl |= 1 << 12;              /* STPCLK_EN = 1 */
- 	pcntrl |= 1 << 11;              /* SLEEP_EN = 1 */
- 	pcntrl &= ~(1 << 10);           /* BURST_EN = 0 */
--	pcntrl &= ~(1 << 9);            /* CC_EN = 0 */
-+	pcntrl |= 1 << 9;               /* CC_EN = 1 */
- 	pcntrl &= ~(1 << 4);            /* THT_EN = 0 */
- 
- 	/* We may have to define a 'good' throttling duty ? */
- 	pcntrl &= ~(0x7 << 1);
--	pcntrl |= (0x2 << 1);
-+	pcntrl |= (0x3 << 1);
- 
- 	dprintk(KERN_DEBUG "pcntrl before: 0x%.8x\n", pcntrl_save);
- 	dprintk(KERN_DEBUG "pcntrl after:  0x%.8x\n", pcntrl);
-@@ -323,7 +325,7 @@
- 
- 	gpo_hilo_port = 0x34 + (gpo_hilo / 8);
- 	gpo_hilo_shift = (gpo_hilo % 8);
--
-+	dprintk(KERN_INFO "speedstep: gpo port: 0x%.2x shift: 0x%.2x\n", gpo_hilo_port, gpo_hilo_shift);
- 	return cpufreq_register_driver(&speedstep_driver);
- }
- 
-
--- 
-Ducrot Bruno
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Carl Thompson
