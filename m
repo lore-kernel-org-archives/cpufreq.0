@@ -1,13 +1,16 @@
-From: Bas Mevissen <ml@basmevissen.nl>
-Subject: Re: cpufreq and 2.4.
-Date: Mon, 18 Aug 2003 15:21:31 +0200
+From: Jan Rychter <jan@rychter.com>
+Subject: Re: cpufreq and P-IIIM
+Date: Mon, 18 Aug 2003 10:02:29 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <3F40D2DB.30307@basmevissen.nl>
-References: <20030817153510.GA2361@brodo.de> <20030818073948.GC18032@poupinou.org> <3F40A702.8040103@basmevissen.nl> <20030818124944.GE18032@poupinou.org>
+Message-ID: <m2vfsux5ju.fsf@tnuctip.rychter.com>
+References: <m2ptj5fiuc.fsf@tnuctip.rychter.com>
+	<20030818112943.GD18032@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030818124944.GE18032@poupinou.org>
+In-Reply-To: <20030818112943.GD18032@poupinou.org> (Ducrot Bruno's message
+ of "Mon, 18 Aug 2003 13:29:43 +0200")
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,37 +20,50 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Ducrot Bruno <ducrot@poupinou.org>
-Cc: Dominik Brodowski <linux@brodo.de>, cpufreq@www.linux.org.uk
+Cc: cpufreq@www.linux.org.uk
 
-Ducrot Bruno wrote:
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> You mean you can translate french documentations to english, correct?
-> Anyway, I would probably have something at my site but only in French
-> scheduled for the next week in order to get C) (can not be more fast
-> at that time, sorry), and start an English version if nobody
-> can not help me to translate.
-> 
+>>>>> "Ducrot" =3D=3D Ducrot Bruno <ducrot@poupinou.org>:
+ Ducrot> On Sat, Aug 16, 2003 at 01:28:11PM -0700, Jan Rychter wrote:
+ >> Hi,
+ >>
+ >> I've just tried the latest 2.4 snapshot of cpufreq. Unfortunately,
+ >> it doesn't seem to work on my hardware. It says:
+ >>
+ >> cpufreq: Intel(R) SpeedStep(TM) support $Revision: 1.7.2.6 $
+ >> cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet)
+ >> available.
 
-Well, I think your English is good enough to translate what you have 
-from French to English.
+ Ducrot> That version is way too old anyway.
 
-My idea is to define what we want to have documented and then see what 
-is there and what needs to be written and split that up somehow.
+Huh? That was the latest 2.4 snapshot that I was able to pull from
+ftp.linux.org.uk: cpufreq-LINUX_2_4-20030816.tar.bz2.
 
->>I think it to be a good way to learn about cpufreq internals by writing 
->>documentation for it.
+If these are not the 'official' archives and the snapshots are outdated,
+I'd humbly suggest pulling them off the net, because it confuses
+people. I was pointed there to get my cpufreq for 2.4, after being
+referred to www.codemonkey.org.uk which has never worked for me in the
+last 3 weeks of trying.
 
-> Unfortunately, I will do only C) which is the _user_ point-of-view of
-> cpufreq.
-> 
+[...]
+ Ducrot> Take a look at www.poupinou.org/cpufreq/
 
-Yes, but even from a user point of view you want to know what happens. I 
-have no intention to write full documentation. But just a good 
-description of what happens and how to let it happen.
+Thanks for the pointer.
 
-Regards,
+=2D-J.
 
-Bas.
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+
+iD4DBQA/QQaqLth4/7/QhDoRAhmLAJiU0iKbLUY+9ZciYWjYoSUdpaGQAKCBvHGZ
+UQDkBi4V0nUxMLAYAVAMZA==
+=olqA
+-----END PGP SIGNATURE-----
+--=-=-=--
