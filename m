@@ -1,13 +1,16 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: powernow-k8: Two PSTs
-Date: Thu, 9 Sep 2004 21:59:02 +0100
+From: GoatZilla <goatzilla@gmail.com>
+Subject: Re: last alternative : program to consume CPU?!
+Date: Thu, 9 Sep 2004 20:11:08 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040909205902.GA5740@redhat.com>
-References: <84EA05E2CA77634C82730353CBE3A843AA1A1E@SAUSEXMB1.amd.com>
+Message-ID: <39e348480409091711781f182@mail.gmail.com>
+References: <Pine.LNX.4.58.0409091132010.31562@marfim.cpad.pucrs.br>
+	<20040909161313.GA5182@dominikbrodowski.de>
+	<Pine.LNX.4.58.0409091321560.6133@marfim.cpad.pucrs.br>
+Reply-To: GoatZilla <goatzilla@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A843AA1A1E@SAUSEXMB1.amd.com>
+In-Reply-To: <Pine.LNX.4.58.0409091321560.6133@marfim.cpad.pucrs.br>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,35 +21,59 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: mark.langsdorf@amd.com
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Thu, Sep 09, 2004 at 02:26:00PM -0500, mark.langsdorf@amd.com wrote:
+Uhm...
 
- > > After subscribing to the list and looking at the archive, I 
- > > found Mark Langsdorf's patch and explanation for my problem.
- > > (http://www.linux.org.uk/mailman/private/cpufreq/2004-August/0
- > 04191.html) 
- > > It's unfortunate that the archive isn't public but the patch
- > > worked perfectly. Is there any chance for this or a similar
- > > patch to be submitted for inclusion into the mainline kernel ? 
- > 
- > I thought by submitting it to this list I was submitting it
- > to the mainline kernel.
+Treat the machine as a dual CPU resource, and load it down with 2 jobs
+instead of 1?
 
-indeed, that is the case.
 
- > If that is not the case, I can post
- > it on LKML at any time.
 
-I'm a little behind with merging due being knee-deep in packing
-boxes and movers, and my regular workstation being inaccessable
-for a few weeks.  It's in my queue, I just haven't found the
-time yet to go through it.
 
-I'll look into it tomorrow.
-
-thanks,
-
-		Dave
+On Thu, 9 Sep 2004 13:35:56 -0300 (BRT), Marco Aurelio Stelmar Netto
+<stelmar@cpad.pucrs.br> wrote:
+> 
+> The BIOS of my machine does not support the modification of the CPU speed.
+> 
+> My problem is that I have a homogeneous cluster composed of 16 machines
+> and I need to perform some tests of my application on a heterogeneous
+> cluster. So my first option was to change the cpu speed in the BIOS, but
+> failed. The second option was to find some support in the linux itself.
+> I have found the cpufreq, but failed. My last option is to implement or
+> find a program to consume a percentage of CPU. Do you know where I can
+> find a good program to perform this task? Or do you know another alternative
+> to solve my problem?
+> 
+> Thank you very much for your attention.
+> 
+> Marco
+> 
+> On Thu, 9 Sep 2004, Dominik Brodowski wrote:
+> 
+> > On Thu, Sep 09, 2004 at 11:46:35AM -0300, Marco Aurelio Stelmar Netto wrote:
+> > >
+> > > Hello,
+> > >
+> > > I have a machine (desktop machine) HP EP-C c10 with a Pentium III
+> > > (Coppermine) 1GHz and I'm making some performance tests so I would like
+> > > to have the machine processor working at 500 MHz. I have configured the
+> > > cpufreq option (kernel 2.6.6) but the cpufreq directory in
+> > > /sys/devices/system/cpu/cpu0 does not exist.
+> > ...
+> > > I don't know if I have made some mistake or my cpu does not support the
+> > > cpufreq. I have tried to modify the clock frequency via BIOS, but such an
+> > > option is not available. All I want is to modify the clock frequency. It
+> > > does not need be on-the-fly.
+> >
+> > A desktop Coppermine Pentium III does not support SpeedStep, so no cpufreq
+> > support exists. Possibly you can change the CPU speed in your system BIOS.
+> >
+> >       Dominik
+> >
+> 
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@www.linux.org.uk
+> http://www.linux.org.uk/mailman/listinfo/cpufreq
+>
