@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/kernel cpufreq.c,1.1.1.2,NONE
-Date: Wed, 27 Aug 2003 14:49:01 +0100
+Subject: cpufreq/linux/drivers/cpufreq cpufreq.c,1.1,NONE
+Date: Wed, 27 Aug 2003 15:06:55 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E19s0fV-0000su-OB@flint.arm.linux.org.uk>
+Message-ID: <E19s0wp-00015P-KD@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,13 +18,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/kernel
-In directory flint:/tmp/cvs-serv3398/linux/kernel
+Update of /mnt/src/cvsroot/cpufreq/linux/drivers/cpufreq
+In directory flint:/tmp/cvs-serv4173/linux/drivers/cpufreq
 
 Removed Files:
       Tag: LINUX_2_4
 	cpufreq.c 
 Log Message:
 move kernel/cpufreq.c to driver/cpufreq (Dominik Brodowski)
+
 
 --- cpufreq.c DELETED ---
