@@ -1,11 +1,13 @@
-From: Ducrot Bruno <ducrot@poupinou.org>
-Subject: [speedstep-piix4] removing soon.
-Date: Mon, 10 Nov 2003 14:04:15 +0100
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
+Date: Mon, 10 Nov 2003 16:32:09 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031110130415.GP21970@poupinou.org>
+Message-ID: <20031110163209.GP10144@redhat.com>
+References: <20031104160816.GA9187@brodo.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20031104160816.GA9187@brodo.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,21 +19,23 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@brodo.de>
+Cc: cpufreq@www.linux.org.uk
 
-Hi list,
+On Tue, Nov 04, 2003 at 05:08:16PM +0100, Dominik Brodowski wrote:
+ > All drivers [davej, can you please verify for powernow-k7?] set the 
+ > transition_latency time in microseconds, even though the core demanded
+ > nanoseconds. Instead of fixing up the drivers, fix up the core...
 
-I will remove speedstep-piix4 tomorrow, unless someone want it.
+Hmm, I think you've unearthed a bug.
 
-Note that it is justified by the fact that I don't find anyone with a non-working
-speedstep-smi but with a working speedstep-piix4.  Also, the speedstep-piix4 does
-have known issues for which it hang hard (see the report page at poupinou) for
-some people.
+The 'latency' we read from the BIOS is in microseconds, but the hardware
+wants it in units of 10ns. We do the necessary maths, and everything is fine.
+But we're also storing that result in ..
 
-Cheers,
+	policy->cpuinfo.transition_latency = latency;
 
--- 
-Ducrot Bruno
+Which is possibly not the right thing to be doing.
+I think we want to be storing the 'pre 10ns munging' value here correct?
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+		Dave
