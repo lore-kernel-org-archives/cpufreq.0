@@ -1,12 +1,13 @@
-From: Nebojsa Trpkovic <trxman@gmail.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 Subject: Re: AMD Athlon 64 2800+ ("Newcastle") Socket 754
-Date: Tue, 29 Mar 2005 16:00:44 +0200
-Message-ID: <42495F8C.2060100@gmail.com>
+Date: Tue, 29 Mar 2005 16:01:38 +0200
+Message-ID: <20050329140138.GA19654@isilmar.linta.de>
 References: <1112103103.3156.48.camel@localhost.localdomain>
+	<9268368b05032905563107221b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1112103103.3156.48.camel@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <9268368b05032905563107221b@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,40 +19,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Daniel Petrini <d.pensator@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-All Athlon64 do support C'n'Q.
+On Tue, Mar 29, 2005 at 09:56:10AM -0400, Daniel Petrini wrote:
+> Hello all,
+> 
+> In the same thread I'd like to ask if is it possible to slow down a
+> "Intel(R) Xeon(TM) CPU 3.40GHz" with the appropriate module
+> ()p2_clockmod)?
+You're referring to p4_clockmod, and its possible to use it to slow down said 
+processor, AFAIK.
+However, it does not scale _voltage_ (and only throttles but does not scale
+frequency) like 'Cool'n Quiet' or 'Demand-Based-Switching'. Some recent
+Intel Xeon processors are capable of dynamic frequency and voltage scaling,
+so you should try out "acpi-cpufreq" and "speedstep-centrino" first.
 
-I have 3000+ and my brother have 2800+. Both work with cpufreq without
-any problems.
-(I've even undervolted my C'n'Q :) )
-Ofcorse, you should read your motherboard manual and search Internet a
-little bit because some Socket 754 mobos does not support C'n'Q well if
-they work with two memory modules.
-
-C'n'Q = PowerNow! for AMD64
-
-
-Michael Pophal wrote:
-
->Hi,
->I decided to change my new Sempron 2600+ to a Athlon64 2800+. Does
->anybody habe experiences with this CPU an CPUfreq? Does it work
->together? 
->This CPU knows of course 'Cool'n Quiet', but is NOT a mobile processor!
->Is there a difference between powernow! and Cool'n Quiet?
->I have to send the sempron back soon, so any hints are appreciated.
->
->Thanks!
->
->Mike
->
->
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
->  
->
+	Dominik
