@@ -1,11 +1,13 @@
-From: =?iso-8859-1?q?Michael_Teichgr=E4ber?= <mt@wmipf.in-berlin.de>
-Subject: /proc/sys/cpu interface and elanfreq on linux 2.4.20
-Date: Wed, 17 Sep 2003 02:10:49 +0200
+From: Toula Michael <keos@wanadoo.fr>
+Subject: Re: VIA C3 problems
+Date: Wed, 17 Sep 2003 10:37:03 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <87znh4e0l2.fsf@wmipf.in-berlin.de>
+Message-ID: <3F681D2F.8030100@wanadoo.fr>
+References: <20030916104052.53283.qmail@web13504.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+In-Reply-To: <20030916104052.53283.qmail@web13504.mail.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,41 +17,49 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: scott@linuxjihad.com
+Cc: cpufreq@www.linux.org.uk
 
-Hello,
+Scott Russ wrote:
 
-I applied a cpufreq patch (http://www.codemonkey.org.uk/projects\
-/cpufreq/cpufreq-2.4.21-2.gz) to a linux 2.4.20 tree without any
-problems, and compiled with the following (default) settings for an
-AMD Elan cpu:
-
-    CONFIG_CPU_FREQ=3Dy
-    CONFIG_CPU_FREQ_TABLE=3Dy
-    CONFIG_CPU_FREQ_PROC_INTF=3Dy
-    CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
-    CONFIG_CPU_FREQ_24_API=3Dy
-    CONFIG_ELAN_CPUFREQ=3Dm
-
-
-The just created module `elanfreq.o' has been loaded smoothly into the
-kernel, and in /proc/cpufreq I can see
-
-          minimum CPU frequency  -  maximum CPU frequency  -  policy
-CPU  0         1000 kHz (  1 %)  -      66000 kHz (100 %)  - performance
-
-
-But I wonder about why both /proc/sys/cpu/0/speed-min and -max contain
-zero, and `speed' always shows the maximum frequency. If I echo a
-value out of the list in elanfreq.c into `speed', there is no
-reaction, elanfreq_target() will not be called (with one exception:
-When initializing, the value specified by `max_freq' will be set
-twice via elanfreq_target).
-
-Am I missing something, does perhaps "deprecated interfaces" mean, the
-userspace access via /proc/sys/cpu might not work?
-
-
---=20
-Michael Teichgr=E4ber
+>I am having problems with using cpufreq.  I used to use it fine and just
+>recently tried applying it again.  I am using 2.4.22 with the CK-2 patches
+>(http://members.optusnet.com.au/ckolivas/kernel/).
+>
+>When I modprobe longhaul I get a kernel oops and lsmod shows longhaul as still
+>initalizing and I can't rmmod.  I also tried the 2.4.22-ac2 patch which
+>includes cpufreq with the same results.  Any suggestions?
+>
+>longhaul: VIA CPU detected. Longhaul version 2 supported
+>longhaul: MinMult(x10)=30 MaxMult(x10)=60
+>longhaul: Lowestspeed=0 Highestspeed=0
+>longhaul: FSB:0 Mult(x10):100
+>divide error: 0000
+>CPU:    0
+>EIP:    0010:[<c010c533>]    Not tainted
+>EFLAGS: 00010246
+>eax: 0051e9fe   ebx: 00001f2c   ecx: 0051e9fe edx: 00000000
+>esi: 00000000   edi: 00000000   ebp: 00000000 esp: dde65da8
+>ds: 0018   es: 0018   ss: 0018
+>Process insmod (pid: 227, stackpage=dde65000)
+>Stack: c022f0b0 dde65e38 00000001 c0238804 00000000 c0120f4a c022f0b0 00000001
+>       dde65e38 00000000 00000000 dde65e38 c01b37e0 c02a65ac 00000001 dde65e38
+>       0000000b 00000000 0000110a dde65e44 00001f2c e01c1411 dde65e38 00000001
+>Call Trace:    [<c0120f4a>] [<c01b37e0>] [<e01c1411>] [<e01c1878>] [<c01b3222>]
+>  [<c01b32cd>] [<c01b369b>] [<c01b3037>] [<c01b3880>] [<e01c19f4>] [<e01c2240>]
+>  [<c0118491>] [<e01c1060>] [<c0106d33>]
+>Sep 13 03:35:13 legends kernel:
+>Code: f7 f7 89 c1 89 d6 0f af cb 0f af f3 89 f0 31 d2 f7 f7 01 c8
+>
+>_______________________________________________
+>Cpufreq mailing list
+>Cpufreq@www.linux.org.uk
+>http://www.linux.org.uk/mailman/listinfo/cpufreq
+>
+>  
+>
+You should try a clean vanilla kernel ( 2.4.22 ) from kernel.org and 
+patch it with one of the latest daily tar archive of the cpufreq cvs :
+ ftp://ftp.linux.org.uk/pub/linux/cpufreq/  .
+It works for me.
