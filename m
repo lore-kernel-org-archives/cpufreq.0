@@ -1,14 +1,12 @@
-From: =?utf-8?q?Micha=C5=82_Pytasz?= <mpytasz@pai.net.pl>
-Subject: Re: Can you please try this powernow-k8.c patch ?
-Date: Tue, 16 Nov 2004 22:15:33 +0000
-Message-ID: <200411162215.33814.mpytasz@pai.net.pl>
-References: <200411161753.11367.mpytasz@pai.net.pl>
-	<20041116204703.GA9138@dominikbrodowski.de>
+From: Dominik Brodowski <linux@dominikbrodowski.de>
+Subject: debugging aid [Re: powernow-k8 problem]
+Date: Tue, 16 Nov 2004 22:16:01 +0100
+Message-ID: <20041116211601.GB9393@dominikbrodowski.de>
+References: <84EA05E2CA77634C82730353CBE3A84301539C23@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20041116204703.GA9138@dominikbrodowski.de>
 Content-Disposition: inline
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301539C23@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,18 +17,17 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="macroman"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Devriendt, Paul" <paul.devriendt@amd.com>
+Cc: cpufreq@www.linux.org.uk
 
-> AFAICS, your system only supports two frequency states with different
-> voltages. Also, the powernow-k8 driver complains if one transition
-> (frequency or voltage) fails. So you can be quite sure that the voltage
-> changes as well.
+>To help verify this, you would need to build the driver for debug (edit the .c file
+> and add #define DEBUG before the include of the powernow-k8.h
+> file). Then it will spew tons more data which will be useful.
 
-OK, thanks, I believe You are right. Although I can see frequencies in betw=
-een=20
-800 and 1600 in the debug log for powernowd-k8, they do not seem to affect=
-=20
-cpuinfo_curr_freq (dummy values ?).
+FYI: from 2.6.10-rc2 on, all you need is to enable CONFIG_CPU_FREQ_DEBUG and
+pass the cpufreq.debug=2 option on the command line (or modify
+/sys/modules/cpufreq/parameters/debug )
 
-Micha=C5=82
+	Dominik
