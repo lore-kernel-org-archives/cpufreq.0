@@ -1,14 +1,18 @@
-From: Jan Rychter <jan@rychter.com>
-Subject: Re: Pentium-M (Centrino): no power saved?
-Date: Sat, 20 Sep 2003 23:50:57 -0700
+From: Ivan Kanis <ivank@juliva.com>
+Subject: Re: Pentium IIIM not recognised
+Date: Mon, 22 Sep 2003 00:29:09 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <m2r82avdm6.fsf@tnuctip.rychter.com>
-References: <m24qz9r0ko.fsf@tnuctip.rychter.com>
-	<3F6ACB0E.8050009@basmevissen.nl>
+Message-ID: <16238.9781.279364.547556@gargle.gargle.HOWL>
+References: <16230.17445.337511.852664@gargle.gargle.HOWL>
+	<20030916091302.GO11391@poupinou.org>
+	<16230.57673.292946.375545@gargle.gargle.HOWL>
+	<20030916102630.GQ11391@poupinou.org>
+	<16231.25993.582976.85275@gargle.gargle.HOWL>
+	<20030917085023.GY11391@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-In-Reply-To: <3F6ACB0E.8050009@basmevissen.nl> (Bas Mevissen's message of
-	"Fri, 19 Sep 2003 11:23:26 +0200")
+In-Reply-To: <20030917085023.GY11391@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,56 +23,46 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
->>>>> "Bas" == Bas Mevissen <ml@basmevissen.nl> writes:
- Bas> Jan Rychter wrote:
- >> and much to my surprise, even though /proc/cpufreq echoes my
- >> changes, I can see no resulting changes in power consumption as
- >> reported by ACPI battery proc entry.
 
- Bas> Can you verify the CPU speed with the bogomips userland utility? 
- Bas> Or something else that gives a CPU-only performance impression.
 
-Ok, I haven't actually verified the CPU speed as reported by bogomips,
-but I've done some power consumption measurements. This is on a Toshiba
-S7/290LNKW, which has a 900MHz Pentium-M, the machine had its HDD spun
-down, no wi-fi or other networking, display set to max brightness and
-was otherwise idle.
+    Bruno> For cpufreq cvs: cvs
+    Bruno> -d:pserver:cvs@pubcvs.arm.linux.org.uk:/mnt/src/cvsroot co
+    Bruno> -rLINUX_2_4 cpufreq
+    Bruno> then: cd cpufreq ./patchin.sh /path/to/kernel
 
-11048mW 900MHz, C2 only
-10560mW 600MHz, C2 only
+Ok I have done that on 2.4.22 and it seems to be happy at boot up:
 
-9306mW 900MHz, C3 allowed
-9306mW 600MHz, C3 allowed
+speedstep-smi: IST_SMI: signature:0x47534943, command:0x008200b2, event:0x000000
+00, perf_level:0x00000101
+cpufreq: currently at high speed setting - 1000 MHz
 
-So, it seems that changing the frequency actually buys very little if
-you're stuck in C2 (about 0.5W) and exactly NOTHING if the machine is
-idle and can use C3.
+But when I try to speed down the laptop my settings don't seem to
+take:
 
-FYI, a good way to get the machine not to use C3 is to plug in an USB
-device. Or just use usb-uhci, which immediately disallows C3 states.
+dell:~# echo "77%77%powersave" > /proc/cpufreq 
+dell:~# cat /proc/cpufreq 
+          minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0       733000 kHz ( 73 %)  -    1000000 kHz (100 %)  -  performance
 
-An unscientific comparison with my old Sharp Mebius Pentium3M-based,
-750MHz, shows that the old machine has actually better idle performance,
-with 8750mW at max display, no HDD, and speedstepped down to 350MHz.
+I am missing something or is just not working ?
 
-Another test has shown that on the Pentium-IIIM machine it DOES make a
-difference if it's speedstepped high or low. The numbers for lowest
-brightness, no HDD, idle machine:
-  speedstep 350MHz
-  5757mW
-  speedstep 750MHz
-  5905mW
+    Bruno> You may try also acpi for his idling stuff, which shall
+    Bruno> save more power comsuption of the processor, and you may
+    Bruno> have ability to throtte the CPU.  AFAIR, there is no
+    Bruno> thermal zone in the i8k dsdt, but my memory may be wrong,
+    Bruno> though.
 
-5757mW is BTW the absolute minimum this machine can do with the display
-on :-)
+I have played a little with the ACPI stuff but it has a bit of a
+drawback. I can't hibernate my laptop anymore since it's not supported
+yet. You are right that there is no thermal zone but that information
+can be had with the i8k.c code.
 
-The above results are rather surprising for me. Either something is
-wrong, or Intel has managed to make a CPU which effectively doesn't
-really need frequency scaling, because it is so good at idle
-handling. But then I thought that voltage also changes along with the
-frequency?
+I could do something drastic and change the CPU of this beast. What
+would people recommend for a cool laptop? Cool as in temperature, of
+course! Would the VIA C3 work?
 
---J.
+Sorry for asking too many questions.
+
+Ivan
