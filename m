@@ -1,13 +1,17 @@
-From: Dominik Brodowski <linux@brodo.de>
+From: David Moore <dcm@acm.org>
 Subject: Re: [ACPI] _PDC method in DSDT
-Date: Mon, 23 Jun 2003 23:37:26 +0200
+Date: 23 Jun 2003 18:14:40 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030623213726.GA1317@brodo.de>
-References: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com> <20030623133834.GA2330@brodo.de> <20030623161136.GG19556@poupinou.org> <1056388336.15250.62.camel@ixodes.goop.org> <1056398545.10322.111.camel@aldebaran.caltech.edu>
+Message-ID: <1056417280.10323.148.camel@aldebaran.caltech.edu>
+References: <F760B14C9561B941B89469F59BA3A84725A303@orsmsx401.jf.intel.com>
+	 <20030623133834.GA2330@brodo.de> <20030623161136.GG19556@poupinou.org>
+	 <1056388336.15250.62.camel@ixodes.goop.org>
+	 <1056398545.10322.111.camel@aldebaran.caltech.edu>
+	 <20030623213726.GA1317@brodo.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1056398545.10322.111.camel@aldebaran.caltech.edu>
+In-Reply-To: <20030623213726.GA1317@brodo.de>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,83 +22,55 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Moore <dcm@acm.org>
+To: Dominik Brodowski <linux@brodo.de>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ducrot Bruno <ducrot@poupinou.org>, Andrew Grover <andrew.grover@intel.com>, "Adachi, Kenichi" <adachi@rd.scei.sony.co.jp>, acpi-devel@lists.sourceforge.net, cpufreq list <cpufreq@www.linux.org.uk>
 
-On Mon, Jun 23, 2003 at 01:02:25PM -0700, David Moore wrote:
-> Thanks for all the responses on this issue.  Forgive my ignorance in
-> many cases, I've been involved in this code much less time than most
-> people here.
-
-"Fresh", new ideas are always most welcome :-) 
-
-
-Firstly, please let me explain the goal of the cpufreq project: it is a
-cross-architecture, _generic framework_ which provides
-
-a) a standard userspace interface to select certain processor speeds
-	(sysfs based in 2.5)
-b) another interface to "governors" which decide what speed to set
-	(e.g. based on userspace input), and
-c) common core functions (so-called notifiers) which update essential
-	timing code in the kernel, such as the Time Stamp Counter (TSC) 
-	timer.
-
-So, to make life simple for the user (a), to offer him some cool features
-(b), and to assure the kernel won't break switching the core frequency
-(c) all "processor drivers" which change the processor core frequency should
-register themselves as cpufreq drivers.[*]
-
-
-Because of this, the ACPI P-States driver became a "cpufreq driver" in the
-_development_ series -- see arch/i386/kernel/cpu/cpufreq/acpi.c in latest 
-2.5. kernels.
-
-
-Also, you should try to think of ACPI as a "library" which provides useful
-helpers for other kernel services -- CPU enumeration, information on how 
-IRQs can be routed, information on how a specific device can be put to
-sleep. It shouldn't be the ACPI code which is in "control of things", as
-there are too many broken BIOSes around, and too many "legacy" systems
-can't even spell ACPI at all. Instead, it should but the specific 
-__device drivers__  which are in "control of things". Nonetheless, these 
-_may_ use ACPI to obtain information/control of the hardware.
-
-> What about this approach as a possible solution to everything that's
-> been discussed:
+On Mon, 2003-06-23 at 14:37, Dominik Brodowski wrote:
 > 
-> Patch ACPI as follows: In the case where _PCT returns FFH as the
-> register type in processor.c, we would simply call a processor-specific
-> function in /arch/i386/ instead of using outb() for the state changes. 
+> Firstly, please let me explain the goal of the cpufreq project: it is a
+> cross-architecture, _generic framework_ which provides
 
-IMO the ACPI P-States driver should only include the ACPI 2.0 P-States driver,
-and not try to support all other sorts of legacy support and become one
-"mega-driver". Instead, the other information stored in _PCT you talk about 
-should be available to other processor-specific cpufreq drivers which see 
-a need to obtain this information -- ACPI as a library, available to those 
-who want it.
+Thanks for your explanation.  My fault was that I was too busy looking
+at 2.4.21-ac1 and I didn't realize cpufreq had matured a lot in the
+development series and resolved the duplication between it and the ACPI
+drivers.
 
-> For those who want to use cpufreq and ACPI simultaneously, they could
-> use the cpufreq-ACPI driver, which would now be capable of using the
-> appropriate processor-specific functions for state changes with little
-> ACPI overhead.
+> Because of this, the ACPI P-States driver became a "cpufreq driver" in the
+> _development_ series -- see arch/i386/kernel/cpu/cpufreq/acpi.c in latest 
+> 2.5. kernels.
+> 
 
-Using some sort of method to switch the core frequency of the processor
-without informing the cpufreq core is dangerous. The cpufreq core makes 
-sure the timing code in other areas of the kernel is updated.
- 
-> The only big drawback of this approach is the duplication of code
-> between the existing cpufreq drivers and these new processor-specific
-> state changing drivers. 
+Yes, I see that now.  That looks like exactly the right way to do it.
 
-Indeed, and it is unnecessary. What's worth having, though, is a way to pass
-the information ACPI possesses to the cpufreq drivers whenever these think
-it's necessary.
+> IMO the ACPI P-States driver should only include the ACPI 2.0 P-States driver,
+> and not try to support all other sorts of legacy support and become one
+> "mega-driver". Instead, the other information stored in _PCT you talk about 
+> should be available to other processor-specific cpufreq drivers which see 
+> a need to obtain this information -- ACPI as a library, available to those 
+> who want it.
+> 
 
-	Dominik
+I see your rationale for wanting the P-state driver to be ACPI 2.0-only,
+but I think there is some advantage to adding Enhanced Speedstep support
+to i386/kernel/cpu/cpufreq/acpi.c rather than just added ACPI query
+capabilities to speedstep-centrino.c:
 
+speedstep-centrino.c is very picky about the precise CPU because its
+tables are hard-coded with no margin for error.  With ACPI, the test for
+Enhanced Speedstep would be more general:
+if cpu_has(cpu, X86_FEATURE_EST) is true, and after calling _PDC, if
+_PTC returns FFH registers, then treat those registers as MSRs instead
+of IO ports.  Thus, it supports any Enhanced Speedstep hardware with a
+correct BIOS, not just the ones enumerated by speedstep-centrino.c.
 
-[*] I know the newly-added drivers/acpi/processor.c in 2.4.22-pre contains
-the ACPI P-States 2.0 driver which can't register itself to any cpufreq core
-as cpufreq is only part of 2.5. kernels. But this is a different issue.
+I guess my main point is that in order for speedstep-centrino.c to call
+ACPI as a library, it would basically need to use every function already
+written in acpi.c.  Why not just dispatch the wrmsr() from acpi.c rather
+than the other way around?  It would take probably a 15-line patch to
+add Enhanced Speedstep support to acpi.c, but probably would be much
+more complicated to query ACPI from speedstep-centrino.c.  For AMD and
+Transmeta processors, there would be no point in specific support for
+them in acpi.c since ACPI doesn't really provide useful information for
+their performance control anyway.
+
+-David
