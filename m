@@ -1,12 +1,13 @@
-From: Alexander Clouter <alex@digriz.org.uk>
-Subject: Re: ondemand improvements, new 'conservative' governor
-Date: Mon, 17 Jan 2005 09:55:17 +0000
-Message-ID: <20050117095517.GA4106@inskipp>
-References: <20050116225136.GA28981@dominikbrodowski.de>
+From: Hendrik Muhs <Hendrik.Muhs@web.de>
+Subject: Re: [PATCH] Another powernow-k7 patch for Desktop XP-M usage
+Date: Mon, 17 Jan 2005 16:21:52 +0100
+Message-ID: <200501171621.52998.Hendrik.Muhs@web.de>
+References: <20050114114656.GA8185@smooth.piipiip.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0725886699=="
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@zenII.linux.org.uk>
-In-Reply-To: <20050116225136.GA28981@dominikbrodowski.de>
+In-Reply-To: <20050114114656.GA8185@smooth.piipiip.net>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,104 +18,70 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: cpufreq@lists.linux.org.uk
-
-
---===============0725886699==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
-Content-Disposition: inline
-
-
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Dominik,
-
-On Jan 16, Dominik Brodowski wrote:
-> Hi Alex, Venki,
->=20
-> IIRC you (Alex) wrote a few improvements to the ondemand governor -- and
-> IIRC they aren't all merged yet, as a few issues were still left? Also,
-> what's the status of your 'conservative' governor. Also IIRC it was missi=
-ng
-> some improvements made to the ondeamnd governor in the meantime.
->=20
-There were some improvements that I had finished porting over however then=
-=20
-for some reason it just stopped working.  Although the module worked and di=
-d=20
-not kill the machine, regardless of the load it never increased the cpufreq=
-=2E=20
-:(
-
-I was going to fix it once I had put back in some debugging information=20
-(probably that 'evil' hack I tried to disguise as debugging which you all s=
-aw=20
-through :)  Also I thought of a nicer way to actually store the 'desired'=
-=20
-cpufreq without making it global which I was going to add.
-
-I am free this weekend, girlfriend is away so I do not have to keep her=20
-entertained which means some quality geek time.
-
-I would of done it earlier but as interest never seemed to go beyond a few
-friends of mine and one or two people on the mailing list I did not have
-people poking me into action; however I guess that happens with every patch.
-
-I'll speak to you later this week, I would do it midweek but I'm looking fo=
-r=20
-a new flat
-
-Cheers
-
-Alex
-
-> Thanks,
-> 	Dominik
-
---=20
- _________________________________________=20
-/ What you don't know won't help you much \
-| either.                                 |
-|                                         |
-\ -- D. Bennett                           /
- -----------------------------------------=20
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
-
---+HP7ph2BbKc20aGI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFB64uFNv5Ugh/sRBYRAszeAJ9FDyd0bXAyDrfeFPyCV0ClcQMDkgCcDqE5
-GoRjNU2lubJZ6oxVmWJpj+4=
-=BY1s
------END PGP SIGNATURE-----
-
---+HP7ph2BbKc20aGI--
-
-
---===============0725886699==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@lists.linux.org.uk
+Cc: Jarkko Lavinen <jlavi@iki.fi>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
+Hi,
 
---===============0725886699==--
+> On Fri Oct 15, 2004 at 08:05:07, Hendrik Muhs wrote:
+> > A new corrected patch is attached to this mail
+>
+> Many thanks for the XP-M patch.  I am using it on 2.6.9 and running
+> XP-M at 1.1Vcore. The max cpu clock at this Vcore is about 1200MHz
+> or multiplier 9 on 133MHz FSB.
+>
+> The patch assumes the CPU is running at the highest normal multiplier,
+> that would be 14 cpu running at around 1800MHz. It then calculates
+> the FSB frquency from cpu clock and the assumed multiplier.  As a result,
+> a wrong FSB and frequencies are calculated.
 
+Strange. If I understand it correctly, your BIOS lets you set the start 
+multiplier but does not report it correctly.
+
+(In my BIOS I can also set a start multiplier, but that does not work at all. 
+The CPU is always started with the highest multiplier (supplied by the CPU))
+
+Which motherboard do you have?
+
+>
+> For a quick remedy, I added a new module option "multiplier_limit" which
+> limits the queried multiplier to no higher than the given limit.
+>
+
+Why not let the user specify the FSB? I mean if this is the issue, why do you 
+take the multiplier? I would add a module option "fsb" instead.
+
+BTW. Wasn't there another report recently about broken FSB detection on the 
+list?
+
+The mailinglist archives are broken, so I can not check it. The links in the 
+pages are still refering to www.linux.org.uk instead of lists.linux.org.uk.
+
+>   overwrite_table=1 multiplier=3,4,5,6,7,8,9 debug=1 multiplier_limit=9
+>
+>   powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+>   powernow: FSB: 135.405 MHz
+>   powernow: Overwriting PST table with manual settings
+>   powernow: Settling Time: 200 microseconds.
+>   powernow:    FID: 0x10 (3.0x [406MHz])  VID: 0xb (1.450V)
+>   powernow:    FID: 0x12 (4.0x [541MHz])  VID: 0xb (1.450V)
+>   powernow:    FID: 0x4 (5.0x [677MHz])   VID: 0xb (1.450V)
+>   powernow:    FID: 0x6 (6.0x [812MHz])   VID: 0xb (1.450V)
+>   powernow:    FID: 0x8 (7.0x [947MHz])   VID: 0xb (1.450V)
+>   powernow:    FID: 0xa (8.0x [1083MHz])  VID: 0xb (1.450V)
+>   powernow:    FID: 0xc (9.0x [1218MHz])  VID: 0xb (1.450V)
+>   powernow: Minimum speed 406 MHz. Maximum speed 1218 MHz.
+>
+> With this modification the FSB and CPU frequencies are repoted correctly.
+> It would be better if the currently used multiplier could be detected
+> without resorting to setting manual limit, though.
+
+Yes, but as I said, I assume that your BIOS does not report it correctly. So I 
+do not see a way to do this.
+
+Anyway, I miss your patch. You have forgotten to attach it!
+
+Regards,
+
+Hendrik
