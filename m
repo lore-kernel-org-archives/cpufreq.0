@@ -1,15 +1,13 @@
-From: Russell King <rmk@arm.linux.org.uk>
+From: Bruno Ducrot <ducrot@poupinou.org>
 Subject: Re: Interl XScale pxa cpufreq driver
-Date: Mon, 22 Mar 2004 15:19:19 +0000
+Date: Mon, 22 Mar 2004 17:14:55 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040322151919.D11212@flint.arm.linux.org.uk>
+Message-ID: <20040322161455.GW28592@poupinou.org>
 References: <120c01c41017$712e04b0$76f02e93@rodin>
-	<405F028A.9030004@buettcher.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <405F028A.9030004@buettcher.org>;
-	from stefan@buettcher.org on Mon, Mar 22, 2004 at 04:13:14PM +0100
+In-Reply-To: <120c01c41017$712e04b0$76f02e93@rodin>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,24 +19,18 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stefan Buettcher <stefan@buettcher.org>
+To: Young-Jin Kim <youngjk@davinci.snu.ac.kr>
 Cc: cpufreq@www.linux.org.uk
 
-On Mon, Mar 22, 2004 at 04:13:14PM +0100, Stefan Buettcher wrote:
-> Young-Jin Kim wrote:
-> > Hi, 
-> > I know there is no cpufreq driver which supports XScale PXA processor.
-> 
-> There is one. You could have a look at the kernel sources
-> of the ARM Linux project or the Familiar distribution.
+On Mon, Mar 22, 2004 at 11:10:34PM +0900, Young-Jin Kim wrote:
+> And, I want to know if there is a routine of changing the supply voltage in speedstep-ich for Intel Mobile Pentium 4.
+> In fact I cannot see well. 
 
-It's not part of the ARM kernels, and if its sitting in the
-handhelds.org CVS, I don't expect it ever to be.  handhelds.org CVS
-is a dumping ground for random stuff and is a failure as far as the
-Linux kernel and Open Source goes.
+There is no (standardized) way to change default setting of the two core
+voltages that can be applyed to a mobile pentium 4.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
-                 2.6 Serial core
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
