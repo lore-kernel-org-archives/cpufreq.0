@@ -1,9 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/arm/mach-sa1100 cpu-sa1100.c, 1.5,
-	1.6 cpu-sa1110.c, 1.12, 1.13
-Date: Thu, 26 Aug 2004 14:25:51 +0100
+Subject: cpufreq/linux/arch/arm/mach-integrator cpu.c,1.9,1.10
+Date: Thu, 26 Aug 2004 14:25:50 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1C0KGF-0006od-0A@flint.arm.linux.org.uk>
+Message-ID: <E1C0KGE-0006oa-Iv@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,106 +18,137 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100
-In directory flint:/tmp/cvs-serv26017/linux/arch/arm/mach-sa1100
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator
+In directory flint:/tmp/cvs-serv26017/linux/arch/arm/mach-integrator
 
 Modified Files:
-	cpu-sa1100.c cpu-sa1110.c 
+	cpu.c 
 Log Message:
 merge with current cpufreq bk tree and 2.6.9-r1
 
-Index: cpu-sa1100.c
+Index: cpu.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1100.c,v
-retrieving revision 1.5
-retrieving revision 1.6
-diff -u -r1.5 -r1.6
---- cpu-sa1100.c	5 Nov 2003 18:27:41 -0000	1.5
-+++ cpu-sa1100.c	26 Aug 2004 13:25:17 -0000	1.6
-@@ -180,7 +180,7 @@
- 			 unsigned int target_freq,
- 			 unsigned int relation)
- {
--	unsigned int cur = sa11x0_getspeed();
-+	unsigned int cur = sa11x0_getspeed(0);
- 	unsigned int new_ppcr;
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-integrator/cpu.c,v
+retrieving revision 1.9
+retrieving revision 1.10
+diff -u -r1.9 -r1.10
+--- cpu.c	20 Jan 2004 17:03:30 -0000	1.9
++++ cpu.c	26 Aug 2004 13:25:17 -0000	1.10
+@@ -22,6 +22,7 @@
  
- 	struct cpufreq_freqs freqs;
-@@ -221,7 +221,7 @@
- {
- 	if (policy->cpu != 0)
- 		return -EINVAL;
--	policy->cur = policy->min = policy->max = sa11x0_getspeed();
-+	policy->cur = policy->min = policy->max = sa11x0_getspeed(0);
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.min_freq = 59000;
- 	policy->cpuinfo.max_freq = 287000;
-@@ -230,15 +230,18 @@
+ #include <asm/hardware.h>
+ #include <asm/io.h>
++#include <asm/mach-types.h>
+ #include <asm/hardware/icst525.h>
+ 
+ static struct cpufreq_driver integrator_driver;
+@@ -98,7 +99,12 @@
+ 
+ 	/* get current setting */
+ 	cm_osc = __raw_readl(CM_OSC);
+-	vco.s = (cm_osc >> 8) & 7;
++
++	if (machine_is_integrator()) {
++		vco.s = (cm_osc >> 8) & 7;
++	} else if (machine_is_cintegrator()) {
++		vco.s = 1;
++	}
+ 	vco.v = cm_osc & 255;
+ 	vco.r = 22;
+ 	freqs.old = icst525_khz(&cclk_params, vco);
+@@ -107,7 +113,7 @@
+ 	 * larger freq in case of CPUFREQ_RELATION_L.
+ 	 */
+ 	if (relation == CPUFREQ_RELATION_L)
+-		target_freq += 1999;
++		target_freq += 999;
+ 	if (target_freq > policy->max)
+ 		target_freq = policy->max;
+ 	vco = icst525_khz_to_vco(&cclk_params, target_freq);
+@@ -123,8 +129,14 @@
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 
+ 	cm_osc = __raw_readl(CM_OSC);
+-	cm_osc &= 0xfffff800;
+-	cm_osc |= vco.v | vco.s << 8;
++
++	if (machine_is_integrator()) {
++		cm_osc &= 0xfffff800;
++		cm_osc |= vco.s << 8;
++	} else if (machine_is_cintegrator()) {
++		cm_osc &= 0xffffff00;
++	}
++	cm_osc |= vco.v;
+ 
+ 	__raw_writel(0xa05f, CM_LOCK);
+ 	__raw_writel(cm_osc, CM_OSC);
+@@ -140,11 +152,11 @@
+ 	return 0;
  }
  
- static struct cpufreq_driver sa1100_driver = {
-+	.flags		= CPUFREQ_STICKY |
-+			  CPUFREQ_PANIC_OUTOFSYNC | 
-+			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
- 	.verify		= sa11x0_verify_speed,
- 	.target		= sa1100_target,
-+	.get		= sa11x0_getspeed,
- 	.init		= sa1100_cpu_init,
- 	.name		= "sa1100",
- };
- 
- static int __init sa1100_dram_init(void)
+-static int integrator_cpufreq_init(struct cpufreq_policy *policy)
++static unsigned int integrator_get(unsigned int cpu)
  {
--	cpufreq_gov_userspace_init();
-  	if ((processor_id & CPU_SA1100_MASK) == CPU_SA1100_ID)
- 		return cpufreq_register_driver(&sa1100_driver);
- 	else
-
-Index: cpu-sa1110.c
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/arm/mach-sa1100/cpu-sa1110.c,v
-retrieving revision 1.12
-retrieving revision 1.13
-diff -u -r1.12 -r1.13
---- cpu-sa1110.c	6 Nov 2003 11:11:44 -0000	1.12
-+++ cpu-sa1110.c	26 Aug 2004 13:25:17 -0000	1.13
-@@ -238,7 +238,7 @@
- 		return -EINVAL;
- 	}
+ 	unsigned long cpus_allowed;
+-	unsigned int cpu = policy->cpu;
+-	u_int cm_osc, cm_stat, mem_freq_khz;
++	unsigned int current_freq;
++	u_int cm_osc;
+ 	struct icst525_vco vco;
  
--	freqs.old = sa11x0_getspeed();
-+	freqs.old = sa11x0_getspeed(0);
- 	freqs.new = sa11x0_ppcr_to_freq(ppcr);
- 	freqs.cpu = 0;
+ 	cpus_allowed = current->cpus_allowed;
+@@ -153,30 +165,32 @@
+ 	BUG_ON(cpu != smp_processor_id());
  
-@@ -320,7 +320,7 @@
- {
- 	if (policy->cpu != 0)
- 		return -EINVAL;
--	policy->cur = policy->min = policy->max = sa11x0_getspeed();
-+	policy->cur = policy->min = policy->max = sa11x0_getspeed(0);
+ 	/* detect memory etc. */
+-	cm_stat = __raw_readl(CM_STAT);
+ 	cm_osc = __raw_readl(CM_OSC);
+-	vco.s = (cm_osc >> 20) & 7;
+-	vco.v = (cm_osc >> 12) & 255;
+-	vco.r = 22;
+-	mem_freq_khz = icst525_khz(&lclk_params, vco) / 2;
+-
+-	printk(KERN_INFO "CPU%d: Module id: %d\n", cpu, cm_stat & 255);
+-	printk(KERN_INFO "CPU%d: Memory clock = %d.%03d MHz\n",
+-	       cpu, mem_freq_khz / 1000, mem_freq_khz % 1000);
+ 
+-	vco.s = (cm_osc >> 8) & 7;
++	if (machine_is_integrator()) {
++		vco.s = (cm_osc >> 8) & 7;
++	} else if (machine_is_cintegrator()) {
++		vco.s = 1;
++	}
+ 	vco.v = cm_osc & 255;
+ 	vco.r = 22;
+ 
++	current_freq = icst525_khz(&cclk_params, vco); /* current freq */
++
++	set_cpus_allowed(current, cpus_allowed);
++
++	return current_freq;
++}
++
++static int integrator_cpufreq_init(struct cpufreq_policy *policy)
++{
++
+ 	/* set default policy and cpuinfo */
  	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.min_freq = 59000;
- 	policy->cpuinfo.max_freq = 287000;
-@@ -329,8 +329,12 @@
+ 	policy->cpuinfo.max_freq = 160000;
+ 	policy->cpuinfo.min_freq = 12000;
+ 	policy->cpuinfo.transition_latency = 1000000; /* 1 ms, assumed */
+-	policy->cur = policy->min = policy->max =
+-		icst525_khz(&cclk_params, vco); /* current freq */
+-
+-	set_cpus_allowed(current, cpus_allowed);
++	policy->cur = policy->min = policy->max = integrator_get(policy->cpu);
+ 
+ 	return 0;
  }
- 
- static struct cpufreq_driver sa1110_driver = {
-+	.flags		= CPUFREQ_STICKY |
-+			  CPUFREQ_PANIC_OUTOFSYNC | 
-+			  CPUFREQ_PANIC_RESUME_OUTOFSYNC,
- 	.verify		= sa11x0_verify_speed,
- 	.target		= sa1110_target,
-+	.get		= sa11x0_getspeed,
- 	.init		= sa1110_cpu_init,
- 	.name		= "sa1110",
+@@ -184,6 +198,7 @@
+ static struct cpufreq_driver integrator_driver = {
+ 	.verify		= integrator_verify_policy,
+ 	.target		= integrator_set_target,
++	.get		= integrator_get,
+ 	.init		= integrator_cpufreq_init,
+ 	.name		= "integrator",
  };
-@@ -354,8 +358,6 @@
- 			sdram->tck, sdram->trcd, sdram->trp,
- 			sdram->twr, sdram->refresh, sdram->cas_latency);
- 
--		cpufreq_gov_userspace_init();
-- 
- 		memcpy(&sdram_params, sdram, sizeof(sdram_params));
- 
- 		return cpufreq_register_driver(&sa1110_driver);
