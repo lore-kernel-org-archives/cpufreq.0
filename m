@@ -1,13 +1,13 @@
-From: Dave Jones <davej@suse.de>
-Subject: Re: [PATCH] cpufreq: add speedstep support for Intel Mobile Pentium P-4 with 533 MHz FSB
-Date: Thu, 26 Jun 2003 02:51:11 +0200
+From: Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH] disable debugging in Centrino driver
+Date: Thu, 26 Jun 2003 01:53:52 +0100
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030626025111.B31502@suse.de>
-References: <20030624183402.GA10605@brodo.de>
+Message-ID: <20030626005351.GA18101@suse.de>
+References: <1056350162.15250.25.camel@ixodes.goop.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20030624183402.GA10605@brodo.de>; from linux@brodo.de on Tue, Jun 24, 2003 at 08:34:02PM +0200
+In-Reply-To: <1056350162.15250.25.camel@ixodes.goop.org>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,19 +19,14 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: cpufreq@www.linux.org.uk
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: cpufreq list <cpufreq@www.linux.org.uk>
 
-On Tue, Jun 24, 2003 at 08:34:02PM +0200, Dominik Brodowski wrote:
- > Add support for newest "Mobile Pentium 4-M" and the new "Mobile Pentium 4 with
- > 533 MHz FSB" processors.
- > 
- > Depends on the speedstep-lib patch sent earlier.
+On Sun, Jun 22, 2003 at 11:36:03PM -0700, Jeremy Fitzhardinge wrote:
+ > Hi Dave, 
+ > Can you put this in your tree?  The debug output gets very boring
+ > very quickly.
 
-Looks good, applied.
+Applied, Thanks.
 
-        Dave
-
--- 
-| Dave Jones.        http://www.codemonkey.org.uk
-| SuSE Labs
+		Dave
