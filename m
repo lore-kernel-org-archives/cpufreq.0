@@ -1,14 +1,12 @@
-From: Georg Sauthoff <g_sauthoff@web.de>
-Subject: Re: Pentium M and 2.4. kernel: does not work
-Date: Sat, 16 Aug 2003 21:57:26 +0200
+From: Jan Rychter <jan@rychter.com>
+Subject: cpufreq and P-IIIM
+Date: Sat, 16 Aug 2003 13:28:11 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <200308162157.26732.g_sauthoff@web.de>
-References: <200308160043.30649.g_sauthoff@web.de> <200308161028.50976.g_sauthoff@web.de> <20030816185320.GA833@brodo.de>
+Message-ID: <m2ptj5fiuc.fsf@tnuctip.rychter.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="==-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <cpufreq-admin@www.linux.org.uk>
-In-Reply-To: <20030816185320.GA833@brodo.de>
-Content-Disposition: inline
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,60 +16,255 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
-Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@www.linux.org.uk
 
-On Saturday 16 August 2003 20:53, Dominik Brodowski wrote:
-> On Sat, Aug 16, 2003 at 10:28:50AM +0200, Georg Sauthoff wrote:
-> > > So,
-> > > # echo -n "0%0%100%userspace" > /proc/cpufreq
-> >
-> >              ^^^^^^^^ What does this mean?
->
-> set the CPU 0  0%
-> to something between
->                  0%
-> and                100%
-> and let the             userspace
-> governor decide which speed to use in between. It's much easier with the
-> 2.6. sysfs interface -- one of the reasons I'm not really too excited abo=
-ut
-> the cpufreq backport for 2.4. [besides, I _only_ use 2.[56] kernels...]
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
 
-Well, I tested a last 2.5er and it worked very stable with my hardware, and=
-=20
-the interface for cpufreq was easy to use (ok - the Pentium M support was n=
-ot=20
-so far at this time I think). So everything just fine, but the =A7"!*$^ Cis=
-co=20
-VPN at the university needs a =A7$=3D?)"# closed source cisco kernel module=
- ...
-Ok, the 2.5er has IPsec support included, but I didn't find so much=20
-documentation about it (specially how to configure the userspace programs).=
-=20
-And btw it seems that an encrypted group passward of a vpn-gateway doesn't=
-=20
-make it easier to use other client software instead of the buggy cisco=20
-client.
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-> > > first, then you can use the
-> > > /proc/sys/cpu/0/speed
-> > > file to set the CPU speed manually.
-> >
-> > Hm, unfortunetly after I set the userspace governor (like above) the
-> > /proc/sys/cpu/0/s* gives me 0 again ...
-> >
-> > In the kernel logs I don't see any messages from cpufreq. Ok, after a
-> > very quick look at the patch sources I don't see printk's there, too.
->
-> Probably a BUG I introduced in the latest backport. Hopefully I'll have
-> the time tomorrow to update it. In the meantime: what does /proc/cpufreq
-> tell?
+Hi,
 
-It does tell (AFAIRC):
-min-policy max-policy ... (sorry don't remember the end of the line)
+I've just tried the latest 2.4 snapshot of cpufreq. Unfortunately, it
+doesn't seem to work on my hardware. It says:
 
-I will mail the exact line tommorow.
+  cpufreq: Intel(R) SpeedStep(TM) support $Revision: 1.7.2.6 $
+  cpufreq: Intel(R) SpeedStep(TM) for this chipset not (yet) available.
 
-Regards
-Georg Sauthoff
+/proc/cpuinfo says:
+  processor       : 0
+  vendor_id       : GenuineIntel
+  cpu family      : 6
+  model           : 11
+  model name      : Intel(R) Pentium(R) III Mobile CPU       750MHz
+  stepping        : 1
+  cpu MHz         : 746.352
+  cache size      : 512 KB
+  fdiv_bug        : no
+  hlt_bug         : no
+  f00f_bug        : no
+  coma_bug        : no
+  fpu             : yes
+  fpu_exception   : yes
+  cpuid level     : 2
+  wp              : yes
+  flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmo=
+v pat pse36 mmx fxsr sse
+  bogomips        : 1490.94
+
+lspci says:
+  00:00.0 Class 0600: 8086:7194 (rev 01)
+  00:00.1 Class 0401: 8086:7195
+  00:00.2 Class 0703: 8086:7196
+  00:07.0 Class 0601: 8086:7198 (rev 01)
+  00:07.1 Class 0101: 8086:7199
+  00:07.2 Class 0c03: 8086:719a
+  00:07.3 Class 0680: 8086:719b
+  00:09.0 Class 0300: 1002:4c52 (rev 64)
+  00:0a.0 Class 0607: 104c:ac1b (rev 03)
+  00:0a.1 Class 0607: 104c:ac1b (rev 03)
+  00:0b.0 Class 0200: 10ec:8139 (rev 10)
+
+which translates to:
+  00:00.0 Host bridge: Intel Corp. 82440MX Host Bridge (rev 01)
+  00:00.1 Multimedia audio controller: Intel Corp. 82440MX AC'97 Audio Cont=
+roller
+  00:00.2 Modem: Intel Corp. 82440MX AC'97 Modem Controller
+  00:07.0 ISA bridge: Intel Corp. 82440MX ISA Bridge (rev 01)
+  00:07.1 IDE interface: Intel Corp. 82440MX EIDE Controller
+  00:07.2 USB Controller: Intel Corp. 82440MX USB Universal Host Controller
+  00:07.3 Bridge: Intel Corp. 82440MX Power Management Controller
+  00:09.0 VGA compatible controller: ATI Technologies Inc Rage Mobility P/M=
+ (rev 64)
+  00:0a.0 CardBus bridge: Texas Instruments PCI1450 (rev 03)
+  00:0a.1 CardBus bridge: Texas Instruments PCI1450 (rev 03)
+  00:0b.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/813=
+9C/8139C+ (rev 10)
+
+Now, I have been successfully using Marc Lehmann's 'speedstep' utility,
+which after minor changes (mostly uncommenting security checks) works
+perfectly for me. When checking state (speedstep -g), it prints:
+  EDI =3D=3D 02020304 !=3D 02020005|02020004,
+
+but I can check speedstep state, and switch it up or down using this
+utility. I've attached the (lobotomized by me) speedstep.c that works
+for me just fine.
+
+Is there a chance that cpufreq could start supporting my machine?
+
+=2D-J.
+
+--=-=-=
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=speedstep.c
+Content-Transfer-Encoding: base64
+
+LyoKICogQ29weXJpZ2h0IChjKSAyMDAwIE1hcmMgQWxleGFuZGVyIExlaG1hbm4gPHBjZ0Bn
+b29mLmNvbT4KICogCiAqIFJlZGlzdHJpYnV0aW9uIGFuZCB1c2UgaW4gc291cmNlIGFuZCBi
+aW5hcnkgZm9ybXMsIHdpdGggb3Igd2l0aG91dCBtb2RpZmljYS0KICogdGlvbiwgYXJlIHBl
+cm1pdHRlZCBwcm92aWRlZCB0aGF0IHRoZSBmb2xsb3dpbmcgY29uZGl0aW9ucyBhcmUgbWV0
+OgogKiAKICogICAxLiAgUmVkaXN0cmlidXRpb25zIG9mIHNvdXJjZSBjb2RlIG11c3QgcmV0
+YWluIHRoZSBhYm92ZSBjb3B5cmlnaHQgbm90aWNlLAogKiAgICAgICB0aGlzIGxpc3Qgb2Yg
+Y29uZGl0aW9ucyBhbmQgdGhlIGZvbGxvd2luZyBkaXNjbGFpbWVyLgogKiAKICogICAyLiAg
+UmVkaXN0cmlidXRpb25zIGluIGJpbmFyeSBmb3JtIG11c3QgcmVwcm9kdWNlIHRoZSBhYm92
+ZSBjb3B5cmlnaHQKICogICAgICAgbm90aWNlLCB0aGlzIGxpc3Qgb2YgY29uZGl0aW9ucyBh
+bmQgdGhlIGZvbGxvd2luZyBkaXNjbGFpbWVyIGluIHRoZQogKiAgICAgICBkb2N1bWVudGF0
+aW9uIGFuZC9vciBvdGhlciBtYXRlcmlhbHMgcHJvdmlkZWQgd2l0aCB0aGUgZGlzdHJpYnV0
+aW9uLgogKiAKICogICAzLiAgVGhlIG5hbWUgb2YgdGhlIGF1dGhvciBtYXkgbm90IGJlIHVz
+ZWQgdG8gZW5kb3JzZSBvciBwcm9tb3RlIHByb2R1Y3RzCiAqICAgICAgIGRlcml2ZWQgZnJv
+bSB0aGlzIHNvZnR3YXJlIHdpdGhvdXQgc3BlY2lmaWMgcHJpb3Igd3JpdHRlbiBwZXJtaXNz
+aW9uLgogKiAKICogVEhJUyBTT0ZUV0FSRSBJUyBQUk9WSURFRCBCWSBUSEUgQVVUSE9SIGBg
+QVMgSVMnJyBBTkQgQU5ZIEVYUFJFU1MgT1IgSU1QTElFRAogKiBXQVJSQU5USUVTLCBJTkNM
+VURJTkcsIEJVVCBOT1QgTElNSVRFRCBUTywgVEhFIElNUExJRUQgV0FSUkFOVElFUyBPRiBN
+RVItCiAqIENIQU5UQUJJTElUWSBBTkQgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBP
+U0UgQVJFIERJU0NMQUlNRUQuICBJTiBOTwogKiBFVkVOVCBTSEFMTCBUSEUgQVVUSE9SIEJF
+IExJQUJMRSBGT1IgQU5ZIERJUkVDVCwgSU5ESVJFQ1QsIElOQ0lERU5UQUwsIFNQRS0KICog
+Q0lBTCwgRVhFTVBMQVJZLCBPUiBDT05TRVFVRU5USUFMIERBTUFHRVMgKElOQ0xVRElORywg
+QlVUIE5PVCBMSU1JVEVEIFRPLAogKiBQUk9DVVJFTUVOVCBPRiBTVUJTVElUVVRFIEdPT0RT
+IE9SIFNFUlZJQ0VTOyBMT1NTIE9GIFVTRSwgREFUQSwgT1IgUFJPRklUUzsKICogT1IgQlVT
+SU5FU1MgSU5URVJSVVBUSU9OKSBIT1dFVkVSIENBVVNFRCBBTkQgT04gQU5ZIFRIRU9SWSBP
+RiBMSUFCSUxJVFksCiAqIFdIRVRIRVIgSU4gQ09OVFJBQ1QsIFNUUklDVCBMSUFCSUxJVFks
+IE9SIFRPUlQgKElOQ0xVRElORyBORUdMSUdFTkNFIE9SIE9USC0KICogRVJXSVNFKSBBUklT
+SU5HIElOIEFOWSBXQVkgT1VUIE9GIFRIRSBVU0UgT0YgVEhJUyBTT0ZUV0FSRSwgRVZFTiBJ
+RiBBRFZJU0VECiAqIE9GIFRIRSBQT1NTSUJJTElUWSBPRiBTVUNIIERBTUFHRS4KICovCgoj
+aW5jbHVkZSA8c3RkaW8uaD4KI2luY2x1ZGUgPHN5cy90eXBlcy5oPgojaW5jbHVkZSA8c3lz
+L3N0YXQuaD4KI2luY2x1ZGUgPHVuaXN0ZC5oPgojaW5jbHVkZSA8ZmNudGwuaD4KI2luY2x1
+ZGUgPHN5cy9pby5oPgojaW5jbHVkZSA8c2lnbmFsLmg+CgovKiBkYWVtb24gbW9kZS4gKi8K
+I2RlZmluZSBQRVJGT1JNQU5DRSA4NQkvKiBjcHUgdXNhZ2UgcGVyY2VudGFnZSBhdCB3aGlj
+aCB0byBnbyBpbnRvIG1heGltdW0gcGVyZm9ybWFuY2UgbW9kZS4gKi8KI2RlZmluZSBCQVRU
+RVJZICAgICA3NSAvKiBjcHUgdXNhZ2UgcGVyY2VudGFnZSBhdCB3aGljaCB0byBlbnRlciBi
+YXR0ZXJ5IG9wdGltaXplZCBtb2RlLiAqLwojZGVmaW5lIE1JTlNFQ1MgICAgICA1ICAvKiBl
+bnRlciBiYXR0ZXJ5IG9wdGltaXplZCBtb2RlIG9ubHkgd2hlbiBubyBhY3Rpdml0eSB0aGlz
+IG51bWJlciBvZiBzZWNvbmRzLiAqLwoKc3RhdGljIGludCBlYXgsIGVieCwgZWN4LCBlZHgs
+IGVzaSwgZWRpOwoKc3RhdGljIGludCBvcHRfcXVpZXQ7CgpzdGF0aWMgdm9pZAptYWdpYyAo
+aW50IGZ1bmN0aW9uLCBpbnQgc3RhdGUpCnsKICBhc20oIm1vdmwgJC0xLCAlJWVkaVxuIgog
+ICAgICAib3V0ICUlYWwsICglJWR4KVxuIgogICAgICA6ICI9YSIgKGVheCksICI9YiIgKGVi
+eCksICI9YyIgKGVjeCksICI9ZCIgKGVkeCksICI9UyIgKGVzaSksICI9RCIgKGVkaSkKICAg
+ICAgOiAiYSIgKDB4NDc1MzQ5ODIpLCAiYiIgKGZ1bmN0aW9uKSwgImMiIChzdGF0ZSksICJk
+IiAoMHhiMikKICApOwp9CgpzdGF0aWMgdm9pZApiYWlsb3V0IChjaGFyICptc2cpCnsKICBm
+cHJpbnRmIChzdGRlcnIsICJGQVRBTDogJXNcbiIsIG1zZyk7CiAgZnByaW50ZiAoc3RkZXJy
+LAogICAgICAgICAgICJlYXggJTA4eFxuZWJ4ICUwOHhcbmVjeCAlMDh4XG5lZHggJTA4eFxu
+ZXNpICUwOHhcbmVkaSAlMDh4XG4iLAogICAgICAgICAgIGVheCwgZWJ4LCBlY3gsIGVkeCwg
+ZXNpLCBlZGkpOwoKICBleGl0KDc3KTsKfQoKc3RhdGljIGludApnZXRfc3RhdGUgKHZvaWQp
+CnsKICBtYWdpYyAoMSwgMSk7CgogIGlmIChlYXggIT0gMCkKICAgIGJhaWxvdXQgKCJnZXQg
+c3RhdGUgcHJvYmFibHkgZmFpbGVkLFxucGxlYXNlIHJlcG9ydCB0byA8c3BlZWRzdGVwQHBs
+YW45LmRlPiwgdG9nZXRoZXIgd2l0aCAvcHJvYy9jcHVpbmZvIik7CgogIC8qIDAyMDIwMDA1
+ID09IG9uX2FjX3Bvd2VyLCAwMjAyMDAwNCA9PSBiYXR0ZXJ5IHBvd2VyICovCiAgaWYgKGVk
+aSAhPSAweDAyMDIwMDA1ICYmIGVkaSAhPSAweDAyMDIwMDA0ICYmIGVkaSAhPSAweDAyMDIw
+MzA1ICYmICFvcHRfcXVpZXQpCiAgICBmcHJpbnRmIChzdGRlcnIsICJFREkgPT0gJTA4eCAh
+PSAwMjAyMDAwNXwwMjAyMDAwNCxcbiIKICAgICAgICAgICAgICAgICAgICAgInBsZWFzZSBy
+ZXBvcnQgdGhpcyB0byA8c3BlZWRzdGVwQHBsYW45LmRlPiwgdG9nZXRoZXIgd2l0aCAvcHJv
+Yy9jcHVpbmZvXG4iCiAgICAgICAgICAgICAgICAgICAgICIoc3VwcHJlc3MgdGhpcyBub3Rp
+Y2Ugd2l0aCAtcSlcbiIsIGVkaSk7CgogIGlmICghb3B0X3F1aWV0KQogICAgcHJpbnRmICgi
+Y3VycmVudCBzdGF0ZTogJXNcbiIsIGVieCA/ICJiYXR0ZXJ5IG9wdGltaXplZCIgOiAibWF4
+aW11bSBwZXJmb3JtYW5jZSIpOwoKICByZXR1cm4gISFlYng7Cn0KCnN0YXRpYyB2b2lkCnNl
+dF9zdGF0ZSAoaW50IHNsb3dkb3duKQp7CiAgaWYgKCFvcHRfcXVpZXQpCiAgICBpZiAoc2xv
+d2Rvd24pCiAgICAgIHByaW50ZiAoInN3aXRjaGluZyB0byBiYXR0ZXJ5IG9wdGltaXplZCBt
+b2RlXG4iKTsKICAgIGVsc2UKICAgICAgcHJpbnRmICgic3dpdGNoaW5nIHRvIG1heGltdW0g
+cGVyZm9ybWFuY2UgbW9kZVxuIik7CgogIG1hZ2ljICgyLCBzbG93ZG93bik7CgogIC8qaWYg
+KGVkaSAhPSAwKQogICAgYmFpbG91dCAoIkVESSAhPSAwOiBzZXR0aW5nIGZhaWxlZCxcbnBs
+ZWFzZSByZXBvcnQgdG8gPHNwZWVkc3RlcEBwbGFuOS5kZT4sIHRvZ2V0aGVyIHdpdGggL3By
+b2MvY3B1aW5mb1xuIik7Ki8KCi8qICBpZiAoZWJ4ICE9IHNsb3dkb3duKQogICAgYmFpbG91
+dCAoImNvdWxkIG5vdCBzd2l0Y2ggcG93ZXIgbW9kZSxcbnBsZWFzZSByZXBvcnQgdG8gPHNw
+ZWVkc3RlcEBwbGFuOS5kZT4sIHRvZ2V0aGVyIHdpdGggL3Byb2MvY3B1aW5mb1xuIik7Ki8K
+fQoKc3RhdGljIHZvaWQKdXNhZ2UgKGludCByYykKewogIGZwcmludGYgKHN0ZGVyciwgIlxu
+IgogICAgICAiaW50ZWwgdHlwZSAyIHNwZWVkc3RlcCBtb2RlIHN3aXRjaGluZyB1dGlsaXR5
+IHZlcnNpb24gIiBWRVJTSU9OICJcbiIKICAgICAgIlxuIgogICAgICAiVXNhZ2U6IHNwZWVk
+c3RlcCBbLXFoYm1nXSBbLXMwXSBbLXMxXVxuIgogICAgICAiICAgICAgICAgLWggICAgICAg
+IHRoaXMgaGVscFxuIgogICAgICAiICAgICAgICAgLXEgICAgICAgIHF1aWV0IG9wZXJhdGlv
+blxuIgogICAgICAiICAgICAgICAgLWIgfCAtczEgIHN3aXRjaCB0byBiYXR0ZXJ5IG9wdGlt
+aXplZCBtb2RlXG4iCiAgICAgICIgICAgICAgICAtbSB8IC1zMCAgc3dpdGNoIHRvIG1heGlt
+dW0gcGVyZm9ybWFuY2UgbW9kZVxuIgogICAgICAiICAgICAgICAgLWcgICAgICAgIHByaW50
+IGN1cnJlbnQgbW9kZSAoZGVmYXVsdClcbiIKICAgICAgIiAgICAgICAgIC1HICAgICAgICBl
+eGl0IGltbWVkaWF0ZWx5IHdpdGggdGhlIGN1cnJlbnQgbW9kZSBhcyBleGl0IHN0YXR1c1xu
+IgogICAgICAiXG4iCiAgICAgICIgICAgICAgICAtZCAgICAgICAgZ28gaW50byBkYWVtb24g
+bW9kZSAoZm9ya3MpXG4iCiAgICAgICIgICAgICAgICAtRCAgICAgICAgc2FtZSBhcyAtZCwg
+YnV0IGRvbid0IGZvcmsgYW5kIGxvZyBtb2RlIGNoYW5nZXNcbiIKICAgICAgIlxuIgogICAg
+ICAiUGxlYXNlIHJlcG9ydCBidWdzIHRvIDxzcGVlZHN0ZXBAcGxhbjkuZGU+XG4iCiAgICAg
+ICJodHRwOi8vc3BlZWRzdGVwLnBsYW45LmRlL1xuIgogICAgICAiXG4iKTsKICBleGl0IChy
+Yyk7Cn0KCnN0YXRpYyBpbnQgc3RhdF9mZDsKc3RhdGljIHVuc2lnbmVkIGxvbmcgc3RhdF9j
+cHUsIHN0YXRfbm9vcDsKCnN0YXRpYyB2b2lkCmdldF9zdGF0ICh2b2lkKQp7CiAgY2hhciBs
+aW5lWzgwXTsKICBzdGF0aWMgdW5zaWduZWQgbG9uZyBzdGF0X3VzZXIsIHN0YXRfbmljZSwg
+c3RhdF9zeXN0ZW0sIHN0YXRfaWRsZTsKICB1bnNpZ25lZCBsb25nIG5fdXNlciwgbl9uaWNl
+LCBuX3N5c3RlbSwgbl9pZGxlOwoKICBsc2VlayAoc3RhdF9mZCwgMCwgU0VFS19TRVQpOwog
+IHJlYWQgKHN0YXRfZmQsIGxpbmUsIDc5KTsKICBsaW5lWzc5XSA9IDA7CgogIGlmICg0ICE9
+IHNzY2FuZiAobGluZSwgIiUqcyAlbHUgJWx1ICVsdSAlbHUiLCAmbl91c2VyLCAmbl9uaWNl
+LCAmbl9zeXN0ZW0sICZuX2lkbGUpKQogICAgewogICAgICBmcHJpbnRmIChzdGRlcnIsICJ1
+bmFibGUgdG8gcGFyc2UgL3Byb2Mvc3RhdCBmb3JtYXQgKCVzKVxuIiwgbGluZSk7CiAgICAg
+IGV4aXQgKDc3KTsKICAgIH0KCiAgc3RhdF9jcHUgID0gKG5fdXNlciAtIHN0YXRfdXNlcikg
+KyAobl9zeXN0ZW0gLSBzdGF0X3N5c3RlbSk7CiAgc3RhdF9ub29wID0gc3RhdF9jcHUgKyAo
+bl9uaWNlIC0gc3RhdF9uaWNlKSArIChuX2lkbGUgLSBzdGF0X2lkbGUpOwoKICBzdGF0X3Vz
+ZXIgICA9IG5fdXNlcjsKICBzdGF0X25pY2UgICA9IG5fbmljZTsKICBzdGF0X3N5c3RlbSA9
+IG5fc3lzdGVtOwogIHN0YXRfaWRsZSAgID0gbl9pZGxlOwp9CgpzdGF0aWMgZW51bSB7IE1P
+REVfUF9EWU5BTUlDLCBNT0RFX0JfRFlOQU1JQywKICAgICAgICAgICAgICBNT0RFX1BfU1RB
+VElDLCAgTU9ERV9CX1NUQVRJQyB9IGRhZW1vbl9tb2RlID0gTU9ERV9CX0RZTkFNSUM7Cgpz
+dGF0aWMgaW50IGN1cnJlbnRfc3RhdGU7CgojZGVmaW5lIFNFVF9TVEFURShzdGF0ZSkgaWYg
+KHN0YXRlICE9IGN1cnJlbnRfc3RhdGUpIHNldF9zdGF0ZSAoKGN1cnJlbnRfc3RhdGUgPSBz
+dGF0ZSkpCiNkZWZpbmUgR0VUX1NUQVRFKCkgICAgICBnZXRfc3RhdGUgKCkKCnN0YXRpYyB2
+b2lkCmRhZW1vbl9sb29wICh2b2lkKQp7CiAgaW50IHBfaHlzdCA9IDA7CgogIGN1cnJlbnRf
+c3RhdGUgPSBHRVRfU1RBVEUgKCk7CgogIGZvciAoOzspCiAgICBzd2l0Y2ggKGRhZW1vbl9t
+b2RlKQogICAgICB7CiAgICAgICAgY2FzZSBNT0RFX1BfRFlOQU1JQzoKICAgICAgICAgIFNF
+VF9TVEFURSAoMCk7CgogICAgICAgICAgc2xlZXAgKDIpOyBnZXRfc3RhdCAoKTsKICAgICAg
+ICAgIGlmIChzdGF0X2NwdSAqIDEwMCA8IEJBVFRFUlkgKiBzdGF0X25vb3ApCiAgICAgICAg
+ICAgIHsKICAgICAgICAgICAgICBwX2h5c3QgKz0gMjsKICAgICAgICAgICAgICBpZiAocF9o
+eXN0IDwgTUlOU0VDUykKICAgICAgICAgICAgICAgIGJyZWFrOwoKICAgICAgICAgICAgICBk
+YWVtb25fbW9kZSA9IE1PREVfQl9EWU5BTUlDOwogICAgICAgICAgICB9CgogICAgICAgICAg
+cF9oeXN0ID0gMDsKCiAgICAgICAgICBicmVhazsKCiAgICAgICAgY2FzZSBNT0RFX0JfRFlO
+QU1JQzoKICAgICAgICAgIFNFVF9TVEFURSAoMSk7CgogICAgICAgICAgc2xlZXAgKDEpOyBn
+ZXRfc3RhdCAoKTsKCiAgICAgICAgICBpZiAoc3RhdF9jcHUgKiAxMDAgPj0gUEVSRk9STUFO
+Q0UgKiBzdGF0X25vb3ApCiAgICAgICAgICAgIGRhZW1vbl9tb2RlID0gTU9ERV9QX0RZTkFN
+SUM7CgogICAgICAgICAgYnJlYWs7CgogICAgICAgIGNhc2UgTU9ERV9QX1NUQVRJQzoKICAg
+ICAgICAgIFNFVF9TVEFURSAoMCk7CiAgICAgICAgICBwYXVzZSAoKTsKICAgICAgICAgIGJy
+ZWFrOwoKICAgICAgICBjYXNlIE1PREVfQl9TVEFUSUM6CiAgICAgICAgICBTRVRfU1RBVEUg
+KDEpOwogICAgICAgICAgcGF1c2UgKCk7CiAgICAgICAgICBicmVhazsKICAgICAgfQp9Cgpz
+dGF0aWMgdm9pZCBoYW5kbGVfc2lnbmFsIChpbnQgc2lnbnVtKQp7CiAgc3dpdGNoIChzaWdu
+dW0pCiAgICB7CiAgICAgIGNhc2UgU0lHSFVQOiAKICAgICAgICBjdXJyZW50X3N0YXRlID0g
+R0VUX1NUQVRFICgpOwogICAgICAgIGRhZW1vbl9tb2RlID0gY3VycmVudF9zdGF0ZSA/IE1P
+REVfQl9EWU5BTUlDIDogTU9ERV9QX0RZTkFNSUM7CiAgICAgICAgYnJlYWs7CgogICAgICBj
+YXNlIFNJR1VTUjE6IGRhZW1vbl9tb2RlID0gTU9ERV9QX1NUQVRJQzsgIGJyZWFrOwogICAg
+ICBjYXNlIFNJR1VTUjI6IGRhZW1vbl9tb2RlID0gTU9ERV9CX1NUQVRJQzsgIGJyZWFrOwog
+ICAgfQp9CgpzdGF0aWMgdm9pZAppbnN0YWxsX3NpZ2hhbmRzICh2b2lkKQp7CiAgc3RydWN0
+IHNpZ2FjdGlvbiBzYTsKCiAgc2Euc2FfaGFuZGxlciA9IGhhbmRsZV9zaWduYWw7CiAgc2Eu
+c2FfZmxhZ3MgPSBTQV9SRVNUQVJUOwogIHNpZ2VtcHR5c2V0ICgmc2Euc2FfbWFzayk7Cgog
+IHNpZ2FjdGlvbiAoU0lHSFVQICwgJnNhLCAwKTsKICBzaWdhY3Rpb24gKFNJR1VTUjEsICZz
+YSwgMCk7CiAgc2lnYWN0aW9uIChTSUdVU1IyLCAmc2EsIDApOwp9CgpzdGF0aWMgdm9pZApk
+YWVtb25pemUgKHZvaWQpCnsKICBzdGF0X2ZkID0gb3BlbiAoIi9wcm9jL3N0YXQiLCBPX1JE
+T05MWSk7CgogIGlmICghc3RhdF9mZCkKICAgIHsKICAgICAgcGVycm9yICgiL3Byb2Mvc3Rh
+dCIpOwogICAgICBleGl0ICgxKTsKICAgIH0KCiAgZ2V0X3N0YXQgKCk7CgogIGluc3RhbGxf
+c2lnaGFuZHMgKCk7CgogIGNoZGlyICgiLyIpOwoKICBpZiAob3B0X3F1aWV0KQogICAgewog
+ICAgICBpbnQgaTsKCiAgICAgIGZvciAoaSA9IDA7IGkgPDEwMjM7IGkrKykKICAgICAgICBp
+ZiAoaSAhPSBzdGF0X2ZkKQogICAgICAgICAgY2xvc2UgKGkpOwoKICAgICAgaWYgKGZvcmsg
+KCkgIT0gMCkKICAgICAgICBleGl0ICgwKTsKCiAgICAgIHNldHNpZCAoKTsKICAgIH0KCiAg
+ZGFlbW9uX2xvb3AgKCk7Cn0KCmludCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pCnsK
+ICBjaGFyICphcmc7CgogIGlvcGVybSAoMHhiMiwgMSwgMSk7IC8qIHdlIG5lZWQgcG9ydCBi
+MiAqLwoKICBpZiAoYXJnYyA8PSAxKQogICAgewogICAgICBnZXRfc3RhdGUgKCk7CiAgICAg
+IGV4aXQgKDApOwogICAgfQogIGVsc2UKICAgIHdoaWxlICgoYXJnID0gKisrYXJndikpCiAg
+ICAgIGlmIChhcmdbMF0gIT0gJy0nKQogICAgICAgIHVzYWdlICgxKTsKICAgICAgZWxzZQog
+ICAgICAgIHN3aXRjaCAoYXJnWzFdKSB7CiAgICAgICAgICBjYXNlICdxJzogb3B0X3F1aWV0
+Kys7IGJyZWFrOwogICAgICAgICAgY2FzZSAnZyc6IGdldF9zdGF0ZSAoKTsgYnJlYWs7CiAg
+ICAgICAgICBjYXNlICdHJzogZXhpdCAoZ2V0X3N0YXRlICgpKTsgYnJlYWs7CiAgICAgICAg
+ICBjYXNlICdtJzogc2V0X3N0YXRlICgwKTsgYnJlYWs7CiAgICAgICAgICBjYXNlICdiJzog
+c2V0X3N0YXRlICgxKTsgYnJlYWs7CgogICAgICAgICAgY2FzZSAncyc6CiAgICAgICAgICAg
+ICAgICAgICAgaWYgKGFyZ1syXSA9PSAnMCcpCiAgICAgICAgICAgICAgICAgICAgICBzZXRf
+c3RhdGUgKDApOwogICAgICAgICAgICAgICAgICAgIGVsc2UgaWYgKGFyZ1syXSA9PSAnMScp
+CiAgICAgICAgICAgICAgICAgICAgICBzZXRfc3RhdGUgKDEpOwogICAgICAgICAgICAgICAg
+ICAgIGVsc2UKICAgICAgICAgICAgICAgICAgICAgIHVzYWdlICgxKTsKICAgICAgICAgICAg
+ICAgICAgICBicmVhazsKCiAgICAgICAgICBjYXNlICdkJzogb3B0X3F1aWV0ID0gMTsgZGFl
+bW9uaXplICgpOyBicmVhazsKICAgICAgICAgIGNhc2UgJ0QnOiBkYWVtb25pemUgKCk7IGJy
+ZWFrOwoKICAgICAgICAgIGNhc2UgJ2gnOgogICAgICAgICAgY2FzZSAnPyc6IHVzYWdlICgw
+KTsgYnJlYWs7CgogICAgICAgICAgZGVmYXVsdDogdXNhZ2UoMSk7IGJyZWFrOwogICAgICAg
+IH0KCiAgcmV0dXJuIDA7Cn0KCg==
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+
+iD8DBQA/PpPcLth4/7/QhDoRAo6+AKCntkAVVNXwl444FZJLb5MjYiUyhgCgrHRw
+zhu9lvIJPXuTNa9pRYhLta0=
+=CYzr
+-----END PGP SIGNATURE-----
+--==-=-=--
