@@ -1,9 +1,17 @@
-From: bugme-daemon@osdl.org
-Subject: [Bug 3255] longhaul: FSB incorrectly guessed (CL-6000E)
-Date: Fri, 3 Sep 2004 01:40:38 -0700
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: CPU Frequency Scaling
+Date: Fri, 3 Sep 2004 11:17:25 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <200409030840.i838ecwh032550@fire-1.osdl.org>
+Message-ID: <20040903091725.GE29560@poupinou.org>
+References: <20040901230103.GB4175@ncrfgs3.ncrfgs>
+	<20040902094839.GW29560@poupinou.org>
+	<20040902105348.GA2447@inferi.kami.home>
+	<20040902124151.GZ29560@poupinou.org>
+	<20040903083450.GA8813@ncrfgs3.ncrfgs>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20040903083450.GA8813@ncrfgs3.ncrfgs>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,24 +21,20 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugme.osdl.org/show_bug.cgi?id=3255
+On Fri, Sep 03, 2004 at 10:34:50AM +0200, ncrfgs wrote:
+> BTW which one would you suggest us to use?
+> 
 
-Nomad@kotnet.org changed:
+Maybe Carl, Mattia, Jeremy (and probably others) will answer ? :)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |CLOSED
-         Resolution|                            |PATCH_ALREADY_AVAILABLE
+Cheers,
 
+-- 
+Bruno Ducrot
 
-
-------- Additional Comments From Nomad@kotnet.org  2004-09-03 01:40 -------
-All is fixed in the current cvs version of cpufreq.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
