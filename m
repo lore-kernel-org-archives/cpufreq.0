@@ -1,14 +1,13 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: speedstep capability checks
-Date: Fri, 19 Mar 2004 12:06:37 +0100
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: My latest powernow-k8.c
+Date: Fri, 19 Mar 2004 12:24:29 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040319110637.GF28592@poupinou.org>
-References: <20040316163604.GK28592@poupinou.org>
-	<20040318195720.D89C43F04@latitude.mynet.no-ip.org>
+Message-ID: <20040319112429.GB5726@elf.ucw.cz>
+References: <99F2150714F93F448942F9A9F112634C1163C59A@txexmtae.amd.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040318195720.D89C43F04@latitude.mynet.no-ip.org>
+In-Reply-To: <99F2150714F93F448942F9A9F112634C1163C59A@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,43 +19,26 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: aeriksson@fastmail.fm
-Cc: Dave Jones <davej@redhat.com>, Arjan van de Ven <arjanv@redhat.com>, cpufreq@www.linux.org.uk
+To: paul.devriendt@amd.com, Cpufreq mailing list <cpufreq@www.linux.org.uk>
+Cc: linux@dominikbrodowski.de
 
-On Thu, Mar 18, 2004 at 08:57:20PM +0100, aeriksson@fastmail.fm wrote:
-> 
-> 
-> davej@redhat.com said:
-> >> A few SpeedStep-capable systems don't perform according to
-> >> specification: the CPUID and/or some MSRs don't tell us the 
-> >> CPU is SpeedStep capable even though it definitely is.
-> 
-> > Is there nothing in the errata documents about this ? 
-> 
-> <snip>
-> 
-> > I'd merge this really as a last resort, and it's beginning to sound
-> > like we don't really have any options (other than not support those
-> > broken boxes). Ugh. 
-> 
-> 
-> ...and ducrot@poupinou.org replied:
-> > There is nothing in any data sheets for the check anyway, other than
-> > it's not possible to distinguish a PIII (coppermine) with Speedstep
-> > technology from one without Speedstep technology.  There is nothing
-> > in any spec update I'm aware. 
-> 
-> 
-> So, is the patch ok to merge?
+Hi!
 
-To be more precise: if you look only datasheets and spec update,
-there is no check given, but there is an application note, and there
-is no errata for that AN.
-I still don't understand why for example it hasn't been included
-in any spec update?
+> Attached are my latest .c and .h ... I am sending the whole files rather than patches, as a check that I did not miss a patch that you wanted. Mail here has been a little less reliable that one might wish for.
+> 
+> I added back in the cpu number in the dprintks to aid MP debugging. I fixed a PSB problem where the battery limits were getting lost. And, I tweaked the smp processor init stuff as discussed in emails.
+> 
+> I am still thinking about the FIXME where Dominik asked for more validity checking. So, that is still FIXME.
 
+Huh, now this is strange:
+
+root@amd:~# echo "0%88%88%powersave" > /proc/cpufreq
+root@amd:~# cat /proc/cpufreq
+          minimum CPU frequency  -  maximum CPU frequency  -  policy
+CPU  0      1584000 kHz ( 88 %)  -    1600000 kHz ( 88 %)  - powersave
+root@amd:~#
+
+								Pavel
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
