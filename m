@@ -1,14 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] cpufreq_ondemand
-Date: Wed, 20 Oct 2004 16:30:57 +0200
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: [Bug 3600] New: Cpu recognization fails after upgrade from
+	2.6.7 to 2.6.9
+Date: Wed, 20 Oct 2004 17:47:44 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041020143057.GA7652@dominikbrodowski.de>
-References: <7f800d9f04101922031be5cfe8@mail.gmail.com>
-	<1098257735.26595.4308.camel@d845pe>
+Message-ID: <20041020154744.GA5372@dreamland.darkstar.lan>
+References: <200410201413.i9KED718023481@fire-1.osdl.org>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1098257735.26595.4308.camel@d845pe>
+In-Reply-To: <200410201413.i9KED718023481@fire-1.osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,38 +21,56 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Len Brown <len.brown@intel.com>
-Cc: Andre Eisenbach <int2str@gmail.com>, Alexander Clouter <alex-kernel@digriz.org.uk>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
+Cc: dbonomi@crema.unimi.it
 
-On Wed, Oct 20, 2004 at 03:35:35AM -0400, Len Brown wrote:
-> On Wed, 2004-10-20 at 01:03, Andre Eisenbach wrote:
+Il Wed, Oct 20, 2004 at 07:13:07AM -0700, bugme-daemon@osdl.org ha scritto: 
+> Problem Description:
+> with linux 2.6.7 my processor is correctly recognized, this is the relative
+> kernel output
 > 
-> > ... If the
-> > speed steps down slowly but shoots up 100% quickly (as it is right
-> > now), even a small task (like opening a folder, or scrolling down in a
-> > document) will cause a tiny spike to 100% which takes a while to go
-> > back down. The result is that the CPU spends most of it's time at 100%
-> > or calming down. I wrote a small test program on my notebook which
-> > confirms this.
+> powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+> powernow: FSB: 132.686 MHz
+> powernow: Found PSB header at c00f06f0
+> powernow: Table version: 0x12
+> powernow: Flags: 0x0 (Mobile voltage regulator)
+> powernow: Settling Time: 100 microseconds.
+> powernow: Has 8 PST tables. (Only dumping ones relevant to this CPU).
+> powernow: PST:3 (@c00f0746)
+> powernow:  cpuid: 0x7a0^Ifsb: 133^ImaxFID: 0x1a^Istartvid: 0x7
+> powernow:    FID: 0x0 (11.0x [1459MHz])^IVID: 0xe (1.300V)
+> powernow:    FID: 0x1 (11.5x [1525MHz])^IVID: 0xd (1.350V)
+> powernow:    FID: 0x2 (12.0x [1592MHz])^IVID: 0xc (1.400V)
+> powernow:    FID: 0x3 (12.5x [1658MHz])^IVID: 0xb (1.450V)
+> powernow:    FID: 0x14 (13.0x [1724MHz])^IVID: 0xa (1.500V)
+> powernow:    FID: 0x15 (13.5x [1791MHz])^IVID: 0x9 (1.550V)
+> powernow:    FID: 0x18 (15.0x [1990MHz])^IVID: 0x8 (1.600V)
+> powernow:    FID: 0x1a (16.0x [2122MHz])^IVID: 0x7 (1.650V)
+> powernow: SGTC: 13333
+> powernow: Minimum speed 1459 MHz. Maximum speed 2122 MHz.
 > 
-> The question is what POLICY we're trying to implement.
+> with 2.6.9 is not 
+> 
+> powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+> powernow: No PST tables match this cpuid (0x7a0)
+> powernow: This is indicative of a broken BIOS.
+> powernow: Trying ACPI perflib
+> powernow: Minimum speed 298 MHz. Maximum speed 796 MHz.
 
-This is why there may be DIFFERENT policies a.k.a. governors in cpufreq.
+Hi,
+I saw something similar on my notebook. In my case when the notebook is
+turned on while using battery BIOS sets CPU speed to a frequency lower
+than the defaul (800MHz for me). It seems that powernow driver is
+confused by the BIOS fiddling with CPU speed and fails to load. I had
+the same symptoms: PST not found and wrong min/max frequencies.
 
->  If the goal is
-> to to be energy efficient while the user notices no performance hit,
-> then fast-up/slow-down is an EXCELLENT strategy.  But if the goal is to
-> optimize for power savings at the cost of impacting performance, then
-> another strategy may work better.
+Disabling "Automatic CPU power saving" (or something like that) in the
+BIOS cures the problem for me. Note that this option do not affect power
+management under linux (or windows), it just controls the CPU before a
+real OS comes up.
 
-> The point is that no strategy will be optimal for all policies.  Linux
-> needs a global power policy manager that the rest of the system can ask
-> about the current policy.  This way sub-systems can (automatically)
-> implement whatever local strategies are consistent with that global
-> policy.
-
-Put it in userspace, and let it ask the cpufreq core in the kernel to use a
-specific governor or another depending on what you want. That's what certain
-userspace daemons / scripts already do, btw.
-
-	Dominik
+Luca
+-- 
+Home: http://kronoz.cjb.net
+La somma dell'intelligenza sulla terra e` una costante.
+La popolazione e` in aumento.
