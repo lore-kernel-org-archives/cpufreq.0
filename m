@@ -1,11 +1,15 @@
-From: Oliver Antwerpen <olli@giesskaennchen.de>
-Subject: Pentium M 1.7GHz/2MB dothan
-Date: Fri, 30 Jul 2004 19:02:41 +0200
+From: Ivor Hewitt <ivor@ivor.org>
+Subject: Re: Kernel 2.6.7 speedstep-piix4 on vaio
+Date: Fri, 30 Jul 2004 20:20:49 +0000
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <410A7F31.9030604@giesskaennchen.de>
+Message-ID: <200407302020.50451.ivor@ivor.org>
+References: <43210.141.228.156.225.1091110800.squirrel@141.228.156.225>
+	<20040729210413.GA7782@dominikbrodowski.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+In-Reply-To: <20040729210413.GA7782@dominikbrodowski.de>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -15,42 +19,28 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Dominik Brodowski <linux@dominikbrodowski.de>
+Cc: cpufreq@www.linux.org.uk
 
-Hi there,
+On Thursday 29 July 2004 21:04, Dominik Brodowski wrote:
+> On Thu, Jul 29, 2004 at 03:20:00PM +0100, Ivor Hewitt wrote:
+>
+> Therefore, the speedstep-smi driver contains a few tweaks which modify the
+> "language" a bit: have you tried passing the module options
+> "smi_port=0xb2 smi_cmd=0x82" yet? On several systems, the smi_cmd is set
+> wrongly by default.
+>
+Aha, with the right combination of BIOS settings and the smi_cmd=0x82 setting 
+the smi driver works on the Vaio Z600.
 
-My CPU isn't recognized by speedstep-centrino, and I can't see why.
+Had to set BIOS settings as:-
+PnP OS: No
+CPU OS Control: Auto
+CPU Speed: Auto
 
-My Kernel:
+Many thanks,
 
-c80:~# uname -r
-2.6.8-rc2-mm1
-
-
-Here's my cpuinfo:
-
-c80:~# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 13
-model name      : Intel(R) Pentium(R) M processor 1.70GHz
-stepping        : 6
-cpu MHz         : 1696.378
-cache size      : 64 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca 
-cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe tm2 est
-bogomips        : 3366.91
-
-Any idea, what's happening here?
-
-Olli
+-- 
+Ivor Hewitt.
+http://www.ivor.it - tech | http://www.ivor.org - hedge
