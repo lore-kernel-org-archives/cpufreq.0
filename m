@@ -1,8 +1,14 @@
-From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq patchin.sh,1.1.1.7,1.1.1.8
-Date: Tue, 04 Jan 2005 09:18:40 +0000
-Message-ID: <E1Clkps-0002rA-CU@flint.arm.linux.org.uk>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: found unsupported CPU with Enhanced SpeedStep
+Date: Wed, 5 Jan 2005 17:06:22 +0100
+Message-ID: <20050105160622.GE19199@poupinou.org>
+References: <20041230014005.GA16358@bittwiddlers.com>
+	<1104446294.24179.1.camel@localhost>
+	<20050102120729.GB23300@dominikbrodowski.de>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20050102120729.GB23300@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -13,38 +19,51 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Matthew Harrell <mharrell-dated-1104802810.0deb6f@bittwiddlers.com>
+Cc: cpufreq list <cpufreq@www.linux.org.uk>
 
-Update of /mnt/src/cvsroot/cpufreq
-In directory flint:/tmp/cvs-serv10975/cpufreq
+On Sun, Jan 02, 2005 at 01:07:29PM +0100, Dominik Brodowski wrote:
+> On Thu, Dec 30, 2004 at 02:38:14PM -0800, Jeremy Fitzhardinge wrote:
+> > On Wed, 2004-12-29 at 20:40 -0500, Matthew Harrell wrote:
+> > > Hi.  I get the following message so I figured I would send you an email
+> > > 
+> > >   speedstep-centrino: invalid ACPI data
+> > >   speedstep-centrino: found unsupported CPU with Enhanced SpeedStep: send /proc/cpuinfo to Jeremy Fitzhardinge <jeremy@goop.org>
+> > > 
+> > > The cpu info file is attached.  Is there a simple change I can do to get this
+> > > to work on this laptop?
+> > 
+> > The "invalid ACPI data" suggests that a BIOS update might help.
+> > Unfortunately the driver can't do anything for an EST-enabled mobile P4
+> > without the ACPI data.
+> > 
+> > I don't know too much about ACPI, so I've cc:'d this to the cpufreq
+> > mailing list.
+> 
+> Can you make the disassembled DSDT (see http://acpi.sourceforge.net for
+> details and/or http://forums.gentoo.org/viewtopic.php?t=122145 for a howto;
+> proceed until step "7. Diagnosing a Buggy DSDT - Disassemble the DSDT"
+> please) as well as a full dmesg output available on the 'net somewhere, please?
+> If that's not possible, please send these two files off-list to me. 
+> 
 
-Modified Files:
-      Tag: LINUX_2_4
-	patchin.sh 
-Log Message:
-From Sergio Monteiro Basto:
-more than trivial
-Documentation , not Docmuentation.
-This clean one warning when apply for 2nd time on same kernel.
+Could you please send me those files as well?
+I would like much the full acpi dump, since it may be in a SSDT table
+instead.
 
+wget ftp://ftp.kernel.org//pub/linux/kernel/people/lenb/acpi/utils/pmtools-20031210.tar.bz2
+tar xjvfp pmtools-20031210.tar.bz2
+cd pmtools-20031210/acpidmp
+make
+sudo ./acpidmp > acpidmp.out
+bzip2 acpidmp.out 
 
-Index: patchin.sh
-===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/patchin.sh,v
-retrieving revision 1.1.1.7
-retrieving revision 1.1.1.8
-diff -u -r1.1.1.7 -r1.1.1.8
---- patchin.sh	26 Aug 2004 16:11:27 -0000	1.1.1.7
-+++ patchin.sh	4 Jan 2005 09:18:37 -0000	1.1.1.8
-@@ -14,7 +14,7 @@
- 	exit 1
- fi
- 
--rm -rf $cpufreq/linux/Docmuentation/cpu-freq
-+rm -rf $cpufreq/linux/Documentation/cpu-freq
- ln -sf cpufreq $cpufreq/linux/Documentation/cpu-freq
- 
- diff -Nur -x"*CVS*" $1/Documentation/cpu-freq linux/Documentation/cpu-freq > patch_core
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
