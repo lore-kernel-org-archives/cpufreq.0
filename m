@@ -1,14 +1,11 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: wrong frequencies reported
-Date: Sun, 25 Jul 2004 23:56:52 +0200
+Subject: [PATCH] speedstep-smi: GET_SPEEDSTEP_FREQS may return bogus values
+Date: Tue, 27 Jul 2004 22:34:38 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040725215652.GA8746@dominikbrodowski.de>
-References: <mailman.0.1090369064.29286.cpufreq@www.linux.org.uk>
-	<Pine.LNX.4.60.0407251752390.1202@cobra.turtle.fr>
+Message-ID: <20040727203438.GA9438@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.60.0407251752390.1202@cobra.turtle.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,28 +17,36 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: peetah_ml@club-internet.fr
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
-On Sun, Jul 25, 2004 at 06:00:45PM +0200, peetah_ml@club-internet.fr wrote:
-> Hello,
-> 
-> During my migration to a 2.6.7 kernel, I've selected the speedstep-smi 
-> driver for my laptop (Nec versa Vxi) with a pentium III 750Mhz ( sspec 
-> SL53P) and a 440MX chipset. But the frequencies reported in 
-> /sys/devices/system/cpu/cpu0/cpufreq are wrong: max frequency is 4Mhz 
-> whereas min frequency is 0 Mhz
-> 
-> I googled a bit to find out why this is happenning, but i didn't find any 
-> explanations or solutions. Therefore, I'm coming to the source.
-> 
-> Is this a known issue with old speedstep processors ?
+On at least one system, the GET_SPEEDSTEP_FREQS call to the BIOS
+returns obviously incorrect data (0 and 4 MHz...). So, check whether
+the results look sane, if not, use the already existing workaround
+for ancient speedstep systems. Thanks to Pierre Maziere for reporting
+this issue and testing the fix.
 
-No, definitely not. Can you uncomment  "//#define SPEEDSTEP_DEBUG" by
-removing "//" in both 
-arch/i386/kernel/cpu/cpufreq/speedstep-smi.c and
-arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
-, recompile, reboot, and send me the resulting dmesg, please?
+Signed-off-by: Dominik Brodowski <linux@brodo.de>
 
-Thanks,
-	Dominik
+--- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2004-07-16 10:07:10.000000000 +0200
++++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2004-07-27 22:26:57.477962728 +0200
+@@ -115,6 +115,11 @@
+ 		: "=a" (result), "=b" (high_mhz), "=c" (low_mhz), "=d" (state), "=D" (edi)
+ 		: "a" (command), "b" (function), "c" (state), "d" (smi_port), "S" (0)
+ 	);
++
++	/* abort if results are obviously incorrect... */
++	if ((high_mhz + low_mhz) < 600)
++		return -EINVAL;
++
+ 	*high = high_mhz * 1000;
+ 	*low  = low_mhz  * 1000;
+ 
+@@ -180,7 +185,7 @@
+ 	local_irq_restore(flags);
+ 
+ 	if (new_state == state) {
+-		dprintk(KERN_INFO "cpufreq: change to %u MHz succeeded after %u tries with result %u\n", (freqs.new / 1000), retry, result);
++		dprintk(KERN_INFO "cpufreq: change to %u MHz succeeded after %u tries with result %u\n", (speedstep_freqs[new_state].frequency / 1000), retry, result);
+ 	} else {
+ 		printk(KERN_ERR "cpufreq: change failed with new_state %u and result %u\n", new_state, result);
+ 	}
