@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq patchin.sh,1.1.1.6,1.1.1.7
-Date: Thu, 26 Aug 2004 17:11:30 +0100
+Subject: cpufreq/linux/include/linux cpufreq.h,1.47,1.48
+Date: Thu, 26 Aug 2004 17:40:23 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1C0MqY-0008Uz-JG@flint.arm.linux.org.uk>
+Message-ID: <E1C0NIV-0000MJ-4c@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,87 +18,151 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq
-In directory flint:/tmp/cvs-serv32608
+Update of /mnt/src/cvsroot/cpufreq/linux/include/linux
+In directory flint:/tmp/cvs-serv1364/linux/include/linux
 
 Modified Files:
-      Tag: LINUX_2_4
-	patchin.sh 
+	cpufreq.h 
 Log Message:
-rewrite 'patchin.sh' so that it's a litle more easy to apply to kernel sources
-with an already patched kernel.
+merge with current cpufreq bk tree and 2.6.9-r1
 
-
-Index: patchin.sh
+Index: cpufreq.h
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/patchin.sh,v
-retrieving revision 1.1.1.6
-retrieving revision 1.1.1.7
-diff -u -r1.1.1.6 -r1.1.1.7
---- patchin.sh	30 Sep 2003 11:25:51 -0000	1.1.1.6
-+++ patchin.sh	26 Aug 2004 16:11:27 -0000	1.1.1.7
-@@ -4,38 +4,39 @@
- #
+RCS file: /mnt/src/cvsroot/cpufreq/linux/include/linux/cpufreq.h,v
+retrieving revision 1.47
+retrieving revision 1.48
+diff -u -r1.47 -r1.48
+--- cpufreq.h	20 Jan 2004 17:03:32 -0000	1.47
++++ cpufreq.h	26 Aug 2004 16:40:19 -0000	1.48
+@@ -21,6 +21,7 @@
+ #include <linux/kobject.h>
+ #include <linux/sysfs.h>
+ #include <linux/completion.h>
++#include <linux/workqueue.h>
  
- if [ "$1" = "" ]; then
--  echo "Syntax: $0 KERNELDIR"
--  exit 1
-+	echo "Syntax: $0 KERNELDIR"
-+	exit 1
- fi
- cpufreq=$PWD
+ #define CPUFREQ_NAME_LEN 16
  
- if [ ! -f $cpufreq/patchin.sh ]; then
--  echo "Please run me in the cpufreq directory"
--  exit 1
-+	echo "Please run me in the cpufreq directory"
-+	exit 1
- fi
+@@ -81,6 +82,9 @@
+  	struct semaphore	lock;   /* CPU ->setpolicy or ->target may
+ 					   only be called once a time */
  
--ln -sf $cpufreq/linux/Documentation/cpufreq $1/Documentation/cpu-freq
--ln -sf $cpufreq/linux/Documentation/cpufreq-old $1/Documentation/cpufreq-old
--ln -sf $cpufreq/linux/include/linux/cpufreq.h $1/include/linux/
--ln -sf $cpufreq/linux/drivers/cpufreq $1/drivers/cpufreq
-+rm -rf $cpufreq/linux/Docmuentation/cpu-freq
-+ln -sf cpufreq $cpufreq/linux/Documentation/cpu-freq
- 
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/elanfreq.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/gx-suspmod.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/longhaul.h $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/longrun.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/p4-clockmod.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k6.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.h $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k8.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k8.h $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-centrino.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-smi.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-ich.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.c $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-lib.h $1/arch/i386/kernel
--ln -sf $cpufreq/linux/arch/i386/kernel/cpufreq/speedstep-piix4.c $1/arch/i386/kernel
-+diff -Nur -x"*CVS*" $1/Documentation/cpu-freq linux/Documentation/cpu-freq > patch_core
-+diff -Nu $1/Documentation/cpufreq-old linux/Documentation/cpufreq-old >> patch_core
-+diff -Nu $1/include/linux/cpufreq.h linux/include/linux/cpufreq.h >> patch_core
-+if [ -f $1/kernel/cpufreq.c ]; then
-+	diff -Nu $1/kernel/cpufreq.c linux/kernel/cpufreq.c >> patch_core
-+fi
-+diff -Nur -x"*CVS*" $1/drivers/cpufreq/ linux/drivers/cpufreq/ >> patch_core
++	struct work_struct	update; /* if update_policy() needs to be
++					 * called, but you're in IRQ context */
 +
-+rm -f patch_x86
-+# note that acpi.c must not be included..
-+for f in elanfreq.c gx-suspmod.c longhaul.c longhaul.h longrun.c \
-+		p4-clockmod.c powernow-k6.c powernow-k7.c powernow-k7.h \
-+		powernow-k8.c powernow-k8.h speedstep-centrino.c \
-+		speedstep-ich.c speedstep-lib.c speedstep-lib.h \
-+		speedstep-piix4.c speedstep-smi.c; do
-+	ln -sf cpufreq/$f linux/arch/i386/kernel/
-+	diff -Nu $1/arch/i386/kernel/$f linux/arch/i386/kernel/$f >> patch_x86
-+done
+ 	struct cpufreq_real_policy	user_policy;
  
- cd $1
- patch -p1 -i $cpufreq/patch
-+patch -p1 -i $cpufreq/patch_core
-+patch -p1 -i $cpufreq/patch_x86
+ 	struct kobject		kobj;
+@@ -96,11 +100,13 @@
+ 
+ #define CPUFREQ_PRECHANGE	(0)
+ #define CPUFREQ_POSTCHANGE	(1)
++#define CPUFREQ_RESUMECHANGE	(8)
+ 
+ struct cpufreq_freqs {
+ 	unsigned int cpu;	/* cpu nr */
+ 	unsigned int old;
+ 	unsigned int new;
++	u8 flags;		/* flags of cpufreq_driver, see below. */
+ };
+ 
+ 
+@@ -110,24 +116,24 @@
+  * @div:   divisor
+  * @mult:  multiplier
+  *
+- * Needed for loops_per_jiffy and similar calculations.  We do it 
+- * this way to avoid math overflow on 32-bit machines.  This will
+- * become architecture dependent once high-resolution-timer is
+- * merged (or any other thing that introduces sc_math.h).
+  *
+  *    new = old * mult / div
+  */
+ static inline unsigned long cpufreq_scale(unsigned long old, u_int div, u_int mult)
+ {
+-	unsigned long val, carry;
++#if BITS_PER_LONG == 32
++
++	u64 result = ((u64) old) * ((u64) mult);
++	do_div(result, div);
++	return (unsigned long) result;
++
++#elif BITS_PER_LONG == 64
+ 
+-	mult /= 100;
+-	div  /= 100;
+-        val   = (old / div) * mult;
+-        carry = old % div;
+-	carry = carry * mult / div;
++	unsigned long result = old * ((u64) mult);
++	result /= div;
++	return result;
+ 
+-	return carry + val;
++#endif
+ };
+ 
+ /*********************************************************************
+@@ -175,6 +181,7 @@
+ struct cpufreq_driver {
+ 	struct module           *owner;
+ 	char			name[CPUFREQ_NAME_LEN];
++	u8			flags;
+ 
+ 	/* needed by all drivers */
+ 	int	(*init)		(struct cpufreq_policy *policy);
+@@ -186,12 +193,31 @@
+ 				 unsigned int target_freq,
+ 				 unsigned int relation);
+ 
++	/* should be defined, if possible */
++	unsigned int	(*get)	(unsigned int cpu);
++
+ 	/* optional */
+ 	int	(*exit)		(struct cpufreq_policy *policy);
+ 	int	(*resume)	(struct cpufreq_policy *policy);
+ 	struct freq_attr	**attr;
+ };
+ 
++/* flags */
++
++#define CPUFREQ_STICKY		0x01	/* the driver isn't removed even if 
++					 * all ->init() calls failed */
++#define CPUFREQ_CONST_LOOPS 	0x02	/* loops_per_jiffy or other kernel
++					 * "constants" aren't affected by
++					 * frequency transitions */
++#define CPUFREQ_PANIC_OUTOFSYNC	0x04	/* panic if cpufreq's opinion of
++					 * current frequency differs from
++					 * actual frequency */
++#define CPUFREQ_PANIC_RESUME_OUTOFSYNC 0x08 /* panic if cpufreq's opinion of
++					 * current frequency differs from
++					 * actual frequency on resume
++					 * from sleep. */
++
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
+@@ -228,6 +254,9 @@
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+ int cpufreq_update_policy(unsigned int cpu);
+ 
++/* query the current CPU frequency (in kHz). If zero, cpufreq couldn't detect it */
++unsigned int cpufreq_get(unsigned int cpu);
++
+ /* the proc_intf.c needs this */
+ int cpufreq_parse_governor (char *str_governor, unsigned int *policy, struct cpufreq_governor **governor);
+ 
+@@ -235,13 +264,10 @@
+ /*********************************************************************
+  *                      CPUFREQ USERSPACE GOVERNOR                   *
+  *********************************************************************/
+-int cpufreq_gov_userspace_init(void);
+-
+ #ifdef CONFIG_CPU_FREQ_24_API
+ 
+ int cpufreq_setmax(unsigned int cpu);
+ int cpufreq_set(unsigned int kHz, unsigned int cpu);
+-unsigned int cpufreq_get(unsigned int cpu);
+ 
+ 
+ /* /proc/sys/cpu */
