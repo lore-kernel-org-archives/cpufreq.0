@@ -1,8 +1,8 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/Documentation/cpufreq user-guide.txt,1.1.1.1,1.1.1.2
-Date: Tue, 30 Sep 2003 12:25:54 +0100
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k8.c,1.1,1.1.2.1
+Date: Tue, 30 Sep 2003 12:25:55 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1A4Ide-0006Ys-Lc@flint.arm.linux.org.uk>
+Message-ID: <E1A4Idf-0006Yu-23@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,29 +18,37 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
-Update of /mnt/src/cvsroot/cpufreq/linux/Documentation/cpufreq
-In directory flint:/tmp/cvs-serv25208/linux/Documentation/cpufreq
+Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
+In directory flint:/tmp/cvs-serv25208/linux/arch/i386/kernel/cpufreq
 
 Modified Files:
       Tag: LINUX_2_4
-	user-guide.txt 
+	powernow-k8.c 
 Log Message:
 Merge AMD Opteron/Athlon64 powernow driver.
 
-Index: user-guide.txt
+Index: powernow-k8.c
 ===================================================================
-RCS file: /mnt/src/cvsroot/cpufreq/linux/Documentation/cpufreq/user-guide.txt,v
-retrieving revision 1.1.1.1
-retrieving revision 1.1.1.2
-diff -u -r1.1.1.1 -r1.1.1.2
---- user-guide.txt	25 Aug 2003 14:58:45 -0000	1.1.1.1
-+++ user-guide.txt	30 Sep 2003 11:25:51 -0000	1.1.1.2
-@@ -57,6 +57,8 @@
- AMD mobile K6-3+
- AMD mobile Duron
- AMD mobile Athlon
-+AMD Opteron
-+AMD Athlon 64
- Cyrix Media GXm
- Intel mobile PIII and Intel mobile PIII-M on certain chipsets
- Intel Pentium 4, Intel Xeon
+RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k8.c,v
+retrieving revision 1.1
+retrieving revision 1.1.2.1
+diff -u -r1.1 -r1.1.2.1
+--- powernow-k8.c	30 Sep 2003 09:26:27 -0000	1.1
++++ powernow-k8.c	30 Sep 2003 11:25:51 -0000	1.1.2.1
+@@ -76,7 +76,6 @@
+ 	.target = drv_target,
+ 	.init = drv_cpu_init,
+ 	.name = "cpufreq-amd64",
+-	.owner = THIS_MODULE,
+ };
+ 
+ #define SEARCH_UP     1
+@@ -494,7 +493,7 @@
+ 	struct cpuinfo_x86 *c = cpu_data;
+ 	u32 eax, ebx, ecx, edx;
+ 
+-	if (num_online_cpus() != 1) {
++	if (smp_num_cpus != 1) {
+ 		printk(KERN_INFO PFX "multiprocessor systems not supported\n");
+ 		return 0;
+ 	}
