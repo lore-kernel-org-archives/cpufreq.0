@@ -1,14 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: speedstep capability checks
-Date: Mon, 15 Mar 2004 21:09:50 +0000
+From: Maxxer <maxxer@tin.it>
+Subject: Armada E500
+Date: Mon, 15 Mar 2004 23:57:00 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040315210950.GC15243@redhat.com>
-References: <20040314152016.0B04B3F04@latitude.mynet.no-ip.org>
-	<20040315141517.GG8636@dominikbrodowski.de>
+Message-ID: <1079391420.4488.13.camel@localhost>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040315141517.GG8636@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,24 +16,14 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: aeriksson@fastmail.fm, Arjan van de Ven <arjanv@redhat.com>, cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, Mar 15, 2004 at 03:15:17PM +0100, Dominik Brodowski wrote:
- > @@ -265,6 +272,12 @@
- >  		ebx = cpuid_ebx(0x00000001);
- >  
- >  		ebx &= 0x000000FF;
- > +
- > +		/* Arjan reported a strange mobile PIII-M where ebx is
- > +		   0x07 */
- > +		if ((ebx == 0x07) && relaxed_check)
- > +			return SPEEDSTEP_PROCESSOR_PIII_T;
- > +
- >  		if (ebx != 0x06)
- >  			return 0;
+Hello
 
-Any reason we can't just check the ebx==0x07, guarded with appropriate
-checks on model/stepping/brand ? The relaxed_check stuff does seem quite ugly to me.
+I've seen on http://www.poupinou.org/cpufreq/reports.html that my Armada
+E500 is not supported by cpufreq, even if the Intel chip is. I'd like to
+know if there is any news about it, since the page doesn't have any
+date!
 
-		Dave
+thanks
+Maxxer
