@@ -1,22 +1,12 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
-Date: Tue, 11 Nov 2003 19:54:17 +0100
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH][DOCUMENTATION BUGFIX] latency in micro-, not nanoseconds
+Date: Tue, 11 Nov 2003 11:57:23 -0800
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031111185417.GB4825@brodo.de>
-References: <20031110163209.GP10144@redhat.com>
-	<20031104160816.GA9187@brodo.de>
-	<20031110163209.GP10144@redhat.com>
-	<20031110171533.GS21970@poupinou.org>
-	<20031104160816.GA9187@brodo.de>
-	<20031110163209.GP10144@redhat.com>
-	<20031110171533.GS21970@poupinou.org>
-	<20031110172246.GT10144@redhat.com>
-	<20031110205029.GA7149@brodo.de>
-	<20031110211654.GA10144@redhat.com>
+Message-ID: <88056F38E9E48644A0F562A38C64FB60077A19@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20031110211654.GA10144@redhat.com>
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -27,31 +17,39 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
+To: Dominik Brodowski <linux@brodo.de>, Dave Jones <davej@redhat.com>
 Cc: Ducrot Bruno <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
-On Mon, Nov 10, 2003 at 09:16:54PM +0000, Dave Jones wrote:
-> On Mon, Nov 10, 2003 at 09:50:29PM +0100, Dominik Brodowski wrote:
-> 
->  > > Actually, I'm wondering why we need this at all anyway..
->  > 
->  > To determine the "cost" of frequency and/or voltage transitions when doing
->  > dynamic switching. If the system is unresponsive for too long a period of 
->  > time, dynamic switching doesn't make sense [at least when some sort of
->  > real-time or "responsiveness" is needed]. Also, the time to needed switch 
->  > back to 100% of processing power should be added to the "overhead" idleness
->  > on future load calculations of yet-to-be-written load-predicting cpufreq
->  > governors.
-> 
-> Ok, I can buy that. But it's not being used at all right now, right ?
 
-It is used in the ondemand governor already. Venkatesh knows of the
-documentation bug and of the powernow-k7 bug, though.
 
-BTW, it's not enough for powernow-k7 to divide the BIOS-known latency by 50.
-This latency for one VID and one FID transition needs to be multiplied by
-the number of p-states minus 1, as that's the actual maximum latency due to
-the "one step up/down only" loop, IIRC.
+> -----Original Message-----
+> From: cpufreq-bounces@www.linux.org.uk=20
+> [mailto:cpufreq-bounces@www.linux.org.uk] On Behalf Of=20
+> Dominik Brodowski
+> Sent: Tuesday, November 11, 2003 10:54 AM
+> To: Dave Jones
+> Cc: Ducrot Bruno; cpufreq@www.linux.org.uk
+> Subject: Re: [PATCH][DOCUMENTATION BUGFIX] latency in micro-,=20
+> not nanoseconds
+>=20
+>=20
+> On Mon, Nov 10, 2003 at 09:16:54PM +0000, Dave Jones wrote:
+> > Ok, I can buy that. But it's not being used at all right=20
+> now, right ?
+>=20
+> It is used in the ondemand governor already. Venkatesh knows of the
+> documentation bug and of the powernow-k7 bug, though.
 
-	Dominik
+
+Yes. Current version of ondemand governor is using the transiton=20
+latency to decide whether this policy can be enabled on this CPU=20
+or not. As it does frequent sampling (default - 4 times per sec)
+which may not work well you have higher transition latencies.=20
+I am planning to use transition latency to decide on an=20
+appropriate sampling frequency for that CPU, in next release=20
+of ondemand governor, so that the governor can support wider=20
+range of CPUs (although with different sampling frequencies).
+
+
+Thanks,
+-Venkatesh
