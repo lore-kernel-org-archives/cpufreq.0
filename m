@@ -1,14 +1,13 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: 2.4.23 + mobile athlon
-Date: Thu, 18 Dec 2003 10:11:52 +0100
-Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20031218091152.GA939@inferi.kami.home>
-References: <3FE061A5.2090206@aon.at>
-Reply-To: dongili@supereva.it
+From: Ducrot Bruno <ducrot@poupinou.org>
+Subject: Re: patch doesn't apply cleanly on 2.4.22
+Date: Thu, 18 Dec 2003 15:52:15 +0100
+Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+Message-ID: <20031218145215.GH14031@poupinou.org>
+References: <Law12-F12119DBqqtJ10004bf6e@hotmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces@www.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <3FE061A5.2090206@aon.at>
+In-Reply-To: <Law12-F12119DBqqtJ10004bf6e@hotmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -17,82 +16,35 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Acid Zebra <acid_zebra@hotmail.com>
+Cc: cpufreq@www.linux.org.uk
 
-On Wed, Dec 17, 2003 at 03:01:09PM +0100, Bernhard Bauch wrote:
-> hi!
-> i just patched kernel-2.4.23 with cpufreq and it worked :)
-> ########################
-> /var/log/dmes:
-> ....
-> powernow: AMD K7 CPU detected.
-[...]
-> everything seems to be OK, but:
-> ################################
-> beatle:/proc/sys/cpu/0# more speed*
-> ::::::::::::::
-> speed
-> ::::::::::::::
-> 0
-> ::::::::::::::
-> speed-max
-> ::::::::::::::
-> 0
-> ::::::::::::::
-> speed-min
-> ::::::::::::::
-> 0
-> #####################
-> 
-> mhh why are all of these parameters zero ??
+On Wed, Dec 17, 2003 at 10:10:15PM +0100, Acid Zebra wrote:
+> I also can't apply the patch to 2.4.21 or 2.4.22...
 
-these are parameters for the userspace governor, try echo
-"0%0%100%userspace" > /proc/cpufreq
+What about 2.4.23?
 
-and play with them
+> and 2.6.0 is not an option for me; I lose the accelerated radeon mobility 
+> drivers from gatos.sf.net
+> So I either have nice CPU freq. tuning or nice speedy graphics...
+> I spent a whole weekend compiling kernels trying to get cpufreq working but 
+> no go :(
 
-> -----------------------------------------------------------------------
-> /proc/acpi/processor/CPU1/info:
-> processor id:            0
-> acpi id:                 1
-> bus mastering control:   no
-> power management:        yes
-> throttling control:      no
-> performance management:  no
-> limit interface:         no
-> 
-> /proc/acpi/processor/CPU1/throttling
-> <not supported>
-> 
-> whats going on here ???
-> why is throtteling not supported ??
+The merge to 2.4.23 was done in 2003-12-05, so go get an earlier version
+via ftp or via cvs with something like that:
 
-acpi throttling is not cpufreq :) (I remember detailed discussions on
-the topic either on this list or the acpi-devel one)
+cvs -z3 -d:pserver:cvs@pubcvs.arm.linux.org.uk:/mnt/src/cvsroot \
+	co -rLINUX_2_4 -D '2003-12-05' cpufreq
 
-> -----------------------
-> other question:
-> is there a way to run cpufreqd with libc 2.2.5-11.5 (debian woody - 
-> stable) ??
+if really you want to stick with 2.4.22.
 
-you could download the debian source package and make a woody deb from
-it. You actually need a couple of adjustments:
-- remove the debconf version dependency from the debian/control file:
-  Build-Depends: debhelper (>> 4.0.0), debconf (>= 1.2.9)
-                                               ^^^^^^^^^^
-- modify following the line of debian/postinst from
-  unset CPUFREQD_PM
-  to
-  [ -z ${CPUFREQD_PM} ] || unset CPUFREQD_PM
+BTW, what cpufreq driver are you using?
 
-and build the binary deb as usual (see release notes on sourceforge).
-
-write me off list if you need help
-
-ciao
 -- 
-mattia
-:wq!
+Ducrot Bruno
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
