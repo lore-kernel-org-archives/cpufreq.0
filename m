@@ -1,8 +1,8 @@
-From: Stephen White <stephen-cpufreq@earth.li>
-Subject: longhaul driver broken?
-Date: Sun, 1 Feb 2004 15:44:49 +0000
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: [PATCH 2.6] sysfs stuff in order to override a powernow-k7 table
+Date: Tue, 3 Feb 2004 19:47:18 +0100
 Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <20040201154449.GA30954@the.earth.li>
+Message-ID: <20040203184718.GA3495@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -18,47 +18,49 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
+Cc: Dave Jones <davej@redhat.com>, Dominik Brodowski <linux@dominikbrodowski.de>
 
-I'm using the 2.4 backport (from
-http://ftp.linux.org.uk/pub/linux/cpufreq/) because of issues with
-drivers for another piece of hardware in my system.  However it appears
-the longhaul driver is rather broken.
+Hi list,
 
-The first problem is in the longhaul_table code.  The 'index' member of 
-each element in the table gets initialised as follows:
-       longhaul_table[k].index = (j << 8);
+This is some patches to be able to override a
+buggy powernow table for the k7.
 
-The 'longhaul_target' routine then obtains this value using:
-       new_clock_ratio = longhaul_table[table_index].index & 0xFF;
-
-Thus 'new_clock_ratio' is /always/ found to be zero and so the driver 
-has no effect.
+All patches for this purpose are at:
+http://www.poupinou.org/cpufreq/powernow-k7/
 
 
-If I fix this then I can change the speed of my processor, but things
-still don't behave perfectly.  I haven't looked into this, but I think
-this may in part be due to the rather random ordering of elements in the
-table, debug reveals:
+BIG FAT DISCLAIMER:
+READ CARREFULLY README.txt AVAILABLE AT
+http://www.poupinou.org/cpufreq/powernow-k7/README.txt
+BEFORE USING IT.
 
-longhaul: longhaul_table[0].frequency = 399 (ratio 30, fsb 133)
-longhaul: longhaul_table[1].frequency = 532 (ratio 40, fsb 133)
-longhaul: longhaul_table[2].frequency = 465 (ratio 35, fsb 133)
-longhaul: longhaul_table[3].frequency = 598 (ratio 45, fsb 133)
-longhaul: longhaul_table[4].frequency = 731 (ratio 55, fsb 133)
-longhaul: longhaul_table[5].frequency = 798 (ratio 60, fsb 133)
-longhaul: longhaul_table[6].frequency = 665 (ratio 50, fsb 133)
+* 01_powernow_dummy_table.diff
+
+Allow the possibility to have powernow-k7 being loaded, even though
+PST is broken.  There is a need, though, to be DMI blacklisted.
+
+* 02_powernow_more_attributes.diff
+
+Some attributes that permit to look into powernow-k7 internals.
+
+* 10_powernow_overwrite_table.diff
+
+That the main stuff.  It introduce the possibility to touch
+the internals of the powernow-k7 in order to change things.
+
+Note that it is only usefull for well known broken laptop.
+
+An alternative for this is to wait an upcoming patch in order to
+retrieve the configuration via ACPI.
 
 
-[ as an aside does anyone know the minimum safe frequency for a VIA Ezra
-C3 800  (family 7, mode 7, stepping 8).  It seems to work at 400Mhz 
-without crashing, but I'm not sure it's supposed to. ]
+* 0000_powernow_overwrite_table.ALL.diff
+The whole (minus README.txt) in one diff.
 
+Cheers,
 
-Does anyone have some insight into the longhaul driver, or is there a
-better version somewhere that I should be using?  If this is the code
-I'm supposed to be using and there's no-one fixing it, is anyone
-interested in receiving some patches for it from me?
+-- 
+Bruno Ducrot
 
-Thanks,
-
-Stephen
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
