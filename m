@@ -1,12 +1,10 @@
-From: "Devriendt, Paul" <paul.devriendt@amd.com>
-Subject: RE: powernow-k8 problem (Mobile Sempron 2800+, Acer Aspire 1362
- )
-Date: Mon, 15 Nov 2004 20:56:29 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A84301539D47@SAUSEXMB1.amd.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Simple cleanups for powernow-k8
+Date: Tue, 16 Nov 2004 13:57:24 +0100
+Message-ID: <20041116125724.GA8105@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,43 +16,80 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: =?iso-8859-2?Q?Micha=B3_Pytasz?= <mpytasz@pai.net.pl>, cpufreq@www.linux.org.uk, "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Content-Transfer-Encoding: 7bit
+To: davej@codemonkey.org.uk, cpufreq@www.linux.org.uk, paul.devriendt@amd.com
 
-=20
-> powernow-k8:    0 : fid 0x8 (1600 MHz), vid 0x6 (1400 mV)
-> powernow-k8:    1 : fid 0x0 (800 MHz), vid 0x18 (950 mV)
+Hi!
 
-> powernow-k8: cpu 0, changing to fid 0x8, vid 0x6
-> powernow-k8: ph1 (cpu0): start, currfid 0x8, currvid 0x4, reqvid 0x6, =
-rvo 0x2
-> powernow-k8: ph1: changing vid for rvo, req 0x3
-> powernow-k8: writing vid 0x3, lo 0x10308, hi 0x1
-> powernow-k8: vid trans failed, vid 0x3, curr 0x4
+This adds some comments where to get more data, puts in same name for
+same variable (numps vs. numpstates, vstable
+vs. voltagestabilizationtime). Please apply,
+								Pavel
 
-Thanks for the additional debug data, that was very helpful. It appears =
-to
-me that the data provided by your BIOS is actually correct. (I am making =
-the
-big assumption that you have a processor that can do 800 MHz/1600 MHz =
-and
-that the data is not just totally crazy! My first guess when I looked at
-your initial post was that the rvo value provided by BIOS might be =
-wrong,
-but it is not.
+--- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	14 Nov 2004 04:46:00 -0000	1.18
++++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	16 Nov 2004 12:54:30 -0000
+@@ -18,6 +18,9 @@
+  *  Processor information obtained from Chapter 9 (Power and Thermal Management)
+  *  of the "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
+  *  Opteron Processors" available for download from www.amd.com
++ *
++ *  Tables for specific CPUs can be infrerred from
++ *	http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
+  */
+ 
+ #include <linux/kernel.h>
+@@ -618,7 +612,7 @@
+ 			return -ENODEV;
+ 		}
+ 
+-		data->vstable = psb->voltagestabilizationtime;
++		data->vstable = psb->vstable;
+ 		dprintk("voltage stabilization time: %d(*20us)\n", data->vstable);
+ 
+ 		dprintk("flags2: 0x%x\n", psb->flags2);
+@@ -632,9 +626,9 @@
+ 		dprintk("isochronous relief time: %d\n", data->irt);
+ 		dprintk("maximum voltage step: %d - 0x%x\n", mvs, data->vidmvs);
+ 
+-		dprintk("numpst: 0x%x\n", psb->numpst);
+-		cpst = psb->numpst;
+-		if ((psb->cpuid == 0x00000fc0) || (psb->cpuid == 0x00000fe0) ){
++		dprintk("numpst: 0x%x\n", psb->num_tables);
++		cpst = psb->num_tables;
++		if ((psb->cpuid == 0x00000fc0) || (psb->cpuid == 0x00000fe0)) {
+ 			thiscpuid = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
+ 			if ((thiscpuid == 0x00000fc0) || (thiscpuid == 0x00000fe0) ) {
+ 				cpst = 1;
+@@ -651,7 +645,7 @@
+ 		dprintk("maxvid: 0x%x\n", psb->maxvid);
+ 		maxvid = psb->maxvid;
+ 
+-		data->numps = psb->numpstates;
++		data->numps = psb->numps;
+ 		dprintk("numpstates: 0x%x\n", data->numps);
+ 		return fill_powernow_table(data, (struct pst_s *)(psb+1), maxvid);
+ 	}
+--- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	14 Nov 2004 04:46:00 -0000	1.9
++++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h	16 Nov 2004 12:00:44 -0000
+@@ -152,14 +151,14 @@
+ 	u8 signature[10];
+ 	u8 tableversion;
+ 	u8 flags1;
+-	u16 voltagestabilizationtime;
++	u16 vstable;
+ 	u8 flags2;
+-	u8 numpst;
++	u8 num_tables;
+ 	u32 cpuid;
+ 	u8 plllocktime;
+ 	u8 maxfid;
+ 	u8 maxvid;
+-	u8 numpstates;
++	u8 numps;
+ };
+ 
+ /* Pairs of fid/vid values are appended to the version 1.4 PSB table. */
 
-There is a bug in the driver exposed here. The bug is exposed by the =
-fact
-that the initial frequency/voltage (8/4) are not valid in the frequency
-table, and the first requested transition is to make them valid (8/6). =
-I.e.,
-your initial voltage is 2 steps too high (4 instead of 6). The driver is
-applying the rvo in 2 steps here, and should be going to a target of =
-(6-2).
-So, no voltage change is needed. What it is actually doing is attempting =
-to=20
-go to 3 and then 2 (4-2).
-
-I will fix this in the driver and send you a patch, hopefully tomorrow
-morning, and we can see what the new behavior is.
-
-Paul.
+-- 
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
