@@ -1,13 +1,13 @@
-From: Dominik Brodowski <linux@brodo.de>
-Subject: Re: Weird behaviour (cpufreq-2.4.21-2)
-Date: Sat, 19 Jul 2003 08:45:28 +0200
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: PowerNowd v.75
+Date: 19 Jul 2003 01:35:14 -0700
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030719064528.GA1658@brodo.de>
-References: <20030719003302.1664a98f.frx@firenze.linux.it>
+Message-ID: <1058603714.22724.10.camel@ixodes.goop.org>
+References: <Pine.LNX.4.44.0307171550430.2877-100000@pianoman.cluster.toy>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-admin@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20030719003302.1664a98f.frx@firenze.linux.it>
+In-Reply-To: <Pine.LNX.4.44.0307171550430.2877-100000@pianoman.cluster.toy>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,27 +18,31 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: CpuFreq <cpufreq@www.linux.org.uk>, frx@firenze.linux.it
+To: John Clemens <john@deater.net>
+Cc: cpufreq list <cpufreq@www.linux.org.uk>
 
-On Sat, Jul 19, 2003 at 12:33:02AM +0200, Francesco Poli wrote:
-> Then I disconnect the laptop from the electrical network: so I run on
-> battery.
-> When I go back on AC power, the battery starts charging (as reported by
-> the LED and by ACPI). And the temperature goes up towards 80 degrees
-> Celsius; the back fan wakes up thus pushing the temperature down again
-> to 69 degrees Celsius; then the fan rests and the temperature goes up
-> again. This thermal cycle goes on and on, even if the CPU is almost
-> totally idle.
+On Thu, 2003-07-17 at 12:58, John Clemens wrote:
+> Yes, i released another cpufreq client daemon.  don't yell, i actually
+> wrote it months ago when everyone else was just writing their's too :-).
 > 
-> A simple reboot stops this behaviour and, after a while, I get
-> $ cat /proc/acpi/thermal_zone/THRM/temperature
-> temperature:              57 C
-> 
-> The question is: what's wrong? What did I messed up with?
+> It's simple, and just works very well for me.  I'm not trying to step on
+> anyone's toes but i figured i wrote it so I may as well put it out there
+> in case someone else finds it ueeful or wants to use some of the ideas in
+> it.  not that it's rocket science...
 
-Hmmm... might it be that the BIOS meddles with the CPU frequency, too?
-You could compare the output of the "bogomips" tool to detect frequency 
-changes, for example.
+This looks very similar in idea to speedfreq; my intention was to keep
+things simple and make everyone else do the hard work of deciding what
+policy to adopt.  It runs as a daemon, speedfreqd, but has a client
+which can set new policies and also monitor state changes (either policy
+changes or speed changes).  The client side is wrapped up into a
+library, so it should be easy to use from other programs (gui interface,
+etc).
 
-	Dominik
+For the "dynamic" policy, I simply calculate the amount of system idle
+time by looking at /proc/uptime; I don't even bother looking at all the
+processes.  It seems to work well enough, though it can't ignore niced
+processes.
+
+http://www.goop.org/~jeremy/speedfreq
+
+	J
