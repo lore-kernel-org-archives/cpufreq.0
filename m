@@ -1,9 +1,8 @@
 From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: [PATCH 2.6.4] fix off-by-10 error in pentiumM_detect_frequency() in
-	speedstep-lib
-Date: Mon, 15 Mar 2004 15:15:21 +0100
+Subject: [PATCH 2.6.4] (2/5) p4-clockmod: single-line KERN_WARNING messages
+Date: Mon, 15 Mar 2004 15:14:53 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040315141521.GH8636@dominikbrodowski.de>
+Message-ID: <20040315141453.GC8636@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
@@ -20,18 +19,43 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@www.linux.org.uk
 
-Fix an off-by-10 error in the detection of the Pentium M processor frequency.
+Use KERN_WARNING for warning. Thanks to Dave Jones, Pavel Machel and Russell 
+King for their help getting this patch right.
 
- arch/i386/kernel/cpu/cpufreq/speedstep-lib.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
---- linux-original/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-15 14:36:10.000000000 +0100
-+++ linux/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c	2004-03-15 15:05:41.530909272 +0100
-@@ -127,7 +127,7 @@
- 	msr_tmp = (msr_lo >> 22) & 0x1f;
- 	dprintk(KERN_DEBUG "speedstep-lib: bits 22-26 are 0x%x\n", msr_tmp);
+diff -ruN linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-original/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-03-15 09:20:50.000000000 +0100
++++ linux/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c	2004-03-15 13:28:00.997133712 +0100
+@@ -181,21 +181,24 @@
+ {
+ 	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
+ 		/* Pentium M */
+-		printk(KERN_DEBUG PFX "Warning: Pentium M detected. The speedstep_centrino module\n");
+-		printk(KERN_DEBUG PFX "offers voltage scaling in addition of frequency scaling. You\n");
+-		printk(KERN_DEBUG PFX "should use that instead of p4-clockmod, if possible.\n");
++		printk(KERN_WARNING PFX "Warning: Pentium M detected. "
++		       "The speedstep_centrino module offers voltage scaling"
++		       " in addition of frequency scaling. You should use "
++		       "that instead of p4-clockmod, if possible.\n");
+ 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
+ 	}
  
--	return (msr_tmp * 100 * 10000);
-+	return (msr_tmp * 100 * 1000);
- }
+ 	if (c->x86 != 0xF) {
+-		printk(KERN_DEBUG PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
++		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
+ 		return 0;
+ 	}
+ 
+ 	if (speedstep_detect_processor() == SPEEDSTEP_PROCESSOR_P4M) {
+-		printk(KERN_DEBUG PFX "Warning: Pentium 4-M detected. The speedstep-ich or acpi cpufreq \n");
+-		printk(KERN_DEBUG PFX "modules offers voltage scaling in addition of frequency scaling. You\n");
+-		printk(KERN_DEBUG PFX "should use either one instead of p4-clockmod, if possible.\n");
++		printk(KERN_WARNING PFX "Warning: Pentium 4-M detected. "
++		       "The speedstep-ich or acpi cpufreq modules offers "
++		       "voltage scaling in addition of frequency scaling. "
++		       "You should use either one instead of p4-clockmod, "
++		       "if possible.\n");
+ 		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4M);
+ 	}
