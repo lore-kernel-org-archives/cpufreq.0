@@ -1,9 +1,9 @@
 From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: [PATCH] support for CPUFREQ_ETERNAL drivers by the ondemand governor
-Date: Sun, 06 Feb 2005 23:33:49 +0100
-Message-ID: <42069B4D.6090505@tremplin-utc.net>
+Subject: [PATCH] ondemand governor clean-ups
+Date: Mon, 07 Feb 2005 00:06:07 +0100
+Message-ID: <4206A2DF.8000304@tremplin-utc.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------070809050905050601030803"
+Content-Type: multipart/mixed; boundary="------------080801040307050902050907"
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,72 +18,80 @@ To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Jun Nakajima <jun.nakaj
 Cc: cpufreq@lists.linux.org.uk
 
 This is a multi-part message in MIME format.
---------------070809050905050601030803
+--------------080801040307050902050907
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 Hello,
 
-For now the ondemand governor doesn't support the drivers which reports 
-a transition latency of CPUFREQ_ETERNAL. That's really a problem because 
-most of the drivers declare such a latency (simply because it's not 
-known, not really because the transition will take an eternal time). 
-All userspace daemons suport those drivers, they just don't pay 
-attention to the transition latency.
+Having a look at the ondemand governor I noticed some possible trivial 
+and minimal clean-ups.
 
-This patch proposes to consider a CPUFREQ_ETERNAL latency as the maximum 
-possible latency of the governor (10 ms). I think this should be 
-conservative enough to be safe with any driver.
+Here they are:
+- change from sampling_rate_in_HZ() to the official function 
+usecs_to_jiffies().
+- use for_each_online_cpu() to instead of using "if (cpu_online(i))"
 
-Hoping you like it,
+Those are just trivial clean-ups, please apply,
 Eric
-
 --
-Support for CPUFREQ_ETERNAL drivers by the ondemand governor.
+Trivial ondemand governor clean-ups
 
 Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
 --
 
---------------070809050905050601030803
+--------------080801040307050902050907
 Content-Type: text/x-patch;
-	name="ondemand-accept-eternel-transition-latency-2.6.11-rc3.patch"
+ name="ondemand-cleanup-macro-2.6.11-rc3.patch"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="ondemand-accept-eternel-transition-latency-2.6.11-rc3.patch"
+Content-Disposition: inline; filename="ondemand-cleanup-macro-2.6.11-rc3.patch"
 
---- linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c.orig	2005-02-05 17:09:30.000000000 +0100
-+++ linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c	2005-02-05 18:02:55.000000000 +0100
-@@ -56,7 +56,7 @@ static unsigned int 				def_sampling_rat
- #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define DEF_SAMPLING_DOWN_FACTOR		(10)
--#define TRANSITION_LATENCY_LIMIT		(10 * 1000)
-+#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000) /* ns */
- #define sampling_rate_in_HZ(x)			(((x * HZ) < (1000 * 1000))?1:((x * HZ) / (1000 * 1000)))
+--- linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c.bak	2005-02-06 23:35:41.000000000 +0100
++++ linux-2.6.11-rc3/drivers/cpufreq/cpufreq_ondemand.c	2005-02-06 23:37:15.000000000 +0100
+@@ -281,7 +281,7 @@ static void dbs_check_cpu(int cpu)
+ 	/* Scale idle ticks by 100 and compare with up and down ticks */
+ 	idle_ticks *= 100;
+ 	up_idle_ticks = (100 - dbs_tuners_ins.up_threshold) *
+-			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate);
++			usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
  
- static void do_dbs_timer(void *data);
-@@ -385,8 +385,8 @@ static int cpufreq_governor_dbs(struct c
- 		    (!policy->cur))
- 			return -EINVAL;
+ 	if (idle_ticks < up_idle_ticks) {
+ 		__cpufreq_driver_target(policy, policy->max, 
+@@ -328,7 +328,7 @@ static void dbs_check_cpu(int cpu)
+ 	freq_down_sampling_rate = dbs_tuners_ins.sampling_rate *
+ 		dbs_tuners_ins.sampling_down_factor;
+ 	down_idle_ticks = (100 - dbs_tuners_ins.down_threshold) *
+-			sampling_rate_in_HZ(freq_down_sampling_rate);
++			usecs_to_jiffies(freq_down_sampling_rate);
  
--		if (policy->cpuinfo.transition_latency >
--				(TRANSITION_LATENCY_LIMIT * 1000))
-+		if ((policy->cpuinfo.transition_latency > TRANSITION_LATENCY_LIMIT) &&
-+		    (policy->cpuinfo.transition_latency != CPUFREQ_ETERNAL))
- 			return -EINVAL;
- 		if (this_dbs_info->enable) /* Already enabled */
- 			break;
-@@ -416,6 +416,8 @@ static int cpufreq_governor_dbs(struct c
- 			/* policy latency is in nS. Convert it to uS first */
+ 	if (idle_ticks > down_idle_ticks ) {
+ 		freq_down_step = (5 * policy->max) / 100;
+@@ -348,11 +348,10 @@ static void do_dbs_timer(void *data)
+ { 
+ 	int i;
+ 	down(&dbs_sem);
+-	for (i = 0; i < NR_CPUS; i++)
+-		if (cpu_online(i))
+-			dbs_check_cpu(i);
++	for_each_online_cpu(i)
++		dbs_check_cpu(i);
+ 	schedule_delayed_work(&dbs_work, 
+-			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
++			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
+ 	up(&dbs_sem);
+ } 
  
- 			latency = policy->cpuinfo.transition_latency;
-+			if (latency == CPUFREQ_ETERNAL)
-+				latency = TRANSITION_LATENCY_LIMIT;
- 			if (latency < 1000)
- 				latency = 1000;
+@@ -360,7 +359,7 @@ static inline void dbs_timer_init(void)
+ {
+ 	INIT_WORK(&dbs_work, do_dbs_timer, NULL);
+ 	schedule_delayed_work(&dbs_work,
+-			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
++			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
+ 	return;
+ }
  
 
---------------070809050905050601030803
+--------------080801040307050902050907
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -94,5 +102,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------070809050905050601030803--
+--------------080801040307050902050907--
 
