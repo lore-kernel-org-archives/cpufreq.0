@@ -1,13 +1,11 @@
-From: Francesco Poli <frx@firenze.linux.it>
-Subject: Re: [cpufreq 24] patches
-Date: Tue, 31 Aug 2004 22:29:52 +0200
+From: ncrfgs <ncrfgs@tin.it>
+Subject: CPU Frequency Scaling
+Date: Thu, 2 Sep 2004 01:01:03 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040831222952.47ecb90f.frx@firenze.linux.it>
-References: <20040831101349.GV29560@poupinou.org>
+Message-ID: <20040901230103.GB4175@ncrfgs3.ncrfgs>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0633565558=="
+Content-Type: multipart/mixed; boundary="===============2003757663=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20040831101349.GV29560@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,53 +17,113 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
---===============0633565558==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="pgp-sha1";
-	boundary="Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP"
 
---Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP
-Content-Type: text/plain; charset=US-ASCII
+--===============2003757663==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="aM3YZ0Iwxop3KEKx"
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On Tue, 31 Aug 2004 12:13:49 +0200 Bruno Ducrot wrote:
-
-> Hi,
-> 
-> For those who prefer a patch for 2.4 instead of the cvs stuff
-> (patchin.sh, etc) I put one at:
-> 
-> ftp://ftp.poupinou.org/cpufreq/cpufreq-24-20040831.diff[$EXT]
-> with $EXT in (nothing), .gz, .bz2, and there is now symbolic links
-> cpufreq-24-current.diff[$EXT] to them.
-
-Many TNX, your job is very much appreciated!  :)
-I will use it as soon as I upgrade to 2.4.28 (that is, as soon as 2.4.28
-itself is out + the time to go back home, rebuild and install... ^__^ )
 
 
--- 
-             |  GnuPG Key ID = DD6DFCF4 |  $ fortune
-  Francesco  |        Key fingerprint = |  Q: What is purple
-     Poli    | C979 F34B 27CE 5CD8 DC12 |     and commutes?
-             | 31B5 78F4 279B DD6D FCF4 |  A: A boolean grape.
+--aM3YZ0Iwxop3KEKx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP
+Hi,
+
+I'm running a vanilla 2.6.8.1 Linux kernel on an iBook 2.2 G3
+900 MHz and I'd like to try the CPU frequency scaling.
+
+Is it required to enable "/proc/sys/cpu/ interface (2.4. / OLD)"
+in order to be able to use CPU frequency scaling efectively?
+
+The kernel I'm running doesn't include it, I'm using powernowd
+as userspace governor and the CPU frequency scaling seems to
+work as far as I know from what I read in /proc/cpu* and
+/sys/devices/system/cpu/cpu0/cpufreq/* files.
+
+Unfortunately even when /proc/cpuinfo reports a clock of 900MHz
+and /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq is set
+to 900000 the system looks quite slow to me, for example during
+compilation processes, as if the current frequency was 400 MHz.
+
+Do I have to enable "Support for Apple PowerBooks", too?
+
+
+Some days ago I argued about this issue with a guy from the
+debian-powerpc mailing list, too and I faced a strange situation
+I didn't understand. According to his kernel config he is using
+'performance' as Default CPUFreq governor but as far as I can see
+from the 'performance' governor Help it shouldn't allow CPU
+Frequency scaling:
+
+  CONFIG_CPU_FREQ_GOV_PERFORMANCE:
+
+  This cpufreq governors set the frequency statically to the
+  highest available CPU frequency.
+
+
+He said that's strange indeed. Nevertheless, He's sure that his frequency is
+changing...
+
+"Because the battery life increase by 1 hour with cpufreqd. And Battery
+load derivative decrease (absolute value increase) when I use some cpu
+intensive programs. Less formally, the more cpu I use the faster my
+battery load decrease."
+
+Is it just an impression of his?
+
+
+Here a portion of his kernel .config file follows.
+
+  CONFIG_CPU_FREQ=3Dy
+  # CONFIG_CPU_FREQ_PROC_INTF is not set
+  CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=3Dy
+  # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+  CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy
+  CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dm
+  CONFIG_CPU_FREQ_GOV_USERSPACE=3Dm
+  # CONFIG_CPU_FREQ_24_API is not set
+  CONFIG_CPU_FREQ_PMAC=3Dy
+  CONFIG_CPU_FREQ_TABLE=3Dy
+
+
+As far as I could see from the section of the kernel config he sent me
+last time, he compiled 'userspace' governor as a module. So I asked him
+if was it loeaded but he answered that is was not.
+
+> cat devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+> performance
+
+
+
+Thanks in advance.
+
+Best regards.
+--=20
+Value your freedom, or you will lose it, teaches history.=20
+``Don't bother us with politics,'' respond those who don't=20
+want to learn.
+
+ -- Richard M. Stallman
+    http://www.gnu.org/philosophy/linux-gnu-freedom.html
+
+--aM3YZ0Iwxop3KEKx
 Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+Version: GnuPG v1.2.5 (GNU/Linux)
 
-iD8DBQFBNN/EePQnm91t/PQRAsQ7AKCtBDqmYD/RyFU6kEcJJhBuu16oCwCgwDck
-rtVHteS69PSyElI5IS3AyM0=
-=AygK
+iD8DBQFBNlSv8UJozN0kXhkRAnFgAKCGJSlhPJ66db3YBY6kcwnDh9cdLgCg0msL
+cZfIvRCk9ynxzoofrNhkffI=
+=Qpps
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__31_Aug_2004_22_29_52_+0200_DDi6tsiU8JPMclJP--
+--aM3YZ0Iwxop3KEKx--
 
 
---===============0633565558==
+--===============2003757663==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -76,5 +134,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
---===============0633565558==--
+--===============2003757663==--
 
