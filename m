@@ -1,8 +1,9 @@
 From: Ducrot Bruno <ducrot@arm.linux.org.uk>
-Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k7.c,1.44,1.45
-Date: Fri, 19 Sep 2003 17:39:23 +0100
+Subject: cpufreq/linux/arch/i386/kernel/cpufreq powernow-k7.c, 1.1.1.1,
+	1.1.1.2
+Date: Fri, 19 Sep 2003 17:47:46 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <E1A0OHz-0003dq-NJ@flint.arm.linux.org.uk>
+Message-ID: <E1A0OQ6-0003kK-OT@flint.arm.linux.org.uk>
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,29 +20,24 @@ Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.arm.linux.org.uk
 
 Update of /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq
-In directory flint:/tmp/cvs-serv13924/linux/arch/i386/kernel/cpufreq
+In directory flint:/tmp/cvs-serv14397/linux/arch/i386/kernel/cpufreq
 
 Modified Files:
+      Tag: LINUX_2_4
 	powernow-k7.c 
 Log Message:
-Bug fix from current bk:
-	* update davej email.
-	* Add missing config.h includes
-	* Read MSRs before trying to use them in powernow-k7
-	* We need to set SGTC when we change powernow-k7 voltage.
-	* Work around buggy powernow-k7 BIOSes with low settling times.
-	* Powernow-k7 latency timer needs to be in values of 10ns.
-	* Explicitly disable scaling we don't need in powernow-k7
+Backport some bug fixes from trunk.  This is needed for a correct operation
+of powernow-k7.
 
 
 Index: powernow-k7.c
 ===================================================================
 RCS file: /mnt/src/cvsroot/cpufreq/linux/arch/i386/kernel/cpufreq/powernow-k7.c,v
-retrieving revision 1.44
-retrieving revision 1.45
-diff -u -r1.44 -r1.45
---- powernow-k7.c	19 Aug 2003 13:38:32 -0000	1.44
-+++ powernow-k7.c	19 Sep 2003 16:39:20 -0000	1.45
+retrieving revision 1.1.1.1
+retrieving revision 1.1.1.2
+diff -u -r1.1.1.1 -r1.1.1.2
+--- powernow-k7.c	25 Aug 2003 14:58:47 -0000	1.1.1.1
++++ powernow-k7.c	19 Sep 2003 16:47:43 -0000	1.1.1.2
 @@ -1,6 +1,7 @@
  /*
   *  AMD K7 Powernow driver.
@@ -50,15 +46,7 @@ diff -u -r1.44 -r1.45
   *
   *  Licensed under the terms of the GNU GPL License version 2.
   *  Based upon datasheets & sample CPUs kindly provided by AMD.
-@@ -13,6 +14,7 @@
-  * - We disable half multipliers if ACPI is used on A0 stepping CPUs.
-  */
- 
-+#include <linux/config.h>
- #include <linux/kernel.h>
- #include <linux/module.h> 
- #include <linux/init.h>
-@@ -190,10 +192,11 @@
+@@ -190,10 +191,11 @@
  {
  	union msr_fidvidctl fidvidctl;
  
@@ -71,7 +59,7 @@ diff -u -r1.44 -r1.45
  		fidvidctl.bits.FIDC = 1;
  		wrmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
  	}
-@@ -204,9 +207,11 @@
+@@ -204,9 +206,11 @@
  {
  	union msr_fidvidctl fidvidctl;
  
@@ -84,7 +72,7 @@ diff -u -r1.44 -r1.45
  		fidvidctl.bits.VIDC = 1;
  		wrmsrl (MSR_K7_FID_VID_CTL, fidvidctl.val);
  	}
-@@ -296,8 +301,14 @@
+@@ -296,8 +300,14 @@
  			dprintk (" voltage regulator)\n");
  
  			latency = psb->settlingtime;
@@ -99,7 +87,7 @@ diff -u -r1.44 -r1.45
  
  			p += sizeof (struct psb_s);
  
-@@ -325,6 +336,8 @@
+@@ -325,6 +335,8 @@
  						p+=2;
  				}
  			}
