@@ -1,11 +1,11 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] 1/3 Dynamic cpufreq governor and updates to ACPI P-state
+Subject: [PATCH] 2/3 Dynamic cpufreq governor and updates to ACPI P-state
 	driver
-Date: Mon, 20 Oct 2003 19:56:23 -0700
+Date: Mon, 20 Oct 2003 19:56:33 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <88056F38E9E48644A0F562A38C64FB60077912@scsmsx403.sc.intel.com>
+Message-ID: <88056F38E9E48644A0F562A38C64FB60077913@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C3977E.E9BD1D20"
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C3977E.EF61E970"
 Return-path: <cpufreq-bounces@www.linux.org.uk>
 content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
@@ -23,402 +23,475 @@ Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, "Nakajima,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C3977E.E9BD1D20
+------_=_NextPart_001_01C3977E.EF61E970
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
 
-Patch 1/3: Changes to ACPI P-state driver, to handle MSR=20
-based transitions frequency transitions and make the driver=20
-SMP aware.
+Patch 2/3: Introduce HT-synchronization in the ACPI P-state=20
+Driver, to take care of shared CPU frequency between HT siblings.
 
-
-diffstat dbs1.patch=20
-arch/i386/kernel/cpu/cpufreq/Kconfig |    4=20
-arch/i386/kernel/cpu/cpufreq/acpi.c  |  141
-+++++++++++++++++++++++++++--------
-include/acpi/processor.h             |    1=20
-3 files changed, 116 insertions(+), 30 deletions(-)
-
+diffstat dbs2.patch=20
+arch/i386/kernel/cpu/cpufreq/acpi.c |  169
+++++++++++++++++++++++++++++++++++--
+include/acpi/processor.h            |   15 +++
+2 files changed, 178 insertions(+), 6 deletions(-)
 
 
 diff -purN linux-2.6.0-test7/arch/i386/kernel/cpu/cpufreq/acpi.c
 linux-2.6.0-test7-dbs/arch/i386/kernel/cpu/cpufreq/acpi.c
 --- linux-2.6.0-test7/arch/i386/kernel/cpu/cpufreq/acpi.c
-2003-10-20 00:24:43.000000000 -0700
+2003-10-20 13:31:10.000000000 -0700
 +++ linux-2.6.0-test7-dbs/arch/i386/kernel/cpu/cpufreq/acpi.c
-2003-10-20 02:11:01.000000000 -0700
-@@ -99,7 +99,9 @@ acpi_processor_get_performance_control (
+2003-10-20 13:29:41.000000000 -0700
+@@ -34,6 +34,7 @@
+ #include <asm/io.h>
+ #include <asm/delay.h>
+ #include <asm/uaccess.h>
++#include <linux/sem.h>
 =20
- 	reg =3D (struct acpi_pct_register *) (obj.buffer.pointer);
+ #include <linux/acpi.h>
+ #include <acpi/processor.h>
+@@ -362,7 +363,8 @@ acpi_processor_set_performance (
+ 	cpufreq_freqs.new =3D perf->states[state].core_frequency * 1000;
 =20
--	if (reg->space_id !=3D ACPI_ADR_SPACE_SYSTEM_IO) {
-+	perf->space_id =3D (int) reg->space_id;
-+	if (reg->space_id !=3D ACPI_ADR_SPACE_SYSTEM_IO &&=20
-+			reg->space_id !=3D ACPI_ADR_SPACE_FIXED_HARDWARE)
-{
- 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
- 			"Unsupported address space [%d]
-(control_register)\n",
- 			(u32) reg->space_id));
-@@ -126,7 +128,8 @@ acpi_processor_get_performance_control (
+ 	/* notify cpufreq */
+-	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
++	perf->domainp->cpufreq_notify_transition_ptr(
++			&cpufreq_freqs, CPUFREQ_PRECHANGE);
 =20
- 	reg =3D (struct acpi_pct_register *) (obj.buffer.pointer);
+ 	/*
+ 	 * First we write the target state's 'control' value to the
+@@ -390,14 +392,17 @@ acpi_processor_set_performance (
+ 	value =3D param.retval;
 =20
--	if (reg->space_id !=3D ACPI_ADR_SPACE_SYSTEM_IO) {
-+	if (reg->space_id !=3D ACPI_ADR_SPACE_SYSTEM_IO &&=20
-+			reg->space_id !=3D ACPI_ADR_SPACE_FIXED_HARDWARE)
-{
- 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
- 			"Unsupported address space [%d]
-(status_register)\n",
- 			(u32) reg->space_id));
-@@ -224,16 +227,100 @@ end:
+ 	/* notify cpufreq */
+-	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
++	perf->domainp->cpufreq_notify_transition_ptr(
++			&cpufreq_freqs, CPUFREQ_POSTCHANGE);
+=20
+ 	if (value !=3D (u16) perf->states[state].status) {
+ 		unsigned int tmp =3D cpufreq_freqs.new;
+ 		cpufreq_freqs.new =3D cpufreq_freqs.old;
+ 		cpufreq_freqs.old =3D tmp;
+-		cpufreq_notify_transition(&cpufreq_freqs,
+CPUFREQ_PRECHANGE);
+-		cpufreq_notify_transition(&cpufreq_freqs,
+CPUFREQ_POSTCHANGE);
++		perf->domainp->cpufreq_notify_transition_ptr(
++				&cpufreq_freqs, CPUFREQ_PRECHANGE);
++		perf->domainp->cpufreq_notify_transition_ptr(
++				&cpufreq_freqs, CPUFREQ_POSTCHANGE);
+ 		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "Transition failed\n"));
+ 		return_VALUE(-ENODEV);
+ 	}
+@@ -568,7 +573,8 @@ acpi_cpufreq_target (
+ 	if (result)
+ 		return_VALUE(result);
+=20
+-	result =3D acpi_processor_set_performance (perf, next_state);
++	result =3D perf->domainp->acpi_processor_set_performance_ptr(
++			perf, next_state);
+=20
  	return_VALUE(result);
  }
+@@ -630,6 +636,144 @@ acpi_processor_get_performance_info (
+ 	return_VALUE(0);
+ }
 =20
-+struct set_performance_param {
-+	int 					cpu;
-+	struct acpi_processor_performance	*perf;
-+	unsigned int 				state;
-+	unsigned int 				async;
-+	unsigned int 				retval;
++static struct acpi_processor_domain acpi_processor_domain_def =3D {
++	.sem =3D __MUTEX_INITIALIZER(acpi_processor_domain_def.sem),
++	.ref_cnt =3D 0,
++	.acpi_processor_set_performance_ptr =3D
+acpi_processor_set_performance,
++	.cpufreq_notify_transition_ptr =3D cpufreq_notify_transition,
 +};
 +
-+static void
-+target_cpu_set_performance(struct set_performance_param	*param)
++#ifdef CONFIG_X86_HT
++static void cpufreq_notify_transition_ht(struct cpufreq_freqs
+*cpufreq_freqs, unsigned int state)
 +{
-+	struct acpi_processor_performance	*perf =3D param->perf;
-+	u16		port =3D 0;
-+	int		state =3D param->state;
-+	unsigned int	value =3D perf->states[state].control;
-+	int		i =3D 0;
-+
-+	ACPI_FUNCTION_TRACE("target_cpu_set_performance");
-+	if (perf->space_id =3D=3D ACPI_ADR_SPACE_FIXED_HARDWARE) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Writing 0x%x to MSR
-0x%x\n",=20
-+					value, perf->control_register));
-+		wrmsr(perf->control_register, value, 0);
-+	} else {
-+		port =3D perf->control_register;
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
-+			"Writing 0x%04x to port 0x%04x\n", value,
-port));
-+
-+		outl(value, port);=20
-+	}
-+
-+	if (param->async) {
-+		/* We don't want to wait for the status change here, as=20
-+		 * that will affect performance, especially with
-frequent=20
-+		 * frequency switches. We assume the tranisition=20
-+		 * gone through and continue.
-+		 */
-+		param->retval =3D perf->states[state].status;
-+		return_VOID;
-+	}
-+
-+	if (perf->space_id =3D=3D ACPI_ADR_SPACE_FIXED_HARDWARE) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
-+			"Looking for 0x%02x from MSR 0x%04x\n",
-+			(u16) perf->states[state].status,=20
-+			perf->status_register));
-+
-+		for (i =3D 0; i < 100; i++) {
-+			unsigned long unused_hi;
-+			rdmsr(perf->status_register, value, unused_hi);
-+			if (value =3D=3D perf->states[state].status)
-+				break;
-+			udelay(10);
-+		}
-+	} else {
-+		port =3D perf->status_register;
-+
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
-+			"Looking for 0x%04x from port 0x%04x\n",
-+			(u16) perf->states[state].status, port));
-+
-+		for (i =3D 0; i < 100; i++) {
-+			value =3D inl(port);
-+			if (value =3D=3D perf->states[state].status)
-+				break;
-+			udelay(10);
-+		}
-+	}
-+	param->retval =3D value;
++	unsigned int cpu =3D cpufreq_freqs->cpu;
++	ACPI_FUNCTION_TRACE("cpufreq_notify_transition_ht");
++	cpufreq_notify_transition(cpufreq_freqs, state);
++	cpufreq_freqs->cpu =3D cpu_sibling_map[cpu];
++	cpufreq_notify_transition(cpufreq_freqs, state);
++	cpufreq_freqs->cpu =3D cpu;
 +	return_VOID;
 +}
 +
-+#ifdef CONFIG_SMP
-+static void
-+target_cpu_set_performance_ipi(void *data)
++static int acpi_processor_set_performance_ht(struct
+acpi_processor_performance *perf, int state)
 +{
-+	struct set_performance_param	*param;
++	struct acpi_processor_domain 	*domainp =3D perf->domainp;
++	int		result =3D 0;
++	int 		i;
++	int 		lo_state; /* highest freq */
 +
-+	param =3D (struct set_performance_param *) data;
-+	if (param->cpu !=3D smp_processor_id())
-+		return;
++	ACPI_FUNCTION_TRACE("acpi_processor_set_performance_ht");
++	down(&(domainp->sem));
++	/*
++	 * Transition into new state, only if it is the lowest among
++	 * all sibling requested states.
++	 * semaphore below should be held across the package.
++	 */
++	perf->requested_state =3D state;
++	lo_state =3D state;
++	for (i =3D 0; i < domainp->ref_cnt; i++) {
++		if (performance[domainp->members[i]].requested_state <
+lo_state)
++			lo_state =3D=20
 +
-+	target_cpu_set_performance(param);
+performance[domainp->members[i]].requested_state;
++	}
++
++	if (lo_state =3D=3D domainp->cur_state) {
++		up(&(domainp->sem));
++		return_VALUE(0);
++	}
++
++	result =3D acpi_processor_set_performance(perf, lo_state);
++	if (result =3D=3D 0) {
++		domainp->cur_state =3D lo_state;
++		for (i =3D 0; i < domainp->ref_cnt; i++)
++			performance[domainp->members[i]].state =3D
+lo_state;
++	}
++
++	up(&(domainp->sem));
++	return_VALUE(result);
 +}
++
++static int
++acpi_processor_domain_ht_init(
++		struct acpi_processor_performance *perf, int cpu)
++{
++	int sibling_cpu =3D cpu_sibling_map[cpu];
++	struct acpi_processor_domain *domainp;
++
++	ACPI_FUNCTION_TRACE("acpi_processor_domain_ht_init");
++	if (cpu < sibling_cpu) {
++		domainp =3D kmalloc(sizeof(struct acpi_processor_domain),
++				GFP_KERNEL);
++		if (domainp =3D=3D NULL)
++			return_VALUE(-ENOMEM);
++
++		init_MUTEX(&(domainp->sem));
++		domainp->acpi_processor_set_performance_ptr =3D=20
++				acpi_processor_set_performance_ht;
++		domainp->cpufreq_notify_transition_ptr =3D=20
++				cpufreq_notify_transition_ht;
++		domainp->cur_state =3D 0;
++		domainp->ref_cnt =3D 0;
++		domainp->members[domainp->ref_cnt] =3D cpu;
++		domainp->ref_cnt++;
++		perf[cpu].domainp =3D domainp;
++	} else {
++		perf[cpu].domainp =3D perf[sibling_cpu].domainp;
++		domainp =3D perf[cpu].domainp;
++		if (domainp->ref_cnt =3D=3D ACPI_MAX_CPUS_PER_DOMAIN) {
++			ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
++				"Only %d CPUS per domain is
+supported\n",
++				ACPI_MAX_CPUS_PER_DOMAIN));
++			return_VALUE(-1);
++		}
++		domainp->members[domainp->ref_cnt] =3D cpu;
++		domainp->ref_cnt++;
++	}
++	return_VALUE(0);
++}
++#endif /* CONFIG_X86_HT */
++
++static int
++acpi_processor_domain_init(struct acpi_processor_performance *perf, int
+cpu)
++{
++
++#ifdef CONFIG_X86_HT
++	int ht_present =3D ((cpu_has_ht) && (smp_num_siblings =3D=3D 2));
 +#endif
++
++	ACPI_FUNCTION_TRACE("acpi_processor_domain_init");
++
++#ifdef CONFIG_X86_HT
++	if (ht_present) {
++		int retval;
++		retval =3D acpi_processor_domain_ht_init(perf, cpu);
++		return_VALUE(retval);
++	}
++	/* FALLTHRU and use default domain structure */
++#endif
++	perf[cpu].domainp =3D &acpi_processor_domain_def;
++	return_VALUE(0);
++}
++
++static void
++acpi_processor_domain_exit(struct acpi_processor_performance *perf, int
+cpu)
++{
++	ACPI_FUNCTION_TRACE("acpi_processor_domain_exit");
++#ifdef CONFIG_X86_HT
++	if (!perf[cpu].domainp)
++		return_VOID;
++
++	if (perf[cpu].domainp =3D=3D &acpi_processor_domain_def)
++		return_VOID;
++
++	perf[cpu].domainp->ref_cnt--;
++	if (perf[cpu].domainp->ref_cnt =3D=3D 0) {
++		kfree(perf[cpu].domainp);
++		perf[cpu].domainp =3D NULL;
++	}
++#endif /* CONFIG_X86_HT */
++	return_VOID;
++}
 =20
  static int
- acpi_processor_set_performance (
- 	struct acpi_processor_performance	*perf,
- 	int			state)
- {
--	u16			port =3D 0;
--	u16			value =3D 0;
-+	unsigned int		value =3D 0;
- 	int			i =3D 0;
- 	struct cpufreq_freqs    cpufreq_freqs;
-+	struct set_performance_param param;
+ acpi_cpufreq_cpu_init (
+@@ -742,8 +886,13 @@ acpi_cpufreq_init (void)
 =20
- 	ACPI_FUNCTION_TRACE("acpi_processor_set_performance");
+ 	/* register struct acpi_processor_performance performance */
+ 	for (i=3D0; i<NR_CPUS; i++) {
+-		if (cpu_online(i))
++		if (cpu_online(i)) {
 =20
-@@ -267,8 +354,12 @@ acpi_processor_set_performance (
+acpi_processor_register_performance(&performance[i], &pr, i);
++			if (acpi_processor_domain_init(performance, i) <
+0) {
++				result =3D -ENOMEM;
++				goto err0;
++			}
++		}
+ 	}
 =20
- 	/* cpufreq frequency struct */
- 	cpufreq_freqs.cpu =3D perf->pr->id;
--	cpufreq_freqs.old =3D perf->states[perf->state].core_frequency;
--	cpufreq_freqs.new =3D perf->states[state].core_frequency;
-+	/*
-+	 * cpufreq_notifier needs to send the freq in KHz. But acpi
-+	 * data we have is in MHz
-+	 */
-+	cpufreq_freqs.old =3D perf->states[perf->state].core_frequency *
-1000;
-+	cpufreq_freqs.new =3D perf->states[state].core_frequency * 1000;
+ 	/* initialize  */
+@@ -804,6 +953,10 @@ acpi_cpufreq_init (void)
+ 	cpufreq_unregister_driver(&acpi_cpufreq_driver);
+ =09
+  err0:
++	for (i =3D 0; i < NR_CPUS; i++)
++		if (cpu_online(i))
++			acpi_processor_domain_exit(performance, i);
++
+ 	/* unregister struct acpi_processor_performance performance */
+ 	for (i=3D0; i<NR_CPUS; i++) {
+ 		if (performance[i].pr) {
+@@ -842,6 +995,10 @@ acpi_cpufreq_exit (void)
+ 		}
+ 	}
 =20
- 	/* notify cpufreq */
- 	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_PRECHANGE);
-@@ -276,35 +367,27 @@ acpi_processor_set_performance (
- 	/*
- 	 * First we write the target state's 'control' value to the
- 	 * control_register.
--	 */
--
--	port =3D perf->control_register;
--	value =3D (u16) perf->states[state].control;
--
--	ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
--		"Writing 0x%04x to port 0x%04x\n", value, port));
--
--	outw(value, port);=20
--
--	/*
- 	 * Then we read the 'status_register' and compare the value with
-the
- 	 * target state's 'status' to make sure the transition was
-successful.
- 	 * Note that we'll poll for up to 1ms (100 cycles of 10us)
-before
- 	 * giving up.
- 	 */
++	for (i =3D 0; i < NR_CPUS; i++)
++		if (cpu_online(i))
++			acpi_processor_domain_exit(performance, i);
++
+ 	kfree(performance);
 =20
--	port =3D perf->status_register;
--
--	ACPI_DEBUG_PRINT((ACPI_DB_INFO,=20
--		"Looking for 0x%04x from port 0x%04x\n",
--		(u16) perf->states[state].status, port));
--
--	for (i=3D0; i<100; i++) {
--		value =3D inw(port);
--		if (value =3D=3D (u16) perf->states[state].status)
--			break;
--		udelay(10);
--	}
-+	param.cpu =3D perf - performance;
-+	param.perf =3D perf;
-+	param.state =3D state;
-+#ifdef CONFIG_SMP
-+	param.async =3D 1; /* We don't want to wait in IPI context */
-+	if (param.cpu !=3D smp_processor_id())
-+		smp_call_function(target_cpu_set_performance_ipi,
-+				(void *)&param, 1, 1);
-+	else
-+		target_cpu_set_performance(&param);
-+#else
-+	param.async =3D 0;
-+	target_cpu_set_performance(&param);
-+#endif
-+	value =3D param.retval;
-=20
- 	/* notify cpufreq */
- 	cpufreq_notify_transition(&cpufreq_freqs, CPUFREQ_POSTCHANGE);
-diff -purN linux-2.6.0-test7/arch/i386/kernel/cpu/cpufreq/Kconfig
-linux-2.6.0-test7-dbs/arch/i386/kernel/cpu/cpufreq/Kconfig
---- linux-2.6.0-test7/arch/i386/kernel/cpu/cpufreq/Kconfig
-2003-10-14 16:28:32.000000000 -0700
-+++ linux-2.6.0-test7-dbs/arch/i386/kernel/cpu/cpufreq/Kconfig
-2003-10-20 02:27:39.000000000 -0700
-@@ -36,7 +36,9 @@ config X86_ACPI_CPUFREQ
- 	depends on CPU_FREQ_TABLE && ACPI_PROCESSOR
- 	help
- 	  This driver adds a CPUFreq driver which utilizes the ACPI
--	  Processor Performance States.
-+	  Processor Performance States. This can work with variety
-+	  of platforms and support both Intel Speedstep and Intel
-Enhanced=20
-+	  Speedstep, as long as BIOS-ACPI provides the P-state
-information.
-=20
- 	  For details, take a look at linux/Documentation/cpu-freq.=20
-=20
+ 	return_VOID;
 diff -purN linux-2.6.0-test7/include/acpi/processor.h
 linux-2.6.0-test7-dbs/include/acpi/processor.h
 --- linux-2.6.0-test7/include/acpi/processor.h	2003-10-20
-00:24:43.000000000 -0700
+13:31:10.000000000 -0700
 +++ linux-2.6.0-test7-dbs/include/acpi/processor.h	2003-10-20
-02:11:08.000000000 -0700
-@@ -73,6 +73,7 @@ struct acpi_processor_performance {
- 	u16			control_register;
+13:08:11.000000000 -0700
+@@ -2,6 +2,7 @@
+ #define __ACPI_PROCESSOR_H
+=20
+ #include <linux/kernel.h>
++#include <linux/sem.h>
+=20
+ #define ACPI_PROCESSOR_BUSY_METRIC	10
+=20
+@@ -74,6 +75,8 @@ struct acpi_processor_performance {
  	u16			status_register;
  	int			state_count;
-+	int			space_id;
+ 	int			space_id;
++	int			requested_state;
++	struct acpi_processor_domain *domainp;
  	struct acpi_processor_px states[ACPI_PROCESSOR_MAX_PERFORMANCE];
  	struct cpufreq_frequency_table
 freq_table[ACPI_PROCESSOR_MAX_PERFORMANCE];
  	struct acpi_processor   *pr;
+@@ -132,6 +135,18 @@ struct acpi_processor {
+ 	struct acpi_processor_limit limit;
+ };
+=20
++#define ACPI_MAX_CPUS_PER_DOMAIN 	2
++struct acpi_processor_domain {
++	/* Domain wide data */
++	struct semaphore	sem;
++	int 			cur_state;
++	int			ref_cnt;
++	int 			members[ACPI_MAX_CPUS_PER_DOMAIN];
++	/* Domain wide function pointers */
++	int (*acpi_processor_set_performance_ptr)(struct
+acpi_processor_performance *perf, int state);
++	void (*cpufreq_notify_transition_ptr)(struct cpufreq_freqs
+*cpufreq_freqs, unsigned int state);
++};
++
+ extern int acpi_processor_get_platform_limit (
+ 	struct acpi_processor*	pr);
+ extern int acpi_processor_register_performance (
 
-------_=_NextPart_001_01C3977E.E9BD1D20
+------_=_NextPart_001_01C3977E.EF61E970
 Content-Type: application/octet-stream;
-	name="dbs1.patch"
+	name="dbs2.patch"
 Content-Transfer-Encoding: base64
-Content-Description: dbs1.patch
+Content-Description: dbs2.patch
 Content-Disposition: attachment;
-	filename="dbs1.patch"
+	filename="dbs2.patch"
 
 ZGlmZiAtcHVyTiBsaW51eC0yLjYuMC10ZXN0Ny9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVx
 L2FjcGkuYyBsaW51eC0yLjYuMC10ZXN0Ny1kYnMvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJl
 cS9hY3BpLmMKLS0tIGxpbnV4LTIuNi4wLXRlc3Q3L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZy
-ZXEvYWNwaS5jCTIwMDMtMTAtMjAgMDA6MjQ6NDMuMDAwMDAwMDAwIC0wNzAwCisrKyBsaW51eC0y
+ZXEvYWNwaS5jCTIwMDMtMTAtMjAgMTM6MzE6MTAuMDAwMDAwMDAwIC0wNzAwCisrKyBsaW51eC0y
 LjYuMC10ZXN0Ny1kYnMvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9hY3BpLmMJMjAwMy0x
-MC0yMCAwMjoxMTowMS4wMDAwMDAwMDAgLTA3MDAKQEAgLTk5LDcgKzk5LDkgQEAgYWNwaV9wcm9j
-ZXNzb3JfZ2V0X3BlcmZvcm1hbmNlX2NvbnRyb2wgKAogCiAJcmVnID0gKHN0cnVjdCBhY3BpX3Bj
-dF9yZWdpc3RlciAqKSAob2JqLmJ1ZmZlci5wb2ludGVyKTsKIAotCWlmIChyZWctPnNwYWNlX2lk
-ICE9IEFDUElfQURSX1NQQUNFX1NZU1RFTV9JTykgeworCXBlcmYtPnNwYWNlX2lkID0gKGludCkg
-cmVnLT5zcGFjZV9pZDsKKwlpZiAocmVnLT5zcGFjZV9pZCAhPSBBQ1BJX0FEUl9TUEFDRV9TWVNU
-RU1fSU8gJiYgCisJCQlyZWctPnNwYWNlX2lkICE9IEFDUElfQURSX1NQQUNFX0ZJWEVEX0hBUkRX
-QVJFKSB7CiAJCUFDUElfREVCVUdfUFJJTlQoKEFDUElfREJfRVJST1IsCiAJCQkiVW5zdXBwb3J0
-ZWQgYWRkcmVzcyBzcGFjZSBbJWRdIChjb250cm9sX3JlZ2lzdGVyKVxuIiwKIAkJCSh1MzIpIHJl
-Zy0+c3BhY2VfaWQpKTsKQEAgLTEyNiw3ICsxMjgsOCBAQCBhY3BpX3Byb2Nlc3Nvcl9nZXRfcGVy
-Zm9ybWFuY2VfY29udHJvbCAoCiAKIAlyZWcgPSAoc3RydWN0IGFjcGlfcGN0X3JlZ2lzdGVyICop
-IChvYmouYnVmZmVyLnBvaW50ZXIpOwogCi0JaWYgKHJlZy0+c3BhY2VfaWQgIT0gQUNQSV9BRFJf
-U1BBQ0VfU1lTVEVNX0lPKSB7CisJaWYgKHJlZy0+c3BhY2VfaWQgIT0gQUNQSV9BRFJfU1BBQ0Vf
-U1lTVEVNX0lPICYmIAorCQkJcmVnLT5zcGFjZV9pZCAhPSBBQ1BJX0FEUl9TUEFDRV9GSVhFRF9I
-QVJEV0FSRSkgewogCQlBQ1BJX0RFQlVHX1BSSU5UKChBQ1BJX0RCX0VSUk9SLAogCQkJIlVuc3Vw
-cG9ydGVkIGFkZHJlc3Mgc3BhY2UgWyVkXSAoc3RhdHVzX3JlZ2lzdGVyKVxuIiwKIAkJCSh1MzIp
-IHJlZy0+c3BhY2VfaWQpKTsKQEAgLTIyNCwxNiArMjI3LDEwMCBAQCBlbmQ6CiAJcmV0dXJuX1ZB
-TFVFKHJlc3VsdCk7CiB9CiAKK3N0cnVjdCBzZXRfcGVyZm9ybWFuY2VfcGFyYW0geworCWludCAJ
-CQkJCWNwdTsKKwlzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UJKnBlcmY7CisJdW5z
-aWduZWQgaW50IAkJCQlzdGF0ZTsKKwl1bnNpZ25lZCBpbnQgCQkJCWFzeW5jOworCXVuc2lnbmVk
-IGludCAJCQkJcmV0dmFsOworfTsKKworc3RhdGljIHZvaWQKK3RhcmdldF9jcHVfc2V0X3BlcmZv
-cm1hbmNlKHN0cnVjdCBzZXRfcGVyZm9ybWFuY2VfcGFyYW0JKnBhcmFtKQoreworCXN0cnVjdCBh
-Y3BpX3Byb2Nlc3Nvcl9wZXJmb3JtYW5jZQkqcGVyZiA9IHBhcmFtLT5wZXJmOworCXUxNgkJcG9y
-dCA9IDA7CisJaW50CQlzdGF0ZSA9IHBhcmFtLT5zdGF0ZTsKKwl1bnNpZ25lZCBpbnQJdmFsdWUg
-PSBwZXJmLT5zdGF0ZXNbc3RhdGVdLmNvbnRyb2w7CisJaW50CQlpID0gMDsKKworCUFDUElfRlVO
-Q1RJT05fVFJBQ0UoInRhcmdldF9jcHVfc2V0X3BlcmZvcm1hbmNlIik7CisJaWYgKHBlcmYtPnNw
-YWNlX2lkID09IEFDUElfQURSX1NQQUNFX0ZJWEVEX0hBUkRXQVJFKSB7CisJCUFDUElfREVCVUdf
-UFJJTlQoKEFDUElfREJfSU5GTywgIldyaXRpbmcgMHgleCB0byBNU1IgMHgleFxuIiwgCisJCQkJ
-CXZhbHVlLCBwZXJmLT5jb250cm9sX3JlZ2lzdGVyKSk7CisJCXdybXNyKHBlcmYtPmNvbnRyb2xf
-cmVnaXN0ZXIsIHZhbHVlLCAwKTsKKwl9IGVsc2UgeworCQlwb3J0ID0gcGVyZi0+Y29udHJvbF9y
-ZWdpc3RlcjsKKwkJQUNQSV9ERUJVR19QUklOVCgoQUNQSV9EQl9JTkZPLCAKKwkJCSJXcml0aW5n
-IDB4JTA0eCB0byBwb3J0IDB4JTA0eFxuIiwgdmFsdWUsIHBvcnQpKTsKKworCQlvdXRsKHZhbHVl
-LCBwb3J0KTsgCisJfQorCisJaWYgKHBhcmFtLT5hc3luYykgeworCQkvKiBXZSBkb24ndCB3YW50
-IHRvIHdhaXQgZm9yIHRoZSBzdGF0dXMgY2hhbmdlIGhlcmUsIGFzIAorCQkgKiB0aGF0IHdpbGwg
-YWZmZWN0IHBlcmZvcm1hbmNlLCBlc3BlY2lhbGx5IHdpdGggZnJlcXVlbnQgCisJCSAqIGZyZXF1
-ZW5jeSBzd2l0Y2hlcy4gV2UgYXNzdW1lIHRoZSB0cmFuaXNpdGlvbiAKKwkJICogZ29uZSB0aHJv
-dWdoIGFuZCBjb250aW51ZS4KKwkJICovCisJCXBhcmFtLT5yZXR2YWwgPSBwZXJmLT5zdGF0ZXNb
-c3RhdGVdLnN0YXR1czsKKwkJcmV0dXJuX1ZPSUQ7CisJfQorCisJaWYgKHBlcmYtPnNwYWNlX2lk
-ID09IEFDUElfQURSX1NQQUNFX0ZJWEVEX0hBUkRXQVJFKSB7CisJCUFDUElfREVCVUdfUFJJTlQo
-KEFDUElfREJfSU5GTywgCisJCQkiTG9va2luZyBmb3IgMHglMDJ4IGZyb20gTVNSIDB4JTA0eFxu
-IiwKKwkJCSh1MTYpIHBlcmYtPnN0YXRlc1tzdGF0ZV0uc3RhdHVzLCAKKwkJCXBlcmYtPnN0YXR1
-c19yZWdpc3RlcikpOworCisJCWZvciAoaSA9IDA7IGkgPCAxMDA7IGkrKykgeworCQkJdW5zaWdu
-ZWQgbG9uZyB1bnVzZWRfaGk7CisJCQlyZG1zcihwZXJmLT5zdGF0dXNfcmVnaXN0ZXIsIHZhbHVl
-LCB1bnVzZWRfaGkpOworCQkJaWYgKHZhbHVlID09IHBlcmYtPnN0YXRlc1tzdGF0ZV0uc3RhdHVz
-KQorCQkJCWJyZWFrOworCQkJdWRlbGF5KDEwKTsKKwkJfQorCX0gZWxzZSB7CisJCXBvcnQgPSBw
-ZXJmLT5zdGF0dXNfcmVnaXN0ZXI7CisKKwkJQUNQSV9ERUJVR19QUklOVCgoQUNQSV9EQl9JTkZP
-LCAKKwkJCSJMb29raW5nIGZvciAweCUwNHggZnJvbSBwb3J0IDB4JTA0eFxuIiwKKwkJCSh1MTYp
-IHBlcmYtPnN0YXRlc1tzdGF0ZV0uc3RhdHVzLCBwb3J0KSk7CisKKwkJZm9yIChpID0gMDsgaSA8
-IDEwMDsgaSsrKSB7CisJCQl2YWx1ZSA9IGlubChwb3J0KTsKKwkJCWlmICh2YWx1ZSA9PSBwZXJm
-LT5zdGF0ZXNbc3RhdGVdLnN0YXR1cykKKwkJCQlicmVhazsKKwkJCXVkZWxheSgxMCk7CisJCX0K
-Kwl9CisJcGFyYW0tPnJldHZhbCA9IHZhbHVlOworCXJldHVybl9WT0lEOworfQorCisjaWZkZWYg
-Q09ORklHX1NNUAorc3RhdGljIHZvaWQKK3RhcmdldF9jcHVfc2V0X3BlcmZvcm1hbmNlX2lwaSh2
-b2lkICpkYXRhKQoreworCXN0cnVjdCBzZXRfcGVyZm9ybWFuY2VfcGFyYW0JKnBhcmFtOworCisJ
-cGFyYW0gPSAoc3RydWN0IHNldF9wZXJmb3JtYW5jZV9wYXJhbSAqKSBkYXRhOworCWlmIChwYXJh
-bS0+Y3B1ICE9IHNtcF9wcm9jZXNzb3JfaWQoKSkKKwkJcmV0dXJuOworCisJdGFyZ2V0X2NwdV9z
-ZXRfcGVyZm9ybWFuY2UocGFyYW0pOworfQorI2VuZGlmCiAKIHN0YXRpYyBpbnQKIGFjcGlfcHJv
-Y2Vzc29yX3NldF9wZXJmb3JtYW5jZSAoCiAJc3RydWN0IGFjcGlfcHJvY2Vzc29yX3BlcmZvcm1h
-bmNlCSpwZXJmLAogCWludAkJCXN0YXRlKQogewotCXUxNgkJCXBvcnQgPSAwOwotCXUxNgkJCXZh
-bHVlID0gMDsKKwl1bnNpZ25lZCBpbnQJCXZhbHVlID0gMDsKIAlpbnQJCQlpID0gMDsKIAlzdHJ1
-Y3QgY3B1ZnJlcV9mcmVxcyAgICBjcHVmcmVxX2ZyZXFzOworCXN0cnVjdCBzZXRfcGVyZm9ybWFu
-Y2VfcGFyYW0gcGFyYW07CiAKIAlBQ1BJX0ZVTkNUSU9OX1RSQUNFKCJhY3BpX3Byb2Nlc3Nvcl9z
-ZXRfcGVyZm9ybWFuY2UiKTsKIApAQCAtMjY3LDggKzM1NCwxMiBAQCBhY3BpX3Byb2Nlc3Nvcl9z
-ZXRfcGVyZm9ybWFuY2UgKAogCiAJLyogY3B1ZnJlcSBmcmVxdWVuY3kgc3RydWN0ICovCiAJY3B1
-ZnJlcV9mcmVxcy5jcHUgPSBwZXJmLT5wci0+aWQ7Ci0JY3B1ZnJlcV9mcmVxcy5vbGQgPSBwZXJm
-LT5zdGF0ZXNbcGVyZi0+c3RhdGVdLmNvcmVfZnJlcXVlbmN5OwotCWNwdWZyZXFfZnJlcXMubmV3
-ID0gcGVyZi0+c3RhdGVzW3N0YXRlXS5jb3JlX2ZyZXF1ZW5jeTsKKwkvKgorCSAqIGNwdWZyZXFf
-bm90aWZpZXIgbmVlZHMgdG8gc2VuZCB0aGUgZnJlcSBpbiBLSHouIEJ1dCBhY3BpCisJICogZGF0
-YSB3ZSBoYXZlIGlzIGluIE1IegorCSAqLworCWNwdWZyZXFfZnJlcXMub2xkID0gcGVyZi0+c3Rh
-dGVzW3BlcmYtPnN0YXRlXS5jb3JlX2ZyZXF1ZW5jeSAqIDEwMDA7CisJY3B1ZnJlcV9mcmVxcy5u
-ZXcgPSBwZXJmLT5zdGF0ZXNbc3RhdGVdLmNvcmVfZnJlcXVlbmN5ICogMTAwMDsKIAogCS8qIG5v
-dGlmeSBjcHVmcmVxICovCiAJY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmY3B1ZnJlcV9mcmVx
-cywgQ1BVRlJFUV9QUkVDSEFOR0UpOwpAQCAtMjc2LDM1ICszNjcsMjcgQEAgYWNwaV9wcm9jZXNz
-b3Jfc2V0X3BlcmZvcm1hbmNlICgKIAkvKgogCSAqIEZpcnN0IHdlIHdyaXRlIHRoZSB0YXJnZXQg
-c3RhdGUncyAnY29udHJvbCcgdmFsdWUgdG8gdGhlCiAJICogY29udHJvbF9yZWdpc3Rlci4KLQkg
-Ki8KLQotCXBvcnQgPSBwZXJmLT5jb250cm9sX3JlZ2lzdGVyOwotCXZhbHVlID0gKHUxNikgcGVy
-Zi0+c3RhdGVzW3N0YXRlXS5jb250cm9sOwotCi0JQUNQSV9ERUJVR19QUklOVCgoQUNQSV9EQl9J
-TkZPLCAKLQkJIldyaXRpbmcgMHglMDR4IHRvIHBvcnQgMHglMDR4XG4iLCB2YWx1ZSwgcG9ydCkp
-OwotCi0Jb3V0dyh2YWx1ZSwgcG9ydCk7IAotCi0JLyoKIAkgKiBUaGVuIHdlIHJlYWQgdGhlICdz
-dGF0dXNfcmVnaXN0ZXInIGFuZCBjb21wYXJlIHRoZSB2YWx1ZSB3aXRoIHRoZQogCSAqIHRhcmdl
-dCBzdGF0ZSdzICdzdGF0dXMnIHRvIG1ha2Ugc3VyZSB0aGUgdHJhbnNpdGlvbiB3YXMgc3VjY2Vz
-c2Z1bC4KIAkgKiBOb3RlIHRoYXQgd2UnbGwgcG9sbCBmb3IgdXAgdG8gMW1zICgxMDAgY3ljbGVz
-IG9mIDEwdXMpIGJlZm9yZQogCSAqIGdpdmluZyB1cC4KIAkgKi8KIAotCXBvcnQgPSBwZXJmLT5z
-dGF0dXNfcmVnaXN0ZXI7Ci0KLQlBQ1BJX0RFQlVHX1BSSU5UKChBQ1BJX0RCX0lORk8sIAotCQki
-TG9va2luZyBmb3IgMHglMDR4IGZyb20gcG9ydCAweCUwNHhcbiIsCi0JCSh1MTYpIHBlcmYtPnN0
-YXRlc1tzdGF0ZV0uc3RhdHVzLCBwb3J0KSk7Ci0KLQlmb3IgKGk9MDsgaTwxMDA7IGkrKykgewot
-CQl2YWx1ZSA9IGludyhwb3J0KTsKLQkJaWYgKHZhbHVlID09ICh1MTYpIHBlcmYtPnN0YXRlc1tz
-dGF0ZV0uc3RhdHVzKQotCQkJYnJlYWs7Ci0JCXVkZWxheSgxMCk7Ci0JfQorCXBhcmFtLmNwdSA9
-IHBlcmYgLSBwZXJmb3JtYW5jZTsKKwlwYXJhbS5wZXJmID0gcGVyZjsKKwlwYXJhbS5zdGF0ZSA9
-IHN0YXRlOworI2lmZGVmIENPTkZJR19TTVAKKwlwYXJhbS5hc3luYyA9IDE7IC8qIFdlIGRvbid0
-IHdhbnQgdG8gd2FpdCBpbiBJUEkgY29udGV4dCAqLworCWlmIChwYXJhbS5jcHUgIT0gc21wX3By
-b2Nlc3Nvcl9pZCgpKQorCQlzbXBfY2FsbF9mdW5jdGlvbih0YXJnZXRfY3B1X3NldF9wZXJmb3Jt
-YW5jZV9pcGksCisJCQkJKHZvaWQgKikmcGFyYW0sIDEsIDEpOworCWVsc2UKKwkJdGFyZ2V0X2Nw
-dV9zZXRfcGVyZm9ybWFuY2UoJnBhcmFtKTsKKyNlbHNlCisJcGFyYW0uYXN5bmMgPSAwOworCXRh
-cmdldF9jcHVfc2V0X3BlcmZvcm1hbmNlKCZwYXJhbSk7CisjZW5kaWYKKwl2YWx1ZSA9IHBhcmFt
-LnJldHZhbDsKIAogCS8qIG5vdGlmeSBjcHVmcmVxICovCiAJY3B1ZnJlcV9ub3RpZnlfdHJhbnNp
-dGlvbigmY3B1ZnJlcV9mcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsKZGlmZiAtcHVyTiBsaW51
-eC0yLjYuMC10ZXN0Ny9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL0tjb25maWcgbGludXgt
-Mi42LjAtdGVzdDctZGJzL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvS2NvbmZpZwotLS0g
-bGludXgtMi42LjAtdGVzdDcvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9LY29uZmlnCTIw
-MDMtMTAtMTQgMTY6Mjg6MzIuMDAwMDAwMDAwIC0wNzAwCisrKyBsaW51eC0yLjYuMC10ZXN0Ny1k
-YnMvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9LY29uZmlnCTIwMDMtMTAtMjAgMDI6Mjc6
-MzkuMDAwMDAwMDAwIC0wNzAwCkBAIC0zNiw3ICszNiw5IEBAIGNvbmZpZyBYODZfQUNQSV9DUFVG
-UkVRCiAJZGVwZW5kcyBvbiBDUFVfRlJFUV9UQUJMRSAmJiBBQ1BJX1BST0NFU1NPUgogCWhlbHAK
-IAkgIFRoaXMgZHJpdmVyIGFkZHMgYSBDUFVGcmVxIGRyaXZlciB3aGljaCB1dGlsaXplcyB0aGUg
-QUNQSQotCSAgUHJvY2Vzc29yIFBlcmZvcm1hbmNlIFN0YXRlcy4KKwkgIFByb2Nlc3NvciBQZXJm
-b3JtYW5jZSBTdGF0ZXMuIFRoaXMgY2FuIHdvcmsgd2l0aCB2YXJpZXR5CisJICBvZiBwbGF0Zm9y
-bXMgYW5kIHN1cHBvcnQgYm90aCBJbnRlbCBTcGVlZHN0ZXAgYW5kIEludGVsIEVuaGFuY2VkIAor
-CSAgU3BlZWRzdGVwLCBhcyBsb25nIGFzIEJJT1MtQUNQSSBwcm92aWRlcyB0aGUgUC1zdGF0ZSBp
-bmZvcm1hdGlvbi4KIAogCSAgRm9yIGRldGFpbHMsIHRha2UgYSBsb29rIGF0IGxpbnV4L0RvY3Vt
-ZW50YXRpb24vY3B1LWZyZXEuIAogCmRpZmYgLXB1ck4gbGludXgtMi42LjAtdGVzdDcvaW5jbHVk
-ZS9hY3BpL3Byb2Nlc3Nvci5oIGxpbnV4LTIuNi4wLXRlc3Q3LWRicy9pbmNsdWRlL2FjcGkvcHJv
-Y2Vzc29yLmgKLS0tIGxpbnV4LTIuNi4wLXRlc3Q3L2luY2x1ZGUvYWNwaS9wcm9jZXNzb3IuaAky
-MDAzLTEwLTIwIDAwOjI0OjQzLjAwMDAwMDAwMCAtMDcwMAorKysgbGludXgtMi42LjAtdGVzdDct
-ZGJzL2luY2x1ZGUvYWNwaS9wcm9jZXNzb3IuaAkyMDAzLTEwLTIwIDAyOjExOjA4LjAwMDAwMDAw
-MCAtMDcwMApAQCAtNzMsNiArNzMsNyBAQCBzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFu
-Y2UgewogCXUxNgkJCWNvbnRyb2xfcmVnaXN0ZXI7CiAJdTE2CQkJc3RhdHVzX3JlZ2lzdGVyOwog
-CWludAkJCXN0YXRlX2NvdW50OworCWludAkJCXNwYWNlX2lkOwogCXN0cnVjdCBhY3BpX3Byb2Nl
-c3Nvcl9weCBzdGF0ZXNbQUNQSV9QUk9DRVNTT1JfTUFYX1BFUkZPUk1BTkNFXTsKIAlzdHJ1Y3Qg
-Y3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgZnJlcV90YWJsZVtBQ1BJX1BST0NFU1NPUl9NQVhfUEVS
-Rk9STUFOQ0VdOwogCXN0cnVjdCBhY3BpX3Byb2Nlc3NvciAgICpwcjsK
+MC0yMCAxMzoyOTo0MS4wMDAwMDAwMDAgLTA3MDAKQEAgLTM0LDYgKzM0LDcgQEAKICNpbmNsdWRl
+IDxhc20vaW8uaD4KICNpbmNsdWRlIDxhc20vZGVsYXkuaD4KICNpbmNsdWRlIDxhc20vdWFjY2Vz
+cy5oPgorI2luY2x1ZGUgPGxpbnV4L3NlbS5oPgogCiAjaW5jbHVkZSA8bGludXgvYWNwaS5oPgog
+I2luY2x1ZGUgPGFjcGkvcHJvY2Vzc29yLmg+CkBAIC0zNjIsNyArMzYzLDggQEAgYWNwaV9wcm9j
+ZXNzb3Jfc2V0X3BlcmZvcm1hbmNlICgKIAljcHVmcmVxX2ZyZXFzLm5ldyA9IHBlcmYtPnN0YXRl
+c1tzdGF0ZV0uY29yZV9mcmVxdWVuY3kgKiAxMDAwOwogCiAJLyogbm90aWZ5IGNwdWZyZXEgKi8K
+LQljcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCZjcHVmcmVxX2ZyZXFzLCBDUFVGUkVRX1BSRUNI
+QU5HRSk7CisJcGVyZi0+ZG9tYWlucC0+Y3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbl9wdHIoCisJ
+CQkmY3B1ZnJlcV9mcmVxcywgQ1BVRlJFUV9QUkVDSEFOR0UpOwogCiAJLyoKIAkgKiBGaXJzdCB3
+ZSB3cml0ZSB0aGUgdGFyZ2V0IHN0YXRlJ3MgJ2NvbnRyb2wnIHZhbHVlIHRvIHRoZQpAQCAtMzkw
+LDE0ICszOTIsMTcgQEAgYWNwaV9wcm9jZXNzb3Jfc2V0X3BlcmZvcm1hbmNlICgKIAl2YWx1ZSA9
+IHBhcmFtLnJldHZhbDsKIAogCS8qIG5vdGlmeSBjcHVmcmVxICovCi0JY3B1ZnJlcV9ub3RpZnlf
+dHJhbnNpdGlvbigmY3B1ZnJlcV9mcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsKKwlwZXJmLT5k
+b21haW5wLT5jcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uX3B0cigKKwkJCSZjcHVmcmVxX2ZyZXFz
+LCBDUFVGUkVRX1BPU1RDSEFOR0UpOwogCiAJaWYgKHZhbHVlICE9ICh1MTYpIHBlcmYtPnN0YXRl
+c1tzdGF0ZV0uc3RhdHVzKSB7CiAJCXVuc2lnbmVkIGludCB0bXAgPSBjcHVmcmVxX2ZyZXFzLm5l
+dzsKIAkJY3B1ZnJlcV9mcmVxcy5uZXcgPSBjcHVmcmVxX2ZyZXFzLm9sZDsKIAkJY3B1ZnJlcV9m
+cmVxcy5vbGQgPSB0bXA7Ci0JCWNwdWZyZXFfbm90aWZ5X3RyYW5zaXRpb24oJmNwdWZyZXFfZnJl
+cXMsIENQVUZSRVFfUFJFQ0hBTkdFKTsKLQkJY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmY3B1
+ZnJlcV9mcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsKKwkJcGVyZi0+ZG9tYWlucC0+Y3B1ZnJl
+cV9ub3RpZnlfdHJhbnNpdGlvbl9wdHIoCisJCQkJJmNwdWZyZXFfZnJlcXMsIENQVUZSRVFfUFJF
+Q0hBTkdFKTsKKwkJcGVyZi0+ZG9tYWlucC0+Y3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbl9wdHIo
+CisJCQkJJmNwdWZyZXFfZnJlcXMsIENQVUZSRVFfUE9TVENIQU5HRSk7CiAJCUFDUElfREVCVUdf
+UFJJTlQoKEFDUElfREJfV0FSTiwgIlRyYW5zaXRpb24gZmFpbGVkXG4iKSk7CiAJCXJldHVybl9W
+QUxVRSgtRU5PREVWKTsKIAl9CkBAIC01NjgsNyArNTczLDggQEAgYWNwaV9jcHVmcmVxX3Rhcmdl
+dCAoCiAJaWYgKHJlc3VsdCkKIAkJcmV0dXJuX1ZBTFVFKHJlc3VsdCk7CiAKLQlyZXN1bHQgPSBh
+Y3BpX3Byb2Nlc3Nvcl9zZXRfcGVyZm9ybWFuY2UgKHBlcmYsIG5leHRfc3RhdGUpOworCXJlc3Vs
+dCA9IHBlcmYtPmRvbWFpbnAtPmFjcGlfcHJvY2Vzc29yX3NldF9wZXJmb3JtYW5jZV9wdHIoCisJ
+CQlwZXJmLCBuZXh0X3N0YXRlKTsKIAogCXJldHVybl9WQUxVRShyZXN1bHQpOwogfQpAQCAtNjMw
+LDYgKzYzNiwxNDQgQEAgYWNwaV9wcm9jZXNzb3JfZ2V0X3BlcmZvcm1hbmNlX2luZm8gKAogCXJl
+dHVybl9WQUxVRSgwKTsKIH0KIAorc3RhdGljIHN0cnVjdCBhY3BpX3Byb2Nlc3Nvcl9kb21haW4g
+YWNwaV9wcm9jZXNzb3JfZG9tYWluX2RlZiA9IHsKKwkuc2VtID0gX19NVVRFWF9JTklUSUFMSVpF
+UihhY3BpX3Byb2Nlc3Nvcl9kb21haW5fZGVmLnNlbSksCisJLnJlZl9jbnQgPSAwLAorCS5hY3Bp
+X3Byb2Nlc3Nvcl9zZXRfcGVyZm9ybWFuY2VfcHRyID0gYWNwaV9wcm9jZXNzb3Jfc2V0X3BlcmZv
+cm1hbmNlLAorCS5jcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uX3B0ciA9IGNwdWZyZXFfbm90aWZ5
+X3RyYW5zaXRpb24sCit9OworCisjaWZkZWYgQ09ORklHX1g4Nl9IVAorc3RhdGljIHZvaWQgY3B1
+ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbl9odChzdHJ1Y3QgY3B1ZnJlcV9mcmVxcyAqY3B1ZnJlcV9m
+cmVxcywgdW5zaWduZWQgaW50IHN0YXRlKQoreworCXVuc2lnbmVkIGludCBjcHUgPSBjcHVmcmVx
+X2ZyZXFzLT5jcHU7CisJQUNQSV9GVU5DVElPTl9UUkFDRSgiY3B1ZnJlcV9ub3RpZnlfdHJhbnNp
+dGlvbl9odCIpOworCWNwdWZyZXFfbm90aWZ5X3RyYW5zaXRpb24oY3B1ZnJlcV9mcmVxcywgc3Rh
+dGUpOworCWNwdWZyZXFfZnJlcXMtPmNwdSA9IGNwdV9zaWJsaW5nX21hcFtjcHVdOworCWNwdWZy
+ZXFfbm90aWZ5X3RyYW5zaXRpb24oY3B1ZnJlcV9mcmVxcywgc3RhdGUpOworCWNwdWZyZXFfZnJl
+cXMtPmNwdSA9IGNwdTsKKwlyZXR1cm5fVk9JRDsKK30KKworc3RhdGljIGludCBhY3BpX3Byb2Nl
+c3Nvcl9zZXRfcGVyZm9ybWFuY2VfaHQoc3RydWN0IGFjcGlfcHJvY2Vzc29yX3BlcmZvcm1hbmNl
+ICpwZXJmLCBpbnQgc3RhdGUpCit7CisJc3RydWN0IGFjcGlfcHJvY2Vzc29yX2RvbWFpbiAJKmRv
+bWFpbnAgPSBwZXJmLT5kb21haW5wOworCWludAkJcmVzdWx0ID0gMDsKKwlpbnQgCQlpOworCWlu
+dCAJCWxvX3N0YXRlOyAvKiBoaWdoZXN0IGZyZXEgKi8KKworCUFDUElfRlVOQ1RJT05fVFJBQ0Uo
+ImFjcGlfcHJvY2Vzc29yX3NldF9wZXJmb3JtYW5jZV9odCIpOworCWRvd24oJihkb21haW5wLT5z
+ZW0pKTsKKwkvKgorCSAqIFRyYW5zaXRpb24gaW50byBuZXcgc3RhdGUsIG9ubHkgaWYgaXQgaXMg
+dGhlIGxvd2VzdCBhbW9uZworCSAqIGFsbCBzaWJsaW5nIHJlcXVlc3RlZCBzdGF0ZXMuCisJICog
+c2VtYXBob3JlIGJlbG93IHNob3VsZCBiZSBoZWxkIGFjcm9zcyB0aGUgcGFja2FnZS4KKwkgKi8K
+KwlwZXJmLT5yZXF1ZXN0ZWRfc3RhdGUgPSBzdGF0ZTsKKwlsb19zdGF0ZSA9IHN0YXRlOworCWZv
+ciAoaSA9IDA7IGkgPCBkb21haW5wLT5yZWZfY250OyBpKyspIHsKKwkJaWYgKHBlcmZvcm1hbmNl
+W2RvbWFpbnAtPm1lbWJlcnNbaV1dLnJlcXVlc3RlZF9zdGF0ZSA8IGxvX3N0YXRlKQorCQkJbG9f
+c3RhdGUgPSAKKwkJCSAgICBwZXJmb3JtYW5jZVtkb21haW5wLT5tZW1iZXJzW2ldXS5yZXF1ZXN0
+ZWRfc3RhdGU7CisJfQorCisJaWYgKGxvX3N0YXRlID09IGRvbWFpbnAtPmN1cl9zdGF0ZSkgewor
+CQl1cCgmKGRvbWFpbnAtPnNlbSkpOworCQlyZXR1cm5fVkFMVUUoMCk7CisJfQorCisJcmVzdWx0
+ID0gYWNwaV9wcm9jZXNzb3Jfc2V0X3BlcmZvcm1hbmNlKHBlcmYsIGxvX3N0YXRlKTsKKwlpZiAo
+cmVzdWx0ID09IDApIHsKKwkJZG9tYWlucC0+Y3VyX3N0YXRlID0gbG9fc3RhdGU7CisJCWZvciAo
+aSA9IDA7IGkgPCBkb21haW5wLT5yZWZfY250OyBpKyspCisJCQlwZXJmb3JtYW5jZVtkb21haW5w
+LT5tZW1iZXJzW2ldXS5zdGF0ZSA9IGxvX3N0YXRlOworCX0KKworCXVwKCYoZG9tYWlucC0+c2Vt
+KSk7CisJcmV0dXJuX1ZBTFVFKHJlc3VsdCk7Cit9CisKK3N0YXRpYyBpbnQKK2FjcGlfcHJvY2Vz
+c29yX2RvbWFpbl9odF9pbml0KAorCQlzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2Ug
+KnBlcmYsIGludCBjcHUpCit7CisJaW50IHNpYmxpbmdfY3B1ID0gY3B1X3NpYmxpbmdfbWFwW2Nw
+dV07CisJc3RydWN0IGFjcGlfcHJvY2Vzc29yX2RvbWFpbiAqZG9tYWlucDsKKworCUFDUElfRlVO
+Q1RJT05fVFJBQ0UoImFjcGlfcHJvY2Vzc29yX2RvbWFpbl9odF9pbml0Iik7CisJaWYgKGNwdSA8
+IHNpYmxpbmdfY3B1KSB7CisJCWRvbWFpbnAgPSBrbWFsbG9jKHNpemVvZihzdHJ1Y3QgYWNwaV9w
+cm9jZXNzb3JfZG9tYWluKSwKKwkJCQlHRlBfS0VSTkVMKTsKKwkJaWYgKGRvbWFpbnAgPT0gTlVM
+TCkKKwkJCXJldHVybl9WQUxVRSgtRU5PTUVNKTsKKworCQlpbml0X01VVEVYKCYoZG9tYWlucC0+
+c2VtKSk7CisJCWRvbWFpbnAtPmFjcGlfcHJvY2Vzc29yX3NldF9wZXJmb3JtYW5jZV9wdHIgPSAK
+KwkJCQlhY3BpX3Byb2Nlc3Nvcl9zZXRfcGVyZm9ybWFuY2VfaHQ7CisJCWRvbWFpbnAtPmNwdWZy
+ZXFfbm90aWZ5X3RyYW5zaXRpb25fcHRyID0gCisJCQkJY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlv
+bl9odDsKKwkJZG9tYWlucC0+Y3VyX3N0YXRlID0gMDsKKwkJZG9tYWlucC0+cmVmX2NudCA9IDA7
+CisJCWRvbWFpbnAtPm1lbWJlcnNbZG9tYWlucC0+cmVmX2NudF0gPSBjcHU7CisJCWRvbWFpbnAt
+PnJlZl9jbnQrKzsKKwkJcGVyZltjcHVdLmRvbWFpbnAgPSBkb21haW5wOworCX0gZWxzZSB7CisJ
+CXBlcmZbY3B1XS5kb21haW5wID0gcGVyZltzaWJsaW5nX2NwdV0uZG9tYWlucDsKKwkJZG9tYWlu
+cCA9IHBlcmZbY3B1XS5kb21haW5wOworCQlpZiAoZG9tYWlucC0+cmVmX2NudCA9PSBBQ1BJX01B
+WF9DUFVTX1BFUl9ET01BSU4pIHsKKwkJCUFDUElfREVCVUdfUFJJTlQoKEFDUElfREJfRVJST1Is
+CisJCQkJIk9ubHkgJWQgQ1BVUyBwZXIgZG9tYWluIGlzIHN1cHBvcnRlZFxuIiwKKwkJCQlBQ1BJ
+X01BWF9DUFVTX1BFUl9ET01BSU4pKTsKKwkJCXJldHVybl9WQUxVRSgtMSk7CisJCX0KKwkJZG9t
+YWlucC0+bWVtYmVyc1tkb21haW5wLT5yZWZfY250XSA9IGNwdTsKKwkJZG9tYWlucC0+cmVmX2Nu
+dCsrOworCX0KKwlyZXR1cm5fVkFMVUUoMCk7Cit9CisjZW5kaWYgLyogQ09ORklHX1g4Nl9IVCAq
+LworCitzdGF0aWMgaW50CithY3BpX3Byb2Nlc3Nvcl9kb21haW5faW5pdChzdHJ1Y3QgYWNwaV9w
+cm9jZXNzb3JfcGVyZm9ybWFuY2UgKnBlcmYsIGludCBjcHUpCit7CisKKyNpZmRlZiBDT05GSUdf
+WDg2X0hUCisJaW50IGh0X3ByZXNlbnQgPSAoKGNwdV9oYXNfaHQpICYmIChzbXBfbnVtX3NpYmxp
+bmdzID09IDIpKTsKKyNlbmRpZgorCisJQUNQSV9GVU5DVElPTl9UUkFDRSgiYWNwaV9wcm9jZXNz
+b3JfZG9tYWluX2luaXQiKTsKKworI2lmZGVmIENPTkZJR19YODZfSFQKKwlpZiAoaHRfcHJlc2Vu
+dCkgeworCQlpbnQgcmV0dmFsOworCQlyZXR2YWwgPSBhY3BpX3Byb2Nlc3Nvcl9kb21haW5faHRf
+aW5pdChwZXJmLCBjcHUpOworCQlyZXR1cm5fVkFMVUUocmV0dmFsKTsKKwl9CisJLyogRkFMTFRI
+UlUgYW5kIHVzZSBkZWZhdWx0IGRvbWFpbiBzdHJ1Y3R1cmUgKi8KKyNlbmRpZgorCXBlcmZbY3B1
+XS5kb21haW5wID0gJmFjcGlfcHJvY2Vzc29yX2RvbWFpbl9kZWY7CisJcmV0dXJuX1ZBTFVFKDAp
+OworfQorCitzdGF0aWMgdm9pZAorYWNwaV9wcm9jZXNzb3JfZG9tYWluX2V4aXQoc3RydWN0IGFj
+cGlfcHJvY2Vzc29yX3BlcmZvcm1hbmNlICpwZXJmLCBpbnQgY3B1KQoreworCUFDUElfRlVOQ1RJ
+T05fVFJBQ0UoImFjcGlfcHJvY2Vzc29yX2RvbWFpbl9leGl0Iik7CisjaWZkZWYgQ09ORklHX1g4
+Nl9IVAorCWlmICghcGVyZltjcHVdLmRvbWFpbnApCisJCXJldHVybl9WT0lEOworCisJaWYgKHBl
+cmZbY3B1XS5kb21haW5wID09ICZhY3BpX3Byb2Nlc3Nvcl9kb21haW5fZGVmKQorCQlyZXR1cm5f
+Vk9JRDsKKworCXBlcmZbY3B1XS5kb21haW5wLT5yZWZfY250LS07CisJaWYgKHBlcmZbY3B1XS5k
+b21haW5wLT5yZWZfY250ID09IDApIHsKKwkJa2ZyZWUocGVyZltjcHVdLmRvbWFpbnApOworCQlw
+ZXJmW2NwdV0uZG9tYWlucCA9IE5VTEw7CisJfQorI2VuZGlmIC8qIENPTkZJR19YODZfSFQgKi8K
+KwlyZXR1cm5fVk9JRDsKK30KIAogc3RhdGljIGludAogYWNwaV9jcHVmcmVxX2NwdV9pbml0ICgK
+QEAgLTc0Miw4ICs4ODYsMTMgQEAgYWNwaV9jcHVmcmVxX2luaXQgKHZvaWQpCiAKIAkvKiByZWdp
+c3RlciBzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UgcGVyZm9ybWFuY2UgKi8KIAlm
+b3IgKGk9MDsgaTxOUl9DUFVTOyBpKyspIHsKLQkJaWYgKGNwdV9vbmxpbmUoaSkpCisJCWlmIChj
+cHVfb25saW5lKGkpKSB7CiAJCQlhY3BpX3Byb2Nlc3Nvcl9yZWdpc3Rlcl9wZXJmb3JtYW5jZSgm
+cGVyZm9ybWFuY2VbaV0sICZwciwgaSk7CisJCQlpZiAoYWNwaV9wcm9jZXNzb3JfZG9tYWluX2lu
+aXQocGVyZm9ybWFuY2UsIGkpIDwgMCkgeworCQkJCXJlc3VsdCA9IC1FTk9NRU07CisJCQkJZ290
+byBlcnIwOworCQkJfQorCQl9CiAJfQogCiAJLyogaW5pdGlhbGl6ZSAgKi8KQEAgLTgwNCw2ICs5
+NTMsMTAgQEAgYWNwaV9jcHVmcmVxX2luaXQgKHZvaWQpCiAJY3B1ZnJlcV91bnJlZ2lzdGVyX2Ry
+aXZlcigmYWNwaV9jcHVmcmVxX2RyaXZlcik7CiAJCiAgZXJyMDoKKwlmb3IgKGkgPSAwOyBpIDwg
+TlJfQ1BVUzsgaSsrKQorCQlpZiAoY3B1X29ubGluZShpKSkKKwkJCWFjcGlfcHJvY2Vzc29yX2Rv
+bWFpbl9leGl0KHBlcmZvcm1hbmNlLCBpKTsKKwogCS8qIHVucmVnaXN0ZXIgc3RydWN0IGFjcGlf
+cHJvY2Vzc29yX3BlcmZvcm1hbmNlIHBlcmZvcm1hbmNlICovCiAJZm9yIChpPTA7IGk8TlJfQ1BV
+UzsgaSsrKSB7CiAJCWlmIChwZXJmb3JtYW5jZVtpXS5wcikgewpAQCAtODQyLDYgKzk5NSwxMCBA
+QCBhY3BpX2NwdWZyZXFfZXhpdCAodm9pZCkKIAkJfQogCX0KIAorCWZvciAoaSA9IDA7IGkgPCBO
+Ul9DUFVTOyBpKyspCisJCWlmIChjcHVfb25saW5lKGkpKQorCQkJYWNwaV9wcm9jZXNzb3JfZG9t
+YWluX2V4aXQocGVyZm9ybWFuY2UsIGkpOworCiAJa2ZyZWUocGVyZm9ybWFuY2UpOwogCiAJcmV0
+dXJuX1ZPSUQ7CmRpZmYgLXB1ck4gbGludXgtMi42LjAtdGVzdDcvaW5jbHVkZS9hY3BpL3Byb2Nl
+c3Nvci5oIGxpbnV4LTIuNi4wLXRlc3Q3LWRicy9pbmNsdWRlL2FjcGkvcHJvY2Vzc29yLmgKLS0t
+IGxpbnV4LTIuNi4wLXRlc3Q3L2luY2x1ZGUvYWNwaS9wcm9jZXNzb3IuaAkyMDAzLTEwLTIwIDEz
+OjMxOjEwLjAwMDAwMDAwMCAtMDcwMAorKysgbGludXgtMi42LjAtdGVzdDctZGJzL2luY2x1ZGUv
+YWNwaS9wcm9jZXNzb3IuaAkyMDAzLTEwLTIwIDEzOjA4OjExLjAwMDAwMDAwMCAtMDcwMApAQCAt
+Miw2ICsyLDcgQEAKICNkZWZpbmUgX19BQ1BJX1BST0NFU1NPUl9ICiAKICNpbmNsdWRlIDxsaW51
+eC9rZXJuZWwuaD4KKyNpbmNsdWRlIDxsaW51eC9zZW0uaD4KIAogI2RlZmluZSBBQ1BJX1BST0NF
+U1NPUl9CVVNZX01FVFJJQwkxMAogCkBAIC03NCw2ICs3NSw4IEBAIHN0cnVjdCBhY3BpX3Byb2Nl
+c3Nvcl9wZXJmb3JtYW5jZSB7CiAJdTE2CQkJc3RhdHVzX3JlZ2lzdGVyOwogCWludAkJCXN0YXRl
+X2NvdW50OwogCWludAkJCXNwYWNlX2lkOworCWludAkJCXJlcXVlc3RlZF9zdGF0ZTsKKwlzdHJ1
+Y3QgYWNwaV9wcm9jZXNzb3JfZG9tYWluICpkb21haW5wOwogCXN0cnVjdCBhY3BpX3Byb2Nlc3Nv
+cl9weCBzdGF0ZXNbQUNQSV9QUk9DRVNTT1JfTUFYX1BFUkZPUk1BTkNFXTsKIAlzdHJ1Y3QgY3B1
+ZnJlcV9mcmVxdWVuY3lfdGFibGUgZnJlcV90YWJsZVtBQ1BJX1BST0NFU1NPUl9NQVhfUEVSRk9S
+TUFOQ0VdOwogCXN0cnVjdCBhY3BpX3Byb2Nlc3NvciAgICpwcjsKQEAgLTEzMiw2ICsxMzUsMTgg
+QEAgc3RydWN0IGFjcGlfcHJvY2Vzc29yIHsKIAlzdHJ1Y3QgYWNwaV9wcm9jZXNzb3JfbGltaXQg
+bGltaXQ7CiB9OwogCisjZGVmaW5lIEFDUElfTUFYX0NQVVNfUEVSX0RPTUFJTiAJMgorc3RydWN0
+IGFjcGlfcHJvY2Vzc29yX2RvbWFpbiB7CisJLyogRG9tYWluIHdpZGUgZGF0YSAqLworCXN0cnVj
+dCBzZW1hcGhvcmUJc2VtOworCWludCAJCQljdXJfc3RhdGU7CisJaW50CQkJcmVmX2NudDsKKwlp
+bnQgCQkJbWVtYmVyc1tBQ1BJX01BWF9DUFVTX1BFUl9ET01BSU5dOworCS8qIERvbWFpbiB3aWRl
+IGZ1bmN0aW9uIHBvaW50ZXJzICovCisJaW50ICgqYWNwaV9wcm9jZXNzb3Jfc2V0X3BlcmZvcm1h
+bmNlX3B0cikoc3RydWN0IGFjcGlfcHJvY2Vzc29yX3BlcmZvcm1hbmNlICpwZXJmLCBpbnQgc3Rh
+dGUpOworCXZvaWQgKCpjcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uX3B0cikoc3RydWN0IGNwdWZy
+ZXFfZnJlcXMgKmNwdWZyZXFfZnJlcXMsIHVuc2lnbmVkIGludCBzdGF0ZSk7Cit9OworCiBleHRl
+cm4gaW50IGFjcGlfcHJvY2Vzc29yX2dldF9wbGF0Zm9ybV9saW1pdCAoCiAJc3RydWN0IGFjcGlf
+cHJvY2Vzc29yKglwcik7CiBleHRlcm4gaW50IGFjcGlfcHJvY2Vzc29yX3JlZ2lzdGVyX3BlcmZv
+cm1hbmNlICgK
 
-------_=_NextPart_001_01C3977E.E9BD1D20
+------_=_NextPart_001_01C3977E.EF61E970
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -429,5 +502,5 @@ Cpufreq mailing list
 Cpufreq@www.linux.org.uk
 http://www.linux.org.uk/mailman/listinfo/cpufreq
 
-------_=_NextPart_001_01C3977E.E9BD1D20--
+------_=_NextPart_001_01C3977E.EF61E970--
 
