@@ -1,13 +1,11 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500 hangs while
-	loading acpi module]
-Date: Tue, 23 Dec 2003 01:31:30 -0500
-Sender: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Message-ID: <BF1FE1855350A0479097B3A0D2A80EE0CC894B@hdsmsx402.hd.intel.com>
+From: Nirmal Govind <nirmalg@psu.edu>
+Subject: sysfs cpufreq missing in 2.6.0
+Date: Tue, 23 Dec 2003 11:38:08 -0500
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <3FE86F70.8060908@psu.edu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces@www.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -16,73 +14,57 @@ List-Post: <mailto:cpufreq@www.linux.org.uk>
 List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.de>, Martin Schreiber <SchreiberX@Altmuehlnet.de>
-Cc: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@www.linux.org.uk
 
-This was  http://bugzilla.kernel.org/show_bug.cgi?id=3D1349
-The fix is in current 2.4.24, and the latest ACPI patch for 2.6.0:
+Hi,
 
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/
-2.6.0/
+I compiled the 2.6.0 kernel (released on Dec. 18, downloaded from 
+kernel.org) with the options enabled for userspace cpufreq.. the 
+documentation says that sysfs will be used however I do not have any 
+such device in /proc/sys/ or in /. I enabled the /proc/cpufreq so I 
+do see a /proc/cpufreq but nothing similar to 
+/sys/devices/system/cpu/cpu0/cpufreq/ as mentioned in the kernel 
+documentation which also says that the sysfs devices will be created 
+automatically. Here's what my /proc/sys/ looks like:
 
-Cheers,
--Len
+root@variance:~# ls /proc/sys
+abi/  debug/  dev/  fs/  kernel/  net/  proc/  sunrpc/  vm/
 
-Ps. Sorry I didn't reply earlier, I got bounced off this list for a
-spell.
+Below is the relevant config options in the kernel (the default on 
+boot is set to userspace). Please let me know if I'm missing 
+something and if there's some way to get the cpufreq working with sysfs.
 
+Thanks,
+nirmal
 
-> -----Original Message-----
-> From: Dominik Brodowski [mailto:linux@dominikbrodowski.de]=20
-> Sent: Saturday, December 20, 2003 12:15 PM
-> To: Brown, Len
-> Cc: cpufreq@www.linux.org.uk
-> Subject: [SchreiberX@Altmuehlnet.de: Re: hp omnibook xe4500=20
-> hangs while loading acpi module]
->=20
->=20
-> Hi Len,
->=20
-> The patch "[ACPI] GV3 IO port is 16-bits" to the
-> arch/i386/kernel/cpu/cpufreq/acpi.c file broke at least some of=20
-> the GV1/2 support. Any idea on how to fix it up so that it works
-> for both?
->=20
-> Happy holidays,
-> 	Dominik
->=20
-> ----- Forwarded message from Martin Schreiber=20
-> <SchreiberX@Altmuehlnet.de> -----
->=20
-> Subject: Re: hp omnibook xe4500 hangs while loading acpi module
-> From: Martin Schreiber <SchreiberX@Altmuehlnet.de>
-> To: Dominik Brodowski <linux@dominikbrodowski.de>
-> Cc: cpufreq@www.linux.org.uk
-> In-Reply-To: <20031219182737.GE6909@dominikbrodowski.de>
-> X-Mailer: Ximian Evolution 1.4.5=20
-> Date: Sat, 20 Dec 2003 17:13:47 +0100
->=20
-> the acpi cpufreq (kernel 2.6.0) works now on omnibook xe4500 with the
-> attached patch.
->=20
-> thanks!
->=20
->=20
->=20
-> On Fri, 2003-12-19 at 19:27, Dominik Brodowski wrote:
-> > Hi,
-> >=20
-> > Can you please try the attached patch (for 2.6.0)? It=20
-> reverts a change
-> > done during the time frame you mention: I assume this patch
-> > "[ACPI] GV3 IO port is 16-bits (Venkatesh Pallipadi)"=20
-> caused the trouble.
-> > Please CC <cpufreq@www.linux.org.uk> in your reply [the=20
-> cpufreq mailing=20
-> > list], so that other cpufreq developers can investigate=20
-> this issue as well.
-> >=20
-> > Thanks,
-> > 	Dominik
+--
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_PROC_INTF=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+# CONFIG_CPU_FREQ_24_API is not set
+CONFIG_CPU_FREQ_TABLE=y
+
+#
+# CPUFreq processor drivers
+#
+# CONFIG_X86_ACPI_CPUFREQ is not set
+# CONFIG_X86_POWERNOW_K6 is not set
+# CONFIG_X86_POWERNOW_K7 is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+# CONFIG_X86_GX_SUSPMOD is not set
+CONFIG_X86_SPEEDSTEP_CENTRINO=y
+# CONFIG_X86_SPEEDSTEP_ICH is not set
+# CONFIG_X86_SPEEDSTEP_SMI is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+# CONFIG_X86_LONGRUN is not set
+# CONFIG_X86_LONGHAUL is not set
