@@ -1,16 +1,12 @@
-From: Mattia Dongili <dongili@supereva.it>
-Subject: Re: CPU Frequency Scaling
-Date: Thu, 2 Sep 2004 15:36:26 +0200
+From: Fred Bleuzet <fred.bleuzet@gmail.com>
+Subject: System speed
+Date: Thu, 2 Sep 2004 12:25:21 -0400
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040902133626.GC2447@inferi.kami.home>
-References: <20040901230103.GB4175@ncrfgs3.ncrfgs>
-	<20040902094839.GW29560@poupinou.org>
-	<20040902105348.GA2447@inferi.kami.home>
-	<20040902124151.GZ29560@poupinou.org>
+Message-ID: <dde1c05d04090209255a5340ac@mail.gmail.com>
+Reply-To: Fred Bleuzet <fred.bleuzet@gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20040902124151.GZ29560@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -21,20 +17,13 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-On Thu, Sep 02, 2004 at 02:41:51PM +0200, Bruno Ducrot wrote:
-> On Thu, Sep 02, 2004 at 12:53:48PM +0200, Mattia Dongili wrote:
-[...]
-> Anyway I supposed the OP was talking about powernowd, not cpufreqd,
-> but maybe I was wrong ;)
+Hi all,
+I'd like to know what configuration would be faster:
+Computer 1: 1 CPU at 2GHz
+Computer 2: 2 CPUs at 1GHz each.
 
-Doh! :)
-I'm a little confused now but in the text I quoted from the OP you can
-find 'cpufreqd' cited :) and I thought you where referring to it.
-
-bye
--- 
-mattia
-:wq!
+Sorry if the question is simple...
+Thanks,
+Fred
