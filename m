@@ -1,16 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.de>
-Subject: Re: [PATCH] cpufreq_ondemand
-Date: Wed, 20 Oct 2004 23:18:51 +0200
+From: Harald Milz <milz@seneca.muc.de>
+Subject: Re: [PATCH] Another powernow-k7 patch for Desktop XP-M usage
+Date: Thu, 21 Oct 2004 00:05:05 +0200 (CEST)
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20041020211851.GA7569@dominikbrodowski.de>
-References: <7f800d9f04101922031be5cfe8@mail.gmail.com>
-	<1098257735.26595.4308.camel@d845pe>
-	<20041020143057.GA7652@dominikbrodowski.de>
-	<1098306225.26605.4345.camel@d845pe>
-Mime-Version: 1.0
+Message-ID: <20041020220505.9DD6040AA0@nathan.muc.de>
+References: <200410121018.20518.Hendrik.Muhs@web.de>
+	<416F0B33.8050700@inbox.ru> <20041020094304.GC22405@poupinou.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1098306225.26605.4345.camel@d845pe>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -20,43 +15,21 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Len Brown <len.brown@intel.com>
-Cc: Andre Eisenbach <int2str@gmail.com>, Alexander Clouter <alex-kernel@digriz.org.uk>, linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>, "cpufreq@www.linux.org.uk" <cpufreq@www.linux.org.uk>
+To: cpufreq@www.linux.org.uk
 
-On Wed, Oct 20, 2004 at 05:03:45PM -0400, Len Brown wrote:
-> On Wed, 2004-10-20 at 10:30, Dominik Brodowski wrote:
-> > On Wed, Oct 20, 2004 at 03:35:35AM -0400, Len Brown wrote:
-> 
-> > > The question is what POLICY we're trying to implement.
-> > 
-> > This is why there may be DIFFERENT policies a.k.a. governors in
-> > cpufreq.
-> ....
-> > 
-> > Put it in userspace, and let it ask the cpufreq core in the kernel to
-> > use a specific governor or another depending on what you want. That's
-> > what certain userspace daemons / scripts already do, btw.
-> 
-> Processors are not the only devices with power management.  When a
-> device driver, say USB, or any ACPI or PCI power-managed device,
-> recognizes that its device is idle, who does it ask to find out what
-> power state to put the hardware in?  Today there is nobody to tell it
-> what to do.
+Bruno Ducrot <ducrot@poupinou.org> wrote:
 
-Something like sysfs' "detach_state" comes to my mind...
+> It's a very large latency, preventing to actually making any kind
+> of dynamic frequencies really usefull, and since there is no voltage
+> scaling, it's IMHO not so usefull for power consuption purpose (though
+> this may help for cooling purpose).
 
-> The user's global desired power policy needs to be represented in the
-> kernel where all devices can get at it so they can make low-latency
-> policy-based decisions.  It isn't clear that the cpufreq multiple
-> governor implementation model would work well for the system as whole.
+After all, power consumption goes sort of linear with frequency, but square
+with voltage. Still, better than nothing. 
 
-The question is how much policy we want in the kernel instead of in
-userspace. The actual implementation (i.e. fast transitions to idle states)
-must be in the kernel, of course. However the policy decision of whether to
-do such idling can and IMHO should be done in userspace.
-
-My $0.02,
-
-	Dominik
+-- 
+Do not meddle in the affairs of troff, for it is subtle and quick to
+anger.
