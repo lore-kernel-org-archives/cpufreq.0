@@ -1,12 +1,12 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH] (3/3) cpufreq_ondemand - 03_sys_freq_step.diff
-Date: Mon, 21 Feb 2005 16:26:51 +0100
-Message-ID: <20050221152651.GA16387@isilmar.linta.de>
-References: <20050220131808.GD4495@inskipp>
-	<20050221151750.GB12182@poupinou.org>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: [PATCH] (1/1) cpufreq_conservative -
+	cpufreq_conservative-2.6.11-rc3-mm2.diff
+Date: Mon, 21 Feb 2005 16:33:43 +0100
+Message-ID: <20050221153343.GC12182@poupinou.org>
+References: <20050220132201.GE4495@inskipp>
 Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20050221151750.GB12182@poupinou.org>
+In-Reply-To: <20050220132201.GE4495@inskipp>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,21 +19,40 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: davej@redhat.com, cpufreq@ZenII.linux.org.uk, alex-kernel@digriz.org.uk, Alexander Clouter <alex@digriz.org.uk>
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: davej@redhat.com, cpufreq@ZenII.linux.org.uk, alex-kernel@digriz.org.uk, linux@dominikbrodowski.de
 
-On Mon, Feb 21, 2005 at 04:17:50PM +0100, Bruno Ducrot wrote:
-> On Sun, Feb 20, 2005 at 01:18:08PM +0000, Alexander Clouter wrote:
-> > Adds support so that the cpufreq change stepping is no longer fixed at 5% and 
-> > can be changed dynamically by the user
-> > 
+On Sun, Feb 20, 2005 at 01:22:01PM +0000, Alexander Clouter wrote:
+> A new cpufreq module, based on the ondemand one with my additional patches 
+> just posted.  This one is more suitable for battery environments where its 
+> probably more appealing to have the cpu freq gracefully increase and decrease 
+> rather than flip between the min and max freq's.
 > 
-> The cpufreq core will step to the next available frequency (in both
-> direction).  So I failed to see the usefullness for this one.
+> N.B. Bruno Ducrot pointed out that the amd64's "do have unacceptable latency
+> between min and max freq transition, due to the step-by-step requirements
+> (200MHz IIRC)"; so AMD64 users would probably benefit from this too.
+> 
 
-If the load is going down, this tunable defines in what frequency steps the
-"target" frequency is decreased -- _then_ the cpufreq core determines which
-frequency close to the target is actually supported by the hardware.
+Ah, I see now why you want to tweak percentage.
 
-Thanks,
-	Dominik
+> +	if (idle_ticks > down_idle_ticks ) {
+...
+...
+
+> +		__cpufreq_driver_target(policy,
+> +			requested_freq[cpu],
+> +			CPUFREQ_RELATION_H);
+                        ^^^^^^^^^^^^^^^^^^
+                      Please use CPUFREQ_RELATION_L
+                      here, so that when going down
+                      the governor will go to the next
+                      lower frequency (even if requested_freq[cpu]
+		      is current_freq -1 ;)
+
+Cheers,
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
