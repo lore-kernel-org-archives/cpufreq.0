@@ -1,13 +1,13 @@
 From: Ducrot Bruno <ducrot@poupinou.org>
 Subject: Re: Cpufreq: powernow-k7 weirdness
-Date: Mon, 7 Jul 2003 15:12:52 +0200
+Date: Mon, 7 Jul 2003 15:32:40 +0200
 Sender: cpufreq-admin@www.linux.org.uk
-Message-ID: <20030707131252.GC7796@poupinou.org>
-References: <tpisqgv58s.fsf@lanthane.pps.jussieu.fr> <20030706184801.GY7796@poupinou.org> <200307062356.01561.lbelli@crema.unimi.it> <200307071129.46683.mflt1@micrologica.com.hk>
+Message-ID: <20030707133240.GD7796@poupinou.org>
+References: <tpisqgv58s.fsf@lanthane.pps.jussieu.fr> <20030706012114.GW7796@poupinou.org> <tpfzlih4si.fsf@helium.pps.jussieu.fr>
 Mime-Version: 1.0
 Return-path: <cpufreq-admin@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200307071129.46683.mflt1@micrologica.com.hk>
+In-Reply-To: <tpfzlih4si.fsf@helium.pps.jussieu.fr>
 Errors-To: cpufreq-admin@www.linux.org.uk
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,24 +19,25 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Frank <mflt1@micrologica.com.hk>
-Cc: Luigi Belli <lbelli@crema.unimi.it>, cpufreq@www.linux.org.uk
+To: Juliusz Chroboczek <jch@pps.jussieu.fr>
+Cc: cpufreq@www.linux.org.uk, davej@suse.de
 
-> The actual minimum time between steps depends on systems design and can 
-> only be established by watching the (core) voltage on an oscilloscope 
-> while modulating cpufreq/ACPI settings. The time used should be double 
-> or triple the minimum for longterm stability. It would be better if 
-> Mainboard manufacturers would specify this minimum time.
+On Mon, Jul 07, 2003 at 02:58:37PM +0200, Juliusz Chroboczek wrote:
+> >> Running stock 2.5.73 (ACPI + preempt) on a Compaq Presario 711, CPU is
+> >> a 950MHz mobile Duron.  I'm getting unexpected timings when enabling
+> >> cpufreq.
+> 
+> > There is a little bug in powernow-k7.c
+> 
+> > ducrot@neptune $  cvs diff -u -r1.42 powernow-k7.c
+> 
+> Yep, that did it.  Thanks a lot.
+> 
+> Why don't you push it into 2.5?
 
-That is suposed to be done via a BIOS table (with signature
-AMDK7PNOW!) for the powernow-k7 driver, but is used for the
-CPU only (I believe), and I guess that anyway this occur
-only when a valid core voltage is applied to the CPU (well,
-I hope).
-But perhaps this table do not give appropriate values on some system?
+Well, I supposed it was in linus bk tree.  I will report then.
 
-Actually, I was wondering why the _PSS method (from ACPI) give
-a settling time of 125us, instead of 100us for some systems.
+Cheers,
 
 -- 
 Ducrot Bruno
