@@ -1,14 +1,14 @@
-From: Arjan van de Ven <arjanv@redhat.com>
-Subject: Re: cpufreq files missing in Linux 2.6.5
-Date: Mon, 24 May 2004 10:55:57 +0200
+From: aeriksson2@fastmail.fm
+Subject: Re: speedstep_smi & psmouse problems?
+Date: Mon, 24 May 2004 12:22:39 +0200
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1085388957.2780.11.camel@laptop.fenrus.com>
-References: <Pine.GSO.4.30.0405201547480.13318-100000@rigel.oac.uci.edu>
-Reply-To: arjanv@redhat.com
+Message-ID: <20040524102240.EF92C3F04@latitude.mynet.no-ip.org>
+References: <aeriksson2@fastmail.fm>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1892357255=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <Pine.GSO.4.30.0405201547480.13318-100000@rigel.oac.uci.edu>
+In-Reply-To: Message from Anders Eriksson <aeriksson2@fastmail.fm> of "Thu,
+	20 May 2004 21:47:59 +0200."
+	<20040520194800.4DE6A4137@latitude.mynet.no-ip.org> 
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -18,56 +18,22 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
-To: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
-Cc: cpufreq@www.linux.org.uk
-
-
---===============1892357255==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-zVI9suJvmu56vArtyA2L"
-
-
---=-zVI9suJvmu56vArtyA2L
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2004-05-21 at 00:56, Vasanth Venkatachalam wrote:
-> Hi everyone,
->=20
-> I am running Redhat Linux 2.6.5 and manually recompiled the kernel to
-> include the cpufreq modules.
-
-.... which are included in the Fedora kernel already.....
-(some are built in some are modules, but they're basically all there)
-
---=-zVI9suJvmu56vArtyA2L
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBAsbidxULwo51rQBIRArSIAJ99wmXGMBnUf/2PEdBHjSfyn6Ca4QCgms7F
-H/jT8zg0r5XZlxGVW+Cy05E=
-=xLep
------END PGP SIGNATURE-----
-
---=-zVI9suJvmu56vArtyA2L--
-
-
-
---===============1892357255==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@www.linux.org.uk
-http://www.linux.org.uk/mailman/listinfo/cpufreq
-
---===============1892357255==--
+To: Bruno Ducrot <ducrot@poupinou.org>, cpufreq@www.linux.org.uk
 
 
+
+> Aha, I see. So it seems I have to choose to use either the battery
+> related stuff, or the new psmouse stuff. I seem to recall seeing some
+> traffic on some option to psmouse.ko which made it work in 'old' or
+> 'absolute' mode or something. I'll check if that's more resilient to
+> bad interactions with battery readings...
+> 
+
+Tried that (using proto=exps instead of proto=imps), but no success.
+Do you know if the psmouse driver can be tweaked to handle this (hw
+bug, I assume) more gracefully? Given the way the mouse jumps on
+the screen, It seems a low-pass filter could do some good...
+
+/Anders
