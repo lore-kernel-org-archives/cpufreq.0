@@ -1,14 +1,9 @@
-From: Hilbert Mostert <hilbert.mostert@tadis.nl>
-Subject: Re: Processor speed way above specs
-Date: Wed, 15 Dec 2004 21:29:40 +0100
-Message-ID: <200412152129.40274.hilbert.mostert@tadis.nl>
-References: <200412102342.58060.hilbert.mostert@tadis.nl>
-	<200412122056.33929.hilbert.mostert@tadis.nl>
-	<20041212225556.GA8182@dominikbrodowski.de>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: [PATCH] ondemand put processors at full speed at startup
+Date: Thu, 16 Dec 2004 11:53:55 +0100
+Message-ID: <20041216105355.GJ2140@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
-In-Reply-To: <20041212225556.GA8182@dominikbrodowski.de>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,45 +16,40 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: venkatesh.pallipadi@intel.com
+Cc: cpufreq@www.linux.org.uk
 
-Hello,
+Hi,
 
-As promised my performance file output for the acpi-cpufreq driver:
+dbs_timer_init() will schedule_work(&dbs_work) so that do_dbs_timer()
+is likely called very early at same time slice scheduler, and
+for each cpu, dbs_check_cpu(cpu) will be called, likely at the same time
+slice than dbs_timer_init().
+So far, we will get total_idle_ticks == idle_ticks == 0 unconditonaly,
+and the processor will be put at full speed even though it's not needed
+at startup.
 
-state count:             5
-active state:            P4
-states:
-    P0:                  1600 MHz, 24000 mW, 10 uS
-    P1:                  1400 MHz, 20000 mW, 10 uS
-    P2:                  1200 MHz, 18000 mW, 10 uS
-    P3:                  800 MHz, 16000 mW, 10 uS
-   *P4:                  600 MHz, 12000 mW, 10 uS
+Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
 
-These numbers aren't correct because the max speed should be 1500 MHz and when 
-i switch it to the highest speed my .proc/cpuinfo file shows a 1722.xx MHz 
-and i'm not really sure it is the actual frequency or it is wrongly 
-calculated.
+ drivers/cpufreq/cpufreq_ondemand.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
--Hilbert
-On Sunday 12 December 2004 23:55, Dominik Brodowski wrote:
-> On Sun, Dec 12, 2004 at 08:56:33PM +0100, Hilbert Mostert wrote:
-> > Hi,
-> >
-> > It was running the acpi-cpufreq driver, I have fixed the problem
-> > yesterday by using an other driver which i found on the web yesterday, it
-> > was a driver for the intel pentium M 745 (1800MHz) and capped it at 1500,
-> > and i have also changed the voltages according to the specs from intel.
-> >
-> > I'll try to compile a few kernels tomorrow and send you the output of the
-> > performance file.
-> >
-> > Are there other reports of this with Intel Pentium M 715 chips?
->
-> Yes, there was one other, don't remember which CPU it was. However, it
-> _ususally_ means the .frequency entry in the ACPI table is incorrect. The
-> CPU isn't really overclocked in that case, only a "sleep 1" won't put the
-> system to sleep for one second. In very most cases, this is only a nuisance
-> and not a problem.
->
->  Dominik
+--- linux-2.6.10-rc3/drivers/cpufreq/cpufreq_ondemand.c	2004/12/16 10:19:29	1.1
++++ linux-2.6.10-rc3/drivers/cpufreq/cpufreq_ondemand.c	2004/12/16 10:21:02
+@@ -359,7 +359,8 @@ static void do_dbs_timer(void *data)
+ static inline void dbs_timer_init(void)
+ {
+ 	INIT_WORK(&dbs_work, do_dbs_timer, NULL);
+-	schedule_work(&dbs_work);
++	schedule_delayed_work(&dbs_work,
++			sampling_rate_in_HZ(dbs_tuners_ins.sampling_rate));
+ 	return;
+ }
+ 
+
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
