@@ -1,54 +1,61 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] 3/3 Dynamic cpufreq governor and updates to ACPI P-state driver
-Date: Fri, 24 Oct 2003 11:52:32 -0700
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <88056F38E9E48644A0F562A38C64FB60077960@scsmsx403.sc.intel.com>
+Subject: [PATCHSET] 0/3 A dynamic cpufreq governor
+Date: Sat, 25 Oct 2003 12:53:30 -0700
+Sender: cpufreq-bounces@www.linux.org.uk
+Message-ID: <88056F38E9E48644A0F562A38C64FB6007796A@scsmsx403.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces@www.linux.org.uk>
 content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://www.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@www.linux.org.uk>
+List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
+List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
+Errors-To: cpufreq-bounces@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@brodo.de>, "Nakajima, Jun" <jun.nakajima@intel.com>, "Moore, Robert" <robert.moore@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: "Mallick, Asit K" <asit.k.mallick@intel.com>, linux-acpi <linux-acpi@intel.com>, cpufreq@www.linux.org.uk, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, Linus Torvalds <torvalds@osdl.org>, akpm@osdl.org
+Cc: "Nakajima, Jun" <jun.nakajima@intel.com>, Pavel Machek <pavel@ucw.cz>, Dominik Brodowski <linux@brodo.de>
 
 
-OK. I will stick 'demandbased' then. 
+Hi,
 
--Venkatesh 
+This is the "new and improved" version of the patch =20
+that was sent out earlier this week. Thanks for all the=20
+feedback/suggestions.
+(lkml subject line reference for previous thread -
+"Dynamic cpufreq governor and updates to ACPI P-state driver")
 
-> -----Original Message-----
-> From: Dominik Brodowski [mailto:linux@brodo.de] 
-> Sent: Friday, October 24, 2003 11:39 AM
-> To: Nakajima, Jun; Moore, Robert; Pavel Machek
-> Cc: Pallipadi, Venkatesh; Mallick, Asit K; linux-acpi; 
-> cpufreq@www.linux.org.uk; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] 3/3 Dynamic cpufreq governor and updates 
-> to ACPI P-state driver
-> 
-> 
-> Vetoed.
-> 
-> cpufreq_dynamic is too generic, there are different 
-> approaches == different
-> governors in the work which are all "dynamic".
-> 
-> 	Dominik
-> 
-> On Thu, Oct 23, 2003 at 02:50:06PM -0700, Nakajima, Jun wrote:
-> > Me too, because it would be consistent with the other ones; 
-> i.e. how the
-> > user perceives them.
-> 
-> On Thu, Oct 23, 2003 at 01:47:49PM -0700, Moore, Robert wrote:
-> > 
-> > I would vote for "cpufreq_dynamic"
-> > 
-> > Bob
-> 
-> On Thu, Oct 23, 2003 at 04:17:04PM +0200, Pavel Machek wrote:
-> > Could you name it cpufreq_demand? We have enough
-> > TLAs as is.
-> > 				Pavwl
-> 
-> 
+The changes from the previous version:
+1) dynamic cpufreq governor changes completely separated=20
+  from the updates to acpi P-state driver. These patches only=20
+  deal with dynamic cpufreq governor. Separate patch will be=20
+  sent out later to cover acpi updates.
+2) New name for this cpufreq driver "cpufreq_ondemand"
+  (Thanks to Pavel for the name)
+3) Miscellaneous bugfixes and changes based on the review comments
+4) And introduction of tuning knobs, where advanced user can tune
+  the cpufreq_ondemand behaviour.=20
+  (Thanks to Dominik for helping me with this)
+  Sampling_rate, down_threshold, up_threshold are currently exported.
+  More advanced user who wants to change the algorithm itself, can=20
+  take the base infrastructure from this driver and come up with a=20
+  new/optimized frequency switching algorithm, as this driver is GPLed
+:).
+
+Patch contents (patches against 2.6.0-test8):
+ondemand1.patch - 'unit' related bugfixes in drivers.=20
+
+ondemand2.patch - basic cpufreq_ondemand governor, with some changes=20
+since the last time.
+
+ondemand3.patch - Adding sysfs interface for cpufreq_ondemand=20
+tunables and making sysfs access by cpufreq governors safe against=20
+removal of the underlying module (from Dominik).=20
+
+
+Thanks,
+-Venkatesh
