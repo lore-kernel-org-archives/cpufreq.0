@@ -1,11 +1,12 @@
-From: "Devriendt, Paul" <paul.devriendt@amd.com>
-Subject: RE: k8-powernow failing targ
-Date: Wed, 30 Mar 2005 14:58:12 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A843023ADDD3@SAUSEXMB1.amd.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Add suspend routine to core
+Date: Fri, 01 Apr 2005 09:07:43 +1000
+Message-ID: <1112310463.31847.178.camel@gaston>
+References: <1112143705.5353.74.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <1112143705.5353.74.camel@gaston>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,20 +16,25 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Jonathan Roes <jonathan.roes@gmail.com>
-Cc: cpufreq@ZenII.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-> For enabling debug stuff, you have to compile your kernel with
-> CONFIG_FREQ_DEBUG and to pass a kernel argument.  See help for
-> "Enable CPUfreq debugging" in the cpufreq sub-menu when configuring
-> the kernel for more details.
+On Wed, 2005-03-30 at 10:48 +1000, Benjamin Herrenschmidt wrote:
+> Hi !
+> 
+> In order to properly fix some issues with cpufreq vs. sleep on
+> PowerBooks, I had to add a suspend callback to the pmac_cpufreq driver.
+> I must force a switch to full speed before sleep and I switch back to
+> previous speed on resume.
+> 
+> I also added a driver flag to disable the warnings in suspend/resume
+> since it is expected in this case to have different speed (and I want it
+> to fixup the jiffies properly).
+>
+> .../...
 
-The system log will have tons of spew from powernow-k8 (and other
-components) with the debug enabled. Included will be more detail on
-exactly what it was doing when it failed, and (hopefully) also the
-startup info when it reported the BIOS supplied PState information.
-If you post that (if it is a reasonable size) or make it available
-as a download then we will have more information on what the
-problem might be. Paul.=20
+No feedback at all ? Without any feedback next week, I'll submit myself
+to andrew ;)
+
+Ben.
