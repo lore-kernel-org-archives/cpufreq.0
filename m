@@ -1,12 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [ANNOUNCE] CPUSpeed 1.2.1 released!
-Date: Mon, 10 Jan 2005 17:54:12 -0500
-Message-ID: <20050110225412.GE30515@redhat.com>
-References: <41E1EE54.2050200@carlthompson.net>
+From: Torsten Wolf <t.wolf@tu-bs.de>
+Subject: cpufreq - totally confused
+Date: Tue, 11 Jan 2005 13:14:23 +0100
+Message-ID: <20050111121423.GA7426@rhea>
+Reply-To: Torsten Wolf <t.wolf@tu-bs.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <41E1EE54.2050200@carlthompson.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -19,35 +18,93 @@ Sender: cpufreq-bounces@www.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Carl Thompson <cet@carlthompson.net>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Sun, Jan 09, 2005 at 06:54:12PM -0800, Carl Thompson wrote:
- > CPUSpeed 1.2.1 has, at long last, been released. There are many, many 
- > new features in this release including even greater efficiency and full 
- > multi-processor support. You can grab it at 
- > http://carlthompson.net/software/cpuspeed .
+Hi!
 
-You'll need this bit..
+Due to nasty USB problems on my Thinkpad 2722 (Banias 1.5GHz) I've
+always switched to the most recent 'stable' kernel release. Up to now,
+2.6.10 (debian source package) seems to solve my USB issues; alas! APM
+no longer works. However, ACPI has become useable and nearly everything
+seems to work right now; except the frequency scaling. With APM, cpufreq
+cpmpiled into the kernel and cpudynd I had two frequencies: 600MHz and
+1.5GHz. Yesterday, while configuring the ACPI stuff gkrellm showed
+various other frequencies that seemed to correspond to the 8 throttling
+stages indicated in /proc/acpi/processor/CPU/throttling. Unfortunately,
+this nice behaviour somehow got lost and I am desperately trying to get
+it back.
 
+The cpufreq settings in .config are listed below; ACPI stuff has been
+compiled as modules. Debians 2.6.10 has been patched with the latest
+swsusp2. Looking at /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
+the lowest frequency is always 600MHz, while the value displayed
+yesterday in gkrellm's x86info plugin was definitely lower. So please
+give me a hint (which modules when to load; cpufreqd or cpudynd;...)
+to be able to use the throttling. What further information do you need?
 
---- cpuspeed-1.2.1/cpuspeed.cc~	2005-01-10 17:53:10.000000000 -0500
-+++ cpuspeed-1.2.1/cpuspeed.cc	2005-01-10 17:53:21.000000000 -0500
-@@ -769,7 +769,7 @@ main(unsigned argc, char * argv[])
-                 "Author:\n"
-                 "    Carl Thompson - cet [at] carlthompson.net  (copyright 2002 - 2005)\n"
-                 "\n"
--                , NAME, VERSION, NAME, NAME
-+                , NAME, VERSION, NAME
-             );
-             exit(0);
-         }
+In the meantime I have the switching between 0.6 and 1.5GHz, but I hope
+to reduce power consumption with additional lower frequencies.
 
+Thanks in advance!
 
-Otherwise you see..
+Best wishes,
+Torsten
 
-gcc -Wall -fno-exceptions -c -O2 cpuspeed.cc
-cpuspeed.cc: In function `int main(unsigned int, char**)':
-cpuspeed.cc:773: warning: too many arguments for format
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
+CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+CONFIG_CPU_FREQ_TABLE=m
 
-		Dave
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=m
+CONFIG_X86_SPEEDSTEP_CENTRINO=m
+CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
+CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+
+-----------------------------------------------------------------------
+
+cat /proc/cpuinfo
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 9
+model name      : Intel(R) Pentium(R) M processor 1500MHz
+stepping        : 5
+cpu MHz         : 598.160
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov
+pat clflush dts acpi mmx fxsr sse sse2 tm pbe est tm2
+bogomips        : 1182.92
+
+-----------------------------------------------------------------------
+
+cat /proc/acpi/processor/CPU/throttling
+
+state count:             8
+active state:            T0
+states:
+   *T0:                  00%
+    T1:                  12%
+    T2:                  25%
+    T3:                  37%
+    T4:                  50%
+    T5:                  62%
+    T6:                  75%
+    T7:                  87%
