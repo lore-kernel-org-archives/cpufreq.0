@@ -1,10 +1,14 @@
-From: "Acid Zebra" <acid_zebra@hotmail.com>
-Subject: Re: patch doesn't apply cleanly on 2.4.22
-Date: Wed, 17 Dec 2003 22:10:15 +0100
+From: Mattia Dongili <dongili@supereva.it>
+Subject: Re: 2.4.23 + mobile athlon
+Date: Thu, 18 Dec 2003 10:11:52 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <Law12-F12119DBqqtJ10004bf6e@hotmail.com>
+Message-ID: <20031218091152.GA939@inferi.kami.home>
+References: <3FE061A5.2090206@aon.at>
+Reply-To: dongili@supereva.it
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces@www.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <3FE061A5.2090206@aon.at>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -14,51 +18,81 @@ List-Help: <mailto:cpufreq-request@www.linux.org.uk?subject=help>
 List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=subscribe>
 Errors-To: cpufreq-bounces@www.linux.org.uk
-Content-Type: text/plain; format=flowed; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-I also can't apply the patch to 2.4.21 or 2.4.22...
-and 2.6.0 is not an option for me; I lose the accelerated radeon mobility 
-drivers from gatos.sf.net
-So I either have nice CPU freq. tuning or nice speedy graphics...
-I spent a whole weekend compiling kernels trying to get cpufreq working but 
-no go :(
+On Wed, Dec 17, 2003 at 03:01:09PM +0100, Bernhard Bauch wrote:
+> hi!
+> i just patched kernel-2.4.23 with cpufreq and it worked :)
+> ########################
+> /var/log/dmes:
+> ....
+> powernow: AMD K7 CPU detected.
+[...]
+> everything seems to be OK, but:
+> ################################
+> beatle:/proc/sys/cpu/0# more speed*
+> ::::::::::::::
+> speed
+> ::::::::::::::
+> 0
+> ::::::::::::::
+> speed-max
+> ::::::::::::::
+> 0
+> ::::::::::::::
+> speed-min
+> ::::::::::::::
+> 0
+> #####################
+> 
+> mhh why are all of these parameters zero ??
 
+these are parameters for the userspace governor, try echo
+"0%0%100%userspace" > /proc/cpufreq
 
->From: AthlonRob <AthlonRob@axpr.net>
->To: cpufreq@www.linux.org.uk
->Subject: Re: patch doesn't apply cleanly on 2.4.22
->Date: Mon, 15 Dec 2003 11:35:58 -0800
->
->On Mon, 2003-12-15 at 10:37, paul wisehart wrote:
->
-> > I have this patch: cpufreq-LINUX_2_4-20031212.tar.bz2
-> > It won't patch cleanly onto a stock kernel.org 2.4.22 kernel-source.
-> >
-> > Before I get any further, can someone verify that this patch is for 
->2.4.22, or
-> > should I be using 2.4.23(, or something else?)?
->
->Hey Paul-
->
->I'm about 95% certain that patch isn't for 2.4.22... it's going to
->either be for 2.4.23 or for 2.4.24-pre1.  My money is on 2.4.23.
->
->However... if you want CPU Frequency support, your best bet is going to
->be with the 2.6.0-test series of kernels.. IMHO, there's no good reason
->to stick with 2.4.x.  :-)
->
->I jumped to 2.6.0-test when I couldn't get CPUFreq working with a kernel
->that worked with the low latency patch.  I haven't looked back.
->
->Rob
->
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@www.linux.org.uk
->http://www.linux.org.uk/mailman/listinfo/cpufreq
+and play with them
 
-_________________________________________________________________
-MSN Search, for accurate results! http://search.msn.nl
+> -----------------------------------------------------------------------
+> /proc/acpi/processor/CPU1/info:
+> processor id:            0
+> acpi id:                 1
+> bus mastering control:   no
+> power management:        yes
+> throttling control:      no
+> performance management:  no
+> limit interface:         no
+> 
+> /proc/acpi/processor/CPU1/throttling
+> <not supported>
+> 
+> whats going on here ???
+> why is throtteling not supported ??
+
+acpi throttling is not cpufreq :) (I remember detailed discussions on
+the topic either on this list or the acpi-devel one)
+
+> -----------------------
+> other question:
+> is there a way to run cpufreqd with libc 2.2.5-11.5 (debian woody - 
+> stable) ??
+
+you could download the debian source package and make a woody deb from
+it. You actually need a couple of adjustments:
+- remove the debconf version dependency from the debian/control file:
+  Build-Depends: debhelper (>> 4.0.0), debconf (>= 1.2.9)
+                                               ^^^^^^^^^^
+- modify following the line of debian/postinst from
+  unset CPUFREQD_PM
+  to
+  [ -z ${CPUFREQD_PM} ] || unset CPUFREQD_PM
+
+and build the binary deb as usual (see release notes on sourceforge).
+
+write me off list if you need help
+
+ciao
+-- 
+mattia
+:wq!
