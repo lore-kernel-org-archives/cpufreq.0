@@ -1,8 +1,8 @@
-From: "Joshua Lowell" <joshual@airpost.net>
+From: joshual@ftml.net
 Subject: cpufreqd not working help?
-Date: Wed, 18 Aug 2004 07:47:47 -0700
+Date: Wed, 18 Aug 2004 08:06:09 -0700
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <1092840467.30637.202577436@webmail.messagingengine.com>
+Message-ID: <1092841569.4421.202578900@webmail.messagingengine.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
@@ -21,10 +21,10 @@ To: cpufreq@www.linux.org.uk
 
 Hi, I have a new laptop an hp ze4805, with an amd athlon xp-m 2800+
 I installed and started:  powernow-k7 module, processor module is
-loaded, and 
+loaded, and
 cpufreqd is also running. oh ac battery and fan are also running.
 But when I check /proc/cpuinfo after unplugging the laptop, the bogoimp
-and 
+and
 cpu mHz stay the same... no chages are displayed at all.
 any help would be more than appreciated.
 thanks
