@@ -1,16 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: powernow-k8, more updates
-Date: Wed, 17 Mar 2004 20:52:26 +0100
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: overrides
+Date: Wed, 17 Mar 2004 21:00:51 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040317195226.GB287@elf.ucw.cz>
-References: <99F2150714F93F448942F9A9F112634C1126A014@txexmtae.amd.com>
-	<20040317100745.GA15284@dominikbrodowski.de>
-	<20040317120409.GA482@elf.ucw.cz>
-	<20040317160408.GP28592@poupinou.org>
+Message-ID: <20040317200051.GS28592@poupinou.org>
+References: <99F2150714F93F448942F9A9F112634C1126A1BF@txexmtae.amd.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20040317160408.GP28592@poupinou.org>
+In-Reply-To: <99F2150714F93F448942F9A9F112634C1126A1BF@txexmtae.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@www.linux.org.uk?subject=unsubscribe>
@@ -22,42 +19,38 @@ List-Subscribe: <http://www.linux.org.uk/mailman/listinfo/cpufreq>,
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@www.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: Dominik Brodowski <linux@dominikbrodowski.de>, Cpufreq mailing list <cpufreq@www.linux.org.uk>
+To: paul.devriendt@amd.com
+Cc: linux@dominikbrodowski.de, cpufreq@www.linux.org.uk, pavel@ucw.cz
 
-Hi!
-
-> > Here are few typo fixes [I believe they are applicable to dominik's
-> > latest version]; I cleaned up puinfo_x86 stuff in check_supported_cpu
-> > (no ifdefs any more!) and introduced fill_powernow_table helper. It
-> > makes code nicer, and makes overriding tables way easier (and you get
-> > all the normal checks for your overrident table, so its harder to mess
-> > it up). Notice that values are now for my arima (1.8GHz), and I
-> > basically guessed them, Paul might have better values. Oh and I now
-> > print out frequencies to the user, so that dmesg output is
-> > informative.
+On Wed, Mar 17, 2004 at 12:01:49PM -0600, paul.devriendt@amd.com wrote:
+> > -----Original Message-----
+> > From: Bruno Ducrot [mailto:ducrot@poupinou.org] 
+> > Sent: Wednesday, March 17, 2004 10:04 AM
+> > To: Pavel Machek
+> > Cc: Dominik Brodowski; Cpufreq mailing list
+> > Subject: Re: powernow-k8, more updates
 > > 
-> >  
-> >  #if 0
-> > + override:
-> >          /*
-> >  	 * hack for machines without a PSB - as an example values for
-> > -	 * 2.0/1.8/0.8 GHz are hardcoded. You need to assert that these
-> > +	 * 1.8/1.6/0.8 GHz are hardcoded. You need to assert that these
-> >  	 * values are correct and supported by your CPU / motherboard
-> > +	 *
-> ...
-> > -	data->powernow_table = powernow_table;
-> > -
-> > -	return 0;
-> >  #endif
+> > Why not just provide an override from userspace?
 > 
-> Why not just provide an override from userspace?
+> The question of overrides is a difficult question. The
+> theory is that BIOS provides a table of frequencies/
+> voltages that should be used for this system. This is
+> because different processors vary on the frequencies
+> that they support, and different processors have
+> different voltages for the same frequency. Also, the
+> platform may have additional restrictions, such as the
+> need to restrict operation at higher frequencies when
+> running on battery power.
 
-Its pretty hard to do, and we actually do not want users overriding
-it. I'd prefer this #if 0 to be killed before mainline merge...
+Then I think it's way better to kill all of this overriding stuff.
 
-								Pavel
+If people want to override, then they have to reimplemente that
+by themself.
+
+It's pretty easy by now to change that '#if 0' by '#if 1'...
+
 -- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
