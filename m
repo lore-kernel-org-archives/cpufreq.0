@@ -1,8 +1,8 @@
 From: Dave Jones <davej@redhat.com>
 Subject: Re: oops on resume
-Date: Thu, 5 Aug 2004 22:27:42 +0100
+Date: Thu, 5 Aug 2004 22:29:31 +0100
 Sender: cpufreq-bounces@www.linux.org.uk
-Message-ID: <20040805212742.GC28775@redhat.com>
+Message-ID: <20040805212931.GD28775@redhat.com>
 References: <pan.2004.08.05.19.00.33.11957@interlinx.bc.ca>
 	<20040805192613.GA9008@dominikbrodowski.de>
 	<1091734482.10552.20.camel@pc> <20040805195248.GA32045@redhat.com>
@@ -28,15 +28,16 @@ To: "Brian J. Murrell" <brian@interlinx.bc.ca>
 Cc: Dominik Brodowski <linux@dominikbrodowski.de>, cpufreq@www.linux.org.uk
 
 On Thu, Aug 05, 2004 at 05:26:05PM -0400, Brian J. Murrell wrote:
- > On Thu, 2004-08-05 at 21:29 +0100, Dave Jones wrote:
- > > Can you edit pentium4_get_frequency() in arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
- > > so that before the switch (fsb_code) {   add a
- > > 		printk ("FSB code = %d\n", fsb_code);
- > > 
- > > Hopefully, Intel are predictable and this is going to be '4'.
- > 
- > You are not going to believe this.  It's 0:
 
-Ok, that matches Dominik's theory that it's a quad-pumped 100MHz bus.
+oops, I forgot to ask..
+
+ > I put a bunch more debug in there too:
+ > 
+ > FSB code = 0, msr_lo = 372247062
+ > fsb = 100000
+ > mult = 372247062
+ > pentium4_get_frequency() returns = 2200000
+
+What does this print when you resume ?
 
 		Dave
