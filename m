@@ -1,10 +1,17 @@
-From: Harald Milz <hm@seneca.muc.de>
-Subject: Re: powernow-k8 on Athlon64 3200+ (s939) stability problem...
-Date: Fri,  8 Apr 2005 14:25:40 +0200 (CEST)
-Message-ID: <20050408122540.EAEAA84C45@nathan.muc.de>
-References: <88056F38E9E48644A0F562A38C64FB60046298FE@scsmsx403.amr.corp.intel.com>
-	<200504051128.29333.pytasz@lodz.home.pl>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: [PATCH] cpufreq: fix latency comment in cpufreq.h [Was: Re: [PATCH]
+	AMD Elan SC520 cpufreq driver]
+Date: Sat, 9 Apr 2005 22:20:55 +0200
+Message-ID: <20050409202055.GA30626@dominikbrodowski.de>
+References: <20050329213658.GA12868@levin.pad.mess.org>
+	<20050329220432.GA4018@isilmar.linta.de>
+	<20050403162700.GA21169@levin.pad.mess.org>
+	<425081E0.6070205@tremplin-utc.net>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <425081E0.6070205@tremplin-utc.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,21 +22,42 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: davej@redhat.com, Eric Piel <Eric.Piel@tremplin-utc.net>
+Cc: cpufreq@lists.linux.org.uk
 
-Micha?? Pytasz <pytasz@lodz.home.pl> wrote:
-> encouraged by a perfectly working laptop (Mobile Sempron 2800) I tried to use 
-> it with desktop (tried ondemand govenor as well as powernowd deamon). 
-> Well, it does work, but after switching to lowest (1000) frequency (not 
-> immediately) system hangs hard or reboots.
+On Mon, Apr 04, 2005 at 01:53:04AM +0200, Eric Piel wrote:
+> Sean Young a =E9crit :
+> >-	policy->cpuinfo.transition_latency =3D CPUFREQ_ETERNAL;
+> >+	policy->cpuinfo.transition_latency =3D 1000; /* 1ms */
+>=20
+> transition_latency is expressed in nanoseconds, so it should be 1000000.
+> I guess the confusion comes from cpufreq.h, where there are two comments =
 
-Works perfect with SL9.2 so it's either a Gentoo or a hardware problem. My
-machine is a 3200+ on an A8V board. 
+> about it, one saying it's nanosecond, another one (older) saying it's=20
+> microseconds. Dominik, maybe this typo should be fixed, do you want me=20
+> to send a patch?
 
--- 
-Quidquid latine dictum sit, altum viditur.
+Nice catch.
 
-(Whatever is said in Latin sounds profound.)
+
+Fix up comment in cpufreq.h stating transition latency should be passed
+in microseconds -- it was decided long ago to switch to nanoseconds.
+
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+
+Index: 2.6.12-rc2/include/linux/cpufreq.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- 2.6.12-rc2.orig/include/linux/cpufreq.h	2005-03-02 18:23:48.000000000 +=
+0100
++++ 2.6.12-rc2/include/linux/cpufreq.h	2005-04-09 22:19:04.000000000 +0200
+@@ -49,7 +49,7 @@
+ /* Frequency values here are CPU kHz so that hardware which doesn't run=20
+  * with some frequencies can complain without having to guess what per=20
+  * cent / per mille means.=20
+- * Maximum transition latency is in microseconds - if it's unknown,
++ * Maximum transition latency is in nanoseconds - if it's unknown,
+  * CPUFREQ_ETERNAL shall be used.
+  */
