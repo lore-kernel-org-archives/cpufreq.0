@@ -1,12 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: longhaul
-Date: Wed, 13 Apr 2005 16:54:20 +0200
-Message-ID: <20050413145420.GT2298@poupinou.org>
-References: <3EFE14A8A1A82D4BB867A48A01A88ED708A08A@waglmb01.labs.agilent.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] drivers/cpufreq/cpufreq_ondemand.c: make
+	cpufreq_gov_dbs static
+Date: Sun, 17 Apr 2005 21:59:42 +0200
+Message-ID: <20050417195942.GF3625@stusta.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <3EFE14A8A1A82D4BB867A48A01A88ED708A08A@waglmb01.labs.agilent.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,30 +15,29 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ken_staton@agilent.com
-Cc: cpufreq@lists.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Mon, Apr 11, 2005 at 10:46:56PM -0700, ken_staton@agilent.com wrote:
-> 
-> here's a partial fix for longhaul on a nehemiah c3-2.
-> 
-> the code in do_powersaver() is significantly changed.
-> 
-> frequency changes occur after the HLT instruction and there must
-> be more than 20 usec between HLT and the interrupt that brings
-> the cpu out of HLT. the only interrupt you have any chance of controlling
-> is the timer interrupt.
+This patch makes a needlessly global and EXPORT_SYMBOL'ed struct static.
 
-BTW, what is the interrupt source in order to wakeup the processor in
-this perticular case?  I would said SMI or SCI, but not
-the timer one.  On the other hand I don't have hardware nor
-specification so I cant tell for sure.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+--- linux-2.6.12-rc2-mm3-full/drivers/cpufreq/cpufreq_ondemand.c.old	2005-04-17 18:32:10.000000000 +0200
++++ linux-2.6.12-rc2-mm3-full/drivers/cpufreq/cpufreq_ondemand.c	2005-04-17 18:32:19.000000000 +0200
+@@ -459,12 +459,11 @@
+ 	return 0;
+ }
+ 
+-struct cpufreq_governor cpufreq_gov_dbs = {
++static struct cpufreq_governor cpufreq_gov_dbs = {
+ 	.name		= "ondemand",
+ 	.governor	= cpufreq_governor_dbs,
+ 	.owner		= THIS_MODULE,
+ };
+-EXPORT_SYMBOL(cpufreq_gov_dbs);
+ 
+ static int __init cpufreq_gov_dbs_init(void)
+ {
