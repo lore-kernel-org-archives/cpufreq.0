@@ -1,11 +1,11 @@
 From: "Mark Bidewell" <mark.bidewell@alumni.clemson.edu>
 Subject: Possible CPUFreq governor
-Date: Tue, 26 Apr 2005 19:39:29 -0400 (EDT)
-Message-ID: <53866.130.127.49.120.1114558769.squirrel@130.127.49.120>
+Date: Tue, 26 Apr 2005 20:13:54 -0400 (EDT)
+Message-ID: <46023.130.127.49.120.1114560834.squirrel@130.127.49.120>
 Reply-To: mark.bidewell@alumni.clemson.edu
 Mime-Version: 1.0
-Content-Type: multipart/mixed;boundary="----=_20050426193929_68134"
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: 8bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,12 +15,9 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
-
-------=_20050426193929_68134
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
 
 I am attaching a Linux kernel patch which supplies a new CPUFreq governor
 for the CPUFreq interface.  It allows a user or daemon to reduce the
@@ -30,181 +27,314 @@ non-interactive processes are run.  It has been extensively tested on the
 
 Mark Bidewell
 
+diff -Nur linux-2.6.11.6/drivers/cpufreq/cpufreq_tempscale.c
+linux-sysfs/drivers/cpufreq/cpufreq_tempscale.c
+--- linux-2.6.11.6/drivers/cpufreq/cpufreq_tempscale.c	1969-12-31
+19:00:00.000000000 -0500
++++ linux-sysfs/drivers/cpufreq/cpufreq_tempscale.c	2005-04-06
+22:56:36.000000000 -0400
+@@ -0,0 +1,199 @@
++/*
++ *  linux/drivers/cpufreq/cpufreq_tempscale.c
++ *
++ *  Copyright (C) 2005  Mark Bidewell <mark.bidewell@alumni.clemson.edu
++ *
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/cpufreq.h>
++#include <linux/init.h>
++
++#define define_one_ro(_name) 					\
++static struct freq_attr _name =  				\
++__ATTR(_name, 0444, show_##_name, NULL)
++
++#define define_one_rw(_name) 					\
++static struct freq_attr _name =  				\
++__ATTR(_name, 0644, show_##_name,store_##_name)
++
++#define TRACK_NUM 5000
++
++void set_proc_stats(struct task_struct *t);
++
++struct task_param{
++	unsigned int pid;
++	unsigned int speed;
++};
++
++unsigned compute_spd=0;
++struct cpufreq_policy	*cpupolicy;
++static char enabled=0;
++
++
++
++void scale_proc_freq(struct task_struct *t, int tsk_intr)
++{
++	if(!enabled) return;
++	if(!cpupolicy) return;
++	if(t->prev_state & TASK_UNINTERRUPTIBLE){
++		__cpufreq_driver_target(cpupolicy, cpupolicy->max, CPUFREQ_RELATION_H);
++		return;
++	}
++	if(!tsk_intr){
++		if(compute_spd && cpupolicy->cur != compute_spd){
++			__cpufreq_driver_target(cpupolicy, compute_spd, CPUFREQ_RELATION_H);
++			compute_spd = cpupolicy->cur;
++		}
++	}
++	else {
++		if(cpupolicy->cur <= compute_spd){
++			__cpufreq_driver_target(cpupolicy, cpupolicy->max, CPUFREQ_RELATION_H);
++		}
++	}
++	#ifdef CONFIG_CPU_FREQ_GOV_TEMPSCALE_DBG
++		set_proc_stats(t);
++	#endif
++	return;
++}
++
++/*
++ *  SysFS tuning knobs  and information
++ */
++
++static ssize_t show_computebound_setspeed(struct cpufreq_policy *unused,
+char *buf)
++{
++	return sprintf (buf, "%u\n", compute_spd);
++}
++static ssize_t store_computebound_setspeed(struct cpufreq_policy *unused,
+const char *buf, size_t count)
++{
++	sscanf(buf, "%u", &compute_spd);
++	return count;
++}
++
++#ifdef CONFIG_CPU_FREQ_GOV_TEMPSCALE_DBG
++
++	struct task_param tasks[TRACK_NUM];
++	unsigned int curtask=0;
++
++	void set_proc_stats(struct task_struct *t)
++	{
++		struct task_param *tsk = &tasks[curtask];
++		curtask = (curtask+1) % TRACK_NUM;
++		tsk->pid = t->pid;
++		tsk->speed = cpufreq_get(0);
++	}
++
++	static ssize_t show_tempscale_stats(struct cpufreq_policy *unused, char
+*buf){
++		int i;
++		int numtasks=curtask;
++		int sz=0;
++		unsigned maxspeed=0, minspeed=0xFFFFFFFF;
++		unsigned nummax=0, nummin=0;
++
++		for(i=0; i < numtasks; i++){
++			if(tasks[i].speed >= maxspeed){
++				maxspeed = tasks[i].speed;
++				nummax++;
++			}
++			if(tasks[i].speed <= minspeed){
++				minspeed = tasks[i].speed;
++				nummin++;
++			}
++		}
++		curtask=0;
++		sz = sprintf(buf, "Number of tasks:  %u\n", numtasks);
++		sz += sprintf(buf, "%sMax speed: %u\n", buf, maxspeed);
++		sz += sprintf(buf, "%sMin speed: %u\n", buf, minspeed);
++		sz += sprintf(buf, "%sNumber max speed: %u\n", buf, nummax);
++		sz += sprintf(buf, "%sNumber min speed: %u\n", buf, nummin);
++		return sz;
++	}
++	static ssize_t show_tempscale_data(struct cpufreq_policy *unused, char
+*buf){
++		int i;
++		int numtasks=curtask;
++		int sz=0;
++		unsigned maxspeed=0, minspeed=0xFFFFFFFF;
++		unsigned nummax=0, nummin=0;
++		sz=sprintf(buf, "PID\tFREQ\n");
++		sz+=sprintf(buf, "%s------\t------\n", buf);
++		if(numtasks > 10) {
++			i = numtasks-10;
++		}
++		else{
++			i=0;
++		}
++		for(; i < numtasks; i++){
++			sz+=sprintf(buf, "%s%u\t%u\n",buf, tasks[i].pid, tasks[i].speed);
++		}
++		return sz;
++	}
++	define_one_ro(tempscale_stats);
++	define_one_ro(tempscale_data);
++#endif
++define_one_rw(computebound_setspeed);
++
++static struct attribute * tempscale_attributes[] = {
++	&computebound_setspeed.attr,
++	#ifdef CONFIG_CPU_FREQ_GOV_TEMPSCALE_DBG
++		&tempscale_stats.attr,
++		&tempscale_data.attr,
++	#endif
++	NULL
++};
++
++static struct attribute_group tempscale_attr_group = {
++	.attrs = tempscale_attributes,
++	.name = "tempscale",
++};
++
++
++static int cpufreq_governor_tempscale(struct cpufreq_policy *policy,
++					unsigned int event)
++{
++	compute_spd=policy->max;
++	cpupolicy = policy;
++	switch (event) {
++	case CPUFREQ_GOV_START:
++		enabled=1;
++		sysfs_create_group(&policy->kobj, &tempscale_attr_group);
++		break;
++	case CPUFREQ_GOV_STOP:
++		enabled=0;
++		sysfs_remove_group(&policy->kobj, &tempscale_attr_group);
++		__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
++		break;
++	}
++	return 0;
++}
++
++static struct cpufreq_governor cpufreq_gov_tempscale = {
++	.name		= "tempscale",
++	.governor	= cpufreq_governor_tempscale,
++	.owner		= THIS_MODULE,
++};
++
++
++static int __init cpufreq_gov_tempscale_init(void)
++{
++	return cpufreq_register_governor(&cpufreq_gov_tempscale);
++}
++
++
++static void __exit cpufreq_gov_tempscale_exit(void)
++{
++	cpufreq_unregister_governor(&cpufreq_gov_tempscale);
++}
++
++
++MODULE_AUTHOR("Mark Bidewell <mark.bidewell@alumni.clemson.edu");
++MODULE_DESCRIPTION("CPUfreq policy governor 'tempscale'");
++MODULE_LICENSE("GPL");
++
++module_init(cpufreq_gov_tempscale_init);
++module_exit(cpufreq_gov_tempscale_exit);
+diff -Nur linux-2.6.11.6/drivers/cpufreq/Kconfig
+linux-sysfs/drivers/cpufreq/Kconfig
+--- linux-2.6.11.6/drivers/cpufreq/Kconfig	2005-03-25 22:28:36.000000000
+-0500
++++ linux-sysfs/drivers/cpufreq/Kconfig	2005-04-06 22:56:36.000000000 -0400
+@@ -116,3 +116,14 @@
+ 	  For details, take a look at linux/Documentation/cpu-freq.
 
+ 	  If in doubt, say N.
++config CPU_FREQ_GOV_TEMPSCALE
++        bool "Temperature Aware Scheduling support"
++        depends on CPU_FREQ
++        help
++          Enables system calls which allow scaling performance between
++          Interactive and non-interactive processes.
++config CPU_FREQ_GOV_TEMPSCALE_DBG
++        bool "Statistics for temperature scaling"
++        depends on CPU_FREQ && CPU_FREQ_GOV_TEMPSCALE
++        help
++          Collect statistics on CPU temperature scaling
+diff -Nur linux-2.6.11.6/drivers/cpufreq/Makefile
+linux-sysfs/drivers/cpufreq/Makefile
+--- linux-2.6.11.6/drivers/cpufreq/Makefile	2005-03-25 22:28:39.000000000
+-0500
++++ linux-sysfs/drivers/cpufreq/Makefile	2005-04-06 22:56:36.000000000 -0400
+@@ -8,7 +8,7 @@
+ obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+= cpufreq_powersave.o
+ obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+= cpufreq_userspace.o
+ obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+= cpufreq_ondemand.o
+-
++obj-$(CONFIG_CPU_FREQ_GOV_TEMPSCALE)	+= cpufreq_tempscale.o
+ # CPUfreq cross-arch helpers
+ obj-$(CONFIG_CPU_FREQ_TABLE)		+= freq_table.o
 
-------=_20050426193929_68134
-Content-Type: application/octet-stream; name="tempscale-2.6.11-sysfs.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="tempscale-2.6.11-sysfs.patch"
+diff -Nur linux-2.6.11.6/include/linux/sched.h
+linux-sysfs/include/linux/sched.h
+--- linux-2.6.11.6/include/linux/sched.h	2005-03-25 22:28:15.000000000 -0500
++++ linux-sysfs/include/linux/sched.h	2005-04-06 22:55:44.000000000 -0400
+@@ -112,14 +112,12 @@
+ #define EXIT_DEAD		32
 
-ZGlmZiAtTnVyIGxpbnV4LTIuNi4xMS42L2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxX3RlbXBzY2Fs
-ZS5jIGxpbnV4LXN5c2ZzL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxX3RlbXBzY2FsZS5jCi0tLSBs
-aW51eC0yLjYuMTEuNi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV90ZW1wc2NhbGUuYwkxOTY5LTEy
-LTMxIDE5OjAwOjAwLjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtc3lzZnMvZHJpdmVycy9jcHVm
-cmVxL2NwdWZyZXFfdGVtcHNjYWxlLmMJMjAwNS0wNC0wNiAyMjo1NjozNi4wMDAwMDAwMDAgLTA0
-MDAKQEAgLTAsMCArMSwxOTkgQEAKKy8qCisgKiAgbGludXgvZHJpdmVycy9jcHVmcmVxL2NwdWZy
-ZXFfdGVtcHNjYWxlLmMKKyAqCisgKiAgQ29weXJpZ2h0IChDKSAyMDA1ICBNYXJrIEJpZGV3ZWxs
-IDxtYXJrLmJpZGV3ZWxsQGFsdW1uaS5jbGVtc29uLmVkdQorICoKKyAqCisgKiBUaGlzIHByb2dy
-YW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlm
-eQorICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5z
-ZSB2ZXJzaW9uIDIgYXMKKyAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0
-aW9uLgorICoKKyAqLworCisjaW5jbHVkZSA8bGludXgva2VybmVsLmg+CisjaW5jbHVkZSA8bGlu
-dXgvbW9kdWxlLmg+CisjaW5jbHVkZSA8bGludXgvY3B1ZnJlcS5oPgorI2luY2x1ZGUgPGxpbnV4
-L2luaXQuaD4KKworI2RlZmluZSBkZWZpbmVfb25lX3JvKF9uYW1lKSAJCQkJCVwKK3N0YXRpYyBz
-dHJ1Y3QgZnJlcV9hdHRyIF9uYW1lID0gIAkJCQlcCitfX0FUVFIoX25hbWUsIDA0NDQsIHNob3df
-IyNfbmFtZSwgTlVMTCkKKworI2RlZmluZSBkZWZpbmVfb25lX3J3KF9uYW1lKSAJCQkJCVwKK3N0
-YXRpYyBzdHJ1Y3QgZnJlcV9hdHRyIF9uYW1lID0gIAkJCQlcCitfX0FUVFIoX25hbWUsIDA2NDQs
-IHNob3dfIyNfbmFtZSxzdG9yZV8jI19uYW1lKQorCisjZGVmaW5lIFRSQUNLX05VTSA1MDAwCisK
-K3ZvaWQgc2V0X3Byb2Nfc3RhdHMoc3RydWN0IHRhc2tfc3RydWN0ICp0KTsKKworc3RydWN0IHRh
-c2tfcGFyYW17CisJdW5zaWduZWQgaW50IHBpZDsKKwl1bnNpZ25lZCBpbnQgc3BlZWQ7Cit9Owor
-Cit1bnNpZ25lZCBjb21wdXRlX3NwZD0wOworc3RydWN0IGNwdWZyZXFfcG9saWN5CSpjcHVwb2xp
-Y3k7CitzdGF0aWMgY2hhciBlbmFibGVkPTA7CisKKworCit2b2lkIHNjYWxlX3Byb2NfZnJlcShz
-dHJ1Y3QgdGFza19zdHJ1Y3QgKnQsIGludCB0c2tfaW50cikKK3sKKwlpZighZW5hYmxlZCkgcmV0
-dXJuOworCWlmKCFjcHVwb2xpY3kpIHJldHVybjsKKwlpZih0LT5wcmV2X3N0YXRlICYgVEFTS19V
-TklOVEVSUlVQVElCTEUpeworCQlfX2NwdWZyZXFfZHJpdmVyX3RhcmdldChjcHVwb2xpY3ksIGNw
-dXBvbGljeS0+bWF4LCBDUFVGUkVRX1JFTEFUSU9OX0gpOworCQlyZXR1cm47CisJfQorCWlmKCF0
-c2tfaW50cil7CisJCWlmKGNvbXB1dGVfc3BkICYmIGNwdXBvbGljeS0+Y3VyICE9IGNvbXB1dGVf
-c3BkKXsgCisJCQlfX2NwdWZyZXFfZHJpdmVyX3RhcmdldChjcHVwb2xpY3ksIGNvbXB1dGVfc3Bk
-LCBDUFVGUkVRX1JFTEFUSU9OX0gpOworCQkJY29tcHV0ZV9zcGQgPSBjcHVwb2xpY3ktPmN1cjsK
-KwkJfQorCX0KKwllbHNlIHsKKwkJaWYoY3B1cG9saWN5LT5jdXIgPD0gY29tcHV0ZV9zcGQpewor
-CQkJX19jcHVmcmVxX2RyaXZlcl90YXJnZXQoY3B1cG9saWN5LCBjcHVwb2xpY3ktPm1heCwgQ1BV
-RlJFUV9SRUxBVElPTl9IKTsKKwkJfQorCX0KKwkjaWZkZWYgQ09ORklHX0NQVV9GUkVRX0dPVl9U
-RU1QU0NBTEVfREJHCisJCXNldF9wcm9jX3N0YXRzKHQpOworCSNlbmRpZgorCXJldHVybjsKK30K
-KworLyoKKyAqICBTeXNGUyB0dW5pbmcga25vYnMgIGFuZCBpbmZvcm1hdGlvbgorICovCisKK3N0
-YXRpYyBzc2l6ZV90IHNob3dfY29tcHV0ZWJvdW5kX3NldHNwZWVkKHN0cnVjdCBjcHVmcmVxX3Bv
-bGljeSAqdW51c2VkLCBjaGFyICpidWYpCit7CisJcmV0dXJuIHNwcmludGYgKGJ1ZiwgIiV1XG4i
-LCBjb21wdXRlX3NwZCk7Cit9CitzdGF0aWMgc3NpemVfdCBzdG9yZV9jb21wdXRlYm91bmRfc2V0
-c3BlZWQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICp1bnVzZWQsIGNvbnN0IGNoYXIgKmJ1Ziwgc2l6
-ZV90IGNvdW50KQoreworCXNzY2FuZihidWYsICIldSIsICZjb21wdXRlX3NwZCk7CisJcmV0dXJu
-IGNvdW50OworfQorCisjaWZkZWYgQ09ORklHX0NQVV9GUkVRX0dPVl9URU1QU0NBTEVfREJHCisJ
-CisJc3RydWN0IHRhc2tfcGFyYW0gdGFza3NbVFJBQ0tfTlVNXTsKKwl1bnNpZ25lZCBpbnQgY3Vy
-dGFzaz0wOworCQorCXZvaWQgc2V0X3Byb2Nfc3RhdHMoc3RydWN0IHRhc2tfc3RydWN0ICp0KQor
-CXsKKwkJc3RydWN0IHRhc2tfcGFyYW0gKnRzayA9ICZ0YXNrc1tjdXJ0YXNrXTsKKwkJY3VydGFz
-ayA9IChjdXJ0YXNrKzEpICUgVFJBQ0tfTlVNOworCQl0c2stPnBpZCA9IHQtPnBpZDsKKwkJdHNr
-LT5zcGVlZCA9IGNwdWZyZXFfZ2V0KDApOworCX0JCisJCisJc3RhdGljIHNzaXplX3Qgc2hvd190
-ZW1wc2NhbGVfc3RhdHMoc3RydWN0IGNwdWZyZXFfcG9saWN5ICp1bnVzZWQsIGNoYXIgKmJ1Zil7
-CisJCWludCBpOworCQlpbnQgbnVtdGFza3M9Y3VydGFzazsKKwkJaW50IHN6PTA7CisJCXVuc2ln
-bmVkIG1heHNwZWVkPTAsIG1pbnNwZWVkPTB4RkZGRkZGRkY7CisJCXVuc2lnbmVkIG51bW1heD0w
-LCBudW1taW49MDsKKwkKKwkJZm9yKGk9MDsgaSA8IG51bXRhc2tzOyBpKyspeworCQkJaWYodGFz
-a3NbaV0uc3BlZWQgPj0gbWF4c3BlZWQpeworCQkJCW1heHNwZWVkID0gdGFza3NbaV0uc3BlZWQ7
-CisJCQkJbnVtbWF4Kys7CisJCQl9CisJCQlpZih0YXNrc1tpXS5zcGVlZCA8PSBtaW5zcGVlZCl7
-CisJCQkJbWluc3BlZWQgPSB0YXNrc1tpXS5zcGVlZDsgCisJCQkJbnVtbWluKys7CisJCQl9CisJ
-CX0KKwkJY3VydGFzaz0wOworCQlzeiA9IHNwcmludGYoYnVmLCAiTnVtYmVyIG9mIHRhc2tzOiAg
-JXVcbiIsIG51bXRhc2tzKTsKKwkJc3ogKz0gc3ByaW50ZihidWYsICIlc01heCBzcGVlZDogJXVc
-biIsIGJ1ZiwgbWF4c3BlZWQpOworCQlzeiArPSBzcHJpbnRmKGJ1ZiwgIiVzTWluIHNwZWVkOiAl
-dVxuIiwgYnVmLCBtaW5zcGVlZCk7CisJCXN6ICs9IHNwcmludGYoYnVmLCAiJXNOdW1iZXIgbWF4
-IHNwZWVkOiAldVxuIiwgYnVmLCBudW1tYXgpOworCQlzeiArPSBzcHJpbnRmKGJ1ZiwgIiVzTnVt
-YmVyIG1pbiBzcGVlZDogJXVcbiIsIGJ1ZiwgbnVtbWluKTsKKwkJcmV0dXJuIHN6OyAKKwl9CisJ
-c3RhdGljIHNzaXplX3Qgc2hvd190ZW1wc2NhbGVfZGF0YShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
-KnVudXNlZCwgY2hhciAqYnVmKXsKKwkJaW50IGk7CisJCWludCBudW10YXNrcz1jdXJ0YXNrOwor
-CQlpbnQgc3o9MDsKKwkJdW5zaWduZWQgbWF4c3BlZWQ9MCwgbWluc3BlZWQ9MHhGRkZGRkZGRjsK
-KwkJdW5zaWduZWQgbnVtbWF4PTAsIG51bW1pbj0wOworCQlzej1zcHJpbnRmKGJ1ZiwgIlBJRFx0
-RlJFUVxuIik7CisJCXN6Kz1zcHJpbnRmKGJ1ZiwgIiVzLS0tLS0tXHQtLS0tLS1cbiIsIGJ1Zik7
-CisJCWlmKG51bXRhc2tzID4gMTApIHsKKwkJCWkgPSBudW10YXNrcy0xMDsKKwkJfQorCQllbHNl
-eworCQkJaT0wOworCQl9CisJCWZvcig7IGkgPCBudW10YXNrczsgaSsrKXsKKwkJCXN6Kz1zcHJp
-bnRmKGJ1ZiwgIiVzJXVcdCV1XG4iLGJ1ZiwgdGFza3NbaV0ucGlkLCB0YXNrc1tpXS5zcGVlZCk7
-CisJCX0KKwkJcmV0dXJuIHN6OworCX0KKwlkZWZpbmVfb25lX3JvKHRlbXBzY2FsZV9zdGF0cyk7
-CisJZGVmaW5lX29uZV9ybyh0ZW1wc2NhbGVfZGF0YSk7CisjZW5kaWYKK2RlZmluZV9vbmVfcnco
-Y29tcHV0ZWJvdW5kX3NldHNwZWVkKTsKKworc3RhdGljIHN0cnVjdCBhdHRyaWJ1dGUgKiB0ZW1w
-c2NhbGVfYXR0cmlidXRlc1tdID0geworCSZjb21wdXRlYm91bmRfc2V0c3BlZWQuYXR0ciwKKwkj
-aWZkZWYgQ09ORklHX0NQVV9GUkVRX0dPVl9URU1QU0NBTEVfREJHCisJCSZ0ZW1wc2NhbGVfc3Rh
-dHMuYXR0ciwKKwkJJnRlbXBzY2FsZV9kYXRhLmF0dHIsCisJI2VuZGlmCisJTlVMTAorfTsKKwor
-c3RhdGljIHN0cnVjdCBhdHRyaWJ1dGVfZ3JvdXAgdGVtcHNjYWxlX2F0dHJfZ3JvdXAgPSB7CisJ
-LmF0dHJzID0gdGVtcHNjYWxlX2F0dHJpYnV0ZXMsCisJLm5hbWUgPSAidGVtcHNjYWxlIiwKK307
-CisKKworc3RhdGljIGludCBjcHVmcmVxX2dvdmVybm9yX3RlbXBzY2FsZShzdHJ1Y3QgY3B1ZnJl
-cV9wb2xpY3kgKnBvbGljeSwKKwkJCQkJdW5zaWduZWQgaW50IGV2ZW50KQoreworCWNvbXB1dGVf
-c3BkPXBvbGljeS0+bWF4OworCWNwdXBvbGljeSA9IHBvbGljeTsKKwlzd2l0Y2ggKGV2ZW50KSB7
-CisJY2FzZSBDUFVGUkVRX0dPVl9TVEFSVDoKKwkJZW5hYmxlZD0xOworCQlzeXNmc19jcmVhdGVf
-Z3JvdXAoJnBvbGljeS0+a29iaiwgJnRlbXBzY2FsZV9hdHRyX2dyb3VwKTsKKwkJYnJlYWs7CisJ
-Y2FzZSBDUFVGUkVRX0dPVl9TVE9QOgorCQllbmFibGVkPTA7CisJCXN5c2ZzX3JlbW92ZV9ncm91
-cCgmcG9saWN5LT5rb2JqLCAmdGVtcHNjYWxlX2F0dHJfZ3JvdXApOwkKKwkJX19jcHVmcmVxX2Ry
-aXZlcl90YXJnZXQocG9saWN5LCBwb2xpY3ktPm1heCwgQ1BVRlJFUV9SRUxBVElPTl9IKTsKKwkJ
-YnJlYWs7CisJfQorCXJldHVybiAwOworfQorCitzdGF0aWMgc3RydWN0IGNwdWZyZXFfZ292ZXJu
-b3IgY3B1ZnJlcV9nb3ZfdGVtcHNjYWxlID0geworCS5uYW1lCQk9ICJ0ZW1wc2NhbGUiLAorCS5n
-b3Zlcm5vcgk9IGNwdWZyZXFfZ292ZXJub3JfdGVtcHNjYWxlLAorCS5vd25lcgkJPSBUSElTX01P
-RFVMRSwKK307CisKKworc3RhdGljIGludCBfX2luaXQgY3B1ZnJlcV9nb3ZfdGVtcHNjYWxlX2lu
-aXQodm9pZCkKK3sKKwlyZXR1cm4gY3B1ZnJlcV9yZWdpc3Rlcl9nb3Zlcm5vcigmY3B1ZnJlcV9n
-b3ZfdGVtcHNjYWxlKTsKK30KKworCitzdGF0aWMgdm9pZCBfX2V4aXQgY3B1ZnJlcV9nb3ZfdGVt
-cHNjYWxlX2V4aXQodm9pZCkKK3sKKwljcHVmcmVxX3VucmVnaXN0ZXJfZ292ZXJub3IoJmNwdWZy
-ZXFfZ292X3RlbXBzY2FsZSk7Cit9CisKKworTU9EVUxFX0FVVEhPUigiTWFyayBCaWRld2VsbCA8
-bWFyay5iaWRld2VsbEBhbHVtbmkuY2xlbXNvbi5lZHUiKTsKK01PRFVMRV9ERVNDUklQVElPTigi
-Q1BVZnJlcSBwb2xpY3kgZ292ZXJub3IgJ3RlbXBzY2FsZSciKTsKK01PRFVMRV9MSUNFTlNFKCJH
-UEwiKTsKKworbW9kdWxlX2luaXQoY3B1ZnJlcV9nb3ZfdGVtcHNjYWxlX2luaXQpOworbW9kdWxl
-X2V4aXQoY3B1ZnJlcV9nb3ZfdGVtcHNjYWxlX2V4aXQpOwpkaWZmIC1OdXIgbGludXgtMi42LjEx
-LjYvZHJpdmVycy9jcHVmcmVxL0tjb25maWcgbGludXgtc3lzZnMvZHJpdmVycy9jcHVmcmVxL0tj
-b25maWcKLS0tIGxpbnV4LTIuNi4xMS42L2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnCTIwMDUtMDMt
-MjUgMjI6Mjg6MzYuMDAwMDAwMDAwIC0wNTAwCisrKyBsaW51eC1zeXNmcy9kcml2ZXJzL2NwdWZy
-ZXEvS2NvbmZpZwkyMDA1LTA0LTA2IDIyOjU2OjM2LjAwMDAwMDAwMCAtMDQwMApAQCAtMTE2LDMg
-KzExNiwxNCBAQAogCSAgRm9yIGRldGFpbHMsIHRha2UgYSBsb29rIGF0IGxpbnV4L0RvY3VtZW50
-YXRpb24vY3B1LWZyZXEuCiAKIAkgIElmIGluIGRvdWJ0LCBzYXkgTi4KK2NvbmZpZyBDUFVfRlJF
-UV9HT1ZfVEVNUFNDQUxFCisgICAgICAgIGJvb2wgIlRlbXBlcmF0dXJlIEF3YXJlIFNjaGVkdWxp
-bmcgc3VwcG9ydCIKKyAgICAgICAgZGVwZW5kcyBvbiBDUFVfRlJFUSAKKyAgICAgICAgaGVscAor
-ICAgICAgICAgIEVuYWJsZXMgc3lzdGVtIGNhbGxzIHdoaWNoIGFsbG93IHNjYWxpbmcgcGVyZm9y
-bWFuY2UgYmV0d2VlbgorICAgICAgICAgIEludGVyYWN0aXZlIGFuZCBub24taW50ZXJhY3RpdmUg
-cHJvY2Vzc2VzLgorY29uZmlnIENQVV9GUkVRX0dPVl9URU1QU0NBTEVfREJHCisgICAgICAgIGJv
-b2wgIlN0YXRpc3RpY3MgZm9yIHRlbXBlcmF0dXJlIHNjYWxpbmciCisgICAgICAgIGRlcGVuZHMg
-b24gQ1BVX0ZSRVEgJiYgQ1BVX0ZSRVFfR09WX1RFTVBTQ0FMRSAKKyAgICAgICAgaGVscAorICAg
-ICAgICAgIENvbGxlY3Qgc3RhdGlzdGljcyBvbiBDUFUgdGVtcGVyYXR1cmUgc2NhbGluZwpkaWZm
-IC1OdXIgbGludXgtMi42LjExLjYvZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlIGxpbnV4LXN5c2Zz
-L2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZQotLS0gbGludXgtMi42LjExLjYvZHJpdmVycy9jcHVm
-cmVxL01ha2VmaWxlCTIwMDUtMDMtMjUgMjI6Mjg6MzkuMDAwMDAwMDAwIC0wNTAwCisrKyBsaW51
-eC1zeXNmcy9kcml2ZXJzL2NwdWZyZXEvTWFrZWZpbGUJMjAwNS0wNC0wNiAyMjo1NjozNi4wMDAw
-MDAwMDAgLTA0MDAKQEAgLTgsNyArOCw3IEBACiBvYmotJChDT05GSUdfQ1BVX0ZSRVFfR09WX1BP
-V0VSU0FWRSkJKz0gY3B1ZnJlcV9wb3dlcnNhdmUubwogb2JqLSQoQ09ORklHX0NQVV9GUkVRX0dP
-Vl9VU0VSU1BBQ0UpCSs9IGNwdWZyZXFfdXNlcnNwYWNlLm8KIG9iai0kKENPTkZJR19DUFVfRlJF
-UV9HT1ZfT05ERU1BTkQpCSs9IGNwdWZyZXFfb25kZW1hbmQubwotCitvYmotJChDT05GSUdfQ1BV
-X0ZSRVFfR09WX1RFTVBTQ0FMRSkJKz0gY3B1ZnJlcV90ZW1wc2NhbGUubwogIyBDUFVmcmVxIGNy
-b3NzLWFyY2ggaGVscGVycwogb2JqLSQoQ09ORklHX0NQVV9GUkVRX1RBQkxFKQkJKz0gZnJlcV90
-YWJsZS5vCiAKZGlmZiAtTnVyIGxpbnV4LTIuNi4xMS42L2luY2x1ZGUvbGludXgvc2NoZWQuaCBs
-aW51eC1zeXNmcy9pbmNsdWRlL2xpbnV4L3NjaGVkLmgKLS0tIGxpbnV4LTIuNi4xMS42L2luY2x1
-ZGUvbGludXgvc2NoZWQuaAkyMDA1LTAzLTI1IDIyOjI4OjE1LjAwMDAwMDAwMCAtMDUwMAorKysg
-bGludXgtc3lzZnMvaW5jbHVkZS9saW51eC9zY2hlZC5oCTIwMDUtMDQtMDYgMjI6NTU6NDQuMDAw
-MDAwMDAwIC0wNDAwCkBAIC0xMTIsMTQgKzExMiwxMiBAQAogI2RlZmluZSBFWElUX0RFQUQJCTMy
-CiAKICNkZWZpbmUgX19zZXRfdGFza19zdGF0ZSh0c2ssIHN0YXRlX3ZhbHVlKQkJXAotCWRvIHsg
-KHRzayktPnN0YXRlID0gKHN0YXRlX3ZhbHVlKTsgfSB3aGlsZSAoMCkKLSNkZWZpbmUgc2V0X3Rh
-c2tfc3RhdGUodHNrLCBzdGF0ZV92YWx1ZSkJCVwKLQlzZXRfbWIoKHRzayktPnN0YXRlLCAoc3Rh
-dGVfdmFsdWUpKQorCWRvIHsodHNrKS0+cHJldl9zdGF0ZT0odHNrKS0+c3RhdGU7ICh0c2spLT5z
-dGF0ZSA9IChzdGF0ZV92YWx1ZSk7IH0gd2hpbGUgKDApCiAKICNkZWZpbmUgX19zZXRfY3VycmVu
-dF9zdGF0ZShzdGF0ZV92YWx1ZSkJCQlcCi0JZG8geyBjdXJyZW50LT5zdGF0ZSA9IChzdGF0ZV92
-YWx1ZSk7IH0gd2hpbGUgKDApCi0jZGVmaW5lIHNldF9jdXJyZW50X3N0YXRlKHN0YXRlX3ZhbHVl
-KQkJXAotCXNldF9tYihjdXJyZW50LT5zdGF0ZSwgKHN0YXRlX3ZhbHVlKSkKKwlkbyB7Y3VycmVu
-dC0+cHJldl9zdGF0ZT1jdXJyZW50LT5zdGF0ZTsgY3VycmVudC0+c3RhdGUgPSAoc3RhdGVfdmFs
-dWUpOyB9IHdoaWxlICgwKQorCisJCiAKIC8qIFRhc2sgY29tbWFuZCBuYW1lIGxlbmd0aCAqLwog
-I2RlZmluZSBUQVNLX0NPTU1fTEVOIDE2CkBAIC01MjYsNyArNTI0LDcgQEAKIHN0cnVjdCBtZW1w
-b2xpY3k7CiAKIHN0cnVjdCB0YXNrX3N0cnVjdCB7Ci0Jdm9sYXRpbGUgbG9uZyBzdGF0ZTsJLyog
-LTEgdW5ydW5uYWJsZSwgMCBydW5uYWJsZSwgPjAgc3RvcHBlZCAqLworCXZvbGF0aWxlIGxvbmcg
-cHJldl9zdGF0ZSwgc3RhdGU7CS8qIC0xIHVucnVubmFibGUsIDAgcnVubmFibGUsID4wIHN0b3Bw
-ZWQgKi8KIAlzdHJ1Y3QgdGhyZWFkX2luZm8gKnRocmVhZF9pbmZvOwogCWF0b21pY190IHVzYWdl
-OwogCXVuc2lnbmVkIGxvbmcgZmxhZ3M7CS8qIHBlciBwcm9jZXNzIGZsYWdzLCBkZWZpbmVkIGJl
-bG93ICovCkBAIC0xMjE2LDQgKzEyMTQsMTMgQEAKICNlbmRpZiAvKiBDT05GSUdfUE0gKi8KICNl
-bmRpZiAvKiBfX0tFUk5FTF9fICovCiAKKy8qQ2hhbmdlIGJ5IE1hcmsgQmlkZXdlbGwqLworaW5s
-aW5lIHN0YXRpYyB2b2lkIHNldF90YXNrX3N0YXRlKHN0cnVjdCB0YXNrX3N0cnVjdCAqdHNrLCB1
-bnNpZ25lZCBzdGF0ZV92YWx1ZSl7CisJKHRzayktPnByZXZfc3RhdGU9KHRzayktPnN0YXRlOyBz
-ZXRfbWIoKHRzayktPnN0YXRlLCAoc3RhdGVfdmFsdWUpKTsKK30KKy8qQ2hhbmdlIGJ5IE1hcmsg
-QmlkZXdlbGwqLworaW5saW5lIHN0YXRpYyB2b2lkIHNldF9jdXJyZW50X3N0YXRlKHVuc2lnbmVk
-IHN0YXRlX3ZhbHVlKXsJCQorCWN1cnJlbnQtPnByZXZfc3RhdGU9Y3VycmVudC0+c3RhdGU7IHNl
-dF9tYihjdXJyZW50LT5zdGF0ZSwgKHN0YXRlX3ZhbHVlKSk7Cit9CisKICNlbmRpZgpkaWZmIC1O
-dXIgbGludXgtMi42LjExLjYva2VybmVsL3NjaGVkLmMgbGludXgtc3lzZnMva2VybmVsL3NjaGVk
-LmMKLS0tIGxpbnV4LTIuNi4xMS42L2tlcm5lbC9zY2hlZC5jCTIwMDUtMDMtMjUgMjI6Mjg6MjYu
-MDAwMDAwMDAwIC0wNTAwCisrKyBsaW51eC1zeXNmcy9rZXJuZWwvc2NoZWQuYwkyMDA1LTA0LTA2
-IDIyOjU1OjMzLjAwMDAwMDAwMCAtMDQwMApAQCAtMjgyMiw2ICsyODIyLDEyIEBACiAJcHJldiA9
-IGN1cnJlbnQ7CiAJaWYgKHVubGlrZWx5KHJlYWNxdWlyZV9rZXJuZWxfbG9jayhwcmV2KSA8IDAp
-KQogCQlnb3RvIG5lZWRfcmVzY2hlZF9ub25wcmVlbXB0aWJsZTsKKwkvKgorCSAqIFB1dCB0aGVy
-bWFsIHN0dWZmIGhlcmUKKwkgKi8KKwkjaWZkZWYgQ09ORklHX0NQVV9GUkVRX0dPVl9URU1QU0NB
-TEUKKwkJc2NhbGVfcHJvY19mcmVxKG5leHQsIFRBU0tfSU5URVJBQ1RJVkUobmV4dCkpOworCSNl
-bmRpZgogCXByZWVtcHRfZW5hYmxlX25vX3Jlc2NoZWQoKTsKIAlpZiAodW5saWtlbHkodGVzdF90
-aHJlYWRfZmxhZyhUSUZfTkVFRF9SRVNDSEVEKSkpCiAJCWdvdG8gbmVlZF9yZXNjaGVkOwo=
-------=_20050426193929_68134
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ #define __set_task_state(tsk, state_value)		\
+-	do { (tsk)->state = (state_value); } while (0)
+-#define set_task_state(tsk, state_value)		\
+-	set_mb((tsk)->state, (state_value))
++	do {(tsk)->prev_state=(tsk)->state; (tsk)->state = (state_value); }
+while (0)
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+ #define __set_current_state(state_value)			\
+-	do { current->state = (state_value); } while (0)
+-#define set_current_state(state_value)		\
+-	set_mb(current->state, (state_value))
++	do {current->prev_state=current->state; current->state = (state_value);
+} while (0)
++
++
 
-------=_20050426193929_68134--
+ /* Task command name length */
+ #define TASK_COMM_LEN 16
+@@ -526,7 +524,7 @@
+ struct mempolicy;
 
+ struct task_struct {
+-	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
++	volatile long prev_state, state;	/* -1 unrunnable, 0 runnable, >0
+stopped */
+ 	struct thread_info *thread_info;
+ 	atomic_t usage;
+ 	unsigned long flags;	/* per process flags, defined below */
+@@ -1216,4 +1214,13 @@
+ #endif /* CONFIG_PM */
+ #endif /* __KERNEL__ */
 
++/*Change by Mark Bidewell*/
++inline static void set_task_state(struct task_struct *tsk, unsigned
+state_value){
++	(tsk)->prev_state=(tsk)->state; set_mb((tsk)->state, (state_value));
++}
++/*Change by Mark Bidewell*/
++inline static void set_current_state(unsigned state_value){
++	current->prev_state=current->state; set_mb(current->state, (state_value));
++}
++
+ #endif
+diff -Nur linux-2.6.11.6/kernel/sched.c linux-sysfs/kernel/sched.c
+--- linux-2.6.11.6/kernel/sched.c	2005-03-25 22:28:26.000000000 -0500
++++ linux-sysfs/kernel/sched.c	2005-04-06 22:55:33.000000000 -0400
+@@ -2822,6 +2822,12 @@
+ 	prev = current;
+ 	if (unlikely(reacquire_kernel_lock(prev) < 0))
+ 		goto need_resched_nonpreemptible;
++	/*
++	 * Put thermal stuff here
++	 */
++	#ifdef CONFIG_CPU_FREQ_GOV_TEMPSCALE
++		scale_proc_freq(next, TASK_INTERACTIVE(next));
++	#endif
+ 	preempt_enable_no_resched();
+ 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+ 		goto need_resched;
