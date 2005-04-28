@@ -1,10 +1,13 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Merging status.
-Date: Thu, 28 Apr 2005 16:47:19 -0400
-Message-ID: <20050428204719.GG8514@redhat.com>
+Subject: Re: Merging status.
+Date: Thu, 28 Apr 2005 18:13:29 -0400
+Message-ID: <20050428221329.GD15706@redhat.com>
+References: <20050428203740.GE8514@redhat.com>
+	<20050428144540.62936aa8.akpm@osdl.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20050428144540.62936aa8.akpm@osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,27 +17,27 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: Andrew Morton <akpm@osdl.org>
+Cc: cpufreq@lists.linux.org.uk
 
-So, I've finally got around to extracting the bits that were
-in the cpufreq bitkeeper tree, and exported them all as
-GNU diffs for the time being.
+[fixed up the Cc list which I botched]
 
-These will go off to Linus pretty soon.
+On Thu, Apr 28, 2005 at 02:45:40PM -0700, Andrew Morton wrote:
+ > Dave Jones <davej@redhat.com> wrote:
+ > >
+ > > http://www.codemonkey.org.uk/projects/cpufreq/pending-patches/
+ > > http://www.codemonkey.org.uk/projects/agp/pending-patches/
+ > 
+ > No probs.  I'm already doing that for ALSA patches.
+ > 
+ > Please make sure the patches alphasort into applying order, or, when you
+ > start using quilt (you should!), include the series file.
 
-I'll set up a script to auto-mirror cpufreq changes that
-I've got queued for merging. They'll appear at
-http://www.codemonkey.org.uk/projects/cpufreq/pending-patches/
-Treat this directory the same as you treated
-"merged into cpufreq-bk".
-(Ie, Andrew can just set up a wget -r on this dir for each -mm
- [theres also a http://www.codemonkey.org.uk/projects/agp/pending-patches/
- for Andrews info])
-
-I may look into using git at a later time, but right now its
-probably going to be easier to just throw patches around.
+They're of the form CPUFREQ-nn where nn is the numerical order they
+should be applied in. (Though this time around, we're lucky, they're
+all independant anyway I think)
 
 		Dave
