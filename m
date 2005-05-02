@@ -1,20 +1,11 @@
-From: Mark Bidewell <mark.bidewell@alumni.clemson.edu>
-Subject: Re: Possible CPUFreq governor
-Date: Mon, 02 May 2005 08:51:25 -0400
-Message-ID: <4276224D.5020005@alumni.clemson.edu>
-References: <53866.130.127.49.120.1114558769.squirrel@130.127.49.120>
-	<20050427105350.GX2298@poupinou.org>
-	<46736.141.228.156.225.1114600117.squirrel@www.difo.com>
-	<426F85F5.7010700@alumni.clemson.edu>
-	<20050427140711.GA2298@poupinou.org>
-	<426FBBB1.7000001@alumni.clemson.edu>
-	<20050427173828.GC2298@poupinou.org>
-	<46372.130.127.49.120.1114625907.squirrel@130.127.49.120>
-	<20050427190416.GE2298@poupinou.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: Possible CPUFreq governor
+Date: Mon, 2 May 2005 07:02:16 -0700
+Message-ID: <88056F38E9E48644A0F562A38C64FB60049EEBC2@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050427190416.GE2298@poupinou.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -24,57 +15,37 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Bruno Ducrot <ducrot@poupinou.org>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Mark Bidewell <mark.bidewell@alumni.clemson.edu>, Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@lists.linux.org.uk
 
-I have been examining the structure and design of the ondemand govenor 
-further.  Would it be accurate to characterize your concern as basically 
-that under heavy process load, the p-state switching latency becomes 
-longer than the timeslices and thus could dominate the CPU?  Or is there 
-an issue with processor damage?
+=20
 
-Bruno Ducrot wrote:
+>-----Original Message-----
+>From: cpufreq-bounces@lists.linux.org.uk=20
+>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Mark Bidewell
+>Sent: Monday, May 02, 2005 5:51 AM
+>To: Bruno Ducrot
+>Cc: cpufreq@lists.linux.org.uk
+>Subject: Re: Possible CPUFreq governor
+>
+>I have been examining the structure and design of the ondemand govenor=20
+>further.  Would it be accurate to characterize your concern as=20
+>basically=20
+>that under heavy process load, the p-state switching latency becomes=20
+>longer than the timeslices and thus could dominate the CPU? =20
+>Or is there=20
+>an issue with processor damage?
+>
 
->On Wed, Apr 27, 2005 at 02:18:27PM -0400, Mark Bidewell wrote:
->  
->
->>It might help to explain how the governor is used. I have a user-mode
->>daemon which samples the ACPI temperature every 2 seconds and communicates
->>the speed at which non-interactive processes should be run via the sysfs
->>interface.  The scheduler will then determine a processes interactivity
->>and change the CPU speed accordingly.  In theory the processor could
->>change speeds every process switch.
->>    
->>
->
->That why I have to do tests in case there is a lot of those process
->switch but when modifiying max frequency instead.
->
->  
->
->>This governor is indeed similar to the ondemand governor.  The distinction
->>is that while the ondemand governor expands CPU performance as load
->>increases, tempscale must limit performance.  In my opinion, the ultimate
->>solution would be a combination of the two governors.  That is, a governor
->>which would react in the following way:
->>
->>1)  If the processor is idle, run at low speeds to conserve power (ondemand).
->>2)  Increase performance with demand as long a temperature is low (ondemand)
->>3)  If temperatures get to high, throttle compute-bound processes (tempscale)
->>
->>I have done some limited experiments along this line using a user-mode
->>daemon to switch governors (as well as speeds) between tempscale and
->>ondemand as temperatures change.
->>    
->>
->
->That's why I suggest to touch max frequency, not the actual frequency.
->
->This must be done outside a governor, so that you can have both actually.
->I'll send you a patch after writing it for testing purpose so that you will
->see what I have in mind.
->
->  
->
+P-state switching latency will be same at all times, irrespective
+of processor load. IIUC, the issue here is adding the knowledge of CPU=20
+temperature to the CPU frequency governor.
+
+For that, As Bruno potins out, one can have a shell script/program on=20
+top of ondemand governor, that monitors the temperature in /proc/...
+And changes ondemand governor's /sys/..../cpufreq/scaling_max_freq
+
+Thanks,
+Venki
