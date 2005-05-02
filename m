@@ -1,11 +1,14 @@
-From: "Langsdorf, Mark" <mark.langsdorf@AMD.com>
-Subject: [PATCH] dual-core powernow-k8
-Date: Mon, 2 May 2005 14:23:41 -0500
-Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFBFB4@SAUSEXMB1.amd.com>
+From: =?iso-8859-2?q?Micha=B3_Pytasz?= <pytasz@lodz.home.pl>
+Subject: Re: [PATCH] dual-core powernow-k8
+Date: Mon, 2 May 2005 23:14:55 +0200
+Message-ID: <200505022314.55468.pytasz@lodz.home.pl>
+References: <84EA05E2CA77634C82730353CBE3A84301CFBFB4@SAUSEXMB1.amd.com>
+Reply-To: pytasz@lodz.home.pl
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C54F4C.731FD26E"
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFBFB4@SAUSEXMB1.amd.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,200 +18,197 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-This is a multi-part message in MIME format.
+Hi,
 
-------_=_NextPart_001_01C54F4C.731FD26E
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+On Monday 02 of May 2005 21:23, Langsdorf, Mark wrote:
+> With the release of the dual-core AMD Opterons last week,
+> it's high time that cpufreq supported them.  The attached
+> patch applies cleanly to 2.6.12-rc3 and updates powernow-k8
+> to support the latest Athlon 64 and Opteron processors.
+>
+> Update the driver to version 1.40.0 and provide support
+> for dual-core processors.
+>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+>
+> -Mark Langsdorf
+> AMD, Inc.
 
-With the release of the dual-core AMD Opterons last week,
-it's high time that cpufreq supported them.  The attached
-patch applies cleanly to 2.6.12-rc3 and updates powernow-k8
-to support the latest Athlon 64 and Opteron processors.
+I just tried applying patch against 2.6.11.8, well it builds fine, however 
+when I try to use it (Athlon64 3200+ s939) I get:
 
-Update the driver to version 1.40.0 and provide support
-for dual-core processors.
+powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.40.0)
+powernow-k8:    0 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
+powernow-k8:    1 : fid 0xa (1800 MHz), vid 0x8 (1350 mV)
+powernow-k8:    2 : fid 0xc (2000 MHz), vid 0x6 (1400 mV)
+Losing some ticks... checking if CPU frequency changed.
+cpu_init done, current fid 0xc, vid 0x6
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+which looks quite fine, but after ondemand govenor is started:
 
--Mark Langsdorf
-AMD, Inc.
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: vid trans failed, vid 0x3, curr 0x4
+powernow-k8: transition frequency failed
+powernow-k8: ignoring illegal change in lo freq table-2 to 0x2
+powernow-k8: transition frequency failed
 
-------_=_NextPart_001_01C54F4C.731FD26E
-Content-Type: application/octet-stream;
-	name=powernow-k8-dual-core-on2.6.12.patch
-Content-Transfer-Encoding: base64
-Content-Description: powernow-k8-dual-core-on2.6.12.patch
-Content-Disposition: attachment; filename=powernow-k8-dual-core-on2.6.12.patch
+and so on.
 
-LS0tIGFyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ctazguYy5vcmlnCTIwMDUt
-MDQtMTQgMTU6MTI6MTUuMDU3ODAxMjQwIC0wNTAwCisrKyBhcmNoL2kzODYva2VybmVsL2NwdS9j
-cHVmcmVxL3Bvd2Vybm93LWs4LmMJMjAwNS0wNC0xNCAxNjoyNzo0Ny4xMzA4MjE0MTYgLTA1MDAK
-QEAgLTQsNyArNCw3IEBACiAgKiAgR05VIGdlbmVyYWwgcHVibGljIGxpY2Vuc2UgdmVyc2lvbiAy
-LiBTZWUgIkNPUFlJTkciIG9yCiAgKiAgaHR0cDovL3d3dy5nbnUub3JnL2xpY2Vuc2VzL2dwbC5o
-dG1sCiAgKgotICogIFN1cHBvcnQgOiBwYXVsLmRldnJpZW5kdEBhbWQuY29tCisgKiAgU3VwcG9y
-dCA6IG1hcmsubGFuZ3Nkb3JmQGFtZC5jb20KICAqCiAgKiAgQmFzZWQgb24gdGhlIHBvd2Vybm93
-LWs3LmMgbW9kdWxlIHdyaXR0ZW4gYnkgRGF2ZSBKb25lcy4KICAqICAoQykgMjAwMyBEYXZlIEpv
-bmVzIDxkYXZlakBjb2RlbW9ua2V5Lm9yZy51az4gb24gYmVoYWxmIG9mIFN1U0UgTGFicwpAQCAt
-MTUsMTIgKzE1LDEzIEBACiAgKgogICogIFZhbHVhYmxlIGlucHV0IGdyYXRlZnVsbHkgcmVjZWl2
-ZWQgZnJvbSBEYXZlIEpvbmVzLCBQYXZlbCBNYWNoZWssCiAgKiAgRG9taW5payBCcm9kb3dza2ks
-IGFuZCBvdGhlcnMuCisgKiAgT3JpZ2luYWxseSBkZXZlbG9wZWQgYnkgUGF1bCBEZXZyaWVuZHQu
-CiAgKiAgUHJvY2Vzc29yIGluZm9ybWF0aW9uIG9idGFpbmVkIGZyb20gQ2hhcHRlciA5IChQb3dl
-ciBhbmQgVGhlcm1hbCBNYW5hZ2VtZW50KQogICogIG9mIHRoZSAiQklPUyBhbmQgS2VybmVsIERl
-dmVsb3BlcidzIEd1aWRlIGZvciB0aGUgQU1EIEF0aGxvbiA2NCBhbmQgQU1ECiAgKiAgT3B0ZXJv
-biBQcm9jZXNzb3JzIiBhdmFpbGFibGUgZm9yIGRvd25sb2FkIGZyb20gd3d3LmFtZC5jb20KICAq
-CiAgKiAgVGFibGVzIGZvciBzcGVjaWZpYyBDUFVzIGNhbiBiZSBpbmZyZXJyZWQgZnJvbQotICoJ
-aHR0cDovL3d3dy5hbWQuY29tL3VzLWVuL2Fzc2V0cy9jb250ZW50X3R5cGUvd2hpdGVfcGFwZXJz
-X2FuZF90ZWNoX2RvY3MvMzA0MzAucGRmCisgKiAgICAgaHR0cDovL3d3dy5hbWQuY29tL3VzLWVu
-L2Fzc2V0cy9jb250ZW50X3R5cGUvd2hpdGVfcGFwZXJzX2FuZF90ZWNoX2RvY3MvMzA0MzAucGRm
-CiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgpAQCAtMzAsNiArMzEsNyBAQAogI2lu
-Y2x1ZGUgPGxpbnV4L2NwdWZyZXEuaD4KICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+CiAjaW5jbHVk
-ZSA8bGludXgvc3RyaW5nLmg+CisjaW5jbHVkZSA8bGludXgvY3B1bWFzay5oPgogCiAjaW5jbHVk
-ZSA8YXNtL21zci5oPgogI2luY2x1ZGUgPGFzbS9pby5oPgpAQCAtNDIsOSArNDQsMTEgQEAKIAog
-I2RlZmluZSBQRlggInBvd2Vybm93LWs4OiAiCiAjZGVmaW5lIEJGWCBQRlggIkJJT1MgZXJyb3I6
-ICIKLSNkZWZpbmUgVkVSU0lPTiAidmVyc2lvbiAxLjAwLjA5ZSIKKyNkZWZpbmUgVkVSU0lPTiAi
-dmVyc2lvbiAxLjQwLjAiCiAjaW5jbHVkZSAicG93ZXJub3ctazguaCIKIAorY3B1bWFza190IGNw
-dV9zaGFyZWRjb3JlX21hc2tbTlJfQ1BVU107CisKIC8qIHNlcmlhbGl6ZSBmcmVxIGNoYW5nZXMg
-ICovCiBzdGF0aWMgREVDTEFSRV9NVVRFWChmaWR2aWRfc2VtKTsKIApAQCAtMjg2LDcgKzI5MCw3
-IEBACiAJCQlyZXR1cm4gMTsKIAl9CiAKLQl3aGlsZSAoKHJ2b3N0ZXBzID4gMCkgICYmICgoZGF0
-YS0+cnZvICsgZGF0YS0+Y3VycnZpZCkgPiByZXF2aWQpKSB7CisJd2hpbGUgKChydm9zdGVwcyA+
-IDApICYmICgoZGF0YS0+cnZvICsgZGF0YS0+Y3VycnZpZCkgPiByZXF2aWQpKSB7CiAJCWlmIChk
-YXRhLT5jdXJydmlkID09IDApIHsKIAkJCXJ2b3N0ZXBzID0gMDsKIAkJfSBlbHNlIHsKQEAgLTY3
-MSw3ICs2NzUsNyBAQAogCSAqIEJJT1MgYW5kIEtlcm5lbCBEZXZlbG9wZXIncyBHdWlkZSwgd2hp
-Y2ggaXMgYXZhaWxhYmxlIG9uCiAJICogd3d3LmFtZC5jb20KIAkgKi8KLQlwcmludGsoS0VSTl9F
-UlIgUEZYICJCSU9TIGVycm9yIC0gbm8gUFNCXG4iKTsKKwlwcmludGsoS0VSTl9JTkZPIFBGWCAi
-QklPUyBlcnJvciAtIG5vIFBTQiBvciBBQ1BJIF9QU1Mgb2JqZWN0c1xuIik7CiAJcmV0dXJuIC1F
-Tk9ERVY7CiB9CiAKQEAgLTY5NSw3ICs2OTksNyBAQAogCXN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5j
-eV90YWJsZSAqcG93ZXJub3dfdGFibGU7CiAKIAlpZiAoYWNwaV9wcm9jZXNzb3JfcmVnaXN0ZXJf
-cGVyZm9ybWFuY2UoJmRhdGEtPmFjcGlfZGF0YSwgZGF0YS0+Y3B1KSkgewotCQlkcHJpbnRrKCJy
-ZWdpc3RlciBwZXJmb3JtYW5jZSBmYWlsZWRcbiIpOworCQlkcHJpbnRrKCJyZWdpc3RlciBwZXJm
-b3JtYW5jZSBmYWlsZWQ6IGJhZCBBQ1BJIGRhdGFcbiIpOwogCQlyZXR1cm4gLUVJTzsKIAl9CiAK
-QEAgLTc0NiwyMiArNzUwLDIzIEBACiAJCQljb250aW51ZTsKIAkJfQogCi0gCQlpZiAoZmlkIDwg
-SElfRklEX1RBQkxFX0JPVFRPTSkgewotIAkJCWlmIChjbnRsb2ZyZXEpIHsKLSAJCQkJLyogaWYg
-Ym90aCBlbnRyaWVzIGFyZSB0aGUgc2FtZSwgaWdub3JlIHRoaXMKLSAJCQkJICogb25lLi4uIAot
-IAkJCQkgKi8KLSAJCQkJaWYgKChwb3dlcm5vd190YWJsZVtpXS5mcmVxdWVuY3kgIT0gcG93ZXJu
-b3dfdGFibGVbY250bG9mcmVxXS5mcmVxdWVuY3kpIHx8Ci0gCQkJCSAgICAocG93ZXJub3dfdGFi
-bGVbaV0uaW5kZXggIT0gcG93ZXJub3dfdGFibGVbY250bG9mcmVxXS5pbmRleCkpIHsKLSAJCQkJ
-CXByaW50ayhLRVJOX0VSUiBQRlggIlRvbyBtYW55IGxvIGZyZXEgdGFibGUgZW50cmllc1xuIik7
-Ci0gCQkJCQlnb3RvIGVycl9vdXRfbWVtOwotIAkJCQl9Ci0JCQkJCi0gCQkJCWRwcmludGsoImRv
-dWJsZSBsb3cgZnJlcXVlbmN5IHRhYmxlIGVudHJ5LCBpZ25vcmluZyBpdC5cbiIpOwotIAkJCQlw
-b3dlcm5vd190YWJsZVtpXS5mcmVxdWVuY3kgPSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQ7Ci0gCQkJ
-CWNvbnRpbnVlOwotIAkJCX0gZWxzZQotIAkJCQljbnRsb2ZyZXEgPSBpOworCQkvKiB2ZXJpZnkg
-b25seSAxIGVudHJ5IGZyb20gdGhlIGxvIGZyZXF1ZW5jeSB0YWJsZSAqLworCQlpZiAoZmlkIDwg
-SElfRklEX1RBQkxFX0JPVFRPTSkgeworCQkJaWYgKGNudGxvZnJlcSkgeworCQkJCS8qIGlmIGJv
-dGggZW50cmllcyBhcmUgdGhlIHNhbWUsIGlnbm9yZSB0aGlzCisJCQkJICogb25lLi4uIAorCQkJ
-CSAqLworCQkJCWlmICgocG93ZXJub3dfdGFibGVbaV0uZnJlcXVlbmN5ICE9IHBvd2Vybm93X3Rh
-YmxlW2NudGxvZnJlcV0uZnJlcXVlbmN5KSB8fAorCQkJCSAgICAocG93ZXJub3dfdGFibGVbaV0u
-aW5kZXggIT0gcG93ZXJub3dfdGFibGVbY250bG9mcmVxXS5pbmRleCkpIHsKKwkJCQkJcHJpbnRr
-KEtFUk5fRVJSIFBGWCAiVG9vIG1hbnkgbG8gZnJlcSB0YWJsZSBlbnRyaWVzXG4iKTsKKwkJCQkJ
-Z290byBlcnJfb3V0X21lbTsKKwkJCQl9CisKKwkJCQlkcHJpbnRrKCJkb3VibGUgbG93IGZyZXF1
-ZW5jeSB0YWJsZSBlbnRyeSwgaWdub3JpbmcgaXQuXG4iKTsKKwkJCQlwb3dlcm5vd190YWJsZVtp
-XS5mcmVxdWVuY3kgPSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQ7CisJCQkJY29udGludWU7CisJCQl9
-IGVsc2UKKwkJCQljbnRsb2ZyZXEgPSBpOwogCQl9CiAKIAkJaWYgKHBvd2Vybm93X3RhYmxlW2ld
-LmZyZXF1ZW5jeSAhPSAoZGF0YS0+YWNwaV9kYXRhLnN0YXRlc1tpXS5jb3JlX2ZyZXF1ZW5jeSAq
-IDEwMDApKSB7CkBAIC04MTYsNyArODIxLDcgQEAKIHsKIAl1MzIgZmlkOwogCXUzMiB2aWQ7Ci0J
-aW50IHJlczsKKwlpbnQgcmVzLCBpOwogCXN0cnVjdCBjcHVmcmVxX2ZyZXFzIGZyZXFzOwogCiAJ
-ZHByaW50aygiY3B1ICVkIHRyYW5zaXRpb24gdG8gaW5kZXggJXVcbiIsIHNtcF9wcm9jZXNzb3Jf
-aWQoKSwgaW5kZXgpOwpAQCAtODQxLDcgKzg0Niw4IEBACiAJfQogCiAJaWYgKChmaWQgPCBISV9G
-SURfVEFCTEVfQk9UVE9NKSAmJiAoZGF0YS0+Y3VycmZpZCA8IEhJX0ZJRF9UQUJMRV9CT1RUT00p
-KSB7Ci0JCXByaW50aygiaWdub3JpbmcgaWxsZWdhbCBjaGFuZ2UgaW4gbG8gZnJlcSB0YWJsZS0l
-eCB0byAweCV4XG4iLAorCQlwcmludGsoS0VSTl9FUlIgUEZYCisJCSAgICAgICAiaWdub3Jpbmcg
-aWxsZWdhbCBjaGFuZ2UgaW4gbG8gZnJlcSB0YWJsZS0leCB0byAweCV4XG4iLAogCQkgICAgICAg
-ZGF0YS0+Y3VycmZpZCwgZmlkKTsKIAkJcmV0dXJuIDE7CiAJfQpAQCAtODUwLDE4ICs4NTYsMjAg
-QEAKIAkJc21wX3Byb2Nlc3Nvcl9pZCgpLCBmaWQsIHZpZCk7CiAKIAlmcmVxcy5jcHUgPSBkYXRh
-LT5jcHU7Ci0KIAlmcmVxcy5vbGQgPSBmaW5kX2toel9mcmVxX2Zyb21fZmlkKGRhdGEtPmN1cnJm
-aWQpOwogCWZyZXFzLm5ldyA9IGZpbmRfa2h6X2ZyZXFfZnJvbV9maWQoZmlkKTsKLQljcHVmcmVx
-X25vdGlmeV90cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QUkVDSEFOR0UpOworCWZvcl9lYWNo
-X2NwdV9tYXNrKGksIGNwdV9zaGFyZWRjb3JlX21hc2tbZGF0YS0+Y3B1XSkgeworCQlmcmVxcy5j
-cHUgPSBpOworCQljcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QUkVD
-SEFOR0UpOworCX0KIAotCWRvd24oJmZpZHZpZF9zZW0pOwogCXJlcyA9IHRyYW5zaXRpb25fZmlk
-X3ZpZChkYXRhLCBmaWQsIHZpZCk7Ci0JdXAoJmZpZHZpZF9zZW0pOwogCiAJZnJlcXMubmV3ID0g
-ZmluZF9raHpfZnJlcV9mcm9tX2ZpZChkYXRhLT5jdXJyZmlkKTsKLQljcHVmcmVxX25vdGlmeV90
-cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsKLQorCWZvcl9lYWNoX2NwdV9t
-YXNrKGksIGNwdV9zaGFyZWRjb3JlX21hc2tbZGF0YS0+Y3B1XSkgeworCQlmcmVxcy5jcHUgPSBp
-OworCQljcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdF
-KTsKKyAgICAgICAgfQogCXJldHVybiByZXM7CiB9CiAKQEAgLTg3NCw2ICs4ODIsNyBAQAogCXUz
-MiBjaGVja3ZpZCA9IGRhdGEtPmN1cnJ2aWQ7CiAJdW5zaWduZWQgaW50IG5ld3N0YXRlOwogCWlu
-dCByZXQgPSAtRUlPOworCWludCBpOwogCiAJLyogb25seSBydW4gb24gc3BlY2lmaWMgQ1BVIGZy
-b20gaGVyZSBvbiAqLwogCW9sZG1hc2sgPSBjdXJyZW50LT5jcHVzX2FsbG93ZWQ7CkBAIC05MDIs
-MjIgKzkxMSw0MSBAQAogCQlkYXRhLT5jdXJyZmlkLCBkYXRhLT5jdXJydmlkKTsKIAogCWlmICgo
-Y2hlY2t2aWQgIT0gZGF0YS0+Y3VycnZpZCkgfHwgKGNoZWNrZmlkICE9IGRhdGEtPmN1cnJmaWQp
-KSB7Ci0JCXByaW50ayhLRVJOX0VSUiBQRlgKLQkJICAgICAgICJlcnJvciAtIG91dCBvZiBzeW5j
-LCBmaWQgMHgleCAweCV4LCB2aWQgMHgleCAweCV4XG4iLAotCQkgICAgICAgY2hlY2tmaWQsIGRh
-dGEtPmN1cnJmaWQsIGNoZWNrdmlkLCBkYXRhLT5jdXJydmlkKTsKKwkJcHJpbnRrKEtFUk5fSU5G
-TyBQRlgKKwkJCSJlcnJvciAtIG91dCBvZiBzeW5jLCBmaXggMHgleCAweCV4LCB2aWQgMHgleCAw
-eCV4XG4iLAorCQkJY2hlY2tmaWQsIGRhdGEtPmN1cnJmaWQsIGNoZWNrdmlkLCBkYXRhLT5jdXJy
-dmlkKTsKIAl9CiAKIAlpZiAoY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVfdGFyZ2V0KHBvbCwgZGF0
-YS0+cG93ZXJub3dfdGFibGUsIHRhcmdmcmVxLCByZWxhdGlvbiwgJm5ld3N0YXRlKSkKIAkJZ290
-byBlcnJfb3V0OwogCisJZG93bigmZmlkdmlkX3NlbSk7CisKKwlmb3JfZWFjaF9jcHVfbWFzayhp
-LCBjcHVfc2hhcmVkY29yZV9tYXNrW3BvbC0+Y3B1XSkgeworCQkvKiBtYWtlIHN1cmUgdGhlIHNp
-YmxpbmcgaXMgaW5pdGlhbGl6ZWQgKi8KKwkJaWYgKCFwb3dlcm5vd19kYXRhW2ldKSB7CisgICAg
-ICAgICAgICAgICAgICAgICAgICByZXQgPSAwOworICAgICAgICAgICAgICAgICAgICAgICAgdXAo
-JmZpZHZpZF9zZW0pOworICAgICAgICAgICAgICAgICAgICAgICAgZ290byBlcnJfb3V0OworICAg
-ICAgICAgICAgICAgIH0KKwl9CisKIAlwb3dlcm5vd19rOF9hY3BpX3BzdF92YWx1ZXMoZGF0YSwg
-bmV3c3RhdGUpOwogCiAJaWYgKHRyYW5zaXRpb25fZnJlcXVlbmN5KGRhdGEsIG5ld3N0YXRlKSkg
-ewogCQlwcmludGsoS0VSTl9FUlIgUEZYICJ0cmFuc2l0aW9uIGZyZXF1ZW5jeSBmYWlsZWRcbiIp
-OwogCQlyZXQgPSAxOworCQl1cCgmZmlkdmlkX3NlbSk7CiAJCWdvdG8gZXJyX291dDsKIAl9CiAK
-KwkvKiBVcGRhdGUgYWxsIHRoZSBmaWQvdmlkcyBvZiBvdXIgc2libGluZ3MgKi8KKwlmb3JfZWFj
-aF9jcHVfbWFzayhpLCBjcHVfc2hhcmVkY29yZV9tYXNrW3BvbC0+Y3B1XSkgeworCQlwb3dlcm5v
-d19kYXRhW2ldLT5jdXJydmlkID0gZGF0YS0+Y3VycnZpZDsKKwkJcG93ZXJub3dfZGF0YVtpXS0+
-Y3VycmZpZCA9IGRhdGEtPmN1cnJmaWQ7CisJfQkKKwl1cCgmZmlkdmlkX3NlbSk7CisKIAlwb2wt
-PmN1ciA9IGZpbmRfa2h6X2ZyZXFfZnJvbV9maWQoZGF0YS0+Y3VycmZpZCk7CiAJcmV0ID0gMDsK
-IApAQCAtOTYyLDcgKzk5MCw3IEBACiAJCSAqLwogCiAJCWlmICgobnVtX29ubGluZV9jcHVzKCkg
-IT0gMSkgfHwgKG51bV9wb3NzaWJsZV9jcHVzKCkgIT0gMSkpIHsKLQkJCXByaW50ayhLRVJOX0lO
-Rk8gUEZYICJNUCBzeXN0ZW1zIG5vdCBzdXBwb3J0ZWQgYnkgUFNCIEJJT1Mgc3RydWN0dXJlXG4i
-KTsKKwkJCXByaW50ayhLRVJOX0VSUiBQRlggIk1QIHN5c3RlbXMgbm90IHN1cHBvcnRlZCBieSBQ
-U0IgQklPUyBzdHJ1Y3R1cmVcbiIpOwogCQkJa2ZyZWUoZGF0YSk7CiAJCQlyZXR1cm4gLUVOT0RF
-VjsKIAkJfQpAQCAtMTAwMyw2ICsxMDMxLDcgQEAKIAlzY2hlZHVsZSgpOwogCiAJcG9sLT5nb3Zl
-cm5vciA9IENQVUZSRVFfREVGQVVMVF9HT1ZFUk5PUjsKKwlwb2wtPmNwdXMgPSBjcHVfc2hhcmVk
-Y29yZV9tYXNrW3BvbC0+Y3B1XTsgCiAKIAkvKiBUYWtlIGEgY3J1ZGUgZ3Vlc3MgaGVyZS4gCiAJ
-ICogVGhhdCBndWVzcyB3YXMgaW4gbWljcm9zZWNvbmRzLCBzbyBtdWx0aXBseSB3aXRoIDEwMDAg
-Ki8KQEAgLTEwNjksNyArMTA5OCw3IEBACiAJCXJldHVybiAwOwogCX0KIAlwcmVlbXB0X2Rpc2Fi
-bGUoKTsKLQorCQogCWlmIChxdWVyeV9jdXJyZW50X3ZhbHVlc193aXRoX3BlbmRpbmdfd2FpdChk
-YXRhKSkKIAkJZ290byBvdXQ7CiAKQEAgLTExMDgsNiArMTEzNyw4IEBACiAJCQljb250aW51ZTsK
-IAkJaWYgKGNoZWNrX3N1cHBvcnRlZF9jcHUoaSkpCiAJCQlzdXBwb3J0ZWRfY3B1cysrOworCQkv
-KiBmaW5kIG91ciBzaWJsaW5ncyBpZiB0aGlzIGlzIGEgZHVhbCBjb3JlIHN5c3RlbSAqLworCQlk
-ZWZpbmVfc2libGluZ3MoaSwgY3B1X3NoYXJlZGNvcmVfbWFzayk7CiAJfQogCiAJaWYgKHN1cHBv
-cnRlZF9jcHVzID09IG51bV9vbmxpbmVfY3B1cygpKSB7CkBAIC0xMTI3LDkgKzExNTgsMTAgQEAK
-IAljcHVmcmVxX3VucmVnaXN0ZXJfZHJpdmVyKCZjcHVmcmVxX2FtZDY0X2RyaXZlcik7CiB9CiAK
-LU1PRFVMRV9BVVRIT1IoIlBhdWwgRGV2cmllbmR0IDxwYXVsLmRldnJpZW5kdEBhbWQuY29tPiIp
-OworTU9EVUxFX0FVVEhPUigiUGF1bCBEZXZyaWVuZHQgPHBhdWwuZGV2cmllbmR0QGFtZC5jb20+
-IGFuZCBNYXJrIExhbmdzZG9yZiA8bWFyay5sYW5nc2RvcmZAYW1kLmNvbS4iKTsKIE1PRFVMRV9E
-RVNDUklQVElPTigiQU1EIEF0aGxvbiA2NCBhbmQgT3B0ZXJvbiBwcm9jZXNzb3IgZnJlcXVlbmN5
-IGRyaXZlci4iKTsKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKIAogbGF0ZV9pbml0Y2FsbChwb3dl
-cm5vd2s4X2luaXQpOwogbW9kdWxlX2V4aXQocG93ZXJub3drOF9leGl0KTsKKwotLS0gYXJjaC9p
-Mzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9wb3dlcm5vdy1rOC5oLm9yaWcJMjAwNS0wNC0xNCAxNDo1
-NzoxMS44MTQxMTUxNTIgLTA1MDAKKysrIGFyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93
-ZXJub3ctazguaAkyMDA1LTA0LTE0IDE2OjE5OjMwLjQ3NzMyNDIyNCAtMDUwMApAQCAtMTc0LDMg
-KzE3NCwyNCBAQAogc3RhdGljIGludCBjb3JlX2ZyZXF1ZW5jeV90cmFuc2l0aW9uKHN0cnVjdCBw
-b3dlcm5vd19rOF9kYXRhICpkYXRhLCB1MzIgcmVxZmlkKTsKIAogc3RhdGljIHZvaWQgcG93ZXJu
-b3dfazhfYWNwaV9wc3RfdmFsdWVzKHN0cnVjdCBwb3dlcm5vd19rOF9kYXRhICpkYXRhLCB1bnNp
-Z25lZCBpbnQgaW5kZXgpOworCisjaWZuZGVmIGZvcl9lYWNoX2NwdV9tYXNrCisjZGVmaW5lIGZv
-cl9lYWNoX2NwdV9tYXNrKGksbWFzaykgZm9yIChpPTA7aTwxO2krKykKKyNlbmRpZgorICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAKKyNpZmRlZiBDT05GSUdfU01QCitzdGF0aWMgaW5saW5lIHZvaWQg
-ZGVmaW5lX3NpYmxpbmdzKGludCBjcHUsIGNwdW1hc2tfdCBjcHVfc2hhcmVkY29yZV9tYXNrW10p
-Cit7CisJaW50IGk7CisJZm9yIChpPTA7aTxOUl9DUFVTO2krKykgeworCQlpZiAocGh5c19wcm9j
-X2lkW2NwdV0gPT0gcGh5c19wcm9jX2lkW2ldKSB7CisJCQljcHVfc2V0KGNwdSwgY3B1X3NoYXJl
-ZGNvcmVfbWFza1tpXSk7CisJCQljcHVfc2V0KGksIGNwdV9zaGFyZWRjb3JlX21hc2tbY3B1XSk7
-CisJCX0KKwl9Cit9CisjZWxzZQorc3RhdGljIGlubGluZSB2b2lkIGRlZmluZV9zaWJsaW5ncyhp
-bnQgY3B1LCBjcHVtYXNrX3QgY3B1X3NoYXJlZGNvcmVfbWFza1tdKQoreworfQorI2VuZGlmCg==
+Here is my cpuinfo (when I see above):
 
-------_=_NextPart_001_01C54F4C.731FD26E
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 31
+model name      : AMD Athlon(tm) 64 Processor 3200+
+stepping        : 0
+cpu MHz         : 2000.108
+cache size      : 512 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 clflush mmx fxsr sse sse2 pni syscall nx mmxext fxsr_opt lm 
+3dnowext 3dnow
+bogomips        : 3915.77
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+built with gcc:
+# gcc --version
+gcc (GCC) 3.4.3-20050110 (Gentoo Linux 3.4.3.20050110-r2, 
+ssp-3.4.3.20050110-0, pie-8.7.7)
 
-------_=_NextPart_001_01C54F4C.731FD26E--
+system is running in native x86_64 mode.
 
-
+Michal
