@@ -1,12 +1,11 @@
-From: =?iso-8859-2?q?Micha=B3_Pytasz?= <pytasz@lodz.home.pl>
+From: =?iso-8859-2?q?Micha=B3_Pytasz?= <mpytasz@pai.net.pl>
 Subject: Re: [PATCH] dual-core powernow-k8
-Date: Mon, 2 May 2005 23:14:55 +0200
-Message-ID: <200505022314.55468.pytasz@lodz.home.pl>
+Date: Mon, 2 May 2005 23:16:34 +0200
+Message-ID: <200505022316.34851.mpytasz@pai.net.pl>
 References: <84EA05E2CA77634C82730353CBE3A84301CFBFB4@SAUSEXMB1.amd.com>
-Reply-To: pytasz@lodz.home.pl
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFBFB4@SAUSEXMB1.amd.com>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
@@ -18,7 +17,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
