@@ -1,10 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH] cpufreq: fix up comment in cpufreq.h
-Date: Wed, 4 May 2005 21:03:45 +0200
-Message-ID: <20050504190345.GA12645@dominikbrodowski.de>
+Subject: Re: Problem recognizing P4-M
+Date: Wed, 4 May 2005 22:58:54 +0200
+Message-ID: <20050504205854.GA6331@isilmar.linta.de>
+References: <1114490818.6148.15.camel@petra>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <1114490818.6148.15.camel@petra>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,25 +16,23 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, cpufreq@lists.linux.org.uk
+To: Paul Swartz <z3p@twistedmatrix.com>
+Cc: cpufreq@lists.linux.org.uk
 
-Fix up comment in cpufreq.h stating transition latency should be passed
-in microseconds -- it was decided long ago to switch to nanoseconds.
+Hi,
 
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+On Tue, Apr 26, 2005 at 12:46:58AM -0400, Paul Swartz wrote:
+> I've checked all over the internet, but I've had no luck finding the
+> answer to this problem.  I have what looks to be a Mobile Intel Pentium
+> 4 at 2.66Ghz.  It's supported (sort of) by the p4-clockmod and
+> acpi-cpufreq modules, but it seems like it should be supported by one of
+> the speedstep modules.  However, whenever I try to insert the
+> speedstep-ich module, I get this:
 
-Index: 2.6.12-rc2/include/linux/cpufreq.h
-===================================================================
---- 2.6.12-rc2.orig/include/linux/cpufreq.h	2005-03-02 18:23:48.000000000 +0100
-+++ 2.6.12-rc2/include/linux/cpufreq.h	2005-04-09 22:19:04.000000000 +0200
-@@ -49,7 +49,7 @@
- /* Frequency values here are CPU kHz so that hardware which doesn't run 
-  * with some frequencies can complain without having to guess what per 
-  * cent / per mille means. 
-- * Maximum transition latency is in microseconds - if it's unknown,
-+ * Maximum transition latency is in nanoseconds - if it's unknown,
-  * CPUFREQ_ETERNAL shall be used.
-  */
+speedstep-ich is the only candidate for this CPU. However, it depends on an
+Intel chipset being present in your notebook. What does lspci tell you?
+
+	Dominik
