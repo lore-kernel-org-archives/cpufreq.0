@@ -1,12 +1,10 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH] dual-core powernow-k8
-Date: Wed, 4 May 2005 18:55:59 +0200
-Message-ID: <20050504165559.GA1286@isilmar.linta.de>
-References: <84EA05E2CA77634C82730353CBE3A84301CFBFD0@SAUSEXMB1.amd.com>
+Subject: [PATCH] cpufreq: fix up comment in cpufreq.h
+Date: Wed, 4 May 2005 21:03:45 +0200
+Message-ID: <20050504190345.GA12645@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFBFD0@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,27 +17,22 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>, davej@redhat.com
-Cc: cpufreq@lists.linux.org.uk
+To: davej@redhat.com, cpufreq@lists.linux.org.uk
 
-On Wed, May 04, 2005 at 11:53:48AM -0500, Langsdorf, Mark wrote:
-> > On Mon, May 02, 2005 at 02:23:41PM -0500, Langsdorf, Mark wrote:
-> > > Update the driver to version 1.40.0 and provide support
-> > > for dual-core processors.
-> > 
-> > Looks good to me, though it'd be great if you could provide 
-> > step-by-step patches in future (e.g. split up printk 
-> > cleanups, adding feature and so on...). One small bit, though:
-> 
-> Will do.
->  
-> > +cpumask_t cpu_sharedcore_mask[NR_CPUS];
-> > 
-> > can be static, AFAICS.
-> 
-> I'll add it to my copy.  Do you want me to resubmit?
+Fix up comment in cpufreq.h stating transition latency should be passed
+in microseconds -- it was decided long ago to switch to nanoseconds.
 
-That's Dave's call...
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
-Thanks,
-	Dominik
+Index: 2.6.12-rc2/include/linux/cpufreq.h
+===================================================================
+--- 2.6.12-rc2.orig/include/linux/cpufreq.h	2005-03-02 18:23:48.000000000 +0100
++++ 2.6.12-rc2/include/linux/cpufreq.h	2005-04-09 22:19:04.000000000 +0200
+@@ -49,7 +49,7 @@
+ /* Frequency values here are CPU kHz so that hardware which doesn't run 
+  * with some frequencies can complain without having to guess what per 
+  * cent / per mille means. 
+- * Maximum transition latency is in microseconds - if it's unknown,
++ * Maximum transition latency is in nanoseconds - if it's unknown,
+  * CPUFREQ_ETERNAL shall be used.
+  */
