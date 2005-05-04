@@ -1,12 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Problem recognizing P4-M
-Date: Wed, 4 May 2005 22:58:54 +0200
-Message-ID: <20050504205854.GA6331@isilmar.linta.de>
-References: <1114490818.6148.15.camel@petra>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] dual-core powernow-k8
+Date: Wed, 4 May 2005 19:27:20 -0400
+Message-ID: <20050504232720.GA15810@redhat.com>
+References: <84EA05E2CA77634C82730353CBE3A84301CFBFD0@SAUSEXMB1.amd.com>
+	<20050504165559.GA1286@isilmar.linta.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1114490818.6148.15.camel@petra>
+In-Reply-To: <20050504165559.GA1286@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,23 +17,36 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Swartz <z3p@twistedmatrix.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
 Cc: cpufreq@lists.linux.org.uk
 
-Hi,
+On Wed, May 04, 2005 at 06:55:59PM +0200, Dominik Brodowski wrote:
+ > On Wed, May 04, 2005 at 11:53:48AM -0500, Langsdorf, Mark wrote:
+ > > > On Mon, May 02, 2005 at 02:23:41PM -0500, Langsdorf, Mark wrote:
+ > > > > Update the driver to version 1.40.0 and provide support
+ > > > > for dual-core processors.
+ > > > 
+ > > > Looks good to me, though it'd be great if you could provide 
+ > > > step-by-step patches in future (e.g. split up printk 
+ > > > cleanups, adding feature and so on...). One small bit, though:
+ > > 
+ > > Will do.
+ > >  
+ > > > +cpumask_t cpu_sharedcore_mask[NR_CPUS];
+ > > > 
+ > > > can be static, AFAICS.
+ > > 
+ > > I'll add it to my copy.  Do you want me to resubmit?
+ > 
+ > That's Dave's call...
 
-On Tue, Apr 26, 2005 at 12:46:58AM -0400, Paul Swartz wrote:
-> I've checked all over the internet, but I've had no luck finding the
-> answer to this problem.  I have what looks to be a Mobile Intel Pentium
-> 4 at 2.66Ghz.  It's supported (sort of) by the p4-clockmod and
-> acpi-cpufreq modules, but it seems like it should be supported by one of
-> the speedstep modules.  However, whenever I try to insert the
-> speedstep-ich module, I get this:
+I'm travelling for the next day or so, so I'm not going to look
+at much until I get back, feel free to send an incremental,
+or I'll just do it myself if it hasnt turned up when I return.
 
-speedstep-ich is the only candidate for this CPU. However, it depends on an
-Intel chipset being present in your notebook. What does lspci tell you?
+thanks,
 
-	Dominik
+		Dave
