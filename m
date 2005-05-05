@@ -1,13 +1,13 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] dual-core powernow-k8
-Date: Wed, 4 May 2005 19:27:20 -0400
-Message-ID: <20050504232720.GA15810@redhat.com>
-References: <84EA05E2CA77634C82730353CBE3A84301CFBFD0@SAUSEXMB1.amd.com>
-	<20050504165559.GA1286@isilmar.linta.de>
+From: Paul Swartz <z3p@twistedmatrix.com>
+Subject: Re: Problem recognizing P4-M
+Date: Wed, 04 May 2005 23:56:24 -0400
+Message-ID: <1115265384.5332.2.camel@petra>
+References: <1114490818.6148.15.camel@petra>
+	<20050504205854.GA6331@isilmar.linta.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20050504165559.GA1286@isilmar.linta.de>
+Content-Type: multipart/mixed; boundary="===============1294432456=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20050504205854.GA6331@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,36 +17,92 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: Dominik Brodowski <linux@dominikbrodowski.net>
 Cc: cpufreq@lists.linux.org.uk
 
-On Wed, May 04, 2005 at 06:55:59PM +0200, Dominik Brodowski wrote:
- > On Wed, May 04, 2005 at 11:53:48AM -0500, Langsdorf, Mark wrote:
- > > > On Mon, May 02, 2005 at 02:23:41PM -0500, Langsdorf, Mark wrote:
- > > > > Update the driver to version 1.40.0 and provide support
- > > > > for dual-core processors.
- > > > 
- > > > Looks good to me, though it'd be great if you could provide 
- > > > step-by-step patches in future (e.g. split up printk 
- > > > cleanups, adding feature and so on...). One small bit, though:
- > > 
- > > Will do.
- > >  
- > > > +cpumask_t cpu_sharedcore_mask[NR_CPUS];
- > > > 
- > > > can be static, AFAICS.
- > > 
- > > I'll add it to my copy.  Do you want me to resubmit?
- > 
- > That's Dave's call...
 
-I'm travelling for the next day or so, so I'm not going to look
-at much until I get back, feel free to send an incremental,
-or I'll just do it myself if it hasnt turned up when I return.
+--===============1294432456==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-85+i45UKXf6dP0HU/44J"
+
+
+--=-85+i45UKXf6dP0HU/44J
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2005-05-04 at 22:58 +0200, Dominik Brodowski wrote:
+> speedstep-ich is the only candidate for this CPU. However, it depends on =
+an
+> Intel chipset being present in your notebook. What does lspci tell you?
+
+lspci says:
+
+0000:00:00.0 Host bridge: ATI Technologies Inc: Unknown device cbb2 (rev
+02)
+0000:00:01.0 PCI bridge: ATI Technologies Inc PCI Bridge [IGP 340M]
+0000:00:06.0 Multimedia audio controller: ALi Corporation M5451 PCI
+AC-Link Controller Audio Device (rev 02)
+0000:00:07.0 ISA bridge: ALi Corporation M1533 PCI to ISA Bridge
+[Aladdin IV]
+0000:00:08.0 Modem: ALi Corporation M5457 AC'97 Modem Controller
+0000:00:09.0 Network controller: Broadcom Corporation BCM4306 802.11b/g
+Wireless LAN Controller (rev 02)
+0000:00:0a.0 CardBus bridge: Texas Instruments PCI1410 PC card Cardbus
+Controller (rev 02)
+0000:00:0b.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB
+1.1 Controller (rev 50)
+0000:00:0b.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB
+1.1 Controller (rev 50)
+0000:00:0b.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 51)
+0000:00:0c.0 FireWire (IEEE 1394): Texas Instruments TSB43AB21
+IEEE-1394a-2000 Controller (PHY/Link)
+0000:00:10.0 IDE interface: ALi Corporation M5229 IDE (rev c4)
+0000:00:11.0 Bridge: ALi Corporation M7101 Power Management Controller
+[PMU]
+0000:00:12.0 Ethernet controller: National Semiconductor Corporation
+DP83815 (MacPhyter) Ethernet Controller
+0000:01:05.0 VGA compatible controller: ATI Technologies Inc Radeon IGP
+340M
 
 thanks,
+-p
 
-		Dave
+(p.s. if you could keep at least CCing me, I'd appreciate it)
+--=20
+       Paul Swartz
+(o_    http://z3p.livejournal.com/  _o)
+//\    z3p@twistedmatrix.com        /\\
+V_/_   AIM: z3penguin              _\_V->
+
+--=-85+i45UKXf6dP0HU/44J
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQBCeZlon20RAFzwsckRArNqAJ0fyibHvGhRHpO/bQjqb71jOIH+jwCfWGdI
+uqq5Krp1GVxb00kn4nk4KUo=
+=KPwJ
+-----END PGP SIGNATURE-----
+
+--=-85+i45UKXf6dP0HU/44J--
+
+
+
+--===============1294432456==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1294432456==--
+
+
