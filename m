@@ -1,14 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Problem recognizing P4-M
-Date: Thu, 5 May 2005 08:34:49 +0200
-Message-ID: <20050505063449.GA19193@isilmar.linta.de>
-References: <1114490818.6148.15.camel@petra>
-	<20050504205854.GA6331@isilmar.linta.de>
-	<1115265384.5332.2.camel@petra>
+From: Vladimir Skokov <jove@newmail.ru>
+Subject: kernel 2.4.27; Pentium M 1.8
+Date: Fri, 6 May 2005 00:27:22 +0400
+Message-ID: <200505060027.22704.jove@newmail.ru>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1115265384.5332.2.camel@petra>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,20 +17,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Swartz <z3p@twistedmatrix.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Wed, May 04, 2005 at 11:56:24PM -0400, Paul Swartz wrote:
-> On Wed, 2005-05-04 at 22:58 +0200, Dominik Brodowski wrote:
-> > speedstep-ich is the only candidate for this CPU. However, it depends on an
-> > Intel chipset being present in your notebook. What does lspci tell you?
-> 
-> lspci says:
-> 
-> 0000:00:11.0 Bridge: ALi Corporation M7101 Power Management Controller [PMU]
+Hello.
 
-This one isn't supported by speedstep-ich, as it isn't an ICH-based
-southbridge.
+I have applied  cpufreq patch for kernel 2.4.27. However I have some issue 
+with loading  speedstep modules? Can you help?  Thanks in advance. 
 
-	Dominik
+dmesg:
+May  5 20:52:33 pc7004c kernel: speedstep-centrino: found unsupported CPU with 
+Enhanced SpeedStep
+
+cat /proc/cpuinfo: 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 13
+model name      : Intel(R) Pentium(R) M processor 1.80GHz
+stepping        : 6
+cpu MHz         : 1800.079
+cache size      : 64 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca cmov 
+pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe tm2 est
+bogomips        : 3591.37
