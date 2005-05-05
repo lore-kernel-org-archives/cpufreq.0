@@ -1,11 +1,12 @@
-From: Vladimir Skokov <jove@newmail.ru>
-Subject: kernel 2.4.27; Pentium M 1.8
-Date: Fri, 6 May 2005 00:27:22 +0400
-Message-ID: <200505060027.22704.jove@newmail.ru>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: kernel 2.4.27; Pentium M 1.8
+Date: Fri, 6 May 2005 00:04:57 +0200
+Message-ID: <20050505220457.GA16100@isilmar.linta.de>
+References: <200505060027.22704.jove@newmail.ru>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <200505060027.22704.jove@newmail.ru>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,34 +18,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Vladimir Skokov <jove@newmail.ru>
+Cc: cpufreq@lists.linux.org.uk
 
-Hello.
+Hi,
+On Fri, May 06, 2005 at 12:27:22AM +0400, Vladimir Skokov wrote:
+> Hello.
+> 
+> I have applied  cpufreq patch for kernel 2.4.27. However I have some issue 
+> with loading  speedstep modules? Can you help?  Thanks in advance. 
 
-I have applied  cpufreq patch for kernel 2.4.27. However I have some issue 
-with loading  speedstep modules? Can you help?  Thanks in advance. 
+This CPU is only supported by the speedstep-centrino module if the ACPI
+performance states library is used -- and that is only available for 2.6.,
+AFAIK. Therefore, cpufreq isn't available for this CPU on 2.4.
 
-dmesg:
-May  5 20:52:33 pc7004c kernel: speedstep-centrino: found unsupported CPU with 
-Enhanced SpeedStep
-
-cat /proc/cpuinfo: 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 13
-model name      : Intel(R) Pentium(R) M processor 1.80GHz
-stepping        : 6
-cpu MHz         : 1800.079
-cache size      : 64 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr pge mca cmov 
-pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe tm2 est
-bogomips        : 3591.37
+	Dominik
