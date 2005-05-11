@@ -1,14 +1,13 @@
-From: Andrea Ferrari <and_ferrari@virgilio.it>
-Subject: Re: Problem with Powernow-k8 module
-Date: Wed, 11 May 2005 10:25:27 +0200
-Message-ID: <200505111025.30976.and_ferrari@virgilio.it>
-References: <200505091736.36551.and_ferrari@virgilio.it>
-	<200505091808.13756.and_ferrari@virgilio.it>
-	<200505091823.24464.pytasz@lodz.home.pl>
+From: Eric Piel <Eric.Piel@tremplin-utc.net>
+Subject: Re: cpufreq on-demand governor up_treshold?
+Date: Wed, 11 May 2005 14:19:03 +0200
+Message-ID: <4281F837.5070608@tremplin-utc.net>
+References: <200503140829.04750.lkml@kcore.org>	<42354400.7070500@tremplin-utc.net>	<20050511013334.GB8039@redhat.com>
+	<20050511023448.GA25506@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1776002246=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200505091823.24464.pytasz@lodz.home.pl>
+In-Reply-To: <20050511023448.GA25506@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,75 +18,25 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@zenii.linux.org.uk, linux@dominikbrodowski.net
 
---===============1776002246==
-Content-Type: multipart/signed; boundary="nextPart16658609.yx39uv5bmK";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Dave Jones a =E9crit :
+> On Tue, May 10, 2005 at 09:33:34PM -0400, Dave Jones wrote:
+>  >=20
+>  > I'm preparing the first cpufreq->linus sync right now.
+>  > Can you write up some descriptions & signed-off-by: lines for
+>  > these three please ?
+>=20
+> Additionally, it'll need tweaking to diff on top of whats
+> currently in the pending queue. looks like the patch at
+> http://www.codemonkey.org.uk/projects/cpufreq/pending-patches/CPUFREQ-0=
+4-ondemand-cleanups.patch
+> upsets yours a little.
+>=20
+Here follows the three patches, updated for the last snapshot of=20
+cpufreq. I knew there was a conflict (CPUFREQ-04 is also a patch I wrote=20
+;-) ) but was too lasy to resend them. Here you are!
 
---nextPart16658609.yx39uv5bmK
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Alle 18:23, luned=C3=AC 9 maggio 2005, Micha=C5=82 Pytasz ha scritto:
-
-> Well, than You have to complain to MSI, but it's strange, I have MSI K8T
-> Neo2 and I have this setting in bios, it's in "Cell menu"
-
-Sorry guys...i'm a stupid. I didn't saw the Cool and Quiet voice in all bio=
-s=20
-in the Msi "Cell Menu"
-
-Now the kernel module powernow-k8 is ok:
-powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.00.09e)
-powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x6 (1400 mV)
-powernow-k8:    1 : fid 0xa (1800 MHz), vid 0x8 (1350 mV)
-powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
-
-Thanks a lot
-
-Andrea
-
-=2D-=20
-
-MOgWai46 - ICQ #203981367
-GPG Key:
-# Keyserver: blackhole.pca.dfn.de
-# KeyID: 0687D717
-
-
-"She puts the weights into my little heart,
-And she gets in my room and she takes it apart.
-She puts the weights into my little heart,
-I said she puts the weights into my little heart."
-
---nextPart16658609.yx39uv5bmK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQBCgcF6hIDJNwaH1xcRAhXiAJ4pyu7eeeZu8kJ/Oij5kwdg2CgN/ACfaLtz
-xIM8dTR2TAkj/H+1HhvGBu4=
-=YWy2
------END PGP SIGNATURE-----
-
---nextPart16658609.yx39uv5bmK--
-
-
---===============1776002246==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
---===============1776002246==--
-
+Eric
