@@ -1,12 +1,11 @@
-From: GothicKnight <gothicknight@gmail.com>
-Subject: A userspace program to control CPUFreq
-Date: Sat, 14 May 2005 00:29:53 +0000
-Message-ID: <ba258bb405051317293da0d9e8@mail.gmail.com>
-Reply-To: GothicKnight <gothicknight@gmail.com>
+From: Jan Mazur <mazu@epf.pl>
+Subject: Centrino 1.5 in Acer Aspire 1681WLMi
+Date: Sat, 14 May 2005 10:52:52 +0200
+Message-ID: <4285BC64.5060800@epf.pl>
+Reply-To: mazu@epf.pl
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,12 +19,15 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-  I was reading the documents within the kernel documentary and i've
-found that the userspace program was not yet implemented.
-  I have one in sourceforge with some extra features. The name is
-"LACH" the web page is not yet done but try to search for it and try.
-It still doesn't have other ACPI hardware support because i don't have
-it on my laptop.
-  It has no documentation but the help (-h) is very simple.
---=20
-There are strange things going on in this world
+Hi,
+I've installed cpufreq, I'm using module acpi-cpufreq (speedstep-centrio
+ won't load for some reason) The problem is that the values in
+/sys/devices/system/cpu/cpu0/ look like they were for Centrino 1.6 (The
+max values are set to 1600000 and the available frequences are 1600000
+1400000 120000 800000 600000) The cpufreq-info also recognise the
+processor as 1.6 Where is the problem? Can I change the settings to 1.5?
+
+Sorry for my 'english'.
+
+-- 
+Jan Mazur
