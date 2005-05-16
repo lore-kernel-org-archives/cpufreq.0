@@ -1,12 +1,11 @@
-From: Nebojsa Trpkovic <trxman@gmail.com>
-Subject: Re: cpu-freq causing kernel lock-up after upgrading to 1GB ram.
-Date: Mon, 16 May 2005 19:08:05 +0200
-Message-ID: <4288D375.7040405@gmail.com>
-References: <84EA05E2CA77634C82730353CBE3A84301CFC017@SAUSEXMB1.amd.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: [PATCH 2/2] dual-core powernow-k8 resubmit
+Date: Mon, 16 May 2005 12:26:28 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFC01A@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C55A3C.64A348BA"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFC017@SAUSEXMB1.amd.com>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,153 +16,213 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-Done.
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C55A3C.64A348BA
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+With the release of the dual-core AMD Opterons last week,
+it's high time that cpufreq supported them.  The attached
+patch applies cleanly to 2.6.12-rc3 and updates powernow-k8
+to support the latest Athlon 64 and Opteron processors.
+
+Update the driver to version 1.40.2 and provide support
+for dual-core processors and the latest fixes.
+
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+
+I'm resubmitting this because Andi Kleen pointed out that
+cpu_core_map has the core-to-node mappings I need and I
+shouldn't independently rediscover them myself.
+
+-Mark Langsdorf
+AMD, Inc.
+
+------_=_NextPart_001_01C55A3C.64A348BA
+Content-Type: application/octet-stream;
+ name=dualcore-2.6.12.patch
+Content-Transfer-Encoding: base64
+Content-Description: dualcore-2.6.12.patch
+Content-Disposition: attachment;
+ filename=dualcore-2.6.12.patch
+
+LS0tIGxpbnV4LTIuNi4xMi10ZXN0L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJu
+b3ctazguYwkyMDA1LTA0LTI5IDIwOjI4OjM1LjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtMi42
+LjEyLXJjNC1wbi9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL3Bvd2Vybm93LWs4LmMJMjAw
+NS0wNS0xNiAxMjowODo0OS4wMDAwMDAwMDAgLTA1MDAKQEAgLTQsNyArNCw3IEBACiAgKiAgR05V
+IGdlbmVyYWwgcHVibGljIGxpY2Vuc2UgdmVyc2lvbiAyLiBTZWUgIkNPUFlJTkciIG9yCiAgKiAg
+aHR0cDovL3d3dy5nbnUub3JnL2xpY2Vuc2VzL2dwbC5odG1sCiAgKgotICogIFN1cHBvcnQgOiBw
+YXVsLmRldnJpZW5kdEBhbWQuY29tCisgKiAgU3VwcG9ydCA6IG1hcmsubGFuZ3Nkb3JmQGFtZC5j
+b20KICAqCiAgKiAgQmFzZWQgb24gdGhlIHBvd2Vybm93LWs3LmMgbW9kdWxlIHdyaXR0ZW4gYnkg
+RGF2ZSBKb25lcy4KICAqICAoQykgMjAwMyBEYXZlIEpvbmVzIDxkYXZlakBjb2RlbW9ua2V5Lm9y
+Zy51az4gb24gYmVoYWxmIG9mIFN1U0UgTGFicwpAQCAtMTUsMTIgKzE1LDEzIEBACiAgKgogICog
+IFZhbHVhYmxlIGlucHV0IGdyYXRlZnVsbHkgcmVjZWl2ZWQgZnJvbSBEYXZlIEpvbmVzLCBQYXZl
+bCBNYWNoZWssCiAgKiAgRG9taW5payBCcm9kb3dza2ksIGFuZCBvdGhlcnMuCisgKiAgT3JpZ2lu
+YWxseSBkZXZlbG9wZWQgYnkgUGF1bCBEZXZyaWVuZHQuCiAgKiAgUHJvY2Vzc29yIGluZm9ybWF0
+aW9uIG9idGFpbmVkIGZyb20gQ2hhcHRlciA5IChQb3dlciBhbmQgVGhlcm1hbCBNYW5hZ2VtZW50
+KQogICogIG9mIHRoZSAiQklPUyBhbmQgS2VybmVsIERldmVsb3BlcidzIEd1aWRlIGZvciB0aGUg
+QU1EIEF0aGxvbiA2NCBhbmQgQU1ECiAgKiAgT3B0ZXJvbiBQcm9jZXNzb3JzIiBhdmFpbGFibGUg
+Zm9yIGRvd25sb2FkIGZyb20gd3d3LmFtZC5jb20KICAqCiAgKiAgVGFibGVzIGZvciBzcGVjaWZp
+YyBDUFVzIGNhbiBiZSBpbmZyZXJyZWQgZnJvbQotICoJaHR0cDovL3d3dy5hbWQuY29tL3VzLWVu
+L2Fzc2V0cy9jb250ZW50X3R5cGUvd2hpdGVfcGFwZXJzX2FuZF90ZWNoX2RvY3MvMzA0MzAucGRm
+CisgKiAgICAgaHR0cDovL3d3dy5hbWQuY29tL3VzLWVuL2Fzc2V0cy9jb250ZW50X3R5cGUvd2hp
+dGVfcGFwZXJzX2FuZF90ZWNoX2RvY3MvMzA0MzAucGRmCiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4
+L2tlcm5lbC5oPgpAQCAtMzAsNiArMzEsNyBAQAogI2luY2x1ZGUgPGxpbnV4L2NwdWZyZXEuaD4K
+ICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+CiAjaW5jbHVkZSA8bGludXgvc3RyaW5nLmg+CisjaW5j
+bHVkZSA8bGludXgvY3B1bWFzay5oPgogCiAjaW5jbHVkZSA8YXNtL21zci5oPgogI2luY2x1ZGUg
+PGFzbS9pby5oPgpAQCAtNDIsNyArNDQsNyBAQAogCiAjZGVmaW5lIFBGWCAicG93ZXJub3ctazg6
+ICIKICNkZWZpbmUgQkZYIFBGWCAiQklPUyBlcnJvcjogIgotI2RlZmluZSBWRVJTSU9OICJ2ZXJz
+aW9uIDEuMDAuMDllIgorI2RlZmluZSBWRVJTSU9OICJ2ZXJzaW9uIDEuNDAuMiIKICNpbmNsdWRl
+ICJwb3dlcm5vdy1rOC5oIgogCiAvKiBzZXJpYWxpemUgZnJlcSBjaGFuZ2VzICAqLwpAQCAtNTAs
+NiArNTIsMTAgQEAKIAogc3RhdGljIHN0cnVjdCBwb3dlcm5vd19rOF9kYXRhICpwb3dlcm5vd19k
+YXRhW05SX0NQVVNdOwogCisjaWZuZGVmIENPTkZJR19TTVAKK3N0YXRpYyBjcHVtYXNrX3QgY3B1
+X2NvcmVfbWFwWzFdOworI2VuZGlmCisKIC8qIFJldHVybiBhIGZyZXF1ZW5jeSBpbiBNSHosIGdp
+dmVuIGFuIGlucHV0IGZpZCAqLwogc3RhdGljIHUzMiBmaW5kX2ZyZXFfZnJvbV9maWQodTMyIGZp
+ZCkKIHsKQEAgLTI3NCwxMSArMjgwLDE4IEBACiB7CiAJdTMyIHJ2b3N0ZXBzID0gZGF0YS0+cnZv
+OwogCXUzMiBzYXZlZmlkID0gZGF0YS0+Y3VycmZpZDsKKwl1MzIgbWF4dmlkLCBsbzsKIAogCWRw
+cmludGsoInBoMSAoY3B1JWQpOiBzdGFydCwgY3VycmZpZCAweCV4LCBjdXJydmlkIDB4JXgsIHJl
+cXZpZCAweCV4LCBydm8gMHgleFxuIiwKIAkJc21wX3Byb2Nlc3Nvcl9pZCgpLAogCQlkYXRhLT5j
+dXJyZmlkLCBkYXRhLT5jdXJydmlkLCByZXF2aWQsIGRhdGEtPnJ2byk7CiAKKwlyZG1zcihNU1Jf
+RklEVklEX1NUQVRVUywgbG8sIG1heHZpZCk7CisJbWF4dmlkID0gMHgxZiAmIChtYXh2aWQgPj4g
+MTYpOworCWRwcmludGsoInBoMSBtYXh2aWQ9MHgleFxuIiwgbWF4dmlkKTsKKwlpZiAocmVxdmlk
+IDwgbWF4dmlkKSAvKiBsb3dlciBudW1iZXJzIGFyZSBoaWdoZXIgdm9sdGFnZXMgKi8KKwkJcmVx
+dmlkID0gbWF4dmlkOworCiAJd2hpbGUgKGRhdGEtPmN1cnJ2aWQgPiByZXF2aWQpIHsKIAkJZHBy
+aW50aygicGgxOiBjdXJyIDB4JXgsIHJlcSB2aWQgMHgleFxuIiwKIAkJCWRhdGEtPmN1cnJ2aWQs
+IHJlcXZpZCk7CkBAIC0yODYsOCArMjk5LDggQEAKIAkJCXJldHVybiAxOwogCX0KIAotCXdoaWxl
+ICgocnZvc3RlcHMgPiAwKSAgJiYgKChkYXRhLT5ydm8gKyBkYXRhLT5jdXJydmlkKSA+IHJlcXZp
+ZCkpIHsKLQkJaWYgKGRhdGEtPmN1cnJ2aWQgPT0gMCkgeworCXdoaWxlICgocnZvc3RlcHMgPiAw
+KSAmJiAoKGRhdGEtPnJ2byArIGRhdGEtPmN1cnJ2aWQpID4gcmVxdmlkKSkgeworCQlpZiAoZGF0
+YS0+Y3VycnZpZCA9PSBtYXh2aWQpIHsKIAkJCXJ2b3N0ZXBzID0gMDsKIAkJfSBlbHNlIHsKIAkJ
+CWRwcmludGsoInBoMTogY2hhbmdpbmcgdmlkIGZvciBydm8sIHJlcSAweCV4XG4iLApAQCAtNjcx
+LDcgKzY4NCw3IEBACiAJICogQklPUyBhbmQgS2VybmVsIERldmVsb3BlcidzIEd1aWRlLCB3aGlj
+aCBpcyBhdmFpbGFibGUgb24KIAkgKiB3d3cuYW1kLmNvbQogCSAqLwotCXByaW50ayhLRVJOX0VS
+UiBQRlggIkJJT1MgZXJyb3IgLSBubyBQU0JcbiIpOworCXByaW50ayhLRVJOX0lORk8gUEZYICJC
+SU9TIGVycm9yIC0gbm8gUFNCIG9yIEFDUEkgX1BTUyBvYmplY3RzXG4iKTsKIAlyZXR1cm4gLUVO
+T0RFVjsKIH0KIApAQCAtNjk1LDcgKzcwOCw3IEBACiAJc3RydWN0IGNwdWZyZXFfZnJlcXVlbmN5
+X3RhYmxlICpwb3dlcm5vd190YWJsZTsKIAogCWlmIChhY3BpX3Byb2Nlc3Nvcl9yZWdpc3Rlcl9w
+ZXJmb3JtYW5jZSgmZGF0YS0+YWNwaV9kYXRhLCBkYXRhLT5jcHUpKSB7Ci0JCWRwcmludGsoInJl
+Z2lzdGVyIHBlcmZvcm1hbmNlIGZhaWxlZFxuIik7CisJCWRwcmludGsoInJlZ2lzdGVyIHBlcmZv
+cm1hbmNlIGZhaWxlZDogYmFkIEFDUEkgZGF0YVxuIik7CiAJCXJldHVybiAtRUlPOwogCX0KIApA
+QCAtNzQ2LDIyICs3NTksMjMgQEAKIAkJCWNvbnRpbnVlOwogCQl9CiAKLSAJCWlmIChmaWQgPCBI
+SV9GSURfVEFCTEVfQk9UVE9NKSB7Ci0gCQkJaWYgKGNudGxvZnJlcSkgewotIAkJCQkvKiBpZiBi
+b3RoIGVudHJpZXMgYXJlIHRoZSBzYW1lLCBpZ25vcmUgdGhpcwotIAkJCQkgKiBvbmUuLi4gCi0g
+CQkJCSAqLwotIAkJCQlpZiAoKHBvd2Vybm93X3RhYmxlW2ldLmZyZXF1ZW5jeSAhPSBwb3dlcm5v
+d190YWJsZVtjbnRsb2ZyZXFdLmZyZXF1ZW5jeSkgfHwKLSAJCQkJICAgIChwb3dlcm5vd190YWJs
+ZVtpXS5pbmRleCAhPSBwb3dlcm5vd190YWJsZVtjbnRsb2ZyZXFdLmluZGV4KSkgewotIAkJCQkJ
+cHJpbnRrKEtFUk5fRVJSIFBGWCAiVG9vIG1hbnkgbG8gZnJlcSB0YWJsZSBlbnRyaWVzXG4iKTsK
+LSAJCQkJCWdvdG8gZXJyX291dF9tZW07Ci0gCQkJCX0KLQkJCQkKLSAJCQkJZHByaW50aygiZG91
+YmxlIGxvdyBmcmVxdWVuY3kgdGFibGUgZW50cnksIGlnbm9yaW5nIGl0LlxuIik7Ci0gCQkJCXBv
+d2Vybm93X3RhYmxlW2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJRDsKLSAJCQkJ
+Y29udGludWU7Ci0gCQkJfSBlbHNlCi0gCQkJCWNudGxvZnJlcSA9IGk7CisJCS8qIHZlcmlmeSBv
+bmx5IDEgZW50cnkgZnJvbSB0aGUgbG8gZnJlcXVlbmN5IHRhYmxlICovCisJCWlmIChmaWQgPCBI
+SV9GSURfVEFCTEVfQk9UVE9NKSB7CisJCQlpZiAoY250bG9mcmVxKSB7CisJCQkJLyogaWYgYm90
+aCBlbnRyaWVzIGFyZSB0aGUgc2FtZSwgaWdub3JlIHRoaXMKKwkJCQkgKiBvbmUuLi4gCisJCQkJ
+ICovCisJCQkJaWYgKChwb3dlcm5vd190YWJsZVtpXS5mcmVxdWVuY3kgIT0gcG93ZXJub3dfdGFi
+bGVbY250bG9mcmVxXS5mcmVxdWVuY3kpIHx8CisJCQkJICAgIChwb3dlcm5vd190YWJsZVtpXS5p
+bmRleCAhPSBwb3dlcm5vd190YWJsZVtjbnRsb2ZyZXFdLmluZGV4KSkgeworCQkJCQlwcmludGso
+S0VSTl9FUlIgUEZYICJUb28gbWFueSBsbyBmcmVxIHRhYmxlIGVudHJpZXNcbiIpOworCQkJCQln
+b3RvIGVycl9vdXRfbWVtOworCQkJCX0KKworCQkJCWRwcmludGsoImRvdWJsZSBsb3cgZnJlcXVl
+bmN5IHRhYmxlIGVudHJ5LCBpZ25vcmluZyBpdC5cbiIpOworCQkJCXBvd2Vybm93X3RhYmxlW2ld
+LmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJRDsKKwkJCQljb250aW51ZTsKKwkJCX0g
+ZWxzZQorCQkJCWNudGxvZnJlcSA9IGk7CiAJCX0KIAogCQlpZiAocG93ZXJub3dfdGFibGVbaV0u
+ZnJlcXVlbmN5ICE9IChkYXRhLT5hY3BpX2RhdGEuc3RhdGVzW2ldLmNvcmVfZnJlcXVlbmN5ICog
+MTAwMCkpIHsKQEAgLTgxNiw3ICs4MzAsNyBAQAogewogCXUzMiBmaWQ7CiAJdTMyIHZpZDsKLQlp
+bnQgcmVzOworCWludCByZXMsIGk7CiAJc3RydWN0IGNwdWZyZXFfZnJlcXMgZnJlcXM7CiAKIAlk
+cHJpbnRrKCJjcHUgJWQgdHJhbnNpdGlvbiB0byBpbmRleCAldVxuIiwgc21wX3Byb2Nlc3Nvcl9p
+ZCgpLCBpbmRleCk7CkBAIC04NDEsNyArODU1LDggQEAKIAl9CiAKIAlpZiAoKGZpZCA8IEhJX0ZJ
+RF9UQUJMRV9CT1RUT00pICYmIChkYXRhLT5jdXJyZmlkIDwgSElfRklEX1RBQkxFX0JPVFRPTSkp
+IHsKLQkJcHJpbnRrKCJpZ25vcmluZyBpbGxlZ2FsIGNoYW5nZSBpbiBsbyBmcmVxIHRhYmxlLSV4
+IHRvIDB4JXhcbiIsCisJCXByaW50ayhLRVJOX0VSUiBQRlgKKwkJICAgICAgICJpZ25vcmluZyBp
+bGxlZ2FsIGNoYW5nZSBpbiBsbyBmcmVxIHRhYmxlLSV4IHRvIDB4JXhcbiIsCiAJCSAgICAgICBk
+YXRhLT5jdXJyZmlkLCBmaWQpOwogCQlyZXR1cm4gMTsKIAl9CkBAIC04NTAsMTggKzg2NSwyMCBA
+QAogCQlzbXBfcHJvY2Vzc29yX2lkKCksIGZpZCwgdmlkKTsKIAogCWZyZXFzLmNwdSA9IGRhdGEt
+PmNwdTsKLQogCWZyZXFzLm9sZCA9IGZpbmRfa2h6X2ZyZXFfZnJvbV9maWQoZGF0YS0+Y3VycmZp
+ZCk7CiAJZnJlcXMubmV3ID0gZmluZF9raHpfZnJlcV9mcm9tX2ZpZChmaWQpOwotCWNwdWZyZXFf
+bm90aWZ5X3RyYW5zaXRpb24oJmZyZXFzLCBDUFVGUkVRX1BSRUNIQU5HRSk7CisJZm9yX2VhY2hf
+Y3B1X21hc2soaSwgY3B1X2NvcmVfbWFwW2RhdGEtPmNwdV0pIHsKKwkJZnJlcXMuY3B1ID0gaTsK
+KwkJY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmZnJlcXMsIENQVUZSRVFfUFJFQ0hBTkdFKTsK
+Kwl9CiAKLQlkb3duKCZmaWR2aWRfc2VtKTsKIAlyZXMgPSB0cmFuc2l0aW9uX2ZpZF92aWQoZGF0
+YSwgZmlkLCB2aWQpOwotCXVwKCZmaWR2aWRfc2VtKTsKIAogCWZyZXFzLm5ldyA9IGZpbmRfa2h6
+X2ZyZXFfZnJvbV9maWQoZGF0YS0+Y3VycmZpZCk7Ci0JY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlv
+bigmZnJlcXMsIENQVUZSRVFfUE9TVENIQU5HRSk7Ci0KKwlmb3JfZWFjaF9jcHVfbWFzayhpLCBj
+cHVfY29yZV9tYXBbZGF0YS0+Y3B1XSkgeworCQlmcmVxcy5jcHUgPSBpOworCQljcHVmcmVxX25v
+dGlmeV90cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsKKyAgICAgICAgfQog
+CXJldHVybiByZXM7CiB9CiAKQEAgLTg3NCw2ICs4OTEsNyBAQAogCXUzMiBjaGVja3ZpZCA9IGRh
+dGEtPmN1cnJ2aWQ7CiAJdW5zaWduZWQgaW50IG5ld3N0YXRlOwogCWludCByZXQgPSAtRUlPOwor
+CWludCBpOwogCiAJLyogb25seSBydW4gb24gc3BlY2lmaWMgQ1BVIGZyb20gaGVyZSBvbiAqLwog
+CW9sZG1hc2sgPSBjdXJyZW50LT5jcHVzX2FsbG93ZWQ7CkBAIC05MDIsMjIgKzkyMCw0MSBAQAog
+CQlkYXRhLT5jdXJyZmlkLCBkYXRhLT5jdXJydmlkKTsKIAogCWlmICgoY2hlY2t2aWQgIT0gZGF0
+YS0+Y3VycnZpZCkgfHwgKGNoZWNrZmlkICE9IGRhdGEtPmN1cnJmaWQpKSB7Ci0JCXByaW50ayhL
+RVJOX0VSUiBQRlgKLQkJICAgICAgICJlcnJvciAtIG91dCBvZiBzeW5jLCBmaWQgMHgleCAweCV4
+LCB2aWQgMHgleCAweCV4XG4iLAotCQkgICAgICAgY2hlY2tmaWQsIGRhdGEtPmN1cnJmaWQsIGNo
+ZWNrdmlkLCBkYXRhLT5jdXJydmlkKTsKKwkJcHJpbnRrKEtFUk5fSU5GTyBQRlgKKwkJCSJlcnJv
+ciAtIG91dCBvZiBzeW5jLCBmaXggMHgleCAweCV4LCB2aWQgMHgleCAweCV4XG4iLAorCQkJY2hl
+Y2tmaWQsIGRhdGEtPmN1cnJmaWQsIGNoZWNrdmlkLCBkYXRhLT5jdXJydmlkKTsKIAl9CiAKIAlp
+ZiAoY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVfdGFyZ2V0KHBvbCwgZGF0YS0+cG93ZXJub3dfdGFi
+bGUsIHRhcmdmcmVxLCByZWxhdGlvbiwgJm5ld3N0YXRlKSkKIAkJZ290byBlcnJfb3V0OwogCisJ
+ZG93bigmZmlkdmlkX3NlbSk7CisKKwlmb3JfZWFjaF9jcHVfbWFzayhpLCBjcHVfY29yZV9tYXBb
+cG9sLT5jcHVdKSB7CisJCS8qIG1ha2Ugc3VyZSB0aGUgc2libGluZyBpcyBpbml0aWFsaXplZCAq
+LworCQlpZiAoIXBvd2Vybm93X2RhdGFbaV0pIHsKKyAgICAgICAgICAgICAgICAgICAgICAgIHJl
+dCA9IDA7CisgICAgICAgICAgICAgICAgICAgICAgICB1cCgmZmlkdmlkX3NlbSk7CisgICAgICAg
+ICAgICAgICAgICAgICAgICBnb3RvIGVycl9vdXQ7CisgICAgICAgICAgICAgICAgfQorCX0KKwog
+CXBvd2Vybm93X2s4X2FjcGlfcHN0X3ZhbHVlcyhkYXRhLCBuZXdzdGF0ZSk7CiAKIAlpZiAodHJh
+bnNpdGlvbl9mcmVxdWVuY3koZGF0YSwgbmV3c3RhdGUpKSB7CiAJCXByaW50ayhLRVJOX0VSUiBQ
+RlggInRyYW5zaXRpb24gZnJlcXVlbmN5IGZhaWxlZFxuIik7CiAJCXJldCA9IDE7CisJCXVwKCZm
+aWR2aWRfc2VtKTsKIAkJZ290byBlcnJfb3V0OwogCX0KIAorCS8qIFVwZGF0ZSBhbGwgdGhlIGZp
+ZC92aWRzIG9mIG91ciBzaWJsaW5ncyAqLworCWZvcl9lYWNoX2NwdV9tYXNrKGksIGNwdV9jb3Jl
+X21hcFtwb2wtPmNwdV0pIHsKKwkJcG93ZXJub3dfZGF0YVtpXS0+Y3VycnZpZCA9IGRhdGEtPmN1
+cnJ2aWQ7CisJCXBvd2Vybm93X2RhdGFbaV0tPmN1cnJmaWQgPSBkYXRhLT5jdXJyZmlkOworCX0J
+CisJdXAoJmZpZHZpZF9zZW0pOworCiAJcG9sLT5jdXIgPSBmaW5kX2toel9mcmVxX2Zyb21fZmlk
+KGRhdGEtPmN1cnJmaWQpOwogCXJldCA9IDA7CiAKQEAgLTk2Miw3ICs5OTksNyBAQAogCQkgKi8K
+IAogCQlpZiAoKG51bV9vbmxpbmVfY3B1cygpICE9IDEpIHx8IChudW1fcG9zc2libGVfY3B1cygp
+ICE9IDEpKSB7Ci0JCQlwcmludGsoS0VSTl9JTkZPIFBGWCAiTVAgc3lzdGVtcyBub3Qgc3VwcG9y
+dGVkIGJ5IFBTQiBCSU9TIHN0cnVjdHVyZVxuIik7CisJCQlwcmludGsoS0VSTl9FUlIgUEZYICJN
+UCBzeXN0ZW1zIG5vdCBzdXBwb3J0ZWQgYnkgUFNCIEJJT1Mgc3RydWN0dXJlXG4iKTsKIAkJCWtm
+cmVlKGRhdGEpOwogCQkJcmV0dXJuIC1FTk9ERVY7CiAJCX0KQEAgLTEwMDMsNiArMTA0MCw3IEBA
+CiAJc2NoZWR1bGUoKTsKIAogCXBvbC0+Z292ZXJub3IgPSBDUFVGUkVRX0RFRkFVTFRfR09WRVJO
+T1I7CisJcG9sLT5jcHVzID0gY3B1X2NvcmVfbWFwW3BvbC0+Y3B1XTsKIAogCS8qIFRha2UgYSBj
+cnVkZSBndWVzcyBoZXJlLiAKIAkgKiBUaGF0IGd1ZXNzIHdhcyBpbiBtaWNyb3NlY29uZHMsIHNv
+IG11bHRpcGx5IHdpdGggMTAwMCAqLwpAQCAtMTA2OSw3ICsxMTA3LDcgQEAKIAkJcmV0dXJuIDA7
+CiAJfQogCXByZWVtcHRfZGlzYWJsZSgpOwotCisJCiAJaWYgKHF1ZXJ5X2N1cnJlbnRfdmFsdWVz
+X3dpdGhfcGVuZGluZ193YWl0KGRhdGEpKQogCQlnb3RvIG91dDsKIApAQCAtMTEyNyw5ICsxMTY1
+LDEwIEBACiAJY3B1ZnJlcV91bnJlZ2lzdGVyX2RyaXZlcigmY3B1ZnJlcV9hbWQ2NF9kcml2ZXIp
+OwogfQogCi1NT0RVTEVfQVVUSE9SKCJQYXVsIERldnJpZW5kdCA8cGF1bC5kZXZyaWVuZHRAYW1k
+LmNvbT4iKTsKK01PRFVMRV9BVVRIT1IoIlBhdWwgRGV2cmllbmR0IDxwYXVsLmRldnJpZW5kdEBh
+bWQuY29tPiBhbmQgTWFyayBMYW5nc2RvcmYgPG1hcmsubGFuZ3Nkb3JmQGFtZC5jb20uIik7CiBN
+T0RVTEVfREVTQ1JJUFRJT04oIkFNRCBBdGhsb24gNjQgYW5kIE9wdGVyb24gcHJvY2Vzc29yIGZy
+ZXF1ZW5jeSBkcml2ZXIuIik7CiBNT0RVTEVfTElDRU5TRSgiR1BMIik7CiAKIGxhdGVfaW5pdGNh
+bGwocG93ZXJub3drOF9pbml0KTsKIG1vZHVsZV9leGl0KHBvd2Vybm93azhfZXhpdCk7CisKLS0t
+IGxpbnV4LTIuNi4xMi10ZXN0L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ct
+azguaAkyMDA1LTA0LTI5IDIwOjI4OjQwLjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtMi42LjEy
+LXJjNC1wbi9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL3Bvd2Vybm93LWs4LmgJMjAwNS0w
+NS0xMCAxNzo0MjowOC4wMDAwMDAwMDAgLTA1MDAKQEAgLTE3NCwzICsxNzQsMTggQEAKIHN0YXRp
+YyBpbnQgY29yZV9mcmVxdWVuY3lfdHJhbnNpdGlvbihzdHJ1Y3QgcG93ZXJub3dfazhfZGF0YSAq
+ZGF0YSwgdTMyIHJlcWZpZCk7CiAKIHN0YXRpYyB2b2lkIHBvd2Vybm93X2s4X2FjcGlfcHN0X3Zh
+bHVlcyhzdHJ1Y3QgcG93ZXJub3dfazhfZGF0YSAqZGF0YSwgdW5zaWduZWQgaW50IGluZGV4KTsK
+KworI2lmbmRlZiBmb3JfZWFjaF9jcHVfbWFzaworI2RlZmluZSBmb3JfZWFjaF9jcHVfbWFzayhp
+LG1hc2spIGZvciAoaT0wO2k8MTtpKyspCisjZW5kaWYKKyAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+CisjaWZkZWYgQ09ORklHX1NNUAorc3RhdGljIGlubGluZSB2b2lkIGRlZmluZV9zaWJsaW5ncyhp
+bnQgY3B1LCBjcHVtYXNrX3QgY3B1X3NoYXJlZGNvcmVfbWFza1tdKQoreworfQorI2Vsc2UKK3N0
+YXRpYyBpbmxpbmUgdm9pZCBkZWZpbmVfc2libGluZ3MoaW50IGNwdSwgY3B1bWFza190IGNwdV9z
+aGFyZWRjb3JlX21hc2tbXSkKK3sKKwljcHVfc2V0KDAsIGNwdV9zaGFyZWRjb3JlX21hc2tbMF0p
+OworfQorI2VuZGlmCg==
+
+------_=_NextPart_001_01C55A3C.64A348BA
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+------_=_NextPart_001_01C55A3C.64A348BA--
 
 
-
-Langsdorf, Mark wrote:
-
->If this problem also occurs on Windows, please report
->it to your motherboard manufacturer immediately.  They'll
->get it fixed.
->
->-Mark Langsdorf
->AMD, Inc.
->
->  
->
->>-----Original Message-----
->>From: cpufreq-bounces@lists.linux.org.uk 
->>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of 
->>Nebojsa Trpkovic
->>Sent: Sunday, May 15, 2005 6:50 PM
->>To: cpufreq@lists.linux.org.uk
->>Subject: Re: cpu-freq causing kernel lock-up after upgrading 
->>to 1GB ram.
->>
->>
->>Same problem here - VNF3-250 - if there's one RAM module 
->>C'n'Q works fine, and if I put two modules it freezes every 
->>time I try to change frequency, no matter linux or windows. 
->>So, it's not cpufreq related problem - it just buggy VNF3-250 
->>C'n'Q inplementation.
->>
->>
->>
->>
->>chris stones wrote:
->>
->>    
->>
->>>This is my first attempt at a bug report, so forgive me for 
->>>      
->>>
->>making a 
->>    
->>
->>>mess, I will try my best.
->>>
->>>-------------------------
->>>hardware:
->>>-------------------------
->>>mobo: Chaintech VNF3-250
->>>chipset: nForce-3
->>>CPU: amd64 Athlon 3400+
->>>Ram: 2 * Kingston 512Meg DDR400 PC3200 2T timeing 3-3-8-3. 
->>>      
->>>
->>(total 1GB) 
->>    
->>
->>>Swap : 1.3 Gb.
->>>
->>>--------------------------
->>>software:
->>>--------------------------
->>>Distro: Gentoo 2005.0 (comiped as 64bit with multilib)
->>>GCC: gcc version 3.4.3 20041125 (Gentoo Linux 3.4.3-r1, ssp-3.4.3-0,
->>>pie-8.7.7)
->>>kernel versions: gentoo 2.6.11-r7; vanilla-2.6.10; vanilla-2.6.11.9
->>>
->>>--------------------------
->>>description:
->>>--------------------------
->>>I have been using the modules freq_table, cpufreq_ondemand, 
->>>powernow_k8 to regulate my cpu clock for over 6 months with the 
->>>hardware configureation shown above, minus one 512meg ram module.
->>>
->>>Recently, i shutdown the box, and added the second memory 
->>>      
->>>
->>module. At 
->>    
->>
->>>the time, the cpu_fre drivers were compiled into the 
->>>      
->>>
->>kernel, shortly 
->>    
->>
->>>after booting, the system would freese when cpu_freq 
->>>      
->>>
->>lowered my cpu to 
->>    
->>
->>>its idle state of 1Ghz.
->>>
->>>These conditions must all be met to cause the lock-up.
->>>1) Both Ram moodules are used (1GB ram)
->>>2) the modules freq_table, cpufreq_ondemand, powernow_k8 are loaded.
->>>3) The lockup occurs when the cpu is slowing down from a period of 
->>>heavy load.
->>>
->>>2 hours running memtest86 shows that my memory is not the problem.
->>>
->>>one one occasion, the kernel gave a memory dump before the 
->>>      
->>>
->>freeze. i 
->>    
->>
->>>regret i didnt take note of its rull contents, but a function trace 
->>>line mentioned a cpu_freq function call.
->>>
->>>If i remove one of the 512meg memory modules, the cpu_freq 
->>>performsperfectly, as it has for the past 6 months.
->>>
->>>Thankyou for taking the time to read my post.
->>>Is there anything i can do (other than go without  ram or 
->>>      
->>>
->>cpu_freq) to 
->>    
->>
->>>solve this ? is there any more information you require from me ?
->>>
->>>I have googled, but found no other similar bug reports.
->>>
->>>From Chris.stones@gmail.com.
->>>
->>>_______________________________________________
->>>Cpufreq mailing list
->>>Cpufreq@lists.linux.org.uk 
->>>http://lists.linux.org.uk/mailman/listinfo/cpufreq
->>>
->>>      
->>>
->>_______________________________________________
->>Cpufreq mailing list
->>Cpufreq@lists.linux.org.uk 
->>http://lists.linux.org.uk/mailman/listinfo/cpu> freq
->>
->>
->>    
->>
->
->
->  
->
