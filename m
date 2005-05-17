@@ -1,13 +1,10 @@
-From: Simon Braunschmidt <brasimon@web.de>
-Subject: Re: [QUESTION] 3 frequency steps for p3 on windows
-Date: Tue, 17 May 2005 17:11:44 +0200
-Message-ID: <200505171711.45444.brasimon@web.de>
-References: <200505122253.18630.brasimon@web.de>
+From: chris stones <chris.stones@gmail.com>
+Subject: RE: cpufreq bug with 2 DIMM's on VNF3-250.
+Date: Tue, 17 May 2005 17:35:44 +0100
+Message-ID: <428A1D60.3050509@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <200505122253.18630.brasimon@web.de>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,93 +15,121 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@lists.linux.org.uk
 
-Am Donnerstag, 12. Mai 2005 22:53 schrieb Simon Braunschmidt:
-> Hi,
->
-> I have a compaq armada m300 with a speedstep-enabled 600mhz pentium.
-> It is running ubuntu so its essentialy a 2.6.10 kernel.
-> Scaling the frequency dynamically works very good so far, i can choose
-> between ~500mhz and ~600mhz.
->
-> However, when i boot into windows xp sp2, after installing some enabler
-> programm from the compaq website, the freqency of the cpu is scaled
-> dynamically with the THREE steps  ~413mhz, ~500mhz and ~600mhz, the exact
-> values for 500 and 600 being the same as in linux.
->
-> So in windows i get an extra frequency option for 413mhz not available in
-> linux.
->
-> Is there any chance of supporting this in linux? Since i only ever heard =
-of
-> 2 frequency steps for the early p3's, i think this will be a
-> compaq-specific behaviour. Is compaq giving out documentation?
->
-> please cc me
->
-> Greetings
-> Simon Braunschmidt
->
 
-After some (random) experimentation (changing from ac to battery while in s=
-3=20
-state, maybe something more, didnt take notes, seems all unrelated), the=20
-frequency steping in linux was ~415mhz and ~500mhz. The values=20
-in /sys=AD=AD/.../cpufreq stayed the same, and the max. frequency was now ~=
-500mhz=20
-(the 600mhz diddnt seem to work anymore).
+If its my Motherboard....
+Then why does cpu frequency scaling work perfectly fine in Knoppix 0.6 ????
 
-This behaviour was gone after a reboot and i hadnt been able to reproduce i=
-t,=20
-strange.
+what does the cpu-frequency driver do in knoppix 0.6 (2.6 kernel option) 
+that th vanilla kernel doesnt ???
 
-So in principle it is possible under linux to use the "compaq 3 steps=20
-behaviour", but the inner workings need to be understood. Any pointers wher=
-e=20
-i could start?
 
-Greetings
-Simon Braunschmidt
-
->
-> simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$ uname -a
-> Linux heimdal 2.6.10-5-686 #1 Tue Apr 5 12:27:02 UTC 2005 i686 GNU/Linux
->
-> simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$ cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 8
-> model name      : Pentium III (Coppermine)
-> stepping        : 3
-> cpu MHz         : 498.115
-> cache size      : 256 KB
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 2
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov
-> pat pse36 mmx fxsr sse
-> bogomips        : 986.45
->
-> simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$ sudo cat *
-> Password:
-> 0
-> 500000
-> 600000
-> 500000
-> 600000 500000
-> userspace ondemand powersave performance
-> 500000
-> speedstep-smi
-> userspace
-> 600000
-> 500000
-> 500000
-> simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$
+ >> -----Original Message-----
+ >> From: cpufreq-bounces@lists.linux.org.uk 
+<mailto:cpufreq-bounces@lists.linux.org.uk>
+ >> [mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of
+ >> Nebojsa Trpkovic
+ >> Sent: Sunday, May 15, 2005 6:50 PM
+ >> To: cpufreq@lists.linux.org.uk <mailto:cpufreq@lists.linux.org.uk>
+ >> Subject: Re: cpu-freq causing kernel lock-up after upgrading
+ >> to 1GB ram.
+ >>
+ >>
+ >> Same problem here - VNF3-250 - if there's one RAM module
+ >> C'n'Q works fine, and if I put two modules it freezes every
+ >> time I try to change frequency, no matter linux or windows.
+ >> So, it's not cpufreq related problem - it just buggy VNF3-250
+ >> C'n'Q inplementation.
+ >>
+ >>
+ >>
+ >>
+ >> chris stones wrote:
+ >>
+ >
+ >>> > This is my first attempt at a bug report, so forgive me for
+ >
+ >> making a
+ >
+ >>> > mess, I will try my best.
+ >>> >
+ >>> > -------------------------
+ >>> > hardware:
+ >>> > -------------------------
+ >>> > mobo: Chaintech VNF3-250
+ >>> > chipset: nForce-3
+ >>> > CPU: amd64 Athlon 3400+
+ >>> > Ram: 2 * Kingston 512Meg DDR400 PC3200 2T timeing 3-3-8-3.
+ >
+ >> (total 1GB)
+ >
+ >>> > Swap : 1.3 Gb.
+ >>> >
+ >>> > --------------------------
+ >>> > software:
+ >>> > --------------------------
+ >>> > Distro: Gentoo 2005.0 (comiped as 64bit with multilib)
+ >>> > GCC: gcc version 3.4.3 20041125 (Gentoo Linux 3.4.3-r1, ssp-3.4.3-0,
+ >>> > pie-8.7.7)
+ >>> > kernel versions: gentoo 2.6.11-r7; vanilla-2.6.10; vanilla-2.6.11.9
+ >>> >
+ >>> > --------------------------
+ >>> > description:
+ >>> > --------------------------
+ >>> > I have been using the modules freq_table, cpufreq_ondemand,
+ >>> > powernow_k8 to regulate my cpu clock for over 6 months with the
+ >>> > hardware configureation shown above, minus one 512meg ram module.
+ >>> >
+ >>> > Recently, i shutdown the box, and added the second memory
+ >
+ >> module. At
+ >
+ >>> > the time, the cpu_fre drivers were compiled into the
+ >
+ >> kernel, shortly
+ >
+ >>> > after booting, the system would freese when cpu_freq
+ >
+ >> lowered my cpu to
+ >
+ >>> > its idle state of 1Ghz.
+ >>> >
+ >>> > These conditions must all be met to cause the lock-up.
+ >>> > 1) Both Ram moodules are used (1GB ram)
+ >>> > 2) the modules freq_table, cpufreq_ondemand, powernow_k8 are loaded.
+ >>> > 3) The lockup occurs when the cpu is slowing down from a period of
+ >>> > heavy load.
+ >>> >
+ >>> > 2 hours running memtest86 shows that my memory is not the problem.
+ >>> >
+ >>> > one one occasion, the kernel gave a memory dump before the
+ >
+ >> freeze. i
+ >
+ >>> > regret i didnt take note of its rull contents, but a function trace
+ >>> > line mentioned a cpu_freq function call.
+ >>> >
+ >>> > If i remove one of the 512meg memory modules, the cpu_freq
+ >>> > performsperfectly, as it has for the past 6 months.
+ >>> >
+ >>> > Thankyou for taking the time to read my post.
+ >>> > Is there anything i can do (other than go without ram or
+ >
+ >> cpu_freq) to
+ >
+ >>> > solve this ? is there any more information you require from me ?
+ >>> >
+ >>> > I have googled, but found no other similar bug reports.
+ >>> >
+ >>> > From Chris.stones@gmail.com <mailto:Chris.stones@gmail.com>.
+ >>> >
+ >>> > _______________________________________________
+ >>> > Cpufreq mailing list
+ >>> > Cpufreq@lists.linux.org.uk <mailto:Cpufreq@lists.linux.org.uk>
+ >>> > http://lists.linux.org.uk/mailman/listinfo/cpufreq
+ >>> >
+ >
+ >>
+ >>
