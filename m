@@ -1,9 +1,9 @@
-From: chris stones <chris.stones@gmail.com>
-Subject: RE: cpufreq bug with 2 DIMM's on VNF3-250.
-Date: Tue, 17 May 2005 17:35:44 +0100
-Message-ID: <428A1D60.3050509@gmail.com>
+From: Daniel Bonniot <Daniel.Bonniot@inria.fr>
+Subject: Centrino: undervolting and further reducing heat
+Date: Wed, 18 May 2005 13:36:04 +0200
+Message-ID: <d6f982$h87$1@sea.gmane.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,121 +15,44 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
 To: cpufreq@lists.linux.org.uk
 
 
-If its my Motherboard....
-Then why does cpu frequency scaling work perfectly fine in Knoppix 0.6 ????
+Hi,
 
-what does the cpu-frequency driver do in knoppix 0.6 (2.6 kernel option) 
-that th vanilla kernel doesnt ???
+I have a dothan 1.6 GHz processor, and i've been investigating how to reduc=
+e=20
+heat to minimize fan usage. One very promising avenue is undervolting.=20
+According to several online articles, there is a large potential for=20
+undervolting. I ended up modifying speedstep-centrino.c to test it out.=20
+Results are very positive: it can run under heavy load at 1.6Ghz with only =
+
+972mV (down from 1340mV). This decreased temperature by 10=B0C! At 600MHz, =
+the=20
+minimum 700mV was sufficient.
+
+I understand that the driver needs to be conservative by default, but given=
+=20
+the huge benefits, it would make a lot of sense to offer a way to specify=20
+lower voltages to those who want to. Has anybody investigated this=20
+possibility, or already started working on it? What would be a good interfa=
+ce=20
+to specify the voltages?
 
 
- >> -----Original Message-----
- >> From: cpufreq-bounces@lists.linux.org.uk 
-<mailto:cpufreq-bounces@lists.linux.org.uk>
- >> [mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of
- >> Nebojsa Trpkovic
- >> Sent: Sunday, May 15, 2005 6:50 PM
- >> To: cpufreq@lists.linux.org.uk <mailto:cpufreq@lists.linux.org.uk>
- >> Subject: Re: cpu-freq causing kernel lock-up after upgrading
- >> to 1GB ram.
- >>
- >>
- >> Same problem here - VNF3-250 - if there's one RAM module
- >> C'n'Q works fine, and if I put two modules it freezes every
- >> time I try to change frequency, no matter linux or windows.
- >> So, it's not cpufreq related problem - it just buggy VNF3-250
- >> C'n'Q inplementation.
- >>
- >>
- >>
- >>
- >> chris stones wrote:
- >>
- >
- >>> > This is my first attempt at a bug report, so forgive me for
- >
- >> making a
- >
- >>> > mess, I will try my best.
- >>> >
- >>> > -------------------------
- >>> > hardware:
- >>> > -------------------------
- >>> > mobo: Chaintech VNF3-250
- >>> > chipset: nForce-3
- >>> > CPU: amd64 Athlon 3400+
- >>> > Ram: 2 * Kingston 512Meg DDR400 PC3200 2T timeing 3-3-8-3.
- >
- >> (total 1GB)
- >
- >>> > Swap : 1.3 Gb.
- >>> >
- >>> > --------------------------
- >>> > software:
- >>> > --------------------------
- >>> > Distro: Gentoo 2005.0 (comiped as 64bit with multilib)
- >>> > GCC: gcc version 3.4.3 20041125 (Gentoo Linux 3.4.3-r1, ssp-3.4.3-0,
- >>> > pie-8.7.7)
- >>> > kernel versions: gentoo 2.6.11-r7; vanilla-2.6.10; vanilla-2.6.11.9
- >>> >
- >>> > --------------------------
- >>> > description:
- >>> > --------------------------
- >>> > I have been using the modules freq_table, cpufreq_ondemand,
- >>> > powernow_k8 to regulate my cpu clock for over 6 months with the
- >>> > hardware configureation shown above, minus one 512meg ram module.
- >>> >
- >>> > Recently, i shutdown the box, and added the second memory
- >
- >> module. At
- >
- >>> > the time, the cpu_fre drivers were compiled into the
- >
- >> kernel, shortly
- >
- >>> > after booting, the system would freese when cpu_freq
- >
- >> lowered my cpu to
- >
- >>> > its idle state of 1Ghz.
- >>> >
- >>> > These conditions must all be met to cause the lock-up.
- >>> > 1) Both Ram moodules are used (1GB ram)
- >>> > 2) the modules freq_table, cpufreq_ondemand, powernow_k8 are loaded.
- >>> > 3) The lockup occurs when the cpu is slowing down from a period of
- >>> > heavy load.
- >>> >
- >>> > 2 hours running memtest86 shows that my memory is not the problem.
- >>> >
- >>> > one one occasion, the kernel gave a memory dump before the
- >
- >> freeze. i
- >
- >>> > regret i didnt take note of its rull contents, but a function trace
- >>> > line mentioned a cpu_freq function call.
- >>> >
- >>> > If i remove one of the 512meg memory modules, the cpu_freq
- >>> > performsperfectly, as it has for the past 6 months.
- >>> >
- >>> > Thankyou for taking the time to read my post.
- >>> > Is there anything i can do (other than go without ram or
- >
- >> cpu_freq) to
- >
- >>> > solve this ? is there any more information you require from me ?
- >>> >
- >>> > I have googled, but found no other similar bug reports.
- >>> >
- >>> > From Chris.stones@gmail.com <mailto:Chris.stones@gmail.com>.
- >>> >
- >>> > _______________________________________________
- >>> > Cpufreq mailing list
- >>> > Cpufreq@lists.linux.org.uk <mailto:Cpufreq@lists.linux.org.uk>
- >>> > http://lists.linux.org.uk/mailman/listinfo/cpufreq
- >>> >
- >
- >>
- >>
+Independently of this feature, I wonder how it's possible to further reduce=
+=20
+consumption when the system is mostly ideal, and even 600MHz is more than=20
+needed. The idea being to let the system cool down even more in that case. =
+Is=20
+there any existing way to achive this on linux? One possibility I found in =
+the=20
+intel docs is the IA32_THERM_CONTROL MSR, which can reduce clock speed by=20
+12.5% to 87.5%. Am I right in thinking that it could be combined with=20
+speedstep to achieve even lower power consumption states? Are there other=20
+possibilities?
+
+Cheers,
+
+Daniel
