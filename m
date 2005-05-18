@@ -1,12 +1,10 @@
-From: Wes Felter <wesley@felter.org>
-Subject: Re: Centrino: undervolting and further reducing heat
-Date: Wed, 18 May 2005 11:07:04 -0500
-Message-ID: <d6fp66$egd$1@sea.gmane.org>
-References: <d6f982$h87$1@sea.gmane.org>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [PATCH] [0/5] ondemand,conservative governor pending patches
+Date: Wed, 18 May 2005 13:30:50 -0700
+Message-ID: <20050518133049.A22282@unix-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <d6f982$h87$1@sea.gmane.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,23 +14,40 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk, Alexander Clouter <alex-kernel@digriz.org.uk>, Eric Piel <Eric.Piel@tremplin-utc.net>, linux@dominikbrodowski.net, Rajesh Shah <rajesh.shah@intel.com>
 
-Daniel Bonniot wrote:
 
-> Independently of this feature, I wonder how it's possible to further 
-> reduce consumption when the system is mostly ideal, and even 600MHz is 
-> more than needed. The idea being to let the system cool down even more 
-> in that case. Is there any existing way to achive this on linux? One 
-> possibility I found in the intel docs is the IA32_THERM_CONTROL MSR, 
-> which can reduce clock speed by 12.5% to 87.5%. Am I right in thinking 
-> that it could be combined with speedstep to achieve even lower power 
-> consumption states? Are there other possibilities?
 
-Throttling isn't going to help if the system is already mostly halted. 
-You're already doing as much as can be done. (Unless there is an 
-undocumented setting even lower than 600MHz...)
+Pending ondemand, conervative governor patches.
 
-Wes Felter - wesley@felter.org
+All the patches are to be applied, in order, against 2.6.12-rc4-mm2. These 
+patches covers the stuff under cpufreq/pending-patches/needs-work.
+
+The patchset contains:
+
+[PATCH] [1/5] ondemand,conservative minor bug-fix and cleanup
+Same as the patch that I sent out to this list two days back. Copying here 
+again as the following patches depends on this one.
+
+[PATCH] [2/5] ondemand,conservative governor store the idle ticks for all cpus
+Originally from Eric. The rebased patch handles both ondemand and conservative
+governors.
+
+[PATCH] [3/5] ondemand,conservative governor idle_tick clean-up
+Originally from Eric. The rebased patch handles both ondemand and conservative 
+governors.
+
+[PATCH] [4/5] ondemand governor automatic downscaling
+The patch is rebased for the latest kernel.
+
+[PATCH] [5/5] ondemand governor default sampling downfactor as 1
+
+
+Please apply.
+
+Thanks,
+Venki
