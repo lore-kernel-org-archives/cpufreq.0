@@ -1,12 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Celeron M 1.3 Ghz processor not recognized
-Date: Sun, 22 May 2005 19:39:56 +0200
-Message-ID: <20050522173956.GA6727@isilmar.linta.de>
-References: <200505221740.44205.cpufreq-list@mopage.de>
+From: Eugenio <eugenio@lumachedelcervello.cjb.net>
+Subject: scaling_max_freq == scaling_min_freq when on battery
+Date: Mon, 23 May 2005 20:01:01 +0200
+Message-ID: <1116871262.3980.5.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200505221740.44205.cpufreq-list@mopage.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,15 +16,12 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mo <cpufreq-list@mopage.de>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Hi,
+i installed ubuntu on my laptop (an asus A3500, with a pentium-m 1.6Ghz)
+cpufreq works nice when on AC, switching from 600Mhz to 1.6Ghz but when
+on battery it fix the frequence at 600. i tried all the
+speedstep-related bios option but with no result. any hint?
+thanks.
 
-On Sun, May 22, 2005 at 05:40:44PM +0100, Mo wrote:
-> model name      : Intel(R) Celeron(R) M processor         1300MHz
-
-AFAIK, Celerons do not support SpeedStep.
-
-	Dominik
+Eugenio
