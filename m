@@ -1,11 +1,12 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: scaling_max_freq == scaling_min_freq when on battery
-Date: Mon, 23 May 2005 13:06:45 -0700
-Message-ID: <88056F38E9E48644A0F562A38C64FB6004CB340B@scsmsx403.amr.corp.intel.com>
+From: Stefan Seyfried <seife@gmane0305.slipkontur.de>
+Subject: Re: scaling_max_freq == scaling_min_freq when on battery
+Date: Tue, 24 May 2005 20:52:28 +0200
+Message-ID: <20050524185228.GB29280@message-id.gmane0305.slipkontur.de>
+References: <88056F38E9E48644A0F562A38C64FB6004CB340B@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6004CB340B@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,37 +16,25 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Eugenio <eugenio@lumachedelcervello.cjb.net>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
 
+On Mon, May 23, 2005 at 01:06:45PM -0700, Pallipadi, Venkatesh wrote:
+> 
+> This limitation must be coming from BIOS. It seems BIOS has decided not 
+> to let CPU run at higher than 600MHz when on battery. 
 
-This limitation must be coming from BIOS. It seems BIOS has decided not=20
-to let CPU run at higher than 600MHz when on battery.=20
+But i have seen this on a Dell D600 too; although if i manually echoed
+1700000 into scaling_max_freq, it could go up even on battery. Also,
+if i suspended on battery and resumed, i could never get it to go
+higher than 600MHz again, even on AC. This was a bit mysterious:
+it happened more often on "userspace" governor than when i suspended on
+"performance" governor and was not too easy to reproduce; now i have
+switched machines and the ASUS M6ne doesn't show this behaviour.
 
-Thanks,
-Venki
-
-
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Eugenio
->Sent: Monday, May 23, 2005 11:01 AM
->To: cpufreq@lists.linux.org.uk
->Subject: scaling_max_freq =3D=3D scaling_min_freq when on battery
->
->i installed ubuntu on my laptop (an asus A3500, with a=20
->pentium-m 1.6Ghz)
->cpufreq works nice when on AC, switching from 600Mhz to 1.6Ghz but when
->on battery it fix the frequence at 600. i tried all the
->speedstep-related bios option but with no result. any hint?
->thanks.
->
->Eugenio
->
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
+If i find a way to reproduce it reliably (it is probably just a matter
+of writing down the steps), i'll post a bugreport.
+-- 
+Stefan Seyfried
