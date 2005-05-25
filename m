@@ -1,13 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Daniel Bonniot <Daniel.Bonniot@inria.fr>
 Subject: Re: Centrino: undervolting and further reducing heat
-Date: Wed, 25 May 2005 15:00:05 +0200
-Message-ID: <20050525130005.GE32472@poupinou.org>
-References: <d6f982$h87$1@sea.gmane.org> <d6fp66$egd$1@sea.gmane.org>
-	<d6gi6v$s1j$1@sea.gmane.org>
+Date: Wed, 25 May 2005 15:35:25 +0200
+Message-ID: <d71upb$lru$1@sea.gmane.org>
+References: <d6f982$h87$1@sea.gmane.org>
+	<d6fp66$egd$1@sea.gmane.org>	<d6gi6v$s1j$1@sea.gmane.org>
+	<20050525130005.GE32472@poupinou.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <d6gi6v$s1j$1@sea.gmane.org>
+In-Reply-To: <20050525130005.GE32472@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,22 +19,18 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Bonniot <Daniel.Bonniot@inria.fr>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-On Thu, May 19, 2005 at 01:15:13AM +0200, Daniel Bonniot wrote:
-> I wonder if there is a way to reduce the speed of other components of the 
-> system (the memory is quite hot, for instance). I'm pretty sure the graphic 
-> card (ATI) can be underclocked too.
 
-IIRC recent xorg do have some power saving options for radeon.
-I don't remember if its in CVS or if patches have been committed though,
-or if this work only for mobile versions.
+> IIRC recent xorg do have some power saving options for radeon.
+> I don't remember if its in CVS or if patches have been committed though,
+> or if this work only for mobile versions.
 
--- 
-Bruno Ducrot
+Yes, I'm using Xorg 6.8.2 (-10 from Ubuntu), and the xorg driver does have 
+power saving options, although they are not on by default (it's the 
+DynamicClocks option). The proprietary drivers enable it by default. My 
+preliminary experiments seem to show that you can save further by 
+underclocking the radeon card (a Mobility in my case).
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Daniel
