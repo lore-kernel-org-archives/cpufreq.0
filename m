@@ -1,7 +1,7 @@
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH] cpufreq-stats driver documentation
-Date: Wed, 25 May 2005 14:43:56 -0700
-Message-ID: <20050525144356.A9092@unix-os.sc.intel.com>
+Subject: [PATCH] cpufreq-stats driver updates
+Date: Wed, 25 May 2005 14:46:50 -0700
+Message-ID: <20050525144650.B9092@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
@@ -21,150 +21,133 @@ To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>, Rajesh Shah <rajesh.shah@intel.com>
 
 
-Attached patch adds documentation for cpufreq-stats driver.
+Attached patch has two minor updates for cpufreq_stats driver.
 
 Please apply.
-
 Thanks,
 Venki
 
-
-
-Documentation for cpufreq stats.
+Changes to the cpufreq stats driver:
+* Changes the way P-state transition table looks in /sysfs providing more 
+  clear output
+* Changes the time unit in the output from HZ to clock_t
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
 
-
-diff -purN linux-2.6.12-rc4-mm2/Documentation/cpu-freq/cpufreq-stats.txt linux-2.6.12-rc4-mm2-ondemand/Documentation/cpu-freq/cpufreq-stats.txt
---- linux-2.6.12-rc4-mm2/Documentation/cpu-freq/cpufreq-stats.txt	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.12-rc4-mm2-ondemand/Documentation/cpu-freq/cpufreq-stats.txt	2005-05-19 01:55:25.282423160 -0700
-@@ -0,0 +1,128 @@
+diff -purN linux-2.6.12-rc4-mm2/drivers/cpufreq/cpufreq_stats.c linux-2.6.12-rc4-mm2-ondemand/drivers/cpufreq/cpufreq_stats.c
+--- linux-2.6.12-rc4-mm2/drivers/cpufreq/cpufreq_stats.c	2005-03-01 23:37:54.000000000 -0800
++++ linux-2.6.12-rc4-mm2-ondemand/drivers/cpufreq/cpufreq_stats.c	2005-05-19 01:59:27.006675488 -0700
+@@ -19,6 +19,7 @@
+ #include <linux/percpu.h>
+ #include <linux/kobject.h>
+ #include <linux/spinlock.h>
++#include <asm/cputime.h>
+ 
+ static spinlock_t cpufreq_stats_lock;
+ 
+@@ -29,20 +30,14 @@ static struct freq_attr _attr_##_name = 
+ 	.show = _show,\
+ };
+ 
+-static unsigned long
+-delta_time(unsigned long old, unsigned long new)
+-{
+-	return (old > new) ? (old - new): (new + ~old + 1);
+-}
+-
+ struct cpufreq_stats {
+ 	unsigned int cpu;
+ 	unsigned int total_trans;
+-	unsigned long long last_time;
++	unsigned long long  last_time;
+ 	unsigned int max_state;
+ 	unsigned int state_num;
+ 	unsigned int last_index;
+-	unsigned long long *time_in_state;
++	cputime64_t *time_in_state;
+ 	unsigned int *freq_table;
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	unsigned int *trans_table;
+@@ -60,12 +55,16 @@ static int
+ cpufreq_stats_update (unsigned int cpu)
+ {
+ 	struct cpufreq_stats *stat;
++	unsigned long long cur_time;
 +
-+     CPU frequency and voltage scaling statictics in the Linux(TM) kernel
++	cur_time = get_jiffies_64();
+ 	spin_lock(&cpufreq_stats_lock);
+ 	stat = cpufreq_stats_table[cpu];
+ 	if (stat->time_in_state)
+-		stat->time_in_state[stat->last_index] +=
+-			delta_time(stat->last_time, jiffies);
+-	stat->last_time = jiffies;
++		stat->time_in_state[stat->last_index] =
++			cputime64_add(stat->time_in_state[stat->last_index],
++				      cputime_sub(cur_time, stat->last_time));
++	stat->last_time = cur_time;
+ 	spin_unlock(&cpufreq_stats_lock);
+ 	return 0;
+ }
+@@ -90,8 +89,8 @@ show_time_in_state(struct cpufreq_policy
+ 		return 0;
+ 	cpufreq_stats_update(stat->cpu);
+ 	for (i = 0; i < stat->state_num; i++) {
+-		len += sprintf(buf + len, "%u %llu\n",
+-			stat->freq_table[i], stat->time_in_state[i]);
++		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i], 
++			(unsigned long long)cputime64_to_clock_t(stat->time_in_state[i]));
+ 	}
+ 	return len;
+ }
+@@ -107,16 +106,30 @@ show_trans_table(struct cpufreq_policy *
+ 	if(!stat)
+ 		return 0;
+ 	cpufreq_stats_update(stat->cpu);
++	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
++	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
++	for (i = 0; i < stat->state_num; i++) {
++		if (len >= PAGE_SIZE)
++			break;
++		len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
++				stat->freq_table[i]);
++	}
++	if (len >= PAGE_SIZE)
++		return len;
 +
++	len += snprintf(buf + len, PAGE_SIZE - len, "\n");
 +
-+             L i n u x    c p u f r e q - s t a t s   d r i v e r
+ 	for (i = 0; i < stat->state_num; i++) {
+ 		if (len >= PAGE_SIZE)
+ 			break;
+-		len += snprintf(buf + len, PAGE_SIZE - len, "%9u:\t",
 +
-+                       - information for users -
-+
-+
-+             Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-+
-+Contents
-+1. Introduction
-+2. Statistics Provided (with example)
-+3. Configuring cpufreq-stats
-+
-+
-+1. Introduction
-+
-+cpufreq-stats is a driver that provices CPU frequency statistics for each CPU.
-+This statistics is provided in /sysfs as a bunch of read_only interfaces. This
-+interface (when configured) will appear in a seperate directory under cpufreq
-+in /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/) for each CPU.
-+Various statistics will form read_only files under this directory.
-+
-+This driver is designed to be independent of any particular cpufreq_driver
-+that may be running on your CPU. So, it will work with any cpufreq_driver.
-+
-+
-+2. Statistics Provided (with example)
-+
-+cpufreq stats provides following statistics (explained in detail below).
-+-  time_in_state
-+-  total_trans
-+-  trans_table
-+
-+All the statistics will be from the time the stats driver has been inserted 
-+to the time when a read of a particular statistic is done. Obviously, stats 
-+driver will not have any information about the the frequcny transitions before
-+the stats driver insertion.
-+
-+--------------------------------------------------------------------------------
-+<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
-+total 0
-+drwxr-xr-x  2 root root    0 May 14 16:06 .
-+drwxr-xr-x  3 root root    0 May 14 15:58 ..
-+-r--r--r--  1 root root 4096 May 14 16:06 time_in_state
-+-r--r--r--  1 root root 4096 May 14 16:06 total_trans
-+-r--r--r--  1 root root 4096 May 14 16:06 trans_table
-+--------------------------------------------------------------------------------
-+
-+-  time_in_state
-+This gives the amount of time spent in each of the frequencies supported by
-+this CPU. The cat output will have "<frequency> <time>" pair in each line, which
-+will mean this CPU spent <time> usertime units of time at <frequency>. Output
-+will have one line for each of the supported freuencies. usertime units here 
-+is 10mS (similar to other time exported in /proc).
-+
-+--------------------------------------------------------------------------------
-+<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state 
-+3600000 2089
-+3400000 136
-+3200000 34
-+3000000 67
-+2800000 172488
-+--------------------------------------------------------------------------------
-+
-+
-+-  total_trans
-+This gives the total number of frequency transitions on this CPU. The cat 
-+output will have a single count which is the total number of frequency
-+transitions.
-+
-+--------------------------------------------------------------------------------
-+<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
-+20
-+--------------------------------------------------------------------------------
-+
-+-  trans_table
-+This will give a fine grained information about all the CPU frequency
-+transitions. The cat output here is a two dimensional matrix, where an entry
-+<i,j> (row i, column j) represents the count of number of transitions from 
-+Freq_i to Freq_j. Freq_i is in descending order with increasing rows and 
-+Freq_j is in descending order with increasing columns. The output here also 
-+contains the actual freq values for each row and column for better readability.
-+
-+--------------------------------------------------------------------------------
-+<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
-+   From  :    To
-+         :   3600000   3400000   3200000   3000000   2800000 
-+  3600000:         0         5         0         0         0 
-+  3400000:         4         0         2         0         0 
-+  3200000:         0         1         0         2         0 
-+  3000000:         0         0         1         0         3 
-+  2800000:         0         0         0         2         0 
-+--------------------------------------------------------------------------------
-+
-+
-+3. Configuring cpufreq-stats
-+
-+To configure cpufreq-stats in your kernel
-+Config Main Menu
-+	Power management options (ACPI, APM)  --->
-+		CPU Frequency scaling  --->
-+			[*] CPU Frequency scaling
-+			<*>   CPU frequency translation statistics 
-+			[*]     CPU frequency translation statistics details
-+
-+
-+"CPU Frequency scaling" (CONFIG_CPU_FREQ) should be enabled to configure
-+cpufreq-stats.
-+
-+"CPU frequency translation statistics" (CONFIG_CPU_FREQ_STAT) provides the
-+basic statistics which includes time_in_state and total_trans.
-+
-+"CPU frequency translation statistics details" (CONFIG_CPU_FREQ_STAT_DETAILS)
-+provides fine grained cpufreq stats by trans_table. The reason for having a
-+seperate config option for trans_table is:
-+- trans_table goes against the traditional /sysfs rule of one value per
-+  interface. It provides a whole bunch of value in a 2 dimensional matrix
-+  form.
-+
-+Once these two options are enabled and your CPU supports cpufrequency, you
-+will be able to see the CPU frequency statistics in /sysfs.
-+
-+
-+
-+
++		len += snprintf(buf + len, PAGE_SIZE - len, "%9u: ",
+ 				stat->freq_table[i]);
+ 
+ 		for (j = 0; j < stat->state_num; j++)   {
+ 			if (len >= PAGE_SIZE)
+ 				break;
+-			len += snprintf(buf + len, PAGE_SIZE - len, "%u\t",
++			len += snprintf(buf + len, PAGE_SIZE - len, "%9u ",
+ 					stat->trans_table[i*stat->max_state+j]);
+ 		}
+ 		len += snprintf(buf + len, PAGE_SIZE - len, "\n");
+@@ -197,7 +210,7 @@ cpufreq_stats_create_table (struct cpufr
+ 		count++;
+ 	}
+ 
+-	alloc_size = count * sizeof(int) + count * sizeof(long long);
++	alloc_size = count * sizeof(int) + count * sizeof(cputime64_t);
+ 
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	alloc_size += count * count * sizeof(int);
+@@ -224,7 +237,7 @@ cpufreq_stats_create_table (struct cpufr
+ 	}
+ 	stat->state_num = j;
+ 	spin_lock(&cpufreq_stats_lock);
+-	stat->last_time = jiffies;
++	stat->last_time = get_jiffies_64();
+ 	stat->last_index = freq_table_get_index(stat, policy->cur);
+ 	spin_unlock(&cpufreq_stats_lock);
+ 	cpufreq_cpu_put(data);
