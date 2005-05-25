@@ -1,11 +1,10 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: OnDemand governor vs. work queue
-Date: Wed, 25 May 2005 14:34:15 -0700
-Message-ID: <88056F38E9E48644A0F562A38C64FB6004D3529A@scsmsx403.amr.corp.intel.com>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [PATCH] cpufreq-stats driver documentation
+Date: Wed, 25 May 2005 14:43:56 -0700
+Message-ID: <20050525144356.A9092@unix-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,61 +14,157 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>, Rajesh Shah <rajesh.shah@intel.com>
 
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
->Benjamin Herrenschmidt
->Sent: Wednesday, May 25, 2005 2:27 PM
->To: Bruno Ducrot
->Cc: cpufreq@lists.linux.org.uk
->Subject: Re: OnDemand governor vs. work queue
->
->On Wed, 2005-05-25 at 11:59 +0200, Bruno Ducrot wrote:
->> On Wed, May 25, 2005 at 01:26:40PM +1000, Benjamin=20
->Herrenschmidt wrote:
->> > Hi !
->> >=20
->> > >From what I've seen, the OnDemand governor works using a=20
->timer/workqueue
->> > pair.
->> >=20
->> > That annoys me a bit as the setup I have on PowerMacs can=20
->take several
->> > ms to transition (due to voltage transition mostly). I=20
->don't like the
->> > idea of hogging keventd that long.
->> >=20
->> > Wouldn't it make sense, especially for setups where=20
->transition latency
->> > is high (by high, I mean significant compared to HZ for=20
->example), to
->> > actually spawn a kthread and do the sampling & switching=20
->from there ?
->>=20
->> I'm wondering if in that case a userspace daemon will be=20
->more suited..
->
->This is what I do & recommend for powerbook users (so far, powernowd
->works like a charm), but since OnDemand governor advertises=20
->working with
->latencies as big as 10ms, I was wondering ...
->
->Ben.
->
+Attached patch adds documentation for cpufreq-stats driver.
 
-Agreed. For the larger latency transitions, ondemand governor should=20
-use its own thread rather than keventd. Probably, it may make sense to=20
-have separate threads for each CPU as well in that case (as otherwise=20
-this thread will end up being moved around from one CPU to other. I will
-
-look at this in a couple of weeks unless someone beats me to it and=20
-sends the patch before that :).
+Please apply.
 
 Thanks,
 Venki
+
+
+
+Documentation for cpufreq stats.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+
+
+
+diff -purN linux-2.6.12-rc4-mm2/Documentation/cpu-freq/cpufreq-stats.txt linux-2.6.12-rc4-mm2-ondemand/Documentation/cpu-freq/cpufreq-stats.txt
+--- linux-2.6.12-rc4-mm2/Documentation/cpu-freq/cpufreq-stats.txt	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.12-rc4-mm2-ondemand/Documentation/cpu-freq/cpufreq-stats.txt	2005-05-19 01:55:25.282423160 -0700
+@@ -0,0 +1,128 @@
++
++     CPU frequency and voltage scaling statictics in the Linux(TM) kernel
++
++
++             L i n u x    c p u f r e q - s t a t s   d r i v e r
++
++                       - information for users -
++
++
++             Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
++
++Contents
++1. Introduction
++2. Statistics Provided (with example)
++3. Configuring cpufreq-stats
++
++
++1. Introduction
++
++cpufreq-stats is a driver that provices CPU frequency statistics for each CPU.
++This statistics is provided in /sysfs as a bunch of read_only interfaces. This
++interface (when configured) will appear in a seperate directory under cpufreq
++in /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/) for each CPU.
++Various statistics will form read_only files under this directory.
++
++This driver is designed to be independent of any particular cpufreq_driver
++that may be running on your CPU. So, it will work with any cpufreq_driver.
++
++
++2. Statistics Provided (with example)
++
++cpufreq stats provides following statistics (explained in detail below).
++-  time_in_state
++-  total_trans
++-  trans_table
++
++All the statistics will be from the time the stats driver has been inserted 
++to the time when a read of a particular statistic is done. Obviously, stats 
++driver will not have any information about the the frequcny transitions before
++the stats driver insertion.
++
++--------------------------------------------------------------------------------
++<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
++total 0
++drwxr-xr-x  2 root root    0 May 14 16:06 .
++drwxr-xr-x  3 root root    0 May 14 15:58 ..
++-r--r--r--  1 root root 4096 May 14 16:06 time_in_state
++-r--r--r--  1 root root 4096 May 14 16:06 total_trans
++-r--r--r--  1 root root 4096 May 14 16:06 trans_table
++--------------------------------------------------------------------------------
++
++-  time_in_state
++This gives the amount of time spent in each of the frequencies supported by
++this CPU. The cat output will have "<frequency> <time>" pair in each line, which
++will mean this CPU spent <time> usertime units of time at <frequency>. Output
++will have one line for each of the supported freuencies. usertime units here 
++is 10mS (similar to other time exported in /proc).
++
++--------------------------------------------------------------------------------
++<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state 
++3600000 2089
++3400000 136
++3200000 34
++3000000 67
++2800000 172488
++--------------------------------------------------------------------------------
++
++
++-  total_trans
++This gives the total number of frequency transitions on this CPU. The cat 
++output will have a single count which is the total number of frequency
++transitions.
++
++--------------------------------------------------------------------------------
++<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
++20
++--------------------------------------------------------------------------------
++
++-  trans_table
++This will give a fine grained information about all the CPU frequency
++transitions. The cat output here is a two dimensional matrix, where an entry
++<i,j> (row i, column j) represents the count of number of transitions from 
++Freq_i to Freq_j. Freq_i is in descending order with increasing rows and 
++Freq_j is in descending order with increasing columns. The output here also 
++contains the actual freq values for each row and column for better readability.
++
++--------------------------------------------------------------------------------
++<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
++   From  :    To
++         :   3600000   3400000   3200000   3000000   2800000 
++  3600000:         0         5         0         0         0 
++  3400000:         4         0         2         0         0 
++  3200000:         0         1         0         2         0 
++  3000000:         0         0         1         0         3 
++  2800000:         0         0         0         2         0 
++--------------------------------------------------------------------------------
++
++
++3. Configuring cpufreq-stats
++
++To configure cpufreq-stats in your kernel
++Config Main Menu
++	Power management options (ACPI, APM)  --->
++		CPU Frequency scaling  --->
++			[*] CPU Frequency scaling
++			<*>   CPU frequency translation statistics 
++			[*]     CPU frequency translation statistics details
++
++
++"CPU Frequency scaling" (CONFIG_CPU_FREQ) should be enabled to configure
++cpufreq-stats.
++
++"CPU frequency translation statistics" (CONFIG_CPU_FREQ_STAT) provides the
++basic statistics which includes time_in_state and total_trans.
++
++"CPU frequency translation statistics details" (CONFIG_CPU_FREQ_STAT_DETAILS)
++provides fine grained cpufreq stats by trans_table. The reason for having a
++seperate config option for trans_table is:
++- trans_table goes against the traditional /sysfs rule of one value per
++  interface. It provides a whole bunch of value in a 2 dimensional matrix
++  form.
++
++Once these two options are enabled and your CPU supports cpufrequency, you
++will be able to see the CPU frequency statistics in /sysfs.
++
++
++
++
