@@ -1,19 +1,11 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: 2.6.11: USB broken on nforce4, ipv6 still broken, centrino
- speedstep even more broken than in 2.6.10
-Date: Wed, 25 May 2005 16:54:39 -0700
-Message-ID: <20050525165439.7230c9de.akpm@osdl.org>
-References: <20050311202122.GA13205@fefe.de>
-	<20050311173517.7fe95918.akpm@osdl.org>
-	<1110599659.12485.279.camel@localhost.localdomain>
-	<20050321163225.4af1c169.akpm@osdl.org>
-	<1111454454.6633.5.camel@linux.site>
-	<20050322222943.GA10442@codeblau.de> <42434E60.1060209@goop.org>
-	<20050325001729.GA30397@codeblau.de>
+From: "Lin, Zihui" <zihui.lin@intel.com>
+Subject: DBS enabling on EM64T machine with cpufreqd
+Date: Thu, 26 May 2005 18:04:11 +0800
+Message-ID: <26F44F810A51DF42A127BC2A06BE185E01D4FAA2@pdsmsx404>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050325001729.GA30397@codeblau.de>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -25,41 +17,113 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Felix von Leitner <felix-linuxkernel@fefe.de>
-Cc: jeremy@goop.org, cpufreq@ZenII.linux.org.uk, abelay@novell.com
+To: cpufreq@lists.linux.org.uk
 
-Felix von Leitner <felix-linuxkernel@fefe.de> wrote:
->
-> Thus spake Jeremy Fitzhardinge (jeremy@goop.org):
-> > Unfortunately, the Dothans *REQUIRE* some degree of ACPI support; the
-> > speedfreq-centrino needs to extract a table from ACPI to know what are
-> > valid operating (voltage/frequency) points to use for the CPU.  The
-> > patch you're using is definitely wrong in principle, though if it works
-> > for you in practice then by all means use it.
-> 
-> I enabled these:
-> 
->   CONFIG_CPU_FREQ=y
->   CONFIG_CPU_FREQ_STAT=y
->   CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
->   CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->   CONFIG_CPU_FREQ_GOV_POWERSAVE=y
->   CONFIG_CPU_FREQ_GOV_USERSPACE=y
->   CONFIG_CPU_FREQ_GOV_ONDEMAND=y
->   CONFIG_CPU_FREQ_TABLE=y
->   CONFIG_X86_SPEEDSTEP_CENTRINO=y
->   CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
->   CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
-> 
-> It should have worked, shouldn't it?
-> 
-> Well, it did not.  You can look at the kernel messages at
-> http://dl.fefe.de/dmesg.gz if that helps.
-> 
-> No cpufreq, and as far as I can see, no speedstep.
-> The fan is running, that's all I can tell.
-> 
+Hi there,
 
-Felix, did all these problems end up getting resolved in 2.6.12-rc5?
+=20
 
-If not, we'll probably need a few reminders as to where we stand, thanks.
+I'm new to cpufreqd. Sorry for my wooden English.
+
+I found that cpufreqd can be used in desktop.=20
+
+Has anybody ever tried cpufreqd in Nocona System?
+
+=20
+
+My Nocona Server has the speedstep functionality,=20
+
+and can be throttled by acpi-cpufreq.=20
+
+But it doesn't have the battery like laptops.=20
+
+I've tried to set the CPU frequency manually, and it works.
+
+Is it possible to use cpufreqd in it?
+
+Any help is appreciated! Thanks in advance!
+
+=20
+
+Best regards,
+
+Zihui
+
+=20
+
+P.S. Here is some output:
+
+=20
+
+[root@ae64 cpufreq]# cat scaling_governor
+
+performance
+
+[root@ae64 cpufreq]# cat scaling_available_frequencies
+
+3400000 3400000 3400000 3400000 3400000 3400000 3400000 3400000 3400000
+2800000
+
+[root@ae64 cpufreq]# cat scaling_available_governors
+
+powersave userspace performance
+
+[root@ae64 cpufreq]# cat /etc/cpufreqd.conf
+
+[General]
+
+pidfile=3D/var/run/cpufreqd.pid
+
+poll_interval=3D2
+
+pm_type=3Dacpi #(acpi, apm or pmu)
+
+verbosity=3D7 #(if you want a minimal logging set to 5)
+
+[Profile]
+
+name=3Dhi_boost
+
+minfreq=3D95%
+
+maxfreq=3D100%
+
+policy=3Dperformance
+
+[Profile]
+
+name=3Dlo_power
+
+minfreq=3D0%
+
+maxfreq=3D95%
+
+policy=3Dpowersave
+
+[Rule]
+
+name=3DAC_on
+
+ac=3Don                   # (on/off)
+
+cpu_interval=3D0-40
+
+profile=3Dlo_power
+
+[Rule]
+
+name=3Dcompiling
+
+ac=3Don                   # (on/off)
+
+programs=3Dgcc,make
+
+cpu_interval=3D80-100
+
+=20
+
+profile=3Dlo_power [root@ae64 cpufreq]# cpufreqd -D
+
+libsys_init() - no batteries found, not a laptop?
+
+=20
