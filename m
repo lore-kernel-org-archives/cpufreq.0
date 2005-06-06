@@ -1,18 +1,11 @@
-From: Ramkumar R <andyetitmoves@gmail.com>
-Subject: Re: Temporary freezes in AMD Sempron 2800+
-Date: Tue, 7 Jun 2005 00:53:50 +0530
-Message-ID: <9a9bfc170506061223354456e6@mail.gmail.com>
-References: <9a9bfc1705060607494838bc6c@mail.gmail.com>
-	<200506061906.16327.mpytasz@pai.net.pl>
-	<9a9bfc170506061021620e487a@mail.gmail.com>
-	<200506061956.16644.mpytasz@posejdon.wpk.p.lodz.pl>
-	<9a9bfc1705060611114a1f2596@mail.gmail.com>
-Reply-To: Ramkumar R <andyetitmoves@gmail.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: Temporary freezes in AMD Sempron 2800+
+Date: Mon, 6 Jun 2005 14:54:42 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFC0D9@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <9a9bfc1705060611114a1f2596@mail.gmail.com>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -24,21 +17,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: =?ISO-8859-2?Q?Micha=B3_Pytasz?= <mpytasz@posejdon.wpk.p.lodz.pl>, cpufreq@lists.linux.org.uk
+To: Ramkumar R <andyetitmoves@gmail.com>, Michal Pytasz <mpytasz@posejdon.wpk.p.lodz.pl>, cpufreq@lists.linux.org.uk
 
-it worked at last! thanx a lot michal for your kernel config
-file...the culprit was the ACPI Processor P-States driver
-(X86_ACPI_CPUFREQ)....not that i need it (i dunno why i had it in the
-first place :) )...but still, is this a bug ? (michal, may be if you
-could confirm this by making it a module and loading it)...
+> yeah, one more question remains...does sempron have only 2=20
+> frequency levels...that's what dmesg and the sys file seem to=20
+> indicate....though i've read that amd processors have quite a=20
+> few speed levels (is that only for the athlon series ?)
 
-yeah, one more question remains...does sempron have only 2 frequency
-levels...that's what dmesg and the sys file seem to indicate....though
-i've read that amd processors have quite a few speed levels (is that
-only for the athlon series ?)
+The powernow driver reads the data provided from the BIOS.
+If the BIOS provides an incorrect number of pstates, the
+driver has no way of knowing that there are other states.
 
-Ramkumar.
---=20
-The day Microsoft makes something that doesn't suck
-is probably the day they start making vacuum cleaners.
-                                               -Ernst Jan Plugge
+How many pstates you have is determined by the frequency of
+the processor.  A Sempron 2800+ is a 1.6 GHz processor and
+should only have 2 pstates - high and low.  It looks like
+your system is set up correctly.
+
+-Mark Langsdorf
+AMD, Inc.
