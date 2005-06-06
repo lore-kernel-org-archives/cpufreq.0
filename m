@@ -1,11 +1,19 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: Temporary freezes in AMD Sempron 2800+
-Date: Mon, 6 Jun 2005 14:54:42 -0500
-Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFC0D9@SAUSEXMB1.amd.com>
+From: Ramkumar R <andyetitmoves@gmail.com>
+Subject: Re: Temporary freezes in AMD Sempron 2800+
+Date: Tue, 7 Jun 2005 02:08:58 +0530
+Message-ID: <9a9bfc1705060613381ff99a1d@mail.gmail.com>
+References: <9a9bfc1705060607494838bc6c@mail.gmail.com>
+	<200506061906.16327.mpytasz@pai.net.pl>
+	<9a9bfc170506061021620e487a@mail.gmail.com>
+	<200506061956.16644.mpytasz@posejdon.wpk.p.lodz.pl>
+	<9a9bfc1705060611114a1f2596@mail.gmail.com>
+	<9a9bfc170506061223354456e6@mail.gmail.com>
+Reply-To: Ramkumar R <andyetitmoves@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+In-Reply-To: <9a9bfc170506061223354456e6@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,21 +25,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Ramkumar R <andyetitmoves@gmail.com>, Michal Pytasz <mpytasz@posejdon.wpk.p.lodz.pl>, cpufreq@lists.linux.org.uk
+To: =?ISO-8859-2?Q?Micha=B3_Pytasz?= <mpytasz@posejdon.wpk.p.lodz.pl>, cpufreq@lists.linux.org.uk
 
-> yeah, one more question remains...does sempron have only 2=20
-> frequency levels...that's what dmesg and the sys file seem to=20
-> indicate....though i've read that amd processors have quite a=20
-> few speed levels (is that only for the athlon series ?)
+well...i guess i was a bit hasty...the p-states driver was not the
+problem...rather, a more interesting pattern has come up...it seems
+that the freeze occurs whenever i am on a X display (i.e. it isn't
+even a problem when i have X running and i am in one of the
+tty's)...in fact, to confirm my doubts, I set up my .Xsession to
+simply loop, sleeping for a second, and toggling between the two
+frequencies. It freezes when i am on the X display, and the problem
+disappears the moment i do a alt+f1...this is really strange...
 
-The powernow driver reads the data provided from the BIOS.
-If the BIOS provides an incorrect number of pstates, the
-driver has no way of knowing that there are other states.
-
-How many pstates you have is determined by the frequency of
-the processor.  A Sempron 2800+ is a 1.6 GHz processor and
-should only have 2 pstates - high and low.  It looks like
-your system is set up correctly.
-
--Mark Langsdorf
-AMD, Inc.
+Ramkumar.
+--=20
+The day Microsoft makes something that doesn't suck
+is probably the day they start making vacuum cleaners.
+                                               -Ernst Jan Plugge
