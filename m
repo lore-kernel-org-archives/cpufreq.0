@@ -1,11 +1,10 @@
-From: "Devriendt, Paul" <paul.devriendt@amd.com>
-Subject: RE: powernow-k8 and stuck change-pending bit
-Date: Tue, 7 Jun 2005 00:07:22 -0500
-Message-ID: <84EA05E2CA77634C82730353CBE3A843028F4CC5@SAUSEXMB1.amd.com>
+From: Alaios <alaios@yahoo.com>
+Subject: Pentium III ( Coppermine)
+Date: Sat, 11 Jun 2005 21:15:16 -0700 (PDT)
+Message-ID: <20050612041516.43517.qmail@web54709.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,55 +16,79 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: John Belmonte <john@neggie.net>, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk, alaios@yahoo.com
 
-> symptoms:
->=20
->     After working fine for a while (several minutes to several hours),
-> cpufreq seems to get into a bad state where:
->=20
->      * change pending bit set / stuck kernel messages appear
->=20
->      * reloading powernow-k8 module fails, with "change=20
-> pending bit stuck"
+HI :)
+I try to make the cpufreq to work with my Pentium III
+Coppermine and that what i have done up to now
+My cpu is
+ctaksideytis:/usr/src/linux-2.6.9# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 8
+model name      : Pentium III (Coppermine)
+stepping        : 1
+cpu MHz         : 448.304
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8
+sep mtrr pge mca cmov pat pse36 mmx fxsr sse
+bogomips        : 878.59
 
-I have seen a very small number of reports of this over the past
-couple of years. Perhaps 3 or 4. I can tell you what is happening, but
-it may not be much help.
 
-The processor has to communicate externally during a frequency or
-a voltage change. On a frequency change, all devices on the=20
-HyperTransport fabric will see a LDT_STOP. On a voltage change, the=20
-new vid (voltage code) has to be driven out to the external VRM=20
-(voltage regulator module) which actually supplies the correct=20
-voltage. Obviously, this external activity takes a little while.
 
-The software interface to this is via a register, and there is a bit
-to warn the software that a change is in progress. This is the pending=20
-bit. A change should never fail to complete. It can fail if the change
-request was invalid, but it should not fail to complete.
 
-The driver is written to timeout (i.e. not hang the system) if the
-pending bit should ever fail to clear.
 
-It is also written to never attempt to make a change if the pending
-bit is set.
+I use the 2.6.9 kernel and i have enabled the
+following  options
+CPU frequency scaling
+Cpu frequency table helpers
+Intel Speedstep on ICH-M chipsets (ioport interface)
+Intel Speedsetp on 440BX/ZX/MX chipsets (SMI
+INTERFACE)
+Relaxed speedstep capability check
 
-This is what you are seeing. A transition was attempted, it never
-completed, and the driver is not happy about it.
 
-The most likely scenario here is the VRM was unable to change
-voltage, and that means flaky hardware as it has previously been
-able to successfully do so. The reason I pick on the VRM and not
-some sort of issue with the HyperTransport fabric is that it is
-unlikely anything would still be alive if there was some sort of=20
-problem coming back from the LDT_STOP.
+Especially i have slected the 2 intel speedstep
+because the help files gives information about the
+Pentium III coppermine.....
 
-Assuming the VRM continues to supply the current voltage within=20
-spec, the system will stay up indefinitely, at the current
-voltage and frequency.
+After recompiling the kernel i couldnt find cpufreq so
+i need your help.. U have to examine if i have done
+sth wrong os i have forhooten sth or my cpou is not
+supoorted
 
-The best path to follow would be to investigate warrantee replacement
-of the board.
+Also my system bus is
+0000:00:01.0 PCI bridge: Intel Corp. 440BX/ZX/DX -
+82443BX/ZX/DX AGP bridge (rev  03) (prog-if 00 [Normal
+decode])
+        Flags: bus master, 66MHz, medium devsel,
+latency 128
+        Bus: primary=00, secondary=01, subordinate=01,
+sec-latency=64
+        I/O behind bridge: 0000e000-0000efff
+        Memory behind bridge: fd000000-fecfffff
+I think that u have to look to the 
+Intel Speedsetp on 440BX/ZX/MX chipsets (SMI
+INTERFACE)
+option because i think that there u can find info
+about my bus...
 
-Paul.
+I think that the provided info is enough... I need
+your suggestions for my lovely laptop
+Have a nice daya
+
+
+		
+__________________________________ 
+Discover Yahoo! 
+Get on-the-go sports scores, stock quotes, news and more. Check it out! 
+http://discover.yahoo.com/mobile.html
