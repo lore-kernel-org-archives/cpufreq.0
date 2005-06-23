@@ -1,10 +1,11 @@
-From: Bernard Blackham <b-lkml@blackham.com.au>
-Subject: [PATCH]: cpufreq: Fix u32 vs pm_message_t confusion
-Date: Wed, 22 Jun 2005 12:25:14 +0800
-Message-ID: <20050622042514.GA11081@blackham.com.au>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: [PATCH 1/1] Provide support for 6 bit FID codes
+Date: Thu, 23 Jun 2005 17:39:04 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFC1D5@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C57844.5C17C7AF"
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,78 +15,168 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C57844.5C17C7AF
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+Opteron revision F will support higher frequencies than
+can be encoded in the current driver's 4 bit frequency
+field.  This patch updates the driver to support Rev F
+including 6 bit FIDs and processor ID updates.
+
+This should apply cleanly whether or not the dual-core
+bugfix I sent out last week is applied.  I'd prefer=20
+that both get applied, of course.
+
+Signed-off-by: David Keck <david.keck@amd.com>
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+
+-Mark Langsdorf
+AMD, Inc.
+
+------_=_NextPart_001_01C57844.5C17C7AF
+Content-Type: application/octet-stream;
+ name=rfpn-2.6.12.patch
+Content-Transfer-Encoding: base64
+Content-Description: rfpn-2.6.12.patch
+Content-Disposition: attachment;
+ filename=rfpn-2.6.12.patch
+
+LS0tIGxpbnV4LTIuNi4xMi4xL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ct
+azguYwkyMDA1LTA2LTIyIDE0OjMzOjA1LjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtcmZwbi9h
+cmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL3Bvd2Vybm93LWs4LmMJMjAwNS0wNi0yMyAxNzo0
+MTo1OS4wMDAwMDAwMDAgLTA1MDAKQEAgLTEsNSArMSw1IEBACiAvKgotICogICAoYykgMjAwMywg
+MjAwNCBBZHZhbmNlZCBNaWNybyBEZXZpY2VzLCBJbmMuCisgKiAgIChjKSAyMDAzLCAyMDA0LCAy
+MDA1IEFkdmFuY2VkIE1pY3JvIERldmljZXMsIEluYy4KICAqICBZb3VyIHVzZSBvZiB0aGlzIGNv
+ZGUgaXMgc3ViamVjdCB0byB0aGUgdGVybXMgYW5kIGNvbmRpdGlvbnMgb2YgdGhlCiAgKiAgR05V
+IGdlbmVyYWwgcHVibGljIGxpY2Vuc2UgdmVyc2lvbiAyLiBTZWUgIkNPUFlJTkciIG9yCiAgKiAg
+aHR0cDovL3d3dy5nbnUub3JnL2xpY2Vuc2VzL2dwbC5odG1sCkBAIC00NCw3ICs0NCw3IEBACiAK
+ICNkZWZpbmUgUEZYICJwb3dlcm5vdy1rODogIgogI2RlZmluZSBCRlggUEZYICJCSU9TIGVycm9y
+OiAiCi0jZGVmaW5lIFZFUlNJT04gInZlcnNpb24gMS40MC4yIgorI2RlZmluZSBWRVJTSU9OICJ2
+ZXJzaW9uIDEuNTAuMyIKICNpbmNsdWRlICJwb3dlcm5vdy1rOC5oIgogCiAvKiBzZXJpYWxpemUg
+ZnJlcSBjaGFuZ2VzICAqLwpAQCAtMjMyLDcgKzIzMiw3IEBACiAvKgogICogUmVkdWNlIHRoZSB2
+aWQgYnkgdGhlIG1heCBvZiBzdGVwIG9yIHJlcXZpZC4KICAqIERlY3JlYXNpbmcgdmlkIGNvZGVz
+IHJlcHJlc2VudCBpbmNyZWFzaW5nIHZvbHRhZ2VzOgotICogdmlkIG9mIDAgaXMgMS41NTBWLCB2
+aWQgb2YgMHgxZSBpcyAwLjgwMFYsIHZpZCBvZiAweDFmIGlzIG9mZi4KKyAqIHZpZCBvZiAwIGlz
+IDEuNTUwViwgdmlkIG9mIDB4MWUgaXMgMC44MDBWLCB2aWQgb2YgVklEX09GRiBpcyBvZmYuCiAg
+Ki8KIHN0YXRpYyBpbnQgZGVjcmVhc2VfdmlkX2NvZGVfYnlfc3RlcChzdHJ1Y3QgcG93ZXJub3df
+azhfZGF0YSAqZGF0YSwgdTMyIHJlcXZpZCwgdTMyIHN0ZXApCiB7CkBAIC00NjcsNyArNDY3LDcg
+QEAKIAllYXggPSBjcHVpZF9lYXgoQ1BVSURfUFJPQ0VTU09SX1NJR05BVFVSRSk7CiAJaWYgKCgo
+ZWF4ICYgQ1BVSURfVVNFX1hGQU1fWE1PRCkgIT0gQ1BVSURfVVNFX1hGQU1fWE1PRCkgfHwKIAkg
+ICAgKChlYXggJiBDUFVJRF9YRkFNKSAhPSBDUFVJRF9YRkFNX0s4KSB8fAotCSAgICAoKGVheCAm
+IENQVUlEX1hNT0QpID4gQ1BVSURfWE1PRF9SRVZfRSkpIHsKKwkgICAgKChlYXggJiBDUFVJRF9Y
+TU9EKSA+IENQVUlEX1hNT0RfUkVWX0YpKSB7CiAJCXByaW50ayhLRVJOX0lORk8gUEZYICJQcm9j
+ZXNzb3IgY3B1aWQgJXggbm90IHN1cHBvcnRlZFxuIiwgZWF4KTsKIAkJZ290byBvdXQ7CiAJfQpA
+QCAtNjk2LDYgKzY5Niw3IEBACiAKIAlkYXRhLT5pcnQgPSAoZGF0YS0+YWNwaV9kYXRhLnN0YXRl
+c1tpbmRleF0uY29udHJvbCA+PiBJUlRfU0hJRlQpICYgSVJUX01BU0s7CiAJZGF0YS0+cnZvID0g
+KGRhdGEtPmFjcGlfZGF0YS5zdGF0ZXNbaW5kZXhdLmNvbnRyb2wgPj4gUlZPX1NISUZUKSAmIFJW
+T19NQVNLOworCWRhdGEtPmV4dHR5cGUgPSAoZGF0YS0+YWNwaV9kYXRhLnN0YXRlc1tpbmRleF0u
+Y29udHJvbCA+PiBFWFRfVFlQRV9TSElGVCkgJiBFWFRfVFlQRV9NQVNLOwogCWRhdGEtPnBsbGxv
+Y2sgPSAoZGF0YS0+YWNwaV9kYXRhLnN0YXRlc1tpbmRleF0uY29udHJvbCA+PiBQTExfTF9TSElG
+VCkgJiBQTExfTF9NQVNLOwogCWRhdGEtPnZpZG12cyA9IDEgPDwgKChkYXRhLT5hY3BpX2RhdGEu
+c3RhdGVzW2luZGV4XS5jb250cm9sID4+IE1WU19TSElGVCkgJiBNVlNfTUFTSyk7CiAJZGF0YS0+
+dnN0YWJsZSA9IChkYXRhLT5hY3BpX2RhdGEuc3RhdGVzW2luZGV4XS5jb250cm9sID4+IFZTVF9T
+SElGVCkgJiBWU1RfTUFTSzsKQEAgLTczNSw4ICs3MzYsMTMgQEAKIAl9CiAKIAlmb3IgKGkgPSAw
+OyBpIDwgZGF0YS0+YWNwaV9kYXRhLnN0YXRlX2NvdW50OyBpKyspIHsKLQkJdTMyIGZpZCA9IGRh
+dGEtPmFjcGlfZGF0YS5zdGF0ZXNbaV0uY29udHJvbCAmIEZJRF9NQVNLOwotCQl1MzIgdmlkID0g
+KGRhdGEtPmFjcGlfZGF0YS5zdGF0ZXNbaV0uY29udHJvbCA+PiBWSURfU0hJRlQpICYgVklEX01B
+U0s7CisJICAgIAlpZiAoZGF0YS0+ZXh0dHlwZSkgeworCQkgICAgCXUzMiBmaWQgPSBkYXRhLT5h
+Y3BpX2RhdGEuc3RhdGVzW2ldLnN0YXR1cyAmIEZJRF9NQVNLOworCQkJdTMyIHZpZCA9IChkYXRh
+LT5hY3BpX2RhdGEuc3RhdGVzW2ldLnN0YXR1cyA+PiBWSURfU0hJRlQpICYgVklEX01BU0s7CisJ
+CX0gZWxzZSB7CisJCSAgICAJdTMyIGZpZCA9IGRhdGEtPmFjcGlfZGF0YS5zdGF0ZXNbaV0uY29u
+dHJvbCAmIEZJRF9NQVNLOworCQkJdTMyIHZpZCA9IChkYXRhLT5hY3BpX2RhdGEuc3RhdGVzW2ld
+LmNvbnRyb2wgPj4gVklEX1NISUZUKSAmIFZJRF9NQVNLOworCQl9CiAKIAkJZHByaW50aygiICAg
+JWQgOiBmaWQgMHgleCwgdmlkIDB4JXhcbiIsIGksIGZpZCwgdmlkKTsKIApAQCAtNzUzLDcgKzc1
+OSw3IEBACiAJCX0KIAogCQkvKiB2ZXJpZnkgdm9sdGFnZSBpcyBPSyAtIEJJT1NzIGFyZSB1c2lu
+ZyAib2ZmIiB0byBpbmRpY2F0ZSBpbnZhbGlkICovCi0JCWlmICh2aWQgPT0gMHgxZikgeworCQlp
+ZiAodmlkID09IFZJRF9PRkYpIHsKIAkJCWRwcmludGsoImludmFsaWQgdmlkICV1LCBpZ25vcmlu
+Z1xuIiwgdmlkKTsKIAkJCXBvd2Vybm93X3RhYmxlW2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5U
+UllfSU5WQUxJRDsKIAkJCWNvbnRpbnVlOwpAQCAtOTMwLDE1ICs5MzYsNiBAQAogCiAJZG93bigm
+ZmlkdmlkX3NlbSk7CiAKLQlmb3JfZWFjaF9jcHVfbWFzayhpLCBjcHVfY29yZV9tYXBbcG9sLT5j
+cHVdKSB7Ci0JCS8qIG1ha2Ugc3VyZSB0aGUgc2libGluZyBpcyBpbml0aWFsaXplZCAqLwotCQlp
+ZiAoIXBvd2Vybm93X2RhdGFbaV0pIHsKLSAgICAgICAgICAgICAgICAgICAgICAgIHJldCA9IDA7
+Ci0gICAgICAgICAgICAgICAgICAgICAgICB1cCgmZmlkdmlkX3NlbSk7Ci0gICAgICAgICAgICAg
+ICAgICAgICAgICBnb3RvIGVycl9vdXQ7Ci0gICAgICAgICAgICAgICAgfQotCX0KLQogCXBvd2Vy
+bm93X2s4X2FjcGlfcHN0X3ZhbHVlcyhkYXRhLCBuZXdzdGF0ZSk7CiAKIAlpZiAodHJhbnNpdGlv
+bl9mcmVxdWVuY3koZGF0YSwgbmV3c3RhdGUpKSB7Ci0tLSBsaW51eC0yLjYuMTIuMS9hcmNoL2kz
+ODYva2VybmVsL2NwdS9jcHVmcmVxL3Bvd2Vybm93LWs4LmgJMjAwNS0wNi0yMiAxNDozMzowNS4w
+MDAwMDAwMDAgLTA1MDAKKysrIGxpbnV4LXJmcG4vYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJl
+cS9wb3dlcm5vdy1rOC5oCTIwMDUtMDYtMjMgMTc6NDQ6MTAuMDAwMDAwMDAwIC0wNTAwCkBAIC0x
+LDUgKzEsNSBAQAogLyoKLSAqICAoYykgMjAwMywgMjAwNCBBZHZhbmNlZCBNaWNybyBEZXZpY2Vz
+LCBJbmMuCisgKiAgKGMpIDIwMDMsIDIwMDQsIDIwMDUgQWR2YW5jZWQgTWljcm8gRGV2aWNlcywg
+SW5jLgogICogIFlvdXIgdXNlIG9mIHRoaXMgY29kZSBpcyBzdWJqZWN0IHRvIHRoZSB0ZXJtcyBh
+bmQgY29uZGl0aW9ucyBvZiB0aGUKICAqICBHTlUgZ2VuZXJhbCBwdWJsaWMgbGljZW5zZSB2ZXJz
+aW9uIDIuIFNlZSAiQ09QWUlORyIgb3IKICAqICBodHRwOi8vd3d3LmdudS5vcmcvbGljZW5zZXMv
+Z3BsLmh0bWwKQEAgLTE5LDYgKzE5LDcgQEAKIAl1MzIgdmlkbXZzOyAgLyogdXNhYmxlIHZhbHVl
+IGNhbGN1bGF0ZWQgZnJvbSBtdnMgKi8KIAl1MzIgdnN0YWJsZTsgLyogdm9sdGFnZSBzdGFiaWxp
+emF0aW9uIHRpbWUsIHVuaXRzIDIwIHVzICovCiAJdTMyIHBsbGxvY2s7IC8qIHBsbCBsb2NrIHRp
+bWUsIHVuaXRzIDEgdXMgKi8KKyAgICAgICAgdTMyIGV4dHR5cGU7IC8qIGV4dGVuZGVkIGludGVy
+ZmFjZSA9IDEgKi8KIAogCS8qIGtlZXAgdHJhY2sgb2YgdGhlIGN1cnJlbnQgZmlkIC8gdmlkICov
+CiAJdTMyIGN1cnJ2aWQsIGN1cnJmaWQ7CkBAIC00MSw3ICs0Miw3IEBACiAjZGVmaW5lIENQVUlE
+X1hGQU0JCQkweDBmZjAwMDAwCS8qIGV4dGVuZGVkIGZhbWlseSAqLwogI2RlZmluZSBDUFVJRF9Y
+RkFNX0s4CQkJMAogI2RlZmluZSBDUFVJRF9YTU9ECQkJMHgwMDBmMDAwMAkvKiBleHRlbmRlZCBt
+b2RlbCAqLwotI2RlZmluZSBDUFVJRF9YTU9EX1JFVl9FCQkweDAwMDIwMDAwCisjZGVmaW5lIENQ
+VUlEX1hNT0RfUkVWX0YJCTB4MDAwNDAwMDAKICNkZWZpbmUgQ1BVSURfVVNFX1hGQU1fWE1PRAkJ
+MHgwMDAwMGYwMAogI2RlZmluZSBDUFVJRF9HRVRfTUFYX0NBUEFCSUxJVElFUwkweDgwMDAwMDAw
+CiAjZGVmaW5lIENQVUlEX0ZSRVFfVk9MVF9DQVBBQklMSVRJRVMJMHg4MDAwMDAwNwpAQCAtNTcs
+MjUgKzU4LDI2IEBACiAKIC8qIEZpZWxkIGRlZmluaXRpb25zIHdpdGhpbiB0aGUgRklEIFZJRCBM
+b3cgQ29udHJvbCBNU1IgOiAqLwogI2RlZmluZSBNU1JfQ19MT19JTklUX0ZJRF9WSUQgICAgIDB4
+MDAwMTAwMDAKLSNkZWZpbmUgTVNSX0NfTE9fTkVXX1ZJRCAgICAgICAgICAweDAwMDAxZjAwCi0j
+ZGVmaW5lIE1TUl9DX0xPX05FV19GSUQgICAgICAgICAgMHgwMDAwMDAyZgorI2RlZmluZSBNU1Jf
+Q19MT19ORVdfVklEICAgICAgICAgIDB4MDAwMDNmMDAKKyNkZWZpbmUgTVNSX0NfTE9fTkVXX0ZJ
+RCAgICAgICAgICAweDAwMDAwMDNmCiAjZGVmaW5lIE1TUl9DX0xPX1ZJRF9TSElGVCAgICAgICAg
+OAogCiAvKiBGaWVsZCBkZWZpbml0aW9ucyB3aXRoaW4gdGhlIEZJRCBWSUQgSGlnaCBDb250cm9s
+IE1TUiA6ICovCi0jZGVmaW5lIE1TUl9DX0hJX1NUUF9HTlRfVE8gICAgICAgMHgwMDBmZmZmZgor
+I2RlZmluZSBNU1JfQ19ISV9TVFBfR05UX1RPIAkgIDB4MDAwZmZmZmYKIAogLyogRmllbGQgZGVm
+aW5pdGlvbnMgd2l0aGluIHRoZSBGSUQgVklEIExvdyBTdGF0dXMgTVNSIDogKi8KLSNkZWZpbmUg
+TVNSX1NfTE9fQ0hBTkdFX1BFTkRJTkcgICAweDgwMDAwMDAwCS8qIGNsZWFyZWQgd2hlbiBjb21w
+bGV0ZWQgKi8KLSNkZWZpbmUgTVNSX1NfTE9fTUFYX1JBTVBfVklEICAgICAweDFmMDAwMDAwCisj
+ZGVmaW5lIE1TUl9TX0xPX0NIQU5HRV9QRU5ESU5HICAgMHg4MDAwMDAwMCAgIC8qIGNsZWFyZWQg
+d2hlbiBjb21wbGV0ZWQgKi8KKyNkZWZpbmUgTVNSX1NfTE9fTUFYX1JBTVBfVklEICAgICAweDNm
+MDAwMDAwCiAjZGVmaW5lIE1TUl9TX0xPX01BWF9GSUQgICAgICAgICAgMHgwMDNmMDAwMAogI2Rl
+ZmluZSBNU1JfU19MT19TVEFSVF9GSUQgICAgICAgIDB4MDAwMDNmMDAKICNkZWZpbmUgTVNSX1Nf
+TE9fQ1VSUkVOVF9GSUQgICAgICAweDAwMDAwMDNmCiAKIC8qIEZpZWxkIGRlZmluaXRpb25zIHdp
+dGhpbiB0aGUgRklEIFZJRCBIaWdoIFN0YXR1cyBNU1IgOiAqLwotI2RlZmluZSBNU1JfU19ISV9N
+QVhfV09SS0lOR19WSUQgIDB4MDAxZjAwMDAKLSNkZWZpbmUgTVNSX1NfSElfU1RBUlRfVklEICAg
+ICAgICAweDAwMDAxZjAwCi0jZGVmaW5lIE1TUl9TX0hJX0NVUlJFTlRfVklEICAgICAgMHgwMDAw
+MDAxZgotI2RlZmluZSBNU1JfQ19ISV9TVFBfR05UX0JFTklHTiAgIDB4MDAwMDAwMDEKKyNkZWZp
+bmUgTVNSX1NfSElfTUlOX1dPUktJTkdfVklEICAweDNmMDAwMDAwCisjZGVmaW5lIE1TUl9TX0hJ
+X01BWF9XT1JLSU5HX1ZJRCAgMHgwMDNmMDAwMAorI2RlZmluZSBNU1JfU19ISV9TVEFSVF9WSUQg
+ICAgICAgIDB4MDAwMDNmMDAKKyNkZWZpbmUgTVNSX1NfSElfQ1VSUkVOVF9WSUQgICAgICAweDAw
+MDAwMDNmCisjZGVmaW5lIE1TUl9DX0hJX1NUUF9HTlRfQkVOSUdOCSAgMHgwMDAwMDAwMQogCiAv
+KgogICogVGhlcmUgYXJlIHJlc3RyaWN0aW9ucyBmcmVxdWVuY2llcyBoYXZlIHRvIGZvbGxvdzoK
+QEAgLTk5LDEzICsxMDEsMTUgQEAKICNkZWZpbmUgTUlOX0ZSRVFfUkVTT0xVVElPTiAgMjAwIC8q
+IGZpZHMganVtcCBieSAyIG1hdGNoaW5nIGZyZXEganVtcHMgYnkgMjAwICovCiAKICNkZWZpbmUg
+TUFYX0ZJRCAweDJhCS8qIFNwZWMgb25seSBnaXZlcyBGSUQgdmFsdWVzIGFzIGZhciBhcyA1IEdI
+eiAqLwotI2RlZmluZSBMRUFTVF9WSUQgMHgxZQkvKiBMb3dlc3QgKG51bWVyaWNhbGx5IGhpZ2hl
+c3QpIHVzZWZ1bCB2aWQgdmFsdWUgKi8KKyNkZWZpbmUgTEVBU1RfVklEIDB4M2UJLyogTG93ZXN0
+IChudW1lcmljYWxseSBoaWdoZXN0KSB1c2VmdWwgdmlkIHZhbHVlICovCiAKICNkZWZpbmUgTUlO
+X0ZSRVEgODAwCS8qIE1pbiBhbmQgbWF4IGZyZXFzLCBwZXIgc3BlYyAqLwogI2RlZmluZSBNQVhf
+RlJFUSA1MDAwCiAKICNkZWZpbmUgSU5WQUxJRF9GSURfTUFTSyAweGZmZmZmZmMxICAvKiBub3Qg
+YSB2YWxpZCBmaWQgaWYgdGhlc2UgYml0cyBhcmUgc2V0ICovCi0jZGVmaW5lIElOVkFMSURfVklE
+X01BU0sgMHhmZmZmZmZlMCAgLyogbm90IGEgdmFsaWQgdmlkIGlmIHRoZXNlIGJpdHMgYXJlIHNl
+dCAqLworI2RlZmluZSBJTlZBTElEX1ZJRF9NQVNLIDB4ZmZmZmZmYzAgIC8qIG5vdCBhIHZhbGlk
+IHZpZCBpZiB0aGVzZSBiaXRzIGFyZSBzZXQgKi8KKworI2RlZmluZSBWSURfT0ZGIDB4M2YKIAog
+I2RlZmluZSBTVE9QX0dSQU5UXzVOUyAxIC8qIG1pbiBwb3NzIG1lbW9yeSBhY2Nlc3MgbGF0ZW5j
+eSBmb3Igdm9sdGFnZSBjaGFuZ2UgKi8KIAo=
+
+------_=_NextPart_001_01C57844.5C17C7AF
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk, pavel@ucw.cz
+Content-Disposition: inline
 
-Hi Dave,
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-With the new pm_message_t being introduced into the driver model,
-cpufreq needs to be updated. As cpufreq doesn't actually look at the
-state passed to the suspend() function, this patch doesn't change
-any code, just declarations. It applies against 2.6.12.
-
-Patches that switch the pm_message_t to a struct will soon be
-stirring in -mm, so it really just fixes a future compilation bug :)
-
-Thanks,
-
-Bernard.
+------_=_NextPart_001_01C57844.5C17C7AF--
 
 
-
-Fix u32 vs pm_message_t confusion in cpufreq.
-
-Signed-off-by: Bernard Blackham <bernard@blackham.com.au>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-Index: linux-2.6.12-brb/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.12-brb.orig/drivers/cpufreq/cpufreq.c	2005-06-22 03:06:44.000000000 +0800
-+++ linux-2.6.12-brb/drivers/cpufreq/cpufreq.c	2005-06-22 03:07:49.000000000 +0800
-@@ -869,7 +869,7 @@
-  *	cpufreq_suspend - let the low level driver prepare for suspend
-  */
- 
--static int cpufreq_suspend(struct sys_device * sysdev, u32 state)
-+static int cpufreq_suspend(struct sys_device * sysdev, pm_message_t pmsg)
- {
- 	int cpu = sysdev->id;
- 	unsigned int ret = 0;
-@@ -897,7 +897,7 @@
- 	}
- 
- 	if (cpufreq_driver->suspend) {
--		ret = cpufreq_driver->suspend(cpu_policy, state);
-+		ret = cpufreq_driver->suspend(cpu_policy, pmsg);
- 		if (ret) {
- 			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
- 					"step on CPU %u\n", cpu_policy->cpu);
-Index: linux-2.6.12-brb/include/linux/cpufreq.h
-===================================================================
---- linux-2.6.12-brb.orig/include/linux/cpufreq.h	2005-06-22 03:06:44.000000000 +0800
-+++ linux-2.6.12-brb/include/linux/cpufreq.h	2005-06-22 03:07:49.000000000 +0800
-@@ -201,7 +201,7 @@
- 
- 	/* optional */
- 	int	(*exit)		(struct cpufreq_policy *policy);
--	int	(*suspend)	(struct cpufreq_policy *policy, u32 state);
-+	int	(*suspend)	(struct cpufreq_policy *policy, pm_message_t pmsg);
- 	int	(*resume)	(struct cpufreq_policy *policy);
- 	struct freq_attr	**attr;
- };
-Index: linux-2.6.12-brb/arch/ppc/platforms/pmac_cpufreq.c
-===================================================================
---- linux-2.6.12-brb.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-06-22 03:06:44.000000000 +0800
-+++ linux-2.6.12-brb/arch/ppc/platforms/pmac_cpufreq.c	2005-06-22 03:07:49.000000000 +0800
-@@ -452,7 +452,7 @@
- 	return offset;
- }
- 
--static int __pmac pmac_cpufreq_suspend(struct cpufreq_policy *policy, u32 state)
-+static int __pmac pmac_cpufreq_suspend(struct cpufreq_policy *policy, pm_message_t pmsg)
- {
- 	/* Ok, this could be made a bit smarter, but let's be robust for now. We
- 	 * always force a speed change to high speed before sleep, to make sure
