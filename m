@@ -1,121 +1,50 @@
-From: Simon Braunschmidt <brasimon@web.de>
-Subject: Re: [QUESTION] 3 frequency steps for p3 on windows
-Date: Mon, 27 Jun 2005 16:04:37 +0200
-Message-ID: <200506271604.37776.brasimon@web.de>
-References: <200505122253.18630.brasimon@web.de>
-	<200505171711.45444.brasimon@web.de>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH 2.6] cpufreq: two minor cleanups
+Date: Tue, 28 Jun 2005 23:28:30 +0200
+Message-ID: <20050628232830.6630c526.khali@linux-fr.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <200505171711.45444.brasimon@web.de>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261395AbVF1V2q@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk, LKML <linux-kernel@vger.kernel.org>
 
-Hi again
+Hi Dave,
 
-Any ideas about this?=20
+Here are two possible cleanups in cpufreq.c:
+* ret has no need to be unsigned in cpufreq_driver_target()
+* ret has no need to be initialized in __cpufreq_governor()
 
-At least some pointer about where to start investigating would be usefull, =
-so=20
-i could start a the right place. Maybe you know off some tool to investigat=
-e=20
-the system state state in winxp for comparison with linux?
+Thanks.
 
-Greeting
-Simon
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 
-Am Dienstag, 17. Mai 2005 17:11 schrieb Simon Braunschmidt:
-> Am Donnerstag, 12. Mai 2005 22:53 schrieb Simon Braunschmidt:
-> > Hi,
-> >
-> > I have a compaq armada m300 with a speedstep-enabled 600mhz pentium.
-> > It is running ubuntu so its essentialy a 2.6.10 kernel.
-> > Scaling the frequency dynamically works very good so far, i can choose
-> > between ~500mhz and ~600mhz.
-> >
-> > However, when i boot into windows xp sp2, after installing some enabler
-> > programm from the compaq website, the freqency of the cpu is scaled
-> > dynamically with the THREE steps  ~413mhz, ~500mhz and ~600mhz, the exa=
-ct
-> > values for 500 and 600 being the same as in linux.
-> >
-> > So in windows i get an extra frequency option for 413mhz not available =
-in
-> > linux.
-> >
-> > Is there any chance of supporting this in linux? Since i only ever heard
-> > of 2 frequency steps for the early p3's, i think this will be a
-> > compaq-specific behaviour. Is compaq giving out documentation?
-> >
-> > please cc me
-> >
-> > Greetings
-> > Simon Braunschmidt
->
-> After some (random) experimentation (changing from ac to battery while in
-> s3 state, maybe something more, didnt take notes, seems all unrelated), t=
-he
-> frequency steping in linux was ~415mhz and ~500mhz. The values
-> in /sys=AD=AD/.../cpufreq stayed the same, and the max. frequency was now
-> ~500mhz (the 600mhz diddnt seem to work anymore).
->
-> This behaviour was gone after a reboot and i hadnt been able to reproduce
-> it, strange.
->
-> So in principle it is possible under linux to use the "compaq 3 steps
-> behaviour", but the inner workings need to be understood. Any pointers
-> where i could start?
->
-> Greetings
-> Simon Braunschmidt
->
-> > simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$ uname -a
-> > Linux heimdal 2.6.10-5-686 #1 Tue Apr 5 12:27:02 UTC 2005 i686 GNU/Linux
-> >
-> > simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$ cat /proc/cpuinfo
-> > processor       : 0
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 8
-> > model name      : Pentium III (Coppermine)
-> > stepping        : 3
-> > cpu MHz         : 498.115
-> > cache size      : 256 KB
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 2
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
-> > cmov pat pse36 mmx fxsr sse
-> > bogomips        : 986.45
-> >
-> > simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$ sudo cat *
-> > Password:
-> > 0
-> > 500000
-> > 600000
-> > 500000
-> > 600000 500000
-> > userspace ondemand powersave performance
-> > 500000
-> > speedstep-smi
-> > userspace
-> > 600000
-> > 500000
-> > 500000
-> > simon@heimdal:/sys/devices/system/cpu/cpu0/cpufreq$
+ drivers/cpufreq/cpufreq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-2.6.12.orig/drivers/cpufreq/cpufreq.c	2005-06-21 21:25:31.000000000 +0200
++++ linux-2.6.12/drivers/cpufreq/cpufreq.c	2005-06-21 21:29:01.000000000 +0200
+@@ -1130,7 +1130,7 @@
+ 			  unsigned int target_freq,
+ 			  unsigned int relation)
+ {
+-	unsigned int ret;
++	int ret;
+ 
+ 	policy = cpufreq_cpu_get(policy->cpu);
+ 	if (!policy)
+@@ -1151,7 +1151,7 @@
+ 
+ static int __cpufreq_governor(struct cpufreq_policy *policy, unsigned int event)
+ {
+-	int ret = -EINVAL;
++	int ret;
+ 
+ 	if (!try_module_get(policy->governor->owner))
+ 		return -EINVAL;
+
+
+-- 
+Jean Delvare
