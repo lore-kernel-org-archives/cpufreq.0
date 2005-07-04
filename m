@@ -1,16 +1,12 @@
-From: =?ISO-8859-1?Q?Jaime_Pe=F1alba?= <jpenalbae@gmail.com>
-Subject: Re: More Pentium III (Coppermine) problems
-Date: Mon, 4 Jul 2005 16:44:36 +0200
-Message-ID: <edaeffdd050704074466fbd26d@mail.gmail.com>
-References: <edaeffdd05063015115b422687@mail.gmail.com>
-	<20050630222500.GA8564@isilmar.linta.de>
-	<edaeffdd05063015391de04e8@mail.gmail.com>
-Reply-To: =?ISO-8859-1?Q?Jaime_Pe=F1alba?= <jpenalbae@gmail.com>
+From: npelov@gmail.com
+Subject: centrino-decode from cpufrequtils doesn't return correct frequencies
+Date: Mon, 4 Jul 2005 17:47:49 +0200 (MEST)
+Message-ID: <Pine.GSO.4.10.10507041651310.25881-200000@bollie.cs.kuleuven.ac.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <edaeffdd05063015391de04e8@mail.gmail.com>
-Content-Disposition: inline
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-559023410-851401618-1120491638=:25881"
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-ID: <Pine.GSO.4.10.10507041740540.25881@bollie.cs.kuleuven.ac.be>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,71 +16,265 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@lists.linux.org.uk, linux@dominikbrodowski.net
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Nobody has any more suggestions?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-Any help would be appreciated.
+---559023410-851401618-1120491638=:25881
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-ID: <Pine.GSO.4.10.10507041740541.25881@bollie.cs.kuleuven.ac.be>
 
-Thanks,
-Jaime.
 
-2005/7/1, Jaime Pe=F1alba <jpenalbae@gmail.com>:
-> also doesnt work ;(
->=20
-> speedstep-lib: x86: 6, model: 8
-> speedstep-lib: Coppermine: MSR_IA32_EBL_CR_POWERON is 0x44080020, 0x0
-> speedstep-lib: Coppermine: MSR_IA32_PLATFORM ID is 0x0, 0x2560000
-> speedstep-smi: signature:0x00008680, command:0x0000e6f5,
-> event:0x00000000, perf_level:0x47534943.
-> speedstep-smi: trying to obtain ownership with command 47534982 at port b=
-2
-> speedstep-smi: result is 0
-> speedstep-smi: bug #1422 -- can't read freqs from BIOS
-> speedstep-smi: could not detect low and high frequencies by SMI call.
-> speedstep-lib: trying to determine both speeds
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> speedstep-lib: speed is 500000
-> speedstep-lib: previous seped is 500000
-> speedstep-smi: trying to set frequency to state 1 with command
-> 47534982 at port b2
-> speedstep-smi: retry 1, previous result 0, waiting...
-> speedstep-smi: retry 2, previous result 0, waiting...
-> speedstep-smi: retry 3, previous result 0, waiting...
-> speedstep-smi: retry 4, previous result 0, waiting...
-> speedstep-smi: retry 5, previous result 0, waiting...
-> cpufreq: change failed with new_state 2 and result 0
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> speedstep-lib: speed is 500000
-> speedstep-lib: low seped is 500000
-> speedstep-smi: trying to set frequency to state 0 with command
-> 47534982 at port b2
-> speedstep-smi: retry 1, previous result 0, waiting...
-> speedstep-smi: retry 2, previous result 0, waiting...
-> speedstep-smi: retry 3, previous result 0, waiting...
-> speedstep-smi: retry 4, previous result 0, waiting...
-> speedstep-smi: retry 5, previous result 0, waiting...
-> cpufreq: change failed with new_state 2 and result 0
-> speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x44080020 0x0
-> speedstep-lib: speed is 500000
-> speedstep-lib: high seped is 500000
-> speedstep-smi: could not detect two different speeds -- aborting.
->=20
-> Any more sugestions?
->=20
-> Thanks,
-> Jaime.
->=20
-> 2005/7/1, Dominik Brodowski <linux@dominikbrodowski.net>:
-> > Hi,
-> >
-> > please try out
-> >
-> > modprobe speedstep-smi smi_cmd=3D0x82 smi_port=3D0xb2 smi_sig=3D1
-> >
-> >
-> >         Dominik
-> >
->
+I've been trying to hack the speedstep-centrino module to manually set
+the voltages for different frequencies for an Intel Pentium M 740
+processor (aka Centrino 2, Sonoma). When using the centrino-decode program
+from the cpufrequtils I discovered that it returns a different frequency
+than the one reported by the system. For example: ./centrino-decode
+will return "0x6000d0f means 1300 MHz @ 1356 mV" while the actual
+processor speed is 1733MHz.
+
+Right now the frequency is calculated as:
+
+  frequency = 100 * ((msr >> 8) & 0xFF);
+
+After some investigation it turned out that the second byte of the 
+IA32_PERF_STATUS register does not encode the frequency (div 100)
+but actually the multiplier of the front side bus. So, the correct
+interpretation is
+
+  mult = ((msr >> 8) & 0xFF);
+  frequency = fsb*mult.
+
+(but I don't know how can you read the FSB)
+In the above example we have fsb=133.333 and mult=13 arriving at the correct
+frequency of 1733MHz.
+
+The original interpretation has been correct because the first Pentium M
+processors had a FSB of 100MHz. 
+
+This problem also has some implications for the speedstep-centrino module.
+Right now, it works correctly but is full with "frequency/voltage"
+terminology which is wrong and needs to be changed to "multiplier/voltage".
+The attached patch does that.
+
+Nik.
+
+---559023410-851401618-1120491638=:25881
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME="freq_mult.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.GSO.4.10.10507041740380.25881@bollie.cs.kuleuven.ac.be>
+Content-Description: 
+Content-Disposition: ATTACHMENT; FILENAME="freq_mult.patch"
+
+KioqIGFyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvc3BlZWRzdGVwLWNl
+bnRyaW5vLmMub3JpZwkyMDA1LTA3LTA0IDE4OjMyOjU2LjAwMDAwMDAwMCAr
+MDMwMA0KLS0tIGFyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvc3BlZWRz
+dGVwLWNlbnRyaW5vLmMJMjAwNS0wNy0wNCAxODozMDo0NC4wMDAwMDAwMDAg
+KzAzMDANCioqKioqKioqKioqKioqKg0KKioqIDcwLDc2ICoqKioNCiAgCWNv
+bnN0IGNoYXIJKm1vZGVsX25hbWU7DQogIAl1bnNpZ25lZAltYXhfZnJlcTsg
+LyogbWF4IGNsb2NrIGluIGtIeiAqLw0KICANCiEgCXN0cnVjdCBjcHVmcmVx
+X2ZyZXF1ZW5jeV90YWJsZSAqb3BfcG9pbnRzOyAvKiBjbG9jay92b2x0YWdl
+IHBhaXJzICovDQogIH07DQogIHN0YXRpYyBpbnQgY2VudHJpbm9fdmVyaWZ5
+X2NwdV9pZChjb25zdCBzdHJ1Y3QgY3B1aW5mb194ODYgKmMsIGNvbnN0IHN0
+cnVjdCBjcHVfaWQgKngpOw0KICANCi0tLSA3MCw3NiAtLS0tDQogIAljb25z
+dCBjaGFyCSptb2RlbF9uYW1lOw0KICAJdW5zaWduZWQJbWF4X2ZyZXE7IC8q
+IG1heCBjbG9jayBpbiBrSHogKi8NCiAgDQohIAlzdHJ1Y3QgY3B1ZnJlcV9m
+cmVxdWVuY3lfdGFibGUgKm9wX3BvaW50czsgLyogbXVsdGlwbGllci92b2x0
+YWdlIHBhaXJzICovDQogIH07DQogIHN0YXRpYyBpbnQgY2VudHJpbm9fdmVy
+aWZ5X2NwdV9pZChjb25zdCBzdHJ1Y3QgY3B1aW5mb194ODYgKmMsIGNvbnN0
+IHN0cnVjdCBjcHVfaWQgKngpOw0KICANCioqKioqKioqKioqKioqKg0KKioq
+IDgzLDk0ICoqKioNCiAgI2lmZGVmIENPTkZJR19YODZfU1BFRURTVEVQX0NF
+TlRSSU5PX1RBQkxFDQogIA0KICAvKiBDb21wdXRlcyB0aGUgY29ycmVjdCBm
+b3JtIGZvciBJQTMyX1BFUkZfQ1RMIE1TUiBmb3IgYSBwYXJ0aWN1bGFyDQoh
+ICAgIGZyZXF1ZW5jeS92b2x0YWdlIG9wZXJhdGluZyBwb2ludDsgZnJlcXVl
+bmN5IGluIE1Ieiwgdm9sdHMgaW4gbVYuDQogICAgIFRoaXMgaXMgc3RvcmVk
+IGFzICJpbmRleCIgaW4gdGhlIHN0cnVjdHVyZS4gKi8NCiEgI2RlZmluZSBP
+UChtaHosIG12KQkJCQkJCQlcDQogIAl7CQkJCQkJCQlcDQohIAkJLmZyZXF1
+ZW5jeSA9IChtaHopICogMTAwMCwJCQkJXA0KISAJCS5pbmRleCA9ICgoKG1o
+eikvMTAwKSA8PCA4KSB8ICgobXYgLSA3MDApIC8gMTYpCQlcDQogIAl9DQog
+IA0KICAvKg0KLS0tIDgzLDk0IC0tLS0NCiAgI2lmZGVmIENPTkZJR19YODZf
+U1BFRURTVEVQX0NFTlRSSU5PX1RBQkxFDQogIA0KICAvKiBDb21wdXRlcyB0
+aGUgY29ycmVjdCBmb3JtIGZvciBJQTMyX1BFUkZfQ1RMIE1TUiBmb3IgYSBw
+YXJ0aWN1bGFyDQohICAgIG11bHRpcGxpZXIvdm9sdGFnZSBvcGVyYXRpbmcg
+cG9pbnQ7IHZvbHRzIGluIG1WLiBBc3N1bWUgYSAxMDBNSHogRlNCLg0KICAg
+ICBUaGlzIGlzIHN0b3JlZCBhcyAiaW5kZXgiIGluIHRoZSBzdHJ1Y3R1cmUu
+ICovDQohICNkZWZpbmUgT1AobXVsdCwgbXYpCQkJCQkJCVwNCiAgCXsJCQkJ
+CQkJCVwNCiEgCQkuZnJlcXVlbmN5ID0gKG11bHQpICogMTAwICogMTAwMCwJ
+CQlcDQohIAkJLmluZGV4ID0gKChtdWx0KSA8PCA4KSB8ICgobXYgLSA3MDAp
+IC8gMTYpCQlcDQogIAl9DQogIA0KICAvKg0KKioqKioqKioqKioqKioqDQoq
+KiogMTAxLDEzMCAqKioqDQogIC8qIFVsdHJhIExvdyBWb2x0YWdlIEludGVs
+IFBlbnRpdW0gTSBwcm9jZXNzb3IgOTAwTUh6IChCYW5pYXMpICovDQogIHN0
+YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgYmFuaWFzXzkw
+MFtdID0NCiAgew0KISAJT1AoNjAwLCAgODQ0KSwNCiEgCU9QKDgwMCwgIDk4
+OCksDQohIAlPUCg5MDAsIDEwMDQpLA0KICAJeyAuZnJlcXVlbmN5ID0gQ1BV
+RlJFUV9UQUJMRV9FTkQgfQ0KICB9Ow0KICANCiAgLyogVWx0cmEgTG93IFZv
+bHRhZ2UgSW50ZWwgUGVudGl1bSBNIHByb2Nlc3NvciAxMDAwTUh6IChCYW5p
+YXMpICovDQogIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFi
+bGUgYmFuaWFzXzEwMDBbXSA9DQogIHsNCiEgCU9QKDYwMCwgICA4NDQpLA0K
+ISAJT1AoODAwLCAgIDk3MiksDQohIAlPUCg5MDAsICAgOTg4KSwNCiEgCU9Q
+KDEwMDAsIDEwMDQpLA0KICAJeyAuZnJlcXVlbmN5ID0gQ1BVRlJFUV9UQUJM
+RV9FTkQgfQ0KICB9Ow0KICANCiAgLyogTG93IFZvbHRhZ2UgSW50ZWwgUGVu
+dGl1bSBNIHByb2Nlc3NvciAxLjEwR0h6IChCYW5pYXMpICovDQogIHN0YXRp
+YyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgYmFuaWFzXzExMDBb
+XSA9DQogIHsNCiEgCU9QKCA2MDAsICA5NTYpLA0KISAJT1AoIDgwMCwgMTAy
+MCksDQohIAlPUCggOTAwLCAxMTAwKSwNCiEgCU9QKDEwMDAsIDExNjQpLA0K
+ISAJT1AoMTEwMCwgMTE4MCksDQogIAl7IC5mcmVxdWVuY3kgPSBDUFVGUkVR
+X1RBQkxFX0VORCB9DQogIH07DQogIA0KLS0tIDEwMSwxMzAgLS0tLQ0KICAv
+KiBVbHRyYSBMb3cgVm9sdGFnZSBJbnRlbCBQZW50aXVtIE0gcHJvY2Vzc29y
+IDkwME1IeiAoQmFuaWFzKSAqLw0KICBzdGF0aWMgc3RydWN0IGNwdWZyZXFf
+ZnJlcXVlbmN5X3RhYmxlIGJhbmlhc185MDBbXSA9DQogIHsNCiEgCU9QKCA2
+LCAgODQ0KSwNCiEgCU9QKCA4LCAgOTg4KSwNCiEgCU9QKCA5LCAxMDA0KSwN
+CiAgCXsgLmZyZXF1ZW5jeSA9IENQVUZSRVFfVEFCTEVfRU5EIH0NCiAgfTsN
+CiAgDQogIC8qIFVsdHJhIExvdyBWb2x0YWdlIEludGVsIFBlbnRpdW0gTSBw
+cm9jZXNzb3IgMTAwME1IeiAoQmFuaWFzKSAqLw0KICBzdGF0aWMgc3RydWN0
+IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlIGJhbmlhc18xMDAwW10gPQ0KICB7
+DQohIAlPUCggNiwgICA4NDQpLA0KISAJT1AoIDgsICAgOTcyKSwNCiEgCU9Q
+KCA5LCAgIDk4OCksDQohIAlPUCgxMCwgMTAwNCksDQogIAl7IC5mcmVxdWVu
+Y3kgPSBDUFVGUkVRX1RBQkxFX0VORCB9DQogIH07DQogIA0KICAvKiBMb3cg
+Vm9sdGFnZSBJbnRlbCBQZW50aXVtIE0gcHJvY2Vzc29yIDEuMTBHSHogKEJh
+bmlhcykgKi8NCiAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90
+YWJsZSBiYW5pYXNfMTEwMFtdID0NCiAgew0KISAJT1AoIDYsICA5NTYpLA0K
+ISAJT1AoIDgsIDEwMjApLA0KISAJT1AoIDksIDExMDApLA0KISAJT1AoMTAs
+IDExNjQpLA0KISAJT1AoMTEsIDExODApLA0KICAJeyAuZnJlcXVlbmN5ID0g
+Q1BVRlJFUV9UQUJMRV9FTkQgfQ0KICB9Ow0KICANCioqKioqKioqKioqKioq
+Kg0KKioqIDEzMiwyMDEgKioqKg0KICAvKiBMb3cgVm9sdGFnZSBJbnRlbCBQ
+ZW50aXVtIE0gcHJvY2Vzc29yIDEuMjBHSHogKEJhbmlhcykgKi8NCiAgc3Rh
+dGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSBiYW5pYXNfMTIw
+MFtdID0NCiAgew0KISAJT1AoIDYwMCwgIDk1NiksDQohIAlPUCggODAwLCAx
+MDA0KSwNCiEgCU9QKCA5MDAsIDEwMjApLA0KISAJT1AoMTAwMCwgMTEwMCks
+DQohIAlPUCgxMTAwLCAxMTY0KSwNCiEgCU9QKDEyMDAsIDExODApLA0KICAJ
+eyAuZnJlcXVlbmN5ID0gQ1BVRlJFUV9UQUJMRV9FTkQgfQ0KICB9Ow0KICAN
+CiAgLyogSW50ZWwgUGVudGl1bSBNIHByb2Nlc3NvciAxLjMwR0h6IChCYW5p
+YXMpICovDQogIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFi
+bGUgYmFuaWFzXzEzMDBbXSA9DQogIHsNCiEgCU9QKCA2MDAsICA5NTYpLA0K
+ISAJT1AoIDgwMCwgMTI2MCksDQohIAlPUCgxMDAwLCAxMjkyKSwNCiEgCU9Q
+KDEyMDAsIDEzNTYpLA0KISAJT1AoMTMwMCwgMTM4OCksDQogIAl7IC5mcmVx
+dWVuY3kgPSBDUFVGUkVRX1RBQkxFX0VORCB9DQogIH07DQogIA0KICAvKiBJ
+bnRlbCBQZW50aXVtIE0gcHJvY2Vzc29yIDEuNDBHSHogKEJhbmlhcykgKi8N
+CiAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSBiYW5p
+YXNfMTQwMFtdID0NCiAgew0KISAJT1AoIDYwMCwgIDk1NiksDQohIAlPUCgg
+ODAwLCAxMTgwKSwNCiEgCU9QKDEwMDAsIDEzMDgpLA0KISAJT1AoMTIwMCwg
+MTQzNiksDQohIAlPUCgxNDAwLCAxNDg0KSwNCiAgCXsgLmZyZXF1ZW5jeSA9
+IENQVUZSRVFfVEFCTEVfRU5EIH0NCiAgfTsNCiAgDQogIC8qIEludGVsIFBl
+bnRpdW0gTSBwcm9jZXNzb3IgMS41MEdIeiAoQmFuaWFzKSAqLw0KICBzdGF0
+aWMgc3RydWN0IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlIGJhbmlhc18xNTAw
+W10gPQ0KICB7DQohIAlPUCggNjAwLCAgOTU2KSwNCiEgCU9QKCA4MDAsIDEx
+MTYpLA0KISAJT1AoMTAwMCwgMTIyOCksDQohIAlPUCgxMjAwLCAxMzU2KSwN
+CiEgCU9QKDE0MDAsIDE0NTIpLA0KISAJT1AoMTUwMCwgMTQ4NCksDQogIAl7
+IC5mcmVxdWVuY3kgPSBDUFVGUkVRX1RBQkxFX0VORCB9DQogIH07DQogIA0K
+ICAvKiBJbnRlbCBQZW50aXVtIE0gcHJvY2Vzc29yIDEuNjBHSHogKEJhbmlh
+cykgKi8NCiAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJs
+ZSBiYW5pYXNfMTYwMFtdID0NCiAgew0KISAJT1AoIDYwMCwgIDk1NiksDQoh
+IAlPUCggODAwLCAxMDM2KSwNCiEgCU9QKDEwMDAsIDExNjQpLA0KISAJT1Ao
+MTIwMCwgMTI3NiksDQohIAlPUCgxNDAwLCAxNDIwKSwNCiEgCU9QKDE2MDAs
+IDE0ODQpLA0KICAJeyAuZnJlcXVlbmN5ID0gQ1BVRlJFUV9UQUJMRV9FTkQg
+fQ0KICB9Ow0KICANCiAgLyogSW50ZWwgUGVudGl1bSBNIHByb2Nlc3NvciAx
+LjcwR0h6IChCYW5pYXMpICovDQogIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9m
+cmVxdWVuY3lfdGFibGUgYmFuaWFzXzE3MDBbXSA9DQogIHsNCiEgCU9QKCA2
+MDAsICA5NTYpLA0KISAJT1AoIDgwMCwgMTAwNCksDQohIAlPUCgxMDAwLCAx
+MTE2KSwNCiEgCU9QKDEyMDAsIDEyMjgpLA0KISAJT1AoMTQwMCwgMTMwOCks
+DQohIAlPUCgxNzAwLCAxNDg0KSwNCiAgCXsgLmZyZXF1ZW5jeSA9IENQVUZS
+RVFfVEFCTEVfRU5EIH0NCiAgfTsNCiAgI3VuZGVmIE9QDQotLS0gMTMyLDIw
+MSAtLS0tDQogIC8qIExvdyBWb2x0YWdlIEludGVsIFBlbnRpdW0gTSBwcm9j
+ZXNzb3IgMS4yMEdIeiAoQmFuaWFzKSAqLw0KICBzdGF0aWMgc3RydWN0IGNw
+dWZyZXFfZnJlcXVlbmN5X3RhYmxlIGJhbmlhc18xMjAwW10gPQ0KICB7DQoh
+IAlPUCggNiwgIDk1NiksDQohIAlPUCggOCwgMTAwNCksDQohIAlPUCggOSwg
+MTAyMCksDQohIAlPUCgxMCwgMTEwMCksDQohIAlPUCgxMSwgMTE2NCksDQoh
+IAlPUCgxMiwgMTE4MCksDQogIAl7IC5mcmVxdWVuY3kgPSBDUFVGUkVRX1RB
+QkxFX0VORCB9DQogIH07DQogIA0KICAvKiBJbnRlbCBQZW50aXVtIE0gcHJv
+Y2Vzc29yIDEuMzBHSHogKEJhbmlhcykgKi8NCiAgc3RhdGljIHN0cnVjdCBj
+cHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSBiYW5pYXNfMTMwMFtdID0NCiAgew0K
+ISAJT1AoIDYsICA5NTYpLA0KISAJT1AoIDgsIDEyNjApLA0KISAJT1AoMTAs
+IDEyOTIpLA0KISAJT1AoMTIsIDEzNTYpLA0KISAJT1AoMTMsIDEzODgpLA0K
+ICAJeyAuZnJlcXVlbmN5ID0gQ1BVRlJFUV9UQUJMRV9FTkQgfQ0KICB9Ow0K
+ICANCiAgLyogSW50ZWwgUGVudGl1bSBNIHByb2Nlc3NvciAxLjQwR0h6IChC
+YW5pYXMpICovDQogIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lf
+dGFibGUgYmFuaWFzXzE0MDBbXSA9DQogIHsNCiEgCU9QKCA2LCAgOTU2KSwN
+CiEgCU9QKCA4LCAxMTgwKSwNCiEgCU9QKDEwLCAxMzA4KSwNCiEgCU9QKDEy
+LCAxNDM2KSwNCiEgCU9QKDE0LCAxNDg0KSwNCiAgCXsgLmZyZXF1ZW5jeSA9
+IENQVUZSRVFfVEFCTEVfRU5EIH0NCiAgfTsNCiAgDQogIC8qIEludGVsIFBl
+bnRpdW0gTSBwcm9jZXNzb3IgMS41MEdIeiAoQmFuaWFzKSAqLw0KICBzdGF0
+aWMgc3RydWN0IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlIGJhbmlhc18xNTAw
+W10gPQ0KICB7DQohIAlPUCggNiwgIDk1NiksDQohIAlPUCggOCwgMTExNiks
+DQohIAlPUCgxMCwgMTIyOCksDQohIAlPUCgxMiwgMTM1NiksDQohIAlPUCgx
+NCwgMTQ1MiksDQohIAlPUCgxNSwgMTQ4NCksDQogIAl7IC5mcmVxdWVuY3kg
+PSBDUFVGUkVRX1RBQkxFX0VORCB9DQogIH07DQogIA0KICAvKiBJbnRlbCBQ
+ZW50aXVtIE0gcHJvY2Vzc29yIDEuNjBHSHogKEJhbmlhcykgKi8NCiAgc3Rh
+dGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSBiYW5pYXNfMTYw
+MFtdID0NCiAgew0KISAJT1AoIDYsICA5NTYpLA0KISAJT1AoIDgsIDEwMzYp
+LA0KISAJT1AoMTAsIDExNjQpLA0KISAJT1AoMTIsIDEyNzYpLA0KISAJT1Ao
+MTQsIDE0MjApLA0KISAJT1AoMTYsIDE0ODQpLA0KICAJeyAuZnJlcXVlbmN5
+ID0gQ1BVRlJFUV9UQUJMRV9FTkQgfQ0KICB9Ow0KICANCiAgLyogSW50ZWwg
+UGVudGl1bSBNIHByb2Nlc3NvciAxLjcwR0h6IChCYW5pYXMpICovDQogIHN0
+YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgYmFuaWFzXzE3
+MDBbXSA9DQogIHsNCiEgCU9QKCA2LCAgOTU2KSwNCiEgCU9QKCA4LCAxMDA0
+KSwNCiEgCU9QKDEwLCAxMTE2KSwNCiEgCU9QKDEyLCAxMjI4KSwNCiEgCU9Q
+KDE0LCAxMzA4KSwNCiEgCU9QKDE3LCAxNDg0KSwNCiAgCXsgLmZyZXF1ZW5j
+eSA9IENQVUZSRVFfVEFCTEVfRU5EIH0NCiAgfTsNCiAgI3VuZGVmIE9QDQoq
+KioqKioqKioqKioqKioNCioqKiAyMDgsMjE0ICoqKioNCiAgfQ0KICAjZGVm
+aW5lIEJBTklBUyhtYXgpCV9CQU5JQVMoJmNwdV9pZHNbQ1BVX0JBTklBU10s
+IG1heCwgI21heCkNCiAgDQohIC8qIENQVSBtb2RlbHMsIHRoZWlyIG9wZXJh
+dGluZyBmcmVxdWVuY3kgcmFuZ2UsIGFuZCBmcmVxL3ZvbHRhZ2UNCiAgICAg
+b3BlcmF0aW5nIHBvaW50cyAqLw0KICBzdGF0aWMgc3RydWN0IGNwdV9tb2Rl
+bCBtb2RlbHNbXSA9DQogIHsNCi0tLSAyMDgsMjE0IC0tLS0NCiAgfQ0KICAj
+ZGVmaW5lIEJBTklBUyhtYXgpCV9CQU5JQVMoJmNwdV9pZHNbQ1BVX0JBTklB
+U10sIG1heCwgI21heCkNCiAgDQohIC8qIENQVSBtb2RlbHMsIHRoZWlyIG9w
+ZXJhdGluZyBmcmVxdWVuY3kgcmFuZ2UsIGFuZCBtdWx0aXBsaWVyL3ZvbHRh
+Z2UNCiAgICAgb3BlcmF0aW5nIHBvaW50cyAqLw0KICBzdGF0aWMgc3RydWN0
+IGNwdV9tb2RlbCBtb2RlbHNbXSA9DQogIHsNCioqKioqKioqKioqKioqKg0K
+KioqIDI5MCwzMDIgKioqKg0KICAJLyoNCiAgCSAqIEV4dHJhY3QgY2xvY2sg
+aW4ga0h6IGZyb20gUEVSRl9DVEwgdmFsdWUNCiAgCSAqIGZvciBjZW50cmlu
+bywgYXMgc29tZSBEU0RUcyBhcmUgYnVnZ3kuDQogIAkgKiBJZGVhbGx5LCB0
+aGlzIGNhbiBiZSBkb25lIHVzaW5nIHRoZSBhY3BpX2RhdGEgc3RydWN0dXJl
+Lg0KICAJICovDQogIAlpZiAoKGNlbnRyaW5vX2NwdVtjcHVdID09ICZjcHVf
+aWRzW0NQVV9CQU5JQVNdKSB8fA0KICAJICAgIChjZW50cmlub19jcHVbY3B1
+XSA9PSAmY3B1X2lkc1tDUFVfRE9USEFOX0ExXSkgfHwNCiAgCSAgICAoY2Vu
+dHJpbm9fY3B1W2NwdV0gPT0gJmNwdV9pZHNbQ1BVX0RPVEhBTl9CMF0pKSB7
+DQogIAkJbXNyID0gKG1zciA+PiA4KSAmIDB4ZmY7DQohIAkJcmV0dXJuIG1z
+ciAqIDEwMDAwMDsNCiAgCX0NCiAgDQogIAlpZiAoKCFjZW50cmlub19tb2Rl
+bFtjcHVdKSB8fCAoIWNlbnRyaW5vX21vZGVsW2NwdV0tPm9wX3BvaW50cykp
+DQotLS0gMjkwLDMwMyAtLS0tDQogIAkvKg0KICAJICogRXh0cmFjdCBjbG9j
+ayBpbiBrSHogZnJvbSBQRVJGX0NUTCB2YWx1ZQ0KICAJICogZm9yIGNlbnRy
+aW5vLCBhcyBzb21lIERTRFRzIGFyZSBidWdneS4NCisgCSAqIFdlIGFzc3Vt
+ZSBhIDEwME1IeiBGU0IuDQogIAkgKiBJZGVhbGx5LCB0aGlzIGNhbiBiZSBk
+b25lIHVzaW5nIHRoZSBhY3BpX2RhdGEgc3RydWN0dXJlLg0KICAJICovDQog
+IAlpZiAoKGNlbnRyaW5vX2NwdVtjcHVdID09ICZjcHVfaWRzW0NQVV9CQU5J
+QVNdKSB8fA0KICAJICAgIChjZW50cmlub19jcHVbY3B1XSA9PSAmY3B1X2lk
+c1tDUFVfRE9USEFOX0ExXSkgfHwNCiAgCSAgICAoY2VudHJpbm9fY3B1W2Nw
+dV0gPT0gJmNwdV9pZHNbQ1BVX0RPVEhBTl9CMF0pKSB7DQogIAkJbXNyID0g
+KG1zciA+PiA4KSAmIDB4ZmY7DQohIAkJcmV0dXJuIG1zciAqIDEwMCAqIDEw
+MDA7DQogIAl9DQogIA0KICAJaWYgKCghY2VudHJpbm9fbW9kZWxbY3B1XSkg
+fHwgKCFjZW50cmlub19tb2RlbFtjcHVdLT5vcF9wb2ludHMpKQ0KKioqKioq
+KioqKioqKioqDQoqKiogMzUyLDM1OCAqKioqDQogICAqIGNlbnRyaW5vX2Nw
+dV9pbml0X2FjcGkgLSByZWdpc3RlciB3aXRoIEFDUEkgUC1TdGF0ZXMgbGli
+cmFyeQ0KICAgKg0KICAgKiBSZWdpc3RlciB3aXRoIHRoZSBBQ1BJIFAtU3Rh
+dGVzIGxpYnJhcnkgKHBhcnQgb2YgZHJpdmVycy9hY3BpL3Byb2Nlc3Nvci5j
+KQ0KISAgKiBpbiBvcmRlciB0byBkZXRlcm1pbmUgY29ycmVjdCBmcmVxdWVu
+Y3kgYW5kIHZvbHRhZ2UgcGFpcmluZ3MgYnkgcmVhZGluZw0KICAgKiB0aGUg
+X1BTUyBvZiB0aGUgQUNQSSBEU0RUIG9yIFNTRFQgdGFibGVzLg0KICAgKi8N
+CiAgc3RhdGljIGludCBjZW50cmlub19jcHVfaW5pdF9hY3BpKHN0cnVjdCBj
+cHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KLS0tIDM1MywzNTkgLS0tLQ0KICAg
+KiBjZW50cmlub19jcHVfaW5pdF9hY3BpIC0gcmVnaXN0ZXIgd2l0aCBBQ1BJ
+IFAtU3RhdGVzIGxpYnJhcnkNCiAgICoNCiAgICogUmVnaXN0ZXIgd2l0aCB0
+aGUgQUNQSSBQLVN0YXRlcyBsaWJyYXJ5IChwYXJ0IG9mIGRyaXZlcnMvYWNw
+aS9wcm9jZXNzb3IuYykNCiEgICogaW4gb3JkZXIgdG8gZGV0ZXJtaW5lIGNv
+cnJlY3QgbXVsdGlwbGllciBhbmQgdm9sdGFnZSBwYWlyaW5ncyBieSByZWFk
+aW5nDQogICAqIHRoZSBfUFNTIG9mIHRoZSBBQ1BJIERTRFQgb3IgU1NEVCB0
+YWJsZXMuDQogICAqLw0KICBzdGF0aWMgaW50IGNlbnRyaW5vX2NwdV9pbml0
+X2FjcGkoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQo=
+---559023410-851401618-1120491638=:25881
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+---559023410-851401618-1120491638=:25881--
+
