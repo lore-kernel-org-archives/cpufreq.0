@@ -1,15 +1,15 @@
-From: Nikolay Pelov <npelov@gmail.com>
-Subject: Re: centrino-decode from cpufrequtils doesn't return correct
- frequencies
-Date: Thu, 7 Jul 2005 13:55:22 +0200 (MEST)
-Message-ID: <Pine.GSO.4.10.10507071350030.26404-200000@bollie.cs.kuleuven.ac.be>
-References: <Pine.GSO.4.10.10507041651310.25881-200000@bollie.cs.kuleuven.ac.be>
+From: st3@riseup.net
+Subject: enhanced intel speedstep feature was Re: speedstep-centrino on
+ dothan
+Date: Thu, 7 Jul 2005 22:00:27 +0200
+Message-ID: <20050707220027.413343d4@horst.morte.male>
+References: <20050706112202.33d63d4d@horst.morte.male>
+	<42CC37FD.5040708@tmr.com> <20050706211159.GF27630@redhat.com>
+	<20050706235557.0c122d33@horst.morte.male>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-559023410-758783491-1120737079=:26404"
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <Pine.GSO.4.10.10507041651310.25881-200000@bollie.cs.kuleuven.ac.be>
-Content-ID: <Pine.GSO.4.10.10507071353030.26404@bollie.cs.kuleuven.ac.be>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <20050706235557.0c122d33@horst.morte.male>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,292 +19,75 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
-
----559023410-758783491-1120737079=:26404
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <Pine.GSO.4.10.10507071351361.26404@bollie.cs.kuleuven.ac.be>
-
-
-I'm resubmitting the patch to the speedstep-centrino module using the
-correct format (diff -u). The patch is mostly cosmetic and changes the
-terminology from "frequency/voltage" to "multplier/voltage".
-
-Nik.
-
----559023410-758783491-1120737079=:26404
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME="freq_mult.patch"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.10.10507071351190.26404@bollie.cs.kuleuven.ac.be>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME="freq_mult.patch"
-
-LS0tIGtlcm5lbC1zb3VyY2UtMi42LjExL2FyY2gvaTM4Ni9rZXJuZWwvY3B1
-
-L2NwdWZyZXEvc3BlZWRzdGVwLWNlbnRyaW5vLmMub3JpZwkyMDA1LTA3LTA0
-
-IDE4OjMyOjU2LjAwMDAwMDAwMCArMDMwMA0KKysrIGtlcm5lbC1zb3VyY2Ut
-
-Mi42LjExL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvc3BlZWRzdGVw
-
-LWNlbnRyaW5vLmMJMjAwNS0wNy0wNyAxNDo0MTo1NC4wMDAwMDAwMDAgKzAz
-
-MDANCkBAIC03MCw3ICs3MCw3IEBADQogCWNvbnN0IGNoYXIJKm1vZGVsX25h
-
-bWU7DQogCXVuc2lnbmVkCW1heF9mcmVxOyAvKiBtYXggY2xvY2sgaW4ga0h6
-
-ICovDQogDQotCXN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSAqb3Bf
-
-cG9pbnRzOyAvKiBjbG9jay92b2x0YWdlIHBhaXJzICovDQorCXN0cnVjdCBj
-
-cHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSAqb3BfcG9pbnRzOyAvKiBtdWx0aXBs
-
-aWVyL3ZvbHRhZ2UgcGFpcnMgKi8NCiB9Ow0KIHN0YXRpYyBpbnQgY2VudHJp
-
-bm9fdmVyaWZ5X2NwdV9pZChjb25zdCBzdHJ1Y3QgY3B1aW5mb194ODYgKmMs
-
-IGNvbnN0IHN0cnVjdCBjcHVfaWQgKngpOw0KIA0KQEAgLTgzLDEyICs4Mywx
-
-MiBAQA0KICNpZmRlZiBDT05GSUdfWDg2X1NQRUVEU1RFUF9DRU5UUklOT19U
-
-QUJMRQ0KIA0KIC8qIENvbXB1dGVzIHRoZSBjb3JyZWN0IGZvcm0gZm9yIElB
-
-MzJfUEVSRl9DVEwgTVNSIGZvciBhIHBhcnRpY3VsYXINCi0gICBmcmVxdWVu
-
-Y3kvdm9sdGFnZSBvcGVyYXRpbmcgcG9pbnQ7IGZyZXF1ZW5jeSBpbiBNSHos
-
-IHZvbHRzIGluIG1WLg0KKyAgIG11bHRpcGxpZXIvdm9sdGFnZSBvcGVyYXRp
-
-bmcgcG9pbnQ7IHZvbHRzIGluIG1WLiBBc3N1bWUgYSAxMDBNSHogRlNCLg0K
-
-ICAgIFRoaXMgaXMgc3RvcmVkIGFzICJpbmRleCIgaW4gdGhlIHN0cnVjdHVy
-
-ZS4gKi8NCi0jZGVmaW5lIE9QKG1oeiwgbXYpCQkJCQkJCVwNCisjZGVmaW5l
-
-IE9QKG11bHQsIG12KQkJCQkJCQlcDQogCXsJCQkJCQkJCVwNCi0JCS5mcmVx
-
-dWVuY3kgPSAobWh6KSAqIDEwMDAsCQkJCVwNCi0JCS5pbmRleCA9ICgoKG1o
-
-eikvMTAwKSA8PCA4KSB8ICgobXYgLSA3MDApIC8gMTYpCQlcDQorCQkuZnJl
-
-cXVlbmN5ID0gKG11bHQpICogMTAwICogMTAwMCwJCQlcDQorCQkuaW5kZXgg
-
-PSAoKG11bHQpIDw8IDgpIHwgKChtdiAtIDcwMCkgLyAxNikJCVwNCiAJfQ0K
-
-IA0KIC8qDQpAQCAtMTAxLDMwICsxMDEsMzAgQEANCiAvKiBVbHRyYSBMb3cg
-
-Vm9sdGFnZSBJbnRlbCBQZW50aXVtIE0gcHJvY2Vzc29yIDkwME1IeiAoQmFu
-
-aWFzKSAqLw0KIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFi
-
-bGUgYmFuaWFzXzkwMFtdID0NCiB7DQotCU9QKDYwMCwgIDg0NCksDQotCU9Q
-
-KDgwMCwgIDk4OCksDQotCU9QKDkwMCwgMTAwNCksDQorCU9QKCA2LCAgODQ0
-
-KSwNCisJT1AoIDgsICA5ODgpLA0KKwlPUCggOSwgMTAwNCksDQogCXsgLmZy
-
-ZXF1ZW5jeSA9IENQVUZSRVFfVEFCTEVfRU5EIH0NCiB9Ow0KIA0KIC8qIFVs
-
-dHJhIExvdyBWb2x0YWdlIEludGVsIFBlbnRpdW0gTSBwcm9jZXNzb3IgMTAw
-
-ME1IeiAoQmFuaWFzKSAqLw0KIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9mcmVx
-
-dWVuY3lfdGFibGUgYmFuaWFzXzEwMDBbXSA9DQogew0KLQlPUCg2MDAsICAg
-
-ODQ0KSwNCi0JT1AoODAwLCAgIDk3MiksDQotCU9QKDkwMCwgICA5ODgpLA0K
-
-LQlPUCgxMDAwLCAxMDA0KSwNCisJT1AoIDYsICAgODQ0KSwNCisJT1AoIDgs
-
-ICAgOTcyKSwNCisJT1AoIDksICAgOTg4KSwNCisJT1AoMTAsIDEwMDQpLA0K
-
-IAl7IC5mcmVxdWVuY3kgPSBDUFVGUkVRX1RBQkxFX0VORCB9DQogfTsNCiAN
-
-CiAvKiBMb3cgVm9sdGFnZSBJbnRlbCBQZW50aXVtIE0gcHJvY2Vzc29yIDEu
-
-MTBHSHogKEJhbmlhcykgKi8NCiBzdGF0aWMgc3RydWN0IGNwdWZyZXFfZnJl
-
-cXVlbmN5X3RhYmxlIGJhbmlhc18xMTAwW10gPQ0KIHsNCi0JT1AoIDYwMCwg
-
-IDk1NiksDQotCU9QKCA4MDAsIDEwMjApLA0KLQlPUCggOTAwLCAxMTAwKSwN
-
-Ci0JT1AoMTAwMCwgMTE2NCksDQotCU9QKDExMDAsIDExODApLA0KKwlPUCgg
-
-NiwgIDk1NiksDQorCU9QKCA4LCAxMDIwKSwNCisJT1AoIDksIDExMDApLA0K
-
-KwlPUCgxMCwgMTE2NCksDQorCU9QKDExLCAxMTgwKSwNCiAJeyAuZnJlcXVl
-
-bmN5ID0gQ1BVRlJFUV9UQUJMRV9FTkQgfQ0KIH07DQogDQpAQCAtMTMyLDcw
-
-ICsxMzIsNzAgQEANCiAvKiBMb3cgVm9sdGFnZSBJbnRlbCBQZW50aXVtIE0g
-
-cHJvY2Vzc29yIDEuMjBHSHogKEJhbmlhcykgKi8NCiBzdGF0aWMgc3RydWN0
-
-IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlIGJhbmlhc18xMjAwW10gPQ0KIHsN
-
-Ci0JT1AoIDYwMCwgIDk1NiksDQotCU9QKCA4MDAsIDEwMDQpLA0KLQlPUCgg
-
-OTAwLCAxMDIwKSwNCi0JT1AoMTAwMCwgMTEwMCksDQotCU9QKDExMDAsIDEx
-
-NjQpLA0KLQlPUCgxMjAwLCAxMTgwKSwNCisJT1AoIDYsICA5NTYpLA0KKwlP
-
-UCggOCwgMTAwNCksDQorCU9QKCA5LCAxMDIwKSwNCisJT1AoMTAsIDExMDAp
-
-LA0KKwlPUCgxMSwgMTE2NCksDQorCU9QKDEyLCAxMTgwKSwNCiAJeyAuZnJl
-
-cXVlbmN5ID0gQ1BVRlJFUV9UQUJMRV9FTkQgfQ0KIH07DQogDQogLyogSW50
-
-ZWwgUGVudGl1bSBNIHByb2Nlc3NvciAxLjMwR0h6IChCYW5pYXMpICovDQog
-
-c3RhdGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSBiYW5pYXNf
-
-MTMwMFtdID0NCiB7DQotCU9QKCA2MDAsICA5NTYpLA0KLQlPUCggODAwLCAx
-
-MjYwKSwNCi0JT1AoMTAwMCwgMTI5MiksDQotCU9QKDEyMDAsIDEzNTYpLA0K
-
-LQlPUCgxMzAwLCAxMzg4KSwNCisJT1AoIDYsICA5NTYpLA0KKwlPUCggOCwg
-
-MTI2MCksDQorCU9QKDEwLCAxMjkyKSwNCisJT1AoMTIsIDEzNTYpLA0KKwlP
-
-UCgxMywgMTM4OCksDQogCXsgLmZyZXF1ZW5jeSA9IENQVUZSRVFfVEFCTEVf
-
-RU5EIH0NCiB9Ow0KIA0KIC8qIEludGVsIFBlbnRpdW0gTSBwcm9jZXNzb3Ig
-
-MS40MEdIeiAoQmFuaWFzKSAqLw0KIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9m
-
-cmVxdWVuY3lfdGFibGUgYmFuaWFzXzE0MDBbXSA9DQogew0KLQlPUCggNjAw
-
-LCAgOTU2KSwNCi0JT1AoIDgwMCwgMTE4MCksDQotCU9QKDEwMDAsIDEzMDgp
-
-LA0KLQlPUCgxMjAwLCAxNDM2KSwNCi0JT1AoMTQwMCwgMTQ4NCksDQorCU9Q
-
-KCA2LCAgOTU2KSwNCisJT1AoIDgsIDExODApLA0KKwlPUCgxMCwgMTMwOCks
-
-DQorCU9QKDEyLCAxNDM2KSwNCisJT1AoMTQsIDE0ODQpLA0KIAl7IC5mcmVx
-
-dWVuY3kgPSBDUFVGUkVRX1RBQkxFX0VORCB9DQogfTsNCiANCiAvKiBJbnRl
-
-bCBQZW50aXVtIE0gcHJvY2Vzc29yIDEuNTBHSHogKEJhbmlhcykgKi8NCiBz
-
-dGF0aWMgc3RydWN0IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlIGJhbmlhc18x
-
-NTAwW10gPQ0KIHsNCi0JT1AoIDYwMCwgIDk1NiksDQotCU9QKCA4MDAsIDEx
-
-MTYpLA0KLQlPUCgxMDAwLCAxMjI4KSwNCi0JT1AoMTIwMCwgMTM1NiksDQot
-
-CU9QKDE0MDAsIDE0NTIpLA0KLQlPUCgxNTAwLCAxNDg0KSwNCisJT1AoIDYs
-
-ICA5NTYpLA0KKwlPUCggOCwgMTExNiksDQorCU9QKDEwLCAxMjI4KSwNCisJ
-
-T1AoMTIsIDEzNTYpLA0KKwlPUCgxNCwgMTQ1MiksDQorCU9QKDE1LCAxNDg0
-
-KSwNCiAJeyAuZnJlcXVlbmN5ID0gQ1BVRlJFUV9UQUJMRV9FTkQgfQ0KIH07
-
-DQogDQogLyogSW50ZWwgUGVudGl1bSBNIHByb2Nlc3NvciAxLjYwR0h6IChC
-
-YW5pYXMpICovDQogc3RhdGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90
-
-YWJsZSBiYW5pYXNfMTYwMFtdID0NCiB7DQotCU9QKCA2MDAsICA5NTYpLA0K
-
-LQlPUCggODAwLCAxMDM2KSwNCi0JT1AoMTAwMCwgMTE2NCksDQotCU9QKDEy
-
-MDAsIDEyNzYpLA0KLQlPUCgxNDAwLCAxNDIwKSwNCi0JT1AoMTYwMCwgMTQ4
-
-NCksDQorCU9QKCA2LCAgOTU2KSwNCisJT1AoIDgsIDEwMzYpLA0KKwlPUCgx
-
-MCwgMTE2NCksDQorCU9QKDEyLCAxMjc2KSwNCisJT1AoMTQsIDE0MjApLA0K
-
-KwlPUCgxNiwgMTQ4NCksDQogCXsgLmZyZXF1ZW5jeSA9IENQVUZSRVFfVEFC
-
-TEVfRU5EIH0NCiB9Ow0KIA0KIC8qIEludGVsIFBlbnRpdW0gTSBwcm9jZXNz
-
-b3IgMS43MEdIeiAoQmFuaWFzKSAqLw0KIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJl
-
-cV9mcmVxdWVuY3lfdGFibGUgYmFuaWFzXzE3MDBbXSA9DQogew0KLQlPUCgg
-
-NjAwLCAgOTU2KSwNCi0JT1AoIDgwMCwgMTAwNCksDQotCU9QKDEwMDAsIDEx
-
-MTYpLA0KLQlPUCgxMjAwLCAxMjI4KSwNCi0JT1AoMTQwMCwgMTMwOCksDQot
-
-CU9QKDE3MDAsIDE0ODQpLA0KKwlPUCggNiwgIDk1NiksDQorCU9QKCA4LCAx
-
-MDA0KSwNCisJT1AoMTAsIDExMTYpLA0KKwlPUCgxMiwgMTIyOCksDQorCU9Q
-
-KDE0LCAxMzA4KSwNCisJT1AoMTcsIDE0ODQpLA0KIAl7IC5mcmVxdWVuY3kg
-
-PSBDUFVGUkVRX1RBQkxFX0VORCB9DQogfTsNCiAjdW5kZWYgT1ANCkBAIC0y
-
-MDgsNyArMjA4LDcgQEANCiB9DQogI2RlZmluZSBCQU5JQVMobWF4KQlfQkFO
-
-SUFTKCZjcHVfaWRzW0NQVV9CQU5JQVNdLCBtYXgsICNtYXgpDQogDQotLyog
-
-Q1BVIG1vZGVscywgdGhlaXIgb3BlcmF0aW5nIGZyZXF1ZW5jeSByYW5nZSwg
-
-YW5kIGZyZXEvdm9sdGFnZQ0KKy8qIENQVSBtb2RlbHMsIHRoZWlyIG9wZXJh
-
-dGluZyBmcmVxdWVuY3kgcmFuZ2UsIGFuZCBtdWx0aXBsaWVyL3ZvbHRhZ2UN
-
-CiAgICBvcGVyYXRpbmcgcG9pbnRzICovDQogc3RhdGljIHN0cnVjdCBjcHVf
-
-bW9kZWwgbW9kZWxzW10gPQ0KIHsNCkBAIC0yOTAsMTMgKzI5MCwxNCBAQA0K
-
-IAkvKg0KIAkgKiBFeHRyYWN0IGNsb2NrIGluIGtIeiBmcm9tIFBFUkZfQ1RM
-
-IHZhbHVlDQogCSAqIGZvciBjZW50cmlubywgYXMgc29tZSBEU0RUcyBhcmUg
-
-YnVnZ3kuDQorCSAqIFdlIGFzc3VtZSBhIDEwME1IeiBGU0IuDQogCSAqIElk
-
-ZWFsbHksIHRoaXMgY2FuIGJlIGRvbmUgdXNpbmcgdGhlIGFjcGlfZGF0YSBz
-
-dHJ1Y3R1cmUuDQogCSAqLw0KIAlpZiAoKGNlbnRyaW5vX2NwdVtjcHVdID09
-
-ICZjcHVfaWRzW0NQVV9CQU5JQVNdKSB8fA0KIAkgICAgKGNlbnRyaW5vX2Nw
-
-dVtjcHVdID09ICZjcHVfaWRzW0NQVV9ET1RIQU5fQTFdKSB8fA0KIAkgICAg
-
-KGNlbnRyaW5vX2NwdVtjcHVdID09ICZjcHVfaWRzW0NQVV9ET1RIQU5fQjBd
-
-KSkgew0KIAkJbXNyID0gKG1zciA+PiA4KSAmIDB4ZmY7DQotCQlyZXR1cm4g
-
-bXNyICogMTAwMDAwOw0KKwkJcmV0dXJuIG1zciAqIDEwMCAqIDEwMDA7DQog
-
-CX0NCiANCiAJaWYgKCghY2VudHJpbm9fbW9kZWxbY3B1XSkgfHwgKCFjZW50
-
-cmlub19tb2RlbFtjcHVdLT5vcF9wb2ludHMpKQ0KQEAgLTM1Miw3ICszNTMs
-
-NyBAQA0KICAqIGNlbnRyaW5vX2NwdV9pbml0X2FjcGkgLSByZWdpc3RlciB3
-
-aXRoIEFDUEkgUC1TdGF0ZXMgbGlicmFyeQ0KICAqDQogICogUmVnaXN0ZXIg
-
-d2l0aCB0aGUgQUNQSSBQLVN0YXRlcyBsaWJyYXJ5IChwYXJ0IG9mIGRyaXZl
-
-cnMvYWNwaS9wcm9jZXNzb3IuYykNCi0gKiBpbiBvcmRlciB0byBkZXRlcm1p
-
-bmUgY29ycmVjdCBmcmVxdWVuY3kgYW5kIHZvbHRhZ2UgcGFpcmluZ3MgYnkg
-
-cmVhZGluZw0KKyAqIGluIG9yZGVyIHRvIGRldGVybWluZSBjb3JyZWN0IG11
-
-bHRpcGxpZXIgYW5kIHZvbHRhZ2UgcGFpcmluZ3MgYnkgcmVhZGluZw0KICAq
-
-IHRoZSBfUFNTIG9mIHRoZSBBQ1BJIERTRFQgb3IgU1NEVCB0YWJsZXMuDQog
-
-ICovDQogc3RhdGljIGludCBjZW50cmlub19jcHVfaW5pdF9hY3BpKHN0cnVj
-
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0K
----559023410-758783491-1120737079=:26404
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Pedro Ramalhais found another interesting thing in:
+ftp://download.intel.com/design/Pentium4/manuals/25366816.pdf
 
----559023410-758783491-1120737079=:26404--
+that's the IA32_CLOCK_MODULATION (still called
+MSR_IA32_THERM_CONTROL in include/asm-i386/msr.h, and I think this would
+need a fix) register, that let set a reduced CPU duty cycle. So just today I
+coded something to use it.
 
+Just add to speedstep-centrino.c:
+[yes I know, this isn't the Right Coding Style, but it's just to give an
+idea of the whole thing]
+
+static int sccm_level = 0;
+module_param(sccm_level, uint, 0644);
+MODULE_PARM_DESC(sccm_level, "Software Controlled Clock Modulation level: 0
+	for disabling, 7 for 12.5\% duty cycle");
+
+in the first part, right after the third #define
+
+and this function after centrino_target():
+
+static int centrino_target_sccm ()
+{
+        unsigned int msr, h;
+        
+        rdmsr(MSR_IA32_THERM_CONTROL, msr, h);
+        msr &= (0<<1); msr &= (0<<2); msr &= (0<<3);
+
+        switch (sccm_level) {
+		case 0:
+			msr &= (0<<4);
+                case 1:
+                        msr |= (1<<4); msr |= (1<<3); msr |= (1<<2);
+			msr |= (1<<1); break;
+		case 2:
+                        msr |= (i<<4); msr |= (1<<3); msr |= (1<<2); break;
+                case 3:
+                        msr |= (1<<4); msr |= (1<<3); msr |= (1<<1); break;
+                case 4:
+                        msr |= (1<<4); msr |= (1<<3); break;
+                case 5:
+                        msr |= (1<<4); msr |= (1<<2); msr |= (1<<1); break;
+                case 6:
+                        msr |= (1<<4); msr |= (1<<2); break;
+                case 7:
+                        msr |= (1<<4); msr |= (1<<1); break;
+        }
+
+        wrmsr (MSR_IA32_THERM_CONTROL, msr, h);
+}
+
+Then you'll just have to insmod speedstep-centrino.ko sccm_level=x, where x
+can be 0 to disable software cycle control modulation, 1 to enable a
+reduced duty cycle of 87.5%, 7 to enable a duty cycle of 12.5% and so on.
+
+Enabling, say, a duty cycle of 12.5% means that the CPU chip will be driven
+by clock just one time every eight, thus reducing power consumption and
+temperature (and it speeds down dramatically the CPU, too =).
+
+I tested it so far on my Pentium M Dothan 715 and on a Dothan 725.
+
+What do you think, could this be useful? I could provide a patch or a
+stand-alone module. Should I write an interface to sysfs?
+
+
+--
+ciao
+st3
