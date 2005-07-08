@@ -1,42 +1,49 @@
-From: st3@riseup.net
+From: Nikolay Pelov <Nikolay.Pelov@cs.kuleuven.ac.be>
 Subject: Re: speedstep-centrino on dothan
-Date: Fri, 8 Jul 2005 10:58:40 +0200
-Message-ID: <20050708105840.784f6d53@horst.morte.male>
-References: <20050706112202.33d63d4d@horst.morte.male>
-	<42CC37FD.5040708@tmr.com>
-	<20050707235928.71016f61@horst.morte.male>
-	<20050708051050.GA3201@isilmar.linta.de>
+Date: Fri, 8 Jul 2005 12:59:18 +0200 (MEST)
+Message-ID: <Pine.GSO.4.10.10507081247090.7617-100000@bollie.cs.kuleuven.ac.be>
+References: <20050707235928.71016f61@horst.morte.male>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050708051050.GA3201@isilmar.linta.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262453AbVGHLAc@vger.kernel.org>
+In-Reply-To: <20050707235928.71016f61@horst.morte.male>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: cpufreq@lists.linux.org.uk, Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: st3@riseup.net
+Cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-On Fri, 8 Jul 2005 07:10:50 +0200
-Dominik Brodowski <linux@dominikbrodowski.net> wrote:
+On Thu, 7 Jul 2005 st3@riseup.net wrote:
 
-> On Thu, Jul 07, 2005 at 11:59:28PM +0200, st3@riseup.net wrote:
-> > read from ACPI tables, while still keeping them available.
 > 
-> You're only keeping some of them available, as you overwrite one such
-> setting. Alternatively you can increase p.state_count by one early enough.
+> int main() {
+> unsigned int index, frequency, voltage
+> 
+> index = (((frequency)/100) << 8) | ((voltage - 700) / 16);
+> printf ("%u\n", index);
+> }
+> 
+> frequency is expressed in MHz, voltage in mV, index is the value for
+> centrino_model[cpu]->op_points[y].index 
 
-Yes, but I was just overwriting the latest ones, that are never used =).
-Anyway, your solution is theoretically better.
+Few days ago I discussed on the cpufreq mailing list that the above formula
+is not the correct way to compute the index. Instead of frequency, one
+should use a multiplier, i.e.:
 
+  index = (multiplier << 8) | ((voltage - 700) / 16);
 
---
-ciao
-st3
+and the multiplier is computed as multiplier = frequency/fsb_speed.
+On older systems fsb_speed = 100 MHz and that's why the original formula
+was working. But for the Sonoma (Centrino 2) Pentium M processors
+fsb_speed = 133 MHz. 
+
+To give an example, take a CPU speed of 800MHz and a front side bus of
+133MHz. Using the original formula we will use the value
+
+  frequency/100 = 800/100 = 8
+
+which is wrong. The correct value is:
+
+  multiplier = frequency/fsb_speed = 800/133 = 6.
+
+Nikolay
