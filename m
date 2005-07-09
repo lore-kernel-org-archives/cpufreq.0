@@ -1,12 +1,12 @@
-From: David Belanger <davidbelanger@gmail.com>
-Subject: Overclocked Dothan
-Date: Sat, 9 Jul 2005 01:01:10 -0400
-Message-ID: <772ea30305070822016720a6a6@mail.gmail.com>
-Reply-To: David Belanger <davidbelanger@gmail.com>
+From: John Belmonte <john@neggie.net>
+Subject: Re: powernow-k8 and stuck change-pending bit
+Date: Sat, 09 Jul 2005 10:29:21 -0400
+Message-ID: <42CFDF41.3040504@neggie.net>
+References: <84EA05E2CA77634C82730353CBE3A843028F4CC5@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A843028F4CC5@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,34 +16,45 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+To: "Devriendt, Paul" <paul.devriendt@amd.com>
+Cc: cpufreq@lists.linux.org.uk
 
-Hello guys. First of all, I hope I am posting this question in the
-right mailling list, and sorry if I'm not, I didn't find another one.
+Devriendt, Paul wrote:
+>>symptoms:
+>>
+>>    After working fine for a while (several minutes to several hours),
+>>cpufreq seems to get into a bad state where:
+>>
+>>     * change pending bit set / stuck kernel messages appear
+>>
+>>     * reloading powernow-k8 module fails, with "change 
+>>pending bit stuck"
+> 
+[...]
+> The most likely scenario here is the VRM was unable to change
+> voltage, and that means flaky hardware as it has previously been
+> able to successfully do so. The reason I pick on the VRM and not
+> some sort of issue with the HyperTransport fabric is that it is
+> unlikely anything would still be alive if there was some sort of 
+> problem coming back from the LDT_STOP.
+> 
+> Assuming the VRM continues to supply the current voltage within 
+> spec, the system will stay up indefinitely, at the current
+> voltage and frequency.
+> 
+> The best path to follow would be to investigate warrantee replacement
+> of the board.
 
-So here goes my questions:
+Thanks for the info Paul.  I've had the motherboard replaced with an
+identical model.  This new board seems to have the same problem, except
+that when a transition finally fails, Linux hangs bad enough to require
+a hard reset of the system.
 
-Could anyone explain to me the different components of cpu freq
-throttling and all of this. I mean, maybe it's because I'm a newbie.
-But still, I did my research and couldn't find anything explaining the
-basics when it comes to all of that. What should I select when I build
-my kernel ? What are the differences between the different choices?
-(i'm talking about kernel-configuration now, not how throttling work)
-(enhanced speedstep, pst, vids, im all confused)
+With two boards having this problem, it suggests either a bad
+motherboard design or some bad interaction between Linux and the
+motherboard.  (It seems strange that the manufacturer wouldn't have seen
+this problem under Windows.)  Much less likely is that I have a bad CPU.
 
-My laptop has a Pentium M 1.6Ghz 400FSB (Dothan B0?) but I am running
-it with 533FSB. But now I'm all confused... what are the differences
-when I do that? I mean, the built-in VIDs are going to be wrong? (and
-what are those VIDs btw, why 4 of em'?). And what if I want to
-undervolt my overclocked cpu? What should I do in order to do that?
-Modifying speedstep-centrino.c? (saw that on a forum)
-
-Hmmm, I understand that I am asking a lot of questions, and I am sorry
-for that, but I couldn't find my answers anywhere else. Please answer
-my questions in a not too-technical-way if you can. And also, I'm
-sorry if my English seems bad, i'm not a native English so please
-forgive me.
-
-Thanks a lot, David.
+--John
