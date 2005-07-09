@@ -1,49 +1,49 @@
-From: Nikolay Pelov <Nikolay.Pelov@cs.kuleuven.ac.be>
-Subject: Re: speedstep-centrino on dothan
-Date: Fri, 8 Jul 2005 12:59:18 +0200 (MEST)
-Message-ID: <Pine.GSO.4.10.10507081247090.7617-100000@bollie.cs.kuleuven.ac.be>
-References: <20050707235928.71016f61@horst.morte.male>
+From: David Belanger <davidbelanger@gmail.com>
+Subject: Overclocked Dothan
+Date: Sat, 9 Jul 2005 01:01:10 -0400
+Message-ID: <772ea30305070822016720a6a6@mail.gmail.com>
+Reply-To: David Belanger <davidbelanger@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262453AbVGHLAc@vger.kernel.org>
-In-Reply-To: <20050707235928.71016f61@horst.morte.male>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: st3@riseup.net
-Cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
 
-On Thu, 7 Jul 2005 st3@riseup.net wrote:
+Hello guys. First of all, I hope I am posting this question in the
+right mailling list, and sorry if I'm not, I didn't find another one.
 
-> 
-> int main() {
-> unsigned int index, frequency, voltage
-> 
-> index = (((frequency)/100) << 8) | ((voltage - 700) / 16);
-> printf ("%u\n", index);
-> }
-> 
-> frequency is expressed in MHz, voltage in mV, index is the value for
-> centrino_model[cpu]->op_points[y].index 
+So here goes my questions:
 
-Few days ago I discussed on the cpufreq mailing list that the above formula
-is not the correct way to compute the index. Instead of frequency, one
-should use a multiplier, i.e.:
+Could anyone explain to me the different components of cpu freq
+throttling and all of this. I mean, maybe it's because I'm a newbie.
+But still, I did my research and couldn't find anything explaining the
+basics when it comes to all of that. What should I select when I build
+my kernel ? What are the differences between the different choices?
+(i'm talking about kernel-configuration now, not how throttling work)
+(enhanced speedstep, pst, vids, im all confused)
 
-  index = (multiplier << 8) | ((voltage - 700) / 16);
+My laptop has a Pentium M 1.6Ghz 400FSB (Dothan B0?) but I am running
+it with 533FSB. But now I'm all confused... what are the differences
+when I do that? I mean, the built-in VIDs are going to be wrong? (and
+what are those VIDs btw, why 4 of em'?). And what if I want to
+undervolt my overclocked cpu? What should I do in order to do that?
+Modifying speedstep-centrino.c? (saw that on a forum)
 
-and the multiplier is computed as multiplier = frequency/fsb_speed.
-On older systems fsb_speed = 100 MHz and that's why the original formula
-was working. But for the Sonoma (Centrino 2) Pentium M processors
-fsb_speed = 133 MHz. 
+Hmmm, I understand that I am asking a lot of questions, and I am sorry
+for that, but I couldn't find my answers anywhere else. Please answer
+my questions in a not too-technical-way if you can. And also, I'm
+sorry if my English seems bad, i'm not a native English so please
+forgive me.
 
-To give an example, take a CPU speed of 800MHz and a front side bus of
-133MHz. Using the original formula we will use the value
-
-  frequency/100 = 800/100 = 8
-
-which is wrong. The correct value is:
-
-  multiplier = frequency/fsb_speed = 800/133 = 6.
-
-Nikolay
+Thanks a lot, David.
