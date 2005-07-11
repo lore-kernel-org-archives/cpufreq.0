@@ -1,9 +1,9 @@
 From: beppuz@freemail.it
 Subject: Bios PST tables no more recognized after 2.6.8.1
-Date: 11 Jul 2005 06:02:27 -0000
-Message-ID: <20050711060227.10762.qmail@mail.supereva.it>
+Date: 11 Jul 2005 06:05:05 -0000
+Message-ID: <20050711060505.21067.qmail@mail.supereva.it>
 Reply-To: beppuz@freemail.it
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,11 +13,11 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "cpufreq@lists.linux.org.uk"@supereva.it, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
 
 Hi all,
