@@ -1,12 +1,13 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
 Subject: Re: CPUFreq Problems After Kernel Upgrade
-Date: Fri, 15 Jul 2005 18:44:08 +0200
-Message-ID: <20050715164408.GB3240@isilmar.linta.de>
-References: <Pine.GSO.4.30.0507131516320.25319-100000@rigel.oac.uci.edu>
+Date: Fri, 15 Jul 2005 20:21:27 +0200
+Message-ID: <20050715182127.GA6536@isilmar.linta.de>
+References: <20050715164408.GB3240@isilmar.linta.de>
+	<Pine.GSO.4.30.0507151115040.10232-100000@rigel.oac.uci.edu>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.30.0507131516320.25319-100000@rigel.oac.uci.edu>
+In-Reply-To: <Pine.GSO.4.30.0507151115040.10232-100000@rigel.oac.uci.edu>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -24,10 +25,19 @@ Cc: cpufreq@lists.linux.org.uk
 
 Hi,
 
-Which cpufreq driver are you using?
+On Fri, Jul 15, 2005 at 11:19:32AM -0700, Vasanth Venkatachalam wrote:
+> Actually I just solved the problem. I noticed that when I unplugged the
+> computer, the /proc/cpuinfo display would freeze and when I plugged it
+> back in it would show the lowest frequency setting. This led me to suspect
+> that the ACPI daemon might be changing the clock frequency on its own. So
+> I disabled ACPI and recompiled the kernel. Sure enough, I'm now able to
+> change the clock frequency and see the changes in /proc/cpuinfo.
+> 
+> So it looks like some parts of ACPI actually interfere with the cpufreq
+> userspace governor.
 
-On Wed, Jul 13, 2005 at 03:37:22PM -0700, Vasanth Venkatachalam wrote:
-> Can someone help with this? I'm guessing that the OS is responsible for
-> this, but I am trying to find the piece of code that is the culprit.
+I'd suspect it was an userspace tool, then. No need to disable ACPI in the
+kernel, but only disable the userspace tool, I suspect.
 
+Thanks,
 	Dominik
