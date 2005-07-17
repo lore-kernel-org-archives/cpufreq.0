@@ -1,11 +1,10 @@
-From: Vasanth Venkatachalam <vvenkata@es.nacs.uci.edu>
-Subject: Re: CPUFreq Problems After Kernel Upgrade
-Date: Fri, 15 Jul 2005 11:19:32 -0700 (PDT)
-Message-ID: <Pine.GSO.4.30.0507151115040.10232-100000@rigel.oac.uci.edu>
-References: <20050715164408.GB3240@isilmar.linta.de>
+From: Luca <kronos@kronoz.cjb.net>
+Subject: [PATCH] Fix sampling rate in cpufreq_conservative
+Date: Sun, 17 Jul 2005 16:05:39 +0200
+Message-ID: <20050717140539.GA2742@dreamland.darkstar.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050715164408.GB3240@isilmar.linta.de>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,43 +14,78 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+
 
 Hi,
+I was fiddling with cpufreq_conservative (2.6.12, but I see that .13-rc3 is
+still the same) and noticed that sampling rate is way too high. The governor
+takes ages (i.e. tens of seconds) to raise the frequency, making it quite
+useless. 
 
-Actually I just solved the problem. I noticed that when I unplugged the
-computer, the /proc/cpuinfo display would freeze and when I plugged it
-back in it would show the lowest frequency setting. This led me to suspect
-that the ACPI daemon might be changing the clock frequency on its own. So
-I disabled ACPI and recompiled the kernel. Sure enough, I'm now able to
-change the clock frequency and see the changes in /proc/cpuinfo.
+From /sys/devices/blabla/conservative:
+down_threshold
+20
+freq_step
+5
+ignore_nice
+0
+sampling_down_factor
+5
+sampling_rate
+19900000
+sampling_rate_max
+1360065408
+sampling_rate_min
+9950000
+up_threshold
+80
 
-So it looks like some parts of ACPI actually interfere with the cpufreq
-userspace governor.
+For reference this is ondemand:
+ignore_nice
+0
+sampling_down_factor
+1
+sampling_rate
+199000
+sampling_rate_max
+99500000
+sampling_rate_min
+99500
+up_threshold
+80
 
-Vasanth
+In cpufreq_conservative.c you can read the following comment:
 
-*********
+ * The polling frequency of this governor depends on the capability of
+ * the processor. Default polling frequency is 1000 times the transition
+ * latency of the processor. The governor will work on any processor with
+   
+but the code doesn't agree:
 
-Vasanth Venkatachalam                        Office: CS/E 137
-PhD Candidate				     Tel: None
-School of Information and Computer Science   Email: vvenkata@uci.edu
-University of California
-Irvine, CA 92697-3425
+#define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER    (100000)
 
-On Fri, 15 Jul 2005, Dominik Brodowski wrote:
+The following patch lower the multiplier to 1000, making the consevative
+governor as responsive as ondemand (which is using the same multiplier).
 
-> Hi,
->
-> Which cpufreq driver are you using?
->
-> On Wed, Jul 13, 2005 at 03:37:22PM -0700, Vasanth Venkatachalam wrote:
-> > Can someone help with this? I'm guessing that the OS is responsible for
-> > this, but I am trying to find the piece of code that is the culprit.
->
-> 	Dominik
->
+Signed-Off-By: Luca Tettamanti <kronos@kronoz.cjb.net>
+
+--- a/drivers/cpufreq/cpufreq_conservative.c	2005-07-17 13:46:27.000000000 +0200
++++ b/drivers/cpufreq/cpufreq_conservative.c	2005-07-17 13:46:40.000000000 +0200
+@@ -55,7 +55,7 @@
+ static unsigned int 				def_sampling_rate;
+ #define MIN_SAMPLING_RATE			(def_sampling_rate / 2)
+ #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
+-#define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(100000)
++#define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
+ #define DEF_SAMPLING_DOWN_FACTOR		(5)
+ #define TRANSITION_LATENCY_LIMIT		(10 * 1000)
+
+
+Luca
+-- 
+Home: http://kronoz.cjb.net
+42
