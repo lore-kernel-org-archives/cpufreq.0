@@ -1,12 +1,10 @@
-From: Nathan Myers <ncm@cantrip.org>
-Subject: Re: Application for decoding ACPI tables under Linux
-Date: Mon, 1 Aug 2005 12:04:07 -0700
-Message-ID: <20050801190407.GB10941@cantrip.org>
-References: <84EA05E2CA77634C82730353CBE3A84301CFC307@SAUSEXMB1.amd.com>
+From: Thomas Renninger <mail@renninger.de>
+Subject: ondemand governor and passive cooling broken?
+Date: Wed, 03 Aug 2005 20:17:07 +0200
+Message-ID: <42F10A23.6020107@renninger.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFC307@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,19 +16,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@lists.linux.org.uk
 
-On Mon, Aug 01, 2005 at 01:39:42PM -0500, Langsdorf, Mark wrote:
-> Is there a Linux tool for decoding ACPI tables?   ...
-> 
-> -Mark Langsdorf
-> AMD, Inc.
+Machine is a Thinkpad with a Pentium M ~1700MHz running with the speedstep-centrino module.
 
-Yes, but not for you.  
+Something seems to be wrong with the cooling system and
+the CPU temp goes up from 50 C to 90 C in about a minute.
 
-Intel posts a tool called "acpica" for download.  It's a nuisance
-getting it to build; don't be squeamish about editing yacc output.
+With the userspace governor the machine stays at 1200 MHz on full load
+and bounces around 80C (passive trip point), that's how it should be.
 
-Nathan Myers
-ncm@cantrip.org
+However, passive cooling seems to be broken with current kernels
+and ondemand governor?
+Machine stays at 1700 MHz until critical shutdown (94 C).
+
+Is passive cooling supposed to work with the ondemand governor?
+If yes, can someone confirm seeing it working with old kernels and
+the speedstep-centrino module?
+
+Thanks,
+
+    Thomas
