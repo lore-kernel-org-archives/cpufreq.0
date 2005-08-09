@@ -1,46 +1,66 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: cpufreq suspend patch.
-Date: Tue, 9 Aug 2005 12:25:56 -0400
-Message-ID: <20050809162556.GK5844@redhat.com>
-References: <20050808224401.GA3277@redhat.com>
-	<1123576360.30257.153.camel@gaston>
+From: Patrick Mochel <mochel@digitalimplant.org>
+Subject: Re: PowerOP 0/3: System power operating point management
+	API
+Date: Tue, 9 Aug 2005 11:12:45 -0700 (PDT)
+Message-ID: <Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
+References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1123576360.30257.153.camel@gaston>
+Content-Type: multipart/mixed; boundary="===============76388639817161841=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: cpufreq@lists.linux.org.uk, dwmw2@redhat.com
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
 
-On Tue, Aug 09, 2005 at 10:32:39AM +0200, Ben Herrenschmidt wrote:
- > On Mon, 2005-08-08 at 18:44 -0400, Dave Jones wrote:
- > > Ben,
- > >  Dave Woodhouse added this to the Fedora kernel a while back
- > > with the helpful comment "Fix ppc32 sleep/cpufreq harder"
- > > I believe this came from you originally.
- > > 
- > > Can you comment on this ? 
- > > 
- > > It seems to make sense to me,  but if you have a newer patch
- > > I'm all ears..
- > 
- > Can you compare with what's currently upstream ? (I'm still travelling
- > around so it's more difficult for me).
+--===============76388639817161841==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Gah, I've been bitten by the 'in Fedora cvs, but not applied to
-spec file' thing again. A variant of this is already upstream.
 
-Thanks.
+On Mon, 8 Aug 2005, Todd Poynor wrote:
 
-		Dave
+> PowerOP is a system power parameter management API submitted for
+> discussion.  PowerOP writes and reads power "operating points",
+> comprised of arbitrary integer-valued values, called power parameters,
+> that correspond to registers, clocks, dividers, voltage regulators,
+> etc. that may be modified to set a basic power/performance point for the
+> system.  The core basically passes an array of integer-valued power
+> parameters (with very little additional structure imposed by the core)
+> to a platform-specific backend that interprets those values and makes
+> the requested adjustments.  PowerOP is intended to leave all power
+> policy decisions to higher layers.  An optional sysfs representation of
+> power parameters is also available, primarily for diagnostic use.
+
+What do those higher layers look like? Do you have a userspace component
+that uses this interface?
+
+Who is using this code? Are there vendors that are already shipping
+systems with this enabled?
+
+Is this part of the DPM project? If so, what other components are left in
+DPM?
+
+What are your plans to integrate this more with the cpufreq code?
+
+Thanks,
+
+
+	Pat
+
+
+--===============76388639817161841==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============76388639817161841==--
