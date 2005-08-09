@@ -1,9 +1,9 @@
 From: Todd Poynor <tpoynor@mvista.com>
-Subject: PowerOP 3/3: Intel Centrino cpufreq integration
-Date: Mon, 8 Aug 2005 19:57:27 -0700
-Message-ID: <20050809025727.GD25064@slurryseal.ddns.mvista.com>
+Subject: PowerOP 0/3: System power operating point management API
+Date: Mon, 8 Aug 2005 20:00:00 -0700
+Message-ID: <20050809030000.GA25112@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,87 +14,53 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-A minimal example of modifying cpufreq to use PowerOP for reading and
-writing power parameters on Intel Centrino platforms.  It would be
-possible to move voltage table lookups to the PowerOP layer.
+[apologies for version with obsolete list address sent previously]
 
+PowerOP is a system power parameter management API submitted for
+discussion.  PowerOP writes and reads power "operating points",
+comprised of arbitrary integer-valued values, called power parameters,
+that correspond to registers, clocks, dividers, voltage regulators,
+etc. that may be modified to set a basic power/performance point for the
+system.  The core basically passes an array of integer-valued power
+parameters (with very little additional structure imposed by the core)
+to a platform-specific backend that interprets those values and makes
+the requested adjustments.  PowerOP is intended to leave all power
+policy decisions to higher layers.  An optional sysfs representation of
+power parameters is also available, primarily for diagnostic use.
 
-Index: linux-2.6.12/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-===================================================================
---- linux-2.6.12.orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-08-04 19:49:29.000000000 +0000
-+++ linux-2.6.12/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-08-05 01:21:45.000000000 +0000
-@@ -24,6 +24,7 @@
- #include <linux/config.h>
- #include <linux/delay.h>
- #include <linux/compiler.h>
-+#include <linux/powerop.h>
- 
- #ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
- #include <linux/acpi.h>
-@@ -322,29 +323,21 @@
- /* Return the current CPU frequency in kHz */
- static unsigned int get_cur_freq(unsigned int cpu)
- {
--	unsigned l, h;
--	unsigned clock_freq;
-+	struct powerop_point point;
-+	unsigned clock_freq = 0;
- 	cpumask_t saved_mask;
-	
- 	saved_mask = current->cpus_allowed;
- 	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- 	if (smp_processor_id() != cpu)
- 		return 0;
- 
--	rdmsr(MSR_IA32_PERF_STATUS, l, h);
--	clock_freq = extract_clock(l, cpu, 0);
-+	if (powerop_get_point(&point))
-+		goto out;
- 
--	if (unlikely(clock_freq == 0)) {
--		/*
--		 * On some CPUs, we can see transient MSR values (which are
--		 * not present in _PSS), while CPU is doing some automatic
--		 * P-state transition (like TM2). Get the last freq set 
--		 * in PERF_CTL.
--		 */
--		rdmsr(MSR_IA32_PERF_CTL, l, h);
--		clock_freq = extract_clock(l, cpu, 1);
--	}
-+	clock_freq = point.param[POWEROP_CPU + cpu] * 1000;
- 
-+out:
- 	set_cpus_allowed(current, saved_mask);
- 	return clock_freq;
- }
-@@ -610,6 +603,7 @@
- 	unsigned int	msr, oldmsr, h, cpu = policy->cpu;
- 	struct cpufreq_freqs	freqs;
- 	cpumask_t		saved_mask;
-+	struct powerop_point	point;
- 	int			retval;
- 
- 	if (centrino_model[cpu] == NULL)
-@@ -650,14 +644,9 @@
- 
- 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 
--	/* all but 16 LSB are "reserved", so treat them with
--	   care */
--	oldmsr &= ~0xffff;
--	msr &= 0xffff;
--	oldmsr |= msr;
--
--	wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
--
-+	point.param[POWEROP_CPU + cpu] = ((msr >> 8) & 0xff) * 100;
-+	point.param[POWEROP_V + cpu] = ((msr & 0xff) * 16) + 700;
-+	powerop_set_point(&point);
- 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 
- 	retval = 0;
+PowerOP can be thought of as a layer below cpufreq that actually
+accesses the hardware to make cpu frequency, voltage, core bus, and
+perhaps other modifications to set a power point, leaving cpufreq to
+manage the interfaces based around the "cpu frequency" abstraction, the
+policies and governors that select the frequency, its notifiers, and so
+forth.  An example hooking up support for one cpufreq platform to
+PowerOP is in patch 3/3.
+
+Depending on the ability of the hardware to make software-controlled
+power/performance adjustments, this may be useful to select custom
+voltages, bus speeds, etc. in desktop/server systems.  Various embedded
+systems have several parameters that can be set.  For example, an XScale
+PXA27x could be considered to have six basic power parameters (mainly
+cpu run mode and memory and bus dividers) that for the most part should
+be set in tandem to known good sets of values as validated by the
+silicon vendor, plus other parameters possible for disabling PLLs during
+low-speed execution, and so forth.  PowerOP is aimed at supporting this
+kind of system, where the cpu frequency abstraction specifies only part
+of the operating point that may be managed from software.  It also
+pushes the hardware-level power parameter management down to a level
+that can be shared with other power management policy frameworks, in use
+in some embedded systems, that wish to deal with entire operating points
+as the basic unit of system power management..
+
+There are many ways to tackle those issues, of course, and a new API
+layer is arguably rather heavyweight.  This is one suggested way that
+tries to minimize disturbing existing power management code.  Comments
+very much appreciated.
+
+Patch 2/3 is a desktop-oriented example of PowerOP; embedded examples
+will follow soon.
