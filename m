@@ -1,14 +1,12 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: cpufreq suspend patch.
-Date: Tue, 09 Aug 2005 10:54:50 +0200
-Message-ID: <1123577691.30257.177.camel@gaston>
-References: <20050808224401.GA3277@redhat.com>
-	<1123576360.30257.153.camel@gaston>
-	<1123577618.4512.21.camel@baythorne.infradead.org>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [linux-pm] PowerOP 1/3: PowerOP core
+Date: Tue, 09 Aug 2005 09:07:33 -0700
+Message-ID: <42F8D4C5.2090800@am.sony.com>
+References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1123577618.4512.21.camel@baythorne.infradead.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,85 +16,52 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: cpufreq@lists.linux.org.uk, Dave Jones <davej@redhat.com>
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 
-On Tue, 2005-08-09 at 09:53 +0100, David Woodhouse wrote:
-> On Tue, 2005-08-09 at 10:32 +0200, Benjamin Herrenschmidt wrote:
-> > Can you compare with what's currently upstream ? (I'm still travelling
-> > around so it's more difficult for me).
-> 
-> It's very similar to what's upstream, but not identical. Your original
-> patch has some extra changes in cpufreq_resume()...
-
-Ah yes, I just reworked the if () statements to drift less to the right
-iirc, no functional changes.
-
-Ben.
-
-
->  static int cpufreq_resume(struct sys_device * sysdev)
->  {
->         int cpu = sysdev->id;
->         unsigned int ret = 0;
-> +       unsigned int cur_freq = 0;
->         struct cpufreq_policy *cpu_policy;
->  
->         dprintk("resuming cpu %u\n", cpu);
-> @@ -908,32 +988,34 @@
->                 }
->         }
->  
-> -       if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-> -               unsigned int cur_freq = 0;
-> -
-> -               if (cpufreq_driver->get)
-> -                       cur_freq = cpufreq_driver->get(cpu_policy->cpu);
-> -
-> -               if (!cur_freq || !cpu_policy->cur) {
-> -                       printk(KERN_ERR "cpufreq: resume failed to assert current frequency is what timing core thinks it is.\n");
-> -                       goto out;
-> -               }
-> -
-> -               if (unlikely(cur_freq != cpu_policy->cur)) {
-> -                       struct cpufreq_freqs freqs;
-> +       if (cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)
-> +               goto out;
->  
-> -                       printk(KERN_WARNING "Warning: CPU frequency is %u, "
-> -                              "cpufreq assumed %u kHz.\n", cur_freq, cpu_policy->cur);
-> +       if (cpufreq_driver->get)
-> +               cur_freq = cpufreq_driver->get(cpu_policy->cpu);
->  
-> -                       freqs.cpu = cpu;
-> -                       freqs.old = cpu_policy->cur;
-> -                       freqs.new = cur_freq;
-> +       if (!cur_freq || !cpu_policy->cur) {
-> +               printk(KERN_ERR "cpufreq: resume failed to assert current "
-> +                      "frequency is what timing core thinks it is.\n");
-> +               goto out;
-> +       }
->  
-> -                       notifier_call_chain(&cpufreq_transition_notifier_list, CPUFREQ_RESUMECHANGE, &freqs);
-> -                       adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
-> +       if (unlikely(cur_freq != cpu_policy->cur)) {
-> +               struct cpufreq_freqs freqs;
->  
-> -                       cpu_policy->cur = cur_freq;
-> -               }
-> +               if (!(cpufreq_driver->flags & CPUFREQ_PM_NO_WARN))
-> +                       printk(KERN_DEBUG "Warning: CPU frequency is %u, "
-> +                              "cpufreq assumed %u kHz.\n",
-> +                              cur_freq, cpu_policy->cur);
+Todd Poynor wrote:
+...
+> ===================================================================
+> --- linux-2.6.12.orig/include/linux/powerop.h	1970-01-01
+> 00:00:00.000000000 +0000
+> +++ linux-2.6.12/include/linux/powerop.h	2005-08-03
+> 01:10:55.000000000 +0000
+> @@ -0,0 +1,36 @@
+> +/*
+> + * PowerOP core definitions
+> + *
+> + * Author: Todd Poynor <tpoynor@mvista.com>
+> + *
+> + * 2005 (c) MontaVista Software, Inc. This file is licensed under
+> + * the terms of the GNU General Public License version 2. This program
+> + * is licensed "as is" without any warranty of any kind, whether
+> express
+> + * or implied.
+> + */
 > +
-> +               freqs.cpu = cpu;
-> +               freqs.old = cpu_policy->cur;
-> +               freqs.new = cur_freq;
+> +#ifndef __POWEROP_H__
+> +#define __POWEROP_H__
 > +
-> +               notifier_call_chain(&cpufreq_transition_notifier_list,
-> +                                   CPUFREQ_RESUMECHANGE, &freqs);
-> +               adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
-> +               cpu_policy->cur = cur_freq;
->         }
+> +#include <linux/kobject.h>
+> +#include <asm/powerop.h>
+> +
+> +struct powerop_point {
+> +	int param[POWEROP_DRIVER_MAX_PARAMS];
+> +};
+
+I'm wondering if anything could be gained by having the whole 
+struct powerop_point defined in asm/powerop.h, and treat it as an 
+opaque structure at this level.  That way, things other than just 
+ints could be passed between the policy manager and the backend, 
+although I guess that breaks the beauty of the simplicity and would 
+complicate the sys-fs interface, etc.  I'm interested to hear your 
+comments.
+
+Another point is that a policy manager would need to poll the system 
+and/or get events and then act.  Your powerop work here only provides 
+a (one way) piece of the final action.  Any comments regarding a more 
+general interface?
+
+-Geoff
