@@ -1,12 +1,13 @@
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [linux-pm] PowerOP 1/3: PowerOP core
-Date: Tue, 09 Aug 2005 09:07:33 -0700
-Message-ID: <42F8D4C5.2090800@am.sony.com>
-References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: cpufreq suspend patch.
+Date: Tue, 9 Aug 2005 12:25:56 -0400
+Message-ID: <20050809162556.GK5844@redhat.com>
+References: <20050808224401.GA3277@redhat.com>
+	<1123576360.30257.153.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <1123576360.30257.153.camel@gaston>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,52 +17,30 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: cpufreq@lists.linux.org.uk, dwmw2@redhat.com
 
-Todd Poynor wrote:
-...
-> ===================================================================
-> --- linux-2.6.12.orig/include/linux/powerop.h	1970-01-01
-> 00:00:00.000000000 +0000
-> +++ linux-2.6.12/include/linux/powerop.h	2005-08-03
-> 01:10:55.000000000 +0000
-> @@ -0,0 +1,36 @@
-> +/*
-> + * PowerOP core definitions
-> + *
-> + * Author: Todd Poynor <tpoynor@mvista.com>
-> + *
-> + * 2005 (c) MontaVista Software, Inc. This file is licensed under
-> + * the terms of the GNU General Public License version 2. This program
-> + * is licensed "as is" without any warranty of any kind, whether
-> express
-> + * or implied.
-> + */
-> +
-> +#ifndef __POWEROP_H__
-> +#define __POWEROP_H__
-> +
-> +#include <linux/kobject.h>
-> +#include <asm/powerop.h>
-> +
-> +struct powerop_point {
-> +	int param[POWEROP_DRIVER_MAX_PARAMS];
-> +};
+On Tue, Aug 09, 2005 at 10:32:39AM +0200, Ben Herrenschmidt wrote:
+ > On Mon, 2005-08-08 at 18:44 -0400, Dave Jones wrote:
+ > > Ben,
+ > >  Dave Woodhouse added this to the Fedora kernel a while back
+ > > with the helpful comment "Fix ppc32 sleep/cpufreq harder"
+ > > I believe this came from you originally.
+ > > 
+ > > Can you comment on this ? 
+ > > 
+ > > It seems to make sense to me,  but if you have a newer patch
+ > > I'm all ears..
+ > 
+ > Can you compare with what's currently upstream ? (I'm still travelling
+ > around so it's more difficult for me).
 
-I'm wondering if anything could be gained by having the whole 
-struct powerop_point defined in asm/powerop.h, and treat it as an 
-opaque structure at this level.  That way, things other than just 
-ints could be passed between the policy manager and the backend, 
-although I guess that breaks the beauty of the simplicity and would 
-complicate the sys-fs interface, etc.  I'm interested to hear your 
-comments.
+Gah, I've been bitten by the 'in Fedora cvs, but not applied to
+spec file' thing again. A variant of this is already upstream.
 
-Another point is that a policy manager would need to poll the system 
-and/or get events and then act.  Your powerop work here only provides 
-a (one way) piece of the final action.  Any comments regarding a more 
-general interface?
+Thanks.
 
--Geoff
+		Dave
