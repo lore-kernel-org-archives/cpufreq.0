@@ -1,13 +1,13 @@
-From: Patrick Mochel <mochel@digitalimplant.org>
-Subject: Re: PowerOP 0/3: System power operating point management
-	API
-Date: Tue, 9 Aug 2005 11:12:45 -0700 (PDT)
-Message-ID: <Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
-References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
+From: Todd Poynor <tpoynor@mvista.com>
+Subject: Re: PowerOP 1/3: PowerOP core
+Date: Tue, 09 Aug 2005 17:33:44 -0700
+Message-ID: <42F94B68.6060107@mvista.com>
+References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
+	<42F8D4C5.2090800@am.sony.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============76388639817161841=="
+Content-Type: multipart/mixed; boundary="===============12890109918576975=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
+In-Reply-To: <42F8D4C5.2090800@am.sony.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -18,49 +18,73 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 
---===============76388639817161841==
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+--===============12890109918576975==
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
+Geoff Levand wrote:
 
-On Mon, 8 Aug 2005, Todd Poynor wrote:
+> I'm wondering if anything could be gained by having the whole 
+> struct powerop_point defined in asm/powerop.h, and treat it as an 
+> opaque structure at this level.  That way, things other than just 
+> ints could be passed between the policy manager and the backend, 
+> although I guess that breaks the beauty of the simplicity and would 
+> complicate the sys-fs interface, etc.  I'm interested to hear your 
+> comments.
 
-> PowerOP is a system power parameter management API submitted for
-> discussion.  PowerOP writes and reads power "operating points",
-> comprised of arbitrary integer-valued values, called power parameters,
-> that correspond to registers, clocks, dividers, voltage regulators,
-> etc. that may be modified to set a basic power/performance point for the
-> system.  The core basically passes an array of integer-valued power
-> parameters (with very little additional structure imposed by the core)
-> to a platform-specific backend that interprets those values and makes
-> the requested adjustments.  PowerOP is intended to leave all power
-> policy decisions to higher layers.  An optional sysfs representation of
-> power parameters is also available, primarily for diagnostic use.
+Making the "operating point" data structure entirely platform-specific 
+should be OK.  There's a little value to having generic pieces handle 
+some common chores (such as the sysfs interfaces), but even for integers 
+decimal vs. hex formatting is nicer depending on the type of value. 
+Since most values that have been managed using similar interfaces thus 
+far have been flags, register values, voltages, etc. using integers has 
+worked well and nicely simplified the platform backend, but if there's a 
+need for other data types then should be doable.
 
-What do those higher layers look like? Do you have a userspace component
-that uses this interface?
+> Another point is that a policy manager would need to poll the system 
+> and/or get events and then act.  Your powerop work here only provides 
+> a (one way) piece of the final action.  Any comments regarding a more 
+> general interface?
 
-Who is using this code? Are there vendors that are already shipping
-systems with this enabled?
+What's discussed here is probably the bottommost layer of a power 
+management software stack: to read and write the platform-specific 
+system power parameters, optionally arranged into a mutually-consistent 
+set called an "operating point".  Power policy management is a large, 
+thorny topic that I wasn't trying to tackle now.
 
-Is this part of the DPM project? If so, what other components are left in
-DPM?
+So far as kernel-to-userspace event notification goes (assuming the 
+power policy manager is in userspace, which is certainly where I'd 
+recommend), ACPI has a procfs-based communication channel but the 
+kobject_uevent stuff looks like the way I'd go, and it's somewhere on my 
+list to come up with a patch that does that as well.
 
-What are your plans to integrate this more with the cpufreq code?
+If these general ideas of arbitrary platform power parameters and 
+operating points are deemed worthy of continued consideration, I'll 
+propose what I view is the next step: interfaces to create and activate 
+operating points from userspace.
 
-Thanks,
+At that point it should be possible to write power policy management 
+applications for systems that can benefit from this generalized notion 
+of operating points: create the operating points that match the system 
+usage models (in the case of many embedded systems, the system is some 
+mode with different power/performance characteristics such as audio 
+playback vs. mobile phone call in progress) and power needs (e.g., low 
+battery strength vs. high strength) and activate operating points based 
+on events received (new app running, low battery warning, etc.).
 
+Any opinions on all that?  Thanks,
 
-	Pat
+-- 
+Todd
 
-
---===============76388639817161841==
+--===============12890109918576975==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 
---===============76388639817161841==--
+--===============12890109918576975==--
