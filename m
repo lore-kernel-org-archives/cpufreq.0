@@ -1,75 +1,82 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: [linux-pm] PowerOP 1/3: PowerOP core
-Date: Wed, 10 Aug 2005 17:25:13 -0700
-Message-ID: <42FA9AE9.9020507@mvista.com>
-References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>	
-	<42F8D4C5.2090800@am.sony.com> <42F94B68.6060107@mvista.com>
-	<9268368b05081006585ca7a415@mail.gmail.com>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: PowerOP 2/3: Intel Centrino support
+Date: Thu, 11 Aug 2005 09:06:50 -0600
+Message-ID: <20050811150650.GG26524@cosmic.amd.com>
+References: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
+	<20050810100133.GA1945@elf.ucw.cz> <20050810125848.GM852@poupinou.org>
+	<20050810184445.GB14350@redhat.com> <42FA8FC0.5000700@mvista.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <9268368b05081006585ca7a415@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="===============72505419100578372=="
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <42FA8FC0.5000700@mvista.com>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Daniel Petrini <d.pensator@gmail.com>
-Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Geoff Levand <geoffrey.levand@am.sony.com>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: Bruno Ducrot <ducrot@poupinou.org>, Pavel Machek <pavel@ucw.cz>, cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 
-Daniel Petrini wrote:
+--===============72505419100578372==
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-> I'd like to have an idea of how the powerop would evolve to address:
-> 
-> a) exporting all operating points to sysfs - that would be useful for
-> a policy manager in user space, or the user policy will already be
-> aware of the ops?
+> I've attempted to extoll the benefits of adding these interfaces in 
+> previous emails, and if after that it still seems mystifying why anybody 
+> would want to do this then I'll take the heat for doing a lousy job of 
+> extolling.  I've also admitted that it is primarily of use in 
+> embedded-specific hardware, and of less use in x86 and in desktop/server 
+> usage for various reasons (unless it turns out there's some fantastic 
+> savings to be had in modifying common x86 bus speeds independently of 
+> cpu speed, which seems unlikely).  In the case of x86, undervolting is 
+> in practice by some folks, but yes it is risky and support for it in the 
+> basic interfaces probably shouldn't be a high priority.
 
-For different usage models I'd expect to see both situations.  In one 
-situation (classic desktop/server), a canned set of operating points may 
-bee preconfigured (for example, the cpufreq support for Centrino), and 
-automated software or an interactive user knows how to select an 
-appropriate point (like the existing cpufreq algorithms such as "choose 
-the lowest (powersave) point").  In the other situation (classic 
-embedded), a system designer has chosen a number of useful operating 
-points and configures software to choose an appropriate point based on 
-system state ("the MPEG4 video app is running"), and that software knows 
-what points are available and in what situations the points should apply.
+I would like to toss in my support to Todd, if he'll take it.  When it comes
+to embedded power management concepts, a consistant theme is that people
+often question the usefulness, redundancy or complexity of a solution.  This
+is perfectly understandable, since such a huge majority of the power
+management experts and users are concentrating intently on x86 desktops and
+servers.  Thats nobody's fault in particular, just a natural result of a
+Wintel world gone mad.
 
-> b) Constraints: if I would like to change to a op and such a
-> transition is not allowed in hardware, what part of the software will
-> test it? The set/get powerop functions, the higher layers or even some
-> lower layer (don't know if expected) ?
+At the PM BOF at OLS, when we started discussing runtime management, somebody
+mentioned that one of the problems with RTPM is the complexity.  As an
+embedded Linux developer, I hope I speak for the entire embedded community
+when I say that we welcome that complexity - we are willing to do anything 
+we can do to squeak every single millivolt out of our platforms.
 
-Any sort of policy on what operating points should be allowed is 
-targeted for a higher layer than PowerOP.  As you mention, there are 
-situations where device needs constrain the operating points that can be 
-set (for example, a PXA27x has modes that disable PLLs and/or run clocks 
-at low speeds such that certain devices, if powered on, will wedge). 
-Intelligence on what to do about that situation, if anything, can be 
-placed in the high-layer power policy management application (this is 
-probably the best answer), and/or the mid-layer power management 
-framework code can also attempt to enforce these rules.
+But as a laptop owner, I can see the other side of the coin as well - I don't
+know the specific voltages that my laptop uses, and I don't want to know. 
 
-Stepping up on my soapbox for a moment, it is always recommended to have 
-the power policy management application be aware of what the constraints 
-are on operating points and set an appropriate power policy based on 
-that information.  This may entail sending event messages from the 
-drivers to the power policy manager app, to coordinate changes in device 
-state with changes in policy.  If the constraints change very rapidly 
-then it may make sense to preconfigure the rules on which operating 
-point to choose in the kernel to avoid userspace interactions (and this 
-is what the DPM device constraints feature is intended to do).  Relying 
-on the power management mid-layer to block attempts to set an 
-incompatible operating point is not recommended, but can function 
-reasonably well if the mid layer is smart enough to know what the next 
-best choice is and set that operating point instead.
+In short, we have different goals, but our hearts are in the the same place.
+These same concepts are going to show up more and more in the future, and
+eventually somebody is going to start shipping less then optimal solutions,
+just to get something to market.  This list can either lend its expertise, or
+complain when somebody else gets it wrong.  The second one might seem more
+fun, but I hope we can agree its far less productive.. :)
+
+Jordan
 
 -- 
-Todd
+Jordan Crouse
+Senior Linux Engineer
+AMD - Personal Connectivity Solutions Group
+<www.amd.com/embeddedprocessors>
+
+
+--===============72505419100578372==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+
+--===============72505419100578372==--
