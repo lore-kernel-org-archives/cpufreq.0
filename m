@@ -1,82 +1,65 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: Re: PowerOP 2/3: Intel Centrino support
-Date: Thu, 11 Aug 2005 09:06:50 -0600
-Message-ID: <20050811150650.GG26524@cosmic.amd.com>
-References: <20050809025419.GC25064@slurryseal.ddns.mvista.com>
-	<20050810100133.GA1945@elf.ucw.cz> <20050810125848.GM852@poupinou.org>
-	<20050810184445.GB14350@redhat.com> <42FA8FC0.5000700@mvista.com>
+From: Nikolay Pelov <ns@pelov.name>
+Subject: Re: [linux-pm] Re: PowerOP 2/3: Intel Centrino support
+Date: Fri, 12 Aug 2005 14:38:43 +0200 (MEST)
+Message-ID: <Pine.GSO.4.10.10508121406280.26851-100000@billie.cs.kuleuven.ac.be>
+References: <20050810184445.GB14350@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============72505419100578372=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <42FA8FC0.5000700@mvista.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20050810184445.GB14350@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: Bruno Ducrot <ducrot@poupinou.org>, Pavel Machek <pavel@ucw.cz>, cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
-
---===============72505419100578372==
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
+Cc: Dave Jones <davej@redhat.com>, Bruno Ducrot <ducrot@poupinou.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 
-> I've attempted to extoll the benefits of adding these interfaces in 
-> previous emails, and if after that it still seems mystifying why anybody 
-> would want to do this then I'll take the heat for doing a lousy job of 
-> extolling.  I've also admitted that it is primarily of use in 
-> embedded-specific hardware, and of less use in x86 and in desktop/server 
-> usage for various reasons (unless it turns out there's some fantastic 
-> savings to be had in modifying common x86 bus speeds independently of 
-> cpu speed, which seems unlikely).  In the case of x86, undervolting is 
-> in practice by some folks, but yes it is risky and support for it in the 
-> basic interfaces probably shouldn't be a high priority.
+On Wed, 10 Aug 2005, Dave Jones wrote:
 
-I would like to toss in my support to Todd, if he'll take it.  When it comes
-to embedded power management concepts, a consistant theme is that people
-often question the usefulness, redundancy or complexity of a solution.  This
-is perfectly understandable, since such a huge majority of the power
-management experts and users are concentrating intently on x86 desktops and
-servers.  Thats nobody's fault in particular, just a natural result of a
-Wintel world gone mad.
+> 
+> For example, most of the x86 drivers, if you set a speed, and then
+> start fiddling with the voltage, you can pretty much guarantee
+> you'll crash within the next few seconds.  They have to match,
+> or at the least, be within a very small margin.
+> 
+> Given how long its taken us to get sane userspace parts for cpufreq,
+> I'm loathe to changing the interfaces yet again unless there's
+> a clear advantage to doing so, as it'll take at least another 12 months
+> for userspace to catch up.
+> 
 
-At the PM BOF at OLS, when we started discussing runtime management, somebody
-mentioned that one of the problems with RTPM is the complexity.  As an
-embedded Linux developer, I hope I speak for the entire embedded community
-when I say that we welcome that complexity - we are willing to do anything 
-we can do to squeak every single millivolt out of our platforms.
+I'm one of those x86 folks undervolting their Pentium M laptops,
+so let me share my experience/opinion. About a week after I bought my
+laptop (Acer Aspire 1690, Intel Pentium M 740 at 1.7GHz), I was at the
+point of returning it to the dealer because the fan was constantly on
+and making too much noise even when running at 800MHz. Then I discovered
+that in the windows world, folks are routinely undervolting their CPUs and
+obtaining significant improvements in reduced heat and battery life.
+There are a number of howto's and software tools on the topic. 
+After I did the excercise myself I ended up with an almost 30% reduction
+in voltage for every frequency. I didn't make measurments how much this
+extends the battery life but the fan certainly spins less often.
 
-But as a laptop owner, I can see the other side of the coin as well - I don't
-know the specific voltages that my laptop uses, and I don't want to know. 
+When I wanted to do this excersise on linux I discovered that there
+wasn't any support for changing voltages on centrino - only some patches
+flying around on this mailing list, many of them for AMD. So, I wrote
+a very simple patch myself which works as follows. Currently, there is a
+table with avaliable frequencies which the cpu governors use for dynamic
+frequency switching. In this table every frequency is paired with a voltage
+setting so whenever someone sets a frequency, the driver also sets the
+corresponding voltage. I guess that this pair is what you refer to as a
+power point. The patch I wrote simply overrides the default voltages in
+this pair. I may send the patch in the coming days but its just a quick
+hack and not a serious solution.
 
-In short, we have different goals, but our hearts are in the the same place.
-These same concepts are going to show up more and more in the future, and
-eventually somebody is going to start shipping less then optimal solutions,
-just to get something to market.  This list can either lend its expertise, or
-complain when somebody else gets it wrong.  The second one might seem more
-fun, but I hope we can agree its far less productive.. :)
+To summarize, undervolting the cpu of your laptop is becoming an important
+task and it would be nice to have support for it in one way or another.
 
-Jordan
-
--- 
-Jordan Crouse
-Senior Linux Engineer
-AMD - Personal Connectivity Solutions Group
-<www.amd.com/embeddedprocessors>
-
-
---===============72505419100578372==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============72505419100578372==--
+Nik.
