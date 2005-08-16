@@ -1,14 +1,19 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: PowerOP 1/3: PowerOP core
-Date: Fri, 12 Aug 2005 18:06:41 -0700
-Message-ID: <42FD47A1.6070506@mvista.com>
-References: <20050809025157.GB25064@slurryseal.ddns.mvista.com>
-	<42F8D4C5.2090800@am.sony.com> <42F94B68.6060107@mvista.com>
-	<20050812162315.16671E2E9B@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: PowerOP 0/3: System power operating point management
+	API
+Date: Tue, 16 Aug 2005 10:53:45 +0200
+Message-ID: <20050816085345.GJ9150@dominikbrodowski.de>
+References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
+	<20050810100718.GC1945@elf.ucw.cz> <42FA796A.4080205@mvista.com>
+	<20050809024907.GA25064@slurryseal.ddns.mvista.com>
+	<Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
+	<42F963F6.60209@mvista.com>
+	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============20013142868981104=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050812162315.16671E2E9B@adsl-69-107-32-110.dsl.pltn13.pacbell.net>
+In-Reply-To: <42FA796A.4080205@mvista.com> <42F963F6.60209@mvista.com>
+	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
@@ -19,101 +24,102 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: david-b@pacbell.net
-Cc: cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: cpufreq@lists.linux.org.uk, Pavel Machek <pavel@ucw.cz>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
 
-david-b@pacbell.net wrote:
-> How well would _this_ notion of an operating point scale up?
-> 
-> I have this feeling that it's maybe better attuned to "scale down"
-> sorts of problems (maybe cell phones) than to a big NUMA box.  I can
-> see how a batch scheduled server might want to fire up only enough
-> components to run the next simulation, but I wonder if maybe systems
-> dynamically managing lots of resources might not be better off with
-> some other model ... where userspace makes higher level decisions,
-> and the kernel is adaptive within a potentially big solution space.
-> (Likewise, maybe some of the smaller systems would too.)
+--===============20013142868981104==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If I understand correctly, that does seem to describe how such systems 
-are used today: out of a potentially large number of choices (and some 
-embedded SOCs do have a good variety of clocking, core voltage, and 
-power domain choices), configure only those useful for the problem at 
-hand into the kernel and then userspace gives marching orders to the 
-kernel to activate whatever's appropriate according to system-specific 
-logic in userspace.
+Hi!
 
->   - Why have any parsing at all?  It's opaque data; so insist that
->     the kernel just get raw bytes.  That's the traditional solution,
->     not having the kernel parse arrays of integers.
-> 
->   - Why try to standardize a data-based abstraction at all?  Surely
->     it'd be easier to use modprobe, and have it register operating
->     points that include not just the data, but its interpretation.
+The PowerOP infrastructure you suggest surely is one path to better runtime
+power management in the Linux kernel. However, I don't like it at all in its
+current implementation. Here are a few suggestions for improvements,
+rewrites, and so on:
 
-Configuring the definitions of desired operating points (and updating 
-these on-the-fly) from userspace has its advantages, but inserting into 
-the kernel as a module should work fine and avoids some awkward 
-userspace interfaces.  In the current code it is intended that both 
-in-kernel interfaces (without parsing) and userspace interfaces are 
-available, but I think non-diagnostic userspace interfaces could easily 
-be dropped.  One of the nice things about having it done from userspace 
-is that apps can be in charge of configuring operating points and 
-activating those operating points in response to changes in system state 
-(with reduced chance of mismatched app + module).  And since it can be 
-done in userspace it's nice to simplify the kernel that way, which some 
-folks feel strongly about.  But not a big deal to me.
+First, the table interface you suggest is ugly. If there's indeed the need for
+such an abstraction, I'd favour something like
 
-Standard data structures have small benefits for implementing some code 
-once instead of per-platform.  Another possibility in addition to the 
-configuration or diagnostic interfaces is the concept of "constraints" 
-on operating points according to device needs that you and others have 
-alluded to: the constraints can be expressed in a form that can be 
-checked by platform-independent code ("check the value at this power 
-parameter index in the array for this range of integer values").  Also 
-not a big deal.
+	struct powerop {
+		struct list_head	powerop_values; /* linked list of powerop_values */
+		...
+	}
 
-All in all, it sounds like the next version of this should not have a 
-userspace configuration interface and should not provide a 
-platform-independent structure for the operating points.  The operating 
-point get and set functions are in machine-specific code and take an 
-operating point argument defined in header files shared between the 
-machine-specific code and whatever kernel code is creating and 
-activating operating points.  Any diagnostic interfaces need to be 
-machine-dependent as well.
+	struct powerop_value {
+		unsigned long		value_cur;
+		unsigned long		value_min;
+		unsigned long		value_max;
+		struct list_head	next;
+		u16			type;
+		struct powerop_value	*cross_dependency;
+		struct powerop_driver	*driver;
+	}
 
-Now that the operating points are created without a generic layer or 
-structure, if one wants a generic interface to set (activate) one of 
-those operating points, probably identified by name, from userspace then 
-a little extra is needed.  Can worry about that later.
+	#define POWEROP_TYPE_CPU_FREQUENCY		0x00000001
+	#define POWEROP_TYPE_CPU_VOLTAGE		0x00000002
+	#define POWEROP_TYPE_FRONT_SIDE_BUS_SPEED	0x00000004
+	...
+	#define POWEROP_TYPE_GPU_FREQUENCY	0x00010000
+	...
 
->   - If those numbers are needed, having single-valued sysfs attributes
->     (maybe /sys/power/runstate/policy_name/XXX) would be preferable
->     to relying on getting position right within a multivalued input.
+and if CPU_VOLTAGE and CPU_FREQEUNCY can only be modified at the same time, (as
+most cpufreq drivers require), type is 0x00000003.
 
-In case it helps, the code thus far and proposed interfaces use 
-single-valued sysfs interfaces.  Since you also mentioned:
 
-> It's easier for me to see how "echo policy_name > /sys/power/runtime"
-> would scale up and down (given pluggable policy_name components!)
-> than "echo 0 35 98 141 66 -3 0x7efc0 > /sys/power/foo" would.
+Secondly, you do not adress the cross-relationships between operation points
+correctly. If you change the CPU frequency, you may have to switch other
+(memory, video) settings; you might even have to validate the frequency
+settings for these or even additional reasons (thermal and battery reasons -
+ACPI _PPC).
 
-and:
+Thirdly, who is to decide on the power management settings? The first and
+intuitive answer is the kernel. Therefore, kernel-space cpufreq governors
+exist. Only under rare circumstances, you want full userspace control --
+that's what the userspace cpufreq governor is for.
 
-> That'd also be less error prone than "whoops,
-> there wasn't supposed to be a space between 35 and 98" or "darn, I
-> switched the 141 and 66 around again".
+Foruthly, the code duplication which your implementation leads to is obvious
+for the speedstep-centrino case. And in contrast to Pavel, I do not consider
+it a "tiny cleanup".
 
-It may be worth pointing out that these interfaces wouldn't do that (a 
-two level hierarchy of operating point name and single power parameter 
-attribute would be used, and the ordering into the array is handled by 
-the generic PowerOP core, which knows how to associate parameter names 
-with array indices).  Older versions of DPM did use interfaces similar 
-to what you describe, in case you've got that in mind.  They weren't 
-intended to be used interactively.
+
+
+I'd suggest that you try upgrading the cpufreq infrastructure to provide
+full support for multiple types of POWEROPs:
+
+a)	Setting of "policies"
+	- New "min" or "max" values for all powerop_values are set, verified
+	  by powerop lowlevel drivers, powerop governors and external
+	  notifiers. E.g. if a new frequency min/max pair is required, the
+	  voltage level gets a new min and max value as well --> you need to
+	  handle recursion.
+	- If necessary a new "powerop governor" is started.
+	   - Each powerop governor specifies which POWEROPs it can handle
+		- current cpufreq governors can handle CPU_FREQUENCY,
+		  CPU_VOLTAGE and FRONT_SIDE_BUS_SPEED
+		- an userspace fallback-governor always "handles" the
+		  parameters no other governor handles
+
+b)	Setting of "values"
+	- Each governor can initiate transitions between the "min" and "max"
+	  values for operationg points it aquired ownership for.
+	- The new setting is notified to all other governors and to external
+	  notifiers. If some entitiy decides it cannot live well with this
+	  new setting, it breaks out. Note that this should not happen quite
+	  often, as the "normal" verification takes place in a) above.
+	  Nonetheless, if you want to break out CPU_VOLTAGE and CPU_FREQUENCY, you
+	  need it. And as it makes life for the kernel so much more
+	  difficult, I'm against doing so.
+	- The low-level driver handling the powerop_value is called
 
 Thanks,
+	Dominik
+
+--===============20013142868981104==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 
--- 
-Todd
+--===============20013142868981104==--
