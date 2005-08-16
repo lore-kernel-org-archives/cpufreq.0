@@ -1,52 +1,31 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: PowerOP 0/3: System power operating point management
-	API
-Date: Tue, 16 Aug 2005 10:57:40 +0200
-Message-ID: <20050816085740.GL9150@dominikbrodowski.de>
-References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
-	<20050810100718.GC1945@elf.ucw.cz> <42FA796A.4080205@mvista.com>
-	<20050809024907.GA25064@slurryseal.ddns.mvista.com>
-	<Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
-	<42F963F6.60209@mvista.com>
-	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
-	<20050816085345.GJ9150@dominikbrodowski.de>
+Subject: Re: ondemand governor and passive cooling broken?
+Date: Tue, 16 Aug 2005 11:48:56 +0200
+Message-ID: <20050816094856.GA9985@dominikbrodowski.de>
+References: <42F10A23.6020107@renninger.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============24168681164824846=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050816085345.GJ9150@dominikbrodowski.de>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <42F10A23.6020107@renninger.de>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-To: Todd Poynor <tpoynor@mvista.com>, cpufreq@lists.linux.org.uk, Patrick Mochel <mochel@digitalimplant.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thomas Renninger <mail@renninger.de>
+Cc: cpufreq@lists.linux.org.uk
 
---===============24168681164824846==
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi,
 
-A small add-on:
+With which kernel do you see this behaviour? Can you re-test with 2.6.12.x,
+please?
 
-We need to make sure that we're capable of handling smart CPUs like Transmeta
-Crusoe processors in a sane way. This means
-
-> b)	Setting of "values"
-
-is optional if the hardware itself can be set to a min/max value (step a
-above in previous mail).
-
+Thanks,
 	Dominik
-
---===============24168681164824846==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============24168681164824846==--
