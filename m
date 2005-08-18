@@ -1,55 +1,50 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: PowerOP 0/3: System power operating point management
-	API
-Date: Tue, 16 Aug 2005 18:52:38 -0700
-Message-ID: <43029866.8040605@mvista.com>
-References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
-	<20050810100718.GC1945@elf.ucw.cz> <42FA796A.4080205@mvista.com>
-	<20050809024907.GA25064@slurryseal.ddns.mvista.com>
-	<Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
-	<42F963F6.60209@mvista.com>
-	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
-	<20050816085345.GJ9150@dominikbrodowski.de>
-	<20050816085740.GL9150@dominikbrodowski.de>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: powernow-k8: missing p-state
+Date: Thu, 18 Aug 2005 12:24:31 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A84301CFC36F@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20050816085740.GL9150@dominikbrodowski.de>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Dominik Brodowski <linux@dominikbrodowski.net>, Todd Poynor <tpoynor@mvista.com>, cpufreq@lists.linux.org.uk, Patrick Mochel <mochel@digitalimplant.org>, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Bruno Ducrot <ducrot@poupinou.org>, Brendt Wohlberg <bw4@wohlberg.net>
+Cc: cpufreq@lists.linux.org.uk
 
-Dominik Brodowski wrote:
-> A small add-on:
-> 
-> We need to make sure that we're capable of handling smart CPUs like Transmeta
-> Crusoe processors in a sane way. This means
-> 
-> 
->>b)	Setting of "values"
-> 
-> 
-> is optional if the hardware itself can be set to a min/max value (step a
-> above in previous mail).
+> > The kernel was built with general ACPI support (CONFIG_ACPI=3Dy), as =
 
-Although I haven't looked into the Crusoe processor support, it may be 
-that there is a different set of power parameters, not cpu speed 
-directly, that are appropriate to manage on these platforms (after a 
-brief look, seems to be a range of frequencies and some sort of flags)? 
-  If so, these sorts of machine-specific power parameters are what 
-PowerOP is trying to address, allowing management of the underlying 
-machine-specific stuff to upper layers that may be presenting an 
-abstracted view of power/performance, such as CPU speed or speed ranges, 
-to the user.  Thanks,
+> > well as with the ACPI option for powernow-k8=20
+> > (CONFIG_X86_POWERNOW_K8_ACPI=3Dy).
+> > =20
+> > > Could you send me the output of acpidmp, please ?
+> >=20
+> > With pleasure - it's attached.
+>=20
+> As expected, there is only 3 p-states on that one, namely=20
+> 2200, 2000 and 1800 kHz.
+>=20
+> Maybe the legacy tables are not so broken.  Could you please=20
+> try that little tool I'm attaching (compile with -O at least)?
+>=20
+> NB: it has been written for powernow-k7 originaly.  So it=20
+> will certainly give false values.  What I want to see in fact=20
+> is the number of frequencies available.
 
--- 
-Todd
+Bruno -
+
+Thank you for the support, but my experience has been that
+the PSB/PST tables are much less likely to exist or be
+correct than the ACPI tables.  I'm not sure what your tool
+is going to demonstrate.
+
+-Mark Langsdorf
+AMD, Inc.
