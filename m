@@ -1,13 +1,12 @@
-From: Thomas Renninger <mail@renninger.de>
-Subject: Re: ondemand governor and passive cooling broken?
-Date: Sun, 21 Aug 2005 06:48:44 +0200
-Message-ID: <430807AC.50309@renninger.de>
-References: <42F10A23.6020107@renninger.de>
-	<20050816094856.GA9985@dominikbrodowski.de>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: powernow-k8: missing p-state
+Date: Tue, 23 Aug 2005 10:42:39 +0200
+Message-ID: <20050823084239.GA28353@poupinou.org>
+References: <84EA05E2CA77634C82730353CBE3A84301CFC36F@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050816094856.GA9985@dominikbrodowski.de>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFC36F@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,45 +16,51 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: cpufreq@lists.linux.org.uk, Brendt Wohlberg <bw4@wohlberg.net>
 
-Hi,
+On Thu, Aug 18, 2005 at 12:24:31PM -0500, Langsdorf, Mark wrote:
+> > > The kernel was built with general ACPI support (CONFIG_ACPI=y), as 
+> > > well as with the ACPI option for powernow-k8 
+> > > (CONFIG_X86_POWERNOW_K8_ACPI=y).
+> > >  
+> > > > Could you send me the output of acpidmp, please ?
+> > > 
+> > > With pleasure - it's attached.
+> > 
+> > As expected, there is only 3 p-states on that one, namely 
+> > 2200, 2000 and 1800 kHz.
+> > 
+> > Maybe the legacy tables are not so broken.  Could you please 
+> > try that little tool I'm attaching (compile with -O at least)?
+> > 
+> > NB: it has been written for powernow-k7 originaly.  So it 
+> > will certainly give false values.  What I want to see in fact 
+> > is the number of frequencies available.
+> 
+> Bruno -
+> 
+> Thank you for the support, but my experience has been that
+> the PSB/PST tables are much less likely to exist or be
+> correct than the ACPI tables.  I'm not sure what your tool
+> is going to demonstrate.
+> 
 
-This makes ondemand governor aware of thermal limits.
-The policy was buffered and new policy values never reached the governor.
+I want to demonstrate nothing.  But if for *one* guy it's better
+to use PSB/PST tables instead of those provided by ACPI, then
+a kernel boot parameter in order to force the use of those
+tables should be written IMHO.
 
-I just used the cpufreq_get_policy call every time the load is checked,
-maybe the new policy should be made available via notifier as it is done
-for the cur_freq in the userspace governor?
-If this sounds reasonable I can come up with a bigger patch on Monday.
+It's not the case here, therefore I won't bother to write
+such a patch.
 
-However, thermal cooling still does not always work right:
+Cheers,
 
-  - Sometimes the limit is not decreased correctly in polling frequency time
-    (I saw it at max for more than 20 secs, polling freq 5 secs, passive tp exceeded).
-    Strange enough, that seems to happen only in rare cases.
-  - I also saw the limit stuck at lowest frequency even after getting back in
-    normal temperature zones.
-  - And once you entered passive cooling you always see the "cooling: passive"
-    flag set in /proc/acpi/thermal_zone/*/cooling_mode
+-- 
+Bruno Ducrot
 
-
-    Thomas
-
-
---- drivers/cpufreq/cpufreq_ondemand.c.orig     2005-08-20 19:26:18.000000000 -0600
-+++ drivers/cpufreq/cpufreq_ondemand.c  2005-08-20 19:28:04.000000000 -0600
-@@ -254,6 +254,10 @@
-        if (!this_dbs_info->enable)
-                return;
-
-+       int ret = cpufreq_get_policy(this_dbs_info->cur_policy, cpu);
-+       if (ret)
-+               return;
-+
-        policy = this_dbs_info->cur_policy;
-        /*
-         * Every sampling_rate, we check, if current idle time is less
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
