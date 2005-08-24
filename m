@@ -1,12 +1,11 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: powernow-k8: missing p-state
-Date: Tue, 23 Aug 2005 10:42:39 +0200
-Message-ID: <20050823084239.GA28353@poupinou.org>
-References: <84EA05E2CA77634C82730353CBE3A84301CFC36F@SAUSEXMB1.amd.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: ondemand governor and passive cooling broken?
+Date: Wed, 24 Aug 2005 12:09:00 -0700
+Message-ID: <88056F38E9E48644A0F562A38C64FB600588ED10@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84301CFC36F@SAUSEXMB1.amd.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,51 +15,56 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: cpufreq@lists.linux.org.uk, Brendt Wohlberg <bw4@wohlberg.net>
+To: Thomas Renninger <mail@renninger.de>, Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@lists.linux.org.uk
 
-On Thu, Aug 18, 2005 at 12:24:31PM -0500, Langsdorf, Mark wrote:
-> > > The kernel was built with general ACPI support (CONFIG_ACPI=y), as 
-> > > well as with the ACPI option for powernow-k8 
-> > > (CONFIG_X86_POWERNOW_K8_ACPI=y).
-> > >  
-> > > > Could you send me the output of acpidmp, please ?
-> > > 
-> > > With pleasure - it's attached.
-> > 
-> > As expected, there is only 3 p-states on that one, namely 
-> > 2200, 2000 and 1800 kHz.
-> > 
-> > Maybe the legacy tables are not so broken.  Could you please 
-> > try that little tool I'm attaching (compile with -O at least)?
-> > 
-> > NB: it has been written for powernow-k7 originaly.  So it 
-> > will certainly give false values.  What I want to see in fact 
-> > is the number of frequencies available.
-> 
-> Bruno -
-> 
-> Thank you for the support, but my experience has been that
-> the PSB/PST tables are much less likely to exist or be
-> correct than the ACPI tables.  I'm not sure what your tool
-> is going to demonstrate.
-> 
+=20
 
-I want to demonstrate nothing.  But if for *one* guy it's better
-to use PSB/PST tables instead of those provided by ACPI, then
-a kernel boot parameter in order to force the use of those
-tables should be written IMHO.
+>-----Original Message-----
+>From: Thomas Renninger [mailto:mail@renninger.de]=20
+>Sent: Saturday, August 20, 2005 9:49 PM
+>To: Dominik Brodowski
+>Cc: cpufreq@lists.linux.org.uk; Pallipadi, Venkatesh
+>Subject: Re: ondemand governor and passive cooling broken?
+>
+>Hi,
+>
+>This makes ondemand governor aware of thermal limits.
+>The policy was buffered and new policy values never reached=20
+>the governor.
 
-It's not the case here, therefore I won't bother to write
-such a patch.
+I don't think there is an issue with buffering here.
+This_dbs_info->cur_policy is a pointer to the cpufreq policy (and not
+allocated by ondemand governor). So, any change to max/min in cpufreq
+should be automatically getting reflected. Atleast that was the intent
+with having policy pointer. If it is not happening then that should be a
+bug. I don't think that this memcpy is required here.
 
-Cheers,
+>I just used the cpufreq_get_policy call every time the load is checked,
+>maybe the new policy should be made available via notifier as=20
+>it is done
+>for the cur_freq in the userspace governor?
+>If this sounds reasonable I can come up with a bigger patch on Monday.
+>
+>However, thermal cooling still does not always work right:
+>
+>  - Sometimes the limit is not decreased correctly in polling=20
+>frequency time
+>    (I saw it at max for more than 20 secs, polling freq 5=20
+>secs, passive tp exceeded).
+>    Strange enough, that seems to happen only in rare cases.
+>  - I also saw the limit stuck at lowest frequency even after=20
+>getting back in
+>    normal temperature zones.
 
--- 
-Bruno Ducrot
+I think we need to do some more things to intergrate cpufreq and thermal
+cooling. Especially in relation to polling frequency. Probably, ondemand
+governor should slow down its polling interval to something higher than
+thermal polling frequency as soon as it notices the passive cooling is
+on.
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+
+Thanks,
+Venki
