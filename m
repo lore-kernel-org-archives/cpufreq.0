@@ -1,18 +1,12 @@
-From: Todd Poynor <tpoynor@mvista.com>
-Subject: Re: PowerOP 0/3: System power operating point management API
-Date: Wed, 24 Aug 2005 20:02:33 -0700
-Message-ID: <430D34C9.5030003@mvista.com>
-References: <20050809024907.GA25064@slurryseal.ddns.mvista.com>
-	<20050810100718.GC1945@elf.ucw.cz> <42FA796A.4080205@mvista.com>
-	<20050809024907.GA25064@slurryseal.ddns.mvista.com>
-	<Pine.LNX.4.50.0508091110430.19925-100000@monsoon.he.net>
-	<42F963F6.60209@mvista.com>
-	<20050809030000.GA25112@slurryseal.ddns.mvista.com>
-	<20050816085345.GJ9150@dominikbrodowski.de>
+From: Thomas Renninger <mail@renninger.de>
+Subject: Re: ondemand governor and passive cooling broken?
+Date: Thu, 25 Aug 2005 12:30:03 +0200
+Message-ID: <430D9DAB.6050502@renninger.de>
+References: <88056F38E9E48644A0F562A38C64FB600588ED10@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050816085345.GJ9150@dominikbrodowski.de>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB600588ED10@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -23,12 +17,63 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>
 
-I've sent Take 2 of PowerOP to LKML and linux-pm.  In the interest of 
-trimming down the lists I spam with this I didn't send it here, but if 
-anyone wants to discuss it here I'd be happy to.
+Pallipadi, Venkatesh wrote:
+>  
+> 
+>>-----Original Message-----
+>>From: Thomas Renninger [mailto:mail@renninger.de] 
+>>Sent: Saturday, August 20, 2005 9:49 PM
+>>To: Dominik Brodowski
+>>Cc: cpufreq@lists.linux.org.uk; Pallipadi, Venkatesh
+>>Subject: Re: ondemand governor and passive cooling broken?
+>>
+>>Hi,
+>>
+>>This makes ondemand governor aware of thermal limits.
+>>The policy was buffered and new policy values never reached 
+>>the governor.
+> 
+> I don't think there is an issue with buffering here.
+> This_dbs_info->cur_policy is a pointer to the cpufreq policy (and not
+> allocated by ondemand governor). So, any change to max/min in cpufreq
+> should be automatically getting reflected. Atleast that was the intent
+> with having policy pointer. If it is not happening then that should be a
+> bug. I don't think that this memcpy is required here.
+> 
+You are right. I tried to reproduce this problem with a powernow-k8 machine
+and thermal cooling worked just fine.
 
--- 
-Todd
+>>I just used the cpufreq_get_policy call every time the load is checked,
+>>maybe the new policy should be made available via notifier as 
+>>it is done
+>>for the cur_freq in the userspace governor?
+>>If this sounds reasonable I can come up with a bigger patch on Monday.
+>>
+>>However, thermal cooling still does not always work right:
+>>
+>> - Sometimes the limit is not decreased correctly in polling 
+>>frequency time
+>>   (I saw it at max for more than 20 secs, polling freq 5 
+>>secs, passive tp exceeded).
+>>   Strange enough, that seems to happen only in rare cases.
+>> - I also saw the limit stuck at lowest frequency even after 
+>>getting back in
+>>   normal temperature zones.
+> 
+> I think we need to do some more things to intergrate cpufreq and thermal
+> cooling. Especially in relation to polling frequency. Probably, ondemand
+> governor should slow down its polling interval to something higher than
+> thermal polling frequency as soon as it notices the passive cooling is
+> on.
+
+Don't know. I will try to get a speedstep-centrino machine and have a look
+whether this makes a difference and also play around a bit with thermal polling freq
+and ondemand configs. Do you think this could be a driver specific problem?
+
+Thanks,
+
+      Thomas
