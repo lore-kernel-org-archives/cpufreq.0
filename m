@@ -1,12 +1,10 @@
-From: Thomas Renninger <mail@renninger.de>
-Subject: Re: ondemand governor and passive cooling broken?
-Date: Thu, 25 Aug 2005 12:30:03 +0200
-Message-ID: <430D9DAB.6050502@renninger.de>
-References: <88056F38E9E48644A0F562A38C64FB600588ED10@scsmsx403.amr.corp.intel.com>
+From: Jose Miguel Goncalves <jose.goncalves@inov.pt>
+Subject: Problem with cpufreq on Geode GX1
+Date: Fri, 26 Aug 2005 20:26:40 +0100
+Message-ID: <430F6CF0.2010509@inov.pt>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB600588ED10@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,63 +15,67 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-Pallipadi, Venkatesh wrote:
->  
-> 
->>-----Original Message-----
->>From: Thomas Renninger [mailto:mail@renninger.de] 
->>Sent: Saturday, August 20, 2005 9:49 PM
->>To: Dominik Brodowski
->>Cc: cpufreq@lists.linux.org.uk; Pallipadi, Venkatesh
->>Subject: Re: ondemand governor and passive cooling broken?
->>
->>Hi,
->>
->>This makes ondemand governor aware of thermal limits.
->>The policy was buffered and new policy values never reached 
->>the governor.
-> 
-> I don't think there is an issue with buffering here.
-> This_dbs_info->cur_policy is a pointer to the cpufreq policy (and not
-> allocated by ondemand governor). So, any change to max/min in cpufreq
-> should be automatically getting reflected. Atleast that was the intent
-> with having policy pointer. If it is not happening then that should be a
-> bug. I don't think that this memcpy is required here.
-> 
-You are right. I tried to reproduce this problem with a powernow-k8 machine
-and thermal cooling worked just fine.
+Hi all,
 
->>I just used the cpufreq_get_policy call every time the load is checked,
->>maybe the new policy should be made available via notifier as 
->>it is done
->>for the cur_freq in the userspace governor?
->>If this sounds reasonable I can come up with a bigger patch on Monday.
->>
->>However, thermal cooling still does not always work right:
->>
->> - Sometimes the limit is not decreased correctly in polling 
->>frequency time
->>   (I saw it at max for more than 20 secs, polling freq 5 
->>secs, passive tp exceeded).
->>   Strange enough, that seems to happen only in rare cases.
->> - I also saw the limit stuck at lowest frequency even after 
->>getting back in
->>   normal temperature zones.
-> 
-> I think we need to do some more things to intergrate cpufreq and thermal
-> cooling. Especially in relation to polling frequency. Probably, ondemand
-> governor should slow down its polling interval to something higher than
-> thermal polling frequency as soon as it notices the passive cooling is
-> on.
+I'm trying to use cpufreq on my Geode GX1 board with linux-2.6.12.5, but,
+while everything seems OK, i.e., I can change from performance to powersave
+governor and back and /proc/cpuinfo reports me frequency changes, I can
+get no effective frequency/CPU power change because I check it with
+the Whetstone benchmark and it allways give me the same value (~100 MWIPS).
+Any ideas from were could be the problem?
 
-Don't know. I will try to get a speedstep-centrino machine and have a look
-whether this makes a difference and also play around a bit with thermal polling freq
-and ondemand configs. Do you think this could be a driver specific problem?
+Some additional info follows:
 
-Thanks,
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
-      Thomas
+performance
+
+$ cat /proc/cpuinfo
+
+processor	: 0
+vendor_id	: CyrixInstead
+cpu family	: 5
+model		: 9
+model name	: Geode(TM) Integrated Processor by National Semi
+stepping	: 2
+cpu MHz		: 300.672
+cache size	: 16 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu tsc msr cx8 cmov mmx cxmmx
+bogomips	: 591.87
+
+$ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+$ cat /proc/cpuinfo
+
+processor	: 0
+vendor_id	: CyrixInstead
+cpu family	: 5
+model		: 9
+model name	: Geode(TM) Integrated Processor by National Semi
+stepping	: 2
+cpu MHz		: 37.095
+cache size	: 16 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu tsc msr cx8 cmov mmx cxmmx
+bogomips	: 73.02
+
+Best regards,
+Jose Goncalves
