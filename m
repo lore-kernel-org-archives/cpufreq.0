@@ -1,10 +1,11 @@
-From: Jose Miguel Goncalves <jose.goncalves@inov.pt>
-Subject: Problem with cpufreq on Geode GX1
-Date: Fri, 26 Aug 2005 20:26:40 +0100
-Message-ID: <430F6CF0.2010509@inov.pt>
+From: bernd.westermann@it-west.de
+Subject: powernow-k8: overflow on vid write on AMD64 3000 Venice
+Date: Sat, 27 Aug 2005 17:48:21 +0200
+Message-ID: <200508271748.21052.bernd.westermann@it-west.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,67 +16,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-Hi all,
+Hello List,
 
-I'm trying to use cpufreq on my Geode GX1 board with linux-2.6.12.5, but,
-while everything seems OK, i.e., I can change from performance to powersave
-governor and back and /proc/cpuinfo reports me frequency changes, I can
-get no effective frequency/CPU power change because I check it with
-the Whetstone benchmark and it allways give me the same value (~100 MWIPS).
-Any ideas from were could be the problem?
+powernow-k8 does not run on my AMD 64 3000 Venice CPU. If I try to set 
+performance governor, I get the following error:
 
-Some additional info follows:
+powernow-k8: internal error - overflow on vid write
+powernow-k8: internal error - overflow on vid write
 
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+Reason: He wants to set VID=0x6 but he gets maxvid=0x4 from MSR_FIDVID_STATUS. 
+So it changed reqvid to 0x4 a nd I get these error.
 
-performance
+At the beginning powernow-k8 tells:
+powernow-k8: Found 1 AMD Athlon 64 / Opteron processors (version 1.40.4)
+powernow-k8:    0 : fid 0xa (1800 MHz), vid 0x6 (1400 mV)
+powernow-k8:    1 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
+cpu_init done, current fid 0x9, vid 0x6
 
-$ cat /proc/cpuinfo
+After I hardcoded the maxvid to 0x6 all govenors running fine. Is there an 
+wrong value in the processor core? Can we change something in powernow-k8?
 
-processor	: 0
-vendor_id	: CyrixInstead
-cpu family	: 5
-model		: 9
-model name	: Geode(TM) Integrated Processor by National Semi
-stepping	: 2
-cpu MHz		: 300.672
-cache size	: 16 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu tsc msr cx8 cmov mmx cxmmx
-bogomips	: 591.87
+My System:
+CPU: AMD64 3000 Venice
+Mainboard: ECS nforce4-939
+Linux: Gentoo 2005.1 64bit
+Kernel: 2.6.12.5 (2.6.12-gentoo-r9)
 
-$ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
-$ cat /proc/cpuinfo
+Best regards
 
-processor	: 0
-vendor_id	: CyrixInstead
-cpu family	: 5
-model		: 9
-model name	: Geode(TM) Integrated Processor by National Semi
-stepping	: 2
-cpu MHz		: 37.095
-cache size	: 16 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu tsc msr cx8 cmov mmx cxmmx
-bogomips	: 73.02
-
-Best regards,
-Jose Goncalves
+Bernd
