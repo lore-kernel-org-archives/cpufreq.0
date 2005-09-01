@@ -1,12 +1,12 @@
-From: Dave Jones <davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+From: Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org>
 Subject: Re: [RFC][PATCH 0/4] Software coordination of frequency across CPUs sharing common P-state
-Date: Thu, 1 Sep 2005 01:29:03 -0400
-Message-ID: <20050901052903.GA17927@redhat.com>
-References: <20050831140933.A12497@unix-os.sc.intel.com>
+Date: Thu, 1 Sep 2005 11:08:22 +0200
+Message-ID: <20050901090822.GD6285@isilmar.linta.de>
+References: <20050831140933.A12497@unix-os.sc.intel.com> <20050901052903.GA17927@redhat.com>
 Mime-Version: 1.0
 Return-path: <acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20050831140933.A12497-39QZ/XbsZ5/mO6KZMuUCQVaTQe2KTcn/@public.gmane.org>
+In-Reply-To: <20050901052903.GA17927-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
@@ -19,31 +19,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Venkatesh Pallipadi <venkatesh.pallipadi-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: cpufreq <cpufreq-1walMZg8u8rXmaaqVzeoHQ@public.gmane.org>, acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rajesh Shah <rajesh.shah-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+To: Dave Jones <davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, cpufreq <cpufreq-1walMZg8u8rXmaaqVzeoHQ@public.gmane.org>, acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rajesh Shah <rajesh.shah-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-On Wed, Aug 31, 2005 at 02:09:33PM -0700, Venkatesh Pallipadi wrote:
+On Thu, Sep 01, 2005 at 01:29:03AM -0400, Dave Jones wrote:
+> On Wed, Aug 31, 2005 at 02:09:33PM -0700, Venkatesh Pallipadi wrote:
+> 
+>  > ACPI 3.0 (http://www.acpi.info) adds new methods with which BIOS can communicate
+>  > P-state dependency domains (List of CPUs that share a common P-state) to
+>  > the OS. This can be used in conjunction with the existing "cpu group awareness"
+>  > in cpufreq infrastructure, to manage the group of CPUs sharing the common 
+>  > P-state, in a better way.
+>  > 
+>  > The patchset that follows adds this "software-coordination" feature in 
+>  > acpi-perflib, and also changes acpi-cpufreq and speedstep-centrino drivers to
+>  > use this feature. 
+> 
+> Patch 1 rejects against the latest git tree, due to Len's latest ACPI changes.
+> That (and possibly patch 4) need redoing.
+> 
+> From a first look, these patches look ok to me, so if you rediff these,
+> and Len is happy with the ACPI changes, I'm happy to merge them for 2.6.14
 
- > ACPI 3.0 (http://www.acpi.info) adds new methods with which BIOS can communicate
- > P-state dependency domains (List of CPUs that share a common P-state) to
- > the OS. This can be used in conjunction with the existing "cpu group awareness"
- > in cpufreq infrastructure, to manage the group of CPUs sharing the common 
- > P-state, in a better way.
- > 
- > The patchset that follows adds this "software-coordination" feature in 
- > acpi-perflib, and also changes acpi-cpufreq and speedstep-centrino drivers to
- > use this feature. 
+Patches
 
-Patch 1 rejects against the latest git tree, due to Len's latest ACPI changes.
-That (and possibly patch 4) need redoing.
+Acked-by: Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org>
 
-From a first look, these patches look ok to me, so if you rediff these,
-and Len is happy with the ACPI changes, I'm happy to merge them for 2.6.14
+Nice work!
 
-Thanks,
-
-		Dave
-
+	Dominik
 
 
 -------------------------------------------------------
