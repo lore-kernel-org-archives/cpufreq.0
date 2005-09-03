@@ -1,40 +1,28 @@
-From: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: RE: Re: [RFC][PATCH 0/4] Software coordination of frequency across CPUs sharing common P-state
-Date: Thu, 1 Sep 2005 15:20:33 -0400
-Message-ID: <F7DC2337C7631D4386A2DF6E8FB22B30047B8ED9@hdsmsx401.amr.corp.intel.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [x86_64] Exception when using powernowd.
+Date: Fri, 2 Sep 2005 17:24:37 -0700
+Message-ID: <20050902172437.7e8ceabd.akpm@osdl.org>
+References: <20050903.021820.1300541056.whatisthis@jcom.home.ne.jp>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Content-class: urn:content-classes:message
-Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161080AbVICAYp@vger.kernel.org>
+In-Reply-To: <20050903.021820.1300541056.whatisthis@jcom.home.ne.jp>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Post: <mailto:acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org>, Dave Jones <davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: cpufreq <cpufreq-1walMZg8u8rXmaaqVzeoHQ@public.gmane.org>, acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, "Shah, Rajesh" <rajesh.shah-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+To: Kyuma Ohta <whatisthis@jcom.home.ne.jp>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-=20
->I had rebased my patch over Len's acpi-20050815-2.6.13 . Probably=20
->some part of it is still not in git that is causing the conflict.=20
->I will rebase the patch with latest git, before I resend the patch.
+Kyuma Ohta <whatisthis@jcom.home.ne.jp> wrote:
+>
+> I'm using MSI K8T Neo2 (VIA K8T800 chipset) and Athlon64 3000+
+> with  linux x86_64 2.6.13 kernel and Debian/sid.
+> When enable powernow-k8 (i.e. using powernowd,cpudyn) to
+> saving power, some process is down by null protection and
+> system is unstable.
+> Then disabling powernow-k8,and reboot, system is very stable.
+> 
+> I attach any log,please give me a advice.
 
-FYI we're planning to send this ACPI patch to Linus in the next
-few days.  It includes a huge Lindent flag-day, so we really
-want to get it into 2.6.14 extremely early, but we need to
-button up a few things first.
-
--Len
-
-
--------------------------------------------------------
-SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
-Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf
+Did earlier kernels work OK?  Can you identify the most recent 2.6 kernel
+which didn't have this bug?
