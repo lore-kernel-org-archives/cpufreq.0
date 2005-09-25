@@ -1,12 +1,13 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: powernow failure
-Date: Thu, 22 Sep 2005 16:43:05 +0200
-Message-ID: <20050922144305.GD12885@poupinou.org>
-References: <F7DC2337C7631D4386A2DF6E8FB22B3004AA5BE3@hdsmsx401.amr.corp.intel.com>
+From: <lutris@gmail.com>
+Subject: Clock runs twice as fast when CPU speed is halved on AMD Turion 64
+	mobile (Compaq Presario V2311US)
+Date: Sat, 24 Sep 2005 23:26:06 -0400
+Message-ID: <8d7939e2050924202679c61e8b@mail.gmail.com>
+Reply-To: lutris@gmail.com
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <F7DC2337C7631D4386A2DF6E8FB22B3004AA5BE3@hdsmsx401.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,33 +17,23 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Brown, Len" <len.brown@intel.com>
-Cc: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Wed, Sep 21, 2005 at 09:56:45PM -0400, Brown, Len wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=5266
-> 
-> unclear if this bug filed agasinst ACPI is an ACPI issue,
-> do any guys who are not on the powernow driver want to take a look?
-> 
+I've an AMD Turion-based laptop, a Compaq Presario V2311US.  It can be
+set to two speeds, 800Mhz or 1600Mhz.  When set to 800Mhz, Linux
+thinks that time is passing twice as fast as normal - if I let the
+laptop sit for an hour, it claims that two have passed.
 
-It's seems it's an issue I introduced trying to fix another one, but I
-believe it's not actually my fault.  The powernow-k7 driver now
-calibrate in order to get it right with max and such.  I believe that
-in some case the system clock run twice (well, at least I saw reports
-on this on nforce based systems IIRC) and therefore I think it's what
-need to be fixed.
+Are there any known workarounds or fixes for this?
 
-Read: I won't fix that and I don't think it is related to ACPI
-nor CPUFreq but to timer code.
+If not, are there any suggestions for dirty hacks?
 
-Cheers,
+Hard-coding the kernel to run the clock half as fast would be
+sufficient; I never need to set the bus speed to full when in Linux.
 
--- 
-Bruno Ducrot
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Incidentally, I briefly thought that I was getting -fantastic- battery
+life, although I was confused about how fast it became midnight.  :]=20
+Oh, well.
