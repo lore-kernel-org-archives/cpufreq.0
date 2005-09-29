@@ -1,73 +1,115 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] transition latency of speedstep-ich (third try)
-Date: Wed, 28 Sep 2005 16:53:46 -0700
-Message-ID: <88056F38E9E48644A0F562A38C64FB6005DBB974@scsmsx403.amr.corp.intel.com>
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: [patch 1/1] cpufreq_conservative: invert meaning of 'ignore_nice'
+Date: Thu, 29 Sep 2005 09:44:35 +0100
+Message-ID: <20050929084435.GC3169@inskipp.digriz.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JwB53PgKC5A7+0Ej"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751125AbVI2It7@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
+To: LKML <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
+Cc: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, Blaisorblade <blaisorblade@yahoo.it>, alex-kernel@digriz.org.uk
 
 
->-----Original Message-----
->From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
->> Eric,
->> Can you put rdtsc's around these in/out on your system and=20
->check how long do they really take. On P4M, rdtsc should be=20
->running all the time other than the Cpu being in deep_sleep=20
->state. That should give us some idea about the SMM latency.
->>=20
->Ok, I've just done it. It's on a P3 coppermine though (not a P4M). So=20
->I've measure the difference of tsc before and after the in/out=20
->instructions (not included the local_irq_*()). The patch is=20
->attached for=20
->double check (or if someone wants to try on another CPU). The values=20
->seem very small compare to the 500uS you mentioned.
->
->After few minutes with ondemand governor, there was a log like this:
->Sep 28 23:30:32 circle kernel: cpufreq transition took 4862 cycles
->Sep 28 23:30:33 circle kernel: cpufreq transition took 4473 cycles
->Sep 28 23:30:33 circle kernel: cpufreq transition took 4836 cycles
->Sep 28 23:30:35 circle kernel: cpufreq transition took 4723 cycles
->Sep 28 23:30:35 circle kernel: cpufreq transition took 5640 cycles
->Sep 28 23:30:48 circle kernel: cpufreq transition took 4515 cycles
->Sep 28 23:30:48 circle kernel: cpufreq transition took 4904 cycles
->Sep 28 23:31:02 circle kernel: cpufreq transition took 4286 cycles
->Sep 28 23:31:02 circle kernel: cpufreq transition took 4607 cycles
->Sep 28 23:31:03 circle kernel: cpufreq transition took 4279 cycles
->Sep 28 23:31:03 circle kernel: cpufreq transition took 4605 cycles
->Sep 28 23:31:04 circle kernel: cpufreq transition took 4694 cycles
->Sep 28 23:31:04 circle kernel: cpufreq transition took 4605 cycles
->Sep 28 23:31:13 circle kernel: cpufreq transition took 4683 cycles
->Sep 28 23:31:14 circle kernel: cpufreq transition took 4676 cycles
->Sep 28 23:31:14 circle kernel: cpufreq transition took 4515 cycles
->Sep 28 23:31:15 circle kernel: cpufreq transition took 4522 cycles
->
->Maximum I've seen is 5640 cycles, minimum is about 4200c. My CPU is=20
->clocked 1GHz so the result can be easily summarized to a maximum of=20
->about 6uS.
->
->As it's very different from the numbers you got, I wonder if I mistook=20
->somewhere ?
->
+--JwB53PgKC5A7+0Ej
+Content-Type: multipart/mixed; boundary="KN5l+BnMqAQyZLvT"
+Content-Disposition: inline
 
-I don't have any numbers with Coppermine or P4-M. Probably the reason
-For low numbers is TSC itself stops at certain times during this whole
-Operation. And it will also run at slower frequency once you change the
-Freq (On coppermine). 6uS is too low in my opinion. We may not be=20
-measuring correctly here.
 
-Thanks,
-Venki
+--KN5l+BnMqAQyZLvT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+The use of the 'ignore_nice' sysfs file is confusing to anyone using.  This=
+=20
+patch makes it so when you now set it to the default value of 1, process ni=
+ce=20
+time is also ignored in the cpu 'busyness' calculation.
+
+Prior to this patch to set it to '1' to make process nice time count...even=
+=20
+confused me :)
+
+WARNING: this obvious breaks any userland tools that expect things to be th=
+e=20
+other way round.  This patch clears up the confusion but should go in ASAP =
+as=20
+at the moment it seems very few tools even make use of this functionality;=
+=20
+all I could find was a Gentoo Wiki entry.
+
+Signed-off-by: Alexander Clouter <alex-kernel@digriz.org.uk>
+
+--KN5l+BnMqAQyZLvT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="01_inverse_ignore_nice_flag.diff"
+Content-Transfer-Encoding: quoted-printable
+
+diff -u linux-2.6.13.orig/drivers/cpufreq/cpufreq_conservative.c linux-2.6.=
+13/drivers/cpufreq/cpufreq_conservative.c
+--- linux-2.6.13.orig/drivers/cpufreq/cpufreq_conservative.c	2005-09-23 15:=
+24:46.605223250 +0100
++++ linux-2.6.13/drivers/cpufreq/cpufreq_conservative.c	2005-09-23 15:24:30=
+=2E740231750 +0100
+@@ -93,7 +93,7 @@
+ {
+ 	return	kstat_cpu(cpu).cpustat.idle +
+ 		kstat_cpu(cpu).cpustat.iowait +
+-		( !dbs_tuners_ins.ignore_nice ?=20
++		( dbs_tuners_ins.ignore_nice ?=20
+ 		  kstat_cpu(cpu).cpustat.nice :
+ 		  0);
+ }
+@@ -515,7 +515,7 @@
+ 			def_sampling_rate =3D (latency / 1000) *
+ 					DEF_SAMPLING_RATE_LATENCY_MULTIPLIER;
+ 			dbs_tuners_ins.sampling_rate =3D def_sampling_rate;
+-			dbs_tuners_ins.ignore_nice =3D 0;
++			dbs_tuners_ins.ignore_nice =3D 1;
+ 			dbs_tuners_ins.freq_step =3D 5;
+=20
+ 			dbs_timer_init();
+diff -u linux-2.6.13.orig/drivers/cpufreq/cpufreq_ondemand.c linux-2.6.13/d=
+rivers/cpufreq/cpufreq_ondemand.c
+--- linux-2.6.13.orig/drivers/cpufreq/cpufreq_ondemand.c	2005-09-23 15:24:4=
+6.609223500 +0100
++++ linux-2.6.13/drivers/cpufreq/cpufreq_ondemand.c	2005-09-23 15:24:08.846=
+863500 +0100
+@@ -86,7 +86,7 @@
+ {
+ 	return	kstat_cpu(cpu).cpustat.idle +
+ 		kstat_cpu(cpu).cpustat.iowait +
+-		( !dbs_tuners_ins.ignore_nice ?=20
++		( dbs_tuners_ins.ignore_nice ?=20
+ 		  kstat_cpu(cpu).cpustat.nice :
+ 		  0);
+ }
+@@ -424,7 +424,7 @@
+ 			def_sampling_rate =3D (latency / 1000) *
+ 					DEF_SAMPLING_RATE_LATENCY_MULTIPLIER;
+ 			dbs_tuners_ins.sampling_rate =3D def_sampling_rate;
+-			dbs_tuners_ins.ignore_nice =3D 0;
++			dbs_tuners_ins.ignore_nice =3D 1;
+=20
+ 			dbs_timer_init();
+ 		}
+
+--KN5l+BnMqAQyZLvT--
+
+--JwB53PgKC5A7+0Ej
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDO6lzNv5Ugh/sRBYRAvrVAJ0Sqytl1vMcA/lSsG0sycKgunv6nwCeIMe8
+EPCT+XzR+jDoAalnp5flRUw=
+=GI2g
+-----END PGP SIGNATURE-----
+
+--JwB53PgKC5A7+0Ej--
