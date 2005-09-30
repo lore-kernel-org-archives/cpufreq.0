@@ -1,12 +1,14 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: Re: [PATCH] transition latency of speedstep-ich (third try)
-Date: Fri, 30 Sep 2005 00:06:14 +0200
-Message-ID: <433C6556.1030803@tremplin-utc.net>
-References: <88056F38E9E48644A0F562A38C64FB6005DBB974@scsmsx403.amr.corp.intel.com>
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: [patch 1/1] cpufreq_conservative: invert meaning of
+	'ignore_nice'
+Date: Fri, 30 Sep 2005 09:09:26 +0100
+Message-ID: <20050930080926.GA3033@inskipp.digriz.org.uk>
+References: <20050929084435.GC3169@inskipp.digriz.org.uk>
+	<200509291346.33855.blaisorblade@yahoo.it>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0861799895=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6005DBB974@scsmsx403.amr.corp.intel.com>
+In-Reply-To: <200509291346.33855.blaisorblade@yahoo.it>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,64 +19,104 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk, LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
 
-29.09.2005 01:53, Pallipadi, Venkatesh wrote/a =E9crit:
->>-----Original Message-----
->>From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
->>
->>>Eric,
->>>Can you put rdtsc's around these in/out on your system and=20
->>
->>check how long do they really take. On P4M, rdtsc should be=20
->>running all the time other than the Cpu being in deep_sleep=20
->>state. That should give us some idea about the SMM latency.
->>
->>Ok, I've just done it. It's on a P3 coppermine though (not a P4M). So=20
->>I've measure the difference of tsc before and after the in/out=20
->>instructions (not included the local_irq_*()). The patch is=20
->>attached for=20
->>double check (or if someone wants to try on another CPU). The values=20
->>seem very small compare to the 500uS you mentioned.
->>
->>After few minutes with ondemand governor, there was a log like this:
->>Sep 28 23:30:32 circle kernel: cpufreq transition took 4862 cycles
->>Sep 28 23:30:33 circle kernel: cpufreq transition took 4473 cycles
->>Sep 28 23:30:33 circle kernel: cpufreq transition took 4836 cycles
->>Sep 28 23:30:35 circle kernel: cpufreq transition took 4723 cycles
->>Sep 28 23:30:35 circle kernel: cpufreq transition took 5640 cycles
->>Sep 28 23:30:48 circle kernel: cpufreq transition took 4515 cycles
->>Sep 28 23:30:48 circle kernel: cpufreq transition took 4904 cycles
->>Sep 28 23:31:02 circle kernel: cpufreq transition took 4286 cycles
->>Sep 28 23:31:02 circle kernel: cpufreq transition took 4607 cycles
->>Sep 28 23:31:03 circle kernel: cpufreq transition took 4279 cycles
->>Sep 28 23:31:03 circle kernel: cpufreq transition took 4605 cycles
->>Sep 28 23:31:04 circle kernel: cpufreq transition took 4694 cycles
->>Sep 28 23:31:04 circle kernel: cpufreq transition took 4605 cycles
->>Sep 28 23:31:13 circle kernel: cpufreq transition took 4683 cycles
->>Sep 28 23:31:14 circle kernel: cpufreq transition took 4676 cycles
->>Sep 28 23:31:14 circle kernel: cpufreq transition took 4515 cycles
->>Sep 28 23:31:15 circle kernel: cpufreq transition took 4522 cycles
->>
->>Maximum I've seen is 5640 cycles, minimum is about 4200c. My CPU is=20
->>clocked 1GHz so the result can be easily summarized to a maximum of=20
->>about 6uS.
->>
->>As it's very different from the numbers you got, I wonder if I mistook=20
->>somewhere ?
->>
+
+--===============0861799895==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
+Content-Disposition: inline
+
+
+--2fHTh5uZTiUOsy+g
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Blaisorblade <blaisorblade@yahoo.it> [20050929 13:46:33 +0200]:
+>
+> On Thursday 29 September 2005 10:44, Alexander Clouter wrote:
+>=20
+> > WARNING: this obvious breaks any userland tools that expect things to be
+> > the other way round.  This patch clears up the confusion but should go =
+in
+> > ASAP as at the moment it seems very few tools even make use of this
+> > functionality; all I could find was a Gentoo Wiki entry.
+>=20
+> My suggestion on this is to rename the flag too, as ignore_nice_load (or=
+=20
+> ignore_nice_tasks, choose your way). Don't forget to do it in docs too.
+>=20
+'ignore_nice_tasks' gets my vote..
+
+> So userspace tools will error out rather than do the reverse of what they=
+ were=20
+> doing, and the user will fix the thing according to the (new) docs.
+>=20
+> This is the way we avoid problems in kernel code, when changing APIs (I r=
+ead=20
+> Linus talking about this), so I assume it's ok?
+>=20
+Makes a lot of sense.  I'll roll out some new patches this evening and subm=
+it=20
+them.
+
+Regards
+
+Alex
+
+> --=20
+> Inform me of my mistakes, so I can keep imitating Homer Simpson's "Doh!".
+> Paolo Giarrusso, aka Blaisorblade (Skype ID "PaoloGiarrusso", ICQ 2156218=
+94)
+> http://www.user-mode-linux.org/~blaisorblade
 >=20
 >=20
-> I don't have any numbers with Coppermine or P4-M. Probably the reason
-> For low numbers is TSC itself stops at certain times during this whole
-> Operation. And it will also run at slower frequency once you change the
-> Freq (On coppermine). 6uS is too low in my opinion. We may not be=20
-> measuring correctly here.
-Could it happen that on a P4M the TSC doesn't stop? Then maybe someone=20
-with such a harware could try? Otherwise, what do you suggest to obtain=20
-the maximum transition latency? Take 500uS and multiply by the number of=20
-I/O in the code ?
+> =09
+>=20
+> =09
+> 	=09
+> ___________________________________=20
+> Yahoo! Mail: gratis 1GB per i messaggi e allegati da 10MB=20
+> http://mail.yahoo.it
 
-Eric
+--=20
+ ________________________________________=20
+< An idle mind is worth two in the bush. >
+ ----------------------------------------=20
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+--2fHTh5uZTiUOsy+g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDPPK2Nv5Ugh/sRBYRAlcYAJ0Z9R2BQu1tkJphBvjm2weFh3wjTwCgjgis
+sfKIC5ou8mMh4XlWM1fSAR4=
+=OK3Q
+-----END PGP SIGNATURE-----
+
+--2fHTh5uZTiUOsy+g--
+
+
+--===============0861799895==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0861799895==--
+
