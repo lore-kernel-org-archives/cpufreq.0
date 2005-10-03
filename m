@@ -1,14 +1,9 @@
-From: Stefan Seyfried <seife@suse.de>
-Subject: Re: [patch 1/1] cpufreq_conservative: invert meaning of
-	'ignore_nice'
-Date: Fri, 30 Sep 2005 15:56:56 +0200
-Message-ID: <433D4428.3050906@suse.de>
-References: <20050929084435.GC3169@inskipp.digriz.org.uk>	<200509291346.33855.blaisorblade@yahoo.it>
-	<20050929215153.GF31516@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <20050929215153.GF31516@redhat.com>
+From: bugme-daemon@kernel-bugs.osdl.org
+Subject: [Bug 5353] New: cpufreq_conservative: cpu always in slowest mode
+	even under high load
+Date: Mon, 3 Oct 2005 08:22:37 -0700
+Message-ID: <200510031522.j93FMbCP010702@fire-1.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,31 +13,39 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@redhat.com>
-Cc: Andrew Morton <akpm@osdl.org>, Alexander Clouter <alex@digriz.org.uk>, cpufreq@lists.linux.org.uk, Blaisorblade <blaisorblade@yahoo.it>, LKML <linux-kernel@vger.kernel.org>, alex-kernel@digriz.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Dave Jones wrote:
-> On Thu, Sep 29, 2005 at 01:46:33PM +0200, Blaisorblade wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=5353
 
->  > So userspace tools will error out rather than do the reverse of what t=
-hey were=20
->  > doing, and the user will fix the thing according to the (new) docs.
->=20
-> Agreed. If we change this, we change it completely.
-> Stefan already mentioned his app will break, and we typically don't
-> find out about widespread breakage until after we ship a release.
+           Summary: cpufreq_conservative: cpu always in slowest mode even
+                    under high load
+    Kernel Version: 2.6.13-rc7
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: linux@markus-schaub.de
 
-I can live with the change - powersaved has a setting "consider_nice" to
-configure this and i can put out a support article telling people to
-"invert" this setting if they are running custom kernels, so it is not
-really a showstopper for me. Most of the users don't understand thos
-settings anyway ;-)
 
-I'm not sure what is better for me - a nice short name or a clear
-indication on which version we are running ;-)
---=20
-Stefan Seyfried                  \ "I didn't want to write for pay. I
-QA / R&D Team Mobile Devices      \ wanted to be paid for what I write."
-SUSE LINUX Products GmbH, N=FCrnberg \                    -- Leonard Cohen
+Most recent kernel where this bug did not occur: don't know
+Distribution:
+Hardware Environment: IBM Thinkpad T43, Pentium M
+Software Environment: speedstep_centrino
+Problem Description:
+After serveral hours under high cpu load (i.e. coding videos with mencoder) the
+system switches to the lowest possible cpu frequency (indicated by
+/sys/devices/.../cpufreq/scaling_cur_freq or by low frame rate in video coder).
+Then changing scaling_governor to performance doesn't change anything, the cpu
+frequency stays at the lowest possible value. Only reboot fixes this.
+
+Steps to reproduce:
+$ modprobe cpufreq_conservative
+$ modprobe speedstep_centrino
+then wait a long time :-)
+The Problem occurs very seldomly, about three times in the last months.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
