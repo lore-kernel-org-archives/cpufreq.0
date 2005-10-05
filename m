@@ -1,9 +1,11 @@
-From: bugme-daemon@kernel-bugs.osdl.org
-Subject: [Bug 5353] New: cpufreq_conservative: cpu always in slowest mode
-	even under high load
-Date: Mon, 3 Oct 2005 08:22:37 -0700
-Message-ID: <200510031522.j93FMbCP010702@fire-1.osdl.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] transition latency of speedstep-ich (third try)
+Date: Wed, 5 Oct 2005 13:39:55 -0700
+Message-ID: <88056F38E9E48644A0F562A38C64FB6005EB231C@scsmsx403.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,38 +16,40 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=5353
-
-           Summary: cpufreq_conservative: cpu always in slowest mode even
-                    under high load
-    Kernel Version: 2.6.13-rc7
-            Status: NEW
-          Severity: normal
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: linux@markus-schaub.de
+To: Eric Piel <Eric.Piel@tremplin-utc.net>
+Cc: davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
 
 
-Most recent kernel where this bug did not occur: don't know
-Distribution:
-Hardware Environment: IBM Thinkpad T43, Pentium M
-Software Environment: speedstep_centrino
-Problem Description:
-After serveral hours under high cpu load (i.e. coding videos with mencoder) the
-system switches to the lowest possible cpu frequency (indicated by
-/sys/devices/.../cpufreq/scaling_cur_freq or by low frame rate in video coder).
-Then changing scaling_governor to performance doesn't change anything, the cpu
-frequency stays at the lowest possible value. Only reboot fixes this.
+>-----Original Message-----
+>From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
+>Sent: Thursday, September 29, 2005 3:06 PM
+>>>
+>>>As it's very different from the numbers you got, I wonder if=20
+>I mistook=20
+>>>somewhere ?
+>>>
+>>=20
+>>=20
+>> I don't have any numbers with Coppermine or P4-M. Probably the reason
+>> For low numbers is TSC itself stops at certain times during=20
+>this whole
+>> Operation. And it will also run at slower frequency once you=20
+>change the
+>> Freq (On coppermine). 6uS is too low in my opinion. We may not be=20
+>> measuring correctly here.
+>Could it happen that on a P4M the TSC doesn't stop? Then maybe someone=20
+>with such a harware could try? Otherwise, what do you suggest=20
+>to obtain=20
+>the maximum transition latency? Take 500uS and multiply by the=20
+>number of=20
+>I/O in the code ?
+>
+>Eric
+>
 
-Steps to reproduce:
-$ modprobe cpufreq_conservative
-$ modprobe speedstep_centrino
-then wait a long time :-)
-The Problem occurs very seldomly, about three times in the last months.
+Do you have ACPI PM timer on your system? May be we can measure the=20
+latency using that.=20
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Thanks,
+Venki
