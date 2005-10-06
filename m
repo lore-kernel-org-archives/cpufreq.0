@@ -1,7 +1,7 @@
 From: bugme-daemon@kernel-bugs.osdl.org
 Subject: [Bug 5383] VIA Nehemiah ondemand scaling governor critical DMA error
-Date: Thu, 6 Oct 2005 14:24:37 -0700
-Message-ID: <200510062124.j96LObhW019148@fire-1.osdl.org>
+Date: Thu, 6 Oct 2005 14:45:02 -0700
+Message-ID: <200510062145.j96Lj2hw020419@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,9 +24,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=5383
 
 
 
-------- Additional Comments From fabio.erculiani@gmail.com  2005-10-06 14:23 -------
-However, I think that should be fixed, don't you? How? ATM, I don't know, even 
-becase I'm not a linux "under_the_hood" kernel hacker ;) 
+------- Additional Comments From davej@codemonkey.org.uk  2005-10-06 14:43 -------
+absolutely, it's just not something thats a quick fix.
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
