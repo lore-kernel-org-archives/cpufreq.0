@@ -1,11 +1,10 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] transition latency of speedstep-ich (third try)
-Date: Wed, 5 Oct 2005 13:39:55 -0700
-Message-ID: <88056F38E9E48644A0F562A38C64FB6005EB231C@scsmsx403.amr.corp.intel.com>
+From: Alex Simonov <a_simonov@yahoo.com>
+Subject: Ondemand governor not working with kernel-2.6.12-12mdk
+Date: Thu, 6 Oct 2005 05:52:46 -0700 (PDT)
+Message-ID: <20051006125246.56683.qmail@web32704.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,39 +16,32 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
+
+Hello everybody,
+
+Recently I installed Mandrake Linux with kernel
+2.6.12 on my laptop, and noticed, that the
+ondemand governor is not working, only the
+powersave, and performance governors.
+
+Anyone has an idea what could be the reason?
+Please tell me if you need any other info for
+better diagnosing the problem.
+
+The System is:
+
+HP Omnibook 510
+Pentium III CPU 1133 Mhz/440BX chipset.
+Cpufreq modules are compiled directly in the
+kernel.
+
+Thank you,
+
+Alex
 
 
->-----Original Message-----
->From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
->Sent: Thursday, September 29, 2005 3:06 PM
->>>
->>>As it's very different from the numbers you got, I wonder if=20
->I mistook=20
->>>somewhere ?
->>>
->>=20
->>=20
->> I don't have any numbers with Coppermine or P4-M. Probably the reason
->> For low numbers is TSC itself stops at certain times during=20
->this whole
->> Operation. And it will also run at slower frequency once you=20
->change the
->> Freq (On coppermine). 6uS is too low in my opinion. We may not be=20
->> measuring correctly here.
->Could it happen that on a P4M the TSC doesn't stop? Then maybe someone=20
->with such a harware could try? Otherwise, what do you suggest=20
->to obtain=20
->the maximum transition latency? Take 500uS and multiply by the=20
->number of=20
->I/O in the code ?
->
->Eric
->
-
-Do you have ACPI PM timer on your system? May be we can measure the=20
-latency using that.=20
-
-Thanks,
-Venki
+		
+__________________________________ 
+Yahoo! Mail - PC Magazine Editors' Choice 2005 
+http://mail.yahoo.com
