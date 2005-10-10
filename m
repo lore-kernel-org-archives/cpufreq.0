@@ -1,12 +1,11 @@
-From: Andrea Ferrari <and_ferrari@virgilio.it>
-Subject: Re: Problem with Powernow-k8 - 2.6.13.3
-Date: Mon, 10 Oct 2005 19:16:31 +0200
-Message-ID: <200510101916.41365.and_ferrari@virgilio.it>
-References: <84EA05E2CA77634C82730353CBE3A84303218846@SAUSEXMB1.amd.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: Problem with Powernow-k8 - 2.6.13.3
+Date: Mon, 10 Oct 2005 15:34:26 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A8430321884F@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1817442837=="
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84303218846@SAUSEXMB1.amd.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,86 +15,41 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Andrea Ferrari <and_ferrari@virgilio.it>
+Cc: cpufreq@lists.linux.org.uk, linux@brodo.de
 
---===============1817442837==
-Content-Type: multipart/signed; boundary="nextPart10459574.NA2pKmYrRA";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+> Alle 19:45, luned=EC 10 ottobre 2005, hai scritto:
+> > Oops.  Sorry, you'll need to copy the powernow-k8.h
+> > file over also.
+> >
+> > Thanks for helping me debug this.
+>=20
+> Ok, i copy powernow-k8.h and powernow-k8.c in 2.6.13.4=20
+> source. Compile it and Reboot my Pc. From Dmesg:
+>=20
+> powernow-k8: Found 1 AMD Athlon 64 / Opteron processors=20
+> (version 1.40.4)
+> powernow-k8: BIOS error - no PSB or ACPI _PSS objects
+>=20
+> Is there a problem on Acpi drivers?
 
---nextPart10459574.NA2pKmYrRA
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+It looks like it.  There was a change between 2.6.12.3
+and 2.6.13.4 that stops Linux from finding the _PSS
+or _PCT objects on your system.
 
-Alle 16:52, luned=EC 10 ottobre 2005, Langsdorf, Mark ha scritto:
+Dominik -
 
-> If you're willing to try an experiment, could you copy the
-> arch/i386/kernel/cpu/cpufreq/powernow-k8.c file from your
-> 2.6.12.4 directory into the same 2.6.13.3 directory?  Then
-> recompile and reboot.  If it still doesn't work, it's an ACPI
-> or BIOS problem.  If it does work, it's a problem with the
-> driver.  Either way, tell me and I'll look into it more.
+You're listed in the credits for processor_perflib.c.
+Something in that file changed between 2.6.12.3 and
+2.6.13.4 to prevent acpi_processor_register_performance()
+from working on a MSI K8N Neo4 Platinum motherboard.
 
-I try it, but when i recompile 2.6.13.3, i have this error:
+I suspect it isn't finding the _PCT, because AMD saw a
+similar bug on an internal BIOS.  I reported it to our
+BIOS team to resolve, but it now appears to be a Linux
+regression.  How can we fix this?
 
-arch/i386/kernel/cpu/cpufreq/powernow-k8.c: In function `check_supported_cp=
-u':
-arch/i386/kernel/cpu/cpufreq/powernow-k8.c:470: error: `CPUID_XMOD_REV_E'=20
-undeclared (first use in this function)
-arch/i386/kernel/cpu/cpufreq/powernow-k8.c:470: error: (Each undeclared=20
-identifier is reported only once
-arch/i386/kernel/cpu/cpufreq/powernow-k8.c:470: error: for each function it=
-=20
-appears in.)
-make[3]: *** [arch/i386/kernel/cpu/cpufreq/powernow-k8.o] Error 1
-make[2]: *** [arch/i386/kernel/cpu/cpufreq] Error 2
-make[1]: *** [arch/i386/kernel/cpu] Error 2
-make: *** [arch/i386/kernel] Error 2
-
-:-(
-
-Andrea
-
-=2D-=20
-
-MOgWai46 - ICQ #203981367
-GPG Key:
-# Keyserver: blackhole.pca.dfn.de
-# KeyID: 0687D717
-
-
-"She puts the weights into my little heart,
-And she gets in my room and she takes it apart.
-She puts the weights into my little heart,
-I said she puts the weights into my little heart."
-
---nextPart10459574.NA2pKmYrRA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQBDSqH5hIDJNwaH1xcRAhECAKCOOySYdnTZpjt+C93ND3hMs6+jagCfXIsO
-mtuWLnSn3Dtn6+x3450Taa0=
-=R8Ef
------END PGP SIGNATURE-----
-
---nextPart10459574.NA2pKmYrRA--
-
-
---===============1817442837==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
---===============1817442837==--
-
+-Mark Langsdorf
+AMD, Inc.
