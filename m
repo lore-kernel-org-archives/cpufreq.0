@@ -1,10 +1,9 @@
-From: Johannes Ranke <jranke@uni-bremen.de>
-Subject: Transmeta Efficeon
-Date: Wed, 12 Oct 2005 10:00:56 +0200
-Message-ID: <20051012080056.GC29101@mail.uft.uni-bremen.de>
-Mime-Version: 1.0
+From: bugme-daemon@kernel-bugs.osdl.org
+Subject: [Bug 5407] CPUFrequency driver for AMD K8 crashes PC with Sempron
+	3400+ CPU
+Date: Thu, 13 Oct 2005 04:09:01 -0700
+Message-ID: <200510131109.j9DB91SN027346@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,27 +14,31 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Dear cpufreq developers,
+http://bugzilla.kernel.org/show_bug.cgi?id=5407
 
-I was trying to profit from the long-run technology in my Transmeta
-Efficeon CPU with kernel 2.6.13, and I have two questions:
 
-	- Is anybody developing/using cpufreq successfully with this CPU
 
-	- Is there a good howto for cpufreq users?
 
-Maybe I should add that I am using an ECS A532 notebook. Is the chipset
-or anything else relevant?
 
-Best regards
+------- Additional Comments From t.artem@mailcity.com  2005-10-13 04:06 -------
+Here's a response from GigaByte engineers (I asked them why my Windows XP hangs
+when I enable cool'n'quite support under this OS):
 
-Johannes Ranke
+"Dear Artem,
 
--- 
-Dr. Johannes Ranke                 jranke@uni-bremen.de
-UFT Bremen, Leobenerstr. 1         +49 421 218 8971 
-D-28359 Bremen                     http://www.uft.uni-bremen.de/chemie/ranke
+As for the problem you mentioned, please kindly notice that release date of
+latest AMD Sempron cool'n'quite drivers is May 2005 but your Sempron processor
+(Palermo E6) was released in June-July 2005 thus we suggest you to await new
+drivers version from AMD or kindly push them to release new version soon. BTW,
+you can uninstall these drivers under windows safe mode."
+
+So I may say that cpufreq linux driver is indeed buggy and needs to be updated
+for proper AMD Sempron Palermo E6 family support.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
