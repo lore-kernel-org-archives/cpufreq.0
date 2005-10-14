@@ -1,8 +1,9 @@
-From: bugme-daemon@kernel-bugs.osdl.org
-Subject: [Bug 5407] CPUFrequency driver for AMD K8 crashes PC with Sempron
-	3400+ CPU
-Date: Thu, 13 Oct 2005 04:09:01 -0700
-Message-ID: <200510131109.j9DB91SN027346@fire-1.osdl.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 5435] New: Powernow code has random CPU speed
+Date: Thu, 13 Oct 2005 21:42:05 -0700
+Message-ID: <20051013214205.200583c1.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,31 +15,54 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5407
 
 
+Begin forwarded message:
+
+Date: Thu, 13 Oct 2005 20:24:07 -0700
+From: bugme-daemon@kernel-bugs.osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 5435] New: Powernow code has random CPU speed
 
 
+http://bugzilla.kernel.org/show_bug.cgi?id=5435
 
-------- Additional Comments From t.artem@mailcity.com  2005-10-13 04:06 -------
-Here's a response from GigaByte engineers (I asked them why my Windows XP hangs
-when I enable cool'n'quite support under this OS):
+           Summary: Powernow code has random CPU speed
+    Kernel Version: 2.6.14-rc4
+            Status: NEW
+          Severity: normal
+             Owner: johnstul@us.ibm.com
+         Submitter: Larry.Finger@lwfinger.net
 
-"Dear Artem,
 
-As for the problem you mentioned, please kindly notice that release date of
-latest AMD Sempron cool'n'quite drivers is May 2005 but your Sempron processor
-(Palermo E6) was released in June-July 2005 thus we suggest you to await new
-drivers version from AMD or kindly push them to release new version soon. BTW,
-you can uninstall these drivers under windows safe mode."
+Most recent kernel where this bug did not occur: 2.6.13 ?
+Distribution: SuSE 10.0
+Hardware Environment: HP ze1115 notebook with 1100 MHz clock
+Software Environment:
+Problem Description: Processor speed determined at startup seems to be random
 
-So I may say that cpufreq linux driver is indeed buggy and needs to be updated
-for proper AMD Sempron Palermo E6 family support.
+Steps to reproduce: Just boot and look at 'dmesg' output.
+
+========================================================================
+When it works correctly:
+
+powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+Detected 1100.247 MHz processor.
+powernow: SGTC: 10000
+powernow: Minimum speed 500 MHz. Maximum speed 1100 MHz.
+
+=========================================================================
+When it fails, speeds are random:
+
+powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
+Detected 7352.734 MHz processor.
+powernow: No PST tables match this cpuid (0x771)
+powernow: This is indicative of a broken BIOS.
+powernow: Trying ACPI perflib
+powernow: Minimum speed 3342 MHz. Maximum speed 7352 MHz.
 
 ------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+You are on the CC list for the bug, or are watching someone who is.
