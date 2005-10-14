@@ -1,14 +1,9 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Fw: [Bugme-new] [Bug 5435] New: Powernow code has random CPU
- speed
-Date: Thu, 13 Oct 2005 22:17:58 -0700
-Message-ID: <20051013221758.0c3fe750.akpm@osdl.org>
-References: <20051013214205.200583c1.akpm@osdl.org>
-	<20051014050544.GA5074@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@kernel-bugs.osdl.org
+Subject: [Bug 5407] CPUFrequency driver for AMD K8 crashes PC with Sempron
+	3400+ CPU
+Date: Fri, 14 Oct 2005 09:09:30 -0700
+Message-ID: <200510141609.j9EG9UR4002655@fire-1.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20051014050544.GA5074@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,30 +14,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: acpi-devel@lists.sourceforge.net, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Dave Jones <davej@redhat.com> wrote:
->
-> On Thu, Oct 13, 2005 at 09:42:05PM -0700, Andrew Morton wrote:
-> 
->  > powernow: PowerNOW! Technology present. Can scale: frequency and voltage.
->  > Detected 7352.734 MHz processor.
->  > powernow: No PST tables match this cpuid (0x771)
->  > powernow: This is indicative of a broken BIOS.
->  > powernow: Trying ACPI perflib
->  > powernow: Minimum speed 3342 MHz. Maximum speed 7352 MHz.
-> 
-> My gut feeling is that this is an ACPI regression, as the powernow-k7
-> driver hasn't changed dramatically recently, and in this dmesg,
-> we've fallen back to using the ACPI.
-> 
-> Something else that's really odd is that the 'Detected' line seems
-> to have found a 7GHz CPU, which is novel.
-> 
+http://bugzilla.kernel.org/show_bug.cgi?id=5407
 
-OK, thanks.
+mark.langsdorf@amd.com changed:
 
-Could one of the ACPI guys please take a look at 5435 and grab it if
-appropriate?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|cpufreq@www.linux.org.uk    |mark.langsdorf@amd.com
+             Status|NEW                         |ASSIGNED
+
+
+
+------- Additional Comments From mark.langsdorf@amd.com  2005-10-14 09:07 -------
+Gigabyte's excuse is unreasonable: both the Windows and Linux 
+PowerNow! drivers are forward compatible with a wide range of 
+processor variations, as long as the BIOS supports the processor 
+in question.  AMD still strongly suspects this is a BIOS problem.
+
+Fortunately, I had a K8NS in my cube and a stack of Sempron 3400+ 
+processors handy.  I've passed the board to the Windows PowerNow! 
+driver maintainer for further investigation.  He'll look at in 
+on Monday and we should have some answers laster next week.
+
+Our best guess is a misconfigured BIOS but we'll keep investigating.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
