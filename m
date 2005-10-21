@@ -1,10 +1,11 @@
-From: Ian Campbell <icampbell@arcom.com>
-Subject: [PATCH] cpufreq driver for the PXA255 processor.
-Date: Fri, 21 Oct 2005 14:34:59 +0100
-Message-ID: <1129901700.561.46.camel@icampbell-debian>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Patch: Fix pending timer stuck condition
+Date: Fri, 21 Oct 2005 13:02:48 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A84303218896@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5D669.A5470228"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,426 +16,96 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C5D669.A5470228
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+AMD recently discovered that on some hardware,
+there is a race condition possible when a C-state
+change request goes onto the bus at the same time
+as a P-state change request.  Both requests happen,
+but the southbridge hardware only acknowledges the
+C-state change.  The PowerNow! driver is then=20
+stuck in a loop, waiting for the P-state change
+acknowledgement.  The driver eventually times out,
+but can no longer perform P-state changes.
+
+It turns out the solution is to resend the P-state
+change, which the southbridge will acknowledge
+normally.
+
+Thanks to Johannes Winkelmann for reporting this
+and testing the fix.
+
+-Mark Langsdorf
+AMD, Inc.
+
+
+------_=_NextPart_001_01C5D669.A5470228
+Content-Type: application/octet-stream;
+ name=pn-collision-retry.patch
+Content-Transfer-Encoding: base64
+Content-Description: pn-collision-retry.patch
+Content-Disposition: attachment;
+ filename=pn-collision-retry.patch
+
+LS0tIGxpbnV4LTIuNi4xMy40L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ct
+azguYwkyMDA1LTEwLTEwIDEzOjU0OjI5LjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtcmV2YW1w
+L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ctazgtMi5jCTIwMDUtMTAtMjEg
+MTI6NDQ6MjguMDAwMDAwMDAwIC0wNTAwCkBAIC00NCw3ICs0NCw3IEBACiAKICNkZWZpbmUgUEZY
+ICJwb3dlcm5vdy1rODogIgogI2RlZmluZSBCRlggUEZYICJCSU9TIGVycm9yOiAiCi0jZGVmaW5l
+IFZFUlNJT04gInZlcnNpb24gMS41MC4zIgorI2RlZmluZSBWRVJTSU9OICJ2ZXJzaW9uIDEuNTAu
+NCIKICNpbmNsdWRlICJwb3dlcm5vdy1rOC5oIgogCiAvKiBzZXJpYWxpemUgZnJlcSBjaGFuZ2Vz
+ICAqLwpAQCAtMTExLDcgKzExMSw3IEBACiAJdTMyIGkgPSAwOwogCiAJZG8gewotCQlpZiAoaSsr
+ID4gMHgxMDAwMDAwKSB7CisJCWlmIChpKysgPiAxMDAwMCkgewogCQkJcHJpbnRrKEtFUk5fRVJS
+IFBGWCAiZGV0ZWN0ZWQgY2hhbmdlIHBlbmRpbmcgc3R1Y2tcbiIpOwogCQkJcmV0dXJuIDE7CiAJ
+CX0KQEAgLTE1OSw2ICsxNTksNyBAQAogewogCXUzMiBsbzsKIAl1MzIgc2F2ZXZpZCA9IGRhdGEt
+PmN1cnJ2aWQ7CisJdTMyIGkgPSAwOwogCiAJaWYgKChmaWQgJiBJTlZBTElEX0ZJRF9NQVNLKSB8
+fCAoZGF0YS0+Y3VycnZpZCAmIElOVkFMSURfVklEX01BU0spKSB7CiAJCXByaW50ayhLRVJOX0VS
+UiBQRlggImludGVybmFsIGVycm9yIC0gb3ZlcmZsb3cgb24gZmlkIHdyaXRlXG4iKTsKQEAgLTE3
+MCwxMCArMTcxLDEzIEBACiAJZHByaW50aygid3JpdGluZyBmaWQgMHgleCwgbG8gMHgleCwgaGkg
+MHgleFxuIiwKIAkJZmlkLCBsbywgZGF0YS0+cGxsbG9jayAqIFBMTF9MT0NLX0NPTlZFUlNJT04p
+OwogCi0Jd3Jtc3IoTVNSX0ZJRFZJRF9DVEwsIGxvLCBkYXRhLT5wbGxsb2NrICogUExMX0xPQ0tf
+Q09OVkVSU0lPTik7Ci0KLQlpZiAocXVlcnlfY3VycmVudF92YWx1ZXNfd2l0aF9wZW5kaW5nX3dh
+aXQoZGF0YSkpCi0JCXJldHVybiAxOworCWRvIHsKKwkJd3Jtc3IoTVNSX0ZJRFZJRF9DVEwsIGxv
+LCBkYXRhLT5wbGxsb2NrICogUExMX0xPQ0tfQ09OVkVSU0lPTik7CisJCWlmIChpKysgPiAxMDAp
+IHsKKwkJCXByaW50ayhLRVJOX0VSUiBQRlggImludGVybmFsIGVycm9yIC0gcGVuZGluZyBiaXQg
+dmVyeSBzdHVjayAtIG5vIGZ1cnRoZXIgcHN0YXRlIGNoYW5nZXMgcG9zc2libGVcbiIpOworCQkJ
+cmV0cnVuIDE7CisJCX0JCQkKKwl9IHdoaWxlIChxdWVyeV9jdXJyZW50X3ZhbHVlc193aXRoX3Bl
+bmRpbmdfd2FpdChkYXRhKSk7CiAKIAljb3VudF9vZmZfaXJ0KGRhdGEpOwogCkBAIC0xOTcsNiAr
+MjAxLDcgQEAKIHsKIAl1MzIgbG87CiAJdTMyIHNhdmVmaWQgPSBkYXRhLT5jdXJyZmlkOworCWlu
+dCBpID0gMDsKIAogCWlmICgoZGF0YS0+Y3VycmZpZCAmIElOVkFMSURfRklEX01BU0spIHx8ICh2
+aWQgJiBJTlZBTElEX1ZJRF9NQVNLKSkgewogCQlwcmludGsoS0VSTl9FUlIgUEZYICJpbnRlcm5h
+bCBlcnJvciAtIG92ZXJmbG93IG9uIHZpZCB3cml0ZVxuIik7CkBAIC0yMDgsMTAgKzIxMywxMyBA
+QAogCWRwcmludGsoIndyaXRpbmcgdmlkIDB4JXgsIGxvIDB4JXgsIGhpIDB4JXhcbiIsCiAJCXZp
+ZCwgbG8sIFNUT1BfR1JBTlRfNU5TKTsKIAotCXdybXNyKE1TUl9GSURWSURfQ1RMLCBsbywgU1RP
+UF9HUkFOVF81TlMpOwotCi0JaWYgKHF1ZXJ5X2N1cnJlbnRfdmFsdWVzX3dpdGhfcGVuZGluZ193
+YWl0KGRhdGEpKQotCQlyZXR1cm4gMTsKKwlkbyB7CisJCXdybXNyKE1TUl9GSURWSURfQ1RMLCBs
+bywgU1RPUF9HUkFOVF81TlMpOworICAgICAgICAgICAgICAgIGlmIChpKysgPiAxMDApIHsKKyAg
+ICAgICAgICAgICAgICAgICAgICAgIHByaW50ayhLRVJOX0VSUiBQRlggImludGVybmFsIGVycm9y
+IC0gcGVuZGluZyBiaXQgdmVyeSBzdHVjayAtIG5vIGZ1cnRoZXIgcHN0YXRlIGNoYW5nZXMgcG9z
+c2libGVcbiIpOworICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIDE7CisgICAgICAgICAg
+ICAgICAgfQorCX0gd2hpbGUgKHF1ZXJ5X2N1cnJlbnRfdmFsdWVzX3dpdGhfcGVuZGluZ193YWl0
+KGRhdGEpKTsKIAogCWlmIChzYXZlZmlkICE9IGRhdGEtPmN1cnJmaWQpIHsKIAkJcHJpbnRrKEtF
+Uk5fRVJSIFBGWCAiZmlkIGNoYW5nZWQgb24gdmlkIHRyYW5zLCBvbGQgMHgleCBuZXcgMHgleFxu
+IiwK
+
+------_=_NextPart_001_01C5D669.A5470228
 Content-Type: text/plain; charset="us-ascii"
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi Dave,
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-Below is a patch adding cpufreq support for the PXA255 Xscale processor.
-The driver was originally from Intrinsyc Software and spent some time in
-the old -bkpxa tree. Since then I've tweaked it a little and have been
-using it successfully for some time.
+------_=_NextPart_001_01C5D669.A5470228--
 
-It was reviewed by several people on the list some time ago and I think
-it is ready to go in, I missed the boat for 2.6.14 due to the list being
-down, but I figure since 2.6.14 is due any day now it would be a good
-time to start sending stuff in preparation for 2.6.15 opening up.
 
-Signed-off-by: Ian Campbell <icampbell@arcom.com>
-
-Index: 2.6/arch/arm/Kconfig
-===================================================================
---- 2.6.orig/arch/arm/Kconfig	2005-08-24 15:04:57.000000000 +0100
-+++ 2.6/arch/arm/Kconfig	2005-08-26 11:26:06.000000000 +0100
-@@ -516,7 +516,7 @@
- 
- endmenu
- 
--if (ARCH_SA1100 || ARCH_INTEGRATOR || ARCH_OMAP1)
-+if (ARCH_SA1100 || ARCH_INTEGRATOR || ARCH_OMAP1 || ARCH_PXA)
- 
- menu "CPU Frequency scaling"
- 
-@@ -543,6 +543,12 @@
- 
- 	  If in doubt, say Y.
- 
-+config CPU_FREQ_PXA25x
-+	bool
-+	select CPU_FREQ_TABLE
-+	depends on CPU_FREQ && PXA25x
-+	default y
-+
- endmenu
- 
- endif
-Index: 2.6/arch/arm/mach-pxa/Makefile
-===================================================================
---- 2.6.orig/arch/arm/mach-pxa/Makefile	2005-08-24 15:04:58.000000000 +0100
-+++ 2.6/arch/arm/mach-pxa/Makefile	2005-08-26 11:26:06.000000000 +0100
-@@ -22,6 +22,9 @@
- 
- obj-$(CONFIG_LEDS) += $(led-y)
- 
-+# CPU freq support
-+obj-$(CONFIG_CPU_FREQ_PXA25x) += cpu-pxa25x.o
-+
- # Misc features
- obj-$(CONFIG_PM) += pm.o sleep.o
- 
-Index: 2.6/Documentation/cpu-freq/user-guide.txt
-===================================================================
---- 2.6.orig/Documentation/cpu-freq/user-guide.txt	2005-05-27 06:06:46.000000000 +0100
-+++ 2.6/Documentation/cpu-freq/user-guide.txt	2005-08-26 11:26:06.000000000 +0100
-@@ -45,6 +45,7 @@
- ARM Integrator
- ARM-SA1100
- ARM-SA1110
-+Intel XScale PXA25x
- 
- 
- 1.2 x86
-Index: 2.6/arch/arm/mach-pxa/cpu-pxa25x.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6/arch/arm/mach-pxa/cpu-pxa25x.c	2005-08-26 11:26:09.000000000 +0100
-@@ -0,0 +1,342 @@
-+/*
-+ *  linux/arch/arm/mach-pxa/cpu-pxa.c
-+ *
-+ *  Copyright (C) 2002,2003 Intrinsyc Software
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ * History:
-+ *   31-Jul-2002 : Initial version [FB]
-+ *   29-Jan-2003 : added PXA255 support [FB]
-+ *   20-Apr-2003 : ported to v2.5 (Dustin McIntire, Sensoria Corp.)
-+ *   18-Jul-2005 : updated for latest kernel (2.6.13-rc), cleanup for submission
-+ *                 (Ian Campbell, Arcom Control Systems)
-+ *
-+ * Note:
-+ *   This driver may change the memory bus clock rate, but will not do any
-+ *   platform specific access timing changes... for example if you have flash
-+ *   memory connected to CS0, you will need to register a platform specific
-+ *   notifier which will adjust the memory access strobes to maintain a
-+ *   minimum strobe width.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/init.h>
-+#include <linux/cpufreq.h>
-+#include <linux/moduleparam.h>
-+
-+#include <asm/hardware.h>
-+
-+#include <asm/arch/pxa-regs.h>
-+
-+#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "pxa25x", msg)
-+
-+struct pxa_freq {
-+	unsigned int khz;
-+	unsigned int membus;
-+	unsigned int cccr;
-+	unsigned int div2;
-+};
-+
-+/* Define the refresh period in mSec for the SDRAM and the number of rows */
-+#define SDRAM_TREF          64		/* standard 64ms SDRAM */
-+#define SDRAM_ROWS          8192	/* 64MB=8192 32MB=4096 */
-+#define MDREFR_DRI(x)       ((x*SDRAM_TREF)/(SDRAM_ROWS*32))
-+
-+#define CCLKCFG_TURBO       0x1
-+#define CCLKCFG_FCS         0x2
-+#define PXA25x_MIN_FREQ     99532
-+#define PXA25x_MAX_FREQ     398131
-+#define MDREFR_DB2_MASK     (MDREFR_K2DB2 | MDREFR_K1DB2)
-+#define MDREFR_DRI_MASK     0xFFF
-+
-+/* Use the run mode frequencies for performance */
-+static struct pxa_freq pxa25x_performance_freqs[] = {
-+	/* CPU   MEMBUS  CCCR   DIV2 */
-+	{99532,   99532, 0x121, 1},	/* run= 99, turbo= 99, PXbus=50,  SDRAM=50 */
-+	{132710, 132710, 0x123, 1},	/* run=133, turbo=133, PXbus=66,  SDRAM=66 */
-+	{199065,  99532, 0x141, 0},	/* run=199, turbo=199, PXbus=99,  SDRAM=99 */
-+	{265421, 132710, 0x143, 1},	/* run=265, turbo=265, PXbus=133, SDRAM=66 */
-+	{331776, 165888, 0x145, 1},	/* run=331, turbo=331, PXbus=166, SDRAM=83 */
-+	{398131,  99532, 0x161, 0},	/* run=398, turbo=398, PXbus=196, SDRAM=99 */
-+};
-+
-+static struct cpufreq_frequency_table pxa25x_performance_freq_table[ARRAY_SIZE(pxa25x_performance_freqs)+1];
-+
-+/* Use the turbo mode frequencies for powersave */
-+static struct pxa_freq pxa25x_powersave_freqs[] = {
-+	/* CPU   MEMBUS CCCR   DIV2 */
-+	{99532,  99532, 0x121, 1},	/* run=99,  turbo= 99, PXbus=50, SDRAM=50 */
-+	{199065, 99532, 0x221, 0},	/* run=99,  turbo=199, PXbus=50, SDRAM=99 */
-+	{298598, 99532, 0x321, 0},	/* run=99,  turbo=287, PXbus=50, SDRAM=99 */
-+	{398131, 99532, 0x241, 0},	/* run=199, turbo=398, PXbus=99, SDRAM=99 */
-+};
-+
-+static struct cpufreq_frequency_table pxa25x_powersave_freq_table[ARRAY_SIZE(pxa25x_powersave_freqs)+1];
-+
-+/* currently selected frequency table */
-+struct pxa_freq *pxa_freq_settings;
-+struct cpufreq_frequency_table *pxa_freq_table;
-+
-+extern unsigned get_clk_frequency_khz(int info);
-+
-+static unsigned int max_frequency = PXA25x_MAX_FREQ;
-+static int performance = 1;
-+
-+/*
-+ * This option can be used if you have one of the 200MHz PXA25x parts by adding
-+ * cpu_pxa25x.max_frequency=199065 to the kernel command line
-+ */
-+module_param(max_frequency, int, 0);
-+MODULE_PARM_DESC(max_frequency, "Set the maximum cpu frequency");
-+
-+module_param(performance, int, 0);
-+MODULE_PARM_DESC(performance, "Use 1=performance instead of powersave frequency tables");
-+
-+static void pxa_select_freq_table(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+
-+	if (performance) {
-+		dprintk("selecting performance tables\n");
-+		pxa_freq_settings = pxa25x_performance_freqs;
-+		pxa_freq_table = pxa25x_performance_freq_table;
-+	} else {
-+		dprintk("selecting powersave tables\n");
-+		pxa_freq_settings = pxa25x_powersave_freqs;
-+		pxa_freq_table = pxa25x_powersave_freq_table;
-+	}
-+
-+	cpufreq_frequency_table_get_attr(pxa_freq_table, policy->cpu);		
-+}
-+
-+/* find a valid frequency point */
-+static int pxa_verify_policy(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	pxa_select_freq_table(policy);
-+
-+	ret = cpufreq_frequency_table_verify(policy, pxa_freq_table);
-+
-+	dprintk("verified CPU policy: %dKhz min to %dKhz max\n",
-+		policy->min, policy->max);
-+
-+	return ret;
-+}
-+
-+static int pxa_set_target(struct cpufreq_policy *policy,
-+			  unsigned int target_freq, unsigned int relation)
-+{
-+	int idx;
-+	struct cpufreq_freqs freqs;
-+	unsigned long flags;
-+	unsigned int unused;
-+	unsigned int preset_mdrefr, postset_mdrefr;
-+	void *ramstart;
-+
-+	/* Lookup the next frequency */
-+	if (cpufreq_frequency_table_target(policy, pxa_freq_table,
-+					   target_freq, relation, &idx))
-+		return -EINVAL;
-+
-+	freqs.old = get_clk_frequency_khz(0);
-+	freqs.new = pxa_freq_settings[idx].khz;
-+	freqs.cpu = policy->cpu;
-+
-+	if (freqs.new == freqs.old && pxa_freq_settings[idx].cccr == CCCR)
-+		return 0;
-+
-+	dprintk("changing CPU frequency to %d.%03d Mhz (SDRAM %d Mhz, CCCR %#04x)\n",
-+		freqs.new / 1000, freqs.new % 1000,
-+		(pxa_freq_settings[idx].div2) ?
-+		(pxa_freq_settings[idx].membus / 2000) :
-+		(pxa_freq_settings[idx].membus / 1000),
-+		pxa_freq_settings[idx].cccr);
-+
-+	ramstart = phys_to_virt(0xa0000000);
-+
-+	/*
-+	 * Tell everyone what we're about to do...
-+	 * you should add a notify client with any platform specific
-+	 * Vcc changing capability
-+	 */
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+	/* Calculate the next MDREFR.  If we're slowing down the SDRAM clock
-+	 * we need to preset the smaller DRI before the change.  If we're speeding
-+	 * up we need to set the larger DRI value after the change.
-+	 */
-+	preset_mdrefr = postset_mdrefr = MDREFR;
-+	if ((MDREFR & MDREFR_DRI_MASK) > MDREFR_DRI(pxa_freq_settings[idx].membus)) {
-+		preset_mdrefr = (preset_mdrefr & ~MDREFR_DRI_MASK) |
-+			MDREFR_DRI(pxa_freq_settings[idx].membus);
-+	}
-+	postset_mdrefr = (postset_mdrefr & ~MDREFR_DRI_MASK) |
-+		MDREFR_DRI(pxa_freq_settings[idx].membus);
-+
-+	/* If we're dividing the memory clock by two for the SDRAM clock, this
-+	 * must be set prior to the change.  Clearing the divide must be done
-+	 * after the change.
-+	 */
-+	if (pxa_freq_settings[idx].div2) {
-+		preset_mdrefr |= MDREFR_DB2_MASK;
-+		postset_mdrefr |= MDREFR_DB2_MASK;
-+	} else {
-+		postset_mdrefr &= ~MDREFR_DB2_MASK;
-+	}
-+
-+	local_irq_save(flags);
-+
-+	/* Set new the CCCR */
-+	CCCR = pxa_freq_settings[idx].cccr;
-+
-+	__asm__ __volatile__("                              \
-+        ldr r4, [%1] ;          /* load MDREFR */           \
-+        b   2f ;                                            \
-+        .align  5 ;                                         \
-+1:                                                          \
-+        str %4, [%1] ;          /* preset the MDREFR */     \
-+        mcr p14, 0, %2, c6, c0, 0 ; /* set CCLKCFG[FCS] */  \
-+        str %5, [%1] ;          /* postset the MDREFR */    \
-+                                                            \
-+        b   3f       ;                                      \
-+2:      b   1b       ;                                      \
-+3:      nop          ;                                      \
-+        "
-+	: "=&r"(unused)
-+	: "r"(&MDREFR), "r"(CCLKCFG_TURBO | CCLKCFG_FCS),
-+	  "r"(ramstart), "r"(preset_mdrefr),
-+	  "r"(postset_mdrefr)
-+	: "r4", "r5");
-+	local_irq_restore(flags);
-+
-+	/*
-+	 * Tell everyone what we've just done...
-+	 * you should add a notify client with any platform specific
-+	 * SDRAM refresh timer adjustments
-+	 */
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+
-+	return 0;
-+}
-+
-+static unsigned int pxa_cpufreq_get(unsigned int cpu)
-+{
-+	return get_clk_frequency_khz(0);
-+}
-+
-+static int pxa_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	int i;
-+
-+	if (policy->cpu != 0)
-+		return -ENODEV;
-+
-+	/* set default policy and cpuinfo */
-+	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
-+	policy->max = policy->cpuinfo.max_freq = max_frequency;
-+	policy->min = policy->cpuinfo.min_freq = PXA25x_MIN_FREQ;
-+	policy->cpuinfo.transition_latency = 1000000;	/* FIXME: 1 ms, assumed */
-+	policy->cur = get_clk_frequency_khz(0);		/* current freq */
-+
-+	/* Generate the run cpufreq_frequency_table struct */
-+	for (i = 0; i < ARRAY_SIZE(pxa25x_performance_freqs); i++) {
-+		pxa25x_performance_freq_table[i].frequency = pxa25x_performance_freqs[i].khz;
-+		pxa25x_performance_freq_table[i].index = i;
-+	}
-+	pxa25x_performance_freq_table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	/* Generate the turbo cpufreq_frequency_table struct */
-+	for (i = 0; i < ARRAY_SIZE(pxa25x_powersave_freqs); i++) {
-+		pxa25x_powersave_freq_table[i].frequency = pxa25x_powersave_freqs[i].khz;
-+		pxa25x_powersave_freq_table[i].index = i;
-+	}
-+	pxa25x_powersave_freq_table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	/* calls cpufreq_frequency_table_get_attr */
-+	pxa_select_freq_table(policy);
-+
-+	printk(KERN_INFO "pxa25x: CPU frequency change support initialized (%s tables)\n",
-+	       performance ? "performance" : "powersave");
-+
-+	return 0;
-+}
-+
-+static ssize_t show_pxa25x_freq_model_attr(struct cpufreq_policy *policy, char *buf)
-+{
-+	return sprintf (buf, "%s\n", performance ? "performance" : "powersave");
-+}
-+
-+static ssize_t store_pxa25x_freq_model_attr(struct cpufreq_policy *policy, const char *buf, size_t count)
-+{
-+	unsigned int ret;
-+	char str[16];
-+
-+	ret = sscanf(buf, "%15s", str);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	if (strnicmp(str,"performance",16)==0)
-+		performance = 1;
-+	else if (strnicmp(str,"powersave",16)==0)
-+		performance = 0;
-+	else
-+		return -EINVAL;
-+
-+	ret = cpufreq_update_policy(policy->cpu);
-+
-+	return ret ? ret : count;
-+}
-+
-+struct freq_attr pxa25x_freq_model_attr = {
-+	.attr = { .name = "pxa25x_freq_model", .mode = 0644, .owner=THIS_MODULE },
-+	.show = show_pxa25x_freq_model_attr,
-+	.store = store_pxa25x_freq_model_attr,
-+};
-+
-+static struct freq_attr* pxa_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	&pxa25x_freq_model_attr,
-+	NULL,
-+};
-+
-+static struct cpufreq_driver pxa_cpufreq_driver = {
-+	.verify	= pxa_verify_policy,
-+	.target	= pxa_set_target,
-+	.init	= pxa_cpufreq_init,
-+	.get	= pxa_cpufreq_get,
-+	.name	= "pxa25x",
-+	.attr	= pxa_cpufreq_attr,
-+};
-+
-+static int __init pxa_cpu_init(void)
-+{
-+	return cpufreq_register_driver(&pxa_cpufreq_driver);
-+}
-+
-+static void __exit pxa_cpu_exit(void)
-+{
-+	cpufreq_unregister_driver(&pxa_cpufreq_driver);
-+}
-+
-+MODULE_AUTHOR("Intrinsyc Software Inc.");
-+MODULE_DESCRIPTION("CPU frequency changing driver for the PXA architecture");
-+MODULE_LICENSE("GPL");
-+module_init(pxa_cpu_init);
-+module_exit(pxa_cpu_exit);
-
--- 
-Ian Campbell, Senior Design Engineer
-                                        Web: http://www.arcom.com
-Arcom, Clifton Road, 			Direct: +44 (0)1223 403 465
-Cambridge CB1 7EA, United Kingdom	Phone:  +44 (0)1223 411 200
