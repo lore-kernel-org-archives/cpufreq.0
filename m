@@ -1,11 +1,12 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: Patch: Fix pending timer stuck condition
-Date: Fri, 21 Oct 2005 13:02:48 -0500
-Message-ID: <84EA05E2CA77634C82730353CBE3A84303218896@SAUSEXMB1.amd.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Patch: Fix pending timer stuck condition
+Date: Fri, 21 Oct 2005 15:19:23 -0400
+Message-ID: <20051021191923.GA5827@redhat.com>
+References: <84EA05E2CA77634C82730353CBE3A84303218896@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5D669.A5470228"
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A84303218896@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,97 +16,47 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C5D669.A5470228
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-
-AMD recently discovered that on some hardware,
-there is a race condition possible when a C-state
-change request goes onto the bus at the same time
-as a P-state change request.  Both requests happen,
-but the southbridge hardware only acknowledges the
-C-state change.  The PowerNow! driver is then=20
-stuck in a loop, waiting for the P-state change
-acknowledgement.  The driver eventually times out,
-but can no longer perform P-state changes.
-
-It turns out the solution is to resend the P-state
-change, which the southbridge will acknowledge
-normally.
-
-Thanks to Johannes Winkelmann for reporting this
-and testing the fix.
-
--Mark Langsdorf
-AMD, Inc.
-
-
-------_=_NextPart_001_01C5D669.A5470228
-Content-Type: application/octet-stream;
- name=pn-collision-retry.patch
-Content-Transfer-Encoding: base64
-Content-Description: pn-collision-retry.patch
-Content-Disposition: attachment;
- filename=pn-collision-retry.patch
-
-LS0tIGxpbnV4LTIuNi4xMy40L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ct
-azguYwkyMDA1LTEwLTEwIDEzOjU0OjI5LjAwMDAwMDAwMCAtMDUwMAorKysgbGludXgtcmV2YW1w
-L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ctazgtMi5jCTIwMDUtMTAtMjEg
-MTI6NDQ6MjguMDAwMDAwMDAwIC0wNTAwCkBAIC00NCw3ICs0NCw3IEBACiAKICNkZWZpbmUgUEZY
-ICJwb3dlcm5vdy1rODogIgogI2RlZmluZSBCRlggUEZYICJCSU9TIGVycm9yOiAiCi0jZGVmaW5l
-IFZFUlNJT04gInZlcnNpb24gMS41MC4zIgorI2RlZmluZSBWRVJTSU9OICJ2ZXJzaW9uIDEuNTAu
-NCIKICNpbmNsdWRlICJwb3dlcm5vdy1rOC5oIgogCiAvKiBzZXJpYWxpemUgZnJlcSBjaGFuZ2Vz
-ICAqLwpAQCAtMTExLDcgKzExMSw3IEBACiAJdTMyIGkgPSAwOwogCiAJZG8gewotCQlpZiAoaSsr
-ID4gMHgxMDAwMDAwKSB7CisJCWlmIChpKysgPiAxMDAwMCkgewogCQkJcHJpbnRrKEtFUk5fRVJS
-IFBGWCAiZGV0ZWN0ZWQgY2hhbmdlIHBlbmRpbmcgc3R1Y2tcbiIpOwogCQkJcmV0dXJuIDE7CiAJ
-CX0KQEAgLTE1OSw2ICsxNTksNyBAQAogewogCXUzMiBsbzsKIAl1MzIgc2F2ZXZpZCA9IGRhdGEt
-PmN1cnJ2aWQ7CisJdTMyIGkgPSAwOwogCiAJaWYgKChmaWQgJiBJTlZBTElEX0ZJRF9NQVNLKSB8
-fCAoZGF0YS0+Y3VycnZpZCAmIElOVkFMSURfVklEX01BU0spKSB7CiAJCXByaW50ayhLRVJOX0VS
-UiBQRlggImludGVybmFsIGVycm9yIC0gb3ZlcmZsb3cgb24gZmlkIHdyaXRlXG4iKTsKQEAgLTE3
-MCwxMCArMTcxLDEzIEBACiAJZHByaW50aygid3JpdGluZyBmaWQgMHgleCwgbG8gMHgleCwgaGkg
-MHgleFxuIiwKIAkJZmlkLCBsbywgZGF0YS0+cGxsbG9jayAqIFBMTF9MT0NLX0NPTlZFUlNJT04p
-OwogCi0Jd3Jtc3IoTVNSX0ZJRFZJRF9DVEwsIGxvLCBkYXRhLT5wbGxsb2NrICogUExMX0xPQ0tf
-Q09OVkVSU0lPTik7Ci0KLQlpZiAocXVlcnlfY3VycmVudF92YWx1ZXNfd2l0aF9wZW5kaW5nX3dh
-aXQoZGF0YSkpCi0JCXJldHVybiAxOworCWRvIHsKKwkJd3Jtc3IoTVNSX0ZJRFZJRF9DVEwsIGxv
-LCBkYXRhLT5wbGxsb2NrICogUExMX0xPQ0tfQ09OVkVSU0lPTik7CisJCWlmIChpKysgPiAxMDAp
-IHsKKwkJCXByaW50ayhLRVJOX0VSUiBQRlggImludGVybmFsIGVycm9yIC0gcGVuZGluZyBiaXQg
-dmVyeSBzdHVjayAtIG5vIGZ1cnRoZXIgcHN0YXRlIGNoYW5nZXMgcG9zc2libGVcbiIpOworCQkJ
-cmV0cnVuIDE7CisJCX0JCQkKKwl9IHdoaWxlIChxdWVyeV9jdXJyZW50X3ZhbHVlc193aXRoX3Bl
-bmRpbmdfd2FpdChkYXRhKSk7CiAKIAljb3VudF9vZmZfaXJ0KGRhdGEpOwogCkBAIC0xOTcsNiAr
-MjAxLDcgQEAKIHsKIAl1MzIgbG87CiAJdTMyIHNhdmVmaWQgPSBkYXRhLT5jdXJyZmlkOworCWlu
-dCBpID0gMDsKIAogCWlmICgoZGF0YS0+Y3VycmZpZCAmIElOVkFMSURfRklEX01BU0spIHx8ICh2
-aWQgJiBJTlZBTElEX1ZJRF9NQVNLKSkgewogCQlwcmludGsoS0VSTl9FUlIgUEZYICJpbnRlcm5h
-bCBlcnJvciAtIG92ZXJmbG93IG9uIHZpZCB3cml0ZVxuIik7CkBAIC0yMDgsMTAgKzIxMywxMyBA
-QAogCWRwcmludGsoIndyaXRpbmcgdmlkIDB4JXgsIGxvIDB4JXgsIGhpIDB4JXhcbiIsCiAJCXZp
-ZCwgbG8sIFNUT1BfR1JBTlRfNU5TKTsKIAotCXdybXNyKE1TUl9GSURWSURfQ1RMLCBsbywgU1RP
-UF9HUkFOVF81TlMpOwotCi0JaWYgKHF1ZXJ5X2N1cnJlbnRfdmFsdWVzX3dpdGhfcGVuZGluZ193
-YWl0KGRhdGEpKQotCQlyZXR1cm4gMTsKKwlkbyB7CisJCXdybXNyKE1TUl9GSURWSURfQ1RMLCBs
-bywgU1RPUF9HUkFOVF81TlMpOworICAgICAgICAgICAgICAgIGlmIChpKysgPiAxMDApIHsKKyAg
-ICAgICAgICAgICAgICAgICAgICAgIHByaW50ayhLRVJOX0VSUiBQRlggImludGVybmFsIGVycm9y
-IC0gcGVuZGluZyBiaXQgdmVyeSBzdHVjayAtIG5vIGZ1cnRoZXIgcHN0YXRlIGNoYW5nZXMgcG9z
-c2libGVcbiIpOworICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIDE7CisgICAgICAgICAg
-ICAgICAgfQorCX0gd2hpbGUgKHF1ZXJ5X2N1cnJlbnRfdmFsdWVzX3dpdGhfcGVuZGluZ193YWl0
-KGRhdGEpKTsKIAogCWlmIChzYXZlZmlkICE9IGRhdGEtPmN1cnJmaWQpIHsKIAkJcHJpbnRrKEtF
-Uk5fRVJSIFBGWCAiZmlkIGNoYW5nZWQgb24gdmlkIHRyYW5zLCBvbGQgMHgleCBuZXcgMHgleFxu
-IiwK
-
-------_=_NextPart_001_01C5D669.A5470228
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: cpufreq@lists.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+On Fri, Oct 21, 2005 at 01:02:48PM -0500, Langsdorf, Mark wrote:
+ > AMD recently discovered that on some hardware,
+ > there is a race condition possible when a C-state
+ > change request goes onto the bus at the same time
+ > as a P-state change request.  Both requests happen,
+ > but the southbridge hardware only acknowledges the
+ > C-state change.  The PowerNow! driver is then 
+ > stuck in a loop, waiting for the P-state change
+ > acknowledgement.  The driver eventually times out,
+ > but can no longer perform P-state changes.
+ > 
+ > It turns out the solution is to resend the P-state
+ > change, which the southbridge will acknowledge
+ > normally.
+ > 
+ > Thanks to Johannes Winkelmann for reporting this
+ > and testing the fix.
 
-------_=_NextPart_001_01C5D669.A5470228--
+Excellent detective work!
+I'll get this sent along to Linus for inclusion in 2.6.14
+as there have been a number of reports of this.
+
+One question though, this part..
+
+-               if (i++ > 0x1000000) {
++               if (i++ > 10000) {
+                        printk(KERN_ERR PFX "detected change pending stuck\n");
+                        return 1;
 
 
+means that on affected hardware, we'll see that msg a lot more
+regularly now. Was this intentional, or a leftover debugging change ?
+
+Final nit, please add a Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+line for future patches.  (I still apply them if they lack that line,
+but following the established protocol is a nice bonus touch ;-)
+
+		Dave
