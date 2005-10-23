@@ -1,11 +1,9 @@
-From: "Devriendt, Paul" <paul.devriendt@amd.com>
-Subject: RE: Patch: Fix pending timer stuck condition
-Date: Fri, 21 Oct 2005 16:34:05 -0500
-Message-ID: <84EA05E2CA77634C82730353CBE3A8430382FDE1@SAUSEXMB1.amd.com>
+From: mommer@sdf-eu.org (Mario S. Mommer)
+Subject: Problems with athlon 64 x2 3800+
+Date: Sun, 23 Oct 2005 19:44:35 +0200
+Message-ID: <87oe5gb01o.fsf@massaq.igpm.rwth-aachen.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,31 +13,31 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>, "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
 
-=20
-> One question though, this part..
->=20
-> -               if (i++ > 0x1000000) {
-> +               if (i++ > 10000) {
->                         printk(KERN_ERR PFX "detected change=20
-> pending stuck\n");
->                         return 1;
->=20
->=20
-> means that on affected hardware, we'll see that msg a lot more
-> regularly now. Was this intentional, or a leftover debugging change ?
 
-The original huge number was dreamt up by myself after measuring=20
-the worst case for the pending bit to clear, and then multiplying
-by 100,000 or something equally ridiculous, to make sure it never
-triggered by accident. As the hardware guarantees that the pending
-bit will clear, the driver was supposed to loop for ever, but
-polling for ever in a kernel driver seemed like a bad idea. The
-lower value makes sense now that the condition occurs and is=20
-understood.
+Hello,
 
-Paul.
+I am trying to get cpufreq running with my (shiny) new athlon 64 x2
+3800+. When I boot, I get the messages
+
+powernow-k8: Found 2 AMD Athlon 64 / Opteron processors (version 1.50.3)
+powernow-k8: MP systems not supported by PSB BIOS structure
+powernow-k8: MP systems not supported by PSB BIOS structure
+
+and that's it.
+
+Somewhat earlier it writes
+
+Using ACPI (MADT) for SMP configuration information
+
+I'm using stock linux kernel 2.6.13.4, my MoBo is an asus a8v deluxe.
+
+Any ideas on what could be wrong?
+
+Regards, and thanks,
+
+        Mario.
