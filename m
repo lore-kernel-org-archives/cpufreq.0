@@ -1,11 +1,11 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Can't load speedstep-centrino on IBM x336?
-Date: Wed, 26 Oct 2005 10:01:17 -0700
-Message-ID: <88056F38E9E48644A0F562A38C64FB60061F410B@scsmsx403.amr.corp.intel.com>
+From: "Jayachandran C." <jchandra@digeo.com>
+Subject: [PATCH] cpufreq: Fix issue found by coverity in
+	drivers/cpufreq/cpufreq_stats.c
+Date: Thu, 27 Oct 2005 15:37:02 -0700
+Message-ID: <20051027223702.GC20378@random.pao.digeo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,77 +17,50 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Chris McDermott <lcm@us.ibm.com>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
+Cc: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk
 
+This fixes an issue found in drivers/cpufreq/cpufreq_stats.c by Coverity. Please
+review as I'm not sure if -EINVAL is the correct value to return at this point.
 
-=20
+Error reported: 
+CID: 2642
+Checker: NULL_RETURNS (help)
+File: /export2/p4-coverity/mc2/linux26/drivers/cpufreq/cpufreq_stats.c
+Function: cpufreq_stats_create_table
+Description: Dereferencing NULL value "data"
 
->-----Original Message-----
->From: Darrick J. Wong [mailto:djwong@us.ibm.com]=20
->
->Hmm... ok then, mainline is working.  Thanks for the data!
->
->Unfortunately, RHEL4 U2's "acpi" (it's based on 2.6.9) module doesn't
->work--it prints the "Looking..." message and then "Transition failed."
->when it doesn't find the value it's looking for (0x0E1E) and=20
->gets 0xFFFF
+Patch description:
+ The return of cpufreq_cpu_get can be NULL, check return code and return
+ -EINVAL if it is NULL. 
 
-When using SYSTEM_IO, The acpi driver does the IO call with proper
-parameters to change the frequency. BIOS then comes in and does the
-actual P-state transition in SMM mode (after the cordination across
-logical CPUs). After the transition, BIOS is supposed to export the
-result in another IO port, which OS tries to read and verify. This
-verification was removed in the latest base kernel, but is present in
-2.6.9 (and RHEL4).
+Signed-off-by: Jayachandran C. <c.jayachandran at gmail.com>
 
-So, the problem here may be:
-1) BIOS is not doing the transition. Hence when OS tries to verify by
-readon the status IO port, it sees the transition has failed.
-2) BIOS is doing the transition, but not reflecting the status in status
-IO port or reporting some error there. Hence again OS fails to see the
-change.
-3) Some other bug in the OS driver.
+---
 
-Having seen various bugs in different BIOSes related to this, and I am
-kind of confident that this also ia a bug in BIOS and not a OS issue.
-Can you please check with the BIOS folks on how exactly they are doing
-these transitions in SMM. You can also let me know if you need any more
-details about the driver itself.
+ cpufreq_stats.c |    6 ++++++
+ 1 files changed, 6 insertions(+)
 
-Thanks,
-Venki=20
-
->instead.  Do you have any suggestions?  (If you're not familiar with
->RHEL4, that's fine too.)
->
->--D
->
->Venkatesh Pallipadi wrote:
->> On Mon, Oct 24, 2005 at 11:18:19PM -0700, Darrick J. Wong wrote:
->>=20
->>>Ok, I tried acpi-cpufreq and tried to change the frequency=20
->from 3.6GHz
->>>to 2.8.  scaling_cur_freq says I'm at 2800MHz, but=20
->/proc/cpuinfo still
->>>says 3600.  In dmesg, I see "Writing 0x00000e1e to port=20
->0x0800" at the
->>>very end of the log, but I don't see "Looking for 0x00000e1e=20
->from port
->>>0x0804" like I think I should.  I don't see "Invalid port width..."
->>>either--it's as if we fell out of the function.
->>>
->>=20
->>=20
->> If scaling_cur_freq shows you the right freq, then things=20
->should be working.
->> We recently removed "Looking for * from port" in the common path.
->>=20
->> What /proc/cpuinfo shows kind of depends on other things. I=20
->had this patch=20
->> in my queue that fixes things with /proc/cpuinfo. This=20
->should help here..
->>=20
->> Thanks,
->> Venki
->
+--- linux-2.6.14-rc4-git2.clean/drivers/cpufreq/cpufreq_stats.c	2005-08-28 16:41:01.000000000 -0700
++++ linux-2.6.14-rc4-git2/drivers/cpufreq/cpufreq_stats.c	2005-10-25 18:47:06.639018548 -0700
+@@ -197,6 +197,11 @@
+ 	memset(stat, 0, sizeof (struct cpufreq_stats));
+ 
+ 	data = cpufreq_cpu_get(cpu);
++	if (data == NULL) {
++		ret = -EINVAL;
++		goto error_get_fail;
++	}
++
+ 	if ((ret = sysfs_create_group(&data->kobj, &stats_attr_group)))
+ 		goto error_out;
+ 
+@@ -244,6 +249,7 @@
+ 	return 0;
+ error_out:
+ 	cpufreq_cpu_put(data);
++error_get_fail:
+ 	kfree(stat);
+ 	cpufreq_stats_table[cpu] = NULL;
+ 	return ret;
