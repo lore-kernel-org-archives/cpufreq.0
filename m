@@ -1,12 +1,12 @@
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: Can't load speedstep-centrino on IBM x336?
-Date: Sat, 29 Oct 2005 19:34:36 -0700
-Message-ID: <4364313C.4020902@us.ibm.com>
-References: <88056F38E9E48644A0F562A38C64FB600625F151@scsmsx403.amr.corp.intel.com>
+From: Alexander Shaposhnikov <shaposh@isp.nsc.ru>
+Subject: Re: cpufreq driver + wrong cpu time
+Date: Mon, 31 Oct 2005 11:44:20 +0600
+Message-ID: <1130737460.3422.17.camel@m00>
+References: <1130677884.3318.15.camel@m00> <4365394B.4000907@tremplin-utc.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1507262490=="
+Content-Type: multipart/mixed; boundary="=-t7lNc0np1Y62l+q2lSog"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB600625F151@scsmsx403.amr.corp.intel.com>
+In-Reply-To: <4365394B.4000907@tremplin-utc.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,785 +17,200 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Chris McDermott <lcm@us.ibm.com>, cpufreq@lists.linux.org.uk
+To: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---===============1507262490==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enigFEC8D2C488CBF08E971C545F"
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFEC8D2C488CBF08E971C545F
-Content-Type: multipart/mixed; boundary="------------040008080105050709070608"
-
-This is a multi-part message in MIME format.
---------------040008080105050709070608
-Content-Type: text/plain; charset=ISO-8859-1
+--=-t7lNc0np1Y62l+q2lSog
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Attached are patches against RHEL4 U2 and SLES9 SP2.
+Hello Eric,
 
-100-500ms is pretty bad; I guess it's worth the check removal.
+Its my first foray into kernel driver programming,
+so please don't be too hard on me:)
 
---D
+The total elapsed time (by "time foo") is OK.
+The problem is, cputime reported by, for example, "top" 
+utility, is wrong. The same problem with fortran intrinsic routine
+"ETIME", so quantum chemistry codes i use (all written in fortran) 
+reports wrong cputime, but correct "wall(elapsed) time". 
 
-Pallipadi, Venkatesh wrote:
->  
-> 
-> 
->>-----Original Message-----
->>From: Darrick J. Wong [mailto:djwong@us.ibm.com] 
->>Sent: Thursday, October 27, 2005 5:54 PM
->>To: Pallipadi, Venkatesh
->>Cc: Dave Jones; cpufreq@lists.linux.org.uk; Chris McDermott
->>Subject: Re: Can't load speedstep-centrino on IBM x336?
->>
->>Venkatesh,
->>
->>It turns out that RHEL4 wasn't calling the SMM to tell it that the OS
->>would handle the p-state transitions.  Thus, the status register trap
->>never got set up, which is why I kept reading 0xFFFF.  RHEL4 also
->>obliterates the value of PSTATE_CNT if the FADT revision is 1.0, so I
->>sent RH a backport of mainline's cpufreq, which only obliterates
->>PSTATE_CNT if acpi=strict and also makes that call to SMM.  With that
->>patch, DBS works great.
->>
-> 
-> 
-> Ok. That's good news. Can you share that patch here? Thanks.
-> 
-> 
->>However, I am curious about the removal of the status register check in
->>acpi_cpufreq--how slow is reading that status register?  
-> 
-> 
-> It is really slow due to SMM. 100+ mS. One one system I measured it as
-> 500 mS.
-> 
-> 
->>It seems to me
->>that it's a rather good idea to check that the operation actually
->>succeeded, instead of assuming that it does and changing the reported
->>clock speed as if it did, because any failures that happen will be
->>silent; we could only tell if the switch succeeded for sure by running
->>CPU benchmarks.  But, perhaps there's a justification for removing it
->>that I simply don't know about?
-> 
-> 
-> It is mostly needed for enabling new platforms. But, once thinsg are
-> working, it really is not required to be tested all the time. It doubles
-> the time for a P-state transition.
-> 
-> Thanks,
-> Venki
-> 
+I've attached the code. I was able to test it only on my own dual
+Opteron system, so have no idea about other MB.
 
---------------040008080105050709070608
-Content-Type: text/x-patch;
- name="dbs-rhel4-x336_2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dbs-rhel4-x336_2.patch"
+P.S.
+Please include me in CC explicitly! 
 
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/acpi.c linux-2.6.9/arch/i386/kernel/cpu/cpufreq/acpi.c
---- orig/arch/i386/kernel/cpu/cpufreq/acpi.c	2005-10-27 13:26:30.000000000 -0700
-+++ linux-2.6.9/arch/i386/kernel/cpu/cpufreq/acpi.c	2005-10-28 15:02:07.000000000 -0700
-@@ -62,6 +62,8 @@
- 
- static struct cpufreq_driver acpi_cpufreq_driver;
- 
-+static unsigned int acpi_pstate_strict;
-+
- static int
- acpi_processor_write_port(
- 	u16	port,
-@@ -166,30 +168,40 @@
- 	}
- 
- 	/*
--	 * Then we read the 'status_register' and compare the value with the
--	 * target state's 'status' to make sure the transition was successful.
--	 * Note that we'll poll for up to 1ms (100 cycles of 10us) before
--	 * giving up.
-+	 * Assume the write went through when acpi_pstate_strict is not used.
-+	 * As read status_register is an expensive operation and there
-+	 * are no specific error cases where an IO port write will fail.
- 	 */
-+	if (acpi_pstate_strict) {
-+		/*
-+		 * Then we read the 'status_register' and compare the value with the
-+		 * target state's 'status' to make sure the transition was successful.
-+		 * Note that we'll poll for up to 1ms (100 cycles of 10us) before
-+		 * giving up.
-+		 */
- 
--	port = data->acpi_data.status_register.address;
--	bit_width = data->acpi_data.status_register.bit_width;
-+		port = data->acpi_data.status_register.address;
-+		bit_width = data->acpi_data.status_register.bit_width;
- 
--	ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
--		"Looking for 0x%08x from port 0x%04x\n",
--		(u32) data->acpi_data.states[state].status, port));
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
-+			"Looking for 0x%08x from port 0x%04x\n",
-+			(u32) data->acpi_data.states[state].status, port));
- 
--	for (i=0; i<100; i++) {
--		ret = acpi_processor_read_port(port, bit_width, &value);
--		if (ret) {	
--			ACPI_DEBUG_PRINT((ACPI_DB_WARN,
--				"Invalid port width 0x%04x\n", bit_width));
--			retval = ret;
--			goto migrate_end;
-+		for (i=0; i<100; i++) {
-+			ret = acpi_processor_read_port(port, bit_width, &value);
-+			if (ret) {	
-+				ACPI_DEBUG_PRINT((ACPI_DB_WARN,
-+					"Invalid port width 0x%04x\n", bit_width));
-+				retval = ret;
-+				goto migrate_end;
-+			}
-+			if (value == (u32) data->acpi_data.states[state].status)
-+				break;
-+			udelay(10);
- 		}
--		if (value == (u32) data->acpi_data.states[state].status)
--			break;
--		udelay(10);
-+	} else {
-+		i = 0;
-+		value = (u32) data->acpi_data.states[state].status;
- 	}
- 
- 	/* notify cpufreq */
-@@ -436,6 +448,8 @@
- 		goto err_freqfree;
- 	}
- 		
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
- 
- 	printk(KERN_INFO "cpufreq: CPU%u - ACPI performance management activated.\n",
- 	       cpu);
-@@ -520,6 +534,8 @@
- 	return_VOID;
- }
- 
-+module_param(acpi_pstate_strict, uint, 0644);
-+MODULE_PARM_DESC(acpi_pstate_strict, "value 0 or non-zero. non-zero -> strict ACPI checks are performed during frequency changes.");
- 
- late_initcall(acpi_cpufreq_init);
- module_exit(acpi_cpufreq_exit);
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux-2.6.9/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
---- orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2004-10-18 14:53:06.000000000 -0700
-+++ linux-2.6.9/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2005-10-27 13:32:24.000000000 -0700
-@@ -400,6 +400,9 @@
- 	powernow_table[i].frequency = CPUFREQ_TABLE_END;
- 	powernow_table[i].index = 0;
- 
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
-+
- 	return 0;
- 
- err2:
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux-2.6.9/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
---- orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2005-10-27 13:26:30.000000000 -0700
-+++ linux-2.6.9/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2005-10-27 13:32:55.000000000 -0700
-@@ -779,6 +779,10 @@
- 	data->numps = data->acpi_data.state_count;
- 	print_basics(data);
- 	powernow_k8_acpi_pst_values(data, 0);
-+
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
-+
- 	return 0;
- err_out:
- 	acpi_processor_unregister_performance(&data->acpi_data, data->cpu);
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux-2.6.9/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-10-27 13:26:30.000000000 -0700
-+++ linux-2.6.9/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-10-27 13:33:15.000000000 -0700
-@@ -448,6 +448,9 @@
- 			centrino_model[policy->cpu]->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
- 	}
- 
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
-+
- 	return 0;
- 
-  err_kfree_all:
-diff -Naur orig/drivers/acpi/processor.c linux-2.6.9/drivers/acpi/processor.c
---- orig/drivers/acpi/processor.c	2005-10-27 13:26:34.000000000 -0700
-+++ linux-2.6.9/drivers/acpi/processor.c	2005-10-27 15:08:09.000000000 -0700
-@@ -770,7 +770,10 @@
-  * policy is adjusted accordingly.
-  */
- 
--static int acpi_processor_ppc_is_init = 0;
-+#define PPC_REGISTERED   1
-+#define PPC_IN_USE       2
-+
-+static int acpi_processor_ppc_status = 0;
- 
- static int acpi_processor_ppc_notifier(struct notifier_block *nb, 
- 	unsigned long event,
-@@ -828,6 +831,10 @@
- 	 * (e.g. 0 = states 0..n; 1 = states 1..n; etc.
- 	 */
- 	status = acpi_evaluate_integer(pr->handle, "_PPC", NULL, &ppc);
-+
-+	if (status != AE_NOT_FOUND)
-+		acpi_processor_ppc_status |= PPC_IN_USE;
-+
- 	if(ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error evaluating _PPC\n"));
- 		return_VALUE(-ENODEV);
-@@ -852,17 +859,17 @@
- 
- static void acpi_processor_ppc_init(void) {
- 	if (!cpufreq_register_notifier(&acpi_ppc_notifier_block, CPUFREQ_POLICY_NOTIFIER))
--		acpi_processor_ppc_is_init = 1;
-+		acpi_processor_ppc_status |= PPC_REGISTERED;
- 	else
- 		printk(KERN_DEBUG "Warning: Processor Platform Limit not supported.\n");
- }
- 
- 
- static void acpi_processor_ppc_exit(void) {
--	if (acpi_processor_ppc_is_init)
-+	if (acpi_processor_ppc_status & PPC_REGISTERED)
- 		cpufreq_unregister_notifier(&acpi_ppc_notifier_block, CPUFREQ_POLICY_NOTIFIER);
- 
--	acpi_processor_ppc_is_init = 0;
-+	acpi_processor_ppc_status &= ~PPC_REGISTERED;
- }
- 
- /*
-@@ -1095,6 +1102,72 @@
- 	return_VALUE(0);
- }
- 
-+int acpi_processor_notify_smm(struct module *calling_module) {
-+	acpi_status		status;
-+	static int		is_done = 0;
-+
-+	ACPI_FUNCTION_TRACE("acpi_processor_notify_smm");
-+
-+	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
-+		return_VALUE(-EBUSY);
-+
-+	if (!try_module_get(calling_module))
-+		return_VALUE(-EINVAL);
-+
-+	/* is_done is set to negative if an error occured,
-+	 * and to postitive if _no_ error occured, but SMM
-+	 * was already notified. This avoids double notification
-+	 * which might lead to unexpected results...
-+	 */
-+	if (is_done > 0) {
-+		module_put(calling_module);
-+		return_VALUE(0);
-+	}
-+	else if (is_done < 0) {
-+		module_put(calling_module);
-+		return_VALUE(is_done);
-+	}
-+
-+	is_done = -EIO;
-+
-+	/* Can't write pstate_cnt to smi_cmd if either value is zero */
-+	if ((!acpi_fadt.smi_cmd) ||
-+	    (!acpi_fadt.pstate_cnt)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+			"No SMI port or pstate_cnt\n"));
-+		module_put(calling_module);
-+		return_VALUE(0);
-+	}
-+
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Writing pstate_cnt [0x%x] to smi_cmd [0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
-+
-+	/* FADT v1 doesn't support pstate_cnt, many BIOS vendors use
-+	 * it anyway, so we need to support it... */
-+	if (acpi_fadt_is_v1) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Using v1.0 FADT reserved value for pstate_cnt\n"));
-+	}
-+
-+	status = acpi_os_write_port (acpi_fadt.smi_cmd,
-+				     (u32) acpi_fadt.pstate_cnt, 8);
-+	if (ACPI_FAILURE (status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				  "Failed to write pstate_cnt [0x%x] to "
-+				  "smi_cmd [0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
-+		module_put(calling_module);
-+		return_VALUE(status);
-+	}
-+
-+	/* Success. If there's no _PPC, we need to fear nothing, so
-+	 * we can allow the cpufreq driver to be rmmod'ed. */
-+	is_done = 1;
-+
-+	if (!(acpi_processor_ppc_status & PPC_IN_USE))
-+		module_put(calling_module);
-+
-+	return_VALUE(0);
-+}
-+EXPORT_SYMBOL(acpi_processor_notify_smm);
-+
- 
- #ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
- /* /proc/acpi/processor/../performance interface (DEPRECATED) */
-@@ -1252,7 +1325,7 @@
- 
- 	ACPI_FUNCTION_TRACE("acpi_processor_register_performance");
- 
--	if (!acpi_processor_ppc_is_init)
-+	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
- 		return_VALUE(-EINVAL);
- 
- 	down(&performance_sem);
-@@ -1293,9 +1366,6 @@
- 
- 	ACPI_FUNCTION_TRACE("acpi_processor_unregister_performance");
- 
--	if (!acpi_processor_ppc_is_init)
--		return_VOID;
--
- 	down(&performance_sem);
- 
- 	pr = processors[cpu];
-diff -Naur orig/drivers/acpi/tables/tbconvrt.c linux-2.6.9/drivers/acpi/tables/tbconvrt.c
---- orig/drivers/acpi/tables/tbconvrt.c	2005-10-27 13:26:33.000000000 -0700
-+++ linux-2.6.9/drivers/acpi/tables/tbconvrt.c	2005-10-27 14:47:28.000000000 -0700
-@@ -49,6 +49,8 @@
- #define _COMPONENT          ACPI_TABLES
- 	 ACPI_MODULE_NAME    ("tbconvrt")
- 
-+u8 acpi_fadt_is_v1;
-+EXPORT_SYMBOL(acpi_fadt_is_v1);
- 
- /*******************************************************************************
-  *
-@@ -212,6 +214,7 @@
- 
- 	/* ACPI 1.0 FACS */
- 	/* The BIOS stored FADT should agree with Revision 1.0 */
-+	acpi_fadt_is_v1 = 1;
- 
- 	/*
- 	 * Copy the table header and the common part of the tables.
-@@ -242,7 +245,8 @@
- 	 * the SMI_CMD register to assume processor performance state control
- 	 * responsibility. There isn't any equivalence in 1.0, leave it zeroed.
- 	 */
--	local_fadt->pstate_cnt = 0;
-+	if (acpi_strict)
-+		local_fadt->pstate_cnt = 0;
- 
- 	/*
- 	 * Support for the _CST object and C States change notification.
-diff -Naur orig/include/acpi/actbl.h linux-2.6.9/include/acpi/actbl.h
---- orig/include/acpi/actbl.h	2004-10-18 14:54:08.000000000 -0700
-+++ linux-2.6.9/include/acpi/actbl.h	2005-10-27 14:06:07.000000000 -0700
-@@ -330,6 +330,8 @@
- #include "actbl1.h"   /* Acpi 1.0 table definitions */
- #include "actbl2.h"   /* Acpi 2.0 table definitions */
- 
-+extern u8 acpi_fadt_is_v1; /* is set to 1 if FADT is revision 1,
-+			    * needed for certain workarounds */
- 
- #pragma pack(1)
- /*
-diff -Naur orig/include/acpi/processor.h linux-2.6.9/include/acpi/processor.h
---- orig/include/acpi/processor.h	2004-10-18 14:53:51.000000000 -0700
-+++ linux-2.6.9/include/acpi/processor.h	2005-10-27 13:36:27.000000000 -0700
-@@ -140,4 +140,8 @@
- 	struct acpi_processor_performance * performance,
- 	unsigned int cpu);
- 
-+/* note: this locks both the calling module and the processor module
-+         if a _PPC object exists, rmmod is disallowed then */
-+int acpi_processor_notify_smm(struct module *calling_module);
-+
- #endif
-
---------------040008080105050709070608
-Content-Type: text/x-patch;
- name="dbs-sles9-x336_2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dbs-sles9-x336_2.patch"
-
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/acpi.c linux-2.6.5/arch/i386/kernel/cpu/cpufreq/acpi.c
---- orig/arch/i386/kernel/cpu/cpufreq/acpi.c	2005-10-27 17:24:58.000000000 -0700
-+++ linux-2.6.5/arch/i386/kernel/cpu/cpufreq/acpi.c	2005-10-28 15:28:46.667369840 -0700
-@@ -59,6 +59,7 @@
- 
- static struct cpufreq_acpi_io	*acpi_io_data[NR_CPUS];
- 
-+static unsigned int acpi_pstate_strict;
- 
- static int
- acpi_processor_write_port(
-@@ -170,30 +171,40 @@
- 	}
- 
- 	/*
--	 * Then we read the 'status_register' and compare the value with the
--	 * target state's 'status' to make sure the transition was successful.
--	 * Note that we'll poll for up to 1ms (100 cycles of 10us) before
--	 * giving up.
-+	 * Assume the write went through when acpi_pstate_strict is not used.
-+	 * As read status_register is an expensive operation and there
-+	 * are no specific error cases where an IO port write will fail.
- 	 */
--
--	port = data->acpi_data.status_register.address;
--	bit_width = data->acpi_data.status_register.bit_width;
--
--	ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
--		"Looking for 0x%08x from port 0x%04x\n",
--		(u32) data->acpi_data.states[state].status, port));
--
--	for (i=0; i<100; i++) {
--		ret = acpi_processor_read_port(port, bit_width, &value);
--		if (ret) {	
--			ACPI_DEBUG_PRINT((ACPI_DB_WARN,
--				"Invalid port width 0x%04x\n", bit_width));
--			retval = ret;
--			goto migrate_end;
-+	if (acpi_pstate_strict) {
-+		/*
-+		 * Then we read the 'status_register' and compare the value with the
-+		 * target state's 'status' to make sure the transition was successful.
-+		 * Note that we'll poll for up to 1ms (100 cycles of 10us) before
-+		 * giving up.
-+		 */
-+
-+		port = data->acpi_data.status_register.address;
-+		bit_width = data->acpi_data.status_register.bit_width;
-+
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, 
-+			"Looking for 0x%08x from port 0x%04x\n",
-+			(u32) data->acpi_data.states[state].status, port));
-+
-+		for (i=0; i<100; i++) {
-+			ret = acpi_processor_read_port(port, bit_width, &value);
-+			if (ret) {	
-+				ACPI_DEBUG_PRINT((ACPI_DB_WARN,
-+					"Invalid port width 0x%04x\n", bit_width));
-+				retval = ret;
-+				goto migrate_end;
-+			}
-+			if (value == (u32) data->acpi_data.states[state].status)
-+				break;
-+			udelay(10);
- 		}
--		if (value == (u32) data->acpi_data.states[state].status)
--			break;
--		udelay(10);
-+	} else {
-+		i = 0;
-+		value = (u32) data->acpi_data.states[state].status;
- 	}
- 
- 	/* notify cpufreq */
-@@ -410,6 +421,9 @@
- 	if (result) {
- 		goto err_freqfree;
- 	}
-+
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
- 		
- 
- 	printk(KERN_INFO "cpufreq: CPU%u - ACPI performance management activated.\n",
-@@ -491,6 +505,8 @@
- 	return_VOID;
- }
- 
-+module_param(acpi_pstate_strict, uint, 0644);
-+MODULE_PARM_DESC(acpi_pstate_strict, "value 0 or non-zero. non-zero -> strict ACPI checks are performed during frequency changes.");
- 
- late_initcall(acpi_cpufreq_init);
- module_exit(acpi_cpufreq_exit);
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c linux-2.6.5/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
---- orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2005-10-27 17:24:42.000000000 -0700
-+++ linux-2.6.5/arch/i386/kernel/cpu/cpufreq/powernow-k7.c	2005-10-27 17:33:39.000000000 -0700
-@@ -179,6 +179,9 @@
- 	powernow_table[number_scales].frequency = CPUFREQ_TABLE_END;
- 	powernow_table[number_scales].index = 0;
- 
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
-+
- 	return 0;
- }
- 
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c linux-2.6.5/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
---- orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2005-10-27 17:25:03.000000000 -0700
-+++ linux-2.6.5/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2005-10-27 17:34:02.000000000 -0700
-@@ -790,6 +790,10 @@
- 	data->numps = data->acpi_data.state_count;
- 	print_basics(data);
- 	powernow_k8_acpi_pst_values(data, 0);
-+
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
-+
- 	return 0;
- err_out:
- 	acpi_processor_unregister_performance(&data->acpi_data, data->cpu);
-diff -Naur orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-10-27 17:24:55.000000000 -0700
-+++ linux-2.6.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2005-10-27 17:34:18.000000000 -0700
-@@ -456,6 +456,9 @@
- 			centrino_model[policy->cpu]->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
- 	}
- 
-+	/* notify BIOS that we exist */
-+	acpi_processor_notify_smm(THIS_MODULE);
-+
- 	return 0;
- 
-  err_kfree_all:
-diff -Naur orig/drivers/acpi/osl.c linux-2.6.5/drivers/acpi/osl.c
---- orig/drivers/acpi/osl.c	2005-10-27 17:24:58.000000000 -0700
-+++ linux-2.6.5/drivers/acpi/osl.c	2005-10-27 18:01:08.000000000 -0700
-@@ -360,6 +360,7 @@
- 	return AE_OK;
- }
- 
-+EXPORT_SYMBOL(acpi_os_write_port);
- acpi_status
- acpi_os_write_port(
- 	acpi_io_address	port,
-diff -Naur orig/drivers/acpi/processor.c linux-2.6.5/drivers/acpi/processor.c
---- orig/drivers/acpi/processor.c	2005-10-27 17:24:58.000000000 -0700
-+++ linux-2.6.5/drivers/acpi/processor.c	2005-10-27 17:58:31.000000000 -0700
-@@ -52,7 +52,7 @@
- #include <acpi/acpi_bus.h>
- #include <acpi/acpi_drivers.h>
- #include <acpi/processor.h>
--
-+#include <acpi/acpiosxf.h>
- 
- #define ACPI_PROCESSOR_COMPONENT	0x01000000
- #define ACPI_PROCESSOR_CLASS		"processor"
-@@ -771,7 +771,10 @@
-  * policy is adjusted accordingly.
-  */
- 
--static int acpi_processor_ppc_is_init = 0;
-+#define PPC_REGISTERED   1
-+#define PPC_IN_USE       2
-+
-+static int acpi_processor_ppc_status = 0;
- 
- static int acpi_processor_ppc_notifier(struct notifier_block *nb, 
- 	unsigned long event,
-@@ -829,6 +832,10 @@
- 	 * (e.g. 0 = states 0..n; 1 = states 1..n; etc.
- 	 */
- 	status = acpi_evaluate_integer(pr->handle, "_PPC", NULL, &ppc);
-+
-+	if (status != AE_NOT_FOUND)
-+		acpi_processor_ppc_status |= PPC_IN_USE;
-+
- 	if(ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR, "Error evaluating _PPC\n"));
- 		return_VALUE(-ENODEV);
-@@ -853,17 +860,17 @@
- 
- static void acpi_processor_ppc_init(void) {
- 	if (!cpufreq_register_notifier(&acpi_ppc_notifier_block, CPUFREQ_POLICY_NOTIFIER))
--		acpi_processor_ppc_is_init = 1;
-+		acpi_processor_ppc_status |= PPC_REGISTERED;
- 	else
- 		printk(KERN_DEBUG "Warning: Processor Platform Limit not supported.\n");
- }
- 
- 
- static void acpi_processor_ppc_exit(void) {
--	if (acpi_processor_ppc_is_init)
-+	if (acpi_processor_ppc_status & PPC_REGISTERED)
- 		cpufreq_unregister_notifier(&acpi_ppc_notifier_block, CPUFREQ_POLICY_NOTIFIER);
- 
--	acpi_processor_ppc_is_init = 0;
-+	acpi_processor_ppc_status &= ~PPC_REGISTERED;
- }
- 
- /*
-@@ -1088,6 +1095,72 @@
- 	return_VALUE(0);
- }
- 
-+int acpi_processor_notify_smm(struct module *calling_module) {
-+	acpi_status		status;
-+	static int		is_done = 0;
-+
-+	ACPI_FUNCTION_TRACE("acpi_processor_notify_smm");
-+
-+	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
-+		return_VALUE(-EBUSY);
-+
-+	if (!try_module_get(calling_module))
-+		return_VALUE(-EINVAL);
-+
-+	/* is_done is set to negative if an error occured,
-+	 * and to postitive if _no_ error occured, but SMM
-+	 * was already notified. This avoids double notification
-+	 * which might lead to unexpected results...
-+	 */
-+	if (is_done > 0) {
-+		module_put(calling_module);
-+		return_VALUE(0);
-+	}
-+	else if (is_done < 0) {
-+		module_put(calling_module);
-+		return_VALUE(is_done);
-+	}
-+
-+	is_done = -EIO;
-+
-+	/* Can't write pstate_cnt to smi_cmd if either value is zero */
-+	if ((!acpi_fadt.smi_cmd) ||
-+	    (!acpi_fadt.pstate_cnt)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+			"No SMI port or pstate_cnt\n"));
-+		module_put(calling_module);
-+		return_VALUE(0);
-+	}
-+
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Writing pstate_cnt [0x%x] to smi_cmd [0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
-+
-+	/* FADT v1 doesn't support pstate_cnt, many BIOS vendors use
-+	 * it anyway, so we need to support it... */
-+	if (acpi_fadt_is_v1) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Using v1.0 FADT reserved value for pstate_cnt\n"));
-+	}
-+
-+	status = acpi_os_write_port (acpi_fadt.smi_cmd,
-+				     (u32) acpi_fadt.pstate_cnt, 8);
-+	if (ACPI_FAILURE (status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				  "Failed to write pstate_cnt [0x%x] to "
-+				  "smi_cmd [0x%x]\n", acpi_fadt.pstate_cnt, acpi_fadt.smi_cmd));
-+		module_put(calling_module);
-+		return_VALUE(status);
-+	}
-+
-+	/* Success. If there's no _PPC, we need to fear nothing, so
-+	 * we can allow the cpufreq driver to be rmmod'ed. */
-+	is_done = 1;
-+
-+	if (!(acpi_processor_ppc_status & PPC_IN_USE))
-+		module_put(calling_module);
-+
-+	return_VALUE(0);
-+}
-+EXPORT_SYMBOL(acpi_processor_notify_smm);
-+
- 
- #ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
- /* /proc/acpi/processor/../performance interface (DEPRECATED) */
-@@ -1245,7 +1318,7 @@
- 
- 	ACPI_FUNCTION_TRACE("acpi_processor_register_performance");
- 
--	if (!acpi_processor_ppc_is_init)
-+	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
- 		return_VALUE(-EINVAL);
- 
- 	down(&performance_sem);
-@@ -1286,9 +1359,6 @@
- 
- 	ACPI_FUNCTION_TRACE("acpi_processor_unregister_performance");
- 
--	if (!acpi_processor_ppc_is_init)
--		return_VOID;
--
- 	down(&performance_sem);
- 
- 	pr = processors[cpu];
-diff -Naur orig/drivers/acpi/tables/tbconvrt.c linux-2.6.5/drivers/acpi/tables/tbconvrt.c
---- orig/drivers/acpi/tables/tbconvrt.c	2005-10-27 17:25:03.000000000 -0700
-+++ linux-2.6.5/drivers/acpi/tables/tbconvrt.c	2005-10-27 17:38:30.000000000 -0700
-@@ -49,6 +49,8 @@
- #define _COMPONENT          ACPI_TABLES
- 	 ACPI_MODULE_NAME    ("tbconvrt")
- 
-+u8 acpi_fadt_is_v1;
-+EXPORT_SYMBOL(acpi_fadt_is_v1);
- 
- /*******************************************************************************
-  *
-@@ -212,6 +214,7 @@
- 
- 	/* ACPI 1.0 FACS */
- 	/* The BIOS stored FADT should agree with Revision 1.0 */
-+	acpi_fadt_is_v1 = 1;
- 
- 	/*
- 	 * Copy the table header and the common part of the tables.
-@@ -242,7 +245,8 @@
- 	 * the SMI_CMD register to assume processor performance state control
- 	 * responsibility. There isn't any equivalence in 1.0, leave it zeroed.
- 	 */
--	local_fadt->pstate_cnt = 0;
-+	if (acpi_strict)
-+		local_fadt->pstate_cnt = 0;
- 
- 	/*
- 	 * Support for the _CST object and C States change notification.
-diff -Naur orig/include/acpi/actbl.h linux-2.6.5/include/acpi/actbl.h
---- orig/include/acpi/actbl.h	2004-04-03 19:37:07.000000000 -0800
-+++ linux-2.6.5/include/acpi/actbl.h	2005-10-27 17:38:51.000000000 -0700
-@@ -343,5 +343,7 @@
- #include "actbl1.h"   /* Acpi 1.0 table definitions */
- #include "actbl2.h"   /* Acpi 2.0 table definitions */
- 
-+extern u8 acpi_fadt_is_v1; /* is set to 1 if FADT is revision 1,
-+			    * needed for certain workarounds */
- 
- #endif /* __ACTBL_H__ */
-diff -Naur orig/include/acpi/processor.h linux-2.6.5/include/acpi/processor.h
---- orig/include/acpi/processor.h	2004-04-03 19:36:57.000000000 -0800
-+++ linux-2.6.5/include/acpi/processor.h	2005-10-27 17:39:05.000000000 -0700
-@@ -140,4 +140,8 @@
- 	struct acpi_processor_performance * performance,
- 	unsigned int cpu);
- 
-+/* note: this locks both the calling module and the processor module
-+         if a _PPC object exists, rmmod is disallowed then */
-+int acpi_processor_notify_smm(struct module *calling_module);
-+
- #endif
-
---------------040008080105050709070608--
-
---------------enigFEC8D2C488CBF08E971C545F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
-
-iD8DBQFDZDFAa6vRYYgWQuURAsxYAJ4+pzPM+pXexEaaNTMtb3iLfyl4cACeN0rd
-XcWcHj+qK2quP6qkOrBLVDY=
-=nkIp
------END PGP SIGNATURE-----
-
---------------enigFEC8D2C488CBF08E971C545F--
+Best Regards,
+Alexander Shaposhnikov
 
 
---===============1507262490==
+
+On Mon, 2005-10-31 at 06:21 +0900, Eric Piel wrote:
+> Alexander Shaposhnikov wrote:
+> > Hello to everyone.
+> > 
+> Hello Alexander,
+> 
+> > I have written cpufreq_nForce4 kernel driver for  cpufreq subsystem.
+> > It allows for CPU frequency changing by adjusting FSB speed, for nForce4
+> > based motherboards. 
+> > Works for single-cpu systems, as well as for SMP.
+> > The problem is, after changing CPU(s) speed on SMP systems, programs
+> > report wrong cpu time (wall time is OK). 
+> What do you mean by CPU time? Do you mean the output of "time foo" ? How 
+> do you know the *right* CPU time? Could you provide some examples :-)
+> 
+> Well, anyway, by _rough_ guess, if on UP it works and on SMP it doesn't, 
+> we could imagine that the difference comes from the fact the tick 
+> interrupt source is not the same on those systems. You could try to boot 
+> a UP kernel with local APIC (selectable in the .config) on the 
+> multi-processor computer to check. Then it might mean that after 
+> changing the FSB speed, the interrupt source has to be re-programmed...
+> 
+> > What would be the best way to fix this, and shouldn't this be done by
+> > the cpufreq subsystem, rather than by hardware driver? 
+> > 
+> Probably the best place to discuss about cpufreq is the dedicated 
+> mailing list : cpufreq@lists.linux.org.uk . If you don't mind, you could 
+>   continue there.
+> 
+> Also please, provide the sources of your driver to have a look :-)
+> 
+> cu,
+> Eric
+
+--=-t7lNc0np1Y62l+q2lSog
+Content-Disposition: attachment; filename=cpufreq_nForce4.tar.bz2
+Content-Type: application/x-bzip-compressed-tar; name=cpufreq_nForce4.tar.bz2
+Content-Transfer-Encoding: base64
+
+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
+
+
+--=-t7lNc0np1Y62l+q2lSog
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -806,5 +221,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============1507262490==--
+--=-t7lNc0np1Y62l+q2lSog--
+
 
