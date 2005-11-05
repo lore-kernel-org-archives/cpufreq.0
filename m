@@ -1,42 +1,59 @@
-From: "Gabriel A. Devenyi" <ace@staticwave.ca>
-Subject: [PATCH] arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-Date: Wed, 2 Nov 2005 20:55:46 -0500
-Message-ID: <200511022055.47183.ace@staticwave.ca>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030264AbVKCBzE@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5553] New: speedstep-smi fails to load if
+	CONFIG_CPU_FREQ_DEBUG is not set
+Date: Fri, 4 Nov 2005 16:19:13 -0800
+Message-ID: <200511050019.jA50JDU3019363@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Thanks to LinuxICC (http://linuxicc.sf.net), a comparison of a u32 less than 0 was found, this patch changes the variable to a signed int so that comparison is meaningful.
+http://bugzilla.kernel.org/show_bug.cgi?id=5553
 
-This patch applies to linus' git tree as of 02.11.2005
-
-Signed-off-by: Gabriel A. Devenyi <ace@staticwave.ca>
-
---
-diff --git a/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c b/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-index 04a4053..039297b 100644
---- a/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-+++ b/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-@@ -177,9 +177,9 @@ static unsigned int nforce2_fsb_read(int
-  */
- static int nforce2_set_fsb(unsigned int fsb)
- {
--	u32 pll, temp = 0;
-+	u32 temp = 0;
- 	unsigned int tfsb;
--	int diff;
-+	int diff, pll = 0;
- 
- 	if ((fsb > max_fsb) || (fsb < NFORCE2_MIN_FSB)) {
- 		printk(KERN_ERR "cpufreq: FSB %d is out of range!\n", fsb);
+           Summary: speedstep-smi fails to load if CONFIG_CPU_FREQ_DEBUG is
+                    not set
+    Kernel Version: 2.6.14
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: tm@del.bg
 
 
--- 
-Gabriel A. Devenyi
-ace@staticwave.ca
+Most recent kernel where this bug did not occur:
+ 2.6.14
+Distribution:
+ Debian GNU/Linux Etch
+Hardware Environment:
+ IBM ThinkPad T22, Pentium III (Coppermine), i440BX
+Software Environment:
+Problem Description:
+
+cpufreq used to work with 2.6.8 and 2.6.11 kernels, but doesn't work with 2.6.12
+and 2.6.14 for me. I've found that it actually works with 2.6.14 but only if
+kernel is compiled with CONFIG_CPU_FREQ_DEBUG option set.
+
+Steps to reproduce:
+
+Compile kernel with all allmodconfig and clear the CONFIG_CPU_FREQ_DEBUG.
+
+Then the following happens (otherwise it works):
+
+# modprobe speedstep-lib relaxed_check=1
+# modprobe speedstep-smi
+FATAL: Error inserting speedstep_smi
+(/lib/modules/2.6.14/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-smi.ko): No
+such device
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
