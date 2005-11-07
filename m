@@ -1,59 +1,36 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5553] New: speedstep-smi fails to load if
-	CONFIG_CPU_FREQ_DEBUG is not set
-Date: Fri, 4 Nov 2005 16:19:13 -0800
-Message-ID: <200511050019.jA50JDU3019363@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: sleeping function called from cpufreq
+Date: Mon, 07 Nov 2005 09:36:36 +0100
+Message-ID: <436F1214.6000307@drzeus.cx>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932453AbVKGIgr@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5553
+As of lately I've been getting tonnes of these:
 
-           Summary: speedstep-smi fails to load if CONFIG_CPU_FREQ_DEBUG is
-                    not set
-    Kernel Version: 2.6.14
-            Status: NEW
-          Severity: normal
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: tm@del.bg
+[  610.185635] Debug: sleeping function called from invalid context at 
+include/linux/rwsem.h:43
+[  610.185647] in_atomic():1, irqs_disabled():0
+[  610.185653]  [<c01041be>] dump_stack+0x1e/0x20
+[  610.185667]  [<c0119b62>] __might_sleep+0xa2/0xc0
+[  610.185678]  [<c029de86>] cpufreq_notify_transition+0x46/0x220
+[  610.185690]  [<e09d08fc>] centrino_target+0xfc/0x130 [speedstep_centrino]
+[  610.185708]  [<c029f17f>] __cpufreq_driver_target+0x5f/0x70
+[  610.185718]  [<c02a029d>] cpufreq_set+0x7d/0xa0
+[  610.185728]  [<c02a0339>] store_speed+0x49/0x50
+[  610.185737]  [<c029e6c6>] store+0x46/0x60
+[  610.185745]  [<c01a5f27>] flush_write_buffer+0x37/0x40
+[  610.185754]  [<c01a5f98>] sysfs_write_file+0x68/0x90
+[  610.185763]  [<c01639b8>] vfs_write+0xa8/0x190
+[  610.185773]  [<c0163b57>] sys_write+0x47/0x70
+[  610.185781]  [<c01032bb>] sysenter_past_esp+0x54/0x75
 
+Ideas on solving it?
 
-Most recent kernel where this bug did not occur:
- 2.6.14
-Distribution:
- Debian GNU/Linux Etch
-Hardware Environment:
- IBM ThinkPad T22, Pentium III (Coppermine), i440BX
-Software Environment:
-Problem Description:
-
-cpufreq used to work with 2.6.8 and 2.6.11 kernels, but doesn't work with 2.6.12
-and 2.6.14 for me. I've found that it actually works with 2.6.14 but only if
-kernel is compiled with CONFIG_CPU_FREQ_DEBUG option set.
-
-Steps to reproduce:
-
-Compile kernel with all allmodconfig and clear the CONFIG_CPU_FREQ_DEBUG.
-
-Then the following happens (otherwise it works):
-
-# modprobe speedstep-lib relaxed_check=1
-# modprobe speedstep-smi
-FATAL: Error inserting speedstep_smi
-(/lib/modules/2.6.14/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-smi.ko): No
-such device
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Rgds
+Pierre
