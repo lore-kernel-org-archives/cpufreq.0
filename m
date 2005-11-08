@@ -1,49 +1,41 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/cpufreq/cpufreq.c: fix a compile warning with
-	SMP=n
-Date: Mon, 7 Nov 2005 21:03:45 +0100
-Message-ID: <20051107200345.GJ3847@stusta.de>
+From: "Gabriel A. Devenyi" <ace@staticwave.ca>
+Subject: [RESEND] [PATCH] arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+Date: Tue, 08 Nov 2005 07:38:35 -0500
+Message-ID: <43709C4B.5010607@staticwave.ca>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965008AbVKHMik@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
 
-This patch fixes the following compile warning with CONFIG_SMP=n:
+Thanks to LinuxICC (http://linuxicc.sf.net), a comparison of a u32 less than 0 was found, this patch changes the variable to a signed int so that comparison is meaningful.
 
-<--  snip  -->
+This patch applies to linus' git tree as of 02.11.2005
 
-...
-  CC      drivers/cpufreq/cpufreq.o
-drivers/cpufreq/cpufreq.c: In function 'cpufreq_remove_dev':
-drivers/cpufreq/cpufreq.c:696: warning: unused variable 'cpu_sys_dev'
-...
+Signed-off-by: Gabriel A. Devenyi <ace@staticwave.ca>
 
-<--  snip  -->
+--
+diff --git a/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c b/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+index 04a4053..039297b 100644
+--- a/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
++++ b/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+@@ -177,9 +177,9 @@ static unsigned int nforce2_fsb_read(int
+   */
+  static int nforce2_set_fsb(unsigned int fsb)
+  {
+-	u32 pll, temp = 0;
++	u32 temp = 0;
+  	unsigned int tfsb;
+-	int diff;
++	int diff, pll = 0;
+
+  	if ((fsb > max_fsb) || (fsb < NFORCE2_MIN_FSB)) {
+  		printk(KERN_ERR "cpufreq: FSB %d is out of range!\n", fsb);
 
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
---- linux-2.6.14-mm1-full/drivers/cpufreq/cpufreq.c.old	2005-11-07 19:27:33.000000000 +0100
-+++ linux-2.6.14-mm1-full/drivers/cpufreq/cpufreq.c	2005-11-07 19:27:50.000000000 +0100
-@@ -693,8 +693,8 @@
- 	unsigned int cpu = sys_dev->id;
- 	unsigned long flags;
- 	struct cpufreq_policy *data;
--	struct sys_device *cpu_sys_dev;
- #ifdef CONFIG_SMP
-+	struct sys_device *cpu_sys_dev;
- 	unsigned int j;
- #endif
+-- 
+Gabriel A. Devenyi
+ace@staticwave.ca
