@@ -1,10 +1,10 @@
 From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: [PATCH] 1/2 Improve Error reporting
-Date: Thu, 10 Nov 2005 16:52:08 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A84303218919@SAUSEXMB1.amd.com>
+Subject: [PATCH] 2/2 fix driver removal code to clean up all governors
+Date: Thu, 10 Nov 2005 16:53:57 -0600
+Message-ID: <84EA05E2CA77634C82730353CBE3A8430321891A@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5E649.611A1636"
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5E649.A1D90D6E"
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,84 +15,41 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 To: cpufreq@lists.linux.org.uk
 Cc: "shin, jacob" <jacob.shin@amd.com>
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C5E649.611A1636
+------_=_NextPart_001_01C5E649.A1D90D6E
 Content-Type: text/plain;
  charset=us-ascii
 Content-Transfer-Encoding: quoted-printable
 
-This patch cleans up some error messages in the=20
-powernow-k8 driver and makes them more understandable.
+This patch fixes a bug that causes a segfault when the
+powernow-k8 driver is removed while the ondemand=20
+governor is running.
 
 Signed-off-by: Jacob Shin <jacob.shin@amd.com>
 Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-------_=_NextPart_001_01C5E649.611A1636
+------_=_NextPart_001_01C5E649.A1D90D6E
 Content-Type: application/octet-stream;
- name=pn-cleanup.patch
+ name=cpufreq-gov_stop-fix.patch
 Content-Transfer-Encoding: base64
-Content-Description: pn-cleanup.patch
+Content-Description: cpufreq-gov_stop-fix.patch
 Content-Disposition: attachment;
- filename=pn-cleanup.patch
+ filename=cpufreq-gov_stop-fix.patch
 
-LS0tIHBvd2Vybm93LWs4LmMub3JpZwkyMDA1LTExLTEwIDEzOjIzOjQ0LjAwMDAwMDAwMCAtMDYw
-MAorKysgcG93ZXJub3ctazguYwkyMDA1LTExLTEwIDEzOjM5OjAzLjAwMDAwMDAwMCAtMDYwMApA
-QCAtNDQsNyArNDQsNyBAQAogCiAjZGVmaW5lIFBGWCAicG93ZXJub3ctazg6ICIKICNkZWZpbmUg
-QkZYIFBGWCAiQklPUyBlcnJvcjogIgotI2RlZmluZSBWRVJTSU9OICJ2ZXJzaW9uIDEuNTAuNCIK
-KyNkZWZpbmUgVkVSU0lPTiAidmVyc2lvbiAxLjUwLjUiCiAjaW5jbHVkZSAicG93ZXJub3ctazgu
-aCIKIAogLyogc2VyaWFsaXplIGZyZXEgY2hhbmdlcyAgKi8KQEAgLTQ2NCw3ICs0NjQsNyBAQCBz
-dGF0aWMgaW50IGNoZWNrX3N1cHBvcnRlZF9jcHUodW5zaWduZWQgCiAJc2NoZWR1bGUoKTsKIAog
-CWlmIChzbXBfcHJvY2Vzc29yX2lkKCkgIT0gY3B1KSB7Ci0JCXByaW50ayhLRVJOX0VSUiAibGlt
-aXRpbmcgdG8gY3B1ICV1IGZhaWxlZFxuIiwgY3B1KTsKKwkJcHJpbnRrKEtFUk5fRVJSIFBGWCAi
-bGltaXRpbmcgdG8gY3B1ICV1IGZhaWxlZFxuIiwgY3B1KTsKIAkJZ290byBvdXQ7CiAJfQogCkBA
-IC01MTksMjIgKzUxOSwyOCBAQCBzdGF0aWMgaW50IGNoZWNrX3BzdF90YWJsZShzdHJ1Y3QgcG93
-ZXJuCiAJCQlwcmludGsoS0VSTl9FUlIgQkZYICJtYXh2aWQgZXhjZWVkZWQgd2l0aCBwc3RhdGUg
-JWRcbiIsIGopOwogCQkJcmV0dXJuIC1FTk9ERVY7CiAJCX0KLQkJaWYgKChwc3Rbal0uZmlkID4g
-TUFYX0ZJRCkKLQkJICAgIHx8IChwc3Rbal0uZmlkICYgMSkKLQkJICAgIHx8IChqICYmIChwc3Rb
-al0uZmlkIDwgSElfRklEX1RBQkxFX0JPVFRPTSkpKSB7CisJCWlmIChwc3Rbal0uZmlkID4gTUFY
-X0ZJRCkgeworCQkJcHJpbnRrKEtFUk5fRVJSIEJGWCAibWF4ZmlkIGV4Y2VlZGVkIHdpdGggcHN0
-YXRlICVkXG4iLCBqKTsKKwkJCXJldHVybiAtRU5PREVWOworCQl9CisJCWlmIChwc3Rbal0uZmlk
-ICYgMSkgeworCQkJcHJpbnRrKEtFUk5fRVJSIEJGWCAiZmlkIGludmFsaWQgLSAlZCA6IDB4JXhc
-biIsIGosIHBzdFtqXS5maWQpOworCQkJcmV0dXJuIC1FSU5WQUw7CisJCX0KKwkJaWYgKGogJiYg
-KHBzdFtqXS5maWQgPCBISV9GSURfVEFCTEVfQk9UVE9NKSkgewogCQkJLyogT25seSBmaXJzdCBm
-aWQgaXMgYWxsb3dlZCB0byBiZSBpbiAibG93IiByYW5nZSAqLwotCQkJcHJpbnRrKEtFUk5fRVJS
-IFBGWCAidHdvIGxvdyBmaWRzIC0gJWQgOiAweCV4XG4iLCBqLCBwc3Rbal0uZmlkKTsKKwkJCXBy
-aW50ayhLRVJOX0VSUiBCRlggInR3byBsb3cgZmlkcyAtICVkIDogMHgleFxuIiwgaiwgcHN0W2pd
-LmZpZCk7CiAJCQlyZXR1cm4gLUVJTlZBTDsKIAkJfQogCQlpZiAocHN0W2pdLmZpZCA8IGxhc3Rm
-aWQpCiAJCQlsYXN0ZmlkID0gcHN0W2pdLmZpZDsKIAl9CiAJaWYgKGxhc3RmaWQgJiAxKSB7Ci0J
-CXByaW50ayhLRVJOX0VSUiBQRlggImxhc3RmaWQgaW52YWxpZFxuIik7CisJCXByaW50ayhLRVJO
-X0VSUiBCRlggImxhc3RmaWQgaW52YWxpZFxuIik7CiAJCXJldHVybiAtRUlOVkFMOwogCX0KIAlp
-ZiAobGFzdGZpZCA+IExPX0ZJRF9UQUJMRV9UT1ApCi0JCXByaW50ayhLRVJOX0lORk8gUEZYICAi
-Zmlyc3QgZmlkIG5vdCBmcm9tIGxvIGZyZXEgdGFibGVcbiIpOworCQlwcmludGsoS0VSTl9JTkZP
-IEJGWCAgImZpcnN0IGZpZCBub3QgZnJvbSBsbyBmcmVxIHRhYmxlXG4iKTsKIAogCXJldHVybiAw
-OwogfQpAQCAtOTE1LDcgKzkyMSw3IEBAIHN0YXRpYyBpbnQgcG93ZXJub3drOF90YXJnZXQoc3Ry
-dWN0IGNwdWYKIAlzY2hlZHVsZSgpOwogCiAJaWYgKHNtcF9wcm9jZXNzb3JfaWQoKSAhPSBwb2wt
-PmNwdSkgewotCQlwcmludGsoS0VSTl9FUlIgImxpbWl0aW5nIHRvIGNwdSAldSBmYWlsZWRcbiIs
-IHBvbC0+Y3B1KTsKKwkJcHJpbnRrKEtFUk5fRVJSIFBGWCAibGltaXRpbmcgdG8gY3B1ICV1IGZh
-aWxlZFxuIiwgcG9sLT5jcHUpOwogCQlnb3RvIGVycl9vdXQ7CiAJfQogCkBAIC05ODcsNiArOTkz
-LDkgQEAgc3RhdGljIGludCBfX2luaXQgcG93ZXJub3drOF9jcHVfaW5pdChzdAogCWNwdW1hc2tf
-dCBvbGRtYXNrID0gQ1BVX01BU0tfQUxMOwogCWludCByYywgaTsKIAorCWlmICghY3B1X29ubGlu
-ZShwb2wtPmNwdSkpCisJCXJldHVybiAtRU5PREVWOworCiAJaWYgKCFjaGVja19zdXBwb3J0ZWRf
-Y3B1KHBvbC0+Y3B1KSkKIAkJcmV0dXJuIC1FTk9ERVY7CiAKQEAgLTEwMjgsNyArMTAzNyw3IEBA
-IHN0YXRpYyBpbnQgX19pbml0IHBvd2Vybm93azhfY3B1X2luaXQoc3QKIAlzY2hlZHVsZSgpOwog
-CiAJaWYgKHNtcF9wcm9jZXNzb3JfaWQoKSAhPSBwb2wtPmNwdSkgewotCQlwcmludGsoS0VSTl9F
-UlIgImxpbWl0aW5nIHRvIGNwdSAldSBmYWlsZWRcbiIsIHBvbC0+Y3B1KTsKKwkJcHJpbnRrKEtF
-Uk5fRVJSIFBGWCAibGltaXRpbmcgdG8gY3B1ICV1IGZhaWxlZFxuIiwgcG9sLT5jcHUpOwogCQln
-b3RvIGVycl9vdXQ7CiAJfQogCkBAIC0xMTc0LDcgKzExODMsNyBAQCBzdGF0aWMgdm9pZCBfX2V4
-aXQgcG93ZXJub3drOF9leGl0KHZvaWQpCiAJY3B1ZnJlcV91bnJlZ2lzdGVyX2RyaXZlcigmY3B1
-ZnJlcV9hbWQ2NF9kcml2ZXIpOwogfQogCi1NT0RVTEVfQVVUSE9SKCJQYXVsIERldnJpZW5kdCA8
-cGF1bC5kZXZyaWVuZHRAYW1kLmNvbT4gYW5kIE1hcmsgTGFuZ3Nkb3JmIDxtYXJrLmxhbmdzZG9y
-ZkBhbWQuY29tLiIpOworTU9EVUxFX0FVVEhPUigiUGF1bCBEZXZyaWVuZHQgPHBhdWwuZGV2cmll
-bmR0QGFtZC5jb20+IGFuZCBNYXJrIExhbmdzZG9yZiA8bWFyay5sYW5nc2RvcmZAYW1kLmNvbT4i
-KTsKIE1PRFVMRV9ERVNDUklQVElPTigiQU1EIEF0aGxvbiA2NCBhbmQgT3B0ZXJvbiBwcm9jZXNz
-b3IgZnJlcXVlbmN5IGRyaXZlci4iKTsKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKIAo=
+LS0tIGNwdWZyZXEuYy5vcmlnCTIwMDUtMTEtMTAgMTM6MzI6NDEuMDAwMDAwMDAwIC0wNjAwCisr
+KyBjcHVmcmVxLmMJMjAwNS0xMS0xMCAxMzozMzoxOS4wMDAwMDAwMDAgLTA2MDAKQEAgLTc3Miw3
+ICs3NzIsNiBAQCBzdGF0aWMgaW50IGNwdWZyZXFfcmVtb3ZlX2RldiAoc3RydWN0IHN5CiAJZG93
+bigmZGF0YS0+bG9jayk7CiAJaWYgKGNwdWZyZXFfZHJpdmVyLT50YXJnZXQpCiAJCV9fY3B1ZnJl
+cV9nb3Zlcm5vcihkYXRhLCBDUFVGUkVRX0dPVl9TVE9QKTsKLQljcHVmcmVxX2RyaXZlci0+dGFy
+Z2V0ID0gTlVMTDsKIAl1cCgmZGF0YS0+bG9jayk7CiAKIAlrb2JqZWN0X3VucmVnaXN0ZXIoJmRh
+dGEtPmtvYmopOwo=
 
-------_=_NextPart_001_01C5E649.611A1636
+------_=_NextPart_001_01C5E649.A1D90D6E
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -103,6 +60,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-------_=_NextPart_001_01C5E649.611A1636--
+------_=_NextPart_001_01C5E649.A1D90D6E--
 
 
