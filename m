@@ -1,9 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 4059] cpufreq longhaul for Via Nehemiah C (C5N) freezes whole
-	system
-Date: Wed, 9 Nov 2005 14:53:30 -0800
-Message-ID: <200511092253.jA9MrUhA002184@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: [PATCH] 1/2 Improve Error reporting
+Date: Thu, 10 Nov 2005 16:52:08 -0600
+Message-ID: <84EA05E2CA77634C82730353CBE3A84303218919@SAUSEXMB1.amd.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5E649.611A1636"
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,56 +15,94 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+Cc: "shin, jacob" <jacob.shin@amd.com>
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C5E649.611A1636
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+This patch cleans up some error messages in the=20
+powernow-k8 driver and makes them more understandable.
+
+Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+
+------_=_NextPart_001_01C5E649.611A1636
+Content-Type: application/octet-stream;
+ name=pn-cleanup.patch
+Content-Transfer-Encoding: base64
+Content-Description: pn-cleanup.patch
+Content-Disposition: attachment;
+ filename=pn-cleanup.patch
+
+LS0tIHBvd2Vybm93LWs4LmMub3JpZwkyMDA1LTExLTEwIDEzOjIzOjQ0LjAwMDAwMDAwMCAtMDYw
+MAorKysgcG93ZXJub3ctazguYwkyMDA1LTExLTEwIDEzOjM5OjAzLjAwMDAwMDAwMCAtMDYwMApA
+QCAtNDQsNyArNDQsNyBAQAogCiAjZGVmaW5lIFBGWCAicG93ZXJub3ctazg6ICIKICNkZWZpbmUg
+QkZYIFBGWCAiQklPUyBlcnJvcjogIgotI2RlZmluZSBWRVJTSU9OICJ2ZXJzaW9uIDEuNTAuNCIK
+KyNkZWZpbmUgVkVSU0lPTiAidmVyc2lvbiAxLjUwLjUiCiAjaW5jbHVkZSAicG93ZXJub3ctazgu
+aCIKIAogLyogc2VyaWFsaXplIGZyZXEgY2hhbmdlcyAgKi8KQEAgLTQ2NCw3ICs0NjQsNyBAQCBz
+dGF0aWMgaW50IGNoZWNrX3N1cHBvcnRlZF9jcHUodW5zaWduZWQgCiAJc2NoZWR1bGUoKTsKIAog
+CWlmIChzbXBfcHJvY2Vzc29yX2lkKCkgIT0gY3B1KSB7Ci0JCXByaW50ayhLRVJOX0VSUiAibGlt
+aXRpbmcgdG8gY3B1ICV1IGZhaWxlZFxuIiwgY3B1KTsKKwkJcHJpbnRrKEtFUk5fRVJSIFBGWCAi
+bGltaXRpbmcgdG8gY3B1ICV1IGZhaWxlZFxuIiwgY3B1KTsKIAkJZ290byBvdXQ7CiAJfQogCkBA
+IC01MTksMjIgKzUxOSwyOCBAQCBzdGF0aWMgaW50IGNoZWNrX3BzdF90YWJsZShzdHJ1Y3QgcG93
+ZXJuCiAJCQlwcmludGsoS0VSTl9FUlIgQkZYICJtYXh2aWQgZXhjZWVkZWQgd2l0aCBwc3RhdGUg
+JWRcbiIsIGopOwogCQkJcmV0dXJuIC1FTk9ERVY7CiAJCX0KLQkJaWYgKChwc3Rbal0uZmlkID4g
+TUFYX0ZJRCkKLQkJICAgIHx8IChwc3Rbal0uZmlkICYgMSkKLQkJICAgIHx8IChqICYmIChwc3Rb
+al0uZmlkIDwgSElfRklEX1RBQkxFX0JPVFRPTSkpKSB7CisJCWlmIChwc3Rbal0uZmlkID4gTUFY
+X0ZJRCkgeworCQkJcHJpbnRrKEtFUk5fRVJSIEJGWCAibWF4ZmlkIGV4Y2VlZGVkIHdpdGggcHN0
+YXRlICVkXG4iLCBqKTsKKwkJCXJldHVybiAtRU5PREVWOworCQl9CisJCWlmIChwc3Rbal0uZmlk
+ICYgMSkgeworCQkJcHJpbnRrKEtFUk5fRVJSIEJGWCAiZmlkIGludmFsaWQgLSAlZCA6IDB4JXhc
+biIsIGosIHBzdFtqXS5maWQpOworCQkJcmV0dXJuIC1FSU5WQUw7CisJCX0KKwkJaWYgKGogJiYg
+KHBzdFtqXS5maWQgPCBISV9GSURfVEFCTEVfQk9UVE9NKSkgewogCQkJLyogT25seSBmaXJzdCBm
+aWQgaXMgYWxsb3dlZCB0byBiZSBpbiAibG93IiByYW5nZSAqLwotCQkJcHJpbnRrKEtFUk5fRVJS
+IFBGWCAidHdvIGxvdyBmaWRzIC0gJWQgOiAweCV4XG4iLCBqLCBwc3Rbal0uZmlkKTsKKwkJCXBy
+aW50ayhLRVJOX0VSUiBCRlggInR3byBsb3cgZmlkcyAtICVkIDogMHgleFxuIiwgaiwgcHN0W2pd
+LmZpZCk7CiAJCQlyZXR1cm4gLUVJTlZBTDsKIAkJfQogCQlpZiAocHN0W2pdLmZpZCA8IGxhc3Rm
+aWQpCiAJCQlsYXN0ZmlkID0gcHN0W2pdLmZpZDsKIAl9CiAJaWYgKGxhc3RmaWQgJiAxKSB7Ci0J
+CXByaW50ayhLRVJOX0VSUiBQRlggImxhc3RmaWQgaW52YWxpZFxuIik7CisJCXByaW50ayhLRVJO
+X0VSUiBCRlggImxhc3RmaWQgaW52YWxpZFxuIik7CiAJCXJldHVybiAtRUlOVkFMOwogCX0KIAlp
+ZiAobGFzdGZpZCA+IExPX0ZJRF9UQUJMRV9UT1ApCi0JCXByaW50ayhLRVJOX0lORk8gUEZYICAi
+Zmlyc3QgZmlkIG5vdCBmcm9tIGxvIGZyZXEgdGFibGVcbiIpOworCQlwcmludGsoS0VSTl9JTkZP
+IEJGWCAgImZpcnN0IGZpZCBub3QgZnJvbSBsbyBmcmVxIHRhYmxlXG4iKTsKIAogCXJldHVybiAw
+OwogfQpAQCAtOTE1LDcgKzkyMSw3IEBAIHN0YXRpYyBpbnQgcG93ZXJub3drOF90YXJnZXQoc3Ry
+dWN0IGNwdWYKIAlzY2hlZHVsZSgpOwogCiAJaWYgKHNtcF9wcm9jZXNzb3JfaWQoKSAhPSBwb2wt
+PmNwdSkgewotCQlwcmludGsoS0VSTl9FUlIgImxpbWl0aW5nIHRvIGNwdSAldSBmYWlsZWRcbiIs
+IHBvbC0+Y3B1KTsKKwkJcHJpbnRrKEtFUk5fRVJSIFBGWCAibGltaXRpbmcgdG8gY3B1ICV1IGZh
+aWxlZFxuIiwgcG9sLT5jcHUpOwogCQlnb3RvIGVycl9vdXQ7CiAJfQogCkBAIC05ODcsNiArOTkz
+LDkgQEAgc3RhdGljIGludCBfX2luaXQgcG93ZXJub3drOF9jcHVfaW5pdChzdAogCWNwdW1hc2tf
+dCBvbGRtYXNrID0gQ1BVX01BU0tfQUxMOwogCWludCByYywgaTsKIAorCWlmICghY3B1X29ubGlu
+ZShwb2wtPmNwdSkpCisJCXJldHVybiAtRU5PREVWOworCiAJaWYgKCFjaGVja19zdXBwb3J0ZWRf
+Y3B1KHBvbC0+Y3B1KSkKIAkJcmV0dXJuIC1FTk9ERVY7CiAKQEAgLTEwMjgsNyArMTAzNyw3IEBA
+IHN0YXRpYyBpbnQgX19pbml0IHBvd2Vybm93azhfY3B1X2luaXQoc3QKIAlzY2hlZHVsZSgpOwog
+CiAJaWYgKHNtcF9wcm9jZXNzb3JfaWQoKSAhPSBwb2wtPmNwdSkgewotCQlwcmludGsoS0VSTl9F
+UlIgImxpbWl0aW5nIHRvIGNwdSAldSBmYWlsZWRcbiIsIHBvbC0+Y3B1KTsKKwkJcHJpbnRrKEtF
+Uk5fRVJSIFBGWCAibGltaXRpbmcgdG8gY3B1ICV1IGZhaWxlZFxuIiwgcG9sLT5jcHUpOwogCQln
+b3RvIGVycl9vdXQ7CiAJfQogCkBAIC0xMTc0LDcgKzExODMsNyBAQCBzdGF0aWMgdm9pZCBfX2V4
+aXQgcG93ZXJub3drOF9leGl0KHZvaWQpCiAJY3B1ZnJlcV91bnJlZ2lzdGVyX2RyaXZlcigmY3B1
+ZnJlcV9hbWQ2NF9kcml2ZXIpOwogfQogCi1NT0RVTEVfQVVUSE9SKCJQYXVsIERldnJpZW5kdCA8
+cGF1bC5kZXZyaWVuZHRAYW1kLmNvbT4gYW5kIE1hcmsgTGFuZ3Nkb3JmIDxtYXJrLmxhbmdzZG9y
+ZkBhbWQuY29tLiIpOworTU9EVUxFX0FVVEhPUigiUGF1bCBEZXZyaWVuZHQgPHBhdWwuZGV2cmll
+bmR0QGFtZC5jb20+IGFuZCBNYXJrIExhbmdzZG9yZiA8bWFyay5sYW5nc2RvcmZAYW1kLmNvbT4i
+KTsKIE1PRFVMRV9ERVNDUklQVElPTigiQU1EIEF0aGxvbiA2NCBhbmQgT3B0ZXJvbiBwcm9jZXNz
+b3IgZnJlcXVlbmN5IGRyaXZlci4iKTsKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKIAo=
+
+------_=_NextPart_001_01C5E649.611A1636
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Disposition: inline
 
-http://bugzilla.kernel.org/show_bug.cgi?id=4059
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-
-
-
-
-------- Additional Comments From ulrich@holeschak.de  2005-11-09 14:48 -------
-I had the same problem. I only occurs if DMA is activated for IDE disk. I expect
-that the systems dies when the DMA occurs while the systems is halted ...
-
-In newer kernel versions (2.6.14) i new bug has been introduced:
-The modification of the pci bus master mode prevents the 8139too network driver
-from working. Removing the following lines in longhaul.c solves this problem
-(but not the DMA crash!)
-
-       /*
-         * get current pci bus master state for all devices
-         * and clear bus master bit
-         */
-        dev = NULL;
-        i = 0;
-        do {
-                dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
-                if (dev != NULL) {
-                        pci_read_config_word(dev, PCI_COMMAND, &pci_cmd);
-                        cmd_state[i++] = pci_cmd;
-                        pci_cmd &= ~PCI_COMMAND_MASTER;
-                        pci_write_config_word(dev, PCI_COMMAND, pci_cmd);
-                }
-        } while (dev != NULL);
-
-...
-
-        /* restore pci bus master state for all devices */
-        dev = NULL;
-        i = 0;
-        do {
-                dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
-                if (dev != NULL) {
-                        pci_cmd = cmd_state[i++];
-                        pci_write_config_byte(dev, PCI_COMMAND, pci_cmd);
-                }
-        } while (dev != NULL);
+------_=_NextPart_001_01C5E649.611A1636--
 
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
