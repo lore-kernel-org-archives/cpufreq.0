@@ -1,11 +1,12 @@
-From: Mark <mark2@ml1.net>
-Subject: kernel hang powernow-k8 SMP
-Date: Sat, 12 Nov 2005 18:40:05 +0000
-Message-ID: <43763705.1030309@ml1.net>
-Reply-To: cpufreq@mnlist.ml1.net
+From: Eric Piel <Eric.Piel@tremplin-utc.net>
+Subject: Re: [PATCH] problems with Athlon64 X2 (dual core)
+Date: Sat, 12 Nov 2005 21:09:39 +0100
+Message-ID: <43764C03.9030506@tremplin-utc.net>
+References: <200511121833.47055.bernd.paysan@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <200511121833.47055.bernd.paysan@gmx.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,94 +16,46 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: Bernd Paysan <bernd.paysan@gmx.de>
+Cc: cpufreq@lists.linux.org.uk
 
-Hi
+12.11.2005 18:33, Bernd Paysan wrote/a =C3=A9crit:
+> [already posted as bug report on the sourceforge page]
+>=20
+> Hi, =20
+>  =20
+> As far as I can tell, cpufreq/powersaved (of 0.10.15.1, as in=20
+> SuSE 10.0) seems to have a  severe problem with the=20
+> Athlon64 X2 dual core chips. If I load just one core, the=20
+> CPU frequency boost is unreliable (toggles  between 1GHz=20
+> and 2GHz). Loading the second core, too, sort-of-fixes that=20
+> problem. =20
+> =20
+> The reason is obvious: The Athlon X2 has a *single* CPU =20
+> frequency setting which affects *both* cores. So you can't =20
+> simply use a SMP setting, treating the two CPUs as two =20
+> processors with two speed settings, you have to know that =20
+> it's a dual-core CPU, and that you can't independently set =20
+> the CPU frequency. If one core is loaded, both must run at =20
+> double frequency. =20
+>  =20
+> Note that the kernel does know about this fact: =20
+>  =20
+> /sys/devices/system/cpu/cpu0/cpufreq> cat affected_cpus  =20
+> 0 1 =20
+> /sys/devices/system/cpu/cpu1/cpufreq> cat affected_cpus  =20
+> 0 1 =20
+>  =20
+> Setting powersaved to be more verbose confirms the =20
+> confusion (the following is with one core loaded by an =20
+> endless loop, the other core loaded lightly): =20
+>  =20
+Hey,
 
-I've just updated my Tyan 2875 board to dual Operon rev CG 248's.
+You've probably mistook with the list, it's only about the kernel=20
+implementation of cpufreq.
 
-cpufreq-info
-
-analyzing CPU 0:
-   driver: powernow-k8
-   CPUs which need to switch frequency at the same time: 0
-   hardware limits: 1000 MHz - 2.20 GHz
-   available frequency steps: 2.20 GHz, 2.00 GHz, 1.80 GHz, 1000 MHz
-   available cpufreq governors: conservative, ondemand, userspace, 
-performance
-   current policy: frequency should be within 1000 MHz and 2.20 GHz.
-                   The governor "userspace" may decide which speed to use
-                   within this range.
-   current CPU frequency is 2.20 GHz (asserted by call to hardware).
-analyzing CPU 1:
-   driver: powernow-k8
-   CPUs which need to switch frequency at the same time: 1
-   hardware limits: 1000 MHz - 2.20 GHz
-   available frequency steps: 2.20 GHz, 2.00 GHz, 1.80 GHz, 1000 MHz
-   available cpufreq governors: conservative, ondemand, userspace, 
-performance
-   current policy: frequency should be within 1000 MHz and 2.20 GHz.
-                   The governor "userspace" may decide which speed to use
-                   within this range.
-   current CPU frequency is 2.20 GHz (asserted by call to hardware).
-
-cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 248
-stepping        : 10
-cpu MHz         : 2193.154
-cache size      : 1024 KB
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
-mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm 
-3dnowext 3dnow
-bogomips        : 4390.67
-TLB size        : 1024 4K pages
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 40 bits physical, 48 bits virtual
-power management: ts fid vid ttp
-
-processor       : 1
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 5
-model name      : AMD Opteron(tm) Processor 248
-stepping        : 10
-cpu MHz         : 2193.154
-cache size      : 1024 KB
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge 
-mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm 
-3dnowext 3dnow
-bogomips        : 4385.58
-TLB size        : 1024 4K pages
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 40 bits physical, 48 bits virtual
-power management: ts fid vid ttp
-
-I have powernow-k8 and ACPI code as built in to kernel
-
-Irrespective of which govenor I run my system is locking up.  I've seen 
-a few general protection faults.  It locks even with the userspace 
-govenor and an attempted manual frequency change.
-
-The problens cease when I recompile without SMP, however, this is not 
-really a solution.
-
-I'm not a developer, and was hoping someone would be able to help me 
-debug this.  I'm running 64 bit Gentoo 2.614 kernel
-
-Mark
+cheers,
+Eric
