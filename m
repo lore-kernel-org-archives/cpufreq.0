@@ -1,12 +1,9 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: Re: [PATCH] problems with Athlon64 X2 (dual core)
-Date: Sat, 12 Nov 2005 21:09:39 +0100
-Message-ID: <43764C03.9030506@tremplin-utc.net>
-References: <200511121833.47055.bernd.paysan@gmx.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5553] speedstep-smi fails to load if CONFIG_CPU_FREQ_DEBUG is
+	not set
+Date: Sun, 13 Nov 2005 06:13:23 -0800
+Message-ID: <200511131413.jADEDNjp025148@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200511121833.47055.bernd.paysan@gmx.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,45 +14,49 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Bernd Paysan <bernd.paysan@gmx.de>
-Cc: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-12.11.2005 18:33, Bernd Paysan wrote/a =C3=A9crit:
-> [already posted as bug report on the sourceforge page]
->=20
-> Hi, =20
->  =20
-> As far as I can tell, cpufreq/powersaved (of 0.10.15.1, as in=20
-> SuSE 10.0) seems to have a  severe problem with the=20
-> Athlon64 X2 dual core chips. If I load just one core, the=20
-> CPU frequency boost is unreliable (toggles  between 1GHz=20
-> and 2GHz). Loading the second core, too, sort-of-fixes that=20
-> problem. =20
-> =20
-> The reason is obvious: The Athlon X2 has a *single* CPU =20
-> frequency setting which affects *both* cores. So you can't =20
-> simply use a SMP setting, treating the two CPUs as two =20
-> processors with two speed settings, you have to know that =20
-> it's a dual-core CPU, and that you can't independently set =20
-> the CPU frequency. If one core is loaded, both must run at =20
-> double frequency. =20
->  =20
-> Note that the kernel does know about this fact: =20
->  =20
-> /sys/devices/system/cpu/cpu0/cpufreq> cat affected_cpus  =20
-> 0 1 =20
-> /sys/devices/system/cpu/cpu1/cpufreq> cat affected_cpus  =20
-> 0 1 =20
->  =20
-> Setting powersaved to be more verbose confirms the =20
-> confusion (the following is with one core loaded by an =20
-> endless loop, the other core loaded lightly): =20
->  =20
-Hey,
+http://bugzilla.kernel.org/show_bug.cgi?id=5553
 
-You've probably mistook with the list, it's only about the kernel=20
-implementation of cpufreq.
 
-cheers,
-Eric
+
+
+
+------- Additional Comments From tm@del.bg  2005-11-13 06:08 -------
+With the patch provided by Andrew Morton:
+
+CONFIG_CPU_FREQ_DEBUG=n
+
+# modprobe speedstep-smi
+FATAL: Error inserting speedstep_smi (/.../speedstep-smi.ko): No such device
+kernel: sig=47534943, smi_port=0, smi_cmd=0
+
+# modprobe speedstep-smi smi_port=0xb2 smi_cmd=0x82
+FATAL: Error inserting speedstep_smi (/.../speedstep-smi.ko): No such device
+kernel: sig=47534943, smi_port=178, smi_cmd=130
+
+As per venkatesh.pallipadi at intel comments I've tried:
+
+# for i in `seq 1 100`; do modprobe speedstep-smi ;done
+
+But still no go.
+
+---
+
+CONFIG_CPU_FREQ_DEBUG=y
+
+# modprobe speedstep-smi
+kernel: sig=47534943, smi_port=0, smi_cmd=0
+
+# rmmod speedstep-smi
+
+# modprobe speedstep-smi smi_port=0xb2 smi_cmd=0x82
+kernel: sig=47534943, smi_port=178, smi_cmd=130
+
+With debug enabled it just works.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
