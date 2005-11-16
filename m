@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5435] Powernow code has random CPU speed
-Date: Tue, 15 Nov 2005 21:54:10 -0800
-Message-ID: <200511160554.jAG5sAkR023340@fire-2.osdl.org>
+Subject: [Bug 4352] Problems with PowerNow on Athlon-XP after upgrade of
+	kernel from 2.6.7 to 2.6.10-r1
+Date: Tue, 15 Nov 2005 23:50:13 -0800
+Message-ID: <200511160750.jAG7oD2s028151@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,21 +19,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5435
-
-Larry.Finger@lwfinger.net changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |REJECTED
-         Resolution|                            |DUPLICATE
+http://bugzilla.kernel.org/show_bug.cgi?id=4352
 
 
 
-------- Additional Comments From Larry.Finger@lwfinger.net  2005-11-15 21:48 -------
 
 
-*** This bug has been marked as a duplicate of 5266 ***
+------- Additional Comments From mathiasb@email.dk  2005-11-15 23:44 -------
+Yes, it works now.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
