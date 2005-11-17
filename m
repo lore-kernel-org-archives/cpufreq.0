@@ -1,13 +1,11 @@
-From: Alexander Shaposhnikov <shaposh@isp.nsc.ru>
-Subject: Re: new cpufreq device driver for nForce4
-Date: Thu, 17 Nov 2005 22:58:31 +0600
-Message-ID: <1132246711.3391.30.camel@sec48-2.isp.nsc.ru>
-References: <200511141243.12113.shaposh@isp.nsc.ru>
-	<437C3E8E.4090502@tremplin-utc.net>
+From: Luca <luca.foppiano@gmail.com>
+Subject: cpufreq on Coppermine
+Date: Thu, 17 Nov 2005 23:05:25 +0100
+Message-ID: <460afdfa0511171405i6df97535n807210617eb3ac0e@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <437C3E8E.4090502@tremplin-utc.net>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,139 +15,273 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
 
-Hellow Eric,
+hi, I try to use cpu scaling on a Laptop with a coppermine 700Mhz.
+/proc/cpuinfo:
 
-Thanks for reply.
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 8
+model name      : Pentium III (Coppermine)
+stepping        : 6
+cpu MHz         : 549.791
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov =
+pat p
+se36 mmx fxsr sse
+bogomips        : 1099.88
 
-There are a lot of really bad places in the code, i know (if any good
-places at all).
-The thing is, my primary motivation was to create OC'ing tool, and it
-works for me really great. The most difficult part was to find PLL
-address and decode its value:), because there is no documentation from
-nVidia.
+lspci -vvv :
 
-It is intended for power user anyway, because for simple power saving
-(though not very efficient, actually) powernow-k8 is better.
+0000:00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX -
+82443BX/ZX/DX Host bridge (rev 03)
+       Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR+ FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort+ >SERR- <PERR-
+       Latency: 64
+       Region 0: Memory at f8000000 (32-bit, prefetchable) [size=3D64M]
+       Capabilities: <available only to root>
 
-By the way, it is often possible to reduce voltage for Athlon64 and
-Opteron processors to the much lower values than according to AMD
-specifications.=20
-It is actually possible to bring power consumption of Desktop and Server
-cpus to the level of mobile cpus or even lower! But this requires some
-testing and user involvement. =20
+0000:00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX
+AGP bridge (rev 03) (prog-if 00 [Normal decode])
+       Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 128
+       Bus: primary=3D00, secondary=3D01, subordinate=3D01, sec-latency=3D6=
+4
+       I/O behind bridge: 00002000-00002fff
+       Memory behind bridge: fc100000-fdffffff
+       Prefetchable memory behind bridge: 28000000-280fffff
+       BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B+
 
-I am planning to export FSB, Voltages and Multipliers through sysfs
-(when i'll learn how to do it right:)  ).
+0000:00:04.0 Multimedia audio controller: ESS Technology ES1988
+Allegro-1 (rev 12)
+       Subsystem: NEC Corporation: Unknown device 80f1
+       Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 64 (500ns min, 6000ns max)
+       Interrupt: pin A routed to IRQ 5
+       Region 0: I/O ports at 1400 [size=3D256]
+       Capabilities: <available only to root>
 
-I am testing it now on another dual Opteron board (Supermicro H8DCE),
-and then going to make new and hopefully much improved version.
+0000:00:06.0 Ethernet controller: 3Com Corporation 3c556B CardBus
+[Tornado] (rev 20)
+       Subsystem: 3Com Corporation 10/100 Mini PCI Ethernet Adapter
+       Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 80 (2500ns min, 2500ns max), Cache Line Size: 0x08 (32 byte=
+s)
+       Interrupt: pin A routed to IRQ 10
+       Region 0: I/O ports at 1800 [size=3D256]
+       Region 1: Memory at fc000400 (32-bit, non-prefetchable) [size=3D128]
+       Region 2: Memory at fc000000 (32-bit, non-prefetchable) [size=3D128]
+       Expansion ROM at 28100000 [disabled] [size=3D128K]
+       Capabilities: <available only to root>
 
-Best Regards,
-Alexander Shaposhnikov
+0000:00:06.1 Communication controller: 3Com Corporation Mini PCI 56k
+Winmodem (rev 20)
+       Subsystem: 3Com Corporation Mini PCI 56K Modem
+       Control: I/O- Mem- BusMaster- SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Interrupt: pin A routed to IRQ 10
+       Region 0: I/O ports at 1c00 [disabled] [size=3D256]
+       Region 1: Memory at fc000c00 (32-bit, non-prefetchable)
+[disabled] [size=3D256]
+       Region 2: Memory at fc000800 (32-bit, non-prefetchable)
+[disabled] [size=3D128]
+       Capabilities: <available only to root>
+
+0000:00:07.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
+       Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 0
+
+0000:00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE
+(rev 01) (prog-if 80 [Master])
+       Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 64
+       Region 4: I/O ports at 1080 [size=3D16]
+
+0000:00:07.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB
+(rev 01) (prog-if 00 [UHCI])
+       Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 64
+       Interrupt: pin D routed to IRQ 5
+       Region 4: I/O ports at 1060 [size=3D32]
+
+0000:00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 03)
+       Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Interrupt: pin ? routed to IRQ 9
+
+0000:00:0c.0 CardBus bridge: Texas Instruments PCI1420
+       Subsystem: NEC Corporation Versa Note VXi
+       Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 168, Cache Line Size: 0x20 (128 bytes)
+       Interrupt: pin A routed to IRQ 10
+       Region 0: Memory at 28120000 (32-bit, non-prefetchable) [size=3D4K]
+       Bus: primary=3D00, secondary=3D02, subordinate=3D05, sec-latency=3D1=
+76
+       Memory window 0: 20000000-21fff000 (prefetchable)
+       Memory window 1: 22000000-23fff000
+       I/O window 0: 00003000-000030ff
+       I/O window 1: 00003400-000034ff
+       BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite=
++
+       16-bit legacy interface ports at 0001
+
+0000:00:0c.1 CardBus bridge: Texas Instruments PCI1420
+       Subsystem: NEC Corporation Versa Note VXi
+       Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 168, Cache Line Size: 0x20 (128 bytes)
+       Interrupt: pin A routed to IRQ 10
+       Region 0: Memory at 28121000 (32-bit, non-prefetchable) [size=3D4K]
+       Bus: primary=3D00, secondary=3D06, subordinate=3D09, sec-latency=3D1=
+76
+       Memory window 0: 24000000-25fff000 (prefetchable)
+       Memory window 1: 26000000-27fff000
+       I/O window 0: 00003800-000038ff
+       I/O window 1: 00003c00-00003cff
+       BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite=
++
+       16-bit legacy interface ports at 0001
+
+0000:00:0d.0 FireWire (IEEE 1394): NEC Corporation IEEE 1394 Host
+Controller (rev 01) (prog-if 10 [OHCI])
+       Subsystem: NEC Corporation: Unknown device 80fa
+       Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 64, Cache Line Size: 0x08 (32 bytes)
+       Interrupt: pin A routed to IRQ 10
+       Region 0: Memory at fc001000 (32-bit, non-prefetchable) [size=3D4K]
+       Capabilities: <available only to root>
+
+0000:01:00.0 VGA compatible controller: ATI Technologies Inc Rage
+Mobility P/M AGP 2x (rev 64) (prog-if 00 [VGA])
+       Subsystem: NEC Corporation: Unknown device 80b7
+       Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping+ SERR- FastB2B-
+       Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+       Latency: 66 (2000ns min), Cache Line Size: 0x08 (32 bytes)
+       Interrupt: pin A routed to IRQ 5
+       Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=3D16M]
+       Region 1: I/O ports at 2000 [size=3D256]
+       Region 2: Memory at fc100000 (32-bit, non-prefetchable) [size=3D4K]
+       Expansion ROM at 28000000 [disabled] [size=3D128K]
+       Capabilities: <available only to root>
+
+I use an utility named speedstep-detect found here
+http://www.poupinou.org/cpufreq/
+and the result is:
+
+dmi_scan: return:
+DMI 2.3 present.
+49 structures occupying 2000 bytes.
+DMI table at 0x000E7010.
+BIOS Vendor: NEC
+BIOS Version: NOTE BIOS Version /175A2700
+BIOS Release: 03/06/2001
+System Vendor: NEC
+Product Name:
+Version:
+Board Vendor: NEC
+Board Name:
+Board Version:
+Trying Intel's int15 GSIC:
+BIOS support GSIC call:
+       signature: GSIC
+       command port =3D 0x00b2
+       command =3D      0x0080
+       event port =3D   0x000000b3
+       flags =3D        0x07d00001
+probing chipsets: Found PIIX4
+ pmbase at 0x1000
+Dumping PM IO register for this southbridge:
+PMCNTRL (0x1004): 0x1401
+(0x1006):         0x0000
+GPEN (0x100e):    0x0600
+PCNTRL (0x1010):  0x00001202
+(0x1016):         0x0000
+DEVSTS (0x101c):  0x00000000
+GLBLEN (0x1020):  0x0400
+(0x1022):         0x00000000
+GLBCTL (0x1028):  0x02013c05
+DEVCTL (0x102c):  0x01000000
+GPIs: (0x1030):   0x37e863
+(0x1033):         0x00
+GPOs: (0x1034):   0x37fffefe
+(0x1038):         0x63 0xe8 0x37 0x00 0xfe 0xfe 0xff 0x37
 
 
+You need to boot on AC and battery and see if GPOs change.
+Then, see if one bit change in between, you have then to note the number
+of this bit.  This will be the gpo_hilo=3D number kernel option for
+enabling the speedstep-piix4 module under Linux.
+                                     ..28..24..20..16..12...8...4...0
+       GPOs: (0x1034):   0x37fffefe  00110111111111111111111011111110
 
-On Thu, 2005-11-17 at 09:25 +0100, Eric Piel wrote:
-> 14.11.2005 10:43, Alexander Shaposhnikov wrote/a =C3=A9crit:
-> > Hellow.
-> >=20
-> > I have  written  cpufreq device  driver for FSB, voltage and multiplier=
-=20
-> > changing on nVidia nForce4 -based motherboards.
-> > It is very amateur thing in the present state, i use it primarily for=20
-> > overclocking  my dual dualcore Opteron system:). But it may be used for=
- power
-> > saving as well.=20
-> Hello Alexander,
->=20
-> I think in general every new driver is welcome. It doesn't matter if it=20
-> looks amateur, a few iterations on the mailing list and it won't ;-) One =
+if I power on the pc only with battery GPOs change in
 
-> important thing though, how dangerous is your driver? I mean, knowing=20
-> you use it for overclocking, if someone use it without any knowledge of=20
-> his hardware, can the driver lead to burn the CPU? If so, IMHO, it=20
-> really requires you to insert some additional code to forbid=20
-> overclocking by defaulf (and authorise it only via a special module=20
-> parameter or a sysfs entry for example).
->=20
-> >=20
-> > If there will be some interest in this i will continue my work on it an=
-d make=20
-> > it more robust, though it already works great for me.
-> Actually I know only very little about cpufreq, but your driver looks=20
-> good, you should keep going!
->=20
-> >=20
-> > I've attached the code.
-> Probably the reason no one answered is that you put it in a tar.bz2 .=20
-> Only plain text is read! Actually, it could be even better if you attach =
+GPOs: (0x1034):   0x37fffeff
+(0x1038):         0x63 0xe8 0x37 0x00 0xff 0xfe 0xff 0x37
 
-> a patch, so that just with "patch -p1 < your-nforce4.patch" it could go=20
-> into the kernel :-) Please read Documentation/SubmittingPatches. You=20
-> might want to also send the small required modifications to Kconfig and=20
-> Makefile.
->=20
-> Also, it is very important you conform to the coding style, cf=20
-> Documentation/CodingStyle. In paticular, the names of the functions and=20
-> variables are in lowercase only, don't put "{" and "}" in if's and for's =
+I try to use speedstep_smi with some option for example
+modprobe speedstep-smi smi_port=3D0xb2 smi_cmd=3D0x82 smi_sig=3D1
 
-> with only one statement, put spaces around "=3D" ...
->=20
-> Ok, now just some very small comments:
-> >=20
-> > static int CK804_cpu_init(struct cpufreq_policy *policy)
-> > {
-> > 	struct K8_STATUS_MSR status_msr;
-> >=20
-> >=20
-> > 	if(!cpu_online(policy->cpu))
-> > 		return -ENODEV;
-> >=20
-> > 	status_msr.cpu=3Dpolicy->cpu;
-> > 	GET_STATUS_MSR(&status_msr);
-> >=20
-> > 	policy->cpus=3DAFFECTED_CPUS;
-> > =09
-> > 	policy->cpuinfo.min_freq =3D PLL_MIN_FSB*FID_to_MUL(K8_MIN_FID);
-> > 	if(ALG!=3D3)
-> Avoid magic numbers! Use "#define"'s to express the meaning of the=20
-> constants.
->=20
-> > 	{
-> > 		policy->cpuinfo.max_freq =3D PLL_MAX_FSB*FID_to_MUL(status_msr.max_fi=
-d);
-> > 	}
-> > 	else
-> > 	{
-> > 		policy->cpuinfo.max_freq =3D 0x3FF*PLL_REF_CLOCK*FID_to_MUL(status_ms=
-r.max_fid)/0x300;
-> > 	}
-> >=20
-> > 	policy->cpuinfo.transition_latency =3D CPUFREQ_ETERNAL;
-> Please, try to put a real value here, some value which you are _sure_=20
-> that will never take so much time to change of frequency. If you put=20
-> CPUFREQ_ETERNAL then your driver will not be compatible with the=20
-> ondemand and conservative governors.
->=20
-> :
-> > static struct cpufreq_driver CK804_driver =3D {
-> > 	.name   =3D "cpufreq_nForce4",
-> There is a already a driver for the nForce2 wich is called "nforce2",=20
-> for consistency, you might want to rename yours to "nforce4".
->=20
-> > 	.verify =3D CK804_verify,
-> > 	.target =3D CK804_target,
-> > 	.get    =3D CK804_get,
-> > 	.init   =3D CK804_cpu_init,
-> > 	.exit   =3D CK804_cpu_exit,
-> > 	.owner  =3D THIS_MODULE,
-> > };
-> >=20
->=20
-> c u
-> Eric
+but the result is
+
+pj@cristal:~$ sudo modprobe speedstep-smi
+FATAL: Error inserting speedstep_smi
+(/lib/modules/2.6.14-p3laptop/kernel/arch/i386/kernel/cpu/cpufreq/speedstep=
+-smi.ko):
+No such device
+
+
+what I do?Is not supported?what option I can try to use?
+tell me if need some information.
+this laptop is a packard bell...
+help me
+
+thanks you
+
+Luca
