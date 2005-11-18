@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5383] VIA Nehemiah ondemand scaling governor critical DMA error
-Date: Thu, 17 Nov 2005 14:19:20 -0800
-Message-ID: <200511172219.jAHMJKqu006235@fire-2.osdl.org>
+Subject: [Bug 3600] Cpu recognization fails after upgrade from 2.6.7 to 2.6.9
+Date: Fri, 18 Nov 2005 02:17:27 -0800
+Message-ID: <200511181017.jAIAHRsW002046@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,7 +18,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5383
+http://bugzilla.kernel.org/show_bug.cgi?id=3600
 
 linux@brodo.de changed:
 
