@@ -1,12 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
+From: Luca <luca.foppiano@gmail.com>
 Subject: Re: cpufreq on Coppermine
-Date: Fri, 18 Nov 2005 16:41:49 +0100
-Message-ID: <20051118154149.GA2104@poupinou.org>
+Date: Fri, 18 Nov 2005 20:39:03 +0100
+Message-ID: <460afdfa0511181139p40db432fm544e480f554e9a0@mail.gmail.com>
 References: <460afdfa0511171405i6df97535n807210617eb3ac0e@mail.gmail.com>
+	<20051118154149.GA2104@poupinou.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <20051118154149.GA2104@poupinou.org>
 Content-Disposition: inline
-In-Reply-To: <460afdfa0511171405i6df97535n807210617eb3ac0e@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,287 +18,671 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Luca <luca.foppiano@gmail.com>
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@lists.linux.org.uk
 
-On Thu, Nov 17, 2005 at 11:05:25PM +0100, Luca wrote:
-> hi, I try to use cpu scaling on a Laptop with a coppermine 700Mhz.
-> /proc/cpuinfo:
-> 
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 8
-> model name      : Pentium III (Coppermine)
-> stepping        : 6
-> cpu MHz         : 549.791
-> cache size      : 256 KB
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 2
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat p
-> se36 mmx fxsr sse
-> bogomips        : 1099.88
-> 
-> lspci -vvv :
-> 
-> 0000:00:00.0 Host bridge: Intel Corporation 440BX/ZX/DX -
-> 82443BX/ZX/DX Host bridge (rev 03)
->        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR+ FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort+ >SERR- <PERR-
->        Latency: 64
->        Region 0: Memory at f8000000 (32-bit, prefetchable) [size=64M]
->        Capabilities: <available only to root>
-> 
-> 0000:00:01.0 PCI bridge: Intel Corporation 440BX/ZX/DX - 82443BX/ZX/DX
-> AGP bridge (rev 03) (prog-if 00 [Normal decode])
->        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV+ VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 128
->        Bus: primary=00, secondary=01, subordinate=01, sec-latency=64
->        I/O behind bridge: 00002000-00002fff
->        Memory behind bridge: fc100000-fdffffff
->        Prefetchable memory behind bridge: 28000000-280fffff
->        BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B+
-> 
-> 0000:00:04.0 Multimedia audio controller: ESS Technology ES1988
-> Allegro-1 (rev 12)
->        Subsystem: NEC Corporation: Unknown device 80f1
->        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 64 (500ns min, 6000ns max)
->        Interrupt: pin A routed to IRQ 5
->        Region 0: I/O ports at 1400 [size=256]
->        Capabilities: <available only to root>
-> 
-> 0000:00:06.0 Ethernet controller: 3Com Corporation 3c556B CardBus
-> [Tornado] (rev 20)
->        Subsystem: 3Com Corporation 10/100 Mini PCI Ethernet Adapter
->        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 80 (2500ns min, 2500ns max), Cache Line Size: 0x08 (32 bytes)
->        Interrupt: pin A routed to IRQ 10
->        Region 0: I/O ports at 1800 [size=256]
->        Region 1: Memory at fc000400 (32-bit, non-prefetchable) [size=128]
->        Region 2: Memory at fc000000 (32-bit, non-prefetchable) [size=128]
->        Expansion ROM at 28100000 [disabled] [size=128K]
->        Capabilities: <available only to root>
-> 
-> 0000:00:06.1 Communication controller: 3Com Corporation Mini PCI 56k
-> Winmodem (rev 20)
->        Subsystem: 3Com Corporation Mini PCI 56K Modem
->        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV+ VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Interrupt: pin A routed to IRQ 10
->        Region 0: I/O ports at 1c00 [disabled] [size=256]
->        Region 1: Memory at fc000c00 (32-bit, non-prefetchable)
-> [disabled] [size=256]
->        Region 2: Memory at fc000800 (32-bit, non-prefetchable)
-> [disabled] [size=128]
->        Capabilities: <available only to root>
-> 
-> 0000:00:07.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 02)
->        Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 0
-> 
-> 0000:00:07.1 IDE interface: Intel Corporation 82371AB/EB/MB PIIX4 IDE
-> (rev 01) (prog-if 80 [Master])
->        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 64
->        Region 4: I/O ports at 1080 [size=16]
-> 
-> 0000:00:07.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB
-> (rev 01) (prog-if 00 [UHCI])
->        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 64
->        Interrupt: pin D routed to IRQ 5
->        Region 4: I/O ports at 1060 [size=32]
-> 
-> 0000:00:07.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 03)
->        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Interrupt: pin ? routed to IRQ 9
-> 
-> 0000:00:0c.0 CardBus bridge: Texas Instruments PCI1420
->        Subsystem: NEC Corporation Versa Note VXi
->        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 168, Cache Line Size: 0x20 (128 bytes)
->        Interrupt: pin A routed to IRQ 10
->        Region 0: Memory at 28120000 (32-bit, non-prefetchable) [size=4K]
->        Bus: primary=00, secondary=02, subordinate=05, sec-latency=176
->        Memory window 0: 20000000-21fff000 (prefetchable)
->        Memory window 1: 22000000-23fff000
->        I/O window 0: 00003000-000030ff
->        I/O window 1: 00003400-000034ff
->        BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite+
->        16-bit legacy interface ports at 0001
-> 
-> 0000:00:0c.1 CardBus bridge: Texas Instruments PCI1420
->        Subsystem: NEC Corporation Versa Note VXi
->        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 168, Cache Line Size: 0x20 (128 bytes)
->        Interrupt: pin A routed to IRQ 10
->        Region 0: Memory at 28121000 (32-bit, non-prefetchable) [size=4K]
->        Bus: primary=00, secondary=06, subordinate=09, sec-latency=176
->        Memory window 0: 24000000-25fff000 (prefetchable)
->        Memory window 1: 26000000-27fff000
->        I/O window 0: 00003800-000038ff
->        I/O window 1: 00003c00-00003cff
->        BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite+
->        16-bit legacy interface ports at 0001
-> 
-> 0000:00:0d.0 FireWire (IEEE 1394): NEC Corporation IEEE 1394 Host
-> Controller (rev 01) (prog-if 10 [OHCI])
->        Subsystem: NEC Corporation: Unknown device 80fa
->        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 64, Cache Line Size: 0x08 (32 bytes)
->        Interrupt: pin A routed to IRQ 10
->        Region 0: Memory at fc001000 (32-bit, non-prefetchable) [size=4K]
->        Capabilities: <available only to root>
-> 
-> 0000:01:00.0 VGA compatible controller: ATI Technologies Inc Rage
-> Mobility P/M AGP 2x (rev 64) (prog-if 00 [VGA])
->        Subsystem: NEC Corporation: Unknown device 80b7
->        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping+ SERR- FastB2B-
->        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->        Latency: 66 (2000ns min), Cache Line Size: 0x08 (32 bytes)
->        Interrupt: pin A routed to IRQ 5
->        Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
->        Region 1: I/O ports at 2000 [size=256]
->        Region 2: Memory at fc100000 (32-bit, non-prefetchable) [size=4K]
->        Expansion ROM at 28000000 [disabled] [size=128K]
->        Capabilities: <available only to root>
-> 
-> I use an utility named speedstep-detect found here
-> http://www.poupinou.org/cpufreq/
-> and the result is:
-> 
-> dmi_scan: return:
-> DMI 2.3 present.
-> 49 structures occupying 2000 bytes.
-> DMI table at 0x000E7010.
-> BIOS Vendor: NEC
-> BIOS Version: NOTE BIOS Version /175A2700
-> BIOS Release: 03/06/2001
-> System Vendor: NEC
-> Product Name:
-> Version:
-> Board Vendor: NEC
-> Board Name:
-> Board Version:
-> Trying Intel's int15 GSIC:
-> BIOS support GSIC call:
->        signature: GSIC
->        command port = 0x00b2
->        command =      0x0080
->        event port =   0x000000b3
->        flags =        0x07d00001
-> probing chipsets: Found PIIX4
->  pmbase at 0x1000
-> Dumping PM IO register for this southbridge:
-> PMCNTRL (0x1004): 0x1401
-> (0x1006):         0x0000
-> GPEN (0x100e):    0x0600
-> PCNTRL (0x1010):  0x00001202
-> (0x1016):         0x0000
-> DEVSTS (0x101c):  0x00000000
-> GLBLEN (0x1020):  0x0400
-> (0x1022):         0x00000000
-> GLBCTL (0x1028):  0x02013c05
-> DEVCTL (0x102c):  0x01000000
-> GPIs: (0x1030):   0x37e863
-> (0x1033):         0x00
-> GPOs: (0x1034):   0x37fffefe
-> (0x1038):         0x63 0xe8 0x37 0x00 0xfe 0xfe 0xff 0x37
-> 
-> 
-> You need to boot on AC and battery and see if GPOs change.
-> Then, see if one bit change in between, you have then to note the number
-> of this bit.  This will be the gpo_hilo= number kernel option for
-> enabling the speedstep-piix4 module under Linux.
->                                      ..28..24..20..16..12...8...4...0
->        GPOs: (0x1034):   0x37fffefe  00110111111111111111111011111110
-> 
-> if I power on the pc only with battery GPOs change in
-> 
-> GPOs: (0x1034):   0x37fffeff
-> (0x1038):         0x63 0xe8 0x37 0x00 0xff 0xfe 0xff 0x37
-> 
-> I try to use speedstep_smi with some option for example
-> modprobe speedstep-smi smi_port=0xb2 smi_cmd=0x82 smi_sig=1
-> 
-> but the result is
-> 
-> pj@cristal:~$ sudo modprobe speedstep-smi
-> FATAL: Error inserting speedstep_smi
-> (/lib/modules/2.6.14-p3laptop/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-smi.ko):
-> No such device
-> 
-> 
-> what I do?Is not supported?what option I can try to use?
-> tell me if need some information.
-> this laptop is a packard bell...
-> help me
-> 
+On 11/18/05, Bruno Ducrot <ducrot@poupinou.org> wrote:
 
-You could eventually try with
-ftp://ftp.poupinou.org/dont_use/old/speedstep_bx.tar.gz
+> You could eventually try with
+> ftp://ftp.poupinou.org/dont_use/old/speedstep_bx.tar.gz
+>
+> I don't think it will work with a 2.6 kernel though, but just for
+> testing purpose...
+>
+> You have to explicitely replace line 42:
+> /* #define I_WANT_SPEEDSTEP */
+> with
+> #define I_WANT_SPEEDSTEP
+>
+> If that work, I will see if I found time to update cpufreq driver then.
 
-I don't think it will work with a 2.6 kernel though, but just for
-testing purpose...
+pj@cristal:/usr/local/src/speedstep_bx$ sudo make
+gcc -D__KERNEL__ -O2 -Wall -Wstrict-prototypes -Wno-trigraphs
+-fomit-frame-pointer -fno-strict-aliasing -fno-common
+-I/lib/modules/`uname -r`/build/include -D_LINUX  -DMODULE
+-DMODVERSIONS -include /lib/modules/`uname
+-r`/build/include/linux/modversions.h -c -o speedstep.o speedstep.c
+cc1: error: /lib/modules/2.6.14p3.laptop.cfd/build/include/linux/modversion=
+s.h:
+No such file or directory
+In file included from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/irq.h:21,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/asm/hardirq.h:6,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/hardirq.h:7,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/interrupt.h:11,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/rcuref.h:36,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/fs.h:12,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/proc_fs.h:6,
+                from speedstep.c:33:
+/lib/modules/2.6.14p3.laptop.cfd/build/include/asm/irq.h:16:25: error:
+irq_vectors.h: No such file or directory
+In file included from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/asm/hardirq.h:6,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/hardirq.h:7,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/interrupt.h:11,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/rcuref.h:36,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/fs.h:12,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/proc_fs.h:6,
+                from speedstep.c:33:
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/irq.h:84: error:
+'NR_IRQS' undeclared here (not in a function)
+In file included from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/irq.h:93,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/asm/hardirq.h:6,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/hardirq.h:7,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/interrupt.h:11,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/rcuref.h:36,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/fs.h:12,
+                from
+/lib/modules/2.6.14p3.laptop.cfd/build/include/linux/proc_fs.h:6,
+                from speedstep.c:33:
+/lib/modules/2.6.14p3.laptop.cfd/build/include/asm/hw_irq.h:30: error:
+'NR_IRQ_VECTORS' undeclared here (not in a function)
+speedstep.c: In function 'speedstep_initialize':
+speedstep.c:491: warning: implicit declaration of function 'pci_find_subsys=
+'
+speedstep.c:495: warning: assignment makes pointer from integer without a c=
+ast
+speedstep.c:502: warning: assignment makes pointer from integer without a c=
+ast
+make: *** [speedstep.o] Error 1
+pj@cristal:/usr/local/src/speedstep_bx$
 
-You have to explicitely replace line 42:
-/* #define I_WANT_SPEEDSTEP */
-with
-#define I_WANT_SPEEDSTEP
+I think don't work with 2.6 kernel...
+>
+> BTW, be sure to read carrefully
+> http://www.poupinou.org/cpufreq/speedstep-piix4.html
+I try to use dmidecode and this is the result:
 
-If that work, I will see if I found time to update cpufreq driver then.
+biosdecode:
+# biosdecode 2.7
+SMBIOS 2.3 present.
+       Structure Table Length: 2000 bytes
+       Structure Table Address: 0x000E7010
+       Number Of Structures: 49
+       Maximum Structure Size: 204 bytes
+ACPI 1.0 present.
+       OEM Identifier: NEC
+       RSD Table 32-bit Address: 0x0FFFB88E
+BIOS32 Service Directory present.
+       Revision: 0
+       Calling Interface Address: 0x000FD8A0
+PNP BIOS 1.0 present.
+       Event Notification: Not Supported
+       Real Mode 16-bit Code Address: F000:8562
+       Real Mode 16-bit Data Address: 0040:0000
+       16-bit Protected Mode Code Address: 0x000F8580
+       16-bit Protected Mode Data Address: 0x00000400
+PCI Interrupt Routing 1.0 present.
+       Router ID: 00:07.0
+       Exclusive IRQs: None
+       Compatible Router: 8086:122e
+       Slot Entry 1: ID 00:07, on-board
+       Slot Entry 2: ID 00:04, on-board
+       Slot Entry 3: ID 00:06, on-board
+       Slot Entry 4: ID 00:0c, on-board
+       Slot Entry 5: ID 00:0d, on-board
+       Slot Entry 6: ID 00:01, on-board
 
-BTW, be sure to read carrefully
-http://www.poupinou.org/cpufreq/speedstep-piix4.html
+dmidecode:
+# dmidecode 2.7
+SMBIOS 2.3 present.
+49 structures occupying 2000 bytes.
+Table at 0x000E7010.
 
--- 
-Bruno Ducrot
+Handle 0x0000, DMI type 0, 20 bytes.
+BIOS Information
+       Vendor: NEC
+       Version: NOTE BIOS Version /175A2700
+       Release Date: 03/06/2001
+       Address: 0xE9720
+       Runtime Size: 92384 bytes
+       ROM Size: 512 kB
+       Characteristics:
+               ISA is supported
+               PCI is supported
+               PC Card (PCMCIA) is supported
+               PNP is supported
+               APM is supported
+               BIOS is upgradeable
+               BIOS shadowing is allowed
+               ESCD support is available
+               Boot from CD is supported
+               Selectable boot is supported
+               EDD is supported
+               Japanese floppy for Toshiba 1.2 MB is supported (int 13h)
+               5.25"/1.2 MB floppy services are supported (int 13h)
+               Print screen service is supported (int 5h)
+               8042 keyboard services are supported (int 9h)
+               Serial services are supported (int 14h)
+               Printer services are supported (int 17h)
+               CGA/mono video services are supported (int 10h)
+               ACPI is supported
+               USB legacy is supported
+               Smart battery is supported
+               Function key-initiated network boot is supported
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Handle 0x0001, DMI type 1, 25 bytes.
+System Information
+       Manufacturer: NEC
+       Product Name:
+       Version:
+       Serial Number: SN-123456UVXV218B7O1N1N1K
+       UUID: Not Settable
+       Wake-up Type: Power Switch
+
+Handle 0x0002, DMI type 2, 8 bytes.
+Base Board Information
+       Manufacturer: NEC
+       Product Name:
+       Version:
+       Serial Number:
+
+Handle 0x0003, DMI type 3, 17 bytes.
+Chassis Information
+       Manufacturer: NEC
+       Type: Notebook
+       Lock: Not Present
+       Version:
+       Serial Number:
+       Asset Tag:
+       Boot-up State: Unknown
+       Power Supply State: Unknown
+       Thermal State: Unknown
+       Security Status: Unknown
+       OEM Information: 0x00001234
+
+Handle 0x0004, DMI type 4, 32 bytes.
+Processor Information
+       Socket Designation: Laptop Computer
+       Type: Central Processor
+       Family: Pentium III
+       Manufacturer: Intel Corporation
+       ID: 86 06 00 00 FF F9 87 03
+       Signature: Type 0, Family 6, Model 8, Stepping 6
+       Flags:
+               FPU (Floating-point unit on-chip)
+               VME (Virtual mode extension)
+               DE (Debugging extension)
+               PSE (Page size extension)
+               TSC (Time stamp counter)
+               MSR (Model specific registers)
+               PAE (Physical address extension)
+               MCE (Machine check exception)
+               CX8 (CMPXCHG8 instruction supported)
+               SEP (Fast system call)
+               MTRR (Memory type range registers)
+               PGE (Page global enable)
+               MCA (Machine check architecture)
+               CMOV (Conditional move instruction supported)
+               PAT (Page attribute table)
+               PSE-36 (36-bit page size extension)
+               PSN (Processor serial number present and enabled)
+               MMX (MMX technology supported)
+               FXSR (Fast floating-point save and restore)
+               SSE (Streaming SIMD extensions)
+       Version: Pentium(R) III
+       Voltage: 1.6 V
+       External Clock: 100 MHz
+       Max Speed: 700 MHz
+       Current Speed: 700 MHz
+       Status: Populated, Enabled
+       Upgrade: None
+       L1 Cache Handle: Not Provided
+       L2 Cache Handle: 0x0009
+       L3 Cache Handle: Not Provided
+
+Handle 0x0005, DMI type 5, 20 bytes.
+Memory Controller Information
+       Error Detecting Method: None
+       Error Correcting Capabilities:
+               None
+       Supported Interleave: One-way Interleave
+       Current Interleave: One-way Interleave
+       Maximum Memory Module Size: 128 MB
+       Maximum Total Memory Size: 256 MB
+       Supported Speeds: None
+       Supported Memory Types:
+               DIMM
+               SDRAM
+       Memory Module Voltage: 3.3 V
+       Associated Memory Slots: 2
+               0x0007
+               0x0008
+       Enabled Error Correcting Capabilities:
+               Unknown
+
+Handle 0x0006, DMI type 6, 12 bytes.
+Memory Module Information
+       Socket Designation: Memory Slot 1
+       Bank Connections: 1 0
+       Current Speed: Unknown
+       Type: DIMM SDRAM
+       Installed Size: 128 MB (Double-bank Connection)
+       Enabled Size: 128 MB (Double-bank Connection)
+       Error Status: OK
+
+Handle 0x0007, DMI type 6, 12 bytes.
+Memory Module Information
+       Socket Designation: Memory Slot 2
+       Bank Connections: 3 2
+       Current Speed: Unknown
+       Type: DIMM SDRAM
+       Installed Size: 128 MB (Double-bank Connection)
+       Enabled Size: 128 MB (Double-bank Connection)
+       Error Status: OK
+
+Handle 0x0008, DMI type 7, 19 bytes.
+Cache Information
+       Socket Designation: L1 Cache
+       Configuration: Enabled, Not Socketed, Level 1
+       Operational Mode: Write Back
+       Location: Internal
+       Installed Size: 32 KB
+       Maximum Size: 32 KB
+       Supported SRAM Types:
+               Other
+       Installed SRAM Type: Other
+       Speed: Unknown
+       Error Correction Type: None
+       System Type: Unified
+       Associativity: 4-way Set-associative
+
+Handle 0x0009, DMI type 7, 19 bytes.
+Cache Information
+       Socket Designation: L2 Cache
+       Configuration: Enabled, Not Socketed, Level 2
+       Operational Mode: Write Back
+       Location: Internal
+       Installed Size: 256 KB
+       Maximum Size: 256 KB
+       Supported SRAM Types:
+               Pipeline Burst
+       Installed SRAM Type: Other
+       Speed: Unknown
+       Error Correction Type: Multi-bit ECC
+       System Type: Unified
+       Associativity: Other
+
+Handle 0x000A, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: USB1
+       External Connector Type: Access Bus (USB)
+       Port Type: USB
+
+Handle 0x000B, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: USB2
+       External Connector Type: Access Bus (USB)
+       Port Type: USB
+
+Handle 0x000C, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Mic In
+       External Connector Type: Mini Jack (headphones)
+       Port Type: Audio Port
+
+Handle 0x000D, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Head phone/Line Out
+       External Connector Type: Mini Jack (headphones)
+       Port Type: Audio Port
+
+Handle 0x000E, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: SPDIF
+       External Connector Type: Mini Jack (headphones)
+       Port Type: Audio Port
+
+Handle 0x000F, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Line In
+       External Connector Type: Mini Jack (headphones)
+       Port Type: Audio Port
+
+Handle 0x0010, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Parallel Port
+       External Connector Type: DB-25 female
+       Port Type: Parallel Port ECP/EPP
+
+Handle 0x0011, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Serial Port
+       External Connector Type: DB-9 male
+       Port Type: Serial Port 16550A Compatible
+
+Handle 0x0012, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: IEEE 1394 Port
+       External Connector Type: IEEE 1394
+       Port Type: Firewire (IEEE P1394)
+
+Handle 0x0013, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Telephone Line
+       External Connector Type: RJ-11
+       Port Type: Modem Port
+
+Handle 0x0014, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Network
+       External Connector Type: RJ-45
+       Port Type: Network Port
+
+Handle 0x0015, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: Monitor
+       External Connector Type: DB-15 male
+       Port Type: Video Port
+
+Handle 0x0016, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: TV-OUT/C-Video
+       External Connector Type: Other
+       Port Type: Video Port
+
+Handle 0x0017, DMI type 8, 9 bytes.
+Port Connector Information
+       Internal Reference Designator:
+       Internal Connector Type: None
+       External Reference Designator: PS/2
+       External Connector Type: PS/2
+       Port Type: Other
+
+Handle 0x0018, DMI type 9, 13 bytes.
+System Slot Information
+       Designation: Socket 1
+       Type: 32-bit PC Card (PCMCIA)
+       Current Usage: Unknown
+       Length: Other
+       ID: Adapter 1, Socket 0
+       Characteristics:
+               5.0 V is provided
+               3.3 V is provided
+               PC Card-16 is supported
+               Cardbus is supported
+               Zoom Video is supported
+               Modem ring resume is supported
+
+Handle 0x0019, DMI type 9, 13 bytes.
+System Slot Information
+       Designation: Socket 2
+       Type: 32-bit PC Card (PCMCIA)
+       Current Usage: Unknown
+       Length: Other
+       ID: Adapter 2, Socket 0
+       Characteristics:
+               5.0 V is provided
+               3.3 V is provided
+               PC Card-16 is supported
+               Cardbus is supported
+               Modem ring resume is supported
+
+Handle 0x001A, DMI type 10, 6 bytes.
+On Board Device Information
+       Type: Video
+       Status: Enabled
+       Description: Rage Mobility-M/Ati
+
+Handle 0x001B, DMI type 10, 6 bytes.
+On Board Device Information
+       Type: Other
+       Status: Enabled
+       Description: PCI1420/Teaxas
+
+Handle 0x001C, DMI type 10, 6 bytes.
+On Board Device Information
+       Type: Other
+       Status: Enabled
+       Description: uPD72872/NEC
+
+Handle 0x001D, DMI type 10, 6 bytes.
+On Board Device Information
+       Type: Other
+       Status: Enabled
+       Description: Mars3/Lucent
+
+Handle 0x001E, DMI type 11, 5 bytes.
+OEM Strings
+       String 1: This is the Intel 440ZX
+       String 2: Customer Reference Platform
+       String 3:
+       String 4:
+       String 5:
+       String 6:
+
+Handle 0x001F, DMI type 13, 22 bytes.
+BIOS Language Information
+       Installable Languages: 1
+               en|US|iso8859-1
+       Currently Installed Language: Not Specified
+
+Handle 0x0020, DMI type 16, 15 bytes.
+Physical Memory Array
+       Location: System Board Or Motherboard
+       Use: System Memory
+       Error Correction Type: None
+       Maximum Capacity: 256 MB
+       Error Information Handle: Not Provided
+       Number Of Devices: 2
+
+Handle 0x0021, DMI type 16, 15 bytes.
+Physical Memory Array
+       Location: System Board Or Motherboard
+       Use: Flash Memory
+       Error Correction Type: None
+       Maximum Capacity: 512 kB
+       Error Information Handle: Not Provided
+       Number Of Devices: 1
+
+Handle 0x0022, DMI type 16, 15 bytes.
+Physical Memory Array
+       Location: System Board Or Motherboard
+       Use: <OUT OF SPEC>
+       Error Correction Type: None
+       Maximum Capacity: 8 MB
+       Error Information Handle: Not Provided
+       Number Of Devices: 1
+
+Handle 0x0023, DMI type 17, 23 bytes.
+Memory Device
+       Array Handle: 0x0022
+       Error Information Handle: Not Provided
+       Total Width: 8 bits
+       Data Width: 8 bits
+       Size: 512 kB
+       Form Factor: Other
+       Set: None
+       Locator: U30
+       Bank Locator:
+       Type: Flash
+       Type Detail: Non-Volatile
+       Speed: Unknown
+
+Handle 0x0024, DMI type 17, 23 bytes.
+Memory Device
+       Array Handle: 0x0022
+       Error Information Handle: Not Provided
+       Total Width: 64 bits
+       Data Width: 64 bits
+       Size: 512 kB
+       Form Factor: Other
+       Set: None
+       Locator: U23
+       Bank Locator:
+       Type: Other
+       Type Detail: Fast-paged
+       Speed: 83 MHz (12.0 ns)
+
+Handle 0x0025, DMI type 17, 23 bytes.
+Memory Device
+       Array Handle: 0x0022
+       Error Information Handle: Not Provided
+       Total Width: 64 bits
+       Data Width: 64 bits
+       Size: 64 MB
+       Form Factor: DIMM
+       Set: None
+       Locator: P20
+       Bank Locator:
+       Type: SDRAM
+       Type Detail: Synchronous
+       Speed: 100 MHz (10.0 ns)
+
+Handle 0x0026, DMI type 17, 23 bytes.
+Memory Device
+       Array Handle: 0x0022
+       Error Information Handle: Not Provided
+       Total Width: 64 bits
+       Data Width: 64 bits
+       Size: 64 MB
+       Form Factor: DIMM
+       Set: 1
+       Locator: P21
+       Bank Locator:
+       Type: SDRAM
+       Type Detail: Synchronous
+       Speed: 100 MHz (10.0 ns)
+
+Handle 0x0027, DMI type 19, 15 bytes.
+Memory Array Mapped Address
+       Starting Address: 0x00000000000
+       Ending Address: 0x0000007FFFF
+       Range Size: 512 kB
+       Physical Array Handle: 0x0022
+       Partition Width: 0
+
+Handle 0x0028, DMI type 19, 15 bytes.
+Memory Array Mapped Address
+       Starting Address: 0x00000000000
+       Ending Address: 0x000003FFFFF
+       Range Size: 4 MB
+       Physical Array Handle: 0x0022
+       Partition Width: 0
+
+Handle 0x0029, DMI type 19, 15 bytes.
+Memory Array Mapped Address
+       Starting Address: 0x00000000000
+       Ending Address: 0x00007FFFFFF
+       Range Size: 128 MB
+       Physical Array Handle: 0x0022
+       Partition Width: 0
+
+Handle 0x002A, DMI type 20, 19 bytes.
+Memory Device Mapped Address
+       Starting Address: 0x00000000000
+       Ending Address: 0x000000003FF
+       Range Size: 1 kB
+       Physical Device Handle: 0x0023
+       Memory Array Mapped Address Handle: 0x0029
+       Partition Row Position: 254
+       Interleave Position: 254
+       Interleaved Data Depth: 254
+
+Handle 0x002B, DMI type 20, 19 bytes.
+Memory Device Mapped Address
+       Starting Address: 0x00000000000
+       Ending Address: 0x000000003FF
+       Range Size: 1 kB
+       Physical Device Handle: 0x0024
+       Memory Array Mapped Address Handle: 0x0029
+       Partition Row Position: 254
+       Interleave Position: 254
+       Interleaved Data Depth: 254
+
+Handle 0x002C, DMI type 21, 7 bytes.
+Built-in Pointing Device
+       Type: Glide Point
+       Interface: PS/2
+       Buttons: 2
+
+Handle 0x002D, DMI type 22, 26 bytes.
+Portable Battery
+       Location: on the right-hand side
+       Manufacturer: NEC
+       Name: NEC
+       Chemistry: Nickel Metal Hydride
+       Design Capacity: 364800 mWh
+       Design Voltage: 9600 mV
+       SBDS Version: Bat123
+       Maximum Error: Unknown
+       SBDS Serial Number: 0000
+       SBDS Manufacture Date: 1985-08-25
+       OEM-specific Information: 0x00000000
+
+Handle 0x002E, DMI type 22, 26 bytes.
+Portable Battery
+       Location: on the right-hand side
+       Manufacturer: NEC
+       Name: NEC
+       Chemistry: Lithium Ion
+       Design Capacity: 547200 mWh
+       Design Voltage: 13440 mV
+       SBDS Version: Bat123
+       Maximum Error: Unknown
+       SBDS Serial Number: 0000
+       SBDS Manufacture Date: 1985-08-25
+       OEM-specific Information: 0x00000000
+
+Handle 0x002F, DMI type 32, 20 bytes.
+System Boot Information
+       Status: <OUT OF SPEC>
+
+Handle 0x0030, DMI type 127, 4 bytes.
+End Of Table
+
+
+vpddecode:
+# vpddecode 2.7
+# No VPD structure found, sorry.
+
+Do you need some info?
+
+tnks you very much
+
+Luca
