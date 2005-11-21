@@ -1,35 +1,38 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] 1/2 Improve Error reporting
-Date: Mon, 21 Nov 2005 13:22:33 -0500
-Message-ID: <20051121182233.GB11724@redhat.com>
-References: <B3870AD84389624BAF87A3C7B831499302935311@SAUSEXMB2.amd.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] X86_GX_SUSPMOD must depend on PCI
+Date: Mon, 21 Nov 2005 23:33:06 +0100
+Message-ID: <20051121223306.GX16060@stusta.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751239AbVKUXGI@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <B3870AD84389624BAF87A3C7B831499302935311@SAUSEXMB2.amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "shin, jacob" <jacob.shin@amd.com>
-Cc: cpufreq@lists.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Mon, Nov 21, 2005 at 12:02:29PM -0600, shin, jacob wrote:
- > On Monday, November 21, 2005 9:36 AM Dave Jones wrote:
- > > (Also: Please make your patches so that they apply with -p1
- > 
- > here is the cleanup patch again, to be applied w/ -p1 flag.
+This patch fixes the following compile error:
 
-Thanks, I already fixed this one up by hand, it's in
-the cpufreq.git tree which should get pulled into the next
-2.6-mm
+...
+  CC      arch/i386/kernel/cpu/cpufreq/gx-suspmod.o
+arch/i386/kernel/cpu/cpufreq/gx-suspmod.c: In function 'gx_detect_chipset':
+arch/i386/kernel/cpu/cpufreq/gx-suspmod.c:193: error: implicit declaration of function 'pci_match_id'
+arch/i386/kernel/cpu/cpufreq/gx-suspmod.c:193: warning: comparison between pointer and integer
+make[3]: *** [arch/i386/kernel/cpu/cpufreq/gx-suspmod.o] Error 1
 
-		Dave
+<--  snip  -->
+
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+--- linux-2.6.15-rc1-mm2-full/arch/i386/kernel/cpu/cpufreq/Kconfig.old	2005-11-21 19:59:21.000000000 +0100
++++ linux-2.6.15-rc1-mm2-full/arch/i386/kernel/cpu/cpufreq/Kconfig	2005-11-21 19:59:48.000000000 +0100
+@@ -96,6 +96,7 @@
+ 
+ config X86_GX_SUSPMOD
+ 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
++	depends on PCI
+ 	help
+ 	 This add the CPUFreq driver for NatSemi Geode processors which
+ 	 support suspend modulation.
