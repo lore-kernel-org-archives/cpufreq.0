@@ -1,18 +1,12 @@
-From: Luca <luca.foppiano@gmail.com>
-Subject: Re: cpufreq on Coppermine
-Date: Sun, 20 Nov 2005 20:41:08 +0100
-Message-ID: <460afdfa0511201141l68fc7e56oabe4ddb917e1eb27@mail.gmail.com>
-References: <460afdfa0511171405i6df97535n807210617eb3ac0e@mail.gmail.com>
-	<20051118154149.GA2104@poupinou.org>
-	<460afdfa0511181139p40db432fm544e480f554e9a0@mail.gmail.com>
-	<20051119192909.GA4190@inferi.kami.home>
-	<460afdfa0511191719s6749b5cfq93bad11d1a878d89@mail.gmail.com>
-	<20051120143332.GF4582@inferi.kami.home>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] 2/2 fix driver removal code to clean up all governors
+Date: Mon, 21 Nov 2005 10:36:20 -0500
+Message-ID: <20051121153620.GB29968@redhat.com>
+References: <84EA05E2CA77634C82730353CBE3A8430321891A@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20051120143332.GF4582@inferi.kami.home>
 Content-Disposition: inline
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A8430321891A@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -24,79 +18,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Luca <luca.foppiano@gmail.com>, cpufreq@lists.linux.org.uk, Bruno Ducrot <ducrot@poupinou.org>
+Content-Transfer-Encoding: 7bit
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: cpufreq@lists.linux.org.uk
 
-On 11/20/05, Mattia Dongili <malattia@linux.it> wrote:
-> Ah, -msoft-float. Either change the '#if 0' to '#if 1' at line 449 or
-> build with 'make EXTRA_CFLAGS=3D-mhard-float'
+On Thu, Nov 10, 2005 at 04:53:57PM -0600, Langsdorf, Mark wrote:
+ > This patch fixes a bug that causes a segfault when the
+ > powernow-k8 driver is removed while the ondemand 
+ > governor is running.
+ > 
+ > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+ > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-I have modified the speedstep.c file and I have compiled the modules,
-but when I load it I return this error:
+Can you elaborate on this one a little ?
 
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: read_core_mult()
-MSR_IA32_EBL_CR_POWERON 0x46480020 0x00000000
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: speedstep_initialize()
-Processor at 700000 kHz
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: speedstep_initialize() pmbase
-is 0x1000
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_read_state() called
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_read_state()
-MSR_IA32_EBL_CR_POWERON 0x46480020 0x00000000
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_read_state() gpo_hilo:
-0xfe
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_read_state()        ->=20
-0x00
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: speedstep_initialize() state
-is 0
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: speedstep_initialize() trying
-to switch to state 1
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition() called
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()     state
-is 01
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()
-MSR_IA32_EBL_CR_POWERON 0x46480020 0x00000000
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()    s is
-fe...
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()    ...
-and now s is ff
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()   cntb
-before: 0x00103a3f 00000000 00010000 00111010 00111111
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()   cntb
-after:  0x00103fff 00000000 00010000 00111111 11111111
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()   pcntrl
-before: 0x00001202 00000000 00000000 00010010 00000010
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()   pcntrl
-after:  0x00001a02 00000000 00000000 00011010 00000010
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition() we
-survive to C3...
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: cpu_do_transition()
-MSR_IA32_EBL_CR_POWERON 0x46480020 0x00000000
-Nov 20 20:30:31 cristal kernel:
-/usr/local/src/speedstep_bx/speedstep.c: read_core_mult()
-MSR_IA32_EBL_CR_POWERON 0x46480020 0x00000000
+(Also: Please make your patches so that they apply with -p1
+ I fixed up the other one by hand adding in the full pathname,
+ but I'm far too lazy to do that for every patch :-)
 
-mmm...what is the problem? Is not supported?
-tell me if you do some information..I don't know what to do...
-help
-thanks very much
-Luca
+		Dave
