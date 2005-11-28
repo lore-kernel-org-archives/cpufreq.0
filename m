@@ -1,12 +1,14 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: [powernow-k8] some wrong frequencies on opterons 252, howto
- find them?
-Date: Mon, 28 Nov 2005 10:33:13 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A84303218993@SAUSEXMB1.amd.com>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: [PATCH] transition latency of speedstep-ich (third try)
+Date: Mon, 28 Nov 2005 23:12:38 +0100
+Message-ID: <20051128221237.GA6340@inferi.kami.home>
+References: <88056F38E9E48644A0F562A38C64FB6005EB231C@scsmsx403.amr.corp.intel.com>
+	<4388E454.6050304@tremplin-utc.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <4388E454.6050304@tremplin-utc.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,45 +18,114 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Eric Piel <Eric.Piel@tremplin-utc.net>
+Cc: davej@redhat.com, cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.net>
 
-> > No, that's okay.  If you could retrieve the value of
-> > pr->performance->state_count from line 1011 of
-> > drivers/acpi/processor.c, and the values of
-> > px->control from line 1036 of the same file for each
-> > _PSS object, that would be very helpful.
-> >=20
+On Sat, Nov 26, 2005 at 11:40:20PM +0100, Eric Piel wrote:
+> 05.10.2005 22:39, Pallipadi, Venkatesh wrote/a =E9crit:
+[...]
+> >Do you have ACPI PM timer on your system? May be we can measure the=20
+> >latency using that.=20
+> >
+> Hello,
 >=20
-> Ok.
+> Sorry for the looonnnggg delay of the reply. I've finally found time to=
+=20
+> hunt for the PM timer on my computer, found it, and kludged=20
+> speedstep-ich to read it :-) For verification and completeness, the=20
+> patch is attached. (the PM timer address is hard-coded, it has to be=20
+> changed before running it on another system, it's indicated at boot in=20
+> dmesg).
 >=20
-> The dmesg look like that now:
->=20
-> powernow-k8: Found 2 AMD Athlon 64 / Opteron processors=20
-> (version 1.50.4)=20
-> processor id 0: pr->performance->state_count 5
-> processor id 0: State [0]: core_frequency[2600]=20
-> power[68000] transition_latency[100] bus_master_latency[7]=20
-> control[0xc0701192] status[0x192]
-> data->acpi_data.state_count: 5
-> data->numps 5
-> powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x6 (1400 mV)
-> powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0x8 (1350 mV)
-> powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xa (1300 mV)
-> powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xc (1250 mV)
-> powernow-k8:    4 : fid 0xa (1800 MHz), vid 0xe (1200 mV)
->
-> For the record, I put the SSDTs loaded via the Load stuff
-> found after dumping the memory regions as I said earlier.
-> I don't think you will need them though.  There is no low=20
-> frequency for sure.
+> So the results are quite interesting and confirm your expectations,=20
+> Venki. After few hours with the ondemand governor, I checked the logs=20
+> and the transition latency seems very stable: around 735 to 742 PM timer=
+=20
+> ticks (~206 us). So indeed, 100us of transition latency was quite=20
+> under-estimating it!
 
-It's a BIOS bug/feature, for sure.  Take it up with HP -
-they've been known to make design decisions like this=20
-before.
+So here's some measurement on my P3M (seems a little faster than yours
+in switching):
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 11
+model name	: Intel(R) Pentium(R) III Mobile CPU      1000MHz
+stepping	: 1
+cpu MHz		: 994.394
+cache size	: 512 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat =
+pse36 mmx fxsr sse
+bogomips	: 1991.49
 
 
--Mark Langsdorf
-AMD, Inc.
+cpufrequtils 0.3: cpufreq-info (C) Dominik Brodowski 2004
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+  driver: speedstep-ich
+  CPUs which need to switch frequency at the same time: 0
+  hardware limits: 732 MHz - 998 MHz
+  available frequency steps: 998 MHz, 732 MHz
+  available cpufreq governors: powersave, performance
+  current policy: frequency should be within 732 MHz and 998 MHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency is 998 MHz.
+
+Some stats while switching from the 2 available frequencies while
+doing some random compile and/or disk intensive operation:
+
+| min->MAX                      | MAX->min
++---------                      +---------
+| 709 PM cicles - occurences 1  | 709 PM cicles - occurences 1
+| 710 PM cicles - occurences 1  | 710 PM cicles - occurences 5
+| 711 PM cicles - occurences 3  | 711 PM cicles - occurences 2
+| 712 PM cicles - occurences 2  | 712 PM cicles - occurences 3
+| 713 PM cicles - occurences 9  | 713 PM cicles - occurences 3
+| 714 PM cicles - occurences 1  | 714 PM cicles - occurences 3
+| 715 PM cicles - occurences 4  | 715 PM cicles - occurences 3
+| 716 PM cicles - occurences 5  | 716 PM cicles - occurences 6
+| 717 PM cicles - occurences 5  | 717 PM cicles - occurences 6
+| 718 PM cicles - occurences 2  | 718 PM cicles - occurences 5
+| 719 PM cicles - occurences 6  | 719 PM cicles - occurences 4
+| 720 PM cicles - occurences 1  | 720 PM cicles - occurences 2
+| 721 PM cicles - occurences 3  | 721 PM cicles - occurences 1
+| 722 PM cicles - occurences 4  | 722 PM cicles - occurences 4
+| 723 PM cicles - occurences 1  | 723 PM cicles - occurences 2
+| 724 PM cicles - occurences 3  | 724 PM cicles - occurences 1
+
+PM cicles weighted average: 716.412
+TSC cicles weighted average: 6009.422
+
+(you don't want to see the perl script that generated it) :)
+
+> Now back to the original problem, from those measurements, which time=20
+> should we put as the maximal transition latency for speedstep-ich? Do=20
+> you think we can simply put something like 300us and that's it? Maybe we=
+=20
+
+I just build speedstep-ich with transition_latency =3D 250
+I'll let you know how it goes. Are you interested?
+
+> could distinguish between PIII and P4 ? It would require someone to=20
+> rerun the measurement on a P4 hardware. Do we need to take into account=
+=20
+> as a parameter the CPU frequency?
+
+Maybe it's already been discussed, but how bad would be trying to
+measure transition latency at runtime?
+
+--=20
+mattia
+:wq!
