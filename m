@@ -1,14 +1,10 @@
-From: "Mattia Dongili" <malattia@linux.it>
-Subject: Re: [PATCH] transition latency of speedstep-ich (third try)
-Date: Tue, 29 Nov 2005 08:48:32 +0100 (CET)
-Message-ID: <6978.83.103.117.254.1133250512.squirrel@picard.linux.it>
-References: <88056F38E9E48644A0F562A38C64FB600671185B@scsmsx403.amr.corp.intel.com>
-	<438B942B.2090100@tremplin-utc.net>
-	<20051128234854.GA3423@inferi.kami.home>
+From: conrad@bungled.net (Nathan Conrad)
+Subject: Wrong frequencies sometimes on Sony Vaio Athlon4
+Date: Tue, 29 Nov 2005 08:54:23 -0500
+Message-ID: <20051129135423.GA20258@bungled.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <20051128234854.GA3423@inferi.kami.home>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,18 +14,57 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Mattia Dongili <malattia@linux.it>
-Cc: davej@redhat.com, Eric Piel <eric.piel@tremplin-utc.net>, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
 
-On Tue, November 29, 2005 12:48 am, Mattia Dongili said:
-[...]
-> +                long long diff = (t2.tv_sec * MSEC_PER_SEC + t2.tv_usec) -
-> +                        (t1.tv_sec * MSEC_PER_SEC + t1.tv_usec);
+Hi,
 
-doh... as the name suggests it should really be USEC_PER_SEC...
+I have a 1.2 GHz Athlon4 CPU on my Sony Vaio PCG-FXA49 laptop. I use
+the powernow CPU scaling. Sometimes (a few percent of the time), the
+driver records my laptop's CPU as the wrong speed. For example, right
+now the following speeds are available:
 
--- 
-mattia
-:wq!
+1292256 1076880 861504 646128 538440
+
+The first should be almost exactly 1.2 GHz while the last should be
+500 MHz.
+
+/proc/cpuinfo:
+
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 6
+model           : 6
+model name      : mobile AMD Athlon(tm) 4
+stepping        : 2
+cpu MHz         : 1076.885
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+cmov pat pse36 mmx fxsr sse syscall mp mmxext 3dnowext 3dnow
+bogomips        : 2144.24
+
+dmesg reports:
+
+CPU: After generic identify, caps: 0383f9ff c1cbf9ff 00000000 00000000 00000000 00000000 00000000
+CPU: After vendor identify, caps: 0383f9ff c1cbf9ff 00000000 00000000 00000000 00000000 00000000
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 256K (64 bytes/line)
+CPU: After all inits, caps: 0383f9ff c1cbf9ff 00000000 00000020 00000000 00000000 00000000
+CPU: AMD mobile AMD Athlon(tm) 4  stepping 02
+powernow: PowerNOW! Technology present. Can scale: frequency and
+voltage.
+Detected 1292.262 MHz processor.
+powernow: No PST tables match this cpuid (0x762)
+powernow: This is indicative of a broken BIOS.
+powernow: Trying ACPI perflib
+powernow: Minimum speed 538 MHz. Maximum speed 1292 MHz.
