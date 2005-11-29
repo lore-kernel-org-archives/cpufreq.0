@@ -1,12 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Wrong frequencies sometimes on Sony Vaio Athlon4
-Date: Tue, 29 Nov 2005 14:44:04 -0500
-Message-ID: <20051129194404.GE3462@redhat.com>
-References: <20051129135423.GA20258@bungled.net>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: [PATCH] Support 100 MHz frequency transitions
+Date: Tue, 29 Nov 2005 14:18:03 -0600
+Message-ID: <84EA05E2CA77634C82730353CBE3A843032189AF@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20051129135423.GA20258@bungled.net>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5F522.0094DC69"
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,26 +15,124 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C5F522.0094DC69
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+
+Future versions of the Opteron processor may support
+frequency transitions of 100 MHz, instead of the=20
+current 200 MHz.  This patch enables the powernow-k8
+driver to transition to an odd FID code, indicating
+a multiple of 100 MHz frequency.
+
+Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+
+This patch follows the two patches submitted on 11/10
+and needs to be applied after them.
+
+------_=_NextPart_001_01C5F522.0094DC69
+Content-Type: application/octet-stream;
+ name=pnk8-odd-fid.patch
+Content-Transfer-Encoding: base64
+Content-Description: pnk8-odd-fid.patch
+Content-Disposition: attachment;
+ filename=pnk8-odd-fid.patch
+
+LS0tIGxpbnV4Lm9yaWcvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9wb3dlcm5vdy1rOC5j
+CTIwMDUtMTEtMjggMDk6NTU6MTIuMDAwMDAwMDAwIC0wNjAwCisrKyBsaW51eC9hcmNoL2kzODYv
+a2VybmVsL2NwdS9jcHVmcmVxL3Bvd2Vybm93LWs4LmMJMjAwNS0xMS0yOCAxMDowMToyOC4wMDAw
+MDAwMDAgLTA2MDAKQEAgLTQ1LDcgKzQ1LDcgQEAKIAogI2RlZmluZSBQRlggInBvd2Vybm93LWs4
+OiAiCiAjZGVmaW5lIEJGWCBQRlggIkJJT1MgZXJyb3I6ICIKLSNkZWZpbmUgVkVSU0lPTiAidmVy
+c2lvbiAxLjUwLjUiCisjZGVmaW5lIFZFUlNJT04gInZlcnNpb24gMS42MC4wIgogI2luY2x1ZGUg
+InBvd2Vybm93LWs4LmgiCiAKIC8qIHNlcmlhbGl6ZSBmcmVxIGNoYW5nZXMgICovCkBAIC0zMzYs
+NyArMzM2LDcgQEAgc3RhdGljIGludCBjb3JlX3ZvbHRhZ2VfcHJlX3RyYW5zaXRpb24ocwogLyog
+UGhhc2UgMiAtIGNvcmUgZnJlcXVlbmN5IHRyYW5zaXRpb24gKi8KIHN0YXRpYyBpbnQgY29yZV9m
+cmVxdWVuY3lfdHJhbnNpdGlvbihzdHJ1Y3QgcG93ZXJub3dfazhfZGF0YSAqZGF0YSwgdTMyIHJl
+cWZpZCkKIHsKLQl1MzIgdmNvcmVxZmlkLCB2Y29jdXJyZmlkLCB2Y29maWRkaWZmLCBzYXZldmlk
+ID0gZGF0YS0+Y3VycnZpZDsKKwl1MzIgdmNvcmVxZmlkLCB2Y29jdXJyZmlkLCB2Y29maWRkaWZm
+LCBmaWRfaW50ZXJ2YWwsIHNhdmV2aWQgPSBkYXRhLT5jdXJydmlkOwogCiAJaWYgKChyZXFmaWQg
+PCBISV9GSURfVEFCTEVfQk9UVE9NKSAmJiAoZGF0YS0+Y3VycmZpZCA8IEhJX0ZJRF9UQUJMRV9C
+T1RUT00pKSB7CiAJCXByaW50ayhLRVJOX0VSUiBQRlggInBoMjogaWxsZWdhbCBsby1sbyB0cmFu
+c2l0aW9uIDB4JXggMHgleFxuIiwKQEAgLTM1OSw5ICszNTksMTEgQEAgc3RhdGljIGludCBjb3Jl
+X2ZyZXF1ZW5jeV90cmFuc2l0aW9uKHN0cgogCSAgICA6IHZjb3JlcWZpZCAtIHZjb2N1cnJmaWQ7
+CiAKIAl3aGlsZSAodmNvZmlkZGlmZiA+IDIpIHsKKwkJKGRhdGEtPmN1cnJmaWQgJiAxKSA/IChm
+aWRfaW50ZXJ2YWwgPSAxKSA6IChmaWRfaW50ZXJ2YWwgPSAyKTsKKwogCQlpZiAocmVxZmlkID4g
+ZGF0YS0+Y3VycmZpZCkgewogCQkJaWYgKGRhdGEtPmN1cnJmaWQgPiBMT19GSURfVEFCTEVfVE9Q
+KSB7Ci0JCQkJaWYgKHdyaXRlX25ld19maWQoZGF0YSwgZGF0YS0+Y3VycmZpZCArIDIpKSB7CisJ
+CQkJaWYgKHdyaXRlX25ld19maWQoZGF0YSwgZGF0YS0+Y3VycmZpZCArIGZpZF9pbnRlcnZhbCkp
+IHsKIAkJCQkJcmV0dXJuIDE7CiAJCQkJfQogCQkJfSBlbHNlIHsKQEAgLTM3MSw3ICszNzMsNyBA
+QCBzdGF0aWMgaW50IGNvcmVfZnJlcXVlbmN5X3RyYW5zaXRpb24oc3RyCiAJCQkJfQogCQkJfQog
+CQl9IGVsc2UgewotCQkJaWYgKHdyaXRlX25ld19maWQoZGF0YSwgZGF0YS0+Y3VycmZpZCAtIDIp
+KQorCQkJaWYgKHdyaXRlX25ld19maWQoZGF0YSwgZGF0YS0+Y3VycmZpZCAtIGZpZF9pbnRlcnZh
+bCkpCiAJCQkJcmV0dXJuIDE7CiAJCX0KIApAQCAtNDc0LDcgKzQ3Niw3IEBAIHN0YXRpYyBpbnQg
+Y2hlY2tfc3VwcG9ydGVkX2NwdSh1bnNpZ25lZCAKIAllYXggPSBjcHVpZF9lYXgoQ1BVSURfUFJP
+Q0VTU09SX1NJR05BVFVSRSk7CiAJaWYgKCgoZWF4ICYgQ1BVSURfVVNFX1hGQU1fWE1PRCkgIT0g
+Q1BVSURfVVNFX1hGQU1fWE1PRCkgfHwKIAkgICAgKChlYXggJiBDUFVJRF9YRkFNKSAhPSBDUFVJ
+RF9YRkFNX0s4KSB8fAotCSAgICAoKGVheCAmIENQVUlEX1hNT0QpID4gQ1BVSURfWE1PRF9SRVZf
+RikpIHsKKwkgICAgKChlYXggJiBDUFVJRF9YTU9EKSA+IENQVUlEX1hNT0RfUkVWX0cpKSB7CiAJ
+CXByaW50ayhLRVJOX0lORk8gUEZYICJQcm9jZXNzb3IgY3B1aWQgJXggbm90IHN1cHBvcnRlZFxu
+IiwgZWF4KTsKIAkJZ290byBvdXQ7CiAJfQpAQCAtNTIxLDEwICs1MjMsNiBAQCBzdGF0aWMgaW50
+IGNoZWNrX3BzdF90YWJsZShzdHJ1Y3QgcG93ZXJuCiAJCQlwcmludGsoS0VSTl9FUlIgQkZYICJt
+YXhmaWQgZXhjZWVkZWQgd2l0aCBwc3RhdGUgJWRcbiIsIGopOwogCQkJcmV0dXJuIC1FTk9ERVY7
+CiAJCX0KLQkJaWYgKHBzdFtqXS5maWQgJiAxKSB7Ci0JCQlwcmludGsoS0VSTl9FUlIgQkZYICJm
+aWQgaW52YWxpZCAtICVkIDogMHgleFxuIiwgaiwgcHN0W2pdLmZpZCk7Ci0JCQlyZXR1cm4gLUVJ
+TlZBTDsKLQkJfQogCQlpZiAoaiAmJiAocHN0W2pdLmZpZCA8IEhJX0ZJRF9UQUJMRV9CT1RUT00p
+KSB7CiAJCQkvKiBPbmx5IGZpcnN0IGZpZCBpcyBhbGxvd2VkIHRvIGJlIGluICJsb3ciIHJhbmdl
+ICovCiAJCQlwcmludGsoS0VSTl9FUlIgQkZYICJ0d28gbG93IGZpZHMgLSAlZCA6IDB4JXhcbiIs
+IGosIHBzdFtqXS5maWQpOwpAQCAtMTE3Nyw0ICsxMTc1LDMgQEAgTU9EVUxFX0xJQ0VOU0UoIkdQ
+TCIpOwogCiBsYXRlX2luaXRjYWxsKHBvd2Vybm93azhfaW5pdCk7CiBtb2R1bGVfZXhpdChwb3dl
+cm5vd2s4X2V4aXQpOwotCi0tLSBsaW51eC5vcmlnL2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZy
+ZXEvcG93ZXJub3ctazguaAkyMDA1LTExLTE4IDA2OjMwOjA3LjAwMDAwMDAwMCAtMDYwMAorKysg
+bGludXgvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9wb3dlcm5vdy1rOC5oCTIwMDUtMTEt
+MjggMDk6NTU6NTUuMDAwMDAwMDAwIC0wNjAwCkBAIC00Miw3ICs0Miw3IEBAIHN0cnVjdCBwb3dl
+cm5vd19rOF9kYXRhIHsKICNkZWZpbmUgQ1BVSURfWEZBTQkJCTB4MGZmMDAwMDAJLyogZXh0ZW5k
+ZWQgZmFtaWx5ICovCiAjZGVmaW5lIENQVUlEX1hGQU1fSzgJCQkwCiAjZGVmaW5lIENQVUlEX1hN
+T0QJCQkweDAwMGYwMDAwCS8qIGV4dGVuZGVkIG1vZGVsICovCi0jZGVmaW5lIENQVUlEX1hNT0Rf
+UkVWX0YJCTB4MDAwNDAwMDAKKyNkZWZpbmUgQ1BVSURfWE1PRF9SRVZfRwkJMHgwMDA2MDAwMAog
+I2RlZmluZSBDUFVJRF9VU0VfWEZBTV9YTU9ECQkweDAwMDAwZjAwCiAjZGVmaW5lIENQVUlEX0dF
+VF9NQVhfQ0FQQUJJTElUSUVTCTB4ODAwMDAwMDAKICNkZWZpbmUgQ1BVSURfRlJFUV9WT0xUX0NB
+UEFCSUxJVElFUwkweDgwMDAwMDA3CkBAIC04NiwxMyArODYsMTQgQEAgc3RydWN0IHBvd2Vybm93
+X2s4X2RhdGEgewogICogICBsb3cgZmlkIHRhYmxlCiAgKiAtIGxvd2VzdCBlbnRyeSBpbiB0aGUg
+aGlnaCBmaWQgdGFibGUgbXVzdCBiZSBhIDw9IDIwME1IeiArIDIgKiB0aGUgZW50cnkKICAqICAg
+aW4gdGhlIGxvdyBmaWQgdGFibGUKLSAqIC0gdGhlIHBhcnRzIGNhbiBvbmx5IHN0ZXAgYXQgMjAw
+IE1IeiBpbnRlcnZhbHMsIHNvIDEuOSBHSHogaXMgbmV2ZXIgdmFsaWQKKyAqIC0gdGhlIHBhcnRz
+IGNhbiBvbmx5IHN0ZXAgYXQgPD0gMjAwIE1IeiBpbnRlcnZhbHMsIG9kZCBmaWQgdmFsdWVzIGFy
+ZQorICogICBzdXBwb3J0ZWQgaW4gcmV2aXNpb24gRyBhbmQgbGF0ZXIgcmV2aXNpb25zLgogICog
+LSBsb3dlc3QgZnJlcXVlbmN5IG11c3QgYmUgPj0gaW50ZXJwcm9jZXNzb3IgaHlwZXJ0cmFuc3Bv
+cnQgbGluayBzcGVlZAogICogICAob25seSBhcHBsaWVzIHRvIE1QIHN5c3RlbXMgb2J2aW91c2x5
+KQogICovCiAKIC8qIGZpZHMgKGZyZXF1ZW5jeSBpZGVudGlmaWVycykgYXJlIGFycmFuZ2VkIGlu
+IDIgdGFibGVzIC0gbG8gYW5kIGhpICovCi0jZGVmaW5lIExPX0ZJRF9UQUJMRV9UT1AgICAgIDYJ
+LyogZmlkIHZhbHVlcyBtYXJraW5nIHRoZSBib3VuZGFyeSAgICAqLworI2RlZmluZSBMT19GSURf
+VEFCTEVfVE9QICAgICA3CS8qIGZpZCB2YWx1ZXMgbWFya2luZyB0aGUgYm91bmRhcnkgICAgKi8K
+ICNkZWZpbmUgSElfRklEX1RBQkxFX0JPVFRPTSAgOAkvKiBiZXR3ZWVuIHRoZSBsb3cgYW5kIGhp
+Z2ggdGFibGVzICAgICovCiAKICNkZWZpbmUgTE9fVkNPRlJFUV9UQUJMRV9UT1AgICAgMTQwMAkv
+KiBjb3JyZXNwb25kaW5nIHZjbyBmcmVxdWVuY3kgdmFsdWVzICovCkBAIC0xMDYsNyArMTA3LDcg
+QEAgc3RydWN0IHBvd2Vybm93X2s4X2RhdGEgewogI2RlZmluZSBNSU5fRlJFUSA4MDAJLyogTWlu
+IGFuZCBtYXggZnJlcXMsIHBlciBzcGVjICovCiAjZGVmaW5lIE1BWF9GUkVRIDUwMDAKIAotI2Rl
+ZmluZSBJTlZBTElEX0ZJRF9NQVNLIDB4ZmZmZmZmYzEgIC8qIG5vdCBhIHZhbGlkIGZpZCBpZiB0
+aGVzZSBiaXRzIGFyZSBzZXQgKi8KKyNkZWZpbmUgSU5WQUxJRF9GSURfTUFTSyAweGZmZmZmZmMw
+ICAvKiBub3QgYSB2YWxpZCBmaWQgaWYgdGhlc2UgYml0cyBhcmUgc2V0ICovCiAjZGVmaW5lIElO
+VkFMSURfVklEX01BU0sgMHhmZmZmZmZjMCAgLyogbm90IGEgdmFsaWQgdmlkIGlmIHRoZXNlIGJp
+dHMgYXJlIHNldCAqLwogCiAjZGVmaW5lIFZJRF9PRkYgMHgzZgo=
+
+------_=_NextPart_001_01C5F522.0094DC69
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Nathan Conrad <conrad@bungled.net>
-Cc: cpufreq@lists.linux.org.uk
+Content-Disposition: inline
 
-On Tue, Nov 29, 2005 at 08:54:23AM -0500, Nathan Conrad wrote:
- > Hi,
- > 
- > I have a 1.2 GHz Athlon4 CPU on my Sony Vaio PCG-FXA49 laptop. I use
- > the powernow CPU scaling. Sometimes (a few percent of the time), the
- > driver records my laptop's CPU as the wrong speed. For example, right
- > now the following speeds are available:
- > 
- > 1292256 1076880 861504 646128 538440
- > 
- > The first should be almost exactly 1.2 GHz while the last should be
- > 500 MHz.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-They're an approximation. We just report what the BIOS claims
-the platform is capable of.
+------_=_NextPart_001_01C5F522.0094DC69--
 
-		Dave
+
