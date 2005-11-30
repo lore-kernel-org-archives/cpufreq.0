@@ -1,12 +1,15 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: [powernow-k8] some wrong frequencies on opterons 252, howto
- find them?
-Date: Wed, 30 Nov 2005 14:46:58 -0600
-Message-ID: <84EA05E2CA77634C82730353CBE3A843032189BC@SAUSEXMB1.amd.com>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: [PATCH 1/2] Move PMBASE reading away and do it only once at
+	initialization time
+Date: Wed, 30 Nov 2005 22:00:59 +0100
+Message-ID: <20051130210059.GC3620@inferi.kami.home>
+References: <11333087112659-git-send-email-malattia@linux.it>
+	<438D86E3.9070502@lifl.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Type: multipart/mixed; boundary="k1lZvvs/B4yU6o8G"
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <438D86E3.9070502@lifl.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,135 +19,137 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Eric Piel <Eric.Piel@lifl.fr>
+Cc: CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, Eric Piel <eric.piel@tremplin-utc.net>, Dominik Brodowski <linux@dominikbrodowski.net>, davej@redhat.com
+
+
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Nov 30, 2005 at 12:02:59PM +0100, Eric Piel wrote:
+[...]
+> >@@ -400,6 +415,10 @@ static int __init speedstep_init(void)
+> > 		return -EINVAL;
+> > 	}
+> > 
+> >+	if (speedstep_find_register()) {
+> >+		return -ENODEV;
+> >+	}
+> >+
+> Please, keep it simple and do put { and } when there is only one line.
+
+I assume you meant "do not put" :)
+attached the fixed patch (with removed extra white space also).
+
+This patch moves away PMBASE reading and only performs it at
+cpufreq_register_driver time by exiting with -ENODEV if unable to read                                                                                
+the value.
+
+Signed-off-by: Mattia Dongili <malattia@linux.it>
+-- 
+mattia
+:wq!
+
+--k1lZvvs/B4yU6o8G
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="move_pmbase_reading.diff"
+
+diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c b/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+index 5b7d18a..77efe8e 100644
+--- a/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
++++ b/arch/i386/kernel/cpu/cpufreq/speedstep-ich.c
+@@ -40,6 +40,7 @@ static struct pci_dev *speedstep_chipset
+  */
+ static unsigned int speedstep_processor = 0;
+ 
++static u32 pmbase;
+ 
+ /*
+  *   There are only two frequency states for each processor. Values
+@@ -56,34 +57,47 @@ static struct cpufreq_frequency_table sp
+ 
+ 
+ /**
+- * speedstep_set_state - set the SpeedStep state
+- * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
++ * speedstep_find_register - read the PMBASE address
+  *
+- *   Tries to change the SpeedStep state.
++ * Returns: -ENODEV if no register could be found
+  */
+-static void speedstep_set_state (unsigned int state)
++static int speedstep_find_register (void)
+ {
+-	u32 pmbase;
+-	u8 pm2_blk;
+-	u8 value;
+-	unsigned long flags;
+-
+-	if (!speedstep_chipset_dev || (state > 0x1))
+-		return;
++	if (!speedstep_chipset_dev)
++		return -ENODEV;
+ 
+ 	/* get PMBASE */
+ 	pci_read_config_dword(speedstep_chipset_dev, 0x40, &pmbase);
+ 	if (!(pmbase & 0x01)) {
+ 		printk(KERN_ERR "speedstep-ich: could not find speedstep register\n");
+-		return;
++		return -ENODEV;
+ 	}
+ 
+ 	pmbase &= 0xFFFFFFFE;
+ 	if (!pmbase) {
+ 		printk(KERN_ERR "speedstep-ich: could not find speedstep register\n");
+-		return;
++		return -ENODEV;
+ 	}
+ 
++	dprintk("pmbase is 0x%x\n", pmbase);
++	return 0;
++}
++
++/**
++ * speedstep_set_state - set the SpeedStep state
++ * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
++ *
++ *   Tries to change the SpeedStep state.
++ */
++static void speedstep_set_state (unsigned int state)
++{
++	u8 pm2_blk;
++	u8 value;
++	unsigned long flags;
++
++	if (state > 0x1)
++		return;
++
+ 	/* Disable IRQs */
+ 	local_irq_save(flags);
+ 
+@@ -400,6 +414,9 @@ static int __init speedstep_init(void)
+ 		return -EINVAL;
+ 	}
+ 
++	if (speedstep_find_register())
++		return -ENODEV;
++
+ 	return cpufreq_register_driver(&speedstep_driver);
+ }
+ 
+
+--k1lZvvs/B4yU6o8G
 Content-Type: text/plain; charset="us-ascii"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@www.linux.org.uk
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> > It's a BIOS bug/feature, for sure.  Take it up with HP -=20
-> > they've been known to make design decisions like this before.
-> >=20
->=20
-> Thanks to confirm this.  I will contact HP in order to get it fixed.
->=20
-> In the meantime (and for those who may need a solution for an=20
-> override) I will provide that patch to your driver.  Of=20
-> course, I don't request it being merged for obvious reasons.
->=20
-> The only (maybe) thing that may be other people want to be=20
-> merged in mainline is that we can get the current voltage.  I=20
-> could separate the voltage attribute if you think it may be=20
-> fun to have.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-I can support powernow_show_voltage and powernow_show_table,
-but AMD will not maintain powernow_store_table. =20
+--k1lZvvs/B4yU6o8G--
 
-> --- linux-2.6.14.3/arch/i386/kernel/cpu/cpufreq/powernow-k8.c=09
-> 2005/11/30 17:14:03	1.1
-> +++ linux-2.6.14.3/arch/i386/kernel/cpu/cpufreq/powernow-k8.c=09
-> 2005/11/30 18:44:19
-> @@ -1129,8 +1129,163 @@ static unsigned int powernowk8_get (unsi
->  	return khz;
->  }
-> =20
-> +static ssize_t powernow_show_voltage(struct cpufreq_policy=20
-> *pol, char=20
-> +*buf) {
-> +	struct powernow_k8_data *data =3D powernow_data[pol->cpu];
-> +	cpumask_t oldmask;
-> +	u32 voltage =3D 0;
-> +
-> +	oldmask =3D current->cpus_allowed;
-> +	set_cpus_allowed(current, cpumask_of_cpu(pol->cpu));
-> +	if (smp_processor_id() !=3D pol->cpu) {
-> +		printk(KERN_ERR "limiting to cpu %u failed\n",=20
-> pol->cpu);
-> +		goto err_out;
-> +	}
-> +
-> +	preempt_disable();
-> +
-> +	if (query_current_values_with_pending_wait(data))
-> +		goto err_out;
-> +
-> +	voltage =3D 1550 - data->currvid * 25;
-
-should be
-voltage =3D find_millivolts_from_vid(data, data->currvid);
-that way it's forward-proofed if we change the voltage
-algorithm on future generations of processors.
-
-> +err_out:
-> +	preempt_enable_no_resched();
-> +	set_cpus_allowed(current, oldmask);
-> +
-> +	return sprintf(buf, "%d\n", voltage);
-> +}
-> +
-> +static struct freq_attr powernow_attr_voltage =3D {
-> +	.attr =3D { .name =3D "powernow_voltage", .mode =3D 0444},
-> +	.show =3D powernow_show_voltage,
-> +};
-> +
-> +static ssize_t powernow_show_table(struct cpufreq_policy *pol, char=20
-> +*buf) {
-> +	int i;
-> +	ssize_t count =3D 0;
-> +	struct powernow_k8_data *data =3D powernow_data[pol->cpu];
-> +	struct cpufreq_frequency_table *table =3D data->powernow_table;
-> +
-> +	count +=3D sprintf(&buf[count], "%d %d %d %d %d %d %d %d\n",
-> +			 data->numps,
-> +			 data->batps,
-> +			 data->rvo,
-> +			 data->irt,
-> +			 data->vidmvs,
-> +			 data->vstable,
-> +			 data->plllock,
-> +			 data->exttype);
-> +
-> +	for (i =3D 0; table[i].frequency !=3D CPUFREQ_TABLE_END; ++i) {
-> +		if (table[i].frequency =3D=3D CPUFREQ_ENTRY_INVALID)
-> +			count +=3D sprintf(&buf[count], "XX ");
-> +		else
-> +			count +=3D sprintf(&buf[count], "%d ",
-> +					table[i].frequency);
-> +		count +=3D sprintf(&buf[count], "0x%.4x\n",
-> +					table[i].index);
-> +	}
-> +
-> +	return count;
-> +}
-> +
-> +static ssize_t powernow_store_table(struct cpufreq_policy *pol,
-> +		const char *buf, size_t count)
-> +{
-....
-> +}
-
-That function scares me.  It's only useful for people with a
-mostly working set of _PSS objects, since it won't generate
-the irt, rvo, pllock, etc.  People attempting to use it
-should be very careful, since incorrect fid/vid pairs=20
-will hardlock the machine and potentially damage the
-processor.  I definitely don't want it in the mainstream code.
-
-> +
-> +static struct freq_attr powernow_attr_table =3D {
-> +	.attr =3D { .name =3D "powernow_table", .mode =3D 0644},
-> +	.show =3D powernow_show_table,
-> +	.store =3D powernow_store_table,
-> +};
-
-Can we get rid of the .store?
-
->  static struct freq_attr* powernow_k8_attr[] =3D {
->  	&cpufreq_freq_attr_scaling_available_freqs,
-> +	&powernow_attr_voltage,
-> +	&powernow_attr_table,
->  	NULL,
->  };
->=20
-
--Mark Langsdorf
-AMD, Inc.
