@@ -1,13 +1,12 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [PATCH 2.6.14] cpufreq: don't suggest speedstep-centrino for
-	Dothan-based Celeron-M processors
-Date: Fri, 2 Dec 2005 16:04:14 +0100
-Message-ID: <20051202150414.GF24254@poupinou.org>
-References: <88056F38E9E48644A0F562A38C64FB60067F3B26@scsmsx403.amr.corp.intel.com>
+From: Alex Simonov <a_simonov@yahoo.com>
+Subject: Re: Wrong frequencies sometimes on Sony Vaio Athlon4
+Date: Fri, 2 Dec 2005 07:46:07 -0800 (PST)
+Message-ID: <20051202154607.43950.qmail@web32704.mail.mud.yahoo.com>
+References: <20051129135423.GA20258@bungled.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB60067F3B26@scsmsx403.amr.corp.intel.com>
+In-Reply-To: <20051129135423.GA20258@bungled.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,35 +17,110 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: CPUFreq@lists.linux.org.uk, davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset="windows-1252"
+To: Nathan Conrad <conrad@bungled.net>, cpufreq@lists.linux.org.uk
 
-On Fri, Dec 02, 2005 at 06:26:52AM -0800, Pallipadi, Venkatesh wrote:
-> 
-> I think from user perspectibe, P4-clockmod is most confusing driver
-> ever. P4-clockmod will only do the duty-cycle based throttling and will
-> not save any significant power. In fact, CPU may end up consuming more
-> power than without it for a constant amount of unit-work (Dominik has
-> patiently explained it quite a few times on this list). It will only
-> help in thermal conditions and ACPI throttling driver should handle that
-> anyway. Given this: I vote for removing p4-clockmod altogether from
-> cpufreq drivers. Dave, Dominik: do you agree?
+It is strange that the cpufreq driver is not
+recognising your CPU.
+Did you change/upgrade it? I have the same laptop
+(FX-502, which is the european version of
+FXA-49). I had the same problem when I upgraded
+my CPU from the original Mobile 1GHz Duron, to
+Athlon XP 1900+.=20
+What I did is to hardcode the powerstates table=20
+(thank you CPUFREQ guys for the support and the
+help in doing that!)=20
+so the driver is  always using it instead of
+using the ACPI perflib. Please email me if you
+want my patch. Then just recompile your kernel
+and have fun ! :)
+May be you will need to adjust the
+frequencies/voltages table yourself, as my
+settings may not work for you.
 
--1
+Best,
 
-There is an infrastructure in order to cool the processor with
-cpufreq.  Doing what you propose disallow people with such
-configurations to use ACPI passive cooling.
+Alex
+Alex
 
-I propose instead that we use some sort of flags such
-that only cpufreq driver which are able to scale voltages, or
-knowns to ofer good power savings, use the policy/governor
-stuff.
+--- Nathan Conrad <conrad@bungled.net> wrote:
 
--- 
-Bruno Ducrot
+> Hi,
+>=20
+> I have a 1.2 GHz Athlon4 CPU on my Sony Vaio
+> PCG-FXA49 laptop. I use
+> the powernow CPU scaling. Sometimes (a few
+> percent of the time), the
+> driver records my laptop's CPU as the wrong
+> speed. For example, right
+> now the following speeds are available:
+>=20
+> 1292256 1076880 861504 646128 538440
+>=20
+> The first should be almost exactly 1.2 GHz
+> while the last should be
+> 500 MHz.
+>=20
+> /proc/cpuinfo:
+>=20
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 6
+> model           : 6
+> model name      : mobile AMD Athlon(tm) 4
+> stepping        : 2
+> cpu MHz         : 1076.885
+> cache size      : 256 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 1
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae
+> mce cx8 sep mtrr pge mca
+> cmov pat pse36 mmx fxsr sse syscall mp mmxext
+> 3dnowext 3dnow
+> bogomips        : 2144.24
+>=20
+> dmesg reports:
+>=20
+> CPU: After generic identify, caps: 0383f9ff
+> c1cbf9ff 00000000 00000000 00000000 00000000
+> 00000000
+> CPU: After vendor identify, caps: 0383f9ff
+> c1cbf9ff 00000000 00000000 00000000 00000000
+> 00000000
+> CPU: L1 I Cache: 64K (64 bytes/line), D cache
+> 64K (64 bytes/line)
+> CPU: L2 Cache: 256K (64 bytes/line)
+> CPU: After all inits, caps: 0383f9ff c1cbf9ff
+> 00000000 00000020 00000000 00000000 00000000
+> CPU: AMD mobile AMD Athlon(tm) 4  stepping 02
+> powernow: PowerNOW! Technology present. Can
+> scale: frequency and
+> voltage.
+> Detected 1292.262 MHz processor.
+> powernow: No PST tables match this cpuid
+> (0x762)
+> powernow: This is indicative of a broken BIOS.
+> powernow: Trying ACPI perflib
+> powernow: Minimum speed 538 MHz. Maximum speed
+> 1292 MHz.
+>=20
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+>
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+>=20
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+
+
+	=09
+__________________________________________=20
+Yahoo! DSL =96 Something to write home about.=20
+Just $16.99/mo. or less.=20
+dsl.yahoo.com=20
