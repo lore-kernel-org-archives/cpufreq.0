@@ -1,14 +1,12 @@
-From: "Mattia Dongili" <malattia@linux.it>
-Subject: Re: [PATCH 2/2 updated] Measure transition latency at driver 
- initialization
-Date: Fri, 2 Dec 2005 14:34:35 +0100 (CET)
-Message-ID: <4792.83.103.117.254.1133530475.squirrel@picard.linux.it>
-References: <11333087111183-git-send-email-malattia@linux.it>	<438D9111.2000306@tremplin-utc.net>	<20051130223038.GD3620@inferi.kami.home>	<438E38B3.3080009@tremplin-utc.net>	<20051201193147.GB4432@inferi.kami.home>	<438F659B.3070103@tremplin-utc.net>
-	<20051201233411.GA5563@inferi.kami.home> <439031F0.2090607@lifl.fr>
+From: Felix Braun <Felix.Braun@mail.mcgill.ca>
+Subject: [PATCH 2.6.14 2/2] cpufreq_conservative units weirdness
+Date: Fri, 2 Dec 2005 14:25:25 +0100
+Message-ID: <20051202142525.07d142a9@tilion.getrex.org>
+References: <20051202135956.5d7299c1@tilion.getrex.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <439031F0.2090607@lifl.fr>
+In-Reply-To: <20051202135956.5d7299c1@tilion.getrex.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,31 +17,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Eric Piel <Eric.Piel@lifl.fr>
-Cc: Eric Piel <eric.piel@tremplin-utc.net>, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, Dominik Brodowski <linux@dominikbrodowski.net>, davej@redhat.com
+Content-Type: text/plain; charset="us-ascii"
+To: CPUFreq@lists.linux.org.uk
 
-On Fri, December 2, 2005 12:37 pm, Eric Piel said:
-> 12/02/2005 12:34 AM, Mattia Dongili wrote/a =C3=A9crit:
-[...]
->> problematics chipsets (current testing report values ~200uSec).
-> Again, I though it was done... and then Ville showed that's it's plainly
-> wrong to assume anything with speedstep-smi: it could take up to 1
-> second to change of frequency or few uSec. So we should probably back
-> out the smi part.
->
-> What I propose: modify slightly the interface of speedstep_get_freqs():
->   * if transition_latency is NULL, we don't try to update the transition
-> latency,
-> * otherwise we so as usual.
-> Then, in speedstep-smi we can call speedstep_get_freqs() with NULL,
-> voila :-)
+It seems to me that there is some discrepancy between cpufreq_ondemand and
+cpufreq_conservative. Specifically, the ondemand driver allows a minimum
+sampling rate of 500 times the transition latency. However, in the
+conservative driver increases the DEFAULT_MULTIPLIER from 1000 to 100000
+without adjusting MIN_SAMPLING_RATE accordingly.
 
-Ok, I had something similar in mind when thinking about creating a more
-general function/interface for latency measurement. We will surely need
-some way to disable it.
+To correct this behaviour, it would be possible to simply adjust the
+DEFAULT_MULTIPLIER to 1000, however, this would change the behaviour of
+the default install. Instead I suggest adjusting the minimum sample rate
+so that people who want to adjust their sampling rates to lower values
+(which should still be safe) can chose to do so.
 
-Updated patch will follow soon.
---=20
-mattia
-:wq!
+------
+
+Allow users of cpufreq_conservative the same minimum sampling rate than
+what is allowed by cpufreq_ondemand.
+
+Signed-off-by: Felix Braun <Felix.Braun@mail.McGill.ca>
+
+------
+
+diff -ruN a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+--- a/drivers/cpufreq/cpufreq_conservative.c    2005-12-02 13:19:48.000000000 +0100
++++ b/drivers/cpufreq/cpufreq_conservative.c    2005-12-02 13:21:11.000000000 +0100
+@@ -54,7 +54,7 @@
+  * All times here are in uS.
+  */
+ static unsigned int                            def_sampling_rate;
+-#define MIN_SAMPLING_RATE                      (def_sampling_rate / 2)
++#define MIN_SAMPLING_RATE                      (def_sampling_rate / 200)
+ #define MAX_SAMPLING_RATE                      (500 * def_sampling_rate)
+ #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER   (100000)
+ #define DEF_SAMPLING_DOWN_FACTOR               (5)
