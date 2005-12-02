@@ -1,12 +1,10 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH 2.6.14] cpufreq: don't suggest speedstep-centrino for
-	Dothan-based Celeron-M processors
-Date: Fri, 2 Dec 2005 08:58:12 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB60067F3CAD@scsmsx403.amr.corp.intel.com>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [PATCH] CPU frequency display in /proc/cpuinfo
+Date: Fri, 2 Dec 2005 10:13:31 -0800
+Message-ID: <20051202101331.A2723@unix-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,80 +14,182 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: CPUFreq@lists.linux.org.uk, davej@redhat.com, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>, Dave Jones <davej@redhat.com>
+Cc: cpufreq <cpufreq@www.linux.org.uk>, linux-kernel <linux-kernel@vger.kernel.org>
 
-=20
 
->-----Original Message-----
->From: Bruno Ducrot [mailto:ducrot@poupinou.org]=20
->Sent: Friday, December 02, 2005 7:04 AM
->To: Pallipadi, Venkatesh
->Cc: Felix Braun; CPUFreq@lists.linux.org.uk; davej@redhat.com;=20
->Dominik Brodowski
->Subject: Re: [PATCH 2.6.14] cpufreq: don't suggest=20
->speedstep-centrino for Dothan-based Celeron-M processors
->
->On Fri, Dec 02, 2005 at 06:26:52AM -0800, Pallipadi, Venkatesh wrote:
->>=20
->> I think from user perspectibe, P4-clockmod is most confusing driver
->> ever. P4-clockmod will only do the duty-cycle based=20
->throttling and will
->> not save any significant power. In fact, CPU may end up=20
->consuming more
->> power than without it for a constant amount of unit-work (Dominik has
->> patiently explained it quite a few times on this list). It will only
->> help in thermal conditions and ACPI throttling driver should=20
->handle that
->> anyway. Given this: I vote for removing p4-clockmod altogether from
->> cpufreq drivers. Dave, Dominik: do you agree?
->
->-1
->
->There is an infrastructure in order to cool the processor with
->cpufreq.  Doing what you propose disallow people with such
->configurations to use ACPI passive cooling.
->
 
-I agree with the intent of providing infrastructure for cooling.
-But, doing it along with the other cpufreq drivers that save power=20
-is not good IMHO.
+What is the value shown in "cpu MHz" of /proc/cpuinfo when CPUs are capable of 
+changing frequency?
 
-I mean,=20
-- For end user it appears as if another way to change the frequency=20
-to save power.
-- Support for cooling doesn't work when CPU also supports freq/voltage=20
-scaling. Say a Enhanced Speedstep capable P4 CPU can still do throttling
+Today the answer is: It depends.
+On i386:
+SMP kernel - It is always the boot frequency
+UP kernel - Scales with the frequency change and shows that was last set.
 
-for cooling. But, current cpufreq doesn't support that.
-- Cooling driver should ideally be triggerred by thermal events and that
+On x86_64:
+There is one single variable cpu_khz that gets written by all the CPUs. So,
+the frequency set by last CPU will be seen on /proc/cpuinfo of all the
+CPUs in the system. What you see also depends on whether you have constant_tsc
+capable CPU or not.
 
-doesn't seem to happen either.
+On ia64:
+It is always boot time frequency of a particular CPU that gets displayed.
 
->I propose instead that we use some sort of flags such
->that only cpufreq driver which are able to scale voltages, or
->knowns to ofer good power savings, use the policy/governor
->stuff.
 
-I was thinking of a cpufreq clone that does similar things to idle-state
+The patch below changes this to:
+Show the last known frequency of the particular CPU, when cpufreq is present. If
+cpu doesnot support changing of frequency through cpufreq, then boot frequency 
+will be shown. The patch affects i386, x86_64 and ia64 architectures.
 
-(C-state) as cpufreq does to frequency/voltage (P-state) states.
-Probably we=20
-need to have another similar set of APIs for cooling (T-state) as well.
-Are=20
-there any other low-level drivers that provide P4-clockmod kind of
-cooling=20
-support. Clubbing them together under a different umbrella, we may be
-able to=20
-separate them from the power-saving frequency change drivers.
+Signed-off-by: Venkatesh Pallipadi<venkatesh.pallipadi@intel.com>
 
-For short term though, atleast there need to be some big Red flag
-against=20
-using p4-clockmod for powersave purposes. Having that info in CONFIG
-help=20
-doesn't seem to be working.
-
-Thanks,
-Venki
+Index: linux-2.6.12/arch/i386/kernel/cpu/proc.c
+===================================================================
+--- linux-2.6.12.orig/arch/i386/kernel/cpu/proc.c	2005-08-30 11:10:46.000000000 -0700
++++ linux-2.6.12/arch/i386/kernel/cpu/proc.c	2005-10-07 15:39:48.000000000 -0700
+@@ -3,6 +3,7 @@
+ #include <linux/string.h>
+ #include <asm/semaphore.h>
+ #include <linux/seq_file.h>
++#include <linux/cpufreq.h>
+ 
+ /*
+  *	Get CPU information for use by the procfs.
+@@ -86,8 +87,11 @@
+ 		seq_printf(m, "stepping\t: unknown\n");
+ 
+ 	if ( cpu_has(c, X86_FEATURE_TSC) ) {
++		unsigned int freq = cpufreq_quick_get(n);
++		if (!freq)
++			freq = cpu_khz;
+ 		seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
+-			cpu_khz / 1000, (cpu_khz % 1000));
++			freq / 1000, (freq % 1000));
+ 	}
+ 
+ 	/* Cache size */
+Index: linux-2.6.12/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.12.orig/drivers/cpufreq/cpufreq.c	2005-09-26 14:59:23.000000000 -0700
++++ linux-2.6.12/drivers/cpufreq/cpufreq.c	2005-10-07 15:46:08.000000000 -0700
+@@ -830,6 +830,30 @@
+ 
+ 
+ /** 
++ * cpufreq_quick_get - get the CPU frequency (in kHz) frpm policy->cur
++ * @cpu: CPU number
++ *
++ * This is the last known freq, without actually getting it from the driver.
++ * Return value will be same as what is shown in scaling_cur_freq in sysfs.
++ */
++unsigned int cpufreq_quick_get(unsigned int cpu)
++{
++	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++	unsigned int ret = 0;
++
++	if (policy) {
++		down(&policy->lock);
++		ret = policy->cur;
++		up(&policy->lock);
++		cpufreq_cpu_put(policy);
++	}
++
++	return (ret);
++}
++EXPORT_SYMBOL(cpufreq_quick_get);
++
++
++/** 
+  * cpufreq_get - get the current CPU frequency (in kHz)
+  * @cpu: CPU number
+  *
+Index: linux-2.6.12/arch/x86_64/kernel/setup.c
+===================================================================
+--- linux-2.6.12.orig/arch/x86_64/kernel/setup.c	2005-08-31 14:46:39.000000000 -0700
++++ linux-2.6.12/arch/x86_64/kernel/setup.c	2005-10-07 15:40:24.000000000 -0700
+@@ -42,6 +42,7 @@
+ #include <linux/mmzone.h>
+ #include <linux/kexec.h>
+ #include <linux/crash_dump.h>
++#include <linux/cpufreq.h>
+ 
+ #include <asm/mtrr.h>
+ #include <asm/uaccess.h>
+@@ -1187,8 +1188,11 @@
+ 		seq_printf(m, "stepping\t: unknown\n");
+ 	
+ 	if (cpu_has(c,X86_FEATURE_TSC)) {
++		unsigned int freq = cpufreq_quick_get((unsigned)(c-cpu_data));
++		if (!freq)
++			freq = cpu_khz;
+ 		seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
+-			     cpu_khz / 1000, (cpu_khz % 1000));
++			     freq / 1000, (freq % 1000));
+ 	}
+ 
+ 	/* Cache size */
+Index: linux-2.6.12/arch/ia64/kernel/setup.c
+===================================================================
+--- linux-2.6.12.orig/arch/ia64/kernel/setup.c	2005-08-31 14:46:39.000000000 -0700
++++ linux-2.6.12/arch/ia64/kernel/setup.c	2005-10-07 15:41:38.000000000 -0700
+@@ -43,6 +43,7 @@
+ #include <linux/initrd.h>
+ #include <linux/platform.h>
+ #include <linux/pm.h>
++#include <linux/cpufreq.h>
+ 
+ #include <asm/ia32.h>
+ #include <asm/machvec.h>
+@@ -474,6 +475,7 @@
+ 	char family[32], features[128], *cp, sep;
+ 	struct cpuinfo_ia64 *c = v;
+ 	unsigned long mask;
++	unsigned int proc_freq;
+ 	int i;
+ 
+ 	mask = c->features;
+@@ -506,6 +508,10 @@
+ 		sprintf(cp, " 0x%lx", mask);
+ 	}
+ 
++	proc_freq = cpufreq_quick_get(cpunum);
++	if (!proc_freq)
++		proc_freq = c->proc_freq / 1000;
++
+ 	seq_printf(m,
+ 		   "processor  : %d\n"
+ 		   "vendor     : %s\n"
+@@ -522,7 +528,7 @@
+ 		   "BogoMIPS   : %lu.%02lu\n",
+ 		   cpunum, c->vendor, family, c->model, c->revision, c->archrev,
+ 		   features, c->ppn, c->number,
+-		   c->proc_freq / 1000000, c->proc_freq % 1000000,
++		   proc_freq / 1000, proc_freq % 1000,
+ 		   c->itc_freq / 1000000, c->itc_freq % 1000000,
+ 		   lpj*HZ/500000, (lpj*HZ/5000) % 100);
+ #ifdef CONFIG_SMP
+Index: linux-2.6.12/include/linux/cpufreq.h
+===================================================================
+--- linux-2.6.12.orig/include/linux/cpufreq.h	2005-09-26 14:59:25.000000000 -0700
++++ linux-2.6.12/include/linux/cpufreq.h	2005-10-07 14:19:05.000000000 -0700
+@@ -259,6 +259,16 @@
+ /* query the current CPU frequency (in kHz). If zero, cpufreq couldn't detect it */
+ unsigned int cpufreq_get(unsigned int cpu);
+ 
++/* query the last known CPU freq (in kHz). If zero, cpufreq couldn't detect it */
++#ifdef CONFIG_CPU_FREQ
++unsigned int cpufreq_quick_get(unsigned int cpu);
++#else
++unsigned int cpufreq_quick_get(unsigned int cpu)
++{
++	return 0;
++}
++#endif
++
+ 
+ /*********************************************************************
+  *                       CPUFREQ DEFAULT GOVERNOR                    *
