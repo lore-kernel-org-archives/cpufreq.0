@@ -1,14 +1,21 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH 1/2] Move PMBASE reading away and do it only once at
-	initialization time
-Date: Sun, 4 Dec 2005 17:58:42 +0100
-Message-ID: <20051204165842.GD8422@isilmar.linta.de>
-References: <11333087112659-git-send-email-malattia@linux.it>
-	<438D86E3.9070502@lifl.fr> <20051130210059.GC3620@inferi.kami.home>
+Subject: Re: [PATCH 2/2 updated] Measure transition latency at driver
+	initialization
+Date: Sun, 4 Dec 2005 18:00:46 +0100
+Message-ID: <20051204170046.GE8422@isilmar.linta.de>
+References: <11333087111183-git-send-email-malattia@linux.it>
+	<438D9111.2000306@tremplin-utc.net>
+	<20051130223038.GD3620@inferi.kami.home>
+	<438E38B3.3080009@tremplin-utc.net>
+	<20051201193147.GB4432@inferi.kami.home>
+	<438F659B.3070103@tremplin-utc.net>
+	<20051201233411.GA5563@inferi.kami.home> <439031F0.2090607@lifl.fr>
+	<4792.83.103.117.254.1133530475.squirrel@picard.linux.it>
+	<20051202205941.GE3598@inferi.kami.home>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20051130210059.GC3620@inferi.kami.home>
+In-Reply-To: <20051202205941.GE3598@inferi.kami.home>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,27 +28,17 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Eric Piel <Eric.Piel@lifl.fr>, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, Eric Piel <eric.piel@tremplin-utc.net>, davej@redhat.com
+To: Eric Piel <Eric.Piel@lifl.fr>, Eric Piel <eric.piel@tremplin-utc.net>, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, davej@redhat.com, syrjala@sci.fi
 
-On Wed, Nov 30, 2005 at 10:00:59PM +0100, Mattia Dongili wrote:
-> On Wed, Nov 30, 2005 at 12:02:59PM +0100, Eric Piel wrote:
-> [...]
-> > >@@ -400,6 +415,10 @@ static int __init speedstep_init(void)
-> > > 		return -EINVAL;
-> > > 	}
-> > > 
-> > >+	if (speedstep_find_register()) {
-> > >+		return -ENODEV;
-> > >+	}
-> > >+
-> > Please, keep it simple and do put { and } when there is only one line.
-> 
-> I assume you meant "do not put" :)
-> attached the fixed patch (with removed extra white space also).
-> 
-> This patch moves away PMBASE reading and only performs it at
-> cpufreq_register_driver time by exiting with -ENODEV if unable to read                                                                                
-> the value.
+On Fri, Dec 02, 2005 at 09:59:41PM +0100, Mattia Dongili wrote:
+> the attached patch introduces runtime latency measurement for ICH[234]
+> based chipsets instead of using CPUFREQ_ETERNAL. It includes
+> some sanity checks in case the measured value is out of range and
+> assigns a safe value of 500uSec that should still be enough on
+> problematics chipsets (current testing report values ~200uSec). The
+> measurement is currently done in speedstep_get_freqs in order to avoid
+> further unnecessary transitions and in the hope it'll come handy for SMI
+> also.
 > 
 > Signed-off-by: Mattia Dongili <malattia@linux.it>
 Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
