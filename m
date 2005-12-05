@@ -1,14 +1,12 @@
 From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [PATCH 2.6.14] cpufreq: don't suggest speedstep-centrino for
-	Dothan-based Celeron-M processors
-Date: Mon, 5 Dec 2005 12:00:12 +0100
-Message-ID: <20051205110012.GA12747@poupinou.org>
-References: <88056F38E9E48644A0F562A38C64FB60067F424F@scsmsx403.amr.corp.intel.com>
-	<20051204164620.GA8422@isilmar.linta.de>
+Subject: Re: Wrong frequencies sometimes on Sony Vaio Athlon4
+Date: Mon, 5 Dec 2005 12:11:18 +0100
+Message-ID: <20051205111118.GB12747@poupinou.org>
+References: <20051129135423.GA20258@bungled.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20051204164620.GA8422@isilmar.linta.de>
+In-Reply-To: <20051129135423.GA20258@bungled.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,30 +19,36 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, CPUFreq@lists.linux.org.uk, davej@redhat.com
+To: Nathan Conrad <conrad@bungled.net>
+Cc: cpufreq@lists.linux.org.uk
 
-On Sun, Dec 04, 2005 at 05:46:20PM +0100, Dominik Brodowski wrote:
+On Tue, Nov 29, 2005 at 08:54:23AM -0500, Nathan Conrad wrote:
 > Hi,
 > 
-> On Fri, Dec 02, 2005 at 01:19:27PM -0800, Pallipadi, Venkatesh wrote:
-> > I understand acpi_throttle and processor_thermal doing it. But,
-> > p4-clockmod, meant for cooling should actual run like acpi_throttle and
-> > get triggered more like throttle rather than powersaving frequency
-> > drivers. Right? 
-> > Also, if throttling information is not there in ACPI, even then P4
-> > clockmod can potentially be used as a replacement for acpi_throttle and
-> > coexist with say acpi-cpufreq.
+> I have a 1.2 GHz Athlon4 CPU on my Sony Vaio PCG-FXA49 laptop. I use
+> the powernow CPU scaling. Sometimes (a few percent of the time), the
+> driver records my laptop's CPU as the wrong speed. For example, right
+> now the following speeds are available:
 > 
-> Yes, exactly. In my TODO list for cpufreq, I still have this entry:
-> - [core] evaluate use of > 1 drivers at one time (CPUFREQ_THROTTLING, 
->         CPUFREQ_SCALING)
-
-Yes, that's what I had in mind.  But maybe we could at first make the
-distinction before being able to load more than one driver?
-
+> 1292256 1076880 861504 646128 538440
 > 
-> However, as I'm too busy at the moment to tackle this issue, it'd be great
-> if someone else could handle this one ;)
+> The first should be almost exactly 1.2 GHz while the last should be
+> 500 MHz.
+
+Does that patch fix this issue?
+
+--- linux-2.6.14/arch/i386/kernel/timers/timer_tsc.c	2005/11/16 18:35:06	1.1
++++ linux-2.6.14/arch/i386/kernel/timers/timer_tsc.c	2005/11/16 18:36:27
+@@ -325,7 +325,9 @@ int recalibrate_cpu_khz(void)
+ 	unsigned int cpu_khz_old = cpu_khz;
+ 
+ 	if (cpu_has_tsc) {
++		local_irq_disable();
+ 		init_cpu_khz();
++		locale_irq_enable();
+ 		cpu_data[0].loops_per_jiffy =
+ 		    cpufreq_scale(cpu_data[0].loops_per_jiffy,
+ 			          cpu_khz_old,
 
 -- 
 Bruno Ducrot
