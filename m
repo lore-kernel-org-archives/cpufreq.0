@@ -1,14 +1,16 @@
-From: Rob Hess <robwhess@gmail.com>
-Subject: Re: why does speedstep_detect_processor() return failure?
-Date: Sun, 4 Dec 2005 16:43:30 -0800
-Message-ID: <8dff05a00512041643id27fc97y7595c3dd04a3e016@mail.gmail.com>
-References: <8dff05a00511291916h39427e1fsff55e81e3a843b21@mail.gmail.com>
-	<20051204165751.GC8422@isilmar.linta.de>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] CPU frequency display in /proc/cpuinfo
+Date: Sun, 4 Dec 2005 20:16:11 -0500
+Message-ID: <20051205011611.GA12664@redhat.com>
+References: <20051202181927.GD9766@wotan.suse.de>
+	<20051202104320.A5234@unix-os.sc.intel.com>
+	<20051204164335.GB32492@isilmar.linta.de>
+	<20051204183239.GE14247@wotan.suse.de>
+	<1133725767.19768.12.camel@mindpipe>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <20051204165751.GC8422@isilmar.linta.de>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <1133725767.19768.12.camel@mindpipe>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,71 +20,35 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Rob Hess <robwhess@gmail.com>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Andrew Morton <akpm@osdl.org>, cpufreq <cpufreq@www.linux.org.uk>, Andi Kleen <ak@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
 
-Thanks for responding.
+On Sun, Dec 04, 2005 at 02:49:26PM -0500, Lee Revell wrote:
+ > On Sun, 2005-12-04 at 19:32 +0100, Andi Kleen wrote:
+ > > On Sun, Dec 04, 2005 at 05:43:35PM +0100, Dominik Brodowski wrote:
+ > > > On Fri, Dec 02, 2005 at 10:43:20AM -0800, Venkatesh Pallipadi wrote:
+ > > > > The patch below changes this to:
+ > > > > Show the last known frequency of the particular CPU, when cpufreq is present. If
+ > > > > cpu doesnot support changing of frequency through cpufreq, then boot frequency 
+ > > > > will be shown. The patch affects i386, x86_64 and ia64 architectures.
+ > > > 
+ > > > Looks good to me -- however, might this affect userspace cpufreq tools? I'd
+ > > 
+ > > They normally use /sys anyways.
+ > 
+ > Wrong, lots of userspace programs that need to know the CPU speed get it
+ > from /proc/cpuinfo.  It would be nice if there were a better API.
 
-> Please post the output of /proc/cpuinfo and of x86info
+I can't think of a single valid reason why a program would want
+to know the MHz rating of a CPU. Given that it's a) approximate,
+b) subject to change due to power management, c) completely nonsensical
+across CPU vendors, and d) only one of many variables regarding CPU
+performance, any program that bases any decision on the values found
+by parsing that field of /proc/cpuinfo is utterly broken beyond belief.
 
-/proc/cpuinfo:
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 4
-model name      : Mobile Intel(R) Pentium(R) 4 CPU 2.80GHz
-stepping        : 1
-cpu MHz         : 2791.294
-cache size      : 1024 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 5
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe pni
-monitor ds_cpl est tm2 cid xtpr
-bogomips        : 5589.46
+Adding any other interface to obtain this value is equally as broken.
 
-
-
-x86info:
-CPU #1
-Family: 15 Model: 4 Stepping: 1 Type: 0 Brand: 0
-CPU Model: Pentium 4 Xeon (Foster) Original OEM
-Feature flags:
- fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat
-pse36 clflsh dtes acpi mmx fxsr sse sse2 selfsnoop ht acc pbe
-Extended feature flags:
- est tm2 cntx-id
-Instruction trace cache:
-        Size: 12K uOps  8-way associative.
-L1 Data cache:
-        Size: 16KB      Sectored, 8-way associative.
-        line size=3D64 bytes.
-L2 unified cache:
-        Size: 1MB       Sectored, 8-way associative.
-        line size=3D64 bytes.
-Instruction TLB: 4K, 2MB or 4MB pages, fully associative, 64 entries.
-Data TLB: 4KB or 4MB pages, fully associative, 64 entries.
-Processor serial: 0000-0F41-0000-0000-0000-0000
-The physical package supports 2 logical processors
-
-
-Note that two identical processors show up in each of these because I
-have SMP enabled so I can use HyperThreading.  I've cut out the second
-processor in both outputs.
-
-Also, the model name in /proc/cpuinfo is correct.  The one in x86info is no=
-t.
-
-
-Rob
+		Dave
