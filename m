@@ -1,12 +1,17 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Wrong frequencies sometimes on Sony Vaio Athlon4
-Date: Mon, 5 Dec 2005 12:11:18 +0100
-Message-ID: <20051205111118.GB12747@poupinou.org>
-References: <20051129135423.GA20258@bungled.net>
+From: Erik Mouw <erik@harddisk-recovery.com>
+Subject: Re: [PATCH] CPU frequency display in /proc/cpuinfo
+Date: Mon, 5 Dec 2005 14:02:24 +0100
+Message-ID: <20051205130224.GC17993@harddisk-recovery.com>
+References: <20051202181927.GD9766@wotan.suse.de>
+	<20051202104320.A5234@unix-os.sc.intel.com>
+	<20051204164335.GB32492@isilmar.linta.de>
+	<20051204183239.GE14247@wotan.suse.de>
+	<1133725767.19768.12.camel@mindpipe>
+	<20051205011611.GA12664@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20051129135423.GA20258@bungled.net>
+In-Reply-To: <20051205011611.GA12664@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,39 +24,33 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nathan Conrad <conrad@bungled.net>
-Cc: cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>, Lee Revell <rlrevell@joe-job.com>, Andi Kleen <ak@suse.de>, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Andrew Morton <akpm@osdl.org>, cpufreq <cpufreq@www.linux.org.uk>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On Tue, Nov 29, 2005 at 08:54:23AM -0500, Nathan Conrad wrote:
-> Hi,
-> 
-> I have a 1.2 GHz Athlon4 CPU on my Sony Vaio PCG-FXA49 laptop. I use
-> the powernow CPU scaling. Sometimes (a few percent of the time), the
-> driver records my laptop's CPU as the wrong speed. For example, right
-> now the following speeds are available:
-> 
-> 1292256 1076880 861504 646128 538440
-> 
-> The first should be almost exactly 1.2 GHz while the last should be
-> 500 MHz.
+On Sun, Dec 04, 2005 at 08:16:11PM -0500, Dave Jones wrote:
+> I can't think of a single valid reason why a program would want
+> to know the MHz rating of a CPU. Given that it's a) approximate,
+> b) subject to change due to power management, c) completely nonsensical
+> across CPU vendors, and d) only one of many variables regarding CPU
+> performance, any program that bases any decision on the values found
+> by parsing that field of /proc/cpuinfo is utterly broken beyond belief.
 
-Does that patch fix this issue?
+If you want a userspace governor to change the CPU speed, you need to
+export the value to userland. There are several papers showing[1] that
+such speed scheduling should be done by power-aware applications which
+need to tell the OS what speed they require to run to meet their
+processing needs.
 
---- linux-2.6.14/arch/i386/kernel/timers/timer_tsc.c	2005/11/16 18:35:06	1.1
-+++ linux-2.6.14/arch/i386/kernel/timers/timer_tsc.c	2005/11/16 18:36:27
-@@ -325,7 +325,9 @@ int recalibrate_cpu_khz(void)
- 	unsigned int cpu_khz_old = cpu_khz;
- 
- 	if (cpu_has_tsc) {
-+		local_irq_disable();
- 		init_cpu_khz();
-+		locale_irq_enable();
- 		cpu_data[0].loops_per_jiffy =
- 		    cpufreq_scale(cpu_data[0].loops_per_jiffy,
- 			          cpu_khz_old,
+I agree that /proc/cpuinfo shouldn't be used (though it is a nice
+interface for humans to read about the CPU speed), but the current
+sysfs interface should do.
+
+
+Erik
+
+[1] See for example
+http://www.pds.twi.tudelft.nl/~pouwelse/energy_priority_scheduling.ps.gz
+http://www.pds.twi.tudelft.nl/~pouwelse/power_aware_video_decoding.ps
 
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
++-- Erik Mouw -- www.harddisk-recovery.com -- +31 70 370 12 90 --
+| Lab address: Delftechpark 26, 2628 XH, Delft, The Netherlands
