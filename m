@@ -1,45 +1,58 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] CPU frequency display in /proc/cpuinfo
-Date: Mon, 5 Dec 2005 19:36:54 +0100
-Message-ID: <20051205183654.GG11190@wotan.suse.de>
-References: <20051202181927.GD9766@wotan.suse.de> <20051202104320.A5234@unix-os.sc.intel.com> <20051204164335.GB32492@isilmar.linta.de> <20051204183239.GE14247@wotan.suse.de> <1133725767.19768.12.camel@mindpipe> <20051205011611.GA12664@redhat.com> <1133796748.21641.8.camel@mindpipe>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH 2.6.14] cpufreq: don't suggest speedstep-centrino for
+	Dothan-based Celeron-M processors
+Date: Tue, 6 Dec 2005 07:01:49 +0100
+Message-ID: <20051206060149.GA4722@isilmar.linta.de>
+References: <88056F38E9E48644A0F562A38C64FB60067F424F@scsmsx403.amr.corp.intel.com>
+	<20051204164620.GA8422@isilmar.linta.de>
+	<20051205110012.GA12747@poupinou.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932504AbVLEShA@vger.kernel.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1133796748.21641.8.camel@mindpipe>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20051205110012.GA12747@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Revell <rlrevell@joe-job.com>
-Cc: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Andrew Morton <akpm@osdl.org>, cpufreq <cpufreq@www.linux.org.uk>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: CPUFreq@lists.linux.org.uk, davej@redhat.com
 
-> JACK needs to know the CPU speed in order to be able to use RDTSC for
-> timing.  Yes that might be "broken" but gettimeofday() is simply not
+Hi,
 
-It is broken then.  Was always broken, will be broken etc.
+On Mon, Dec 05, 2005 at 12:00:12PM +0100, Bruno Ducrot wrote:
+> > Yes, exactly. In my TODO list for cpufreq, I still have this entry:
+> > - [core] evaluate use of > 1 drivers at one time (CPUFREQ_THROTTLING, 
+> >         CPUFREQ_SCALING)
+> 
+> Yes, that's what I had in mind.  But maybe we could at first make the
+> distinction before being able to load more than one driver?
 
-> fast enough for our use, we can't afford the overhead of thousands of
-> system calls per second.  And until recently 99.999% of desktop machines
-> had a monotonic TSC so this worked very well.
+Yes, sure. However, only on the x86 I'm quite confident that the throttling
+state is equivalent to the idle state, and therefore doesn't offer
+_additional_ power savings (besides the effect discussed by Dave yesterday)
+if the CPU load is lower than (1 - throttling_rate), IMO.
 
-You're wrong. First if you say "monotonic" you don't understand the problem.
-Monotonicity is only a small part of it.  The bigger one is just 
-getting the current frequency and figuring out of if the information
-is safe to use.
+CPUFREQ_SCALING:
+	acpi-cpufreq
+	elanfreq
+	powernow-k{6,7,8}
+	speedstep-{smi,ich,centrino}
+	longrun
+	longhaul
 
-Chips where it doesn't work:
+CPUFREQ_THROTTLING:
+	p4-clockmod
+	gx-suspmod
 
-- Intel Prescott and derivatives (newer Pentium 4, newer Xeon, on
-Celeron you are still lucky because they normally don't have speedstep): 
-TSC runs at a different frequency than the current P state and P state often 
-varies with speedstep [These are the most common desktop chips in the world, 
-although not all have speedstep enabled. Many newer ones have though.]
-- Intel P-M and earlier P4,P3 mobile chips, Athlon 64, Athlon XP-M,
-Opteron etc: 
-TSC varies with P state and user space has no way to get timely 
-updates on P-state changes.
-- VIA C3: I believe TSC stops in idle (at least it used to on
-older versions, don't know if they fixed it)
+The other architectures I'm not so familiar with, so this list is x86 only
+at the moment.
 
--Andi
+	Dominik
