@@ -1,11 +1,9 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: [PATCH] fix cpu frequency detection in
-	arch/i386/kernel/timers/timer_tsc.c::recalibrate_cpu_khz()
-Date: Mon, 19 Dec 2005 11:59:55 +0100
-Message-ID: <20051219105955.GC6233@poupinou.org>
-Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5353] cpufreq_conservative: cpu always in slowest mode even
+	under high load
+Date: Mon, 19 Dec 2005 11:46:55 -0800
+Message-ID: <200512191946.jBJJktlB030452@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,41 +13,25 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@osdl.org>
-Cc: cpufreq@lists.linux.org.uk, Larry Finger <Larry.Finger@lwfinger.net>
+To: cpufreq@www.linux.org.uk
 
-Hi,
+http://bugzilla.kernel.org/show_bug.cgi?id=5353
 
-When we re-calibrate the frequency, it is likely that an
-interrupt (as for example the main system clock) will be triggered
-by the system.  Therefore the calibration may not be accurate.
-This will also provide a fix to bug #5266.
 
-Many thanks to Larry Finger for helping resolving this issue.
 
-From: Larry Finger
-Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
 
- linux-2.6.14.3/arch/i386/kernel/timers/timer_tsc.c |    2 ++
- 1 files changed, 2 insertions(+)
 
---- linux-2.6.14.3/arch/i386/kernel/timers/timer_tsc.c	2005/12/19 10:51:22	1.1
-+++ linux-2.6.14.3/arch/i386/kernel/timers/timer_tsc.c	2005/12/19 10:52:03
-@@ -325,7 +325,9 @@ int recalibrate_cpu_khz(void)
- 	unsigned int cpu_khz_old = cpu_khz;
- 
- 	if (cpu_has_tsc) {
-+		local_irq_disable();
- 		init_cpu_khz();
-+		local_irq_enable();
- 		cpu_data[0].loops_per_jiffy =
- 		    cpufreq_scale(cpu_data[0].loops_per_jiffy,
- 			          cpu_khz_old,
--- 
-Bruno Ducrot
+------- Additional Comments From linux@markus-schaub.de  2005-12-19 11:38 -------
+Created an attachment (id=6858)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=6858&action=view)
+cat /proc/acpu/processor/CPU/*
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Same situation as in the bug ddescription , machine is pretty cold
+Kernel Version is now 2.6.15-rc2
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
