@@ -1,12 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Help: Using cpufreq from kernel level
-Date: Sat, 17 Dec 2005 21:58:11 +0100
-Message-ID: <20051217205811.GA12598@isilmar.linta.de>
-References: <200512171310.34014.cloud.of.andor@gmail.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: [PATCH] fix cpu frequency detection in
+	arch/i386/kernel/timers/timer_tsc.c::recalibrate_cpu_khz()
+Date: Mon, 19 Dec 2005 11:59:55 +0100
+Message-ID: <20051219105955.GC6233@poupinou.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200512171310.34014.cloud.of.andor@gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,23 +15,41 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Claudio Scordino <cloud.of.andor@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@osdl.org>
+Cc: cpufreq@lists.linux.org.uk, Larry Finger <Larry.Finger@lwfinger.net>
 
 Hi,
 
-On Sat, Dec 17, 2005 at 01:10:33PM -0500, Claudio Scordino wrote:
-> At user level it can be done through
-> 
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+When we re-calibrate the frequency, it is likely that an
+interrupt (as for example the main system clock) will be triggered
+by the system.  Therefore the calibration may not be accurate.
+This will also provide a fix to bug #5266.
 
-Only on _some_ CPUs, and therefore it isn't part of the information
-available to governors.
+Many thanks to Larry Finger for helping resolving this issue.
 
-	Dominik
+From: Larry Finger
+Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
 
-PS: Please use only the cpufreq mailing list for cpufreq-related questions 
-in future
+ linux-2.6.14.3/arch/i386/kernel/timers/timer_tsc.c |    2 ++
+ 1 files changed, 2 insertions(+)
+
+--- linux-2.6.14.3/arch/i386/kernel/timers/timer_tsc.c	2005/12/19 10:51:22	1.1
++++ linux-2.6.14.3/arch/i386/kernel/timers/timer_tsc.c	2005/12/19 10:52:03
+@@ -325,7 +325,9 @@ int recalibrate_cpu_khz(void)
+ 	unsigned int cpu_khz_old = cpu_khz;
+ 
+ 	if (cpu_has_tsc) {
++		local_irq_disable();
+ 		init_cpu_khz();
++		local_irq_enable();
+ 		cpu_data[0].loops_per_jiffy =
+ 		    cpufreq_scale(cpu_data[0].loops_per_jiffy,
+ 			          cpu_khz_old,
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
