@@ -1,10 +1,11 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [ANNOUNCE] cpufrequtils-0.4 released
-Date: Mon, 19 Dec 2005 22:57:34 +0100
-Message-ID: <20051219215734.GA8089@dominikbrodowski.de>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: returning from .target before sending CPUFREQ_POSTCHANGE
+Date: Tue, 20 Dec 2005 12:26:33 -0600
+Message-ID: <84EA05E2CA77634C82730353CBE3A84303218A3E@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0595849490=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,57 +16,27 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-
-
---===============0595849490==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
-Content-Disposition: inline
-
-
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi!
-
-cpufrequtils-0.4 is released and available at
-
-http://www.kernel.org/pub/linux/utils/kernel/cpufreq/
-
-See also: http://www.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html
-
-The most important change in this release is that libsysfs-2.0.0 is now
-supported as well -- thanks to Jens Thoms Toerring for the patch.
-
-	Dominik
-
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDpyzOZ8MDCHJbN8YRAiSaAJ0esz6wfhr+pNGnOkixTiQISqxXKQCfTZAp
-lFcJygH7mcKcmjRqlxAiu28=
-=ZZwg
------END PGP SIGNATURE-----
-
---d6Gm4EdcadzBjdND--
-
-
---===============0595849490==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============0595849490==--
+Is it legal to return from a .target=20
+call without sending out a the=20
+CPUFREQ_POSTCHANGE event? =20
 
+I'm thinking about restructuring the=20
+powernow-k8 driver so that instead of=20
+busywaiting while polling the pending=20
+bit, the driver sets up a periodic timer=20
+poll mechanism to check the pending bit
+and signals the CPUFREQ_POSTCHANGE
+when the bit clears.
+
+This would return control of execution
+to other programs a little faster, but
+I'm not sure if it's legal.
+
+Comments would be appreciated.
+
+-Mark Langsdorf
+AMD, Inc.
