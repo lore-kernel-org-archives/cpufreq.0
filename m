@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 5773] hang on suspend2 resume
-Date: Thu, 22 Dec 2005 17:51:38 -0800
-Message-ID: <200512230151.jBN1pcEp003752@fire-2.osdl.org>
+Date: Sat, 24 Dec 2005 01:25:43 -0800
+Message-ID: <200512240925.jBO9Phpa004867@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,11 +20,11 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=5773
 
-imran1008@gmail.com changed:
+nigel@suspend2.net changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-            Summary|hang on reboot              |hang on suspend2 resume
+                 CC|                            |nigel@suspend2.net
 
 
 
