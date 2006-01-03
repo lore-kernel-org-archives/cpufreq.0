@@ -1,8 +1,8 @@
 From: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
-Subject: Re: cpufreq: powernow-k8 frequency transitions question
-Date: Tue, 03 Jan 2006 01:16:07 +0100
-Message-ID: <dpcfn8$16q$1@sea.gmane.org>
-References: <dp8h08$du6$1@sea.gmane.org> <p73fyo6ft59.fsf@verdi.suse.de>
+Subject: RE: cpufreq: powernow-k8 frequency transitions question
+Date: Tue, 03 Jan 2006 01:19:28 +0100
+Message-ID: <dpcfth$16q$2@sea.gmane.org>
+References: <84EA05E2CA77634C82730353CBE3A84303D430BD@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -19,33 +19,31 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@lists.linux.org.uk
 
-Andi Kleen wrote:
->> I already asked this question on linux-kernel@vger.kernel.org but maybe
->> this list would be a more appropriate place...
-> The proceedings of the Ottawa Linux Symposium 2004 (available online)
-> have a detailed paper on the powernow-k8 driver.
+Devriendt, Paul wrote:
+> Transitions between low frequencies (<=3D1.4GHz) are not supported by
+> hardware. The way to do them is to transition to an intermediate
+> high frequency.
 
-Ah, thanks. I found it, read it, and will soon compare the description to
-the current implementation.
-From what I saw I already figured out the most important parts myself, as
-the driver is rather readable, but the paper contained some interesting
-additional details and reasons for some things I still wondered about.
+Yes, I read about that in the PDF I referred to. I guess that#s the guide
+you also mentioned?
 
->> How do the conservative/ondemand cpufreq governors cope with the kernel
->> advertising frequencies it cannot directly transition between?
-> Step by step. The frequency/voltage transistion functions
-> in powernow-k8.c go through them in loops.
+> No BIOSs define two low PStates so the case never occurs, but it could
+> theoretically be done.=20
 
-Oh, ok, I must have missed that part in the driver, I will look for it.
+I'm currently experimenting with the speeds my CPU can run at. (Out of spec,
+at lower frequencies and voltages to safe a few watts and keep everything
+cool'n'quiet, so to say... ;)
 
-Thanks a lot! :-)
+It seems to run fine a several low pstates, I just need to check if
+supporting low-low-transitions would be worth the hassle, or if I just
+limit my pstate table to two pstates between which the CPU can transition
+directly.
 
-Greetings,
+Thanks a lot for your answer,
 
   Gunter
 
 --=20
-The students were staring at her in the manner of those who have heard=20
-of the species 'female' but have never expected to get this close to=20
-one.        -- (Terry Pratchett, Soul Music)
+Thunder rolled. ... It rolled a six.        -- (Terry Pratchett,=20
+Guards! Guards!)
 *** PGP-Verschl=FCsselung bei eMails erw=FCnscht :-) *** PGP: 0x1128F25F ***
