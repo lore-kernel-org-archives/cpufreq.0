@@ -1,15 +1,12 @@
-From: Nebojsa Trpkovic <trxman@gmail.com>
+From: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
 Subject: Re: cpufreq: powernow-k8 frequency transitions question
-Date: Wed, 04 Jan 2006 14:04:31 +0100
-Message-ID: <43BBC7DF.7040900@gmail.com>
-References: <84EA05E2CA77634C82730353CBE3A84303D430BD@SAUSEXMB1.amd.com>
-	<20060103162946.GF13887@poupinou.org>
+Date: Sat, 07 Jan 2006 15:28:12 +0100
+Message-ID: <dpoj4u$87s$1@sea.gmane.org>
+References: <84EA05E2CA77634C82730353CBE3A84303D430BD@SAUSEXMB1.amd.com>	<20060103162946.GF13887@poupinou.org>
 	<dpf5ue$4a0$1@sea.gmane.org> <43BB29FF.2000401@gmail.com>
-	<20060104104540.GI13887@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <20060104104540.GI13887@poupinou.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,53 +16,46 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@lists.linux.org.uk
 
-Bruno Ducrot wrote:
+Nebojsa Trpkovic wrote:
+> The most usefull powersaving is achieved by lowering the voltage and not =
 
->My though was more towards what Gunter Ohrner stated, that is if it's
->interresting to add some intermediate low p-state between the already
->given one and the first high p-state given the actual status of
->the algorithms used (as the on-demand and maybe other I'm working ATM).
->
-I just wanted to tell Gunter Ohrner that there are some more usefull 
-methods then lowering CPU frequency to 800MHz.
+> the further lowering of frequency.
 
-As for low-low p-state transition, my experiments show that it's quite 
-possible, but I don't know exact details such as transition latency and 
-so on. Namely, when I've got Newcastle and Winchster, I've wanted to 
-test them on various frequencies and voltages to make some kind of 
-undetailed "preview" of graphs I made latter. It was a little bit boring 
-to restart computer every time I wanted to change frequency and/or 
-voltage, so I've installed Windows XP and software called "CPU MSR" wich 
-allowed me to manually set FID and VID of the CPU in the real-time 
-operation. (I think that FID transition latency was about 1000 "bus 
-cycles" and VID transition latency about 1ms, but I'm not sure). So, on 
-the Newcastle I've menaged to change multiplier down to 4 (800MHz), 
-because my Newcastle was Socket 754 CPU and had 800MHz HTT. All other 
-transitions between low p-states went without problem (multiplier 4 to 
-5, 5 to 6, 4 to 6, 6 to 4 and so on).
+Yes, but lower clock speeds usually allow for lower voltages, so that's what
+you gain by lowering the core frequency.
 
->>I've found that almost all Athlon64 CPUs can work at a lot lower 
->>voltage then in AMD specs.
->>    
->>
->
->You are right.  But I am not sure however if running out-of-spec a
->processor will have a consequence for it's whole life time though.
->  
->
-I can understand that running processor out-of-spec in terms of higher 
-voltage than default one in long time periods could be dangerous because 
-of heat disipation, changing of internal structure due to "runaway" 
-atoms pulled away by electromagnetic forces stronger then at default 
-voltage and so on,
-but I realy can't see and negative aspect nor physical threat for 
-processor when it's undervolted, except (ofcorse) stabilty issues if one 
-goes too far with voltage lowering (where prime95 comes very handy :) ).
+> minimum stable voltage just to be 110% sure it will work stable:
+> Winchester runs with 1.0GHz @1.0V and 1.8GHz @1.275V
 
-Greetings,
-Nebojsa Trpkovic
+I'm currently running my Winchester 3000+ at 1,0GHZ@1,0V and 1,8GHz@1,15V
+only, and it's rock solid for me so far - it survived hours of 100% cpu
+load during normal operation and using cpuburn's burnK7, either locked at
+on of the frequencies or in dynamic mode using the ondemand governor.
+
+> So, I've modified powernow-k8.c to lower the voltages read from BIOS for =
+
+> every p-state.
+
+Changing the vlaues returned by the BIOS by a function is a really
+interesting approach, especially if there's not much point in providing
+additional P-states, which is my current impression. At the moment I have
+ACPI table queries turned off in powernow-k8 and supply a hand craftes PSB
+table, but obviously that's not the most flexible solution. Mh, two VID and
+FID mapping function's which initially are identity functions but with some
+sysfs-tuneable parameters sounds interesting to me... :-)
+
+I guess I should try that.
+
+Greetings and thanks for that idea,
+
+  Gunter
+
+--=20
+The question seldom addressed is *where* Medusa had snakes. Underarm=20
+hair is an even more embarassing problem when it keeps biting the top=20
+of the deodorant bottle.        -- (Terry Pratchett, Soul Music)
+*** PGP-Verschl=FCsselung bei eMails erw=FCnscht :-) *** PGP: 0x1128F25F ***
