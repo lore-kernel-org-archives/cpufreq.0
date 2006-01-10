@@ -1,10 +1,12 @@
-From: Davide <louigi600@yahoo.it>
-Subject: Problems with longhaul on a C3 (epia ME6000,
-	MII6000 and 800) all non nehemiah core
-Date: Mon, 9 Jan 2006 14:21:56 +0100 (CET)
-Message-ID: <20060109132156.16964.qmail@web52607.mail.yahoo.com>
+From: Andras Gefferth <Andras.Gefferth@soha.tmit.bme.hu>
+Subject: PATCH: cpu-freq user-guide.txt
+Date: Tue, 10 Jan 2006 12:43:31 +0100 (CET)
+Message-ID: <Pine.LNX.4.61.0601101230190.7990@soha.tmit.bme.hu>
+References: <20060109025751.5942fe83.Andras.Gefferth@soha.tmit.bme.hu>
+	<20060109200628.GA12100@isilmar.linta.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20060109200628.GA12100@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,86 +16,73 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
 Content-Transfer-Encoding: 7bit
-To: devel@brodo.de, linux@brodo.de
-Cc: mike@ossmann.com, cpufreq@www.linux.org.uk, dwhedon@debian.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@lists.linux.org.uk
 
-I have left a post on VIA forums
-"http://forums.viaarena.com/messageview.aspx?catid=28&threadid=67875&enterthread=y"
- regarding this for a long time and got no answer.
+Dear Dominik,
 
-Becoming more and mode desparate for help I started
-looking for emails on the source code and
-documentation; this is why I'm writing to you.
+I rewrote my previous version according to your comments, and also made 
+some restructureing, all the new stuff is now at the beginning.
 
-After longhaul module loading everything seems to be
-woorking fine.
-I can doo all one would expect in the /sys fs,
-problems rise later:
-I left my EPIA 800 running at lowest possible
-frequency for some time (399MHz with userspace
-governor).
-Apparently everything was working but after some time
-(something in the order of one hour) the system froze
-irreparably. Screen went blank and mouse/keyboard
-activity does not light it again (brobably because the
-system is totally hung). 
-I'ts not a one off problem because I have ben able to
-reproduce the problem on all my VIA mini-itx boards.
+Short description of the patch:
 
-I did a little more investigation on the matter and
-found this:
-It only happens wheni I insert the longhaul module
-(I've had my boards running for days without locking
-up when the longhaul module is not loaded),
-I've reproduced the problem on EPIA 800, M6000 and
-MII6000,
-I've reproduced the problem bothe in high and low cpu
-load,
-I've been monitoring the cpu temperature with external
-sensor that supprisingly reports that the temperature
-shoots up after the freeze,
-I have not changet power supply and/or cooling system,
-I've reproduced the problem on 2.6.12.x and 2.6.13
-kernels (all unpatched),
-I've upgraded the bios on all my boards to get the
-"via 2 slot pci raiser card" working (but I'm not
-currently using it).
+Added a few words to the cpu-freq user-guide.txt so that the user can see 
+what is needed to enable the feature.
+Patch applies to kernels: 2.6.XX
 
-Meantime I came across a XP-M based laptop ...
-powernow-k7 works fine without the freeze after some
-time.
+Signed-off-by: Andras Gefferth <g_a at freemail dot hu>
 
-So I decided to google a little mor on this and found
-this on http://www.cpqlinux.com/acpi-howto.html
->Hang Recovery
->Recovering from a GUI hard lock up:
->If you get no feedback either from the keyboard or
-monitor, then to >recover you should:
->1. if your network is up, then ssh/rsh/telnet into
-your box and tell it to >reboot
->2. if network is not up, then try this key sequence:
-CTRL+ALT+F1 >CTRL+ALT+DEL. You will not get any video 
->or keyboard feedback but this 
->_MAY_ blindly switch to tty1 (CTRL+ALT+F1) and press
-ing CTRL+ALT+DEL >_MAY_ cause your system to do a
-polite reboot rather than a hard shutdown, >then wait
-an appropriate amount 
->of time that it usually takes to reboot 
->your machine
+This is the patch:
+--- linux/Documentation/cpu-freq/user-guide.txt.orig    2006-01-10 
+12:27:42.000000000 +0100
++++ linux/Documentation/cpu-freq/user-guide.txt 2006-01-10 
+12:28:15.000000000 +0100
+@@ -17,6 +17,11 @@
 
-This is describing some problems that can arise when
-acpi manipulates cpu frequency on certain power state
-transitions and actually I'm using acpi on all the
-systems that produce the problem.
+  Contents:
+  ---------
++0. Prerequisites
++0.1 Processor
++0.2 Bios
++0.3 Kernel
++
+  1. Supported Architectures and Processors
+  1.1 ARM
+  1.2 x86
+@@ -32,6 +37,31 @@ Contents:
+  3.1 Preferred interface: sysfs
+  3.2 Deprecated interfaces
 
-Any idea as to why ?
-Any hope for a fix ?
++0. Prerequisites
++================
++
++0.1 Processor
++-------------
++
++Check whether your processor supports scaling!
++See: "1. Supported Architectures and Processors"
++
++0.2 BIOS
++--------
++
++Check whether scaling is enabled in the BIOS!
++It might have various names, like "SpeedStep", or "PowerNow", etc.
++
++0.3 Kernel
++----------
++
++Scaling has to be enabled in the kernel.
++Look at "Power management options"/"CPU Frequency scaling"!
++Here you have to select the governor(s) you need (see section 2.2 
+Governor),
++and the type of processor you have.
++If compiled as modules the governors can be found in
++/lib/modules/$(uname -r)/kernel/drivers/cpufreq/, and the processor 
+drivers in
++/lib/modules/$(uname -r)/kernel/arch/i386/kernel/cpu/cpufreq/
 
-Regards
-David
 
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
+  1. Supported Architectures and Processors
