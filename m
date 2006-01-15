@@ -1,9 +1,13 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5353] cpufreq_conservative: cpu always in slowest mode even
-	under high load
-Date: Tue, 10 Jan 2006 14:22:48 -0800
-Message-ID: <200601102222.k0AMMmcx005275@fire-2.osdl.org>
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: cannot unload acpi-cpufreq
+Date: Sun, 15 Jan 2006 21:17:31 +0300
+Message-ID: <200601152117.32333.arvidjaar@mail.ru>
+References: <200601150118.57542.arvidjaar@mail.ru>
+	<20060114222510.GA1112@isilmar.linta.de>
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20060114222510.GA1112@isilmar.linta.de>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,27 +20,46 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5353
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
+On Sunday 15 January 2006 01:25, Dominik Brodowski wrote:
+>
+> > I do not see, how can I actually "release" it. Also, the reason I need to
+> > unload it - I am testing alternative CPU frequency driver and would like
+> > to avoid reboot when switching. This driver unloads just fine (it is
+> > written by me and contains the minimal set of functions).
+>
+> What is this for a driver?
+>
 
+I have Toshiba Portege 4000. It supports only acpi-cpufreq providing 2 
+performance states. All Toshiba also can scale CPU speed (I am not sure if it 
+really changes *frequency*) using HCI interface that offers 8 levels. I was 
+interested to see if using apparently more deep slowdown may be of any 
+improvement; also my son has Tecra 3490CT, and this is not supported by any 
+cpufreq driver so it could be of use for such systems.
 
+Unfortunately naive approach proved useless. Using CPU slowdown alone does not 
+result in any noticeable improvements w.r.t. current CPU temp; actually it is 
+worse than using ACPI even when setting the most slow speed.
 
+I will post prototype driver if there is any interest.
 
-------- Additional Comments From bugzilla.kernel.org@CustomCDROM.de  2006-01-10 14:11 -------
-Mh, I thought conservative was completely broken. To be honest, on both of my 
-machines - a Celeron M notebook and my AMD64 Winchester - switching to 
-conservative with standard settings causes the CPU to immediately enter the 
-lowest speed setting and never changing back, independant of the load. Thus 
-I'm using ondemand which works flawlessly. (Both 2.6.13.x and 1.6.14.x vanilla 
-kernel versions.) 
- 
-Hoping the bug isn't just sitting in front of my keyboard, is there any way I 
-could help to debug the problems? Patching or rebuilding the kernel would be 
-no problem if neccessary, however I'm just in the middle of preparing for an 
-examn and have not too much time to fiddle with tings myself ATM. :-( 
+regards
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+- -andrey
+> For additional cpufreq-related messages, please consider posting to the
+> cpufreq mailing list:  cpufreq  (AT) lists (DOT) linux.org (DOT) uk
+>
+> 	Dominik
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDypG8R6LMutpd94wRAsgrAJ0cUrfVV8ZU+MqwwZX6ENFfdFzjzACgk9MB
+1gFML2ByKBU7gFi6IUNAWXQ=
+=yq+7
+-----END PGP SIGNATURE-----
