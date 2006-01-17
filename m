@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 5860] ondemand and speedstep-ich fail on inspiron 8500
-Date: Tue, 17 Jan 2006 06:27:18 -0800
-Message-ID: <200601171427.k0HERIIr027589@fire-2.osdl.org>
+Date: Tue, 17 Jan 2006 07:01:57 -0800
+Message-ID: <200601171501.k0HF1vv2029218@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,17 +20,22 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=5860
 
-sg02r@ecs.soton.ac.uk changed:
+piel@lifl.fr changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-     Kernel Version|2.6.14                      |2.6.14/15
+              Owner|cpufreq@www.linux.org.uk    |piel@lifl.fr
+             Status|NEW                         |ASSIGNED
 
 
 
-------- Additional Comments From sg02r@ecs.soton.ac.uk  2006-01-17 06:15 -------
-I have also tested this on kernel 2.6.15 and the speedstep-ich module is still
-exhibits the same behaviour.
+------- Additional Comments From piel@lifl.fr  2006-01-17 06:50 -------
+Yes, that's completely "normal". speedstep-ich was not setting information about
+the transition latency in the 2.6.15 neither. Mattia Dongili has done the work
+to fix this... and you are (somehow) lucky, it's available in the 2.6.16-rc1
+that Linus has released an hour ago ;-)
+
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
