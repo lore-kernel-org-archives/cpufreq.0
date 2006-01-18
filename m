@@ -1,12 +1,13 @@
-From: Andy Burns <fedora@adslpipe.co.uk>
-Subject: Re: Speedstep on a Pentium4 630 (2.6.13)
-Date: Wed, 18 Jan 2006 13:12:57 +0000
-Message-ID: <43CE3ED9.9070303@adslpipe.co.uk>
-References: <43CE0D1D.1070808@gmx.at>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: permissions on
+	/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+Date: Wed, 18 Jan 2006 14:53:18 -0500
+Message-ID: <20060118195318.GD316@redhat.com>
+References: <20060118103423.C62755E401E@latitude.mynet.no-ip.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <43CE0D1D.1070808@gmx.at>
+Content-Disposition: inline
+In-Reply-To: <20060118103423.C62755E401E@latitude.mynet.no-ip.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,14 +18,23 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: anders@latitude.mynet.no-ip.org
+Cc: cpufreq@lists.linux.org.uk
 
-celtune-gmx wrote:
+On Wed, Jan 18, 2006 at 11:34:23AM +0100, anders@latitude.mynet.no-ip.org wrote:
 
-> Does somebody know how to scale a Pentium 630 (3,0 GHz) to another freq. 
-> than 2,8 GHz or 3,0 GHz (Slackware10.2)?
+ > I'd like for a selected group of users to be able to change the frequency.
+ > However, /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed is:
+ > 
+ > -rw-r--r--  1 root root 4096 Jan 18 11:24 scaling_setspeed
+ > 
+ > What's the best way to change that to another group and g+w ? (and no, I don't
+ > want to fiddle with sudo...)
 
-Just to confirm that on my P4 630 running 2.6.15 with acpi_cpufreq.ko I 
-also see just 2.8GHz and 3.0GHz in cpufreq-applet, I don't know what 
-other speeds EIST could/should offer?
+it's not really designed to be used on a per-user basis.
+How can it be ?  Imagine one user wants to set the speed low, whilst
+another wants it high.
+
+		Dave
