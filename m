@@ -1,13 +1,12 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: permissions on
-	/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-Date: Wed, 18 Jan 2006 14:53:18 -0500
-Message-ID: <20060118195318.GD316@redhat.com>
-References: <20060118103423.C62755E401E@latitude.mynet.no-ip.org>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: [RFC] cpufrequtils-0.5-rc1
+Date: Wed, 18 Jan 2006 21:35:28 +0100
+Message-ID: <20060118203528.GA3628@inferi.kami.home>
+References: <20060117203643.GB16217@isilmar.linta.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060118103423.C62755E401E@latitude.mynet.no-ip.org>
+In-Reply-To: <20060117203643.GB16217@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,24 +16,41 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: anders@latitude.mynet.no-ip.org
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Wed, Jan 18, 2006 at 11:34:23AM +0100, anders@latitude.mynet.no-ip.org wrote:
+On Tue, Jan 17, 2006 at 09:36:43PM +0100, Dominik Brodowski wrote:
+> Hi,
+> 
+> At
+> http://kernel.org/pub/linux/kernel/people/brodo/cpufrequtils-0.5-pre1.tar.bz2
+> you can find a new prerelease version of cpufrequtils. Most important is
+> that the package size was reduzed by a factor of 11, only caused by a switch
+> away from autotools to a customized Makefile based on the one to be found in
+> udev. Also, compilation speed is down by a factor of 10 or so... I'm
+> interested in your feedback on this, especially from package maintainers
+> whether this complicates their life much, or if they have any (different)
+> suggestions.
 
- > I'd like for a selected group of users to be able to change the frequency.
- > However, /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed is:
- > 
- > -rw-r--r--  1 root root 4096 Jan 18 11:24 scaling_setspeed
- > 
- > What's the best way to change that to another group and g+w ? (and no, I don't
- > want to fiddle with sudo...)
+It seems Debian doesn't distribute the /usr/bin/gmsgfmt link in gettext
+packages. Changing the Makefile to use /usr/bin/msgfmt doesn't give any
+problem here.
+Is there any problem in such a change?
 
-it's not really designed to be used on a per-user basis.
-How can it be ?  Imagine one user wants to set the speed low, whilst
-another wants it high.
+> For configuration, please edit the "Makefile" found in the top directory.
 
-		Dave
+The attached patch makes configration easier by allowing command line
+overriding of configuration options. Useful?
+
+> Oh, and as the release numbering is a bit confusing -- was 0.3 really _that_
+> unstable? -- I think I'll switch to the versioning system known by udev (and
+> pcmciautils), which will mean that instead of cpufrequtils-0.5 it will be
+> named cpufrequtils-1.
+
+or cpufrequtils-001 ? :)
+
+-- 
+mattia
+:wq!
