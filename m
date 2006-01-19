@@ -1,12 +1,10 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [RFC] cpufrequtils-0.5-rc1
-Date: Thu, 19 Jan 2006 15:42:31 +0100
-Message-ID: <20060119144231.GG2154@poupinou.org>
-References: <20060117203643.GB16217@isilmar.linta.de>
+From: Thomas Renninger <mail@renninger.de>
+Subject: DELL 600/800 - PPC frequency change issues
+Date: Thu, 19 Jan 2006 18:59:22 +0100
+Message-ID: <43CFD37A.1040402@renninger.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20060117203643.GB16217@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,47 +15,53 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@lists.linux.org.uk
+Cc: Dominik Brodowski <linux@dominikbrodowski.de>
 
-On Tue, Jan 17, 2006 at 09:36:43PM +0100, Dominik Brodowski wrote:
-> Hi,
-> 
-> At
-> http://kernel.org/pub/linux/kernel/people/brodo/cpufrequtils-0.5-pre1.tar.bz2
-> you can find a new prerelease version of cpufrequtils. Most important is
-> that the package size was reduzed by a factor of 11, only caused by a switch
-> away from autotools to a customized Makefile based on the one to be found in
-> udev. Also, compilation speed is down by a factor of 10 or so... I'm
-> interested in your feedback on this, especially from package maintainers
-> whether this complicates their life much, or if they have any (different)
-> suggestions.
-> 
-> For configuration, please edit the "Makefile" found in the top directory.
-> 
-> Oh, and as the release numbering is a bit confusing -- was 0.3 really _that_
-> unstable? -- I think I'll switch to the versioning system known by udev (and
-> pcmciautils), which will mean that instead of cpufrequtils-0.5 it will be
-> named cpufrequtils-1.
-> 
+When unplugging the AC adapter on these machines
+following happens in BIOS:
 
-BTW it would be fine to be able to install localized files ;)
+- ACPI processor event fired, frequencies get limited
+  to the lowest one(600 MHz) and BIOS already sets lowest freq.
+- when waiting about 10 seconds another ACPI processor 
+  event is fired, and all frequencies are available again,
+  highest freq(1700 MHz) is set.
+- when plugging in ac adapter before waiting 10 seconds
+  ACPI processor event is happening immediately and all
+  frequencies are available again, highest freq(1700 MHz) is set.
 
---- Makefile	2006/01/19 14:36:17	1.2
-+++ Makefile	2006/01/19 14:36:57
-@@ -246,7 +246,7 @@ install-man:
- install-gmo:
- 	$(INSTALL) -d $(DESTDIR)${prefix}${localedir}
- 	for HLANG in $(LANGUAGES); do \
--		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${prefix}${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo;' \
-+		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${prefix}${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo'; \
- 		$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${prefix}${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
- 	done;
- 
 
--- 
-Bruno Ducrot
+I found these bugs in kernel:
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+- speedstep centrino driver does not recognise that BIOS
+  changed the frequency behind it's back.
+  It tells you that 600 MHz are already set, and does not invoke
+  PRE/POST transition validation. 
+  On next frequency settings, the frequency is "out_of_sync" and
+  the validater assumes 600 MHz and the frequency stays there.
+  Not sure, maybe it stayed on 600 because of next bug or both, still
+  the "out_of_sync" is valid and should be handled gracefully:
+
+  Patch [1/2]
+  
+- userspace governor is using its own cpufreq_policy struct and
+  forgets to set max_frequency there in 
+  cpufreq_governor_userspace(CPUFREQ_GOV_LIMITS)
+  That results in scaling_setspeed staying high in sysfs even the
+  frequency has been lowered on _PPC change.
+  When _PPC allows all frequencies again, the userspace governor
+  uses it's own policy_struct with the old max value again (now the
+  low one) and the frequency still stays at lowest frequency.
+
+  Patch [2/2]
+
+I tested with ondemand and userspace governor on a speedstep-centrino
+system, both governors had problems with but should work fine with _PPC
+changes whether the BIOS prechanges the freq or not.
+
+Could someone please review.
+
+Thanks,
+
+      Thomas
