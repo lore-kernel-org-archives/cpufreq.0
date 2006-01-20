@@ -1,12 +1,12 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [2.6 patch] X86_GX_SUSPMOD must depend on PCI
-Date: Thu, 19 Jan 2006 19:45:38 -0500
-Message-ID: <20060120004538.GD3798@redhat.com>
-References: <20060120002537.GI19398@stusta.de>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 2/2] PPC frequency change issues
+Date: Fri, 20 Jan 2006 11:47:43 +0100
+Message-ID: <43D0BFCF.1080301@suse.de>
+References: <43CFD6C3.5010403@suse.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20060120002537.GI19398@stusta.de>
+Content-Type: multipart/mixed; boundary="------------050103060705030703020204"
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <43CFD6C3.5010403@suse.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,27 +16,147 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: Thomas Renninger <trenn@suse.de>
+Cc: cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.de>
+
+This is a multi-part message in MIME format.
+--------------050103060705030703020204
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@stusta.de>
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Fri, Jan 20, 2006 at 01:25:37AM +0100, Adrian Bunk wrote:
- > This patch fixes the following compile error:
- > 
- > ...
- >   CC      arch/i386/kernel/cpu/cpufreq/gx-suspmod.o
- > arch/i386/kernel/cpu/cpufreq/gx-suspmod.c: In function 'gx_detect_chipset':
- > arch/i386/kernel/cpu/cpufreq/gx-suspmod.c:193: error: implicit declaration of function 'pci_match_id'
- > arch/i386/kernel/cpu/cpufreq/gx-suspmod.c:193: warning: comparison between pointer and integer
- > make[3]: *** [arch/i386/kernel/cpu/cpufreq/gx-suspmod.o] Error 1
- > 
- > <--  snip  -->
- > 
- > 
- > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Sorry,
 
-Applied, thanks Adrian.
+the patches where totally C&P messed up... here again attached.
 
-		Dave
+   Thomas
+
+--------------050103060705030703020204
+Content-Type: text/plain;
+ name="cpufreq_userspace_delete_struct"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpufreq_userspace_delete_struct"
+
+Author: Thomas Renninger <trenn@suse.de>
+
+userspace governor need not to hold it's own cpufreq_policy,
+better make use of the global core policy.
+Also fixes a bug in case of frequency changes via _PPC.
+Old min/max values have wrongly been passed to __cpufreq_driver_target()
+(kind of buffered) and when max freq was available again, only the old
+max(normally lowest freq) was still active.
+
+
+cpufreq_userspace.c |   36 +++++++++++++++++-------------------
+1 files changed, 17 insertions(+), 19 deletions(-)
+
+
+Index: linux-2.6.15/drivers/cpufreq/cpufreq_userspace.c
+===================================================================
+--- linux-2.6.15.orig/drivers/cpufreq/cpufreq_userspace.c	2006-01-03 04:21:10.000000000 +0100
++++ linux-2.6.15/drivers/cpufreq/cpufreq_userspace.c	2006-01-20 11:41:27.000000000 +0100
+@@ -33,7 +33,6 @@
+ static unsigned int	cpu_cur_freq[NR_CPUS]; /* current CPU freq */
+ static unsigned int	cpu_set_freq[NR_CPUS]; /* CPU freq desired by userspace */
+ static unsigned int	cpu_is_managed[NR_CPUS];
+-static struct cpufreq_policy current_policy[NR_CPUS];
+ 
+ static DECLARE_MUTEX	(userspace_sem); 
+ 
+@@ -64,22 +63,22 @@
+  *
+  * Sets the CPU frequency to freq.
+  */
+-static int cpufreq_set(unsigned int freq, unsigned int cpu)
++static int cpufreq_set(unsigned int freq, struct cpufreq_policy *policy)
+ {
+ 	int ret = -EINVAL;
+ 
+-	dprintk("cpufreq_set for cpu %u, freq %u kHz\n", cpu, freq);
++    dprintk("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
+ 
+ 	down(&userspace_sem);
+-	if (!cpu_is_managed[cpu])
++    if (!cpu_is_managed[policy->cpu])
+ 		goto err;
+ 
+-	cpu_set_freq[cpu] = freq;
++    cpu_set_freq[policy->cpu] = freq;
+ 
+-	if (freq < cpu_min_freq[cpu])
+-		freq = cpu_min_freq[cpu];
+-	if (freq > cpu_max_freq[cpu])
+-		freq = cpu_max_freq[cpu];
++    if (freq < cpu_min_freq[policy->cpu])
++        freq = cpu_min_freq[policy->cpu];
++    if (freq > cpu_max_freq[policy->cpu])
++        freq = cpu_max_freq[policy->cpu];
+ 
+ 	/*
+ 	 * We're safe from concurrent calls to ->target() here
+@@ -88,8 +87,7 @@
+ 	 * A: cpufreq_set (lock userspace_sem) -> cpufreq_driver_target(lock policy->lock)
+ 	 * B: cpufreq_set_policy(lock policy->lock) -> __cpufreq_governor -> cpufreq_governor_userspace (lock userspace_sem)
+ 	 */
+-	ret = __cpufreq_driver_target(&current_policy[cpu], freq, 
+-	      CPUFREQ_RELATION_L);
++    ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
+ 
+  err:
+ 	up(&userspace_sem);
+@@ -113,7 +111,7 @@
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+-	cpufreq_set(freq, policy->cpu);
++    cpufreq_set(freq, policy);
+ 
+ 	return count;
+ }
+@@ -141,7 +139,6 @@
+ 		cpu_cur_freq[cpu] = policy->cur;
+ 		cpu_set_freq[cpu] = policy->cur;
+ 		sysfs_create_file (&policy->kobj, &freq_attr_scaling_setspeed.attr);
+-		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
+ 		dprintk("managing cpu %u started (%u - %u kHz, currently %u kHz)\n", cpu, cpu_min_freq[cpu], cpu_max_freq[cpu], cpu_cur_freq[cpu]);
+ 		up(&userspace_sem);
+ 		break;
+@@ -161,16 +158,17 @@
+ 		cpu_max_freq[cpu] = policy->max;
+ 		dprintk("limit event for cpu %u: %u - %u kHz, currently %u kHz, last set to %u kHz\n", cpu, cpu_min_freq[cpu], cpu_max_freq[cpu], cpu_cur_freq[cpu], cpu_set_freq[cpu]);
+ 		if (policy->max < cpu_set_freq[cpu]) {
+-			__cpufreq_driver_target(&current_policy[cpu], policy->max, 
+-			      CPUFREQ_RELATION_H);
++            if (!__cpufreq_driver_target(policy, policy->max, 
++                            CPUFREQ_RELATION_H))
++                cpu_cur_freq[cpu] = policy->max;
+ 		} else if (policy->min > cpu_set_freq[cpu]) {
+-			__cpufreq_driver_target(&current_policy[cpu], policy->min, 
+-			      CPUFREQ_RELATION_L);
++            if (!__cpufreq_driver_target(policy, policy->min, 
++                            CPUFREQ_RELATION_L))
++                cpu_cur_freq[cpu] = policy->min;
+ 		} else {
+-			__cpufreq_driver_target(&current_policy[cpu], cpu_set_freq[cpu],
++            __cpufreq_driver_target(policy, cpu_set_freq[cpu],
+ 			      CPUFREQ_RELATION_L);
+ 		}
+-		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
+ 		up(&userspace_sem);
+ 		break;
+ 	}
+
+--------------050103060705030703020204
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--------------050103060705030703020204--
+
