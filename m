@@ -1,11 +1,8 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Speedstep on a Pentium4 630 (2.6.13)
-Date: Sat, 21 Jan 2006 07:17:58 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB6006FB7B60@scsmsx403.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5934] New: System locks if cpufreq set to lowest level.
+Date: Sat, 21 Jan 2006 13:16:33 -0800
+Message-ID: <200601212116.k0LLGX9O014190@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,40 +13,46 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Andy Burns <fedora@adslpipe.co.uk>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=5934
+
+           Summary: System locks if cpufreq set to lowest level.
+    Kernel Version: 2.6.16-rc1
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: kernelbugs@loftwyr.ca
 
 
-Actually No.
+Most recent kernel where this bug did not occur: unknown
+Distribution:  Gentoo
+Hardware Environment: amd64
+Problem Description:
 
-Acpi-cpufreq _and_ speedstep-centrino are the right drivers (don't worry
-too much about the centrino name here) to be used on P4 630 and P4 Xeons
-as well. One of these drivers will be used depending on the BIOS and
-things like whether HT is enabled etc.
+I'm using the k8-powernow for powersaving on my X2-4200+ with cpufreq and
+cpudyn.
 
-And EIST on P4s cannot do frequencies like 600 MHz. Typically 2.8 GHz is
-the least frequency they can go upto.=20
+When I start up, the k8-powernow statements are as follows:
 
-Thanks,
-Venki
+powernow-k8: Found 2 AMD Athlon 64 / Opteron processors (version 1.50.4)
+powernow-k8:    0 : fid 0xe (2200 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Andy Burns
->Sent: Saturday, January 21, 2006 5:55 AM
->To: cpufreq@lists.linux.org.uk
->Subject: Re: Speedstep on a Pentium4 630 (2.6.13)
->
->celtune-gmx wrote:
->
->> i think a cpu with EIST should be scaleable like a Pentium M=20
->(my 735 is=20
->> with EIST scaleable from 600MHz(0,700V) to 1,7 GHz(1,276V))
->
->Would I get better results with speedstep-ich instead of acpi-cpufreq?
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
+This is confirmed by scaling_available_frequencies which echos
+2200000 1000000
+
+However, scaling_min_freq is 1452000 and that's what the powersave module
+pushes down to.  if I force it to 1000000, my machine locks up.
+
+The Gentoo devs told me to post it here after replicating it on the 2.6.16-rc1
+
+Specs:
+Motherboard: gigabyte GA-K8NF-9  BIOS F10 (latest)
+Processor: Athlon 64 4200+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
