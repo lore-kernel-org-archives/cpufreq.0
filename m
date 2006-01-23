@@ -1,14 +1,8 @@
-From: Andy Burns <fedora@adslpipe.co.uk>
-Subject: Re: Speedstep on a Pentium4 630 (2.6.13)
-Date: Sun, 22 Jan 2006 15:53:00 +0000
-Message-ID: <43D3AA5C.6060600@adslpipe.co.uk>
-References: <43CE0D1D.1070808@gmx.at> <43CE3ED9.9070303@adslpipe.co.uk>
-	<43CE5994.9070300@gmx.at> <43D23CCD.4060808@adslpipe.co.uk>
-	<43D2C0C2.7040900@gmx.at>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <43D2C0C2.7040900@gmx.at>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5934] System locks if cpufreq set to lowest level.
+Date: Mon, 23 Jan 2006 06:11:43 -0800
+Message-ID: <200601231411.k0NEBht2017931@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,25 +12,34 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-cel wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=5934
 
-> I dont know ,I used on the 630 the module for the Pentium4 (dont know 
-> the exact name now p4clockmod maybe) and ondemand  and at idle i had 375MHz 
+mark.langsdorf@amd.com changed:
 
-Hmm, been trying to read up on EIST, seems that 14x (i.e. 2.8GHz) *is* 
-the slowest clock speed P4 630 will throttle to, which kind of makes it 
-a non-feature on a 3.0GHz CPU. What CPU feature does p4clockmod use to 
-go lower than EIST apparently allows?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|cpufreq@www.linux.org.uk    |mark.langsdorf@amd.com
+             Status|NEW                         |ASSIGNED
 
-I'm running rawhide and don't see *p4*.ko did you have to build a custom 
-kernel? I'd like to get idle consumption down on my box to quiet the 
-fans even further ...
 
-> and the vcore at about 1,6v (but thats not speedstep!)
 
-lm_sensors reckons my Vcore is 1.35v to start with (perhaps I've got my 
-VRM settings wrong in /etc/sensors.conf)
+------- Additional Comments From mark.langsdorf@amd.com  2006-01-23 06:11 -------
+Your system has a very weird PN! table.  I'd expect to see several P-states
+going between 2.2 GHz and 1.6 GHz, then a 1.0 GHz P-state.
+
+It's also weird that the driver is reporting a 1.0 GHz minimum P-state, but
+cpufreq is not reporting that minimum frequency.
+
+Please make sure you have the latest BIOS.
+
+Also, could you turn on cpufreq debugging and recompile your kernel?  I'd like
+to see if the driver is providing any additional messages.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
