@@ -1,45 +1,177 @@
-From: Mischa Jonker <mischa.jonker@philips.com>
-Subject: [PATCH 2.6.15.1] CPUFREQ: Added range check for ARM Integrator
-Date: Wed, 25 Jan 2006 14:59:22 +0100
-Message-ID: <OF4BB77455.2FF23295-ONC1257101.004A6D07-C1257101.004D2929@philips.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 2/2] _PPC frequency change issues
+Date: Wed, 25 Jan 2006 18:39:30 +0100
+Message-ID: <200601251839.31618.trenn@suse.de>
+References: <88056F38E9E48644A0F562A38C64FB6007000574@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932087AbWAYRjf@vger.kernel.org>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007000574@scsmsx403.amr.corp.intel.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>, cpufreq@www.linux.org.uk, Dominik Brodowski <linux@brodo.de>, Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-From: Mischa Jonker <m.d.s.x.jonker@gmail.com>
+On Tuesday 24 January 2006 18:06, Pallipadi, Venkatesh wrote:
+> Thanks for identifying the issues and sendint these patches Thomas.
+>
+> Patch 1 looks clean. New lines seem to contain spaces instead of tabs.
+> The same issue is there in patch 2 as well. Can you resent it with
+> indentation fixed.
+>
+> Patch 2 I am concenred with following hunk.
+>
+> @@ -161,16 +158,17 @@
+>  		cpu_max_freq[cpu] = policy->max;
+>  		dprintk("limit event for cpu %u: %u - %u kHz, currently
+> %u kHz, last set to %u kHz\n", cpu, cpu_min_freq[cpu],
+> cpu_max_freq[cpu], cpu_cur_freq[cpu], cpu_set_freq[cpu]);
+>  		if (policy->max < cpu_set_freq[cpu]) {
+> -			__cpufreq_driver_target(&current_policy[cpu],
+> policy->max,
+> -			      CPUFREQ_RELATION_H);
+> +            if (!__cpufreq_driver_target(policy, policy->max,
+> +                            CPUFREQ_RELATION_H))
+> +                cpu_cur_freq[cpu] = policy->max;
+>
+> Should this me cpu_cur_freq[cpu] = policy->cur instead. As the max
+> setting may not be supported by the driver, it might have set some
+> closer available freq
+>
+> Same comment for below two driver target calls as well.
+Ok, I all (cpu_max/min/cur_freq) assigned it after setting, this should be OK?
 
-Added range check for minimum target frequency for ARM Integrator 
-platform.
+Seems as if I had some wrong indentation offset set and had not checked
+the patch output itself, sorry about that.
 
-Signed-off-by: Mischa Jonker <m.d.s.x.jonker@gmail.com>
----
-Without the patch, the "ondemand" governor hangs the system, because it 
-tries to set a too low operating point. Maybe some range-checking should 
-be implemented there as well.
+Tell me if you still see any problems ...
 
---- linux-2.6.15.1/arch/arm/mach-integrator/cpu.c       2006-01-25 
-14:56:21.000000000 +0100
-+++ linux-2.6.15.1-patched/arch/arm/mach-integrator/cpu.c       2006-01-25 
-14:00:04.000000000 +0100
-@@ -109,6 +109,8 @@ static int integrator_set_target(struct 
-        vco.r = 22;
-        freqs.old = icst525_khz(&cclk_params, vco);
+Author: Thomas Renninger <trenn@suse.de>
+
+userspace governor need not to hold it's own cpufreq_policy,
+better make use of the global core policy.
+Also fixes a bug in case of frequency changes via _PPC.
+Old min/max values have wrongly been passed to __cpufreq_driver_target()
+(kind of buffered) and when max freq was available again, only the old
+max(normally lowest freq) was still active.
+
+cpufreq_userspace.c |   52 
++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 27 insertions(+), 25 deletions(-)
+
+Index: linux-2.6.15/drivers/cpufreq/cpufreq_userspace.c
+===================================================================
+--- linux-2.6.15.orig/drivers/cpufreq/cpufreq_userspace.c
++++ linux-2.6.15/drivers/cpufreq/cpufreq_userspace.c
+@@ -33,7 +33,6 @@ static unsigned int	cpu_min_freq[NR_CPUS
+ static unsigned int	cpu_cur_freq[NR_CPUS]; /* current CPU freq */
+ static unsigned int	cpu_set_freq[NR_CPUS]; /* CPU freq desired by userspace 
+*/
+ static unsigned int	cpu_is_managed[NR_CPUS];
+-static struct cpufreq_policy current_policy[NR_CPUS];
  
-+       if (target_freq < policy->min)
-+               target_freq = policy->min;
-        /* icst525_khz_to_vco rounds down -- so we need the next
-         * larger freq in case of CPUFREQ_RELATION_L.
-         */
+ static DECLARE_MUTEX	(userspace_sem); 
+ 
+@@ -64,22 +63,22 @@ static struct notifier_block userspace_c
+  *
+  * Sets the CPU frequency to freq.
+  */
+-static int cpufreq_set(unsigned int freq, unsigned int cpu)
++static int cpufreq_set(unsigned int freq, struct cpufreq_policy *policy)
+ {
+ 	int ret = -EINVAL;
+ 
+-	dprintk("cpufreq_set for cpu %u, freq %u kHz\n", cpu, freq);
++	dprintk("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
+ 
+ 	down(&userspace_sem);
+-	if (!cpu_is_managed[cpu])
++	if (!cpu_is_managed[policy->cpu])
+ 		goto err;
+ 
+-	cpu_set_freq[cpu] = freq;
++	cpu_set_freq[policy->cpu] = freq;
+ 
+-	if (freq < cpu_min_freq[cpu])
+-		freq = cpu_min_freq[cpu];
+-	if (freq > cpu_max_freq[cpu])
+-		freq = cpu_max_freq[cpu];
++	if (freq < cpu_min_freq[policy->cpu])
++		freq = cpu_min_freq[policy->cpu];
++	if (freq > cpu_max_freq[policy->cpu])
++		freq = cpu_max_freq[policy->cpu];
+ 
+ 	/*
+ 	 * We're safe from concurrent calls to ->target() here
+@@ -88,8 +87,7 @@ static int cpufreq_set(unsigned int freq
+ 	 * A: cpufreq_set (lock userspace_sem) -> cpufreq_driver_target(lock 
+policy->lock)
+ 	 * B: cpufreq_set_policy(lock policy->lock) -> __cpufreq_governor -> 
+cpufreq_governor_userspace (lock userspace_sem)
+ 	 */
+-	ret = __cpufreq_driver_target(&current_policy[cpu], freq, 
+-	      CPUFREQ_RELATION_L);
++	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
+ 
+  err:
+ 	up(&userspace_sem);
+@@ -113,7 +111,7 @@ store_speed (struct cpufreq_policy *poli
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+-	cpufreq_set(freq, policy->cpu);
++	cpufreq_set(freq, policy);
+ 
+ 	return count;
+ }
+@@ -141,7 +139,6 @@ static int cpufreq_governor_userspace(st
+ 		cpu_cur_freq[cpu] = policy->cur;
+ 		cpu_set_freq[cpu] = policy->cur;
+ 		sysfs_create_file (&policy->kobj, &freq_attr_scaling_setspeed.attr);
+-		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
+ 		dprintk("managing cpu %u started (%u - %u kHz, currently %u kHz)\n", cpu, 
+cpu_min_freq[cpu], cpu_max_freq[cpu], cpu_cur_freq[cpu]);
+ 		up(&userspace_sem);
+ 		break;
+@@ -157,20 +154,25 @@ static int cpufreq_governor_userspace(st
+ 		break;
+ 	case CPUFREQ_GOV_LIMITS:
+ 		down(&userspace_sem);
+-		cpu_min_freq[cpu] = policy->min;
+-		cpu_max_freq[cpu] = policy->max;
+-		dprintk("limit event for cpu %u: %u - %u kHz, currently %u kHz, last set to 
+%u kHz\n", cpu, cpu_min_freq[cpu], cpu_max_freq[cpu], cpu_cur_freq[cpu], 
+cpu_set_freq[cpu]);
++		dprintk("limit event for cpu %u: %u - %u kHz,"
++			"currently %u kHz, last set to %u kHz\n",
++			cpu, policy->min, policy->max,
++			cpu_cur_freq[cpu], cpu_set_freq[cpu]);
+ 		if (policy->max < cpu_set_freq[cpu]) {
+-			__cpufreq_driver_target(&current_policy[cpu], policy->max, 
+-			      CPUFREQ_RELATION_H);
+-		} else if (policy->min > cpu_set_freq[cpu]) {
+-			__cpufreq_driver_target(&current_policy[cpu], policy->min, 
+-			      CPUFREQ_RELATION_L);
+-		} else {
+-			__cpufreq_driver_target(&current_policy[cpu], cpu_set_freq[cpu],
+-			      CPUFREQ_RELATION_L);
++			__cpufreq_driver_target(policy, policy->max,
++						CPUFREQ_RELATION_H);
++		}
++		else if (policy->min > cpu_set_freq[cpu]) {
++			__cpufreq_driver_target(policy, policy->min,
++						CPUFREQ_RELATION_L);
++		}
++		else {
++			__cpufreq_driver_target(policy, cpu_set_freq[cpu],
++						CPUFREQ_RELATION_L);
+ 		}
+-		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
++		cpu_min_freq[cpu] = policy->min;
++		cpu_max_freq[cpu] = policy->max;
++		cpu_cur_freq[cpu] = policy->cur;
+ 		up(&userspace_sem);
+ 		break;
+ 	}
