@@ -1,177 +1,111 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 2/2] _PPC frequency change issues
-Date: Wed, 25 Jan 2006 18:39:30 +0100
-Message-ID: <200601251839.31618.trenn@suse.de>
-References: <88056F38E9E48644A0F562A38C64FB6007000574@scsmsx403.amr.corp.intel.com>
+Subject: Re: [PATCH 1/2] _PPC frequency change issues
+Date: Wed, 25 Jan 2006 18:51:00 +0100
+Message-ID: <200601251851.00659.trenn@suse.de>
+References: <43D6573C.3070103@suse.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932087AbWAYRjf@vger.kernel.org>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6007000574@scsmsx403.amr.corp.intel.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <43D6573C.3070103@suse.de>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Thomas Renninger <trenn@suse.de>, cpufreq@www.linux.org.uk, Dominik Brodowski <linux@brodo.de>, Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: cpufreq@lists.linux.org.uk, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@brodo.de>
 
-On Tuesday 24 January 2006 18:06, Pallipadi, Venkatesh wrote:
-> Thanks for identifying the issues and sendint these patches Thomas.
+On Tuesday 24 January 2006 17:35, Thomas Renninger wrote:
+> On Dell600/800 machines:
 >
-> Patch 1 looks clean. New lines seem to contain spaces instead of tabs.
-> The same issue is there in patch 2 as well. Can you resent it with
-> indentation fixed.
+> When unplugging the AC adapter on these machines
+> following happens in BIOS:
 >
-> Patch 2 I am concenred with following hunk.
+> - ACPI processor event fired, frequencies get limited
+>  to the lowest one(600 MHz) and BIOS already sets lowest freq.
+> - when waiting about 10 seconds another ACPI processor  event
+>  is fired, and all frequencies are available again,
+>  highest freq(1700 MHz) is set.
+> - when plugging in ac adapter before waiting 10 seconds
+>  ACPI processor event is happening immediately and all
+>  frequencies are available again, highest freq(1700 MHz) is set.
 >
-> @@ -161,16 +158,17 @@
->  		cpu_max_freq[cpu] = policy->max;
->  		dprintk("limit event for cpu %u: %u - %u kHz, currently
-> %u kHz, last set to %u kHz\n", cpu, cpu_min_freq[cpu],
-> cpu_max_freq[cpu], cpu_cur_freq[cpu], cpu_set_freq[cpu]);
->  		if (policy->max < cpu_set_freq[cpu]) {
-> -			__cpufreq_driver_target(&current_policy[cpu],
-> policy->max,
-> -			      CPUFREQ_RELATION_H);
-> +            if (!__cpufreq_driver_target(policy, policy->max,
-> +                            CPUFREQ_RELATION_H))
-> +                cpu_cur_freq[cpu] = policy->max;
 >
-> Should this me cpu_cur_freq[cpu] = policy->cur instead. As the max
-> setting may not be supported by the driver, it might have set some
-> closer available freq
+> I found these bugs in kernel:
 >
-> Same comment for below two driver target calls as well.
-Ok, I all (cpu_max/min/cur_freq) assigned it after setting, this should be OK?
-
-Seems as if I had some wrong indentation offset set and had not checked
-the patch output itself, sorry about that.
-
-Tell me if you still see any problems ...
+> - speedstep centrino driver does not recognise that BIOS
+> changed the frequency behind it's back.
+> It tells you that 600 MHz are already set, and does not invoke
+> PRE/POST transition validation.  On next frequency settings,
+> the frequency is "out_of_sync" and
+> the validater assumes 600 MHz and the frequency stays there.
+>
+> Patch [1/2]
+>
+> - userspace governor is using its own cpufreq_policy struct and
+> forgets to set max_frequency there in 
+> cpufreq_governor_userspace(CPUFREQ_GOV_LIMITS) That results in
+> scaling_setspeed staying high in sysfs even the
+> frequency has been lowered on _PPC change.
+> When _PPC allows all frequencies again, the userspace governor
+> uses it's own policy_struct with the old max value again (now the
+> low one) and the frequency still stays at lowest frequency.
+> Also the userspace governor need not to hold it's own cpufreq_policy,
+> better make use of the global core policy, save some memory and
+> avoid to forget any struct member to be copied.
+>
+> Patch [2/2]
+>
+> I tested with ondemand and userspace governor on a speedstep-centrino
+> system, both governors had problems with but should work fine now,
+> whether _PPC (or whatever ACPI function) prechanges the freq or not.
+> The first patch fixes the ondemand governor working properly again,
+> the second is also needed to make the userspace governor working on these
+> machines.
+>
+> Could someone please review and apply.
+>
+Corrected indentation and a whitespace...
+I also heard about weird behaviour on Dell Inspiron 8600 (1.5GHz Centrino) and 
+a Dell Latitude X1 when (un)plugging AC adapter, they probably have the same 
+problem.
 
 Author: Thomas Renninger <trenn@suse.de>
 
-userspace governor need not to hold it's own cpufreq_policy,
-better make use of the global core policy.
-Also fixes a bug in case of frequency changes via _PPC.
-Old min/max values have wrongly been passed to __cpufreq_driver_target()
-(kind of buffered) and when max freq was available again, only the old
-max(normally lowest freq) was still active.
+BIOS might change frequency behind our back
+when BIOS changes allowed frequencies via _PPC.
+in this case cpufreq core got out of sync.
+-> ask driver for current freq and notify
+  governors about a change
 
-cpufreq_userspace.c |   52 
-+++++++++++++++++++++++++++-------------------------
- 1 files changed, 27 insertions(+), 25 deletions(-)
+cpufreq.c |   10 ++++++++++
+1 files changed, 10 insertions(+)
 
-Index: linux-2.6.15/drivers/cpufreq/cpufreq_userspace.c
+Index: linux-2.6.15/drivers/cpufreq/cpufreq.c
 ===================================================================
---- linux-2.6.15.orig/drivers/cpufreq/cpufreq_userspace.c
-+++ linux-2.6.15/drivers/cpufreq/cpufreq_userspace.c
-@@ -33,7 +33,6 @@ static unsigned int	cpu_min_freq[NR_CPUS
- static unsigned int	cpu_cur_freq[NR_CPUS]; /* current CPU freq */
- static unsigned int	cpu_set_freq[NR_CPUS]; /* CPU freq desired by userspace 
-*/
- static unsigned int	cpu_is_managed[NR_CPUS];
--static struct cpufreq_policy current_policy[NR_CPUS];
+--- linux-2.6.15.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6.15/drivers/cpufreq/cpufreq.c
+@@ -1402,6 +1402,16 @@ int cpufreq_update_policy(unsigned int c
+ 	policy.policy = data->user_policy.policy;
+ 	policy.governor = data->user_policy.governor;
  
- static DECLARE_MUTEX	(userspace_sem); 
++	/* BIOS might change freq behind our back
++	   -> ask driver for current freq and notify
++	   governors about a change
++	*/
++	if (cpufreq_driver->get){
++		policy.cur = cpufreq_driver->get(cpu);
++		if (data->cur != policy.cur)
++			cpufreq_out_of_sync(cpu, data->cur, policy.cur);
++	}
++
+ 	ret = __cpufreq_set_policy(data, &policy);
  
-@@ -64,22 +63,22 @@ static struct notifier_block userspace_c
-  *
-  * Sets the CPU frequency to freq.
-  */
--static int cpufreq_set(unsigned int freq, unsigned int cpu)
-+static int cpufreq_set(unsigned int freq, struct cpufreq_policy *policy)
- {
- 	int ret = -EINVAL;
- 
--	dprintk("cpufreq_set for cpu %u, freq %u kHz\n", cpu, freq);
-+	dprintk("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
- 
- 	down(&userspace_sem);
--	if (!cpu_is_managed[cpu])
-+	if (!cpu_is_managed[policy->cpu])
- 		goto err;
- 
--	cpu_set_freq[cpu] = freq;
-+	cpu_set_freq[policy->cpu] = freq;
- 
--	if (freq < cpu_min_freq[cpu])
--		freq = cpu_min_freq[cpu];
--	if (freq > cpu_max_freq[cpu])
--		freq = cpu_max_freq[cpu];
-+	if (freq < cpu_min_freq[policy->cpu])
-+		freq = cpu_min_freq[policy->cpu];
-+	if (freq > cpu_max_freq[policy->cpu])
-+		freq = cpu_max_freq[policy->cpu];
- 
- 	/*
- 	 * We're safe from concurrent calls to ->target() here
-@@ -88,8 +87,7 @@ static int cpufreq_set(unsigned int freq
- 	 * A: cpufreq_set (lock userspace_sem) -> cpufreq_driver_target(lock 
-policy->lock)
- 	 * B: cpufreq_set_policy(lock policy->lock) -> __cpufreq_governor -> 
-cpufreq_governor_userspace (lock userspace_sem)
- 	 */
--	ret = __cpufreq_driver_target(&current_policy[cpu], freq, 
--	      CPUFREQ_RELATION_L);
-+	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
- 
-  err:
- 	up(&userspace_sem);
-@@ -113,7 +111,7 @@ store_speed (struct cpufreq_policy *poli
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	cpufreq_set(freq, policy->cpu);
-+	cpufreq_set(freq, policy);
- 
- 	return count;
- }
-@@ -141,7 +139,6 @@ static int cpufreq_governor_userspace(st
- 		cpu_cur_freq[cpu] = policy->cur;
- 		cpu_set_freq[cpu] = policy->cur;
- 		sysfs_create_file (&policy->kobj, &freq_attr_scaling_setspeed.attr);
--		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
- 		dprintk("managing cpu %u started (%u - %u kHz, currently %u kHz)\n", cpu, 
-cpu_min_freq[cpu], cpu_max_freq[cpu], cpu_cur_freq[cpu]);
- 		up(&userspace_sem);
- 		break;
-@@ -157,20 +154,25 @@ static int cpufreq_governor_userspace(st
- 		break;
- 	case CPUFREQ_GOV_LIMITS:
- 		down(&userspace_sem);
--		cpu_min_freq[cpu] = policy->min;
--		cpu_max_freq[cpu] = policy->max;
--		dprintk("limit event for cpu %u: %u - %u kHz, currently %u kHz, last set to 
-%u kHz\n", cpu, cpu_min_freq[cpu], cpu_max_freq[cpu], cpu_cur_freq[cpu], 
-cpu_set_freq[cpu]);
-+		dprintk("limit event for cpu %u: %u - %u kHz,"
-+			"currently %u kHz, last set to %u kHz\n",
-+			cpu, policy->min, policy->max,
-+			cpu_cur_freq[cpu], cpu_set_freq[cpu]);
- 		if (policy->max < cpu_set_freq[cpu]) {
--			__cpufreq_driver_target(&current_policy[cpu], policy->max, 
--			      CPUFREQ_RELATION_H);
--		} else if (policy->min > cpu_set_freq[cpu]) {
--			__cpufreq_driver_target(&current_policy[cpu], policy->min, 
--			      CPUFREQ_RELATION_L);
--		} else {
--			__cpufreq_driver_target(&current_policy[cpu], cpu_set_freq[cpu],
--			      CPUFREQ_RELATION_L);
-+			__cpufreq_driver_target(policy, policy->max,
-+						CPUFREQ_RELATION_H);
-+		}
-+		else if (policy->min > cpu_set_freq[cpu]) {
-+			__cpufreq_driver_target(policy, policy->min,
-+						CPUFREQ_RELATION_L);
-+		}
-+		else {
-+			__cpufreq_driver_target(policy, cpu_set_freq[cpu],
-+						CPUFREQ_RELATION_L);
- 		}
--		memcpy (&current_policy[cpu], policy, sizeof(struct cpufreq_policy));
-+		cpu_min_freq[cpu] = policy->min;
-+		cpu_max_freq[cpu] = policy->max;
-+		cpu_cur_freq[cpu] = policy->cur;
- 		up(&userspace_sem);
- 		break;
- 	}
+ 	up(&data->lock);
