@@ -1,7 +1,7 @@
-From: "shin, jacob" <jacob.shin@amd.com>
-Subject: RE: Temperature Limiting Govenor?
-Date: Tue, 31 Jan 2006 08:59:58 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B83149930293550D@SAUSEXMB2.amd.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: powernow-k8: out of sync on Athlon64 x2 3800+
+Date: Tue, 31 Jan 2006 09:16:54 -0600
+Message-ID: <84EA05E2CA77634C82730353CBE3A84303218B5B@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -17,36 +17,35 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: David Pottage <david@chrestomanci.org>, cpufreq@www.linux.org.uk
+To: Niklas Edmundsson <Niklas.Edmundsson@hpc2n.umu.se>, cpufreq@lists.linux.org.uk
 
-On Tuesday, January 31, 2006 3:45 AM cpufreq-bounces@lists.linux.org.uk =
-wrote:
-> Hi.
+> We're getting errors like this in the kernel log:
+> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
+> powernow-k8: error - out of sync, fix 0x2 0xa, vid 0x12 0xa
+> powernow-k8: error - out of sync, fix 0xa 0xc, vid 0xa 0x8
+> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
 >=20
-> I have an AMD64 system, that will tend to heat up hotter than I would
-> prefer if it is run at the maximum clock speed, especialy in summer.
+> Looking at /proc/cpuinfo the CPU:s doesn't seem to change frequency,=20
+> even though the sysfs cpufreq knobs says otherwise.
 >=20
-> In order to prolong the life of the CPU, and other components in my
-> case, I have written a simple user space governor in perl, that
-> dynamically limits the maximum clock speed to prevent CPU overheat,
-> while allowing short busts at full speed.
+> Is this a known problem, or is there anything we can do to help=20
+> debug/fix it?
 >=20
-> On my system this allows me busts of high CPU speed for good =
-interactive
-> performance, while preventing long running processes such as media
-> encoding from causing exesively high temperatures.
+> Kernel: kernel.org 2.6.15.1, 32bit SMP
+> CPU: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+
+> Machine: Fujitsu-Siemens ESPRIMO P5600 (SiS761), latest BIOS.
 >=20
-> Would it be worthwhile incorporating similar functionality
-> into a kernel space governor? How easy would it be to do?=20
-> Is it possible for more than one governor to be active at once?
+> I'm not on the list so Cc replies to me.
 
-Writing the governor policy control should be a fairly easy task, =
-depending on how complex of control mechanism is put in to place.  =
-However, the difficult part is to find a generic way to grab the system =
-temperature data.  ACPI thermal zones would be nice, however some BIOSes =
-do not support it.  The lm_sensors (integrated into 2.6 kernel now) =
-project only supports handful of hardware (both southbridge and =
-temperature sensor chip must be supported).
+You'll get that message on an Athlon X2 if you're using an
+old version of the driver that doesn't fully support dual
+core or if your part is being reported to Linux as 2=20
+single core parts.
 
--Jacob Shin
+Neither of those should be happening with the 2.6.15.1 kernel.
+
+Could you send me the results of `dmesg | grep powern`=20
+immediately after boot?
+
+-Mark Langsdorf
 AMD, Inc.
