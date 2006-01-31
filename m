@@ -1,9 +1,11 @@
-From: Niklas Edmundsson <Niklas.Edmundsson@hpc2n.umu.se>
-Subject: powernow-k8: out of sync on Athlon64 x2 3800+
-Date: Tue, 31 Jan 2006 16:00:33 +0100 (MET)
-Message-ID: <Pine.GSO.4.64.0601311308390.14826@kleopatra.acc.umu.se>
+From: "shin, jacob" <jacob.shin@amd.com>
+Subject: RE: Temperature Limiting Govenor?
+Date: Tue, 31 Jan 2006 08:59:58 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B83149930293550D@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,35 +16,37 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: David Pottage <david@chrestomanci.org>, cpufreq@www.linux.org.uk
 
+On Tuesday, January 31, 2006 3:45 AM cpufreq-bounces@lists.linux.org.uk =
+wrote:
+> Hi.
+>=20
+> I have an AMD64 system, that will tend to heat up hotter than I would
+> prefer if it is run at the maximum clock speed, especialy in summer.
+>=20
+> In order to prolong the life of the CPU, and other components in my
+> case, I have written a simple user space governor in perl, that
+> dynamically limits the maximum clock speed to prevent CPU overheat,
+> while allowing short busts at full speed.
+>=20
+> On my system this allows me busts of high CPU speed for good =
+interactive
+> performance, while preventing long running processes such as media
+> encoding from causing exesively high temperatures.
+>=20
+> Would it be worthwhile incorporating similar functionality
+> into a kernel space governor? How easy would it be to do?=20
+> Is it possible for more than one governor to be active at once?
 
-Hi all!
+Writing the governor policy control should be a fairly easy task, =
+depending on how complex of control mechanism is put in to place.  =
+However, the difficult part is to find a generic way to grab the system =
+temperature data.  ACPI thermal zones would be nice, however some BIOSes =
+do not support it.  The lm_sensors (integrated into 2.6 kernel now) =
+project only supports handful of hardware (both southbridge and =
+temperature sensor chip must be supported).
 
-We're getting errors like this in the kernel log:
-powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
-powernow-k8: error - out of sync, fix 0x2 0xa, vid 0x12 0xa
-powernow-k8: error - out of sync, fix 0xa 0xc, vid 0xa 0x8
-powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
-
-Looking at /proc/cpuinfo the CPU:s doesn't seem to change frequency, 
-even though the sysfs cpufreq knobs says otherwise.
-
-Is this a known problem, or is there anything we can do to help 
-debug/fix it?
-
-Kernel: kernel.org 2.6.15.1, 32bit SMP
-CPU: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+
-Machine: Fujitsu-Siemens ESPRIMO P5600 (SiS761), latest BIOS.
-
-I'm not on the list so Cc replies to me.
-
-/Nikke
--- 
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  Niklas Edmundsson, Admin @ {acc,hpc2n}.umu.se     |    nikke@hpc2n.umu.se
----------------------------------------------------------------------------
-  A bachelor is a guy who is footloose and fiancee free
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+-Jacob Shin
+AMD, Inc.
