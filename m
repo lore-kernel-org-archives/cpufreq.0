@@ -1,99 +1,26 @@
-From: "shin, jacob" <jacob.shin@amd.com>
-Subject: RE: powernow-k8: out of sync on Athlon64 x2 3800+
-Date: Wed, 1 Feb 2006 18:05:00 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B83149930293551F@SAUSEXMB2.amd.com>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: powernow-k8: out of sync on Athlon64 x2 3800+
+Date: Thu, 2 Feb 2006 07:37:34 +0100
+Message-ID: <200602020737.34781.ak@suse.de>
+References: <B3870AD84389624BAF87A3C7B83149930293551F@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751089AbWBBAGY@vger.kernel.org>
-Content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423020AbWBBGjK@vger.kernel.org>
+In-Reply-To: <B3870AD84389624BAF87A3C7B83149930293551F@SAUSEXMB2.amd.com>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>, Niklas Edmundsson <Niklas.Edmundsson@hpc2n.umu.se>, Andreas.Burghart@fujitsu-siemens.com, Andi Kleen <ak@suse.de>
+To: "shin, jacob" <jacob.shin@amd.com>
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>, Niklas Edmundsson <Niklas.Edmundsson@hpc2n.umu.se>, Andreas.Burghart@fujitsu-siemens.com
 
-Hello,
+On Thursday 02 February 2006 01:05, shin, jacob wrote:
 
-I don't think this is a BIOS issue, but a kernel bug in the i386 tree.  I believe this was recently discussed and hopefully fixed by Andi Kleen in the kernel mailing list:
+> I was wondering if anyone has already tested Andi's patch, if it
+> successfully solves this problem, and if the patch has made it into the git
+> yet.
 
-http://lkml.org/lkml/2006/1/9/442
+It's in 2.6.16-rc1. If you think it's critical I can propose it for 2.6.15 
+stable too.
 
-This is a critical bug especially for systems running AMD Dual-Core Processors on i386 kernel configuration w/ powernow-k8.
-
-The reason for "powernow-k8 - out of sync" errors is because the cpufreq driver is not aware [or has the wrong idea] about which CPUs are tied together, because cpu_core_id and phy_proc_id data is wrong.
-
-Now this is fairly harmless as Mark mentioned, but only on single socket Dual Core systems.
-
-On a multi-socket multi-core system, it will result in something like: (2 dual-core Opterons)
-
-cpu0:
-drwxr-xr-x  2 root root    0 Nov  3 09:51 cpufreq
-
-cpu1:
-drwxr-xr-x  2 root root    0 Nov  3 09:51 cpufreq
-
-cpu2:
-lrwxrwxrwx  1 root root    0 Nov  3 09:51 cpufreq -> ../../../../devices/system/cpu/cpu1/cpufreq
-
-cpu3:
-lrwxrwxrwx  1 root root    0 Nov  3 09:51 cpufreq -> ../../../../devices/system/cpu/cpu1/cpufreq
-
-In this configuration, the second processors will never be able to be managed by a governor.
-
-I was wondering if anyone has already tested Andi's patch, if it successfully solves this problem, and if the patch has made it into the git yet.
-
-Thanks,
-
--Jacob Shin
-AMD, Inc.
-
-On  cpufreq-bounces@lists.linux.org.uk wrote:
->>> You'll get that message on an Athlon X2 if you're using an
->>> old version of the driver that doesn't fully support
->>> dual core or if your part is being reported to Linux as 2 single core parts.
->>> 
->>> Neither of those should be happening with the 2.6.15.1 kernel.
->> 
->> OK, seems we've really found a bug then.
-> 
-> Yes, but it's a BIOS bug.
-> 
->>> Could you send me the results of `dmesg | grep powern` immediately
->>> after boot?
->> 
->> Sure:
->> # dmesg|grep powern
->> powernow-k8: Found 2 AMD Athlon 64 / Opteron processors (version 1.50.4)
->> powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x8 (1350 mV)
->> powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa (1300 mV)
->> powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
->> powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x8 (1350 mV)
->> powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa (1300 mV)
->> powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
-> 
-> You're using a driver that supports dual-core, but the BIOS
-> is reporting the two cores as two separate processors.
-> They've probably got the APICIDs misconfigured.
-> 
-> I've reported it to FSC and I advise you to do the same.
-> 
->> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
->> powernow-k8: error - out of sync, fix 0x2 0xa, vid 0x12 0xa
->> powernow-k8: error - out of sync, fix 0xa 0xc, vid 0xa 0x8
->> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
->> powernow-k8: error - out of sync, fix 0x2 0xc, vid 0x12 0x8
->> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
-> 
-> These messages are mostly harmless, by the way, but some
-> people have seen system instability.  I would enable
-> pmtimer support as your clock source, but that's advisable
-> when running a single dual-core anyway.
-> 
-> -Mark Langsdorf
-> AMD, Inc.
-> 
-> 
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@lists.linux.org.uk
-> http://lists.linux.org.uk/mailman/listinfo/cpufreq
+-Andi
