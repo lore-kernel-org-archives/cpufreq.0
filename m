@@ -1,79 +1,99 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5985] speedstep-smi not detecting speedstep-capability with
-	early Pentium 3 Coppermine
-Date: Tue, 31 Jan 2006 22:48:23 -0800
-Message-ID: <200602010648.k116mNT0001660@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: "shin, jacob" <jacob.shin@amd.com>
+Subject: RE: powernow-k8: out of sync on Athlon64 x2 3800+
+Date: Wed, 1 Feb 2006 18:05:00 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B83149930293551F@SAUSEXMB2.amd.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751089AbWBBAGY@vger.kernel.org>
+Content-class: urn:content-classes:message
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>, Niklas Edmundsson <Niklas.Edmundsson@hpc2n.umu.se>, Andreas.Burghart@fujitsu-siemens.com, Andi Kleen <ak@suse.de>
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5985
+Hello,
 
+I don't think this is a BIOS issue, but a kernel bug in the i386 tree.  I believe this was recently discussed and hopefully fixed by Andi Kleen in the kernel mailing list:
 
+http://lkml.org/lkml/2006/1/9/442
 
+This is a critical bug especially for systems running AMD Dual-Core Processors on i386 kernel configuration w/ powernow-k8.
 
+The reason for "powernow-k8 - out of sync" errors is because the cpufreq driver is not aware [or has the wrong idea] about which CPUs are tied together, because cpu_core_id and phy_proc_id data is wrong.
 
-------- Additional Comments From zarhan@cs.tut.fi  2006-01-31 22:48 -------
-With the suggested parameters, I get
+Now this is fairly harmless as Mark mentioned, but only on single socket Dual Core systems.
 
-speedstep-lib: x86: 6, model: 8
-speedstep-lib: Coppermine: MSR_IA32_EBL_CR_POWERON is 0x4c080020, 0x0
-speedstep-lib: Coppermine: MSR_IA32_PLATFORM ID is 0x0, 0x540000
-speedstep-lib: early PIII version
-speedstep-smi: signature:0x00008680, command:0x0000e6f5, event:0x00000000,
-perf_level:0x47534943.
-cpufreq-core: trying to register driver speedstep-smi
-cpufreq-core: adding CPU 0
-speedstep-smi: trying to obtain ownership with command 47534982 at port b2
-speedstep-smi: result is 0
-speedstep-smi: bug #1422 -- can't read freqs from BIOS
-speedstep-smi: could not detect low and high frequencies by SMI call.
-speedstep-lib: trying to determine both speeds
-speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x4c080020 0x0
-speedstep-lib: workaround for early PIIIs
-speedstep-lib: speed is 500000
-speedstep-lib: previous speed is 500000
-speedstep-smi: trying to set frequency to state 1 with command 47534982 at port b2
-speedstep-smi: retry 1, previous result 0, waiting...
-speedstep-smi: retry 2, previous result 0, waiting...
-speedstep-smi: retry 3, previous result 0, waiting...
-speedstep-smi: retry 4, previous result 0, waiting...
-speedstep-smi: retry 5, previous result 0, waiting...
-cpufreq: change failed with new_state 2 and result 0
-speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x4c080020 0x0
-speedstep-lib: workaround for early PIIIs
-speedstep-lib: speed is 500000
-speedstep-lib: low speed is 500000
-speedstep-smi: trying to set frequency to state 0 with command 47534982 at port b2
-speedstep-smi: retry 1, previous result 0, waiting...
-speedstep-smi: retry 2, previous result 0, waiting...
-speedstep-smi: retry 3, previous result 0, waiting...
-speedstep-smi: retry 4, previous result 0, waiting...
-speedstep-smi: retry 5, previous result 0, waiting...
-cpufreq: change failed with new_state 2 and result 0
-speedstep-lib: P3 - MSR_IA32_EBL_CR_POWERON: 0x4c080020 0x0
-speedstep-lib: workaround for early PIIIs
-speedstep-lib: speed is 500000
-speedstep-lib: high speed is 500000
-speedstep-smi: could not detect two different speeds -- aborting.
-cpufreq-core: initialization failed
-cpufreq-core: no CPU initialized for driver speedstep-smi
-cpufreq-core: unregistering CPU 0
+On a multi-socket multi-core system, it will result in something like: (2 dual-core Opterons)
 
-  The 500 MHz speed is correct, but that's about it. I don't have MS Windows
-available right now, but I'll try that out. Thanks for the tips.
+cpu0:
+drwxr-xr-x  2 root root    0 Nov  3 09:51 cpufreq
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+cpu1:
+drwxr-xr-x  2 root root    0 Nov  3 09:51 cpufreq
+
+cpu2:
+lrwxrwxrwx  1 root root    0 Nov  3 09:51 cpufreq -> ../../../../devices/system/cpu/cpu1/cpufreq
+
+cpu3:
+lrwxrwxrwx  1 root root    0 Nov  3 09:51 cpufreq -> ../../../../devices/system/cpu/cpu1/cpufreq
+
+In this configuration, the second processors will never be able to be managed by a governor.
+
+I was wondering if anyone has already tested Andi's patch, if it successfully solves this problem, and if the patch has made it into the git yet.
+
+Thanks,
+
+-Jacob Shin
+AMD, Inc.
+
+On  cpufreq-bounces@lists.linux.org.uk wrote:
+>>> You'll get that message on an Athlon X2 if you're using an
+>>> old version of the driver that doesn't fully support
+>>> dual core or if your part is being reported to Linux as 2 single core parts.
+>>> 
+>>> Neither of those should be happening with the 2.6.15.1 kernel.
+>> 
+>> OK, seems we've really found a bug then.
+> 
+> Yes, but it's a BIOS bug.
+> 
+>>> Could you send me the results of `dmesg | grep powern` immediately
+>>> after boot?
+>> 
+>> Sure:
+>> # dmesg|grep powern
+>> powernow-k8: Found 2 AMD Athlon 64 / Opteron processors (version 1.50.4)
+>> powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x8 (1350 mV)
+>> powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa (1300 mV)
+>> powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
+>> powernow-k8:    0 : fid 0xc (2000 MHz), vid 0x8 (1350 mV)
+>> powernow-k8:    1 : fid 0xa (1800 MHz), vid 0xa (1300 mV)
+>> powernow-k8:    2 : fid 0x2 (1000 MHz), vid 0x12 (1100 mV)
+> 
+> You're using a driver that supports dual-core, but the BIOS
+> is reporting the two cores as two separate processors.
+> They've probably got the APICIDs misconfigured.
+> 
+> I've reported it to FSC and I advise you to do the same.
+> 
+>> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
+>> powernow-k8: error - out of sync, fix 0x2 0xa, vid 0x12 0xa
+>> powernow-k8: error - out of sync, fix 0xa 0xc, vid 0xa 0x8
+>> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
+>> powernow-k8: error - out of sync, fix 0x2 0xc, vid 0x12 0x8
+>> powernow-k8: error - out of sync, fix 0xc 0x2, vid 0x8 0x12
+> 
+> These messages are mostly harmless, by the way, but some
+> people have seen system instability.  I would enable
+> pmtimer support as your clock source, but that's advisable
+> when running a single dual-core anyway.
+> 
+> -Mark Langsdorf
+> AMD, Inc.
+> 
+> 
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
