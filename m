@@ -1,28 +1,42 @@
-From: "shin, jacob" <jacob.shin@amd.com>
-Subject: RE: powernow-k8: out of sync on Athlon64 x2 3800+
-Date: Thu, 2 Feb 2006 11:36:05 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B831499302935525@SAUSEXMB2.amd.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750811AbWBBRhe@vger.kernel.org>
-Content-class: urn:content-classes:message
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5985] speedstep-smi not detecting speedstep-capability with
+	early Pentium 3 Coppermine
+Date: Fri, 3 Feb 2006 08:29:12 -0800
+Message-ID: <200602031629.k13GTCiL024444@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Andi Kleen <ak@suse.de>
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>, Niklas Edmundsson <Niklas.Edmundsson@hpc2n.umu.se>, Andreas.Burghart@fujitsu-siemens.com
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-On Thursday, February 02, 2006 12:38 AM Andi Kleen wrote:
-> It's in 2.6.16-rc1. If you think it's critical I can propose it for 2.6.15
-> stable too.
+http://bugzilla.kernel.org/show_bug.cgi?id=5985
 
-Yes, please do propose it for 2.6.15 as well.
+zarhan@cs.tut.fi changed:
 
-It is critical in my opinion.  It affects all i386 kernel running AMD Dual-Core processors.  It affects any code that relies on cpu_core_id and phys_proc_id data.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |REJECTED
+         Resolution|                            |DOCUMENTED
 
-I believe the bug has been around since 2.6.13.  I am surprised no one raised red flags until now.  Maybe everyone using dual core processors migrated to x86_64.  ;-)
 
-Thanks Andi,
 
--Jacob Shin
-AMD, Inc.
+------- Additional Comments From zarhan@cs.tut.fi  2006-02-03 08:29 -------
+Hmm, it seems that this old second-hand laptop does not support Speedstep after
+all - it's not mentioned in the specifications when I was able to dig them up.
+The BIOS can change processor speeds, (I can see it with /proc/cpuinfo), but
+it's not possible to control it from the OS..
+
+Oh well. I didn't even know there were Coppermines that did not support Speedstep.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
