@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6005] can't change cpu frequency on pentium M
-Date: Fri, 3 Feb 2006 16:57:48 -0800
-Message-ID: <200602040057.k140vmVp021910@fire-2.osdl.org>
+Subject: [Bug 4379] Default sampling rates for ondemand governor are too
+	high on a amd64
+Date: Sun, 5 Feb 2006 02:46:01 -0800
+Message-ID: <200602051046.k15Ak12r012481@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,37 +19,24 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6005
-
-venkatesh.pallipadi@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |venkatesh.pallipadi@intel.co
-                   |                            |m
-             Status|NEW                         |ASSIGNED
+http://bugzilla.kernel.org/show_bug.cgi?id=4379
 
 
 
-------- Additional Comments From venkatesh.pallipadi@intel.com  2006-02-03 16:57 -------
-Make sure you have the following things selected in your config.
 
-Power Management
-    ACPI->Processor 
 
-    cpufreq->Enhanced speedstep
-       cpufreq->Enhanced speedstep->ACPI
+------- Additional Comments From piel@lifl.fr  2006-02-05 02:46 -------
+Created an attachment (id=7248)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=7248&action=view)
+Reduce the default sampling rate to check more often
 
-    cpufreq->acpi cpufreq
+Hello,
 
-If you have all these and still you don't see /sys/..../cpu0/cpufreq
-then
-- Add you .config file as attachment (don't inline, add it as attachement please)
-- Add output of acpidump as an attachement. Use the latest pmtools here
-http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/ for acpidump.
+Could you try the attached patch against 2.6.15 or 2.6.16 and confirm it solves
+your problem ? As there is now a check to avoid polling too fast, it should not
+be dangerous to check more often.
 
-Thanks,
-Venki
+Eric
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
