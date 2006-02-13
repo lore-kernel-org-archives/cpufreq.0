@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6063] New: /proc/cpufreq and
-	/sys/devices/system/cpu/cpu0/cpufreq don't exist
-Date: Sun, 12 Feb 2006 16:26:21 -0800
-Message-ID: <200602130026.k1D0QL7B030951@fire-2.osdl.org>
+Subject: [Bug 6063] /proc/cpufreq and /sys/devices/system/cpu/cpu0/cpufreq
+	don't exist
+Date: Sun, 12 Feb 2006 16:28:43 -0800
+Message-ID: <200602130028.k1D0Sh4w031022@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,29 +21,15 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=6063
 
-           Summary: /proc/cpufreq and /sys/devices/system/cpu/cpu0/cpufreq
-                    don't exist
-    Kernel Version: vanilla-2.6.15.1
-            Status: NEW
-          Severity: high
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: jieryn@gmail.com
 
 
-Most recent kernel where this bug did not occur: unknown
-Distribution:         gentoo
-Hardware Environment: amd64
-Software Environment: vanilla-sources-2.6.15.1
-Problem Description:  none of the following exist:
-
-/sys/devices/system/cpu/cpu0/cpufreq
-/proc/cpufreq
-/proc/sys/cpu/*/speed
-/proc/sys/cpu/*/speed-min
-/proc/sys/cpu/*/speed-max
 
 
-Steps to reproduce:   compile 2.6.15.1 kernel and enable CONFIG_CPUFREQD
+------- Additional Comments From jieryn@gmail.com  2006-02-12 16:28 -------
+Created an attachment (id=7302)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=7302&action=view)
+linux config-2.6.15.1
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
