@@ -1,9 +1,13 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6034] powernow-k8 fails to load on AMD Mobile Sempron 3000+
-	system
-Date: Tue, 14 Feb 2006 05:38:58 -0800
-Message-ID: <200602141338.k1EDcwx3007823@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+From: Cyrill Helg <helgc@ee.ethz.ch>
+Subject: Re: Kernel Options for changing the settings of coservative govenor?
+Date: Wed, 15 Feb 2006 14:56:34 +0100
+Message-ID: <200602151456.34455.helgc@ee.ethz.ch>
+References: <200602131025.59014.helgc@ee.ethz.ch>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <200602131025.59014.helgc@ee.ethz.ch>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,25 +17,26 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6034
+Am Montag, 13. Februar 2006 10:25 schrieb Cyrill Helg:
+> Hi guys
+>
+> I'm using the conservative govenor. But I think that the down_threshold is
+> too low for my use. So I'd like to change that to 55 or so. How can I put
+> that as a kernel Option? Because that would be the most elegant way of
+> doing it.
+>
+> Thanks for any help!
+>
+> Cyrill
 
+Nobody? Or is it not possible?
 
-
-
-
-------- Additional Comments From e_val@inbox.ru  2006-02-14 05:38 -------
-Dave,
-
-thank you for you replies. It is very nice to see such a good support for Linux
-kernel form AMD itself. It's just a matter of curiosity now, but where are
-Mobile Sempron datasheets? Are they available publically or just to BIOS makers
-etc? Thanks in advance.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+>
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
