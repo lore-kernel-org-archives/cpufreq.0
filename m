@@ -1,13 +1,11 @@
-From: Vince <legoll@online.fr>
-Subject: Re: Missing PSB or _PSS in BIOS
-Date: Sun, 19 Feb 2006 12:37:49 +0100
-Message-ID: <43F8588D.8030408@online.fr>
-References: <F7DC2337C7631D4386A2DF6E8FB22B30061F41E8@hdsmsx401.amr.corp.intel.com>
-Reply-To: legoll@online.fr
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: Kernel Options for changing the settings of coservative govenor?
+Date: Sun, 19 Feb 2006 17:11:00 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB60074BD55E@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-reply-to: <F7DC2337C7631D4386A2DF6E8FB22B30061F41E8@hdsmsx401.amr.corp.intel.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,60 +15,38 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Brown, Len" <len.brown@intel.com>
-Cc: linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Cyrill Helg <helgc@ee.ethz.ch>, cpufreq@www.linux.org.uk
 
-Brown, Len wrote:
- >> I'm using an opteron 165 (dual-core) which frequency/voltage should
- >> be able to be scaled, but unfortunately the latest BIOS for my
- >> motherboard
- >> lacks the frequency transition tables needed by powernow-k8.c
- >>
- >> as shown by the boot message:
- >> powernow-k8: MP systems not supported by PSB BIOS structure
- >> powernow-k8:  BIOS error - no PSB or ACPI _PSS objects
- >>
- >> Would it be possible to write suitable ACPI _PSS from AMD processor
- >> documentation ?
- >> Or take the infos from some other ACPI BIOS which has support, and put
- >> it in mine ?
- >>
- >> And use the "ACPI load custom DSDT" kernel option to get the
- >> patched one
- >> used by the
- >> powernow-k8 driver ?
- >>
- >> I found a lot of infos about fixing glitches in DSDT but could
- >> not find
- >> anything
- >> about adding missing  _PSS entries...
- >>
- >> Would that be dangerous ?
- >>
- >> Is there something else I could do ?
- >> I don't think I'll get an answer from the vendor, even if I tried...
- >
- > Sure it is possible.
 
- > It is only dangerous if you care about the data on the machine.
- > Presumably the vendor had a reason not to enable this feature...
+Just echo the value that you want into corresponding
+/sys/devices/system/..../cpufreq/conservative/.. file in your init
+script.=20
 
-I suspected the reason would be 'do not care', but you are making it sound
-this is not right for this processor, or something... Care to elaborate 
-a bit,
-or could you point me at a CPU errata or any other source of information
-that will enlighten me as to why enabling this feature would eat my data...
-
-The powernow driver has got patches to enable dual core CPUs, the CPU report
-the feature as present (/proc/cpuinfo), so I had the impression this was not
-working only because the BIOS is crappy, not because of it being a dangerous
-feature...
-
-Sorry if you think I'm silly, but I'm new to ACPI / powernow internals, 
-so please,
-excuse my ignorance...
-
--- 
-Vincent Legoll
+>-----Original Message-----
+>From: cpufreq-bounces@lists.linux.org.uk=20
+>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Cyrill Helg
+>Sent: Monday, February 13, 2006 1:26 AM
+>To: cpufreq@www.linux.org.uk
+>Subject: Kernel Options for changing the settings of=20
+>coservative govenor?
+>
+>Hi guys
+>
+>I'm using the conservative govenor. But I think that the=20
+>down_threshold is too=20
+>low for my use. So I'd like to change that to 55 or so. How=20
+>can I put that as=20
+>a kernel Option? Because that would be the most elegant way of=20
+>doing it.=20
+>
+>Thanks for any help!
+>
+>Cyrill
+>
+>_______________________________________________
+>Cpufreq mailing list
+>Cpufreq@lists.linux.org.uk
+>http://lists.linux.org.uk/mailman/listinfo/cpufreq
+>
