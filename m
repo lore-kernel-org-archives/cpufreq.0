@@ -1,11 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Kernel Options for changing the settings of coservative govenor?
-Date: Sun, 19 Feb 2006 17:11:00 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB60074BD55E@scsmsx403.amr.corp.intel.com>
+From: Bell <bell.jw@gmx.ch>
+Subject: Re: Kernel Options for changing the settings of coservative govenor?
+Date: Mon, 20 Feb 2006 11:04:28 +0100
+Message-ID: <200602201104.28829.bell.jw@gmx.ch>
+References: <88056F38E9E48644A0F562A38C64FB60074BD55E@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB60074BD55E@scsmsx403.amr.corp.intel.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,36 +19,48 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Cyrill Helg <helgc@ee.ethz.ch>, cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
+Am Montag 20 Februar 2006 02:11 schrieb Pallipadi, Venkatesh:
+> Just echo the value that you want into corresponding
+> /sys/devices/system/..../cpufreq/conservative/.. file in your init
+> script.
 
-Just echo the value that you want into corresponding
-/sys/devices/system/..../cpufreq/conservative/.. file in your init
-script.=20
+Thats what I am doing now yes. But the other way with kernel parameters would 
+be a lot nicer... This just means it's no possible?
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Cyrill Helg
->Sent: Monday, February 13, 2006 1:26 AM
->To: cpufreq@www.linux.org.uk
->Subject: Kernel Options for changing the settings of=20
->coservative govenor?
+Thanks
+
+Cyrill
+
 >
->Hi guys
+> >-----Original Message-----
+> >From: cpufreq-bounces@lists.linux.org.uk
+> >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Cyrill Helg
+> >Sent: Monday, February 13, 2006 1:26 AM
+> >To: cpufreq@www.linux.org.uk
+> >Subject: Kernel Options for changing the settings of
+> >coservative govenor?
+> >
+> >Hi guys
+> >
+> >I'm using the conservative govenor. But I think that the
+> >down_threshold is too
+> >low for my use. So I'd like to change that to 55 or so. How
+> >can I put that as
+> >a kernel Option? Because that would be the most elegant way of
+> >doing it.
+> >
+> >Thanks for any help!
+> >
+> >Cyrill
+> >
+> >_______________________________________________
+> >Cpufreq mailing list
+> >Cpufreq@lists.linux.org.uk
+> >http://lists.linux.org.uk/mailman/listinfo/cpufreq
 >
->I'm using the conservative govenor. But I think that the=20
->down_threshold is too=20
->low for my use. So I'd like to change that to 55 or so. How=20
->can I put that as=20
->a kernel Option? Because that would be the most elegant way of=20
->doing it.=20
->
->Thanks for any help!
->
->Cyrill
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
