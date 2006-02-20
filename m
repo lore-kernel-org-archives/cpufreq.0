@@ -1,66 +1,56 @@
-From: Bell <bell.jw@gmx.ch>
-Subject: Re: Kernel Options for changing the settings of coservative govenor?
-Date: Mon, 20 Feb 2006 11:04:28 +0100
-Message-ID: <200602201104.28829.bell.jw@gmx.ch>
-References: <88056F38E9E48644A0F562A38C64FB60074BD55E@scsmsx403.amr.corp.intel.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: Missing PSB or _PSS in BIOS
+Date: Mon, 20 Feb 2006 12:00:51 +0100
+Message-ID: <20060220110051.GA15047@poupinou.org>
+References: <43F7CDA2.8030209@online.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB60074BD55E@scsmsx403.amr.corp.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <43F7CDA2.8030209@online.fr>
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Vince <legoll@online.fr>
+Cc: linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-Am Montag 20 Februar 2006 02:11 schrieb Pallipadi, Venkatesh:
-> Just echo the value that you want into corresponding
-> /sys/devices/system/..../cpufreq/conservative/.. file in your init
-> script.
+On Sun, Feb 19, 2006 at 02:45:06AM +0100, Vince wrote:
+> Hello,
+> 
+> I'm using an opteron 165 (dual-core) which frequency/voltage should
+> be able to be scaled, but unfortunately the latest BIOS for my motherboard
+> lacks the frequency transition tables needed by powernow-k8.c
+> 
+> as shown by the boot message:
+> powernow-k8: MP systems not supported by PSB BIOS structure
+> powernow-k8:  BIOS error - no PSB or ACPI _PSS objects
+> 
+> Would it be possible to write suitable ACPI _PSS from AMD processor 
+> documentation ?
+> Or take the infos from some other ACPI BIOS which has support, and put 
+> it in mine ?
+> 
+> And use the "ACPI load custom DSDT" kernel option to get the patched one 
+> used by the
+> powernow-k8 driver ?
+> 
+> I found a lot of infos about fixing glitches in DSDT but could not find 
+> anything
+> about adding missing  _PSS entries...
+> 
+> Would that be dangerous ?
+> 
+> Is there something else I could do ?
+> I don't think I'll get an answer from the vendor, even if I tried...
+> 
 
-Thats what I am doing now yes. But the other way with kernel parameters would 
-be a lot nicer... This just means it's no possible?
+First, check if 'Cool'n Quiet' is enabled in the bios.  Second, if that
+do not work, try to upgrade your bios.  I had a similar problem with a
+HP Proliant 385, and after upgrading it was (almost) ok (they just
+forgot one p-state, but it was easy to add it afterward).
 
-Thanks
+-- 
+Bruno Ducrot
 
-Cyrill
-
->
-> >-----Original Message-----
-> >From: cpufreq-bounces@lists.linux.org.uk
-> >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Cyrill Helg
-> >Sent: Monday, February 13, 2006 1:26 AM
-> >To: cpufreq@www.linux.org.uk
-> >Subject: Kernel Options for changing the settings of
-> >coservative govenor?
-> >
-> >Hi guys
-> >
-> >I'm using the conservative govenor. But I think that the
-> >down_threshold is too
-> >low for my use. So I'd like to change that to 55 or so. How
-> >can I put that as
-> >a kernel Option? Because that would be the most elegant way of
-> >doing it.
-> >
-> >Thanks for any help!
-> >
-> >Cyrill
-> >
-> >_______________________________________________
-> >Cpufreq mailing list
-> >Cpufreq@lists.linux.org.uk
-> >http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@lists.linux.org.uk
-> http://lists.linux.org.uk/mailman/listinfo/cpufreq
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
