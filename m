@@ -1,47 +1,55 @@
-From: "=?ISO-8859-1?Q?Jes=FAs_Velazquez?=" <jesus.velazquez@gmail.com>
-Subject: help acpi-cpufreq
-Date: Wed, 22 Feb 2006 18:35:52 -0600
-Message-ID: <5876e7e80602221635w52dad6abk36dca5d35d54fe70@mail.gmail.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Status of X86_P4_CLOCKMOD?
+Date: Thu, 23 Feb 2006 20:59:37 +0100
+Message-ID: <20060223195937.GA5087@stusta.de>
+References: <20060214152218.GI10701@stusta.de> <20060222024438.GI20204@MAIL.13thfloor.at> <20060222031001.GC4661@stusta.de> <200602212220.05642.dtor_core@ameritech.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751778AbWBWT7k@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <200602212220.05642.dtor_core@ameritech.net>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>
+Cc: Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
 
-Hi, Our names are Emmanuel and Jesus
+On Tue, Feb 21, 2006 at 10:20:04PM -0500, Dmitry Torokhov wrote:
+> On Tuesday 21 February 2006 22:10, Adrian Bunk wrote:
+> > On Wed, Feb 22, 2006 at 03:44:38AM +0100, Herbert Poetzl wrote:
+> > > 
+> > >  config X86_P4_CLOCKMOD
+> > > 	depends on EMBEDDED
+> > 
+> > This one is an x86_64 only issue, and yes, it's wrong.
+> 
+> That's for P4, not X86_64... And since P4 clock modulation does not provide
+> almost any energy savings it was "hidden" under embedded.
 
-We are trying to load the module acpi_cpufreq unsuccessfully, We have
-been trying different Linux Kernel Versions: 2.6.12, 2.6.12.6,
-2.6.13.1, 2.6.15.3, 2.6.9, 2.6.10 but in all the cases the error is
-the same (also the p4-clockmod):
+But the EMBEDDED dependency is only on x86_64:
 
-FATAL: Error inserting acpi_cpufreq
-(/lib/modules/XXXXX/kernel/arch/x86_64/kernel/cpufreq/acpi-cpufreq.ko):
-No such device
+arch/i386/kernel/cpu/cpufreq/Kconfig:
+config X86_P4_CLOCKMOD
+        tristate "Intel Pentium 4 clock modulation"
+        select CPU_FREQ_TABLE
+        help
 
-and dmesg command doesn't show anything.
+arch/x86_64/kernel/cpufreq/Kconfig:
+config X86_P4_CLOCKMOD
+        tristate "Intel Pentium 4 clock modulation"
+        depends on EMBEDDED
+        help
 
-The platform we are using is an Intel Xeon Processor at 2.0 Ghz for 64bits
+And if the option is mostly useless, what is it good for?
 
-We are running Suse Linux Enterprise Server 9 service pack 3.
+> Dmitry
 
-Are there any patch for that problem?
+cu
+Adrian
 
-Suffering the web we found that there is a regression for acpi-cpufreq
-module, is it correct?, what version of Linux Kernel do we use?, How
-can we get more information about this problem?, What "no such device"
-means? What other information do you need in order to figure out the
-problem?
+-- 
 
-Thanks
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
