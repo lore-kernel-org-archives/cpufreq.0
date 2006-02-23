@@ -1,56 +1,47 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Missing PSB or _PSS in BIOS
-Date: Mon, 20 Feb 2006 12:00:51 +0100
-Message-ID: <20060220110051.GA15047@poupinou.org>
-References: <43F7CDA2.8030209@online.fr>
+From: "=?ISO-8859-1?Q?Jes=FAs_Velazquez?=" <jesus.velazquez@gmail.com>
+Subject: help acpi-cpufreq
+Date: Wed, 22 Feb 2006 18:35:52 -0600
+Message-ID: <5876e7e80602221635w52dad6abk36dca5d35d54fe70@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <43F7CDA2.8030209@online.fr>
-Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Vince <legoll@online.fr>
-Cc: linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Sun, Feb 19, 2006 at 02:45:06AM +0100, Vince wrote:
-> Hello,
-> 
-> I'm using an opteron 165 (dual-core) which frequency/voltage should
-> be able to be scaled, but unfortunately the latest BIOS for my motherboard
-> lacks the frequency transition tables needed by powernow-k8.c
-> 
-> as shown by the boot message:
-> powernow-k8: MP systems not supported by PSB BIOS structure
-> powernow-k8:  BIOS error - no PSB or ACPI _PSS objects
-> 
-> Would it be possible to write suitable ACPI _PSS from AMD processor 
-> documentation ?
-> Or take the infos from some other ACPI BIOS which has support, and put 
-> it in mine ?
-> 
-> And use the "ACPI load custom DSDT" kernel option to get the patched one 
-> used by the
-> powernow-k8 driver ?
-> 
-> I found a lot of infos about fixing glitches in DSDT but could not find 
-> anything
-> about adding missing  _PSS entries...
-> 
-> Would that be dangerous ?
-> 
-> Is there something else I could do ?
-> I don't think I'll get an answer from the vendor, even if I tried...
-> 
+Hi, Our names are Emmanuel and Jesus
 
-First, check if 'Cool'n Quiet' is enabled in the bios.  Second, if that
-do not work, try to upgrade your bios.  I had a similar problem with a
-HP Proliant 385, and after upgrading it was (almost) ok (they just
-forgot one p-state, but it was easy to add it afterward).
+We are trying to load the module acpi_cpufreq unsuccessfully, We have
+been trying different Linux Kernel Versions: 2.6.12, 2.6.12.6,
+2.6.13.1, 2.6.15.3, 2.6.9, 2.6.10 but in all the cases the error is
+the same (also the p4-clockmod):
 
--- 
-Bruno Ducrot
+FATAL: Error inserting acpi_cpufreq
+(/lib/modules/XXXXX/kernel/arch/x86_64/kernel/cpufreq/acpi-cpufreq.ko):
+No such device
 
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+and dmesg command doesn't show anything.
+
+The platform we are using is an Intel Xeon Processor at 2.0 Ghz for 64bits
+
+We are running Suse Linux Enterprise Server 9 service pack 3.
+
+Are there any patch for that problem?
+
+Suffering the web we found that there is a regression for acpi-cpufreq
+module, is it correct?, what version of Linux Kernel do we use?, How
+can we get more information about this problem?, What "no such device"
+means? What other information do you need in order to figure out the
+problem?
+
+Thanks
