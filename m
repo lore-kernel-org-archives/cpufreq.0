@@ -1,47 +1,40 @@
-From: Dave Jones <davej@redhat.com>
+From: Andi Kleen <ak@suse.de>
 Subject: Re: Status of X86_P4_CLOCKMOD?
-Date: Fri, 24 Feb 2006 23:24:56 -0500
-Message-ID: <20060225042456.GA7851@redhat.com>
-References: <20060214152218.GI10701@stusta.de> <20060222024438.GI20204@MAIL.13thfloor.at> <20060222031001.GC4661@stusta.de> <200602212220.05642.dtor_core@ameritech.net> <20060223195937.GA5087@stusta.de> <20060223204110.GE6213@redhat.com> <20060225015722.GC8132@linuxtv.org>
+Date: Sat, 25 Feb 2006 05:27:01 +0100
+Message-ID: <200602250527.03493.ak@suse.de>
+References: <20060214152218.GI10701@stusta.de> <20060223204110.GE6213@redhat.com> <20060225015722.GC8132@linuxtv.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932655AbWBYE0x@vger.kernel.org>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932670AbWBYElf@vger.kernel.org>
 In-Reply-To: <20060225015722.GC8132@linuxtv.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johannes Stezenbach <js@linuxtv.org>, Adrian Bunk <bunk@stusta.de>, Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk, ak@suse.de
+To: Johannes Stezenbach <js@linuxtv.org>
+Cc: Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@stusta.de>, Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
 
-On Sat, Feb 25, 2006 at 02:57:22AM +0100, Johannes Stezenbach wrote:
- > On Thu, Feb 23, 2006, Dave Jones wrote:
- > > On Thu, Feb 23, 2006 at 08:59:37PM +0100, Adrian Bunk wrote:
- > >  > And if the option is mostly useless, what is it good for?
- > > 
- > > It's sometimes useful in cases where the target CPU doesn't have any better
- > > option (Speedstep/Powernow).  The big misconception is that it
- > > somehow saves power & increases battery life. Not so.
- > > All it does is 'not do work so often'.  The upside of this is
- > > that in some situations, we generate less heat this way.
- > 
- > Doesn't less heat imply less power consumption?
+On Saturday 25 February 2006 02:57, Johannes Stezenbach wrote:
+> On Thu, Feb 23, 2006, Dave Jones wrote:
+> > On Thu, Feb 23, 2006 at 08:59:37PM +0100, Adrian Bunk wrote:
+> >  > And if the option is mostly useless, what is it good for?
+> > 
+> > It's sometimes useful in cases where the target CPU doesn't have any better
+> > option (Speedstep/Powernow).  The big misconception is that it
+> > somehow saves power & increases battery life. Not so.
+> > All it does is 'not do work so often'.  The upside of this is
+> > that in some situations, we generate less heat this way.
+> 
+> Doesn't less heat imply less power consumption?
 
-Not really.  The only energy you're saving is that your CPU fan
-will turn slightly slower, which is probably going to be < 1W
-of difference.  Generated heat drop in a large room of servers
-*may* mean the aircon has less to do, but I'd be surprised if
-it made a noticable difference.
+Not in this case no.
 
- > - after some minutes of idling without user activity
- >   go into lowest power mode (could be triggered
- >   from xscreensaver)
- > - at the slightest hint of user activity or CPU load jump
- >   back to max performance mode
- > (- optionally use intermediate clock mod steps for
- >   non-interactive loads, but I'm not convinced it's
- >   worth it)
+> P4 clockmod certainly sucks compared to Speedstep,
+> but IMHO it is still potentially useful for the average
+> desktop PC user (at least those many who let their PCs
+> run 24/7, but 90% idle and unused).
 
-You should be able to modify cpuspeed or some other userspace
-governor to do this quite easily.
+I don't think so no. The latencies make it unusable.
 
-		Dave
+-Andi
+ 
