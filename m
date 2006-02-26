@@ -1,20 +1,22 @@
-From: Pavel Machek <pavel@suse.cz>
+From: Johannes Stezenbach <js@linuxtv.org>
 Subject: Re: Status of X86_P4_CLOCKMOD?
-Date: Sun, 26 Feb 2006 11:12:20 +0000
-Message-ID: <20060226111220.GA2359@ucw.cz>
+Date: Sun, 26 Feb 2006 21:39:41 +0100
+Message-ID: <20060226203941.GA5783@linuxtv.org>
 References: <20060214152218.GI10701@stusta.de> <20060223204110.GE6213@redhat.com> <20060225015722.GC8132@linuxtv.org> <200602250527.03493.ak@suse.de> <20060225125326.GJ3674@stusta.de> <20060225132820.GA13413@isilmar.linta.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751282AbWBZRp1@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751080AbWBZUkn@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <20060225132820.GA13413@isilmar.linta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@stusta.de>, Andi Kleen <ak@suse.de>, Johannes Stezenbach <js@linuxtv.org>, Dave Jones <davej@redhat.com>, Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
+To: Adrian Bunk <bunk@stusta.de>, Andi Kleen <ak@suse.de>, Dave Jones <davej@redhat.com>, Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
 
-Hi!
-
+On Sat, Feb 25, 2006 at, Dominik Brodowski wrote:
+> On Sat, Feb 25, 2006 at 01:53:26PM +0100, Adrian Bunk wrote:
+> > > > Doesn't less heat imply less power consumption?
+> > > 
 > > > Not in this case no.
 > > >...
 > > 
@@ -26,7 +28,13 @@ Hi!
 > No. Let's do the math (again), and (again) for the actual values of an Intel
 > Pentium(R) M Processor, 1400 MHz @ 1.484 V, even though the same rules of
 > physics, logic and mathematics apply to _all_ processors.
-> 
+
+Do you have the numbers for a Pentium(R) 4 HT? (I couldn't find
+anything substantial with google.) Especially C2 vs. C2 + throttling?
+Because the way I remember having read somewhere, the idle
+(C2) power consumption of the P4 is significantly higher
+than with the Pentium(R) M.
+
 > Power consumption in idle state C2 (Stop-Grant state)	 7.3 W
 > Power consumption when "skipping instructions"
 > 	because of throttling (Stop-Grant state)	 7.3 W
@@ -36,8 +44,10 @@ Hi!
 > 
 > This means that if the processor idle percentage is _larger_ than (1 -
 > throttling rate), throttling has no effect at all.
-> 
-> 
+
+On a Pentium(R) M, but how about P4? The two have very different
+architectures, don't they?
+
 > Now, let's assume there is some work for the CPU to do which keeps it busy
 > for one second @ 1.4 GHz. How much energy is needed to get this work done?
 > 
@@ -58,8 +68,10 @@ Hi!
 > that sufficiently, the fan _may_ need to run faster, which consumes more
 > energy than is saved by only having to cool 7.3 W (instead of 11W) the other
 > three seconds.
-> 
-> 
+
+This is all fine, but why would anyone use throttling when the
+CPU has work to do (except for thermal emergency throttling)?
+
 > So: P4-clockmod style throttling only makes sense if either
 > 
 > a) the idle handler does not enter the Stop-Grant state (C2) efficiently, or
@@ -67,9 +79,42 @@ Hi!
 > b) the load varies significantly over time in a manner which has effect on
 >    the fan, and where the latency induced by throttling doesn't matter.
 
-c) your load is something like game of doom, where you want
-  to play for half an hour with least power consumed. You
-  don't really need 1000 fps, 100 fps is enough.
-						Pavel
--- 
-Thanks, Sharp!
+Maybe my previous mails were not clear enough: The goal is to
+reduce idle power consumption (and by that fan noise). The PC
+is running but is idle, e.g just listening for possible incoming
+jabber messages or whatever.
+
+When I experimented with P4-clockmod some time ago, I observed
+that the fan noise was reduced when I left the box run idle
+with clockmod set to maximum throttling. I thought this was
+a good thing.
+
+Anyway, 2.6.16-rc4 p4-clockmod driver doesn't work with my CPU
+anymore (booted with cpufreq.debug=7):
+
+CPU: Intel(R) Pentium(R) 4 CPU 2.60GHz stepping 09
+Checking 'hlt' instruction... OK.
+...
+cpufreq-core: trying to register driver p4-clockmod
+cpufreq-core: adding CPU 0
+p4-clockmod: has errata -- disabling frequencies lower than 2ghz
+speedstep-lib: x86: f, model: 2
+speedstep-lib: ebx value is 9, x86_mask is 9
+speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0xd12000d 0x0
+speedstep-lib: P4 - FSB 200000 kHz; Multiplier 13; Speed 2600000 kHz
+freq-table: setting show_table for cpu 0 to b04be620
+freq-table: table entry 0 is invalid, skipping
+freq-table: table entry 1 is invalid, skipping
+freq-table: table entry 2 is invalid, skipping
+freq-table: table entry 3 is invalid, skipping
+freq-table: table entry 4 is invalid, skipping
+freq-table: table entry 5 is invalid, skipping
+freq-table: table entry 6 is invalid, skipping
+freq-table: table entry 7 is invalid, skipping
+freq-table: table entry 8 is invalid, skipping
+cpufreq-core: initialization failed
+cpufreq-core: no CPU initialized for driver p4-clockmod
+cpufreq-core: unregistering CPU 0
+
+
+Johannes
