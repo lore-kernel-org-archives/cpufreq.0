@@ -1,47 +1,28 @@
-From: Johannes Stezenbach <js@linuxtv.org>
+From: Wes Felter <wesley@felter.org>
 Subject: Re: Status of X86_P4_CLOCKMOD?
-Date: Mon, 27 Feb 2006 00:37:45 +0100
-Message-ID: <20060226233745.GA6804@linuxtv.org>
-References: <20060214152218.GI10701@stusta.de> <20060223204110.GE6213@redhat.com> <20060225015722.GC8132@linuxtv.org> <200602250527.03493.ak@suse.de> <20060225125326.GJ3674@stusta.de> <20060225132820.GA13413@isilmar.linta.de> <20060226203941.GA5783@linuxtv.org> <20060226205513.GA26486@isilmar.linta.de>
+Date: Mon, 27 Feb 2006 15:17:37 -0600
+Message-ID: <dtvqaa$1et$1@sea.gmane.org>
+References: <20060214152218.GI10701@stusta.de> <20060222024438.GI20204@MAIL.13thfloor.at> <20060222031001.GC4661@stusta.de> <200602212220.05642.dtor_core@ameritech.net> <20060223195937.GA5087@stusta.de> <20060223204110.GE6213@redhat.com> <20060225015722.GC8132@linuxtv.org> <20060225042456.GA7851@redhat.com> <20060225125337.GB8698@linuxtv.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751425AbWBZXhs@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060226205513.GA26486@isilmar.linta.de>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751756AbWB0VTW@vger.kernel.org>
+In-Reply-To: <20060225125337.GB8698@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Adrian Bunk <bunk@stusta.de>, Andi Kleen <ak@suse.de>, Dave Jones <davej@redhat.com>, Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-kernel@vger.kernel.org
+Cc: cpufreq@lists.linux.org.uk
 
-On Sun, Feb 26, 2006, Dominik Brodowski wrote:
-> On Sun, Feb 26, 2006 at 09:39:41PM +0100, Johannes Stezenbach wrote:
-> > 
-> > Do you have the numbers for a Pentium(R) 4 HT? (I couldn't find
-> > anything substantial with google.) Especially C2 vs. C2 + throttling?
-> > Because the way I remember having read somewhere, the idle
-> > (C2) power consumption of the P4 is significantly higher
-> > than with the Pentium(R) M.
-> 
-> Unfortunately, I do not have these numbers present. You can check the
-> processor specification sheets at Intel's website, though.
+Johannes Stezenbach wrote:
 
-Went to the Intel(R) website, searched for half an hour, found many
-docs but none that gives useful information about this, gave up. :-(
+> If someone has done measurements I'd be interested to
+> know the numbers about the actual power savings which
+> can be achieved by using P4 clock mod. I don't expect
+> it to be much, but I bet it's more than 1W.
 
-> > > So: P4-clockmod style throttling only makes sense if either
-> > > 
-> > > a) the idle handler does not enter the Stop-Grant state (C2) efficiently, or
-> > 
-> > Maybe my previous mails were not clear enough: The goal is to
-> > reduce idle power consumption (and by that fan noise). The PC
-> > is running but is idle, e.g just listening for possible incoming
-> > jabber messages or whatever.
-> 
-> Most probably, the idle handler can't make use of the Stop-Grant state (C2)
-> here, so this is case a) noted above.
+Clock modulation can reduce power by 40W on a 3.6GHz Xeon when the 
+system is running a high-power application (e.g. Linpack). (It also 
+reduces performance by a factor of 6-10). Clock modulation saves no 
+power at all during idle.
 
-Hm.
-
-Thanks,
-Johannes
+Wes Felter - wesley@felter.org
