@@ -1,13 +1,11 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
-Date: Tue, 28 Feb 2006 13:15:52 +0100
-Message-ID: <200602281315.53204.ak@suse.de>
-References: <B3870AD84389624BAF87A3C7B831499302935655@SAUSEXMB2.amd.com>
+From: "shin, jacob" <jacob.shin@amd.com>
+Subject: RE: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
+Date: Tue, 28 Feb 2006 09:33:45 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B831499302935659@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <B3870AD84389624BAF87A3C7B831499302935655@SAUSEXMB2.amd.com>
-Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,25 +15,27 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "shin, jacob" <jacob.shin@amd.com>
+To: Andi Kleen <ak@suse.de>
 Cc: cpufreq@lists.linux.org.uk, davej@redhat.com, "Langsdorf,
 	Mark" <mark.langsdorf@amd.com>
 
-On Tuesday 28 February 2006 02:54, shin, jacob wrote:
-> powernow-k8: Let cpufreq driver handle affected CPUs
-> 
-> Let the cpufreq driver manage AMD Dual-Core CPUs being tied together.
-> 
-> Since cpufreq driver's affected CPUs data, cpufreq_policy->cpus, already
-> knows about which cores are tied together, powernow driver does not have
-> keep its internal data for every core.  (even a pointer.. it will never
-> be called on)  Telling cpufreq driver about cpu_core_map at init time is
-> sufficient.
+On Tuesday, February 28, 2006 6:16 AM Andi Kleen wrote:
 
-Nice - it even simplifies the code.  And makes sense.
+> How much regression testing did you do? Is it well tested enough for =
+2.6.16?
 
-How much regression testing did you do? Is it well tested enough for 2.6.16? 
+I tested on machine running 2 Dual-Core AMD Opteron processors.
+I tried 1P, SMP, SMP + Hotplug configurations on x86_64 side.
+i386 should be fine too, since we share the powernow code.
 
--Andi
+These changes to should really be transparent, since it simply
+does away with keeping track of data that we never use.
+
+I am confidant enough to push for 2.6.16.
+
+Thanks!
+
+-Jacob Shin
+AMD, Inc.
