@@ -1,28 +1,106 @@
-From: Wes Felter <wesley@felter.org>
-Subject: Re: Status of X86_P4_CLOCKMOD?
-Date: Mon, 27 Feb 2006 15:17:37 -0600
-Message-ID: <dtvqaa$1et$1@sea.gmane.org>
-References: <20060214152218.GI10701@stusta.de> <20060222024438.GI20204@MAIL.13thfloor.at> <20060222031001.GC4661@stusta.de> <200602212220.05642.dtor_core@ameritech.net> <20060223195937.GA5087@stusta.de> <20060223204110.GE6213@redhat.com> <20060225015722.GC8132@linuxtv.org> <20060225042456.GA7851@redhat.com> <20060225125337.GB8698@linuxtv.org>
+From: "shin, jacob" <jacob.shin@amd.com>
+Subject: [PATCH] [2/2] cpufreq: Fix handling for CPU hotplug
+Date: Mon, 27 Feb 2006 19:54:38 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B831499302935656@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751756AbWB0VTW@vger.kernel.org>
-In-Reply-To: <20060225125337.GB8698@linuxtv.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============0020637015=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-kernel@vger.kernel.org
-Cc: cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: Andi Kleen <ak@suse.de>, cpufreq@lists.linux.org.uk
+Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>
 
-Johannes Stezenbach wrote:
+--===============0020637015==
+Content-class: urn:content-classes:message
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: base64
 
-> If someone has done measurements I'd be interested to
-> know the numbers about the actual power savings which
-> can be achieved by using P4 clock mod. I don't expect
-> it to be much, but I bet it's more than 1W.
+Y3B1ZnJlcTogRml4IGhhbmRsaW5nIGZvciBDUFUgaG90cGx1Zw0KDQpUaGlzIHBhdGNoIGFkZHMg
+cHJvcGVyIGxvZ2ljIHRvIGNwdWZyZXEgZHJpdmVyIGluIG9yZGVyIHRvIGhhbmRsZQ0KQ1BVIEhv
+dHBsdWcuDQoNCldoZW4gQ1BVcyBnbyBvbi9vZmZsaW5lLCB0aGUgYWZmZWN0ZWQgQ1BVcyBkYXRh
+LCBjcHVmcmVxX3BvbGljeS0+Y3B1cywNCmlzIG5vdCB1cGRhdGVkIHByb3Blcmx5LiBUaGlzIGNh
+dXNlcyBzeXNmcyBkaXJlY3RvcmllcyBhbmQgc3ltbGlua3MgdG8NCmJlIGluIGFuIGluY29ycmVj
+dCBzdGF0ZSBhZnRlciBmZXcgQ1BVIG9uL29mZmxpbmVzLg0KDQpTaWduZWQtb2ZmLWJ5OiBKYWNv
+YiBTaGluIDxqYWNvYi5zaGluQGFtZC5jb20+DQoNCi0tLQ0KDQotLS0gbGludXgub3JpZy9kcml2
+ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCTIwMDYtMDItMjQgMDQ6NDY6MjQuMDAwMDAwMDAwIC0wNjAw
+DQorKysgbGludXgvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwkyMDA2LTAyLTI3IDEyOjQ4OjMz
+LjAwMDAwMDAwMCAtMDYwMA0KQEAgLTYsNiArNiw4IEBADQogICoNCiAgKiAgT2N0IDIwMDUgLSBB
+c2hvayBSYWogPGFzaG9rLnJhakBpbnRlbC5jb20+DQogICogICAgICAgICAJCUFkZGVkIGhhbmRs
+aW5nIGZvciBDUFUgaG90cGx1Zw0KKyAqICBGZWIgMjAwNiAtIEphY29iIFNoaW4gPGphY29iLnNo
+aW5AYW1kLmNvbT4NCisgKiAgICAgICAgICAgICAgICAgICAgICBGaXggaGFuZGxpbmcgZm9yIENQ
+VSBob3RwbHVnIC0tIGFmZmVjdGVkIENQVXMNCiAgKg0KICAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVl
+IHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5DQogICogaXQg
+dW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSB2ZXJzaW9u
+IDIgYXMNCkBAIC01NzMsOCArNTc1LDEyIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfZGV2IChz
+dHJ1Y3Qgc3lzX2QNCiAJc3RydWN0IGNwdWZyZXFfcG9saWN5IG5ld19wb2xpY3k7DQogCXN0cnVj
+dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5Ow0KIAlzdHJ1Y3QgZnJlcV9hdHRyICoqZHJ2X2F0dHI7
+DQorCXN0cnVjdCBzeXNfZGV2aWNlICpjcHVfc3lzX2RldjsNCiAJdW5zaWduZWQgbG9uZyBmbGFn
+czsNCiAJdW5zaWduZWQgaW50IGo7DQorI2lmZGVmIENPTkZJR19TTVANCisJc3RydWN0IGNwdWZy
+ZXFfcG9saWN5ICptYW5hZ2VkX3BvbGljeTsNCisjZW5kaWYNCiANCiAJaWYgKGNwdV9pc19vZmZs
+aW5lKGNwdSkpDQogCQlyZXR1cm4gMDsNCkBAIC01ODcsOCArNTkzLDcgQEAgc3RhdGljIGludCBj
+cHVmcmVxX2FkZF9kZXYgKHN0cnVjdCBzeXNfZA0KIAkgKiBDUFUgYmVjYXVzZSBpdCBpcyBpbiB0
+aGUgc2FtZSBib2F0LiAqLw0KIAlwb2xpY3kgPSBjcHVmcmVxX2NwdV9nZXQoY3B1KTsNCiAJaWYg
+KHVubGlrZWx5KHBvbGljeSkpIHsNCi0JCWRwcmludGsoIkNQVSBhbHJlYWR5IG1hbmFnZWQsIGFk
+ZGluZyBsaW5rXG4iKTsNCi0JCXN5c2ZzX2NyZWF0ZV9saW5rKCZzeXNfZGV2LT5rb2JqLCAmcG9s
+aWN5LT5rb2JqLCAiY3B1ZnJlcSIpOw0KKwkJY3B1ZnJlcV9jcHVfcHV0KHBvbGljeSk7DQogCQlj
+cHVmcmVxX2RlYnVnX2VuYWJsZV9yYXRlbGltaXQoKTsNCiAJCXJldHVybiAwOw0KIAl9DQpAQCAt
+NjIzLDYgKzYyOCwzMiBAQCBzdGF0aWMgaW50IGNwdWZyZXFfYWRkX2RldiAoc3RydWN0IHN5c19k
+DQogCQlnb3RvIGVycl9vdXQ7DQogCX0NCiANCisjaWZkZWYgQ09ORklHX1NNUA0KKwlmb3JfZWFj
+aF9jcHVfbWFzayhqLCBwb2xpY3ktPmNwdXMpIHsNCisJCWlmIChjcHUgPT0gaikNCisJCQljb250
+aW51ZTsNCisNCisJCS8qIGNoZWNrIGZvciBleGlzdGluZyBhZmZlY3RlZCBDUFVzLiAgVGhleSBt
+YXkgbm90IGJlIGF3YXJlDQorCQkgKiBvZiBpdCBkdWUgdG8gQ1BVIEhvdHBsdWcuDQorCQkgKi8N
+CisJCW1hbmFnZWRfcG9saWN5ID0gY3B1ZnJlcV9jcHVfZ2V0KGopOw0KKwkJaWYgKHVubGlrZWx5
+KG1hbmFnZWRfcG9saWN5KSkgew0KKwkJCXNwaW5fbG9ja19pcnFzYXZlKCZjcHVmcmVxX2RyaXZl
+cl9sb2NrLCBmbGFncyk7DQorCQkJbWFuYWdlZF9wb2xpY3ktPmNwdXMgPSBwb2xpY3ktPmNwdXM7
+DQorCQkJY3B1ZnJlcV9jcHVfZGF0YVtjcHVdID0gbWFuYWdlZF9wb2xpY3k7DQorCQkJc3Bpbl91
+bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOw0KKw0KKwkJCWRw
+cmludGsoIkNQVSBhbHJlYWR5IG1hbmFnZWQsIGFkZGluZyBsaW5rXG4iKTsNCisJCQlzeXNmc19j
+cmVhdGVfbGluaygmc3lzX2Rldi0+a29iaiwNCisJCQkJCSAgJm1hbmFnZWRfcG9saWN5LT5rb2Jq
+LCAiY3B1ZnJlcSIpOw0KKw0KKwkJCWNwdWZyZXFfZGVidWdfZW5hYmxlX3JhdGVsaW1pdCgpOw0K
+KwkJCW11dGV4X3VubG9jaygmcG9saWN5LT5sb2NrKTsNCisJCQlyZXQgPSAwOw0KKwkJCWdvdG8g
+ZXJyX291dF9kcml2ZXJfZXhpdDsgLyogY2FsbCBkcml2ZXItPmV4aXQoKSAqLw0KKwkJfQ0KKwl9
+DQorI2VuZGlmDQogCW1lbWNweSgmbmV3X3BvbGljeSwgcG9saWN5LCBzaXplb2Yoc3RydWN0IGNw
+dWZyZXFfcG9saWN5KSk7DQogDQogCS8qIHByZXBhcmUgaW50ZXJmYWNlIGRhdGEgKi8NCkBAIC02
+NTAsNiArNjgxLDIxIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfZGV2IChzdHJ1Y3Qgc3lzX2QN
+CiAJZm9yX2VhY2hfY3B1X21hc2soaiwgcG9saWN5LT5jcHVzKQ0KIAkJY3B1ZnJlcV9jcHVfZGF0
+YVtqXSA9IHBvbGljeTsNCiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJf
+bG9jaywgZmxhZ3MpOw0KKw0KKwkvKiBzeW1saW5rIGFmZmVjdGVkIENQVXMgKi8NCisJZm9yX2Vh
+Y2hfY3B1X21hc2soaiwgcG9saWN5LT5jcHVzKSB7DQorCQlpZiAoaiA9PSBjcHUpDQorCQkJY29u
+dGludWU7DQorCQlpZiAoIWNwdV9vbmxpbmUoaikpDQorCQkJY29udGludWU7DQorCQkNCisJCWRw
+cmludGsoIkNQVSBhbHJlYWR5IG1hbmFnZWQsIGFkZGluZyBsaW5rXG4iKTsNCisJCWNwdWZyZXFf
+Y3B1X2dldChjcHUpOw0KKwkJY3B1X3N5c19kZXYgPSBnZXRfY3B1X3N5c2RldihqKTsNCisJCXN5
+c2ZzX2NyZWF0ZV9saW5rKCZjcHVfc3lzX2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwNCisJCQkJ
+ICAiY3B1ZnJlcSIpOw0KKwl9DQorDQogCXBvbGljeS0+Z292ZXJub3IgPSBOVUxMOyAvKiB0byBh
+c3N1cmUgdGhhdCB0aGUgc3RhcnRpbmcgc2VxdWVuY2UgaXMNCiAJCQkJICAqIHJ1biBpbiBjcHVm
+cmVxX3NldF9wb2xpY3kgKi8NCiAJbXV0ZXhfdW5sb2NrKCZwb2xpY3ktPmxvY2spOw0KQEAgLTcy
+OCw2ICs3NzQsNyBAQCBzdGF0aWMgaW50IGNwdWZyZXFfcmVtb3ZlX2RldiAoc3RydWN0IHN5DQog
+CSAqLw0KIAlpZiAodW5saWtlbHkoY3B1ICE9IGRhdGEtPmNwdSkpIHsNCiAJCWRwcmludGsoInJl
+bW92aW5nIGxpbmtcbiIpOw0KKwkJY3B1X2NsZWFyKGNwdSwgZGF0YS0+Y3B1cyk7DQogCQlzcGlu
+X3VubG9ja19pcnFyZXN0b3JlKCZjcHVmcmVxX2RyaXZlcl9sb2NrLCBmbGFncyk7DQogCQlzeXNm
+c19yZW1vdmVfbGluaygmc3lzX2Rldi0+a29iaiwgImNwdWZyZXEiKTsNCiAJCWNwdWZyZXFfY3B1
+X3B1dChkYXRhKTsNCg==
 
-Clock modulation can reduce power by 40W on a 3.6GHz Xeon when the 
-system is running a high-power application (e.g. Linpack). (It also 
-reduces performance by a factor of 6-10). Clock modulation saves no 
-power at all during idle.
 
-Wes Felter - wesley@felter.org
+
+--===============0020637015==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0020637015==--
