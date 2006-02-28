@@ -1,11 +1,12 @@
-From: "shin, jacob" <jacob.shin@amd.com>
-Subject: RE: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
-Date: Tue, 28 Feb 2006 09:33:45 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B831499302935659@SAUSEXMB2.amd.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
+Date: Tue, 28 Feb 2006 11:22:37 -0500
+Message-ID: <20060228162237.GE7317@redhat.com>
+References: <B3870AD84389624BAF87A3C7B831499302935655@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <B3870AD84389624BAF87A3C7B831499302935655@SAUSEXMB2.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,25 +18,14 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Andi Kleen <ak@suse.de>
-Cc: cpufreq@lists.linux.org.uk, davej@redhat.com, "Langsdorf,
-	Mark" <mark.langsdorf@amd.com>
+Content-Transfer-Encoding: 7bit
+To: "shin, jacob" <jacob.shin@amd.com>
+Cc: cpufreq@lists.linux.org.uk, "Langsdorf, Mark" <mark.langsdorf@amd.com>, Andi Kleen <ak@suse.de>
 
-On Tuesday, February 28, 2006 6:16 AM Andi Kleen wrote:
+On Mon, Feb 27, 2006 at 07:54:36PM -0600, shin, jacob wrote:
+ > +	data->currvid = data->currvid;
+ > +	data->currfid = data->currfid;
 
-> How much regression testing did you do? Is it well tested enough for =
-2.6.16?
+ummm ?
 
-I tested on machine running 2 Dual-Core AMD Opteron processors.
-I tried 1P, SMP, SMP + Hotplug configurations on x86_64 side.
-i386 should be fine too, since we share the powernow code.
-
-These changes to should really be transparent, since it simply
-does away with keeping track of data that we never use.
-
-I am confidant enough to push for 2.6.16.
-
-Thanks!
-
--Jacob Shin
-AMD, Inc.
+		Dave
