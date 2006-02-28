@@ -1,11 +1,13 @@
-From: "shin, jacob" <jacob.shin@amd.com>
-Subject: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
-Date: Mon, 27 Feb 2006 19:54:36 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B831499302935655@SAUSEXMB2.amd.com>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] [2/2] cpufreq: Fix handling for CPU hotplug
+Date: Tue, 28 Feb 2006 13:17:18 +0100
+Message-ID: <200602281317.18912.ak@suse.de>
+References: <B3870AD84389624BAF87A3C7B831499302935656@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+In-Reply-To: <B3870AD84389624BAF87A3C7B831499302935656@SAUSEXMB2.amd.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,73 +19,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Andi Kleen <ak@suse.de>, cpufreq@lists.linux.org.uk
-Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "shin, jacob" <jacob.shin@amd.com>
+Cc: cpufreq@lists.linux.org.uk, davej@redhat.com, "Langsdorf,
+	Mark" <mark.langsdorf@amd.com>
 
-powernow-k8: Let cpufreq driver handle affected CPUs
+On Tuesday 28 February 2006 02:54, shin, jacob wrote:
+> cpufreq: Fix handling for CPU hotplug
+> 
+> This patch adds proper logic to cpufreq driver in order to handle
+> CPU Hotplug.
+> 
+> When CPUs go on/offline, the affected CPUs data, cpufreq_policy->cpus,
+> is not updated properly. This causes sysfs directories and symlinks to
+> be in an incorrect state after few CPU on/offlines.
 
-Let the cpufreq driver manage AMD Dual-Core CPUs being tied together.
+Looks good to me. I assume that's an 2.6.16 candidate too.
 
-Since cpufreq driver's affected CPUs data, cpufreq_policy->cpus, already
-knows about which cores are tied together, powernow driver does not have
-keep its internal data for every core.  (even a pointer.. it will never
-be called on)  Telling cpufreq driver about cpu_core_map at init time is
-sufficient.
+Dave, can you submit them?
 
-Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-
----
-
---- linux.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2006-02-27 =
-06:40:23.000000000 -0600
-+++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2006-02-27 =
-09:53:10.000000000 -0600
-@@ -45,7 +45,7 @@
-=20
- #define PFX "powernow-k8: "
- #define BFX PFX "BIOS error: "
--#define VERSION "version 1.60.0"
-+#define VERSION "version 1.60.1"
- #include "powernow-k8.h"
-=20
- /* serialize freq changes  */
-@@ -909,7 +909,6 @@ static int powernowk8_target(struct cpuf
- 	u32 checkvid =3D data->currvid;
- 	unsigned int newstate;
- 	int ret =3D -EIO;
--	int i;
-=20
- 	/* only run on specific CPU from here on */
- 	oldmask =3D current->cpus_allowed;
-@@ -957,10 +956,8 @@ static int powernowk8_target(struct cpuf
- 	}
-=20
- 	/* Update all the fid/vids of our siblings */
--	for_each_cpu_mask(i, cpu_core_map[pol->cpu]) {
--		powernow_data[i]->currvid =3D data->currvid;
--		powernow_data[i]->currfid =3D data->currfid;
--	}=09
-+	data->currvid =3D data->currvid;
-+	data->currfid =3D data->currfid;
- 	up(&fidvid_sem);
-=20
- 	pol->cur =3D find_khz_freq_from_fid(data->currfid);
-@@ -984,7 +981,7 @@ static int __cpuinit powernowk8_cpu_init
- {
- 	struct powernow_k8_data *data;
- 	cpumask_t oldmask =3D CPU_MASK_ALL;
--	int rc, i;
-+	int rc;
-=20
- 	if (!cpu_online(pol->cpu))
- 		return -ENODEV;
-@@ -1070,9 +1067,7 @@ static int __cpuinit powernowk8_cpu_init
- 	printk("cpu_init done, current fid 0x%x, vid 0x%x\n",
- 	       data->currfid, data->currvid);
-=20
--	for_each_cpu_mask(i, cpu_core_map[pol->cpu]) {
--		powernow_data[i] =3D data;
--	}
-+	powernow_data[pol->cpu] =3D data;
-=20
- 	return 0;
+-Andi
