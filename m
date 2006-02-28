@@ -1,7 +1,7 @@
 From: "shin, jacob" <jacob.shin@amd.com>
 Subject: RE: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
-Date: Tue, 28 Feb 2006 10:54:26 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B83149930293565F@SAUSEXMB2.amd.com>
+Date: Tue, 28 Feb 2006 11:36:09 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B831499302935665@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -17,18 +17,20 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
+To: "shin, jacob" <jacob.shin@amd.com>, Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk, "Langsdorf, Mark" <mark.langsdorf@amd.com>, Andi Kleen <ak@suse.de>
 
-On Tuesday, February 28, 2006 10:51 AM shin, jacob wrote:
-> On Tuesday, February 28, 2006 10:23 AM Dave Jones wrote:
->> On Mon, Feb 27, 2006 at 07:54:36PM -0600, shin, jacob wrote:
->>  > +	data->currvid =3D data->currvid;
->>  > +	data->currfid =3D data->currfid;
->=20
-> Sorry about that, here we go again..
+On Tuesday, February 28, 2006 10:54 AM shin, jacob wrote:
 
-The test results should still be valid.  But will test again
-regardless.
+> The test results should still be valid.  But will test again
+> regardless.
+
+Did more testing w/ the updated patch.  Everything still looks
+good as it should.. w/ or w/o hotplug, smp.. etc.
+
+again, the changes should be transparent the the rest of the
+world.
+
+Thanks!
 
 -jacob
