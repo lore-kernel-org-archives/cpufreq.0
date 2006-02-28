@@ -1,9 +1,9 @@
 From: "shin, jacob" <jacob.shin@amd.com>
-Subject: [PATCH] [2/2] cpufreq: Fix handling for CPU hotplug
-Date: Mon, 27 Feb 2006 19:54:38 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B831499302935656@SAUSEXMB2.amd.com>
+Subject: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
+Date: Mon, 27 Feb 2006 19:54:36 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B831499302935655@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0020637015=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
@@ -16,91 +16,74 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 To: Andi Kleen <ak@suse.de>, cpufreq@lists.linux.org.uk
 Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>
 
---===============0020637015==
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
+powernow-k8: Let cpufreq driver handle affected CPUs
 
-Y3B1ZnJlcTogRml4IGhhbmRsaW5nIGZvciBDUFUgaG90cGx1Zw0KDQpUaGlzIHBhdGNoIGFkZHMg
-cHJvcGVyIGxvZ2ljIHRvIGNwdWZyZXEgZHJpdmVyIGluIG9yZGVyIHRvIGhhbmRsZQ0KQ1BVIEhv
-dHBsdWcuDQoNCldoZW4gQ1BVcyBnbyBvbi9vZmZsaW5lLCB0aGUgYWZmZWN0ZWQgQ1BVcyBkYXRh
-LCBjcHVmcmVxX3BvbGljeS0+Y3B1cywNCmlzIG5vdCB1cGRhdGVkIHByb3Blcmx5LiBUaGlzIGNh
-dXNlcyBzeXNmcyBkaXJlY3RvcmllcyBhbmQgc3ltbGlua3MgdG8NCmJlIGluIGFuIGluY29ycmVj
-dCBzdGF0ZSBhZnRlciBmZXcgQ1BVIG9uL29mZmxpbmVzLg0KDQpTaWduZWQtb2ZmLWJ5OiBKYWNv
-YiBTaGluIDxqYWNvYi5zaGluQGFtZC5jb20+DQoNCi0tLQ0KDQotLS0gbGludXgub3JpZy9kcml2
-ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCTIwMDYtMDItMjQgMDQ6NDY6MjQuMDAwMDAwMDAwIC0wNjAw
-DQorKysgbGludXgvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwkyMDA2LTAyLTI3IDEyOjQ4OjMz
-LjAwMDAwMDAwMCAtMDYwMA0KQEAgLTYsNiArNiw4IEBADQogICoNCiAgKiAgT2N0IDIwMDUgLSBB
-c2hvayBSYWogPGFzaG9rLnJhakBpbnRlbC5jb20+DQogICogICAgICAgICAJCUFkZGVkIGhhbmRs
-aW5nIGZvciBDUFUgaG90cGx1Zw0KKyAqICBGZWIgMjAwNiAtIEphY29iIFNoaW4gPGphY29iLnNo
-aW5AYW1kLmNvbT4NCisgKiAgICAgICAgICAgICAgICAgICAgICBGaXggaGFuZGxpbmcgZm9yIENQ
-VSBob3RwbHVnIC0tIGFmZmVjdGVkIENQVXMNCiAgKg0KICAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVl
-IHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5DQogICogaXQg
-dW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSB2ZXJzaW9u
-IDIgYXMNCkBAIC01NzMsOCArNTc1LDEyIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfZGV2IChz
-dHJ1Y3Qgc3lzX2QNCiAJc3RydWN0IGNwdWZyZXFfcG9saWN5IG5ld19wb2xpY3k7DQogCXN0cnVj
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5Ow0KIAlzdHJ1Y3QgZnJlcV9hdHRyICoqZHJ2X2F0dHI7
-DQorCXN0cnVjdCBzeXNfZGV2aWNlICpjcHVfc3lzX2RldjsNCiAJdW5zaWduZWQgbG9uZyBmbGFn
-czsNCiAJdW5zaWduZWQgaW50IGo7DQorI2lmZGVmIENPTkZJR19TTVANCisJc3RydWN0IGNwdWZy
-ZXFfcG9saWN5ICptYW5hZ2VkX3BvbGljeTsNCisjZW5kaWYNCiANCiAJaWYgKGNwdV9pc19vZmZs
-aW5lKGNwdSkpDQogCQlyZXR1cm4gMDsNCkBAIC01ODcsOCArNTkzLDcgQEAgc3RhdGljIGludCBj
-cHVmcmVxX2FkZF9kZXYgKHN0cnVjdCBzeXNfZA0KIAkgKiBDUFUgYmVjYXVzZSBpdCBpcyBpbiB0
-aGUgc2FtZSBib2F0LiAqLw0KIAlwb2xpY3kgPSBjcHVmcmVxX2NwdV9nZXQoY3B1KTsNCiAJaWYg
-KHVubGlrZWx5KHBvbGljeSkpIHsNCi0JCWRwcmludGsoIkNQVSBhbHJlYWR5IG1hbmFnZWQsIGFk
-ZGluZyBsaW5rXG4iKTsNCi0JCXN5c2ZzX2NyZWF0ZV9saW5rKCZzeXNfZGV2LT5rb2JqLCAmcG9s
-aWN5LT5rb2JqLCAiY3B1ZnJlcSIpOw0KKwkJY3B1ZnJlcV9jcHVfcHV0KHBvbGljeSk7DQogCQlj
-cHVmcmVxX2RlYnVnX2VuYWJsZV9yYXRlbGltaXQoKTsNCiAJCXJldHVybiAwOw0KIAl9DQpAQCAt
-NjIzLDYgKzYyOCwzMiBAQCBzdGF0aWMgaW50IGNwdWZyZXFfYWRkX2RldiAoc3RydWN0IHN5c19k
-DQogCQlnb3RvIGVycl9vdXQ7DQogCX0NCiANCisjaWZkZWYgQ09ORklHX1NNUA0KKwlmb3JfZWFj
-aF9jcHVfbWFzayhqLCBwb2xpY3ktPmNwdXMpIHsNCisJCWlmIChjcHUgPT0gaikNCisJCQljb250
-aW51ZTsNCisNCisJCS8qIGNoZWNrIGZvciBleGlzdGluZyBhZmZlY3RlZCBDUFVzLiAgVGhleSBt
-YXkgbm90IGJlIGF3YXJlDQorCQkgKiBvZiBpdCBkdWUgdG8gQ1BVIEhvdHBsdWcuDQorCQkgKi8N
-CisJCW1hbmFnZWRfcG9saWN5ID0gY3B1ZnJlcV9jcHVfZ2V0KGopOw0KKwkJaWYgKHVubGlrZWx5
-KG1hbmFnZWRfcG9saWN5KSkgew0KKwkJCXNwaW5fbG9ja19pcnFzYXZlKCZjcHVmcmVxX2RyaXZl
-cl9sb2NrLCBmbGFncyk7DQorCQkJbWFuYWdlZF9wb2xpY3ktPmNwdXMgPSBwb2xpY3ktPmNwdXM7
-DQorCQkJY3B1ZnJlcV9jcHVfZGF0YVtjcHVdID0gbWFuYWdlZF9wb2xpY3k7DQorCQkJc3Bpbl91
-bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOw0KKw0KKwkJCWRw
-cmludGsoIkNQVSBhbHJlYWR5IG1hbmFnZWQsIGFkZGluZyBsaW5rXG4iKTsNCisJCQlzeXNmc19j
-cmVhdGVfbGluaygmc3lzX2Rldi0+a29iaiwNCisJCQkJCSAgJm1hbmFnZWRfcG9saWN5LT5rb2Jq
-LCAiY3B1ZnJlcSIpOw0KKw0KKwkJCWNwdWZyZXFfZGVidWdfZW5hYmxlX3JhdGVsaW1pdCgpOw0K
-KwkJCW11dGV4X3VubG9jaygmcG9saWN5LT5sb2NrKTsNCisJCQlyZXQgPSAwOw0KKwkJCWdvdG8g
-ZXJyX291dF9kcml2ZXJfZXhpdDsgLyogY2FsbCBkcml2ZXItPmV4aXQoKSAqLw0KKwkJfQ0KKwl9
-DQorI2VuZGlmDQogCW1lbWNweSgmbmV3X3BvbGljeSwgcG9saWN5LCBzaXplb2Yoc3RydWN0IGNw
-dWZyZXFfcG9saWN5KSk7DQogDQogCS8qIHByZXBhcmUgaW50ZXJmYWNlIGRhdGEgKi8NCkBAIC02
-NTAsNiArNjgxLDIxIEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfZGV2IChzdHJ1Y3Qgc3lzX2QN
-CiAJZm9yX2VhY2hfY3B1X21hc2soaiwgcG9saWN5LT5jcHVzKQ0KIAkJY3B1ZnJlcV9jcHVfZGF0
-YVtqXSA9IHBvbGljeTsNCiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJf
-bG9jaywgZmxhZ3MpOw0KKw0KKwkvKiBzeW1saW5rIGFmZmVjdGVkIENQVXMgKi8NCisJZm9yX2Vh
-Y2hfY3B1X21hc2soaiwgcG9saWN5LT5jcHVzKSB7DQorCQlpZiAoaiA9PSBjcHUpDQorCQkJY29u
-dGludWU7DQorCQlpZiAoIWNwdV9vbmxpbmUoaikpDQorCQkJY29udGludWU7DQorCQkNCisJCWRw
-cmludGsoIkNQVSBhbHJlYWR5IG1hbmFnZWQsIGFkZGluZyBsaW5rXG4iKTsNCisJCWNwdWZyZXFf
-Y3B1X2dldChjcHUpOw0KKwkJY3B1X3N5c19kZXYgPSBnZXRfY3B1X3N5c2RldihqKTsNCisJCXN5
-c2ZzX2NyZWF0ZV9saW5rKCZjcHVfc3lzX2Rldi0+a29iaiwgJnBvbGljeS0+a29iaiwNCisJCQkJ
-ICAiY3B1ZnJlcSIpOw0KKwl9DQorDQogCXBvbGljeS0+Z292ZXJub3IgPSBOVUxMOyAvKiB0byBh
-c3N1cmUgdGhhdCB0aGUgc3RhcnRpbmcgc2VxdWVuY2UgaXMNCiAJCQkJICAqIHJ1biBpbiBjcHVm
-cmVxX3NldF9wb2xpY3kgKi8NCiAJbXV0ZXhfdW5sb2NrKCZwb2xpY3ktPmxvY2spOw0KQEAgLTcy
-OCw2ICs3NzQsNyBAQCBzdGF0aWMgaW50IGNwdWZyZXFfcmVtb3ZlX2RldiAoc3RydWN0IHN5DQog
-CSAqLw0KIAlpZiAodW5saWtlbHkoY3B1ICE9IGRhdGEtPmNwdSkpIHsNCiAJCWRwcmludGsoInJl
-bW92aW5nIGxpbmtcbiIpOw0KKwkJY3B1X2NsZWFyKGNwdSwgZGF0YS0+Y3B1cyk7DQogCQlzcGlu
-X3VubG9ja19pcnFyZXN0b3JlKCZjcHVmcmVxX2RyaXZlcl9sb2NrLCBmbGFncyk7DQogCQlzeXNm
-c19yZW1vdmVfbGluaygmc3lzX2Rldi0+a29iaiwgImNwdWZyZXEiKTsNCiAJCWNwdWZyZXFfY3B1
-X3B1dChkYXRhKTsNCg==
+Let the cpufreq driver manage AMD Dual-Core CPUs being tied together.
 
+Since cpufreq driver's affected CPUs data, cpufreq_policy->cpus, already
+knows about which cores are tied together, powernow driver does not have
+keep its internal data for every core.  (even a pointer.. it will never
+be called on)  Telling cpufreq driver about cpu_core_map at init time is
+sufficient.
 
+Signed-off-by: Jacob Shin <jacob.shin@amd.com>
 
---===============0020637015==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+---
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
---===============0020637015==--
+--- linux.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2006-02-27 =
+06:40:23.000000000 -0600
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2006-02-27 =
+09:53:10.000000000 -0600
+@@ -45,7 +45,7 @@
+=20
+ #define PFX "powernow-k8: "
+ #define BFX PFX "BIOS error: "
+-#define VERSION "version 1.60.0"
++#define VERSION "version 1.60.1"
+ #include "powernow-k8.h"
+=20
+ /* serialize freq changes  */
+@@ -909,7 +909,6 @@ static int powernowk8_target(struct cpuf
+ 	u32 checkvid =3D data->currvid;
+ 	unsigned int newstate;
+ 	int ret =3D -EIO;
+-	int i;
+=20
+ 	/* only run on specific CPU from here on */
+ 	oldmask =3D current->cpus_allowed;
+@@ -957,10 +956,8 @@ static int powernowk8_target(struct cpuf
+ 	}
+=20
+ 	/* Update all the fid/vids of our siblings */
+-	for_each_cpu_mask(i, cpu_core_map[pol->cpu]) {
+-		powernow_data[i]->currvid =3D data->currvid;
+-		powernow_data[i]->currfid =3D data->currfid;
+-	}=09
++	data->currvid =3D data->currvid;
++	data->currfid =3D data->currfid;
+ 	up(&fidvid_sem);
+=20
+ 	pol->cur =3D find_khz_freq_from_fid(data->currfid);
+@@ -984,7 +981,7 @@ static int __cpuinit powernowk8_cpu_init
+ {
+ 	struct powernow_k8_data *data;
+ 	cpumask_t oldmask =3D CPU_MASK_ALL;
+-	int rc, i;
++	int rc;
+=20
+ 	if (!cpu_online(pol->cpu))
+ 		return -ENODEV;
+@@ -1070,9 +1067,7 @@ static int __cpuinit powernowk8_cpu_init
+ 	printk("cpu_init done, current fid 0x%x, vid 0x%x\n",
+ 	       data->currfid, data->currvid);
+=20
+-	for_each_cpu_mask(i, cpu_core_map[pol->cpu]) {
+-		powernow_data[i] =3D data;
+-	}
++	powernow_data[pol->cpu] =3D data;
+=20
+ 	return 0;
