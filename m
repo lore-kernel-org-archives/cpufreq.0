@@ -1,36 +1,53 @@
-From: "shin, jacob" <jacob.shin@amd.com>
-Subject: RE: [PATCH] [1/2] cpufreq: Fix handling for CPU hotplug
-Date: Tue, 28 Feb 2006 11:36:09 -0600
-Message-ID: <B3870AD84389624BAF87A3C7B831499302935665@SAUSEXMB2.amd.com>
+From: Matt Mackall <mpm@selenic.com>
+Subject: Re: Status of X86_P4_CLOCKMOD?
+Date: Tue, 28 Feb 2006 13:46:29 -0600
+Message-ID: <20060228194628.GP4650@waste.org>
+References: <20060214152218.GI10701@stusta.de> <20060222024438.GI20204@MAIL.13thfloor.at> <20060222031001.GC4661@stusta.de> <200602212220.05642.dtor_core@ameritech.net> <20060223195937.GA5087@stusta.de> <20060223204110.GE6213@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932533AbWB1TrR@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060223204110.GE6213@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "shin, jacob" <jacob.shin@amd.com>, Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk, "Langsdorf, Mark" <mark.langsdorf@amd.com>, Andi Kleen <ak@suse.de>
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@stusta.de>, Dmitry Torokhov <dtor_core@ameritech.net>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk, ak@suse.de
 
-On Tuesday, February 28, 2006 10:54 AM shin, jacob wrote:
+On Thu, Feb 23, 2006 at 03:41:10PM -0500, Dave Jones wrote:
+> On Thu, Feb 23, 2006 at 08:59:37PM +0100, Adrian Bunk wrote:
+> 
+>  > > > >  config X86_P4_CLOCKMOD
+>  > > > > 	depends on EMBEDDED
+>  > > > 
+>  > > > This one is an x86_64 only issue, and yes, it's wrong.
+>  > > 
+>  > > That's for P4, not X86_64... And since P4 clock modulation does not provide
+>  > > almost any energy savings it was "hidden" under embedded.
+>  > 
+>  > But the EMBEDDED dependency is only on x86_64:
+>  > 
+>  > arch/i386/kernel/cpu/cpufreq/Kconfig:
+>  > config X86_P4_CLOCKMOD
+>  >         tristate "Intel Pentium 4 clock modulation"
+>  >         select CPU_FREQ_TABLE
+>  >         help
+>  > 
+>  > arch/x86_64/kernel/cpufreq/Kconfig:
+>  > config X86_P4_CLOCKMOD
+>  >         tristate "Intel Pentium 4 clock modulation"
+>  >         depends on EMBEDDED
+>  >         help
+>  > 
+>  > And if the option is mostly useless, what is it good for?
+> 
+> It's sometimes useful in cases where the target CPU doesn't have any better
+> option (Speedstep/Powernow).  The big misconception is that it
+> somehow saves power & increases battery life. Not so.
+> All it does is 'not do work so often'.  The upside of this is
+> that in some situations, we generate less heat this way.
 
-> The test results should still be valid.  But will test again
-> regardless.
+This is perplexing. Less heat equals less power usage according to the
+laws of thermodynamics.
 
-Did more testing w/ the updated patch.  Everything still looks
-good as it should.. w/ or w/o hotplug, smp.. etc.
-
-again, the changes should be transparent the the rest of the
-world.
-
-Thanks!
-
--jacob
+-- 
+Mathematics is the supreme nostalgia of our time.
