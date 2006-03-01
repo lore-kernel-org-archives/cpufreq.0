@@ -1,37 +1,72 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: Status of X86_P4_CLOCKMOD?
-Date: Tue, 28 Feb 2006 23:22:01 +0100
-Message-ID: <200602282322.03316.ak@suse.de>
-References: <20060222024438.GI20204@MAIL.13thfloor.at> <20060228213428.GA31044@isilmar.linta.de> <d120d5000602281339h777a9b73nb95bf6b6b5ee90c9@mail.gmail.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] [2/2] cpufreq: Fix handling for CPU hotplug
+Date: Tue, 28 Feb 2006 17:23:26 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB600762929B@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932525AbWB1WW2@vger.kernel.org>
-In-Reply-To: <d120d5000602281339h777a9b73nb95bf6b6b5ee90c9@mail.gmail.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: dtor_core@ameritech.net
-Cc: Matt Mackall <mpm@selenic.com>, Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@stusta.de>, davej@codemonkey.org.uk, Zwane Mwaikambo <zwane@commfireservices.com>, Samuel Masham <samuel.masham@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
+To: "shin, jacob" <jacob.shin@amd.com>, Andi Kleen <ak@suse.de>, cpufreq@lists.linux.org.uk
+Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>
 
-On Tuesday 28 February 2006 22:39, Dmitry Torokhov wrote:
-> On 2/28/06, Dominik Brodowski <linux@dominikbrodowski.net> wrote:
-> > On Tue, Feb 28, 2006 at 03:26:32PM -0600, Matt Mackall wrote:
-> > > > So even if the battery lasts longer, you don't have anything of it, 'cause
-> > > > the CPU can even compute _less_ in this longer time-span. Remember that
-> > > > idling doesn't count...
-> > >
-> > > Which is different from other power-saving modes how? If it means I
-> > > can read my email longer on the plane, it's a power-saving mode.
-> >
-> > But you can't... [*]
-> ...
-> > [*] unless the idling algorithm is broken and does not enter C2-type idle
-> > states.
-> 
-> Or box does not support anything but C1.
+=20
+Questions:
 
-There are quite advanced forms of C1 around.
-And I would expect even old style dumb C1 to save more than throttling.
+>-----Original Message-----
+>From: cpufreq-bounces@lists.linux.org.uk=20
+>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of shin, jacob
+>Sent: Monday, February 27, 2006 5:55 PM
+>@@ -623,6 +628,32 @@ static int cpufreq_add_dev (struct sys_d
+> 		goto err_out;
+> 	}
+>=20
+>+#ifdef CONFIG_SMP
+>+	for_each_cpu_mask(j, policy->cpus) {
+>+		if (cpu =3D=3D j)
+>+			continue;
+>+
+>+		/* check for existing affected CPUs.  They may=20
+>not be aware
+>+		 * of it due to CPU Hotplug.
+>+		 */
+>+		managed_policy =3D cpufreq_cpu_get(j);
 
--Andi
+I see multiple cpufreq_cpu_get() without cpmplementing=20
+cpufreq_cpu_put(). Is it intentional?
+
+
+>+		if (unlikely(managed_policy)) {
+>+			spin_lock_irqsave(&cpufreq_driver_lock, flags);
+>+			managed_policy->cpus =3D policy->cpus;
+>+			cpufreq_cpu_data[cpu] =3D managed_policy;
+>+		=09
+>spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>+
+>+			dprintk("CPU already managed, adding link\n");
+>+			sysfs_create_link(&sys_dev->kobj,
+>+					 =20
+>&managed_policy->kobj, "cpufreq");
+>+
+>+			cpufreq_debug_enable_ratelimit();
+>+			mutex_unlock(&policy->lock);
+>+			ret =3D 0;
+>+			goto err_out_driver_exit; /* call=20
+>driver->exit() */
+
+Why is this going through the error path here. Is the call to exit()
+required?
+
+
+Thanks,
+Venki
