@@ -1,12 +1,11 @@
-From: Jonas Jermann <jjermann@gmx.net>
-Subject: Unable to incrase scaling_max_freq?
-Date: Fri, 3 Mar 2006 13:40:34 +0100
-Message-ID: <20060303124034.GA9852@zaphod.discordia.ch>
+From: "Shinichi Kudo" <randomshinichi4869@gmail.com>
+Subject: VIA C3 Crashes with CPU Freq Scaling (longhaul)
+Date: Sat, 4 Mar 2006 03:30:39 +0800
+Message-ID: <8be2e100603031130rb3cce9n42a77075dcb4c1eb@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="mYCpIKhGyMATD0i+"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_7806_15275935.1141414239648"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,406 +16,301 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
 
-
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
+------=_Part_7806_15275935.1141414239648
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi
+Hello, I don't know whether to send this to the mailing list or where
+you send patches or something. I'm not subscribed to this mailing
+list, so I sure hope that when you reply, please make sure my email is
+included.
+Anyway, this is my laptop's hardware
+VIA C3 C5C 933MHz, VIA PN266-VT8235, ProSavage DDR (yes I ran cpuburn
+and memtest86+, they all passed)
+With the custom kernels I built, they would always crash after about
+two hours. I spent lots of time tweaking the kernel, making monolithic
+builds, modularized builds, leaving this/that out... but it always
+crashed. I thought it was a direct rendering issue for a year, and
+tried to solve that, but once I used the Ubuntu kernel, I knew at once
+that instability had nothing to do with direct rendering, for 3D
+worked fine for days in a row.
+So eventually I narrowed it down to this: it doesn't matter what
+frequency governor you have, as long as you have the longhaul module
+modprobed, or compiled straight into the kernel, your VIA based CPU
+will hang. Hard.
+Details can be found here: http://tinyurl.com/k7wlw
+As you can see from the thread, this hanging issue (pun intended) has
+its origins in kernel 2.4, and is distribution independent and extends
+across all C3 CPUs. I can verify that it is distro independent (Gentoo
+to Ubuntu all had same probs) and 2.6.11 to 2.6.14 always had
+stability issues. I didn't see any traces of a longhaul.ko change in
+the changelog for 2.6.15.
 
-My situation is as this:
+CRASH/HANG description
+Personally, what I saw was this: I would start my computer. and use it
+normally, X and a couple progs, or sometimes no X. It crashed without
+X too, in Gentoo.
+On my Ubuntu install, it usually doesn't crash until about 2 hours
+into uptime. Then I would do something that required a frequency
+change, like scrolling down in Firefox or running OpenOffice or even
+just moving the mouse around to click on a hyperlink. The mouse
+pointer would just stop there, pinging the laptop over the network
+does not get a reply, and the brightness of the screen (which I can
+adjust even in the BIOS) cannot be changed. Of course, Caps Lock and
+Scroll Lock and Num Lock don't light up at this point. If I boot into
+a kernel without CPU Frequency scaling support FOR MY PROCESSOR, it
+doesn't ever crash.
 
-I installed cpufreqd on my system and (at least since the last few hours)
-the CPU frequency didn't go above 1.7Ghz (my CPU is 3.4Ghz). So I stopped
-the daemon but the frequency stayed low. Then I tried to manually increase
-it using: echo on /sys/devices/system/cpu/cpu0/cpufreq/... and cpufreq-set.
-I still wasn't able to incrase the scaling_max_freq (tried userspace and
-performance governor also while cpufreqd was running). Changing the frequen=
-cy
-also didn't help (I suppose it needs a higher scaling_max_freq anyway).
-Actually, to be more precise: cpufreq-set -u / -d 3400000 didn't change
-anything, the values stayed the same....
+I posted this on Linuxquestions.org. But they've all gone in the wrong
+direction. I firmly believe something is wrong in the longhaul code
+and it needs a serious overhaul, especially since this crash dates
+from kernel 2.4.
+If you need any more information, please ask, although I may not be
+able to get it - after all, the computer is so shell-shocked by the
+hang that it doesn't even have the senses to generate any sort of
+Kernel Panic message.
 
-So I'm completely clueless why I can't get my full power. :(
+Randomshinichi
 
-Additionally I'm curious if I can/should run it at the top freq with a very
-hot CPU. My temperature is 72=B0C (with 1.7Ghz and running fan)...
-My cpufreqd eg. has several settings that already react on temperatures abo=
-ve
-50=B0C which is almost always the case...
+--
+....pi......pi......kaaaaaaa....
+AMD Throughbred-A 1533MHz, 768MB PC2100 RAM, Maxtor 6EL040,
+NV25 Ti4200 128MB
 
-Here some data:
+------=_Part_7806_15275935.1141414239648
+Content-Type: application/octet-stream; name=lspci
+Content-Transfer-Encoding: 7bit
+X-Attachment-Id: f_ekcvx7mx
+Content-Disposition: attachment; filename="lspci"
 
-I'm running the latest debian sid:
-cpufreqd version 2.0.0 + cpufrequtils installed
+0000:00:00.0 Host bridge: VIA Technologies, Inc. P/KN266 Host Bridge
+	Subsystem: VIA Technologies, Inc. P/KN266 Host Bridge
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+	Latency: 8
+	Region 0: Memory at ea000000 (32-bit, prefetchable) [size=32M]
+	Capabilities: [a0] AGP version 2.0
+		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2,x4
+		Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP+ GART64- 64bit- FW- Rate=x4
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-uname -a:
-Linux defiant 2.6.14 #0 PREEMPT Fri Nov 4 14:59:44 CET 2005 i686 GNU/Linux
+0000:00:01.0 PCI bridge: VIA Technologies, Inc. VT8633 [Apollo Pro266 AGP] (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR+
+	Latency: 0
+	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+	I/O behind bridge: 0000f000-00000fff
+	Memory behind bridge: e8100000-e81fffff
+	Prefetchable memory behind bridge: f0000000-f7ffffff
+	BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B-
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-cpufreq-info:
-cpufrequtils 0.4: cpufreq-info (C) Dominik Brodowski 2004
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
-  driver: p4-clockmod
-  CPUs which need to switch frequency at the same time: 0
-  hardware limits: 425 MHz - 3.40 GHz
-  available frequency steps: 425 MHz, 850 MHz, 1.28 GHz, 1.70 GHz, 2.13 GHz,
-	2.55 GHz, 2.98 GHz, 3.40 GHz
-  available cpufreq governors: ondemand, conservative, userspace, powersave,
-	performance
-  current policy: frequency should be within 1.36 GHz and 1.70 GHz.
-                  The governor "performance" may decide which speed to use
-                  within this range.
-  current CPU frequency is 1.70 GHz (asserted by call to hardware).
+0000:00:08.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
+	Subsystem: Realtek Semiconductor Co., Ltd. RT8139
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64 (8000ns min, 16000ns max)
+	Interrupt: pin A routed to IRQ 9
+	Region 0: I/O ports at 1000 [size=256]
+	Region 1: Memory at e8000000 (32-bit, non-prefetchable) [size=256]
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-cat /proc/acpi/thermal_zone/THRM/*:
-cooling mode:   active
-<polling disabled>
-state:                   passive=20
-temperature:             71 C
-critical (S5):           80 C
-passive:                 69 C: tc1=3D2 tc2=3D3 tsp=3D40 devices=3D0xc18deec=
-0=20
+0000:00:0a.0 CardBus bridge: Texas Instruments PCI1410 PC card Cardbus Controller (rev 02)
+	Subsystem: Unknown device 17c4:7230
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 168, Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin A routed to IRQ 11
+	Region 0: Memory at 14000000 (32-bit, non-prefetchable) [size=4K]
+	Bus: primary=00, secondary=02, subordinate=05, sec-latency=176
+	Memory window 0: 10000000-11fff000 (prefetchable)
+	Memory window 1: 12000000-13fff000
+	I/O window 0: 00002000-000020ff
+	I/O window 1: 00002400-000024ff
+	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt+ PostWrite+
+	16-bit legacy interface ports at 0001
 
-cat /proc/cpuinfo:
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Pentium(R) 4 CPU 3.40GHz
-stepping        : 9
-cpu MHz         : 1696.405
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
-cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid xtpr
-bogomips        : 6787.02
+0000:00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 80) (prog-if 00 [UHCI])
+	Subsystem: Unknown device 17c4:0230
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64, Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin A routed to IRQ 9
+	Region 4: I/O ports at 1c00 [size=32]
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
 
-lsmod:
-Module                  Size  Used by
-lp                     11844  0=20
-binfmt_misc            11912  1=20
-fuse                   36364  0=20
-cpufreq_ondemand        6300  0=20
-cpufreq_conservative     7204  0=20
-cpufreq_userspace       4572  0=20
-cpufreq_powersave       1792  0=20
-p4_clockmod             4872  0=20
-speedstep_lib           3840  1 p4_clockmod
-snd_pcm_oss            52512  0=20
-snd_mixer_oss          18944  1 snd_pcm_oss
-nvidia               4088720  14=20
-usbhid                 38368  0=20
-ehci_hcd               35208  0=20
-uhci_hcd               32528  0=20
-usbcore               121216  4 usbhid,ehci_hcd,uhci_hcd
-parport_pc             36164  1=20
-parport                37064  2 lp,parport_pc
+0000:00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 80) (prog-if 00 [UHCI])
+	Subsystem: Unknown device 17c4:0230
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64, Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin B routed to IRQ 9
+	Region 4: I/O ports at 1c20 [size=32]
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-/proc/config.gz and dmesg.gz are also attached...
+0000:00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82) (prog-if 20 [EHCI])
+	Subsystem: Unknown device 17c4:0230
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64, Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin D routed to IRQ 9
+	Region 0: Memory at e8000400 (32-bit, non-prefetchable) [size=256]
+	Capabilities: [80] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+0000:00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
+	Subsystem: Unknown device 17c4:0230
+	Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+0000:00:11.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06) (prog-if 8a [Master SecP PriP])
+	Subsystem: Unknown device 17c4:0230
+	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64
+	Interrupt: pin A routed to IRQ 11
+	Region 4: I/O ports at 1c40 [size=16]
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+0000:00:11.5 Multimedia audio controller: VIA Technologies, Inc. VT8233/A/8235/8237 AC97 Audio Controller (rev 50)
+	Subsystem: Unknown device 17c4:0230
+	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Interrupt: pin C routed to IRQ 9
+	Region 0: I/O ports at 1400 [size=256]
+	Capabilities: [c0] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+0000:00:11.6 Communication controller: VIA Technologies, Inc. AC'97 Modem Controller (rev 80)
+	Subsystem: Unknown device 17c4:2230
+	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Interrupt: pin C routed to IRQ 9
+	Region 0: I/O ports at 1800 [size=256]
+	Capabilities: [d0] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+0000:01:00.0 VGA compatible controller: S3 Inc. VT8375 [ProSavage8 KM266/KL266] (prog-if 00 [VGA])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 64 (1000ns min, 63750ns max), Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin A routed to IRQ 11
+	Region 0: Memory at e8100000 (32-bit, non-prefetchable) [size=512K]
+	Region 1: Memory at f0000000 (32-bit, prefetchable) [size=128M]
+	Expansion ROM at e8180000 [disabled] [size=64K]
+	Capabilities: [dc] Power Management version 2
+		Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [80] AGP version 2.0
+		Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA- ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x4
+		Command: RQ=32 ArqSz=0 Cal=0 SBA- AGP+ GART64- 64bit- FW- Rate=x4
 
 
-I'm clueless, I hope you can help.
-
-Best Regards
-	Jonas Jermann
 
 
---mYCpIKhGyMATD0i+
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="config.gz"
-Content-Transfer-Encoding: base64
 
-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
 
---mYCpIKhGyMATD0i+
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="dmesg.gz"
-Content-Transfer-Encoding: base64
 
-H4sICBw2CEQAA2RtZXNnLnR4dAC0W2tz4siS/bz6FRl3ZqPNLMh68N7wRvOyzbSxuQh3T6y3
-wyukwugaJI0k/JhfvyerJMA22N0Tsf0BgyozKyurMvNklvoiCNdP9CCSNIhCsvS6blbpKImi
-7LMv5oEbZiU6uvO8DUlVN3SbLMOomYZl01GciEQshZsKEPbFDCySxqrYpRL9YtB4MhiMxlM6
-TQK6jB6oSma1XWu1q1XqDaZSktYdXjmVOIkeAl/4FC+e08BzlzTpjGjlxm2NJIFoWkabjFf/
-qLL7qDVv4tHROnVnS1E6xKioXjC6UtZRIlKRPAj/IKvffD2nafwYq/laXXs+byjW99TdUL1k
-nEnGTm88JN/N3MO8sze8TWPLe/nVOcjafDVttbD4B0udC+/1UvHI/DFW8ZZVSNN9yKr0fcE6
-935MYf7n7bKaxdAuq2k1Rl06H56djwYjch/cYMnbpmvNVh0DF1ffXj2fR+vQJ2c0ptG4kvEz
-cjOeYl5vmIZ2FVIY+YIMyqLMXcbunUjbZNXhEoZG1B916K8oFG2qGq06yeEyXQxPr2jmZt6i
-bYLoMkpW8BRFZ1k1q2nsobSZ9Dy4W4zEKqe1MU91n9Ca1h8NKeZlh5mu8Slp08Tpj+nogQ1y
-PqYf+Feiz2Q8qaVaxlbKVEoxJY2UJJ8R09bVASO6mI4Vr/ynJPFJtu25nUs67Wwk5fo44/6Z
-/LIjaTy9oK0keyvJFV4tlzR6I+nfqDMe9n5QJ3dut3JJ3aurV6v71emeTrsXvx6WZO5Kcs1c
-kuO81omfn79rpxeSvEKn/o7FlShnPDnrdy4Gu5JGzumUf6tTLzZ7J//lksajyjRYiYSGVzSO
-kgze8wT6Zj58EXHAloZzfR+HJ8V44c0FjRw+cr04uA38G57iOy3dOPC2P0XIbgJnGyeRBylR
-wjnErLUtJXyTqQ4LNV8KNfcLNfcL/daZXA4vz9p0Obntja8dWgarIKNoTiYlwvUWwteJtnKC
-uzBK8GxXm9tLONCrZS7gfCT8OwGBYYaH5vfSuzzmuzzDK7VsRWt9L4x+w0ZXQe873aXB7QyJ
-+cYAn+LA1zblxiGrvFm5je+7+6ZElOnMGZJRsQq3G15Ob51J7/bq64SOZmvQEj5vg+RPfLtb
-RjN3KX9YW91LH7O2dllbinUpHsRywzv5p0HrFNBg9kwRdE6AE/TtoPXeYGvP4IAPRBDeqe1f
-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
 
---mYCpIKhGyMATD0i+
+
+
+
+
+
+
+
+
+
+
+------=_Part_7806_15275935.1141414239648
+Content-Type: application/octet-stream; name=ver_linux
+Content-Transfer-Encoding: 7bit
+X-Attachment-Id: f_ekcwevjq
+Content-Disposition: attachment; filename="ver_linux"
+
+If some fields are empty or look unusual you may have an old version.
+Compare to the current minimal requirements in Documentation/Changes.
+ 
+Linux athena-asamiya 2.6.15.1-ubuntu1athenacustom-DRI #22 PREEMPT Thu Mar 2 22:04:06 MYT 2006 i686 GNU/Linux
+ 
+Gnu C                  4.0.3
+Gnu make               3.81beta4
+binutils               2.16.91
+util-linux             2.12r
+mount                  2.12r
+module-init-tools      3.2.2
+e2fsprogs              1.38
+jfsutils               1.1.8
+reiserfsprogs          3.6.19
+reiser4progs           1.0.5
+xfsprogs               2.7.7
+pcmcia-cs              3.2.8
+PPP                    2.4.4b1
+Linux C Library        2.3.6
+Dynamic linker (ldd)   2.3.6
+Procps                 3.2.6
+Net-tools              1.60
+Console-tools          0.2.3
+Sh-utils               5.93
+udev                   079
+Modules Loaded         usbhid ipv6 savage drm video thermal processor fan button battery ac snd_seq_oss snd_seq_midi snd_seq_midi_event snd_seq snd_via82xx_modem snd_via82xx snd_ac97_codec snd_ac97_bus snd_mpu401_uart snd_pcm_oss snd_mixer_oss pcmcia firmware_class snd_rawmidi snd_seq_device snd_pcm snd_timer snd i2c_viapro uhci_hcd ehci_hcd rtc snd_page_alloc usbcore 8139too mii yenta_socket rsrc_nonstatic pcmcia_core i2c_prosavage i2c_algo_bit i2c_core psmouse soundcore via_agp agpgart evdev unix
+
+
+
+
+
+------=_Part_7806_15275935.1141414239648
+Content-Type: application/octet-stream; name=cpuinfo
+Content-Transfer-Encoding: 7bit
+X-Attachment-Id: f_ekcwfqz0
+Content-Disposition: attachment; filename="cpuinfo"
+
+processor	: 0
+vendor_id	: CentaurHauls
+cpu family	: 6
+model		: 7
+model name	: VIA Ezra
+stepping	: 10
+cpu MHz		: 933.545
+cache size	: 64 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 1
+wp		: yes
+flags		: fpu de tsc msr cx8 mtrr pge mmx 3dnow
+bogomips	: 1868.19
+
+
+
+
+
+------=_Part_7806_15275935.1141414239648
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -427,5 +321,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---mYCpIKhGyMATD0i+--
+------=_Part_7806_15275935.1141414239648--
 
