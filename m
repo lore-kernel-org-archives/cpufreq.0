@@ -1,163 +1,85 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: p4_clockmod broken in 2.6.16-rc? kernels
-Date: Thu, 9 Mar 2006 05:53:14 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB60077AFDA6@scsmsx403.amr.corp.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.16-rc5-mm3 -- BUG: sleeping function called from invalid
+ context at include/linux/rwsem.h:43 in_atomic():0, irqs_disabled():1
+Date: Thu, 9 Mar 2006 11:11:56 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0603091046080.5232-100000@iolanthe.rowland.org>
+References: <20060309023234.02ba4517.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C64380.CFF15078"
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932205AbWCIQL6@vger.kernel.org>
+In-Reply-To: <20060309023234.02ba4517.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Mike Galbraith <efault@gmx.de>, cpufreq@lists.linux.org.uk
-Cc: davej@codemonkey.org.uk
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C64380.CFF15078
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-
-Please try the attached patch and let me know whether that helps.
-
-Thanks,
-Venki=20
-
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Mike Galbraith
->Sent: Wednesday, March 08, 2006 10:12 PM
->To: cpufreq@lists.linux.org.uk
->Cc: davej@codemonkey.org.uk
->Subject: p4_clockmod broken in 2.6.16-rc? kernels
->
->Greetings,
->
->As subject says, it appears to be broken for at least one single P4 HT
->system, namely mine.  2.6.15 works fine.
->
->With a UP compiled kernel, it fails completely, due to CPU0 failure to
->initialize.  With an SMP compiled kernel, CPU0 fails, but the sibling
->initializes.  Nothing good happens afterward though.  See debug
->(cpufreq.debug=3D7) output below.
->
->	Cheers,
->
->	-Mike
->
->cpufreq-core: trying to register driver p4-clockmod
->cpufreq-core: adding CPU 0
->p4-clockmod: has errata -- disabling frequencies lower than 2ghz
->speedstep-lib: x86: f, model: 2
->speedstep-lib: ebx value is 9, x86_mask is 9
->speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0xf12000f 0x0
->speedstep-lib: P4 - FSB 200000 kHz; Multiplier 15; Speed 3000000 kHz
->freq-table: setting show_table for cpu 0 to c14bd800
->freq-table: table entry 0 is invalid, skipping
->freq-table: table entry 1 is invalid, skipping
->freq-table: table entry 2 is invalid, skipping
->freq-table: table entry 3 is invalid, skipping
->freq-table: table entry 4 is invalid, skipping
->freq-table: table entry 5 is invalid, skipping
->freq-table: table entry 6 is invalid, skipping
->freq-table: table entry 7 is invalid, skipping
->freq-table: table entry 8 is invalid, skipping
->cpufreq-core: initialization failed
->cpufreq-core: adding CPU 1
->p4-clockmod: has errata -- disabling frequencies lower than 2ghz
->speedstep-lib: x86: f, model: 2
->speedstep-lib: ebx value is 9, x86_mask is 9
->speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0xf12000f 0x0
->speedstep-lib: P4 - FSB 200000 kHz; Multiplier 15; Speed 3000000 kHz
->freq-table: setting show_table for cpu 1 to c14bd800
->freq-table: table entry 0 is invalid, skipping
->freq-table: table entry 1: 375000 kHz, 1 index
->freq-table: table entry 2: 750000 kHz, 2 index
->freq-table: table entry 3: 1125000 kHz, 3 index
->freq-table: table entry 4: 1500000 kHz, 4 index
->freq-table: table entry 5: 1875000 kHz, 5 index
->freq-table: table entry 6: 2250000 kHz, 6 index
->freq-table: table entry 7: 2625000 kHz, 7 index
->freq-table: table entry 8: 3000000 kHz, 8 index
->cpufreq-core: setting new policy for CPU 1: 375000 - 3000000 kHz
->freq-table: request for verification of policy (375000 -=20
->3000000 kHz) for cpu 1
->freq-table: verification lead to (375000 - 3000000 kHz) for cpu 1
->freq-table: request for verification of policy (375000 -=20
->3000000 kHz) for cpu 1
->freq-table: verification lead to (375000 - 3000000 kHz) for cpu 1
->cpufreq-core: new min and max freqs are 375000 - 3000000 kHz
->cpufreq-core: governor switch
->cpufreq-core: __cpufreq_governor for CPU 1, event 1
->performance: setting to 3000000 kHz because of event 1
->cpufreq-core: target for CPU 1: 3000000 kHz, relation 1
->freq-table: request for target 3000000 kHz (relation: 1) for cpu 1
->freq-table: target is 8 (3000000 kHz, 8)
->cpufreq-core: governor: change or update limits
->cpufreq-core: __cpufreq_governor for CPU 1, event 3
->performance: setting to 3000000 kHz because of event 3
->cpufreq-core: target for CPU 1: 3000000 kHz, relation 1
->freq-table: request for target 3000000 kHz (relation: 1) for cpu 1
->freq-table: target is 8 (3000000 kHz, 8)
->cpufreq-core: initialization complete
->cpufreq-core: driver p4-clockmod up and running
->p4-clockmod: P4/Xeon(TM) CPU On-Demand Clock Modulation available
->
->[lack of events]
->
->
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
-
-------_=_NextPart_001_01C64380.CFF15078
-Content-Type: application/octet-stream;
-	name="p4clockmod.patch"
-Content-Transfer-Encoding: base64
-Content-Description: p4clockmod.patch
-Content-Disposition: attachment;
-	filename="p4clockmod.patch"
-
-CkZpeCB0aGUgY29kZSB0byBkaXNhYmxlIGZyZXFzIGxlc3MgdGhhbiAyR0h6IGluIE40NCAwMTcg
-ZXJyYXRhLgoKU2lnbmVkLW9mZi1ieTogVmVua2F0ZXNoIFBhbGxpcGFkaSA8dmVua2F0ZXNoLnBh
-bGxpcGFkaUBpbnRlbC5jb20+CgpJbmRleDogbGludXgtMi42LjE1L2FyY2gvaTM4Ni9rZXJuZWwv
-Y3B1L2NwdWZyZXEvcDQtY2xvY2ttb2QuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMTUub3Jp
-Zy9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL3A0LWNsb2NrbW9kLmMKKysrIGxpbnV4LTIu
-Ni4xNS9hcmNoL2kzODYva2VybmVsL2NwdS9jcHVmcmVxL3A0LWNsb2NrbW9kLmMKQEAgLTI0NCw3
-ICsyNDQsNyBAQCBzdGF0aWMgaW50IGNwdWZyZXFfcDRfY3B1X2luaXQoc3RydWN0IGNwCiAJZm9y
-IChpPTE7IChwNGNsb2NrbW9kX3RhYmxlW2ldLmZyZXF1ZW5jeSAhPSBDUFVGUkVRX1RBQkxFX0VO
-RCk7IGkrKykgewogCQlpZiAoKGk8MikgJiYgKGhhc19ONDRfTzE3X2VycmF0YVtwb2xpY3ktPmNw
-dV0pKQogCQkJcDRjbG9ja21vZF90YWJsZVtpXS5mcmVxdWVuY3kgPSBDUFVGUkVRX0VOVFJZX0lO
-VkFMSUQ7Ci0JCWVsc2UgaWYgKGhhc19ONjBfZXJyYXRhW3BvbGljeS0+Y3B1XSAmJiBwNGNsb2Nr
-bW9kX3RhYmxlW2ldLmZyZXF1ZW5jeSA8IDIwMDAwMDApCisJCWVsc2UgaWYgKGhhc19ONjBfZXJy
-YXRhW3BvbGljeS0+Y3B1XSAmJiAoKHN0b2NrX2ZyZXEgKiBpKS84KSA8IDIwMDAwMDApCiAJCQlw
-NGNsb2NrbW9kX3RhYmxlW2ldLmZyZXF1ZW5jeSA9IENQVUZSRVFfRU5UUllfSU5WQUxJRDsKIAkJ
-ZWxzZQogCQkJcDRjbG9ja21vZF90YWJsZVtpXS5mcmVxdWVuY3kgPSAoc3RvY2tfZnJlcSAqIGkp
-Lzg7Cg==
-
-------_=_NextPart_001_01C64380.CFF15078
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Andrew Morton <akpm@osdl.org>
+Cc: Miles Lane <miles.lane@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kernel development list <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk, Russell King <rmk@arm.linux.org.uk>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+On Thu, 9 Mar 2006, Andrew Morton wrote:
 
-------_=_NextPart_001_01C64380.CFF15078--
+> "Miles Lane" <miles.lane@gmail.com> wrote:
+> >
+> > Apologies.  This bug caused my video to get messed up.  I was able to
+> > run Gnome, but the apps weren't rendering correctly, so I couldn't be
+> > sure my subject line was correct.
+> > I would have edited out some of the context info, but that was tough
+> > as well.  Here's the BUG message by itself.  Perhaps all the dmesg
+> > output in the previous message will be helpful.
+> > As you can see in the dmesg output, I hit this by suspending and
+> > resuming.  I am running Fedora Core 5 Test 3 + all yum updates.
+> > Andrew, the full dmesg output is in the LKML message with the subject
+> > line set to "v".  Let me know if you would like me to send it directly
+> > to you.
+> > 
+> > BUG: sleeping function called from invalid context at include/linux/rwsem.h:43
+> > in_atomic():0, irqs_disabled():1
+> >  <c1003f81> show_trace+0xd/0xf   <c100401b> dump_stack+0x17/0x19
+> >  <c1015f77> __might_sleep+0x86/0x90   <c1024738>
+> > blocking_notifier_call_chain+0x1b/0x4d
+> >  <c1183bb2> cpufreq_resume+0xf5/0x11d   <c112b27c> __sysdev_resume+0x23/0x57
+> >  <c112b3c9> sysdev_resume+0x19/0x4b   <c112f736> device_power_up+0x8/0xf
+> >  <c1033339> swsusp_suspend+0x6e/0x8b   <c1033918> pm_suspend_disk+0x51/0xf3
+> >  <c10328c7> enter_state+0x53/0x1c1   <c1032abe> state_store+0x89/0x97
+> >  <c108af00> subsys_attr_store+0x20/0x25   <c108b020> sysfs_write_file+0xb5/0xdc
+> >  <c1056578> vfs_write+0xab/0x154   <c1056aa3> sys_write+0x3b/0x60
+> >  <c1002b43> syscall_call+0x7/0xb
+> > PM: Image restored success
+> 
+> ho-hum.  That's swsusp insisting on running things which it shouldn't run
+> with local interrupts disabled.
+> 
+> I wouldn't expect this to cause the display to get mucked up though.
 
+This problem arises because the cpufreq transition notifier chain is
+classified as blocking, but it gets called with interrupts disabled during
+cpufreq_suspend() and cpufreq_resume().  In fact, those routines include
+this comment:
+
+	/* we may be lax here as interrupts are off. Nonetheless
+	 * we need to grab the correct cpu policy, as to check
+	 * whether we really run on this CPU.
+	 */
+
+Now this is odd, because the main path for calling that notifier chain,
+cpufreq_notify_transition(), includes the line
+
+	BUG_ON(irqs_disabled());
+
+In other words, cpufreq seems to be of two minds about whether or not 
+interrupts should be enabled when the transition notifier chain gets run.
+
+Note that in at least one driver, drivers/pcmcia/soc_common.c, a callout
+routine on that chain does a down().  So it looks like interrupts should
+always be enabled.  Or maybe I'm reading too much into a simple mistake.
+
+Part of the problem may be that cpufreq seems to expect interrupts to be
+on when the chain is called with val = CPUFREQ_PRECHANGE or
+CPUFREQ_POSTCHANGE, and interrupts to be off when the chain is called with
+CPUFREQ_SUSPENDCHANGE or CPUFREQ_RESUMECHANGE.  This is a rather fragile
+way of doing things.
+
+I don't know what the proper way is to fix this; someone involved with 
+cpufreq development will have to handle it.  Perhaps there should be two 
+distinct notifier chains, one for suspend/resume and one for everything 
+else.
+
+Alan Stern
