@@ -1,85 +1,49 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: 2.6.16-rc5-mm3 -- BUG: sleeping function called from invalid
- context at include/linux/rwsem.h:43 in_atomic():0, irqs_disabled():1
-Date: Thu, 9 Mar 2006 11:11:56 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0603091046080.5232-100000@iolanthe.rowland.org>
-References: <20060309023234.02ba4517.akpm@osdl.org>
+From: "Miles Lane" <miles.lane@gmail.com>
+Subject: 2.6.16-rc5-mm3 -- initcall at 0xc1325736:
+	acpi_cpufreq_init+0x0/0x71(): returned with error code -16
+Date: Thu, 9 Mar 2006 09:14:07 -0800
+Message-ID: <a44ae5cd0603090914vfaaf439m448db90c9b732ff0@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932205AbWCIQL6@vger.kernel.org>
-In-Reply-To: <20060309023234.02ba4517.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: Miles Lane <miles.lane@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kernel development list <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk, Russell King <rmk@arm.linux.org.uk>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
 
-On Thu, 9 Mar 2006, Andrew Morton wrote:
+Hello,
 
-> "Miles Lane" <miles.lane@gmail.com> wrote:
-> >
-> > Apologies.  This bug caused my video to get messed up.  I was able to
-> > run Gnome, but the apps weren't rendering correctly, so I couldn't be
-> > sure my subject line was correct.
-> > I would have edited out some of the context info, but that was tough
-> > as well.  Here's the BUG message by itself.  Perhaps all the dmesg
-> > output in the previous message will be helpful.
-> > As you can see in the dmesg output, I hit this by suspending and
-> > resuming.  I am running Fedora Core 5 Test 3 + all yum updates.
-> > Andrew, the full dmesg output is in the LKML message with the subject
-> > line set to "v".  Let me know if you would like me to send it directly
-> > to you.
-> > 
-> > BUG: sleeping function called from invalid context at include/linux/rwsem.h:43
-> > in_atomic():0, irqs_disabled():1
-> >  <c1003f81> show_trace+0xd/0xf   <c100401b> dump_stack+0x17/0x19
-> >  <c1015f77> __might_sleep+0x86/0x90   <c1024738>
-> > blocking_notifier_call_chain+0x1b/0x4d
-> >  <c1183bb2> cpufreq_resume+0xf5/0x11d   <c112b27c> __sysdev_resume+0x23/0x57
-> >  <c112b3c9> sysdev_resume+0x19/0x4b   <c112f736> device_power_up+0x8/0xf
-> >  <c1033339> swsusp_suspend+0x6e/0x8b   <c1033918> pm_suspend_disk+0x51/0xf3
-> >  <c10328c7> enter_state+0x53/0x1c1   <c1032abe> state_store+0x89/0x97
-> >  <c108af00> subsys_attr_store+0x20/0x25   <c108b020> sysfs_write_file+0xb5/0xdc
-> >  <c1056578> vfs_write+0xab/0x154   <c1056aa3> sys_write+0x3b/0x60
-> >  <c1002b43> syscall_call+0x7/0xb
-> > PM: Image restored success
-> 
-> ho-hum.  That's swsusp insisting on running things which it shouldn't run
-> with local interrupts disabled.
-> 
-> I wouldn't expect this to cause the display to get mucked up though.
+I get this when I boot:
+initcall at 0xc1325736: acpi_cpufreq_init+0x0/0x71(): returned with
+error code -16
+Is this a problem?
 
-This problem arises because the cpufreq transition notifier chain is
-classified as blocking, but it gets called with interrupts disabled during
-cpufreq_suspend() and cpufreq_resume().  In fact, those routines include
-this comment:
+CONFIG_CPU_FREQ=3Dy
+CONFIG_CPU_FREQ_TABLE=3Dy
+CONFIG_CPU_FREQ_DEBUG=3Dy
+CONFIG_CPU_FREQ_STAT=3Dm
+CONFIG_CPU_FREQ_STAT_DETAILS=3Dy
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=3Dy
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dm
+CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dm
+CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
+CONFIG_CPU_FREQ_GOV_ONDEMAND=3Dy
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=3Dm
 
-	/* we may be lax here as interrupts are off. Nonetheless
-	 * we need to grab the correct cpu policy, as to check
-	 * whether we really run on this CPU.
-	 */
-
-Now this is odd, because the main path for calling that notifier chain,
-cpufreq_notify_transition(), includes the line
-
-	BUG_ON(irqs_disabled());
-
-In other words, cpufreq seems to be of two minds about whether or not 
-interrupts should be enabled when the transition notifier chain gets run.
-
-Note that in at least one driver, drivers/pcmcia/soc_common.c, a callout
-routine on that chain does a down().  So it looks like interrupts should
-always be enabled.  Or maybe I'm reading too much into a simple mistake.
-
-Part of the problem may be that cpufreq seems to expect interrupts to be
-on when the chain is called with val = CPUFREQ_PRECHANGE or
-CPUFREQ_POSTCHANGE, and interrupts to be off when the chain is called with
-CPUFREQ_SUSPENDCHANGE or CPUFREQ_RESUMECHANGE.  This is a rather fragile
-way of doing things.
-
-I don't know what the proper way is to fix this; someone involved with 
-cpufreq development will have to handle it.  Perhaps there should be two 
-distinct notifier chains, one for suspend/resume and one for everything 
-else.
-
-Alan Stern
+CONFIG_X86_ACPI_CPUFREQ=3Dy
+CONFIG_X86_SPEEDSTEP_CENTRINO=3Dy
+CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=3Dy
+CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=3Dy
+CONFIG_X86_SPEEDSTEP_ICH=3Dy
+CONFIG_X86_P4_CLOCKMOD=3Dm
+CONFIG_X86_SPEEDSTEP_LIB=3Dy
+CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK=3Dy
