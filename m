@@ -1,40 +1,44 @@
 From: Andrey Borzenkov <arvidjaar@mail.ru>
 Subject: System completely hangs using acpi_cpufreq
-Date: Wed, 8 Mar 2006 14:37:00 +0300
-Message-ID: <200603081437.01363.arvidjaar@mail.ru>
+Date: Thu, 9 Mar 2006 08:15:04 +0300
+Message-ID: <200603090815.05081.arvidjaar@mail.ru>
 References: <200601150118.57542.arvidjaar@mail.ru>
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964844AbWCHLhM@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <200601150118.57542.arvidjaar@mail.ru>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: acpi-devel@lists.sourceforge.net
+To: linux-acpi@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
+
+[I resend this now with correct ACPI ML address]
 
 For some time I have been experiencing mysterious lockups on my notebook. They 
 happened usually shortly after system has been booted (probably 95% of 
 power-ups), 5-10 minutes. I normally switch off/on every day and the normal 
 sequence was:
 
-- - switch on
-- - kernel boots, KDE loads
-- - I start doing something and system stalls. The only way out is power button 
+- - - switch on
+- - - kernel boots, KDE loads
+- - - I start doing something and system stalls. The only way out is power 
+button 
 (keep pressing for 4 sec :) I did not have chance to check if network was 
 still active, but both input (keyboard and mouse) and output (no screen 
 updates) were dead
-- - I switch on again and now keyboard is dead. I cannot even select kernel to 
+- - - I switch on again and now keyboard is dead. I cannot even select kernel to 
 load in grub menu
-- - I switch off again (does not matter if I do it before loading kernel while 
+- - - I switch off again (does not matter if I do it before loading kernel while 
 in grub or wait until kdm loads and shut down system using menu - fortunately 
 mouse still works at this time). If I switch while in grub I do not have to 
 wait that long BTW, it reacts almost immediately on button press.
-- - when I finally switch on third time, system works. I do not remember having 
+- - - when I finally switch on third time, system works. I do not remember 
+having 
 lockup after this boot.
 
 Then I switch off and on the next day it usually repeats itself.
@@ -58,7 +62,7 @@ without APIC but failed.
 
 regards
 
-- -andrey
+- - -andrey
 
 Linux version 2.6.15.6-1avb (bor@cooker.home.net) (gcc version 4.0.3 
 (4.0.3-0.20060215.2mdk for Mandriva Linux release 2006.1)) #17 Mon Mar 6 
@@ -331,7 +335,7 @@ Uniform CD-ROM driver Revision: 3.20
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2.1 (GNU/Linux)
 
-iD8DBQFEDsHdR6LMutpd94wRAhMGAKCPf4wuu7vGPAXqM3KGbRqmDQ3KBwCg0qcb
-YAAilny8xcuZ6FRHbL3ggmM=
-=KpKK
+iD8DBQFED7nYR6LMutpd94wRAslzAJ4tS89oAkTM78uizyUjVMi4uQ08gwCggDAt
+hsngTxupFGf6K7r5s89+NM4=
+=WxDh
 -----END PGP SIGNATURE-----
