@@ -1,13 +1,12 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: 2.6.16-rc5-mm3 -- initcall at 0xc1325736:
- acpi_cpufreq_init+0x0/0x71(): returned with error code -16
-Date: Thu, 9 Mar 2006 13:08:47 -0800
-Message-ID: <20060309130847.05d94ede.akpm@osdl.org>
-References: <a44ae5cd0603090914vfaaf439m448db90c9b732ff0@mail.gmail.com>
+From: Mike Galbraith <efault@gmx.de>
+Subject: RE: p4_clockmod broken in 2.6.16-rc? kernels
+Date: Fri, 10 Mar 2006 04:25:45 +0100
+Message-ID: <1141961145.7807.11.camel@homer>
+References: <88056F38E9E48644A0F562A38C64FB60077AFDA6@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <a44ae5cd0603090914vfaaf439m448db90c9b732ff0@mail.gmail.com>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB60077AFDA6@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,15 +18,18 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Miles Lane <miles.lane@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
 
-"Miles Lane" <miles.lane@gmail.com> wrote:
->
->  I get this when I boot:
->  initcall at 0xc1325736: acpi_cpufreq_init+0x0/0x71(): returned with
->  error code -16
->  Is this a problem?
+On Thu, 2006-03-09 at 05:53 -0800, Pallipadi, Venkatesh wrote:
+> Please try the attached patch and let me know whether that helps.
 
-Nope, this is acpi_cpufreq saying "hey, you already installed a cpufreq
-driver - what are you asking me to do it for?".
+Sorry for the late response.  I'm the father of an 18 year old chip off
+the old block-head... 'nuff said.
+
+Yes, this fixes it for both SMP and UP.  Thanks for the quick response.
+
+	-Mike
+
+(Now to go patch my kernel. 2250 Mhz my south 40.. buy cpu for $$ get
+bonus defects for free.. mutter mutter gripe bitch whine complain;) 
