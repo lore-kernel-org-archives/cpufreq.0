@@ -1,12 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: p4_clockmod broken in 2.6.16-rc? kernels
-Date: Fri, 10 Mar 2006 00:47:23 -0500
-Message-ID: <20060310054723.GC5600@redhat.com>
-References: <88056F38E9E48644A0F562A38C64FB60077E8338@scsmsx403.amr.corp.intel.com>
+From: Eric Piel <Eric.Piel@tremplin-utc.net>
+Subject: [PATCH] Warn if ondemand governor can not run due to too long
+ transition latency
+Date: Fri, 10 Mar 2006 11:34:16 +0200
+Message-ID: <44114818.4060301@tremplin-utc.net>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="------------000502090807090706030808"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB60077E8338@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,35 +16,70 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Dave Jones <davej@redhat.com>
+Cc: CPUFreq Mailing List <cpufreq@lists.linux.org.uk>
+
+This is a multi-part message in MIME format.
+--------------000502090807090706030808
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk, Mike Galbraith <efault@gmx.de>
 
-On Thu, Mar 09, 2006 at 08:07:44PM -0800, Pallipadi, Venkatesh wrote:
- > 
- > Great to hear that the patch helped. I had a typo in the patch header
- > and attaching an updated patch. 
- > 
- > Dave: Please push this patch towards base. This was a bug in one of the
- > recent changes in p4-clockmod.c
+Hello,
 
-Applied, thanks.  I fixed this one up by hand, but next time can you
-inline the patch instead of attaching it ?
+The ondemand governor will not run if the transition latency of the 
+driver is more than 10 ms. In such case, the selection of the governor 
+will fail _silently_ (for the user). This is quite confusing and, 
+indeed, there has already been several reports on this mailing list of 
+user considering this as a bug.
 
-git doesn't grok MIME, so I end up having to save it seperately,
-and munge it back into your mail in an editor before I can feed it to
-git, turning 'a few seconds' into a 'a minute or two' to apply a patch.[1]
+So I suggest printing a warning message if this condition is triggered. 
+That's what does the attached patch :-)
 
-btw, should acpi-cpufreq/speedstep-ich also have those errata workarounds?
+see you,
+Eric
 
-Thanks.
+---
+From: Eric Piel <eric.piel@tremplin-utc.net>
 
-		Dave
+Display a warning if the ondemand governor can not be selected due to a 
+transition latency of the cpufreq driver which is too long.
 
-[1] Actually this was even longer. Due to me missing chopping a MIME
-mailheader, it still confused git-apply, and I scratched my head
-for some time until Linus clued me in.  MIME- just say no!
+Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
 
--- 
-http://www.codemonkey.org.uk
+--------------000502090807090706030808
+Content-Type: text/x-patch;
+	name="cpufreq-ondemand-warn-too-long-transition-latency.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="cpufreq-ondemand-warn-too-long-transition-latency.patch"
+
+--- linux-2.6.16-rc5/drivers/cpufreq/cpufreq_ondemand.c-keep-ignore-nice	2006-03-07 11:07:37.000000000 +0200
++++ linux-2.6.16-rc5/drivers/cpufreq/cpufreq_ondemand.c	2006-03-07 11:11:45.000000000 +0200
+@@ -396,8 +396,11 @@ static int cpufreq_governor_dbs(struct c
+ 			return -EINVAL;
+ 
+ 		if (policy->cpuinfo.transition_latency >
+-				(TRANSITION_LATENCY_LIMIT * 1000))
++				(TRANSITION_LATENCY_LIMIT * 1000)) {
++			printk(KERN_WARNING "ondemand governor failed to load "
++			       "due to too long transition latency\n");
+ 			return -EINVAL;
++		}
+ 		if (this_dbs_info->enable) /* Already enabled */
+ 			break;
+ 		 
+
+--------------000502090807090706030808
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--------------000502090807090706030808--
+
+
