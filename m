@@ -1,11 +1,14 @@
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-Subject: [PATCH] keep ignore_nice_load value when the ondemand govenor is
- reselected
-Date: Fri, 10 Mar 2006 11:35:27 +0200
-Message-ID: <4411485F.1010401@tremplin-utc.net>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: p4_clockmod broken in 2.6.16-rc? kernels
+Date: Tue, 14 Mar 2006 09:55:51 -0800
+Message-ID: <20060314095551.A4913@unix-os.sc.intel.com>
+References: <88056F38E9E48644A0F562A38C64FB60077E8338@scsmsx403.amr.corp.intel.com>
+	<20060310054723.GC5600@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------010503020202090107000900"
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20060310054723.GC5600@redhat.com>;
+	from davej@redhat.com on Fri, Mar 10, 2006 at 12:47:23AM -0500
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,84 +18,48 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Dave Jones <davej@redhat.com>
-Cc: CPUFreq Mailing List <cpufreq@lists.linux.org.uk>
-
-This is a multi-part message in MIME format.
---------------010503020202090107000900
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hello,
-
-With the ondemand governor, ignore_nice_load is reset each time the 
-governor is selected. That's annoying because each time I change to 
-another governor and change back to ondemand, I also have to set up 
-ignore_nice_load. eg:
-# cat /sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice_load
-1
-# cpufreq-set -g powersave
-# cpufreq-set -g ondemand
-# cat /sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice_load
-0
-
-This behavior is also inconsistent with the other variables of 
-/sys/devices/system/cpu/cpu0/cpufreq/ondemand/
-
-Attached is a patch that corrects the behavior.
-
-see you,
-Eric
-
----
-From: Eric Piel <eric.piel@tremplin-utc.net>
-
-Keep the value of ignore_nice_load of the ondemand governor even after 
-the governor has been deselected and selected back. This is the behavior 
-of the other exported values of the ondemand governor and it's much more 
-user-friendly.
-
-Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
-
-
---------------010503020202090107000900
-Content-Type: text/x-patch;
-	name="cpufreq-ondemand-keep-ignore-nice-load-setting-2.6.16.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename*0="cpufreq-ondemand-keep-ignore-nice-load-setting-2.6.16.patch"
-
---- linux-2.6.16-rc5.bak/drivers/cpufreq/cpufreq_ondemand.c	2006-03-03 22:10:26.000000000 +0100
-+++ linux-2.6.16-rc5/drivers/cpufreq/cpufreq_ondemand.c	2006-03-03 21:58:58.000000000 +0100
-@@ -84,6 +84,7 @@ struct dbs_tuners {
- static struct dbs_tuners dbs_tuners_ins = {
- 	.up_threshold 		= DEF_FREQUENCY_UP_THRESHOLD,
- 	.sampling_down_factor 	= DEF_SAMPLING_DOWN_FACTOR,
-+	.ignore_nice		= 0,
- };
- 
- static inline unsigned int get_cpu_idle_time(unsigned int cpu)
-@@ -431,8 +432,6 @@ static int cpufreq_governor_dbs(struct c
- 				def_sampling_rate = MIN_STAT_SAMPLING_RATE;
- 
- 			dbs_tuners_ins.sampling_rate = def_sampling_rate;
--			dbs_tuners_ins.ignore_nice = 0;
--
- 			dbs_timer_init();
- 		}
- 		
-
---------------010503020202090107000900
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk, Mike Galbraith <efault@gmx.de>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+On Fri, Mar 10, 2006 at 12:47:23AM -0500, Dave Jones wrote:
+> On Thu, Mar 09, 2006 at 08:07:44PM -0800, Pallipadi, Venkatesh wrote:
+>  > 
+>  > Great to hear that the patch helped. I had a typo in the patch header
+>  > and attaching an updated patch. 
+>  > 
+>  > Dave: Please push this patch towards base. This was a bug in one of the
+>  > recent changes in p4-clockmod.c
+> 
+> Applied, thanks.  I fixed this one up by hand, but next time can you
+> inline the patch instead of attaching it ?
 
---------------010503020202090107000900--
+Sorry for all the hassle. I wanted to send that patch out quick, before 2.6.16. 
+And hence ended up sending it as an attachment using the dump mail client.
 
+> btw, should acpi-cpufreq/speedstep-ich also have those errata workarounds?
+
+No. These two errats seem specific to clock modulation and not speedstep. So,
+no changes required for speedstep.
+
+Looking at the workarounds in p4-clockmod.c again...
+Seems like some more work is needed on this. The current workaround doesn't 
+seem to cover all the affected steppings and also it is using int [NR_CPUS] 
+array to store a single bit (whether error is present or not). I will send a 
+follow-on cleanup patch, which I think can wait until 2.6.16.
+
+Thanks,
+Venki
+> 
+> Thanks.
+> 
+> 		Dave
+> 
+> [1] Actually this was even longer. Due to me missing chopping a MIME
+> mailheader, it still confused git-apply, and I scratched my head
+> for some time until Linus clued me in.  MIME- just say no!
+> 
+> -- 
+> http://www.codemonkey.org.uk
