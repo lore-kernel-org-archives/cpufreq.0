@@ -1,47 +1,50 @@
-From: Daniel Rubio Bonilla <danielrubiob@terra.es>
-Subject: Re: How can I guess the system FSB speed?
-Date: Wed, 15 Mar 2006 19:48:12 +0100
-Message-ID: <200603151948.13122.danielrubiob@terra.es>
-References: <200603150018.33139.danielrubiob@terra.es>
-	<20060314234027.GB8659@redhat.com>
+From: "Jan Beulich" <jbeulich@novell.com>
+Subject: [PATCH] kernel crash in powernow-k8 after lost ticks detected
+Date: Mon, 20 Mar 2006 14:43:52 +0100
+Message-ID: <441EB1990200007800013DB9@emea1-mh.id2.novell.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20060314234027.GB8659@redhat.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964793AbWCTNoJ@vger.kernel.org>
 Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
+Cc: mark.langsdorf@amd.com, davej@redhat.com, Pavel Machek <pavel@suse.de>, linux-kernel@vger.kernel.org
 
-El Mi=E9rcoles, 15 de Marzo de 2006 00:40, escribi=F3:
-> On Wed, Mar 15, 2006 at 12:18:33AM +0100, Daniel Rubio Bonilla wrote:
->  > Hi to everyone. I am new in this mailing list.
->  >
->  > I would like to ask how could I guess the speed of the FSB of the
->  > system, if there is any way...
->
-> you can't reliably.  the best you can hope for is to decode the EBLCR MSR
-> if present.  Unfortuantly, it has different meaning on pretty much
-> every CPU out there, which makes it a bit of a mess to decode.
+Since powernowk8_cpu_init() gets called only for one of the two cores (the
+other one is in the same policy set and hence cpufreq_add_dev() prevents the
+call), calling other functions, namely powernowk8_get(), one CPUs that haven't
+been initialized will yield a NULL from the respective powernow_data[] slot. In
+the specific case, the problem occured after the system detected some lost
+ticks and called cpufreq_get() for all CPUs.
+While I can imagine more sophisticated fixes for this (it namely seems
+questionable whether calling the init routines not on all CPUs, or, if that's
+necessary, whether not properly setting up the data pointers for all affected
+CPUs in powernow-k8 is okay), below simple change seems to address the
+problem (the other hunk is to make a message more meaningful).
 
-Thanks a lot Dave. I have found this register for Pentium 4 and other P6 in=
-tel=20
-processors. But it seems it has disappeared in the Pentium-M model. And is=
-=20
-just the one I would like to know the speed :(
-Do you have any information about this processor, or do you know another wa=
-y=20
-of finding the FSB speed?
+Signed-Off-By: Jan Beulich <jbeulich@novell.com>
 
-Thanks again :)
+Index: head-2006-03-13/drivers/cpufreq/cpufreq.c
+===================================================================
+--- head-2006-03-13.orig/drivers/cpufreq/cpufreq.c      2006-03-13 10:21:56.000000000 +0100
++++ head-2006-03-13/drivers/cpufreq/cpufreq.c   2006-03-15 08:59:42.000000000 +0100
+@@ -689,7 +689,7 @@ static int cpufreq_add_dev (struct sys_d
+               if (!cpu_online(j))
+                       continue;
 
-Daniel
+-               dprintk("CPU already managed, adding link\n");
++               dprintk("CPU %u already managed, adding link\n", j);
+               cpufreq_cpu_get(cpu);
+               cpu_sys_dev = get_cpu_sysdev(j);
+               sysfs_create_link(&cpu_sys_dev->kobj, &policy->kobj,
+@@ -921,7 +921,7 @@ unsigned int cpufreq_get(unsigned int cp
+
+       mutex_lock(&policy->lock);
+
+-       ret = cpufreq_driver->get(cpu);
++       ret = cpufreq_driver->get(policy->cpu);
+
+       if (ret && policy->cur && !(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+               /* verify no discrepancy between actual and saved value exists */
