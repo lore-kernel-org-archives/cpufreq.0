@@ -1,12 +1,9 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] Warn if ondemand governor can not run due to too long
-	transition latency
-Date: Thu, 23 Mar 2006 05:49:24 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB6007A24DB5@scsmsx403.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5553] speedstep-smi fails to load if CONFIG_CPU_FREQ_DEBUG is
+	not set
+Date: Thu, 23 Mar 2006 11:24:14 -0800
+Message-ID: <200603231924.k2NJOEce012243@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,55 +14,46 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Eric Piel <Eric.Piel@tremplin-utc.net>, Dave Jones <davej@redhat.com>
-Cc: CPUFreq Mailing List <cpufreq@lists.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=5553
 
 
-It does return a error value today. Right? In that sense it is not
-failing silently. I agree that the warning message is more effective
-than the return value.=20
 
-I am just wondering will it be better to notice this latency issue at
-the driver init time itself, rather than checking at the governor switch
-time. But, that is not entirely related to this patch. So, for now I
-think we can go ahead with this patch. I will see if we can improve it
-in anyway later.
 
-Dave: please add this patch.
+
+------- Additional Comments From ospite@studenti.unina.it  2006-03-23 11:24 -------
+Hallo, I also have this problem on linux 2.6.16, and the patch in
+http://bugzilla.kernel.org/show_bug.cgi?id=5553#c8 does not help.
+
+I found that any printk() statement before the asm code seems to fix the symptom
+(hence the driver can be loaded without problems).
+
+Just for istance, the following patch make the module loadable without touching
+explicitly the 'command' variable or anything else.
+
+--- speedstep-smi.c.orig	2006-03-23 19:22:05.000000000 +0100
++++ speedstep-smi.c	2006-03-23 20:05:28.000000000 +0100
+@@ -70,6 +70,7 @@ static int speedstep_smi_ownership (void
+ 	command = (smi_sig & 0xffffff00) | (smi_cmd & 0xff);
+ 	magic = virt_to_phys(magic_data);
+ 
++	printk("Loading speedstep-smi.\n");
+ 	dprintk("trying to obtain ownership with command %x at port %x\n", command,
+smi_port);
+ 
+ 	__asm__ __volatile__(
+
+
+Maybe a workaround like this can be used in a future kernel version to let users
+load the module, while thinking to a real fix (it sounds a bit 'redmondish', I
+know :) )
 
 Thanks,
-Venki
+   Antonio Ospite.
 
->-----Original Message-----
->From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
->Sent: Friday, March 10, 2006 1:34 AM
->To: Pallipadi, Venkatesh; Dave Jones
->Cc: CPUFreq Mailing List
->Subject: [PATCH] Warn if ondemand governor can not run due to=20
->too long transition latency
->
->Hello,
->
->The ondemand governor will not run if the transition latency of the=20
->driver is more than 10 ms. In such case, the selection of the governor=20
->will fail _silently_ (for the user). This is quite confusing and,=20
->indeed, there has already been several reports on this mailing list of=20
->user considering this as a bug.
->
->So I suggest printing a warning message if this condition is=20
->triggered.=20
->That's what does the attached patch :-)
->
->see you,
->Eric
->
->---
->From: Eric Piel <eric.piel@tremplin-utc.net>
->
->Display a warning if the ondemand governor can not be selected=20
->due to a=20
->transition latency of the cpufreq driver which is too long.
->
->Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
->
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
