@@ -1,8 +1,8 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] keep ignore_nice_load value when the ondemand govenor
-	is reselected
-Date: Thu, 23 Mar 2006 05:41:09 -0800
-Message-ID: <88056F38E9E48644A0F562A38C64FB6007A24DB1@scsmsx403.amr.corp.intel.com>
+Subject: RE: [PATCH] Warn if ondemand governor can not run due to too long
+	transition latency
+Date: Thu, 23 Mar 2006 05:49:24 -0800
+Message-ID: <88056F38E9E48644A0F562A38C64FB6007A24DB5@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -22,37 +22,40 @@ To: Eric Piel <Eric.Piel@tremplin-utc.net>, Dave Jones <davej@redhat.com>
 Cc: CPUFreq Mailing List <cpufreq@lists.linux.org.uk>
 
 
-Ack. Dave, please add this patch onto your git tree.
+It does return a error value today. Right? In that sense it is not
+failing silently. I agree that the warning message is more effective
+than the return value.=20
 
-Thakns,
+I am just wondering will it be better to notice this latency issue at
+the driver init time itself, rather than checking at the governor switch
+time. But, that is not entirely related to this patch. So, for now I
+think we can go ahead with this patch. I will see if we can improve it
+in anyway later.
+
+Dave: please add this patch.
+
+Thanks,
 Venki
-=20
 
 >-----Original Message-----
 >From: Eric Piel [mailto:Eric.Piel@tremplin-utc.net]=20
->Sent: Friday, March 10, 2006 1:35 AM
+>Sent: Friday, March 10, 2006 1:34 AM
 >To: Pallipadi, Venkatesh; Dave Jones
 >Cc: CPUFreq Mailing List
->Subject: [PATCH] keep ignore_nice_load value when the ondemand=20
->govenor is reselected
+>Subject: [PATCH] Warn if ondemand governor can not run due to=20
+>too long transition latency
 >
 >Hello,
 >
->With the ondemand governor, ignore_nice_load is reset each time the=20
->governor is selected. That's annoying because each time I change to=20
->another governor and change back to ondemand, I also have to set up=20
->ignore_nice_load. eg:
-># cat /sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice_load
->1
-># cpufreq-set -g powersave
-># cpufreq-set -g ondemand
-># cat /sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice_load
->0
+>The ondemand governor will not run if the transition latency of the=20
+>driver is more than 10 ms. In such case, the selection of the governor=20
+>will fail _silently_ (for the user). This is quite confusing and,=20
+>indeed, there has already been several reports on this mailing list of=20
+>user considering this as a bug.
 >
->This behavior is also inconsistent with the other variables of=20
->/sys/devices/system/cpu/cpu0/cpufreq/ondemand/
->
->Attached is a patch that corrects the behavior.
+>So I suggest printing a warning message if this condition is=20
+>triggered.=20
+>That's what does the attached patch :-)
 >
 >see you,
 >Eric
@@ -60,13 +63,9 @@ Venki
 >---
 >From: Eric Piel <eric.piel@tremplin-utc.net>
 >
->Keep the value of ignore_nice_load of the ondemand governor even after=20
->the governor has been deselected and selected back. This is=20
->the behavior=20
->of the other exported values of the ondemand governor and it's=20
->much more=20
->user-friendly.
+>Display a warning if the ondemand governor can not be selected=20
+>due to a=20
+>transition latency of the cpufreq driver which is too long.
 >
 >Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
->
 >
