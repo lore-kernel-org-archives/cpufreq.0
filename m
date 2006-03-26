@@ -1,7 +1,7 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 007/007] cpufreq_ondemand: add range check
-Date: Sun, 26 Mar 2006 11:57:51 +0200
-Message-ID: <20060326095751.GH17358@dominikbrodowski.de>
+Subject: [PATCH 002/007] cpufreq_conservative: alter default responsiveness
+Date: Sun, 26 Mar 2006 11:55:21 +0200
+Message-ID: <20060326095521.GC17358@dominikbrodowski.de>
 References: <20060326095338.GA17358@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -21,32 +21,35 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@lists.linux.org.uk
 
-From: Dominik Brodowski <linux@dominikbrodowski.net>
+From: Alexander Clouter <alex@digriz.org.uk>
 
-Assert that cpufreq_target is, at least, called with the minimum frequency
-allowed by this policy, not something lower. It triggered problems on ARM.
+The sensible approach to making conservative less responsive than ondemand :)
+As mentioned in patch [1/4].  We do not want conservative to shoot through
+all the frequencies, its point (by default) is to slowly move through them.
 
+By default its ten times less responsive.
+
+Signed-off-by: Alexander Clouter <alex-kernel@digriz.org.uk>
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
 ---
 
- drivers/cpufreq/cpufreq_ondemand.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-7c9d8c0e84d395a01289ebd1597758939a875a86
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index cd846f5..956d121 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -351,6 +351,9 @@ static void dbs_check_cpu(int cpu)
- 	freq_next = (freq_next * policy->cur) /
- 			(dbs_tuners_ins.up_threshold - 10);
+e8a02572252f9115c2b8296c40fd8b985f06f872
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index adecd31..3ca3cf0 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -509,7 +509,7 @@ static int cpufreq_governor_dbs(struct c
+ 			if (latency == 0)
+ 				latency = 1;
  
-+	if (freq_next < policy->min)
-+		freq_next = policy->min;
-+
- 	if (freq_next <= ((policy->cur * 95) / 100))
- 		__cpufreq_driver_target(policy, freq_next, CPUFREQ_RELATION_L);
- }
+-			def_sampling_rate = latency *
++			def_sampling_rate = 10 * latency *
+ 					DEF_SAMPLING_RATE_LATENCY_MULTIPLIER;
+ 
+ 			if (def_sampling_rate < MIN_STAT_SAMPLING_RATE)
 -- 
 1.2.4
