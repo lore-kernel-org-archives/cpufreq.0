@@ -1,8 +1,7 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 004/007] cpufreq_conservative: alternative initialise
-	approach
-Date: Sun, 26 Mar 2006 11:56:16 +0200
-Message-ID: <20060326095616.GE17358@dominikbrodowski.de>
+Subject: [PATCH 003/007] cpufreq_conservative: make for_each_cpu() safe
+Date: Sun, 26 Mar 2006 11:55:44 +0200
+Message-ID: <20060326095544.GD17358@dominikbrodowski.de>
 References: <20060326095338.GA17358@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -24,154 +23,171 @@ To: davej@redhat.com, cpufreq@lists.linux.org.uk
 
 From: Alexander Clouter <alex@digriz.org.uk>
 
-Venki, author of cpufreq_ondemand, came up with a neater way to remove the
-initialiser code from the main loop of my code and out to the point when the
-governor is actually initialised.
+All these changes should make cpufreq_conservative safe in regards to the x86
+for_each_cpu cpumask.h changes and whatnot.
 
-Not only does it look but it also feels cleaner, plus its simpler to
-understand.  It also saves a bunch of pointless conditional statements in the
-main loop.
+Whilst making it safe a number of pointless for loops related to the cpu
+mask's were removed.  I was never comfortable with all those for loops,
+especially as the iteration is over the same data again and again for each
+CPU you had in a single poll, an O(n^2) outcome to frequency scaling.
+
+The approach I use is to assume by default no CPU's exist and it sets the
+requested_freq to zero as a kind of flag, the reasoning is in the source ;)
+If the CPU is queried and requested_freq is zero then it initialises the
+variable to current_freq and then continues as if nothing happened which
+should be the same net effect as before?
 
 Signed-off-by: Alexander Clouter <alex-kernel@digriz.org.uk>
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
 ---
 
- drivers/cpufreq/cpufreq_conservative.c |   55 ++++++++++----------------------
- 1 files changed, 18 insertions(+), 37 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c |   91 +++++++++++++++-----------------
+ 1 files changed, 42 insertions(+), 49 deletions(-)
 
-a159b82770ab84e1b5e0306fa65e158188492b16
+08a28e2e98aa821cf6f15f8a267beb2f33377bb9
 diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 7498f25..a152d2c 100644
+index 3ca3cf0..7498f25 100644
 --- a/drivers/cpufreq/cpufreq_conservative.c
 +++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -65,6 +65,8 @@ struct cpu_dbs_info_s {
- 	unsigned int 		prev_cpu_idle_up;
- 	unsigned int 		prev_cpu_idle_down;
- 	unsigned int 		enable;
-+	unsigned int		down_skip;
-+	unsigned int		requested_freq;
- };
- static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
- 
-@@ -297,35 +299,12 @@ static void dbs_check_cpu(int cpu)
- 	unsigned int tmp_idle_ticks, total_idle_ticks;
+@@ -294,31 +294,40 @@ static struct attribute_group dbs_attr_g
+ static void dbs_check_cpu(int cpu)
+ {
+ 	unsigned int idle_ticks, up_idle_ticks, down_idle_ticks;
++	unsigned int tmp_idle_ticks, total_idle_ticks;
  	unsigned int freq_step;
  	unsigned int freq_down_sampling_rate;
--	static unsigned short down_skip[NR_CPUS];
--	static unsigned int requested_freq[NR_CPUS];
--	static unsigned int init_flag = NR_CPUS;
- 	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
+-	static int down_skip[NR_CPUS];
+-	static int requested_freq[NR_CPUS];
+-	static unsigned short init_flag = 0;
+-	struct cpu_dbs_info_s *this_dbs_info;
+-	struct cpu_dbs_info_s *dbs_info;
+-
++	static unsigned short down_skip[NR_CPUS];
++	static unsigned int requested_freq[NR_CPUS];
++	static unsigned int init_flag = NR_CPUS;
++	struct cpu_dbs_info_s *this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
  	struct cpufreq_policy *policy;
+-	unsigned int j;
  
+-	this_dbs_info = &per_cpu(cpu_dbs_info, cpu);
  	if (!this_dbs_info->enable)
  		return;
  
--	if ( init_flag != 0 ) {
--		for_each_cpu(init_flag) {
--			down_skip[init_flag] = 0;
--			/* I doubt a CPU exists with a freq of 0hz :) */
--			requested_freq[init_flag] = 0;
--		}
--		init_flag = 0;
--	}
--	
--	/*
--	 * If its a freshly initialised cpu we setup requested_freq.  This
--	 * check could be avoided if we did not care about a first time
--	 * stunted increase in CPU speed when there is a load.  I feel we
--	 * should be initialising this to something.  The removal of a CPU
--	 * is not a problem, after a short time the CPU should settle down
--	 * to a 'natural' frequency.
--	 */
--	if (requested_freq[cpu] == 0)
--		requested_freq[cpu] = this_dbs_info->cur_policy->cur;
+-	policy = this_dbs_info->cur_policy;
 -
- 	policy = this_dbs_info->cur_policy;
- 
- 	/* 
-@@ -360,12 +339,12 @@ static void dbs_check_cpu(int cpu)
- 			usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
- 
- 	if (idle_ticks < up_idle_ticks) {
--		down_skip[cpu] = 0;
-+		this_dbs_info->down_skip = 0;
- 		this_dbs_info->prev_cpu_idle_down =
- 			this_dbs_info->prev_cpu_idle_up;
- 
- 		/* if we are already at full speed then break out early */
--		if (requested_freq[cpu] == policy->max)
-+		if (this_dbs_info->requested_freq == policy->max)
- 			return;
- 		
- 		freq_step = (dbs_tuners_ins.freq_step * policy->max) / 100;
-@@ -374,18 +353,18 @@ static void dbs_check_cpu(int cpu)
- 		if (unlikely(freq_step == 0))
- 			freq_step = 5;
- 		
--		requested_freq[cpu] += freq_step;
--		if (requested_freq[cpu] > policy->max)
--			requested_freq[cpu] = policy->max;
-+		this_dbs_info->requested_freq += freq_step;
-+		if (this_dbs_info->requested_freq > policy->max)
-+			this_dbs_info->requested_freq = policy->max;
- 
--		__cpufreq_driver_target(policy, requested_freq[cpu], 
-+		__cpufreq_driver_target(policy, this_dbs_info->requested_freq,
- 			CPUFREQ_RELATION_H);
- 		return;
+-	if ( init_flag == 0 ) {
+-		for_each_online_cpu(j) {
+-			dbs_info = &per_cpu(cpu_dbs_info, j);
+-			requested_freq[j] = dbs_info->cur_policy->cur;
++	if ( init_flag != 0 ) {
++		for_each_cpu(init_flag) {
++			down_skip[init_flag] = 0;
++			/* I doubt a CPU exists with a freq of 0hz :) */
++			requested_freq[init_flag] = 0;
+ 		}
+-		init_flag = 1;
++		init_flag = 0;
  	}
+ 	
++	/*
++	 * If its a freshly initialised cpu we setup requested_freq.  This
++	 * check could be avoided if we did not care about a first time
++	 * stunted increase in CPU speed when there is a load.  I feel we
++	 * should be initialising this to something.  The removal of a CPU
++	 * is not a problem, after a short time the CPU should settle down
++	 * to a 'natural' frequency.
++	 */
++	if (requested_freq[cpu] == 0)
++		requested_freq[cpu] = this_dbs_info->cur_policy->cur;
++
++	policy = this_dbs_info->cur_policy;
++
+ 	/* 
+ 	 * The default safe range is 20% to 80% 
+ 	 * Every sampling_rate, we check
+@@ -335,20 +344,15 @@ static void dbs_check_cpu(int cpu)
  
- 	/* Check for frequency decrease */
--	down_skip[cpu]++;
--	if (down_skip[cpu] < dbs_tuners_ins.sampling_down_factor)
-+	this_dbs_info->down_skip++;
-+	if (this_dbs_info->down_skip < dbs_tuners_ins.sampling_down_factor)
- 		return;
+ 	/* Check for frequency increase */
+ 	idle_ticks = UINT_MAX;
+-	for_each_cpu_mask(j, policy->cpus) {
+-		unsigned int tmp_idle_ticks, total_idle_ticks;
+-		struct cpu_dbs_info_s *j_dbs_info;
+-
+-		j_dbs_info = &per_cpu(cpu_dbs_info, j);
+-		/* Check for frequency increase */
+-		total_idle_ticks = get_cpu_idle_time(j);
+-		tmp_idle_ticks = total_idle_ticks -
+-			j_dbs_info->prev_cpu_idle_up;
+-		j_dbs_info->prev_cpu_idle_up = total_idle_ticks;
  
- 	/* Check for frequency decrease */
-@@ -399,7 +378,7 @@ static void dbs_check_cpu(int cpu)
+-		if (tmp_idle_ticks < idle_ticks)
+-			idle_ticks = tmp_idle_ticks;
+-	}
++	/* Check for frequency increase */
++	total_idle_ticks = get_cpu_idle_time(cpu);
++	tmp_idle_ticks = total_idle_ticks -
++		this_dbs_info->prev_cpu_idle_up;
++	this_dbs_info->prev_cpu_idle_up = total_idle_ticks;
++
++	if (tmp_idle_ticks < idle_ticks)
++		idle_ticks = tmp_idle_ticks;
  
  	/* Scale idle ticks by 100 and compare with up and down ticks */
  	idle_ticks *= 100;
--	down_skip[cpu] = 0;
-+	this_dbs_info->down_skip = 0;
+@@ -357,13 +361,9 @@ static void dbs_check_cpu(int cpu)
  
- 	freq_down_sampling_rate = dbs_tuners_ins.sampling_rate *
- 		dbs_tuners_ins.sampling_down_factor;
-@@ -412,7 +391,7 @@ static void dbs_check_cpu(int cpu)
- 		 * or if we 'cannot' reduce the speed as the user might want
- 		 * freq_step to be zero
- 		 */
--		if (requested_freq[cpu] == policy->min
-+		if (this_dbs_info->requested_freq == policy->min
- 				|| dbs_tuners_ins.freq_step == 0)
+ 	if (idle_ticks < up_idle_ticks) {
+ 		down_skip[cpu] = 0;
+-		for_each_cpu_mask(j, policy->cpus) {
+-			struct cpu_dbs_info_s *j_dbs_info;
++		this_dbs_info->prev_cpu_idle_down =
++			this_dbs_info->prev_cpu_idle_up;
+ 
+-			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+-			j_dbs_info->prev_cpu_idle_down = 
+-					j_dbs_info->prev_cpu_idle_up;
+-		}
+ 		/* if we are already at full speed then break out early */
+ 		if (requested_freq[cpu] == policy->max)
  			return;
- 
-@@ -422,11 +401,11 @@ static void dbs_check_cpu(int cpu)
- 		if (unlikely(freq_step == 0))
- 			freq_step = 5;
- 
--		requested_freq[cpu] -= freq_step;
--		if (requested_freq[cpu] < policy->min)
--			requested_freq[cpu] = policy->min;
-+		this_dbs_info->requested_freq -= freq_step;
-+		if (this_dbs_info->requested_freq < policy->min)
-+			this_dbs_info->requested_freq = policy->min;
- 
--		__cpufreq_driver_target(policy, requested_freq[cpu],
-+		__cpufreq_driver_target(policy, this_dbs_info->requested_freq,
- 				CPUFREQ_RELATION_H);
+@@ -388,21 +388,14 @@ static void dbs_check_cpu(int cpu)
+ 	if (down_skip[cpu] < dbs_tuners_ins.sampling_down_factor)
  		return;
- 	}
-@@ -489,6 +468,8 @@ static int cpufreq_governor_dbs(struct c
+ 
+-	idle_ticks = UINT_MAX;
+-	for_each_cpu_mask(j, policy->cpus) {
+-		unsigned int tmp_idle_ticks, total_idle_ticks;
+-		struct cpu_dbs_info_s *j_dbs_info;
+-
+-		j_dbs_info = &per_cpu(cpu_dbs_info, j);
+-		/* Check for frequency decrease */
+-		total_idle_ticks = j_dbs_info->prev_cpu_idle_up;
+-		tmp_idle_ticks = total_idle_ticks -
+-			j_dbs_info->prev_cpu_idle_down;
+-		j_dbs_info->prev_cpu_idle_down = total_idle_ticks;
++	/* Check for frequency decrease */
++	total_idle_ticks = this_dbs_info->prev_cpu_idle_up;
++	tmp_idle_ticks = total_idle_ticks -
++		this_dbs_info->prev_cpu_idle_down;
++	this_dbs_info->prev_cpu_idle_down = total_idle_ticks;
+ 
+-		if (tmp_idle_ticks < idle_ticks)
+-			idle_ticks = tmp_idle_ticks;
+-	}
++	if (tmp_idle_ticks < idle_ticks)
++		idle_ticks = tmp_idle_ticks;
+ 
+ 	/* Scale idle ticks by 100 and compare with up and down ticks */
+ 	idle_ticks *= 100;
+@@ -491,7 +484,7 @@ static int cpufreq_governor_dbs(struct c
+ 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+ 		
+-			j_dbs_info->prev_cpu_idle_up = get_cpu_idle_time(j);
++			j_dbs_info->prev_cpu_idle_up = get_cpu_idle_time(cpu);
+ 			j_dbs_info->prev_cpu_idle_down
  				= j_dbs_info->prev_cpu_idle_up;
  		}
- 		this_dbs_info->enable = 1;
-+		this_dbs_info->down_skip = 0;
-+		this_dbs_info->requested_freq = policy->cur;
- 		sysfs_create_group(&policy->kobj, &dbs_attr_group);
- 		dbs_enable++;
- 		/*
 -- 
 1.2.4
