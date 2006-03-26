@@ -1,8 +1,7 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 005/007] cpufreq_ondemand: Warn if it cannot run due to too
-	long transition latency
-Date: Sun, 26 Mar 2006 11:57:12 +0200
-Message-ID: <20060326095712.GF17358@dominikbrodowski.de>
+Subject: [PATCH 007/007] cpufreq_ondemand: add range check
+Date: Sun, 26 Mar 2006 11:57:51 +0200
+Message-ID: <20060326095751.GH17358@dominikbrodowski.de>
 References: <20060326095338.GA17358@dominikbrodowski.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -22,37 +21,32 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@lists.linux.org.uk
 
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 
-Display a warning if the ondemand governor can not be selected due to a
-transition latency of the cpufreq driver which is too long.
+Assert that cpufreq_target is, at least, called with the minimum frequency
+allowed by this policy, not something lower. It triggered problems on ARM.
 
-Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
 ---
 
- drivers/cpufreq/cpufreq_ondemand.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-ff8c288d7d1a368b663058cdee1ea0adcdef2fa2
+7c9d8c0e84d395a01289ebd1597758939a875a86
 diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 69aa1db..6430489 100644
+index cd846f5..956d121 100644
 --- a/drivers/cpufreq/cpufreq_ondemand.c
 +++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -395,8 +395,11 @@ static int cpufreq_governor_dbs(struct c
- 			return -EINVAL;
+@@ -351,6 +351,9 @@ static void dbs_check_cpu(int cpu)
+ 	freq_next = (freq_next * policy->cur) /
+ 			(dbs_tuners_ins.up_threshold - 10);
  
- 		if (policy->cpuinfo.transition_latency >
--				(TRANSITION_LATENCY_LIMIT * 1000))
-+				(TRANSITION_LATENCY_LIMIT * 1000)) {
-+			printk(KERN_WARNING "ondemand governor failed to load "
-+			       "due to too long transition latency\n");
- 			return -EINVAL;
-+		}
- 		if (this_dbs_info->enable) /* Already enabled */
- 			break;
- 
++	if (freq_next < policy->min)
++		freq_next = policy->min;
++
+ 	if (freq_next <= ((policy->cur * 95) / 100))
+ 		__cpufreq_driver_target(policy, freq_next, CPUFREQ_RELATION_L);
+ }
 -- 
 1.2.4
