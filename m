@@ -1,12 +1,16 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: [PATCH] cpufreq_conservative: keep ignore_nice_load and freq_step
-	values when reselected
-Date: Mon, 27 Mar 2006 22:55:55 +0200
-Message-ID: <20060327205555.GD4150@inferi.kami.home>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [git pull] cpufreq governor updates for 2.6.17
+Date: Mon, 27 Mar 2006 23:06:09 +0200
+Message-ID: <20060327210609.GA23471@isilmar.linta.de>
+References: <20060326095338.GA17358@dominikbrodowski.de>
+	<20060327195310.GA647@redhat.com>
+	<20060326095338.GA17358@dominikbrodowski.de>
+	<20060327195310.GA647@redhat.com> <20060327195810.GB647@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="KN5l+BnMqAQyZLvT"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20060327195310.GA647@redhat.com>
+	<20060327195810.GB647@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,72 +21,31 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: CPUFreq Mailing List <cpufreq@lists.linux.org.uk>
-
-
---KN5l+BnMqAQyZLvT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hello,
-
-inspired by Eric's similar patch for the ondemand governor here's a fix
-to keep some useful values for the conservative governor between
-deselect/select cycles.
-The patch is against 2.6.16-mm1, so it should apply over the just pulled
-conservative patches.
-
--- 
-mattia
-:wq!
-
----
-From: Mattia Dongili <malattia@linux.it>
-
-Keep the value of ignore_nice_load and freq_step of the conservative
-governor after the governor is deselected and reselected.
-
-Signed-off-by: Mattia Dongili <malattia@linux.it>
-
-
---KN5l+BnMqAQyZLvT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment;
-	filename="cpufreq_conservative_keep_option_values.diff"
-
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index a152d2c..037f6bf 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -88,6 +88,8 @@ static struct dbs_tuners dbs_tuners_ins 
- 	.up_threshold 		= DEF_FREQUENCY_UP_THRESHOLD,
- 	.down_threshold 	= DEF_FREQUENCY_DOWN_THRESHOLD,
- 	.sampling_down_factor 	= DEF_SAMPLING_DOWN_FACTOR,
-+	.ignore_nice		= 0,
-+	.freq_step		= 5,
- };
- 
- static inline unsigned int get_cpu_idle_time(unsigned int cpu)
-@@ -490,8 +492,6 @@ static int cpufreq_governor_dbs(struct c
- 				def_sampling_rate = MIN_STAT_SAMPLING_RATE;
- 
- 			dbs_tuners_ins.sampling_rate = def_sampling_rate;
--			dbs_tuners_ins.ignore_nice = 0;
--			dbs_tuners_ins.freq_step = 5;
- 
- 			dbs_timer_init();
- 		}
-
---KN5l+BnMqAQyZLvT
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+On Mon, Mar 27, 2006 at 02:58:10PM -0500, Dave Jones wrote:
+> On Mon, Mar 27, 2006 at 02:53:10PM -0500, Dave Jones wrote:
+>  > On Sun, Mar 26, 2006 at 11:53:39AM +0200, Dominik Brodowski wrote:
+>  >  > Hi Dave,
+>  >  > 
+>  >  > Please pull from
+>  >  > git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpufreq-2.6.git/ 
+>  >  > for a few cpufreq updates for 2.6.17. The diffstat and list of changes
+>  >  > follows, the patches will be sent out as individual mails as replies to this
+>  >  > message.
+>  > 
+>  > I'm not entirely sure what happened here.
+>  > I git pull'd from this, and ended up with a 59,886 line delta against Linus' tree.
+>  > As you sent the diffs too, I'll just apply-mbox them.
+> 
+> pilot-error on my part, the pull succeeded.
 
---KN5l+BnMqAQyZLvT--
+In fact, it was my mistake, as I cloned a copy of Linus' tree, checked that
+you didn't have anything new in your cpufreq tree since Linus' last pull, but
+forgot to reset my cpufreq tree to the HEAD of your cpufreq tree... Sorry
+about that,
 
+	Dominik
