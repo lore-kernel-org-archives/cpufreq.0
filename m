@@ -1,16 +1,12 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [git pull] cpufreq governor updates for 2.6.17
-Date: Mon, 27 Mar 2006 23:06:09 +0200
-Message-ID: <20060327210609.GA23471@isilmar.linta.de>
-References: <20060326095338.GA17358@dominikbrodowski.de>
-	<20060327195310.GA647@redhat.com>
-	<20060326095338.GA17358@dominikbrodowski.de>
-	<20060327195310.GA647@redhat.com> <20060327195810.GB647@redhat.com>
+From: "shin, jacob" <jacob.shin@amd.com>
+Subject: RE: [PATCH] kernel crash in powernow-k8 after lost ticks
+ detected
+Date: Mon, 27 Mar 2006 09:57:20 -0600
+Message-ID: <B3870AD84389624BAF87A3C7B831499302935767@SAUSEXMB2.amd.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20060327195310.GA647@redhat.com>
-	<20060327195810.GB647@redhat.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,32 +16,49 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.net>, Jan Beulich <jbeulich@novell.com>
+Cc: Pavel Machek <pavel@suse.de>, cpufreq@lists.linux.org.uk, "Langsdorf,
+	Mark" <mark.langsdorf@amd.com>, davej@redhat.com
 
-On Mon, Mar 27, 2006 at 02:58:10PM -0500, Dave Jones wrote:
-> On Mon, Mar 27, 2006 at 02:53:10PM -0500, Dave Jones wrote:
->  > On Sun, Mar 26, 2006 at 11:53:39AM +0200, Dominik Brodowski wrote:
->  >  > Hi Dave,
->  >  > 
->  >  > Please pull from
->  >  > git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpufreq-2.6.git/ 
->  >  > for a few cpufreq updates for 2.6.17. The diffstat and list of changes
->  >  > follows, the patches will be sent out as individual mails as replies to this
->  >  > message.
->  > 
->  > I'm not entirely sure what happened here.
->  > I git pull'd from this, and ended up with a 59,886 line delta against Linus' tree.
->  > As you sent the diffs too, I'll just apply-mbox them.
-> 
-> pilot-error on my part, the pull succeeded.
+On Sunday, March 26, 2006 2:25 AM Dominik Brodowski wrote:
 
-In fact, it was my mistake, as I cloned a copy of Linus' tree, checked that
-you didn't have anything new in your cpufreq tree since Linus' last pull, but
-forgot to reset my cpufreq tree to the HEAD of your cpufreq tree... Sorry
-about that,
+> cpufreq_driver->get() can get called for _any_ CPU -- that's the
+> semantics of that funciton, which I would not want to be changed.
+> Therefore I prefer the patch by Andi which fixes powernow-k8.c and
+> which is in Linus' git tree by now.
 
-	Dominik
+Andi's patch will not work properly with CPU Hotplug.
+Please use the following patch instead.
+
+Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+
+---
+ arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1103,10 +1103,15 @@ static int __devexit powernowk8_cpu_exit
+=20
+ static unsigned int powernowk8_get (unsigned int cpu)
+ {
+-	struct powernow_k8_data *data =3D powernow_data[cpu];
++	struct powernow_k8_data *data;
+ 	cpumask_t oldmask =3D current->cpus_allowed;
+ 	unsigned int khz =3D 0;
+=20
++	data =3D powernow_data[first_cpu(cpu_core_map[cpu])];
++
++	if (!data)
++		return -EINVAL;
++
+ 	set_cpus_allowed(current, cpumask_of_cpu(cpu));
+ 	if (smp_processor_id() !=3D cpu) {
+ 		printk(KERN_ERR PFX "limiting to CPU %d failed in powernowk8_get\n", =
+cpu);
