@@ -1,12 +1,8 @@
-From: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] kernel crash in powernow-k8 after lost ticks
-	detected
-Date: Mon, 27 Mar 2006 17:56:27 +0200
-Message-ID: <4428193C020000780001454E@emea1-mh.id2.novell.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6300] New: 2.6.16
+Date: Wed, 29 Mar 2006 09:55:06 -0800
+Message-ID: <200603291755.k2THt6nK015761@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,22 +12,46 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: linux@dominikbrodowski.net
-Cc: Pavel Machek <pavel@suse.de>, cpufreq@lists.linux.org.uk, mark.langsdorf@amd.com, davej@redhat.com
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
->>> Dominik Brodowski <linux@dominikbrodowski.net> 03/26/06 10:25 AM >>>
->cpufreq_driver->get() can get called for _any_ CPU -- that's the semantics
->of that funciton, which I would not want to be changed. Therefore I prefer
->the patch by Andi which fixes powernow-k8.c and which is in Linus' git tree
->by now.
+http://bugzilla.kernel.org/show_bug.cgi?id=6300
 
-I don't think the patch makes this not work - since it alters the queried CPU only
-when the original and the new CPU are in the same policy set anyway, the
-result is not going to be different.
-Regardless of that, I'm fine with Andi's patch, and if it so be I'm also fine with
-this patch being removed again (I understand it also got applied meanwhile)
-if Andi's is in Linus' tree.
+           Summary: 2.6.16
+    Kernel Version: 2.
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: simon@cesa.cz
+                CC: pavel@suse.cz
 
-Jan
+
+I have notebook dell inspiron 5150 P4/HT .. 
+
+if use smp kernel -> first sw suspend and resume  work OK ... next suspend crash
+... with message
+ 
+ class driver suspend failed for CPU0 ...
+    if use non preempt kernel -> kernel work ok 
+    if use preempt kernel -> next message is
+
+ unable to handle kernel paging at virtual address 6d726966
+ EIP: c01eb19f 
+ ....... 
+    if i use kernel without cpufreq ... all work OK 
+    if i use non smp kernel with cpufreq all work OK 
+
+-------------------------------------------------------------------------
+Distribution:debian etch ... self compiled vanilla kernel 2.6.16 SMP (HT)
+Hardware Environment:Dell Inspiron 5150
+Software Environment:
+Problem Description:next suspend crash in cpufreq ...
+
+Steps to reproduce:boot machine ->  suspend to disk -> resume from suspend  
+and next suspend ... ended with kernel crash ...
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
