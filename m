@@ -1,8 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6303] Fujitsu-Siemens P4 Amilo D 7830 laptop has no govenors
-	with 2.6.16
-Date: Wed, 29 Mar 2006 13:59:52 -0800
-Message-ID: <200603292159.k2TLxqU3028354@fire-2.osdl.org>
+Subject: [Bug 6300] 2.6.16
+Date: Wed, 29 Mar 2006 15:10:38 -0800
+Message-ID: <200603292310.k2TNAcgf031932@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,17 +18,17 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6303
+http://bugzilla.kernel.org/show_bug.cgi?id=6300
 
 
 
 
 
-------- Additional Comments From cbradney@zip.com.au  2006-03-29 13:59 -------
-See my comment here too:
-http://forums.gentoo.org/viewtopic-t-446745-highlight-governors.html
+------- Additional Comments From simon@cesa.cz  2006-03-29 15:10 -------
+Created an attachment (id=7712)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=7712&action=view)
+photo ....screen when kernel crash 
 
-I tried adding SMP like one guy tried, didnt help here.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
