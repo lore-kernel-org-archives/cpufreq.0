@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6301] 2.6.16
-Date: Wed, 29 Mar 2006 10:00:52 -0800
-Message-ID: <200603291800.k2TI0q9Q016144@fire-2.osdl.org>
+Subject: [Bug 6300] 2.6.16
+Date: Wed, 29 Mar 2006 10:00:55 -0800
+Message-ID: <200603291800.k2TI0tCa016164@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,22 +18,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6301
+http://bugzilla.kernel.org/show_bug.cgi?id=6300
 
-simon@cesa.cz changed:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |REJECTED
-         Resolution|                            |DUPLICATE
-            Summary|2.6.16                      |2.6.16
 
 
 
 ------- Additional Comments From simon@cesa.cz  2006-03-29 10:00 -------
-
-
-*** This bug has been marked as a duplicate of 6300 ***
+*** Bug 6301 has been marked as a duplicate of this bug. ***
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
