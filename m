@@ -1,7 +1,10 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6300] speedstep-ich driver oopses on resume
-Date: Wed, 29 Mar 2006 16:29:32 -0800
-Message-ID: <200603300029.k2U0TWTv004270@fire-2.osdl.org>
+From: =?UTF-8?B?0JzQuNGF0LDQuNC7INCY0LLQsNC90L7Qsg==?= <ivans@isle.spb.ru>
+Subject: Powernow on MSI L715 megabook
+Date: Thu, 30 Mar 2006 12:11:36 +0400
+Message-ID: <442B92B8.7060709@isle.spb.ru>
+Reply-To: ivans@isle.spb.ru
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -13,21 +16,23 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6300
+Hallo! Recently I have acquired a L715 megabook with MT34 Turion processor.
+I think I have some problem with temperature control. The average CPU
+temperature stabilizes around 54*C on idle notebook. Processor frequency
+is set to 800Mhz (lowest), but the fan rotates on the higher speed.
+Occasionally it switches to lower speed, but after a second or a two
+it switches back to higher speed. This speed change occurs once in
+15...30 seconds.
 
-davej@codemonkey.org.uk changed:
+I'm running kernel 2.6.16, this behaviour is observed with both ondemand
+and conservative governors. I also had the same pattern with userspace
+governor (I used powernowd).
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-            Summary|2.6.16                      |speedstep-ich driver oopses
-                   |                            |on resume
+I also observe constant acpi events from CPU: 00000080 00000000. This
+event is generated once in a couple of seconds, sometimes more frequently.
+maybe this is related to the fan problem.
 
-
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Can anybody advise me on this problem? Thanks!
