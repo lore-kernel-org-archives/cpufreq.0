@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6300] 2.6.16
-Date: Wed, 29 Mar 2006 15:37:25 -0800
-Message-ID: <200603292337.k2TNbPfF001907@fire-2.osdl.org>
+Date: Wed, 29 Mar 2006 16:18:36 -0800
+Message-ID: <200603300018.k2U0IamU003788@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,8 +24,17 @@ http://bugzilla.kernel.org/show_bug.cgi?id=6300
 
 
 
-------- Additional Comments From davej@codemonkey.org.uk  2006-03-29 15:37 -------
-can you paste the output of cat /sys/devices/system/cpu/cpu*/cpufreq
+------- Additional Comments From simon@cesa.cz  2006-03-29 16:18 -------
+Created an attachment (id=7718)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=7718&action=view)
+output of cat /sys/devices/system/cpu/cpu*/cpufreq
+
+... this is output from new kernel .... i compile governors and driver
+speedstep-ich as module ...
+
+when driver speedstep_ich is loaded second suspend crashed 
+when i make before suspend -> rmmod -f speedstep_ich, speedstep_lib and
+governors -> second suspend work OK 
 
 
 ------- You are receiving this mail because: -------
