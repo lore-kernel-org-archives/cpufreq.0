@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6331] cpu frequency gets lowered by kernel when cord is
 	pulled(init=bin/sh)
-Date: Tue, 4 Apr 2006 13:24:40 -0700
-Message-ID: <200604042024.k34KOd5U015758@fire-2.osdl.org>
+Date: Tue, 4 Apr 2006 13:48:53 -0700
+Message-ID: <200604042048.k34Kmrat016761@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,24 +21,22 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=6331
 
-davej@codemonkey.org.uk changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |REJECTED
-         Resolution|                            |INVALID
 
 
 
-------- Additional Comments From davej@codemonkey.org.uk  2006-04-04 13:24 -------
-I've seen a bunch of machines do this, and there's not a thing we can do about
-it.  The kernel isn't what's changing the speed, the BIOS is doing it via SMM
-traps when a power change occurs.  It's taken quite a bit of work for the
-kernel to event detect that this has happened, as SMMs are completely
-transparent to the OS.  (That's why it takes a while for the kernel to realise
-that it changed).
 
-Maybe there's something in the BIOS you can change to disable this 'feature' ?
+------- Additional Comments From mike@palczewski.net  2006-04-04 13:48 -------
+damn hardware!
+well, if anyone else does a search on this issue, here's a cool workaround to
+put in your scripts, 
+
+ while [ `cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq` != \
+            `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq` ]
+    do
+        cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq > \
+            /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+        sleep 1;
+    done
 
 
 ------- You are receiving this mail because: -------
