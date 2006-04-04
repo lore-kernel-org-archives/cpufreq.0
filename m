@@ -1,12 +1,9 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] If max_freq got reduced (e.g. by _PPC) a write to sysfs
-	scaling_governor let cpufreq core stuck at low max_freq for ever
-Date: Tue, 4 Apr 2006 14:53:25 +0200
-Message-ID: <200604041453.25890.trenn@suse.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6331] New: cpu frequency gets lowered by kernel when cord is
+	pulled(init=bin/sh)
+Date: Tue, 4 Apr 2006 13:03:43 -0700
+Message-ID: <200604042003.k34K3hOf014836@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,78 +13,50 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
-Cc: Dave Jones <davej@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Subject: Max freq stucks at low freq if reduced by _PPC and sysfs gov access
+http://bugzilla.kernel.org/show_bug.cgi?id=6331
 
-The problem is reproducable by(if machine is limiting freqs via BIOS):
- - Unplugging AC -> max freq gets limited
- - echo ${governor} >/sys/.../cpufreq/scaling_governor (policy->user_data.max
-   gets overridden with policy->max and will never come up again.)
+           Summary: cpu frequency gets lowered by kernel when cord is
+                    pulled(init=bin/sh)
+    Kernel Version: 2.6.16 from kernel.org
+            Status: NEW
+          Severity: low
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: mike@palczewski.net
 
-This patch exchanges the cpufreq_set_policy call to __cpufreq_set_policy 
-in store_scaling_governor and duplicates most of it's functionality but does
-not override user_data.max.
 
- drivers/cpufreq/cpufreq.c |   29 ++++++++++++++++++++++-------
- 1 files changed, 22 insertions(+), 7 deletions(-)
+Most recent kernel where this bug did not occur: unknown
+Distribution: ubuntu dapper
+Hardware Environment: Dell inspiron 9300 Inetl Pentium M 1.73 using
+centrino-speedstep
+Software Environment: ubuntu dapper gcc 4.0.3 
+Problem Description:
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+when ac cord is pulled (even in single user mode, or with init=/bin/sh)  
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+get's set to the scaling_min_freq automatically
+any scripts that run and try to set scaling_max_freq to something else end up
+instead making sure that this gets reverted back to min freq
+this is using the performance governor. 
 
-Index: linux-2.6.16/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.16.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.16/drivers/cpufreq/cpufreq.c
-@@ -402,7 +402,7 @@ static ssize_t show_scaling_governor (st
- 	return -EINVAL;
- }
- 
--
-+static int __cpufreq_set_policy(struct cpufreq_policy *data, struct cpufreq_policy *policy);
- /**
-  * store_scaling_governor - store policy for the specified CPU
-  */
-@@ -413,19 +413,34 @@ static ssize_t store_scaling_governor (s
- 	char	str_governor[16];
- 	struct cpufreq_policy new_policy;
- 
-+	mutex_lock(&policy->lock);
- 	ret = cpufreq_get_policy(&new_policy, policy->cpu);
- 	if (ret)
--		return ret;
-+		goto error;
- 
- 	ret = sscanf (buf, "%15s", str_governor);
--	if (ret != 1)
--		return -EINVAL;
-+	if (ret != 1){
-+		ret =  -EINVAL;
-+		goto error;
-+	}
- 
--	if (cpufreq_parse_governor(str_governor, &new_policy.policy, &new_policy.governor))
--		return -EINVAL;
-+	if (cpufreq_parse_governor(str_governor, &new_policy.policy, &new_policy.governor)){
-+		ret =  -EINVAL;
-+		goto error;
-+	}
-+	/* Do not use cpufreq_set_policy here or the user_policy.max
-+	   will be wrongly overridden */
-+	ret = __cpufreq_set_policy(policy, &new_policy);
-+
-+	policy->user_policy.policy = policy->policy;
-+	policy->user_policy.governor = policy->governor;
-+	mutex_unlock(&policy->lock);
-+	cpufreq_cpu_put(policy);
- 
--	ret = cpufreq_set_policy(&new_policy);
- 	return ret ? ret : count;
-+ error:
-+	mutex_unlock(&policy->lock);
-+	return ret;
- }
- 
- /**
+Steps to reproduce:
+boot kernel with flag init=/bin/sh and ac plugged in (to make sure no other
+scripts of anything could possibly be changing this)
+# mount /sys
+pull plug
+
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+repeat last step until it eventually goes back to the full frequency and stays
+there.  
+
+a workaround for scrits that normally control these things is to have them sleep
+for a while after an AC event has occured.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
