@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6376] cpufreq wrongly reports "frequency should be within 600
 	MHz and 600 MHz"
-Date: Tue, 11 Apr 2006 11:19:15 -0700
-Message-ID: <200604111819.k3BIJFQ6030477@fire-2.osdl.org>
+Date: Tue, 11 Apr 2006 11:41:57 -0700
+Message-ID: <200604111841.k3BIfvoX031432@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,9 +25,8 @@ http://bugzilla.kernel.org/show_bug.cgi?id=6376
 
 
 
-------- Additional Comments From stivani@gmail.com  2006-04-11 11:19 -------
-I made a mistake in the first line and could not find the edit button:
-Every time I unplug the ac adapter, cpufreq DOES NOT want TO go up to 1.70 GHz.
+------- Additional Comments From stivani@gmail.com  2006-04-11 11:41 -------
+I think this problem could be related with bug #6370
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
