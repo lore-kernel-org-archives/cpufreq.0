@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6370] cpufreq problems on Pentium-M
-Date: Tue, 11 Apr 2006 05:03:42 -0700
-Message-ID: <200604111203.k3BC3gWv013475@fire-2.osdl.org>
+Subject: [Bug 6376] cpufreq wrongly reports "frequency should be within 600
+	MHz and 600 MHz"
+Date: Tue, 11 Apr 2006 11:15:10 -0700
+Message-ID: <200604111815.k3BIFAJF030256@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,7 +19,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6370
+http://bugzilla.kernel.org/show_bug.cgi?id=6376
 
 stivani@gmail.com changed:
 
