@@ -1,29 +1,35 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/cpufreq/cpufreq.c: static functions mustn't be exported
-Date: Thu, 13 Apr 2006 13:58:02 +0200
-Message-ID: <20060413115802.GC8171@stusta.de>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964893AbWDML6E@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6382] Random lockups, no kernel panic just a compleate hang
+Date: Thu, 13 Apr 2006 05:05:58 -0700
+Message-ID: <200604131205.k3DC5w40006849@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+To: cpufreq@www.linux.org.uk
 
-This patch removes the EXPORT_SYMBOL_GPL of the static function 
-cpufreq_parse_governor().
+http://bugzilla.kernel.org/show_bug.cgi?id=6382
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+stanv@altlinux.ru changed:
 
---- linux-2.6.17-rc1-mm2-full/drivers/cpufreq/cpufreq.c.old	2006-04-13 10:48:13.000000000 +0200
-+++ linux-2.6.17-rc1-mm2-full/drivers/cpufreq/cpufreq.c	2006-04-13 10:48:19.000000000 +0200
-@@ -319,7 +319,6 @@
- 	}
- 	return -EINVAL;
- }
--EXPORT_SYMBOL_GPL(cpufreq_parse_governor);
- 
- 
- /* drivers/base/cpu.c */
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|power-                      |cpufreq@www.linux.org.uk
+                   |management_other@kernel-    |
+                   |bugs.osdl.org               |
+          Component|Other                       |cpufreq
+
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
