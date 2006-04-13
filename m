@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6382] Random lockups, no kernel panic just a compleate hang
-Date: Thu, 13 Apr 2006 06:33:12 -0700
-Message-ID: <200604131333.k3DDXCN3010400@fire-2.osdl.org>
+Subject: [Bug 6331] cpu frequency gets lowered by kernel when cord is
+	pulled(init=bin/sh)
+Date: Thu, 13 Apr 2006 12:16:21 -0700
+Message-ID: <200604131916.k3DJGLG0027578@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,17 +19,23 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6382
+http://bugzilla.kernel.org/show_bug.cgi?id=6331
 
 
 
 
 
-------- Additional Comments From stanv@altlinux.ru  2006-04-13 06:33 -------
-Created an attachment (id=7860)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=7860&action=view)
-CPU freq configuration details
+------- Additional Comments From stivani@gmail.com  2006-04-13 12:16 -------
+Sorry for replying again. I am new to Linux and mailing lists.
 
+Currently, I am using the 2.6.15-suspend2-r8 kernel from Gentoo. This kernel has
+already the _PPC frequency change issues patch, I think.  
+
+But which kernel version has already have all these patches included? or where
+can I find these patches and apply them by hand?
+
+I hope to resolve these problems soon. And thanks to Thomas for providing the
+patches. 
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
