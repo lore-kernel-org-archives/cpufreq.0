@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6376] cpufreq wrongly reports "frequency should be within 600
-	MHz and 600 MHz"
-Date: Tue, 11 Apr 2006 11:41:57 -0700
-Message-ID: <200604111841.k3BIfvoX031432@fire-2.osdl.org>
+Subject: [Bug 6331] cpu frequency gets lowered by kernel when cord is
+	pulled(init=bin/sh)
+Date: Thu, 13 Apr 2006 03:45:55 -0700
+Message-ID: <200604131045.k3DAjtbe003832@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,14 +19,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6376
+http://bugzilla.kernel.org/show_bug.cgi?id=6331
+
+trenn@suse.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |jean-
+                   |                            |marc.valin@usherbrooke.ca
 
 
 
-
-
-------- Additional Comments From stivani@gmail.com  2006-04-11 11:41 -------
-I think this problem could be related with bug #6370
+------- Additional Comments From trenn@suse.de  2006-04-13 03:45 -------
+*** Bug 6370 has been marked as a duplicate of this bug. ***
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
