@@ -1,7 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5027] Usermode speed governor is dangerous on Athlon 64 X2
-Date: Fri, 14 Apr 2006 03:55:56 -0700
-Message-ID: <200604141055.k3EAtupi003049@fire-2.osdl.org>
+From: Nebojsa Trpkovic <trxman@gmail.com>
+Subject: simple question
+Date: Fri, 14 Apr 2006 21:27:34 +0200
+Message-ID: <443FF7A6.4060206@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -13,27 +15,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5027
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-bunk@stusta.de changed:
+Do cores in dual-core Athlon64 CPUs change their frequency independent
+one from another or they work at the equal clock all the time?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |bunk@stusta.de
-             Status|NEW                         |CLOSED
-         Resolution|                            |PATCH_ALREADY_AVAILABLE
+Thanks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-
-
-------- Additional Comments From bunk@stusta.de  2006-04-14 03:55 -------
-I'm assuming this issue is already fixed in recent 2.6 kernels.
-
-Please reopen this bug if it's still present in kernel 2.6.16.5.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+iD8DBQFEP/emqDH2e5UXzrQRAqDqAJ90/oomAJBujqJG0GCkJxRd8xnIcwCfSpoi
+H7kNHvysSv7eS/7U6pA28SE=
+=nwzU
+-----END PGP SIGNATURE-----
