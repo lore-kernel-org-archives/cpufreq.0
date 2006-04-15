@@ -1,9 +1,13 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
-	p4-clockmod anymore
-Date: Fri, 14 Apr 2006 14:51:17 -0700
-Message-ID: <200604142151.k3ELpHIS030744@fire-2.osdl.org>
+From: "Jacob Shin" <jacob.w.shin@gmail.com>
+Subject: Re: simple question
+Date: Sat, 15 Apr 2006 13:33:43 -0500
+Message-ID: <2f98cb310604151133t58c60174ja947fbc51ca76bc3@mail.gmail.com>
+References: <443FF7A6.4060206@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <443FF7A6.4060206@gmail.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,26 +18,33 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Nebojsa Trpkovic <trxman@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6367
+Two cores are tied together due to hardware design.
 
+-Jacob Shin
 
-
-
-
-------- Additional Comments From oopla@users.sf.net  2006-04-14 14:51 -------
-tested 2.6.16.5: better, p4-clockmod would load, but avail_scaling_freq shows just:
-
-2025000 2362500 2700000
-
-while I know this CPU offers a larger f-table - I'd say the old one reported is 
-correct/closer to what ToshibaHCI offers.
-
-But get an oops on modprobe -r cpufreq_stats - see attachment #7875.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+On 4/14/06, Nebojsa Trpkovic <trxman@gmail.com> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Do cores in dual-core Athlon64 CPUs change their frequency independent
+> one from another or they work at the equal clock all the time?
+>
+> Thanks.
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.2.2 (GNU/Linux)
+> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+>
+> iD8DBQFEP/emqDH2e5UXzrQRAqDqAJ90/oomAJBujqJG0GCkJxRd8xnIcwCfSpoi
+> H7kNHvysSv7eS/7U6pA28SE=3D
+> =3DnwzU
+> -----END PGP SIGNATURE-----
+>
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
+>
