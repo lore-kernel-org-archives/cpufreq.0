@@ -1,13 +1,9 @@
-From: "Jacob Shin" <jacob.w.shin@gmail.com>
-Subject: Re: simple question
-Date: Sat, 15 Apr 2006 13:33:43 -0500
-Message-ID: <2f98cb310604151133t58c60174ja947fbc51ca76bc3@mail.gmail.com>
-References: <443FF7A6.4060206@gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
+	p4-clockmod anymore
+Date: Sat, 15 Apr 2006 23:25:39 -0700
+Message-ID: <200604160625.k3G6Pd7D004500@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <443FF7A6.4060206@gmail.com>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,33 +14,25 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Nebojsa Trpkovic <trxman@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Two cores are tied together due to hardware design.
+http://bugzilla.kernel.org/show_bug.cgi?id=6367
 
--Jacob Shin
+oopla@users.sf.net changed:
 
-On 4/14/06, Nebojsa Trpkovic <trxman@gmail.com> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Do cores in dual-core Athlon64 CPUs change their frequency independent
-> one from another or they work at the equal clock all the time?
->
-> Thanks.
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.2.2 (GNU/Linux)
-> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
->
-> iD8DBQFEP/emqDH2e5UXzrQRAqDqAJ90/oomAJBujqJG0GCkJxRd8xnIcwCfSpoi
-> H7kNHvysSv7eS/7U6pA28SE=3D
-> =3DnwzU
-> -----END PGP SIGNATURE-----
->
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@lists.linux.org.uk
-> http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+           Severity|blocking                    |normal
+
+
+
+------- Additional Comments From oopla@users.sf.net  2006-04-15 23:25 -------
+changing severity to 'normal', as p4-clockmod now loads and cpufreq works albeit
+with very limited (nearly useless wrt pw.saving) cpu-freq.
+Also, cpufreq_stats seems not essentials, so temp w.around is to not load it at all.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
