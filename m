@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
 	p4-clockmod anymore
-Date: Mon, 17 Apr 2006 00:08:25 -0700
-Message-ID: <200604170708.k3H78PAi031925@fire-2.osdl.org>
+Date: Mon, 17 Apr 2006 02:38:43 -0700
+Message-ID: <200604170938.k3H9chgl004198@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,8 +25,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=6367
 
 
 
-------- Additional Comments From nanhai.zou@intel.com  2006-04-17 00:08 -------
-Does this reproduceable with latest RC kernel?
+------- Additional Comments From oopla@users.sf.net  2006-04-17 02:38 -------
+2.6.17-rc1 won't even boot - pls see #6368
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
