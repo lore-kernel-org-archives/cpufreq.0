@@ -1,65 +1,50 @@
 From: "Jan Beulich" <jbeulich@novell.com>
-Subject: [PATCH] cpufreq {d,}printk adjustments
-Date: Wed, 26 Apr 2006 15:38:13 +0200
-Message-ID: <444F93E5.76E4.0078.0@novell.com>
+Subject: [PATCH] dprintk adjustments to cpufreq-nforce2
+Date: Wed, 26 Apr 2006 15:40:02 +0200
+Message-ID: <444F9452.76E4.0078.0@novell.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932328AbWDZNhb@vger.kernel.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 Cc: linux-kernel@vger.kernel.org
 
-Convert some dprintk-s to printk-s as their use of KERN_* indicates they
-were meant to be used that way. Alternatively, the KERN_* prefixes could
-be removed and the dprintk-s then retained.
+Remove KERN_* suffixes from some NForce2 cpufreq driver's dprintk-s.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-diff -Npru /home/jbeulich/tmp/linux-2.6.17-rc2/drivers/cpufreq/cpufreq.c
-2.6.17-rc2-cpufreq-dprintk/drivers/cpufreq/cpufreq.c
---- /home/jbeulich/tmp/linux-2.6.17-rc2/drivers/cpufreq/cpufreq.c	2006-04-26 11:50:31.667747992 +0200
-+++ 2.6.17-rc2-cpufreq-dprintk/drivers/cpufreq/cpufreq.c	2006-04-24 12:28:37.000000000 +0200
-@@ -257,9 +257,9 @@ void cpufreq_notify_transition(struct cp
- 		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
- 			if ((policy) && (policy->cpu == freqs->cpu) &&
- 			    (policy->cur) && (policy->cur != freqs->old)) {
--				dprintk(KERN_WARNING "Warning: CPU frequency is"
--					" %u, cpufreq assumed %u kHz.\n",
--					freqs->old, policy->cur);
-+				printk(KERN_WARNING "Warning: CPU frequency is"
-+				       " %u, cpufreq assumed %u kHz.\n",
-+				       freqs->old, policy->cur);
- 				freqs->old = policy->cur;
- 			}
- 		}
-@@ -874,7 +874,7 @@ static void cpufreq_out_of_sync(unsigned
- {
- 	struct cpufreq_freqs freqs;
+diff -Npru /home/jbeulich/tmp/linux-2.6.17-rc2/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+2.6.17-rc2-i386-cpufreq-nforce2-dprintk/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+--- /home/jbeulich/tmp/linux-2.6.17-rc2/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c	2006-04-26 10:55:10.000000000
++0200
++++ 2.6.17-rc2-i386-cpufreq-nforce2-dprintk/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c	2006-04-24
+12:28:36.000000000 +0200
+@@ -266,7 +266,7 @@ static int nforce2_target(struct cpufreq
+ 	if (freqs.old == freqs.new)
+ 		return 0;
  
--	dprintk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing "
-+	printk(KERN_WARNING "Warning: CPU frequency out of sync: cpufreq and timing "
- 	       "core thinks of %u, is %u kHz.\n", old_freq, new_freq);
+-	dprintk(KERN_INFO "cpufreq: Old CPU frequency %d kHz, new %d kHz\n",
++	dprintk("Old CPU frequency %d kHz, new %d kHz\n",
+ 	       freqs.old, freqs.new);
  
- 	freqs.cpu = cpu;
-@@ -1006,7 +1006,7 @@ static int cpufreq_suspend(struct sys_de
- 		struct cpufreq_freqs freqs;
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+@@ -278,7 +278,7 @@ static int nforce2_target(struct cpufreq
+ 		printk(KERN_ERR "cpufreq: Changing FSB to %d failed\n",
+                        target_fsb);
+ 	else
+-		dprintk(KERN_INFO "cpufreq: Changed FSB successfully to %d\n",
++		dprintk("Changed FSB successfully to %d\n",
+                        target_fsb);
  
- 		if (!(cpufreq_driver->flags & CPUFREQ_PM_NO_WARN))
--			dprintk(KERN_DEBUG "Warning: CPU frequency is %u, "
-+			printk(KERN_WARNING "Warning: CPU frequency is %u, "
- 			       "cpufreq assumed %u kHz.\n",
- 			       cur_freq, cpu_policy->cur);
- 
-@@ -1087,7 +1087,7 @@ static int cpufreq_resume(struct sys_dev
- 			struct cpufreq_freqs freqs;
- 
- 			if (!(cpufreq_driver->flags & CPUFREQ_PM_NO_WARN))
--				dprintk(KERN_WARNING "Warning: CPU frequency"
-+				printk(KERN_WARNING "Warning: CPU frequency"
- 				       "is %u, cpufreq assumed %u kHz.\n",
- 				       cur_freq, cpu_policy->cur);
- 
-
+ 	/* Enable IRQs */
