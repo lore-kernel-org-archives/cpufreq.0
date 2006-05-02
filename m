@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6478] rmmod powernow_k8 BUG
-Date: Tue, 2 May 2006 01:14:24 -0700
-Message-ID: <200605020814.k428EOIc001973@fire-2.osdl.org>
+Date: Tue, 2 May 2006 01:16:44 -0700
+Message-ID: <200605020816.k428GixL002088@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,11 +20,17 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=6478
 
-akpm@osdl.org changed:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |akpm@osdl.org
+
+
+
+------- Additional Comments From akpm@osdl.org  2006-05-02 01:16 -------
+
+ah-hah, I think this was the bug which
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.17-rc3/2.6.17-rc3-mm1/broken-out/powernow-k8-crash-workaround.patch
+was supposed to work around.
+
+Does it make this oops go away?
 
 
 
