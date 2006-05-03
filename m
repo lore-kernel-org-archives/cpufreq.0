@@ -1,14 +1,11 @@
-From: Diederick de Vries <diederick@diederickdevries.net>
-Subject: Re: compiling fails
-Date: Wed, 3 May 2006 19:01:38 +0200
-Message-ID: <200605031901.38778.diederick@diederickdevries.net>
-References: <200605012108.53297.diederick@diederickdevries.net>
-	<20060501211551.GC4570@inferi.kami.home>
+From: "Van Alstine, Eric J" <eric.j.van.alstine@intel.com>
+Subject: 2.6.9 cpufreq and scheduler interaction question on PXA27x processor
+Date: Wed, 3 May 2006 13:51:40 -0700
+Message-ID: <E02592704DB9854BB0B2E7DD3A633B776D2AF2@orsmsx412.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20060501211551.GC4570@inferi.kami.home>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,27 +19,27 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-Op Monday 01 May 2006 23:15 schreef Mattia Dongili:
+Hello, I'm new to messing around in the linux kernel and apologize if my
+questions fall on the 'idiot' level, but would greatly appreciate any
+assistance you could offer.  Here's the situation:
 
-> On Mon, May 01, 2006 at 09:08:53PM +0200, Diederick de Vries wrote:
+            Platform:  Intel PXA27x Xscale processor DVK=20
 
-> > configure: error: At least one of /sys support or /proc support MUST be
-> > enabled
-> > configure: error: /bin/sh './configure' failed for libcpufreq
-> >
-> > However, I have SYSFS and PROC_FS both enabled in my kernel (v2.6.16) and
-> > I have have sysfsutils installed in /usr/lib (header files are
-> > in /usr/include/sysfs). Why can't the configure script find this?
->
-> strange! do you really have /usr/include/sysfs/libsysfs.h ?
+            OS:  2.6.9 kernel
 
-Yes. Really ;-)
+            Issue:  I'm trying to play around with some ideas regarding
+DVM/DFM.  Inside the scheduler, I'm trying to call pxa27x_set_cpufreq
+which works its way through the CPUFreq interface, and am now getting a
+"Unable to handle kernel NULL pointer dereference at virtual address
+00000000".  I'm trying to dig through this and thought it was due to the
+notify call, but after commenting that out, I get a similar but
+differently located bug.  I'd appreciate anyone's thoughts as to what's
+going on.  I was hoping to reuse the cpufreq functions, but if I can't
+do that from inside the scheduler, I'll just write my own & reinvent the
+wheel.
 
-> It won't probably help, but anyway you should try the latest version
-> (001) from:
-> http://www.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html
+=20
 
-Well, it compiled without errors. (but there no configure script anymore)
+Thanks for the help!
 
-Thanks, 
-Diederick
+-Eric
