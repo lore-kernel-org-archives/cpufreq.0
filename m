@@ -1,11 +1,10 @@
-From: "Van Alstine, Eric J" <eric.j.van.alstine@intel.com>
-Subject: 2.6.9 cpufreq and scheduler interaction question on PXA27x processor
-Date: Wed, 3 May 2006 13:51:40 -0700
-Message-ID: <E02592704DB9854BB0B2E7DD3A633B776D2AF2@orsmsx412.amr.corp.intel.com>
+From: "Andi Kleen" <ak@suse.de>
+Subject: [PATCH] [7/7] x86_64: Move ondemand timer into own work queue
+Date: Fri, 05 May 2006 20:33:14 +0200
+Message-ID: <445B9A6A.mailIZ41BYSAC@suse.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,29 +16,87 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+To: torvalds@osdl.org
+Cc: akpm@osdl.org, discuss@x86-64.org, cpufreq@lists.linux.org.uk
 
-Hello, I'm new to messing around in the linux kernel and apologize if my
-questions fall on the 'idiot' level, but would greatly appreciate any
-assistance you could offer.  Here's the situation:
 
-            Platform:  Intel PXA27x Xscale processor DVK=20
+Taking the cpu hotplug semaphore in a normal events workqueue
+is unsafe because other tasks can wait for any workqueues with
+it hold. This results in a deadlock.
 
-            OS:  2.6.9 kernel
+Move the DBS timer into its own work queue which is not 
+affected by other work queue flushes to avoid this.
 
-            Issue:  I'm trying to play around with some ideas regarding
-DVM/DFM.  Inside the scheduler, I'm trying to call pxa27x_set_cpufreq
-which works its way through the CPUFreq interface, and am now getting a
-"Unable to handle kernel NULL pointer dereference at virtual address
-00000000".  I'm trying to dig through this and thought it was due to the
-notify call, but after commenting that out, I get a similar but
-differently located bug.  I'd appreciate anyone's thoughts as to what's
-going on.  I was hoping to reuse the cpufreq functions, but if I can't
-do that from inside the scheduler, I'll just write my own & reinvent the
-wheel.
+Cc: venkatesh.pallipadi@intel.com
+Cc: cpufreq@lists.linux.org.uk
 
-=20
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-Thanks for the help!
+---
+ drivers/cpufreq/cpufreq_ondemand.c |   28 ++++++++++++++++++++--------
+ 1 files changed, 20 insertions(+), 8 deletions(-)
 
--Eric
+Index: linux/drivers/cpufreq/cpufreq_ondemand.c
+===================================================================
+--- linux.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux/drivers/cpufreq/cpufreq_ondemand.c
+@@ -74,6 +74,8 @@ static unsigned int dbs_enable;	/* numbe
+ static DEFINE_MUTEX (dbs_mutex);
+ static DECLARE_WORK	(dbs_work, do_dbs_timer, NULL);
+ 
++static struct workqueue_struct *dbs_workq;
++
+ struct dbs_tuners {
+ 	unsigned int sampling_rate;
+ 	unsigned int sampling_down_factor;
+@@ -364,23 +366,29 @@ static void do_dbs_timer(void *data)
+ 	mutex_lock(&dbs_mutex);
+ 	for_each_online_cpu(i)
+ 		dbs_check_cpu(i);
+-	schedule_delayed_work(&dbs_work,
+-			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
++	queue_delayed_work(dbs_workq, &dbs_work,
++			   usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
+ 	mutex_unlock(&dbs_mutex);
+ }
+ 
+ static inline void dbs_timer_init(void)
+ {
+ 	INIT_WORK(&dbs_work, do_dbs_timer, NULL);
+-	schedule_delayed_work(&dbs_work,
+-			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
++	if (!dbs_workq)
++		dbs_workq = create_singlethread_workqueue("ondemand");
++	if (!dbs_workq) {
++		printk(KERN_ERR "ondemand: Cannot initialize kernel thread\n");
++		return;
++	}
++	queue_delayed_work(dbs_workq, &dbs_work,
++			   usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
+ 	return;
+ }
+ 
+ static inline void dbs_timer_exit(void)
+ {
+-	cancel_delayed_work(&dbs_work);
+-	return;
++	if (dbs_workq)
++		cancel_rearming_delayed_workqueue(dbs_workq, &dbs_work);
+ }
+ 
+ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+@@ -489,8 +497,12 @@ static int __init cpufreq_gov_dbs_init(v
+ 
+ static void __exit cpufreq_gov_dbs_exit(void)
+ {
+-	/* Make sure that the scheduled work is indeed not running */
+-	flush_scheduled_work();
++	/* Make sure that the scheduled work is indeed not running.
++	   Assumes the timer has been cancelled first. */
++	if (dbs_workq) {
++		flush_workqueue(dbs_workq);
++		destroy_workqueue(dbs_workq);
++	}
+ 
+ 	cpufreq_unregister_governor(&cpufreq_gov_dbs);
+ }
