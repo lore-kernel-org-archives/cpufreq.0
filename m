@@ -1,12 +1,10 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] [7/7] x86_64: Move ondemand timer into own work queue
-Date: Fri, 5 May 2006 15:09:45 -0400
-Message-ID: <20060505190945.GG9937@redhat.com>
-References: <445B9A6A.mailIZ41BYSAC@suse.de>
+From: Gianpaolo Lopresti <gianpaolo.lopresti@email.it>
+Subject: Pentium M 740 (Sonoma)
+Date: Tue, 09 May 2006 12:19:09 +0200
+Message-ID: <44606C9D.2030309@email.it>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <445B9A6A.mailIZ41BYSAC@suse.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,30 +16,45 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andi Kleen <ak@suse.de>
-Cc: akpm@osdl.org, discuss@x86-64.org, torvalds@osdl.org, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Fri, May 05, 2006 at 08:33:14PM +0200, Andi Kleen wrote:
- > 
- > Taking the cpu hotplug semaphore in a normal events workqueue
- > is unsafe because other tasks can wait for any workqueues with
- > it hold. This results in a deadlock.
- > 
- > Move the DBS timer into its own work queue which is not 
- > affected by other work queue flushes to avoid this.
- > 
- > Cc: venkatesh.pallipadi@intel.com
- > Cc: cpufreq@lists.linux.org.uk
- > 
- > Signed-off-by: Andi Kleen <ak@suse.de>
+Hi,
+i'm Italian, and so sorry for my english...
+I have noted that in the speedstep-centrino.c there is not the support
+for the pentium M 740 (Family 6, Model 13, stepping 8), that is the
+centrino with 533Mhz FSB.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+I think that this is one of the most popular centrino, because,
+practically at same price of a 400Mhz fsb processor, you can have a
+533Mhz Processor.
 
-(I'm up to my eyes in various real-world crisis right now, so git maintainence
- is slacking for a month)
+I wrote to make you known that, on Internet, there are a lot of
+implementation of speedstep-centrino.c that support this processor: one
+is at http://pdis.rnw.nl/~hansl/linux/nc6230/speedstep-centrino.c
+<http://pdis.rnw.nl/%7Ehansl/linux/nc6230/speedstep-centrino.c>
+I found this link by the address:
+http://pdis.rnw.nl/~hansl/linux/nc6230/index_nc6230.html
+<http://pdis.rnw.nl/%7Ehansl/linux/nc6230/index_nc6230.html>
 
-		Dave
+I don't know if it work or not (i do not trust unofficial versions...),
+but, if it works, it's possible that this version will become an
+Official version (or that the 6,13,8 processor will be supported by
+cpufreq)?
 
--- 
-http://www.codemonkey.org.uk
+Thanks for your attention,
+Gianpaolo Lopresti
+ 
+
+ 
+
+ --
+
+ Email.it, the professional e-mail, gratis per te: http://www.email.it/f
+
+ 
+
+ Sponsor:
+
+ Prova GRATIS per 15 giorni! DVDNetRent e ricevi a casa 3 film. Puoi scegliere tra migliaia di titoli
+
+ Clicca qui: http://adv.email.it/cgi-bin/foclick.cgi?mid=4632&d=9-5
