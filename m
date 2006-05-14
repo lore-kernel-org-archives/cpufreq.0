@@ -1,9 +1,9 @@
 From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Longhaul - patch proposal
-Date: Fri, 12 May 2006 22:37:14 +0200
-Message-ID: <4464F1FA.4010304@interia.pl>
+Date: Sun, 14 May 2006 08:51:12 +0200
+Message-ID: <4466D360.9070204@interia.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------070306050908070205050606"
+Content-Type: multipart/mixed; boundary="------------000803040002030008090506"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,22 +15,46 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>, cpufreq@lists.linux.org.uk
 
 This is a multi-part message in MIME format.
---------------070306050908070205050606
+--------------000803040002030008090506
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 
-Sorry. Bad English inside.
-Idea is simple - write ide suspend which waits for end of DMA transfer.
+I think this is working. Patches are for linux-2.6.16. Preempt_disable
+seems to be unnecesary before goto_sleep_pci so I do it later. I can do:
+
+while [ 1 ]
+do
+echo >scaling_setspeed 532000
+sleep 1s
+echo >scaling_setspeed 997000
+sleep 1s
+done
+
+on one console while on other is running:
+
+while [ 1 ]
+do
+hdparm -t /dev/hda
+done
+
+Output (24MB/s is max for my drive):
+dev/hda:
+ Timing buffered disk reads:   60 MB in  3.02 seconds =  19.90 MB/sec
+ Timing buffered disk reads:   62 MB in  3.02 seconds =  20.52 MB/sec
+ Timing buffered disk reads:   68 MB in  3.01 seconds =  22.56 MB/sec
+ Timing buffered disk reads:   50 MB in  3.44 seconds =  14.55 MB/sec
+ Timing buffered disk reads:   70 MB in  3.07 seconds =  22.80 MB/sec
+
 
 
 
 ----------------------------------------------------------------------
 Poznaj Stefana! Zmien komunikator! >>> http://link.interia.pl/f1924
 
---------------070306050908070205050606
+--------------000803040002030008090506
 Content-Type: text/plain;
  name="longhaul.patch"
 Content-Transfer-Encoding: 7bit
@@ -38,7 +62,7 @@ Content-Disposition: inline;
  filename="longhaul.patch"
 
 --- longhaul.orig.c	2006-03-20 06:53:29.000000000 +0100
-+++ longhaul.c	2006-05-12 22:05:08.000000000 +0200
++++ longhaul.c	2006-05-14 00:28:01.000000000 +0200
 @@ -30,6 +30,7 @@
  #include <linux/slab.h>
  #include <linux/string.h>
@@ -124,9 +148,9 @@ Content-Disposition: inline;
  	unsigned int tmp_mask;
 +	union msr_bcr2 bcr2;
 +
-+	preempt_disable();
 +	goto_sleep_pci();
 +
++	preempt_disable();
 +	local_irq_save(flags);
 +
 +	tmp_mask=inb(0x21);	/* works on C3. save mask. */
@@ -150,9 +174,9 @@ Content-Disposition: inline;
 +
 +	outb(tmp_mask, 0x21);	/* restore mask */
 +	local_irq_restore(flags);
++	preempt_enable();
 +
 +	wakeup_pci();
-+	preempt_enable();
 +}
 +
 +static void do_powersaver(union msr_longhaul *longhaul,
@@ -171,25 +195,16 @@ Content-Disposition: inline;
  		return;
  	}
  
-+	preempt_disable();
+-	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
+-	longhaul->bits.SoftBusRatio = clock_ratio_index & 0xf;
+-	longhaul->bits.SoftBusRatio4 = (clock_ratio_index & 0x10) >> 4;
+-	longhaul->bits.EnableSoftBusRatio = 1;
+-	longhaul->bits.RevisionKey = 0;
 +	goto_sleep_pci();
-+
-+	local_irq_save(flags);
-+
-+	pic2_mask=inb(0xA1);
-+	pic1_mask=inb(0x21);	/* works on C3. save mask. */
-+	outb(0xFF,0xA1);	/* Overkill */
-+	outb(0xFE,0x21);	/* TMR0 only */
-+
- 	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
- 	longhaul->bits.SoftBusRatio = clock_ratio_index & 0xf;
- 	longhaul->bits.SoftBusRatio4 = (clock_ratio_index & 0x10) >> 4;
- 	longhaul->bits.EnableSoftBusRatio = 1;
- 	longhaul->bits.RevisionKey = 0;
  
--	preempt_disable();
--	local_irq_save(flags);
--
+ 	preempt_disable();
+ 	local_irq_save(flags);
+ 
 -	/*
 -	 * get current pci bus master state for all devices
 -	 * and clear bus master bit
@@ -207,10 +222,19 @@ Content-Disposition: inline;
 -	} while (dev != NULL);
 -
 -	tmp_mask=inb(0x21);	/* works on C3. save mask. */
--	outb(0xFE,0x21);	/* TMR0 only */
++	pic2_mask=inb(0xA1);
++	pic1_mask=inb(0x21);	/* works on C3. save mask. */
++	outb(0xFF,0xA1);	/* Overkill */
+ 	outb(0xFE,0x21);	/* TMR0 only */
 -	outb(0xFF,0x80);	/* delay */
--
+ 
 -	safe_halt();
++	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
++	longhaul->bits.SoftBusRatio = clock_ratio_index & 0xf;
++	longhaul->bits.SoftBusRatio4 = (clock_ratio_index & 0x10) >> 4;
++	longhaul->bits.EnableSoftBusRatio = 1;
++	longhaul->bits.RevisionKey = 0;
++
 +	safe_halt();		/* Sync */
  	wrmsrl(MSR_VIA_LONGHAUL, longhaul->val);
  	halt();
@@ -241,9 +265,9 @@ Content-Disposition: inline;
 +	outb(pic2_mask,0xA1);
 +	outb(pic1_mask,0x21);	/* restore mask */
 +	local_irq_restore(flags);
++	preempt_enable();
 +
 +	wakeup_pci();
-+	preempt_enable();
  }
  
  /**
@@ -278,7 +302,134 @@ Content-Disposition: inline;
  
  	/*
 
---------------070306050908070205050606
+--------------000803040002030008090506
+Content-Type: text/plain;
+ name="via82cxxx.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="via82cxxx.patch"
+
+--- via82cxxx.orig.c	2006-05-01 09:18:15.000000000 +0200
++++ via82cxxx.c	2006-05-14 08:23:48.000000000 +0200
+@@ -34,6 +34,7 @@
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/ide.h>
++#include <linux/pm.h>
+ #include <asm/io.h>
+ 
+ #ifdef CONFIG_PPC_MULTIPLATFORM
+@@ -469,6 +470,99 @@
+ 	hwif->drives[1].autodma = hwif->autodma;
+ }
+ 
++/* Copy of sc1200.c */
++
++static ide_hwif_t *lookup_pci_dev (ide_hwif_t *prev, struct pci_dev *dev)
++{
++	int	h;
++
++	for (h = 0; h < MAX_HWIFS; h++) {
++		ide_hwif_t *hwif = &ide_hwifs[h];
++		if (prev) {
++			if (hwif == prev)
++				prev = NULL;	// found previous, now look for next match
++		} else {
++			if (hwif && hwif->pci_dev == dev)
++				return hwif;	// found next match
++		}
++	}
++	return NULL;	// not found
++}
++
++static int via_suspend(struct pci_dev *dev, pm_message_t state)
++{
++	ide_hwif_t *hwif = NULL;
++	ide_drive_t *drive = NULL;
++	struct request rq;
++	struct request_pm_state rqpm;
++	ide_task_t args;
++	unsigned int d;
++
++	printk("VIA IDE: suspend(%u)\n", state.event);
++
++	while ( ( hwif = lookup_pci_dev(hwif, dev) ) != NULL ) {
++		for (d = 0; d < MAX_DRIVES; ++d) {
++			drive = &(hwif->drives[d]);
++			if (drive->present) {
++				ide_init_drive_cmd(&rq);
++				memset(&rqpm, 0, sizeof(rqpm));
++			    	memset(&args, 0, sizeof(args));
++				rq.flags = REQ_PM_SUSPEND;
++		    		rq.pm = &rqpm;
++				rq.special = &args;
++				rqpm.pm_step = ide_pm_state_start_suspend;
++				rqpm.pm_state = state.event;
++				ide_do_drive_cmd(drive, &rq, ide_head_wait);
++			}
++		}
++	}
++	pci_save_state(dev);
++	pci_disable_device(dev);
++	pci_set_power_state(dev, pci_choose_state(dev, state));
++	dev->current_state = state.event;
++	return 0;
++}
++
++static int via_resume(struct pci_dev *dev)
++{
++	ide_hwif_t *hwif = NULL;
++	ide_drive_t *drive = NULL;
++	struct request rq;
++	struct request_pm_state rqpm;
++	ide_task_t args;
++	unsigned int d;
++
++	printk("VIA IDE: resume\n");
++
++	pci_restore_state(dev);
++	pci_set_power_state(dev, PCI_D0);	// bring chip back from sleep state
++	dev->current_state = PM_EVENT_ON;
++	/* if the device was busmaster before the suspend, make it busmaster again */
++	if (dev->is_busmaster)
++		pci_set_master(dev);
++	/* if the device was enabled before suspend, reenable */
++	if (dev->is_enabled)
++		pci_enable_device(dev);
++
++	while ( ( hwif = lookup_pci_dev(hwif, dev) ) != NULL ) {
++		for (d = 0; d < MAX_DRIVES; ++d) {
++			drive = &(hwif->drives[d]);
++			if (drive->present) {
++				ide_init_drive_cmd(&rq);
++				memset(&args, 0, sizeof(args));
++				memset(&rqpm, 0, sizeof(rqpm));
++				rq.flags = REQ_PM_RESUME;
++		    		rq.pm = &rqpm;
++				rq.special = &args;
++				rqpm.pm_step = ide_pm_state_start_resume;
++				rqpm.pm_state = PM_EVENT_ON;
++				ide_do_drive_cmd(drive, &rq, ide_head_wait);
++			}
++		}
++	}
++	return 0;
++}
++
+ static ide_pci_device_t via82cxxx_chipsets[] __devinitdata = {
+ 	{	/* 0 */
+ 		.name		= "VP_IDE",
+@@ -506,6 +600,8 @@
+ 	.name 		= "VIA_IDE",
+ 	.id_table 	= via_pci_tbl,
+ 	.probe 		= via_init_one,
++	.suspend	= via_suspend,
++	.resume		= via_resume,
+ };
+ 
+ static int via_ide_init(void)
+
+--------------000803040002030008090506
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -289,5 +440,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------070306050908070205050606--
+--------------000803040002030008090506--
 
