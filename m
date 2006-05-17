@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6558] Cpufreq reports nominal CPU speed instead of actual
-Date: Mon, 15 May 2006 09:00:10 -0700
-Message-ID: <200605151600.k4FG0A30011025@fire-2.osdl.org>
+Subject: [Bug 6426] Working Longhaul driver removed from kernel
+Date: Wed, 17 May 2006 07:07:38 -0700
+Message-ID: <200605171407.k4HE7cSh022741@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,13 +18,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6558
+http://bugzilla.kernel.org/show_bug.cgi?id=6426
 
-dsd@gentoo.org changed:
+bugzilla.kernel.org@kleinmanns.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |kernel@gentoo.org
+                 CC|                            |bugzilla.kernel.org@kleinman
+                   |                            |ns.com
 
 
 
