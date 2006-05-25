@@ -1,16 +1,11 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [Fwd: Re: via-pmu runs device_power_down in atomic context]
-Date: Thu, 25 May 2006 15:53:56 +1000
-Message-ID: <1148536437.13249.262.camel@localhost.localdomain>
-References: <1148531830.13249.237.camel@localhost.localdomain>
-	<20060524215917.230af218.akpm@osdl.org>
-	<1148534398.13249.246.camel@localhost.localdomain>
-	<20060524223658.6fc797f5.akpm@osdl.org>
-	<1148535984.13249.253.camel@localhost.localdomain>
+Date: Thu, 25 May 2006 10:12:05 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0605251005450.6990-100000@iolanthe.rowland.org>
+References: <20060524215917.230af218.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1148535984.13249.253.camel@localhost.localdomain>
+In-Reply-To: <20060524215917.230af218.akpm@osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,54 +16,49 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@osdl.org>
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net, stern@rowland.harvard.edu, cpufreq@lists.linux.org.uk
+Cc: cpufreq@lists.linux.org.uk, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@ozlabs.org
 
-On Thu, 2006-05-25 at 15:46 +1000, Benjamin Herrenschmidt wrote:
-> > This requirement to keep interrupts off in there breaks things again and
-> > again and again and again.  And this time: again.
+On Wed, 24 May 2006, Andrew Morton wrote:
+
+> > device_power_down should be called with interrupts off, thus the PMU
+> > driver is fine. It's a misnamed function, it calls the sysdev's suspend
+> > and those should be called with irq off. I think the problem is more due
+> > to some cpufreq or notifier change that somebody done to recent kernels
+> > and that added some might_sleep.... I wonder why. 
+> > 
+> > Andrew, what's up there ? What is this new
+> > "blocking_notifier_call_chain" thing ? notifiers use to not use
+> > semaphores and not be blocking... at least powermac implementation of
+> > cpufreq relies on that.
 > 
-> Where else ?
+> notifiers used to be racy too - we just waddled across them without any
+> locking.
 > 
-> If you look at this function it's _designed_ for interrupts off ! the
-> driver suspend have the option of deferring their suspend() callback
-> until after irqs have been turned off (needed for legacy stuff afaik but
-> rarely used) and the sysdev's are very low level things whose suspend
-> and resume callbacks should be called after that point as well. 
+> Alan made a best-effort conversion of callers, and there have been a few
+> problems.
+> 
+> Here, pmac has gone and unilaterally decided that device_power_down() is
+> atomic, even though device_power_down() _already_ calls suspend_device(),
+> which does down().  So I'd say you've gone and found a via-pmu bug here.
+> 
+> A way of shutting up the warning would be to use an atomic notifier, but
+> it'll still be buggy.  Better would be to teach pmac_suspend_devices() not
+> to assume things which aren't true ;)
 
-BTW. The root of the problem with cpufreq is it's upside down design :)
-Well, not all of it, but the fact that it registers a sysdev. It's not
-the "midlayer" (ugh) business to register devices and hook things like
-PM events to pass them down to actual drivers. It should be the cpufreq
-drivers themselves that attach to the device model in a way or another
-and "instanciate" the ability to control the cpu frequency, passing
-along their struct device.
+Someone else had a problem with the cpufreq conversion earlier.  I posted 
+a message on the cpufreq mailing list but nobody ever responded to it.  
+This may or may not be related to that earlier problem.
 
-The driver itself should pick the right type of "device" to attach to
-(sysdev's are just weird beast and were a bad idea in the first place
-since they aren't even struct device).
+In essence, the problem seemed to be that the cpufreq notifier chain is
+sometimes expected to be blocking and sometimes expected to be atomic,
+based on the "val" code passed to notifier_call_chain.  The cleanest
+solution would be to split the single notifier chain into two chains,
+one always blocking and the other always atomic.
 
-But then, iirc, that's because we also did the cpu stuff in sysfs upside
-down too ... :)
+Somebody who knows more about cpufreq than I do will have to make that
+change.
 
-Now, wether the cpufreq notifier might end up calling things that will
-sleep or not ... hrm... that's an interesting issue. Part of the problem
-is that because cpufreq is a sysdev, it will be called so late in the
-suspend process, pretty much everything else is asleep. So I'm quite
-confident that things attaching to the cpufreq notifiers other than bits
-of cpufreq itself are likely to break anyway. Is it documented anywhere
-that registering a cpufreq notifier might cause it to be called in
-atomic context or very later in the suspend process (possibly after the
-interrupt controller hs been put down) ?
-
-Yes it's messy, no I don't have a miracle solution, but I think here the
-proper way to fix it in the long run is for cpufreq not to be a sysdev
-or anything like that and to stop trying to do the suspend/resume thing
-for the drivers. Drivers are in charge, they get to create the device of
-whatever type it is and get the suspend/resume events whenever they are
-sent. cpufreq can then provide maybe "helpers" to help work out what to
-do at suspend and/or resume time but with the knowledge that for some
-drivers maybe, this will happen in atomic context.
-
-Ben.
+Alan Stern
