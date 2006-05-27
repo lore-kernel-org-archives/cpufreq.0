@@ -1,11 +1,13 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [ PATCH ] Longhaul - call suspend(PMSG_FREEZE) before and resume()
- after
-Date: Sat, 27 May 2006 16:36:58 +0200
-Message-ID: <4478640A.2030001@interia.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [ PATCH ] Longhaul - call suspend(PMSG_FREEZE) before and
+	resume() after
+Date: Sun, 28 May 2006 07:29:04 +1000
+Message-ID: <1148765345.8089.184.camel@localhost.localdomain>
+References: <4478640A.2030001@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <4478640A.2030001@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,337 +18,367 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: =?UTF-8?Q?Rafa=C5=82?= Bilski <rafalbilski@interia.pl>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
 
-1. Call suspend(PMSG_FREEZE) for each block device.
-2. Call suspend(PMSG_FREEZE) for each PCI device.
-3. Change CPU frequency.
-4. Call resume() for each PCI device.
-5. Call resume() for each block device.
+On Sat, 2006-05-27 at 16:36 +0200, Rafa=C5=82 Bilski wrote:
+> 1. Call suspend(PMSG_FREEZE) for each block device.
+> 2. Call suspend(PMSG_FREEZE) for each PCI device.
+> 3. Change CPU frequency.
+> 4. Call resume() for each PCI device.
+> 5. Call resume() for each block device.
 
-Result: No more broken DMA transfers.
+This is an horrible hack that breaks so many defined semantics that it's
+not even funny.
 
-diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.16.18-vanilla/arch/i386/kernel/cpu/cpufreq/Kconfig linux-2.6.16.18/arch/i386/kernel/cpu/cpufreq/Kconfig
---- linux-2.6.16.18-vanilla/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-05-27 15:50:00.000000000 +0200
-+++ linux-2.6.16.18/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-05-27 15:53:13.000000000 +0200
-@@ -203,7 +203,6 @@ config X86_LONGRUN
- config X86_LONGHAUL
- 	tristate "VIA Cyrix III Longhaul"
- 	select CPU_FREQ_TABLE
--	depends on BROKEN
- 	help
- 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII, 
- 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T 
-diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.16.18-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c linux-2.6.16.18/arch/i386/kernel/cpu/cpufreq/longhaul.c
---- linux-2.6.16.18-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-03-20 06:53:29.000000000 +0100
-+++ linux-2.6.16.18/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-05-27 15:53:13.000000000 +0200
-@@ -30,6 +30,11 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/pci.h>
-+#include <linux/pm.h>
-+#include <linux/kobject.h>
-+#include <linux/sysdev.h>
-+#include <linux/genhd.h>
-+#include <linux/blkdev.h>
- 
- #include <asm/msr.h>
- #include <asm/timex.h>
-@@ -115,16 +120,144 @@ static int longhaul_get_cpu_mult(void)
- }
- 
- 
--static void do_powersaver(union msr_longhaul *longhaul,
--			unsigned int clock_ratio_index)
-+extern struct subsystem block_subsys;
-+extern struct semaphore block_subsys_sem;
-+
-+static struct pm_message pmsg_freeze = { .event = PM_EVENT_FREEZE, };
-+
-+void block_freeze_resume(int freeze)
-+{
-+	struct gendisk *disk;
-+	struct list_head *p;
-+	struct bus_type *bus;
-+
-+	list_for_each(p, &block_subsys.kset.list) {
-+		disk = list_entry(p, struct gendisk, kobj.entry);
-+		if (disk->driverfs_dev && disk->driverfs_dev->bus) {
-+			bus = disk->driverfs_dev->bus;
-+			if (bus->suspend && freeze) {
-+				printk("Longhaul: %.32s (%.32s) -> suspend(PMSG_FREEZE)\n", &disk->disk_name[0], &disk->driverfs_dev->bus_id[0]);
-+				bus->suspend(disk->driverfs_dev, pmsg_freeze); 
-+			} else if (bus->resume && !freeze) {
-+				printk("Longhaul: %.32s (%.32s) -> resume()\n", &disk->disk_name[0], &disk->driverfs_dev->bus_id[0]);
-+				bus->resume(disk->driverfs_dev); 
-+			}
-+		}
-+	}
-+}
-+
-+
-+/* This is copy from pci.c and pci-driver.c
-+ */
-+
-+static void goto_sleep_pci(void)
-+{
-+	struct pci_dev *dev;
-+	struct pci_driver *drv;
-+	u16 pci_command;
-+
-+	/*
-+	 * Get current pci bus master state for all devices
-+	 * and clear bus master bit
-+	 */
-+
-+	dev = NULL;
-+	do {
-+		dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
-+		if (dev != NULL) {
-+			drv = dev->driver;
-+			if (drv && drv->suspend)
-+				drv->suspend(dev, pmsg_freeze);
-+			else
-+	    			pci_save_state(dev);
-+			pci_read_config_word(dev, PCI_COMMAND, &pci_command);
-+			if (pci_command & PCI_COMMAND_MASTER) {
-+				pci_command &= ~PCI_COMMAND_MASTER;
-+				pci_write_config_word(dev, PCI_COMMAND, pci_command);
-+			}
-+			/* pcibios_disable_device omited because
-+			   USB devices don't respond after resume
-+			   on EPIA M10000 */
-+		}
-+	} while (dev != NULL);
-+}
-+
-+
-+static void wakeup_pci(void)
- {
- 	struct pci_dev *dev;
-+	struct pci_driver *drv;
-+
-+	/* Restore pci bus master state for all devices */
-+
-+	dev = NULL;
-+	do {
-+		dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
-+		if (dev != NULL) {
-+			drv = dev->driver;
-+			if (drv && drv->resume)
-+				drv->resume(dev);
-+			else
-+				/* restore the PCI config space */
-+				pci_restore_state(dev);
-+	    		/* if the device was busmaster before the suspend, make it busmaster again */
-+			if (dev->is_busmaster)
-+				pci_set_master(dev);
-+			/* if the device was enabled before suspend, reenable */
-+			if (dev->is_enabled)
-+				pci_enable_device(dev);
-+		}
-+	} while (dev != NULL);
-+}
-+
-+
-+static void do_longhaul1(int reserved, unsigned int clock_ratio_index)
-+{
- 	unsigned long flags;
- 	unsigned int tmp_mask;
-+	union msr_bcr2 bcr2;
-+
-+        down(&block_subsys_sem);
-+	block_freeze_resume(1);
-+	preempt_disable();
-+	goto_sleep_pci();
-+	local_irq_save(flags);
-+
-+	local_irq_disable();
-+
-+	tmp_mask=inb(0x21);	/* works on C3. save mask. */
-+	outb(0xFE, 0x21);	/* TMR0 only */
-+
-+	rdmsrl(MSR_VIA_BCR2, bcr2.val);
-+	/* Enable software clock multiplier */
-+	bcr2.bits.ESOFTBF = 1;
-+	bcr2.bits.CLOCKMUL = clock_ratio_index;
-+	safe_halt();		/* Sync */
-+	wrmsrl(MSR_VIA_BCR2, bcr2.val);	/* Change */
-+	halt();
-+
-+	/* Disable software clock multiplier */
-+	local_irq_disable();
-+	rdmsrl(MSR_VIA_BCR2, bcr2.val);
-+	bcr2.bits.ESOFTBF = 0;
-+	wrmsrl(MSR_VIA_BCR2, bcr2.val);
-+	local_irq_enable();
-+
-+	outb(tmp_mask, 0x21);	/* restore mask */
-+	local_irq_restore(flags);
-+	wakeup_pci();
-+	preempt_enable();
-+	block_freeze_resume(0);
-+        up(&block_subsys_sem);
-+}
-+
-+
-+static void do_powersaver(union msr_longhaul *longhaul,
-+			unsigned int clock_ratio_index)
-+{
-+	unsigned long flags;
-+	unsigned int pic1_mask, pic2_mask;
- 	int version;
--	int i;
--	u16 pci_cmd;
--	u16 cmd_state[64];
- 
- 	switch (cpu_model) {
- 	case CPU_EZRA_T:
-@@ -137,61 +270,44 @@ static void do_powersaver(union msr_long
- 		return;
- 	}
- 
-+        down(&block_subsys_sem);
-+	block_freeze_resume(1);
-+	preempt_disable();
-+	goto_sleep_pci();
-+	local_irq_save(flags);
-+
-+	local_irq_disable();
-+	pic2_mask=inb(0xA1);
-+	pic1_mask=inb(0x21);	/* works on C3. save mask. */
-+	outb(0xFF,0xA1);	/* Overkill */
-+	outb(0xFE,0x21);	/* TMR0 only */
-+
- 	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
- 	longhaul->bits.SoftBusRatio = clock_ratio_index & 0xf;
- 	longhaul->bits.SoftBusRatio4 = (clock_ratio_index & 0x10) >> 4;
- 	longhaul->bits.EnableSoftBusRatio = 1;
- 	longhaul->bits.RevisionKey = 0;
- 
--	preempt_disable();
--	local_irq_save(flags);
--
--	/*
--	 * get current pci bus master state for all devices
--	 * and clear bus master bit
--	 */
--	dev = NULL;
--	i = 0;
--	do {
--		dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
--		if (dev != NULL) {
--			pci_read_config_word(dev, PCI_COMMAND, &pci_cmd);
--			cmd_state[i++] = pci_cmd;
--			pci_cmd &= ~PCI_COMMAND_MASTER;
--			pci_write_config_word(dev, PCI_COMMAND, pci_cmd);
--		}
--	} while (dev != NULL);
--
--	tmp_mask=inb(0x21);	/* works on C3. save mask. */
--	outb(0xFE,0x21);	/* TMR0 only */
--	outb(0xFF,0x80);	/* delay */
--
--	safe_halt();
-+	safe_halt();		/* Sync */
- 	wrmsrl(MSR_VIA_LONGHAUL, longhaul->val);
- 	halt();
- 
- 	local_irq_disable();
- 
--	outb(tmp_mask,0x21);	/* restore mask */
--
--	/* restore pci bus master state for all devices */
--	dev = NULL;
--	i = 0;
--	do {
--		dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
--		if (dev != NULL) {
--			pci_cmd = cmd_state[i++];
--			pci_write_config_byte(dev, PCI_COMMAND, pci_cmd);
--		}
--	} while (dev != NULL);
--	local_irq_restore(flags);
--	preempt_enable();
--
- 	/* disable bus ratio bit */
- 	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
- 	longhaul->bits.EnableSoftBusRatio = 0;
- 	longhaul->bits.RevisionKey = version;
- 	wrmsrl(MSR_VIA_LONGHAUL, longhaul->val);
-+
-+	outb(pic2_mask,0xA1);
-+	outb(pic1_mask,0x21);	/* restore mask */
-+
-+	local_irq_restore(flags);
-+	wakeup_pci();
-+	preempt_enable();
-+	block_freeze_resume(0);
-+        up(&block_subsys_sem);
- }
- 
- /**
-@@ -206,7 +322,6 @@ static void longhaul_setstate(unsigned i
- 	int speed, mult;
- 	struct cpufreq_freqs freqs;
- 	union msr_longhaul longhaul;
--	union msr_bcr2 bcr2;
- 	static unsigned int old_ratio=-1;
- 
- 	if (old_ratio == clock_ratio_index)
-@@ -241,20 +356,7 @@ static void longhaul_setstate(unsigned i
- 	 */
- 	case TYPE_LONGHAUL_V1:
- 	case TYPE_LONGHAUL_V2:
--		rdmsrl (MSR_VIA_BCR2, bcr2.val);
--		/* Enable software clock multiplier */
--		bcr2.bits.ESOFTBF = 1;
--		bcr2.bits.CLOCKMUL = clock_ratio_index;
--		local_irq_disable();
--		wrmsrl (MSR_VIA_BCR2, bcr2.val);
--		safe_halt();
--
--		/* Disable software clock multiplier */
--		rdmsrl (MSR_VIA_BCR2, bcr2.val);
--		bcr2.bits.ESOFTBF = 0;
--		local_irq_disable();
--		wrmsrl (MSR_VIA_BCR2, bcr2.val);
--		local_irq_enable();
-+		do_longhaul1(0, clock_ratio_index);
- 		break;
- 
- 	/*
-diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.16.18-vanilla/block/genhd.c linux-2.6.16.18/block/genhd.c
---- linux-2.6.16.18-vanilla/block/genhd.c	2006-05-27 15:50:01.000000000 +0200
-+++ linux-2.6.16.18/block/genhd.c	2006-05-27 15:53:13.000000000 +0200
-@@ -16,9 +16,9 @@
- #include <linux/kobj_map.h>
- #include <linux/buffer_head.h>
- 
--static struct subsystem block_subsys;
-+struct subsystem block_subsys;
- 
--static DECLARE_MUTEX(block_subsys_sem);
-+DECLARE_MUTEX(block_subsys_sem);
- 
- /*
-  * Can be deleted altogether. Later.
-@@ -511,8 +511,10 @@ static struct kset_uevent_ops block_ueve
- };
- 
- /* declare block_subsys. */
--static decl_subsys(block, &ktype_block, &block_uevent_ops);
-+decl_subsys(block, &ktype_block, &block_uevent_ops);
- 
-+EXPORT_SYMBOL(block_subsys);
-+EXPORT_SYMBOL(block_subsys_sem);
- 
- /*
-  * aggregate disk stat collector.  Uses the same stats that the sysfs
+If you want something like that, then you need to freeze/resume _all_
+devices with the proper ordering defined by the bus linkage. It has a
+number of side effects though, can't be done that easily. Maybe cpufreq
+should have the necessary infrastructure for that ?
 
+Ben.
 
-
-----------------------------------------------------------------------
-INTERIA.PL dla kobiet... >>> http://link.interia.pl/f193b
+> Result: No more broken DMA transfers.
+>=20
+> diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.16=
+.18-vanilla/arch/i386/kernel/cpu/cpufreq/Kconfig linux-2.6.16.18/arch/i386/=
+kernel/cpu/cpufreq/Kconfig
+> --- linux-2.6.16.18-vanilla/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-05-=
+27 15:50:00.000000000 +0200
+> +++ linux-2.6.16.18/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-05-27 15:53=
+:13.000000000 +0200
+> @@ -203,7 +203,6 @@ config X86_LONGRUN
+>  config X86_LONGHAUL
+>  	tristate "VIA Cyrix III Longhaul"
+>  	select CPU_FREQ_TABLE
+> -	depends on BROKEN
+>  	help
+>  	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,=20
+>  	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T=20
+> diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.16=
+.18-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c linux-2.6.16.18/arch/i3=
+86/kernel/cpu/cpufreq/longhaul.c
+> --- linux-2.6.16.18-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-=
+03-20 06:53:29.000000000 +0100
+> +++ linux-2.6.16.18/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-05-27 15=
+:53:13.000000000 +0200
+> @@ -30,6 +30,11 @@
+>  #include <linux/slab.h>
+>  #include <linux/string.h>
+>  #include <linux/pci.h>
+> +#include <linux/pm.h>
+> +#include <linux/kobject.h>
+> +#include <linux/sysdev.h>
+> +#include <linux/genhd.h>
+> +#include <linux/blkdev.h>
+> =20
+>  #include <asm/msr.h>
+>  #include <asm/timex.h>
+> @@ -115,16 +120,144 @@ static int longhaul_get_cpu_mult(void)
+>  }
+> =20
+>=20
+> -static void do_powersaver(union msr_longhaul *longhaul,
+> -			unsigned int clock_ratio_index)
+> +extern struct subsystem block_subsys;
+> +extern struct semaphore block_subsys_sem;
+> +
+> +static struct pm_message pmsg_freeze =3D { .event =3D PM_EVENT_FREEZE, };
+> +
+> +void block_freeze_resume(int freeze)
+> +{
+> +	struct gendisk *disk;
+> +	struct list_head *p;
+> +	struct bus_type *bus;
+> +
+> +	list_for_each(p, &block_subsys.kset.list) {
+> +		disk =3D list_entry(p, struct gendisk, kobj.entry);
+> +		if (disk->driverfs_dev && disk->driverfs_dev->bus) {
+> +			bus =3D disk->driverfs_dev->bus;
+> +			if (bus->suspend && freeze) {
+> +				printk("Longhaul: %.32s (%.32s) -> suspend(PMSG_FREEZE)\n", &disk->d=
+isk_name[0], &disk->driverfs_dev->bus_id[0]);
+> +				bus->suspend(disk->driverfs_dev, pmsg_freeze);=20
+> +			} else if (bus->resume && !freeze) {
+> +				printk("Longhaul: %.32s (%.32s) -> resume()\n", &disk->disk_name[0],=
+ &disk->driverfs_dev->bus_id[0]);
+> +				bus->resume(disk->driverfs_dev);=20
+> +			}
+> +		}
+> +	}
+> +}
+> +
+> +
+> +/* This is copy from pci.c and pci-driver.c
+> + */
+> +
+> +static void goto_sleep_pci(void)
+> +{
+> +	struct pci_dev *dev;
+> +	struct pci_driver *drv;
+> +	u16 pci_command;
+> +
+> +	/*
+> +	 * Get current pci bus master state for all devices
+> +	 * and clear bus master bit
+> +	 */
+> +
+> +	dev =3D NULL;
+> +	do {
+> +		dev =3D pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+> +		if (dev !=3D NULL) {
+> +			drv =3D dev->driver;
+> +			if (drv && drv->suspend)
+> +				drv->suspend(dev, pmsg_freeze);
+> +			else
+> +	    			pci_save_state(dev);
+> +			pci_read_config_word(dev, PCI_COMMAND, &pci_command);
+> +			if (pci_command & PCI_COMMAND_MASTER) {
+> +				pci_command &=3D ~PCI_COMMAND_MASTER;
+> +				pci_write_config_word(dev, PCI_COMMAND, pci_command);
+> +			}
+> +			/* pcibios_disable_device omited because
+> +			   USB devices don't respond after resume
+> +			   on EPIA M10000 */
+> +		}
+> +	} while (dev !=3D NULL);
+> +}
+> +
+> +
+> +static void wakeup_pci(void)
+>  {
+>  	struct pci_dev *dev;
+> +	struct pci_driver *drv;
+> +
+> +	/* Restore pci bus master state for all devices */
+> +
+> +	dev =3D NULL;
+> +	do {
+> +		dev =3D pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+> +		if (dev !=3D NULL) {
+> +			drv =3D dev->driver;
+> +			if (drv && drv->resume)
+> +				drv->resume(dev);
+> +			else
+> +				/* restore the PCI config space */
+> +				pci_restore_state(dev);
+> +	    		/* if the device was busmaster before the suspend, make it busmas=
+ter again */
+> +			if (dev->is_busmaster)
+> +				pci_set_master(dev);
+> +			/* if the device was enabled before suspend, reenable */
+> +			if (dev->is_enabled)
+> +				pci_enable_device(dev);
+> +		}
+> +	} while (dev !=3D NULL);
+> +}
+> +
+> +
+> +static void do_longhaul1(int reserved, unsigned int clock_ratio_index)
+> +{
+>  	unsigned long flags;
+>  	unsigned int tmp_mask;
+> +	union msr_bcr2 bcr2;
+> +
+> +        down(&block_subsys_sem);
+> +	block_freeze_resume(1);
+> +	preempt_disable();
+> +	goto_sleep_pci();
+> +	local_irq_save(flags);
+> +
+> +	local_irq_disable();
+> +
+> +	tmp_mask=3Dinb(0x21);	/* works on C3. save mask. */
+> +	outb(0xFE, 0x21);	/* TMR0 only */
+> +
+> +	rdmsrl(MSR_VIA_BCR2, bcr2.val);
+> +	/* Enable software clock multiplier */
+> +	bcr2.bits.ESOFTBF =3D 1;
+> +	bcr2.bits.CLOCKMUL =3D clock_ratio_index;
+> +	safe_halt();		/* Sync */
+> +	wrmsrl(MSR_VIA_BCR2, bcr2.val);	/* Change */
+> +	halt();
+> +
+> +	/* Disable software clock multiplier */
+> +	local_irq_disable();
+> +	rdmsrl(MSR_VIA_BCR2, bcr2.val);
+> +	bcr2.bits.ESOFTBF =3D 0;
+> +	wrmsrl(MSR_VIA_BCR2, bcr2.val);
+> +	local_irq_enable();
+> +
+> +	outb(tmp_mask, 0x21);	/* restore mask */
+> +	local_irq_restore(flags);
+> +	wakeup_pci();
+> +	preempt_enable();
+> +	block_freeze_resume(0);
+> +        up(&block_subsys_sem);
+> +}
+> +
+> +
+> +static void do_powersaver(union msr_longhaul *longhaul,
+> +			unsigned int clock_ratio_index)
+> +{
+> +	unsigned long flags;
+> +	unsigned int pic1_mask, pic2_mask;
+>  	int version;
+> -	int i;
+> -	u16 pci_cmd;
+> -	u16 cmd_state[64];
+> =20
+>  	switch (cpu_model) {
+>  	case CPU_EZRA_T:
+> @@ -137,61 +270,44 @@ static void do_powersaver(union msr_long
+>  		return;
+>  	}
+> =20
+> +        down(&block_subsys_sem);
+> +	block_freeze_resume(1);
+> +	preempt_disable();
+> +	goto_sleep_pci();
+> +	local_irq_save(flags);
+> +
+> +	local_irq_disable();
+> +	pic2_mask=3Dinb(0xA1);
+> +	pic1_mask=3Dinb(0x21);	/* works on C3. save mask. */
+> +	outb(0xFF,0xA1);	/* Overkill */
+> +	outb(0xFE,0x21);	/* TMR0 only */
+> +
+>  	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
+>  	longhaul->bits.SoftBusRatio =3D clock_ratio_index & 0xf;
+>  	longhaul->bits.SoftBusRatio4 =3D (clock_ratio_index & 0x10) >> 4;
+>  	longhaul->bits.EnableSoftBusRatio =3D 1;
+>  	longhaul->bits.RevisionKey =3D 0;
+> =20
+> -	preempt_disable();
+> -	local_irq_save(flags);
+> -
+> -	/*
+> -	 * get current pci bus master state for all devices
+> -	 * and clear bus master bit
+> -	 */
+> -	dev =3D NULL;
+> -	i =3D 0;
+> -	do {
+> -		dev =3D pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+> -		if (dev !=3D NULL) {
+> -			pci_read_config_word(dev, PCI_COMMAND, &pci_cmd);
+> -			cmd_state[i++] =3D pci_cmd;
+> -			pci_cmd &=3D ~PCI_COMMAND_MASTER;
+> -			pci_write_config_word(dev, PCI_COMMAND, pci_cmd);
+> -		}
+> -	} while (dev !=3D NULL);
+> -
+> -	tmp_mask=3Dinb(0x21);	/* works on C3. save mask. */
+> -	outb(0xFE,0x21);	/* TMR0 only */
+> -	outb(0xFF,0x80);	/* delay */
+> -
+> -	safe_halt();
+> +	safe_halt();		/* Sync */
+>  	wrmsrl(MSR_VIA_LONGHAUL, longhaul->val);
+>  	halt();
+> =20
+>  	local_irq_disable();
+> =20
+> -	outb(tmp_mask,0x21);	/* restore mask */
+> -
+> -	/* restore pci bus master state for all devices */
+> -	dev =3D NULL;
+> -	i =3D 0;
+> -	do {
+> -		dev =3D pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+> -		if (dev !=3D NULL) {
+> -			pci_cmd =3D cmd_state[i++];
+> -			pci_write_config_byte(dev, PCI_COMMAND, pci_cmd);
+> -		}
+> -	} while (dev !=3D NULL);
+> -	local_irq_restore(flags);
+> -	preempt_enable();
+> -
+>  	/* disable bus ratio bit */
+>  	rdmsrl(MSR_VIA_LONGHAUL, longhaul->val);
+>  	longhaul->bits.EnableSoftBusRatio =3D 0;
+>  	longhaul->bits.RevisionKey =3D version;
+>  	wrmsrl(MSR_VIA_LONGHAUL, longhaul->val);
+> +
+> +	outb(pic2_mask,0xA1);
+> +	outb(pic1_mask,0x21);	/* restore mask */
+> +
+> +	local_irq_restore(flags);
+> +	wakeup_pci();
+> +	preempt_enable();
+> +	block_freeze_resume(0);
+> +        up(&block_subsys_sem);
+>  }
+> =20
+>  /**
+> @@ -206,7 +322,6 @@ static void longhaul_setstate(unsigned i
+>  	int speed, mult;
+>  	struct cpufreq_freqs freqs;
+>  	union msr_longhaul longhaul;
+> -	union msr_bcr2 bcr2;
+>  	static unsigned int old_ratio=3D-1;
+> =20
+>  	if (old_ratio =3D=3D clock_ratio_index)
+> @@ -241,20 +356,7 @@ static void longhaul_setstate(unsigned i
+>  	 */
+>  	case TYPE_LONGHAUL_V1:
+>  	case TYPE_LONGHAUL_V2:
+> -		rdmsrl (MSR_VIA_BCR2, bcr2.val);
+> -		/* Enable software clock multiplier */
+> -		bcr2.bits.ESOFTBF =3D 1;
+> -		bcr2.bits.CLOCKMUL =3D clock_ratio_index;
+> -		local_irq_disable();
+> -		wrmsrl (MSR_VIA_BCR2, bcr2.val);
+> -		safe_halt();
+> -
+> -		/* Disable software clock multiplier */
+> -		rdmsrl (MSR_VIA_BCR2, bcr2.val);
+> -		bcr2.bits.ESOFTBF =3D 0;
+> -		local_irq_disable();
+> -		wrmsrl (MSR_VIA_BCR2, bcr2.val);
+> -		local_irq_enable();
+> +		do_longhaul1(0, clock_ratio_index);
+>  		break;
+> =20
+>  	/*
+> diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.16=
+.18-vanilla/block/genhd.c linux-2.6.16.18/block/genhd.c
+> --- linux-2.6.16.18-vanilla/block/genhd.c	2006-05-27 15:50:01.000000000 +=
+0200
+> +++ linux-2.6.16.18/block/genhd.c	2006-05-27 15:53:13.000000000 +0200
+> @@ -16,9 +16,9 @@
+>  #include <linux/kobj_map.h>
+>  #include <linux/buffer_head.h>
+> =20
+> -static struct subsystem block_subsys;
+> +struct subsystem block_subsys;
+> =20
+> -static DECLARE_MUTEX(block_subsys_sem);
+> +DECLARE_MUTEX(block_subsys_sem);
+> =20
+>  /*
+>   * Can be deleted altogether. Later.
+> @@ -511,8 +511,10 @@ static struct kset_uevent_ops block_ueve
+>  };
+> =20
+>  /* declare block_subsys. */
+> -static decl_subsys(block, &ktype_block, &block_uevent_ops);
+> +decl_subsys(block, &ktype_block, &block_uevent_ops);
+> =20
+> +EXPORT_SYMBOL(block_subsys);
+> +EXPORT_SYMBOL(block_subsys_sem);
+> =20
+>  /*
+>   * aggregate disk stat collector.  Uses the same stats that the sysfs
+>=20
+>=20
+>=20
+> ----------------------------------------------------------------------
+> INTERIA.PL dla kobiet... >>> http://link.interia.pl/f193b
+>=20
+>=20
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
