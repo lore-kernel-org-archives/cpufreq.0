@@ -1,11 +1,12 @@
-From: "Matteo Giordano" <ilmalteo@gmail.com>
-Subject: Make overclock possible with cpufreq
-Date: Sun, 28 May 2006 22:26:56 +0200
-Message-ID: <6d24915a0605281326j597faae7u49daaf78c962e2db@mail.gmail.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Make overclock possible with cpufreq
+Date: Sun, 28 May 2006 17:22:39 -0400
+Message-ID: <20060528212239.GB5741@redhat.com>
+References: <6d24915a0605281326j597faae7u49daaf78c962e2db@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <6d24915a0605281326j597faae7u49daaf78c962e2db@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,20 +17,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Matteo Giordano <ilmalteo@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-Hi,
-I just subscribed to the list to address this issue (I think it's an *issue=
-*).
-I'm not a kernel hacker so I'm just guessing here, even if I searched
-and tried all the afternoon.
-It's not possible to use cpufreq with an overclocked CPU because the
-processor's frequencies are "hardcoded" somewhere (the BIOS or a PSB
-table?).
-So if I push my Athlon 64 3200+ to 2.4GHz the "performance" governor
-will always put it to 2GHz max, causing the overclock to be useless.
+On Sun, May 28, 2006 at 10:26:56PM +0200, Matteo Giordano wrote:
 
-Isn't really possible to take the _actual_ frequencies into cpufreq?
+ > I just subscribed to the list to address this issue (I think it's an 
+ > *issue*).
+ > I'm not a kernel hacker so I'm just guessing here, even if I searched
+ > and tried all the afternoon.
+ > It's not possible to use cpufreq with an overclocked CPU because the
+ > processor's frequencies are "hardcoded" somewhere (the BIOS or a PSB
+ > table?).
+ > So if I push my Athlon 64 3200+ to 2.4GHz the "performance" governor
+ > will always put it to 2GHz max, causing the overclock to be useless.
+ > 
+ > Isn't really possible to take the _actual_ frequencies into cpufreq?
 
-Matteo
+It's reliant upon the BIOS tables describing valid frequency/voltage pairs.
+Obviously, your BIOS has no knowledge of overclocked values.
+
+There's nothing sane we can do here. The only possible way this could
+work would be by having a mechanism to feed such pairs to the driver,
+overriding the BIOS.
+
+Patches to do this have been posted to the list in the past, but I'm
+not enthusiastic about applying them to the mainline kernel, as the
+potential for getting something wrong if you don't know what you're
+doing is huge, and this has the possibility of exposing hard-to-track
+down bugs.
+
+		Dave
+
+-- 
+http://www.codemonkey.org.uk
