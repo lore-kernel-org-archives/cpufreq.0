@@ -1,14 +1,10 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [ PATCH ] Longhaul - call suspend(PMSG_FREEZE) before and
-	resume() after
-Date: Sat, 27 May 2006 17:32:49 -0400
-Message-ID: <20060527213249.GA5366@redhat.com>
-References: <4478640A.2030001@interia.pl>
+From: Niels Borne <niels.borne@laposte.net>
+Subject: hardware limits
+Date: Sun, 28 May 2006 09:37:11 +0200
+Message-ID: <44795327.5000809@laposte.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <4478640A.2030001@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,46 +15,69 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-On Sat, May 27, 2006 at 04:36:58PM +0200, Rafa=C5=82 Bilski wrote:
+Hi there,
 
-Because of this chunk..
+I am working on a vaio laptop pcg-fr415b, using fc5 (see result of cat=20
+/proc/cpuinfo above).
+Since it is quite noisy I allowed cpuspeed at startup and this improved=20
+the situation a little bit.
+Still cpufreq-info (see details above -in french, but you can guess) gives
+hardware limits : 2.10 GHz - 2.80 GHz
+Is there any hope to go below 2.10 GHz and if yes, how ?
 
- > diff -uprN -X linux-2.6.16.18-vanilla/Documentation/dontdiff linux-2.6.1=
-6.18-vanilla/block/genhd.c linux-2.6.16.18/block/genhd.c
- > --- linux-2.6.16.18-vanilla/block/genhd.c	2006-05-27 15:50:01.000000000 =
-+0200
- > +++ linux-2.6.16.18/block/genhd.c	2006-05-27 15:53:13.000000000 +0200
- > @@ -16,9 +16,9 @@
- >  #include <linux/kobj_map.h>
- >  #include <linux/buffer_head.h>
- > =20
- > -static struct subsystem block_subsys;
- > +struct subsystem block_subsys;
- > =20
- > -static DECLARE_MUTEX(block_subsys_sem);
- > +DECLARE_MUTEX(block_subsys_sem);
- > =20
- >  /*
- >   * Can be deleted altogether. Later.
- > @@ -511,8 +511,10 @@ static struct kset_uevent_ops block_ueve
- >  };
- > =20
- >  /* declare block_subsys. */
- > -static decl_subsys(block, &ktype_block, &block_uevent_ops);
- > +decl_subsys(block, &ktype_block, &block_uevent_ops);
- > =20
- > +EXPORT_SYMBOL(block_subsys);
- > +EXPORT_SYMBOL(block_subsys_sem);
-=20
-This really should also get posted to linux-kernel, though I don't
-think people are going to be particularly enthusiastic about exposing
-these innards to modules.
+Thanks,
 
-		Dave
+Niels
 
---=20
-http://www.codemonkey.org.uk
+
+
+
+
+
+
+
+
+cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Intel(R) Celeron(R) CPU 2.80GHz
+stepping        : 9
+cpu MHz         : 2100.000
+cache size      : 128 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 mtrr pge mca cmov=20
+pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe cid xtpr
+bogomips        : 5589.50
+
+
+
+cpufreq-info
+cpufrequtils 0.4: cpufreq-info (C) Dominik Brodowski 2004
+Veuillez rapportez les erreurs et les bogues =E0 linux@brodo.de, s'il vous =
+
+plait.
+analyse du CPU 0 :
+   pilote : p4-clockmod
+   CPUs qui doivent changer de fr=E9quences en m=EAme temps : 0
+   limitation mat=E9rielle : 2.10 GHz - 2.80 GHz
+   plage de fr=E9quence : 2.10 GHz, 2.45 GHz, 2.80 GHz
+   r=E9gulateurs disponibles : userspace, performance
+   tactique actuelle : la fr=E9quence doit =EAtre comprise entre 2.10 GHz e=
+t=20
+2.80 GHz.
+                   Le r=E9gulateur "userspace" est libre de choisir la vite=
+sse
+                   dans cette plage de fr=E9quences.
+   la fr=E9quence actuelle de ce CPU est 2.10 GHz.
