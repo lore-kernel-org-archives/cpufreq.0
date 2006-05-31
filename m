@@ -1,8 +1,7 @@
-From: Holger Macht <hmacht@suse.de>
-Subject: [PATCH] Use sampling_rate_min/max if value beyond limit is written
-	to ondemand/sampling_rate
-Date: Tue, 30 May 2006 20:14:17 +0200
-Message-ID: <20060530181417.GB2374@linux-ersb>
+From: Dave Jones <davej@redhat.com>
+Subject: cpufreq & dual core CPUs.
+Date: Wed, 31 May 2006 00:26:39 -0400
+Message-ID: <20060531042639.GA8609@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
@@ -18,39 +17,51 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-If a value lower then sampling_rate_min or greater than sampling_rate_max
-is written to ondemand/sampling_rate, the request ist ignored and a write
-error is thrown. Patch takes sampling_rate_min/max into account if a value
-beyond the limit is written.
+After being prompted by akpm to look into this (he noted his builds
+were taking twice as long when cpuspeed was active on his core duo laptop),
+I did some tests on a similar spec laptop myself, and it seems that
+we have a number of shortcomings in cpufreq right now when presented
+with a multi-core CPU.
 
-This leads to consistent behaviour between ondemand/sampling_rate and the
-userspace governor scaling_setspeed interface, where one can write a
-frequency lower than scaling_min_freq and scaling_min_freq is actually
-used instead of the setting being ignored.
+This CPU has two cores in a single package, yet cpufreq doesn't
+realise this, and presents them as two separately independant scalable
+CPUs, as if they were regular SMP.
 
-Signed-off-by: Holger Macht <hmacht@suse.de>
----
- cpufreq_ondemand.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+The problems this causes are twofold.
 
---- linux-2.6.17-rc5.orig/drivers/cpufreq/cpufreq_ondemand.c	2006-05-30 14:11:38.000000000 +0200
-+++ linux-2.6.17-rc5/drivers/cpufreq/cpufreq_ondemand.c	2006-05-27 17:58:09.000000000 +0200
-@@ -155,11 +155,16 @@ static ssize_t store_sampling_rate(struc
- 	ret = sscanf (buf, "%u", &input);
- 
- 	mutex_lock(&dbs_mutex);
--	if (ret != 1 || input > MAX_SAMPLING_RATE || input < MIN_SAMPLING_RATE) {
-+	if (ret != 1) {
- 		mutex_unlock(&dbs_mutex);
- 		return -EINVAL;
- 	}
- 
-+	if (input > MAX_SAMPLING_RATE)
-+		input = MAX_SAMPLING_RATE;
-+	else if (input < MIN_SAMPLING_RATE)
-+		input = MIN_SAMPLING_RATE;
-+
- 	dbs_tuners_ins.sampling_rate = input;
- 	mutex_unlock(&dbs_mutex);
+- We get into situations where strange things happen like
+  CPU0 being at 1GHz whilst CPU1 is at 2GHz, and a foodfight
+  ensues as both cores continually readjust themselves to
+  match what the other is doing.
+  (This is actually quite amusing to watch if you configure two
+   of the gnome cpufreq applets)
+  This seems to affect both userspace daemons like cpuspeed,
+  and also (to a lesser extent) the ondemand/conservative governors.
+
+  By adding dual-core awareness to the drivers, we can make sure
+  that all cores in a single package stay in sync.
+
+- We allow the possibility for different governors on each core.
+  Ie, you can set core0 to ondemand and core1 to userspace.
+  I'm not convinced this is a good idea even on SMP, but on
+  multi-core it for sure makes no sense.
+
+  One way to fix this would be to ensure that updating the
+  governor on one core automatically updates the governor
+  on all other cores.  It does mean that the CPU agnostic drivers/cpufreq/
+  core will have to start caring about architecture specific things
+  like the core maps however.
+
+Before looking any further into why Andrews performance suffered
+so much (it aparently never shifted up from 1GHz unless he ran
+two intensive tasks, keeping both cores busy), I think getting
+the above in order makes sense.
+
+Comments?
+
+		Dave
+
+-- 
+http://www.codemonkey.org.uk
