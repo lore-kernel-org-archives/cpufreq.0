@@ -1,13 +1,12 @@
-From: Jacob Shin <jacob.w.shin@gmail.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 Subject: Re: cpufreq & dual core CPUs.
-Date: Wed, 31 May 2006 00:05:15 -0500
-Message-ID: <447D240B.6090507@gmail.com>
-References: <88056F38E9E48644A0F562A38C64FB60085E063E@scsmsx403.amr.corp.intel.com>
-	<20060531045417.GA9439@redhat.com>
+Date: Wed, 31 May 2006 07:33:34 +0200
+Message-ID: <20060531053334.GA11111@isilmar.linta.de>
+References: <88056F38E9E48644A0F562A38C64FB60085E064C@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20060531045417.GA9439@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB60085E064C@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,32 +18,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: Andrew Morton <akpm@osdl.org>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
 
-Dave Jones wrote:
+Hi,
 
-> On Tue, May 30, 2006 at 09:40:37PM -0700, Pallipadi, Venkatesh wrote:
-
-> yes, sorry for omitting that, though I'm not sure this problem
-> is unique to Intel CPUs, though powernow-k8 does seem to have
-> some awareness of the cpu_core_map
-
-Yes, powernow-k8 will populate cpufreq_policy->cpus with cpu_core_map[] in order
-to communicate to cpufreq driver that the two cores are tied together in freq,
-and voltage.
-
-> Looking at that file on my core duo laptop, I see ..
+> >That implies to me that they're separate cores no?
 > 
-> (00:47:47:davej@exile:~)$ cat /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus
-> 0
-> (00:47:54:davej@exile:~)$ cat /sys/devices/system/cpu/cpu1/cpufreq/affected_cpus
-> 1
-> 
-> That implies to me that they're separate cores no?
+> This implies software coordination is not happening here.
+> But, that is OK, as hardware or BIOS coordination can be happening.
 
-Are both cores on core-duos tied together?  Then why not populate ->cpus with both
-of the cores set?
+However, I still fail to see why hardware/BIOS coordination is in any way
+better to software coordination and why we don't use software coordination
+for speedstep-centrino. Especially as it can so easily lead to confusion.
 
--Jacob Shin
-AMD, Inc.
+	Dominik
