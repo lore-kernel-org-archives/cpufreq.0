@@ -1,12 +1,10 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH] Hardware P-state driver for AMD Opterons, etc.
-Date: Sun, 4 Jun 2006 19:18:40 +0200
-Message-ID: <20060604171840.GB25345@isilmar.linta.de>
-References: <84EA05E2CA77634C82730353CBE3A843053503D0@SAUSEXMB1.amd.com>
+From: Sebastian Witt <hasw@hasw.net>
+Subject: [PATCH] cpufreq-nforce2 divider
+Date: Sun, 04 Jun 2006 19:42:16 +0200
+Message-ID: <44831B78.6050407@hasw.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A843053503D0@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,36 +15,31 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-Hi,
+Patch against 2.6.16. Sets minimum PLL divider to 2. No negative impact when 
+tested with two nForce2 based boards. (Updates also the (C) year)
 
-On Fri, Jun 02, 2006 at 05:45:24PM -0500, Langsdorf, Mark wrote:
-> +static int cpu_family = CPU_OPTERON;
+Signed-off-by: Sebastian Witt <se.witt <at> gmx net>
+---
 
-...
+--- linux-2.6.16-gentoo-r7.orig/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c 
+2006-06-04 19:32:29.000000000 +0200
++++ linux-2.6.16-gentoo-r7/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c 
+2006-06-04 19:32:42.000000000 +0200                     @@ -1,5 +1,5 @@
+  /*
+- * (C) 2004  Sebastian Witt <se.witt@gmx.net>
++ * (C) 2004-2006  Sebastian Witt <se.witt@gmx.net>
+   *
+   *  Licensed under the terms of the GNU GPL License version 2.
+   *  Based upon reverse engineered information
+@@ -90,7 +90,7 @@
 
-> +	if (cpu_family)
-> +		return 0;
-> +
-
-...
-
-> +	if (cpu_family) {
-> +		rdmsr(MSR_PSTATE_STATUS, lo, hi);
-
-...
-
-I'd prefer it if all these if cases would be made explicit:
-
-
-	if (cpu_family == CPU_OPTERON)
-
-as that makes the code much more readable.
-
-
-Thanks,
-	Dominik
+         /* Try to calculate multiplier and divider up to 4 times */
+         while (((mul == 0) || (div == 0)) && (tried <= 3)) {
+-               for (xdiv = 1; xdiv <= 0x80; xdiv++)
++               for (xdiv = 2; xdiv <= 0x80; xdiv++)
+                         for (xmul = 1; xmul <= 0xfe; xmul++)
+                                 if (nforce2_calc_fsb(NFORCE2_PLL(xmul, xdiv)) ==
+                                     fsb + tried) {
