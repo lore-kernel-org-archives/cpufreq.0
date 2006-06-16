@@ -1,14 +1,9 @@
-From: Reimar =?iso-8859-1?Q?D=F6ffinger?=
-	<Reimar.Doeffinger@stud.uni-karlsruhe.de>
-Subject: Re: [PATCH] allow powersave as default governor
-Date: Thu, 15 Jun 2006 22:54:28 +0200
-Message-ID: <20060615205428.GA10507@rz.uni-karlsruhe.de>
-References: <CFF307C98FEABE47A452B27C06B85BB6B89BF1@hdsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6699] New: Possible Frequencies steps changed with kernel
+	upgrade in p4-clockmod
+Date: Fri, 16 Jun 2006 09:48:44 -0700
+Message-ID: <200606161648.k5GGmiuf013025@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <CFF307C98FEABE47A452B27C06B85BB6B89BF1@hdsmsx411.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,38 +14,42 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hello,
+http://bugzilla.kernel.org/show_bug.cgi?id=6699
 
-I accidentially sent this only to the author of the previous mail
-instead of the list, so another try...
+           Summary: Possible Frequencies steps changed with kernel upgrade
+                    in p4-clockmod
+    Kernel Version: 2.6.16.20
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: tkrah@fachschaft.imn.htwk-leipzig.de
 
-On Tue, Jun 13, 2006 at 03:52:01PM -0400, Brown, Len wrote:
-> >On Wed, May 31, 2006 at 07:05:30PM +0200, Reimar D?ffinger wrote:
-> >> this patch against linux 2.6.16.16 kernel adds the powersave=20
-> >governor to
-> >> the list of possible default governors.
-> >> Avoids noisy fan e.g. during fsck when no userspace governor=20
-> >> is running yet.
->=20
-> What MHz does the noisy system boot at when cpufreq is not loaded at all?
 
-2GHz (i.e. full speed), and since it is a AMD64 laptop system, that means q=
-uite
-noisy even if CPU usage is < 10 %
+Most recent kernel where this bug did not occur: 2.6.15.6
+Distribution: Debian Sarge
+Hardware Environment: Dell Power Edge 1600SC with 2800 GHz P4 Xeon HT
+Software Environment:
+Problem Description: Using the new kernel, cpufreq-info only shows:
 
-> If it boots in low-frequency-mode, then perhaps cpufreq should
-> not load any governor until it can load its governor of choice,
-> and the window where this issue is seen would go away?
+hardware limits: 2.10 GHz - 2.80 GHz
+available frequency steps: 2.10 GHz, 2.45 GHz, 2.80 GHz
 
-Not sure I understand both the question and the code, but I would expect
-that selecting "userspace" as governor would keep the frequency that the
-BIOS or whatever sets before booting.
-Oh, just to avoid a possible misunderstanding, when I said "when no
-userspace governor is running yet" I meant by "userspace governor"
-something like powernowd.
+With the 2.6.15 version it shows much more:
 
-Greetings,
-Reimar D=F6ffinger
+hardware limits: 350 MHz - 2.80 GHz
+available frequency steps: 350 MHz, 700 MHz, 1.05 GHz, 1.40 GHz, 1.75 GHz, 2.10
+GHz, 2.45 GHz, 2.80 GHz
+
+Steps to reproduce: Boot with 2.6.16.20 Kernel and watch cpufreq-info output.
+
+kind regards
+
+Torsten
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
