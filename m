@@ -1,12 +1,12 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: ondemand vs suspend.
-Date: Mon, 19 Jun 2006 15:52:59 -0700
-Message-ID: <44972ACB.2040609@goop.org>
-References: <EB12A50964762B4D8111D55B764A8454110B16@scsmsx413.amr.corp.intel.com>
+From: Ben Kevan <ben.kevan@gmail.com>
+Subject: 2.6.16.x CPUFREQ / SpeedStep-Centrino: couldn't enable Enchanced
+	SpeedStep
+Date: Mon, 19 Jun 2006 16:10:40 -0700
+Message-ID: <200606191610.40597.ben.kevan@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454110B16@scsmsx413.amr.corp.intel.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,25 +17,75 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>, pjones@redhat.com, cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: linux@brodo.de
+Cc: cpufreq@lists.linux.org.uk
 
-Pallipadi, Venkatesh wrote:
-> Yes. I am able to reproduce this 2.6.17-rc6 and trying to narrow it
-> down.
->
-> Also, there is a known issue with ondemand and resuming anyway as the
-> second CPU will not be able to resume with ondemand, but instead will go
-> back to 'default' governor on initialization. 
-> So, even with this bug fixed, we cannot suspend-resume with ondemand
-> governor. Workaround for now can be just to switch to default governor
-> before suspend and go back to ondemand after resume, using initscripts. 
->   
-I've noticed another problem, which may be related.  Sometimes after 
-resume, cpufreq seems to lose the ability to control the CPU speeds: 
-they stay at the lowest performance level, and don't change regardless 
-of what governor I set.  I'm seeing this on a T2400 Core Duo.  I'm not 
-sure if this is a speedfreq-centrino problem or cpufreq itself.
+Hi, 
 
-    J
+I copied both on this because I thought you both may be interested. My problem 
+is, my Toshiba Tecra M1 will only run at 598Mhz, and I can not use toshutils 
+or anything else to configure speedstep to run higher. Or in any other way 
+can I use it to run higher.  
+
+Below are a bunch of commands to give you an idea of what's going on. Is this 
+a bug with the 2.6.16.x build? Or is it something else that I am just 
+oblivious too (ACPI?). 
+
+Any information would be greatly appreciated.
+
+LSHESU01004839:/home/bkevan # dmesg | grep speedstep
+speedstep-centrino: couldn't enable Enhanced SpeedStep
+speedstep-centrino: couldn't enable Enhanced SpeedStep
+speedstep-centrino: couldn't enable Enhanced SpeedStep
+speedstep-centrino: couldn't enable Enhanced SpeedStep
+
+LSHESU01004839:/home/bkevan # modprobe speedstep_centrino
+FATAL: Error inserting speedstep_centrino 
+(/lib/modules/2.6.16.13-4-default/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko): 
+No such device
+LSHESU01004839:/home/bkevan # modprobe acpi_cpufreq
+FATAL: Error inserting acpi_cpufreq 
+(/lib/modules/2.6.16.13-4-default/kernel/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.ko): 
+No such device
+
+
+LSHESU01004839:/home/bkevan # cpufreq-info
+cpufrequtils 0.4: cpufreq-info (C) Dominik Brodowski 2004
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+  no or unknown cpufreq driver is active on this CPU
+LSHESU01004839:/home/bkevan # uname -r
+2.6.16.13-4-default
+
+LSHESU01004839:/home/bkevan # cat /proc/acpi/processor/C*/info
+processor id:            0
+acpi id:                 1
+bus mastering control:   yes
+power management:        yes
+throttling control:      no
+limit interface:         no
+
+LSHESU01004839:/home/bkevan # cat /proc/acpi/processor/C*/limit
+<not supported>
+
+LSHESU01004839:/home/bkevan # cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 9
+model name      : Intel(R) Pentium(R) M processor 1600MHz
+stepping        : 5
+cpu MHz         : 598.582
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov pat 
+clflush dts acpi mmx fxsr sse sse2 tm pbe est tm2
+bogomips        : 1198.30
