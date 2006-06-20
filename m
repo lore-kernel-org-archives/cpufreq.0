@@ -1,10 +1,14 @@
-From: "Marcos Tadeu" <marcos@v2r.com.br>
-Subject: Why cpuinfo_min_freq change from 300Mhz to 2100MHz
-Date: Tue, 20 Jun 2006 09:36:02 -0300 (BRT)
-Message-ID: <3062.200.234.191.25.1150806962.squirrel@w2.v2r.com.br>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: 2.6.16.x CPUFREQ / SpeedStep-Centrino: couldn't enable	Enchanced
+ SpeedStep
+Date: Tue, 20 Jun 2006 11:07:07 -0700
+Message-ID: <4498394B.3080909@goop.org>
+References: <200606191610.40597.ben.kevan@gmail.com>
+	<20060620094357.GB3700@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20060620094357.GB3700@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,111 +19,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Bruno Ducrot <ducrot@poupinou.org>
+Cc: cpufreq@lists.linux.org.uk, Ben Kevan <ben.kevan@gmail.com>, linux@brodo.de
 
-Hi!
+Bruno Ducrot wrote:
+> That's strange.  Even if there is no processor object declared onto ACPI
+> tables it should work with CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE set since
+> it's a bania.
+>   
 
-First, thanks for hours of plus batery life! :)
+This message specifically means that the CPU isn't allowing EST to be 
+enabled, even though the CPU has the capability.  I think the BIOS can 
+lock this down, like VT on later processors.  Though I can't imagine 
+why, unless the machine is being sold as a cheaper/slower system than 
+the CPU they put in it...
 
-I need use my laptop with batery. But the time up decrease. I investigate
-and see that cpuinfo_min_freq change from 300Mhz to 2100MHz, maybe because
-I upgrade the kernel version.
+What does the SMM patch do?
 
-I read that this is because a hardware bug! (???). But I use in the old
-kernel, without "visible" problems.
-
-Can anyone help or clear my mind?
-
-TIA!
-
-Some data:
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Mobile Intel(R) Celeron(R) CPU 2.40GHz
-stepping        : 9
-cpu MHz         : 2400.000
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe up cid xtpr
-bogomips        : 4800.72
-
-My kernel config:
-#
-# Processor type and features
-#
-# CONFIG_SMP is not set
-CONFIG_X86_PC=y
-CONFIG_MPENTIUM4=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_XADD=y
-CONFIG_X86_L1_CACHE_SHIFT=7
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_HPET_TIMER=y
-# CONFIG_PREEMPT_NONE is not set
-CONFIG_PREEMPT_VOLUNTARY=y
-# CONFIG_PREEMPT is not set
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_UP_IOAPIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_NONFATAL=m
-CONFIG_X86_MCE_P4THERMAL=y
-
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=m
-# CONFIG_CPU_FREQ_DEBUG is not set
-CONFIG_CPU_FREQ_STAT=m
-# CONFIG_CPU_FREQ_STAT_DETAILS is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-CONFIG_CPU_FREQ_GOV_USERSPACE=m
-CONFIG_CPU_FREQ_GOV_ONDEMAND=m
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
-
-#
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=m
-# CONFIG_X86_POWERNOW_K6 is not set
-# CONFIG_X86_POWERNOW_K7 is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-# CONFIG_X86_GX_SUSPMOD is not set
-CONFIG_X86_SPEEDSTEP_CENTRINO=m
-CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
-# CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE is not set
-CONFIG_X86_SPEEDSTEP_ICH=m
-# CONFIG_X86_SPEEDSTEP_SMI is not set
-CONFIG_X86_P4_CLOCKMOD=m
-# CONFIG_X86_CPUFREQ_NFORCE2 is not set
-# CONFIG_X86_LONGRUN is not set
-
-
--- 
-Marcos Tadeu
-V2R
+    J
