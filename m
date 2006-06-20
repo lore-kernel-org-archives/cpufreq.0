@@ -1,14 +1,10 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: 2.6.16.x CPUFREQ / SpeedStep-Centrino: couldn't enable
-	Enchanced SpeedStep
-Date: Tue, 20 Jun 2006 12:16:08 +0200
-Message-ID: <20060620101608.GC3700@poupinou.org>
-References: <200606191610.40597.ben.kevan@gmail.com>
-	<20060620094357.GB3700@poupinou.org>
+From: "Marcos Tadeu" <marcos@v2r.com.br>
+Subject: Why cpuinfo_min_freq change from 300Mhz to 2100MHz
+Date: Tue, 20 Jun 2006 09:36:02 -0300 (BRT)
+Message-ID: <3062.200.234.191.25.1150806962.squirrel@w2.v2r.com.br>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20060620094357.GB3700@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,78 +16,110 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ben Kevan <ben.kevan@gmail.com>
-Cc: cpufreq@lists.linux.org.uk, linux@brodo.de
+To: cpufreq@lists.linux.org.uk
 
-On Tue, Jun 20, 2006 at 11:43:57AM +0200, Bruno Ducrot wrote:
-> On Mon, Jun 19, 2006 at 04:10:40PM -0700, Ben Kevan wrote:
-> > Hi, 
-> > 
-> > I copied both on this because I thought you both may be interested. My problem 
-> > is, my Toshiba Tecra M1 will only run at 598Mhz, and I can not use toshutils 
-> > or anything else to configure speedstep to run higher. Or in any other way 
-> > can I use it to run higher.  
-> > 
-> > Below are a bunch of commands to give you an idea of what's going on. Is this 
-> > a bug with the 2.6.16.x build? Or is it something else that I am just 
-> > oblivious too (ACPI?). 
-> > 
-> 
-> ....
-> 
-> 
-> > LSHESU01004839:/home/bkevan # cat /proc/cpuinfo
-> > processor       : 0
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 9
-> > model name      : Intel(R) Pentium(R) M processor 1600MHz
-> > stepping        : 5
-> > cpu MHz         : 598.582
-> > cache size      : 1024 KB
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 2
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov pat 
-> > clflush dts acpi mmx fxsr sse sse2 tm pbe est tm2
-> > bogomips        : 1198.30
-> 
-> That's strange.  Even if there is no processor object declared onto ACPI
-> tables it should work with CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE set since
-> it's a bania.
-> 
+Hi!
 
-I'm wondering if actually the bios correctly has been informed that the OS
-take control of performance things (or something like such..)
+First, thanks for hours of plus batery life! :)
 
-(In that case, CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE won't help, but it
-may work with CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI set)
+I need use my laptop with batery. But the time up decrease. I investigate
+and see that cpuinfo_min_freq change from 300Mhz to 2100MHz, maybe because
+I upgrade the kernel version.
 
-Could you please test with that little patch please ?
+I read that this is because a hardware bug! (???). But I use in the old
+kernel, without "visible" problems.
 
+Can anyone help or clear my mind?
 
---- linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2006/06/20 10:09:38	1.1
-+++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2006/06/20 10:11:03
-@@ -455,7 +455,9 @@ static int centrino_cpu_init_acpi(struct
- 	}
- 
- 	/* notify BIOS that we exist */
--	acpi_processor_notify_smm(THIS_MODULE);
-+	result = acpi_processor_notify_smm(THIS_MODULE);
-+	if (result)
-+		printk(KERN_WARNING "notifying SMM bios failed\n");
- 
- 	return 0;
- 
+TIA!
+
+Some data:
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 2
+model name      : Mobile Intel(R) Celeron(R) CPU 2.40GHz
+stepping        : 9
+cpu MHz         : 2400.000
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe up cid xtpr
+bogomips        : 4800.72
+
+My kernel config:
+#
+# Processor type and features
+#
+# CONFIG_SMP is not set
+CONFIG_X86_PC=y
+CONFIG_MPENTIUM4=y
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_XADD=y
+CONFIG_X86_L1_CACHE_SHIFT=7
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_CMPXCHG64=y
+CONFIG_X86_GOOD_APIC=y
+CONFIG_X86_INTEL_USERCOPY=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_TSC=y
+CONFIG_HPET_TIMER=y
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT is not set
+CONFIG_X86_UP_APIC=y
+CONFIG_X86_UP_IOAPIC=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_NONFATAL=m
+CONFIG_X86_MCE_P4THERMAL=y
+
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=m
+# CONFIG_CPU_FREQ_DEBUG is not set
+CONFIG_CPU_FREQ_STAT=m
+# CONFIG_CPU_FREQ_STAT_DETAILS is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+CONFIG_CPU_FREQ_GOV_USERSPACE=m
+CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=m
+# CONFIG_X86_POWERNOW_K6 is not set
+# CONFIG_X86_POWERNOW_K7 is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+# CONFIG_X86_GX_SUSPMOD is not set
+CONFIG_X86_SPEEDSTEP_CENTRINO=m
+CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
+# CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE is not set
+CONFIG_X86_SPEEDSTEP_ICH=m
+# CONFIG_X86_SPEEDSTEP_SMI is not set
+CONFIG_X86_P4_CLOCKMOD=m
+# CONFIG_X86_CPUFREQ_NFORCE2 is not set
+# CONFIG_X86_LONGRUN is not set
+
 
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+Marcos Tadeu
+V2R
