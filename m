@@ -1,12 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: cpufreq & dual core CPUs.
-Date: Fri, 23 Jun 2006 08:50:14 +0200
-Message-ID: <20060623065014.GA20048@isilmar.linta.de>
-References: <88056F38E9E48644A0F562A38C64FB60085E064C@scsmsx403.amr.corp.intel.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: ondemand vs suspend.
+Date: Fri, 23 Jun 2006 15:45:22 -0700
+Message-ID: <449C6F02.7090103@goop.org>
+References: <EB12A50964762B4D8111D55B764A8454110B16@scsmsx413.amr.corp.intel.com>	<44972ACB.2040609@goop.org>
+	<20060621115413.A16324@unix-os.sc.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB60085E064C@scsmsx403.amr.corp.intel.com>
+In-Reply-To: <20060621115413.A16324@unix-os.sc.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,17 +18,15 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Dave Jones <davej@redhat.com>, pjones@redhat.com, cpufreq@lists.linux.org.uk
 
-Hi,
+Venkatesh Pallipadi wrote:
+> Does it only happen on CPU 1 or both the CPUs? What does /sys/.../cpufreq
+> look like once you get to this stuck at lowest freq state? Does 
+> scaling_available_frequencies still show all the freqs.
+>   
+Did you have a chance to look at this, or should I do more investigation?
 
-ISTR that your major point against software cooridnation of P-States is the
-cost associated with set_cpus_allowed() -- couldn't we get rid of this if
-we'd start a per-CPU thread in speedstep-centrino which takes care of
-switching frequencies? threads are cheap, AFAIK...
-
-Thanks,
-	Dominik
+    J
