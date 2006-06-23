@@ -1,12 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [RFC] sysdev_driver / cpufreq notification locking design issue.
-Date: Thu, 22 Jun 2006 21:20:25 +0200
-Message-ID: <20060622192025.GB11313@dominikbrodowski.de>
-References: <5389061B65D50446B1783B97DFDB392D015E5A3A@orsmsx411.amr.corp.intel.com>
+Subject: Re: cpufreq & dual core CPUs.
+Date: Fri, 23 Jun 2006 08:50:14 +0200
+Message-ID: <20060623065014.GA20048@isilmar.linta.de>
+References: <88056F38E9E48644A0F562A38C64FB60085E064C@scsmsx403.amr.corp.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <5389061B65D50446B1783B97DFDB392D015E5A3A@orsmsx411.amr.corp.intel.com>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB60085E064C@scsmsx403.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,19 +19,15 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk
 
 Hi,
 
-On Tue, Jun 13, 2006 at 09:57:53AM -0700, Gross, Mark wrote:
-> It seems that the attributes exposed by the system device could be move
-> somewhere else in the sysfs hierarchy easily enough.  I'm thinking under
-> /sys/devices/platform/cpufreq should be an ok place to put the
-> cpufreq-attributes.
-
-Yes, though we'd need to add a symlink for backwards compatibility unless we
-want to break every working cpufreq setup out there ;)
+ISTR that your major point against software cooridnation of P-States is the
+cost associated with set_cpus_allowed() -- couldn't we get rid of this if
+we'd start a per-CPU thread in speedstep-centrino which takes care of
+switching frequencies? threads are cheap, AFAIK...
 
 Thanks,
 	Dominik
