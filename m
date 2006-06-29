@@ -1,45 +1,98 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: ondemand vs suspend.
-Date: Wed, 28 Jun 2006 15:20:36 -0700
-Message-ID: <44A300B4.8050202@goop.org>
-References: <EB12A50964762B4D8111D55B764A84541D4F8C@scsmsx413.amr.corp.intel.com>
+From: CIJOML <cijoml@volny.cz>
+Subject: Re: cpufreq doesn't work with my Intel Pentium M processor in 2.6.17
+Date: Thu, 29 Jun 2006 10:07:57 +0200
+Message-ID: <200606291007.57323.cijoml@volny.cz>
+References: <EB12A50964762B4D8111D55B764A84541D4975@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <EB12A50964762B4D8111D55B764A84541D4F8C@scsmsx413.amr.corp.intel.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751756AbWF2IH6@vger.kernel.org>
+In-Reply-To: <EB12A50964762B4D8111D55B764A84541D4975@scsmsx413.amr.corp.intel.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="iso-8859-1"
 To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>, pjones@redhat.com, cpufreq@lists.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, "Brodowski, Dominik" <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
 
-Pallipadi, Venkatesh wrote:
-> Strange. I guess only scaling_max_freq is changing and not
-> cpuinfo_max_freq. Right?
-> Can you try stopping the applet and see whether anything changes?
-> Is the system idle while these changes happen or the load is varying
-> causing some frequency changes by conservative on CPU 0?
+Hi Pallipadi,
+
+I have created kernel bug report:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=3D6765
+
+Let me know, if you need more informations.
+
+Best regards
+
+Michal
+
+Dne sobota 24 =E8erven 2006 16:33 Pallipadi, Venkatesh napsal(a):
+> Can you send me the acpidump output from this system using the latest
+> pmtools from here.
+> http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
 >
-> I am not able to reproduce this with periodic reading of
-> scaling_cur_freq. May be soemthing else is happening from userlevel that
-> is causing this..
->   
-Sorry, I haven't got around to looking at this closely again.  However, 
-the behaviour with 2.6.17-mm3 has changed a bit.  Now on resume, the 
-cpufreq applets exit for some reason, and both CPUs end up with a max 
-speed of 1GHz.
-
-> Can you enable cpufreq.debug and capture the log. 
->   
-
-Will do.
-
-    J
+> Better still, if you can open a bugzilla at http://bugme.osdl.org
+> That will help tracking this one better.
+>
+> Thanks,
+> Venki
+>
+> >-----Original Message-----
+> >From: CIJOML [mailto:cijoml@volny.cz]
+> >Sent: Wednesday, June 21, 2006 11:34 PM
+> >To: Pallipadi, Venkatesh; linux-kernel@vger.kernel.org;
+> >Brodowski, Dominik; cpufreq@lists.linux.org.uk
+> >Subject: Re: cpufreq doesn't work with my Intel Pentium M
+> >processor in 2.6.17
+> >
+> >Hi Pallipadi,
+> >
+> >no change:
+> >
+> >#find /sys -name *freq*
+> >/sys/module/acpi_cpufreq
+> >
+> >no tuning options as you can see
+> >module is compiled into kernel
+> >
+> >Michal
+> >
+> >Dne st=F8eda 21 =E8erven 2006 21:27 jste napsal(a):
+> >> >-----Original Message-----
+> >> >From: linux-kernel-owner@vger.kernel.org
+> >> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of CIJOML
+> >> >Sent: Sunday, June 18, 2006 11:06 PM
+> >> >To: linux-kernel@vger.kernel.org
+> >> >Subject: cpufreq doesn't work with my Intel Pentium M
+> >> >processor in 2.6.17
+> >> >
+> >> >Hello team,
+> >> >
+> >> >I compiled 2.6.17 and now I see, that cpufreq doesn't work
+> >> >with 2.6.17 (2.6.16
+> >> >was fine).
+> >> >
+> >> >My cpu:
+> >> >Intel(R) Pentium(R) M processor 1.70GHz
+> >> >cpu family 6
+> >> >model 13
+> >> >stepping 6
+> >> >
+> >> >Cpufreq doesn't start and also /sys files are not present/created
+> >> >
+> >> >My config:
+> >> >[*] CPU Frequency scaling
+> >> ><*> CPU frequency translation statistics
+> >> >[*] CPU frequency translation statistics details
+> >> >governors: <*> performance, powersave, ondemand, conservative
+> >> ><*> Intel Enhanced SpeedStep
+> >> >[*] Use ACPI tables to decode valid frequency/voltage pairs
+> >> >[*] Built-in tables for Banias CPUs
+> >>
+> >> Can you also try
+> >> [*] ACPI Processor P-states driver
+> >>
+> >> In the same config menu.
+> >>
+> >> Thanks,
+> >> Venki
