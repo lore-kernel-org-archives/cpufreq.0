@@ -1,12 +1,13 @@
 From: Dave Jones <davej@redhat.com>
 Subject: Re: [PATCH 4/4] minor optimizations to ondemand governor
-Date: Fri, 30 Jun 2006 01:37:53 -0400
-Message-ID: <20060630053753.GE32729@redhat.com>
+Date: Fri, 30 Jun 2006 01:47:01 -0400
+Message-ID: <20060630054701.GG32729@redhat.com>
 References: <20060628135217.E12989@unix-os.sc.intel.com>
+	<20060630053753.GE32729@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060628135217.E12989@unix-os.sc.intel.com>
+In-Reply-To: <20060630053753.GE32729@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,40 +23,24 @@ Content-Transfer-Encoding: 7bit
 To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Cc: alexey.y.starikovskiy@intel.com, cpufreq <cpufreq@www.linux.org.uk>, Len Brown <lenb@unix-os.sc.intel.com>
 
-On Wed, Jun 28, 2006 at 01:52:18PM -0700, Venkatesh Pallipadi wrote:
+On Fri, Jun 30, 2006 at 01:37:53AM -0400, Dave Jones wrote:
 
- > Index: linux-2.6.17/drivers/cpufreq/cpufreq_ondemand.c
- > ===================================================================
- > --- linux-2.6.17.orig/drivers/cpufreq/cpufreq_ondemand.c
- > +++ linux-2.6.17/drivers/cpufreq/cpufreq_ondemand.c
- > @@ -17,23 +17,11 @@
- >  
- >  #include <linux/kernel.h>
- >  #include <linux/module.h>
- > -#include <linux/smp.h>
- >  #include <linux/init.h>
- > -#include <linux/interrupt.h>
- > -#include <linux/ctype.h>
- >  #include <linux/cpu.h>
- >  #include <linux/cpufreq.h>
- > -#include <linux/sysctl.h>
- > -#include <linux/types.h>
- > -#include <linux/fs.h>
- > -#include <linux/sysfs.h>
- > -#include <linux/sched.h>
- > -#include <linux/kmod.h>
- > -#include <linux/workqueue.h>
- >  #include <linux/jiffies.h>
- >  #include <linux/kernel_stat.h>
- > -#include <linux/percpu.h>
- > -#include <linux/mutex.h>
+ > This gave me rejects against Linus tree for some reason.
+ > It's wrong anyway, as this file uses mutex's, and I'd rather
+ > not have to rely on us pulling in mutex.h indirectly through
+ > some other include file chain.
+ > 
+ > I fixed it up by hand.
 
-This gave me rejects against Linus tree for some reason.
-It's wrong anyway, as this file uses mutex's, and I'd rather
-not have to rely on us pulling in mutex.h indirectly through
-some other include file chain.
+One downside of this patch btw, is that it now increases the
+delta between ondemand and conservative a little, which makes
+applying the same patch to both a bit more painful.
 
-I fixed it up by hand.
+Care to do a resync sometime ?
+
+Longer term, I'd really like to see conservative & ondemand
+sharing more code as a separate helper .o file. They're similar
+in so many ways, it seems silly to duplicate so much code.
 
 		Dave
 
