@@ -1,11 +1,8 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: [PATCH 4/4] minor optimizations to ondemand governor
-Date: Fri, 30 Jun 2006 03:33:39 -0400
-Message-ID: <CFF307C98FEABE47A452B27C06B85BB6E16653@hdsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6300] speedstep-ich driver oopses on resume
+Date: Fri, 30 Jun 2006 04:06:03 -0700
+Message-ID: <200606301106.k5UB637B004221@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,18 +13,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>, cpufreq <cpufreq@www.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-=20
->Longer term, I'd really like to see conservative & ondemand
->sharing more code as a separate helper .o file. They're similar
->in so many ways, it seems silly to duplicate so much code.
+http://bugzilla.kernel.org/show_bug.cgi?id=6300
 
-What value does cpufreq_conservative.c add over ondemand?
+pavel@suse.cz changed:
 
-Are there some workloads we can measure to prove that
-cpufreq_conservative.c should, or should-not exist?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEEDINFO                    |RESOLVED
+         Resolution|                            |CODE_FIX
 
--Len
+
+
+------- Additional Comments From pavel@suse.cz  2006-06-30 04:03 -------
+Original submitter reports that problems are fixed in 2.6.17.1 .
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
