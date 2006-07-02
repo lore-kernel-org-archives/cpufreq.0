@@ -1,36 +1,56 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Suspend to RAM regression tracked down
-Date: Sun, 02 Jul 2006 11:06:24 -0700
-Message-ID: <44A80B20.1090702@goop.org>
-References: <1151837268.5358.10.camel@idefix.homelinux.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Longhaul - Use hardware support
+Date: Sun, 2 Jul 2006 17:02:48 -0400
+Message-ID: <20060702210248.GD14292@redhat.com>
+References: <44A831D8.7040902@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964848AbWGBSGQ@vger.kernel.org>
-In-Reply-To: <1151837268.5358.10.camel@idefix.homelinux.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <44A831D8.7040902@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jean-Marc Valin <Jean-Marc.Valin@USherbrooke.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
 
-Jean-Marc Valin wrote:
-> A while ago, I reported a suspend to RAM regression (fail to resume). I
-> have since then tracked down the regression to the changes between
-> 2.6.12-rc5-git5 and 2.6.12-rc5-git6. On my laptop, I have only been able
-> to reproduce the problem with the ondemand cpufreq governor, but I've
-> head of another user with the same (Dell D600) laptop having problem
-> with the userspace governor as well. All the details are actually
-> http://bugzilla.kernel.org/show_bug.cgi?id=6166 but it seems like it's
-> being ignored. It's currently assigned to the ACPI category, but maybe
-> it belongs to cpufreq? Anyone can help here?
->   
+On Sun, Jul 02, 2006 at 10:51:36PM +0200, Rafa=C5=82 Bilski wrote:
+ >=20
+ > Changes in longhaul.h:
+ > - clock tables merged - differences are little, "longhaul"
+ > will do errata for detected CPU,
+ > - eblcr tables merged - reason above,
+ > - format of voltage tables changed,
+ > - added mobile vrm.
+ >=20
+ > Changes in longhaul.c:
+ > - most important - now C3 state is causing transition,
+ > - code resopnsible for clearing "bus master" bit removed,
+ > - protect bcr2 transition in the same way as longhaul,
+ > - check if Longhaul MSR is present, don't assume that this
+ > stepping have this MSR, and other don't,
+ > - voltage scaling added. By default disabled because is=20
+ > untested. Looks like processors on Epia mainboards don't
+ > support voltage scaling,
+ > - some FSB scaling compatibility,
+ > - some minor changes.
 
-There was a race in ondemand and conservative which made them lock up on 
-resume (possibly only on SMP systems though).  There's a patch for that 
-in current -mm, but I suspect there's another problem (still haven't had 
-any time to track it down).
+Please split this up into easy-to-review single-change-per-diff
+patchset.  This way if it becomes easier to review, and also
+if there are any objectionable parts, I can drop those whilst
+still applying the non-contentious parts.
 
-The workaround is to switch to one of the performance/powersave/user 
-governors just before suspend, and restore the governor on resume.
+Thanks,
 
-    J
+		Dave
+
+--=20
+http://www.codemonkey.org.uk
