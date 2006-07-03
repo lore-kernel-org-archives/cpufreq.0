@@ -1,7 +1,7 @@
 From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Re: [PATCH] Longhaul - There are limits
-Date: Mon, 03 Jul 2006 20:37:47 +0200
-Message-ID: <44A963FB.7040302@interia.pl>
+Date: Mon, 03 Jul 2006 21:14:46 +0200
+Message-ID: <44A96CA6.60703@interia.pl>
 References: <44A8A894.7020907@interia.pl> <20060703141148.GK14292@redhat.com>
 	<44A93F07.3020905@interia.pl> <20060703165220.GM14292@redhat.com>
 Mime-Version: 1.0
@@ -25,15 +25,13 @@ Cc: cpufreq@lists.linux.org.uk
 > [...]
 > I wonder if this could be solved with something as trivial as..
 > [...]
+>=20
+> 		Dave
 
-I just found this:
-"The local APIC is enabled at boot-time and can be disabled by=20
-clearing bit 11 of IA32_APIC_BASE_MSR (the CPU then receives its=20
-interrupts directly from a 8259-compatible PIC."
-So simple?
+It is. Please ignore previous patches. Changing code.
 
 Rafa=B3
 
-
 ------------------------------------------------------------------------
-Interaktywne mapy miast na http://map24.interia.pl
+Znajd=BC kr=F3tsz=B1 drog=EA do pracy!
+http://map24.interia.pl - interaktywny planer podr=F3=BFy.
