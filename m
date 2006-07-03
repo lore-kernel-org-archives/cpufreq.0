@@ -1,26 +1,49 @@
-From: Jean-Marc Valin <Jean-Marc.Valin@USherbrooke.ca>
-Subject: Re: Suspend to RAM regression tracked down
-Date: Mon, 03 Jul 2006 08:52:44 +1000
-Message-ID: <1151880764.5358.32.camel@idefix.homelinux.org>
-References: <1151837268.5358.10.camel@idefix.homelinux.org>
-	 <44A80B20.1090702@goop.org>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: [PATCH] Longhaul - There are limits
+Date: Mon, 03 Jul 2006 07:18:12 +0200
+Message-ID: <44A8A894.7020907@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751016AbWGBWw5@vger.kernel.org>
-In-Reply-To: <44A80B20.1090702@goop.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk
 
-> There was a race in ondemand and conservative which made them lock up on 
-> resume (possibly only on SMP systems though).  There's a patch for that 
-> in current -mm, but I suspect there's another problem (still haven't had 
-> any time to track it down).
+Changes in Kconfig:
+1. ACPI_PROCESSOR - next patch need ACPI C3 state working,
+2. !X86_UP_APIC - (un)patched "longhaul" isn't APIC compatible,
+3. !SMP - (un)patched "longhaul" isn't SMP compatible. First=20
+step would be APIC support. Second - per CPU private data.
 
-Any link to the patch and the thread about the problem (if any)? Also,
-was the race introduced in 2.6.12-rc5-git6? If not, it's a completely
-different problem because my machine worked fine with 2.6.12-rc5-git5.
+Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
 
-	Jean-Marc
+---
+
+--- linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/Kconfig.orig	2006-06-18=
+ 03:49:35.000000000 +0200
++++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-07-02 19:4=
+8:40.000000000 +0200
+@@ -202,7 +202,7 @@ config X86_LONGRUN
+ config X86_LONGHAUL
+ 	tristate "VIA Cyrix III Longhaul"
+ 	select CPU_FREQ_TABLE
+-	depends on BROKEN
++	depends on !SMP && !X86_UP_APIC && ACPI_PROCESSOR
+ 	help
+ 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
+ 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
+
+
+------------------------------------------------------------------------
+Wyje=BFd=BFasz na wakacje? Zaplanuj tras=EA z map24.=20
+http://map24.interia.pl
