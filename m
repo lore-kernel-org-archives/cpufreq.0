@@ -1,14 +1,13 @@
-From: Dave Jones <davej@redhat.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Re: [PATCH] Longhaul - There are limits
-Date: Mon, 3 Jul 2006 12:52:20 -0400
-Message-ID: <20060703165220.GM14292@redhat.com>
+Date: Mon, 03 Jul 2006 19:39:32 +0200
+Message-ID: <44A95654.7000204@interia.pl>
 References: <44A8A894.7020907@interia.pl> <20060703141148.GK14292@redhat.com>
-	<44A93F07.3020905@interia.pl>
+	<44A93F07.3020905@interia.pl> <20060703165220.GM14292@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <44A93F07.3020905@interia.pl>
+In-Reply-To: <20060703165220.GM14292@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,55 +18,51 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk
 
-On Mon, Jul 03, 2006 at 06:00:07PM +0200, Rafa=C5=82 Bilski wrote:
+>  > It is good idea, but I think there should be check for APIC too,=20
+>  > but I don't know how to make it. !X86_UP_APIC is for non SMP=20
+>  > kernels only. It is possible that in this case there will be=20
+>  > SMP kernel running on single processor with APIC enabled.=20
+>  > I don't know much about APIC, but as far I know we are poking=20
+>  > PIC registers direcly and in such case not all interrupts will
+>  > be disabled.
+>=20
+> I wonder if this could be solved with something as trivial as..
+>=20
+> 	if (cpu_has_apic)
+> 		disable_local_APIC()
+>=20
+> 	...
+>=20
+> 	if (cpu_has_apic)
+> 		enable_local_APIC()
+> [...]
 
- > > It's not unfeasible for an SMP kernel to be run on UP hardware,
- > > (and several distros are shipping SMP kernels as default)
- > > so I'm in two minds about removing the !SMP check, and making it be a
- > >=20
- > > 	if (num_online_cpus() > 1)
- > > 		return -ENODEV;
- > >=20
- > > in the init routine.
- > >=20
- > > Thoughts?
- > >=20
- > > 		Dave
- > >=20
- >=20
- > It is good idea, but I think there should be check for APIC too,=20
- > but I don't know how to make it. !X86_UP_APIC is for non SMP=20
- > kernels only. It is possible that in this case there will be=20
- > SMP kernel running on single processor with APIC enabled.=20
- > I don't know much about APIC, but as far I know we are poking=20
- > PIC registers direcly and in such case not all interrupts will
- > be disabled.
+Wow! But I don't see this symbols exported to modules.
+There are functions lapic_suspend / lapic_resume in apic dev=20
+interface, but do this functions do what we need?
 
-I wonder if this could be solved with something as trivial as..
+> We should probably also avoid touching the PIC if we're in APIC mode
+> with something like..
+>=20
+>     if (pic_mode =3D=3D 1) {
+> 		...
+> 		PIC poking goes here..
+> 	}
+>=20
+> (Will also need to EXPORT_SYMBOL(pic_mode) from mpparse.c)
+>=20
+> 		Dave
+>=20
 
-	if (cpu_has_apic)
-		disable_local_APIC()
+We really need to touch PIC. If we can't then we can't change frequency.
 
-	...
+Rafa=B3
 
-	if (cpu_has_apic)
-		enable_local_APIC()
 
-We should probably also avoid touching the PIC if we're in APIC mode
-with something like..
-
-    if (pic_mode =3D=3D 1) {
-		...
-		PIC poking goes here..
-	}
-
-(Will also need to EXPORT_SYMBOL(pic_mode) from mpparse.c)
-
-		Dave
-
---=20
-http://www.codemonkey.org.uk
+------------------------------------------------------------------------
+Wyje=BFd=BFasz na wakacje? Zaplanuj tras=EA z map24.=20
+http://map24.interia.pl
