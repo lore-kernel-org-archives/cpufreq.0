@@ -1,9 +1,7 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - There are limits
-Date: Tue, 04 Jul 2006 17:50:57 +0200
-Message-ID: <44AA8E61.7030807@interia.pl>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6793] New: AMD K8 driver with C'n'Q enabled hangs the system
+Date: Wed, 5 Jul 2006 01:28:52 -0700
+Message-ID: <200607050828.k658SqK7005056@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,73 +13,47 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hello!
+http://bugzilla.kernel.org/show_bug.cgi?id=6793
 
-There is no need to worry about local APIC.
-There is need to worry about I/O APIC, because I/O APIC=20
-is replacing good old 8259. Acording to Nehemiah datasheet VIA is=20
-using 3-wire bus to connect local APIC to I/O APIC.
+           Summary: AMD K8 driver with C'n'Q enabled hangs the system
+    Kernel Version: 2.6.17
+            Status: NEW
+          Severity: blocking
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: t.artem@mailcity.com
 
-"[...] When IA32_APIC_BASE[11] is set to 0, processor APICs based on the 3-=
-wire APIC
- bus cannot be generally re-enabled until a system hardware reset. The 3-wi=
-re bus
- looses track of arbitration that would be necessary for complete re-enabli=
-ng. Certain
- (local) APIC functionality can be enabled. [...]"
 
-So we must set disable bit for each interrupt in I/O APIC registers.=20
-Same situation as for PIC - we must poke registers direcly.
-How to do this? I don't know. So at the moment it is better=20
-to fail.
+It's almost impossible to reach any AMD engineers via AMD's website so I post
+this bug report here. This problem is related to both Linux and Windows AMD K8
+CPU drivers.
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
+My hardware configuration is the following:
+CPU: AMD Sempron 3400+ Socket 754
+RAM: 2x512 Corsair 2,5-3-3-8@1T
+MB: GigaByte K8NS Pro (nForce3 250GB chipset)
 
----
+The problem: Upon enabling cool'n'quite technology via K8 driver as soon as the
+first cpu frequency change occurs my system hangs up completely. I was trying to
+solve this problem by weakening memory timings up to 4-4-4-10@2T also I've tried
+to put memory modules in all possible memory slots but all in vain.
 
-diff -uprN -X linux-2.6.17-git20-vanilla/Documentation/dontdiff linux-2.6.1=
-7-git20-vanilla/arch/i386/kernel/cpu/cpufreq/Kconfig linux-2.6.17-git20/arc=
-h/i386/kernel/cpu/cpufreq/Kconfig
---- linux-2.6.17-git20-vanilla/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-06=
--18 03:49:35.000000000 +0200
-+++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-07-04 16:0=
-3:36.000000000 +0200
-@@ -202,7 +202,7 @@ config X86_LONGRUN
- config X86_LONGHAUL
- 	tristate "VIA Cyrix III Longhaul"
- 	select CPU_FREQ_TABLE
--	depends on BROKEN
-+	depends on ACPI_PROCESSOR
- 	help
- 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
- 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
-diff -uprN -X linux-2.6.17-git20-vanilla/Documentation/dontdiff linux-2.6.1=
-7-git20-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c linux-2.6.17-git20/=
-arch/i386/kernel/cpu/cpufreq/longhaul.c
---- linux-2.6.17-git20-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006=
--07-02 19:41:52.000000000 +0200
-+++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-04 1=
-7:11:21.000000000 +0200
-@@ -534,6 +534,15 @@ static int __init longhaul_cpu_init(stru
- 	char *cpuname=3DNULL;
- 	int ret;
-=20
-+#ifdef CONFIG_SMP
-+	if (num_online_cpus() > 1)
-+		return -ENODEV;
-+#endif
-+#ifdef CONFIG_X86_IO_APIC
-+	if (cpu_has_apic)
-+		return -ENODEV;
-+#endif
-+
- 	switch (c->x86_model) {
- 	case 6:
- 		cpu_model =3D CPU_SAMUEL;
+Suddenly I've found a nice Windows utility RMClock which CAN change CPU
+frequency without hangings. But it's only possible if I load "Registered DIMMs"
+timer settings. These are:
 
-------------------------------------------------------------------------
-Interaktywne mapy miast na http://map24.interia.pl/
+Good Phase Error: 100us
+Clock Ramp Hysteresis: 2000ns
+HTT Clock PLL Lock Counter: 100us
+
+With these settings everything works fine.
+
+So my question is: Is it possible to implement these settings in Linux driver
+via powernow-k8 module options?
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
