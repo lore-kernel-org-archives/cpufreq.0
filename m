@@ -1,126 +1,56 @@
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 1/2] cpufreq: add __find_governor helper and clean up some
- error handling
-Date: Thu, 06 Jul 2006 12:30:26 -0700
-Message-ID: <44AD64D2.5070504@goop.org>
+Subject: [PATCH 2/2] cpufreq: demand load governor modules
+Date: Thu, 06 Jul 2006 12:32:01 -0700
+Message-ID: <44AD6531.7050803@goop.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750741AbWGFTaZ@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Adds a __find_governor() helper function to look up a governor by
-name.  Also restructures some error handling to conform to the
-"single-exit" model which is generally preferred for kernel code.
+Demand-load cpufreq governor modules if needed.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@goop.org>
 
 ---
- drivers/cpufreq/cpufreq.c |   59 ++++++++++++++++++++++++++-------------------
- 1 file changed, 35 insertions(+), 24 deletions(-)
+ drivers/cpufreq/cpufreq.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
 
-diff -r 46ca283d1fe1 drivers/cpufreq/cpufreq.c
---- a/drivers/cpufreq/cpufreq.c	Mon Jul 03 13:37:39 2006 -0700
-+++ b/drivers/cpufreq/cpufreq.c	Wed Jul 05 22:26:52 2006 -0700
-@@ -284,39 +284,52 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_transit
-  *                          SYSFS INTERFACE                          *
-  *********************************************************************/
- 
-+static struct cpufreq_governor *__find_governor(const char *str_governor)
-+{
-+	struct cpufreq_governor *t;
-+	
-+	list_for_each_entry(t, &cpufreq_governor_list, governor_list)
-+		if (!strnicmp(str_governor,t->name,CPUFREQ_NAME_LEN))
-+			return t;
-+
-+	return NULL;
-+}
-+
- /**
-  * cpufreq_parse_governor - parse a governor string
-  */
- static int cpufreq_parse_governor (char *str_governor, unsigned int *policy,
- 				struct cpufreq_governor **governor)
- {
-+	int err = -EINVAL;
-+
- 	if (!cpufreq_driver)
--		return -EINVAL;
-+		goto out;
-+
- 	if (cpufreq_driver->setpolicy) {
- 		if (!strnicmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
- 			*policy = CPUFREQ_POLICY_PERFORMANCE;
--			return 0;
-+			err = 0;
- 		} else if (!strnicmp(str_governor, "powersave", CPUFREQ_NAME_LEN)) {
- 			*policy = CPUFREQ_POLICY_POWERSAVE;
--			return 0;
-+			err = 0;
- 		}
--		return -EINVAL;
--	} else {
-+	} else if (cpufreq_driver->target) {
- 		struct cpufreq_governor *t;
-+
+diff -r 4650553b3f11 drivers/cpufreq/cpufreq.c
+--- a/drivers/cpufreq/cpufreq.c	Wed Jul 05 15:21:25 2006 -0700
++++ b/drivers/cpufreq/cpufreq.c	Wed Jul 05 15:25:52 2006 -0700
+@@ -320,6 +320,23 @@ static int cpufreq_parse_governor (char 
  		mutex_lock(&cpufreq_governor_mutex);
--		if (!cpufreq_driver || !cpufreq_driver->target)
--			goto out;
--		list_for_each_entry(t, &cpufreq_governor_list, governor_list) {
--			if (!strnicmp(str_governor,t->name,CPUFREQ_NAME_LEN)) {
--				*governor = t;
--				mutex_unlock(&cpufreq_governor_mutex);
--				return 0;
--			}
+ 
+ 		t = __find_governor(str_governor);
 +
-+		t = __find_governor(str_governor);
++		if (t == NULL) {
++			char *name = kasprintf(GFP_KERNEL, "cpufreq_%s", str_governor);
 +
-+		if (t != NULL) {
-+			*governor = t;
-+			err = 0;
- 		}
--out:
++			if (name) {
++				int ret;
 +
- 		mutex_unlock(&cpufreq_governor_mutex);
- 	}
--	return -EINVAL;
-+  out:
-+	return err;
- }
++				mutex_unlock(&cpufreq_governor_mutex);
++				ret = request_module(name);
++				mutex_lock(&cpufreq_governor_mutex);
++
++				if (ret == 0)
++					t = __find_governor(str_governor);
++			}
++
++			kfree(name);
++		}
  
- 
-@@ -1273,23 +1286,21 @@ EXPORT_SYMBOL_GPL(cpufreq_governor);
- 
- int cpufreq_register_governor(struct cpufreq_governor *governor)
- {
--	struct cpufreq_governor *t;
-+	int err;
- 
- 	if (!governor)
- 		return -EINVAL;
- 
- 	mutex_lock(&cpufreq_governor_mutex);
- 
--	list_for_each_entry(t, &cpufreq_governor_list, governor_list) {
--		if (!strnicmp(governor->name,t->name,CPUFREQ_NAME_LEN)) {
--			mutex_unlock(&cpufreq_governor_mutex);
--			return -EBUSY;
--		}
--	}
--	list_add(&governor->governor_list, &cpufreq_governor_list);
-+	err = -EBUSY;
-+	if (__find_governor(governor->name) == NULL) {
-+		err = 0;
-+		list_add(&governor->governor_list, &cpufreq_governor_list);
-+	}
- 
- 	mutex_unlock(&cpufreq_governor_mutex);
--	return 0;
-+	return err;
- }
- EXPORT_SYMBOL_GPL(cpufreq_register_governor);
- 
+ 		if (t != NULL) {
+ 			*governor = t;
