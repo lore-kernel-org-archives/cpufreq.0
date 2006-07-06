@@ -1,7 +1,7 @@
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 2/2] cpufreq: demand load governor modules
-Date: Thu, 06 Jul 2006 12:32:01 -0700
-Message-ID: <44AD6531.7050803@goop.org>
+Subject: Race in cpufreq_add_dev()?
+Date: Thu, 06 Jul 2006 12:35:37 -0700
+Message-ID: <44AD6609.1080604@goop.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -16,41 +16,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: cpufreq@lists.linux.org.uk
 
-Demand-load cpufreq governor modules if needed.
+cpufreq_add_dev contains the test:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@goop.org>
+#ifdef CONFIG_SMP
+	/* check whether a different CPU already registered this
+	 * CPU because it is in the same boat. */
+	policy = cpufreq_cpu_get(cpu);
+	if (unlikely(policy)) {
+		cpufreq_cpu_put(policy);
+		cpufreq_debug_enable_ratelimit();
+		return 0;
+	}
+#endif
 
----
- drivers/cpufreq/cpufreq.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+I don't see what prevents two CPUs from racing through here.  Both could 
+perform this test and find that there's no policy for the CPU, and then 
+both will attempt to add it.  Or is there something else which 
+serializes multiple CPUs through this code?
 
-
-diff -r 4650553b3f11 drivers/cpufreq/cpufreq.c
---- a/drivers/cpufreq/cpufreq.c	Wed Jul 05 15:21:25 2006 -0700
-+++ b/drivers/cpufreq/cpufreq.c	Wed Jul 05 15:25:52 2006 -0700
-@@ -320,6 +320,23 @@ static int cpufreq_parse_governor (char 
- 		mutex_lock(&cpufreq_governor_mutex);
- 
- 		t = __find_governor(str_governor);
-+
-+		if (t == NULL) {
-+			char *name = kasprintf(GFP_KERNEL, "cpufreq_%s", str_governor);
-+
-+			if (name) {
-+				int ret;
-+
-+				mutex_unlock(&cpufreq_governor_mutex);
-+				ret = request_module(name);
-+				mutex_lock(&cpufreq_governor_mutex);
-+
-+				if (ret == 0)
-+					t = __find_governor(str_governor);
-+			}
-+
-+			kfree(name);
-+		}
- 
- 		if (t != NULL) {
- 			*governor = t;
+    J
