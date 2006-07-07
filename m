@@ -1,43 +1,81 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Suspend to RAM regression tracked down
-Date: Fri, 7 Jul 2006 12:21:52 -0400
-Message-ID: <20060707162152.GB3223@redhat.com>
-References: <1151837268.5358.10.camel@idefix.homelinux.org> <44A80B20.1090702@goop.org> <1152271537.5163.4.camel@idefix.homelinux.org>
+From: Scott Lampert <scott@lampert.org>
+Subject: Re: [discuss] Re: [PATCH] Allow all Opteron processors to change
+ pstate at same time
+Date: Fri, 07 Jul 2006 11:14:57 -0700
+Message-ID: <44AEA4A1.3050601@lampert.org>
+References: <Pine.LNX.4.64.0607061519040.9066@solonow.amd.com>
+	<p73fyhdpqe1.fsf@verdi.suse.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932189AbWGGQWO@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1152271537.5163.4.camel@idefix.homelinux.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Marc Valin <Jean-Marc.Valin@USherbrooke.ca>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <p73fyhdpqe1.fsf@verdi.suse.de>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Cc: discuss@x86-64.org, cpufreq@lists.linux.org.uk
 
-On Fri, Jul 07, 2006 at 09:25:37PM +1000, Jean-Marc Valin wrote:
- > > There was a race in ondemand and conservative which made them lock up on 
- > > resume (possibly only on SMP systems though).  There's a patch for that 
- > > in current -mm, but I suspect there's another problem (still haven't had 
- > > any time to track it down).
- > 
- > OK, I tried the patch with 2.6.17 and it didn't work. My laptop failed
- > to resume on the first try, so it must be something else. Could someone
- > actually have a look at the changes in 2.6.12-rc5-git6 (which happen to
- > be cpufreq-related)? I spend months pinpointing the problem to that
- > version (it's takes several days to reproduce). I'd appreciate if
- > someone could at least have a look at what changed there and maybe fix
- > it.
+As an aside, is this what the "AMD Dual-Core Optimizer" driver located at:
 
-Can you show /proc/cpuinfo for the affected system ?
-If it's 15/3/4 or 15/4/1, that would explain why this kernel,
-as this was when support for those models got introduced to
-speedstep-centrino.
+http://www.amd.com/us-en/Processors/TechnicalResources/0,,30_182_871_13118,00.html
 
-If it's not that, there is a pretty large delta in the ondemand
-governor in this update, but I don't see anything blindlingly
-obvious from looking over it.
+does for that other OS?  Does this solution work there?
+	-Scott
 
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+Andi Kleen wrote:
+> "Mark Langsdorf" <mark.langsdorf@amd.com> writes:
+> 
+> [cc'ing back to discuss and cpufreq]
+> 
+>> The current generation of Opteron processors do not provide a frequency 
+>> independent TSC.  This causes wild gettimeofday skew on systems that 
+>> enable cpufreq while using TSC as a gtod source.
+>>
+>> This patch provides a workaround by changing all processors to the same 
+>> frequency at the same time, so that the TSC on each processor never 
+>> increments at a different rate than the TSC on another processor.
+>>
+>> the "powernow-k8.tscsync=1" options enables simeltameous transitions.  
+>> Other options are necessary to force the use of TSC as a gtod source.
+>>
+>> This patch should apply cleanly to the 2.6.18-rc1 kernel.
+> 
+> Your patch seems to be ^M damaged.
+> 
+> I'm still dubious if the result is really correct if the hardware
+> wasn't designed to guarantee synchronous TSC operation.
+> 
+> Can you do the following test please? 
+> 
+> - Set this option
+> - Let the system run for let's say a day or two with some freq transitions
+> and varying loads
+> [Better would be to let two systems run in this way to compare]
+> - Then hotunplug all the CPUs >0 with
+> for i in /sys/devices/system/cpu/cpu*/online ; do echo 0 > $i ; done
+> - Wait a bit 
+> - Restart them again with 
+> for i in /sys/devices/system/cpu/cpu*/online ; do echo 1 > $i ; done
+> 
+> The kernel should now print the results of the TSC resync for the
+> replugged CPUs with output like this
+> 
+> CPU N: Syncing TSC to CPU 0.
+> CPU N: synchronized TSC with CPU 0 (last diff XXX cycles, maxerr YYY cycles)
+> 
+> How do these numbers look like, also compared to the original boot
+> output?
+> 
+> If the cycles diverge more between the different CPUs it would be a bad sign. 
+> It would mean that the error would add up over longer runtime
+> and timing would get more and more unstable.
+> 
+> -Andi
+> 
