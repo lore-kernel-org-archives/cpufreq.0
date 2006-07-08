@@ -1,49 +1,38 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] X86_GX_SUSPMOD must depend on PCI
-Date: Sat, 8 Jul 2006 22:20:26 +0200
-Message-ID: <20060708202026.GF5020@stusta.de>
+From: Jean-Marc Valin <Jean-Marc.Valin@USherbrooke.ca>
+Subject: Re: Suspend to RAM regression tracked down
+Date: Sun, 09 Jul 2006 08:55:02 +1000
+Message-ID: <1152399303.14453.29.camel@idefix.homelinux.org>
+References: <1151837268.5358.10.camel@idefix.homelinux.org>
+	 <44A80B20.1090702@goop.org> <1152271537.5163.4.camel@idefix.homelinux.org>
+	 <20060707162152.GB3223@redhat.com>
+	 <1152312530.14453.16.camel@idefix.homelinux.org>
+	 <20060708062345.GB3356@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030328AbWGHUUq@vger.kernel.org>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030417AbWGHWzK@vger.kernel.org>
+In-Reply-To: <20060708062345.GB3356@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
 
-It seems commit 32ee8c3e470d86588b51dc42ed01e85c5fa0f180 accidentially=20
-reverted cdc9cc1d740ffc3d8d8207fbf5df9bf05fcc9955, IOW, it reintroduced=
-=20
-the following compile error with CONFIG_PCI=3Dn:
+> If you're prepared to play around with 'git bisect' a little, it shouldn't
+> take that many iterations, as you've already narrowed it down quite a lot.
+> 
+> $ git bisect start drivers/cpufreq/cpufreq_ondemand.c
+> $ git bisect bad
+> $ git bisect good v2.6.12-rc5
+> 
+> should get you most of the way there.
+> 
+> http://www.kernel.org/pub/software/scm/git/docs/git-bisect.html
+> has more info.
 
-<--  snip  -->
+Could you give me a bit more info, since I've never used git before (I
+only downloaded the git snapshots)? Also, if I understand correctly,
+cpufreq_ondemand.c is the only file that could cause the problem. Is
+that right? Also, is it possible to use an old version of it on a new
+kernel?
 
-=2E..
-  CC      arch/i386/kernel/cpu/cpufreq/gx-suspmod.o
-arch/i386/kernel/cpu/cpufreq/gx-suspmod.c: In function =E2=80=98gx_dete=
-ct_chipset=E2=80=99:
-arch/i386/kernel/cpu/cpufreq/gx-suspmod.c:193: error: implicit declarat=
-ion of function =E2=80=98pci_match_id=E2=80=99
-arch/i386/kernel/cpu/cpufreq/gx-suspmod.c:193: warning: comparison betw=
-een pointer and integer
-make[3]: *** [arch/i386/kernel/cpu/cpufreq/gx-suspmod.o] Error 1
-
-<--  snip  -->
-
-This patch therefore re-adds the dependency of X86_GX_SUSPMOD on PCI.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
---- linux-2.6.17-mm6-full/arch/i386/kernel/cpu/cpufreq/Kconfig.old	2006=
--07-08 17:29:40.000000000 +0200
-+++ linux-2.6.17-mm6-full/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-07-=
-08 17:29:53.000000000 +0200
-@@ -96,6 +96,7 @@
-=20
- config X86_GX_SUSPMOD
- 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
-+	depends on PCI
- 	help
- 	 This add the CPUFreq driver for NatSemi Geode processors which
- 	 support suspend modulation.
+	Jean-Marc
