@@ -1,44 +1,32 @@
-From: Dave Jones <davej@redhat.com>
+From: Jean-Marc Valin <Jean-Marc.Valin@USherbrooke.ca>
 Subject: Re: Suspend to RAM regression tracked down
-Date: Sat, 8 Jul 2006 23:21:03 -0400
-Message-ID: <20060709032103.GA31395@redhat.com>
-References: <1151837268.5358.10.camel@idefix.homelinux.org> <44A80B20.1090702@goop.org> <1152271537.5163.4.camel@idefix.homelinux.org> <20060707162152.GB3223@redhat.com> <1152312530.14453.16.camel@idefix.homelinux.org> <20060708062345.GB3356@redhat.com> <1152399303.14453.29.camel@idefix.homelinux.org>
+Date: Sun, 09 Jul 2006 15:28:15 +1000
+Message-ID: <1152422895.14453.32.camel@idefix.homelinux.org>
+References: <1151837268.5358.10.camel@idefix.homelinux.org>
+	 <44A80B20.1090702@goop.org> <1152271537.5163.4.camel@idefix.homelinux.org>
+	 <20060707162152.GB3223@redhat.com>
+	 <1152312530.14453.16.camel@idefix.homelinux.org>
+	 <20060708062345.GB3356@redhat.com>
+	 <1152399303.14453.29.camel@idefix.homelinux.org>
+	 <20060709032103.GA31395@redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161074AbWGIDVZ@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1152399303.14453.29.camel@idefix.homelinux.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964995AbWGIF2S@vger.kernel.org>
+In-Reply-To: <20060709032103.GA31395@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jean-Marc Valin <Jean-Marc.Valin@USherbrooke.ca>
+To: Dave Jones <davej@redhat.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
 
-On Sun, Jul 09, 2006 at 08:55:02AM +1000, Jean-Marc Valin wrote:
- > > If you're prepared to play around with 'git bisect' a little, it shouldn't
- > > take that many iterations, as you've already narrowed it down quite a lot.
- > > 
- > > $ git bisect start drivers/cpufreq/cpufreq_ondemand.c
- > > $ git bisect bad
- > > $ git bisect good v2.6.12-rc5
- > > 
- > > should get you most of the way there.
- > > 
- > > http://www.kernel.org/pub/software/scm/git/docs/git-bisect.html
- > > has more info.
- > 
- > Could you give me a bit more info, since I've never used git before (I
- > only downloaded the git snapshots)? Also, if I understand correctly,
- > cpufreq_ondemand.c is the only file that could cause the problem. Is
- > that right? Also, is it possible to use an old version of it on a new
- > kernel?
+> Actually, before deep diving into chasing bugs in ondemand, we should
+> probably confirm that the same behaviour doesn't happen with a different
+> governor.  Can you try that ?   Try setting it to userspace, and then
+> running a userspace app like cpuspeed/powernowd etc.
 
-Actually, before deep diving into chasing bugs in ondemand, we should
-probably confirm that the same behaviour doesn't happen with a different
-governor.  Can you try that ?   Try setting it to userspace, and then
-running a userspace app like cpuspeed/powernowd etc.
+Well, that's the thing here. I tried userspace and couldn't get it to
+crash (for several weeks in a row). However, someone I know with the
+same laptop model (not sure it's the exact same revision) told me it
+would crash on him with userspace as well.
 
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+	Jean-Marc
