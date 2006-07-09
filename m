@@ -1,13 +1,12 @@
-From: Dave Jones <davej@redhat.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Re: [PATCH] Longhaul - Use information from Longhaul
-Date: Sun, 9 Jul 2006 15:00:28 -0400
-Message-ID: <20060709190027.GB10044@redhat.com>
-References: <44B0D22D.2030805@interia.pl>
+Date: Sun, 09 Jul 2006 21:47:04 +0200
+Message-ID: <44B15D38.3030204@interia.pl>
+References: <44B0D22D.2030805@interia.pl> <20060709190027.GB10044@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <44B0D22D.2030805@interia.pl>
+In-Reply-To: <20060709190027.GB10044@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,45 +17,38 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk
 
-On Sun, Jul 09, 2006 at 11:53:49AM +0200, Rafa=C5=82 Bilski wrote:
- > First. I lost very important line in do_powersaver. Again. Sorry.
+> On Sun, Jul 09, 2006 at 11:53:49AM +0200, Rafa=B3 Bilski wrote:
+>  > First. I lost very important line in do_powersaver. Again. Sorry.
+>=20
+> So why is this diff longer than one line ? :-)
+>=20
+[...]
+>=20
+> 		Dave
 
-So why is this diff longer than one line ? :-)
+Right.
 
- > Longhaul don't report minimum multiplier. It reports minimum frequency.
- > So not always minimum multiplier at minimum FSB is really minimum.
+Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
 
-I don't follow your logic.  How can lowest mult * lowest fsb not be
-lowest frequency ?  The MSRs most definitly only report the multipliers.
+---
 
- > This is most important for Nehemiah witch allows FSB 66MHz, 100MHz and=20
- > 133MHz. Ezra seems to support only 100MHz and 133MHz so in this case=20
- > minimum multiplier at min FSB reported is in fact minimum PLL multiplier.
-
-Note, that we don't (and won't) do FSB scaling even the hardware in some
-variants of longhaul claim to support it. The reality is that there are
-very few boards out there that can do it, and it's impossible to detect
-at runtime which boards they are.  Given this, all boards should always boot
-up at the fastest FSB, so the FSB we read at startup should remain constant.
-
- > Looks like all VIA CPUs allow to read FSB frequency from EBL_CR_POWERON.
- > Only some have 66MHz reserved.
-
-ISTR there was at least one (Ezra maybe?) that didn't.
-
- > More precise speed calculations. This is bad when kernel first reports=20
- > 999MHz and we are saying later that max is 997MHz.
-
-I'd rather keep the code readable and lose a tiny bit of accuracy here.
-The tables match the descriptions in the datasheets exactly, which makes
-it easier to review.
-
-		Dave
+--- linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c.orig	2006-07=
+-08 22:21:35.000000000 +0200
++++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-09 2=
+1:44:47.000000000 +0200
+@@ -162,6 +162,7 @@ static void do_powersaver(int cx_address
+ 	longhaul.bits.RevisionKey =3D longhaul.bits.RevisionID;
+ 	longhaul.bits.SoftBusRatio =3D clock_ratio_index & 0xf;
+ 	longhaul.bits.SoftBusRatio4 =3D (clock_ratio_index & 0x10) >> 4;
++	longhaul.bits.EnableSoftBusRatio =3D 1;
+=20
+ 	/* Sync to timer tick */
+ 	safe_halt();
 
 
---=20
-http://www.codemonkey.org.uk
+----------------------------------------------------------------------
+PS. Fajny portal... >>> http://link.interia.pl/f196a
