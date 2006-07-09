@@ -1,14 +1,13 @@
-From: Dave Jones <davej@redhat.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Re: [PATCH] Longhaul - Use information from Longhaul
-Date: Sun, 9 Jul 2006 17:00:27 -0400
-Message-ID: <20060709210027.GC10044@redhat.com>
+Date: Sun, 09 Jul 2006 23:45:12 +0200
+Message-ID: <44B178E8.7030502@interia.pl>
 References: <44B0D22D.2030805@interia.pl> <20060709190027.GB10044@redhat.com>
-	<44B1624A.2040000@interia.pl>
+	<44B1624A.2040000@interia.pl> <20060709210027.GC10044@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <44B1624A.2040000@interia.pl>
+In-Reply-To: <20060709210027.GC10044@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,41 +18,61 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk
 
-On Sun, Jul 09, 2006 at 10:08:42PM +0200, Rafa=C5=82 Bilski wrote:
- > [...]=20
- > >  > Longhaul don't report minimum multiplier. It reports minimum freque=
-ncy.
- > >  > So not always minimum multiplier at minimum FSB is really minimum.
- > >=20
- > > I don't follow your logic.  How can lowest mult * lowest fsb not be
- > > lowest frequency ?  The MSRs most definitly only report the multiplier=
-s.
- >=20
- > I don't know how to explain this properly in English. I will use example.
- > This is from my Nehemiah:
- > min f =3D 433MHz =3D 6.5 * 66MHz
- > max f =3D 999MHz =3D 7.5 * 133MHz
- > but this is Nehemiah "C" and it is working downto 4.0 multiplier.
- >=20
- > This is Ezra that I have found in Google (output from Your program):
- > min f =3D 300MHz =3D 3.0 * 100MHz
- > max f =3D 864MHz =3D 6.5 * 133MHz
+>  >=20
+>  > I don't know how to explain this properly in English. I will use examp=
+le.
+>  > This is from my Nehemiah:
+>  > min f =3D 433MHz =3D 6.5 * 66MHz
+>  > max f =3D 999MHz =3D 7.5 * 133MHz
+>  > but this is Nehemiah "C" and it is working downto 4.0 multiplier.
+>  >=20
+>  > This is Ezra that I have found in Google (output from Your program):
+>  > min f =3D 300MHz =3D 3.0 * 100MHz
+>  > max f =3D 864MHz =3D 6.5 * 133MHz
+>=20
+> But this is only true IFF we scale the FSB, which we don't.
+> The above scenarios will not happen for as long as that is true.
 
-But this is only true IFF we scale the FSB, which we don't.
-The above scenarios will not happen for as long as that is true.
+Yes.
 
- > I'm trying to be more compatible with information from Longhaul MSR. Eve=
-n if=20
- > this register is broken for my CPU, using min frequency insteed of min=20
- > multiplier is fixing this.
+>=20
+>  > I'm trying to be more compatible with information from Longhaul MSR. E=
+ven if=20
+>  > this register is broken for my CPU, using min frequency insteed of min=
+=20
+>  > multiplier is fixing this.
+>=20
+> when you say 'min frequency', which MSR bits are you talking about?
+>=20
+> 		Dave
+>=20
 
-when you say 'min frequency', which MSR bits are you talking about?
+I mean that
+min frequency =3D MinMHzFSB * MinMHzBR
+of course values from multipliers and fsb tables.
 
-		Dave
+This is big patch, but change I want to do is in this:
 
---=20
-http://www.codemonkey.org.uk
+ 		ratio =3D clock_ratio[j];
+ 		if (ratio =3D=3D -1)
+ 			continue;
+-		if (ratio > maxmult || ratio < minmult)
++		speed =3D calc_speed(ratio, fsb);
++		if (speed > highest_speed || speed < lowest_speed)
+ 			continue;
+-		longhaul_table[k].frequency =3D calc_speed(ratio);
++		longhaul_table[k].frequency =3D speed;
+
+If I would blindly read MinMHzBR for my CPU then minimal multiplier=20
+would be 6.5, but in fact this processor is capable of 4.0.
+
+Rafa=B3
+
+
+------------------------------------------------------------------------
+Wyjezdzasz na wakacje? Zaplanuj trase z map24.=20
+http://map24.interia.pl/
