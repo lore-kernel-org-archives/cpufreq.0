@@ -1,44 +1,62 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [-mm patch] make arch/i386/kernel/cpu/cpufreq/longhaul.c:longhaul_walk_callback() static
-Date: Sun, 9 Jul 2006 19:53:08 +0200
-Message-ID: <20060709175308.GJ13938@stusta.de>
-References: <20060709021106.9310d4d1.akpm@osdl.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Longhaul - Use information from Longhaul
+Date: Sun, 9 Jul 2006 15:00:28 -0400
+Message-ID: <20060709190027.GB10044@redhat.com>
+References: <44B0D22D.2030805@interia.pl>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030245AbWGIRxL@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060709021106.9310d4d1.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <44B0D22D.2030805@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>, rafalbilski@interia.pl, Dave Jones <davej@redhat.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
 
-On Sun, Jul 09, 2006 at 02:11:06AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.17-mm6:
->...
->  git-cpufreq.patch
->...
->  git trees
->...
+On Sun, Jul 09, 2006 at 11:53:49AM +0200, Rafa=C5=82 Bilski wrote:
+ > First. I lost very important line in do_powersaver. Again. Sorry.
 
-This patch makes the needlessly global longhaul_walk_callback() static.
+So why is this diff longer than one line ? :-)
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+ > Longhaul don't report minimum multiplier. It reports minimum frequency.
+ > So not always minimum multiplier at minimum FSB is really minimum.
 
---- linux-2.6.18-rc1-mm1-full/arch/i386/kernel/cpu/cpufreq/longhaul.c.old	2006-07-09 16:29:54.000000000 +0200
-+++ linux-2.6.18-rc1-mm1-full/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-09 16:30:11.000000000 +0200
-@@ -524,9 +524,9 @@
- 	return calc_speed(longhaul_get_cpu_mult());
- }
- 
--acpi_status longhaul_walk_callback(acpi_handle obj_handle,
--				  u32 nesting_level,
--				  void *context, void **return_value)
-+static acpi_status longhaul_walk_callback(acpi_handle obj_handle,
-+					  u32 nesting_level,
-+					  void *context, void **return_value)
- {
- 	struct acpi_device *d;
- 
+I don't follow your logic.  How can lowest mult * lowest fsb not be
+lowest frequency ?  The MSRs most definitly only report the multipliers.
+
+ > This is most important for Nehemiah witch allows FSB 66MHz, 100MHz and=20
+ > 133MHz. Ezra seems to support only 100MHz and 133MHz so in this case=20
+ > minimum multiplier at min FSB reported is in fact minimum PLL multiplier.
+
+Note, that we don't (and won't) do FSB scaling even the hardware in some
+variants of longhaul claim to support it. The reality is that there are
+very few boards out there that can do it, and it's impossible to detect
+at runtime which boards they are.  Given this, all boards should always boot
+up at the fastest FSB, so the FSB we read at startup should remain constant.
+
+ > Looks like all VIA CPUs allow to read FSB frequency from EBL_CR_POWERON.
+ > Only some have 66MHz reserved.
+
+ISTR there was at least one (Ezra maybe?) that didn't.
+
+ > More precise speed calculations. This is bad when kernel first reports=20
+ > 999MHz and we are saying later that max is 997MHz.
+
+I'd rather keep the code readable and lose a tiny bit of accuracy here.
+The tables match the descriptions in the datasheets exactly, which makes
+it easier to review.
+
+		Dave
+
+
+--=20
+http://www.codemonkey.org.uk
