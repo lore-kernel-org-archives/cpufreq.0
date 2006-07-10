@@ -1,44 +1,37 @@
 From: "Joachim Deguara" <joachim.deguara@amd.com>
 Subject: RE: [discuss] Re: [PATCH] Allow all Opteron processors to
  change pstate at same time
-Date: Mon, 10 Jul 2006 14:45:55 +0200
-Message-ID: <1152535555.4897.16.camel@lapdog.site>
+Date: Mon, 10 Jul 2006 15:02:12 +0200
+Message-ID: <1152536532.4897.18.camel@lapdog.site>
 References: <84EA05E2CA77634C82730353CBE3A84303218E99@SAUSEXMB1.amd.com>
+ <1152535555.4897.16.camel@lapdog.site>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="=-bPp9qvWDkclka1MSEgdL"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161007AbWGJMrQ@vger.kernel.org>
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84303218E99@SAUSEXMB1.amd.com>
+ boundary="=-8ujyHyt5kLTQhg1Y8Xlv"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161057AbWGJNC7@vger.kernel.org>
+In-Reply-To: <1152535555.4897.16.camel@lapdog.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
 Cc: ak@suse.de, discuss@x86-64.org, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
 
---=-bPp9qvWDkclka1MSEgdL
+--=-8ujyHyt5kLTQhg1Y8Xlv
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2006-07-07 at 12:36 -0500, Langsdorf, Mark wrote: 
-> > Your patch seems to be ^M damaged.
-> 
-> I'll smack my mailer around again.  Sorry about that.
-
-revised patch attached (also corrected tscsync qualifier and initial
-state of req_state).
-
-> > I'm still dubious if the result is really correct if the 
-> > hardware wasn't designed to guarantee synchronous TSC operation.
+On Mon, 2006-07-10 at 14:46 +0200, Joachim Deguara wrote:
+> On Fri, 2006-07-07 at 12:36 -0500, Langsdorf, Mark wrote: 
+> > > Your patch seems to be ^M damaged.
 > > 
-> > Can you do the following test please? 
+> > I'll smack my mailer around again.  Sorry about that.
 > 
-> We'll try to have the results back by Monday evening.
-
-may have to wait till Tuesday for my results.
-
+> revised patch attached (also corrected tscsync qualifier and initial
+> state of req_state).
+typo corrected (sorry)
 -joachim
 
---=-bPp9qvWDkclka1MSEgdL
+--=-8ujyHyt5kLTQhg1Y8Xlv
 Content-Disposition: attachment;
  filename=2.6.18-rc1-pntscsync.patch
 Content-Type: text/x-patch;
@@ -47,7 +40,7 @@ Content-Type: text/x-patch;
 Content-Transfer-Encoding: 7bit
 
 --- arch/i386/kernel/cpu/cpufreq/powernow-k8.c.orig	2006-07-10 13:25:47.000000000 +0200
-+++ arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2006-07-10 14:15:37.000000000 +0200
++++ arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2006-07-10 14:52:11.000000000 +0200
 @@ -46,13 +46,15 @@
  
  #define PFX "powernow-k8: "
@@ -246,7 +239,7 @@ Content-Transfer-Encoding: 7bit
  
  	if (supported_cpus == num_online_cpus()) {
 +		if (tscsync) {
-+			req_state = kalloc(sizeof(int)*NR_CPUS, GFP_KERNEL);
++			req_state = kmalloc(sizeof(int)*NR_CPUS, GFP_KERNEL);
 +			if (!req_state) {
 +				printk(KERN_ERR PFX "Unable to allocate memory!\n");
 +				return -ENOMEM;
@@ -276,5 +269,5 @@ Content-Transfer-Encoding: 7bit
 +module_param(tscsync, int, 0);
 +MODULE_PARM_DESC(tscsync, "enable tsc by synchronizing powernow-k8 changes");
 
---=-bPp9qvWDkclka1MSEgdL--
+--=-8ujyHyt5kLTQhg1Y8Xlv--
 
