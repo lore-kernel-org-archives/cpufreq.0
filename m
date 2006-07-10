@@ -1,7 +1,7 @@
 From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Re: [PATCH] Longhaul - Use information from Longhaul
-Date: Sun, 09 Jul 2006 23:45:12 +0200
-Message-ID: <44B178E8.7030502@interia.pl>
+Date: Mon, 10 Jul 2006 07:45:08 +0200
+Message-ID: <44B1E964.3020001@interia.pl>
 References: <44B0D22D.2030805@interia.pl> <20060709190027.GB10044@redhat.com>
 	<44B1624A.2040000@interia.pl> <20060709210027.GC10044@redhat.com>
 Mime-Version: 1.0
@@ -18,11 +18,10 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="iso-8859-9"
 To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk
 
->  >=20
 >  > I don't know how to explain this properly in English. I will use examp=
 le.
 >  > This is from my Nehemiah:
@@ -36,43 +35,16 @@ le.
 >=20
 > But this is only true IFF we scale the FSB, which we don't.
 > The above scenarios will not happen for as long as that is true.
-
-Yes.
-
->=20
->  > I'm trying to be more compatible with information from Longhaul MSR. E=
-ven if=20
->  > this register is broken for my CPU, using min frequency insteed of min=
-=20
->  > multiplier is fixing this.
->=20
-> when you say 'min frequency', which MSR bits are you talking about?
->=20
-> 		Dave
 >=20
 
-I mean that
-min frequency =3D MinMHzFSB * MinMHzBR
-of course values from multipliers and fsb tables.
-
-This is big patch, but change I want to do is in this:
-
- 		ratio =3D clock_ratio[j];
- 		if (ratio =3D=3D -1)
- 			continue;
--		if (ratio > maxmult || ratio < minmult)
-+		speed =3D calc_speed(ratio, fsb);
-+		if (speed > highest_speed || speed < lowest_speed)
- 			continue;
--		longhaul_table[k].frequency =3D calc_speed(ratio);
-+		longhaul_table[k].frequency =3D speed;
-
-If I would blindly read MinMHzBR for my CPU then minimal multiplier=20
-would be 6.5, but in fact this processor is capable of 4.0.
+I'm starting to thinking that printing this information to user
+isn't good idea. Probably will cause confusion. What are You thinking
+about printing min( longhaul_table[].frequency )? This would print=20
+motherboard, not processor, limit.
 
 Rafa=B3
 
 
-------------------------------------------------------------------------
-Wyjezdzasz na wakacje? Zaplanuj trase z map24.=20
-http://map24.interia.pl/
+
+----------------------------------------------------------------------
+PS. Fajny portal... >>> http://link.interia.pl/f196a
