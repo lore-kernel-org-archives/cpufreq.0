@@ -1,32 +1,50 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6426] Working Longhaul driver removed from kernel
-Date: Mon, 10 Jul 2006 12:28:36 -0700
-Message-ID: <200607101928.k6AJSaHo031519@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Shaohua Li <shaohua.li@intel.com>
+Subject: [BUG] cpu_khz isn't reliable at boot time
+Date: Tue, 11 Jul 2006 13:17:36 +0800
+Message-ID: <1152595057.21189.150.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965158AbWGKFUP@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk, lkml <linux-kernel@vger.kernel.org>
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6426
+In mobile system, BIOS usually sets CPU to low speed. In modern CPU, TSC
+is constant speed regardless of CPU speed. Linux uses TSC to calculate
+cpu_khz, which is the full speed frequence of CPU instead of low speed
+in some systems. This might invoke some potential issues. One is NMI
+watchdog, which runs less frequently in cpu low speed mode.
 
-rafalbilski@interia.pl changed:
+Below workaround from Len addressed the NMI issue, any idea?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|DEFERRED                    |CLOSED
-
-
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
+index d43b498..b157186 100644
+--- a/arch/i386/kernel/nmi.c
++++ b/arch/i386/kernel/nmi.c
+@@ -150,7 +150,12 @@ #ifdef CONFIG_SMP
+ 		if (!cpu_isset(cpu, cpu_callin_map))
+ 			continue;
+ #endif
+-		if (nmi_count(cpu) - prev_nmi_count[cpu] <= 5) {
++		/*
++		 * Fail if there were NO watchdog interrupts recorded.
++		 * We don't know the exact number to expect because
++		 * cpu_khz is variable.
++		 */
++		if ((nmi_count(cpu) - prev_nmi_count[cpu]) == 0) {
+ 			endflag = 1;
+ 			printk("CPU#%d: NMI appears to be stuck (%d->%d)!\n",
+ 				cpu,
+@@ -357,6 +362,11 @@ static void clear_msr_range(unsigned int
+ 		wrmsr(base+i, 0, 0);
+ }
+ 
++/*
++ * n.b.
++ * cpu_khz may not reflect the current or future khz of the processor
++ * depending on what speed the system booted at and if cpufreq is running
++ */
+ static void write_watchdog_counter(const char *descr)
+ {
+ 	u64 count = (u64)cpu_khz * 1000;
