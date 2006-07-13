@@ -1,10 +1,13 @@
-From: "Allen H. Ibara" <uce.llist@ibara.net>
-Subject: cpufreq lockdep warning
-Date: Wed, 12 Jul 2006 21:02:00 -0700
-Message-ID: <20060713040200.GA12731@wam.verbalee.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Longhaul - Only for "Powersaver"
+Date: Thu, 13 Jul 2006 02:27:23 -0400
+Message-ID: <20060713062723.GB12807@redhat.com>
+References: <44B5E0DD.9090109@interia.pl>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <44B5E0DD.9090109@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,69 +18,53 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
-Cc: davej@codemonkey.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Cc: cpufreq@lists.linux.org.uk
 
-Hi,
+On Thu, Jul 13, 2006 at 07:57:49AM +0200, Rafa=C5=82 Bilski wrote:
+ > Looks like ACPI C3 don't work with older VIA CPUs. Motherboard is=20
+ > ACPI C3 capable, but after C3 frequency is same as before.
+ > So this patch below will make "longhaul" fail for older CPU's.
+ > There is nothing what I can do to fix this. Looks like CPU with=20
+ > BCR2 MSR is changing frequency only on halt. Processor with=20
+ > Longhaul MSR is changing frequency on halt or ACPI C3.
+ > Btw typo fixes.
 
-Not sure what to make of this lockdep warning with recent git i386
-kernel:
+Falling back to what we did in 2.6.17 for BCR2 systems may
+get some of those working at least.  The whole notion of tying the
+longhaul driver closely to acpi makes me nervous, as a lot of
+those socket-370 boards have _dreadful_ ACPI BIOS implementations,
+and in a large number of cases, will lack the necessary functionality
+needed, as socket 370 Celerons were boring and had no fancy power
+saving features to run in C3.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
--------------------------------------------------------
-powernowd/5276 is trying to acquire lock:
- (&policy->lock){--..}, at: [<c0330bed>] mutex_lock+0x1c/0x1f
+I really need to find time to dig out some of those old test systems, but t=
+hat
+won't happen now until after kernel summit/OLS/vacation.
 
-but task is already holding lock:
- (cpucontrol){--..}, at: [<c0330bed>] mutex_lock+0x1c/0x1f
+ > @@ -627,7 +627,9 @@ static int __init longhaul_cpu_init(stru
+ >  	switch (longhaul_version) {
+ >  	case TYPE_LONGHAUL_V1:
+ >  	case TYPE_LONGHAUL_V2:
+ > -		printk ("Longhaul v%d supported.\n", longhaul_version);
+ > +//		printk ("Longhaul v%d supported.\n", longhaul_version);
+ > +		printk(KERN_ERR PFX "Processor don't support ACPI. Aborting.\n");
 
-which lock already depends on the new lock.
+It's really a BIOS failing. The CPU cares nothing about how it's driven,
+but if the DSDT lacks methods to do anything interesting, nothing happens.
 
+ > @@ -691,8 +693,8 @@ static int __init longhaul_init(void)
+ > =20
+ >  #ifdef CONFIG_SMP
+ >  	if (num_online_cpus() > 1) {
+ > -		return -ENODEV;
+ >  		printk(KERN_ERR PFX "More than 1 CPU detected, longhaul disabled.\n");
+ > +		return -ENODEV;
 
-the existing dependency chain (in reverse order) is:
+Applied this bit, but the other bit I need to think about some more.
 
--> #1 (cpucontrol){--..}:
-       [<c0135a10>] lock_acquire+0x5e/0x7e
-       [<c0330a67>] __mutex_lock_slowpath+0xb0/0x21a
-       [<c0330bed>] mutex_lock+0x1c/0x1f
-       [<c0138c9b>] __lock_cpu_hotplug+0x38/0x52
-       [<c0138d8a>] lock_cpu_hotplug+0xa/0xc
-       [<c02d9bcd>] __cpufreq_driver_target+0x13/0x4e
-       [<c02db44a>] cpufreq_governor_performance+0x1a/0x20
-       [<c02da145>] __cpufreq_governor+0x7c/0x14d
-       [<c02da420>] __cpufreq_set_policy+0xc7/0x102
-       [<c02da6e9>] cpufreq_set_policy+0x2d/0x6f
-       [<c02daa01>] cpufreq_add_dev+0x2d6/0x450
-       [<c027d2d5>] sysdev_driver_register+0x58/0x9b
-       [<c02da2dd>] cpufreq_register_driver+0x7f/0xfb
-       [<f898155a>] powernowk8_init+0x65/0x73 [powernow_k8]
-       [<c013b6f7>] sys_init_module+0x15e0/0x1741
-       [<c0102e5d>] sysenter_past_esp+0x56/0x8d
+		Dave
 
--> #0 (&policy->lock){--..}:
-       [<c0135a10>] lock_acquire+0x5e/0x7e
-       [<c0330a67>] __mutex_lock_slowpath+0xb0/0x21a
-       [<c0330bed>] mutex_lock+0x1c/0x1f
-       [<c02da681>] store_scaling_governor+0x120/0x15b
-       [<c02d9fa3>] store+0x35/0x46
-       [<c018e3ce>] sysfs_write_file+0xb1/0xd7
-       [<c015be13>] vfs_write+0x8a/0x136
-       [<c015c650>] sys_write+0x3b/0x60
-       [<c0102e5d>] sysenter_past_esp+0x56/0x8d
-
-other info that might help us debug this:
-
-1 lock held by powernowd/5276:
- #0:  (cpucontrol){--..}, at: [<c0330bed>] mutex_lock+0x1c/0x1f
-
-
-I would guess that store_scaling_governor in drivers/cpufreq/cpufreq.c should
-do mutex_lock(&policy->lock) before lock_cpu_hotplug() (near line 426),
-but someone who's more familiar with it should probably validate that.
-
-Thanks,
-
---AHI
+--=20
+http://www.codemonkey.org.uk
