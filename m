@@ -1,13 +1,10 @@
-From: Bhavana Nagendra <bnagendr@redhat.com>
-Subject: Re: [discuss] Re: [PATCH] Allow all Opteron processors to
- changepstate at same time
-Date: Thu, 13 Jul 2006 10:58:19 -0400
-Message-ID: <44B65F8B.2020309@redhat.com>
-References: <B3870AD84389624BAF87A3C7B831499302935A88@SAUSEXMB2.amd.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: [PATCH] Longhaul - Typo fix
+Date: Thu, 13 Jul 2006 19:26:10 +0200
+Message-ID: <44B68232.40503@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <B3870AD84389624BAF87A3C7B831499302935A88@SAUSEXMB2.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,60 +15,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "shin, jacob" <jacob.shin@amd.com>, linux-kernel@vger.kernel.org
-Cc: discuss@x86-64.org, cpufreq@lists.linux.org.uk, Andi Kleen <ak@suse.de>, Pavel Machek <pavel@suse.cz>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk
 
-Here are some results without changing frequencies on a system whose 
-BIOS does not support Power Now! on MP systems:
+Please add this too.
+This is changing "always true" test to something usefull.
 
-Basically the system booted up with "nohpet, nopmtimer"i.e. using TSC as 
-the GTOD time source and system stayed idle for 13 hours.   There 
-appears to be drift of 20 secs in the CPU 2 readings.    This TSC drift 
-could worsen when
-the system is active and doing GTOD operations and/or when system is up 
-a lot longer. 
+Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
 
-CPU 2: Syncing TSC to CPU 0.
-CPU 2: synchronized TSC with CPU 0 (last diff -108 cycles, maxerr 826 
-cycles)
-CPU 3: Syncing TSC to CPU 0.
-CPU 3: synchronized TSC with CPU 0 (last diff -119 cycles, maxerr 845 
-cycles)
+---
 
-*** CPUs go offline ***
+diff -uprN -X linux-2.6.17-git20-vanilla/Documentation/dontdiff linux-2.6.1=
+7-git20-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c linux-2.6.17-git20/=
+arch/i386/kernel/cpu/cpufreq/longhaul.c
+--- linux-2.6.17-git20-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006=
+-07-13 07:39:41.000000000 +0200
++++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-13 0=
+7:38:35.000000000 +0200
+@@ -550,7 +550,7 @@ static int __init longhaul_cpu_init(stru
+ 	if (pr =3D=3D NULL) goto err_acpi;
+=20
+ 	cx =3D &pr->power.states[ACPI_STATE_C3];
+-	if (cx =3D=3D NULL || cx->latency > 1000) goto err_acpi;
++	if (cx->address =3D=3D 0 || cx->latency > 1000) goto err_acpi;
+=20
+ 	/* Now check what we have on this motherboard */
+ 	switch (c->x86_model) {
 
-*** back online ***
 
-CPU 2: Syncing TSC to CPU 0.
-CPU 2: synchronized TSC with CPU 0 (last diff -117 cycles, maxerr 846 
-cycles)
-CPU 3: Syncing TSC to CPU 0.
-CPU 3: synchronized TSC with CPU 0 (last diff -117 cycles, maxerr 845 
-cycles)
-
-shin, jacob wrote:
-
->On Thursday, July 13, 2006 9:32 AM Deguara, Joachim wrote:
->
->  
->
->>parallel sounds fun, but I don't get it.  Two machine or trying to go
->>online and offline at the same time?  Firestorming two busy parallel
->>while loops, one turning the core offline and the other online, did
->>not bring an oops so I guess this kernel is in the clear in that
->>regard. 
->>
->>I can't get it to crash again and I am afraid that it crashed under an
->>old devel kernel.  After another ~20 hour test with heavy freq changes
->>with the tscsync patch
->>    
->>
->
->There were several different issues w/ powernow + cpu hotplug in the
->past.  Good to hear that the latest kernel doesn't oops.. I believe 
->cpu hotplug is needed for suspend to work..
->
->
->  
->
+--------------------------------------------------------------------
+12 000 SMS-ow gratis! Promocja na http://link.interia.pl/f1971
