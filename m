@@ -1,10 +1,13 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Typo fix
-Date: Thu, 13 Jul 2006 19:26:10 +0200
-Message-ID: <44B68232.40503@interia.pl>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Longhaul - Typo fix
+Date: Thu, 13 Jul 2006 13:45:14 -0400
+Message-ID: <20060713174514.GL12807@redhat.com>
+References: <44B68232.40503@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <44B68232.40503@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,34 +18,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@codemonkey.org.uk>
+Content-Type: text/plain; charset="utf-8"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
 Cc: cpufreq@lists.linux.org.uk
 
-Please add this too.
-This is changing "always true" test to something usefull.
+On Thu, Jul 13, 2006 at 07:26:10PM +0200, Rafał Bilski wrote:
+ > Please add this too.
+ > This is changing "always true" test to something usefull.
+ > 
+ > Signed-off-by: Rafał Bilski <rafalbilski@interia.pl>
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
+Applied, thanks.
 
----
+		Dave
 
-diff -uprN -X linux-2.6.17-git20-vanilla/Documentation/dontdiff linux-2.6.1=
-7-git20-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c linux-2.6.17-git20/=
-arch/i386/kernel/cpu/cpufreq/longhaul.c
---- linux-2.6.17-git20-vanilla/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006=
--07-13 07:39:41.000000000 +0200
-+++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-13 0=
-7:38:35.000000000 +0200
-@@ -550,7 +550,7 @@ static int __init longhaul_cpu_init(stru
- 	if (pr =3D=3D NULL) goto err_acpi;
-=20
- 	cx =3D &pr->power.states[ACPI_STATE_C3];
--	if (cx =3D=3D NULL || cx->latency > 1000) goto err_acpi;
-+	if (cx->address =3D=3D 0 || cx->latency > 1000) goto err_acpi;
-=20
- 	/* Now check what we have on this motherboard */
- 	switch (c->x86_model) {
-
-
---------------------------------------------------------------------
-12 000 SMS-ow gratis! Promocja na http://link.interia.pl/f1971
+-- 
+http://www.codemonkey.org.uk
