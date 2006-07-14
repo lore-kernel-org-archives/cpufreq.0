@@ -1,11 +1,10 @@
-From: Len Brown <len.brown@intel.com>
-Subject: [PATCH 1/2 vs 2.6.18rc1] ondemand: tune for hardware coordination
-Date: Thu, 13 Jul 2006 16:22:34 -0400
-Message-ID: <200607131622.34806.len.brown@intel.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: [PATCH] Longhaul - Fix multipliers table
+Date: Fri, 14 Jul 2006 19:36:05 +0200
+Message-ID: <44B7D605.2060603@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,73 +15,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: davej@codemonkey.org.uk
-Cc: alexey.y.starikovskiy@intel.com, cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk
 
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+This patch fix multiplier table. Some values are swaped
+and 9.0*133MHz processor is incorrecly reported as=20
+5.0*133MHz.
 
- cpufreq_ondemand.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
 
-Try to make dbs_check_cpu() call on all CPUs at the same jiffy.
-This will help when multiple cores share P-states via Hardware Coordination.
+---
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-
-Index: linux-2.6.15.1/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-2.6.15.1.orig/drivers/cpufreq/cpufreq_ondemand.c	2006-07-10 15:34:53.000000000 +0400
-+++ linux-2.6.15.1/drivers/cpufreq/cpufreq_ondemand.c	2006-07-12 12:36:18.000000000 +0400
-@@ -74,6 +74,7 @@
- 
- struct dbs_tuners {
- 	unsigned int sampling_rate;
-+	unsigned int sampling_rate_jiffies;
- 	unsigned int up_threshold;
- 	unsigned int ignore_nice;
- };
-@@ -139,6 +140,7 @@
- 	}
- 
- 	dbs_tuners_ins.sampling_rate = input;
-+	dbs_tuners_ins.sampling_rate_jiffies = usecs_to_jiffies(input);
- 	mutex_unlock(&dbs_mutex);
- 
- 	return count;
-@@ -303,26 +305,28 @@
+--- linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c.orig	2006-07=
+-14 19:22:01.000000000 +0200
++++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-14 1=
+9:27:21.000000000 +0200
+@@ -323,8 +323,10 @@ static int __init longhaul_get_ranges(vo
  {
- 	unsigned int cpu = smp_processor_id();
- 	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, cpu);
-+	int delay = dbs_tuners_ins.sampling_rate_jiffies -
-+		(jiffies % dbs_tuners_ins.sampling_rate_jiffies);
- 
- 	dbs_check_cpu(dbs_info);
--	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work,
--			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
-+	/* We want all CPUs to do sampling nearly on same jiffy */
-+	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work, delay);
- }
- 
- static inline void dbs_timer_init(unsigned int cpu)
- {
- 	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, cpu);
-+	int delay = dbs_tuners_ins.sampling_rate_jiffies -
-+		(jiffies % dbs_tuners_ins.sampling_rate_jiffies);
- 
- 	INIT_WORK(&dbs_info->work, do_dbs_timer, 0);
--	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work,
--			usecs_to_jiffies(dbs_tuners_ins.sampling_rate));
--	return;
-+	/* We want all CPUs to do sampling nearly on same jiffy */
-+	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work, delay);
- }
- 
- static inline void dbs_timer_exit(unsigned int cpu)
- {
- 	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, cpu);
--
- 	cancel_rearming_delayed_workqueue(kondemand_wq, &dbs_info->work);
- }
+ 	unsigned long invalue;
+ 	unsigned int multipliers[32]=3D {
+-		50,40,30,100,55,35,45,95,90,70,80,60,120,75,85,65,
+-		-1,110,120,-1,135,115,125,105,130,150,160,140,-1,155,-1,145 };
++		 90,  30,  40, 100,  55,  35,  45,  95,
++		 50,  70,  80,  60, 120,  75,  85,  65,
++		 -1, 110, 120,  -1, 135, 115, 125, 105,
++		130, 150, 160, 140,  -1, 155,  -1, 145 };
+ 	unsigned int j, k =3D 0;
+ 	union msr_longhaul longhaul;
+ 	unsigned long lo, hi;
+
+
+----------------------------------------------------------------------
+Upal jakby mniejszy... http://link.interia.pl/f1975
