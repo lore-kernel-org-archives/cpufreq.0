@@ -1,10 +1,13 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Fix multipliers table
-Date: Fri, 14 Jul 2006 19:36:05 +0200
-Message-ID: <44B7D605.2060603@interia.pl>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Longhaul - Fix multipliers table
+Date: Fri, 14 Jul 2006 18:24:05 -0400
+Message-ID: <20060714222405.GP24705@redhat.com>
+References: <44B7D605.2060603@interia.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <44B7D605.2060603@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,36 +18,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@codemonkey.org.uk>
+Content-Type: text/plain; charset="windows-1252"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
 Cc: cpufreq@lists.linux.org.uk
 
-This patch fix multiplier table. Some values are swaped
-and 9.0*133MHz processor is incorrecly reported as=20
-5.0*133MHz.
+On Fri, Jul 14, 2006 at 07:36:05PM +0200, Rafa=C5=82 Bilski wrote:
+ > This patch fix multiplier table. Some values are swaped
+ > and 9.0*133MHz processor is incorrecly reported as=20
+ > 5.0*133MHz.
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
+Wow, not sure what happened there. Looks like there was some
+confusion over which CPU this table was for.
 
----
+Care to rename multipliers to ezra_t_multipliers or c5m_multipliers
+at the same time to ease the confusion?
 
---- linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c.orig	2006-07=
--14 19:22:01.000000000 +0200
-+++ linux-2.6.17-git20/arch/i386/kernel/cpu/cpufreq/longhaul.c	2006-07-14 1=
-9:27:21.000000000 +0200
-@@ -323,8 +323,10 @@ static int __init longhaul_get_ranges(vo
- {
- 	unsigned long invalue;
- 	unsigned int multipliers[32]=3D {
--		50,40,30,100,55,35,45,95,90,70,80,60,120,75,85,65,
--		-1,110,120,-1,135,115,125,105,130,150,160,140,-1,155,-1,145 };
-+		 90,  30,  40, 100,  55,  35,  45,  95,
-+		 50,  70,  80,  60, 120,  75,  85,  65,
-+		 -1, 110, 120,  -1, 135, 115, 125, 105,
-+		130, 150, 160, 140,  -1, 155,  -1, 145 };
- 	unsigned int j, k =3D 0;
- 	union msr_longhaul longhaul;
- 	unsigned long lo, hi;
+		Dave
 
-
-----------------------------------------------------------------------
-Upal jakby mniejszy... http://link.interia.pl/f1975
+--=20
+http://www.codemonkey.org.uk
