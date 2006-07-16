@@ -1,39 +1,72 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Longhaul - Fix multipliers table
-Date: Fri, 14 Jul 2006 18:24:05 -0400
-Message-ID: <20060714222405.GP24705@redhat.com>
-References: <44B7D605.2060603@interia.pl>
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: [discuss] Re: [PATCH] Allow all Opteron processors to change pstate at same time
+Date: Sun, 16 Jul 2006 03:56:36 +0200
+Message-ID: <20060716015636.GC21162@atrey.karlin.mff.cuni.cz>
+References: <B3870AD84389624BAF87A3C7B831499302935A76@SAUSEXMB2.amd.com> <20060713130604.GC8230@ucw.cz> <1152801132.4519.10.camel@lapdog.site>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1946079AbWGPB4s@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <44B7D605.2060603@interia.pl>
+In-Reply-To: <1152801132.4519.10.camel@lapdog.site>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Joachim Deguara <joachim.deguara@amd.com>
+Cc: "shin, jacob" <jacob.shin@amd.com>, Andi Kleen <ak@suse.de>, "Langsdorf, Mark" <mark.langsdorf@amd.com>, discuss@x86-64.org, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-On Fri, Jul 14, 2006 at 07:36:05PM +0200, Rafa=C5=82 Bilski wrote:
- > This patch fix multiplier table. Some values are swaped
- > and 9.0*133MHz processor is incorrecly reported as=20
- > 5.0*133MHz.
+> On Thu, 2006-07-13 at 13:06 +0000, Pavel Machek wrote:
+> > Can you run two such tests *in parallel*? That seemed to break it
+> > really quickly.
+> parallel sounds fun, but I don't get it.  Two machine or trying to go
+> online and offline at the same time?  Firestorming two busy parallel
 
-Wow, not sure what happened there. Looks like there was some
-confusion over which CPU this table was for.
+Trying to online and offline at the same time.
 
-Care to rename multipliers to ezra_t_multipliers or c5m_multipliers
-at the same time to ease the confusion?
+> while loops, one turning the core offline and the other online, did not
+> bring an oops so I guess this kernel is in the clear in that regard.
 
-		Dave
+Better run two tight loops, each doing online; offline. I got reports
+it crashed machines before, but maybe it is solved.
 
---=20
-http://www.codemonkey.org.uk
+> I can't get it to crash again and I am afraid that it crashed under an
+> old devel kernel.  After another ~20 hour test with heavy freq changes
+> with the tscsync patch
+> 
+> CPU 1: Syncing TSC to CPU 0.
+> CPU 1: synchronized TSC with CPU 0 (last diff 4 cycles, maxerr 499
+> cycles)
+> ...
+> CPU 2: Syncing TSC to CPU 0.
+> CPU 2: synchronized TSC with CPU 0 (last diff -105 cycles, maxerr 600
+> cycles)
+> ...
+> CPU 3: Syncing TSC to CPU 0.
+> CPU 3: synchronized TSC with CPU 0 (last diff -122 cycles, maxerr 1126
+> cycles)
+> 
+> 
+> after 5 hours of no PowerNow!
+> 
+> CPU 1: Syncing TSC to CPU 0.
+> CPU 1: synchronized TSC with CPU 0 (last diff -3 cycles, maxerr 598
+> cycles)
+> ...
+> CPU 2: Syncing TSC to CPU 0.
+> CPU 2: synchronized TSC with CPU 0 (last diff -124 cycles, maxerr 1129
+> cycles)
+> ...
+> CPU 3: Syncing TSC to CPU 0.
+> CPU 3: synchronized TSC with CPU 0 (last diff -124 cycles, maxerr 1127
+> cycles)
+> 
+> 
+> huh?? I don't understand but it does not matter what I do or how long I
+> do it, the difference looks to always be about the same.  
+> 
+> -joachim
+> 
+> 
+> 
+
+-- 
+Thanks, Sharp!
