@@ -1,8 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6849] New: speedstep-centrino does not work on Intel Core Duo
-	T2400
-Date: Mon, 17 Jul 2006 05:08:08 -0700
-Message-ID: <200607171208.k6HC88da006277@fire-2.osdl.org>
+Subject: [Bug 6849] speedstep-centrino does not work on Intel Core Duo T2400
+Date: Mon, 17 Jul 2006 05:09:02 -0700
+Message-ID: <200607171209.k6HC92YK006360@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,22 +20,15 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=6849
 
-           Summary: speedstep-centrino does not work on Intel Core Duo T2400
-    Kernel Version: 2.6.17.6
-            Status: NEW
-          Severity: normal
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: skytte@gmail.com
 
 
-Most recent kernel where this bug did not occur: never worked
-Distribution: Arch Linux
-Hardware Environment: Zepto Znote 6214w (laptop). i945pm chipset, T2400 cpu
-Software Environment:
-Problem Description: Any attempt to load speedstep-centrino results in "No such
-device"
 
-Steps to reproduce: Load the module
+
+------- Additional Comments From skytte@gmail.com  2006-07-17 05:05 -------
+Created an attachment (id=8563)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=8563&action=view)
+acpidump
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
