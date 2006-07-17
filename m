@@ -1,9 +1,11 @@
 From: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>
-Subject: Additional patches to enable powersave-bias
-Date: Mon, 17 Jul 2006 15:40:20 +0400
-Message-ID: <B41635854730A14CA71C92B36EC22AAC0E5E8C@mssmsx411>
+Subject: RE: speedstep-centrino does not work on Core Duo T2400
+Date: Mon, 17 Jul 2006 15:46:13 +0400
+Message-ID: <B41635854730A14CA71C92B36EC22AAC0E5E8D@mssmsx411>
+References: <EB12A50964762B4D8111D55B764A84540D030D@scsmsx413.amr.corp.intel.com><ac5f76150606101315r546af269qe76227100e7508b4@mail.gmail.com>
+	<ac5f76150607170423w57905cf1j576e549e53974f5e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6A996.6026261B"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
@@ -16,131 +18,151 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Martin Skytte <skytte@gmail.com>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, cpufreq@lists.linux.org.uk
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C6A996.6026261B
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-These are follow-up patches to fix errors, introduced by previous pair =
-of patches and refactor the code a little bit.
-
-Regards,
+Please open a bug at bugzilla.kernel.org with output of dmesg and =
+acpidump.
+Thanks,
 Alex.
 
+-----Original Message-----
+From: cpufreq-bounces@lists.linux.org.uk on behalf of Martin Skytte
+Sent: Mon 7/17/2006 3:23 PM
+To: Pallipadi, Venkatesh; cpufreq@lists.linux.org.uk
+Subject: Re: speedstep-centrino does not work on Core Duo T2400
+=20
+I never got any replies to this one so I wonder if there is anything =
+else I
+can do about it?
 
-------_=_NextPart_001_01C6A996.6026261B
-Content-Type: application/octet-stream;
-	name="ondemand_flex_powersave_percent_refactor.patch"
-Content-Transfer-Encoding: base64
-Content-Description: ondemand_flex_powersave_percent_refactor.patch
-Content-Disposition: attachment;
-	filename="ondemand_flex_powersave_percent_refactor.patch"
-
-UmVmYWN0b3IgZmxleC1wb3dlcnNhdmUgZGJzX3RpbWVyIGZ1bmN0aW9uLgoKU2lnbmVkLW9mZi1i
-eTogQWxleGV5IFN0YXJpa292c2tpeSA8YWxleGV5Lnkuc3Rhcmlrb3Zza2l5QGludGVsLmNvbT4K
-CkluZGV4OiBsaW51eC0yLjYuMTUuMS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9vbmRlbWFuZC5j
-Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi4xNS4xLm9yaWcvZHJpdmVycy9jcHVmcmVxL2NwdWZy
-ZXFfb25kZW1hbmQuYwkyMDA2LTA3LTE3IDE1OjIyOjIzLjAwMDAwMDAwMCArMDQwMAorKysgbGlu
-dXgtMi42LjE1LjEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXFfb25kZW1hbmQuYwkyMDA2LTA3LTE3
-IDE1OjM2OjExLjAwMDAwMDAwMCArMDQwMApAQCAtNDE2LDM2ICs0MTYsMjIgQEAKIAkvKiBXZSB3
-YW50IGFsbCBDUFVzIHRvIGRvIHNhbXBsaW5nIG5lYXJseSBvbiBzYW1lIGppZmZ5ICovCiAJaW50
-IGRlbGF5ID0gdXNlY3NfdG9famlmZmllcyhkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKTsK
-IAlkZWxheSAtPSBqaWZmaWVzICUgZGVsYXk7Ci0JaWYgKCFkYnNfdHVuZXJzX2lucy5wb3dlcnNh
-dmVfYmlhcykgewotCQkvKiBDb21tb24gTk9STUFMX1NBTVBMRSBzZXR1cCAqLwotCQlJTklUX1dP
-UksoJmRic19pbmZvLT53b3JrLCBkb19kYnNfdGltZXIsCi0JCQkJKHZvaWQgKilEQlNfTk9STUFM
-X1NBTVBMRSk7Ci0JCWRic19jaGVja19jcHUoZGJzX2luZm8pOwotCQlxdWV1ZV9kZWxheWVkX3dv
-cmtfb24oY3B1LCBrb25kZW1hbmRfd3EsCi0JCQkJJmRic19pbmZvLT53b3JrLCBkZWxheSk7Ci0J
-CXJldHVybjsKLQl9Ci0KLQkvKiBwb3dlcnNhdmVfYmlhcyBpcyBzZXQgKi8KLQlpZiAoKHVuc2ln
-bmVkIGxvbmcpIGRhdGEgPT0gREJTX05PUk1BTF9TQU1QTEUpIHsKKwkvKiBDb21tb24gTk9STUFM
-X1NBTVBMRSBzZXR1cCAqLworCUlOSVRfV09SSygmZGJzX2luZm8tPndvcmssIGRvX2Ric190aW1l
-ciwgKHZvaWQgKilEQlNfTk9STUFMX1NBTVBMRSk7CisJaWYgKCFkYnNfdHVuZXJzX2lucy5wb3dl
-cnNhdmVfYmlhcyB8fAorCSAgICAodW5zaWduZWQgbG9uZykgZGF0YSA9PSBEQlNfTk9STUFMX1NB
-TVBMRSkgewogCQlkYnNfY2hlY2tfY3B1KGRic19pbmZvKTsKIAkJaWYgKGRic19pbmZvLT5mcmVx
-X2xvKSB7Ci0JCQkvKiBTZXR1cCB0aW1lciBmb3IgU1VCX1NBTVBMRSBhbmQgcmV0dXJuICovCisJ
-CQkvKiBTZXR1cCB0aW1lciBmb3IgU1VCX1NBTVBMRSAqLwogCQkJSU5JVF9XT1JLKCZkYnNfaW5m
-by0+d29yaywgZG9fZGJzX3RpbWVyLAogCQkJCQkodm9pZCAqKURCU19TVUJfU0FNUExFKTsKLQkJ
-CXF1ZXVlX2RlbGF5ZWRfd29ya19vbihjcHUsCi0JCQkJCWtvbmRlbWFuZF93cSwKLQkJCQkJJmRi
-c19pbmZvLT53b3JrLAotCQkJCQlkYnNfaW5mby0+ZnJlcV9oaV9qaWZmaWVzKTsKLQkJCXJldHVy
-bjsKKwkJCWRlbGF5ID0gZGJzX2luZm8tPmZyZXFfaGlfamlmZmllczsKIAkJfQotCX0gZWxzZSBp
-ZiAoKHVuc2lnbmVkIGxvbmcpIGRhdGEgPT0gREJTX1NVQl9TQU1QTEUpIHsKKwl9IGVsc2Ugewog
-CQlfX2NwdWZyZXFfZHJpdmVyX3RhcmdldChkYnNfaW5mby0+Y3VyX3BvbGljeSwKIAkgICAgICAg
-ICAgICAgICAgICAgICAgICAJZGJzX2luZm8tPmZyZXFfbG8sCiAJICAgICAgICAgICAgICAgICAg
-ICAgICAgCUNQVUZSRVFfUkVMQVRJT05fSCk7CiAJfQotCi0JSU5JVF9XT1JLKCZkYnNfaW5mby0+
-d29yaywgZG9fZGJzX3RpbWVyLCAodm9pZCAqKURCU19OT1JNQUxfU0FNUExFKTsKIAlxdWV1ZV9k
-ZWxheWVkX3dvcmtfb24oY3B1LCBrb25kZW1hbmRfd3EsICZkYnNfaW5mby0+d29yaywgZGVsYXkp
-OwogfQogCg==
-
-------_=_NextPart_001_01C6A996.6026261B
-Content-Type: application/octet-stream;
-	name="ondemand_sync_timer_oncpus_fix.patch"
-Content-Transfer-Encoding: base64
-Content-Description: ondemand_sync_timer_oncpus_fix.patch
-Content-Disposition: attachment;
-	filename="ondemand_sync_timer_oncpus_fix.patch"
-
-UmVtb3ZlIGFkZGl0aW9uYWwgdmFyaWFibGUsIHdoaWNoIHdhcyBjYXVzaW5nIGRpdmlzaW9uIGJ5
-IHplcm8gZXJyb3JzIGF0IGluaXQuCgpTaWduZWQtb2ZmLWJ5OiBBbGV4ZXkgU3Rhcmlrb3Zza2l5
-IDxhbGV4ZXkueS5zdGFyaWtvdnNraXlAaW50ZWwuY29tPgoKSW5kZXg6IGxpbnV4LTIuNi4xNS4x
-L2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxX29uZGVtYW5kLmMKPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgt
-Mi42LjE1LjEub3JpZy9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9vbmRlbWFuZC5jCTIwMDYtMDct
-MTcgMTU6MDA6MzkuMDAwMDAwMDAwICswNDAwCisrKyBsaW51eC0yLjYuMTUuMS9kcml2ZXJzL2Nw
-dWZyZXEvY3B1ZnJlcV9vbmRlbWFuZC5jCTIwMDYtMDctMTcgMTU6MjI6MjMuMDAwMDAwMDAwICsw
-NDAwCkBAIC03OCw3ICs3OCw2IEBACiAKIHN0cnVjdCBkYnNfdHVuZXJzIHsKIAl1bnNpZ25lZCBp
-bnQgc2FtcGxpbmdfcmF0ZTsKLQl1bnNpZ25lZCBpbnQgc2FtcGxpbmdfcmF0ZV9qaWZmaWVzOwog
-CXVuc2lnbmVkIGludCB1cF90aHJlc2hvbGQ7CiAJdW5zaWduZWQgaW50IGlnbm9yZV9uaWNlOwog
-CXVuc2lnbmVkIGludCBwb3dlcnNhdmVfYmlhczsKQEAgLTE0NSw3ICsxNDQsNyBAQAogCQlkYnNf
-aW5mby0+ZnJlcV9sb19qaWZmaWVzID0gMDsKIAkJcmV0dXJuIGZyZXFfbG87CiAJfQotCWppZmZp
-ZXNfdG90YWwgPSBkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlX2ppZmZpZXM7CisJamlmZmll
-c190b3RhbCA9IHVzZWNzX3RvX2ppZmZpZXMoZGJzX3R1bmVyc19pbnMuc2FtcGxpbmdfcmF0ZSk7
-CiAJamlmZmllc19oaSA9IChmcmVxX2F2ZyAtIGZyZXFfbG8pICogamlmZmllc190b3RhbDsKIAlq
-aWZmaWVzX2hpICs9ICgoZnJlcV9oaSAtIGZyZXFfbG8pIC8gMik7CiAJamlmZmllc19oaSAvPSAo
-ZnJlcV9oaSAtIGZyZXFfbG8pOwpAQCAtMjEwLDcgKzIwOSw2IEBACiAJfQogCiAJZGJzX3R1bmVy
-c19pbnMuc2FtcGxpbmdfcmF0ZSA9IGlucHV0OwotCWRic190dW5lcnNfaW5zLnNhbXBsaW5nX3Jh
-dGVfamlmZmllcyA9IHVzZWNzX3RvX2ppZmZpZXMoaW5wdXQpOwogCW11dGV4X3VubG9jaygmZGJz
-X211dGV4KTsKIAogCXJldHVybiBjb3VudDsKQEAgLTQxNiwxNiArNDE0LDEzIEBACiAJdW5zaWdu
-ZWQgaW50IGNwdSA9IHNtcF9wcm9jZXNzb3JfaWQoKTsKIAlzdHJ1Y3QgY3B1X2Ric19pbmZvX3Mg
-KmRic19pbmZvID0gJnBlcl9jcHUoY3B1X2Ric19pbmZvLCBjcHUpOwogCS8qIFdlIHdhbnQgYWxs
-IENQVXMgdG8gZG8gc2FtcGxpbmcgbmVhcmx5IG9uIHNhbWUgamlmZnkgKi8KLQlpbnQgZGVsYXkg
-PSBkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlX2ppZmZpZXMgLQotCQkoamlmZmllcyAlIGRi
-c190dW5lcnNfaW5zLnNhbXBsaW5nX3JhdGVfamlmZmllcyk7CisJaW50IGRlbGF5ID0gdXNlY3Nf
-dG9famlmZmllcyhkYnNfdHVuZXJzX2lucy5zYW1wbGluZ19yYXRlKTsKKwlkZWxheSAtPSBqaWZm
-aWVzICUgZGVsYXk7CiAJaWYgKCFkYnNfdHVuZXJzX2lucy5wb3dlcnNhdmVfYmlhcykgewogCQkv
-KiBDb21tb24gTk9STUFMX1NBTVBMRSBzZXR1cCAqLwogCQlJTklUX1dPUksoJmRic19pbmZvLT53
-b3JrLCBkb19kYnNfdGltZXIsCiAJCQkJKHZvaWQgKilEQlNfTk9STUFMX1NBTVBMRSk7CiAJCWRi
-c19jaGVja19jcHUoZGJzX2luZm8pOwotCQkvKiBXZSB3YW50IGFsbCBDUFVzIHRvIGRvIHNhbXBs
-aW5nIG5lYXJseSBvbiBzYW1lIGppZmZ5ICovCi0JCWRlbGF5ID0gZGJzX3R1bmVyc19pbnMuc2Ft
-cGxpbmdfcmF0ZV9qaWZmaWVzIC0KLQkgICAgICAgIAkoamlmZmllcyAlIGRic190dW5lcnNfaW5z
-LnNhbXBsaW5nX3JhdGVfamlmZmllcyk7CiAJCXF1ZXVlX2RlbGF5ZWRfd29ya19vbihjcHUsIGtv
-bmRlbWFuZF93cSwKIAkJCQkmZGJzX2luZm8tPndvcmssIGRlbGF5KTsKIAkJcmV0dXJuOwpAQCAt
-NDU3LDEyICs0NTIsMTEgQEAKIHN0YXRpYyBpbmxpbmUgdm9pZCBkYnNfdGltZXJfaW5pdCh1bnNp
-Z25lZCBpbnQgY3B1KQogewogCXN0cnVjdCBjcHVfZGJzX2luZm9fcyAqZGJzX2luZm8gPSAmcGVy
-X2NwdShjcHVfZGJzX2luZm8sIGNwdSk7Ci0JaW50IGRlbGF5ID0gZGJzX3R1bmVyc19pbnMuc2Ft
-cGxpbmdfcmF0ZV9qaWZmaWVzIC0KLQkJKGppZmZpZXMgJSBkYnNfdHVuZXJzX2lucy5zYW1wbGlu
-Z19yYXRlX2ppZmZpZXMpOwotCisJLyogV2Ugd2FudCBhbGwgQ1BVcyB0byBkbyBzYW1wbGluZyBu
-ZWFybHkgb24gc2FtZSBqaWZmeSAqLworCWludCBkZWxheSA9IHVzZWNzX3RvX2ppZmZpZXMoZGJz
-X3R1bmVyc19pbnMuc2FtcGxpbmdfcmF0ZSk7CisJZGVsYXkgLT0gamlmZmllcyAlIGRlbGF5Owog
-CW9uZGVtYW5kX3Bvd2Vyc2F2ZV9iaWFzX2luaXQoKTsKIAlJTklUX1dPUksoJmRic19pbmZvLT53
-b3JrLCBkb19kYnNfdGltZXIsIDApOwotCS8qIFdlIHdhbnQgYWxsIENQVXMgdG8gZG8gc2FtcGxp
-bmcgbmVhcmx5IG9uIHNhbWUgamlmZnkgKi8KIAlxdWV1ZV9kZWxheWVkX3dvcmtfb24oY3B1LCBr
-b25kZW1hbmRfd3EsICZkYnNfaW5mby0+d29yaywgZGVsYXkpOwogfQogCg==
-
-------_=_NextPart_001_01C6A996.6026261B
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
+2006/6/10, Martin Skytte <skytte@gmail.com>:
+>
+> I have CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI and CONFIG_ACPI_PROCESSOR
+> buildin in the kernel.
+> The BIOS setting is also enabled (and it works in windows)
+>
+> With a custom kernel I enabled CONFIG_CPU_FREQ_DEBUG, but with boot
+> options cpufreq.debug=3D[1,2,4] (cpufreq.debug alone is not valid) I =
+still
+> get "no such device" when inserting speedstep-centrino. You might need =
+to
+> elaborate on this, I am not used to debugging hardware.
+>
+> The contents of kernel.log is courious I think.
+>
+> -Martin
+>
+> 2006/6/10, Pallipadi, Venkatesh < venkatesh.pallipadi@intel.com >:
+>
+> >
+> >
+> > Do you have CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI and =
+CONFIG_ACPI_PROCESSOR
+> >
+> > selected in your config options? Check your BIOS have option to
+> > Enable/Disable
+> > Speedstep feature. It is typically called EIST/IST/Speedstep in BIOS
+> > options.
+> >
+> > If it still it doesn't work, then we need to debug this further
+> > 1) Enable CPUFREQ_DEBUG and pass appropriate boot option =
+cpufreq.debug
+> > and see what is the error you get while inserting speedstep_centrino
+> > 2) Get the latest pmtools from here
+> > http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
+> > And send acpidump output from your system to me.
+> >
+> > Thanks,
+> > Venki
+> >
+> > >-----Original Message-----
+> > >From: cpufreq-bounces@lists.linux.org.uk
+> > >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Martin =
+Skytte
+> > >Sent: Saturday, June 10, 2006 1:12 AM
+> > >To: cpufreq@lists.linux.org.uk
+> > >Subject: speedstep-centrino does not work on Core Duo T2400
+> > >
+> > >Hi,
+> > >When I try to load the speedstep-centrino module I get:
+> > >FATAL: Error inserting speedstep_centrino
+> > >(/lib/modules/2.6.16-beyond/kernel/arch/i386/kernel/cpu/cpufreq
+> > >/speedstep-
+> > >centrino.ko): No such device
+> > >The same happens when loading acpi-cpufreq.
+> > >
+> > >I've been wrestling with this for quite some time now, but I
+> > >really don't
+> > >have no ideas as to how to solve this.
+> > >
+> > >-Martin
+> > >
+> > >cat /proc/cpuinfo
+> > >processor    : 0
+> > >vendor_id    : GenuineIntel
+> > >cpu family    : 6
+> > >model        : 14
+> > >model name    : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+> > >stepping    : 8
+> > >cpu MHz        : 1828.805
+> > >cache size    : 2048 KB
+> > >physical id    : 0
+> > >siblings    : 2
+> > >core id        : 0
+> > >cpu cores    : 2
+> > >fdiv_bug    : no
+> > >hlt_bug        : no
+> > >f00f_bug    : no
+> > >coma_bug    : no
+> > >fpu        : yes
+> > >fpu_exception    : yes
+> > >cpuid level    : 10
+> > >wp        : yes
+> > >flags        : fpu vme de pse tsc msr pae mce cx8 apic sep
+> > >mtrr pge mca cmov
+> > >pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc =
+pni
+> >
+> > >monitor vmx est tm2 xtpr
+> > >bogomips    : 3661.78
+> > >
+> > >processor    : 1
+> > >vendor_id    : GenuineIntel
+> > >cpu family    : 6
+> > >model        : 14
+> > >model name    : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+> > >stepping    : 8
+> > >cpu MHz        : 1828.805
+> > >cache size    : 2048 KB
+> > >physical id    : 0
+> > >siblings    : 2
+> > >core id        : 1
+> > >cpu cores    : 2
+> > >fdiv_bug    : no
+> > >hlt_bug        : no
+> > >f00f_bug    : no
+> > >coma_bug    : no
+> > >fpu        : yes
+> > >fpu_exception    : yes
+> > >cpuid level    : 10
+> > >wp        : yes
+> > >flags        : fpu vme de pse tsc msr pae mce cx8 apic sep
+> > >mtrr pge mca cmov
+> > >pat clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc =
+pni
+> > >monitor vmx est tm2 xtpr
+> > >bogomips    : 3657.40
+> > >_______________________________________________
+> > >Cpufreq mailing list
+> > >Cpufreq@lists.linux.org.uk
+> > > http://lists.linux.org.uk/mailman/listinfo/cpufreq
+> > >
+> >
+>
+>
+>
 _______________________________________________
 Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
-------_=_NextPart_001_01C6A996.6026261B--
-
