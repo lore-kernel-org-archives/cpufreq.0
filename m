@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
-Date: Mon, 17 Jul 2006 17:14:15 -0700
-Message-ID: <200607180014.k6I0EFxp014383@fire-2.osdl.org>
+Date: Mon, 17 Jul 2006 18:23:04 -0700
+Message-ID: <200607180123.k6I1N4mn017359@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,14 +20,14 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=6851
 
+luming.yu@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+          Component|cpufreq                     |Other
+           Category|Power Management            |ACPI
 
 
-
-
-------- Additional Comments From brandon@ifup.org  2006-07-17 17:10 -------
-Problem: When ondemand is the govenor suspend to ram fails.  
-
-Suspend to ram works with the performance govenor.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
