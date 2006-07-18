@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
-Date: Mon, 17 Jul 2006 18:23:53 -0700
-Message-ID: <200607180123.k6I1Nrx9017438@fire-2.osdl.org>
+Date: Mon, 17 Jul 2006 18:24:24 -0700
+Message-ID: <200607180124.k6I1OOVP017463@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,7 +24,9 @@ luming.yu@intel.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-          Component|Other                       |Power-Sleep-Wake
+                 CC|                            |acpi-
+                   |                            |bugzilla@lists.sourceforge.n
+                   |                            |et
 
 
 
