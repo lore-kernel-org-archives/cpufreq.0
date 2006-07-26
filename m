@@ -1,12 +1,8 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 2/2 vs 2.6.18-rc1] ondemand: add powersave_bias tunable
-Date: Tue, 25 Jul 2006 20:29:16 -0400
-Message-ID: <20060726002916.GA29328@redhat.com>
-References: <200607131621.31600.len.brown@intel.com>
-Mime-Version: 1.0
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
+Date: Wed, 26 Jul 2006 02:10:16 -0700
+Message-ID: <200607260910.k6Q9AGaB020424@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200607131621.31600.len.brown@intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,38 +13,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Len Brown <len.brown@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Thu, Jul 13, 2006 at 04:21:31PM -0400, Len Brown wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=6851
 
-Hey Len & co.
+pavel@suse.cz changed:
 
- > From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
- > 
- > cpufreq_ondemand.c |  164 +++++++++++++++++++++++++++++++++++++++++++++++++----
- >  1 files changed, 153 insertions(+), 11 deletions(-)
- > 
- > ondemand selects the minimum frequency that can retire
- > a workload with negligible idle time -- ideally resulting in the highest
- > performance/power efficiency with negligible performance impact.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |pavel@suse.cz
 
-I had to drop this and the follow-on patches from the cpufreq.git tree
-due to collisions with the stuff Linus did a few days ago.
 
-Can you rediff this please when things settle down again ?
-(Likely not to be until after the cpufreq vs hotplug cpu mess is sorted out).
 
-(Also, the third set of patches had some problems:
-- Please put one patch per mail, then I don't have to hand-hack mbox's
-  for git-apply
-- MIME is bad mmkay? Include the patches inline, and all will be happy.
+------- Additional Comments From pavel@suse.cz  2006-07-26 02:06 -------
+On lkml, there's currently discussion about ondemand's locking being termianlly
+broken. This is probably one of the symptoms
 
-Thanks,
-
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
