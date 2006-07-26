@@ -1,32 +1,27 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
-Date: Wed, 26 Jul 2006 02:10:42 -0700
-Message-ID: <200607260910.k6Q9AgDg020458@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Subject: RE: [discuss] Re: [PATCH] Allow all Opteron processors to
+ change pstate at same time
+Date: Wed, 26 Jul 2006 13:31:54 +0200
+Message-ID: <1153913514.4533.24.camel@lapdog.site>
+References: <84EA05E2CA77634C82730353CBE3A84303218EF5@SAUSEXMB1.amd.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751504AbWGZLdc@vger.kernel.org>
+In-Reply-To: <84EA05E2CA77634C82730353CBE3A84303218EF5@SAUSEXMB1.amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: ak@suse.de, "Gulam, Nagib" <nagib.gulam@amd.com>, discuss@x86-64.org, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6851
+On Tue, 2006-07-25 at 16:47 -0500, Langsdorf, Mark wrote:
+> Joachim was supposed to be collecting the data for the system
+> with PN! enabled, if he hasn't posted it already.
+> 
+yeah sorry, when I checked today my machine only had an uptime of 21
+hours and somehow has some new entries in the mcelog, great. I can redo
+the longterm test.
 
-pavel@suse.cz changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |davej@codemonkey.org.uk
+-joachim  
 
 
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
