@@ -1,46 +1,29 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: [discuss] Re: [PATCH] Allow all Opteron processors to change
-	pstate at same time
-Date: Wed, 26 Jul 2006 20:53:40 +0200
-Message-ID: <200607262053.40123.ak@suse.de>
-References: <84EA05E2CA77634C82730353CBE3A84303218F09@SAUSEXMB1.amd.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: cpufreq notifier initialization
+Date: Fri, 28 Jul 2006 17:19:04 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0607281710090.5679-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <84EA05E2CA77634C82730353CBE3A84303218F09@SAUSEXMB1.amd.com>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161305AbWG1VTH@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: discuss@x86-64.org
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, "Gulam,
-	Nagib" <nagib.gulam@amd.com>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
+Cc: Kernel development list <linux-kernel@vger.kernel.org>
 
+I want to modify the cpufreq_transition_notifier_list.  Currently it is a
+source of problems during swsusp, because the suspend and resume methods
+invoke the notifier chain at a time when the down_read() operation
+protecting the chain is not legal.
 
-> In contrast, the same machine running with TSC and standard
-> PN! sees massive drift, upwards of an hour, within an hour.
+If the notifier chain is protected by SRCU ("Sleepable RCU", recently
+added to -mm) instead of an rwsem, the problems would go away.  However 
+SRCU requires runtime initialization.  This means the notifier chain's 
+head has to be initialized before any listeners register on it and before 
+the chain is ever invoked.
 
-Do you see the same drift when you lock date on a single CPU
-with taskset?
+Can anyone tell me where a good place would be to do the initialization?  
+It has to be early enough that nobody has used the transition notifier 
+list but late enough that per-CPU data can be allocated.
 
-> If the TSCnow! patch reduces measured drift down to a second 
-> a week, would you consider that acceptable?
-
-No because even one second a week will break timing badly
-over time. 
-
-I believe the only good solution unless hardware helps would
-be to use per CPU TSC offsets as discussed earlier. Even that
-is a bit risky because there can be still very small drifts,
-but they should be limited by a clock tick error max and
-might work out.
-
--Andi
+Alan Stern
