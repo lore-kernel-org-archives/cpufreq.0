@@ -1,45 +1,74 @@
-From: Dave Jones <davej@redhat.com>
+From: bert hubert <bert.hubert@netherlabs.nl>
 Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1 on	pentium4
-Date: Sun, 30 Jul 2006 15:01:33 -0400
-Message-ID: <20060730190133.GD18757@redhat.com>
-References: <20060730120844.GA18293@outpost.ds9a.nl> <20060730160738.GB13377@irc.pl> <20060730165137.GA26511@outpost.ds9a.nl> <44CCF556.2060505@linux.intel.com> <20060730184443.GA30067@outpost.ds9a.nl>
+Date: Sun, 30 Jul 2006 21:19:32 +0200
+Message-ID: <20060730191932.GA31309@outpost.ds9a.nl>
+References: <20060730120844.GA18293@outpost.ds9a.nl> <20060730160738.GB13377@irc.pl> <20060730165137.GA26511@outpost.ds9a.nl> <44CCF556.2060505@linux.intel.com> <20060730184443.GA30067@outpost.ds9a.nl> <20060730190133.GD18757@redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932430AbWG3TDM@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932445AbWG3TTx@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20060730184443.GA30067@outpost.ds9a.nl>
+In-Reply-To: <20060730190133.GD18757@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bert hubert <bert.hubert@netherlabs.nl>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
+To: Dave Jones <davej@redhat.com>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
 
-On Sun, Jul 30, 2006 at 08:44:43PM +0200, bert hubert wrote:
- 
- > > Do you have any info in /sys/devices/system/cpu/cpu0/cpufreq ?
- > 
- > No, not with just acpi-cpufreq loaded. With the help of Zwane, I've
- > discovered that if I unload acpi-cpufreq, I *can* load p4-clockmod, and then
- > the directory you mention appears, and I can configure governors, and life
- > is good. This all on 2.6.18-rc3.
+On Sun, Jul 30, 2006 at 03:01:33PM -0400, Dave Jones wrote:
 
-Right, cpufreq drivers aren't 'stackable'.
+> Normally, if the necessary BIOS bits aren't there, then acpi-cpufreq will
+> fail to register.  For some reason it sounds like it believes that everything
+> went ok.  I wonder if something changed in acpi recently that caused this
+> change in behaviour ? Len ?
 
- > Do I understand correctly that acpi-cpufreq is supposed to offer comparable
- > features?
+As far as I can see, acpi_cpufreq does not pass on any errors it sees during
+init:
 
-If the BIOS supports the relevant ACPI tables.
+static int __init acpi_cpufreq_init (void)
+{
+        int                     result = 0;
 
- > Perhaps acpi-cpufreq *has* loaded, but did not find the proper hooks, but
- > has now registered itself, thus blocking p4-clockmod? When everything is
- > in-kernel, acpi-cpufreq might register itself first, which would lead to the
- > same thing.
+        dprintk("acpi_cpufreq_init\n");
 
-Normally, if the necessary BIOS bits aren't there, then acpi-cpufreq will
-fail to register.  For some reason it sounds like it believes that everything
-went ok.  I wonder if something changed in acpi recently that caused this
-change in behaviour ? Len ?
+        result = acpi_cpufreq_early_init_acpi();
+...
 
-		Dave
+And from acpi_cpufreq_early_init_acpi():
+
+static int acpi_cpufreq_early_init_acpi(void)
+{
+        struct acpi_processor_performance       *data;
+        unsigned int                            i, j;
+
+        dprintk("acpi_cpufreq_early_init\n");
+
+	( some memory allocations, does not look at acpi or bios )
+	
+        /* Do initialization in ACPI core */
+        acpi_processor_preregister_performance(acpi_perf_data);
+        return 0;
+}
+
+Note how any error from acpi_processor_preregister_performance is ignored.
+
+Ghetto patch which "fixes" the problem for me:
+
+--- ./arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c~orig  2006-07-30 21:14:43.000000000 +0200
++++ ./arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c       2006-07-30 21:11:34.000000000 +0200
+@@ -384,8 +384,7 @@
+        }
+
+        /* Do initialization in ACPI core */
+-       acpi_processor_preregister_performance(acpi_perf_data);
+-       return 0;
++       return acpi_processor_preregister_performance(acpi_perf_data);
+ }
+
+
+But tonight I have no speedstep laptop available to check if this does not
+kill acpi_cpufreq when it can work.
+
+Thanks for the hint, dave!
 
 -- 
-http://www.codemonkey.org.uk
+http://www.PowerDNS.com      Open source, database driven DNS Software 
+http://netherlabs.nl              Open and Closed source services
