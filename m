@@ -1,46 +1,79 @@
-From: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+From: bert hubert <bert.hubert@netherlabs.nl>
 Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1
- on	pentium4
-Date: Sun, 30 Jul 2006 22:07:18 +0400
-Message-ID: <44CCF556.2060505@linux.intel.com>
-References: <20060730120844.GA18293@outpost.ds9a.nl>	<20060730160738.GB13377@irc.pl> <20060730165137.GA26511@outpost.ds9a.nl>
+	on	pentium4
+Date: Sun, 30 Jul 2006 20:44:43 +0200
+Message-ID: <20060730184443.GA30067@outpost.ds9a.nl>
+References: <20060730120844.GA18293@outpost.ds9a.nl>
+	<20060730160738.GB13377@irc.pl>
+	<20060730165137.GA26511@outpost.ds9a.nl>
+	<44CCF556.2060505@linux.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932400AbWG3SH1@vger.kernel.org>
-In-Reply-To: <20060730165137.GA26511@outpost.ds9a.nl>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <44CCF556.2060505@linux.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, davej@redhat.com, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Cc: akpm@osdl.org, zwane@arm.linux.org.uk, tony@atomide.com, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, davej@redhat.com
 
-Do I understand your logs right and acpi-cpufreq is already loaded and works on your processor?
-Do you have any info in /sys/devices/system/cpu/cpu0/cpufreq ?
-Why do you want to load p4-clockmod over it? It does not save you any power, just limits performance.
+On Sun, Jul 30, 2006 at 10:07:18PM +0400, Alexey Starikovskiy wrote:
+> Do I understand your logs right and acpi-cpufreq is already loaded and 
+> works on your processor?
 
-Regards,
-	Alex.
+Yes, I can load it, but I'm unable to figure out what it is supposed to do,
+or if it is doing anything.
 
-bert hubert wrote:
->>   I have similar problem with cpufreq-nforce2 -- http://lkml.org/lkml/2006/7/7/234
->>   I haven't do a git-bisect yet.
-> 
-> To recap, cpufreq died for at least two people (Tomasz Torcz and me) between
-> 2.6.17 and 2.6.18-rc1. I've cc'd everybody who touched cpufreq according to
-> the shortlog.
-> 
-> Abundant details are in:
-> 
-> http://lkml.org/lkml/2006/7/30/87
-> 
-> New information is that I've narrowed it down from between 2.6.16.9 and
-> 2.6.18-rc1 to between 2.6.17.7 (which works) and 2.6.18-rc1 (which doesn't).
-> 
-> The problem exists both with cpufreq as modules and staticly, and both with
-> P4 and nforce2.
-> 
-> Please let me know how I can help you solve this problem. I'll try a git
-> bisect but a lot of the cpufreq changes appear to be interrelated, so I'm
-> unsure if it will work.
-> 
-> Thanks!
-> 
+> Do you have any info in /sys/devices/system/cpu/cpu0/cpufreq ?
+
+No, not with just acpi-cpufreq loaded. With the help of Zwane, I've
+discovered that if I unload acpi-cpufreq, I *can* load p4-clockmod, and then
+the directory you mention appears, and I can configure governors, and life
+is good. This all on 2.6.18-rc3.
+
+Do I understand correctly that acpi-cpufreq is supposed to offer comparable
+features?
+
+Perhaps acpi-cpufreq *has* loaded, but did not find the proper hooks, but
+has now registered itself, thus blocking p4-clockmod? When everything is
+in-kernel, acpi-cpufreq might register itself first, which would lead to the
+same thing.
+
+For completeness, lspci. This is a desktop system, but I need some kind of
+governer for quiet running.
+
+$ lspci
+0000:00:00.0 Host bridge: Intel Corporation 915G/P/GV/GL/PL/910GL Processor to I/O Controller (rev 04)
+0000:00:01.0 PCI bridge: Intel Corporation 915G/P/GV/GL/PL/910GL PCI Express Root Port (rev 04)
+0000:00:02.0 VGA compatible controller: Intel Corporation 82915G/GV/910GL Express Chipset Family Graphics Controller (rev 04)
+0000:00:1b.0 0403: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) High Definition Audio Controller (rev 03)
+0000:00:1c.0 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 1 (rev 03)
+0000:00:1c.1 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 2 (rev 03)
+0000:00:1c.2 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 3 (rev 03)
+0000:00:1c.3 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 4 (rev 03)
+0000:00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #1 (rev 03)
+0000:00:1d.1 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #2 (rev 03)
+0000:00:1d.2 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #3 (rev 03)
+0000:00:1d.3 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #4 (rev 03)
+0000:00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB2 EHCI Controller (rev 03)
+0000:00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d3)
+0000:00:1f.0 ISA bridge: Intel Corporation 82801FB/FR (ICH6/ICH6R) LPC Interface Bridge (rev 03)
+0000:00:1f.1 IDE interface: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) IDE Controller (rev 03)
+0000:00:1f.2 IDE interface: Intel Corporation 82801FB/FW (ICH6/ICH6W) SATA Controller (rev 03)0000:00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) SMBus Controller (rev 03)
+0000:06:00.0 Network controller: Techsan Electronics Co Ltd B2C2 FlexCopII DVB chip / Technisat SkyStar2 DVB card (rev 02)
+0000:06:08.0 Ethernet controller: Intel Corporation 82562ET/EZ/GT/GZ - PRO/100 VE (LOM) Ethernet Controller (rev 01)
+
+Thanks!
+
+-- 
+http://www.PowerDNS.com      Open source, database driven DNS Software 
+http://netherlabs.nl              Open and Closed source services
