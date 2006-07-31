@@ -1,74 +1,68 @@
-From: bert hubert <bert.hubert@netherlabs.nl>
-Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1 on	pentium4
-Date: Sun, 30 Jul 2006 21:19:32 +0200
-Message-ID: <20060730191932.GA31309@outpost.ds9a.nl>
-References: <20060730120844.GA18293@outpost.ds9a.nl> <20060730160738.GB13377@irc.pl> <20060730165137.GA26511@outpost.ds9a.nl> <44CCF556.2060505@linux.intel.com> <20060730184443.GA30067@outpost.ds9a.nl> <20060730190133.GD18757@redhat.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Linux v2.6.18-rc3
+Date: Sun, 30 Jul 2006 21:27:46 -0700
+Message-ID: <20060730212746.4c2e1466.akpm@osdl.org>
+References: <Pine.LNX.4.64.0607292320490.4168@g5.osdl.org>
+	<4807377b0607302113i4e984ff6j1ebae5562148907c@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932445AbWG3TTx@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060730190133.GD18757@redhat.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751148AbWGaE1w@vger.kernel.org>
+In-Reply-To: <4807377b0607302113i4e984ff6j1ebae5562148907c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, Alan Stern <stern@rowland.harvard.edu>, cpufreq@www.linux.org.uk
 
-On Sun, Jul 30, 2006 at 03:01:33PM -0400, Dave Jones wrote:
+On Sun, 30 Jul 2006 21:13:48 -0700
+"Jesse Brandeburg" <jesse.brandeburg@gmail.com> wrote:
 
-> Normally, if the necessary BIOS bits aren't there, then acpi-cpufreq will
-> fail to register.  For some reason it sounds like it believes that everything
-> went ok.  I wonder if something changed in acpi recently that caused this
-> change in behaviour ? Len ?
+> On 7/29/06, Linus Torvalds <torvalds@osdl.org> wrote:
+> >
+> > Ok, this missed a week (it should really have been -rc4, and we should
+> > have had a -rc3 a week ago), but the fact is, with a lot of people at the
+> > kernel summit and at OLS, it was so quiet for a week that there simply was
+> > no point.
+> 
+> not sure if this is a regression or not, get this on my IBM thinkpad
+> T43 when resuming from S3 or from hibernate to disk.
+> 
+> acpi acpi: suspend
+> PM: Entering mem sleep
+> Intel machine check architecture supported.
+> Intel machine check reporting enabled on CPU#0.
+> Back to C!
+> BUG: sleeping function called from invalid context at kernel/rwsem.c:20
+> in_atomic():0, irqs_disabled():1
+>  [<c012d638>] down_read+0x12/0x1f
+>  [<c012605b>] blocking_notifier_call_chain+0xe/0x29
+>  [<c029199a>] cpufreq_resume+0x118/0x13f
+>  [<c0231b68>] __sysdev_resume+0x20/0x53
+>  [<c0231ca9>] sysdev_resume+0x16/0x47
+>  [<c0235f93>] device_power_up+0x5/0xa
+>  [<c013358d>] suspend_enter+0x3b/0x44
+>  [<c011b644>] printk+0x1b/0x1f
+>  [<c01336fe>] enter_state+0x168/0x198
+>  [<c01337b3>] state_store+0x85/0x99
+>  [<c013372e>] state_store+0x0/0x99
+>  [<c019047a>] subsys_attr_store+0x1e/0x22
+>  [<c01906ca>] sysfs_write_file+0xa6/0xcc
+>  [<c0190624>] sysfs_write_file+0x0/0xcc
+>  [<c015ae52>] vfs_write+0xa8/0x159
+>  [<c015b398>] sys_write+0x41/0x67
+>  [<c0102bc9>] sysenter_past_esp+0x56/0x79
+> PM: Finishing wakeup.
+> acpi acpi: resuming
+> 
+> full dmesg and .config attached, I can test patches.
 
-As far as I can see, acpi_cpufreq does not pass on any errors it sees during
-init:
+I think this is the cpufreq problem wherein it sometimes requires that the
+notifier chain be traversed from atomic context and at other times it
+requires that sleeping functions be callable from within the traversal. 
+IOW: we're screwed whatever type of locking we use on that chain.
 
-static int __init acpi_cpufreq_init (void)
-{
-        int                     result = 0;
+I think Alan is cooking up a scheme wherein we fix this with an srcu-locked
+notifier chain.  If so, it'd be nice to get that moving along a bit?
 
-        dprintk("acpi_cpufreq_init\n");
-
-        result = acpi_cpufreq_early_init_acpi();
-...
-
-And from acpi_cpufreq_early_init_acpi():
-
-static int acpi_cpufreq_early_init_acpi(void)
-{
-        struct acpi_processor_performance       *data;
-        unsigned int                            i, j;
-
-        dprintk("acpi_cpufreq_early_init\n");
-
-	( some memory allocations, does not look at acpi or bios )
-	
-        /* Do initialization in ACPI core */
-        acpi_processor_preregister_performance(acpi_perf_data);
-        return 0;
-}
-
-Note how any error from acpi_processor_preregister_performance is ignored.
-
-Ghetto patch which "fixes" the problem for me:
-
---- ./arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c~orig  2006-07-30 21:14:43.000000000 +0200
-+++ ./arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c       2006-07-30 21:11:34.000000000 +0200
-@@ -384,8 +384,7 @@
-        }
-
-        /* Do initialization in ACPI core */
--       acpi_processor_preregister_performance(acpi_perf_data);
--       return 0;
-+       return acpi_processor_preregister_performance(acpi_perf_data);
- }
-
-
-But tonight I have no speedstep laptop available to check if this does not
-kill acpi_cpufreq when it can work.
-
-Thanks for the hint, dave!
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+If not, I'm not sure what the fix is - perhaps create a second notifier
+chain which has the same contents but uses a different locking approach?
