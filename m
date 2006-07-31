@@ -1,33 +1,88 @@
-From: bert hubert <bert.hubert@netherlabs.nl>
-Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1 on	pentium4
-Date: Mon, 31 Jul 2006 09:08:01 +0200
-Message-ID: <20060731070800.GA22205@outpost.ds9a.nl>
-References: <20060730120844.GA18293@outpost.ds9a.nl> <20060730160738.GB13377@irc.pl> <20060730165137.GA26511@outpost.ds9a.nl> <44CCF556.2060505@linux.intel.com> <20060730184443.GA30067@outpost.ds9a.nl> <20060730190133.GD18757@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Linux v2.6.18-rc3
+Date: Mon, 31 Jul 2006 10:54:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.0607311033310.7225-100000@iolanthe.rowland.org>
+References: <20060730212746.4c2e1466.akpm@osdl.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932507AbWGaHIX@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060730190133.GD18757@redhat.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751170AbWGaOy6@vger.kernel.org>
+In-Reply-To: <20060730212746.4c2e1466.akpm@osdl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
+To: Andrew Morton <akpm@osdl.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>, linux-kernel@vger.kernel.org, torvalds@osdl.org, cpufreq@www.linux.org.uk
 
-> went ok.  I wonder if something changed in acpi recently that caused this
-> change in behaviour ? Len ?
+On Sun, 30 Jul 2006, Andrew Morton wrote:
 
-Dave,
+> On Sun, 30 Jul 2006 21:13:48 -0700
+> "Jesse Brandeburg" <jesse.brandeburg@gmail.com> wrote:
+> 
+> > On 7/29/06, Linus Torvalds <torvalds@osdl.org> wrote:
+> > >
+> > > Ok, this missed a week (it should really have been -rc4, and we should
+> > > have had a -rc3 a week ago), but the fact is, with a lot of people at the
+> > > kernel summit and at OLS, it was so quiet for a week that there simply was
+> > > no point.
+> > 
+> > not sure if this is a regression or not, get this on my IBM thinkpad
+> > T43 when resuming from S3 or from hibernate to disk.
+> > 
+> > acpi acpi: suspend
+> > PM: Entering mem sleep
+> > Intel machine check architecture supported.
+> > Intel machine check reporting enabled on CPU#0.
+> > Back to C!
+> > BUG: sleeping function called from invalid context at kernel/rwsem.c:20
+> > in_atomic():0, irqs_disabled():1
+> >  [<c012d638>] down_read+0x12/0x1f
+> >  [<c012605b>] blocking_notifier_call_chain+0xe/0x29
+> >  [<c029199a>] cpufreq_resume+0x118/0x13f
+> >  [<c0231b68>] __sysdev_resume+0x20/0x53
+> >  [<c0231ca9>] sysdev_resume+0x16/0x47
+> >  [<c0235f93>] device_power_up+0x5/0xa
+> >  [<c013358d>] suspend_enter+0x3b/0x44
+> >  [<c011b644>] printk+0x1b/0x1f
+> >  [<c01336fe>] enter_state+0x168/0x198
+> >  [<c01337b3>] state_store+0x85/0x99
+> >  [<c013372e>] state_store+0x0/0x99
+> >  [<c019047a>] subsys_attr_store+0x1e/0x22
+> >  [<c01906ca>] sysfs_write_file+0xa6/0xcc
+> >  [<c0190624>] sysfs_write_file+0x0/0xcc
+> >  [<c015ae52>] vfs_write+0xa8/0x159
+> >  [<c015b398>] sys_write+0x41/0x67
+> >  [<c0102bc9>] sysenter_past_esp+0x56/0x79
+> > PM: Finishing wakeup.
+> > acpi acpi: resuming
+> > 
+> > full dmesg and .config attached, I can test patches.
+> 
+> I think this is the cpufreq problem wherein it sometimes requires that the
+> notifier chain be traversed from atomic context and at other times it
+> requires that sleeping functions be callable from within the traversal. 
+> IOW: we're screwed whatever type of locking we use on that chain.
 
-I'm no expert but I think it was you that made this change in
-http://kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;h=567b39bea07e4fbbe091b265b010905e3d30ff5a;hp=1a7bdcef19261deff5a7ea8ee13d5a8ddb434a19;hb=911cb74bb9e77e40749abc2fca6fe74d87d940f3;f=arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+I have looked at that problem more closely, and my earlier understanding
+wasn't quite right.  It's not that the context needs to be atomic at some
+times but not others -- it should always be a process context.  The
+problem is that the suspend and resume traversals are done at a time when
+interrupts need to remain disabled, since cpufreq registers its drivers as
+sysdevs.  (Kind of like SYSTEM_BOOTING, except that system_state isn't set
+to anything special.)  Because the down_read() call that protects the
+notifier chain isn't allowed when interrupts are disabled, the BUG occurs.
 
-+ /* Do initialization in ACPI core */
-+ acpi_processor_preregister_performance(acpi_perf_data);
-+ return 0;
-+}
+> I think Alan is cooking up a scheme wherein we fix this with an srcu-locked
+> notifier chain.  If so, it'd be nice to get that moving along a bit?
 
-:-)
+Yes; protecting the notifier chain by SRCU instead of an rwsem will 
+prevent the problem.  It's a trivial change, except for one thing: SRCU 
+structures require initialization at runtime before they can be used.  
+This initialization must be done before any driver tries to register on 
+the cpufreq transition notifier chain.
 
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+If someone could give me a hint where a good place would be to carry out
+the initialization, I'd appreciate it.  Would an initcall be appropriate?  
+And if so, which sort of initcall?  core_initcall?  The only requirement 
+is that alloc_percpu() must be available.
+
+Alan Stern
