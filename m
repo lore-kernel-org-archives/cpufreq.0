@@ -1,65 +1,58 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Linux v2.6.18-rc3
-Date: Mon, 31 Jul 2006 11:59:45 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0607311140360.8047-100000@iolanthe.rowland.org>
-References: <20060731081112.05427677.akpm@osdl.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1
+	on	pentium4
+Date: Mon, 31 Jul 2006 12:20:46 -0400
+Message-ID: <20060731162046.GA4631@redhat.com>
+References: <20060730120844.GA18293@outpost.ds9a.nl>
+	<20060730160738.GB13377@irc.pl>
+	<20060730165137.GA26511@outpost.ds9a.nl>
+	<44CCF556.2060505@linux.intel.com>
+	<20060730184443.GA30067@outpost.ds9a.nl>
+	<20060730190133.GD18757@redhat.com>
+	<20060731070800.GA22205@outpost.ds9a.nl>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751106AbWGaP7r@vger.kernel.org>
-In-Reply-To: <20060731081112.05427677.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20060731070800.GA22205@outpost.ds9a.nl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: jesse.brandeburg@gmail.com, linux-kernel@vger.kernel.org, torvalds@osdl.org, cpufreq@www.linux.org.uk
+To: bert hubert <bert.hubert@netherlabs.nl>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
 
-On Mon, 31 Jul 2006, Andrew Morton wrote:
+On Mon, Jul 31, 2006 at 09:08:01AM +0200, bert hubert wrote:
+ > > went ok.  I wonder if something changed in acpi recently that caused this
+ > > change in behaviour ? Len ?
+ > 
+ > Dave,
+ > 
+ > I'm no expert but I think it was you that made this change in
+ > http://kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;h=567b39bea07e4fbbe091b265b010905e3d30ff5a;hp=1a7bdcef19261deff5a7ea8ee13d5a8ddb434a19;hb=911cb74bb9e77e40749abc2fca6fe74d87d940f3;f=arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+ > 
+ > + /* Do initialization in ACPI core */
+ > + acpi_processor_preregister_performance(acpi_perf_data);
+ > + return 0;
+ > +}
+ > 
+ > :-)
 
-> > > I think this is the cpufreq problem wherein it sometimes requires that the
-> > > notifier chain be traversed from atomic context and at other times it
-> > > requires that sleeping functions be callable from within the traversal. 
-> > > IOW: we're screwed whatever type of locking we use on that chain.
-> > 
-> > I have looked at that problem more closely, and my earlier understanding
-> > wasn't quite right.  It's not that the context needs to be atomic at some
-> > times but not others -- it should always be a process context.  The
-> > problem is that the suspend and resume traversals are done at a time when
-> > interrupts need to remain disabled, since cpufreq registers its drivers as
-> > sysdevs.  (Kind of like SYSTEM_BOOTING, except that system_state isn't set
-> > to anything special.)  Because the down_read() call that protects the
-> > notifier chain isn't allowed when interrupts are disabled, the BUG occurs.
-> 
-> So why wouldn't an atomic notifier be suitable?
+I'm puzzled. As that commit message doesn't match the diff.
+If you click "commitdiff", you'll see the actual commit for that msg,
+which is a one-liner.
 
-I can't be entirely certain.  It looks like most of the callout routines
-would work fine in an atomic context, but there are a couple of 
-exceptions:
+Your change in your previous mail makes sense to me though,
+so I'll commit it to cpufreq.git later today.
 
-drivers/pcmcia/soc_common.c:soc_pcmcia_notifier() does a down().  Perhaps
-this should be made conditional on the notifier message not being
-CPUFREQ_SUSPENDCHANGE or CPUFREQ_RESUMECHANGE.  Similarly,
-arch/i386/kernel/tsc.c:time_cpufreq_notifier() calls
-write_sequnlock_irq().
+		Dave
 
-(Not to mention the fact that drivers/serial/sh-sci.c:sci_init() registers 
-a cpufreq notifier but sci_exit() neglects to unregister it.)
 
-In general, the callout routines don't seem to treat the PRECHANGE and
-POSTCHANGE messages differently from the SUSPENDCHANGE and RESUMECHANGE
-messages.  So I'm reluctant to split the two sorts of messages up into two
-separate chains.
-
-> > If someone could give me a hint where a good place would be to carry out
-> > the initialization, I'd appreciate it.  Would an initcall be appropriate?  
-> > And if so, which sort of initcall?  core_initcall?  The only requirement 
-> > is that alloc_percpu() must be available.
-> > 
-> 
-> core_initcall() would suit.  That's actually a bit late for this sort of
-> thing, but we can always add a new section later if it becomes a problem. 
-> I'd suggest that we ensure that srcu_notifier_chain_register() performs a
-> reliable BUG() if it gets called too early.
-
-Okay, let me work on a patch.
-
-Alan Stern
+-- 
+http://www.codemonkey.org.uk
