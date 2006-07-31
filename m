@@ -1,21 +1,12 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1
-	on	pentium4
-Date: Mon, 31 Jul 2006 16:38:29 -0400
-Message-ID: <20060731203829.GF4631@redhat.com>
-References: <20060730120844.GA18293@outpost.ds9a.nl>
-	<20060730160738.GB13377@irc.pl>
-	<20060730165137.GA26511@outpost.ds9a.nl>
-	<44CCF556.2060505@linux.intel.com>
-	<20060730184443.GA30067@outpost.ds9a.nl>
-	<20060730190133.GD18757@redhat.com>
-	<20060731070800.GA22205@outpost.ds9a.nl>
-	<20060731162046.GA4631@redhat.com>
-	<20060731185713.GA16797@outpost.ds9a.nl>
+Subject: Re: [PATCH 1/8] acpi-cpufreq: fix multicore bug
+Date: Mon, 31 Jul 2006 17:49:50 -0400
+Message-ID: <20060731214950.GD31513@redhat.com>
+References: <44CE4E0B.608@linux.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060731185713.GA16797@outpost.ds9a.nl>
+In-Reply-To: <44CE4E0B.608@linux.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -28,19 +19,30 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bert hubert <bert.hubert@netherlabs.nl>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
+To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Cc: cpufreq@lists.linux.org.uk
 
-On Mon, Jul 31, 2006 at 08:57:13PM +0200, bert hubert wrote:
- > On Mon, Jul 31, 2006 at 12:20:46PM -0400, Dave Jones wrote:
+On Mon, Jul 31, 2006 at 10:38:03PM +0400, Alexey Starikovskiy wrote:
+ > acpi-cpufreq.c |   98 
+ > +++++++++------------------------------------------------
+ > 1 file changed, 17 insertions(+), 81 deletions(-)
  > 
- > > Your change in your previous mail makes sense to me though,
- > > so I'll commit it to cpufreq.git later today.
+ > Fix a problem on a multicore processors. 
  > 
- > Do you think this will make 2.6.18? Otherwise any kernel with acpi_list
- > compiled in will have no frequency scaling, unless it supports scaling over
- > ACPI.
+ > Signed-off: Denis Sadykov <denis.m.sadykov@intel.com>
+ > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi at intel.com>
+ > Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy at intel.com>
 
-Yes, I'll queue it for .18
+Can I get a little more verbose description for the changelog please ?
+I think I understand whats going on here, but I'd like to understand
+it more than "fix a bug" when I'm browsing the history 6 months from now.
+
+Also, is there any way you can make thunderbird not send mails
+with format=flowed in your Content-type: ?  mutt respects this attribute
+and handily word-wraps your diffs. (Which doesn't matter for applying
+them, but it does make it a pain when reviewing).
+
+Thanks,
 
 		Dave
 
