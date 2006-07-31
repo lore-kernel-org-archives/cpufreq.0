@@ -1,148 +1,48 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Linux v2.6.18-rc3
-Date: Mon, 31 Jul 2006 16:34:10 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.0607311627240.5805-100000@iolanthe.rowland.org>
-References: <20060731081112.05427677.akpm@osdl.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1
+	on	pentium4
+Date: Mon, 31 Jul 2006 16:38:29 -0400
+Message-ID: <20060731203829.GF4631@redhat.com>
+References: <20060730120844.GA18293@outpost.ds9a.nl>
+	<20060730160738.GB13377@irc.pl>
+	<20060730165137.GA26511@outpost.ds9a.nl>
+	<44CCF556.2060505@linux.intel.com>
+	<20060730184443.GA30067@outpost.ds9a.nl>
+	<20060730190133.GD18757@redhat.com>
+	<20060731070800.GA22205@outpost.ds9a.nl>
+	<20060731162046.GA4631@redhat.com>
+	<20060731185713.GA16797@outpost.ds9a.nl>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030193AbWGaUeO@vger.kernel.org>
-In-Reply-To: <20060731081112.05427677.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20060731185713.GA16797@outpost.ds9a.nl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jesse.brandeburg@gmail.com, Andrew Morton <akpm@osdl.org>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, torvalds@osdl.org, cpufreq@www.linux.org.uk
+To: bert hubert <bert.hubert@netherlabs.nl>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
 
-On Mon, 31 Jul 2006, Andrew Morton wrote:
+On Mon, Jul 31, 2006 at 08:57:13PM +0200, bert hubert wrote:
+ > On Mon, Jul 31, 2006 at 12:20:46PM -0400, Dave Jones wrote:
+ > 
+ > > Your change in your previous mail makes sense to me though,
+ > > so I'll commit it to cpufreq.git later today.
+ > 
+ > Do you think this will make 2.6.18? Otherwise any kernel with acpi_list
+ > compiled in will have no frequency scaling, unless it supports scaling over
+ > ACPI.
 
-> core_initcall() would suit.  That's actually a bit late for this sort of
-> thing, but we can always add a new section later if it becomes a problem. 
-> I'd suggest that we ensure that srcu_notifier_chain_register() performs a
-> reliable BUG() if it gets called too early.
+Yes, I'll queue it for .18
 
-Here's a patch to test.  I can't try it out on my machine because 
-2.6.18-rc2-mm1 (even without the patch) crashes partway through a 
-suspend-to-disk, in a way that's extremely hard to debug.  Some sort of 
-spinlock-related bug occurs within ioapic_write_entry.
+		Dave
 
-Alan Stern
-
-
-Index: 2.6.18-rc2-mm1/kernel/sys.c
-===================================================================
---- 2.6.18-rc2-mm1.orig/kernel/sys.c
-+++ 2.6.18-rc2-mm1/kernel/sys.c
-@@ -516,7 +516,7 @@ EXPORT_SYMBOL_GPL(srcu_notifier_call_cha
- void srcu_init_notifier_head(struct srcu_notifier_head *nh)
- {
- 	mutex_init(&nh->mutex);
--	init_srcu_struct(&nh->srcu);
-+	BUG_ON(init_srcu_struct(&nh->srcu) < 0);
- 	nh->head = NULL;
- }
- 
-Index: 2.6.18-rc2-mm1/kernel/srcu.c
-===================================================================
---- 2.6.18-rc2-mm1.orig/kernel/srcu.c
-+++ 2.6.18-rc2-mm1/kernel/srcu.c
-@@ -42,11 +42,12 @@
-  * to any other function.  Each srcu_struct represents a separate domain
-  * of SRCU protection.
-  */
--void init_srcu_struct(struct srcu_struct *sp)
-+int init_srcu_struct(struct srcu_struct *sp)
- {
- 	sp->completed = 0;
--	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
- 	mutex_init(&sp->mutex);
-+	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
-+	return (sp->per_cpu_ref ? 0 : -ENOMEM);
- }
- 
- /*
-Index: 2.6.18-rc2-mm1/include/linux/srcu.h
-===================================================================
---- 2.6.18-rc2-mm1.orig/include/linux/srcu.h
-+++ 2.6.18-rc2-mm1/include/linux/srcu.h
-@@ -43,7 +43,7 @@ struct srcu_struct {
- #define srcu_barrier()
- #endif /* #else #ifndef CONFIG_PREEMPT */
- 
--void init_srcu_struct(struct srcu_struct *sp);
-+int init_srcu_struct(struct srcu_struct *sp);
- void cleanup_srcu_struct(struct srcu_struct *sp);
- int srcu_read_lock(struct srcu_struct *sp);
- void srcu_read_unlock(struct srcu_struct *sp, int idx);
-Index: 2.6.18-rc2-mm1/drivers/cpufreq/cpufreq.c
-===================================================================
---- 2.6.18-rc2-mm1.orig/drivers/cpufreq/cpufreq.c
-+++ 2.6.18-rc2-mm1/drivers/cpufreq/cpufreq.c
-@@ -52,8 +52,14 @@ static void handle_update(void *data);
-  * The mutex locks both lists.
-  */
- static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
--static BLOCKING_NOTIFIER_HEAD(cpufreq_transition_notifier_list);
-+static struct srcu_notifier_head cpufreq_transition_notifier_list;
- 
-+static int __init init_cpufreq_transition_notifier_list(void)
-+{
-+	srcu_init_notifier_head(&cpufreq_transition_notifier_list);
-+	return 0;
-+}
-+core_initcall(init_cpufreq_transition_notifier_list);
- 
- static LIST_HEAD(cpufreq_governor_list);
- static DEFINE_MUTEX (cpufreq_governor_mutex);
-@@ -262,14 +268,14 @@ void cpufreq_notify_transition(struct cp
- 				freqs->old = policy->cur;
- 			}
- 		}
--		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
- 				CPUFREQ_PRECHANGE, freqs);
- 		adjust_jiffies(CPUFREQ_PRECHANGE, freqs);
- 		break;
- 
- 	case CPUFREQ_POSTCHANGE:
- 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
--		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
- 				CPUFREQ_POSTCHANGE, freqs);
- 		if (likely(policy) && likely(policy->cpu == freqs->cpu))
- 			policy->cur = freqs->new;
-@@ -1049,7 +1055,7 @@ static int cpufreq_suspend(struct sys_de
- 		freqs.old = cpu_policy->cur;
- 		freqs.new = cur_freq;
- 
--		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
-+		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
- 				    CPUFREQ_SUSPENDCHANGE, &freqs);
- 		adjust_jiffies(CPUFREQ_SUSPENDCHANGE, &freqs);
- 
-@@ -1130,7 +1136,7 @@ static int cpufreq_resume(struct sys_dev
- 			freqs.old = cpu_policy->cur;
- 			freqs.new = cur_freq;
- 
--			blocking_notifier_call_chain(
-+			srcu_notifier_call_chain(
- 					&cpufreq_transition_notifier_list,
- 					CPUFREQ_RESUMECHANGE, &freqs);
- 			adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
-@@ -1176,7 +1182,7 @@ int cpufreq_register_notifier(struct not
- 
- 	switch (list) {
- 	case CPUFREQ_TRANSITION_NOTIFIER:
--		ret = blocking_notifier_chain_register(
-+		ret = srcu_notifier_chain_register(
- 				&cpufreq_transition_notifier_list, nb);
- 		break;
- 	case CPUFREQ_POLICY_NOTIFIER:
-@@ -1208,7 +1214,7 @@ int cpufreq_unregister_notifier(struct n
- 
- 	switch (list) {
- 	case CPUFREQ_TRANSITION_NOTIFIER:
--		ret = blocking_notifier_chain_unregister(
-+		ret = srcu_notifier_chain_unregister(
- 				&cpufreq_transition_notifier_list, nb);
- 		break;
- 	case CPUFREQ_POLICY_NOTIFIER:
+-- 
+http://www.codemonkey.org.uk
