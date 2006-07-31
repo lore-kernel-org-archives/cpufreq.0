@@ -1,29 +1,57 @@
-From: bert hubert <bert.hubert@netherlabs.nl>
-Subject: Re: 2.6.17 -> 2.6.18 regression: cpufreq broken since 2.6.18-rc1 on	pentium4
-Date: Mon, 31 Jul 2006 20:57:13 +0200
-Message-ID: <20060731185713.GA16797@outpost.ds9a.nl>
-References: <20060730120844.GA18293@outpost.ds9a.nl> <20060730160738.GB13377@irc.pl> <20060730165137.GA26511@outpost.ds9a.nl> <44CCF556.2060505@linux.intel.com> <20060730184443.GA30067@outpost.ds9a.nl> <20060730190133.GD18757@redhat.com> <20060731070800.GA22205@outpost.ds9a.nl> <20060731162046.GA4631@redhat.com>
+From: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Subject: [PATCH 8/8] acpi-cpufreq: skip duplicate frequencies
+Date: Mon, 31 Jul 2006 22:58:19 +0400
+Message-ID: <44CE52CB.3090104@linux.intel.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030323AbWGaS5d@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20060731162046.GA4631@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, linux-kernel@vger.kernel.org, zwane@arm.linux.org.uk, venkatesh.pallipadi@intel.com, tony@atomide.com, akpm@osdl.org, cpufreq@lists.linux.org.uk, len.brown@intel.com
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Brown, Len" <len.brown@intel.com>, Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk
 
-On Mon, Jul 31, 2006 at 12:20:46PM -0400, Dave Jones wrote:
+ acpi-cpufreq.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-> Your change in your previous mail makes sense to me though,
-> so I'll commit it to cpufreq.git later today.
+Skip duplicate frequencies reported by ACPI.
 
-Do you think this will make 2.6.18? Otherwise any kernel with acpi_list
-compiled in will have no frequency scaling, unless it supports scaling over
-ACPI.
+Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy at intel.com>
 
-Thanks!
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+Index: linux-2.6.15.1/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+===================================================================
+--- linux-2.6.15.1.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c	2006-07-31 21:23:47.000000000 +0400
++++ linux-2.6.15.1/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c	2006-07-31 21:36:02.000000000 +0400
+@@ -22,7 +22,7 @@
+  *  with this program; if not, write to the Free Software Foundation, Inc.,
+  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+  *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ 
+ #include <linux/config.h>
+@@ -476,8 +476,14 @@
+ 		} else {
+ 			data->freq_table[i].index = i;
+ 		}
+-		data->freq_table[i].frequency =
+-		    perf->states[i].core_frequency * 1000;
++		if (i == 0 ||
++		    perf->states[i].core_frequency !=
++		    perf->states[i - 1].core_frequency) {
++			data->freq_table[i].frequency =
++			    perf->states[i].core_frequency * 1000;
++		} else {
++			data->freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
++		}
+ 	}
+ 	data->freq_table[perf->state_count].frequency = CPUFREQ_TABLE_END;
