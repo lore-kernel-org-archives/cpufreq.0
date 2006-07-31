@@ -1,12 +1,12 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/8] acpi-cpufreq: fix multicore bug
-Date: Mon, 31 Jul 2006 17:49:50 -0400
-Message-ID: <20060731214950.GD31513@redhat.com>
-References: <44CE4E0B.608@linux.intel.com>
+Subject: Re: [PATCH 1/2] ondemand: updated tune for hardware coordination
+Date: Mon, 31 Jul 2006 18:37:50 -0400
+Message-ID: <20060731223750.GG31513@redhat.com>
+References: <44CE4B10.6080506@linux.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <44CE4E0B.608@linux.intel.com>
+In-Reply-To: <44CE4B10.6080506@linux.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,27 +22,26 @@ Content-Transfer-Encoding: 7bit
 To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
 Cc: cpufreq@lists.linux.org.uk
 
-On Mon, Jul 31, 2006 at 10:38:03PM +0400, Alexey Starikovskiy wrote:
- > acpi-cpufreq.c |   98 
- > +++++++++------------------------------------------------
- > 1 file changed, 17 insertions(+), 81 deletions(-)
+On Mon, Jul 31, 2006 at 10:25:20PM +0400, Alexey Starikovskiy wrote:
  > 
- > Fix a problem on a multicore processors. 
+ > cpufreq_ondemand.c |   13 ++++++++-----
+ > 1 file changed, 8 insertions(+), 5 deletions(-)
  > 
- > Signed-off: Denis Sadykov <denis.m.sadykov@intel.com>
+ > Try to make dbs_check_cpu() call on all CPUs at the same jiffy.
+ > This will help when multiple cores share P-states via Hardware Coordination.
+ > 
  > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi at intel.com>
  > Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy at intel.com>
 
-Can I get a little more verbose description for the changelog please ?
-I think I understand whats going on here, but I'd like to understand
-it more than "fix a bug" when I'm browsing the history 6 months from now.
+Still doesn't apply..
 
-Also, is there any way you can make thunderbird not send mails
-with format=flowed in your Content-type: ?  mutt respects this attribute
-and handily word-wraps your diffs. (Which doesn't matter for applying
-them, but it does make it a pain when reviewing).
+error: patch failed: drivers/cpufreq/cpufreq_ondemand.c:303
+error: drivers/cpufreq/cpufreq_ondemand.c: patch does not apply
 
-Thanks,
+
+ > Index: linux-2.6.15.1/drivers/cpufreq/cpufreq_ondemand.c
+                ^^^^^^^^
+Hmmm?
 
 		Dave
 
