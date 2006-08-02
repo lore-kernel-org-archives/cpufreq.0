@@ -1,52 +1,38 @@
-From: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
-Subject: Re: [PATCH 1/2] ondemand: updated tune for hardware coordination
-Date: Tue, 01 Aug 2006 21:39:24 +0400
-Message-ID: <44CF91CC.3070003@linux.intel.com>
-References: <44CE4B10.6080506@linux.intel.com>
-	<20060731223750.GG31513@redhat.com>
-	<44CF0C4E.9020603@linux.intel.com>
-	<20060801164315.GA9083@redhat.com>
+From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+Subject: Re: Linux v2.6.18-rc3
+Date: Tue, 1 Aug 2006 21:31:22 -0700
+Message-ID: <4807377b0608012131mf160bc3iff724910191b521@mail.gmail.com>
+References: <20060731081112.05427677.akpm@osdl.org>
+	 <Pine.LNX.4.44L0.0607311627240.5805-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20060801164315.GA9083@redhat.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751145AbWHBEbY@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0607311627240.5805-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@osdl.org>, Kernel development list <linux-kernel@vger.kernel.org>, torvalds@osdl.org, cpufreq@www.linux.org.uk
 
-Dave Jones wrote:
-> On Tue, Aug 01, 2006 at 12:09:50PM +0400, Alexey Starikovskiy wrote:
->  > Dave Jones wrote:
->  > > On Mon, Jul 31, 2006 at 10:25:20PM +0400, Alexey Starikovskiy wrote:
->  > >  > 
->  > >  > cpufreq_ondemand.c |   13 ++++++++-----
->  > >  > 1 file changed, 8 insertions(+), 5 deletions(-)
->  > >  > 
->  > >  > Try to make dbs_check_cpu() call on all CPUs at the same jiffy.
->  > >  > This will help when multiple cores share P-states via Hardware Coordination.
->  > >  > 
->  > >  > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi at intel.com>
->  > >  > Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy at intel.com>
->  > > 
->  > > Still doesn't apply..
->  > > 
->  > > error: patch failed: drivers/cpufreq/cpufreq_ondemand.c:303
->  > > error: drivers/cpufreq/cpufreq_ondemand.c: patch does not apply
->  > It requires Arjan's patch to cpufreq, sitting in Linus tree for 3 days already.
-> 
-> This was after I'd rebased the cpufreq.git tree to Linus' latest yesterday.
-> 
-> 		Dave
-> 
-Just checked once again. Version I've sent yesterday cleanly applies to your
-just updated cpufreq.git tree.
+On 7/31/06, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 31 Jul 2006, Andrew Morton wrote:
+>
+> > core_initcall() would suit.  That's actually a bit late for this sort of
+> > thing, but we can always add a new section later if it becomes a problem.
+> > I'd suggest that we ensure that srcu_notifier_chain_register() performs a
+> > reliable BUG() if it gets called too early.
+>
+> Here's a patch to test.  I can't try it out on my machine because
+> 2.6.18-rc2-mm1 (even without the patch) crashes partway through a
+> suspend-to-disk, in a way that's extremely hard to debug.  Some sort of
+> spinlock-related bug occurs within ioapic_write_entry.
+
+can't test because I also can't suspend or hibernate with rc2-mm1
+(resume causes hard hang with the backlight and screen off)  The issue
+i reported was against linus' 2.6.18-rc3 kernel.
+
+patch didn't apply to 2.6.18-rc3.
+
+Thanks,
+  Jesse
