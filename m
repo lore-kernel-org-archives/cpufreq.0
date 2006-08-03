@@ -1,14 +1,16 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Why supports the speedstep-ich only 2 processor states
-Date: Thu, 3 Aug 2006 18:17:06 +0200
-Message-ID: <20060803161706.GM17014@poupinou.org>
-References: <16060.84.57.16.17.1154612140.squirrel@www.fh-augsburg.de>
-	<a11ccc30608030747v16bf4f2bs3ca2ff1b09bd5d36@mail.gmail.com>
-	<a11ccc30608030802j57c2dc19h9298d001e81faaa1@mail.gmail.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of cpufreq
+	drivers
+Date: Thu, 3 Aug 2006 12:20:24 -0400
+Message-ID: <20060803162024.GA22448@redhat.com>
+References: <44CE4F8A.5060600@linux.intel.com>
+	<20060802092733.GI17014@poupinou.org>
+	<44D0F292.8090403@linux.intel.com>
+	<20060803161130.GL17014@poupinou.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <a11ccc30608030802j57c2dc19h9298d001e81faaa1@mail.gmail.com>
+In-Reply-To: <20060803161130.GL17014@poupinou.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,26 +23,39 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hiroshi Miura <miura@da-cha.org>
+To: Bruno Ducrot <ducrot@poupinou.org>
 Cc: cpufreq@lists.linux.org.uk
 
-On Fri, Aug 04, 2006 at 12:02:21AM +0900, Hiroshi Miura wrote:
-> Oh, I'm sorry I mistook the expression.
-> 
-> In early generaion of speedstep technology, a circuit which
-> changes cpu frequency and voltage is connected to south bridge
-> GPIO port or specific port.
-> 
-> It may be controlled by single flag(1/0), so it can serve
-> only two frequency value.
-> 
-> Recent ich driver use a specific register port to control
-> the circuit.(outb(value, (pmbase + 0x50));)
+On Thu, Aug 03, 2006 at 06:11:30PM +0200, Bruno Ducrot wrote:
+ > On Wed, Aug 02, 2006 at 10:44:34PM +0400, Alexey Starikovskiy wrote:
+ > > Bruno Ducrot wrote:
+ > > > I've not checked carrefully but it seems to me you are breaking
+ > > > powernow-k8.
+ > > We do not touch powernow-k8, and tried to make sure we do not change
+ > > acpi-cpufreq to exclude any unknown hardware. What we tried to do, is to merge
+ > > different ways of accessing cpufreq with ACPI under single driver. Could you be
+ > > more specific how we break powernow-k8?
+ > 
+ > I haven't seen the if (!check_speedstep_cpu(cpu)) {...} onto
+ > apci_cpufreq_cpu_init_acpi() indeed.
+ > 
+ > Therefore you are correct.
+ > 
+ > But it's funny to see that how acpi_cpufreq driver become
+ > so Intel specific.
 
-In the latter, only bit 0 will flip the 2 states btw.
+I've not looked over these patches in detail yet, but one precondition
+is that acpi-cpufreq _must_ continue to work on non-Intel.
+Newer VIA CPUs rely on this driver rather than longhaul for example.
+
+ > If AMD or any other vendors want to add their stuff
+ > onto acpi_cpufreq, then should we accept their patches
+ > as well?
+
+Absolutely.
+
+		Dave
+
 
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+http://www.codemonkey.org.uk
