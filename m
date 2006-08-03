@@ -1,8 +1,7 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH 6/8] acpi-cpufreq: use cpu_core_map on multicore
-	processors
-Date: Thu, 3 Aug 2006 14:05:41 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454566EB7@scsmsx413.amr.corp.intel.com>
+Subject: RE: [PATCH 8/8] acpi-cpufreq: skip duplicate frequencies
+Date: Thu, 3 Aug 2006 14:10:50 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454566EC0@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -27,58 +26,65 @@ Cc: cpufreq@lists.linux.org.uk
 >From: cpufreq-bounces@lists.linux.org.uk=20
 >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
 >Alexey Starikovskiy
->Sent: Monday, July 31, 2006 11:54 AM
+>Sent: Monday, July 31, 2006 11:58 AM
 >To: Brown, Len; Dave Jones
 >Cc: cpufreq@lists.linux.org.uk
->Subject: [PATCH 6/8] acpi-cpufreq: use cpu_core_map on=20
->multicore processors
+>Subject: [PATCH 8/8] acpi-cpufreq: skip duplicate frequencies
 >
-> acpi-cpufreq.c |   11 ++++++++++-
-> 1 file changed, 10 insertions(+), 1 deletion(-)
+> acpi-cpufreq.c |   12 +++++++++---
+> 1 file changed, 9 insertions(+), 3 deletions(-)
 >
->on some new systems "shared_cpu_map" from ACPI is wrong, so  =20
->"cpu_core_map" structure is used to define right "policy->cpus" group.
+>Skip duplicate frequencies reported by ACPI.
 >
->Signed-off: Denis Sadykov <denis.m.sadykov@intel.com>
->Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi at intel.com>
 >Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy at intel.com>
 >
->Index: linux-2.6.17/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+>Index: linux-2.6.15.1/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
 >=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 >---=20
->linux-2.6.17.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
->2006-07-17 17:09:27.000000000 +0000
->+++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
->2006-07-17 17:11:07.000000000 +0000
->@@ -542,7 +542,16 @@
-> 		}
-> 	}
+>linux-2.6.15.1.orig/arch/i386/kernel/cpu/cpufreq/acpi-cp
+>ufreq.c	2006-07-31 21:23:47.000000000 +0400
+>+++ linux-2.6.15.1/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
+>2006-07-31 21:36:02.000000000 +0400
+>@@ -22,7 +22,7 @@
+>  *  with this program; if not, write to the Free Software=20
+>Foundation, Inc.,
+>  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+>  *
+>- *=20
+>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>~~~~~~~~~~~=20
+>+ *=20
+>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>~~~~~~~~~~~
+>  */
 >=20
->-	policy->cpus =3D data->acpi_data->shared_cpu_map;
->+/*	policy->cpus =3D data->acpi_data->shared_cpu_map; */
->+/* NOTE TODO:
->+	Actually we must use "shared_cpu_map" from acpi data to=20
->define policy->cpus,
->+	but on some new systems "shared_cpu_map" is wrong. So=20
->we use "cpu_core_map"
->+	sructure temporarily. Should be return back. */
->+#ifdef CONFIG_SMP
->+	policy->cpus =3D cpu_core_map[cpu];
->+#else
->+	policy->cpus =3D cpumask_of_cpu(cpu);
->+#endif /* CONFIG_SMP */
-> 	for_each_cpu_mask(i, policy->cpus) {
-> 		drv_data[i] =3D data;
+> #include <linux/config.h>
+>@@ -476,8 +476,14 @@
+> 		} else {
+> 			data->freq_table[i].index =3D i;
+> 		}
+>-		data->freq_table[i].frequency =3D
+>-		    perf->states[i].core_frequency * 1000;
+>+		if (i =3D=3D 0 ||
+>+		    perf->states[i].core_frequency !=3D
+>+		    perf->states[i - 1].core_frequency) {
+>+			data->freq_table[i].frequency =3D
+>+			    perf->states[i].core_frequency * 1000;
+>+		} else {
+>+			data->freq_table[i].frequency =3D=20
+>CPUFREQ_ENTRY_INVALID;
+>+		}
 > 	}
->
+> 	data->freq_table[perf->state_count].frequency =3D=20
+>CPUFREQ_TABLE_END;
 
-I don't think this should be done universally. We should try to limit it
-to only for the platforms that has this issue, using OEMID or some such
-thing. In any case, this patch should not be part of this patch set.
-Should be a standalone bugfix-workaround patch with more details about
-the bug.
+
+I guess we should compact the whole table rather than adding INVALID
+entries. With INVALID entries, we may end up running some redundant
+loops table_verify table_target functions later.
 
 Thanks,
 Venki
+=20
