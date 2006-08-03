@@ -1,8 +1,8 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of
-	cpufreqdrivers
-Date: Thu, 3 Aug 2006 14:02:05 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454566EB0@scsmsx413.amr.corp.intel.com>
+Subject: RE: [PATCH 6/8] acpi-cpufreq: use cpu_core_map on multicore
+	processors
+Date: Thu, 3 Aug 2006 14:05:41 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454566EB7@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -27,17 +27,17 @@ Cc: cpufreq@lists.linux.org.uk
 >From: cpufreq-bounces@lists.linux.org.uk=20
 >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
 >Alexey Starikovskiy
->Sent: Monday, July 31, 2006 11:44 AM
+>Sent: Monday, July 31, 2006 11:54 AM
 >To: Brown, Len; Dave Jones
 >Cc: cpufreq@lists.linux.org.uk
->Subject: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of=20
->cpufreqdrivers
+>Subject: [PATCH 6/8] acpi-cpufreq: use cpu_core_map on=20
+>multicore processors
 >
-> acpi-cpufreq.c |  157=20
->+++++++++++++++++++++++++++++++++++++++++++++++++++------
-> 1 file changed, 141 insertions(+), 16 deletions(-)
+> acpi-cpufreq.c |   11 ++++++++++-
+> 1 file changed, 10 insertions(+), 1 deletion(-)
 >
->merge acpi functionality of cpufreq drivers
+>on some new systems "shared_cpu_map" from ACPI is wrong, so  =20
+>"cpu_core_map" structure is used to define right "policy->cpus" group.
 >
 >Signed-off: Denis Sadykov <denis.m.sadykov@intel.com>
 >Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi at intel.com>
@@ -49,67 +49,36 @@ Cc: cpufreq@lists.linux.org.uk
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 >---=20
 >linux-2.6.17.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
->2006-07-13 17:52:15.000000000 +0000
+>2006-07-17 17:09:27.000000000 +0000
 >+++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
->2006-07-13 18:15:30.000000000 +0000
->@@ -49,9 +49,16 @@
-> MODULE_DESCRIPTION("ACPI Processor P-States Driver");
-> MODULE_LICENSE("GPL");
+>2006-07-17 17:11:07.000000000 +0000
+>@@ -542,7 +542,16 @@
+> 		}
+> 	}
 >=20
->+enum {
->+	UNDEFINED_CAPABLE =3D 0,
->+	SYSTEM_MSR_CAPABLE,
->+	SYSTEM_IO_CAPABLE,
->+};
->+
-> struct acpi_cpufreq_data {
-> 	struct acpi_processor_performance	*acpi_data;
-> 	struct cpufreq_frequency_table		*freq_table;
->+	unsigned int				cpu_fet;
-> };
->=20
-> static struct acpi_cpufreq_data		=09
->*drv_data[NR_CPUS];
->@@ -59,7 +66,29 @@
->=20
-> static struct cpufreq_driver			acpi_cpufreq_driver;
->=20
->-static unsigned extract_freq(u32 value, struct=20
->acpi_cpufreq_data *data)
->+static int check_speedstep_cpu(unsigned int cpuid)
->+{
->+	struct cpuinfo_x86 *cpu =3D &cpu_data[cpuid];
->+
->+	if (cpu->x86_vendor !=3D X86_VENDOR_INTEL ||
->+				!cpu_has(cpu, X86_FEATURE_EST))
->+		return (0);
->+	return (1);
->+}
->+
->+static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
->+{
->+	int i;
->+
->+	msr &=3D 0xffff;
->+	for (i =3D 0; data->freq_table[i].frequency !=3D=20
->CPUFREQ_TABLE_END; i++) {
->+		if (msr =3D=3D data->freq_table[i].index)
->+			return data->freq_table[i].frequency;
->+	}
->+	return (0);
->+}
+>-	policy->cpus =3D data->acpi_data->shared_cpu_map;
+>+/*	policy->cpus =3D data->acpi_data->shared_cpu_map; */
+>+/* NOTE TODO:
+>+	Actually we must use "shared_cpu_map" from acpi data to=20
+>define policy->cpus,
+>+	but on some new systems "shared_cpu_map" is wrong. So=20
+>we use "cpu_core_map"
+>+	sructure temporarily. Should be return back. */
+>+#ifdef CONFIG_SMP
+>+	policy->cpus =3D cpu_core_map[cpu];
+>+#else
+>+	policy->cpus =3D cpumask_of_cpu(cpu);
+>+#endif /* CONFIG_SMP */
+> 	for_each_cpu_mask(i, policy->cpus) {
+> 		drv_data[i] =3D data;
+> 	}
+>
 
-This has to change to return minimum or closest freq when msr value does
-not match any index in the frequency table. There is a possibility of
-having a MSR value not in frequency table into this routine, as we read
-PERF_STATUS and it can contain some interim value due to Enhanced
-C-state or TM2 reducing the CPU frequency and voltage. If we return zero
-frequency in those cases, some of the functions that use this value can
-get confused. I have seen earlier driver panic, as some notifier
-callback function sees old or new frequency as zero and tries to use
-that frequency value for some division.
-
-Rest of the changes in the patch looks good.
+I don't think this should be done universally. We should try to limit it
+to only for the platforms that has this issue, using OEMID or some such
+thing. In any case, this patch should not be part of this patch set.
+Should be a standalone bugfix-workaround patch with more details about
+the bug.
 
 Thanks,
 Venki
