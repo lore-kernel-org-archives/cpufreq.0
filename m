@@ -1,7 +1,8 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: problems setting freq on dual core t2600, 2.6.17-1.2157_FC5smp
-Date: Thu, 3 Aug 2006 13:47:16 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454566E8C@scsmsx413.amr.corp.intel.com>
+Subject: RE: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of
+	cpufreqdrivers
+Date: Thu, 3 Aug 2006 14:02:05 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454566EB0@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -17,38 +18,98 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: tobias.bocanegra@day.com, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk
 
+=20
 
-
-> something other that is funny is that sysfs does not show correct
-cur_freq
-> # echo 1000000 > scaling_setspeed
-> # cat cpuinfo_cur_freq
-> 1667000
+>-----Original Message-----
+>From: cpufreq-bounces@lists.linux.org.uk=20
+>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
+>Alexey Starikovskiy
+>Sent: Monday, July 31, 2006 11:44 AM
+>To: Brown, Len; Dave Jones
+>Cc: cpufreq@lists.linux.org.uk
+>Subject: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of=20
+>cpufreqdrivers
+>
+> acpi-cpufreq.c |  157=20
+>+++++++++++++++++++++++++++++++++++++++++++++++++++------
+> 1 file changed, 141 insertions(+), 16 deletions(-)
+>
+>merge acpi functionality of cpufreq drivers
+>
+>Signed-off: Denis Sadykov <denis.m.sadykov@intel.com>
+>Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi at intel.com>
+>Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy at intel.com>
+>
+>Index: linux-2.6.17/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>---=20
+>linux-2.6.17.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
+>2006-07-13 17:52:15.000000000 +0000
+>+++ linux-2.6.17/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c=09
+>2006-07-13 18:15:30.000000000 +0000
+>@@ -49,9 +49,16 @@
+> MODULE_DESCRIPTION("ACPI Processor P-States Driver");
+> MODULE_LICENSE("GPL");
 >=20
-> # cat /proc/cpuinfo | grep MHz
-> cpu MHz         : 1000.000=20
+>+enum {
+>+	UNDEFINED_CAPABLE =3D 0,
+>+	SYSTEM_MSR_CAPABLE,
+>+	SYSTEM_IO_CAPABLE,
+>+};
+>+
+> struct acpi_cpufreq_data {
+> 	struct acpi_processor_performance	*acpi_data;
+> 	struct cpufreq_frequency_table		*freq_table;
+>+	unsigned int				cpu_fet;
+> };
+>=20
+> static struct acpi_cpufreq_data		=09
+>*drv_data[NR_CPUS];
+>@@ -59,7 +66,29 @@
+>=20
+> static struct cpufreq_driver			acpi_cpufreq_driver;
+>=20
+>-static unsigned extract_freq(u32 value, struct=20
+>acpi_cpufreq_data *data)
+>+static int check_speedstep_cpu(unsigned int cpuid)
+>+{
+>+	struct cpuinfo_x86 *cpu =3D &cpu_data[cpuid];
+>+
+>+	if (cpu->x86_vendor !=3D X86_VENDOR_INTEL ||
+>+				!cpu_has(cpu, X86_FEATURE_EST))
+>+		return (0);
+>+	return (1);
+>+}
+>+
+>+static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
+>+{
+>+	int i;
+>+
+>+	msr &=3D 0xffff;
+>+	for (i =3D 0; data->freq_table[i].frequency !=3D=20
+>CPUFREQ_TABLE_END; i++) {
+>+		if (msr =3D=3D data->freq_table[i].index)
+>+			return data->freq_table[i].frequency;
+>+	}
+>+	return (0);
+>+}
 
-Can you "cat scaling_cur_freq" at the same time? My guess is that will
-show 1000000.
+This has to change to return minimum or closest freq when msr value does
+not match any index in the frequency table. There is a possibility of
+having a MSR value not in frequency table into this routine, as we read
+PERF_STATUS and it can contain some interim value due to Enhanced
+C-state or TM2 reducing the CPU frequency and voltage. If we return zero
+frequency in those cases, some of the functions that use this value can
+get confused. I have seen earlier driver panic, as some notifier
+callback function sees old or new frequency as zero and tries to use
+that frequency value for some division.
 
-/proc/cpuinfo and scaling_cur_freq shows previously cached value, value
-that was tried to be set last time. cpuinfo_cur_freq shows current
-frequency that is gets from hardware. As you have a dual coure CPU and 2
-CPUs sharing frequency in hardware coordinated manner [1], you will have
-to reduce the freq on both to see the actual change. Actual hardware
-frequency increase happens as soon as any one core requests for higher
-freq, however.
+Rest of the changes in the patch looks good.
 
 Thanks,
 Venki
-
-[1] Hardware coordination of frequencies: More than one logical
-processors can share same frequency by design. The frequency
-coordination across them will happen in hardware coordination, in which
-case, OS will think that each CPU has its own independent control and
-give requests to the CPU independently. Hardware picks the highest
-frequency among all dependent CPUs and maintains all dependent CPUs at
-that frequency.
