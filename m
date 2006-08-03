@@ -1,11 +1,15 @@
-From: "Stijn Van Nieuwenhuyse" <stivani@gmail.com>
-Subject: Dell bios + cpufreqd problem
-Date: Thu, 3 Aug 2006 11:32:44 +0200
-Message-ID: <e29f4c3f0608030232n695737f6yd249b24f059f5c6e@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: Pentium D 915 support
+Date: Thu, 03 Aug 2006 13:44:53 +0200
+Message-ID: <1154605493.4302.494.camel@queen.suse.de>
+References: <1154265136.21063.10.camel@skylla.slagter.name>
+	<44CCD154.3080606@linux.intel.com>
+	<1154275129.21063.31.camel@skylla.slagter.name>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <1154275129.21063.31.camel@skylla.slagter.name>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,27 +20,50 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Erik Slagter <erik@slagter.name>
+Cc: cpufreq@lists.linux.org.uk
 
-I have posted a couple of monts ago a bugreport about my cpufreq problems.
-I have a Dell Latitude D800 with a Dothan Pentium M processor.
-When I switched to ac adapter, the frequency was locked to 600 MHz
-(frequency should be within 600 MHz and 600 MHz). In the meantime this
-problem has been resolved.
+On Sun, 2006-07-30 at 17:58 +0200, Erik Slagter wrote:
+> On zo, 2006-07-30 at 19:33 +0400, Alexey Starikovskiy wrote:
+> modprobe acpi-cpufreq does work but output of cpufreq-info shows:
+> 
+> > cpufrequtils 0.4: cpufreq-info (C) Dominik Brodowski 2004
+> > Report errors and bugs to linux@brodo.de, please.
+> > analyzing CPU 0:
+> >   driver: acpi-cpufreq
+> >   CPUs which need to switch frequency at the same time: 0
+> >   hardware limits: 2.40 GHz - 2.80 GHz
+> >   available frequency steps: 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.40 GHz  available cpufreq governors: conservative, ondemand, powersave, userspace, performance
+> >   current policy: frequency should be within 2.40 GHz and 2.80 GHz.
+> >                   The governor "performance" may decide which speed to use
+> >                   within this range.
+> >   current CPU frequency is 2.80 GHz.
+> > analyzing CPU 1:
+> >   driver: acpi-cpufreq
+> >   CPUs which need to switch frequency at the same time: 1
+> >   hardware limits: 2.40 GHz - 2.80 GHz
+> >   available frequency steps: 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.80 GHz, 2.40 GHz  available cpufreq governors: conservative, ondemand, powersave, userspace, performance
+> >   current policy: frequency should be within 2.40 GHz and 2.80 GHz.
+> >                   The governor "performance" may decide which speed to use
+> >                   within this range.
+> >   current CPU frequency is 2.80 GHz.
+> 
+> Please note the amount of repeated same frequency.
+> 
+I already saw something similar.
+This is BIOS information, they probably want to take care that no
+performance is lost and define 9 high and one low step.
 
-I have noticed approximately the same problem again while running cpufeqd.
-If I only use cpufrequtils and set the governor with cpufreq-set,
-everything seems to be working (when I switch to battery, the
-processor is locked for approximately 15 seconds to 600 MHz, but
-afterwards, everything is OK)
-But if I use cpufreqd, the processor is locked to 600 MHz when I
-switch to battery, and the maximum freqency does not get updated. A
-workaround I have found is restarting the cpufreqd daemon.
-(when I boot on battery power, cpufreq-info gives the correct output,
-when I switch to ac adapter and to battery again, the problem occurs
-again.
+> Also, it strikes me that /proc/acpi/../power only shows C1, is this normal?
+> 
+On a Pentium D, I'd say yes.
 
-Can somebody point my to a solution for my problem?
+> Last but not least: the loading or unloading of the module doesn't have
+> any effect on the actual power consumption, even with powersave governor
+> and both cores at 2.4 Ghz (both at 140 W).
+Strange. 2.4 GHz is still a lot?
 
-I am running Gentoo Linux with 2.6.16-suspend2-r8 kernel.
+Have you already searched for a new BIOS, if not better do that first.
+
+     Thomas
