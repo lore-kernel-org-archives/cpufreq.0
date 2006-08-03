@@ -1,17 +1,13 @@
 From: Erik Slagter <erik@slagter.name>
-Subject: Re: Pentium D 915 support
-Date: Thu, 03 Aug 2006 16:55:13 +0200
-Message-ID: <1154616914.23310.1.camel@skylla.slagter.name>
-References: <1154265136.21063.10.camel@skylla.slagter.name>
-	<44CCD154.3080606@linux.intel.com>
-	<1154275129.21063.31.camel@skylla.slagter.name>
-	<1154605493.4302.494.camel@queen.suse.de>
-	<1154605725.14206.22.camel@localhost>
-	<1154617009.4302.515.camel@queen.suse.de>
+Subject: Re: Why supports the speedstep-ich only 2 processor states
+Date: Thu, 03 Aug 2006 16:56:47 +0200
+Message-ID: <1154617007.23310.3.camel@skylla.slagter.name>
+References: <16060.84.57.16.17.1154612140.squirrel@www.fh-augsburg.de>
+	<a11ccc30608030747v16bf4f2bs3ca2ff1b09bd5d36@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1962395739=="
+Content-Type: multipart/mixed; boundary="===============1628540574=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1154617009.4302.515.camel@queen.suse.de>
+In-Reply-To: <a11ccc30608030747v16bf4f2bs3ca2ff1b09bd5d36@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,29 +18,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: trenn@suse.de
+To: Hiroshi Miura <miura@da-cha.org>
 Cc: cpufreq@lists.linux.org.uk
 
 
---===============1962395739==
+--===============1628540574==
 Content-Type: multipart/signed; micalg=sha1;
 	protocol="application/x-pkcs7-signature";
-	boundary="=-kQU2dD+oIFHf0qyf2jgi"
+	boundary="=-gokVmYd60njMoHadgXtq"
 
 
---=-kQU2dD+oIFHf0qyf2jgi
+--=-gokVmYd60njMoHadgXtq
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On do, 2006-08-03 at 16:56 +0200, Thomas Renninger wrote:
-> Maybe you find some specs on the Intel site what speed steps should be
-> supported and how many power/temperature gain you can get. 2.4 GHz
-> doesn't sound like you save a lot of energy...
+On do, 2006-08-03 at 23:47 +0900, Hiroshi Miura wrote:
+> The latter is configurable by setting  /proc/acpi/processor/CPU0/throttli=
+ng
+>=20
+> For example, if your acpi bios support 4 throttling state and set LOW
+> with  speedstep, then freq =3D 733 x 25% =3D> 184Mhz.
+>=20
+> I don't know how BIOS set chips to run such a state but it may help
+> you to understand what is happened.
 
-According to Alexey (@ intel.com) the processor simply only supports
-two frequencies. I guess he can know...
+Hmmm, I don't think that will buy you much. At least in my system
+throttling doesn't give _any_ power saving.
 
---=-kQU2dD+oIFHf0qyf2jgi
+--=-gokVmYd60njMoHadgXtq
 Content-Type: application/x-pkcs7-signature; name=smime.p7s
 Content-Disposition: attachment; filename=smime.p7s
 Content-Transfer-Encoding: base64
@@ -89,22 +90,22 @@ qi2fNi/A9BxQIJNwPP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa
 9/eH1sYITq726jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggJmMIICYgIBATBpMGIxCzAJ
 BgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
 EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMAkGBSsOAwIaBQCgggFT
-MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgwMzE0NTUxMFow
-IwYJKoZIhvcNAQkEMRYEFIYECUH5NfRVWlHc5a8YacZth6+vMHgGCSsGAQQBgjcQBDFrMGkwYjEL
+MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgwMzE0NTY0Nlow
+IwYJKoZIhvcNAQkEMRYEFBIxI49vm0joSaYoaFiIQ7sU3i9fMHgGCSsGAQQBgjcQBDFrMGkwYjEL
 MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNV
 BAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAgMP8QQwegYLKoZIhvcNAQkQ
 Agsxa6BpMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBM
 dGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMA0G
-CSqGSIb3DQEBAQUABIGAKJ5jeh7WEFFK6hs8XSmkIB+bbLNXo40H0MkFlCSacf6eoD4xHPD0T5AF
-VBxJvkfb/Ja+FB5vsa6NH5Z8m59HNIJRwHYbAl6cNb5b6d/w3dVynQCRdk8OJeflf1DTLe/FCfIa
-kLwaqrvU42eDf7JurXtskcHZG81AVCBZhMKrIEoAAAAAAAA=
+CSqGSIb3DQEBAQUABIGApyhPcJzoKIaHC44fjEEnkRtz0Hs8PxkJ+umW0Coa+YmoxRADgXlN2PRx
+3CsxsoSaVZ/l2jj+clRb7wnNxMc/MFmML5nrF9QOZbmzfSND2hcIYVaf0ZQWuPgI6CUWmitHMRQk
+KYIooqTzPt+js/yMglRJ3S2x9iuGqcckhzLPhhQAAAAAAAA=
 
 
---=-kQU2dD+oIFHf0qyf2jgi--
+--=-gokVmYd60njMoHadgXtq--
 
 
 
---===============1962395739==
+--===============1628540574==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -115,6 +116,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============1962395739==--
+--===============1628540574==--
 
 
