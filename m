@@ -1,9 +1,10 @@
-From: "Slagter, EM" <eslagter@wlz.nl>
-Subject: FYI ASUS reply clock frequency setting
-Date: Thu, 03 Aug 2006 16:02:51 +0200
-Message-ID: <1154613771.14206.34.camel@localhost>
+From: "Thomas Kisler" <kay@RZ.FH-Augsburg.DE>
+Subject: Why supports the speedstep-ich only 2 processor states
+Date: Thu, 3 Aug 2006 15:35:40 +0200 (CEST)
+Message-ID: <16060.84.57.16.17.1154612140.squirrel@www.fh-augsburg.de>
+Reply-To: kay@RZ.FH-Augsburg.DE
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,33 +19,29 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-I sent this message to ASUS:
+Hello everybody,
 
-> [...]
-> 
-> Furthermore I noticed that slowing the processor down to 1.4 Ghz from
-> the BIOS settings gives an 
-> additional power saving of 20-30 watts, which is very interesting to
-> me, especially if the motherboards' 
-> CPU speed could be altered on the fly from within the operating
-> system. I am NOT talking of the 
-> 2.8/2.4 CPU speed of the EIST s! ystem, I am talking of the cpu clock
-> supplied by the motherboard as set with the BIOS settings, 1.4 Ghz -
-> 4.0 Ghz using 0.1 Ghz increments.
-> 
-> My questions: can this hardware clock setting be altered on the fly,
-> or can it be set during the boot 
-> process only?
-> 
-> If it can be changed on the fly, is there some smbios interface or
-> documentation available for this 
-> feature?
+i'm wondering why the speedstep-ich cpufreq driver only supports two
+processor states in general.
 
-They replied:
+I own an IBM Thinkpad X24 with a 1.13 GHz Mobile Pentium 3m (Tualatin)
+which runs on 1130 MHz and 733 MHz with cpufreq.
 
-> The clock settings can only be set at bootup only, due to the clock
-> chips features, and bios settings.
+But if I select in BIOS the 'fixed slow' option at the customized Power
+Mode _and_ boot a kernel without cpufreq support at all, /proc/cpuinfo
+reports me the cpu running at 191 MHz. Also the acpi reports a lower
+discharging rate of the battery, as if i run at 733 MHz.
 
-*BUMMER* :-(
+So I had a look at the source code of the speedstep-ich driver and noticed
+that there are only a SPEEDSTEP_HIGH and a SPEEDSTEP_LOW frequency in the
+speedstep_freqs struct. Can anybody tell me why?
 
-Well at least I tried.
+If there is no specific reason, has anybody information about how the
+available frequencies are calculated. So i can adapt the source code that
+this 3rd power state is available.
+
+Thanks in advance.
+
+Greetings
+
+Thomas Kisler
