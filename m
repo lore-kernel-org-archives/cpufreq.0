@@ -1,16 +1,17 @@
 From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: Why supports the speedstep-ich only 2 processor states
-Date: Fri, 4 Aug 2006 10:54:32 +0200
-Message-ID: <20060804085432.GN17014@poupinou.org>
-References: <16060.84.57.16.17.1154612140.squirrel@www.fh-augsburg.de>
-	<a11ccc30608030747v16bf4f2bs3ca2ff1b09bd5d36@mail.gmail.com>
-	<1154617007.23310.3.camel@skylla.slagter.name>
-	<a11ccc30608030816s22bbd417pe93a00703d1f18df@mail.gmail.com>
-	<1154633918.9169.15.camel@sunwork>
+Subject: Re: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of cpufreq
+	drivers
+Date: Fri, 4 Aug 2006 11:22:12 +0200
+Message-ID: <20060804092212.GO17014@poupinou.org>
+References: <44CE4F8A.5060600@linux.intel.com>
+	<20060802092733.GI17014@poupinou.org>
+	<44D0F292.8090403@linux.intel.com>
+	<20060803161130.GL17014@poupinou.org>
+	<20060803162024.GA22448@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <1154633918.9169.15.camel@sunwork>
+In-Reply-To: <20060803162024.GA22448@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -23,27 +24,43 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "kay@rz.fh-augsburg.de" <kay@rz.fh-augsburg.de>
-Cc: Hiroshi Miura <miura@da-cha.org>, cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk
 
-On Thu, Aug 03, 2006 at 08:38:38PM +0100, kay@rz.fh-augsburg.de wrote:
-> Hi,
+On Thu, Aug 03, 2006 at 12:20:24PM -0400, Dave Jones wrote:
+> On Thu, Aug 03, 2006 at 06:11:30PM +0200, Bruno Ducrot wrote:
+>  > On Wed, Aug 02, 2006 at 10:44:34PM +0400, Alexey Starikovskiy wrote:
+>  > > Bruno Ducrot wrote:
+>  > > > I've not checked carrefully but it seems to me you are breaking
+>  > > > powernow-k8.
+>  > > We do not touch powernow-k8, and tried to make sure we do not change
+>  > > acpi-cpufreq to exclude any unknown hardware. What we tried to do, is to merge
+>  > > different ways of accessing cpufreq with ACPI under single driver. Could you be
+>  > > more specific how we break powernow-k8?
+>  > 
+>  > I haven't seen the if (!check_speedstep_cpu(cpu)) {...} onto
+>  > apci_cpufreq_cpu_init_acpi() indeed.
+>  > 
+>  > Therefore you are correct.
+>  > 
+>  > But it's funny to see that how acpi_cpufreq driver become
+>  > so Intel specific.
 > 
-> first, thanks for your answers.
-> 
-> Ok, I tried the throttling. And it's available two for the 191 MHz Mode.
-> And you are both right, there is no power saving if idle with the
-> throttling at both Modes.
-> Power Saving is about 200 mW at 191 MHz compared to 733 MHz. I know it's
-> not much, but I am not willing to accept that it's not possible :-).
-> Because it definitly is.
-> 
+> I've not looked over these patches in detail yet, but one precondition
+> is that acpi-cpufreq _must_ continue to work on non-Intel.
 
-Maybe something is broken with power states of the processor.
-What say
-cat /proc/acpi/processor/*/power
+I think it's the case.
 
-Cheers,
+> Newer VIA CPUs rely on this driver rather than longhaul for example.
+
+Ah I see.  In fact we could add them already to
+speedstep-centrino.c easily.
+It seems also (though I've not checked carrefully yet)
+that it might be better to add newest AMD powernow stuff
+to speedstep-centrino.c instead of powernow-k8.c.
+
+Therefore, it might be better to add all that stuff
+to acpi-cpufreq.c instead of speedstep-centrino.c after all.
 
 -- 
 Bruno Ducrot
