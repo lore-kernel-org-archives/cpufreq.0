@@ -1,13 +1,13 @@
 From: Thomas Renninger <trenn@suse.de>
 Subject: Re: Dell bios + cpufreqd problem
-Date: Fri, 4 Aug 2006 22:53:44 +0200 (CEST)
-Message-ID: <911730.1154724824299.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
+Date: Fri, 4 Aug 2006 23:10:04 +0200 (CEST)
+Message-ID: <8355938.1154725804784.SLOX.WebMail.wwwrun@imap-dhs.suse.de>
 References: <e29f4c3f0608030232n695737f6yd249b24f059f5c6e@mail.gmail.com>
 	<1154606992.4302.496.camel@queen.suse.de>
 	<e29f4c3f0608040845y10f38c01lda01eaeb9c0edb14@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <e29f4c3f0608040845y10f38c01lda01eaeb9c0edb14@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,18 +18,13 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="utf-8"
 To: Stijn Van Nieuwenhuyse <stivani@gmail.com>
 Cc: cpufreq@lists.linux.org.uk
 
 Am Fr 04.08.2006 17:45 schrieb Stijn Van Nieuwenhuyse
 <stivani@gmail.com>:
-
-> I have still the same problem with kernel version 2.6.17.7
->
-> Since which kernel version should this be fixed?
->
 > On 8/3/06, Thomas Renninger <trenn@suse.de> wrote:
 > > On Thu, 2006-08-03 at 11:32 +0200, Stijn Van Nieuwenhuyse wrote:
 > > > I have posted a couple of monts ago a bugreport about my cpufreq
@@ -40,11 +35,6 @@ Am Fr 04.08.2006 17:45 schrieb Stijn Van Nieuwenhuyse
 > > > this
 > > > problem has been resolved.
 > > >
-Sorry I=C2=A0meant this one you already mentioned fixed.
-I don't know about the cpufreqd problem.
-=C2=A0
-=C2=A0=C2=A0 Thomas
-
 > > > I have noticed approximately the same problem again while running
 > > > cpufeqd.
 > > > If I only use cpufrequtils and set the governor with cpufreq-set,
@@ -62,7 +52,19 @@ I don't know about the cpufreqd problem.
 > > > again.
 > > >
 > > > Can somebody point my to a solution for my problem?
-> > >
-> > > I am running Gentoo Linux with 2.6.16-suspend2-r8 kernel.
-> >
-> > This problem should be fixed in more recent kernels.
+These Dells behave very strange:
+if you unplug AC adapter:
+=C2=A0=C2=A0=C2=A0 - bios limits processor to the lowest freq
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 (scaling_max_freq =3D=3D scaling_min_freq in=
+ /sys/devices/.../cpufreq)
+=C2=A0=C2=A0=C2=A0 - after some seconds bios allows all freqs again
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 scaling_max_freq is increased again
+normally the kernel should remember the last freq told from cpufreqd if
+in
+userspace governor mode.
+You can watch acpi processor events when the bios limits frequencies
+and allows them again (last value, if it's zero all frequencies are
+allowed).
+Maybe cpufreqd gets confused by this?
+=C2=A0
+=C2=A0=C2=A0=C2=A0 Thomas
