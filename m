@@ -1,17 +1,14 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of cpufreq
-	drivers
-Date: Fri, 4 Aug 2006 11:22:12 +0200
-Message-ID: <20060804092212.GO17014@poupinou.org>
-References: <44CE4F8A.5060600@linux.intel.com>
-	<20060802092733.GI17014@poupinou.org>
-	<44D0F292.8090403@linux.intel.com>
-	<20060803161130.GL17014@poupinou.org>
-	<20060803162024.GA22448@redhat.com>
+From: "Stijn Van Nieuwenhuyse" <stivani@gmail.com>
+Subject: Re: Dell bios + cpufreqd problem
+Date: Fri, 4 Aug 2006 17:45:44 +0200
+Message-ID: <e29f4c3f0608040845y10f38c01lda01eaeb9c0edb14@mail.gmail.com>
+References: <e29f4c3f0608030232n695737f6yd249b24f059f5c6e@mail.gmail.com>
+	<1154606992.4302.496.camel@queen.suse.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <1154606992.4302.496.camel@queen.suse.de>
 Content-Disposition: inline
-In-Reply-To: <20060803162024.GA22448@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,49 +18,41 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: trenn@suse.de
 Cc: cpufreq@lists.linux.org.uk
 
-On Thu, Aug 03, 2006 at 12:20:24PM -0400, Dave Jones wrote:
-> On Thu, Aug 03, 2006 at 06:11:30PM +0200, Bruno Ducrot wrote:
->  > On Wed, Aug 02, 2006 at 10:44:34PM +0400, Alexey Starikovskiy wrote:
->  > > Bruno Ducrot wrote:
->  > > > I've not checked carrefully but it seems to me you are breaking
->  > > > powernow-k8.
->  > > We do not touch powernow-k8, and tried to make sure we do not change
->  > > acpi-cpufreq to exclude any unknown hardware. What we tried to do, is to merge
->  > > different ways of accessing cpufreq with ACPI under single driver. Could you be
->  > > more specific how we break powernow-k8?
->  > 
->  > I haven't seen the if (!check_speedstep_cpu(cpu)) {...} onto
->  > apci_cpufreq_cpu_init_acpi() indeed.
->  > 
->  > Therefore you are correct.
->  > 
->  > But it's funny to see that how acpi_cpufreq driver become
->  > so Intel specific.
-> 
-> I've not looked over these patches in detail yet, but one precondition
-> is that acpi-cpufreq _must_ continue to work on non-Intel.
+I have still the same problem with kernel version 2.6.17.7
 
-I think it's the case.
+Since which kernel version should this be fixed?
 
-> Newer VIA CPUs rely on this driver rather than longhaul for example.
-
-Ah I see.  In fact we could add them already to
-speedstep-centrino.c easily.
-It seems also (though I've not checked carrefully yet)
-that it might be better to add newest AMD powernow stuff
-to speedstep-centrino.c instead of powernow-k8.c.
-
-Therefore, it might be better to add all that stuff
-to acpi-cpufreq.c instead of speedstep-centrino.c after all.
-
--- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+On 8/3/06, Thomas Renninger <trenn@suse.de> wrote:
+> On Thu, 2006-08-03 at 11:32 +0200, Stijn Van Nieuwenhuyse wrote:
+> > I have posted a couple of monts ago a bugreport about my cpufreq problems.
+> > I have a Dell Latitude D800 with a Dothan Pentium M processor.
+> > When I switched to ac adapter, the frequency was locked to 600 MHz
+> > (frequency should be within 600 MHz and 600 MHz). In the meantime this
+> > problem has been resolved.
+> >
+> > I have noticed approximately the same problem again while running cpufeqd.
+> > If I only use cpufrequtils and set the governor with cpufreq-set,
+> > everything seems to be working (when I switch to battery, the
+> > processor is locked for approximately 15 seconds to 600 MHz, but
+> > afterwards, everything is OK)
+> > But if I use cpufreqd, the processor is locked to 600 MHz when I
+> > switch to battery, and the maximum freqency does not get updated. A
+> > workaround I have found is restarting the cpufreqd daemon.
+> > (when I boot on battery power, cpufreq-info gives the correct output,
+> > when I switch to ac adapter and to battery again, the problem occurs
+> > again.
+> >
+> > Can somebody point my to a solution for my problem?
+> >
+> > I am running Gentoo Linux with 2.6.16-suspend2-r8 kernel.
+>
+> This problem should be fixed in more recent kernels.
+>
+>    Thomas
+>
+>
