@@ -1,13 +1,16 @@
 From: Erik Slagter <erik@slagter.name>
-Subject: Re: Pentium D 915 / e-c1 with acpi-cpufreq
-Date: Sun, 06 Aug 2006 11:29:23 +0200
-Message-ID: <1154856563.8243.18.camel@skylla.slagter.name>
-References: <1154718872.8243.7.camel@skylla.slagter.name>
-	<8be731880608051149p29bb4e51n55932a965d136148@mail.gmail.com>
+Subject: Re: problems setting freq on dual core t2600, 2.6.17-1.2157_FC5smp
+Date: Sun, 06 Aug 2006 11:32:21 +0200
+Message-ID: <1154856741.8243.21.camel@skylla.slagter.name>
+References: <8be731880608030605x6dbeb691kc7079a9d51fe87e9@mail.gmail.com>
+	<44D28043.5010301@goop.org>
+	<8be731880608051042o6d9a3eb6v2b7290fcd9eaf866@mail.gmail.com>
+	<44D59CC5.1010200@goop.org>
+	<8be731880608060209s7b280ecvadffc9c28c9d770d@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2134769917=="
+Content-Type: multipart/mixed; boundary="===============0554870644=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <8be731880608051149p29bb4e51n55932a965d136148@mail.gmail.com>
+In-Reply-To: <8be731880608060209s7b280ecvadffc9c28c9d770d@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,45 +25,35 @@ To: tobias.bocanegra@day.com
 Cc: cpufreq@lists.linux.org.uk
 
 
---===============2134769917==
+--===============0554870644==
 Content-Type: multipart/signed; micalg=sha1;
 	protocol="application/x-pkcs7-signature";
-	boundary="=-WdNoebbfn2Y0OKdgXPQB"
+	boundary="=-haAuUWua5nNukAJ75Tw4"
 
 
---=-WdNoebbfn2Y0OKdgXPQB
+--=-haAuUWua5nNukAJ75Tw4
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On za, 2006-08-05 at 20:49 +0200, Tobias Bocanegra wrote:
-
-> $ cat /proc/acpi/processor/CPU1/power
-> active state:            C2
-> max_cstate:              C8
-> bus master activity:     00000000
-> states:
->     C1:                  type[C1] promotion[C2] demotion[--]
-> latency[000] usage[00000010]
->    *C2:                  type[C2] promotion[--] demotion[C1]
-> latency[001] usage[02220984]
+On zo, 2006-08-06 at 11:09 +0200, Tobias Bocanegra wrote:
+> i think it's the perflib:
 >=20
-> i used http://processorfinder.intel.com/default.aspx to find the spec
-> of my cpu: http://processorfinder.intel.com/details.aspx?sSpec=3DSL8VN
-> and reviewed the specs of my processor. and it seems, that the
-> power-states in acpi do not correspond to the states in the manual. i
-> guess C2 is the 'C1' in the spec, since there is no C0. what i don't
-> understand is, that it says: max_cstate: C8, which my cpu does not
-> have.
+> $ cat /proc/acpi/processor/CPU0/performance
+> state count:             4
+> active state:            P1
+> states:
+>     P0:                  2167 MHz, 31000 mW, 10 uS
+>    *P1:                  1667 MHz, 23000 mW, 10 uS
+>     P2:                  1333 MHz, 18000 mW, 10 uS
+>     P3:                  1000 MHz, 13000 mW, 10 uS
+>=20
+> how is the performance state set / influenced?
+> regards, toby
 
-Why you exactly get 2 "C" states (and I am getting 1 on my pentium D915)
-I can't say one sane thing about and I'd like to know as well. This sort
-of information also can't be found on the Intel website unfortunately.
+You can do a "echo 0 > performance" to make the processor go to P0 etc.
+But this is a deprecated interface. You should use cpufreq-set I guess.
 
-I do know, that "max_cstate" is a value that is hardcoded in the kernel,
-and specifies the size of the array that holds the C states. So it
-doesn't say anything about your processor.
-
---=-WdNoebbfn2Y0OKdgXPQB
+--=-haAuUWua5nNukAJ75Tw4
 Content-Type: application/x-pkcs7-signature; name=smime.p7s
 Content-Disposition: attachment; filename=smime.p7s
 Content-Transfer-Encoding: base64
@@ -105,22 +98,22 @@ qi2fNi/A9BxQIJNwPP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa
 9/eH1sYITq726jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggJmMIICYgIBATBpMGIxCzAJ
 BgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
 EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMAkGBSsOAwIaBQCgggFT
-MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgwNjA5MjkyM1ow
-IwYJKoZIhvcNAQkEMRYEFHwPKRxXEiSmi4OJlXzAxar00wTyMHgGCSsGAQQBgjcQBDFrMGkwYjEL
+MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgwNjA5MzIyMVow
+IwYJKoZIhvcNAQkEMRYEFPJJFkoaMA/6IC3/LAguVLEFzkz7MHgGCSsGAQQBgjcQBDFrMGkwYjEL
 MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNV
 BAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAgMP8QQwegYLKoZIhvcNAQkQ
 Agsxa6BpMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBM
 dGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMA0G
-CSqGSIb3DQEBAQUABIGADjafctnkwyKX/cH37xdvil/+M+QgRNoznBxj7ZsfLgOyKNbz343t1C2O
-6xU/KZ9uDoA35ng5HHEoApCnMo7Ua9CDYKkrhU9JlZLQ/ZMFC1+CagYWcD0TNSeg8ojc3yPR84K9
-9vEplj9JAQp2yhoPozFmTUWEtEVPhqfydNhD7kAAAAAAAAA=
+CSqGSIb3DQEBAQUABIGAtVryCSEGE9X+e5cXFvKQcsooRw8iWjGk5jvNPngFS1KQ3vD75MIdTZbh
+J9Rwre5ZEVwltnMxXghlSRaT97CJOz2Ad2lDPDKCvcIy6EKROqNM/dHImGxV3M2W/AI4iofh+Hkp
+muBwojDnNs15Xh5WmNJmeFHzQcMIYsT/p43rcg0AAAAAAAA=
 
 
---=-WdNoebbfn2Y0OKdgXPQB--
+--=-haAuUWua5nNukAJ75Tw4--
 
 
 
---===============2134769917==
+--===============0554870644==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -131,6 +124,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============2134769917==--
+--===============0554870644==--
 
 
