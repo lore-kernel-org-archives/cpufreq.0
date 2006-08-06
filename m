@@ -1,7 +1,7 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Pentium D 915 / e-c1 with acpi-cpufreq
-Date: Sun, 6 Aug 2006 07:19:31 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A84545A604F@scsmsx413.amr.corp.intel.com>
+Subject: RE: problems setting freq on dual core t2600, 2.6.17-1.2157_FC5smp
+Date: Sun, 6 Aug 2006 07:10:24 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A84545A604D@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -17,63 +17,67 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Erik Slagter <erik@slagter.name>, tobias.bocanegra@day.com
+To: tobias.bocanegra@day.com, Erik Slagter <erik@slagter.name>
 Cc: cpufreq@lists.linux.org.uk
 
 =20
 
 >-----Original Message-----
 >From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Erik Slagter
->Sent: Sunday, August 06, 2006 2:29 AM
->To: tobias.bocanegra@day.com
+>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
+>Tobias Bocanegra
+>Sent: Sunday, August 06, 2006 3:02 AM
+>To: Erik Slagter
 >Cc: cpufreq@lists.linux.org.uk
->Subject: Re: Pentium D 915 / e-c1 with acpi-cpufreq
+>Subject: Re: problems setting freq on dual core t2600,=20
+>2.6.17-1.2157_FC5smp
 >
->On za, 2006-08-05 at 20:49 +0200, Tobias Bocanegra wrote:
+>no, performance state-change does not work at all:
+>but when switching performance states, /proc/cpuinfo freq changes
 >
->> $ cat /proc/acpi/processor/CPU1/power
->> active state:            C2
->> max_cstate:              C8
->> bus master activity:     00000000
->> states:
->>     C1:                  type[C1] promotion[C2] demotion[--]
->> latency[000] usage[00000010]
->>    *C2:                  type[C2] promotion[--] demotion[C1]
->> latency[001] usage[02220984]
->>=20
->> i used http://processorfinder.intel.com/default.aspx to find the spec
->> of my cpu: =
-http://processorfinder.intel.com/details.aspx?sSpec=3DSL8VN
->> and reviewed the specs of my processor. and it seems, that the
->> power-states in acpi do not correspond to the states in the manual. i
->> guess C2 is the 'C1' in the spec, since there is no C0. what i don't
->> understand is, that it says: max_cstate: C8, which my cpu does not
->> have.
+># echo 0 > /proc/acpi/processor/CPU0/performance
+># cat /proc/acpi/processor/CPU0/performance
+>state count:             4
+>active state:            P1
+>states:
+>    P0:                  2167 MHz, 31000 mW, 10 uS
+>   *P1:                  1667 MHz, 23000 mW, 10 uS
+>    P2:                  1333 MHz, 18000 mW, 10 uS
+>    P3:                  1000 MHz, 13000 mW, 10 uS
+># cat /proc/cpuinfo  | grep MHz
+>cpu MHz         : 1667.000
+>cpu MHz         : 1667.000
+># cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
+>1667000
 >
->Why you exactly get 2 "C" states (and I am getting 1 on my=20
->pentium D915)
->I can't say one sane thing about and I'd like to know as well.=20
->This sort
->of information also can't be found on the Intel website unfortunately.
+># echo 2 > /proc/acpi/processor/CPU0/performance
+># cat /proc/acpi/processor/CPU0/performance
+>state count:             4
+>active state:            P1
+>states:
+>    P0:                  2167 MHz, 31000 mW, 10 uS
+>   *P1:                  1667 MHz, 23000 mW, 10 uS
+>    P2:                  1333 MHz, 18000 mW, 10 uS
+>    P3:                  1000 MHz, 13000 mW, 10 uS
+># cat /proc/cpuinfo  | grep MHz
+>cpu MHz         : 1333.000
+>cpu MHz         : 1667.000
+># cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
+>1667000
+>
 
-The number of C-states supported by your platform can be seen in boot
-messages.
-Something of the form..
-ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+I mentioned it in my earlier reply. But, I am not sure whether you tried
+this or not. Can you please try this.
+#cat /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
+#cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+#cat /proc/cpuinfo  | grep MHz
 
-The number 8, as Eric mentioned, is the max number of C-states that can
-be supported by the kernel and has nothing to do with the platform.
+#echo 1333000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+#echo 1333000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_setspeed
 
-Note:
-1) The number of C-states is not constant at all times, for a platform.
-Platform BIOS may change the number of C-states dynamically depending on
-the condition. Example: When on battery, there can be extra C-state
-compared to when on A/C.
-2) Number of C-states that a system can use is actually given by
-platform/bios to OS and may not be constant for a CPU type. Platform
-vendor may decide to expose/hide different C-states based on platform
-requirements.
+#cat /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
+#cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+#cat /proc/cpuinfo  | grep MHz
 
 Thanks,
 Venki
