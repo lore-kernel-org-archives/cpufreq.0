@@ -1,7 +1,7 @@
 From: Erik Slagter <erik@slagter.name>
 Subject: Re: problems setting freq on dual core t2600, 2.6.17-1.2157_FC5smp
-Date: Sun, 06 Aug 2006 12:18:32 +0200
-Message-ID: <1154859512.8243.26.camel@skylla.slagter.name>
+Date: Sun, 06 Aug 2006 12:19:30 +0200
+Message-ID: <1154859570.8243.28.camel@skylla.slagter.name>
 References: <8be731880608030605x6dbeb691kc7079a9d51fe87e9@mail.gmail.com>
 	<44D28043.5010301@goop.org>
 	<8be731880608051042o6d9a3eb6v2b7290fcd9eaf866@mail.gmail.com>
@@ -10,11 +10,11 @@ References: <8be731880608030605x6dbeb691kc7079a9d51fe87e9@mail.gmail.com>
 	<1154856741.8243.21.camel@skylla.slagter.name>
 	<8be731880608060244t3c0cedd6k7c7f76d5a58f8489@mail.gmail.com>
 	<1154857599.8243.23.camel@skylla.slagter.name>
-	<8be731880608060302x495fe71kda23879901fb66b3@mail.gmail.com>
+	<8be731880608060310s315c85c8l3ba522b5278987b0@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1380473321=="
+Content-Type: multipart/mixed; boundary="===============1018416655=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <8be731880608060302x495fe71kda23879901fb66b3@mail.gmail.com>
+In-Reply-To: <8be731880608060310s315c85c8l3ba522b5278987b0@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -29,59 +29,28 @@ To: tobias.bocanegra@day.com
 Cc: cpufreq@lists.linux.org.uk
 
 
---===============1380473321==
+--===============1018416655==
 Content-Type: multipart/signed; micalg=sha1;
 	protocol="application/x-pkcs7-signature";
-	boundary="=-og6OJspDG2VMXrf+l6Mk"
+	boundary="=-lp3ArEC0axSmVh+mYgTS"
 
 
---=-og6OJspDG2VMXrf+l6Mk
+--=-lp3ArEC0axSmVh+mYgTS
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On zo, 2006-08-06 at 12:02 +0200, Tobias Bocanegra wrote:
-> i don't have a THM entry:
-> # tree /proc/acpi/thermal_zone
-> /proc/acpi/thermal_zone
-> |-- TZ0
-> |   |-- cooling_mode
-> |   |-- polling_frequency
-> |   |-- state
-> |   |-- temperature
-> |   `-- trip_points
-> |-- TZ1
-> |   |-- cooling_mode
-> |   |-- polling_frequency
-> |   |-- state
-> |   |-- temperature
-> |   `-- trip_points
-> |-- TZ2
-> |   |-- cooling_mode
-> |   |-- polling_frequency
-> |   |-- state
-> |   |-- temperature
-> |   `-- trip_points
-> |-- TZ3
-> |   |-- cooling_mode
-> |   |-- polling_frequency
-> |   |-- state
-> |   |-- temperature
-> |   `-- trip_points
-> `-- TZ4
->     |-- cooling_mode
->     |-- polling_frequency
->     |-- state
->     |-- temperature
->     `-- trip_points
->=20
-> btw: cpu throttling works.
+On zo, 2006-08-06 at 12:10 +0200, Tobias Bocanegra wrote:
+> > It looks your processor is in TM2 mode (reduced frequency and voltage
+> > due to overtemperature) or cpufreq thinks it is.
+> just curious, are the fans / temperature really only controlled by the
+> kernel and not by the cpu? i.e. setting a wrong thermal limit would
+> overheat the cpu?
 
-This means to me you actually have a working thermal zones system. Mine
-appears to be a stub. It seems you'll have to check all these files out.
+AFAIK that is dependent on cpu, motherboard and bios.
 
-And please don't top-post.
+Most CPU's shut down (as last resort) on overtemperature, though.
 
---=-og6OJspDG2VMXrf+l6Mk
+--=-lp3ArEC0axSmVh+mYgTS
 Content-Type: application/x-pkcs7-signature; name=smime.p7s
 Content-Disposition: attachment; filename=smime.p7s
 Content-Transfer-Encoding: base64
@@ -126,22 +95,22 @@ qi2fNi/A9BxQIJNwPP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa
 9/eH1sYITq726jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggJmMIICYgIBATBpMGIxCzAJ
 BgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
 EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMAkGBSsOAwIaBQCgggFT
-MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgwNjEwMTgzMlow
-IwYJKoZIhvcNAQkEMRYEFP/atPUlca3CMewChOXZzeewI0SjMHgGCSsGAQQBgjcQBDFrMGkwYjEL
+MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgwNjEwMTkzMFow
+IwYJKoZIhvcNAQkEMRYEFAEuVJgceSs2rtevD3VrtMyt8pIiMHgGCSsGAQQBgjcQBDFrMGkwYjEL
 MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNV
 BAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAgMP8QQwegYLKoZIhvcNAQkQ
 Agsxa6BpMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBM
 dGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMA0G
-CSqGSIb3DQEBAQUABIGAkxlvq7vhlcp1xGDhEjB1dExEjSg/X29bNJhstOZ+FdADjEGoE4oYQiz4
-YHHU2g0uY58ynb55BLt12g8RMlBMZX/gv2IZpKgTEMcqGMv8e/HRgrfGDprgkRKivF7N1FIURLXy
-jcCFWGOf8RW93jxnWaktZwnh89lMvAnMf9GxRF8AAAAAAAA=
+CSqGSIb3DQEBAQUABIGAaW46LIUR4WKU35U0qSsmlFTbCRyLHafWl2XaqIUaWNbMUipTszbBd36J
+UTCPJgjqKZkbziurAGZxZfFQ0mNuzSnnEiUSgwJaPIUuoQ/jmx4xBhoOlk3hg2oxNNL1mlCmxJJ5
+umZcQ3QhOi+qKdGTxYkvqwzgf3qnS/EmteLCcXMAAAAAAAA=
 
 
---=-og6OJspDG2VMXrf+l6Mk--
+--=-lp3ArEC0axSmVh+mYgTS--
 
 
 
---===============1380473321==
+--===============1018416655==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -152,6 +121,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============1380473321==--
+--===============1018416655==--
 
 
