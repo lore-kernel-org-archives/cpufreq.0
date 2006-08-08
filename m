@@ -1,20 +1,14 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 3/8] acpi-cpufreq: merge acpi functionality of cpufreq
-	drivers
-Date: Mon, 7 Aug 2006 12:55:28 -0400
-Message-ID: <20060807165528.GO13393@redhat.com>
-References: <44CE4F8A.5060600@linux.intel.com>
-	<20060802092733.GI17014@poupinou.org>
-	<44D0F292.8090403@linux.intel.com>
-	<20060803161130.GL17014@poupinou.org>
-	<20060803162024.GA22448@redhat.com>
-	<20060804092212.GO17014@poupinou.org>
-	<20060804170338.GK7265@redhat.com>
-	<20060807084849.GP17014@poupinou.org>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH 4/8] acpi-cpufreq: remove ACPI from speedstep-centrino
+	driver -- updated to not revert Jeremy's patch
+Date: Mon, 7 Aug 2006 21:42:21 -0400
+Message-ID: <20060808014221.GB21822@dominikbrodowski.de>
+References: <44CE5015.2090200@linux.intel.com>
+	<44D1BBB7.6010903@linux.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060807084849.GP17014@poupinou.org>
+In-Reply-To: <44D1BBB7.6010903@linux.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -27,38 +21,54 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: cpufreq@lists.linux.org.uk
+To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Cc: cpufreq@lists.linux.org.uk, Dave Jones <davej@redhat.com>
 
-On Mon, Aug 07, 2006 at 10:48:49AM +0200, Bruno Ducrot wrote:
- > On Fri, Aug 04, 2006 at 01:03:38PM -0400, Dave Jones wrote:
- > > On Fri, Aug 04, 2006 at 11:22:12AM +0200, Bruno Ducrot wrote:
- > > 
- > >  > > Newer VIA CPUs rely on this driver rather than longhaul for example.
- > >  > 
- > >  > Ah I see.  In fact we could add them already to
- > >  > speedstep-centrino.c easily.
- > > 
- > > We could, though they need to rely on the ACPI tables rather than
- > > hardcoded tables (as we've no way to distinguish regular from ULV
- > > parts afaics), at which point it doesn't really buy us anything
- > > over just using acpi-cpufreq which works without any modifications.
- > 
- > I don't get it.  speedstep-centrino does support both hardcoded tables
- > and ACPI tables (but I agree it would be better to add this support
- > to acpi-cpufreq instead of speedstep-centrino).
- > 
- > FYI FreeBSD support VIA C7-M processors with hardcoded tables.  They
- > use MSR_IA32_PERF_STATUS, bit 31 to 64, in order to distinguish various
- > variants of those processors (and Intel processors as well btw).
- > See /sys/i386/cpufreq/est.c
- > http://www.freebsd.org/cgi/cvsweb.cgi/~checkout~/src/sys/i386/cpufreq/est.c?rev=1.11&content-type=text/plain
+Hi,
 
-Hmm, I notice they mention a much newer rev of the BIOS writers guide than
-what I had, maybe mine missed something important (or perhaps I need
-to go read it again).
+On Thu, Aug 03, 2006 at 01:02:47PM +0400, Alexey Starikovskiy wrote:
+>  speedstep-centrino.c |  234 +++------------------------------------------------
+>  1 file changed, 17 insertions(+), 217 deletions(-)
+> 
+> remove ACPI from speedstep-centrino driver
 
-		Dave
+At least two issues with this patch:
 
--- 
-http://www.codemonkey.org.uk
+a) you leave arch/i386/kernel/cpu/cpufreq/Kconfig alone, even though all
+relevant usages of X86_SPEEDSTEP_CENTRINO_ACPI seem to be removed by this
+patch.
+
+b) you suggest to remove a "feature" here. (A feature being a functionality
+working with a specific .config setting). We shouldn't do that without a
+fair warning and a sufficient transition period, unless we have compelling
+reasons to do otherwise. Therefore, I'd suggest to first
+- Add a warning
+	printk(KERN_WARNING "Please use CONFIG_... instead!")
+- tweak KCONFIG so that if X86_SPEEDSTEP_CENTRINO_ACPI was set,
+  CONFIG_X86_ACPI_CPUFREQ is selected, e.g.
+
+ config X86_SPEEDSTEP_CENTRINO_ACPI
+ 	bool "Use ACPI tables to decode valid frequency/voltage pairs"
+  	depends on X86_SPEEDSTEP_CENTRINO && ACPI_PROCESSOR
+ 	depends on !(X86_SPEEDSTEP_CENTRINO = y && ACPI_PROCESSOR = m)
+ 	default y
++	select X86_ACPI_CPUFREQ
+ 	help
+ 	  Use primarily the information provided in the BIOS ACPI tables
+ 	  to determine valid CPU frequency and voltage pairings. It is
+ 	  required for the driver to work on non-Banias CPUs.
+
+     - add a notice to Documentation/feature-removal-schedule.txt.
+
+
+and the actual code is only removed in a couple of months (>6) from now.
+
+
+Also, I wonder how we'll look on this this merge-all-into-one-driver-approach
+in a few years. Remember Dave's talk at OLS 2003 about
+merge-then-split-up-then-remerging-then-splitting-up-cycles in the
+kernel...[*]
+
+	Dominik
+
+[*] http://archive.linuxsymposium.org/ols2003/Proceedings/All-Reprints/Reprint-Jones-OLS2003.pdf
