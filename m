@@ -1,8 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
-Date: Wed, 9 Aug 2006 21:23:29 -0700
-Message-ID: <200608100423.k7A4NTV7017133@fire-2.osdl.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: cpufreq stops working after a while
+Date: Fri, 11 Aug 2006 11:46:31 -0700
+Message-ID: <20060811114631.4a699667.akpm@osdl.org>
+References: <44DCCB96.5080801@rtr.ca>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <44DCCB96.5080801@rtr.ca>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,25 +17,33 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6851
+On Fri, 11 Aug 2006 14:25:26 -0400
+Mark Lord <lkml@rtr.ca> wrote:
 
-len.brown@intel.com changed:
+> One of my notebooks (Dell Latitude X1) has a 1.1GHz Pentium-M ULV processor.
+> This chip can change CPU speeds from 600 -> 800 -> 1100 Mhz.
+> 
+> I use speedstep-centrino with it, and after boot all is usually okay.
+> But after a few hours of operation, it stops shifting to the highest frequency
+> even under continuous 100% load (or not).  Eventually it gets stuck at 600Mhz
+> and stays there until I reboot.
+> 
+> Sometimes rebooting doesn't even restore it.
+> 
+> /sys/devices/system/cpu/cpu0/cpufreq is all very normal looking,
+> showing the available frequencies and other info.  All of the attribs
+> there look fine, except for "scaling_max_freq", which is what seems
+> to gradually get set smaller.  For instance, right now it is set to 800000,
+> and it won't let me change it (echo 11000000 > scaling_max_freq has no effect.
+> 
+> WHY?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-          Component|Power-Sleep-Wake            |cpufreq
-           Category|ACPI                        |Power Management
+cpufreq seems to have relatively frequent problems.
 
+>  And how can I fix it?
 
-
-------- Additional Comments From len.brown@intel.com  2006-08-09 21:17 -------
-Please verify that this issue is gone using 2.6.18-rc4 or later.
-(moving to PM/cpufreq, since this is not an ACPI issue)
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+You could start by telling us which kernel versions are affected ;)
