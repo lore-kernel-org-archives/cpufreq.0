@@ -1,13 +1,10 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: cpufreq stops working after a while
-Date: Fri, 11 Aug 2006 12:18:06 -0700
-Message-ID: <20060811121806.51a73fe5.akpm@osdl.org>
-References: <44DCCB96.5080801@rtr.ca> <20060811114631.4a699667.akpm@osdl.org>
-	<44DCD618.2040700@rtr.ca>
+From: A van Staalduijnen <cpufreq@toptracker.com>
+Subject: Chipset dependant?
+Date: Sat, 12 Aug 2006 00:14:10 +0200
+Message-ID: <44DD0132.8040205@toptracker.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <44DCD618.2040700@rtr.ca>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,29 +15,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-On Fri, 11 Aug 2006 15:10:16 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+At home I am running an old desktop box, running an Athlon XP on the old 
+VIA KT133 (not KT133A) chipset. Since this box is mostly idle I am 
+considering doing the old Athlon bridge hack, to turn the cpu into an 
+Athlon XP-M, thinking I could be using cpufreq then, in order 
+dynamically scale it's frequency.
 
-> >> WHY?
-> > 
-> > cpufreq seems to have relatively frequent problems.
-> > 
-> >>  And how can I fix it?
-> > 
-> > You could start by telling us which kernel versions are affected ;)
-> 
-> 
-> Mmm.. since it appears to be related, kbuild dumps this out when building the kernel:
-> 
-> WARNING: drivers/acpi/processor.o - Section mismatch: reference to .init.data: from .text between 'acpi_processor_power_init' (at offset 0xf29) and 'acpi_processor_cst_has_changed'
-> 
-> A possible source for the bug, or total red herring ?
+I wonder though if it would suffice to turn the cpu into a 'mobile', or 
+if it would require to have a different chipset on the motherboard as well.
 
-An RH.  acpi_processor_power_init() is actually non-buggy, due to its
-interesting games with `first_run'.
+Any chance cpufreq will work after modding the CPU on this motherboard, 
+or would it be useless?
 
-A section error would usually trigger a wild oops if you're affected by it.
+
+Thanks,
+
+Arjan
