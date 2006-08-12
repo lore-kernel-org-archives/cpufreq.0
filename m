@@ -1,12 +1,12 @@
 From: Erik Slagter <erik@slagter.name>
-Subject: Re: chipset dependant?
-Date: Sat, 12 Aug 2006 10:49:40 +0200
-Message-ID: <1155372580.7809.4.camel@skylla.slagter.name>
-References: <Pine.LNX.4.64.0608111712290.15701@airraid.toptracker.com>
+Subject: Re: cpufreq stops working after a while
+Date: Sat, 12 Aug 2006 10:52:13 +0200
+Message-ID: <1155372733.7809.6.camel@skylla.slagter.name>
+References: <44DCCB96.5080801@rtr.ca> <20060811114631.4a699667.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0550834372=="
+Content-Type: multipart/mixed; boundary="===============1697320157=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0608111712290.15701@airraid.toptracker.com>
+In-Reply-To: <20060811114631.4a699667.akpm@osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,38 +20,32 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 To: cpufreq@lists.linux.org.uk
 
 
---===============0550834372==
+--===============1697320157==
 Content-Type: multipart/signed; micalg=sha1;
 	protocol="application/x-pkcs7-signature";
-	boundary="=-QNQFReBhzU5Y0xZbGenU"
+	boundary="=-Ao2evXMGOVMFsrw7u2H8"
 
 
---=-QNQFReBhzU5Y0xZbGenU
+--=-Ao2evXMGOVMFsrw7u2H8
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On vr, 2006-08-11 at 17:21 +0200, A van Staalduijnen wrote:
-> At home I am running an old box, running an Athlon XP on the old VIA KT13=
-3=20
-> (not KT133A) chipset. Since this box is mostly idle I am considering doin=
-g=20
-> the old Athlon bridge hack, to turn the cpu into an Athlon XP-M, thinking=
-=20
-> I could be using cpufreq then, in order dynamically scale frequencies.
->=20
-> I wonder though if it would suffice to turn the cpu into a 'mobile', or i=
-f=20
-> it would require a different chipset on the motherboard as well (as for=20
-> Intels)?
->=20
-> Any chance cpufreq will work after modding the CPU, or would it be=20
-> useless?
+On Fri, 11 Aug 2006 14:25:26 -0400 Mark Lord <lkml@rtr.ca> wrote:
 
-The mod to turn the XP into an MP won't give you M)obile capabilities
-but M)ultiprocessor caps. AFAIK the KT133 chipset doesn't implement any
-power saving mechanism at all. Bummer...
+> One of my notebooks (Dell Latitude X1) has a 1.1GHz Pentium-M ULV process=
+or.
+> This chip can change CPU speeds from 600 -> 800 -> 1100 Mhz.
+>=20
+> I use speedstep-centrino with it, and after boot all is usually okay.
+> But after a few hours of operation, it stops shifting to the highest freq=
+uency
+> even under continuous 100% load (or not).  Eventually it gets stuck at 60=
+0Mhz
+> and stays there until I reboot.
 
---=-QNQFReBhzU5Y0xZbGenU
+Can't it be TM2 pulling the handbrake?
+
+--=-Ao2evXMGOVMFsrw7u2H8
 Content-Type: application/x-pkcs7-signature; name=smime.p7s
 Content-Disposition: attachment; filename=smime.p7s
 Content-Transfer-Encoding: base64
@@ -96,22 +90,22 @@ qi2fNi/A9BxQIJNwPP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa
 9/eH1sYITq726jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggJmMIICYgIBATBpMGIxCzAJ
 BgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
 EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMAkGBSsOAwIaBQCgggFT
-MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgxMjA4NDk0MFow
-IwYJKoZIhvcNAQkEMRYEFKLwbfww6NmzUPZAq8U63NX+7p+KMHgGCSsGAQQBgjcQBDFrMGkwYjEL
+MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgxMjA4NTIxM1ow
+IwYJKoZIhvcNAQkEMRYEFG/oE4qWi2W+7J77RGlbUajZgvOIMHgGCSsGAQQBgjcQBDFrMGkwYjEL
 MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNV
 BAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAgMP8QQwegYLKoZIhvcNAQkQ
 Agsxa6BpMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBM
 dGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMA0G
-CSqGSIb3DQEBAQUABIGAVUEa9xJWXal29OhRrFmjUoQosveTqi7yQf9z6y7YDsfIPxSOuQryX5k5
-oKn5HfNxTxZIlr9A1uOqBH0MjzTUbWW1dn94xOvPTUIe4+XIQGZn7iejM3NdAVdVDfWbI0HkiB5Z
-iH+W+8biCSyChn5WstYw3z4b9qkO11hyC40pOggAAAAAAAA=
+CSqGSIb3DQEBAQUABIGAdfj3MrlziiD7I3OR+MlgEjIM7HcauZewjao8bSDvKLNuJmtqBnTfUHWe
+Ow2pFnhYv9UMOYDyT5fSdVKRT676sOTQL37OClFD+CvSwFwGKV4wn4/hgWME4l+DmodIA6mz4nB8
+rzLnB7uYCoW4TbDtSJKzR0GrEx71+rtazVTC788AAAAAAAA=
 
 
---=-QNQFReBhzU5Y0xZbGenU--
+--=-Ao2evXMGOVMFsrw7u2H8--
 
 
 
---===============0550834372==
+--===============1697320157==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -122,6 +116,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---===============0550834372==--
+--===============1697320157==--
 
 
