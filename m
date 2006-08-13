@@ -1,72 +1,43 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Add ignore_latency option
-Date: Sun, 13 Aug 2006 09:16:20 +0200
-Message-ID: <44DED1C4.7060108@interia.pl>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [-mm patch] make drivers/cpufreq/cpufreq_ondemand.c:powersave_bias_target() static
+Date: Sun, 13 Aug 2006 23:00:08 +0200
+Message-ID: <20060813210007.GJ3543@stusta.de>
+References: <20060813012454.f1d52189.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751439AbWHMVAL@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060813012454.f1d52189.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, davej@codemonkey.org.uk
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-Some laptops with VIA C3 processor, CLE266 chipset and
-AMI BIOS have incorrect latency values in FADT table. These
-laptops seems to be C3 capable, but latency values are to
-big: 101 for C2 and 1017 for C3. This option will allow
-user to skip C3 latency test but not C3 address test. AMI
-BIOS is setting C3 address to correct value in DSDT table.
+On Sun, Aug 13, 2006 at 01:24:54AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.18-rc3-mm2:
+>...
+>  git-cpufreq.patch
+>...
+>  git trees
+>...
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
+This patch makes the needlessly global powersave_bias_target() static.
 
----
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
-/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -65,7 +65,7 @@ static int port22_en =3D 0;
-=20
- /* Module parameters */
- static int dont_scale_voltage;
--
-+static int ignore_latency =3D 0;
-=20
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "longha=
-ul", msg)
-=20
-@@ -665,8 +665,10 @@ static int __init longhaul_cpu_init(stru
- 	if (longhaul_version =3D=3D TYPE_POWERSAVER) {
- 		/* Check ACPI support for C3 state */
- 		cx =3D &pr->power.states[ACPI_STATE_C3];
--		if (cx->address =3D=3D 0 || cx->latency > 1000)
-+		if (cx->address =3D=3D 0 ||=20
-+		   (cx->latency > 1000 && ignore_latency =3D=3D 0) )
- 			goto err_acpi;
-+
- 	} else {
- 		/* Check ACPI support for bus master arbiter disable */
- 		if (!pr->flags.bm_control) {
-@@ -773,6 +775,8 @@ static void __exit longhaul_exit(void)
-=20
- module_param (dont_scale_voltage, int, 0644);
- MODULE_PARM_DESC(dont_scale_voltage, "Don't scale voltage of processor");
-+module_param(ignore_latency, int, 0644);
-+MODULE_PARM_DESC(ignore_latency, "Skip ACPI C3 latency test");
-=20
- MODULE_AUTHOR ("Dave Jones <davej@codemonkey.org.uk>");
- MODULE_DESCRIPTION ("Longhaul driver for VIA Cyrix processors.");
-@@ -780,4 +784,3 @@ MODULE_LICENSE ("GPL");
-=20
- late_initcall(longhaul_init);
- module_exit(longhaul_exit);
--
+--- linux-2.6.18-rc4-mm1/drivers/cpufreq/cpufreq_ondemand.c.old	2006-08-13 17:40:48.000000000 +0200
++++ linux-2.6.18-rc4-mm1/drivers/cpufreq/cpufreq_ondemand.c	2006-08-13 17:40:59.000000000 +0200
+@@ -105,8 +105,9 @@
+  * Returns the freq_hi to be used right now and will set freq_hi_jiffies,
+  * freq_lo, and freq_lo_jiffies in percpu area for averaging freqs.
+  */
+-unsigned int powersave_bias_target(struct cpufreq_policy *policy,
+-		unsigned int freq_next, unsigned int relation)
++static unsigned int powersave_bias_target(struct cpufreq_policy *policy,
++					  unsigned int freq_next,
++					  unsigned int relation)
+ {
+ 	unsigned int freq_req, freq_reduc, freq_avg;
+ 	unsigned int freq_hi, freq_lo;
