@@ -1,12 +1,10 @@
-From: Erik Slagter <erik@slagter.name>
-Subject: Re: cpufreq stops working after a while
-Date: Sat, 12 Aug 2006 10:52:13 +0200
-Message-ID: <1155372733.7809.6.camel@skylla.slagter.name>
-References: <44DCCB96.5080801@rtr.ca> <20060811114631.4a699667.akpm@osdl.org>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: [PATCH] Longhaul - Add ignore_latency option
+Date: Sun, 13 Aug 2006 09:16:20 +0200
+Message-ID: <44DED1C4.7060108@interia.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1697320157=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20060811114631.4a699667.akpm@osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,105 +15,58 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk
 
+Some laptops with VIA C3 processor, CLE266 chipset and
+AMI BIOS have incorrect latency values in FADT table. These
+laptops seems to be C3 capable, but latency values are to
+big: 101 for C2 and 1017 for C3. This option will allow
+user to skip C3 latency test but not C3 address test. AMI
+BIOS is setting C3 address to correct value in DSDT table.
 
---===============1697320157==
-Content-Type: multipart/signed; micalg=sha1;
-	protocol="application/x-pkcs7-signature";
-	boundary="=-Ao2evXMGOVMFsrw7u2H8"
+Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
 
+---
 
---=-Ao2evXMGOVMFsrw7u2H8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 11 Aug 2006 14:25:26 -0400 Mark Lord <lkml@rtr.ca> wrote:
-
-> One of my notebooks (Dell Latitude X1) has a 1.1GHz Pentium-M ULV process=
-or.
-> This chip can change CPU speeds from 600 -> 800 -> 1100 Mhz.
->=20
-> I use speedstep-centrino with it, and after boot all is usually okay.
-> But after a few hours of operation, it stops shifting to the highest freq=
-uency
-> even under continuous 100% load (or not).  Eventually it gets stuck at 60=
-0Mhz
-> and stays there until I reboot.
-
-Can't it be TM2 pulling the handbrake?
-
---=-Ao2evXMGOVMFsrw7u2H8
-Content-Type: application/x-pkcs7-signature; name=smime.p7s
-Content-Disposition: attachment; filename=smime.p7s
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIILzCCAnIw
-ggHboAMCAQICAw/xBDANBgkqhkiG9w0BAQQFADBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhh
-d3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVt
-YWlsIElzc3VpbmcgQ0EwHhcNMDUxMTI5MTc0MTQ0WhcNMDYxMTI5MTc0MTQ0WjBqMRAwDgYDVQQE
-EwdTbGFndGVyMRUwEwYDVQQqEwxFcmlrIE1hcnRpam4xHTAbBgNVBAMTFEVyaWsgTWFydGlqbiBT
-bGFndGVyMSAwHgYJKoZIhvcNAQkBFhFlcmlrQHNsYWd0ZXIubmFtZTCBnzANBgkqhkiG9w0BAQEF
-AAOBjQAwgYkCgYEAtYqGuTSGbsTHZPiKQnNmvpVaxVuBZS6rV5xuKD47J9hz8Vq3Xh4PpuGYNW5L
-vevp80oj6sYAhNuU380UNRqALFaer8MtG6fXpvBgq+MCxVQzMyYxAnopqWlZQIUQNQX9wZmI0gVv
-gY6vwcXRBXkMyrzm41dy4oFwh+PTj3U+xwcCAwEAAaMuMCwwHAYDVR0RBBUwE4ERZXJpa0BzbGFn
-dGVyLm5hbWUwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQQFAAOBgQCf5+l4khcSjUOL8WcuJ7Q1
-eXhSPe0VJEsHSfVJCNFmfFZFiGZNwQRliOuGFxSy+uPb8ZVIZ3cBIen/K0k2hWS6pCiDm3xNdkFU
-mhWsibmyMoc91I0Re2ZWPmL6isxiyr56Qv7vNz2UHSinLJr/QtsvRv/RKFlcO1gm1wsCOPkyITCC
-AnIwggHboAMCAQICAw/xBDANBgkqhkiG9w0BAQQFADBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMc
-VGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZy
-ZWVtYWlsIElzc3VpbmcgQ0EwHhcNMDUxMTI5MTc0MTQ0WhcNMDYxMTI5MTc0MTQ0WjBqMRAwDgYD
-VQQEEwdTbGFndGVyMRUwEwYDVQQqEwxFcmlrIE1hcnRpam4xHTAbBgNVBAMTFEVyaWsgTWFydGlq
-biBTbGFndGVyMSAwHgYJKoZIhvcNAQkBFhFlcmlrQHNsYWd0ZXIubmFtZTCBnzANBgkqhkiG9w0B
-AQEFAAOBjQAwgYkCgYEAtYqGuTSGbsTHZPiKQnNmvpVaxVuBZS6rV5xuKD47J9hz8Vq3Xh4PpuGY
-NW5Lvevp80oj6sYAhNuU380UNRqALFaer8MtG6fXpvBgq+MCxVQzMyYxAnopqWlZQIUQNQX9wZmI
-0gVvgY6vwcXRBXkMyrzm41dy4oFwh+PTj3U+xwcCAwEAAaMuMCwwHAYDVR0RBBUwE4ERZXJpa0Bz
-bGFndGVyLm5hbWUwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQQFAAOBgQCf5+l4khcSjUOL8Wcu
-J7Q1eXhSPe0VJEsHSfVJCNFmfFZFiGZNwQRliOuGFxSy+uPb8ZVIZ3cBIen/K0k2hWS6pCiDm3xN
-dkFUmhWsibmyMoc91I0Re2ZWPmL6isxiyr56Qv7vNz2UHSinLJr/QtsvRv/RKFlcO1gm1wsCOPky
-ITCCAz8wggKooAMCAQICAQ0wDQYJKoZIhvcNAQEFBQAwgdExCzAJBgNVBAYTAlpBMRUwEwYDVQQI
-EwxXZXN0ZXJuIENhcGUxEjAQBgNVBAcTCUNhcGUgVG93bjEaMBgGA1UEChMRVGhhd3RlIENvbnN1
-bHRpbmcxKDAmBgNVBAsTH0NlcnRpZmljYXRpb24gU2VydmljZXMgRGl2aXNpb24xJDAiBgNVBAMT
-G1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBDQTErMCkGCSqGSIb3DQEJARYccGVyc29uYWwtZnJl
-ZW1haWxAdGhhd3RlLmNvbTAeFw0wMzA3MTcwMDAwMDBaFw0xMzA3MTYyMzU5NTlaMGIxCzAJBgNV
-BAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNU
-aGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQTCBnzANBgkqhkiG9w0BAQEFAAOBjQAw
-gYkCgYEAxKY8VXNV+065yplaHmjAdQRwnd/p/6Me7L3N9VvyGna9fww6YfK/Uc4B1OVQCjDXAmNa
-LIkVcI7dyfArhVqqP3FWy688Cwfn8R+RNiQqE88r1fOCdz0Dviv+uxg+B79AgAJk16emu59l0cUq
-VIUPSAR/p7bRPGEEQB5kGXJgt/sCAwEAAaOBlDCBkTASBgNVHRMBAf8ECDAGAQH/AgEAMEMGA1Ud
-HwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwudGhhd3RlLmNvbS9UaGF3dGVQZXJzb25hbEZyZWVtYWls
-Q0EuY3JsMAsGA1UdDwQEAwIBBjApBgNVHREEIjAgpB4wHDEaMBgGA1UEAxMRUHJpdmF0ZUxhYmVs
-Mi0xMzgwDQYJKoZIhvcNAQEFBQADgYEASIzRUIPqCy7MDaNmrGcPf6+svsIXoUOWlJ1/TCG4+DYf
-qi2fNi/A9BxQIJNwPP2t4WFiw9k6GX6EsZkbAMUaC4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa
-9/eH1sYITq726jTlEBpbNU1341YheILcIRk13iSx0x1G/11fZU8xggJmMIICYgIBATBpMGIxCzAJ
-BgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
-EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMAkGBSsOAwIaBQCgggFT
-MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA2MDgxMjA4NTIxM1ow
-IwYJKoZIhvcNAQkEMRYEFG/oE4qWi2W+7J77RGlbUajZgvOIMHgGCSsGAQQBgjcQBDFrMGkwYjEL
-MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNV
-BAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAgMP8QQwegYLKoZIhvcNAQkQ
-Agsxa6BpMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBM
-dGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDD/EEMA0G
-CSqGSIb3DQEBAQUABIGAdfj3MrlziiD7I3OR+MlgEjIM7HcauZewjao8bSDvKLNuJmtqBnTfUHWe
-Ow2pFnhYv9UMOYDyT5fSdVKRT676sOTQL37OClFD+CvSwFwGKV4wn4/hgWME4l+DmodIA6mz4nB8
-rzLnB7uYCoW4TbDtSJKzR0GrEx71+rtazVTC788AAAAAAAA=
-
-
---=-Ao2evXMGOVMFsrw7u2H8--
-
-
-
---===============1697320157==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
---===============1697320157==--
-
-
+diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
+/cpufreq/longhaul.c
+--- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
++++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+@@ -65,7 +65,7 @@ static int port22_en =3D 0;
+=20
+ /* Module parameters */
+ static int dont_scale_voltage;
+-
++static int ignore_latency =3D 0;
+=20
+ #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "longha=
+ul", msg)
+=20
+@@ -665,8 +665,10 @@ static int __init longhaul_cpu_init(stru
+ 	if (longhaul_version =3D=3D TYPE_POWERSAVER) {
+ 		/* Check ACPI support for C3 state */
+ 		cx =3D &pr->power.states[ACPI_STATE_C3];
+-		if (cx->address =3D=3D 0 || cx->latency > 1000)
++		if (cx->address =3D=3D 0 ||=20
++		   (cx->latency > 1000 && ignore_latency =3D=3D 0) )
+ 			goto err_acpi;
++
+ 	} else {
+ 		/* Check ACPI support for bus master arbiter disable */
+ 		if (!pr->flags.bm_control) {
+@@ -773,6 +775,8 @@ static void __exit longhaul_exit(void)
+=20
+ module_param (dont_scale_voltage, int, 0644);
+ MODULE_PARM_DESC(dont_scale_voltage, "Don't scale voltage of processor");
++module_param(ignore_latency, int, 0644);
++MODULE_PARM_DESC(ignore_latency, "Skip ACPI C3 latency test");
+=20
+ MODULE_AUTHOR ("Dave Jones <davej@codemonkey.org.uk>");
+ MODULE_DESCRIPTION ("Longhaul driver for VIA Cyrix processors.");
+@@ -780,4 +784,3 @@ MODULE_LICENSE ("GPL");
+=20
+ late_initcall(longhaul_init);
+ module_exit(longhaul_exit);
+-
