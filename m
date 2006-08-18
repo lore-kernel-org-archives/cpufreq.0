@@ -1,36 +1,33 @@
 From: Dave Jones <davej@redhat.com>
-Subject: vacation, and merging status.
-Date: Thu, 17 Aug 2006 18:03:43 -0400
-Message-ID: <20060817220343.GJ6938@redhat.com>
+Subject: acpi-cpufreq oddness
+Date: Fri, 18 Aug 2006 14:43:47 -0400
+Message-ID: <20060818184347.GE4616@redhat.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
-Cc: Andrew Morton <akpm@osdl.org>
+To: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk, linux-acpi@vger.kernel.org
 
-I'm disappearing off the net for two weeks as of Monday,
-so I won't be merging any cpufreq patches.  Given where we are
-in the 2.6.18rc release cycle, things really should be slowing
-down to almost a halt anyway, so anything exciting can wait
-until I get back and 2.6.19. (There's a few things brewing,
-Alexey's reworking of speedstep, and Rafael has some more
-longhaul patches, but thats about it for now iirc).
+Someone reported to me that modprobe acpi-cpufreq now fails noisily
+complaining about invalid arguments.  I was able to reproduce it
+on one of my boxes that doesn't have any form of speed scaling at all.
+Previously, the modprobe would return with -ENODEV, but now its
+getting an -EINVAL from somewhere. (I'm still trying to chase down
+exactly where its coming from).
 
-If any 'must fix for .18' type patches turn up in the next two weeks,
-posting them here as usual, and also Cc'ing Andrew is probably
-the best way to make sure that happens.
+So far in chasing this, all I found is a cosmetic bug,
+acpi_cpufreq_target has a..
+dprintk("acpi_cpufreq_setpolicy");
+in it, which is the only reference to setpolicy in the whole driver.
+
+I don't have handy access to a git tree at the moment, and I've forgotten
+the history of the recent changes here.
+
+Alexey/Len, any ideas whats going on here?
 
 		Dave
 
