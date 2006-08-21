@@ -1,10 +1,10 @@
-From: "Martin Forsgren" <mk0foma@student.chalmers.se>
-Subject: RE: speedstep-centrino not working with Intel Pentium M 1.73
-Date: Sun, 20 Aug 2006 20:11:08 +0200
-Message-ID: <op.telgsuax8oynmf@mthef.bredband.comhem.se>
+From: Daniel Drake <dsd@gentoo.org>
+Subject: p4-clockmod reports frequencies faster than CPU
+Date: Mon, 21 Aug 2006 17:11:11 +0100
+Message-ID: <44E9DB1F.2020405@gentoo.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,31 +14,32 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; format="flowed"; delsp="yes"; charset="us-ascii"
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@lists.linux.org.uk
+Cc: zwane@commfireservices.com
+
+Hi,
+
+A Gentoo user at http://bugs.gentoo.org/141234 reports that the 
+p4-clockmod cpufreq driver reports bad frequencies for his 1300mhz 
+Pentium 4 processor:
+
+# cat sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+525000 787500 1050000 1312500 1575000 1837500 2100000
+
+The last 3 are obviously wrong.
+
+Unfortunately as this is a production system it's not easy to test other 
+kernels, so this has only been reproduced on a Gentoo-patched 2.6.16. 
+However the Gentoo patches don't modify cpufreq at all and are generally 
+quite minimal.
 
 
-  We are not alone.
+/proc/cpuinfo output is here:
+http://bugs.gentoo.org/attachment.cgi?id=92370&action=view
 
-Looks like many people have this problem, I'm included.
+Does any more info need to be provided?
 
-I can run "p4-clockmode" but then I only get maximum 1.3GHz.
-None of the other cpufreq variants work.
-
-Found a patch for 'dothan'-processors but I don't know
-wich one that is, or if I can use it on my cpu.
-http://stefans.datenbruch.de/acerTM292/
-
-You wanted the acpidump? any special parameter or just
-acpidump straight off?
-Anything else you want to know? I try to provide it.
-
-Best regards
-  Martin Forsgren
-
-_My system_
-Zepto 2314w Laptop
-Debian testing
-Kernel 2.6.18-rc4-mm1
-Pentium M 1.73
+Thanks,
+Daniel
