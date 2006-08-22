@@ -1,11 +1,11 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: p4-clockmod reports frequencies faster than CPU
-Date: Mon, 21 Aug 2006 18:58:19 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454777C6A@scsmsx413.amr.corp.intel.com>
+From: antoine <rouadec@gmail.com>
+Subject: voltage on an intel dual core L2400 @ 1.66GHz
+Date: Tue, 22 Aug 2006 14:47:25 -0700
+Message-ID: <e2219c8a0608221447n115309ewd55212ce4e5e9342@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,63 +16,23 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Daniel Drake <dsd@gentoo.org>, cpufreq@lists.linux.org.uk, Dominik Brodowski <linux@dominikbrodowski.de>
-Cc: zwane@commfireservices.com
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-=20
+Hello,
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Daniel Drake
->Sent: Monday, August 21, 2006 9:11 AM
->To: cpufreq@lists.linux.org.uk
->Cc: zwane@commfireservices.com
->Subject: p4-clockmod reports frequencies faster than CPU
->
->Hi,
->
->A Gentoo user at http://bugs.gentoo.org/141234 reports that the=20
->p4-clockmod cpufreq driver reports bad frequencies for his 1300mhz=20
->Pentium 4 processor:
->
-># cat sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
->525000 787500 1050000 1312500 1575000 1837500 2100000
->
->The last 3 are obviously wrong.
->
->Unfortunately as this is a production system it's not easy to=20
->test other=20
->kernels, so this has only been reproduced on a Gentoo-patched 2.6.16.=20
->However the Gentoo patches don't modify cpufreq at all and are=20
->generally=20
->quite minimal.
->
->
->/proc/cpuinfo output is here:
->http://bugs.gentoo.org/attachment.cgi?id=3D92370&action=3Dview
->
->Does any more info need to be provided?
+Just got this x60s, everything runs smoothly but for one thing which
+is the battery life being 40% shorter and the whole computer running
+hotter than "usual" (i.e. the 4 days I spend with windows on it).
 
-The root of the problem seems to be this line at
-arch/i386/kernel/cpu/cpufreq/speedstep-lib.c:pentium4_get_frequency()
+I suspect the voltage associated to each frequency by cpufreq are too
+high but couldn't find a way to check those as of now. I don't really
+want to lower them, I was just wondering how they were set?
 
-if (c->x86_model < 2)
-	mult =3D msr_lo >> 27;
-
-The CPU model on this system here is 0. As I see in the documentation,
-multiplier is not defined in MSR_EBC_FREQUENCY_ID for model 0. So, we
-are getting the wrong estimate of the processor frequency.
-
-Dominik may have more history about this.
-Dominik: did this >> 27 work on any P4 with model 0 and 1 at all?
-
-Note that this is only a reporting issue. Even with this bug, top speed
-of the CPU will always be 1.3 and with P4_clock mod, CPU speed will vary
-according to scale by (1/8th) for every lower P-state.
+I know about the linux-PHC patch, but it seems this is only if you
+wish to lower the default voltages, I merely wish to know what my
+current ones are right now.
 
 Thanks,
-Venki
-
-Thanks,
-Venki
+-- 
+Antoine
