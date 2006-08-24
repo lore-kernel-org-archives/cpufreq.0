@@ -1,14 +1,13 @@
-From: antoine <rouadec@gmail.com>
-Subject: Re: voltage on an intel dual core L2400 @ 1.66GHz
-Date: Thu, 24 Aug 2006 08:23:29 -0700
-Message-ID: <e2219c8a0608240823y6d334d26o9b5b9f13f9d68e5a@mail.gmail.com>
-References: <e2219c8a0608221447n115309ewd55212ce4e5e9342@mail.gmail.com>
-	<200608222225.25264.len.brown@intel.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: Re: [PATCH] Longhaul - Add ignore_latency option
+Date: Thu, 24 Aug 2006 19:18:14 +0200
+Message-ID: <44EDDF56.2060807@interia.pl>
+References: <44DED1C4.7060108@interia.pl>
+	<200608232322.19005.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <200608222225.25264.len.brown@intel.com>
-Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <200608232322.19005.len.brown@intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,53 +17,49 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-9"
+To: Len Brown <lenb@kernel.org>
+Cc: cpufreq@lists.linux.org.uk
 
-ok, I didn't get round to do a full test with bltk but it seems my
-first impressions were wrong (not that I was extremly confident in
-them to start with).
+>> Some laptops with VIA C3 processor, CLE266 chipset and
+>> AMI BIOS have incorrect latency values in FADT table. These
+>> laptops seems to be C3 capable, but latency values are to
+>> big: 101 for C2 and 1017 for C3. This option will allow
+>> user to skip C3 latency test but not C3 address test. AMI
+>> BIOS is setting C3 address to correct value in DSDT table.
+>=20
+> This looks very fishy.
 
-the shorten battery life seems to be a fan always on issue, the CPU
-temp is low enough (well the fan is allways running) at 45/50 celsius.
-After checking the blueprints it seems that what was burning my
-fingers was the mini PCI express wireless card...
+So why P_BLK address is valid and have proper lenght?
 
-Sorry for the clueless questions and thanks for the help.
+>=20
+> C2 latency above 100usec and C3 latency above 1000 usec
+> are the official way for the BIOS to tell the OS to NOT USE
+> those C-states.  Under no conditions should Linux second
+> guess those explicit instructions -- the BIOS may have put
+> those values there because you get silent data corruption
+> on that particular stepping of the processor or chipset
+> if they are enabled.
+>=20
 
-I may be able to provide some informations about my CPU if you guys
-need it to built the tables for linux-PHC :
-Genuine Intel(R) CPU           L2400  @ 1.66GHz
+It is disabled by default.
+It is only needed for some laptops.
+As far I know there is no data corruption. Chipset and processor=20
+are exacly the same as on Epia M10000 so I don't expect any.
 
-Once again, thanks
+Why force user to recompilation of distro kernel?
 
-On 8/22/06, Len Brown <len.brown@intel.com> wrote:
-> On Tuesday 22 August 2006 17:47, antoine wrote:
-> > Hello,
-> >
-> > Just got this x60s, everything runs smoothly but for one thing which
-> > is the battery life being 40% shorter and the whole computer running
-> > hotter than "usual" (i.e. the 4 days I spend with windows on it).
-> >
-> > I suspect the voltage associated to each frequency by cpufreq are too
-> > high but couldn't find a way to check those as of now. I don't really
-> > want to lower them, I was just wondering how they were set?
-> >
-> > I know about the linux-PHC patch, but it seems this is only if you
-> > wish to lower the default voltages, I merely wish to know what my
-> > current ones are right now.
->
-> It might be a good idea to get an objective measurement
-> of the Linux battery life on the system:
->
-> http://sourceforge.net/projects/bltk
->
-> cheers,
+> But the real question is why the longhaul driver is checking
+> for C2 and C3 support in the first place -- as they are not
+> directly related to the availability of P-states.
+>=20
 > -Len
->
+>=20
 
+Because Longhaul isn't using P-states.
 
--- 
-Antoine
-http://delaunay.org/antoine
+Rafa=B3
+
+----------------------------------------------------------------------
+Zostan Chlopakiem Lata! >>> http://link.interia.pl/f1998
