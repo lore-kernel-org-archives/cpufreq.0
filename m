@@ -1,7 +1,7 @@
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 2/5] Unify ACPI bits on speedstep-centrino and acpi-cpufreq
-Date: Fri, 1 Sep 2006 14:08:29 -0700
-Message-ID: <20060901140829.E14821@unix-os.sc.intel.com>
+Subject: [PATCH 3/5] Unify ACPI bits on speedstep-centrino and acpi-cpufreq
+Date: Fri, 1 Sep 2006 14:09:32 -0700
+Message-ID: <20060901140932.F14821@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
@@ -22,274 +22,144 @@ Cc: alexey.y.starikovskiy@intel.com, cpufreq <cpufreq@www.linux.org.uk>, Dominik
 
 
 
-Add in the support for Intel Enhanced Speedstep - MSR based transitions.
-With this change, the ACPI based support in speedstep-centrino can be
-deprecated and duplicate code in that driver can be marked for removal.
-Much easier to maintain and support this way. This also reduces the
-user misconfigurations and questions on which driver is to be used
-under which CPUs to support Enhanced Speedstep.
+Mark ACPI hooks in speedstep-centrino as deprecated. Change the order in which
+speedstep-centrino and acpi-cpufreq (when both are in kernel) will be
+added. First driver to be tried is now acpi-cpufreq, followed by 
+speedstep-centrino.
+
+Add a note in feature-removal-schedule to mark this deprecation.
 
 Signed-off-by: Denis Sadykov <denis.m.sadykov@intel.com>
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
 
-Index: linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+Index: linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/Kconfig
 ===================================================================
---- linux-2.6.18-rc4.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -40,6 +40,7 @@
- #include <acpi/processor.h>
+--- linux-2.6.18-rc4.orig/arch/i386/kernel/cpu/cpufreq/Kconfig
++++ linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/Kconfig
+@@ -17,6 +17,7 @@ config X86_ACPI_CPUFREQ
+ 	help
+ 	  This driver adds a CPUFreq driver which utilizes the ACPI
+ 	  Processor Performance States.
++	  This driver also supports Intel Enhanced Speedstep.
  
- #include <asm/io.h>
-+#include <asm/msr.h>
- #include <asm/processor.h>
- #include <asm/cpufeature.h>
- #include <asm/delay.h>
-@@ -52,10 +53,19 @@ MODULE_DESCRIPTION("ACPI Processor P-Sta
- MODULE_LICENSE("GPL");
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
  
+@@ -121,12 +122,15 @@ config X86_SPEEDSTEP_CENTRINO
+ 	  If in doubt, say N.
  
-+enum {
-+	UNDEFINED_CAPABLE = 0,
-+	SYSTEM_INTEL_MSR_CAPABLE,
-+	SYSTEM_IO_CAPABLE,
-+};
-+
-+#define INTEL_MSR_RANGE		(0xffff)
-+
- struct acpi_cpufreq_data {
- 	struct acpi_processor_performance	*acpi_data;
- 	struct cpufreq_frequency_table		*freq_table;
- 	unsigned int				resume;
-+	unsigned int				cpu_feature;
- };
+ config X86_SPEEDSTEP_CENTRINO_ACPI
+-	bool "Use ACPI tables to decode valid frequency/voltage pairs"
++	bool "Use ACPI tables to decode valid frequency/voltage (deprecated)"
+ 	depends on X86_SPEEDSTEP_CENTRINO && ACPI_PROCESSOR
+ 	depends on !(X86_SPEEDSTEP_CENTRINO = y && ACPI_PROCESSOR = m)
+ 	default y
+ 	help
+-	  Use primarily the information provided in the BIOS ACPI tables
++	  This is deprecated and this functionality is now merged into
++	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
++	  speedstep_centrino.
++	  Was used primarily the information provided in the BIOS ACPI tables
+ 	  to determine valid CPU frequency and voltage pairings. It is
+ 	  required for the driver to work on non-Banias CPUs.
  
- static struct acpi_cpufreq_data	*drv_data[NR_CPUS];
-@@ -65,7 +75,20 @@ static struct cpufreq_driver acpi_cpufre
+Index: linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/Makefile
+===================================================================
+--- linux-2.6.18-rc4.orig/arch/i386/kernel/cpu/cpufreq/Makefile
++++ linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/Makefile
+@@ -7,9 +7,9 @@ obj-$(CONFIG_SC520_CPUFREQ)		+= sc520_fr
+ obj-$(CONFIG_X86_LONGRUN)		+= longrun.o  
+ obj-$(CONFIG_X86_GX_SUSPMOD)		+= gx-suspmod.o
+ obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= speedstep-ich.o
+-obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
+ obj-$(CONFIG_X86_SPEEDSTEP_LIB)		+= speedstep-lib.o
+ obj-$(CONFIG_X86_SPEEDSTEP_SMI)		+= speedstep-smi.o
+ obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
++obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
+ obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
+ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+Index: linux-2.6.18-rc4/arch/x86_64/kernel/cpufreq/Kconfig
+===================================================================
+--- linux-2.6.18-rc4.orig/arch/x86_64/kernel/cpufreq/Kconfig
++++ linux-2.6.18-rc4/arch/x86_64/kernel/cpufreq/Kconfig
+@@ -27,10 +27,13 @@ config X86_POWERNOW_K8_ACPI
+ 	default y
  
- static unsigned int acpi_pstate_strict;
+ config X86_SPEEDSTEP_CENTRINO
+-	tristate "Intel Enhanced SpeedStep"
++	tristate "Intel Enhanced SpeedStep (deprecated)"
+ 	select CPU_FREQ_TABLE
+ 	depends on ACPI_PROCESSOR
+ 	help
++	  This is deprecated and this functionality is now merged into
++	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
++	  speedstep_centrino.
+ 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+ 	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
+ 	  or 64bit enabled Intel Xeons.
+@@ -50,6 +53,7 @@ config X86_ACPI_CPUFREQ
+ 	help
+ 	  This driver adds a CPUFreq driver which utilizes the ACPI
+ 	  Processor Performance States.
++	  This driver also supports Intel Enhanced Speedstep.
  
--static unsigned extract_freq(u32 value, struct acpi_cpufreq_data *data)
-+
-+static int check_est_cpu(unsigned int cpuid)
-+{
-+	struct cpuinfo_x86 *cpu = &cpu_data[cpuid];
-+
-+	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
-+			!cpu_has(cpu, X86_FEATURE_EST))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+
-+static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
- {
- 	struct acpi_processor_performance       *perf;
- 	int                                     i;
-@@ -80,6 +103,31 @@ static unsigned extract_freq(u32 value, 
- }
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
  
+Index: linux-2.6.18-rc4/arch/x86_64/kernel/cpufreq/Makefile
+===================================================================
+--- linux-2.6.18-rc4.orig/arch/x86_64/kernel/cpufreq/Makefile
++++ linux-2.6.18-rc4/arch/x86_64/kernel/cpufreq/Makefile
+@@ -5,8 +5,8 @@
+ SRCDIR := ../../../i386/kernel/cpu/cpufreq
  
-+static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
-+{
-+	int i;
-+
-+	msr &= INTEL_MSR_RANGE;
-+	for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-+		if (msr == data->freq_table[i].index)
-+			return data->freq_table[i].frequency;
-+	}
-+	return data->freq_table[0].frequency;
-+}
-+
-+
-+static unsigned extract_freq(u32 val, struct acpi_cpufreq_data *data)
-+{
-+	switch (data->cpu_feature) {
-+	    case SYSTEM_INTEL_MSR_CAPABLE:
-+		return extract_msr(val, data);
-+	    case SYSTEM_IO_CAPABLE:
-+		return extract_io(val, data);
-+	    default:
-+		return 0;
-+	}
-+}
-+
- static void wrport(u16 port, u8 bit_width, u32 value)
- {
- 	if (bit_width <= 8) {
-@@ -103,27 +151,57 @@ static void rdport(u16 port, u8 bit_widt
- 	}
- }
+ obj-$(CONFIG_X86_POWERNOW_K8) += powernow-k8.o
+-obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO) += speedstep-centrino.o
+ obj-$(CONFIG_X86_ACPI_CPUFREQ) += acpi-cpufreq.o
++obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO) += speedstep-centrino.o
+ obj-$(CONFIG_X86_P4_CLOCKMOD) += p4-clockmod.o
+ obj-$(CONFIG_X86_SPEEDSTEP_LIB) += speedstep-lib.o
  
-+struct msr_addr {
-+	u32 reg;
-+};
-+
- struct io_addr {
- 	u16 port;
- 	u8 bit_width;
- };
+Index: linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+===================================================================
+--- linux-2.6.18-rc4.orig/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -531,6 +531,9 @@ static int centrino_cpu_init_acpi(struct
  
-+typedef union {
-+	struct msr_addr msr;
-+	struct io_addr io;
-+} drv_addr_union;
-+
- struct drv_cmd {
-+	unsigned int type;
- 	cpumask_t mask;
--	struct io_addr addr;
-+	drv_addr_union addr;
- 	u32 val;
- };
- 
- static void do_drv_read(struct drv_cmd *cmd)
- {
--	rdport(cmd->addr.port, cmd->addr.bit_width, &cmd->val);
--	return;
-+	u32 h;
-+
-+	switch (cmd->type) {
-+	    case SYSTEM_INTEL_MSR_CAPABLE:
-+		rdmsr(cmd->addr.msr.reg, cmd->val, h);
-+		break;
-+	    case SYSTEM_IO_CAPABLE:
-+		rdport(cmd->addr.io.port, cmd->addr.io.bit_width, &cmd->val);
-+		break;
-+	    default:
-+		break;
-+	}
- }
- 
- static void do_drv_write(struct drv_cmd *cmd)
- {
--	wrport(cmd->addr.port, cmd->addr.bit_width, cmd->val);
--	return;
-+	u32 h = 0;
-+
-+	switch (cmd->type) {
-+	    case SYSTEM_INTEL_MSR_CAPABLE:
-+		wrmsr(cmd->addr.msr.reg, cmd->val, h);
-+		break;
-+	    case SYSTEM_IO_CAPABLE:
-+		wrport(cmd->addr.io.port, cmd->addr.io.bit_width, cmd->val);
-+		break;
-+	    default:
-+		break;
-+	}
- }
- 
- static inline void drv_read(struct drv_cmd *cmd)
-@@ -159,9 +237,21 @@ static u32 get_cur_val(cpumask_t mask)
- 	if (unlikely(cpus_empty(mask)))
- 		return 0;
- 
--	perf = drv_data[first_cpu(mask)]->acpi_data;
--	cmd.addr.port = perf->control_register.address;
--	cmd.addr.bit_width = perf->control_register.bit_width;
-+	switch (drv_data[first_cpu(mask)]->cpu_feature) {
-+	case SYSTEM_INTEL_MSR_CAPABLE:
-+		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
-+		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
-+		break;
-+	case SYSTEM_IO_CAPABLE:
-+		cmd.type = SYSTEM_IO_CAPABLE;
-+		perf = drv_data[first_cpu(mask)]->acpi_data;
-+		cmd.addr.io.port = perf->control_register.address;
-+		cmd.addr.io.bit_width = perf->control_register.bit_width;
-+		break;
-+	default:
-+		return 0;
-+	}
-+
- 	cmd.mask = mask;
- 
- 	drv_read(&cmd);
-@@ -214,6 +304,7 @@ static int acpi_cpufreq_target(struct cp
- 	struct cpufreq_freqs			freqs;
- 	cpumask_t				online_policy_cpus;
- 	struct drv_cmd				cmd;
-+	unsigned int				msr;
- 	unsigned int				next_state = 0;
- 	unsigned int				next_perf_state = 0;
- 	unsigned int				i;
-@@ -257,9 +348,22 @@ static int acpi_cpufreq_target(struct cp
- 		}
- 	}
- 
--	cmd.addr.port = perf->control_register.address;
--	cmd.addr.bit_width = perf->control_register.bit_width;
--	cmd.val = (u32) perf->states[next_perf_state].control;
-+ 	switch (data->cpu_feature) {
-+ 	    case SYSTEM_INTEL_MSR_CAPABLE:
-+ 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
-+ 		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
-+		msr = (u32) perf->states[next_perf_state].control & INTEL_MSR_RANGE;
-+ 		cmd.val = (cmd.val & ~INTEL_MSR_RANGE) | msr;
-+ 		break;
-+ 	    case SYSTEM_IO_CAPABLE:
-+ 		cmd.type = SYSTEM_IO_CAPABLE;
-+ 		cmd.addr.io.port = perf->control_register.address;
-+ 		cmd.addr.io.bit_width = perf->control_register.bit_width;
-+ 		cmd.val = (u32) perf->states[next_perf_state].control;
-+ 		break;
-+ 	    default:
-+ 		return -ENODEV;
-+ 	}
- 
- 	cpus_clear(cmd.mask);
- 
-@@ -406,6 +510,7 @@ acpi_cpufreq_cpu_init (
- 	unsigned int			valid_states = 0;
- 	unsigned int			cpu = policy->cpu;
- 	struct acpi_cpufreq_data	*data;
-+	unsigned int			l, h;
- 	unsigned int			result = 0;
- 	struct cpuinfo_x86 		*c = &cpu_data[policy->cpu];
- 	struct acpi_processor_performance	*perf;
-@@ -464,6 +569,15 @@ acpi_cpufreq_cpu_init (
- 	switch (perf->control_register.space_id) {
- 	    case ACPI_ADR_SPACE_SYSTEM_IO:
- 		dprintk("SYSTEM IO addr space\n");
-+		data->cpu_feature = SYSTEM_IO_CAPABLE;
-+		break;
-+	    case ACPI_ADR_SPACE_FIXED_HARDWARE:
-+		dprintk("HARDWARE addr space\n");
-+		if (!check_est_cpu(cpu)) {
-+			result = -ENODEV;
-+			goto err_unreg;
-+		}
-+		data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
- 		break;
- 	    default:
- 		dprintk("Unknown addr space %d\n",
-@@ -486,9 +600,6 @@ acpi_cpufreq_cpu_init (
- 	}
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 
--	/* The current speed is unknown and not detectable by ACPI...  */
--	policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
--
- 	/* table init */
- 	for (i=0; i<perf->state_count; i++)
- 	{
-@@ -508,6 +619,18 @@ acpi_cpufreq_cpu_init (
- 		goto err_freqfree;
- 	}
- 
-+	switch (data->cpu_feature) {
-+	    case ACPI_ADR_SPACE_SYSTEM_IO:
-+		/* Current speed is unknown and not detectable by IO port */
-+		policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
-+		break;
-+	    case ACPI_ADR_SPACE_FIXED_HARDWARE:
-+		get_cur_freq_on_cpu(cpu);
-+		break;
-+	    default:
-+		break;
-+	}
-+
  	/* notify BIOS that we exist */
  	acpi_processor_notify_smm(THIS_MODULE);
++	printk("speedstep-centrino with X86_SPEEDSTEP_CENTRINO_ACPI"
++			"config is deprecated.\n "
++			"Use X86_ACPI_CPUFREQ (acpi-cpufreq instead.\n" );
+ 
+ 	return 0;
+ 
+Index: linux-2.6.18-rc4/Documentation/feature-removal-schedule.txt
+===================================================================
+--- linux-2.6.18-rc4.orig/Documentation/feature-removal-schedule.txt
++++ linux-2.6.18-rc4/Documentation/feature-removal-schedule.txt
+@@ -274,3 +274,25 @@ Why:	The deferred output hooks are a lay
+ Who:	Patrick McHardy <kaber@trash.net>
+ 
+ ---------------------------
++
++What:	ACPI hooks (X86_SPEEDSTEP_CENTRINO_ACPI) in speedstep-centrino driver
++When:	December 2006
++Why:	Speedstep-centrino driver with ACPI hooks and acpi-cpufreq driver are
++	functionally very much similar. They talk to ACPI in same way. Only
++	difference between them is the way they do frequency transitions.
++	One uses MSRs and the other one uses IO ports. Functionaliy of
++	speedstep_centrino with ACPI hooks is now merged into acpi-cpufreq.
++	That means one common driver will support all Intel Enhanced Speedstep
++	capable CPUs. That means less confusion over name of
++	speedstep-centrino driver (with that driver supposed to be used on
++	non-centrino platforms). That means less duplication of code and
++	less maintenance effort and no possibility of these two drivers
++	going out of sync.
++	Current users of speedstep_centrino with ACPI hooks are requested to
++	switch over to acpi-cpufreq driver. speedstep-centrino will continue
++	to work using older non-ACPI static table based scheme even after this
++	date.
++
++Who:	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
++
++---------------------------
