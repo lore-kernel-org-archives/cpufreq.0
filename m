@@ -1,58 +1,52 @@
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 5/5] Unify ACPI bits on speedstep-centrino and acpi-cpufreq
-Date: Fri, 1 Sep 2006 14:10:20 -0700
-Message-ID: <20060901141020.H14821@unix-os.sc.intel.com>
+From: Nick Orlov <bugfixer@list.ru>
+Subject: [PATCH 2.6.18-rc6-mm1 0/2] cpufreq: make it harder for cpu to leave
+ "hot" mode
+Date: Mon, 11 Sep 2006 23:29:24 -0400
+Message-ID: <20060912032924.GA3677@nickolas.homeunix.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964838AbWILD3b@vger.kernel.org>
+Content-disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: alexey.y.starikovskiy@intel.com, cpufreq <cpufreq@www.linux.org.uk>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
+Cc: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@codemonkey.org.uk>
 
+Andrew,
 
+I was playing with ondemand cpufreq governor (gotta save on electricity
+bills one day :) ) and I've noticed that gameplay become somewhat sluggish.
+Especially noticeble in something cpu-power demanding, like quake4.
+Quick look at stats/trans_table confirmed that CPU goes out of "hot" mode
+way too often.
 
-Only change the frequency if the state previously set is different
-from what we are trying to set. We don't really have to get the current
-frequency at this point.
+To make long story short - reverting -mm changes for cpufreq_ondemand.c
+helps a _LOT_.  I'm not sure if it is something powersave_bias related or
+(most probably) due to alignment of "next do_dbs_timer() fire time" which
+could make "collect stats" window too short and introduce significant errors.
+Have not specifically checked ...
 
-Signed-off-by: Denis Sadykov <denis.m.sadykov@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
+After thinking about the issue for a while I come up with the following tweaks:
+First of all I made hysteresis little bit wider (20% instead of 10).
+Another idea was to increase "sampling period" once cpu is in "hot" mode.
 
-Index: linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-===================================================================
---- linux-2.6.18-rc4.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ linux-2.6.18-rc4/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -325,11 +325,8 @@ static int acpi_cpufreq_target(struct cp
- 	online_policy_cpus = policy->cpus;
- #endif
- 
--	cmd.val = get_cur_val(online_policy_cpus);
--	freqs.old = extract_freq(cmd.val, data);
--	freqs.new = data->freq_table[next_state].frequency;
- 	next_perf_state = data->freq_table[next_state].index;
--	if (freqs.new == freqs.old) {
-+	if (perf->state == next_perf_state) {
- 		if (unlikely(data->resume)) {
- 			dprintk("Called after resume, resetting to P%d\n",
- 				next_perf_state);
-@@ -367,6 +364,8 @@ static int acpi_cpufreq_target(struct cp
- 	else
- 		cpu_set(policy->cpu, cmd.mask);
- 
-+	freqs.old = data->freq_table[perf->state].frequency;
-+	freqs.new = data->freq_table[next_perf_state].frequency;
- 	for_each_cpu_mask(i, cmd.mask) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+Second part also have benefits of reducing the load on already overloaded cpu.
+Plus it's damn trivial. To simplify further testing I have exposed
+"sampling_rate_hot" parameter through sysfs. Setting it to sampling_rate * 10
+works for me very well. Now I do not have to switch governor to "performance"
+during game sessions.
+
+Tested on AMD64x2 (32 bit mode).
+
+Could you please consider the following patch for inclusion in -mm?
+Should be applied after reverting -mm cpufreq_ondemand.c changes.
+
+Thank you,
+	Nick Orlov
+
+P.S. These are the first patches I'm sending to LKML: please, be patient :)
+
+-- 
+With best wishes,
+	Nick Orlov.
