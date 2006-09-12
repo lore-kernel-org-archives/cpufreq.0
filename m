@@ -1,10 +1,13 @@
-From: Arik Raffael Funke <arik.funke@gmx.de>
-Subject: Sempron 2800+
-Date: Tue, 12 Sep 2006 16:11:57 +0200
-Message-ID: <ee6f7d$7hc$1@sea.gmane.org>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: Sempron 2800+
+Date: Tue, 12 Sep 2006 09:42:32 -0500
+Message-ID: <84EA05E2CA77634C82730353CBE3A8430321907D@SAUSEXMB1.amd.com>
+References: <ee6f7d$7hc$1@sea.gmane.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
+In-Reply-To: <ee6f7d$7hc$1@sea.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,17 +18,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Arik Raffael Funke <arik.funke@gmx.de>, cpufreq@lists.linux.org.uk
 
-Hello,
+> I am using kernel version 2.6.17.11 with built-in cpufreq=20
+> support on a AMD Sempron 2800+. However, I do not have the=20
+> directory /sys/devices/system/cpu/cpu0/cpufreq/
+>=20
+> Can anybody tell me why? Does my cpu not support cpufreq or=20
+> have i forgotten to select some kernel modules/configuration?
 
-I am using kernel version 2.6.17.11 with built-in cpufreq support on a 
-AMD Sempron 2800+. However, I do not have the directory 
-/sys/devices/system/cpu/cpu0/cpufreq/
+What does `dmesg | grep powern` report?
 
-Can anybody tell me why? Does my cpu not support cpufreq or have i 
-forgotten to select some kernel modules/configuration?
+I suspect that your Sempron doesn't have the bit enabled=20
+that tells the driver it supports PowerNow!.  Thus, the
+driver doesn't load.  I haven't had a chance to determine
+if there's a large batch of Sempron 2800s that don't
+support PN!, or if they just use a different bit to=20
+indicate that support.
 
-Cheers,
-Arik
+-Mark Langsdorf
+AMD, Inc.
