@@ -1,11 +1,13 @@
 From: Nick Orlov <bugfixer@list.ru>
-Subject: [PATCH 2.6.18-rc6-mm1 0/2] cpufreq: make it harder for cpu to leave
- "hot" mode
-Date: Mon, 11 Sep 2006 23:29:24 -0400
-Message-ID: <20060912032924.GA3677@nickolas.homeunix.com>
+Subject: Re: [PATCH 2.6.18-rc6-mm1 1/2] cpufreq: make it harder for cpu to
+ leave "hot" mode
+Date: Mon, 11 Sep 2006 23:30:34 -0400
+Message-ID: <20060912033034.GB3677@nickolas.homeunix.com>
+References: <20060912032924.GA3677@nickolas.homeunix.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964838AbWILD3b@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964872AbWILDag@vger.kernel.org>
+In-reply-to: <20060912032924.GA3677@nickolas.homeunix.com>
 Content-disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
@@ -13,39 +15,40 @@ Content-Type: text/plain; charset="us-ascii"
 To: linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
 Cc: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@codemonkey.org.uk>
 
-Andrew,
+From: Nick Orlov <bugfixer@list.ru>
 
-I was playing with ondemand cpufreq governor (gotta save on electricity
-bills one day :) ) and I've noticed that gameplay become somewhat sluggish.
-Especially noticeble in something cpu-power demanding, like quake4.
-Quick look at stats/trans_table confirmed that CPU goes out of "hot" mode
-way too often.
+Make hysteresis wider (20% instead of 10).
 
-To make long story short - reverting -mm changes for cpufreq_ondemand.c
-helps a _LOT_.  I'm not sure if it is something powersave_bias related or
-(most probably) due to alignment of "next do_dbs_timer() fire time" which
-could make "collect stats" window too short and introduce significant errors.
-Have not specifically checked ...
+Signed-off-by: Nick Orlov <bugfixer@list.ru>
 
-After thinking about the issue for a while I come up with the following tweaks:
-First of all I made hysteresis little bit wider (20% instead of 10).
-Another idea was to increase "sampling period" once cpu is in "hot" mode.
-
-Second part also have benefits of reducing the load on already overloaded cpu.
-Plus it's damn trivial. To simplify further testing I have exposed
-"sampling_rate_hot" parameter through sysfs. Setting it to sampling_rate * 10
-works for me very well. Now I do not have to switch governor to "performance"
-during game sessions.
-
-Tested on AMD64x2 (32 bit mode).
-
-Could you please consider the following patch for inclusion in -mm?
-Should be applied after reverting -mm cpufreq_ondemand.c changes.
-
-Thank you,
-	Nick Orlov
-
-P.S. These are the first patches I'm sending to LKML: please, be patient :)
+--- linux-2.6.18-rc6/drivers/cpufreq/cpufreq_ondemand.c	2006-09-11 21:22:50.000000000 -0400
++++ linux-2.6.18-rc6-mm1-nick/drivers/cpufreq/cpufreq_ondemand.c	2006-09-11 20:49:10.000000000 -0400
+@@ -25,7 +25,7 @@
+  */
+ 
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
+-#define MIN_FREQUENCY_UP_THRESHOLD		(11)
++#define MIN_FREQUENCY_UP_THRESHOLD		(21)
+ #define MAX_FREQUENCY_UP_THRESHOLD		(100)
+ 
+ /*
+@@ -290,12 +315,12 @@
+ 	/*
+ 	 * The optimal frequency is the frequency that is the lowest that
+ 	 * can support the current CPU usage without triggering the up
+-	 * policy. To be safe, we focus 10 points under the threshold.
++	 * policy. To be safe, we focus 20 points under the threshold.
+ 	 */
+-	if (load < (dbs_tuners_ins.up_threshold - 10)) {
++	if (load < (dbs_tuners_ins.up_threshold - 20)) {
+ 		unsigned int freq_next;
+ 		freq_next = (policy->cur * load) /
+-			(dbs_tuners_ins.up_threshold - 10);
++			(dbs_tuners_ins.up_threshold - 20);
+ 
+ 		__cpufreq_driver_target(policy, freq_next, CPUFREQ_RELATION_L);
+ 	}
+_
 
 -- 
 With best wishes,
