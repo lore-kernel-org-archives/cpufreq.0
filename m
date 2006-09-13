@@ -1,44 +1,31 @@
-From: Arik Raffael Funke <arik.funke@gmx.de>
-Subject: Re: Sempron 2800+
-Date: Tue, 12 Sep 2006 22:31:15 +0200
-Message-ID: <45071913.7080708@gmx.de>
-References: <B3870AD84389624BAF87A3C7B831499303FB29AD@SAUSEXMB2.amd.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH 2.6.18-rc6-mm2] sw_any_bug_dmi_table can be used on resume,
+ so it isn't initdata
+Date: Tue, 12 Sep 2006 18:55:53 -0700
+Message-ID: <45076529.6040106@goop.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <B3870AD84389624BAF87A3C7B831499303FB29AD@SAUSEXMB2.amd.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751490AbWIMB4I@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+To: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-shin, jacob wrote:
- > On Tuesday, September 12, 2006 11:03 AM Arik Raffael Funke wrote:
- >
- >> dmesg | grep powern reports nothing at all... Is that supposed to be a
- >> good or bad thing? I fear for the latter. ;-)
- >>
- >> Is there anything else I could provide to help with diagnosis?
- >
- > It is very possible that your Sempron does not support frequency
- > scaling.  Easy way to check is with cpuid instruction.
- >
- > Could you compile and run the following and copy us on the output?
+sw_any_bug_dmi_table can be used on resume, so it isn't initdata.
 
-Hi Shin,
-the code you provided gives:
+Signed-off-by: Jeremy Fitzhardinge <jeremy@goop.org>
 
-[root@funke ~]# ./cputest
-00000009
-[root@funke ~]#
+diff -r 3bf6c0c79dba arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
+--- a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	Tue Sep 12 01:37:21 2006 -0700
++++ b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	Tue Sep 12 18:51:41 2006 -0700
+@@ -393,7 +393,7 @@ static int __init sw_any_bug_found(struc
+ }
+ 
+ 
+-static struct dmi_system_id __initdata sw_any_bug_dmi_table[] = {
++static struct dmi_system_id sw_any_bug_dmi_table[] = {
+ 	{
+ 		.callback = sw_any_bug_found,
+ 		.ident = "Supermicro Server X6DLP",
 
-Regards,
-Arik
