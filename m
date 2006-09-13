@@ -1,31 +1,37 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 2.6.18-rc6-mm2] sw_any_bug_dmi_table can be used on resume,
- so it isn't initdata
-Date: Tue, 12 Sep 2006 18:55:53 -0700
-Message-ID: <45076529.6040106@goop.org>
+From: Johny the Ripper <my_publicyty@yahoo.com>
+Subject: Can't get it working on Mobile Coppermine 1Ghz - i440BX - please
+	help...
+Date: Wed, 13 Sep 2006 03:37:38 -0700 (PDT)
+Message-ID: <20060913103738.9984.qmail@web30803.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751490AbWIMB4I@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
 
-sw_any_bug_dmi_table can be used on resume, so it isn't initdata.
+I started a thread on the gentoo forums, but I didn't
+get a reply... I hope you guys can help me out, I
+searched the internet and forums a lot, don't know why
+it isn't working... Here's the gentoo thread:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@goop.org>
+http://forums.gentoo.org/viewtopic-t-497427.html
 
-diff -r 3bf6c0c79dba arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	Tue Sep 12 01:37:21 2006 -0700
-+++ b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	Tue Sep 12 18:51:41 2006 -0700
-@@ -393,7 +393,7 @@ static int __init sw_any_bug_found(struc
- }
- 
- 
--static struct dmi_system_id __initdata sw_any_bug_dmi_table[] = {
-+static struct dmi_system_id sw_any_bug_dmi_table[] = {
- 	{
- 		.callback = sw_any_bug_found,
- 		.ident = "Supermicro Server X6DLP",
+If you have a clue of where I could begin to continue
+to search, please post it...
 
+thx
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
