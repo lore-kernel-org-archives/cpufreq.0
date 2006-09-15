@@ -1,33 +1,33 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 2.6.18-rc6-mm1 0/2] cpufreq: make it harder for cpu to
- leave "hot" mode
-Date: Thu, 14 Sep 2006 14:38:03 -0700
-Message-ID: <20060914143803.493c5bf0.akpm@osdl.org>
-References: <20060912032924.GA3677@nickolas.homeunix.com>
+From: lucke <lucke@o2.pl>
+Subject: cpufreq and suspend
+Date: Fri, 15 Sep 2006 22:25:36 +0200
+Message-ID: <200609152225.36610.lucke@o2.pl>
+Reply-To: lucke@o2.pl
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751123AbWINVi0@vger.kernel.org>
-In-Reply-To: <20060912032924.GA3677@nickolas.homeunix.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Nick Orlov <bugfixer@list.ru>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk, Dave Jones <davej@codemonkey.org.uk>
+To: cpufreq@lists.linux.org.uk
 
-On Mon, 11 Sep 2006 23:29:24 -0400
-Nick Orlov <bugfixer@list.ru> wrote:
+Dear cpufreq gurus,
 
-> I was playing with ondemand cpufreq governor (gotta save on electricity
-> bills one day :) ) and I've noticed that gameplay become somewhat sluggish.
-> Especially noticeble in something cpu-power demanding, like quake4.
-> Quick look at stats/trans_table confirmed that CPU goes out of "hot" mode
-> way too often.
+I would be grateful if you could have a look at:
+http://lists.suspend2.net/lurker/message/20060827.234345.486617dc.en.html
 
-I won't apply any of this in view of your ongoing discussion with
-Venkatesh, but thanks for the ongoing support and help - cpufreq is, shall
-we say, a rich source of future kernel improvements.
+Forgive me if this issue has been already mentioned, I can't seem to find a 
+way to search through archives.
 
-Next time you prepare a patch series please ensure that it uses a different
-Subject: for each patch, as per
-http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt, section 2.
+Regards,
 
+Luke
