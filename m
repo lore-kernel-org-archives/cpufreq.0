@@ -1,13 +1,10 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: cpufreq and suspend
-Date: Fri, 15 Sep 2006 15:42:57 -0500
-Message-ID: <84EA05E2CA77634C82730353CBE3A843032190A9@SAUSEXMB1.amd.com>
-References: <200609152225.36610.lucke@o2.pl>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: Harald Milz <hm@seneca.muc.de>
+Subject: Re: 10 Reasons Must Boycott the 2008 Olympic Games in Communist
+	China
+Date: Sat, 16 Sep 2006 07:11:10 +0000 (UTC)
+Message-ID: <20060916071110.710ED11526D@seneca.muc.de>
+References: <bl5cq03e3uofnkp.130920062340@kta02>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <200609152225.36610.lucke@o2.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,19 +15,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: lucke@o2.pl, cpufreq@lists.linux.org.uk
-Cc: "Gulam, Nagib" <nagib.gulam@amd.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
 
-> I would be grateful if you could have a look at:
->
-http://lists.suspend2.net/lurker/message/20060827.234345.486617dc.en.htm
-l
->=20
-> Forgive me if this issue has been already mentioned, I can't=20
-> seem to find a way to search through archives.
+picnotonickle <picnotonickle@yahoo.co.uk> wrote:
+> [-- text/plain, Encoding 7bit, Zeichensatz: us-ascii, 76 Zeilen --]
 
-I'll go take a look at this.
+> Hi, my name is Nickle, a human right volunteer in UK.
+> I am writing to support Klitou by passing the message below.
+> Please pass the message to all the people around you.
 
--Mark Langsdorf
-AMD, Inc.
+Can we please keep political off-topic stuff to the alt.guitar.*
+newsgroups? Thank you... 
+
+-- 
+It is one of the superstitions of the human mind to have imagined that
+virginity could be a virtue.
+		-- Voltaire
