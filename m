@@ -1,9 +1,8 @@
-From: Harald Milz <hm@seneca.muc.de>
-Subject: Re: 10 Reasons Must Boycott the 2008 Olympic Games in Communist
-	China
-Date: Sat, 16 Sep 2006 07:11:10 +0000 (UTC)
-Message-ID: <20060916071110.710ED11526D@seneca.muc.de>
-References: <bl5cq03e3uofnkp.130920062340@kta02>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6034] powernow-k8 fails to load on AMD Mobile Sempron 3000+
+	system
+Date: Sun, 17 Sep 2006 17:06:53 -0700
+Message-ID: <200609180006.k8I06rYG019965@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,19 +17,17 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.l
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-picnotonickle <picnotonickle@yahoo.co.uk> wrote:
-> [-- text/plain, Encoding 7bit, Zeichensatz: us-ascii, 76 Zeilen --]
+http://bugzilla.kernel.org/show_bug.cgi?id=6034
 
-> Hi, my name is Nickle, a human right volunteer in UK.
-> I am writing to support Klitou by passing the message below.
-> Please pass the message to all the people around you.
+saro@fh-brandenburg.de changed:
 
-Can we please keep political off-topic stuff to the alt.guitar.*
-newsgroups? Thank you... 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |saro@fh-brandenburg.de
 
--- 
-It is one of the superstitions of the human mind to have imagined that
-virginity could be a virtue.
-		-- Voltaire
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
