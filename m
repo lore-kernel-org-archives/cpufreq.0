@@ -1,8 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6034] powernow-k8 fails to load on AMD Mobile Sempron 3000+
-	system
-Date: Sun, 17 Sep 2006 17:06:53 -0700
-Message-ID: <200609180006.k8I06rYG019965@fire-2.osdl.org>
+From: Bryan O'Sullivan <bos@serpentine.com>
+Subject: No life from acpi-cpufreq, Pentium D 930, x86_64
+Date: Tue, 19 Sep 2006 21:55:12 -0700
+Message-ID: <1158728112.19359.18.camel@pelerin.serpentine.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,20 +15,17 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6034
+I'm running the 2.6.17-1.2174_FC5 x86_64 kernel from FC5 updates on a
+Dell PowerEdge 830 server with a Pentium D 930 inside.  I can modprobe
+acpi_cpufreq, but it doesn't do anything - there are no kernel log
+messages, no new sysfs files to look at, nothing in /proc/acpi.
 
-saro@fh-brandenburg.de changed:
+cpufreq-info tells me that I have no cpufreq support, but I had kind of
+figured that out already :-(
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |saro@fh-brandenburg.de
+Is there something more I should be doing?
 
-
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+	<b
