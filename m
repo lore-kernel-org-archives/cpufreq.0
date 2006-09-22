@@ -1,16 +1,19 @@
-From: Dave Jones <davej@redhat.com>
+From: Ryan Underwood <nemesis-lists@icequake.net>
 Subject: Re: writing a cpufreq driver
-Date: Thu, 21 Sep 2006 17:13:43 -0400
-Message-ID: <20060921211343.GG26683@redhat.com>
+Date: Fri, 22 Sep 2006 09:13:18 -0500
+Message-ID: <20060922141318.GE24439@dbz.icequake.net>
 References: <20060921184833.GC1216@dbz.icequake.net>
 	<20060921193141.GE17065@redhat.com>
 	<20060921200851.GF2364@dbz.icequake.net>
 	<20060921204402.GA26683@redhat.com>
 	<20060921210329.GA16590@dbz.icequake.net>
+	<20060921211343.GG26683@redhat.com>
+Reply-To: nemesis@icequake.net
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060921210329.GA16590@dbz.icequake.net>
+In-Reply-To: <20060921211343.GG26683@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,26 +24,806 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: Cpufreq@lists.linux.org.uk, Ryan Underwood <nemesis@icequake.net>
+
+
+--zhXaljGHf11kAtnf
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+
+
+On Thu, Sep 21, 2006 at 05:13:43PM -0400, Dave Jones wrote:
+> 
+> Pointer to the driver source ?
+
+Sorry, I had email problems yesterday, let me know if you don't get this
+email ;)
+
+dmesg + driver source attached
+
+I have a question, how critical is it that I have exactly the correct
+CPU MHz for the scaling to work properly?  Unfortunately, for the slow
+speed there is no way for me to know what it actually is on a particular
+system due to limitations of the firmware, so the best I could do is a
+RDTSC timing to try to figure it out.  I wonder if skew between the
+actual CPU speed and what cpufreq thinks it is would be the source of
+the problem.
+
+-- 
+Ryan Underwood, <nemesis@icequake.net>
+
+--zhXaljGHf11kAtnf
+Content-Type: text/x-csrc; charset=iso-8859-1
+Content-Disposition: attachment; filename="toshiba_freq.c"
+
+/*
+ *	toshiba_freq.c: cpufreq driver for Toshiba SCI (non-Speedstep) laptops
+ *
+ *	Copyright (C) 2006 Ryan Underwood <nemesis@icequake.net>
+ *
+ *	This program is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU General Public License
+ *	as published by the Free Software Foundation; either version
+ *	2 of the License, or (at your option) any later version.
+ *
+ *	Based on sc520_freq.c
+ *
+ *	2006-09-11: - initial revision
+ */
+
+
+/* NOTE: currently this should drag in toshiba.ko which checks for the
+ * appropriate hardware in its init function. Things will be different when
+ * ACPI instead of the SMM driver is used as the SCI access method.
+ *
+ * This module should respect the user's firmware configuration prior to
+ * loading it and preserve it always when the module encounters an error,
+ * is unloaded, or the system is rebooted.  Unfortunately, there is no way
+ * to handle the case of a SysRq reboot.
+ */
+
+/* FIXME: Fan and LCD brightness are variable on some systems */
+/* FIXME: TSC timer needs recalibration, why isn't this an issue with /dev/toshiba? */
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/timex.h>
+#include <linux/delay.h>
+#include <linux/reboot.h>
+
+#include <linux/cpufreq.h>
+#include <linux/toshiba.h>
+
+#define DRIVER_NAME "toshiba_freq"
+#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, DRIVER_NAME, msg)
+
+static u32 original_battsave;
+static u32 original_cpustate;
+static u32 original_cache;
+static u32 original_brightness;
+static u32 original_fan;
+
+/* Store this locally to avoid a SMM round trip to obtain it */
+static u32 current_cpustate;
+
+/* The operating speed of the CPU when in 'fast' mode */
+static int nominal_khz;
+
+/* The maximum SMI interrupt latency we have encountered */
+static int max_smm_latency = 7000000; /* Start with 7ms */
+
+/* Has an SCI error occurred in the past? */
+static int sci_halt;
+
+static int control_cpucache = 1;
+static int control_fan = 1;
+static int control_lcd;
+
+/* User-supplied nominal MHz rating */
+static int user_mhz = -1;
+
+module_param_named(cpucache, control_cpucache, int, 1);
+MODULE_PARM_DESC(cpucache, "Allow CPUFreq to enable/disable CPU cache");
+module_param_named(fan, control_fan, int, 1);
+MODULE_PARM_DESC(fan, "Allow CPUFreq to control the system fan");
+module_param_named(lcd, control_lcd, int, 0);
+MODULE_PARM_DESC(lcd, "Allow CPUFreq to control LCD brightness");
+module_param_named(mhz, user_mhz, int, -1);
+MODULE_PARM_DESC(mhz, "MHz rating of CPU (required for pre-Pentium)");
+
+/* Index corresponds to the SCI CPU speed state (0 or 1) */
+static struct cpufreq_frequency_table toshiba_freq_table[] = {
+	{0,	0},  /* slow (low) */
+	{1,	0},  /* fast (high) */
+	{0,	CPUFREQ_TABLE_END},
+};
+
+static void restore_original_config(void)
+{
+	/* Attempt to unconditionally reset the original values */
+	if (control_fan)
+		tosh_scihci_set(HCI_SET, HCI_FAN, original_fan);
+
+	if (control_lcd)
+		tosh_scihci_set(0, SCI_LCD_BRIGHTNESS, original_brightness);
+
+	if (control_cpucache)
+		tosh_scihci_set(0, SCI_CPU_CACHE, original_cache);
+
+	tosh_scihci_set(0, SCI_PROCESSING, original_cpustate);
+	tosh_scihci_set(0, SCI_BATTERY_SAVE, original_battsave);
+}
+
+static int toshiba_freq_notify_reboot(struct notifier_block *this, unsigned long code, void *x)
+{
+	/* We don't care what the code is, do this always. */
+	restore_original_config();
+	return NOTIFY_DONE;
+}
+
+
+static struct notifier_block toshiba_freq_notifier =
+{ toshiba_freq_notify_reboot, NULL, 0 };
+
+static unsigned int toshiba_freq_get_cpu_frequency(unsigned int cpu)
+{
+#if 0
+	unsigned int val;
+	tosh_scihci_get(0, SCI_PROCESSING, &val);
+	val &= 1; /* safety */
+	return toshiba_freq_table[val].frequency;
+#else
+	/* It is okay to cache this, as long as userland is
+	 * prevented from messing with the current state via
+	 * /dev/toshiba.  */
+
+	return toshiba_freq_table[current_cpustate].frequency;
+#endif
+}
+
+static void tosh_scihci_set_error(unsigned int hci, unsigned int cmd, unsigned int arg)
+{
+	int err;
+	int transition_usecs;
+	struct timeval tv, tv2;
+
+	if (sci_halt) return;
+
+	do_gettimeofday(&tv);
+	err = tosh_scihci_set(hci, cmd, arg);
+	do_gettimeofday(&tv2);
+
+	transition_usecs = 1000000*(tv2.tv_sec - tv.tv_sec) + (tv2.tv_usec - tv.tv_usec);
+	if (transition_usecs*1000 > max_smm_latency) { /* latency is in ns */
+		dprintk(DRIVER_NAME": transition latency increased from %d to %d ns\n", max_smm_latency, transition_usecs*1000);
+		max_smm_latency = transition_usecs * 1000;
+	}
+
+	if (err) {
+		sci_halt = 1;
+		/* Attempt to restore the original config, so i.e. the 
+		 * processor is not at high speed while the fan is not on,
+		 * or some other inconsistent state. */
+		restore_original_config();
+		/* We will do nothing more now */
+		printk(DRIVER_NAME": SCI error condition encountered, giving up.\n");
+		tosh_cpufreq_in_control = 0;
+	}
+}
+
+static void toshiba_freq_set_cpu_state (unsigned int state)
+{
+	struct cpufreq_freqs freqs;
+
+	freqs.old = toshiba_freq_get_cpu_frequency(0);
+	freqs.new = toshiba_freq_table[state].frequency;
+	freqs.cpu = 0;
+
+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+
+	dprintk(DRIVER_NAME": attempting to set frequency to %i kHz\n",
+			toshiba_freq_table[state].frequency);
+
+	if (state == 0) { /* slow */
+		if (control_fan)
+			tosh_scihci_set_error(HCI_SET, HCI_FAN, HCI_DISABLE);
+		if (control_lcd)
+			tosh_scihci_set_error(0, SCI_LCD_BRIGHTNESS, SCI_SEMI_BRIGHT);
+		if (control_cpucache)
+			tosh_scihci_set_error(0, SCI_CPU_CACHE, SCI_OFF);
+		tosh_scihci_set_error(0, SCI_PROCESSING, SCI_LOW);
+	}
+	else { /* fast */
+		if (control_fan)
+			tosh_scihci_set_error(HCI_SET, HCI_FAN, HCI_ENABLE);
+		if (control_lcd)
+			tosh_scihci_set_error(0, SCI_LCD_BRIGHTNESS, SCI_BRIGHT);
+		if (control_cpucache)
+			tosh_scihci_set_error(0, SCI_CPU_CACHE, SCI_ON);
+#if 0
+		tosh_scihci_set_error(0, SCI_PROCESSING, SCI_HIGH);
+#else
+		{
+		//Experimenting with SMM latency
+		u32 low, low2;
+		local_irq_disable();
+		sync_core();
+		low = get_cycles();
+		tosh_scihci_set_error(0, SCI_PROCESSING, SCI_HIGH);
+		sync_core();
+		low2 = get_cycles();
+		local_irq_enable();
+		dprintk(DRIVER_NAME": SMM took %d cycles\n", low2-low);
+		}
+#endif
+	}
+
+	current_cpustate = toshiba_freq_table[state].index;
+
+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+};
+
+static int toshiba_freq_verify (struct cpufreq_policy *policy)
+{
+	return cpufreq_frequency_table_verify(policy, &toshiba_freq_table[0]);
+}
+
+static int toshiba_freq_target (struct cpufreq_policy *policy,
+			    unsigned int target_freq,
+			    unsigned int relation)
+{
+	unsigned int newstate = 0;
+
+	if (cpufreq_frequency_table_target(policy, toshiba_freq_table, target_freq, relation, &newstate))
+		return -EINVAL;
+
+	toshiba_freq_set_cpu_state(newstate);
+
+	policy->cpuinfo.transition_latency = max_smm_latency;
+
+	return 0;
+}
+
+/*
+ *	Module init and exit code
+ */
+
+static int toshiba_freq_cpu_init(struct cpufreq_policy *policy)
+{
+	int result;
+
+	/* Make sure we don't leave the system in a bad state at reboot */
+	register_reboot_notifier(&toshiba_freq_notifier);
+
+	/* Prevent userspace from using /dev/toshiba to frob the CPU speed */
+	tosh_cpufreq_in_control = 1;
+
+	/* Fill out the frequency table (in KHz) for the two Toshiba SCI modes
+	 * "slow" and "fast". 	 */
+	toshiba_freq_table[0].frequency = nominal_khz / 2;
+	toshiba_freq_table[1].frequency = nominal_khz;
+
+	/* cpuinfo and default policy values */
+	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+	policy->cpuinfo.transition_latency = max_smm_latency;
+	policy->cur = toshiba_freq_get_cpu_frequency(0);
+
+	result = cpufreq_frequency_table_cpuinfo(policy, toshiba_freq_table);
+	if (result)
+		return (result);
+
+	cpufreq_frequency_table_get_attr(toshiba_freq_table, policy->cpu);
+
+	return 0;
+}
+
+static int toshiba_freq_cpu_exit(struct cpufreq_policy *policy)
+{
+	cpufreq_frequency_table_put_attr(policy->cpu);
+	
+	restore_original_config();
+
+	unregister_reboot_notifier(&toshiba_freq_notifier);
+
+	/* Allow userspace to control CPU via /dev/toshiba again */
+	tosh_cpufreq_in_control = 0;
+
+	return 0;
+}
+
+
+static struct freq_attr* toshiba_freq_attr[] = {
+	&cpufreq_freq_attr_scaling_available_freqs,
+	NULL,
+};
+
+
+static struct cpufreq_driver toshiba_freq_driver = {
+	.get	= toshiba_freq_get_cpu_frequency,
+	.verify	= toshiba_freq_verify,
+	.target	= toshiba_freq_target,
+	.init	= toshiba_freq_cpu_init,
+	.exit	= toshiba_freq_cpu_exit,
+	.name	= "toshiba_freq",
+	.owner	= THIS_MODULE,
+	.attr	= toshiba_freq_attr,
+};
+
+
+static int __init toshiba_freq_init(void)
+{
+	char buf[128];
+
+	/* Save the original state */
+	if (tosh_scihci_get(0, SCI_BATTERY_SAVE, &original_battsave) ||
+			tosh_scihci_get(0, SCI_PROCESSING, &original_cpustate) ||
+			tosh_scihci_get(0, SCI_CPU_CACHE, &original_cache) ||
+			tosh_scihci_get(HCI_GET, HCI_FAN, &original_fan) ||
+			tosh_scihci_get(0, SCI_LCD_BRIGHTNESS, &original_brightness))
+		return -ENODEV;
+
+	/* Note: At least some ACPI machines do not allow the SMI handler to
+	 * modify the CPU frequency.  Here, we will read all the settings we
+	 * are interested in and attempt to set their values, as a test that we
+	 * are actually in control of the hardware. */
+
+	/* First the laptop must be put in the "user settings" battery
+	 * save mode; otherwise the SMI handler rejects software requests to
+	 * change CPU speed. */
+
+	if (tosh_scihci_set(0, SCI_BATTERY_SAVE, SCI_USER_SETTINGS)) {
+		restore_original_config();
+		return -ENODEV;
+	}
+
+	/* CPU state */
+	if (tosh_scihci_set(0, SCI_PROCESSING, original_cpustate)) {
+		restore_original_config();
+		return -ENODEV;
+	}
+
+	/* CPU cache */
+	if (control_cpucache) {
+		if (tosh_scihci_set(0, SCI_CPU_CACHE, original_cache)) {
+			restore_original_config();
+			return -ENODEV;
+		}
+	}
+
+	/* Fan */
+	if (control_fan) {
+		if (tosh_scihci_set(HCI_SET, HCI_FAN, original_fan)) {
+			restore_original_config();
+			return -ENODEV;
+		}
+	}
+
+	/* Display brightness */
+	if (control_lcd) {
+		if (tosh_scihci_set(0, SCI_LCD_BRIGHTNESS, original_brightness)) {
+			restore_original_config();
+			return -ENODEV;
+		}
+	}
+
+	/* Now that we know we can control all the appropriate settings,
+	 * we can continue */
+
+	/* Now we need to obtain the nominal CPU speed for cpufreq to use.
+	 *
+	 * Possible methods: firmware, TSC, cpu_khz, user
+	 * We don't know how to do it via firmware.
+	 * cpu_khz is variable and thus unreliable.
+	 * We thus try timing it with the TSC if available, and otherwise
+	 * rely on the user to supply the speed.
+	 */
+
+	if (user_mhz < 0) {
+		/* Use TSC to estimate CPU speed */
+		u32 count, count2, lapsed_usec;
+		struct timeval tv, tv2;
+		int i;
+
+		if (!cpu_has_tsc) {
+			printk(DRIVER_NAME": 'mhz' option is required for systems without TSC\n");
+			restore_original_config();
+			return -EINVAL;
+		}
+
+#if 0
+		/* Place CPU into 'fast' state (max speed) */
+		if (tosh_scihci_set(0, SCI_PROCESSING, SCI_LOW)) {
+			restore_original_config();
+			return -ENODEV;
+		}
+
+		sync_core();
+		asm __volatile__ ( "mov %%cr0, %0" : "=r"(i) );
+		printk("cr0 low: %lx\n", i);
+#endif
+
+		/* Place CPU into 'fast' state (max speed) */
+		if (tosh_scihci_set(0, SCI_PROCESSING, SCI_HIGH)) {
+			restore_original_config();
+			return -ENODEV;
+		}
+
+#if 0
+		sync_core();
+		asm __volatile__ ( "mov %%cr0, %0" : "=r"(i) );
+		printk("cr0 high: %lx\n", i);
+#endif
+
+		/* According to RDTSCPM1.HTM, make 3 pre-runs to
+		 * prime the instruction cache, and disable all
+		 * pending speculations prior to RDTSC */
+		for (i = 0; i < 4; i++) {
+			local_irq_disable();
+			do_gettimeofday(&tv);
+			/* If core supports CPUID, then it may support
+			 * speculative execution which should be evaded
+			 * for accurate RDTSC timing */
+			if (boot_cpu_data.cpuid_level != -1)
+				sync_core();
+			count = get_cycles();
+			local_irq_enable();
+			msleep_interruptible(1);
+			local_irq_disable();
+			do_gettimeofday(&tv2);
+			if (boot_cpu_data.cpuid_level != -1)
+				sync_core();
+			count2 = get_cycles();
+			local_irq_enable();
+		}
+
+		if (tosh_scihci_set(0, SCI_PROCESSING, original_cpustate)) {
+			restore_original_config();
+			return -ENODEV;
+		}
+
+		lapsed_usec = 1000000*(tv2.tv_sec - tv.tv_sec) + (tv2.tv_usec - tv.tv_usec);
+		nominal_khz = (count2 - count) / lapsed_usec; /* cycles / us  = MHz */
+		nominal_khz *= 1000; /* cycles / ms = kHz */
+	}
+	else
+		nominal_khz = user_mhz * 1000;
+
+	sprintf(buf, DRIVER_NAME": Managing CPU (nominal %d MHz)", nominal_khz / 1000);
+	if (control_cpucache)
+		strcat(buf, ", L2 cache");
+	if (control_fan)
+		strcat(buf, ", system fan");
+	if (control_lcd)
+		strcat(buf, ", LCD");
+
+	printk("%s\n", buf);
+
+	current_cpustate = original_cpustate;
+
+	return cpufreq_register_driver(&toshiba_freq_driver);
+}
+
+
+static void __exit toshiba_freq_exit(void)
+{
+	cpufreq_unregister_driver(&toshiba_freq_driver);
+}
+
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Ryan Underwood <nemesis@icequake.net>");
+MODULE_DESCRIPTION("cpufreq driver for Toshiba non-Speedstep (SCI) laptops");
+
+module_init(toshiba_freq_init);
+module_exit(toshiba_freq_exit);
+
+
+--zhXaljGHf11kAtnf
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: attachment; filename=dmesg
+
+ protocol family 1
+hdc: ATAPI 10X CD-ROM drive, 128kB Cache
+Uniform CD-ROM driver Revision: 3.20
+input: PS/2 Generic Mouse as /class/input/input1
+pnp: the driver 'parport_pc' has been registered
+pnp: match found with the PnP device '00:10' and the driver 'parport_pc'
+parport: PnPBIOS parport detected.
+parport0: PC-style at 0x378 (0x778), irq 7, dma 3 [PCSPP,TRISTATE,COMPAT,ECP,DMA]
+irda_init()
+NET: Registered protocol family 23
+Real Time Clock Driver v1.12ac
+input: PC Speaker as /class/input/input2
+Floppy drive(s): fd0 is 1.44M
+FDC 0 is an 8272A
+Yenta: CardBus bridge found at 0000:00:02.0 [0000:0000]
+Yenta: ISA IRQ mask 0x0000, PCI irq 11
+Socket status: 30000010
+Yenta: CardBus bridge found at 0000:00:02.1 [0000:0000]
+Yenta: ISA IRQ mask 0x0000, PCI irq 11
+Socket status: 30000006
+pccard: PCMCIA card inserted into slot 0
+pnp: the driver 'cs4232-pnpbios' has been registered
+pnp: match found with the PnP device '00:17' and the driver 'cs4232-pnpbios'
+ALSA sound/isa/cs423x/cs4236.c:293: CS4232 WSS PnP manual resources are invalid, using auto config
+CS4232 WSS PnP configure failed for WSS (out of resources?)
+PnP BIOS detection failed for CS4232
+pnp: Failed to disable device 00:17.
+cs4232-pnpbios: probe of 00:17 failed with error -16
+pnp: the driver 'cs4232_isapnp' has been registered
+CS4232 soundcard not found or device busy
+pnp: the driver 'cs4232_isapnp' has been unregistered
+pnp: the driver 'cs4232-pnpbios' has been unregistered
+pnp: the driver 'cs4232-pnpbios' has been registered
+pnp: match found with the PnP device '00:17' and the driver 'cs4232-pnpbios'
+ALSA sound/isa/cs423x/cs4236.c:293: CS4232 WSS PnP manual resources are invalid, using auto config
+CS4232 WSS PnP configure failed for WSS (out of resources?)
+PnP BIOS detection failed for CS4232
+pnp: Failed to disable device 00:17.
+cs4232-pnpbios: probe of 00:17 failed with error -16
+pnp: the driver 'cs4232_isapnp' has been registered
+CS4232 soundcard not found or device busy
+pnp: the driver 'cs4232_isapnp' has been unregistered
+pnp: the driver 'cs4232-pnpbios' has been unregistered
+ts: Compaq touchscreen protocol output
+mice: PS/2 mouse device common for all mice
+cs: IO port probe 0x100-0x4ff: excluding 0x120-0x127 0x220-0x22f 0x388-0x38f 0x480-0x48f 0x4d0-0x4d7
+cs: IO port probe 0x800-0x8ff: clean.
+cs: IO port probe 0xc00-0xcff: clean.
+cs: IO port probe 0x1000-0x10ff: clean.
+cs: IO port probe 0x1400-0x14ff: clean.
+cs: IO port probe 0x1800-0x18ff: clean.
+cs: IO port probe 0x1c00-0x1cff: clean.
+cs: memory probe 0xa0000000-0xa0ffffff: clean.
+pcmcia: registering new device pcmcia0.0
+pcmcia: registering new device pcmcia0.1
+cs: IO port probe 0x100-0x4ff: excluding 0x120-0x127 0x220-0x22f 0x388-0x38f 0x480-0x48f 0x4d0-0x4d7
+cs: IO port probe 0x800-0x8ff: clean.
+cs: IO port probe 0xc00-0xcff: clean.
+cs: IO port probe 0x1000-0x10ff: clean.
+cs: IO port probe 0x1400-0x14ff: clean.
+cs: IO port probe 0x1800-0x18ff: clean.
+cs: IO port probe 0x1c00-0x1cff: clean.
+eth0: NE2000 Compatible: io 0x300, irq 11, mem 0xca128000, auto xcvr, hw_addr 00:04:AC:84:59:C0
+0.1: ttyS2 at I/O 0x3e8 (irq = 11) is a 16550A
+Adding 460204k swap on /dev/hda2.  Priority:-1 extents:1 across:460204k
+EXT3 FS on hda1, internal journal
+Toshiba System Managment Mode driver v1.11 26/9/2001
+apm: BIOS version 1.2 Flags 0x02 (Driver version 1.16ac)
+pnp: the driver 'cs4232-pnpbios' has been registered
+pnp: match found with the PnP device '00:17' and the driver 'cs4232-pnpbios'
+ALSA sound/isa/cs423x/cs4236.c:293: CS4232 WSS PnP manual resources are invalid, using auto config
+CS4232 WSS PnP configure failed for WSS (out of resources?)
+PnP BIOS detection failed for CS4232
+pnp: Failed to disable device 00:17.
+cs4232-pnpbios: probe of 00:17 failed with error -16
+pnp: the driver 'cs4232_isapnp' has been registered
+CS4232 soundcard not found or device busy
+pnp: the driver 'cs4232_isapnp' has been unregistered
+pnp: the driver 'cs4232-pnpbios' has been unregistered
+register_blkdev: cannot get major 31 for mtdblock
+Unable to register mtdblock block device on major 31: -16
+slram: devname=ram_uncached, devstart=0x4000000, devlength=0x5000000
+slram: ioremap failed
+NET: Registered protocol family 17
+openafs: module license 'http://www.openafs.org/dl/license10.html' taints kernel.
+Found system call table at 0xc02624a0 (pattern scan)
+Address 0xc02624a0 is not writable.
+System call hooks will not be installed; proceeding anyway
+Starting AFS cache scan...found 2532 non-empty cache files (25%).
+NET: Registered protocol family 4
+pccard: card ejected from slot 0
+pccard: PCMCIA card inserted into slot 0
+pcmcia: registering new device pcmcia0.0
+eth0: NE2000 Compatible: io 0x300, irq 11, mem 0xca128000, auto xcvr, hw_addr 00:04:AC:84:59:C0
+pcmcia: registering new device pcmcia0.1
+0.1: ttyS2 at I/O 0x3e8 (irq = 11) is a 16550A
+NET: Registered protocol family 10
+lo: Disabled Privacy Extensions
+IPv6 over IPv4 tunneling driver
+sit0: Disabled Privacy Extensions
+eth0: no IPv6 routers present
+toshiba_freq: Managing CPU (nominal 120 MHz), L2 cache, system fan
+cpufreq-core: trying to register driver toshiba_freq
+cpufreq-core: adding CPU 0
+freq-table: table entry 0: 60000 kHz, 0 index
+freq-table: table entry 1: 120000 kHz, 1 index
+freq-table: setting show_table for cpu 0 to ca449908
+cpufreq-core: setting new policy for CPU 0: 60000 - 120000 kHz
+freq-table: request for verification of policy (60000 - 120000 kHz) for cpu 0
+freq-table: verification lead to (60000 - 120000 kHz) for cpu 0
+freq-table: request for verification of policy (60000 - 120000 kHz) for cpu 0
+freq-table: verification lead to (60000 - 120000 kHz) for cpu 0
+cpufreq-core: new min and max freqs are 60000 - 120000 kHz
+cpufreq-core: governor switch
+cpufreq-core: __cpufreq_governor for CPU 0, event 1
+performance: setting to 120000 kHz because of event 1
+cpufreq-core: target for CPU 0: 120000 kHz, relation 1
+freq-table: request for target 120000 kHz (relation: 1) for cpu 0
+freq-table: target is 1 (120000 kHz, 1)
+cpufreq-core: notification 0 of frequency transition to 120000 kHz
+cpufreq-core: saving 1203703 as reference value for loops_per_jiffy; freq is 120000 kHz
+toshiba_freq: toshiba_freq: attempting to set frequency to 120000 kHz
+toshiba_freq: toshiba_freq: SMM took 779732 cycles
+cpufreq-core: notification 1 of frequency transition to 120000 kHz
+cpufreq-core: governor: change or update limits
+cpufreq-core: __cpufreq_governor for CPU 0, event 3
+performance: setting to 120000 kHz because of event 3
+cpufreq-core: target for CPU 0: 120000 kHz, relation 1
+freq-table: request for target 120000 kHz (relation: 1) for cpu 0
+freq-table: target is 1 (120000 kHz, 1)
+cpufreq-core: notification 0 of frequency transition to 120000 kHz
+toshiba_freq: toshiba_freq: attempting to set frequency to 120000 kHz
+toshiba_freq: toshiba_freq: SMM took 811010 cycles
+cpufreq-core: notification 1 of frequency transition to 120000 kHz
+cpufreq-core: initialization complete
+cpufreq-core: driver toshiba_freq up and running
+cpufreq-core: setting new policy for CPU 0: 60000 - 120000 kHz
+freq-table: request for verification of policy (60000 - 120000 kHz) for cpu 0
+freq-table: verification lead to (60000 - 120000 kHz) for cpu 0
+freq-table: request for verification of policy (60000 - 120000 kHz) for cpu 0
+freq-table: verification lead to (60000 - 120000 kHz) for cpu 0
+cpufreq-core: new min and max freqs are 60000 - 120000 kHz
+cpufreq-core: governor switch
+cpufreq-core: __cpufreq_governor for CPU 0, event 2
+cpufreq-core: __cpufreq_governor for CPU 0, event 1
+cpufreq-core: governor: change or update limits
+cpufreq-core: __cpufreq_governor for CPU 0, event 3
+cpufreq-core: target for CPU 0: 8571 kHz, relation 0
+freq-table: request for target 8571 kHz (relation: 0) for cpu 0
+freq-table: target is 0 (60000 kHz, 0)
+cpufreq-core: notification 0 of frequency transition to 60000 kHz
+toshiba_freq: toshiba_freq: attempting to set frequency to 60000 kHz
+cpufreq-core: notification 1 of frequency transition to 60000 kHz
+cpufreq-core: scaling loops_per_jiffy to 601851 for frequency 60000 kHz
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing some ticks... checking if CPU frequency changed.
+Losing too many ticks!
+TSC cannot be used as a timesource.  
+Possible reasons for this are:
+  You're running with Speedstep,
+  You don't have DMA enabled for your hard disk (see hdparm),
+  Incorrect TSC synchronization on an SMP system (see dmesg).
+Falling back to a sane timesource now.
+Losing some ticks... checking if CPU frequency changed.
+cpufreq-core: target for CPU 0: 120000 kHz, relation 1
+freq-table: request for target 120000 kHz (relation: 1) for cpu 0
+freq-table: target is 1 (120000 kHz, 1)
+cpufreq-core: notification 0 of frequency transition to 120000 kHz
+cpufreq-core: scaling loops_per_jiffy to 1203703 for frequency 120000 kHz
+toshiba_freq: toshiba_freq: attempting to set frequency to 120000 kHz
+toshiba_freq: toshiba_freq: SMM took 807552 cycles
+cpufreq-core: notification 1 of frequency transition to 120000 kHz
+cpufreq-core: target for CPU 0: 3428 kHz, relation 0
+freq-table: request for target 3428 kHz (relation: 0) for cpu 0
+freq-table: target is 0 (60000 kHz, 0)
+cpufreq-core: notification 0 of frequency transition to 60000 kHz
+
+--zhXaljGHf11kAtnf
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Ryan Underwood <nemesis@icequake.net>
-Cc: Cpufreq@lists.linux.org.uk
+Content-Disposition: inline
 
-On Thu, Sep 21, 2006 at 04:03:29PM -0500, Ryan Underwood wrote:
- > 
- > On Thu, Sep 21, 2006 at 04:44:02PM -0400, Dave Jones wrote:
- > >  > 
- > >  > No, because only the firmware knows what the real CPU speeds are.  How
- > >  > would I deal with this?
- > > 
- > > Actually, if your driver is correctly using cpufreq_notify_transition()
- > > it should be doing this automagically for you.  If you turn on debugging with
- > > cpufreq.debug=7 , you should see lines of the form.
- > > 
- > > scaling loops_per_jiffy to %lu for frequency %u kHz\n
- > 
- > I don't see this, here's the dmesg (2.6.16.28)
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-Pointer to the driver source ?
+--zhXaljGHf11kAtnf--
 
-	Dave
