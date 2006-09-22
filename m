@@ -1,15 +1,19 @@
 From: Dave Jones <davej@redhat.com>
 Subject: Re: writing a cpufreq driver
-Date: Fri, 22 Sep 2006 11:49:41 -0400
-Message-ID: <20060922154941.GB15032@redhat.com>
-References: <20060921193141.GE17065@redhat.com>
-	<1449F58C868D8D4E9C72945771150BDF153669@SAUSEXMB1.amd.com>
-	<20060921194714.GH17065@redhat.com>
-	<20060922154448.GO4945@poupinou.org>
+Date: Fri, 22 Sep 2006 11:51:05 -0400
+Message-ID: <20060922155105.GC15032@redhat.com>
+References: <20060921184833.GC1216@dbz.icequake.net>
+	<20060921193141.GE17065@redhat.com>
+	<20060921200851.GF2364@dbz.icequake.net>
+	<20060921204402.GA26683@redhat.com>
+	<20060921210329.GA16590@dbz.icequake.net>
+	<20060921211343.GG26683@redhat.com>
+	<20060922141318.GE24439@dbz.icequake.net>
+	<20060922143954.GF24439@dbz.icequake.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060922154448.GO4945@poupinou.org>
+In-Reply-To: <20060922143954.GF24439@dbz.icequake.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,26 +26,39 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: Cpufreq@lists.linux.org.uk, nemesis@icequake.net
+To: nemesis@icequake.net
+Cc: Cpufreq@lists.linux.org.uk
 
-On Fri, Sep 22, 2006 at 05:44:48PM +0200, Bruno Ducrot wrote:
- 
- > > Looking at it again..
- > > cpufreq_notify_transition() is calling adjust_jiffies()
- > > which should be doing the same thing, so we should be good to go.
- > > 
- > > It looks like feasible that recalibrate_cpu_khz() could actually
- > > be killed off.
+On Fri, Sep 22, 2006 at 09:39:54AM -0500, Ryan Underwood wrote:
  > 
- > It's called only at init time because cpu_khz is not
- > reliable on some platform due to braindamaged BIOS
- > that switch frequency of the K7 onto the SMM handler
- > when ACPI enable performance control, breaking AMD
- > recommandation at the same time BTW.
+ > On Fri, Sep 22, 2006 at 09:13:18AM -0500, Ryan Underwood wrote:
+ > > 
+ > > I have a question, how critical is it that I have exactly the correct
+ > > CPU MHz for the scaling to work properly?  Unfortunately, for the slow
+ > > speed there is no way for me to know what it actually is on a particular
+ > > system due to limitations of the firmware, so the best I could do is a
+ > > RDTSC timing to try to figure it out.  I wonder if skew between the
+ > > actual CPU speed and what cpufreq thinks it is would be the source of
+ > > the problem.
+ > 
+ > Hmm, this might have been the problem.  On my machine, the fast and slow
+ > MHz (as measured by my TSC routine) are the same.  However, the machine
+ > is noticeably slower at the 'slow' firmware setting.  I thought maybe
+ > they were disabling L1 cache, but that is not the case.  The CPU is a
+ > Pentium VRT 120MHZ so I'm not sure what is going on.... maybe down
+ > clocking the system bus or memory or inserting wait states somewhere.
+ > 
+ > In any case, since the fast and slow MHZ are the same, cpufreq does
+ > nothing.  But cpufreq should still do "something" in this case, since
+ > something else that my driver does is to disable the L2 cache when going
+ > to the slow state, which is a decent power savings even on my laptop
+ > that doesn't have an actual slow MHZ.  But since the fast and slow mhz
+ > are the same, cpufreq performs no actions.
 
-Ahh. That deserves a comment. Another alternative would
-be to do a transition on startup, which would end up adjusting
-it through the notifiers.
+*shrug*, I'm out of ideas. I looked over your code, and it seems to
+be correctly doing notifications when it performs a transition,
+which should be taking care of the timing issues for you.
 
-	Dave
+Puzzlings.
+
+	Dave 
