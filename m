@@ -1,13 +1,16 @@
-From: Johny the Ripper <my_publicyty@yahoo.com>
-Subject: Re: Can't get it working on Mobile Coppermine 1Ghz - i440BX -
-	please help...
-Date: Sat, 23 Sep 2006 04:24:09 -0700 (PDT)
-Message-ID: <20060923112409.55922.qmail@web30812.mail.mud.yahoo.com>
-References: <a11ccc30609230354h205fb392t7712d8477497bd28@mail.gmail.com>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: Re: writing a cpufreq driver
+Date: Sat, 23 Sep 2006 17:07:52 +0200
+Message-ID: <20060923150751.GR4945@poupinou.org>
+References: <20060921184833.GC1216@dbz.icequake.net>
+	<20060922153948.GN4945@poupinou.org>
+	<20060922160025.GA4459@dbz.icequake.net>
+	<20060922160514.GQ4945@poupinou.org>
+	<20060922161149.GC4459@dbz.icequake.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <a11ccc30609230354h205fb392t7712d8477497bd28@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20060922161149.GC4459@dbz.icequake.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,62 +22,23 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Hiroshi Miura <miura@da-cha.org>
-Cc: cpufreq@lists.linux.org.uk, Bruno Ducrot <ducrot@poupinou.org>
+Content-Transfer-Encoding: 7bit
+To: Ryan Underwood <nemesis@icequake.net>
+Cc: Cpufreq@lists.linux.org.uk
 
-Hi,
-
-thanks for your answer. I still don't get it working
-and I'm not sure what's going wrong. Probably my poor
-knowledge of using kernel modules...
-This is what I did: I adapted the suggested values in
-speedstep-smi.c and did a make from /usr/src/linux . I
-saw in the output that it compiled the speedstep-smi
-module. But I still couldn't load the ondemand
-governor. I did a make modules to be sure, but it
-didn't help. So I copied the new-made kernel to and
-rebooted using this new kernel. (hoping that it would
-use the new module) But it still doesn't work.
-
-Am I doing something wrong with this new module or
-should I use a different value?
-
-
-greetz,
-Johny
-
---- Hiroshi Miura <miura@da-cha.org> wrote:
-
-> Hi,
+On Fri, Sep 22, 2006 at 11:11:49AM -0500, Ryan Underwood wrote:
 > 
-> You can find a speedstep-smi.c
-> in /usr/src/linux/arch/i386/kernel/cpu/cpufreq/
-> which is the source file Bruno memtioned.
+> On Fri, Sep 22, 2006 at 06:05:14PM +0200, Bruno Ducrot wrote:
+> > 
+> > I'm now sure the southbridge is throttling the processor...
 > 
-> 2006/9/23, Johny the Ripper
-> <my_publicyty@yahoo.com>:
-> >
-> > Hi Bruno, thanks again :) But I'm a bit in the
-> dark
-> > here: which file should I change? I searched
-> > /usr/src/linux/drivers/cpufreq/cpufreq_ondemand.c
-> but
-> > I didn't find the line you specified...
-> > Anyway, I'm glad there's a way to make this
-> governor
-> > work, even though maybe it will not be perfect...
-> 
-> I also don't know proper value of transition latency
-> because there are not any description in public
-> documents
-> that I found.
-> 
-> -- 
-> HIroshi Miura
-> 
+> How would it usually do this, by repeated #SMI?
 
+By repeated STPCLK# I guess.  IIRC i486 (and newer intel processors) had
+that pin.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
