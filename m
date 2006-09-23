@@ -1,9 +1,10 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Disable arbiter CLE266
-Date: Sat, 23 Sep 2006 07:59:01 +0200
-Message-ID: <4514CD25.6030901@interia.pl>
+From: Johny the Ripper <my_publicyty@yahoo.com>
+Subject: Re: Can't get it working on Mobile Coppermine 1Ghz - i440BX -
+	please help...
+Date: Sat, 23 Sep 2006 03:20:09 -0700 (PDT)
+Message-ID: <20060923102009.32968.qmail@web30805.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,53 +16,45 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
+Cc: Bruno Ducrot <ducrot@poupinou.org>
 
-I have datasheet for CLE266 now. It is possible to enable=20
-port 0x22 on this chipset too.
+--- Bruno Ducrot <ducrot@poupinou.org> wrote:
 
-This patch is adding support for older CPU connected to=20
-CLE266 chipset.=20
+> Yes.  The problem with speedstep smi is that we
+> don't
+> know exactly how much time at transition will take.
+> I've see some mail about adding such information for
+> that driver, but nothing reach mainstream AFAIK.
+> 
+> More precisely, you have to modify that line:
+> 
+> 	policy->cpuinfo.transition_latency =
+> CPUFREQ_ETERNAL;
+> 
+> with something like that:
+> 
+> 	policy->cpuinfo.transition_latency = 100000;
+> 
+> Actually I *really* don't know if that's correct,
+> but it should be
+> close enough to the real one, hopefully, even though
+> I don't count
+> the bus stuff, memory cache invalidation and so on..
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
-
----
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
-/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -567,16 +567,23 @@ static acpi_status longhaul_walk_callbac
- static int enable_arbiter_disable(void)
- {
- 	struct pci_dev *dev;
-+	int port;
- 	u8 pci_cmd;
-=20
- 	/* Find PLE133 host bridge */
-+	port =3D 0x78;
- 	dev =3D pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8601_0, NULL=
-);
-+	/* Find CLE266 host bridge */
-+	if (dev =3D=3D NULL) {
-+		dev =3D pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_862X_0, NUL=
-L);
-+		port =3D 0x76;
-+	}
- 	if (dev !=3D NULL) {
- 		/* Enable access to port 0x22 */
--		pci_read_config_byte(dev, 0x78, &pci_cmd);
-+		pci_read_config_byte(dev, port, &pci_cmd);
- 		if ( !(pci_cmd & 1<<7) ) {
- 			pci_cmd |=3D 1<<7;
--			pci_write_config_byte(dev, 0x78, pci_cmd);
-+			pci_write_config_byte(dev, port, pci_cmd);
- 		}
- 		return 1;
- 	}
+Hi Bruno, thanks again :) But I'm a bit in the dark
+here: which file should I change? I searched
+/usr/src/linux/drivers/cpufreq/cpufreq_ondemand.c but
+I didn't find the line you specified...
+Anyway, I'm glad there's a way to make this governor
+work, even though maybe it will not be perfect...
 
 
-----------------------------------------------------------------------
-Jestes kierowca? To poczytaj! >>> http://link.interia.pl/f199e
+Greetz!
+Johny
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
