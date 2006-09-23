@@ -1,11 +1,14 @@
-From: Johny the Ripper <my_publicyty@yahoo.com>
+From: "Hiroshi Miura" <miura@da-cha.org>
 Subject: Re: Can't get it working on Mobile Coppermine 1Ghz - i440BX -
 	please help...
-Date: Sat, 23 Sep 2006 03:20:09 -0700 (PDT)
-Message-ID: <20060923102009.32968.qmail@web30805.mail.mud.yahoo.com>
+Date: Sat, 23 Sep 2006 19:54:38 +0900
+Message-ID: <a11ccc30609230354h205fb392t7712d8477497bd28@mail.gmail.com>
+References: <20060923102009.32968.qmail@web30805.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20060923102009.32968.qmail@web30805.mail.mud.yahoo.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,46 +18,29 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
-Cc: Bruno Ducrot <ducrot@poupinou.org>
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Johny the Ripper <my_publicyty@yahoo.com>
+Cc: cpufreq@lists.linux.org.uk, Bruno Ducrot <ducrot@poupinou.org>
 
---- Bruno Ducrot <ducrot@poupinou.org> wrote:
+Hi,
 
-> Yes.  The problem with speedstep smi is that we
-> don't
-> know exactly how much time at transition will take.
-> I've see some mail about adding such information for
-> that driver, but nothing reach mainstream AFAIK.
-> 
-> More precisely, you have to modify that line:
-> 
-> 	policy->cpuinfo.transition_latency =
-> CPUFREQ_ETERNAL;
-> 
-> with something like that:
-> 
-> 	policy->cpuinfo.transition_latency = 100000;
-> 
-> Actually I *really* don't know if that's correct,
-> but it should be
-> close enough to the real one, hopefully, even though
-> I don't count
-> the bus stuff, memory cache invalidation and so on..
+You can find a speedstep-smi.c
+in /usr/src/linux/arch/i386/kernel/cpu/cpufreq/
+which is the source file Bruno memtioned.
 
-Hi Bruno, thanks again :) But I'm a bit in the dark
-here: which file should I change? I searched
-/usr/src/linux/drivers/cpufreq/cpufreq_ondemand.c but
-I didn't find the line you specified...
-Anyway, I'm glad there's a way to make this governor
-work, even though maybe it will not be perfect...
+2006/9/23, Johny the Ripper <my_publicyty@yahoo.com>:
+>
+> Hi Bruno, thanks again :) But I'm a bit in the dark
+> here: which file should I change? I searched
+> /usr/src/linux/drivers/cpufreq/cpufreq_ondemand.c but
+> I didn't find the line you specified...
+> Anyway, I'm glad there's a way to make this governor
+> work, even though maybe it will not be perfect...
 
+I also don't know proper value of transition latency
+because there are not any description in public documents
+that I found.
 
-Greetz!
-Johny
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+-- 
+HIroshi Miura
