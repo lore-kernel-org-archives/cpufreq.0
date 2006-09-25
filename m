@@ -1,22 +1,13 @@
-From: Ryan Underwood <nemesis@icequake.net>
-Subject: Re: writing a cpufreq driver
-Date: Mon, 25 Sep 2006 10:39:14 -0500
-Message-ID: <20060925153914.GB1364@dbz.icequake.net>
-References: <20060921184833.GC1216@dbz.icequake.net>
-	<20060922153948.GN4945@poupinou.org>
-	<20060922160025.GA4459@dbz.icequake.net>
-	<20060922160514.GQ4945@poupinou.org>
-	<20060922161149.GC4459@dbz.icequake.net>
-	<20060923150751.GR4945@poupinou.org>
-	<20060923152144.GA15964@dbz.icequake.net>
-	<20060923154442.GT4945@poupinou.org>
-	<20060923160335.GB15964@dbz.icequake.net>
-	<20060923161311.GV4945@poupinou.org>
-Reply-To: nemesis@icequake.net
+From: Erik Slagter <erik@slagter.name>
+Subject: Re: [PATCH] acpi-cpufreq: Use IA32_APERF and IA32_MPERF and get freq
+ feedback from hardware
+Date: Mon, 25 Sep 2006 18:02:51 +0200
+Message-ID: <4517FDAB.9010705@slagter.name>
+References: <EB12A50964762B4D8111D55B764A8454A4110F@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20060923161311.GV4945@poupinou.org>
+In-Reply-To: <EB12A50964762B4D8111D55B764A8454A4110F@scsmsx413.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -28,58 +19,37 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bruno Ducrot <ducrot@poupinou.org>
-Cc: Cpufreq@lists.linux.org.uk, Ryan Underwood <nemesis@icequake.net>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@www.linux.org.uk
 
+Pallipadi, Venkatesh wrote:
 
-On Sat, Sep 23, 2006 at 06:13:11PM +0200, Bruno Ducrot wrote:
-> On Sat, Sep 23, 2006 at 11:03:36AM -0500, Ryan Underwood wrote:
-> > 
-> > On Sat, Sep 23, 2006 at 05:44:42PM +0200, Bruno Ducrot wrote:
-> > > > 
-> > > > But if it were using STPCLK, TSC would be slowed too, right?  TSC just
-> > > > counts the clock cycles of CPU.  I was thinking the method was to enter
-> > > > SMM and run HLT instructions or similar.  That way power is saved but
-> > > > TSC is preserved.  Unfortunately, that makes the power saving mode on
-> > > > this particular machine useless, since Linux already runs HLT during
-> > > > idle.
-> > > 
-> > > You are right.  Maybe Toshiba implemented that:
-> > > 
-> > > http://www.freepatentsonline.com/7082542.html
-> > 
-> > Very good catch!
-> > 
-> 
-> Of course, I never wrote toshiba can invalidate this patent by earlyer
-> works...  After all we are only speculating.
+> The problem is, a lot of times current frequency may not mean much as
+> frequency can change immediately after one get frequency call or
+> immediately before we did the call. The freuency can change
+> asynchronously due to number of reasons like hardware coordination, TM2
+> and get frequency will not help to get frequency over a period of time.
+> Also, there is no call back from hardware when frequency changes
+> asynchronously. So, getting average frequency over a period of time is
+> the best we can do in order to use the utilization in that period and
+> make some frequency target decision for next sampling period.
 
-So I did some more poking around.. this is from the system maintenance
-manual:
+I get your drift ;-)
 
- System Controller Gate Array 
+Actually what I am interested in is this:
 
- This gate array has the following functions: 
+ - spotting frequency switching by tm2 because I suspect my processor
+might be running hot sometimes (a little overlocking ;-))
+ - seeing the actual running frequency, as this may not be the value the
+processor is set for (again, an overclocking issue, I know).
 
- CPU interface/control 
- Level-2 cache memory control 
- DRAM control 
- PCI master/slave interface 
- Write buffer (CPU-DRAM, CPU-PCI, PCI-DRAM) 
- Prefetch buffer (PCI-PCI, PCI-DRAM) 
- Two DMACs: 82C37 equivalent 
- Two PICs: 82C59 equivalent 
- One PIT: 82C54 equivalent 
- Serial interrupt function 
- Power management control 
- Suspend/resume control 
- CPU stop clock function  <-----
+After booting the value in /proc/cpuinfo is correct, related to the
+frequency the cpu is actually set to. After a switch by cpufreq, only
+the "standard" values are shown there, although performance shows the
+cpu is still running at it's higher clock.
 
-Interesting that if it were SMI throttling, they would refer to it as
-"stop clock".  I wonder if anyone can tell us whether STPCLK stops TSC
-or not.
-
-
--- 
-Ryan Underwood, <nemesis@icequake.net>
+BTW I also noticed that on a CPU with C1e the performance increases when
+the acpi-cpufreq module is loaded and set to ondemand. Could it be that
+the module can make smarter decisions than the processor itself? Does
+the module override the C1e functionality, actually? Output of the sys
+stats directorie shows indeed correct switching to lower speed when idle.
