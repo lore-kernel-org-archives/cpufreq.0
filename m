@@ -1,12 +1,13 @@
 From: Dave Jones <davej@redhat.com>
 Subject: Re: [1/5] reorganizes & code cleaning in acpi-cpufreq
-Date: Tue, 26 Sep 2006 22:40:51 -0400
-Message-ID: <20060927024051.GA19413@redhat.com>
+Date: Tue, 26 Sep 2006 22:41:48 -0400
+Message-ID: <20060927024148.GA29163@redhat.com>
 References: <20060901140753.D14821@unix-os.sc.intel.com>
+	<20060927024051.GA19413@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060901140753.D14821@unix-os.sc.intel.com>
+In-Reply-To: <20060927024051.GA19413@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
