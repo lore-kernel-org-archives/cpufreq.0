@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
-Date: Wed, 27 Sep 2006 16:14:45 -0700
-Message-ID: <200609272314.k8RNEjls004090@fire-2.osdl.org>
+Subject: [Bug 5773] hang on suspend2 resume
+Date: Wed, 27 Sep 2006 16:16:48 -0700
+Message-ID: <200609272316.k8RNGmcp004558@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,7 +18,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6851
+http://bugzilla.kernel.org/show_bug.cgi?id=5773
 
 bunk@stusta.de changed:
 
