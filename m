@@ -1,13 +1,13 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: [1/5] reorganizes & code cleaning in acpi-cpufreq
-Date: Tue, 26 Sep 2006 22:41:48 -0400
-Message-ID: <20060927024148.GA29163@redhat.com>
-References: <20060901140753.D14821@unix-os.sc.intel.com>
-	<20060927024051.GA19413@redhat.com>
+Subject: Re: [PATCH] Longhaul - Disable arbiter CLE266
+Date: Wed, 27 Sep 2006 01:06:39 -0400
+Message-ID: <20060927050639.GC3571@redhat.com>
+References: <45198341.4080202@interia.pl>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20060927024051.GA19413@redhat.com>
+In-Reply-To: <45198341.4080202@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,34 +18,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: alexey.y.starikovskiy@intel.com, cpufreq <cpufreq@www.linux.org.uk>, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset="utf-8"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Cc: cpufreq@lists.linux.org.uk
 
-On Fri, Sep 01, 2006 at 02:07:53PM -0700, Venkatesh Pallipadi wrote:
+On Tue, Sep 26, 2006 at 09:45:05PM +0200, Rafał Bilski wrote:
+ > Please ignore previous two messages. :-)
+ > 
+ > This patch is adding support for CPU connected to CLE266 
+ > chipset. For older CPU this is only way. For "Powersaver" 
+ > processor this way will be used if ACPI C3 isn't supported.
+ > 
+ > Signed-off-by: Rafał Bilski <rafalbilski@interia.pl>
+ 
+Argh, I already applied the second of the earlier diffs.
+Can you send an incremental diff to whats in cpufreq.git?
 
- > Some clean up and redsign of the driver. Mainly making it easier to add
- > support for multiple sub-mechanisms of changing frequency. Currently this
- > driver supports only ACPI SYSTEM_IO address space. With the changes
- > below it is easier to add support for other address spaces like Intel 
- > Enhanced Speedstep which uses MSR (ACPI FIXED_FEATURE_HARDWARE) to do the 
- > transitions.
+Thanks,
 
-This patch-series fell at the first hurdle.
-
-error: patch failed: arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c:91
-error: arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c: patch does not apply
-
-When you repost rediffed patchset, please make the subject of each patch
-in the series a unique description, as this gets used in the shortlog.
-
-As this series failed, your subsequent patches
- acpi-cpufreq: Make cpuinfo_cur_freq work again
-and
- Use IA32_APERF and IA32_MPERF and get freq feedback from hardware
-
-also failed. If you want to fold those into the other changes, or
-just send a complete rediffed 7-series patchset, I'll apply those.
-
-		Dave
+	Dave 
