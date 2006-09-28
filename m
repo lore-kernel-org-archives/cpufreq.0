@@ -1,8 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7221] acpi_cpufreq_target calls smp_processor_id while
-	preemptible
-Date: Thu, 28 Sep 2006 11:32:52 -0700
-Message-ID: <200609281832.k8SIWqsO024792@fire-2.osdl.org>
+From: ataschi@sms.at
+Subject: Re: powernow with kt133
+Date: Thu, 28 Sep 2006 20:53:12 +0200
+Message-ID: <20060928185312.B766D8450E@mail.sms.at>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,22 +15,49 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7221
+Hi all,
+got the hint, that this mailing list will have an answer .. could be,hm?
+so i forward my questions ...
 
-venkatesh.pallipadi@intel.com changed:
+ > I googled now for more than a week to find a solution for my freezing pr=
+oblem.
+ > I used the VIA KT133 chipset on an MS-6330 (MSI K7T Pro 2-A) motherboard.
+ > Immediatly after I press the enter key to load the powernow-k7 module (k=
+ernel 2.6.17)
+ > everything is freezed. Even so fast that no log will be produced.
+ >
+ > My first assumption was: compatibilty problems of the modul with my AMD =
+Geode NX 1750.
+ >   -> no, definitly not
+ >
+ > second assumption: chipset problem, KT133 (and it's not the KT133A !) do=
+ not support
+ >   powernow! But .. I found a report where exactly this chipset will be u=
+sed in a
+ >   Notebook
+ >   http://stupidius.dyndns.org/linux_on_maxdata_m-book/index.html
+ >   -> in this case PST tables are available
+ >   -> but on my desktop system they are not --> thus, I used your patch ;)
+ >
+ > third and last assumption: The MS-6330 does something weired or better, =
+doesn't handel
+ >   the FID signals or the FID_Change procedure in a correct way. Now, I'm=
+ not sure if
+ >   this is a hardware problem or can be solved by software.
+ >
+ > My question: Do you know something about this stuff?? Can you help me? C=
+an help me
+ >   anyone?
+ >
+ > By the way: Do you know something about the VT8363 chipset register 55? =
+On KT133A it
+ >   seems, it will enable the chipset for powernow!!??
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |venkatesh.pallipadi@intel.co
-                   |                            |m
-             Status|NEW                         |ASSIGNED
+wbr
+armin
 
-
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+--
+Ein Service von http://www.sms.at
