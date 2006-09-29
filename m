@@ -1,8 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5773] hang on suspend2 resume
-Date: Fri, 29 Sep 2006 03:40:12 -0700
-Message-ID: <200609291040.k8TAeCvk012876@fire-2.osdl.org>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: speedstep-ich issue
+Date: Fri, 29 Sep 2006 19:40:35 +0200
+Message-ID: <20060929174035.GE13444@inferi.kami.home>
+References: <200609291111.48598.cusmai@gmail.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <200609291111.48598.cusmai@gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,25 +17,23 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Marco cusmai <cusmai@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5773
+On Fri, Sep 29, 2006 at 11:11:48AM +0000, Marco cusmai wrote:
+> Upgrading kernel form version 2.6.17.2 to 2.6.18 the cpufreq system makes 
+>   strange things.. looking at dmesg (with debugging enabled for cpufreq) it 
+>   seems that after a while the system recognizes only one step of frequency 
+>   (the slowest) .. The CPU is a P3 that can change the frequency from 730 MHz 
+>   to 1.1 GHz, using the speedstep-ich driver. Tell me if you need more 
+>   informations..
 
-rjwysocki@sisk.pl changed:
+probably dmesg output and some kind of evidence of the problem you're
+reporting would be appreciated.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |rjwysocki@sisk.pl
-             Status|NEW                         |ASSIGNED
-
-
-
-------- Additional Comments From rjwysocki@sisk.pl  2006-09-29 03:29 -------
-Can you please verify if this happens on 2.6.18?
-
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Regards
+-- 
+mattia
+:wq!
