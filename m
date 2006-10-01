@@ -1,8 +1,8 @@
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 6/8]cpufreq: acpi-cpufreq: Eliminate get of current freq on
-	notification
-Date: Sun, 1 Oct 2006 07:15:45 -0700
-Message-ID: <20061001071545.F16392@unix-os.sc.intel.com>
+Subject: [PATCH 7/8]cpufreq: acpi-cpufreq: Fix get of current frequency
+	breakage
+Date: Sun, 1 Oct 2006 07:17:27 -0700
+Message-ID: <20061001071727.G16392@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
@@ -22,37 +22,31 @@ To: Dave Jones <davej@redhat.com>
 Cc: alexey.y.starikovskiy@intel.com, cpufreq <cpufreq@www.linux.org.uk>, Dominik Brodowski <linux@dominikbrodowski.net>
 
 
-Only change the frequency if the state previously set is different
-from what we are trying to set. We don't really have to get the current
-frequency at this point.
+Recent speedstep-centrino unification onto acpi-cpufreq patchset broke
+cpuinfo_cur_freq interface in /sys/../cpuinfo/, when MSR was used for
+transitions. Attached patch fixes that breakage.
 
-Signed-off-by: Denis Sadykov <denis.m.sadykov@intel.com>
+Applies over the patchset with subject
+Unify ACPI bits on speedstep-centrino and acpi-cpufreq
+
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
 
 Index: linux-2.6.18/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
 ===================================================================
 --- linux-2.6.18.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
 +++ linux-2.6.18/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -325,11 +325,8 @@ static int acpi_cpufreq_target(struct cp
- 	online_policy_cpus = policy->cpus;
- #endif
+@@ -102,10 +102,13 @@ static unsigned extract_io(u32 value, st
+ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
+ {
+ 	int i;
++	struct acpi_processor_performance *perf;
  
--	cmd.val = get_cur_val(online_policy_cpus);
--	freqs.old = extract_freq(cmd.val, data);
--	freqs.new = data->freq_table[next_state].frequency;
- 	next_perf_state = data->freq_table[next_state].index;
--	if (freqs.new == freqs.old) {
-+	if (perf->state == next_perf_state) {
- 		if (unlikely(data->resume)) {
- 			dprintk("Called after resume, resetting to P%d\n",
- 				next_perf_state);
-@@ -367,6 +364,8 @@ static int acpi_cpufreq_target(struct cp
- 	else
- 		cpu_set(policy->cpu, cmd.mask);
- 
-+	freqs.old = data->freq_table[perf->state].frequency;
-+	freqs.new = data->freq_table[next_perf_state].frequency;
- 	for_each_cpu_mask(i, cmd.mask) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 	msr &= INTEL_MSR_RANGE;
++	perf = data->acpi_data;
++
+ 	for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		if (msr == data->freq_table[i].index)
++		if (msr == perf->states[data->freq_table[i].index].status)
+ 			return data->freq_table[i].frequency;
+ 	}
+ 	return data->freq_table[0].frequency;
