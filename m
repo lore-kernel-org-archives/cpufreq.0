@@ -1,7 +1,8 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: new p4-clockmod capable CPUs
-Date: Mon, 2 Oct 2006 16:23:17 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454ABC291@scsmsx413.amr.corp.intel.com>
+Subject: RE: [PATCH 2/8]cpufreq: acpi-cpufreq: reorganize code to make MSR
+	support addition easier
+Date: Mon, 2 Oct 2006 16:32:05 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454ABC2A5@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -17,61 +18,61 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@lists.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>, Dave Jones <davej@redhat.com>, cpufreq <cpufreq@www.linux.org.uk>
 
-=20
 
 >-----Original Message-----
 >From: Dominik Brodowski [mailto:linux@dominikbrodowski.net]=20
->Sent: Sunday, October 01, 2006 7:06 PM
->To: cpufreq@lists.linux.org.uk; Pallipadi, Venkatesh
->Subject: new p4-clockmod capable CPUs
+>Sent: Monday, October 02, 2006 4:22 PM
+>To: Pallipadi, Venkatesh
+>Cc: Dave Jones; cpufreq; Starikovskiy, Alexey Y
+>Subject: Re: [PATCH 2/8]cpufreq: acpi-cpufreq: reorganize code=20
+>to make MSR support addition easier
 >
->Hi!
+>On Mon, Oct 02, 2006 at 04:04:25PM -0700, Pallipadi, Venkatesh wrote:
+>> >On Sun, Oct 01, 2006 at 07:09:29AM -0700, Venkatesh Pallipadi wrote:
+>> >> +static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+>> >> +{
+>> >> +	struct acpi_cpufreq_data		*data =3D drv_data[cpu];
+>> >> +	unsigned int				freq;
+>> >> +
+>> >> +	dprintk("get_cur_freq_on_cpu (%d)\n", cpu);
+>> >> +
+>> >> +	if (unlikely(data =3D=3D NULL ||
+>> >> +	             data->acpi_data =3D=3D NULL ||
+>> >> +	             data->freq_table =3D=3D NULL)) {
+>> >> +		return 0;
+>> >>  	}
+>> >> =20
+>> >> -	dprintk("Transition successful after %d=20
+>> >microseconds\n", i * 10);
+>> >> +	freq =3D extract_freq(get_cur_val(cpumask_of_cpu(cpu)), data);
+>> >
+>> >Does this _finally_ work according to ACPI spec? That you can=20
+>> >determine the
+>> >current frequency this way?
+>> >
+>> >
+>>=20
+>> Nope. ACPI spec only goes to say you can check whether=20
+>transitions was
+>> successful or not by looking at the status.=20
 >
->A couple of people have contacted me during my absence from=20
->Linux coding
->regarding new p4-clockmod capable CPUs. These are:
+>Then this might get us all sorts of strange results if using=20
+>the IO methods
+>in the acpi-cpufreq driver?
 >
->Intel(R) Celeron(R) M CPU 410
->cpu family      : 6
->model           : 14
->stepping        : 8
->
->Intel(R) CPU T2050 [dualcore?]
->cpu family      : 6
->model           : 14
->stepping        : 8
->flags		: ... est ...
->
->Intel(R) Xeon(TM) CPU @ 2.00 GHz [dualcore?]
->cpu family      : 6
->model           : 14
->stepping        : 8
->flags		: ... est ...
->
->Intel(R) Core(TM)2 CPU [dualcore!]
->cpu family      : 6
->model           : 15
->stepping        : 6
->flags		: ... est ...
->
->
->A few questions to the Intel guys:
->
->- Is the method in pentiumM_get_frequency() for these CPUs?
-May not work and will need change. The bus speed will not be 100 on all
-these CPUs..
+>	Dominik
 
->- Is the p4-clockmod algorithm valid (though mostly useless)=20
->for these CPUs?=20
-Yes.
+Yes. That's why we still use *_guess_freq in IO port path during
+initialization.
 
->- Is the TSC running continuously even if doing=20
->p4-clockmod-type modulation
->  on these CPUs?
-Yes.
-
+Ohh OK. I understand your point. Good catch.
+get_cur_freq_on_cpu() is used in ->get() method for IO port driver.
+It will work OK with get method when previous set transition is
+successful. But, it will give strange result when previous set is not
+successful. Is this the case you were mentioning.=20
 
 Thanks,
 Venki
