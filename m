@@ -1,14 +1,21 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: speedstep-ich issue
-Date: Mon, 2 Oct 2006 04:13:30 +0200
-Message-ID: <20061002021330.GD19253@isilmar.linta.de>
-References: <200609291111.48598.cusmai@gmail.com>
-	<20060929174035.GE13444@inferi.kami.home>
-	<200609292149.42603.cusmai@gmail.com>
+Subject: Re: writing a cpufreq driver
+Date: Mon, 2 Oct 2006 04:19:47 +0200
+Message-ID: <20061002021947.GE19253@isilmar.linta.de>
+References: <20060922153948.GN4945@poupinou.org>
+	<20060922160025.GA4459@dbz.icequake.net>
+	<20060922160514.GQ4945@poupinou.org>
+	<20060922161149.GC4459@dbz.icequake.net>
+	<20060923150751.GR4945@poupinou.org>
+	<20060923152144.GA15964@dbz.icequake.net>
+	<20060923154442.GT4945@poupinou.org>
+	<20060923160335.GB15964@dbz.icequake.net>
+	<20060923161311.GV4945@poupinou.org>
+	<20060925153914.GB1364@dbz.icequake.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200609292149.42603.cusmai@gmail.com>
+In-Reply-To: <20060925153914.GB1364@dbz.icequake.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,20 +28,16 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marco cusmai <cusmai@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Ryan Underwood <nemesis@icequake.net>
+Cc: Cpufreq@lists.linux.org.uk, Bruno Ducrot <ducrot@poupinou.org>
 
-Hi,
+On Mon, Sep 25, 2006 at 10:39:14AM -0500, Ryan Underwood wrote:
+> Interesting that if it were SMI throttling, they would refer to it as
+> "stop clock".  I wonder if anyone can tell us whether STPCLK stops TSC
+> or not.
 
-On Fri, Sep 29, 2006 at 09:49:42PM +0000, Marco cusmai wrote:
-> cat scaling_available_frequencies : 1130500 731500
-> cat scaling_min_freq : 731500
-> cat scaling_max_freq : 731500
+As far as I know, the TSC is usually stopped when triggering STPCLK on an
+"older" CPU. Does the battery run-time increase when you use your driver?
+Then it's doing _something_ , even if we do not know what it does exactly :)
 
-Yes, then it won't scale any more -- the CPU will only be set to a value
-between scaling_min_freq and scaling_max_freq. Therefore, please check the
-configuration file for cpufreqd (or any other cpufreq daemon you're
-running).
-
-Thanks,
 	Dominik
