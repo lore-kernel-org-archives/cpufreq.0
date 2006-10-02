@@ -1,10 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH] cpufreq: Documentation fix
-Date: Mon, 2 Oct 2006 19:26:47 -0400
-Message-ID: <20061002232647.GA10053@dominikbrodowski.de>
+Subject: Re: speedstep-centrino not working with Intel Pentium M 1.73
+Date: Mon, 2 Oct 2006 19:32:26 -0400
+Message-ID: <20061002233226.GF9748@dominikbrodowski.de>
+References: <op.telgsuax8oynmf@mthef.bredband.comhem.se>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <op.telgsuax8oynmf@mthef.bredband.comhem.se>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,23 +19,23 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com
+To: Martin Forsgren <mk0foma@student.chalmers.se>
 Cc: cpufreq@lists.linux.org.uk
 
-Fix reference to where the code actually is. Noted by Hero Wanders.
+Hi,
 
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+On Sun, Aug 20, 2006 at 08:11:08PM +0200, Martin Forsgren wrote:
+> I can run "p4-clockmode" but then I only get maximum 1.3GHz.
+> None of the other cpufreq variants work.
+> 
+> Found a patch for 'dothan'-processors but I don't know
+> wich one that is, or if I can use it on my cpu.
+> http://stefans.datenbruch.de/acerTM292/
 
-diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.txt
-index 29b3f9f..ce0666e 100644
---- a/Documentation/cpu-freq/core.txt
-+++ b/Documentation/cpu-freq/core.txt
-@@ -24,7 +24,7 @@ Contents:
- 1. General Information
- =======================
- 
--The CPUFreq core code is located in linux/kernel/cpufreq.c. This
-+The CPUFreq core code is located in drivers/cpufreq/cpufreq.c. This
- cpufreq code offers a standardized interface for the CPUFreq
- architecture drivers (those pieces of code that do actual
- frequency transitions), as well as to "notifiers". These are device
+No, better not use that one.
+
+Does "modprobe acpi-cpufreq" on a _recent_ kernel (-mm is fine)
+help?
+
+Thanks,
+	Dominik
