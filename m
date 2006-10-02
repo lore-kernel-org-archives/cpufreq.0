@@ -1,8 +1,8 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH 2/8]cpufreq: acpi-cpufreq: reorganize code to make MSR
-	support addition easier
-Date: Mon, 2 Oct 2006 16:04:25 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454ABC262@scsmsx413.amr.corp.intel.com>
+Subject: RE: [PATCH 4/8]cpufreq: acpi-cpufreq: Mark speedstep-centrino ACPI
+	as deprecated
+Date: Mon, 2 Oct 2006 16:06:37 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454ABC267@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -24,40 +24,32 @@ Cc: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>, Dave Jones <dave
 
 >-----Original Message-----
 >From: Dominik Brodowski [mailto:linux@dominikbrodowski.net]=20
->Sent: Sunday, October 01, 2006 5:41 PM
+>Sent: Sunday, October 01, 2006 5:48 PM
 >To: Pallipadi, Venkatesh
 >Cc: Dave Jones; cpufreq; Starikovskiy, Alexey Y
->Subject: Re: [PATCH 2/8]cpufreq: acpi-cpufreq: reorganize code=20
->to make MSR support addition easier
+>Subject: Re: [PATCH 4/8]cpufreq: acpi-cpufreq: Mark=20
+>speedstep-centrino ACPI as deprecated
 >
 >Hi,
 >
->On Sun, Oct 01, 2006 at 07:09:29AM -0700, Venkatesh Pallipadi wrote:
->> +static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
->> +{
->> +	struct acpi_cpufreq_data		*data =3D drv_data[cpu];
->> +	unsigned int				freq;
->> +
->> +	dprintk("get_cur_freq_on_cpu (%d)\n", cpu);
->> +
->> +	if (unlikely(data =3D=3D NULL ||
->> +	             data->acpi_data =3D=3D NULL ||
->> +	             data->freq_table =3D=3D NULL)) {
->> +		return 0;
->>  	}
->> =20
->> -	dprintk("Transition successful after %d=20
->microseconds\n", i * 10);
->> +	freq =3D extract_freq(get_cur_val(cpumask_of_cpu(cpu)), data);
+>>  	help
+>> -	  Use primarily the information provided in the BIOS ACPI tables
+>> +	  This is deprecated and this functionality is now merged into
+>> +	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
+>> +	  speedstep_centrino.
+>> +	  Was used primarily the information provided in the=20
+>BIOS ACPI tables
+>>  	  to determine valid CPU frequency and voltage pairings.
 >
->Does this _finally_ work according to ACPI spec? That you can=20
->determine the
->current frequency this way?
->
+>Even though I'm no expert in the English language, this new=20
+>sentence ("Was
+>used ...") looks a bit strange to me - maybe just leave it=20
+>with "Use" and
+>only add the paragraph above?
 >
 
-Nope. ACPI spec only goes to say you can check whether transitions was
-successful or not by looking at the status.=20
+Agreed that sentence doesn't make any sense. Looks like I was partially
+asleep while editing that config file :(. Will change it in next rev.
 
 Thanks,
 Venki
