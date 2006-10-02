@@ -1,8 +1,8 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH 4/8]cpufreq: acpi-cpufreq: Mark speedstep-centrino ACPI
-	as deprecated
-Date: Mon, 2 Oct 2006 16:06:37 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454ABC267@scsmsx413.amr.corp.intel.com>
+Subject: RE: [PATCH 6/8]cpufreq: acpi-cpufreq: Eliminate get of current freq
+	on notification
+Date: Mon, 2 Oct 2006 16:16:37 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454ABC281@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -24,32 +24,54 @@ Cc: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>, Dave Jones <dave
 
 >-----Original Message-----
 >From: Dominik Brodowski [mailto:linux@dominikbrodowski.net]=20
->Sent: Sunday, October 01, 2006 5:48 PM
+>Sent: Sunday, October 01, 2006 5:52 PM
 >To: Pallipadi, Venkatesh
 >Cc: Dave Jones; cpufreq; Starikovskiy, Alexey Y
->Subject: Re: [PATCH 4/8]cpufreq: acpi-cpufreq: Mark=20
->speedstep-centrino ACPI as deprecated
+>Subject: Re: [PATCH 6/8]cpufreq: acpi-cpufreq: Eliminate get=20
+>of current freq on notification
 >
 >Hi,
 >
->>  	help
->> -	  Use primarily the information provided in the BIOS ACPI tables
->> +	  This is deprecated and this functionality is now merged into
->> +	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
->> +	  speedstep_centrino.
->> +	  Was used primarily the information provided in the=20
->BIOS ACPI tables
->>  	  to determine valid CPU frequency and voltage pairings.
+>On Sun, Oct 01, 2006 at 07:15:45AM -0700, Venkatesh Pallipadi wrote:
+>> Only change the frequency if the state previously set is different
+>> from what we are trying to set. We don't really have to get=20
+>the current
+>> frequency at this point.
 >
->Even though I'm no expert in the English language, this new=20
->sentence ("Was
->used ...") looks a bit strange to me - maybe just leave it=20
->with "Use" and
->only add the paragraph above?
+>What if it changed behind our back? Shouldn't happen, I know,=20
+>but it does
+>happen.
 >
+>	Dominik
 
-Agreed that sentence doesn't make any sense. Looks like I was partially
-asleep while editing that config file :(. Will change it in next rev.
+Yes. It happens and it can happen more often with multi-core CPUs which
+has hardware coordination set up. Changing frequency on one CPU can
+affect other CPU in the same package. But, changing frequency behind the
+back does not matter on recent CPUs, as TSC is constant across P-state.
+Also, depending on frequency that changes behind the back is not good.
+If something changed behind the back, it will also later revert back to
+original state in the same way. So, if we get current frequency in
+between and take some decision based on that, will be bad.
+Example:
+- User has set the frequency to P0.
+- TM2 kicks in and reduces the frequency to P3 state.
+- Now user wants to reduce the frequency to P3 (This is the point where
+above current freq was being checked).
+- At this time, we can do two things
+Option 1)
+- Get the current frequency and see that we are in P3.
+- Do not change the frequency as per user request.
+- Now once TM2 event goes away (temperature is under control), CPU goes
+back to P0, which was original user set state.
+
+Option 2)
+- Look at what user had set previously (P0) and set the state to P3
+(even though we are in that state due to P3).
+- Now once TM2 event goes away (temperature is under control), CPU goes
+back to last user set state in this case P3.
+
+Option 2 is what is ideal and the patch does it that way. Same example
+as above can happen with hardware coordination as well.
 
 Thanks,
 Venki
