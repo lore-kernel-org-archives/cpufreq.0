@@ -1,8 +1,8 @@
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 1/8]cpufreq:acpi-cpufreq: software coordination and handle
-	all CPUs in the group
-Date: Tue, 3 Oct 2006 12:27:10 -0700
-Message-ID: <20061003122710.A31577@unix-os.sc.intel.com>
+Subject: [PATCH 3/8]cpufreq:acpi-cpufreq: Pull in MSR based transition
+	support
+Date: Tue, 3 Oct 2006 12:33:14 -0700
+Message-ID: <20061003123314.A31827@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
@@ -22,92 +22,282 @@ To: Dave Jones <davej@redhat.com>
 Cc: cpufreq <cpufreq@www.linux.org.uk>
 
 
-This patchset has refresh/rebase of a bunch of patches/bugfixes related to
-acpi-cpufreq that were sent earlier on this list.
-
-patch 1/8 
- Patch that fixes a bug in swcoordination code in acpi-cpufreq
-
-patch 2/8 through patch 7/8
- Grand unification of ACPI based speedstep-centrino and acpi-cpufreq drivers.
-
- ACPI allows P-state transitions in multiple ways. Like using IO ports or using
- processor native method (MSR). Without this patch, IO port based P-state
- transitions are handled in acpi-cpufreq driver and MSR based transitions on
- Intel CPUs are handled in speedstep-centrino driver. Even though most of the
- code in these two drivers should be similar, except for final changing/checking
- of frequency (one driver does it using IO port and other does it through
- MSR), we have duplicated code in these two drivers. There are also issues
- around BIOSes supporting both MSR and IO port and which driver should be
- loaded first in standard installations.
-
- The patchset combines functionality of these two driver into acpi-cpufreq
- driver. ACPI based functionality in speedstep-centrino is marked deprecated
- and will be removed in future. speedstep-centrino will continue to work
- on systems that depend on older non-ACPI table based P-state chanes.
-
- * 2/8 - Patch that reorganizes the code in acpi-cpufreq, cleaning it up
- a little and making it easier to add MSR support later.
- * 3/8 - Pull in the MSR based transition support into acpi-cpufreq.
- * 4/8 - Mark speedstep-centrino deprecated. Change the order in Makefile to
- load acpi-cpufreq first and speedstep-centrino later, in cases where both
- are configured in.
- * 5/8 - lindent acpi-cpufreq.c
- * 6/8 - Minor change to eliminate the check of current frequency on
- notifications. We can use last set frequency instead.
- * 7/8 - Make cpufreq->get of acpi_cpufreq work correctly again.
-
- There will be a patch in future that removes ACPI based support in
- speedstep-centrino in coming months.
-
-patch 8/8
-Add support for IA32_APERF and IA32_MPERF MSR and get the actual frequency
-from these MSRs and use it to determine the next frequency target in ondemand
-governor
-
-
-This patch:
-There is a bug in software coordination patch in acpi-cpufreq, due to which 
-frequency will only be set on first CPU of any coordinated group. 
-Bug identified by Denis, was not recognised earlier as there are no platforms 
-yet that use software coordination with acpi-cpufreq driver.
+Add in the support for Intel Enhanced Speedstep - MSR based transitions.
+With this change, the ACPI based support in speedstep-centrino can be
+deprecated and duplicate code in that driver can be marked for removal.
+Much easier to maintain and support this way. This also reduces the
+user misconfigurations and questions on which driver is to be used
+under which CPUs to support Enhanced Speedstep.
 
 Signed-off-by: Denis Sadykov <denis.m.sadykov@intel.com>
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
 
 Index: linux-2.6.18/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
 ===================================================================
 --- linux-2.6.18.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
 +++ linux-2.6.18/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -197,6 +197,7 @@ acpi_cpufreq_target (
- 	unsigned int relation)
+@@ -39,6 +39,7 @@
+ #include <acpi/processor.h>
+ 
+ #include <asm/io.h>
++#include <asm/msr.h>
+ #include <asm/processor.h>
+ #include <asm/cpufeature.h>
+ #include <asm/delay.h>
+@@ -51,10 +52,19 @@ MODULE_DESCRIPTION("ACPI Processor P-Sta
+ MODULE_LICENSE("GPL");
+ 
+ 
++enum {
++	UNDEFINED_CAPABLE = 0,
++	SYSTEM_INTEL_MSR_CAPABLE,
++	SYSTEM_IO_CAPABLE,
++};
++
++#define INTEL_MSR_RANGE		(0xffff)
++
+ struct acpi_cpufreq_data {
+ 	struct acpi_processor_performance	*acpi_data;
+ 	struct cpufreq_frequency_table		*freq_table;
+ 	unsigned int				resume;
++	unsigned int				cpu_feature;
+ };
+ 
+ static struct acpi_cpufreq_data	*drv_data[NR_CPUS];
+@@ -64,7 +74,20 @@ static struct cpufreq_driver acpi_cpufre
+ 
+ static unsigned int acpi_pstate_strict;
+ 
+-static unsigned extract_freq(u32 value, struct acpi_cpufreq_data *data)
++
++static int check_est_cpu(unsigned int cpuid)
++{
++	struct cpuinfo_x86 *cpu = &cpu_data[cpuid];
++
++	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
++			!cpu_has(cpu, X86_FEATURE_EST))
++		return 0;
++
++	return 1;
++}
++
++
++static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
  {
- 	struct cpufreq_acpi_io *data = acpi_io_data[policy->cpu];
-+	struct cpufreq_acpi_io *cpudata;
- 	struct acpi_processor_performance *perf;
- 	struct cpufreq_freqs freqs;
- 	cpumask_t online_policy_cpus;
-@@ -260,7 +261,8 @@ acpi_cpufreq_target (
- 			break;
+ 	struct acpi_processor_performance       *perf;
+ 	int                                     i;
+@@ -79,6 +102,31 @@ static unsigned extract_freq(u32 value, 
+ }
+ 
+ 
++static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
++{
++	int i;
++
++	msr &= INTEL_MSR_RANGE;
++	for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
++		if (msr == data->freq_table[i].index)
++			return data->freq_table[i].frequency;
++	}
++	return data->freq_table[0].frequency;
++}
++
++
++static unsigned extract_freq(u32 val, struct acpi_cpufreq_data *data)
++{
++	switch (data->cpu_feature) {
++	    case SYSTEM_INTEL_MSR_CAPABLE:
++		return extract_msr(val, data);
++	    case SYSTEM_IO_CAPABLE:
++		return extract_io(val, data);
++	    default:
++		return 0;
++	}
++}
++
+ static void wrport(u16 port, u8 bit_width, u32 value)
+ {
+ 	if (bit_width <= 8) {
+@@ -102,27 +150,57 @@ static void rdport(u16 port, u8 bit_widt
+ 	}
+ }
+ 
++struct msr_addr {
++	u32 reg;
++};
++
+ struct io_addr {
+ 	u16 port;
+ 	u8 bit_width;
+ };
+ 
++typedef union {
++	struct msr_addr msr;
++	struct io_addr io;
++} drv_addr_union;
++
+ struct drv_cmd {
++	unsigned int type;
+ 	cpumask_t mask;
+-	struct io_addr addr;
++	drv_addr_union addr;
+ 	u32 val;
+ };
+ 
+ static void do_drv_read(struct drv_cmd *cmd)
+ {
+-	rdport(cmd->addr.port, cmd->addr.bit_width, &cmd->val);
+-	return;
++	u32 h;
++
++	switch (cmd->type) {
++	    case SYSTEM_INTEL_MSR_CAPABLE:
++		rdmsr(cmd->addr.msr.reg, cmd->val, h);
++		break;
++	    case SYSTEM_IO_CAPABLE:
++		rdport(cmd->addr.io.port, cmd->addr.io.bit_width, &cmd->val);
++		break;
++	    default:
++		break;
++	}
+ }
+ 
+ static void do_drv_write(struct drv_cmd *cmd)
+ {
+-	wrport(cmd->addr.port, cmd->addr.bit_width, cmd->val);
+-	return;
++	u32 h = 0;
++
++	switch (cmd->type) {
++	    case SYSTEM_INTEL_MSR_CAPABLE:
++		wrmsr(cmd->addr.msr.reg, cmd->val, h);
++		break;
++	    case SYSTEM_IO_CAPABLE:
++		wrport(cmd->addr.io.port, cmd->addr.io.bit_width, cmd->val);
++		break;
++	    default:
++		break;
++	}
+ }
+ 
+ static inline void drv_read(struct drv_cmd *cmd)
+@@ -158,9 +236,21 @@ static u32 get_cur_val(cpumask_t mask)
+ 	if (unlikely(cpus_empty(mask)))
+ 		return 0;
+ 
+-	perf = drv_data[first_cpu(mask)]->acpi_data;
+-	cmd.addr.port = perf->control_register.address;
+-	cmd.addr.bit_width = perf->control_register.bit_width;
++	switch (drv_data[first_cpu(mask)]->cpu_feature) {
++	case SYSTEM_INTEL_MSR_CAPABLE:
++		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
++		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
++		break;
++	case SYSTEM_IO_CAPABLE:
++		cmd.type = SYSTEM_IO_CAPABLE;
++		perf = drv_data[first_cpu(mask)]->acpi_data;
++		cmd.addr.io.port = perf->control_register.address;
++		cmd.addr.io.bit_width = perf->control_register.bit_width;
++		break;
++	default:
++		return 0;
++	}
++
+ 	cmd.mask = mask;
+ 
+ 	drv_read(&cmd);
+@@ -213,6 +303,7 @@ static int acpi_cpufreq_target(struct cp
+ 	struct cpufreq_freqs			freqs;
+ 	cpumask_t				online_policy_cpus;
+ 	struct drv_cmd				cmd;
++	unsigned int				msr;
+ 	unsigned int				next_state = 0;
+ 	unsigned int				next_perf_state = 0;
+ 	unsigned int				i;
+@@ -256,9 +347,22 @@ static int acpi_cpufreq_target(struct cp
  		}
+ 	}
  
--		result = acpi_processor_set_performance (data, j, next_state);
-+		cpudata = acpi_io_data[j];
-+		result = acpi_processor_set_performance(cpudata, j, next_state);
- 		if (result) {
- 			result = -EAGAIN;
- 			break;
-@@ -287,8 +289,11 @@ acpi_cpufreq_target (
+-	cmd.addr.port = perf->control_register.address;
+-	cmd.addr.bit_width = perf->control_register.bit_width;
+-	cmd.val = (u32) perf->states[next_perf_state].control;
++ 	switch (data->cpu_feature) {
++ 	    case SYSTEM_INTEL_MSR_CAPABLE:
++ 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
++ 		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
++		msr = (u32) perf->states[next_perf_state].control & INTEL_MSR_RANGE;
++ 		cmd.val = (cmd.val & ~INTEL_MSR_RANGE) | msr;
++ 		break;
++ 	    case SYSTEM_IO_CAPABLE:
++ 		cmd.type = SYSTEM_IO_CAPABLE;
++ 		cmd.addr.io.port = perf->control_register.address;
++ 		cmd.addr.io.bit_width = perf->control_register.bit_width;
++ 		cmd.val = (u32) perf->states[next_perf_state].control;
++ 		break;
++ 	    default:
++ 		return -ENODEV;
++ 	}
  
- 		if (!cpus_empty(covered_cpus)) {
- 			for_each_cpu_mask(j, covered_cpus) {
--				policy->cpu = j;
--				acpi_processor_set_performance (data, 
-+				cpus_clear(set_mask);
-+				cpu_set(j, set_mask);
-+				set_cpus_allowed(current, set_mask);
-+				cpudata = acpi_io_data[j];
-+				acpi_processor_set_performance(cpudata,
- 						j, 
- 						cur_state);
- 			}
+ 	cpus_clear(cmd.mask);
+ 
+@@ -405,6 +509,7 @@ acpi_cpufreq_cpu_init (
+ 	unsigned int			valid_states = 0;
+ 	unsigned int			cpu = policy->cpu;
+ 	struct acpi_cpufreq_data	*data;
++	unsigned int			l, h;
+ 	unsigned int			result = 0;
+ 	struct cpuinfo_x86 		*c = &cpu_data[policy->cpu];
+ 	struct acpi_processor_performance	*perf;
+@@ -463,6 +568,15 @@ acpi_cpufreq_cpu_init (
+ 	switch (perf->control_register.space_id) {
+ 	    case ACPI_ADR_SPACE_SYSTEM_IO:
+ 		dprintk("SYSTEM IO addr space\n");
++		data->cpu_feature = SYSTEM_IO_CAPABLE;
++		break;
++	    case ACPI_ADR_SPACE_FIXED_HARDWARE:
++		dprintk("HARDWARE addr space\n");
++		if (!check_est_cpu(cpu)) {
++			result = -ENODEV;
++			goto err_unreg;
++		}
++		data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
+ 		break;
+ 	    default:
+ 		dprintk("Unknown addr space %d\n",
+@@ -485,9 +599,6 @@ acpi_cpufreq_cpu_init (
+ 	}
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 
+-	/* The current speed is unknown and not detectable by ACPI...  */
+-	policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
+-
+ 	/* table init */
+ 	for (i=0; i<perf->state_count; i++)
+ 	{
+@@ -507,6 +618,18 @@ acpi_cpufreq_cpu_init (
+ 		goto err_freqfree;
+ 	}
+ 
++	switch (data->cpu_feature) {
++	    case ACPI_ADR_SPACE_SYSTEM_IO:
++		/* Current speed is unknown and not detectable by IO port */
++		policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
++		break;
++	    case ACPI_ADR_SPACE_FIXED_HARDWARE:
++		get_cur_freq_on_cpu(cpu);
++		break;
++	    default:
++		break;
++	}
++
+ 	/* notify BIOS that we exist */
+ 	acpi_processor_notify_smm(THIS_MODULE);
+ 
+@@ -599,7 +722,7 @@ acpi_cpufreq_init (void)
+ 
+ 	acpi_cpufreq_early_init();
+ 
+-	return cpufreq_register_driver(&acpi_cpufreq_driver);
++ 	return cpufreq_register_driver(&acpi_cpufreq_driver);
+ }
