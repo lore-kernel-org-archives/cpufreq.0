@@ -1,14 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Frequency changes for XScale PXA255
-Date: Mon, 2 Oct 2006 20:23:47 -0400
-Message-ID: <20061003002346.GH9748@dominikbrodowski.de>
-References: <b6cb966c0607060232k40b87efrd51c9bbdbaf8a105@mail.gmail.com>
-	<20060706160859.GA5441@isilmar.linta.de>
-	<b6cb966c0607061009o64a6a47dnaa996219f6984c2e@mail.gmail.com>
+Subject: Re: Race in cpufreq_add_dev()?
+Date: Mon, 2 Oct 2006 20:27:38 -0400
+Message-ID: <20061003002738.GI9748@dominikbrodowski.de>
+References: <44AD6609.1080604@goop.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <b6cb966c0607061009o64a6a47dnaa996219f6984c2e@mail.gmail.com>
+In-Reply-To: <44AD6609.1080604@goop.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,45 +19,28 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Miroslav Vasic <miroslav.vasic@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: cpufreq@lists.linux.org.uk
 
-Hi,
-
-Sorry for not getting back to you earlier. What's the status of your
-modules? A few comments:
-
-On Thu, Jul 06, 2006 at 07:09:01PM +0200, Miroslav Vasic wrote:
-> static int pxa_set_target(struct cpufreq_policy *policy,
->                 unsigned int target_freq,
->                 unsigned int relation)
-> {
->    /*
->     * Bind to the specified CPU.  When this call returns,
->     * we should be running on the right CPU.
->     */
->    set_cpus_allowed(current, cpumask_of_cpu(cpu));
->    BUG_ON(cpu != smp_processor_id());
-
-You don't need to do that this early -- the next few instructions can still
-be run on any CPU.
+On Thu, Jul 06, 2006 at 12:35:37PM -0700, Jeremy Fitzhardinge wrote:
+> cpufreq_add_dev contains the test:
 > 
->    /* Get the current policy */
->    pxa_select_freq_table(policy, &pxa_freq_settings, &pxa_freqs_table);
+> #ifdef CONFIG_SMP
+> 	/* check whether a different CPU already registered this
+> 	 * CPU because it is in the same boat. */
+> 	policy = cpufreq_cpu_get(cpu);
+> 	if (unlikely(policy)) {
+> 		cpufreq_cpu_put(policy);
+> 		cpufreq_debug_enable_ratelimit();
+> 		return 0;
+> 	}
+> #endif
 > 
->    /* Lookup the next frequency */
->    if (cpufreq_frequency_table_target(policy, pxa_freqs_table,
->                                       target_freq, relation, &idx)) {
->        return -EINVAL;
->    }
+> I don't see what prevents two CPUs from racing through here.  Both could 
+> perform this test and find that there's no policy for the CPU, and then 
+> both will attempt to add it.  Or is there something else which 
+> serializes multiple CPUs through this code?
 
-up to exactly here. Unless get-clk_frequency_khz(0) means "let's ask for the
-speed of CPU 0", then this code is even more broken. It is broken, BTW, for
-it does no error handling (i.e. resetting set_cups_allowed().)
-
->    printk(KERN_INFO "The first notify_transition \n");
->    cpufreq_notify_transition1(&freqs, CPUFREQ_PRECHANGE);
-			      ^
-artifact or part of the code?
+AFAICS it is protected by sysdev_drivers_lock.
 
 	Dominik
