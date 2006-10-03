@@ -1,12 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: new p4-clockmod capable CPUs
-Date: Mon, 2 Oct 2006 21:28:12 -0400
-Message-ID: <20061003012812.GA10059@dominikbrodowski.de>
-References: <EB12A50964762B4D8111D55B764A8454ABC291@scsmsx413.amr.corp.intel.com>
+From: "Martin Forsgren" <mk0foma@student.chalmers.se>
+Subject: Re: speedstep-centrino not working with Intel Pentium M 1.73
+Date: Tue, 03 Oct 2006 13:52:33 +0200
+Message-ID: <op.tguglvpx8oynmf@mthef.bredband.comhem.se>
+References: <op.telgsuax8oynmf@mthef.bredband.comhem.se>
+	<20061002233226.GF9748@dominikbrodowski.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454ABC291@scsmsx413.amr.corp.intel.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20061002233226.GF9748@dominikbrodowski.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,22 +17,45 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; format="flowed"; delsp="yes"; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
 
-Hi,
+Den 2006-10-03 01:32:26 skrev Dominik Brodowski  
+<linux@dominikbrodowski.net>:
 
-On Mon, Oct 02, 2006 at 04:23:17PM -0700, Pallipadi, Venkatesh wrote:
-> >- Is the method in pentiumM_get_frequency() for these CPUs?
-> May not work and will need change. The bus speed will not be 100 on all
-> these CPUs..
+> Hi,
+>
+> On Sun, Aug 20, 2006 at 08:11:08PM +0200, Martin Forsgren wrote:
+>> I can run "p4-clockmode" but then I only get maximum 1.3GHz.
+>> None of the other cpufreq variants work.
+>>
+>> Found a patch for 'dothan'-processors but I don't know
+>> wich one that is, or if I can use it on my cpu.
+>> http://stefans.datenbruch.de/acerTM292/
+>
+> No, better not use that one.
+>
+> Does "modprobe acpi-cpufreq" on a _recent_ kernel (-mm is fine)
+> help?
+>
+> Thanks,
+> 	Dominik
 
-What's the register to look at, and the values? Can't find anything in
-245472-012, unfortunately, which would help me for this...
+This ive tested:
+
+	kernel 2.6.17-11 ( patched for reiser4-for-2.6.17-3.patch.gz )
+	acpi-cpufreq works but not speedstep-centrino
+
+	linux-image-2.6.18-rc4-mm1
+	only p4-clockmode works, maximum 1.3GHz
+
+Any special combination you want me to try?
+Got a Pentium-M 1.73.
+
+Is there any difference between acpi-cpufreq and speedstep-centrino?
+Someone wrote that its almost only voltage scaling that lower energy
+consumtion. Is it right and does acpi-cpufreq this?
 
 Thanks,
-
-	Dominik
+  Martin Forsgren
