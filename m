@@ -1,14 +1,10 @@
-From: v+cpufreq@iki.fi
-Subject: Re: Intel Core 2 T6600 (Conroe): Unknown p4-clockmod-capable
-	CPU.Please send an e-mail to <linux@brodo.de>
-Date: Fri, 6 Oct 2006 21:29:01 +0300
-Message-ID: <20061006182900.GI23144@vianova.fi>
-References: <EB12A50964762B4D8111D55B764A8454B2E105@scsmsx413.amr.corp.intel.com>
-Reply-To: vherva@vianova.fi
+From: Luca <morpheus@ferrara.linux.it>
+Subject: Cpufreq on kernel 2.6.18
+Date: Fri, 6 Oct 2006 22:01:01 +0200
+Message-ID: <20061006220101.722689c2.morpheus@ferrara.linux.it>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454B2E105@scsmsx413.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,41 +15,49 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@lists.linux.org.uk
 
-On Fri, Oct 06, 2006 at 07:32:44AM -0700, you [Pallipadi, Venkatesh] wrote:
-> 
-> >p4-clockmod-capable CPU.Please send an e-mail to <linux@brodo.de>
-> >
-> >You are probably getting a ton of these, but I did try to 
-> >search google,
-> >lkml, cpufreq-git and this mailing list and came up with 
-> >nothing. So perhaps
-> >you can point me to right direction, or ack that Core2 is not (yet)
-> >supported?
-> 
-> P4-clockmod is not the right driver that you should be using here.. 
-> If you are using 2.6.18, 
+Hello,
+I just updated the kernel from 2.6.15.2 to 2.6.18 and the frequency scaling=
+ of my Centrinlo Laptop stopped working (keeping the same configuration).
+The dir /sys/devices/system/cpu/cpu0/ is empty and I don't know which other=
+ tests I could make.
+I also tried to move CONFIG_X86_ACPI_CPUFREQ from builtin to module: loadin=
+g the module does not give any information nor any error.
+I need 2.6.18 for other drivers, so it would be really nice if I could solv=
+e this problem that seems to be the only driver that's not working properly=
+ (and my battery would be much happier :) )
+If you need more informations just tell me.
 
-2.6.18-rc7. Sorry I forgot to mention.
+Bests,
+	Luca.
 
-> use both acpi-cpufreq and speedstep-centrino 
-> and one of them work.
-> This is what you need in your config
-> CONFIG_X86_ACPI_CPUFREQ=y
-> >   CONFIG_X86_SPEEDSTEP_CENTRINO=y
-> >   CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
-> CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI=y
 
-Ok, that works. 
+my cpu is:
 
-I actually had that in my config (CONFIG_X86_ACPI_CPUFREQ=m though) and the
-module loaded, but I guess CONFIG_X86_P4_CLOCKMOD=y occluded it, since
-CONFIG_X86_SPEEDSTEP_CENTRINO never took over. 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 13
+model name      : Intel(R) Pentium(R) M processor 1.73GHz
+stepping        : 8
+cpu MHz         : 1729.621
+cache size      : 2048 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca =
+cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx est tm2
+bogomips        : 3462.49
 
-With CONFIG_X86_SPEEDSTEP_CENTRINO=n, I got the cpufreq working, and the box
-is satisfyingly silent.
 
-Thanks!
+--=20
+       .-------------------------------------.
+  -=3D<(=A7  Luca <morpheus AT ferrara.linux.it>  =A7)>=3D-
+       =B0-------------------------------------=B0
