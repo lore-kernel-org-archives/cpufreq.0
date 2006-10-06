@@ -1,11 +1,14 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Cpufreq on kernel 2.6.18
-Date: Fri, 6 Oct 2006 16:08:22 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454B2E59D@scsmsx413.amr.corp.intel.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: speedstep-centrino not working with Intel Pentium M 1.73
+Date: Fri, 6 Oct 2006 19:48:09 -0400
+Message-ID: <20061006234809.GB7751@dominikbrodowski.de>
+References: <op.telgsuax8oynmf@mthef.bredband.comhem.se>
+	<20061002233226.GF9748@dominikbrodowski.de>
+	<op.tguglvpx8oynmf@mthef.bredband.comhem.se>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <op.tguglvpx8oynmf@mthef.bredband.comhem.se>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,34 +20,52 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Luca <morpheus@ferrara.linux.it>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Martin Forsgren <mk0foma@student.chalmers.se>
+Cc: cpufreq@lists.linux.org.uk
 
-=20
+Hi,
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Luca
->Sent: Friday, October 06, 2006 1:01 PM
->To: cpufreq@lists.linux.org.uk
->Subject: Cpufreq on kernel 2.6.18
->
->Hello,
->I just updated the kernel from 2.6.15.2 to 2.6.18 and the=20
->frequency scaling of my Centrinlo Laptop stopped working=20
->(keeping the same configuration).
->The dir /sys/devices/system/cpu/cpu0/ is empty and I don't=20
->know which other tests I could make.
->I also tried to move CONFIG_X86_ACPI_CPUFREQ from builtin to=20
->module: loading the module does not give any information nor any error.
->I need 2.6.18 for other drivers, so it would be really nice if=20
->I could solve this problem that seems to be the only driver=20
->that's not working properly (and my battery would be much happier :) )
->If you need more informations just tell me.
->
+On Tue, Oct 03, 2006 at 01:52:33PM +0200, Martin Forsgren wrote:
+> Den 2006-10-03 01:32:26 skrev Dominik Brodowski  
+> <linux@dominikbrodowski.net>:
+> 
+> >Hi,
+> >
+> >On Sun, Aug 20, 2006 at 08:11:08PM +0200, Martin Forsgren wrote:
+> >>I can run "p4-clockmode" but then I only get maximum 1.3GHz.
+> >>None of the other cpufreq variants work.
+> >>
+> >>Found a patch for 'dothan'-processors but I don't know
+> >>wich one that is, or if I can use it on my cpu.
+> >>http://stefans.datenbruch.de/acerTM292/
+> >
+> >No, better not use that one.
+> >
+> >Does "modprobe acpi-cpufreq" on a _recent_ kernel (-mm is fine)
+> >help?
+> >
+> >Thanks,
+> >	Dominik
+> 
+> This ive tested:
+> 
+> 	kernel 2.6.17-11 ( patched for reiser4-for-2.6.17-3.patch.gz )
+> 	acpi-cpufreq works but not speedstep-centrino
+> 
+> 	linux-image-2.6.18-rc4-mm1
+> 	only p4-clockmode works, maximum 1.3GHz
+> 
+> Any special combination you want me to try?
+> Got a Pentium-M 1.73.
+> 
+> Is there any difference between acpi-cpufreq and speedstep-centrino?
+> Someone wrote that its almost only voltage scaling that lower energy
+> consumtion. Is it right and does acpi-cpufreq this?
 
-Can you enable CPU_FREQ_DEBUG in your config and pass =
-"cpufreq.debug=3D3"
-in kernel parameter and send in the dmesg log.
+Mostly. Yes, only speedstep-centrino and acpi-cpufreq tend to lower voltage,
+but not p4-clockmod. Yes, only speedstep-centrino and acpi-cpufreq lower
+energy consumtion under normal circumstances. So you really want to use
+acpi-cpufreq in this case.
 
-Thanks,
-Venki
+	Dominik
