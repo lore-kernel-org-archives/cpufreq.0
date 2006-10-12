@@ -1,11 +1,10 @@
-From: "Johannes Petersson" <my_reflection@hotmail.com>
-Subject: Re: Core 2 Duo Merom speedstep on 2.6.18
-Date: Tue, 10 Oct 2006 14:20:46 +0200
-Message-ID: <BAY18-F136A91B2D63533BBF7A12883170@phx.gbl>
-References: <452B82B4.6020607@linux.intel.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Strange entries in /proc/acpi/thermal_zone for Thinkpad X60
+Date: Thu, 12 Oct 2006 15:19:40 -0700
+Message-ID: <452EBF7C.3000409@goop.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <452B82B4.6020607@linux.intel.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,158 +14,67 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; format=flowed; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: alexey_y_starikovskiy@linux.intel.com
-Cc: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Brown, Len" <len.brown@intel.com>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: cpufreq@lists.linux.org.uk, acpi-devel@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi, thank you for your answer
+I have a Thinkpad X60 with an Intel Core Duo T2400.  In 
+/proc/acpi/thermal_zone, I'm getting two subdirectories, each with their 
+own set of files:
 
-I was guessing that it worked properly, cause I've got a wattmeter and 
-during idle it shows about 53 watts and with two instances of burnP6 it goes 
-upp to 84 watts with the acpi_cpufreq loaded. And when I don't have acpi_cpu 
-freq loaded /proc/cpuinfo shows the correct 2 Ghz but the computer still 
-draws the same 53 watts in idle and 84 watts with burnP6.
+/proc/acpi/thermal_zone/THM0/cooling_mode:
+<setting not supported>
+cooling mode:   critical
 
-I've also been experimenting with the DSDT of the bios and when I compiled 
-it with the iasl compiler from intel it gave me 3 errors which I corrected 
-but that didn't help much for this problem.
+/proc/acpi/thermal_zone/THM0/polling_frequency:
+<polling disabled>
 
-What I was hoping for is that I could use the speedstep_centrino module and 
-that it didn't get its frequencies from the bios.
+/proc/acpi/thermal_zone/THM0/state:
+state:                   ok
 
-But for now, until I can get MSI to give me an update to their bios for the 
-Speedster mainboard I have to be happy that it's just the wrong numbers 
-that's beeing reported.
+/proc/acpi/thermal_zone/THM0/temperature:
+temperature:             53 C
 
-Sincerely,
-  Johannes Petersson
+/proc/acpi/thermal_zone/THM0/trip_points:
+critical (S5):           127 C
 
 
->From: Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
->To: Johannes Petersson <my_reflection@hotmail.com>
->CC: cpufreq@lists.linux.org.uk
->Subject: Re: Core 2 Duo Merom speedstep on 2.6.18
->Date: Tue, 10 Oct 2006 15:23:32 +0400
->
->Hi Johannes,
->acpi_cpufreq gets its frequencies from ACPI tables exported by BIOS,
->so if you see wrong values -- it's BIOS bug, try to get proper BIOS
->from your notebook/mainboard vendor.
->On the other hand, lowest freq for Pentium M derivatives is 6 * FSB.
->So either your BIOS set FSB to 100Mhz, or it forget to change FSB freq for
->Merom (should be 166Mhz) -> 1200*1.66 => 2000 you are looking for.
->This means that cpufreq framework is working properly even if you don't see
->right numbers.
->
->Anyway, update your BIOS! :)
->
->Regards,
->	Alex.
->
->Johannes Petersson wrote:
-> > Hello
-> >
-> > I've been struggling a while to get speedstepping to work correctly on a
-> > Core 2 Duo T7200 2Ghz (merom) processor with the 2.6.18 kernel. First I
-> > tried it on the 2.6.15.27 kernel, then I got recommended to try the
-> > 2.6.18 but I have the same problem on the latter kernel as well.
-> >
-> > With the acpi-cpufreq module everything seems to work, the
-> > /sys/devices/system/cpu/cpu0(1)/cpufreq/
-> > folders gets populated but the thing is that the
-> > scaling_available_frequencies file only contains the following available
-> > speedstepping frequenzies:
-> > 1200000 1000000 800000 600000
-> > And the cpuinfo_max_freq only contains:
-> > 1200000
-> > Which is not true, the processor has a max speed of 2 Ghz.
-> >
-> > When I start two burnP6 instances the processor scales from 600000 to
-> > 1200000 according to the scaling_cur_freq file.
-> >
-> > If I instead try to load the speedstep-centrino module I get the
-> > following errors:
-> > modprobe -v speedstep-centrino
-> > insmod
-> > 
->/lib/modules/2.6.18-686/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko
-> >
-> > FATAL: Error inserting speedstep_centrino
-> > 
->(/lib/modules/2.6.18-686/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko):
-> > No such device
-> >
-> > But from what I read in the archives the speedstep-centrino is
-> > deprecated and all its functionallity is included in acpi-cpufreq in the
-> > 2.6.18 kernel.
-> >
-> > So is there anyone that has a solution to get a C2D Merom T7200
-> > processor to speedstep up to it's full speed??
-> >
-> > Here is /proc/cpuinfo during full load, this also shows 1.2 GHz
-> >
-> > processor    : 0
-> > vendor_id    : GenuineIntel
-> > cpu family    : 6
-> > model        : 15
-> > model name    : Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
-> > stepping    : 6
-> > cpu MHz        : 1200.000
-> > cache size    : 4096 KB
-> > physical id    : 0
-> > siblings    : 2
-> > core id        : 0
-> > cpu cores    : 2
-> > fdiv_bug    : no
-> > hlt_bug        : no
-> > f00f_bug    : no
-> > coma_bug    : no
-> > fpu        : yes
-> > fpu_exception    : yes
-> > cpuid level    : 10
-> > wp        : yes
-> > flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> > constant_tsc pni monitor ds_cpl vmx est tm2 cx16 xtpr lahf_lm
-> > bogomips    : 3986.98
-> >
-> > processor    : 1
-> > vendor_id    : GenuineIntel
-> > cpu family    : 6
-> > model        : 15
-> > model name    : Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
-> > stepping    : 6
-> > cpu MHz        : 1200.000
-> > cache size    : 4096 KB
-> > physical id    : 0
-> > siblings    : 2
-> > core id        : 1
-> > cpu cores    : 2
-> > fdiv_bug    : no
-> > hlt_bug        : no
-> > f00f_bug    : no
-> > coma_bug    : no
-> > fpu        : yes
-> > fpu_exception    : yes
-> > cpuid level    : 10
-> > wp        : yes
-> > flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> > cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
-> > constant_tsc pni monitor ds_cpl vmx est tm2 cx16 xtpr lahf_lm
-> > bogomips    : 3983.93
-> >
-> > _________________________________________________________________
-> > Express yourself instantly with MSN Messenger! Download today it's FREE!
-> > http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
-> >
-> >
-> > _______________________________________________
-> > Cpufreq mailing list
-> > Cpufreq@lists.linux.org.uk
-> > http://lists.linux.org.uk/mailman/listinfo/cpufreq
+/proc/acpi/thermal_zone/THM1/cooling_mode:
+<setting not supported>
+cooling mode:   passive
 
-_________________________________________________________________
-FREE pop-up blocking with the new MSN Toolbar - get it now! 
-http://toolbar.msn.click-url.com/go/onm00200415ave/direct/01/
+/proc/acpi/thermal_zone/THM1/polling_frequency:
+<polling disabled>
+
+/proc/acpi/thermal_zone/THM1/state:
+state:                   ok
+
+/proc/acpi/thermal_zone/THM1/temperature:
+temperature:             53 C
+
+/proc/acpi/thermal_zone/THM1/trip_points:
+critical (S5):           97 C
+passive:                 93 C: tc1=5 tc2=4 tsp=600 devices=0xf7eaa264 0xf7eaa244 
+
+
+The interesting thing is that the two sets of files are not consistent - 
+sometimes they don't even show the same temperature.
+
+The reason I'm interested in this is that I think it's behind some of my 
+cpufreq problems.  Sometimes the kernel decides that I just can't raise 
+the max frequency above 1GHz, because its been thermally limited (I've 
+put printks in to confirm that its the ACPI thermal limit on the policy 
+notifier chain which is limiting the max speed).  It seems to me that 
+having a thermal zone for each core is a BIOS bug, since they're really 
+the same chip, but the THM1 entries should be ignored.  I don't believe 
+the CPU has ever approached either 97 C, let alone 127; while I put it 
+under a fair amount of load, it is sitting on a desktop with no airflow 
+obstructions, so if it really is overheating it suggests a serious 
+design problem with the hardware.
+
+But I'm just speculating; I'm not really sure what all this means.  Any 
+clues?
+
+Thanks,
+    J
