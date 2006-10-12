@@ -1,10 +1,11 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Strange entries in /proc/acpi/thermal_zone for Thinkpad X60
-Date: Thu, 12 Oct 2006 15:19:40 -0700
-Message-ID: <452EBF7C.3000409@goop.org>
+From: Carl Thompson <cet@carlthompson.net>
+Subject: Testers needed for new CPUSpeed beta
+Date: Thu, 12 Oct 2006 16:52:47 -0700
+Message-ID: <20061012165247.m05przqmgwckgg4o@carlthompson.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,66 +16,37 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Brown, Len" <len.brown@intel.com>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk, acpi-devel@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+	charset=;
+	DelSp="Yes";
+	format="flowed"; charset="us-ascii"
+To: CPUFreq List <cpufreq@lists.linux.org.uk>
 
-I have a Thinkpad X60 with an Intel Core Duo T2400.  In 
-/proc/acpi/thermal_zone, I'm getting two subdirectories, each with their 
-own set of files:
+Hello,
 
-/proc/acpi/thermal_zone/THM0/cooling_mode:
-<setting not supported>
-cooling mode:   critical
+      I finally got around to buying a multi-core CPUFreq-capable =20
+machine and I have updated CPUSpeed to properly handle multi-core CPUs =20
+that tie together cores under one control interface. Users of current =20
+multi-core machines should see very, VERY significant performance =20
+improvements from their machines.
 
-/proc/acpi/thermal_zone/THM0/polling_frequency:
-<polling disabled>
+(CPUSpeed is a userspace daemon that monitors the processor usage on a =20
+system and adjusts the processor speed and voltage to maximize battery =20
+life while still allowing maximum performance when needed. CPUSpeed is =20
+designed for laptop (or server) users that wish minimize power usage =20
+(maximize battery life). However, everyone with a modern =20
+CPUFreq-capable CPU can benefit.
 
-/proc/acpi/thermal_zone/THM0/state:
-state:                   ok
+Send me an email with your hardware platform, Linux kernel version and =20
+OS version details to get the beta if you:
+* Run an AMD AM2 4x4 platform (I really need someone with one of this)
+* Run a Core Duo or Core 2 Duo
+* Run an AMD X2
+* Run an SMP machine (the more processors the better)
+* Just want to run the beta to see if it works better / faster than whatever
+   you're currently using
 
-/proc/acpi/thermal_zone/THM0/temperature:
-temperature:             53 C
+Of course you must be running a platform that has a working CPUFreq driver.
 
-/proc/acpi/thermal_zone/THM0/trip_points:
-critical (S5):           127 C
-
-
-/proc/acpi/thermal_zone/THM1/cooling_mode:
-<setting not supported>
-cooling mode:   passive
-
-/proc/acpi/thermal_zone/THM1/polling_frequency:
-<polling disabled>
-
-/proc/acpi/thermal_zone/THM1/state:
-state:                   ok
-
-/proc/acpi/thermal_zone/THM1/temperature:
-temperature:             53 C
-
-/proc/acpi/thermal_zone/THM1/trip_points:
-critical (S5):           97 C
-passive:                 93 C: tc1=5 tc2=4 tsp=600 devices=0xf7eaa264 0xf7eaa244 
-
-
-The interesting thing is that the two sets of files are not consistent - 
-sometimes they don't even show the same temperature.
-
-The reason I'm interested in this is that I think it's behind some of my 
-cpufreq problems.  Sometimes the kernel decides that I just can't raise 
-the max frequency above 1GHz, because its been thermally limited (I've 
-put printks in to confirm that its the ACPI thermal limit on the policy 
-notifier chain which is limiting the max speed).  It seems to me that 
-having a thermal zone for each core is a BIOS bug, since they're really 
-the same chip, but the THM1 entries should be ignored.  I don't believe 
-the CPU has ever approached either 97 C, let alone 127; while I put it 
-under a fair amount of load, it is sitting on a desktop with no airflow 
-obstructions, so if it really is overheating it suggests a serious 
-design problem with the hardware.
-
-But I'm just speculating; I'm not really sure what all this means.  Any 
-clues?
-
-Thanks,
-    J
+Thank you,
+Carl Thompson
