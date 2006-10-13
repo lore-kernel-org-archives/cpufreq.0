@@ -1,52 +1,114 @@
-From: Carl Thompson <cet@carlthompson.net>
-Subject: Testers needed for new CPUSpeed beta
-Date: Thu, 12 Oct 2006 16:52:47 -0700
-Message-ID: <20061012165247.m05przqmgwckgg4o@carlthompson.net>
+From: Len Brown <len.brown@intel.com>
+Subject: Re: Strange entries in /proc/acpi/thermal_zone for Thinkpad X60
+Date: Fri, 13 Oct 2006 00:53:10 -0400
+Message-ID: <200610130053.10437.len.brown@intel.com>
+References: <452EBF7C.3000409@goop.org>
+Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <452EBF7C.3000409@goop.org>
 Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain;
-	charset=;
-	DelSp="Yes";
-	format="flowed"; charset="us-ascii"
-To: CPUFreq List <cpufreq@lists.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hello,
+On Thursday 12 October 2006 18:19, Jeremy Fitzhardinge wrote:
+> I have a Thinkpad X60 with an Intel Core Duo T2400.  In 
+> /proc/acpi/thermal_zone, I'm getting two subdirectories, each with their 
+> own set of files:
+> 
+> /proc/acpi/thermal_zone/THM0/cooling_mode:
+> <setting not supported>
+> cooling mode:   critical
+> 
+> /proc/acpi/thermal_zone/THM0/polling_frequency:
+> <polling disabled>
+> 
+> /proc/acpi/thermal_zone/THM0/state:
+> state:                   ok
+> 
+> /proc/acpi/thermal_zone/THM0/temperature:
+> temperature:             53 C
+> 
+> /proc/acpi/thermal_zone/THM0/trip_points:
+> critical (S5):           127 C
 
-      I finally got around to buying a multi-core CPUFreq-capable =20
-machine and I have updated CPUSpeed to properly handle multi-core CPUs =20
-that tie together cores under one control interface. Users of current =20
-multi-core machines should see very, VERY significant performance =20
-improvements from their machines.
 
-(CPUSpeed is a userspace daemon that monitors the processor usage on a =20
-system and adjusts the processor speed and voltage to maximize battery =20
-life while still allowing maximum performance when needed. CPUSpeed is =20
-designed for laptop (or server) users that wish minimize power usage =20
-(maximize battery life). However, everyone with a modern =20
-CPUFreq-capable CPU can benefit.
+This means that if THM0 reaches 127, your system will shut down.
+You don't have much control over this one -- but you could probably
+lower the temperature  to do a critical shut-down earlier with something like this:
 
-Send me an email with your hardware platform, Linux kernel version and =20
-OS version details to get the beta if you:
-* Run an AMD AM2 4x4 platform (I really need someone with one of this)
-* Run a Core Duo or Core 2 Duo
-* Run an AMD X2
-* Run an SMP machine (the more processors the better)
-* Just want to run the beta to see if it works better / faster than whatever
-   you're currently using
+echo -n "126:125:124:123:122" >trip_points
+note that the 1st is the critical one, and the others are hot:passive:active:active place holders.
 
-Of course you must be running a platform that has a working CPUFreq driver.
+> 
+> /proc/acpi/thermal_zone/THM1/cooling_mode:
+> <setting not supported>
+> cooling mode:   passive
+> 
+> /proc/acpi/thermal_zone/THM1/polling_frequency:
+> <polling disabled>
+> 
+> /proc/acpi/thermal_zone/THM1/state:
+> state:                   ok
+> 
+> /proc/acpi/thermal_zone/THM1/temperature:
+> temperature:             53 C
+> 
+> /proc/acpi/thermal_zone/THM1/trip_points:
+> critical (S5):           97 C
+> passive:                 93 C: tc1=5 tc2=4 tsp=600 devices=0xf7eaa264 0xf7eaa244 
 
-Thank you,
-Carl Thompson
+You are not given the opportunity to set the active trip points here.
+Looks like you have just a passive trip point at 93 and we would
+expect to throttle when we go above 93.
+Presumably some other method should be kicking in the fans before
+this passive point is reached.
+
+The theory is that...
+If the fans kicked in earlier than you liked, you should be able to lower
+the passive trip point to below that temperature to make the system
+throttle before the fans kick in.
+
+But probably the root cause of your issue is that the fans are _not_ kicking in...
+
+for grins you can probably raise the passive point with something like this
+
+# echo -n "98:97:96:53:45" > trip_points
+
+but it seems that you are doing passive cooling way before  you
+get anywhere near 93, so that is the mystery.
+
+-Len
+
+> 
+> 
+> The interesting thing is that the two sets of files are not consistent - 
+> sometimes they don't even show the same temperature.
+> 
+> The reason I'm interested in this is that I think it's behind some of my 
+> cpufreq problems.  Sometimes the kernel decides that I just can't raise 
+> the max frequency above 1GHz, because its been thermally limited (I've 
+> put printks in to confirm that its the ACPI thermal limit on the policy 
+> notifier chain which is limiting the max speed).  It seems to me that 
+> having a thermal zone for each core is a BIOS bug, since they're really 
+> the same chip, but the THM1 entries should be ignored.  I don't believe 
+> the CPU has ever approached either 97 C, let alone 127; while I put it 
+> under a fair amount of load, it is sitting on a desktop with no airflow 
+> obstructions, so if it really is overheating it suggests a serious 
+> design problem with the hardware.
+> 
+> But I'm just speculating; I'm not really sure what all this means.  Any 
+> clues?
+> 
+> Thanks,
+>     J
+> 
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
+> 
