@@ -1,128 +1,102 @@
-From: Joan Moreau <joan.moreau@m4x.org>
-Subject: Re: Cpufreq on kernel 2.6.18
-Date: Fri, 13 Oct 2006 17:53:10 +0300
-Message-ID: <452FA856.30306@m4x.org>
-References: <EB12A50964762B4D8111D55B764A8454B2E59D@scsmsx413.amr.corp.intel.com>
-	<20061008193637.7cf052c7.morpheus@ferrara.linux.it>
-	<45295EB7.5070505@m4x.org>
-	<Pine.LNX.4.62.0610091709560.26129@cadalboia.ferrara.linux.it>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [1/3] 2.6.19-rc2: known unfixed regressions
+Date: Sat, 14 Oct 2006 13:22:26 +0200
+Message-ID: <20061014112226.GJ30596@stusta.de>
+References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org> <20061014111458.GI30596@stusta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.62.0610091709560.26129@cadalboia.ferrara.linux.it>
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20061014111458.GI30596@stusta.de>
+Sender: linux-ide-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Luca Barion <morpheus@cadalboia.ferrara.linux.it>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesper Juhl <jesper.juhl@gmail.com>, David Howells <dhowells@redhat.com>, James.Bottomley@HansenPartnership.com, pazke@donpac.ru, linux-visws-devel@lists.sf.net, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, art@usfltd.com, ak@suse.de, discuss@x86-64.org, Robert Hancock <hancockr@shaw.ca>, "Eric W. Biederman" <ebiederm@xmission.com>, David Gerber <dg-kernel-bug@zapek.com>, Dmitry Torokhov <dtor@insightbb.com>, John Stultz <johnstul@us.ibm.com>, linux-input@atrey.karlin.mff.cuni.cz, Kenny Graunke <kenny@whitecape.org>, Patrick Jefferson <henj@hp.com>, Alan Cox <alan@redhat.com>, Christian <>
+
+This email lists some known unfixed regressions in 2.6.19-rc2 compared 
+to 2.6.18.
+
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
+
+Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-yes, the governor process works, but the frequency stays unchanged , 
-whatever is the governor :-(
+Subject    : CONFIG_X86_VOYAGER=y, CONFIG_SMP=n compile error
+References : http://lkml.org/lkml/2006/10/7/51
+Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
+Caused-By  : David Howells <dhowells@redhat.com>
+             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+Status     : unknown
 
-Is anybody having the same problem ?
 
-Thanks
+Subject    : CONFIG_X86_VISWS=y, CONFIG_SMP=n compile error
+References : http://lkml.org/lkml/2006/10/7/51
+Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
+Caused-By  : David Howells <dhowells@redhat.com>
+             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+Status     : unknown
 
-Joan
 
-Luca Barion wrote:
-> I can tell you that on my centrino with the module cpufreq_centrino 
-> cpufreq works (at least I was able to set powersave governor, the 
-> orther I didn't try yet).
-> You could try to build any feature regarding cpufreq as module, and 
-> loading and unloading each: I found that some modules conflict with 
-> other preventing from working correctly (also on a desktop p4 dualcore).
->     Luca.
->
-> On Sun, 8 Oct 2006, Joan Moreau wrote:
->
->> Luca,
->>
->> I have exactly the same problem on my pentium M 2Ghz.
->>
->> Only "cpufreq_centrino"  works under linux 2.6.18 (i..e /sys has 
->> relevant info) but cpufredq does not work anymore (frequancy not 
->> changeable)
->>
->> Has anybody found any fixes ?
->>
->> Thanks
->>
->> Joan
->>
->> Luca wrote:
->>> On Fri, 6 Oct 2006 16:08:22 -0700
->>> "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
->>>
->>>
->>>>
->>>>
->>>>> -----Original Message-----
->>>>> From: cpufreq-bounces@lists.linux.org.uk 
->>>>> [mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Luca
->>>>> Sent: Friday, October 06, 2006 1:01 PM
->>>>> To: cpufreq@lists.linux.org.uk
->>>>> Subject: Cpufreq on kernel 2.6.18
->>>>>
->>>>> Hello,
->>>>> I just updated the kernel from 2.6.15.2 to 2.6.18 and the 
->>>>> frequency scaling of my Centrinlo Laptop stopped working (keeping 
->>>>> the same configuration).
->>>>> The dir /sys/devices/system/cpu/cpu0/ is empty and I don't know 
->>>>> which other tests I could make.
->>>>> I also tried to move CONFIG_X86_ACPI_CPUFREQ from builtin to 
->>>>> module: loading the module does not give any information nor any 
->>>>> error.
->>>>> I need 2.6.18 for other drivers, so it would be really nice if I 
->>>>> could solve this problem that seems to be the only driver that's 
->>>>> not working properly (and my battery would be much happier :) )
->>>>> If you need more informations just tell me.
->>>>>
->>>>>
->>>> Can you enable CPU_FREQ_DEBUG in your config and pass 
->>>> "cpufreq.debug=3"
->>>> in kernel parameter and send in the dmesg log.
->>>>
->>>
->>> I found something, and maybe I have to ask excuse, because now it's 
->>> working..
->>> Anyway something has changed and that's the reason that fooled me: 
->>> on my old logs, with the old kernel I had:
->>>  acpi-cpufreq: CPU0 - ACPI performance management activated.
->>> So I focused my attention on the module acpi-cpufreq. Inserting it, 
->>> even with debug activated (cpufreq.debug=3 forgot to pass it at 
->>> boot, but now seems not so important...) doesn't tell anything at 
->>> all (and doesn't work).
->>> I was playing with other modules, and I found that loading the 
->>> module speedstep-centrino enables cpufreq (even if on kernel log 
->>> doesn't print anything).
->>> So something has changed in the software support for my hardware. 
->>> I'm sorry for not having understood earlyer. Since I'm writing here, 
->>> can I kindly ask you a short explanation on this difference between 
->>> two different kernels, on the same hardware.
->>>
->>> Thanks for the fast answer,
->>>                 Luca.
->>>
->>>
->>> PS: thanks for the work on cpufreq: with the moderm pcs with cpu 
->>> pull to the limit I think it's really useful to be able to force 
->>> lower frequency, when you don't need all the computeing power.
->>>
->>>
->>>> Thanks,
->>>> Venki
->>>>
->>>
->>>
->>>
->
+Subject    : unable to rip cd
+References : http://lkml.org/lkml/2006/10/13/100
+Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
+Status     : unknown
+
+
+Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
+Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
+Status     : unknown
+
+
+Subject    : monitor not active after boot
+References : http://lkml.org/lkml/2006/10/5/338
+Submitter  : Olaf Hering <olaf@aepfle.de>
+Caused-By  : Antonino Daplas <adaplas@pol.net>
+             commit 346bc21026e7a92e1d7a4a1b3792c5e8b686133d
+Status     : unknown
+
+
+Subject    : SMP x86_64 boot problem
+References : http://lkml.org/lkml/2006/9/28/330
+             http://lkml.org/lkml/2006/10/5/289
+Submitter  : art@usfltd.com
+Status     : submitter was asked to git bisect
+             result of bisecting seems to be wrong
+
+
+Subject    : do_IRQ: No irq handler for vector
+References : http://lkml.org/lkml/2006/10/11/13
+Submitter  : Robert Hancock <hancockr@shaw.ca>
+Handled-By : "Eric W. Biederman" <ebiederm@xmission.com>
+Status     : Andrew: a few people are seeing this. Eric is working it.
+
+
+Subject    : messed up keyboard events, TSC related
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7291
+Submitter  : David Gerber <dg-kernel-bug@zapek.com>
+Handled-By : Dmitry Torokhov <dtor@insightbb.com>
+             John Stultz <johnstul@us.ibm.com>
+Status     : Dmitry and John are investigating
+
+
+Subject    : ide-generic no longer finds marvell controller
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7353
+Submitter  : Kenny Graunke <kenny@whitecape.org>
+Caused-By  : Patrick Jefferson <henj@hp.com>
+             commit a4bea10eca68152e84ffc4eaeb9d20ec2ac34664
+Handled-By : Alan Cox <alan@redhat.com>
+Status     : Alan is investigating
+
+
+Subject    : cpufreq not working on AMD K8
+References : http://lkml.org/lkml/2006/10/10/114
+Submitter  : Christian <christiand59@web.de>
+Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
+Status     : Mark is investigating
+
+
