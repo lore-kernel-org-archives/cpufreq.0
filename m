@@ -1,12 +1,12 @@
-From: Luca <morpheus@ferrara.linux.it>
+From: Joan Moreau <joan.moreau@m4x.org>
 Subject: Re: Cpufreq on kernel 2.6.18
-Date: Mon, 16 Oct 2006 20:53:18 +0200
-Message-ID: <20061016205318.5f81a00b.morpheus@ferrara.linux.it>
-References: <EB12A50964762B4D8111D55B764A8454BA3D97@scsmsx413.amr.corp.intel.com>
+Date: Mon, 16 Oct 2006 23:00:27 +0300
+Message-ID: <4533E4DB.8040503@m4x.org>
+References: <EB12A50964762B4D8111D55B764A8454BA3D95@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454BA3D97@scsmsx413.amr.corp.intel.com>
+In-Reply-To: <EB12A50964762B4D8111D55B764A8454BA3D95@scsmsx413.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,28 +17,76 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 Cc: cpufreq@lists.linux.org.uk
 
-On Mon, 16 Oct 2006 06:34:38 -0700
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
 
-...
->=20
-> Change from acpi-cpufreq to speedstep-centrino is a long story. You can
-> find some background here
-> http://bugme.osdl.org/show_bug.cgi?id=3D6005
->=20
->=20
+Thanks for the tip.
+
+I guess the error comes from the Kernel, as all interfaces are their, 
+but the frequency is not changeable in /sysfs :-(
+
+
+
+Pallipadi, Venkatesh wrote:
+>  
+>
+>   
+>> -----Original Message-----
+>> From: Joan Moreau [mailto:joan.moreau@m4x.org] 
+>> Sent: Sunday, October 08, 2006 1:25 PM
+>> To: Luca
+>> Cc: Pallipadi, Venkatesh; cpufreq@lists.linux.org.uk
+>> Subject: Re: Cpufreq on kernel 2.6.18
+>>
+>> Luca,
+>>
+>> I have exactly the same problem on my pentium M 2Ghz.
+>>
+>> Only "cpufreq_centrino"  works under linux 2.6.18 (i..e /sys has 
+>> relevant info) but cpufredq does not work anymore (frequancy 
+>> not changeable)
+>>
+>> Has anybody found any fixes ?
+>>
+>> Thanks
+>>
+>> Joan
+>>     
+>
+> The change from acpi-cpufreq to speedstep-centrino driver from 2.6.16 to
+> 2.6.18 is intentional. Looks like your platform can support both these
+> drivers and Linux is picking the best driver, that is speedstep centrino
+> in this case. So, everything is fine until that point.
+>
+> But, I don't know why cpufreqd does not work with speedstep-centrino. As
+> long as these /sysfs interfaces are there, cpufreqd should work. Is it
+> not inserting the speedstep-module and hence it is failing? Can you try
+> manually switching to performance and powersave governors and make sure
+> frequency is changing. Something like this after you have
+> speedstep_centrino working.
+>
+> #cd /sys/devices/system/cpu/cpu0/cpufreq
+> // I am assuming that this is a Centrino CPU with single logical CPU.
+> #cat  scaling_available_frequencies
+> #echo performance > scaling_governor
+> #cat cpuinfo_cur_freq
+> #echo powersave > scaling_governor
+> #cat cpuinfo_cur_freq
+>
+> Now if this works, you can go ahead and try ondemand governor and see
+> whether that is working
+> #echo ondemand > scaling governor
+> // Leave system idle for couple of seconds
+> #echo cpuinfo_cur_freq
+> // Run some infinite loop code or some other load to keep CPU busy
+> #echo cpuinfo_cur_freq
+>
+> Now if this also works, then there is something wrong with cpufreqd..
+> If any of these doesn't work, then there is some problem in kernel.
+>
 > Thanks,
 > Venki
-
-Thanks for the information: at the end I can understand the trick :)
-
-	Luca.
-
---=20
-       .-------------------------------------.
-  -=3D<(=A7  Luca <morpheus AT ferrara.linux.it>  =A7)>=3D-
-       =B0-------------------------------------=B0
+>
+>   
