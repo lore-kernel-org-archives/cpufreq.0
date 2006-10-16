@@ -1,12 +1,9 @@
-From: Joan Moreau <joan.moreau@m4x.org>
-Subject: Re: Cpufreq on kernel 2.6.18
-Date: Mon, 16 Oct 2006 23:00:27 +0300
-Message-ID: <4533E4DB.8040503@m4x.org>
-References: <EB12A50964762B4D8111D55B764A8454BA3D95@scsmsx413.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7376] New: ondemand and conservative governors are not working
+	as expected
+Date: Mon, 16 Oct 2006 13:20:40 -0700
+Message-ID: <200610162020.k9GKKeYg020830@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454BA3D95@scsmsx413.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,76 +14,43 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=7376
+
+           Summary: ondemand and conservative governors are not working as
+                    expected
+    Kernel Version: 2.6.18, 2.6.18.1, 2.6.19-rc1
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: caglar@pardus.org.tr
 
 
-Thanks for the tip.
+Most recent kernel where this bug did not occur: 2.6.16
+Distribution: Pardus Linux, Alpha 3
+Hardware Environment: Sony Vaio VGN-FS215B Notebook
+Software Environment:
+Problem Description:
 
-I guess the error comes from the Kernel, as all interfaces are their, 
-but the frequency is not changeable in /sysfs :-(
+Ondemand or conservative governors couldnWt change current frequency of CPU
+while system is idle with 2.6.18, 2.6.18.1, 2.6.19-r1 kernels. 2.6.16 works fine
+without any problem. 
 
+As a workaround unplug/plug ac adapter magically solves the problem and these
+governors start to run as expected.
 
+In ordet to be sure this problem is kernel related, all userspace softwares
+which capable of powermanagent are stopped (hal/powersave etc.)
 
-Pallipadi, Venkatesh wrote:
->  
->
->   
->> -----Original Message-----
->> From: Joan Moreau [mailto:joan.moreau@m4x.org] 
->> Sent: Sunday, October 08, 2006 1:25 PM
->> To: Luca
->> Cc: Pallipadi, Venkatesh; cpufreq@lists.linux.org.uk
->> Subject: Re: Cpufreq on kernel 2.6.18
->>
->> Luca,
->>
->> I have exactly the same problem on my pentium M 2Ghz.
->>
->> Only "cpufreq_centrino"  works under linux 2.6.18 (i..e /sys has 
->> relevant info) but cpufredq does not work anymore (frequancy 
->> not changeable)
->>
->> Has anybody found any fixes ?
->>
->> Thanks
->>
->> Joan
->>     
->
-> The change from acpi-cpufreq to speedstep-centrino driver from 2.6.16 to
-> 2.6.18 is intentional. Looks like your platform can support both these
-> drivers and Linux is picking the best driver, that is speedstep centrino
-> in this case. So, everything is fine until that point.
->
-> But, I don't know why cpufreqd does not work with speedstep-centrino. As
-> long as these /sysfs interfaces are there, cpufreqd should work. Is it
-> not inserting the speedstep-module and hence it is failing? Can you try
-> manually switching to performance and powersave governors and make sure
-> frequency is changing. Something like this after you have
-> speedstep_centrino working.
->
-> #cd /sys/devices/system/cpu/cpu0/cpufreq
-> // I am assuming that this is a Centrino CPU with single logical CPU.
-> #cat  scaling_available_frequencies
-> #echo performance > scaling_governor
-> #cat cpuinfo_cur_freq
-> #echo powersave > scaling_governor
-> #cat cpuinfo_cur_freq
->
-> Now if this works, you can go ahead and try ondemand governor and see
-> whether that is working
-> #echo ondemand > scaling governor
-> // Leave system idle for couple of seconds
-> #echo cpuinfo_cur_freq
-> // Run some infinite loop code or some other load to keep CPU busy
-> #echo cpuinfo_cur_freq
->
-> Now if this also works, then there is something wrong with cpufreqd..
-> If any of these doesn't work, then there is some problem in kernel.
->
-> Thanks,
-> Venki
->
->   
+acpidump, /proc/cpuinfo, dmesg output, dmidecode output, lsmod output, top, ps
+output and CONFIG will follow this report as attachments
+
+Whole LKML thread can be found @
+http://www.gossamer-threads.com/lists/linux/kernel/692970
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
