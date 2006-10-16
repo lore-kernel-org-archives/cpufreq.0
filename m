@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7376] ondemand and conservative governors are not working as
 	expected
-Date: Mon, 16 Oct 2006 13:27:54 -0700
-Message-ID: <200610162027.k9GKRs0K021317@fire-2.osdl.org>
+Date: Mon, 16 Oct 2006 15:43:14 -0700
+Message-ID: <200610162243.k9GMhEKi029359@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,12 +25,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=7376
 
 
 
-------- Additional Comments From caglar@pardus.org.tr  2006-10-16 13:15 -------
-Created an attachment (id=9278)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=9278&action=view)
-/proc/interrupts
-
-cat /proc/interrupts; sleep 10; cat /proc/interrupts while nothing working
+------- Additional Comments From caglar@pardus.org.tr  2006-10-16 15:31 -------
+I just found one more workaround, suspending to ram and resuming back solves
+problem while ac_adapter plugged in :)
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
