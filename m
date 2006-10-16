@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7376] ondemand and conservative governors are not working as
 	expected
-Date: Mon, 16 Oct 2006 13:23:03 -0700
-Message-ID: <200610162023.k9GKN3RX020992@fire-2.osdl.org>
+Date: Mon, 16 Oct 2006 13:24:09 -0700
+Message-ID: <200610162024.k9GKO9nt021109@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,10 +25,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=7376
 
 
 
-------- Additional Comments From caglar@pardus.org.tr  2006-10-16 13:10 -------
-Created an attachment (id=9272)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=9272&action=view)
-dmesg
+------- Additional Comments From caglar@pardus.org.tr  2006-10-16 13:11 -------
+Created an attachment (id=9274)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=9274&action=view)
+lsmod
 
 
 ------- You are receiving this mail because: -------
