@@ -1,9 +1,10 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7376] ondemand and conservative governors are not working as
-	expected
-Date: Mon, 16 Oct 2006 20:07:20 -0700
-Message-ID: <200610170307.k9H37KFl009767@fire-2.osdl.org>
+From: Dave Jones <davej@redhat.com>
+Subject: speedstep-smi detection broken.
+Date: Tue, 17 Oct 2006 01:55:29 -0400
+Message-ID: <20061017055529.GJ32681@redhat.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,22 +15,32 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: miura@da-cha.org
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7376
+If someone inserts speedstep-smi on a mobile P4,
+it prevents other cpufreq modules from loading until it
+is unloaded.
 
-venkatesh.pallipadi@intel.com changed:
+Opinions on this patch ?
+(I'm tempted to just remove the printk too).
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |venkatesh.pallipadi@intel.co
-                   |                            |m
-             Status|NEW                         |ASSIGNED
+	Dave
+
+--- local-git/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c~	2006-10-17 01:53:29.000000000 -0400
++++ local-git/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2006-10-17 01:54:02.000000000 -0400
+@@ -362,7 +362,7 @@ static int __init speedstep_init(void)
+ 		break;
+ 	case SPEEDSTEP_PROCESSOR_P4M:
+ 		printk(KERN_INFO "speedstep-smi: you're trying to use this cpufreq driver on a Pentium 4-based CPU. Most likely it will not work.\n");
+-		break;
++		return -ENODEV;
+ 	default:
+ 		speedstep_processor = 0;
+ 	}
 
 
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+-- 
+http://www.codemonkey.org.uk
