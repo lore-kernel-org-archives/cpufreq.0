@@ -1,11 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Cpufreq on kernel 2.6.18
-Date: Tue, 17 Oct 2006 06:19:55 -0700
-Message-ID: <EB12A50964762B4D8111D55B764A8454BE3B13@scsmsx413.amr.corp.intel.com>
+From: "Hiroshi Miura" <miura@da-cha.org>
+Subject: Re: speedstep-smi detection broken.
+Date: Tue, 17 Oct 2006 23:00:42 +0900
+Message-ID: <a11ccc30610170700h61c7a9bbgf9f3e74b62fd6c28@mail.gmail.com>
+References: <20061017055529.GJ32681@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20061017055529.GJ32681@redhat.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,35 +17,63 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: Joan Moreau <joan.moreau@m4x.org>
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk
 
-=20
+I prefer removing all of P4M case  block  if you remove the printk too.
+This means simply not to support P4M with this driver and
+return -ENODEV.
+If user turn on debug flag, they may see
+	dprintk ("No supported Intel CPU detected.\n");
+as same as other CPUs.
 
->-----Original Message-----
->From: Joan Moreau [mailto:joan.moreau@m4x.org]=20
->Sent: Monday, October 16, 2006 1:00 PM
->To: Pallipadi, Venkatesh
->Cc: Luca; cpufreq@lists.linux.org.uk
->Subject: Re: Cpufreq on kernel 2.6.18
+Hiroshi
+
+--- linux-2.6.18/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c~	2006-09-20
+12:42:06.000000000 +0900
++++ linux-2.6.18/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2006-10-17
+22:59:50.553975632 +0900
+@@ -360,9 +360,6 @@
+ 	case SPEEDSTEP_PROCESSOR_PIII_C:
+ 	case SPEEDSTEP_PROCESSOR_PIII_C_EARLY:
+ 		break;
+-	case SPEEDSTEP_PROCESSOR_P4M:
+-		printk(KERN_INFO "speedstep-smi: you're trying to use this cpufreq
+driver on a Pentium 4-based CPU. Most likely it will not work.\n");
+-		break;
+ 	default:
+ 		speedstep_processor = 0;
+ 	}
+
+2006/10/17, Dave Jones <davej@redhat.com>:
+> If someone inserts speedstep-smi on a mobile P4,
+> it prevents other cpufreq modules from loading until it
+> is unloaded.
+>
+> Opinions on this patch ?
+> (I'm tempted to just remove the printk too).
+>
+>         Dave
+>
+> --- local-git/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c~     2006-10-17 01:53:29.000000000 -0400
+> +++ local-git/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c      2006-10-17 01:54:02.000000000 -0400
+> @@ -362,7 +362,7 @@ static int __init speedstep_init(void)
+>                 break;
+>         case SPEEDSTEP_PROCESSOR_P4M:
+>                 printk(KERN_INFO "speedstep-smi: you're trying to use this cpufreq driver on a Pentium 4-based CPU. Most likely it will not work.\n");
+> -               break;
+> +               return -ENODEV;
+>         default:
+>                 speedstep_processor = 0;
+>         }
 >
 >
->Thanks for the tip.
->
->I guess the error comes from the Kernel, as all interfaces are their,=20
->but the frequency is not changeable in /sysfs :-(
->
+> --
+> http://www.codemonkey.org.uk
 >
 
-If you manually set the governor to userspace and change the frequency
-by writing to cpufreq_setspeed does the frequency change?
 
-This looks like same as
-http://bugzilla.kernel.org/show_bug.cgi?id=3D7376
-
-Can you confirm?
-
-Thanks,
-Venki
+-- 
+HIroshi Miura
