@@ -1,10 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: speedstep-smi detection broken.
-Date: Tue, 17 Oct 2006 01:55:29 -0400
-Message-ID: <20061017055529.GJ32681@redhat.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: Cpufreq on kernel 2.6.18
+Date: Tue, 17 Oct 2006 06:19:55 -0700
+Message-ID: <EB12A50964762B4D8111D55B764A8454BE3B13@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,33 +15,35 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: miura@da-cha.org
+To: Joan Moreau <joan.moreau@m4x.org>
 Cc: cpufreq@lists.linux.org.uk
 
-If someone inserts speedstep-smi on a mobile P4,
-it prevents other cpufreq modules from loading until it
-is unloaded.
+=20
 
-Opinions on this patch ?
-(I'm tempted to just remove the printk too).
+>-----Original Message-----
+>From: Joan Moreau [mailto:joan.moreau@m4x.org]=20
+>Sent: Monday, October 16, 2006 1:00 PM
+>To: Pallipadi, Venkatesh
+>Cc: Luca; cpufreq@lists.linux.org.uk
+>Subject: Re: Cpufreq on kernel 2.6.18
+>
+>
+>Thanks for the tip.
+>
+>I guess the error comes from the Kernel, as all interfaces are their,=20
+>but the frequency is not changeable in /sysfs :-(
+>
+>
 
-	Dave
+If you manually set the governor to userspace and change the frequency
+by writing to cpufreq_setspeed does the frequency change?
 
---- local-git/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c~	2006-10-17 01:53:29.000000000 -0400
-+++ local-git/arch/i386/kernel/cpu/cpufreq/speedstep-smi.c	2006-10-17 01:54:02.000000000 -0400
-@@ -362,7 +362,7 @@ static int __init speedstep_init(void)
- 		break;
- 	case SPEEDSTEP_PROCESSOR_P4M:
- 		printk(KERN_INFO "speedstep-smi: you're trying to use this cpufreq driver on a Pentium 4-based CPU. Most likely it will not work.\n");
--		break;
-+		return -ENODEV;
- 	default:
- 		speedstep_processor = 0;
- 	}
+This looks like same as
+http://bugzilla.kernel.org/show_bug.cgi?id=3D7376
 
+Can you confirm?
 
--- 
-http://www.codemonkey.org.uk
+Thanks,
+Venki
