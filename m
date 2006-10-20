@@ -1,44 +1,38 @@
-From: Wes Felter <wesley@felter.org>
+From: Jarek Poplawski <jarkao2@o2.pl>
 Subject: Re: 3.2GHz cpus with cpufreq become 2.8GHz
-Date: Thu, 19 Oct 2006 17:48:33 -0500
-Message-ID: <453800C1.8050409@felter.org>
-References: <Pine.LNX.4.64.0610182133130.29935@bizon.gios.gov.pl>
-	<4537A582.4020406@felter.org>
-	<Pine.LNX.4.64.0610200022320.30089@bizon.gios.gov.pl>
+Date: Fri, 20 Oct 2006 09:37:52 +0200
+Message-ID: <20061020073752.GC1898@ff.dom.local>
+References: <Pine.LNX.4.64.0610200022320.30089@bizon.gios.gov.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992558AbWJTHcq@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0610200022320.30089@bizon.gios.gov.pl>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Krzysztof Oledzki <olel@ans.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-Krzysztof Oledzki wrote:
-
-> Hm... speedstep-centrino on Xeon? AFAIK speedstep-centrino requires 
-> "est" and /proc/cpuinfo does not mention this flag:
->  fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 
-> clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni 
-> monitor ds_cpl cid cx16 xtpr
-
-Odd; I have a similar processor and it has est and uses the 
-speedstep-centrino driver. But I am using an old kernel (2.6.5) and the 
-flag detection has changed since then.
-
-> BTW: what wrong is with p4-clockmod? I was 
+On 20-10-2006 00:25, Krzysztof Oledzki wrote:
+...
+> I will check this, thank you. BTW: what wrong is with p4-clockmod? I was 
 > not able to find any information that it is broken and should not be used?
 
-It makes the processor slower but only reduces power consumption 
-slightly, making the processor less power-efficient. You probably don't 
-want your processor to be less efficient.
+At least it is very suspected:
 
-Wes Felter - wesley@felter.org
+"Subject: Hardware bug or kernel bug?
+On Mon, Oct 16, 2006 at 03:32:38PM +0100, David Johnson wrote:
+..
+> I've found the culprit - CPU Frequency Scaling.
+> With it enabled I get the reboots, with it disabled I don't. That's the same
+> with every kernel version I've tried (2.6.19-rc1+rc2, 2.6.17.13 & Centos'
+> 2.6.9) The system was using the p4-clockmod driver and the ondemand governor.
+
+> I'm still not sure exactly what the problem is - the reboots only happen in
+> the circumstances I've mentioned and are not triggered by changes in clock
+> speed alone - but disabling cpufreq seems to make it go away... "
+
+Cheers,
+
+Jarek P.
