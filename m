@@ -1,38 +1,33 @@
-From: Jarek Poplawski <jarkao2@o2.pl>
-Subject: Re: 3.2GHz cpus with cpufreq become 2.8GHz
-Date: Fri, 20 Oct 2006 09:37:52 +0200
-Message-ID: <20061020073752.GC1898@ff.dom.local>
-References: <Pine.LNX.4.64.0610200022320.30089@bizon.gios.gov.pl>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992558AbWJTHcq@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0610200022320.30089@bizon.gios.gov.pl>
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5516] CPUFrequency driver doesn't have stats for CPU voltage
+Date: Fri, 20 Oct 2006 22:24:52 -0700
+Message-ID: <200610210524.k9L5OqkE029261@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On 20-10-2006 00:25, Krzysztof Oledzki wrote:
-...
-> I will check this, thank you. BTW: what wrong is with p4-clockmod? I was 
-> not able to find any information that it is broken and should not be used?
+http://bugzilla.kernel.org/show_bug.cgi?id=5516
 
-At least it is very suspected:
+t.artem@mailcity.com changed:
 
-"Subject: Hardware bug or kernel bug?
-On Mon, Oct 16, 2006 at 03:32:38PM +0100, David Johnson wrote:
-..
-> I've found the culprit - CPU Frequency Scaling.
-> With it enabled I get the reboots, with it disabled I don't. That's the same
-> with every kernel version I've tried (2.6.19-rc1+rc2, 2.6.17.13 & Centos'
-> 2.6.9) The system was using the p4-clockmod driver and the ondemand governor.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |REJECTED
+         Resolution|                            |WILL_NOT_FIX
 
-> I'm still not sure exactly what the problem is - the reboots only happen in
-> the circumstances I've mentioned and are not triggered by changes in clock
-> speed alone - but disabling cpufreq seems to make it go away... "
 
-Cheers,
 
-Jarek P.
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
