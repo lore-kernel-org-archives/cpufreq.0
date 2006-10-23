@@ -1,9 +1,8 @@
-From: LingNing Zhang <lizhang@redhat.com>
-Subject: Hi, I have a question
-Date: Mon, 23 Oct 2006 16:12:07 +0800
-Message-ID: <453C7957.7000009@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6938] use of cpufreq (with any cpufreqd-like deamon) has
+	strange influence on the acpi functions of an IBM Thinkpad X21
+Date: Mon, 23 Oct 2006 06:04:55 -0700
+Message-ID: <200610231304.k9ND4tKR007623@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,19 +14,38 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hi all,
-I am a new guy who joined in the mail list of cpufreq just now. And I 
-have a question, why can not I find the directory of 
-/*sys/devices/system/cpu/cpu0/cpufreq*/ in my rhel5?
-How can I resolve it?
-Where is the address of IRC of cpufreq?
-Who knows where is the mail list of cpuspeed? I can not find it through 
-google. :(
-Thanks a lot!
-:)
+http://bugzilla.kernel.org/show_bug.cgi?id=6938
 
-Regards,
-Lingning Zhang
+herrmann-tom@gmx.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+           Severity|normal                      |blocking
+     Kernel Version|2.6.16-rc1 and all newer    |2.6.16-rc2 and all newer
+                   |(2.6.18-rc3 is most recent  |(2.6.19-rc2 is most recent
+                   |now)                        |now)
+            Summary|use of cpufreq (with any    |use of cpufreq (with any
+                   |cpufreqd-like deamon) has   |cpufreqd-like deamon) has
+                   |strange influence on the    |strange influence on the
+                   |embeded controler functions |acpi functions of an IBM
+                   |of an IBM Thinkpad X21      |Thinkpad X21
+
+
+
+------- Additional Comments From herrmann-tom@gmx.de  2006-10-23 05:52 -------
+This bug is still present in latest kenel versions.
+
+Because of security and feature lack while using the old 2.6.15.7 kernel I am
+going to think about not using linux anymore.
+
+Disable speedstep realy is no option on a (sub-)notebook
+
+It would be greate if someone could even try to fix this bug.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
