@@ -1,51 +1,64 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6938] use of cpufreq (with any cpufreqd-like deamon) has
-	strange influence on the acpi functions of an IBM Thinkpad X21
-Date: Mon, 23 Oct 2006 06:04:55 -0700
-Message-ID: <200610231304.k9ND4tKR007623@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: Krzysztof Oledzki <olel@ans.pl>
+Subject: Re: 3.2GHz cpus with cpufreq become 2.8GHz
+Date: Mon, 23 Oct 2006 15:53:33 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0610231550570.8201@bizon.gios.gov.pl>
+References: <Pine.LNX.4.64.0610182133130.29935@bizon.gios.gov.pl>
+ <4537A582.4020406@felter.org> <Pine.LNX.4.64.0610200022320.30089@bizon.gios.gov.pl>
+ <453800C1.8050409@felter.org>
+Mime-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-1738232621-1161611613=:8201"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751182AbWJWNxr@vger.kernel.org>
+In-Reply-To: <453800C1.8050409@felter.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Wes Felter <wesley@felter.org>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6938
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-herrmann-tom@gmx.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-           Severity|normal                      |blocking
-     Kernel Version|2.6.16-rc1 and all newer    |2.6.16-rc2 and all newer
-                   |(2.6.18-rc3 is most recent  |(2.6.19-rc2 is most recent
-                   |now)                        |now)
-            Summary|use of cpufreq (with any    |use of cpufreq (with any
-                   |cpufreqd-like deamon) has   |cpufreqd-like deamon) has
-                   |strange influence on the    |strange influence on the
-                   |embeded controler functions |acpi functions of an IBM
-                   |of an IBM Thinkpad X21      |Thinkpad X21
+---187430788-1738232621-1161611613=:8201
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 
 
-------- Additional Comments From herrmann-tom@gmx.de  2006-10-23 05:52 -------
-This bug is still present in latest kenel versions.
+On Thu, 19 Oct 2006, Wes Felter wrote:
 
-Because of security and feature lack while using the old 2.6.15.7 kernel I am
-going to think about not using linux anymore.
+> Krzysztof Oledzki wrote:
+>
+>> Hm... speedstep-centrino on Xeon? AFAIK speedstep-centrino requires "est=
+"=20
+>> and /proc/cpuinfo does not mention this flag:
+>>  fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36=
+=20
+>> clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni=
+=20
+>> monitor ds_cpl cid cx16 xtpr
+>
+> Odd; I have a similar processor and it has est and uses the=20
+> speedstep-centrino driver. But I am using an old kernel (2.6.5) and the f=
+lag=20
+> detection has changed since then.
 
-Disable speedstep realy is no option on a (sub-)notebook
+Anyway, I have just tested speedstep-centrino, but it does not work.
 
-It would be greate if someone could even try to fix this bug.
+>> BTW: what wrong is with p4-clockmod? I was not able to find any informat=
+ion=20
+>> that it is broken and should not be used?
+>
+> It makes the processor slower but only reduces power consumption slightly=
+,=20
+> making the processor less power-efficient. You probably don't want your=
+=20
+> processor to be less efficient.
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+I also tested ACPI Processor P-States driver (X86_ACPI_CPUFREQ), but it=20
+does not work either.
+
+Any other ideas?
+
+Best regards,
+
+ =09=09=09=09Krzysztof Ol=EAdzki
+---187430788-1738232621-1161611613=:8201--
