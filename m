@@ -1,7 +1,7 @@
 From: "Mateusz Mielnicki" <matim@wp.pl>
 Subject: Odp: RE: Intel T2250
-Date: Thu, 26 Oct 2006 20:58:22 +0200
-Message-ID: <4541054e17553@wp.pl>
+Date: Thu, 26 Oct 2006 21:35:39 +0200
+Message-ID: <45410e0b7931b@wp.pl>
 References: <EB12A50964762B4D8111D55B764A8454C966B1@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -22,81 +22,35 @@ Content-Type: text/plain; charset="iso-8859-1"
 To: Pallipadi Venkatesh <venkatesh.pallipadi@intel.com>
 Cc: cpufreq <cpufreq@lists.linux.org.uk>, Dominik Brodowski <linux@dominikbrodowski.net>
 
-With acpi-cpufreq it is as below:
+And also info from /var/log/messages
 
-MatiM matim # modprobe acpi_cpufreq
-MatiM matim # modprobe cpufreq_stats
-MatiM matim # modprobe cpufreq_powersave
-MatiM matim # modprobe cpufreq_ondemand
-MatiM matim # modprobe cpufreq_userspace
-MatiM matim # modprobe cpufreq_conservative
-MatiM matim # lsmod
-Module                  Size  Used by
-cpufreq_conservative     6152  0
-cpufreq_userspace       3816  0
-cpufreq_ondemand        5324  0
-cpufreq_powersave       1728  0
-cpufreq_stats           4748  0
-acpi_cpufreq            6868  0
-freq_table              4744  2 cpufreq_stats,acpi_cpufreq
-snd_pcm_oss            38688  0
-snd_mixer_oss          14208  2 snd_pcm_oss
-i915                   17152  2
-usbhid                 30916  0
-snd_hda_intel          13972  2
-snd_hda_codec         146112  1 snd_hda_intel
-thermal                10760  0
-processor              22712  2 acpi_cpufreq,thermal
-battery                 7620  0
-ac                      3588  0
-MatiM matim #
-MatiM matim # cpufreq-info
-cpufrequtils 001: cpufreq-info (C) Dominik Brodowski 2004-2006
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
-  no or unknown cpufreq driver is active on this CPU
-analyzing CPU 1:
-  no or unknown cpufreq driver is active on this CPU
-MatiM matim # ls /sys/devices/system/cpu/cpu*
-/sys/devices/system/cpu/cpu0:
-cache  topology
+Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_init
+Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_early_init
+Oct 26 20:45:40 MatiM cpufreq-core: trying to register driver acpi-cpufreq
+Oct 26 20:45:40 MatiM cpufreq-core: adding CPU 0
+Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
+Oct 26 20:45:40 MatiM cpufreq-core: initialization failed
+Oct 26 20:45:40 MatiM cpufreq-core: adding CPU 1
+Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
+Oct 26 20:45:40 MatiM cpufreq-core: initialization failed
+Oct 26 20:45:40 MatiM cpufreq-core: driver acpi-cpufreq up and running
+Oct 26 20:46:03 MatiM cpufreq-core: trying to register driver centrino
+Oct 26 20:51:31 MatiM acpi-cpufreq: acpi_cpufreq_exit
+Oct 26 20:51:31 MatiM cpufreq-core: unregistering driver acpi-cpufreq
+Oct 26 20:51:31 MatiM cpufreq-core: unregistering CPU 0
+Oct 26 20:51:31 MatiM cpufreq-core: unregistering CPU 1
+Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_init
+Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_early_init
+Oct 26 20:51:50 MatiM cpufreq-core: trying to register driver acpi-cpufreq
+Oct 26 20:51:50 MatiM cpufreq-core: adding CPU 0
+Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
+Oct 26 20:51:50 MatiM cpufreq-core: initialization failed
+Oct 26 20:51:50 MatiM cpufreq-core: adding CPU 1
+Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
+Oct 26 20:51:50 MatiM cpufreq-core: initialization failed
+Oct 26 20:51:50 MatiM cpufreq-core: driver acpi-cpufreq up and running
 
-/sys/devices/system/cpu/cpu1:
-cache  online  topology
-MatiM matim # /etc/init.d/cpufrequtils start
- * Enabling ondemand cpufreq governor ...  [ !! ]unknown or unhandled CPU?
-MatiM matim #
-
-------------------------------------------
-Only difference I see is "online" in second processor directory.
-
-MatiM proc # ls -l /proc/cpufreq
-ls: /proc/cpufreq: Nie ma takiego pliku ani katalogu
-MatiM proc #
-
------------------------------------------
-But I also found:
-
-MatiM CPU0 # cat /proc/acpi/processor/CPU0/throttling
-state count:             8
-active state:            T0
-states:
-   *T0:                  00%
-    T1:                  12%
-    T2:                  25%
-    T3:                  37%
-    T4:                  50%
-    T5:                  62%
-    T6:                  75%
-    T7:                  87%
-MatiM CPU0 #
-
-
-Any guess?
-
-Thanks
-Mateusz
-
+What does this mean ?????
 
 Dnia 26-10-2006 o godz. 19:48 Pallipadi Venkatesh napisa=B3(a):
 >=20
