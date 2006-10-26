@@ -1,148 +1,97 @@
-From: "Mateusz Mielnicki" <matim@wp.pl>
-Subject: Odp: RE: Intel T2250
-Date: Thu, 26 Oct 2006 21:35:39 +0200
-Message-ID: <45410e0b7931b@wp.pl>
-References: <EB12A50964762B4D8111D55B764A8454C966B1@scsmsx413.amr.corp.intel.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc3: known unfixed regressions (v2)
+Date: Fri, 27 Oct 2006 00:45:41 +0200
+Message-ID: <20061026224541.GQ27968@stusta.de>
+References: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-reply-to: <EB12A50964762B4D8111D55B764A8454C966B1@scsmsx413.amr.corp.intel.com>
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org>
+Sender: linux-ide-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Pallipadi Venkatesh <venkatesh.pallipadi@intel.com>
-Cc: cpufreq <cpufreq@lists.linux.org.uk>, Dominik Brodowski <linux@dominikbrodowski.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz, Stephen Hemminger <shemminger@osdl.org>, Philipp Zabel <philipp.zabel@gmail.com>, rmk@arm.linux.org.uk, Martin Lorenz <martin@lorenz.eu.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Komuro <komurojun-mbn@nifty.com>, Thomas Gleixner <tglx@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, Christian <christiand59@web.de>, Mark Langsdorf <mark.langsdorf@amd.com>, davej@codemonkey.org.uk, 
 
-And also info from /var/log/messages
+This email lists some known regressions in 2.6.19-rc3 compared to 2.6.18
+that are not yet fixed Linus' tree.
 
-Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_init
-Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_early_init
-Oct 26 20:45:40 MatiM cpufreq-core: trying to register driver acpi-cpufreq
-Oct 26 20:45:40 MatiM cpufreq-core: adding CPU 0
-Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
-Oct 26 20:45:40 MatiM cpufreq-core: initialization failed
-Oct 26 20:45:40 MatiM cpufreq-core: adding CPU 1
-Oct 26 20:45:40 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
-Oct 26 20:45:40 MatiM cpufreq-core: initialization failed
-Oct 26 20:45:40 MatiM cpufreq-core: driver acpi-cpufreq up and running
-Oct 26 20:46:03 MatiM cpufreq-core: trying to register driver centrino
-Oct 26 20:51:31 MatiM acpi-cpufreq: acpi_cpufreq_exit
-Oct 26 20:51:31 MatiM cpufreq-core: unregistering driver acpi-cpufreq
-Oct 26 20:51:31 MatiM cpufreq-core: unregistering CPU 0
-Oct 26 20:51:31 MatiM cpufreq-core: unregistering CPU 1
-Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_init
-Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_early_init
-Oct 26 20:51:50 MatiM cpufreq-core: trying to register driver acpi-cpufreq
-Oct 26 20:51:50 MatiM cpufreq-core: adding CPU 0
-Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
-Oct 26 20:51:50 MatiM cpufreq-core: initialization failed
-Oct 26 20:51:50 MatiM cpufreq-core: adding CPU 1
-Oct 26 20:51:50 MatiM acpi-cpufreq: acpi_cpufreq_cpu_init
-Oct 26 20:51:50 MatiM cpufreq-core: initialization failed
-Oct 26 20:51:50 MatiM cpufreq-core: driver acpi-cpufreq up and running
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-What does this mean ?????
-
-Dnia 26-10-2006 o godz. 19:48 Pallipadi Venkatesh napisa=B3(a):
->=20
-> Can you try the same thing with 'modprobe acpi-cpufreq' instead of=20
-> 'modprobe speedstep-centrino' in first line below.
->=20
-> Thanks,
-> Venki=20
->=20
-> >-----Original Message-----
-> >From: cpufreq-bounces@lists.linux.org.uk=20
-> >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
-> >Mateusz Mielnicki
-> >Sent: Thursday, October 26, 2006 10:38 AM
-> >To: Dominik Brodowski
-> >Cc: cpufreq
-> >Subject: Re: Intel T2250
-> >
-> >Well, I don't think so... sadly.
-> >
-> >This is what I get in console:
-> >
-> >MatiM matim # modprobe speedstep-centrino
-> >FATAL: Error inserting speedstep_centrino=20
-> >(/lib/modules/2.6.17-gentoo-r8-w/kernel/arch/i386/kernel/cpu/cp
-> >ufreq/speedstep-centrino.ko): No such device
-> >MatiM matim # modprobe cpufreq_userspace
-> >MatiM matim # modprobe cpufreq_powersave
-> >MatiM matim # modprobe cpufreq_ondemand
-> >MatiM matim # modprobe cpufreq_conservative
-> >MatiM matim # cpufreq-info
-> >cpufrequtils 001: cpufreq-info (C) Dominik Brodowski 2004-2006
-> >Report errors and bugs to linux@brodo.de, please.
-> >analyzing CPU 0:
-> >  no or unknown cpufreq driver is active on this CPU
-> >analyzing CPU 1:
-> >  no or unknown cpufreq driver is active on this CPU
-> >MatiM matim #
-> >MatiM matim # ls /sys/devices/system/cpu/cpu*
-> >/sys/devices/system/cpu/cpu0:
-> >cache  topology
-> >
-> >/sys/devices/system/cpu/cpu1:
-> >cache  topology
-> >MatiM matim #
-> >MatiM matim # /etc/init.d/cpufrequtils start
-> > * Enabling ondemand cpufreq governor ...  [ !! ]unknown or=20
-> >unhandled CPU?
-> >MatiM matim #
-> >
-> >
-> >As you can see there is nothing that would say it is working...
-> >Is my processor T2250 really supported? I saw that=20
-> >speedstep-centrino contains clock and voltage information of=20
-> >certain processor's, and this one is not even mentioned on=20
-> >intel's page. What can I do with it ?
-> >Mateusz
-> >
-> >
-> >Dnia 26-10-2006 o godz. 4:34 Dominik Brodowski napisa=B3(a):
-> >> On Thu, Oct 19, 2006 at 09:54:42AM +0200, Mateusz Mielnicki wrote:
-> >> > Yes, every module of cpufreq loads, acpi-cpufreq,=20
-> >cpufreq_powersave,
-> >> > cpufreq_conservative, freq_table and so on, excepting=20
-> >speedstep-centrino
-> >> > which gives "No such device".
-> >>=20
-> >> Well, this means that speedstep is working just fine; it uses the
-> >> (preferred) acpi-cpufreq module.
-> >>=20
-> >> 	Dominik
-> >>=20
-> >
-> >
-> >----------------------------------------------------
-> >Nowa Gra Zakr=EAcone Dynie - sprwd=BC i kliknij:
-> >http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fd2
-> >4.html&sid=3D911
-> >Czy zakr=EAcisz nimi jeszcze bardziej i zbijesz wszystkie z planszy?
-> >
-> >
-> >
-> >_______________________________________________
-> >Cpufreq mailing list
-> >Cpufreq@lists.linux.org.uk
-> >http://lists.linux.org.uk/mailman/listinfo/cpufreq
-> >
->=20
+Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-----------------------------------------------------
-Trzy wesela... i niez=B3y cyrk: brytyjska komedia "Confetti"=20
-- przeb=F3j Warszawskiego Festiwalu Filmowego: w kinach!
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fconfetti.htm=
-l&sid=3D912
+Subject    : swsusp initialized after SATA (CONFIG_PCI_MULTITHREAD_PROBE)
+References : http://lkml.org/lkml/2006/10/14/31
+Submitter  : Pavel Machek <pavel@ucw.cz>
+Status     : unknown
+
+
+Subject    : MSI errors during boot (CONFIG_PCI_MULTITHREAD_PROBE)
+References : http://lkml.org/lkml/2006/10/16/291
+Submitter  : Stephen Hemminger <shemminger@osdl.org>
+Handled-By : Greg KH <greg@kroah.com>
+Status     : Greg is working on a fix
+
+
+Subject    : arm: Oops in __wake_up_common during htc magician resume
+References : http://lkml.org/lkml/2006/10/25/73
+Submitter  : Philipp Zabel <philipp.zabel@gmail.com>
+Status     : unknown
+
+
+Subject    : X60s: BUG()s, lose ACPI events after suspend/resume
+References : http://lkml.org/lkml/2006/10/10/39
+Submitter  : Martin Lorenz <martin@lorenz.eu.org>
+Status     : unknown
+
+
+Subject    : T60 stops triggering any ACPI events
+References : http://lkml.org/lkml/2006/10/4/425
+             http://lkml.org/lkml/2006/10/16/262
+             http://bugzilla.kernel.org/show_bug.cgi?id=7408
+Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
+Status     : unknown
+
+
+Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
+Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
+Status     : unknown
+
+
+Subject    : unable to rip cd
+References : http://lkml.org/lkml/2006/10/13/100
+Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
+Status     : unknown
+
+
+Subject    : SMP kernel can not generate ISA irq properly
+References : http://lkml.org/lkml/2006/10/22/15
+Submitter  : Komuro <komurojun-mbn@nifty.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : Thomas will investigate
+
+
+Subject    : ohci1394 on PPC_PMAC:
+             pci_set_power_state() failure and breaking suspend
+References : http://lkml.org/lkml/2006/10/24/13
+Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Caused-By  : Stefan Richter <stefanr@s5r6.in-berlin.de>
+             commit ea6104c22468239083857fa07425c312b1ecb424
+Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
+Status     : Stefan Richter: looking for an answer when to ignore
+             the return code of pci_set_power_state
+
+
+Subject    : cpufreq not working on AMD K8
+References : http://lkml.org/lkml/2006/10/10/114
+Submitter  : Christian <christiand59@web.de>
+Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
+Status     : Mark is investigating
+
+
