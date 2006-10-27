@@ -1,97 +1,154 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.19-rc3: known unfixed regressions (v2)
-Date: Fri, 27 Oct 2006 00:45:41 +0200
-Message-ID: <20061026224541.GQ27968@stusta.de>
-References: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org>
+From: "Miroslav Vasic" <miroslav.vasic@gmail.com>
+Subject: Problem with CPU frequency and booting from the FLASH
+Date: Fri, 27 Oct 2006 14:28:24 +0200
+Message-ID: <b6cb966c0610270528x55e43dd7k3931f148d8bcd3de@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0610231618510.3962@g5.osdl.org>
-Sender: linux-ide-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz, Stephen Hemminger <shemminger@osdl.org>, Philipp Zabel <philipp.zabel@gmail.com>, rmk@arm.linux.org.uk, Martin Lorenz <martin@lorenz.eu.org>, len.brown@intel.com, linux-acpi@vger.kernel.org, linux-pm@osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Komuro <komurojun-mbn@nifty.com>, Thomas Gleixner <tglx@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, Christian <christiand59@web.de>, Mark Langsdorf <mark.langsdorf@amd.com>, davej@codemonkey.org.uk, 
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-This email lists some known regressions in 2.6.19-rc3 compared to 2.6.18
-that are not yet fixed Linus' tree.
+Hi everyone.
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+Few months ago I got evaluation version of RT Linux (from FSMLabs) for the
+Viper board I have (the board  has Xscale PXA255) . I managed to boot the RT
+Linux via Network File System and to make several little applications, which
+were functioning without any problem. Each one of them was working with
+different CPU clock values, because I made a thread which was changing CPU
+clock from time to time in order to see how does it make influence on idle
+times of micro. After that, I tried to boot the RT Linux via flash and it
+works, but not the way I expected. If I enter in the RedBoot and set the CPU
+clock to 133MHz (clock -l 36 -m 1 -n 10) it will not run. To be more exact,
+it will not run each time when the Memory clock is different from 99 MHz (It
+boots with l=27, m=1/2/4, n=1, any other combination with l=36/45 doesn't
+work). The problem is that the File System can not be mounted (I can see
+that message on my screen), and it is the consequence of an earlier error,
+the RedBoot partition table can not be detected. Following is the output of
+command fis list (to show Flash Image System), part of the output messages
+when RT Linux boots correctly, and the messages I receive when RT Linux does
+not boot.
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+RedBoot> fis list
+Name              FLASH addr  Mem addr    Length      Entry point
+FIS directory     0x00000000  0x00000000  0x0001F000  0x00000000
+RedBoot config    0x0001F000  0x0001F000  0x00001000  0x00000000
+filesystem        0x00020000  0x00400000  0x01FE0000  0x00400000
+
+Probing VIPER flash device at physical address 0x04000000
+Probing flash at physical address 0x04000000
+flash: Found 1 x16 devices at 0x0 in 16-bit bank
+ Intel/Sharp Extended Query Table at 0x0031
+Using buffer write method
+cfi_cmdset_0001: Erase suspend on write enabled
+cmdlinepart partition parsing not available
+Searching for RedBoot partition table in flash at offset 0x0
+3 RedBoot partitions found on MTD device flash
+Creating 3 MTD partitions on "flash":
+0x00000000-0x0001f000 : "FIS directory"
+0x0001f000-0x00020000 : "RedBoot config"
+0x00020000-0x02000000 : "filesystem"
+i2c /dev entries driver
+...
+VFS: Mounted root (jffs2 filesystem).
+
+Probing VIPER flash device at physical address 0x04000000
+Probing flash at physical address 0x04000000
+flash: Found 1 x16 devices at 0x0 in 16-bit bank
+ Intel/Sharp Extended Query Table at 0x0031
+Using buffer write method
+cfi_cmdset_0001: Erase suspend on write enabled
+cmdlinepart partition parsing not available
+Searching for RedBoot partition table in flash at offset 0x0
+No RedBoot partition table detected in flash
+Using static partition definition
+Creating 2 MTD partitions on "flash":
+0x00000000-0x000a0000 : "kernel"
+0x000a0000-0x02000000 : "filesystem"
+i2c /dev entries driver
+...
+Kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(0,0)
+
+When I want to boot Arcom's version of Linux, which I received with my
+board, with different CPU clock speeds it works.
+Do you, maybe know what could be the problem?
+Do you know what part of the kernel is in charge for communication between
+CPU and FLASH memory?
+Maybe there is a bug in that part of the kernel I am trying to boot on the
+Viper board. Do you know how does frequency change make influence to
+communication between FLASH memory and CPU?
+Code for frequency changes (you can find it in cpu-pxa.c, function
+pxa_set_target) is the same in both kernels (RTLinux and Arcom's version of
+kernel). Is there any other function which I should check because of the
+side effects?
+
+The problem can be seen in one more way. I boot the RT Linux, and then I
+insert a module which changes the CPU frequency during initialization. If I
+give a command: lsmod or rmmod I receive following message (this happens
+only if the memory clock is changed to value different then 99MHz):
+
+Node header CRC failed at 01908c68. But it must have been OK earlier.
+Node was: { 1985, 2185, 00920002, 01122f52 }
+Node totlen on flash (0x00920002) != totlen from node ref (0x000001d4)
+Node header CRC failed at 01908684. But it must have been OK earlier.
+Node was: { 19bf, 2185, 00a205e2, 772f0000 }
+Node totlen on flash (0x00a205e2) != totlen from node ref (0x000005e4)
+Node header CRC failed at 01907eb4. But it must have been OK earlier.
+Node was: { 19bf, 2185, 018d07cd, 04290000 }
+Node totlen on flash (0x018d07cd) != totlen from node ref (0x000007d0)
+Node header CRC failed at 019075b0. But it must have been OK earlier.
+Node was: { 1985, 2185, 00020802, 0173c773 }
+Node totlen on flash (0x00020802) != totlen from node ref (0x00000904)
+Node header CRC failed at 01906d80. But it must have been OK earlier.
+Node was: { 1985, 2185, 00100800, 116e9d6e }
+Node totlen on flash (0x00100800) != totlen from node ref (0x00000830)
+jffs2_do_read_inode(): No data nodes found for ino #6192
+-bash: lsmod: command not found
+
+In cpu-pxa.c there is a function which has a task to start frequency change
+(if I understand very well), pxa_set_target. In this function there is a
+part of code which is written in assembly, see line below, and if I put this
+part of code as a comment, my system "works" (I want to say, that I change
+voltage, but I do not change frequency. System works with minimal frequency
+of 99MHz) Because of that, I have doubts, that maybe this part is doing
+something wrong, although I can not see what.
+
+__asm__ __volatile__("                                  \
+        ldr r4, [%1] ;  /* load MDREFR */                   \
+        b   2f ;                                            \
+        .align  5 ;                                         \
+1:                                                          \
+        str %4, [%1] ;          /* preset the MDREFR */     \
+        mcr p14, 0, %2, c6, c0, 0 ; /* set CCLKCFG[FCS] */  \
+        str %5, [%1] ;          /* postset the MDREFR */    \
+                                                            \
+        b   3f       ;                                      \
+2:      b   1b       ;                                      \
+3:      nop          ;                                      \
+
+"
+
+        : "=&r"
+(unused)
+        : "r" (&MDREFR), "r" (CCLKCFG_TURBO|CCLKCFG_FCS), "r" (ramstart), \
+          "r" (preset_mdrefr), "r" (postset_mdrefr)
+        : "r4", "r5");
 
 
-Subject    : swsusp initialized after SATA (CONFIG_PCI_MULTITHREAD_PROBE)
-References : http://lkml.org/lkml/2006/10/14/31
-Submitter  : Pavel Machek <pavel@ucw.cz>
-Status     : unknown
+Does anybody have idea what can be the problem?
+Has anybody seen something similar?
 
+Thanks in advance.
 
-Subject    : MSI errors during boot (CONFIG_PCI_MULTITHREAD_PROBE)
-References : http://lkml.org/lkml/2006/10/16/291
-Submitter  : Stephen Hemminger <shemminger@osdl.org>
-Handled-By : Greg KH <greg@kroah.com>
-Status     : Greg is working on a fix
-
-
-Subject    : arm: Oops in __wake_up_common during htc magician resume
-References : http://lkml.org/lkml/2006/10/25/73
-Submitter  : Philipp Zabel <philipp.zabel@gmail.com>
-Status     : unknown
-
-
-Subject    : X60s: BUG()s, lose ACPI events after suspend/resume
-References : http://lkml.org/lkml/2006/10/10/39
-Submitter  : Martin Lorenz <martin@lorenz.eu.org>
-Status     : unknown
-
-
-Subject    : T60 stops triggering any ACPI events
-References : http://lkml.org/lkml/2006/10/4/425
-             http://lkml.org/lkml/2006/10/16/262
-             http://bugzilla.kernel.org/show_bug.cgi?id=7408
-Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
-Status     : unknown
-
-
-Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
-Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
-Status     : unknown
-
-
-Subject    : unable to rip cd
-References : http://lkml.org/lkml/2006/10/13/100
-Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
-Status     : unknown
-
-
-Subject    : SMP kernel can not generate ISA irq properly
-References : http://lkml.org/lkml/2006/10/22/15
-Submitter  : Komuro <komurojun-mbn@nifty.com>
-Handled-By : Thomas Gleixner <tglx@linutronix.de>
-Status     : Thomas will investigate
-
-
-Subject    : ohci1394 on PPC_PMAC:
-             pci_set_power_state() failure and breaking suspend
-References : http://lkml.org/lkml/2006/10/24/13
-Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Caused-By  : Stefan Richter <stefanr@s5r6.in-berlin.de>
-             commit ea6104c22468239083857fa07425c312b1ecb424
-Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
-Status     : Stefan Richter: looking for an answer when to ignore
-             the return code of pci_set_power_state
-
-
-Subject    : cpufreq not working on AMD K8
-References : http://lkml.org/lkml/2006/10/10/114
-Submitter  : Christian <christiand59@web.de>
-Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
-Status     : Mark is investigating
-
-
+Miroslav Vasic
