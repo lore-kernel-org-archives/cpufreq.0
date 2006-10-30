@@ -1,8 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6938] use of cpufreq (with any cpufreqd-like deamon) has
-	strange influence on the acpi functions of an IBM Thinkpad X21
-Date: Mon, 30 Oct 2006 09:42:00 -0800
-Message-ID: <200610301742.k9UHg0RW011571@fire-2.osdl.org>
+Subject: [Bug 6851] Suspend to RAM and Ondemand Lockup/Stack trace
+Date: Mon, 30 Oct 2006 10:16:01 -0800
+Message-ID: <200610301816.k9UIG1Qm014000@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,15 +18,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6938
+http://bugzilla.kernel.org/show_bug.cgi?id=6851
 
-venkatesh.pallipadi@intel.com changed:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-          Component|cpufreq                     |Other
-           Category|Power Management            |ACPI
 
+
+
+------- Additional Comments From rjwysocki@sisk.pl  2006-10-30 10:02 -------
+Does the lack of activity mean the issue has been fixed?
 
 
 ------- You are receiving this mail because: -------
