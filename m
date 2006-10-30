@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 6938] use of cpufreq (with any cpufreqd-like deamon) has
 	strange influence on the acpi functions of an IBM Thinkpad X21
-Date: Mon, 30 Oct 2006 09:43:32 -0800
-Message-ID: <200610301743.k9UHhWYr011618@fire-2.osdl.org>
+Date: Mon, 30 Oct 2006 09:42:00 -0800
+Message-ID: <200610301742.k9UHg0RW011571@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,16 +25,10 @@ venkatesh.pallipadi@intel.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |acpi-
-                   |                            |bugzilla@lists.sourceforge.n
-                   |                            |et
-              Owner|cpufreq@www.linux.org.uk    |acpi_other@kernel-
-                   |                            |bugs.osdl.org
+          Component|cpufreq                     |Other
+           Category|Power Management            |ACPI
 
 
-
-------- Additional Comments From venkatesh.pallipadi@intel.com  2006-10-30 09:29 -------
-Moved to ACPI bucket.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
