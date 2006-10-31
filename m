@@ -1,153 +1,85 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH] p4-clockmod: add more CPUs
-Date: Tue, 31 Oct 2006 12:44:08 -0500
-Message-ID: <20061031174408.GA8838@dominikbrodowski.de>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc4: known unfixed regressions
+Date: Tue, 31 Oct 2006 20:56:54 +0100
+Message-ID: <20061031195654.GV27968@stusta.de>
+References: <Pine.LNX.4.64.0610302019560.25218@g5.osdl.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1945931AbWJaT47@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0610302019560.25218@g5.osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, cpufreq@lists.linux.org.uk
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jeff Chua <jeff.chua.linux@gmail.com>, gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz, Prakash Punnoor <prakash@punnoor.de>, phil.el@wanadoo.fr, oprofile-list@lists.sf.net, ak@suse.de, discuss@x86-64.org, Martin Lorenz <martin@lorenz.eu.org>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Hugh Dickins <hugh@veritas.com>, len.brown@intel.com, linux-acpi@vger.kernel.org, pavel@suse.cz, linux-pm@osdl.org, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Christian <christiand59@web.de>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Komuro <komurojun-mbn@nifty.com>, Thomas Gleixner <tglx@linutronix.de>, Randy Dunlap <randy.dunlap@oracle.com>, Arnd Bergmann <arnd@arndb.de>, David Brownell <david-b>
 
-Several more Intel CPUs are now capable using the p4-clockmod cpufreq
-driver. As it is of limited use most of the time, print a big bold warning
-if a better cpufreq driver might be available.
+This email lists some known regressions in 2.6.19-rc4 compared to 2.6.18
+that are not yet fixed in Linus' tree.
 
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c b/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-index 304d2ea..bec5017 100644
---- a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-+++ b/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
-@@ -163,29 +163,27 @@ static int cpufreq_p4_verify(struct cpuf
- 
- static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
- {
--	if ((c->x86 == 0x06) && (c->x86_model == 0x09)) {
--		/* Pentium M (Banias) */
--		printk(KERN_WARNING PFX "Warning: Pentium M detected. "
--		       "The speedstep_centrino module offers voltage scaling"
--		       " in addition of frequency scaling. You should use "
--		       "that instead of p4-clockmod, if possible.\n");
--		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
--	}
--
--	if ((c->x86 == 0x06) && (c->x86_model == 0x0D)) {
--		/* Pentium M (Dothan) */
--		printk(KERN_WARNING PFX "Warning: Pentium M detected. "
--		       "The speedstep_centrino module offers voltage scaling"
--		       " in addition of frequency scaling. You should use "
--		       "that instead of p4-clockmod, if possible.\n");
--		/* on P-4s, the TSC runs with constant frequency independent whether
--		 * throttling is active or not. */
--		p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
--		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
-+	if (c->x86 == 0x06) {
-+		if (cpu_has(c, X86_FEATURE_EST))
-+			printk(KERN_WARNING PFX "Warning: EST-capable CPU detected. "
-+			       "The acpi-cpufreq module offers voltage scaling"
-+			       " in addition of frequency scaling. You should use "
-+			       "that instead of p4-clockmod, if possible.\n");
-+		switch (c->x86_model) {
-+		case 0x0E: /* Core */
-+		case 0x0F: /* Core Duo */
-+			p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
-+			return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PCORE);
-+		case 0x0D: /* Pentium M (Dothan) */
-+			p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
-+			/* fall through */
-+		case 0x09: /* Pentium M (Banias) */
-+			return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
-+		}
- 	}
- 
- 	if (c->x86 != 0xF) {
--		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <linux@brodo.de>\n");
-+		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux.org.uk>\n");
- 		return 0;
- 	}
- 
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c b/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
-index 4f46cac..6623a56 100644
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
-+++ b/arch/i386/kernel/cpu/cpufreq/speedstep-lib.c
-@@ -123,6 +123,36 @@ static unsigned int pentiumM_get_frequen
- 	return (msr_tmp * 100 * 1000);
- }
- 
-+static unsigned int pentium_core_get_frequency(void)
-+{
-+	u32 fsb = 0;
-+	u32 msr_lo, msr_tmp;
-+
-+	rdmsr(MSR_FSB_FREQ, msr_lo, msr_tmp);
-+	/* see table B-2 of 24547212.pdf */
-+	switch (msr_lo & 0x07) {
-+	case 5:
-+		fsb = 400;
-+		break;
-+	case 1:
-+		fsb = 533;
-+		break;
-+	case 3:
-+		fsb = 667;
-+		break;
-+	default:
-+		printk(KERN_ERR "PCORE - MSR_FSB_FREQ undefined value");
-+	}
-+
-+	rdmsr(MSR_IA32_EBL_CR_POWERON, msr_lo, msr_tmp);
-+	dprintk("PCORE - MSR_IA32_EBL_CR_POWERON: 0x%x 0x%x\n", msr_lo, msr_tmp);
-+
-+	msr_tmp = (msr_lo >> 22) & 0x1f;
-+	dprintk("bits 22-26 are 0x%x, speed is %u\n", msr_tmp, (msr_tmp * fsb * 1000));
-+
-+	return (msr_tmp * fsb * 1000);
-+}
-+
- 
- static unsigned int pentium4_get_frequency(void)
- {
-@@ -174,6 +204,8 @@ static unsigned int pentium4_get_frequen
- unsigned int speedstep_get_processor_frequency(unsigned int processor)
- {
- 	switch (processor) {
-+	case SPEEDSTEP_PROCESSOR_PCORE:
-+		return pentium_core_get_frequency();
- 	case SPEEDSTEP_PROCESSOR_PM:
- 		return pentiumM_get_frequency();
- 	case SPEEDSTEP_PROCESSOR_P4D:
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h b/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
-index b735429..b11bcc6 100644
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
-+++ b/arch/i386/kernel/cpu/cpufreq/speedstep-lib.h
-@@ -22,6 +22,7 @@ #define SPEEDSTEP_PROCESSOR_P4M			0x0000
-  * the speedstep_get_processor_frequency() call. */
- #define SPEEDSTEP_PROCESSOR_PM			0xFFFFFF03  /* Pentium M  */
- #define SPEEDSTEP_PROCESSOR_P4D			0xFFFFFF04  /* desktop P4  */
-+#define SPEEDSTEP_PROCESSOR_PCORE		0xFFFFFF05  /* Core */
- 
- /* speedstep states -- only two of them */
- 
-diff --git a/include/asm-i386/msr.h b/include/asm-i386/msr.h
-index 62b76cd..e2e98d6 100644
---- a/include/asm-i386/msr.h
-+++ b/include/asm-i386/msr.h
-@@ -95,6 +95,8 @@ #define MSR_IA32_UCODE_REV		0x8b
- 
- #define MSR_P6_PERFCTR0		0xc1
- #define MSR_P6_PERFCTR1		0xc2
-+#define MSR_FSB_FREQ		0xcd
-+
- 
- #define MSR_IA32_BBL_CR_CTL		0x119
+Due to the huge amount of recipients, please trim the Cc when answering.
+
+
+Subject    : PCI: MMCONFIG breakage
+References : http://lkml.org/lkml/2006/10/27/251
+Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown, both BIOS and Direct work
+
+
+Subject    : x86_64: oprofile doesn't work
+References : http://lkml.org/lkml/2006/10/27/3
+Submitter  : Prakash Punnoor <prakash@punnoor.de>
+Status     : unknown
+
+
+Subject    : T43p/T60/X60s: lose ACPI events after suspend/resume
+References : http://lkml.org/lkml/2006/10/10/39
+             http://lkml.org/lkml/2006/10/4/425
+             http://lkml.org/lkml/2006/10/16/262
+             http://bugzilla.kernel.org/show_bug.cgi?id=7408
+             http://lkml.org/lkml/2006/10/30/251
+Submitter  : Martin Lorenz <martin@lorenz.eu.org>
+             "Michael S. Tsirkin" <mst@mellanox.co.il>
+             Hugh Dickins <hugh@veritas.com>
+Status     : unknown
+
+
+Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
+Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
+Status     : unknown
+
+
+Subject    : unable to rip cd
+References : http://lkml.org/lkml/2006/10/13/100
+Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
+Status     : unknown
+
+
+Subject    : cpufreq not working on AMD K8
+References : http://lkml.org/lkml/2006/10/10/114
+Submitter  : Christian <christiand59@web.de>
+Status     : unknown
+
+
+Subject    : SMP kernel can not generate ISA irq properly
+References : http://lkml.org/lkml/2006/10/22/15
+Submitter  : Komuro <komurojun-mbn@nifty.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : Thomas will investigate
+
+
+Subject    : USB net drivers: missing MII select's
+References : http://lkml.org/lkml/2006/10/25/209
+Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
+Caused-By  : Arnd Bergmann <arnd@arndb.de>
+             commit c41286fd42f3545513f8de9f61028120b6d38e89
+Handled-By : Randy Dunlap <randy.dunlap@oracle.com>
+             David Brownell <david-b@pacbell.net>
+Status     : patches are being discussed
+
