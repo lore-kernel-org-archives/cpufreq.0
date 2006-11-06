@@ -1,47 +1,34 @@
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.19-rc4: known unfixed regressions (v3)
-Date: Sun, 5 Nov 2006 17:30:27 +0800
-Message-ID: <b6a2187b0611050130s325d777che069a7d9619f061b@mail.gmail.com>
-References: <Pine.LNX.4.64.0610302019560.25218@g5.osdl.org>
-	<20061105064801.GV13381@stusta.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20061105064801.GV13381@stusta.de>
-Content-Disposition: inline
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7463] CPU frequency scaling(cpufreq) does not work.
+	speedstep-centrino.c problem
+Date: Sun, 5 Nov 2006 16:00:14 -0800
+Message-ID: <200611060000.kA600EYP003512@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Komuro <komurojun-mbn@nifty.com>, linux-pm@osdl.org, Ernst Herzberg <earny@net4u.de>, Christian <christiand59@web.de>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, ak@suse.de, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, discuss@x86-64.org, Thierry Vignaud <tvignaud@mandriva.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, neilb@cse.unsw.edu.au, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net, "Eric W. Biederman" <ebiederm@xmission.com>, cpufreq@lists.linux.org.uk, "Michael S. Tsirkin" <mst@mellan>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-On 11/5/06, Adrian Bunk <bunk@stusta.de> wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=7463
 
-> Subject    : PCI: MMCONFIG breakage
-> References : http://lkml.org/lkml/2006/10/27/251
-> Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
-> Status     : unknown, both BIOS and Direct work
->              Greg said it should already be fixed
+akpm@osdl.org changed:
 
-Here's results with vanilla 2.6.19-rc4 (gcc version 3.4.5) ...
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|drivers_other@kernel-       |cpufreq@www.linux.org.uk
+                   |bugs.osdl.org               |
 
-1) PCI access mode (Any) ... FAILED
 
-2) PCI access mode (MMConfig) ... FAILED
 
-3) PCI access mode (Direct) ... PASSED
-
-4) PCI access mode (BIOS) ... PASSED
-
-Looks like it's still having problem with Dell Optiplex GX620.
-
-Thanks,
-Jeff.
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
