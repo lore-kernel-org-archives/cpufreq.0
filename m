@@ -1,40 +1,93 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: [discuss] Re: 2.6.19-rc4: known unfixed regressions
-	(v3)
-Date: Mon, 6 Nov 2006 18:47:26 +0100
-Message-ID: <200611061847.27540.ak@suse.de>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [discuss] Linux 2.6.19-rc4: known unfixed regressions (v2)
+Date: Mon, 6 Nov 2006 18:35:28 +0100
+Message-ID: <20061106173528.GQ5778@stusta.de>
 References: <Pine.LNX.4.64.0610302019560.25218@g5.osdl.org>
-	<20061105064801.GV13381@stusta.de>
-	<b6a2187b0611050130s325d777che069a7d9619f061b@mail.gmail.com>
+	<454AFD01.4080306@linux.intel.com>
+	<20061103155656.GA1000@redhat.com>
+	<200611051832.13285.christiand59@web.de>
+	<20061105200448.GE859@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <b6a2187b0611050130s325d777che069a7d9619f061b@mail.gmail.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <20061105200448.GE859@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: discuss@x86-64.org
-Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Thierry Vignaud <tvignaud@mandriva.com>, Ernst Herzberg <earny@net4u.de>, Christian <christiand59@web.de>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, linux-pm@osdl.org, Komuro <komurojun-mbn@nifty.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, neilb@cse.unsw.edu.au, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net, "Eric W. Biederman" <ebiederm@xmission.com>, cpufreq@lists.linux.org
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>, Christian <christiand59@web.de>, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-On Sunday 05 November 2006 10:30, Jeff Chua wrote:
+On Sun, Nov 05, 2006 at 03:04:48PM -0500, Dave Jones wrote:
+> On Sun, Nov 05, 2006 at 06:32:12PM +0100, Christian wrote:
+>  > Am Freitag, 3. November 2006 16:56 schrieb Dave Jones:
+>  > > On Fri, Nov 03, 2006 at 11:25:37AM +0300, Alexey Starikovskiy wrote:
+>  > >  > Could this be a problem?
+>  > >  > --------------------
+>  > >  > ...
+>  > >  > CONFIG_ACPI_PROCESSOR=m
+>  > >  > ...
+>  > >  > CONFIG_X86_POWERNOW_K8=y
+>  > >
+>  > > Hmm, possibly.  Christian, does it work again if you set them both to =y ?
+>  > 
+>  > Yes, it works now! Only the change to CONFIG_ACPI_PROCESSOR=y made it work 
+>  > again!
+> 
+> So, the reasoning behind this, is that we have this construct..
+> 
+> config X86_POWERNOW_K8_ACPI
+>     bool
+>     depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
+>     depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
+>     default y
+> 
+> 
+> Which makes us use the ACPI stuff if it's there, otherwise not,
+> and in your case, it seems your system _needs_ this enabled
+> to make powernow work.
+> 
+> Thing is, this was there in 2.6.18 too, so strictly speaking,
+> we haven't regressed here, and you're getting exactly what you asked for.
+> The problem is that it's completely silent as to why it then fails.
+> 
+> I'm open to improvements, but I'm not sure what the right thing to do
+> here is.. opinions ?
 
-> Here's results with vanilla 2.6.19-rc4 (gcc version 3.4.5) ...
-> =
+The extreme solution would be
 
-> 1) PCI access mode (Any) ... FAILED
-> =
+config X86_POWERNOW_K8
+        tristate "AMD Opteron/Athlon64 PowerNow!"
+        select CPU_FREQ_TABLE
+        depends ACPI_PROCESSOR
 
-> 2) PCI access mode (MMConfig) ... FAILED
+A medium solution might be
 
-Full boot log please?
+config X86_POWERNOW_K8
+        tristate "AMD Opteron/Athlon64 PowerNow!"
+        select CPU_FREQ_TABLE
+	depends (ACPI_PROCESSOR || ACPI_PROCESSOR=n)
 
--Andi
+But in the end, the best solution depends on how many percent of the 
+X86_POWERNOW_K8 users have Christian's problem of requiring 
+ACPI_PROCESSOR. If there are only very few people with this problem, I'd 
+say leave it as it is.
+
+> 	Dave
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
