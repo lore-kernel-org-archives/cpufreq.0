@@ -1,48 +1,46 @@
-From: Martin Cracauer <cracauer@cons.org>
-Subject: Need to reuse cpufreq's recalibration code
-Date: Thu, 9 Nov 2006 16:32:28 -0500
-Message-ID: <20061109213228.GA72108@cons.org>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: [discuss] Re: 2.6.19-rc4: known unfixed regressions
+	(v3)
+Date: Fri, 10 Nov 2006 07:52:54 +0100
+Message-ID: <200611100752.55517.ak@suse.de>
+References: <Pine.LNX.4.64.0611080056480.12828@silvia.corp.fedex.com>
+	<Pine.LNX.4.64.0611081048330.3667@g5.osdl.org>
+	<m1r6wd3fnd.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.osdl.org>
+In-Reply-To: <m1r6wd3fnd.fsf@ebiederm.dsl.xmission.com>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.osdl.org>
+List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.osdl.org
+Errors-To: linux-pm-bounces@lists.osdl.org
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: discuss@x86-64.org
+Cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com, Thierry Vignaud <tvignaud@mandriva.com>, Matthew Wilcox <matthew@wil.cx>, Ernst Herzberg <earny@net4u.de>, Aaron Durbin <adurbin@google.com>, Alex Romosan <romosan@sycorax.lbl.gov>, openib-general@openib.org, neilb@cse.unsw.edu.au, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, oprofile-list@lists.sourceforge.net, Jens Axboe <jens.axboe@oracle.com>, linux-pci@atrey.karlin.mff.cuni.cz, Elimar Riesebieter <riesebie@lxtec.de>, linux-pm@osdl.org, Komuro <komurojun-mbn@nifty.com>, Jeff Chua <jeff.chua.linux@gmail.com>, Tim Chen <tim.c.chen@linux.intel.com>, phil.el@wanadoo.fr, gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Christian <christiand59@web.de>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, mingo@redhat.com, nfs@lists.sourceforge.net
 
-Hi,
 
-I am messing with the CPU clocks outside the cpufreq framework (direct
-ICS manipulation).  While I plan to integrate the code into cpufreq,
-at this time I cannot since all the math is pocket calculator.
+> So we should have the infrastructure to only use mmconfig for some set
+> of busses.  If that interface is well described we can probably
+> bootstrap sanely, only enabling what we know exists and like wise
+> only reserving what we know is used.
 
-What I need to do is recalibrate the CPU clocks after I change the
-frequency.  I observe that the real time clock is correct, but that
-CPU time is wrongly accounted for and obviously /proc/cpuinfo isn't
-updated.  That happens if I use the TCS, mptmr and hpet.
+Unfortunately there is a chicken and egg problem on those few broken
+systems (like some x86 Macs) where only mcfg works. Without mcfg you
+won't be able to probe the bus. Ok you could trust ACPI when it says
+it's there, but I'm not sure Linus would like that.
 
-I figured that the best way to proceed is that I reuse some code from
-cpufreq, namely cpufreq_notify_transition().
+Still perhaps I guess only reserving when the bus is probed is probably
+a good idea. In most cases we only probe a small number of busses =
 
-I am looking for advise how to achieve this best without messing up
-too much other code.
+because ACPI tells us the number.
 
-Maybe I can write an "empty" cpufreq implementation that does nothing
-but call cpufreq_notify_transition when I touch one of it's /proc
-files? 
+This basically means pci_mcfg_init() should be split up.
 
-Platform is x86_64, hardware is Core2 Conroe on D975XBX (975x chipset).
-
-Martin
--- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Martin Cracauer <cracauer@cons.org>   http://www.cons.org/cracauer/
+-Andi
