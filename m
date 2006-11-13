@@ -1,10 +1,8 @@
-From: celtune <celtune@gmx.at>
-Subject: Dothan 735 C-Stepping with 400MHz-FSB ?
-Date: Mon, 13 Nov 2006 16:09:57 +0100
-Message-ID: <45588AC5.10607@gmx.at>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7514] New: No centrino-speedstepping w/  HP nx7400 (rh402et)
+Date: Mon, 13 Nov 2006 12:08:27 -0800
+Message-ID: <200611132008.kADK8RHc021084@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,20 +12,39 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-hi!
+http://bugzilla.kernel.org/show_bug.cgi?id=7514
 
-Can somebody help me Please, i got a Pentium M 735 (1,7GHz, 400 MHz-FSB)=20
-with a C-stepping (8) (same stepping like a Sonoma with 533MHz-FSB) I=20
-just know B-Stepping (6) 735 Dothans ,with these stepping (6) i can=20
-manage to undervolt but i can=B4t with the 400MHZ-C-Stepping ones . Is=20
-there a Patch for a 2.6 Kernel (best would be for a 2.6.14 or for a=20
-2.6.18) ?
-PS: Sorry for my English  ;)
+           Summary: No centrino-speedstepping w/  HP nx7400 (rh402et)
+    Kernel Version: 2.6.27-10 up to 2.6.18.2
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: public.email@web.de
 
-Thank=B4s i advance
 
-celtune
+Distribution: Kubuntu 6.10
+Hardware: HP NX7400 (rh402et), BIOS N07 (Downgrade borks up the whole thing)
+
+Problem Description:
+
+Can't load speedstep-centrino with the current kernels.
+
+FATAL: Error inserting speedstep_centrino
+(/lib/modules/2.6.17-10-generic/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko):
+No such device
+
+Collected the most important things (dmesg, acpidump, kernel config) at
+http://www.wegotocanada.de/privat/nx7400
+
+Steps to reproduce:
+
+Just type 'modprobe speedstep-centrino'
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
