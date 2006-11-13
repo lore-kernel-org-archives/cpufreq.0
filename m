@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7514] No centrino-speedstepping w/  HP nx7400 (rh402et)
-Date: Mon, 13 Nov 2006 12:12:34 -0800
-Message-ID: <200611132012.kADKCYAe021465@fire-2.osdl.org>
+Date: Mon, 13 Nov 2006 12:29:03 -0800
+Message-ID: <200611132029.kADKT34X022391@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,10 +24,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=7514
 
 
 
-------- Additional Comments From public.email@web.de  2006-11-13 12:11 -------
-Created an attachment (id=9489)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=9489&action=view)
-kernconfig of my nx7400
+------- Additional Comments From public.email@web.de  2006-11-13 12:28 -------
+Created an attachment (id=9490)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=9490&action=view)
+lshw output of nx7400
 
 
 ------- You are receiving this mail because: -------
