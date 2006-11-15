@@ -1,46 +1,47 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7532] cpufreq does not get enabled on a core 2 duo E6300
-	system.
-Date: Wed, 15 Nov 2006 10:48:06 -0800
-Message-ID: <200611151848.kAFIm62N018094@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: Mattia Dongili <malattia@linux.it>
+Subject: [PATCH 2.6.19-rc5-mm2] cpufreq: set policy->curfreq on initialization
+Date: Wed, 15 Nov 2006 20:05:17 +0100
+Message-ID: <20061115190517.GA2449@inferi.kami.home>
+References: <EB12A50964762B4D8111D55B764A8454E4128E@scsmsx413.amr.corp.intel.com> <20061115183610.GA4812@inferi.kami.home>
+Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030903AbWKOTJA@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20061115183610.GA4812@inferi.kami.home>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=7532
-
-venkatesh.pallipadi@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |venkatesh.pallipadi@intel.co
-                   |                            |m
-             Status|NEW                         |ASSIGNED
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, ego@in.ibm.com, Reuben Farrelly <reuben-linuxkernel@reub.net>, Andrew Morton <akpm@osdl.org>, davej@redhat.com, linux-kernel@vger.kernel.org, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, "Sadykov, Denis M" <denis.m.sadykov@intel.com>
 
 
+Check the correct variable and set policy->cur upon acpi-cpufreq
+initialization to allow the userspace governor to be used as default.
 
-------- Additional Comments From venkatesh.pallipadi@intel.com  2006-11-15 10:46 -------
+Signed-off-by: Mattia Dongili <malattia@linux.it>
 
-From the first looks it seems that BIOS is not giving the proper Speedstep
-information to OS. I will have to look at acpidump in a bit more detail.
+---
 
-Can you make sure you are running the latest BIOS and check whether BIOS has any
-option related to Enahanced Speedstep (May be called Intel EST or EIST or some
-such thing) is enabled.
+Reuben, could you also try if this patch fixes the BUG()?
+Thanks
 
-Thanks.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+diff --git a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+index 18f4715..a630f94 100644
+--- a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -699,14 +699,14 @@ static int acpi_cpufreq_cpu_init(struct
+ 	if (result)
+ 		goto err_freqfree;
+ 
+-	switch (data->cpu_feature) {
++	switch (perf->control_register.space_id) {
+ 	case ACPI_ADR_SPACE_SYSTEM_IO:
+ 		/* Current speed is unknown and not detectable by IO port */
+ 		policy->cur = acpi_cpufreq_guess_freq(data, policy->cpu);
+ 		break;
+ 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+ 		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
+-		get_cur_freq_on_cpu(cpu);
++		policy->cur = get_cur_freq_on_cpu(cpu);
+ 		break;
+ 	default:
+ 		break;
