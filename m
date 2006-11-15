@@ -1,73 +1,61 @@
-From: Reuben Farrelly <reuben-linuxkernel@reub.net>
-Subject: Re: 2.6.19-rc5-mm2
-Date: Wed, 15 Nov 2006 21:42:19 +1100
-Message-ID: <455AEF0B.1040907@reub.net>
-References: <20061114014125.dd315fff.akpm@osdl.org> <4559A91C.10009@reub.net> <20061114170053.GA22649@in.ibm.com> <20061114205829.GC2504@inferi.kami.home> <20061115103419.GA3131@in.ibm.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: 2.6.19-rc5-mm2
+Date: Wed, 15 Nov 2006 06:09:47 -0800
+Message-ID: <EB12A50964762B4D8111D55B764A8454E4109A@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S966725AbWKOKmT@vger.kernel.org>
-In-Reply-To: <20061115103419.GA3131@in.ibm.com>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030465AbWKOOJw@vger.kernel.org>
+Content-class: urn:content-classes:message
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: ego@in.ibm.com
-Cc: Andrew Morton <akpm@osdl.org>, davej@redhat.com, linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+To: ego@in.ibm.com, Reuben Farrelly <reuben-linuxkernel@reub.net>, Andrew Morton <akpm@osdl.org>, davej@redhat.com, linux-kernel@vger.kernel.org, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, Mattia Dongili <malattia@linux.it>
 
-Hi,
+ 
 
-On 15/11/2006 9:34 PM, Gautham R Shenoy wrote:
-> Hi,
-> 
-> On Tue, Nov 14, 2006 at 09:58:29PM +0100, Mattia Dongili wrote:
+>-----Original Message-----
+>From: Gautham R Shenoy [mailto:ego@in.ibm.com] 
+>Sent: Wednesday, November 15, 2006 2:34 AM
+>To: Gautham R Shenoy; Reuben Farrelly; Andrew Morton; 
+>davej@redhat.com; linux-kernel@vger.kernel.org; Pallipadi, 
+>Venkatesh; CPUFreq Mailing List
+>Subject: Re: 2.6.19-rc5-mm2
+>
+>Hi,
+>
+>On Tue, Nov 14, 2006 at 09:58:29PM +0100, Mattia Dongili wrote:
+>> 
 >> maybe this helps? mostly guessing here, but when cpufreq_userspace is
 >> the default governor we may hit this path and leave policy->cur
 >> unset.
-> 
-> I doubt if that's causing the problem. My reasons are:
+>
+>I doubt if that's causing the problem. My reasons are:
+>
+>- Reuben's config shows his system to be a x64_64. So if I am not
+>  mistaken, the correct file look for would be 
+>  arch/ia64/kernel/cpufreq/acpi-cpufreq.c.
 
-Yes.  I just tried with the one-liner from Mattia as below, and unfortunately it 
-made no difference.  The crash was the same..
+ia64 and x86_64 are different!
+X86_64 shares acpi-cpufreq.c in arch/i386/kernel/cpu/cpufreq. So, that
+is the file that can be causing problems here.
 
-Unfortunately I didn't get to test out 2.6.19-rc5-mm1 as there was some issue 
-with it unable to mount my ext3/raid-1 root (fixed in -rc5-mm2), that I didn't 
-have time to get to the bottom of.
+>- The fix provided by you deals with the state of a 
+>  driver(hardware) specific variable data->cpu_feature while the
+>  governors like userspace/performance/powersave/ondemand are 
+>  driver(hardware) independent.
+>
+>Nevertheless, it could be a valid fix for i386 acpi_cpufreq considering
+>that policy->cur is not being initialized if 
+>data->cpu_feature == ACPI_ADR_SPACE_FIXED_HARDWARE.
 
-So there is a chance that this cpufreq problem is not new to -rc5-mm2.
+Yes. Patch from Mattia is indeed required for acpi-cpufreq. 
+Mattia: Can you please send the patch towards Andrew (With signed off
+etc) for inclusion.
 
-Reuben
+Reuben: Can you please enable CPU_FREQ_DEBUG in your config and boot
+with "cpufreq.debug=7" boot parameter and send me the log. That will
+give some more debug information that should help to root cause this
+faster.
 
-
-> - Reuben's config shows his system to be a x64_64. So if I am not
->   mistaken, the correct file look for would be 
->   arch/ia64/kernel/cpufreq/acpi-cpufreq.c.
-> 
-> - The fix provided by you deals with the state of a 
->   driver(hardware) specific variable data->cpu_feature while the
->   governors like userspace/performance/powersave/ondemand are 
->   driver(hardware) independent.
-> 
-> Nevertheless, it could be a valid fix for i386 acpi_cpufreq considering
-> that policy->cur is not being initialized if 
-> data->cpu_feature == ACPI_ADR_SPACE_FIXED_HARDWARE.
-> 
-> Please check with Dave Jones or Venkatesh Pallipadi.
-> 
-> Thanks
-> gautham.
-> 
->> diff --git a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
->> index 18f4715..94e6e86 100644
->> --- a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
->> +++ b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
->> @@ -706,7 +706,7 @@ static int acpi_cpufreq_cpu_init(struct
->>  		break;
->>  	case ACPI_ADR_SPACE_FIXED_HARDWARE:
->>  		acpi_cpufreq_driver.get = get_cur_freq_on_cpu;
->> -		get_cur_freq_on_cpu(cpu);
->> +		policy->cur = get_cur_freq_on_cpu(cpu);
->>  		break;
->>  	default:
->>  		break;
->>
->> -- 
->> mattia
+Thanks,
+Venki
