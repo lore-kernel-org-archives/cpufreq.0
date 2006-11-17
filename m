@@ -1,64 +1,84 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: linux-2.6.19-rc6-g1b9bb3c1 build #128 failed
-Date: Fri, 17 Nov 2006 15:03:21 -0500
-Message-ID: <20061117200321.GC14972@redhat.com>
-References: <EB12A50964762B4D8111D55B764A8454E763D0@scsmsx413.amr.corp.intel.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc6: known regressions (v2)
+Date: Fri, 17 Nov 2006 21:40:36 +0100
+Message-ID: <20061117204036.GK31879@stusta.de>
+References: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454E763D0@scsmsx413.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Toralf F???rster <toralf.foerster@gmx.de>, cpufreq@lists.linux.org.uk
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@timesys.com>, Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, Mattia Dongili <malattia@linux.it>, Andre Noll <maan@systemlinux.org>, Andi Kleen <ak@suse.de>, discuss@x86-64.org, Prakash Punnoor <prakash@punnoor.de>, phil.el@wanadoo.fr, oprofile-list@lists.sf.net, Ray Lee <ray-lk@madrabbit.org>, Michael Buesch <mb@bu3sch.de>, Larry Finger <Larry.Finger@lwfinger.net>, st3@riseup.net, linville@tuxdriver.com, netdev@vger.kernel.org, David Brownell <david-b@pacbell.net>, Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org, Ernst Herzberg <earny@net4u.de>
 
-On Fri, Nov 17, 2006 at 11:55:51AM -0800, Pallipadi, Venkatesh wrote:
- >  
- > 
- > >-----Original Message-----
- > >From: cpufreq-bounces@lists.linux.org.uk 
- > >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Dave Jones
- > >Sent: Friday, November 17, 2006 11:45 AM
- > >To: Toralf F???rster; davej@codemonkey.org.uk; 
- > >cpufreq@lists.linux.org.uk
- > >Subject: Re: linux-2.6.19-rc6-g1b9bb3c1 build #128 failed
- > >
- > >On Fri, Nov 17, 2006 at 08:37:59PM +0100, Mattia Dongili wrote:
- > >
- > > > 
- > > > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
- > > > index 2cc71b6..491779a 100644
- > > > --- a/drivers/cpufreq/Kconfig
- > > > +++ b/drivers/cpufreq/Kconfig
- > > > @@ -107,6 +107,7 @@ config CPU_FREQ_GOV_USERSPACE
- > > >  
- > > >  config CPU_FREQ_GOV_ONDEMAND
- > > >  	tristate "'ondemand' cpufreq policy governor"
- > > > +	select CPU_FREQ_TABLE
- > > >  	help
- > > >  	  'ondemand' - This driver adds a dynamic cpufreq 
- > >policy governor.
- > > >  	  The governor does a periodic polling and 
- > >
- > >I suspect conservative needs a similar change?
- > 
- > No. This is ondmeand only requirement at this time as it is coming from
- > the recent powersave_bias changes that is only in ondemand.
+This email lists some known regressions in 2.6.19-rc6 compared to 2.6.18
+that are not yet fixed in Linus' tree.
 
-Ok. I've had "merge ondemand / conservative" on my todo forever.
-I might get around to it circa 2.6.21
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-		Dave
+Due to the huge amount of recipients, please trim the Cc when answering.
 
--- 
-http://www.codemonkey.org.uk
+
+Subject    : cpufreq notification broken
+References : http://lkml.org/lkml/2006/11/16/177
+Submitter  : Thomas Gleixner <tglx@timesys.com>
+Caused-By  : Alan Stern <stern@rowland.harvard.edu>
+             commit b4dfdbb3c707474a2254c5b4d7e62be31a4b7da9
+Handled-By : Ingo Molnar <mingo@elte.hu>
+             Linus Torvalds <torvalds@osdl.org>
+Status     : patches are being discussed
+
+
+Subject    : CPU_FREQ_GOV_ONDEMAND=y compile error
+References : http://lkml.org/lkml/2006/11/17/198
+Submitter  : alex1000@comcast.net
+Caused-By  : Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+             commit 05ca0350e8caa91a5ec9961c585c98005b6934ea
+Handled-By : Mattia Dongili <malattia@linux.it>
+Patch      : http://lkml.org/lkml/2006/11/17/236
+Status     : patch available
+
+
+Subject    : x86_64: Bad page state in process 'swapper'
+References : http://lkml.org/lkml/2006/11/10/135
+             http://lkml.org/lkml/2006/11/10/208
+Submitter  : Andre Noll <maan@systemlinux.org>
+Handled-By : Andi Kleen <ak@suse.de>
+Status     : Andi is investigating
+
+
+Subject    : x86_64: oprofile doesn't work
+References : http://lkml.org/lkml/2006/10/27/3
+             http://lkml.org/lkml/2006/11/15/92
+Submitter  : Prakash Punnoor <prakash@punnoor.de>
+Status     : problem is being discussed
+
+
+Subject    : bcm43xx: serious problems
+References : http://lkml.org/lkml/2006/11/15/296
+Submitter  : Ray Lee <ray-lk@madrabbit.org>
+Handled-By : Michael Buesch <mb@bu3sch.de>
+             Larry Finger <Larry.Finger@lwfinger.net>
+Status     : problem is being debugged
+
+
+Subject    : nasty ACPI regression, AE_TIME errors
+References : http://lkml.org/lkml/2006/11/15/12
+Submitter  : David Brownell <david-b@pacbell.net>
+Handled-By : Len Brown <len.brown@intel.com>
+             Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Status     : problem is being debugged
+
+
+Subject    : ThinkPad R50p: boot fail with (lapic && on_battery)
+References : http://lkml.org/lkml/2006/10/31/333
+Submitter  : Ernst Herzberg <earny@net4u.de>
+Handled-By : Len Brown <len.brown@intel.com>
+Status     : problem is being debugged
+
