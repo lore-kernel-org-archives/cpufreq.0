@@ -1,84 +1,111 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.19-rc6: known regressions (v2)
-Date: Fri, 17 Nov 2006 21:40:36 +0100
-Message-ID: <20061117204036.GK31879@stusta.de>
-References: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
+From: meskes@debian.org
+Subject: Centrino based CPU not recognized
+Date: Sat, 18 Nov 2006 12:06:42 +0100
+Message-ID: <20061118110642.GA10713@feivel.credativ.de>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="wRRV7LY7NUeQGEoC"
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
-Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+
+
+--wRRV7LY7NUeQGEoC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi,
+
+as your driver asked me to send you an email I do. :-)
+
+Attached you'll find my cpuinfo. You will notice that this is a model 15
+CPU which the driver does not know so far. Since it's a Core2Duo with
+1.83 GHz it might just be too new. Anyway, I tried to add this CPU so it
+was accepted on the first call to centrino_cpu_init, but it seems this
+function is then called another time (for the other core?) and fails to
+initialize the policy struct in centrino_cpu_init_acpi. At least
+policy->cpu is 1 after the call to this function which causes a ENODEV
+return value. You probably know the reason for this better than I do.
+
+BTW I'm trying with 2.6.19-rc5.
+
+Michael
+-- 
+Michael Meskes
+Email: Michael at Fam-Meskes dot De, Michael at Meskes dot (De|Com|Net|Org)
+ICQ: 179140304, AIM/Yahoo: michaelmeskes, Jabber: meskes@jabber.org
+Go SF 49ers! Go Rhein Fire! Use Debian GNU/Linux! Use PostgreSQL!
+
+--wRRV7LY7NUeQGEoC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=cpuinfo
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU         T5600  @ 1.83GHz
+stepping	: 6
+cpu MHz		: 1828.820
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3661.81
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU         T5600  @ 1.83GHz
+stepping	: 6
+cpu MHz		: 1828.820
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3657.79
+
+
+--wRRV7LY7NUeQGEoC
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@timesys.com>, Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, Mattia Dongili <malattia@linux.it>, Andre Noll <maan@systemlinux.org>, Andi Kleen <ak@suse.de>, discuss@x86-64.org, Prakash Punnoor <prakash@punnoor.de>, phil.el@wanadoo.fr, oprofile-list@lists.sf.net, Ray Lee <ray-lk@madrabbit.org>, Michael Buesch <mb@bu3sch.de>, Larry Finger <Larry.Finger@lwfinger.net>, st3@riseup.net, linville@tuxdriver.com, netdev@vger.kernel.org, David Brownell <david-b@pacbell.net>, Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org, Ernst Herzberg <earny@net4u.de>
+Content-Disposition: inline
 
-This email lists some known regressions in 2.6.19-rc6 compared to 2.6.18
-that are not yet fixed in Linus' tree.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
-
-Due to the huge amount of recipients, please trim the Cc when answering.
-
-
-Subject    : cpufreq notification broken
-References : http://lkml.org/lkml/2006/11/16/177
-Submitter  : Thomas Gleixner <tglx@timesys.com>
-Caused-By  : Alan Stern <stern@rowland.harvard.edu>
-             commit b4dfdbb3c707474a2254c5b4d7e62be31a4b7da9
-Handled-By : Ingo Molnar <mingo@elte.hu>
-             Linus Torvalds <torvalds@osdl.org>
-Status     : patches are being discussed
-
-
-Subject    : CPU_FREQ_GOV_ONDEMAND=y compile error
-References : http://lkml.org/lkml/2006/11/17/198
-Submitter  : alex1000@comcast.net
-Caused-By  : Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
-             commit 05ca0350e8caa91a5ec9961c585c98005b6934ea
-Handled-By : Mattia Dongili <malattia@linux.it>
-Patch      : http://lkml.org/lkml/2006/11/17/236
-Status     : patch available
-
-
-Subject    : x86_64: Bad page state in process 'swapper'
-References : http://lkml.org/lkml/2006/11/10/135
-             http://lkml.org/lkml/2006/11/10/208
-Submitter  : Andre Noll <maan@systemlinux.org>
-Handled-By : Andi Kleen <ak@suse.de>
-Status     : Andi is investigating
-
-
-Subject    : x86_64: oprofile doesn't work
-References : http://lkml.org/lkml/2006/10/27/3
-             http://lkml.org/lkml/2006/11/15/92
-Submitter  : Prakash Punnoor <prakash@punnoor.de>
-Status     : problem is being discussed
-
-
-Subject    : bcm43xx: serious problems
-References : http://lkml.org/lkml/2006/11/15/296
-Submitter  : Ray Lee <ray-lk@madrabbit.org>
-Handled-By : Michael Buesch <mb@bu3sch.de>
-             Larry Finger <Larry.Finger@lwfinger.net>
-Status     : problem is being debugged
-
-
-Subject    : nasty ACPI regression, AE_TIME errors
-References : http://lkml.org/lkml/2006/11/15/12
-Submitter  : David Brownell <david-b@pacbell.net>
-Handled-By : Len Brown <len.brown@intel.com>
-             Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-Status     : problem is being debugged
-
-
-Subject    : ThinkPad R50p: boot fail with (lapic && on_battery)
-References : http://lkml.org/lkml/2006/10/31/333
-Submitter  : Ernst Herzberg <earny@net4u.de>
-Handled-By : Len Brown <len.brown@intel.com>
-Status     : problem is being debugged
+--wRRV7LY7NUeQGEoC--
 
