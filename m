@@ -1,7 +1,7 @@
 From: Michael Meskes <meskes@debian.org>
 Subject: Re: Centrino based CPU not recognized
-Date: Sun, 19 Nov 2006 10:21:15 +0100
-Message-ID: <20061119092115.GA8559@feivel.credativ.de>
+Date: Sun, 19 Nov 2006 10:32:35 +0100
+Message-ID: <20061119093235.GA29780@trantor.fam-meskes.de>
 References: <EB12A50964762B4D8111D55B764A8454E766ED@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -22,29 +22,17 @@ Content-Transfer-Encoding: 7bit
 To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 Cc: cpufreq@lists.linux.org.uk
 
-On Sat, Nov 18, 2006 at 09:23:44AM -0800, Pallipadi, Venkatesh wrote:
-> What is the BIOS version btw?
-
-It's F07. 
-
-> There was a similar report here
-> http://bugme.osdl.org/show_bug.cgi?id=7157
-> about HP NC6400
-
-Yes, I know about some of those reports. However, only F07 is able to
-cope with Core2Duos. I tried downgrading to F06 which miserably failed.
-I am also planning got open a support call to HP asap, but since the
-driver said it found an unsupported CPU with Enhanced SpeedStep, I
-wonder if this really is a BIOS problem. Especially with the model
-number not listed in the module. Or is speedstep-centrino not supposed
-to work with Core2Duos?  
-
-Is it correct that centrino_cpu_init is called twice? Is there a way to
-make the linux kernel only use one core?
+Sorry, forgot one more question. Do you guys know how to verify
+speedstepping on Windows? I did not find anything in the XP
+installation, then downloaded a GPLed software call SpeedstepXP but this
+one also isn't even able to display the actual stepping. This makes it
+look like a BIOS problem, I agree. And gives me a good reason to open
+that call. But again, I'd like to have another program to verify it.
 
 Michael
+
 -- 
 Michael Meskes
-Email: Michael at Fam-Meskes dot De, Michael at Meskes dot (De|Com|Net|Org)
+Email: Michael at Fam-Meskes dot De
 ICQ: 179140304, AIM/Yahoo: michaelmeskes, Jabber: meskes@jabber.org
 Go SF 49ers! Go Rhein Fire! Use Debian GNU/Linux! Use PostgreSQL!
