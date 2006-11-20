@@ -1,46 +1,85 @@
-From: Michael Meskes <meskes@debian.org>
-Subject: Re: Centrino based CPU not recognized
-Date: Mon, 20 Nov 2006 14:14:45 +0100
-Message-ID: <20061120131445.GC13589@feivel.credativ.de>
-References: <EB12A50964762B4D8111D55B764A8454E76762@scsmsx413.amr.corp.intel.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc6: known regressions (v3)
+Date: Mon, 20 Nov 2006 20:53:10 +0100
+Message-ID: <20061120195310.GY31879@stusta.de>
+References: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454E76762@scsmsx413.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>, Andre Noll <maan@systemlinux.org>, David Rientjes <rientjes@cs.washington.edu>, ak@suse.de, discuss@x86-64.org, Prakash Punnoor <prakash@punnoor.de>, phil.el@wanadoo.fr, oprofile-list@lists.sf.net, Thomas Gleixner <tglx@timesys.com>, Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>, "Paul E. McKenney" <paulmck@us.ibm.com>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, Mattia Dongili <malattia@linux.it>, David Brownell <david-b@pacbell.net>, Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org, Ernst Herzberg <earny@net4u.de>
 
-On Sun, Nov 19, 2006 at 03:17:20PM -0800, Pallipadi, Venkatesh wrote:
-> Bug report for nx7400 here
-> http://bugzilla.kernel.org/show_bug.cgi?id=7514
-> Looks like a lot of people have this problem right now.
+This email lists some known regressions in 2.6.19-rc6 compared to 2.6.18
+that are not yet fixed in Linus' tree.
 
-True. Interestingly they all seem to be from Germany. I wonder if there
-is something special to the machines delivered around here.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-> >From what I see in acpidump in the bug report, BIOS does not
-> have any ACPI objects needed for frequency control at all. I am certain
-> That the frequency control will not work with Windows as well on this
-> platform.
-> Report it to the BIOS folks...
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-I already did. Let's see what happens.
 
-Michael
--- 
-Michael Meskes
-Email: Michael at Fam-Meskes dot De, Michael at Meskes dot (De|Com|Net|Org)
-ICQ: 179140304, AIM/Yahoo: michaelmeskes, Jabber: meskes@jabber.org
-Go SF 49ers! Go Rhein Fire! Use Debian GNU/Linux! Use PostgreSQL!
+Subject    : kernel hangs when booting with irqpoll
+References : http://lkml.org/lkml/2006/11/20/233
+Submitter  : Vivek Goyal <vgoyal@in.ibm.com>
+Status     : unknown
+
+
+Subject    : x86_64: Bad page state in process 'swapper'
+References : http://lkml.org/lkml/2006/11/10/135
+             http://lkml.org/lkml/2006/11/10/208
+Submitter  : Andre Noll <maan@systemlinux.org>
+Handled-By : David Rientjes <rientjes@cs.washington.edu>
+Status     : problem is being debugged
+
+
+Subject    : x86_64: oprofile doesn't work
+References : http://lkml.org/lkml/2006/10/27/3
+             http://lkml.org/lkml/2006/11/15/92
+Submitter  : Prakash Punnoor <prakash@punnoor.de>
+Status     : problem is being discussed
+
+
+Subject    : cpufreq notification broken
+References : http://lkml.org/lkml/2006/11/16/177
+Submitter  : Thomas Gleixner <tglx@timesys.com>
+Caused-By  : Alan Stern <stern@rowland.harvard.edu>
+             commit b4dfdbb3c707474a2254c5b4d7e62be31a4b7da9
+Handled-By : Ingo Molnar <mingo@elte.hu>
+             Linus Torvalds <torvalds@osdl.org>
+             Oleg Nesterov <oleg@tv-sign.ru>
+             Paul E. McKenney <paulmck@us.ibm.com>
+Status     : patches are being discussed
+
+
+Subject    : CPU_FREQ_GOV_ONDEMAND=y compile error
+References : http://lkml.org/lkml/2006/11/17/198
+Submitter  : alex1000@comcast.net
+Caused-By  : Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
+             commit 05ca0350e8caa91a5ec9961c585c98005b6934ea
+Handled-By : Mattia Dongili <malattia@linux.it>
+Patch      : http://lkml.org/lkml/2006/11/17/236
+Status     : patch available
+
+
+Subject    : nasty ACPI regression, AE_TIME errors
+References : http://lkml.org/lkml/2006/11/15/12
+Submitter  : David Brownell <david-b@pacbell.net>
+Handled-By : Len Brown <len.brown@intel.com>
+             Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Status     : problem is being debugged
+
+
+Subject    : ThinkPad R50p: boot fail with (lapic && on_battery)
+References : http://lkml.org/lkml/2006/10/31/333
+Submitter  : Ernst Herzberg <earny@net4u.de>
+Handled-By : Len Brown <len.brown@intel.com>
+Status     : problem is being debugged
+
+
