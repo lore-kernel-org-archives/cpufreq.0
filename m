@@ -1,11 +1,12 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Centrino based CPU not recognized
-Date: Sun, 19 Nov 2006 15:17:20 -0800
-Message-ID: <EB12A50964762B4D8111D55B764A8454E76762@scsmsx413.amr.corp.intel.com>
+From: Michael Meskes <meskes@debian.org>
+Subject: Re: Centrino based CPU not recognized
+Date: Mon, 20 Nov 2006 14:14:45 +0100
+Message-ID: <20061120131445.GC13589@feivel.credativ.de>
+References: <EB12A50964762B4D8111D55B764A8454E76762@scsmsx413.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+Content-Disposition: inline
+In-Reply-To: <EB12A50964762B4D8111D55B764A8454E76762@scsmsx413.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,49 +18,29 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Michael Meskes <meskes@debian.org>
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 Cc: cpufreq@lists.linux.org.uk
 
+On Sun, Nov 19, 2006 at 03:17:20PM -0800, Pallipadi, Venkatesh wrote:
+> Bug report for nx7400 here
+> http://bugzilla.kernel.org/show_bug.cgi?id=7514
+> Looks like a lot of people have this problem right now.
 
+True. Interestingly they all seem to be from Germany. I wonder if there
+is something special to the machines delivered around here.
 
-Bug report for nx7400 here
-http://bugzilla.kernel.org/show_bug.cgi?id=3D7514
-Looks like a lot of people have this problem right now.
+> >From what I see in acpidump in the bug report, BIOS does not
+> have any ACPI objects needed for frequency control at all. I am certain
+> That the frequency control will not work with Windows as well on this
+> platform.
+> Report it to the BIOS folks...
 
-From what I see in acpidump in the bug report, BIOS does not
-have any ACPI objects needed for frequency control at all. I am certain
-That the frequency control will not work with Windows as well on this
-platform.
-Report it to the BIOS folks...
+I already did. Let's see what happens.
 
-I am not sure how to check this thing on Windows. I see a
-Windows whitepaper on P-states and frequency control here
-http://www.microsoft.com/whdc/system/pnppwr/powermgmt/ProcPerfCtrl.mspx=20
-May be that will help.
-
-Thanks,
-Venki=20
-
->-----Original Message-----
->From: Michael Meskes [mailto:meskes@debian.org]=20
->Sent: Sunday, November 19, 2006 1:33 AM
->To: Pallipadi, Venkatesh
->Cc: Mattia Dongili; cpufreq@lists.linux.org.uk
->Subject: Re: Centrino based CPU not recognized
->
->Sorry, forgot one more question. Do you guys know how to verify
->speedstepping on Windows? I did not find anything in the XP
->installation, then downloaded a GPLed software call=20
->SpeedstepXP but this
->one also isn't even able to display the actual stepping. This makes it
->look like a BIOS problem, I agree. And gives me a good reason to open
->that call. But again, I'd like to have another program to verify it.
->
->Michael
->
->--=20
->Michael Meskes
->Email: Michael at Fam-Meskes dot De
->ICQ: 179140304, AIM/Yahoo: michaelmeskes, Jabber: meskes@jabber.org
->Go SF 49ers! Go Rhein Fire! Use Debian GNU/Linux! Use PostgreSQL!
->
+Michael
+-- 
+Michael Meskes
+Email: Michael at Fam-Meskes dot De, Michael at Meskes dot (De|Com|Net|Org)
+ICQ: 179140304, AIM/Yahoo: michaelmeskes, Jabber: meskes@jabber.org
+Go SF 49ers! Go Rhein Fire! Use Debian GNU/Linux! Use PostgreSQL!
