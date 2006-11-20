@@ -1,85 +1,47 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: 2.6.19-rc6: known regressions (v3)
-Date: Mon, 20 Nov 2006 20:53:10 +0100
-Message-ID: <20061120195310.GY31879@stusta.de>
-References: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: ACPI P-States vs Longhaul
+Date: Mon, 20 Nov 2006 14:59:12 -0500
+Message-ID: <20061120195912.GC27924@redhat.com>
+References: <456203F5.60606@interia.pl>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0611152008450.3349@woody.osdl.org>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <456203F5.60606@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vivek Goyal <vgoyal@in.ibm.com>, Andre Noll <maan@systemlinux.org>, David Rientjes <rientjes@cs.washington.edu>, ak@suse.de, discuss@x86-64.org, Prakash Punnoor <prakash@punnoor.de>, phil.el@wanadoo.fr, oprofile-list@lists.sf.net, Thomas Gleixner <tglx@timesys.com>, Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>, "Paul E. McKenney" <paulmck@us.ibm.com>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>, Mattia Dongili <malattia@linux.it>, David Brownell <david-b@pacbell.net>, Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org, Ernst Herzberg <earny@net4u.de>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Cc: cpufreq@lists.linux.org.uk
 
-This email lists some known regressions in 2.6.19-rc6 compared to 2.6.18
-that are not yet fixed in Linus' tree.
+On Mon, Nov 20, 2006 at 08:37:25PM +0100, Rafa=C5=82 Bilski wrote:
+ > Hello,
+ >=20
+ > I know that a lot has changed since 2.6.18 in "ACPI P-States"=20
+ > driver, but I wasn't paing attention. Just in case if this=20
+ > issue isn't known. Reported by user.=20
+ > System: VIA Epia SP13000 (VIA C3-2 "Nehemiah" 6.9.8)
+ > Kernel: 2.6.18.2 custom config, apci-cpufreq=3Dm, longhaul=3Dm
+ > Issue:
+ > "ACPI P-States driver" is loaded (by distro) and stays loaded.=20
+ > When user try to load "Longhaul" CPU is already owned by other=20
+ > driver and "Longhaul" fails with -EBUSY. Of course rmmod does=20
+ > the trick. But why acpi-cpufreq didn't failed? This processor=20
+ > don't support P-states.
+ > Sadly "Longhaul" don't work too. No ACPI C3 support in BIOS=20
+ > and CN400 chipset on mainboard.
+=20
+Probably due to the 'sticky' bug that was fixed in 2.6.18.3
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+		Dave
 
-Due to the huge amount of recipients, please trim the Cc when answering.
-
-
-Subject    : kernel hangs when booting with irqpoll
-References : http://lkml.org/lkml/2006/11/20/233
-Submitter  : Vivek Goyal <vgoyal@in.ibm.com>
-Status     : unknown
-
-
-Subject    : x86_64: Bad page state in process 'swapper'
-References : http://lkml.org/lkml/2006/11/10/135
-             http://lkml.org/lkml/2006/11/10/208
-Submitter  : Andre Noll <maan@systemlinux.org>
-Handled-By : David Rientjes <rientjes@cs.washington.edu>
-Status     : problem is being debugged
-
-
-Subject    : x86_64: oprofile doesn't work
-References : http://lkml.org/lkml/2006/10/27/3
-             http://lkml.org/lkml/2006/11/15/92
-Submitter  : Prakash Punnoor <prakash@punnoor.de>
-Status     : problem is being discussed
-
-
-Subject    : cpufreq notification broken
-References : http://lkml.org/lkml/2006/11/16/177
-Submitter  : Thomas Gleixner <tglx@timesys.com>
-Caused-By  : Alan Stern <stern@rowland.harvard.edu>
-             commit b4dfdbb3c707474a2254c5b4d7e62be31a4b7da9
-Handled-By : Ingo Molnar <mingo@elte.hu>
-             Linus Torvalds <torvalds@osdl.org>
-             Oleg Nesterov <oleg@tv-sign.ru>
-             Paul E. McKenney <paulmck@us.ibm.com>
-Status     : patches are being discussed
-
-
-Subject    : CPU_FREQ_GOV_ONDEMAND=y compile error
-References : http://lkml.org/lkml/2006/11/17/198
-Submitter  : alex1000@comcast.net
-Caused-By  : Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>
-             commit 05ca0350e8caa91a5ec9961c585c98005b6934ea
-Handled-By : Mattia Dongili <malattia@linux.it>
-Patch      : http://lkml.org/lkml/2006/11/17/236
-Status     : patch available
-
-
-Subject    : nasty ACPI regression, AE_TIME errors
-References : http://lkml.org/lkml/2006/11/15/12
-Submitter  : David Brownell <david-b@pacbell.net>
-Handled-By : Len Brown <len.brown@intel.com>
-             Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-Status     : problem is being debugged
-
-
-Subject    : ThinkPad R50p: boot fail with (lapic && on_battery)
-References : http://lkml.org/lkml/2006/10/31/333
-Submitter  : Ernst Herzberg <earny@net4u.de>
-Handled-By : Len Brown <len.brown@intel.com>
-Status     : problem is being debugged
-
-
+--=20
+http://www.codemonkey.org.uk
