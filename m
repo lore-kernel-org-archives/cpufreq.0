@@ -1,43 +1,42 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: ACPI P-States vs Longhaul
-Date: Mon, 20 Nov 2006 20:37:25 +0100
-Message-ID: <456203F5.60606@interia.pl>
+From: Bruno Ducrot <ducrot@poupinou.org>
+Subject: [PATCH] allow the highest frequency if bios think so.
+Date: Tue, 21 Nov 2006 11:30:42 +0100
+Message-ID: <20061121103042.GI4945@poupinou.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-9"; format="flowed"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: davej@redhat.com
+Cc: cpufreq@lists.linux.org.uk, linux-acpi@vger.kernel.org
 
-Hello,
+Hi all,
 
-I know that a lot has changed since 2.6.18 in "ACPI P-States"=20
-driver, but I wasn't paing attention. Just in case if this=20
-issue isn't known. Reported by user.=20
-System: VIA Epia SP13000 (VIA C3-2 "Nehemiah" 6.9.8)
-Kernel: 2.6.18.2 custom config, apci-cpufreq=3Dm, longhaul=3Dm
-Issue:
-"ACPI P-States driver" is loaded (by distro) and stays loaded.=20
-When user try to load "Longhaul" CPU is already owned by other=20
-driver and "Longhaul" fails with -EBUSY. Of course rmmod does=20
-the trick. But why acpi-cpufreq didn't failed? This processor=20
-don't support P-states.
-Sadly "Longhaul" don't work too. No ACPI C3 support in BIOS=20
-and CN400 chipset on mainboard.
+processor_perflib.c::acpi_processor_ppc_notifier() check if the value
+returned by the processor's _PPC method is 0 and return failed if so.
+This is wrong since 0 indicate that the bios think the processor can go
+to the highest frequency.  This patch for example fix the HP NX 6125 to
+allow its highest frequency to be available.
 
-Regards
-Rafa=B3
+Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
+
+--- linux-2.6.19-rc6/drivers/acpi/processor_perflib.c	2006/11/21 10:18:39	1.1
++++ linux-2.6.19-rc6/drivers/acpi/processor_perflib.c	2006/11/21 10:18:55
+@@ -83,8 +83,6 @@ static int acpi_processor_ppc_notifier(s
+ 		goto out;
+ 
+ 	ppc = (unsigned int)pr->performance_platform_limit;
+-	if (!ppc)
+-		goto out;
+ 
+ 	if (ppc > pr->performance->state_count)
+ 		goto out;
 
 
-----------------------------------------------------------------------
-PS. >>> http://link.interia.pl/f19a6
+-- 
+Bruno Ducrot
+
+--  Which is worse:  ignorance or apathy?
+--  Don't know.  Don't care.
