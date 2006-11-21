@@ -1,62 +1,48 @@
-From: Bruno Ducrot <ducrot@poupinou.org>
-Subject: Re: [PATCH] allow the highest frequency if bios think so.
-Date: Tue, 21 Nov 2006 17:35:14 +0100
-Message-ID: <20061121163514.GM4945@poupinou.org>
-References: <EB12A50964762B4D8111D55B764A8454E76E62@scsmsx413.amr.corp.intel.com>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Bug: Pentium M not always detected by CPUFREQ
+Date: Tue, 21 Nov 2006 18:00:12 +0100
+Message-ID: <1164128412.31358.680.camel@laptopd505.fenrus.org>
+References: <200611211646.29488.hs4233@mail.mn-solutions.de>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <EB12A50964762B4D8111D55B764A8454E76E62@scsmsx413.amr.corp.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1031076AbWKURAS@vger.kernel.org>
+In-Reply-To: <200611211646.29488.hs4233@mail.mn-solutions.de>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: davej@redhat.com, cpufreq@lists.linux.org.uk, linux-acpi@vger.kernel.org
+To: Holger Schurig <hs4233@mail.mn-solutions.de>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-On Tue, Nov 21, 2006 at 07:08:57AM -0800, Pallipadi, Venkatesh wrote:
-> Hmmm Great find.....
-> A perfect example of the bug that was quietly hiding
-> under our noses all these years....
-
-Indeed.  I'm actually still surprised why I haven't found it in the
-past.
-
+On Tue, 2006-11-21 at 16:46 +0100, Holger Schurig wrote:
+> Hi !
 > 
-> >>  	if (ppc > pr->performance->state_count)
-> >
-> >BTW I'm wondering if this check should be :
-> >	if (ppc >= pr->performance->state_count)
-> >>  		goto out;
-> >
+> One module thinks that I have a Pentium M, the other doesn't. 
+> Which module is right?
+
+> model name      : Intel(R) Celeron(R) processor            600MHz
+> stepping        : 5
+> cpu MHz         : 598.093
+> cache size      : 64 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 2
+> wp              : yes
+> flags           : fpu vme de pse tsc msr mce cx8 apic sep mtrr 
+> pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 tm pbe
+> bogomips        : 1196.88
 > 
-> Yes. I think this should change to >= as well.
-> Otherwise indexing states with this ppc can go out of bounds.
 > 
-
-Updated.
-
-Correct bound checking from the value returned from _PPC method.
-
-Signed-off-by: Bruno Ducrot <ducrot@poupinou.org>
-
---- linux-2.6.19-rc6/drivers/acpi/processor_perflib.c	2006/11/21 10:18:39	1.1
-+++ linux-2.6.19-rc6/drivers/acpi/processor_perflib.c	2006/11/21 16:28:04
-@@ -83,10 +83,8 @@ static int acpi_processor_ppc_notifier(s
- 		goto out;
- 
- 	ppc = (unsigned int)pr->performance_platform_limit;
--	if (!ppc)
--		goto out;
- 
--	if (ppc > pr->performance->state_count)
-+	if (ppc >= pr->performance->state_count)
- 		goto out;
- 
- 	cpufreq_verify_within_limits(policy, 0,
-
+> So far I can only say that speedstep-centrino doesn't have an 
+> entry for a CPU with a mere 600 MHz. May this be the problem?
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 -- 
-Bruno Ducrot
-
---  Which is worse:  ignorance or apathy?
---  Don't know.  Don't care.
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
