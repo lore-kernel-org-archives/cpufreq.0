@@ -1,26 +1,44 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Bug: Pentium M not always detected by CPUFREQ
-Date: Mon, 27 Nov 2006 20:57:48 -0500
-Message-ID: <20061128015748.GB21472@isilmar.linta.de>
-References: <200611211646.29488.hs4233@mail.mn-solutions.de> <1164128474.31358.682.camel@laptopd505.fenrus.org> <200611220848.03746.hs4233@mail.mn-solutions.de>
+From: Ashley Pittman <ashley@pittman.co.uk>
+Subject: Re: [PATCH] If a CPU gets onlined set the governor to the one that
+	is run on other CPUs
+Date: Tue, 28 Nov 2006 10:40:56 +0000
+Message-ID: <1164710457.22971.49.camel@localhost.localdomain>
+References: <1164296237.3721.395.camel@queen.suse.de>
+	<20061126222120.GB26600@redhat.com>
+	<1164620871.4656.110.camel@queen.suse.de>
+	<20061127173321.GA25763@redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933934AbWK1B5v@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200611220848.03746.hs4233@mail.mn-solutions.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Holger Schurig <hs4233@mail.mn-solutions.de>
-Cc: Arjan van de Ven <arjan@infradead.org>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20061127173321.GA25763@redhat.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk, Stefan Seyfried <seife@suse.de>
 
-On Wed, Nov 22, 2006 at 08:48:03AM +0100, Holger Schurig wrote:
-> > you don't have a pentium M
+On Mon, 2006-11-27 at 12:33 -0500, Dave Jones wrote:
+> On Mon, Nov 27, 2006 at 10:47:51AM +0100, Thomas Renninger wrote:
 > 
-> In that case p4-clockmod has a bug, because it said that I have 
-> one.
+>  > Thinking about x86 may get 16/32/64 CPU sockets the next years, it may
+>  > be convenient for very specific guys to run some nodes at highest
+>  > performance to even avoid some 2% performance regression on database
+>  > nodes while others are run with ondemand.
+> 
+> For the HPC folks I've spoken with, this doesn't seem likely.
+> If they care at all about that 2% (which they do), they'll want that
+> out of every CPU, and not leave anything idle.
 
-That bug should be fixed in -mm, cpufreq-git and 2.6.20.
+With the onset of cpusets this assertion possibly won't hold true for
+much longer however, we would be willing to only get 100% out of the
+cpu's which have HPC jobs assigned to then.
 
-Thanks,
-	Dominik
+Ashley,
