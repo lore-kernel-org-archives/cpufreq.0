@@ -1,7 +1,7 @@
 From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Add support for CN400
-Date: Thu, 30 Nov 2006 03:47:41 +0100
-Message-ID: <456E464D.8060708@interia.pl>
+Subject: [PATCH] Longhaul - fix 200MHz FSB
+Date: Thu, 30 Nov 2006 03:36:44 +0100
+Message-ID: <456E43BC.7090806@interia.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -19,8 +19,8 @@ Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
 To: Dave Jones <davej@codemonkey.org.uk>
 Cc: cpufreq@lists.linux.org.uk
 
-Support for CN400 northbridge when ACPI C3 isn't available.
-Tested on Epia SP13000. Thanks to Robert for testing it.
+On board of Epia SP13000 is 10x133Mhz VIA Nehemiah. It is reported=20
+as 10x200MHz. This patch is fixing this issue.
 
 Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
 
@@ -30,29 +30,15 @@ diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
 /cpufreq/longhaul.c
 --- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
 +++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -583,6 +583,11 @@ static int enable_arbiter_disable(void)
- 	if (dev =3D=3D NULL) {
- 		reg =3D 0x76;
- 		dev =3D pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_862X_0, NUL=
-L);
-+		/* Find CN400 V-Link host bridge */
-+		if (dev =3D=3D NULL) {
-+			dev =3D pci_find_device(PCI_VENDOR_ID_VIA, 0x7259, NULL);
-+		}
-+=20
- 	}
- 	if (dev !=3D NULL) {
- 		/* Enable access to port 0x22 */
-@@ -734,7 +739,7 @@ print_support_type:
- 	return 0;
-=20
- err_acpi:
--	printk(KERN_ERR PFX "No ACPI support. No VT8601 or VT8623 northbridge. Ab=
-orting.\n");
-+	printk(KERN_ERR PFX "No ACPI support. Unsupported northbridge. Aborting.\=
-n");
- 	return -ENODEV;
- }
+@@ -410,7 +410,7 @@ static int __init longhaul_get_ranges(vo
+			maxmult=3Dlonghaul_get_cpu_mult();
+
+			/* Starting with the 1.2GHz parts, theres a 200MHz bus. */
+-			if ((cpu_khz/1000) > 1200)
++			if ((cpu_khz/maxmult) > 13400)
+				fsb =3D 200;
+			else
+				fsb =3D eblcr_fsb_table_v2[longhaul.bits.MaxMHzFSB];
 
 
 ----------------------------------------------------------------------
