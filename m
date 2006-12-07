@@ -1,10 +1,13 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Don't use regs to obtain FSB frequency
-Date: Sun, 03 Dec 2006 17:17:28 +0100
-Message-ID: <4572F898.4050300@interia.pl>
+From: John Frankish <frankish@dubai.oilfield.slb.com>
+Subject: Re: Problems Compiling cpufreq in 2.4.26
+Date: Thu, 07 Dec 2006 14:58:16 +0400
+Message-ID: <7.0.1.0.2.20061207144440.040f2e60@dubai.oilfield.slb.com>
+References: <7.0.1.0.2.20061129084245.040034e0@dubai.oilfield.slb.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-reply-to: <7.0.1.0.2.20061129084245.040034e0@dubai.oilfield.slb.com>
+References: <7.0.1.0.2.20061129084245.040034e0@dubai.oilfield.slb.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,260 +18,77 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-Current code has a problem with FSB on "PowerSaver 1.0"=20
-CPU. FSB is incorrecly guessed (again) for mini PC by Ebox.=20
-There is 8x100MHz CPU with "Nehemiah" core. It is reported=20
-as 8x133MHz. Apparently Longhaul MSR isn't reliable source=20
-of information if it is RevisionID =3D=3D 0 for anything else=20
-then max multiplier. We can't read 200MHz FSB from it nor=20
-from EBLCR_POWER_ON too. This driver is working only with=20
-multipliers. FSB frequency is only needed to calculate CPU=20
-f for Cpufreq core. At boot kernel is calculating processor=20
-frequency. We know the multiplier. In this way we have bus=20
-frequency with kHz precision.
+I managed to make some progress on this - the compile problem was due 
+to a bug related to the drmP.h file in /drivers/char/drm of the 2.4.26 sources.
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
+After applying the cpufreq patch and recompiling, I am unable to load 
+the speedstep-centrino module (dmesg states the cpu is unsupported) 
+but am able to load the p4-clockmod module although it does not 
+appear to be working.
 
----=20
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
-/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -54,7 +54,7 @@
-=20
- static int cpu_model;
- static unsigned int numscales=3D16;
--static unsigned int fsb;
-+static unsigned int fsb_kHz;
-=20
- static struct mV_pos *vrm_mV_table;
- static unsigned char *mV_vrm_table;
-@@ -109,15 +109,14 @@ static char *print_speed(int speed)
- static unsigned int calc_speed(int mult)
- {
- 	int khz;
--	khz =3D (mult/10)*fsb;
-+	khz =3D (mult/10)*fsb_kHz;
- 	if (mult%10)
--		khz +=3D fsb/2;
--	khz *=3D 1000;
-+		khz +=3D fsb_kHz/2;
- 	return khz;
- }
-=20
-=20
--static int longhaul_get_cpu_mult(void)
-+static int get_cpu_mult_eblcr(void)
- {
- 	unsigned long invalue=3D0,lo, hi;
-=20
-@@ -226,14 +225,14 @@ static void longhaul_setstate(unsigned i
- 	if ((speed > highest_speed) || (speed < lowest_speed))
- 		return;
-=20
--	freqs.old =3D calc_speed(longhaul_get_cpu_mult());
-+	freqs.old =3D calc_speed(get_cpu_mult_eblcr());
- 	freqs.new =3D speed;
- 	freqs.cpu =3D 0; /* longhaul.c is UP only driver */
-=20
- 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-=20
- 	dprintk ("Setting to FSB:%dMHz Mult:%d.%dx (%s)\n",
--			fsb, mult/10, mult%10, print_speed(speed/1000));
-+			fsb_kHz/1000, mult/10, mult%10, print_speed(speed/1000));
-=20
- 	preempt_disable();
- 	local_irq_save(flags);
-@@ -303,60 +302,16 @@ static void longhaul_setstate(unsigned i
- 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- }
-=20
--/*
-- * Centaur decided to make life a little more tricky.
-- * Only longhaul v1 is allowed to read EBLCR BSEL[0:1].
-- * Samuel2 and above have to try and guess what the FSB is.
-- * We do this by assuming we booted at maximum multiplier, and interpolate
-- * between that value multiplied by possible FSBs and cpu_mhz which
-- * was calculated at boot time. Really ugly, but no other way to do this.
-- */
--
--#define ROUNDING	0xf
--
--static int _guess(int guess)
--{
--	int target;
--
--	target =3D ((maxmult/10)*guess);
--	if (maxmult%10 !=3D 0)
--		target +=3D (guess/2);
--	target +=3D ROUNDING/2;
--	target &=3D ~ROUNDING;
--	return target;
--}
--
--
--static int guess_fsb(void)
--{
--	int speed =3D (cpu_khz/1000);
--	int i;
--	int speeds[3] =3D { 66, 100, 133 };
--
--	speed +=3D ROUNDING/2;
--	speed &=3D ~ROUNDING;
--
--	for (i=3D0; i<3; i++) {
--		if (_guess(speeds[i]) =3D=3D speed)
--			return speeds[i];
--	}
--	return 0;
--}
--
--
- static int __init longhaul_get_ranges(void)
- {
- 	unsigned long invalue;
--	unsigned int ezra_t_multipliers[32]=3D {
-+	unsigned int longhaul_multipliers[32]=3D {
- 			90,  30,  40, 100,  55,  35,  45,  95,
- 			50,  70,  80,  60, 120,  75,  85,  65,
- 			-1, 110, 120,  -1, 135, 115, 125, 105,
- 			130, 150, 160, 140,  -1, 155,  -1, 145 };
- 	unsigned int j, k =3D 0;
- 	union msr_longhaul longhaul;
--	unsigned long lo, hi;
--	unsigned int eblcr_fsb_table_v1[] =3D { 66, 133, 100, -1 };
--	unsigned int eblcr_fsb_table_v2[] =3D { 133, 100, -1, 66 };
-=20
- 	switch (longhaul_version) {
- 	case TYPE_LONGHAUL_V1:
-@@ -364,71 +319,43 @@ static int __init longhaul_get_ranges(vo
- 		/* Ugh, Longhaul v1 didn't have the min/max MSRs.
- 		   Assume min=3D3.0x & max =3D whatever we booted at. */
- 		minmult =3D 30;
--		maxmult =3D longhaul_get_cpu_mult();
--		rdmsr (MSR_IA32_EBL_CR_POWERON, lo, hi);
--		invalue =3D (lo & (1<<18|1<<19)) >>18;
--		if (cpu_model=3D=3DCPU_SAMUEL || cpu_model=3D=3DCPU_SAMUEL2)
--			fsb =3D eblcr_fsb_table_v1[invalue];
--		else
--			fsb =3D guess_fsb();
-+		maxmult =3D get_cpu_mult_eblcr();
- 		break;
-=20
- 	case TYPE_POWERSAVER:
--		/* Ezra-T */
--		if (cpu_model=3D=3DCPU_EZRA_T) {
--			rdmsrl (MSR_VIA_LONGHAUL, longhaul.val);
--			invalue =3D longhaul.bits.MaxMHzBR;
--			if (longhaul.bits.MaxMHzBR4)
--				invalue +=3D 16;
--			maxmult=3Dezra_t_multipliers[invalue];
--
-+		rdmsrl(MSR_VIA_LONGHAUL, longhaul.val);
-+		invalue =3D longhaul.bits.MaxMHzBR;
-+		if (longhaul.bits.MaxMHzBR4)
-+			invalue +=3D 16;
-+		maxmult =3D longhaul_multipliers[invalue];
-+		/* Ezra-T
-+		 * PowerSaver 2.0 - bus ratio and voltage scaling
-+		 * Valid: MinMHzBR, MaxMHzBR, MinMHzFSB, MaxMHzFSB,
-+		 * 	  MinVID, MaxVID, VRMRev */
-+		if (longhaul.bits.RevisionID > 0) {
- 			invalue =3D longhaul.bits.MinMHzBR;
- 			if (longhaul.bits.MinMHzBR4 =3D=3D 1)
- 				minmult =3D 30;
- 			else
--				minmult =3D ezra_t_multipliers[invalue];
--			fsb =3D eblcr_fsb_table_v2[longhaul.bits.MaxMHzFSB];
--			break;
--		}
--
--		/* Nehemiah */
--		if (cpu_model=3D=3DCPU_NEHEMIAH) {
--			rdmsrl (MSR_VIA_LONGHAUL, longhaul.val);
--
--			/*
--			 * TODO: This code works, but raises a lot of questions.
--			 * - Some Nehemiah's seem to have broken Min/MaxMHzBR's.
--			 *   We get around this by using a hardcoded multiplier of 4.0x
--			 *   for the minimimum speed, and the speed we booted up at for the max.
--			 *   This is done in longhaul_get_cpu_mult() by reading the EBLCR regis=
-ter.
--			 * - According to some VIA documentation EBLCR is only
--			 *   in pre-Nehemiah C3s. How this still works is a mystery.
--			 *   We're possibly using something undocumented and unsupported,
--			 *   But it works, so we don't grumble.
--			 */
--			minmult=3D40;
--			maxmult=3Dlonghaul_get_cpu_mult();
--
--			/* Starting with the 1.2GHz parts, theres a 200MHz bus. */
--			if ((cpu_khz/maxmult) > 13400)
--				fsb =3D 200;
--			else
--				fsb =3D eblcr_fsb_table_v2[longhaul.bits.MaxMHzFSB];
--			break;
-+				minmult =3D longhaul_multipliers[invalue];
-+		/* Nehemiah
-+		 * PowerSaver 1.0 - bus ratio scaling
-+		 * Valid: MaxMHzBR */
-+		} else {
-+			minmult =3D 40;
- 		}
-+		break;
- 	}
-+	/* Kernel already knows true FSB speed */
-+	fsb_kHz =3D (cpu_khz * 10) / maxmult;
-=20
- 	dprintk ("MinMult:%d.%dx MaxMult:%d.%dx\n",
- 		 minmult/10, minmult%10, maxmult/10, maxmult%10);
-=20
--	if (fsb =3D=3D -1) {
--		printk (KERN_INFO PFX "Invalid (reserved) FSB!\n");
--		return -EINVAL;
--	}
--
- 	highest_speed =3D calc_speed(maxmult);
- 	lowest_speed =3D calc_speed(minmult);
--	dprintk ("FSB:%dMHz  Lowest speed: %s   Highest speed:%s\n", fsb,
-+	dprintk ("FSB:%dMHz  Lowest speed: %s   Highest speed:%s\n",
-+		 fsb_kHz / 1000,
- 		 print_speed(lowest_speed/1000),=20
- 		 print_speed(highest_speed/1000));
-=20
-@@ -475,7 +402,7 @@ static void __init longhaul_setup_voltag
- 	unsigned int j, speed, pos, kHz_step, numvscales;
-=20
- 	rdmsrl(MSR_VIA_LONGHAUL, longhaul.val);
--	if (!(longhaul.bits.RevisionID & 1)) {
-+	if (longhaul.bits.RevisionID !=3D 1) {
- 		printk(KERN_INFO PFX "Voltage scaling not supported by CPU.\n");
- 		return;
- 	}
-@@ -553,7 +480,7 @@ static unsigned int longhaul_get(unsigne
- {
- 	if (cpu)
- 		return 0;
--	return calc_speed(longhaul_get_cpu_mult());
-+	return calc_speed(get_cpu_mult_eblcr());
- }
-=20
- static acpi_status longhaul_walk_callback(acpi_handle obj_handle,
-@@ -728,7 +655,7 @@ print_support_type:
-=20
- 	policy->governor =3D CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.transition_latency =3D 200000;	/* nsec */
--	policy->cur =3D calc_speed(longhaul_get_cpu_mult());
-+	policy->cur =3D calc_speed(get_cpu_mult_eblcr());
-=20
- 	ret =3D cpufreq_frequency_table_cpuinfo(policy, longhaul_table);
- 	if (ret)
+Given that the speedstep-centrino module loads and works in 2.6.12, I 
+am puzzled as to why the module with the same name will not load 
+under 2.4.26 - is this related to the processor type in the .config file maybe?
 
 
-----------------------------------------------------------------------
-Jestes kierowca? To poczytaj! >>> http://link.interia.pl/f199e
+At 09:13 29-11-06, you wrote:
+>Hi,
+>
+>I've been using cpufreq without problems under the DSL-N distro 
+>(2.6.12 based on knoppix 4.0.2) but have so far been unable to 
+>re-compile cpufreq into the DSL distro (2.4.26 based on knoppix 3.4) 
+>on the same machine.
+>
+>I've tried with both the cpufreq-LINUX_2_4-20040813.tar.gz cvs file 
+>and the cpufreq-24-2004083101.diff.gz patch (kernel sources from 
+>linux-2.4.26.tar.gz) - are these the most recent cpufreq versions for 2.4.x?
+>
+>1. Apply the patch, load existing .config file with menuconfig, 
+>chose the relevent cpufreq options (CONFIG_CPU_FREQ=y, 
+>CONFIG_CPU_FREQ_TABLE=y, CONFIG_CPU_FREQ_GOV_USERSPACE=y, 
+>CONFIG_X86_SPEEDSTEP_CENTRINO=m). This compiles the kernel modules 
+>(built-in.o, cpufreq.o, freq_table.o, proc_intf.o, userspace.o) but 
+>not the loadable module speedstep-centrino.o. If I boot the new 
+>kernel image and manually copy speedstep-centrino.o from 2 below, I 
+>get an error message that my cpu is not supported when I try to load 
+>the module.
+>
+>2. As a test - apply the patch, use make oldconfig, chose the 
+>relevent cpufreq options and save. This compiles the kernel modules 
+>and the loadable module but I cannot boot from the new kernel image 
+>as the default config with the kernel source does not match my 
+>system. If I modify the config to suit my system then the loadable 
+>module does not compile.
+>
+>Does anyone have an idea what the problem might be?
+>
+>cat /proc/cpuinfo
+>------------------------
+>processor      : 0
+>vendor_id       : GenuineIntel
+>cpu family      : 6
+>model            : 13
+>model name   : Intel(R) Pentium(R) M processor 1.60GHz
+>stepping        : 6
+>cpu MHz        : 1594.847
+>cache size     : 64 KB (2048KB under 2.6.12)
+>fdiv_bug        : no
+>hlt_bug         : no
+>f00f_bug        : no
+>coma_bug     : no
+>fpu                : yes
+>fpu_exception   : yes
+>cpuid level     : 2
+>wp              : yes
+>flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca 
+>cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe tm2 est
+>bogomips        : 3185.04
+>
+>
+>_______________________________________________
+>Cpufreq mailing list
+>Cpufreq@lists.linux.org.uk
+>http://lists.linux.org.uk/mailman/listinfo/cpufreq
