@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7700] linux-2.6-20-rc1: kernel BUG at
 	drivers/cpufreq/cpufreq_userspace.c
-Date: Mon, 18 Dec 2006 15:50:54 -0800
-Message-ID: <200612182350.kBINosET029441@fire-2.osdl.org>
+Date: Mon, 18 Dec 2006 17:03:59 -0800
+Message-ID: <200612190103.kBJ13x1e001213@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,16 +21,12 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=7700
 
+davej@codemonkey.org.uk changed:
 
-
-
-
-------- Additional Comments From cogel@rrz.uni-koeln.de  2006-12-18 15:46 -------
-The patch from Mattia Dongili fixed the bug as far as I can tell.
-No kernel bug during boot. No freezing system.
-
-
-Thanks!
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |CLOSED
+         Resolution|                            |CODE_FIX
 
 
 
