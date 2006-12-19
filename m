@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7712] sempron 64 bits support
-Date: Tue, 19 Dec 2006 03:23:54 -0800
-Message-ID: <200612191123.kBJBNsFG000800@fire-2.osdl.org>
+Subject: [Bug 7713] CPU Frequency scaling has wrong frequencies on Abit AB9
+	Pro
+Date: Tue, 19 Dec 2006 06:43:40 -0800
+Message-ID: <200612191443.kBJEhe0Q010539@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,15 +19,17 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7712
+http://bugzilla.kernel.org/show_bug.cgi?id=7713
+
+davej@codemonkey.org.uk changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|ak@suse.de                  |cpufreq@www.linux.org.uk
+          Component|x86-64                      |cpufreq
+           Category|Platform Specific/Hardware  |Power Management
 
 
-
-
-
-------- Additional Comments From fedora@leemhuis.info  2006-12-19 03:19 -------
-the 2800+ afaik does not support Cool'n'Quiet; see page 63 on 
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
