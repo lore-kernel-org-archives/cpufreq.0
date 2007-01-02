@@ -1,12 +1,15 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Power mgmt / CPUFREQ on Via C7 (Esther)
-Date: Tue, 2 Jan 2007 12:36:01 -0500
-Message-ID: <20070102173601.GD7656@redhat.com>
-References: <5317.195.215.10.251.1167740225.squirrel@195.41.226.86>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] Fix
+	/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq with
+	acpi-cpufreq and ondemand
+Date: Tue, 2 Jan 2007 09:46:37 -0800
+Message-ID: <EB12A50964762B4D8111D55B764A8454010D14DF@scsmsx413.amr.corp.intel.com>
+References: <459A7D3F.60309@yahoo.fr>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <5317.195.215.10.251.1167740225.squirrel@195.41.226.86>
+Content-class: urn:content-classes:message
+In-Reply-To: <459A7D3F.60309@yahoo.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,31 +21,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: jorgen@greven.dk
-Cc: cpufreq@lists.linux.org.uk
+To: Guillaume Chazarain <guichaz@yahoo.fr>, "Sadykov, Denis M" <denis.m.sadykov@intel.com>, cpufreq@lists.linux.org.uk
 
-On Tue, Jan 02, 2007 at 01:17:05PM +0100, jorgen@greven.dk wrote:
- > Hi
- > 
- > I have just bought a nice little sbc mainboard with a Via C7 cpu. It run
- > Centos with stock kernel 2.6.19.1 that I downloaded and installed a few
- > days ago.
- > But cpufreq does not work.
- > 
- > Can I in some way help with testing/debugging the cpufreq driver (centrino
- > or longhaul?) for this cpu?
 
-The C7 works fine with acpi-cpufreq if the correct BIOS tables are present.
-Support *could* be added to speedstep-centrino to use hardcoded tables
-for these CPUs for systems where the BIOSes lack them, but hasn't been
-done yet.
+Hi,
 
-Given speedstep-centrino is due to be obsoleted by acpi-cpufreq at some stage,
-the feature of using hardcoded tables probably needs to be added to
-acpi-cpufreq at some point too.
+This issue has been fixed in an earlier patch which is in mm right now
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc2/2.
+6.20-rc2-mm1/broken-out/git-cpufreq.patch
+    [CPUFREQ] Bug fix for acpi-cpufreq and cpufreq_stats oops on
+frequency change notification
 
-		Dave
+Can you please check with 2.6.20-rc2-mm1 and report if there are any
+issues with that kernel.
 
--- 
-http://www.codemonkey.org.uk
+Thanks,
+Venki
+
+>-----Original Message-----
+>From: Guillaume Chazarain [mailto:guichaz@yahoo.fr]=20
+>Sent: Tuesday, January 02, 2007 7:42 AM
+>To: Sadykov, Denis M; Pallipadi, Venkatesh; cpufreq@lists.linux.org.uk
+>Subject: [PATCH] Fix=20
+>/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq with=20
+>acpi-cpufreq and ondemand
+>
+>Hi,
+>
+>This is 2.6.20 material I think.
+>
+>--=20
+>Guillaume
+>
+>
