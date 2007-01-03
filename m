@@ -1,9 +1,9 @@
-From: jorgen@greven.dk
-Subject: Power mgmt / CPUFREQ on Via C7 (Esther)
-Date: Wed, 3 Jan 2007 11:22:21 +0100 (CET)
-Message-ID: <14588.195.215.10.251.1167819741.squirrel@195.41.226.86>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: Longhaul
+Date: Wed, 03 Jan 2007 18:59:01 +0100
+Message-ID: <459BEEE5.30109@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,24 +15,20 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-9"; format="flowed"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@lists.linux.org.uk
 
->On Tue, Jan 02, 2007 at 11:16:49PM +0100, jorgen at greven.dk wrote:
 
-> > # dmesg
-> > acpi_cpufreq: disagrees about version of symbol
-acpi_processor_notify_smm acpi_cpufreq: Unknown symbol
-acpi_processor_notify_smm
+I have report that Longhaul is locking Epia CL-10000. Basicaly=20
+it is older Epia M-10000 with dual LAN. ACPI nor northbridge=20
+support isn't blocking disk DMA.
 
->Looks like a miscompiled module somehow.
->
->		Dave
->
-Why that - it's stock code from kernel.org?
+Feel free to mark Longhaul broken again.
 
-Can you point me to:
-1) info on how to debug a module
-2) some specs on the acpi / cpu frequency parts
+Bye
+Rafa=B3 Bilski
 
-Brgds Jorgen
+
+----------------------------------------------------------------------
+Jestes kierowca? To poczytaj! >>> http://link.interia.pl/f199e
