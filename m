@@ -1,13 +1,12 @@
-From: Len Brown <lenb@kernel.org>
+From: Jorgen <jorgen@greven.dk>
 Subject: Re: Power mgmt / CPUFREQ on Via C7 (Esther)
-Date: Wed, 3 Jan 2007 15:41:07 -0500
-Message-ID: <200701031541.07754.lenb@kernel.org>
-References: <14588.195.215.10.251.1167819741.squirrel@195.41.226.86>
+Date: Wed, 3 Jan 2007 23:10:11 +0000 (UTC)
+Message-ID: <loom.20070104T000819-223@post.gmane.org>
+References: <5317.195.215.10.251.1167740225.squirrel@195.41.226.86>
+	<20070102173601.GD7656@redhat.com> <459AA1F9.3040701@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <14588.195.215.10.251.1167819741.squirrel@195.41.226.86>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,24 +17,35 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 To: cpufreq@lists.linux.org.uk
-Cc: jorgen@greven.dk
 
-On Wednesday 03 January 2007 05:22, jorgen@greven.dk wrote:
-> >On Tue, Jan 02, 2007 at 11:16:49PM +0100, jorgen at greven.dk wrote:
+Rafał Bilski <rafalbilski <at> interia.pl> writes:
+
+> >  > But cpufreq does not work.
+> >  > 
+> >  > Can I in some way help with testing/debugging the cpufreq driver (centrino
+> >  > or longhaul?) for this cpu?
+> > 
+> > The C7 works fine with acpi-cpufreq if the correct BIOS tables are present.
+> > Support *could* be added to speedstep-centrino to use hardcoded tables
+> > for these CPUs for systems where the BIOSes lack them, but hasn't been
+> > done yet.
+> > 
+> Beauty of "Enhanced PowerSaver" is in that hardcoded tables are not necessary. 
+> Would be very easy to add ACPI independent driver for these CPU's. If somebody 
+> would test it then I can try.
+> What do You think?
 > 
-> > > # dmesg
-> > > acpi_cpufreq: disagrees about version of symbol
-> acpi_processor_notify_smm acpi_cpufreq: Unknown symbol
-> acpi_processor_notify_smm
+> Rafał
+> 
+> ----------------------------------------------------------------------
+> Jestes kierowca? To poczytaj! >>> http://link.interia.pl/f199e
+> 
 
-acpi_processor_notify_smm should get built into the processor module --
-assuming CONFIG_ACPI and CONFIG_CPU_FREQ are enabled.
+If you need a tester with a Via C7 PC, I'm ready to do do it.
 
-did you do a "make oldconfig" before building?
-what do you see running
-grep ACPI .config
-grep CPU_FREQ .config
+Looks as acpi-cpufreq only works on Intel h/w, and longhaul are not going to
+support Via C7, so I'm left out in the cold.
 
--Len
+Brgds Jorgen
