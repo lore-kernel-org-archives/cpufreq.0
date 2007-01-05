@@ -1,49 +1,59 @@
-From: Jorgen <jorgen@greven.dk>
-Subject: Power mgmt / CPUFREQ on Via C7 (Esther)
-Date: Thu, 4 Jan 2007 12:37:58 +0000 (UTC)
-Message-ID: <loom.20070104T133125-754@post.gmane.org>
-References: <5317.195.215.10.251.1167740225.squirrel@195.41.226.86>
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: [PATCH 2.6.20-rc3] cpufreq: check sysfs_create_link return value
+Date: Fri, 5 Jan 2007 05:44:54 +0200
+Message-ID: <20070105034454.GA5974@Ahmed>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030305AbXAEDpE@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: davej@codemonkey.org.uk
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-> Patch for 2.6.19.1 is included in this message. It is adding new driver
-> to cpufreq so You have to enable it in kernel config. It isn't working
-> driver for now. Compile it as module. After modprobe it will print
-> You few lines starting with "eps: ". Please send me theses lines. If
-> there will be sane values then I will send You more working driver.
->=20
-> Regards
-> Rafa=C2=B3
->=20
->=20
->=20
-Hi Rafa
+Trivial patch to check sysfs_create_link return values. Fail gracefully 
+if needed.
 
-I have build with your patch and loaded the enhanced_powersaver module. Her=
-e=20
-is the output from dmesg:
+Signed-off-by: Ahmed Darwish <darwish.07@gmail.com>
 
-eps: Eden
-eps: Extended Centaur CPUID =3D 0xc0000002
-eps: CPU temp =3D 42 deg C
-eps: Current voltage 844mV
-eps: Current multiplier 10
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index d913304..72ee576 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -722,8 +722,13 @@ static int cpufreq_add_dev (struct sys_device * sys_dev)
+ 			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+ 			dprintk("CPU already managed, adding link\n");
+-			sysfs_create_link(&sys_dev->kobj,
+-					  &managed_policy->kobj, "cpufreq");
++			ret = sysfs_create_link(&sys_dev->kobj,
++						&managed_policy->kobj, 
++						"cpufreq");
++			if (ret) {
++				mutex_unlock(&policy->lock);
++				goto err_out_driver_exit;
++			}
+ 
+ 			cpufreq_debug_enable_ratelimit();
+ 			mutex_unlock(&policy->lock);
+@@ -770,8 +775,12 @@ static int cpufreq_add_dev (struct sys_device * sys_dev)
+ 		dprintk("CPU %u already managed, adding link\n", j);
+ 		cpufreq_cpu_get(cpu);
+ 		cpu_sys_dev = get_cpu_sysdev(j);
+-		sysfs_create_link(&cpu_sys_dev->kobj, &policy->kobj,
+-				  "cpufreq");
++		ret = sysfs_create_link(&cpu_sys_dev->kobj, &policy->kobj,
++					"cpufreq");
++		if (ret) {
++			mutex_unlock(&policy->lock);
++			goto err_out_unregister;
++		}
+ 	}
+ 
+ 	policy->governor = NULL; /* to assure that the starting sequence is
 
-Looks good to me.
 
-The mainboard is an I-Base IB796
-
-Brgds Jorgen
+-- 
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
