@@ -1,12 +1,13 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: cpufreq doesn't recognise my pentium m
-Date: Fri, 12 Jan 2007 07:37:48 -0500
-Message-ID: <20070112123748.GF13024@dominikbrodowski.de>
-References: <20070106181953.GA268358@syrinx.mpch-mainz.mpg.de>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: Frequency can't switch on a dual Turion 64
+Date: Fri, 12 Jan 2007 09:06:06 -0600
+Message-ID: <1449F58C868D8D4E9C72945771150BDFD964C6@SAUSEXMB1.amd.com>
+References: <43212.193.48.146.2.1168602995.squirrel@www.lievin.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20070106181953.GA268358@syrinx.mpch-mainz.mpg.de>
+Content-class: urn:content-classes:message
+In-Reply-To: <43212.193.48.146.2.1168602995.squirrel@www.lievin.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,21 +19,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tim Butler <tmb@mpch-mainz.mpg.de>
+To: =?iso-8859-1?Q?Romain_Li=E9vin?= <roms@lievin.net>, davej@codemonkey.org.uk
 Cc: cpufreq@lists.linux.org.uk
 
-Hi,
+> I may have detected a bug with the K8 cpu frequency driver
+> (powernow_k8.c). While the driver correctly
+> detect the 2 availables frequencies (800 & 1600 MHz), the=20
+> governor always uses the lowest one.
 
-On Sat, Jan 06, 2007 at 07:19:53PM +0100, Tim Butler wrote:
-> I recently ran into some trouble with CPU frequency scaling on my sony
-> vaio laptop. I'm running a fresh install of debian etch with a custom
-> kernel compiled from the latest 2.6.18 debian kernel sources, with:
-> 
-> CONFIG_X86_SPEEDSTEP_CENTRINO=y
-> CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+It looks like the powernow-k8 driver correctly constructs
+a two entry frequency table and verifies it, and then
+reverifies a second frequency table with only 1 entry in
+it.
 
-Does CONFIG_X86_ACPI_CPUFREQ work? Also, you might have more luck with a
-more recent kernel...
+I'm not familiar enough with the cpufreq code to guess
+why this is happening.  I don't think it's a powernow-k8
+bug, but I suppose it could be doing something wrong.
 
-	Dominik
+-Mark Langsdorf
+AMD, Inc.
