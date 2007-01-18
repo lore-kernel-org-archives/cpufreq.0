@@ -1,48 +1,96 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: rdmsr_on_cpu, wrmsr_on_cpu et al
-Date: Wed, 17 Jan 2007 20:01:34 -0500
-Message-ID: <20070118010134.GB31366@redhat.com>
-References: <20070117132613.GC6021@localhost.sw.ru>
+From: Adrian Bunk <bunk-HeJ8Db2Gnd6zQB+pC5nmwQ@public.gmane.org>
+Subject: 2.6.20-rc5: known regressions with patches (v2)
+Date: Thu, 18 Jan 2007 20:59:15 +0100
+Message-ID: <20070118195915.GC9093@stusta.de>
+References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20070117132613.GC6021@localhost.sw.ru>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexey Dobriyan <adobriyan@openvz.org>
-Cc: cpufreq@lists.linux.org.uk, devel@openvz.org
+Return-path: <kvm-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701121424520.11200-AgDkxUvNf0y7TbgM5vRIOg@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/kvm-devel>,
+	<mailto:kvm-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=kvm-devel>
+List-Post: <mailto:kvm-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:kvm-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/kvm-devel>,
+	<mailto:kvm-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Sender: kvm-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Errors-To: kvm-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: Linus Torvalds <torvalds-3NddpPZAyC0@public.gmane.org>, Andrew Morton <akpm-3NddpPZAyC0@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Russell King <rmk+lkml-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Michael Gernoth <gernoth-jNDFPZUTrfT6U6xlzOR6HsSSVFg4/55HhC4ANOJQIlc@public.gmane.org>, Miles Lane <miles.lane-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-usb-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, YOSHIFUJI Hideaki <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-cunTk1MwBs8iFSDQTTA3OLVCufUGDwFn@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David L Stevens <dlstevens-r/Jw6+rmf7HQT0dZR+AlfA@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, jffs-dev-VrBV9hrLPhE@public.gmane.org, Dave Jones <davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Daniel Drake <dsd-aBrp7R+bbdUdnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Roland Dreier <rdreier-FYB4Gu1CFyUAvxtiuMwx3w@public.gmane.org>, kvm-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 
-On Wed, Jan 17, 2007 at 04:26:13PM +0300, Alexey Dobriyan wrote:
- > Hi, Dave!
- > 
- > There was OpenVZ specific bug rendering some cpufreq drivers unusable
- > on SMP. In short, when cpufreq code thinks it confined itself to
- > needed cpu by means of set_cpus_allowed() to execute rdmsr, some
- > "virtual cpu" feature can migrate process to anywhere. This triggers
- > bugons and does wrong things in general.
- > 
- > This got fixed by introducing rdmsr_on_cpu and wrmsr_on_cpu executing
- > rdmsr and wrmsr on given physical cpu by means of smp_call_function_single().
- > 
- > So, understanding p4-clockmod is not the only driver that was affected,
- > is something like this acceptable for start?
+This email lists some known regressions in 2.6.20-rc5 compared to 2.6.19
+with patches available
 
-This is probably useful outside of cpufreq too, so should probably
-go somewhere in include/asm/processor.h for eg.
-Looks ok on a quick glance, but I'd like to see if anyone on lkml
-has any comments, especially the usual x86/x86-64 experts.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-		Dave
+Due to the huge amount of recipients, please trim the Cc when answering.
 
--- 
-http://www.codemonkey.org.uk
+
+Subject    : does not pickup ipv6 addresses
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7817
+             http://lkml.org/lkml/2007/1/14/146
+Submitter  : Michael Gernoth <gernoth-jNDFPZUTrfT6U6xlzOR6HsSSVFg4/55HhC4ANOJQIlc@public.gmane.org>
+             Daniel Drake <dsd-aBrp7R+bbdUdnm+yROfE0A@public.gmane.org>
+Caused-By  : David L Stevens <dlstevens-r/Jw6+rmf7HQT0dZR+AlfA@public.gmane.org>
+             commit 30c4cf577fb5b68c16e5750d6bdbd7072e42b279
+Handled-By : YOSHIFUJI Hideaki <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7817
+Status     : patch available
+
+
+Subject    : ACPI: fix cpufreq regression
+References : http://lkml.org/lkml/2007/1/16/120
+Submitter  : Ingo Molnar <mingo-X9Un+BFzKDI@public.gmane.org>
+Caused-By  : Dave Jones <davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+             commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
+Handled-By : Ingo Molnar <mingo-X9Un+BFzKDI@public.gmane.org>
+Patch      : http://lkml.org/lkml/2007/1/16/120
+Status     : patch available
+
+
+Subject    : CONFIG_JFFS2_FS_DEBUG=2 compile error
+References : http://lkml.org/lkml/2007/1/12/161
+Submitter  : Russell King <rmk+lkml-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Caused-By  : Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>
+             commit 914e26379decf1fd984b22e51fd2e4209b7a7f1b
+Handled-By : David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Status     : patch available
+
+
+Subject    : WARNING: "profile_hits" [drivers/kvm/kvm-intel.ko] undefined!
+References : http://lkml.org/lkml/2007/1/12/16
+Submitter  : Miles Lane <miles.lane-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Caused-By  : Ingo Molnar <mingo-X9Un+BFzKDI@public.gmane.org>
+             commit 07031e14c1127fc7e1a5b98dfcc59f434e025104
+Handled-By : Andrew Morton <akpm-3NddpPZAyC0@public.gmane.org>
+Patch      : http://lkml.org/lkml/2007/1/12/18
+Status     : patch available
+
+
+Subject    : KVM: guest crash
+References : http://lkml.org/lkml/2007/1/8/163
+Submitter  : Roland Dreier <rdreier-FYB4Gu1CFyUAvxtiuMwx3w@public.gmane.org>
+Handled-By : Avi Kivity <avi-atKUWr5tajBWk0Htik3J/w@public.gmane.org>
+Patch      : http://lkml.org/lkml/2007/1/9/280
+Status     : patch available
+
+
+Subject    : compile error: USB_HID must depend on INPUT
+References : http://lkml.org/lkml/2007/1/12/157
+Submitter  : Russell King <rmk+lkml-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Handled-By : Russell King <rmk+lkml-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Patch      : http://lkml.org/lkml/2007/1/12/177
+Status     : patch available
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
