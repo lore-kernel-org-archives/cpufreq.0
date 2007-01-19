@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7851] New: cpufreq shows bad/incomplete infos
-Date: Fri, 19 Jan 2007 07:06:06 -0800
-Message-ID: <200701191506.l0JF66Z6007401@fire-2.osdl.org>
+Subject: [Bug 7851] cpufreq shows bad/incomplete infos
+Date: Fri, 19 Jan 2007 07:22:13 -0800
+Message-ID: <200701191522.l0JFMDXY007903@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,39 +20,19 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=7851
 
-           Summary: cpufreq shows bad/incomplete infos
-    Kernel Version: 2.6.19.1
-            Status: NEW
-          Severity: normal
-             Owner: cpufreq@www.linux.org.uk
-         Submitter: hetfield666@gmail.com
+alexey.y.starikovskiy@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |REJECTED
+         Resolution|                            |INVALID
 
 
-Most recent kernel where this bug did *NOT* occur:
-Distribution: Gentoo
-Hardware Environment: Asus P5B Deluxe (P965 chipset), Core 2 Duo E6300
-Software Environment: Gentoo 64bit
-Problem Description:
-cpufreq-info shows
 
-limiti hardware: 1.60 GHz - 1.86 GHz
-frequenze disponibili: 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.86
-GHz, 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.60 GHz
-
-while it should go down until 1 ghz. 
-
-/sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_available_frequencies
-says the same.
-
-i'm using the centrino /speedstep module.
-i tried acpi-speedstep but it does't detect anything and i have no freq scaling.
-
-according to http://forums.gentoo.org/viewtopic-p-3837305.html#3837305
-an mm patch should be in place. if so, just tell me i'll be happy to test next week
-
-Steps to reproduce:
-run
-cpufreq-info
+------- Additional Comments From alexey.y.starikovskiy@intel.com  2007-01-19 07:14 -------
+E6300 lowest frequency multiplier is 6. This means that if you have FSB at 
+1066MHz, base CPU frequency is 1066/4=266, and lowest frequency your CPU may 
+appear at is 266*6=1.6Ghz, exactly what you see. 
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
