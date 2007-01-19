@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7060] Thinkpad X60 stuck at low speed without battery
-Date: Thu, 18 Jan 2007 18:09:44 -0800
-Message-ID: <200701190209.l0J29iwh019324@fire-2.osdl.org>
+Date: Thu, 18 Jan 2007 18:55:55 -0800
+Message-ID: <200701190255.l0J2ttsf020447@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,18 +20,13 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=7060
 
-luming.yu@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |acpi-
-                   |                            |bugzilla@lists.sourceforge.n
-                   |                            |et
 
 
 
-------- Additional Comments From luming.yu@intel.com  2007-01-18 18:02 -------
-Does windows work?
+
+------- Additional Comments From gsalgado@gmail.com  2007-01-18 18:48 -------
+No. As I expected, got exactly the same behaviour on windows.
+(I knew one day I'd be thankful for not erasing the windows partition!)
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
