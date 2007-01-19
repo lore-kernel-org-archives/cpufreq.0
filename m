@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7060] Thinkpad X60 stuck at low speed without battery
-Date: Fri, 19 Jan 2007 04:19:46 -0800
-Message-ID: <200701191219.l0JCJkIZ002921@fire-2.osdl.org>
+Subject: [Bug 7851] New: cpufreq shows bad/incomplete infos
+Date: Fri, 19 Jan 2007 07:06:06 -0800
+Message-ID: <200701191506.l0JF66Z6007401@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,26 +18,41 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7060
+http://bugzilla.kernel.org/show_bug.cgi?id=7851
+
+           Summary: cpufreq shows bad/incomplete infos
+    Kernel Version: 2.6.19.1
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: hetfield666@gmail.com
 
 
+Most recent kernel where this bug did *NOT* occur:
+Distribution: Gentoo
+Hardware Environment: Asus P5B Deluxe (P965 chipset), Core 2 Duo E6300
+Software Environment: Gentoo 64bit
+Problem Description:
+cpufreq-info shows
 
+limiti hardware: 1.60 GHz - 1.86 GHz
+frequenze disponibili: 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.86
+GHz, 1.86 GHz, 1.86 GHz, 1.86 GHz, 1.60 GHz
 
+while it should go down until 1 ghz. 
 
-------- Additional Comments From gsalgado@gmail.com  2007-01-19 04:12 -------
-I've already tried it, and it doesn't solve this problem.
+/sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_available_frequencies
+says the same.
 
-To solve this problem I could simply remove a call to
-acpi_processor_get_platform_limit(pr) from acpi_processor_ppc_has_changed, since
-that's the function responsible for obtaining the value of _PPC (and storing it
-in pr->performance_platform_limit) from the BIOS, but that doesn't look right to me.
+i'm using the centrino /speedstep module.
+i tried acpi-speedstep but it does't detect anything and i have no freq scaling.
 
-There are also other possible ways to workaround this problem in the kernel, but
-that may cause regressions.
+according to http://forums.gentoo.org/viewtopic-p-3837305.html#3837305
+an mm patch should be in place. if so, just tell me i'll be happy to test next week
 
-What I think is that the BIOS shouldn't notify the kernel that the _PPC has
-changed when the battery is removed, since in that case we certainly have AC
-plugged in.
+Steps to reproduce:
+run
+cpufreq-info
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
