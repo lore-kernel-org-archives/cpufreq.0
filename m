@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7859] Frequency can't switch on a dual Turion 64
-Date: Sun, 21 Jan 2007 08:03:39 -0800
-Message-ID: <200701211603.l0LG3diu027194@fire-2.osdl.org>
+Date: Sun, 21 Jan 2007 13:26:39 -0800
+Message-ID: <200701212126.l0LLQd1j003565@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,10 +24,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=7859
 
 
 
-------- Additional Comments From roms@lievin.net  2007-01-21 07:55 -------
-Created an attachment (id=10146)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=10146&action=view)
-ACPI dump
+------- Additional Comments From trenn@suse.de  2007-01-21 13:18 -------
+Created an attachment (id=10149)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10149&action=view)
+That one should fix it: Set cpufreq limit for all affected/managed cpus
 
 
 ------- You are receiving this mail because: -------
