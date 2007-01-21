@@ -1,10 +1,13 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Remove "ignore_latency" option
-Date: Fri, 19 Jan 2007 22:28:22 +0100
-Message-ID: <45B137F6.6070006@interia.pl>
+From: Romain =?iso-8859-1?Q?Li=E9vin?= <roms@lievin.net>
+Subject: RE: Frequency can't switch on a dual Turion 64
+Date: Sun, 21 Jan 2007 11:28:56 +0100 (CET)
+Message-ID: <1052.10.10.10.3.1169375336.squirrel@www.lievin.net>
+References: <43212.193.48.146.2.1168602995.squirrel@www.lievin.net>
+	<1449F58C868D8D4E9C72945771150BDFD964C6@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <1449F58C868D8D4E9C72945771150BDFD964C6@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,59 +18,32 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: davej@codemonkey.org.uk, Romain =?iso-8859-1?Q?Li=E9vin?= <roms@lievin.net>, cpufreq@lists.linux.org.uk
 
+Hi,
 
-There is no need to have this option in Longhaul anymore.=20
-It was for laptop with CLE266 chipset in times, when only=20
-ACPI C3 was used to switch frequency. Now we have native=20
-support not only for CLE266, but CN400 too. Would be good=20
-to have support for PN266, but I can't find datasheet for=20
-it.
-Looks like BIOS for CPU's faster then 1GHz don't support=20
-ACPI C2 nor C3.
+> It looks like the powernow-k8 driver correctly constructs
+> a two entry frequency table and verifies it, and then
+> reverifies a second frequency table with only 1 entry in
+> it.
 
-Signed-off-by: Rafa=B3 Bilski <rafalbilski@interia.pl>
----
- arch/i386/kernel/cpu/cpufreq/longhaul.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+I feel very strange that frequency range can vary ("request for
+verification of policy") between 2 calls of cpufreq_driver->verify() on
+the same CPU (cpufreq.c: 1386 & 1400). First call returns
+800000-1600000MHz while the second one returns 800000-800000. Moreover,
+both calls are done before calling set_policy() at line 1413.
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
-/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -76,7 +76,6 @@ static u8 longhaul_flags;
-=20
- /* Module parameters */
- static int scale_voltage;
--static int ignore_latency;
-=20
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "longha=
-ul", msg)
-=20
-@@ -678,8 +677,7 @@ static int __init longhaul_cpu_init(struct cpufreq_poli=
-cy *policy)
- 	/* Check ACPI support for C3 state */
- 	if ((pr !=3D NULL) && (longhaul_version =3D=3D TYPE_POWERSAVER)) {
- 		cx =3D &pr->power.states[ACPI_STATE_C3];
--		if (cx->address > 0 &&
--		   (cx->latency <=3D 1000 || ignore_latency !=3D 0) ) {
-+		if (cx->address > 0 && cx->latency <=3D 1000) {
- 			longhaul_flags |=3D USE_ACPI_C3;
- 			goto print_support_type;
- 		}
-@@ -798,8 +796,6 @@ static void __exit longhaul_exit(void)
-=20
- module_param (scale_voltage, int, 0644);
- MODULE_PARM_DESC(scale_voltage, "Scale voltage of processor");
--module_param(ignore_latency, int, 0644);
--MODULE_PARM_DESC(ignore_latency, "Skip ACPI C3 latency test");
-=20
- MODULE_AUTHOR ("Dave Jones <davej@codemonkey.org.uk>");
- MODULE_DESCRIPTION ("Longhaul driver for VIA Cyrix processors.");
+I think there is either a bug, either a problem with my configuration.
+Anyways, I'm investigating this by taking a look at source code.
 
+I decided to debug this but I can load the powernow-k8 module once. I
+can't unload it; I have to reboot which is very annoying. Why module is
+locked?
 
-----------------------------------------------------------------------
-Fergie i jej biodra.... - zobacz >>  http://link.interia.pl/f19ed
+Regards, Romain.
+-- 
+email:	<roms@lievin.net>
+web:	<http://www.lievin.net>
+"Linux, y'a moins bien mais c'est plus cher !"
