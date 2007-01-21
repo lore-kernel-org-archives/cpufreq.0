@@ -1,15 +1,8 @@
-From: Romain =?iso-8859-1?Q?Li=E9vin?= <roms@lievin.net>
-Subject: RE: Frequency can't switch on a dual Turion 64
-Date: Sun, 21 Jan 2007 16:45:27 +0100 (CET)
-Message-ID: <1050.10.10.10.3.1169394327.squirrel@www.lievin.net>
-References: <43212.193.48.146.2.1168602995.squirrel@www.lievin.net>    
-	<1449F58C868D8D4E9C72945771150BDFD964C6@SAUSEXMB1.amd.com>    
-	<1052.10.10.10.3.1169375336.squirrel@www.lievin.net>   
-	<1169379997.14625.29.camel@sublime.site>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7859] New: Frequency can't switch on a dual Turion 64
+Date: Sun, 21 Jan 2007 08:01:14 -0800
+Message-ID: <200701211601.l0LG1EHq027033@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1169379997.14625.29.camel@sublime.site>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,50 +13,47 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: trenn@suse.de
-Cc: davej@codemonkey.org.uk, Romain =?iso-8859-1?Q?Li=E9vin?= <roms@lievin.net>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hi,
+http://bugzilla.kernel.org/show_bug.cgi?id=7859
 
-> In older kernels powernow-k8 could be unloaded, not sure whether this is
-still the case. Switch to performance (or userspace?) governor and try
-to unload all related modules, e.g. freq_tables,
-> maybe it still works.
+           Summary: Frequency can't switch on a dual Turion 64
+    Kernel Version: 2.6.19.2
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: roms@lievin.net
+                CC: trenn@suse.de
 
-I'm already using performance governator and powernow-k8 is the single
-module I have.
 
-> I expect the limitation comes from ACPI _PPC func, so you should add
-ACPI_DEBUG to your debug kernel and a printk into:
-> drivers/acpi/processor_perflib.c:acpi_processor_ppc_notifier()
-> to be sure.
+Most recent kernel where this bug did *NOT* occur:
+Distribution: Debian testing 64-bits
+Hardware Environment: Laptop Fujistu-Siemens Amilo Pa 1538
+Software Environment: vanilla kernel 2.6.19.2 SMP w/ ACPI
+Problem Description: while the driver correctly detects the two available
+frequencies (800 & 1600 MHz), any governor will always use the lowest one.
+Sometimes, it enables the highest frequency. In this case, my laptop switches
+well between lowest and highest frequencies on power insertion/removal.
+But, most of the time, I can switch between 800 and 800MHz, sic!
 
-I have added printk: the function is called at module insertion.
+It looks like the powernow-k8 driver correctly constructs a two entry frequency
+table and verifies it, and then reverifies a second frequency table with only 1
+entry in it. But, I feel very strange that frequency range can vary ("request
+for verification of policy") between 2 calls of cpufreq_driver->verify() on
+the same CPU (cpufreq.c: 1386 & 1400). First call returns 800000-1600000MHz
+while the second one returns 800000-800000. Moreover, both calls are done before
+calling set_policy() at line 1413.
 
-> Can you open a bugzilla.kernel.org bug and attach acpidump and add me to
-CC, pls.
-
-I will do it.
-
-> This sounds related to:
-> https://bugzilla.novell.com/show_bug.cgi?id=231107
-
-Yes, it does.
-
-> You should also make sure your kernel includes this one, recently posted
-here by Bruno Ducrot:
-> http://marc.theaimsgroup.com/?l=linux-acpi&m=116412804022222&w=2
-
-It is (2.6.19.2 which is the latest one).
-
->
->      Thomas
->
->
+I have attached:
+- dmesg output
+- sysfs files
+- cpufreq-info output
+- ACPI dump
 
 Romain.
--- 
-email:	<roms@lievin.net>
-web:	<http://www.lievin.net>
-"Linux, y'a moins bien mais c'est plus cher !"
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
