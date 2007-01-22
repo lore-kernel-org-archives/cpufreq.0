@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7859] Frequency can't switch on a dual Turion 64
-Date: Mon, 22 Jan 2007 08:47:07 -0800
-Message-ID: <200701221647.l0MGl78Q002143@fire-2.osdl.org>
+Date: Mon, 22 Jan 2007 08:49:06 -0800
+Message-ID: <200701221649.l0MGn6c0002180@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,17 +24,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=7859
 
 
 
-------- Additional Comments From roms@lievin.net  2007-01-22 08:39 -------
-I have added your printk line at the end of acpi_processor_ppc_notifier() but
-before the verify call. On the other hand, I forgot to add it in the
-for_each_cpu_mask loop. I have the call once at module load time (see
-cpufreq2.dmesg).
+------- Additional Comments From roms@lievin.net  2007-01-22 08:41 -------
+Created an attachment (id=10153)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10153&action=view)
+dmesg output (PPC - ppc: 0, cpuid 0, policy_cpu: 0 line)
 
-As stated in your mail, I have added the marc's patch and I'm happy to tell you
-that's working. I have changed governor twice as you may see in the
-cpufreq3.dmesg log.
-
-As a final check, I will try and build a UP kernel. More report later.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
