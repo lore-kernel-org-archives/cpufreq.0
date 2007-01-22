@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7851] cpufreq shows bad/incomplete infos
-Date: Sun, 21 Jan 2007 23:56:36 -0800
-Message-ID: <200701220756.l0M7uaoW018991@fire-2.osdl.org>
+Date: Mon, 22 Jan 2007 00:55:03 -0800
+Message-ID: <200701220855.l0M8t3dr020826@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,10 +24,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=7851
 
 
 
-------- Additional Comments From hetfield666@gmail.com  2007-01-21 23:48 -------
-i'm quite surprised of this as another user reported me from 1.8 to 1.0 ghz.
-
-is speedstep implementation cutting only 200mhz on e6300?
+------- Additional Comments From alexey.y.starikovskiy@intel.com  2007-01-22 00:47 -------
+You can get 1.0G on mobile Core (2) Duo, just because it uses 166x4 FSB. E6300 
+is _not_ mobile part.  
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
