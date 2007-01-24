@@ -1,36 +1,62 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7866] cpufreq fails to correctly identify Intel Conroe
-	operating frequencies
-Date: Tue, 23 Jan 2007 15:28:27 -0800
-Message-ID: <200701232328.l0NNSR0c021988@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.20-rc5: known regressions with patches (v3)
+Date: Wed, 24 Jan 2007 16:50:53 +0100
+Message-ID: <20070124155053.GL17836@stusta.de>
+References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
+Sender: netdev-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="macroman"
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?utf-8?B?QmrDtnJu?= Steinbrink <B.Steinbrink@gmx.de>, Robert Hancock <hancockr@shaw.ca>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Michael Gernoth <gernoth@informatik.uni-erlangen.de>, Daniel Drake <dsd@gentoo.org>, David L Stevens <dlstevens@us.ibm.com>, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>, davem@davemloft.net, netdev@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>, cpufreq@lists.linux.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7866
+This email lists some known regressions in 2.6.20-rc5 compared to 2.6.1=
+9
+with patches available.
 
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possib=
+ly
+involved with one or more of these issues.
 
-
+Due to the huge amount of recipients, please trim the Cc when answering=
+=2E
 
 
-------- Additional Comments From jared@jaredcam.net  2007-01-23 15:20 -------
-Created an attachment (id=10167)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=10167&action=view)
-result of acpidump
+Subject    : sata_nv: SATA exceptions
+References : http://lkml.org/lkml/2007/1/14/108
+Submitter  : Bj=C3=B6rn Steinbrink <B.Steinbrink@gmx.de>
+Caused-By  : Robert Hancock <hancockr@shaw.ca>
+             commit 2dec7555e6bf2772749113ea0ad454fcdb8cf861
+Handled-By : Robert Hancock <hancockr@shaw.ca>
+Patch      : http://lkml.org/lkml/2007/1/23/280
+Status     : patch available
 
-Here is the output of acpidump
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Subject    : does not pickup ipv6 addresses
+References : http://bugzilla.kernel.org/show_bug.cgi?id=3D7817
+             http://lkml.org/lkml/2007/1/14/146
+Submitter  : Michael Gernoth <gernoth@informatik.uni-erlangen.de>
+             Daniel Drake <dsd@gentoo.org>
+Caused-By  : David L Stevens <dlstevens@us.ibm.com>
+             commit 30c4cf577fb5b68c16e5750d6bdbd7072e42b279
+Handled-By : YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=3D7817
+Status     : patch available
+
+
+Subject    : ACPI: fix cpufreq regression
+References : http://lkml.org/lkml/2007/1/16/120
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Caused-By  : Dave Jones <davej@redhat.com>
+             commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
+Handled-By : Ingo Molnar <mingo@elte.hu>
+Patch      : http://lkml.org/lkml/2007/1/16/120
+Status     : patch available
+
+
