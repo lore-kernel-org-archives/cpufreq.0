@@ -1,41 +1,45 @@
-From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
-Subject: Re: 2.6.20rc5 k8/acpi regression ( 2.6.17.13 works fine ).
-Date: Thu, 25 Jan 2007 23:11:46 +0100
-Message-ID: <200701252311.46858.pluto@agmk.net>
-References: <200701242346.44673.pluto@agmk.net> <20070124225238.GT17836@stusta.de> <200701242350.45276.lenb@kernel.org>
+From: "Jong Sung Lee" <sayhappy@gmail.com>
+Subject: [Q] What patch can be applied to linux kernel 2.4.26?
+Date: Fri, 26 Jan 2007 16:47:32 +0900
+Message-ID: <001501c7411e$43e76150$6f3e98a3@SMRLnotebook>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200701242350.45276.lenb@kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============0477917048=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: linux-kernel@vger.kernel.org
-Cc: Len Brown <lenb@kernel.org>, Adrian Bunk <bunk@stusta.de>, linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Thursday 25 of January 2007 05:50:45 Len Brown wrote:
-> On Wednesday 24 January 2007 17:52, Adrian Bunk wrote:
-> > On Wed, Jan 24, 2007 at 11:46:44PM +0100, Pawe=C5=82 Sikora wrote:
-> > > for 2.6.20rc5 i get an acpi related oops during x86-64 boot:
-> > > http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-acpi-oops.jpg
-> > > disabling the "amd-k8 cool'n'quiet" option in bios helps.
-> > > moreover, it works fine for 2.6.17.13, so it looks like
-> > > a recent regression. i can provide more details if you need.
-> >
-> > thanks for your report.
-> >
-> > Can you narrow down a bit when it started?
-> > Is 2.6.19 OK?
-> > Is 2.6.18 OK?
->
-> Is the stack trace always the same?  It doesn't make much sense to me=
-=2E
+This is a multi-part message in MIME format.
 
-with debug options enabled oops looks better:
-http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-oops-01.jpg
--
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--===============0477917048==
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: base64
+
+SGVsbG8hfg0KDQpOb3cgSSBuZWVkIGNwdWZyZXEgaW4gbGludXgga2VybmVsIDIuNC4yNi4NClRo
+dXMgSSBkb3dubG9hZGVkIGtlcm5lbCAyLjQuMjYgaG93ZXZlciBJIGRvIG5vdCBrbm93IHdoYXQg
+dGFyYmFsbCBpcyBtYWRlIGZvciAyLjQuMjYgZnJvbSANCmZ0cDovL2Z0cC5saW51eC5vcmcudWsv
+cHViL2xpbnV4L2NwdWZyZXEvDQoNCnNvbWVvbmUgY2FuIHRlbGwgaXQgdG8gbWU/DQoNCg==
+
+--===============0477917048==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0477917048==--
+
+
