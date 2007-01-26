@@ -1,94 +1,64 @@
-From: Francesco Poli <frx@firenze.linux.it>
-Subject: Re: [Q] What patch can be applied to linux kernel 2.4.26?
-Date: Fri, 26 Jan 2007 18:52:14 +0100
-Message-ID: <20070126185214.3563467d.frx@firenze.linux.it>
-References: <001501c7411e$43e76150$6f3e98a3@SMRLnotebook>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.20-rc6: known regressions with patches
+Date: Fri, 26 Jan 2007 19:18:53 +0100
+Message-ID: <20070126181853.GO17836@stusta.de>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1207941224=="
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <001501c7411e$43e76150$6f3e98a3@SMRLnotebook>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-
---===============1207941224==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__26_Jan_2007_18_52_14_+0100_usqzbPzsUuBRV78="
-
---Signature=_Fri__26_Jan_2007_18_52_14_+0100_usqzbPzsUuBRV78=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 26 Jan 2007 16:47:32 +0900 Jong Sung Lee wrote:
-
-> Hello!~
-
-Hi!
-
->=20
-> Now I need cpufreq in linux kernel 2.4.26.
-
-Version 2.4.26 is quite old, now.
-The latest 2.4.x version is 2.4.34, if you cannot (or do not want to)
-switch to 2.6.x...
-
-> Thus I downloaded kernel 2.4.26 however I do not know what tarball is
-> made for 2.4.26 from  ftp://ftp.linux.org.uk/pub/linux/cpufreq/
->=20
-> someone can tell it to me?
-
-The following patch should be able to apply more or less cleanly to
-version 2.4.26:
-ftp://ftp.poupinou.org/cpufreq/cpufreq-24-2004083101.diff.bz2
-
-At least, it applies to recent 2.4.x Linux kernels (such as 2.4.34).
-
-
-Disclaimer:
-IANAKH (I Am Not A Kernel Hacker), just a cpufreq user; if anyone knows
-better, I will be more than happy to be corrected!   ;-)
-
-
---=20
- http://frx.netsons.org/progs/scripts/releas-o-meter.html
- Try our amazing Releas-o-meter!
-..................................................... Francesco Poli .
- GnuPG key fpr =3D=3D C979 F34B 27CE 5CD8 DC12  31B5 78F4 279B DD6D FCF4
-
---Signature=_Fri__26_Jan_2007_18_52_14_+0100_usqzbPzsUuBRV78=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFFuj/UePQnm91t/PQRAgWLAJ9REI/eTDWzQTisbTuDUirOvnkBBwCbBAQ0
-ibpqxKGH3WIk7fb63X+2kjA=
-=pDmj
------END PGP SIGNATURE-----
-
---Signature=_Fri__26_Jan_2007_18_52_14_+0100_usqzbPzsUuBRV78=--
-
-
---===============1207941224==
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Duncan <1i5t5.duncan@cox.net>, Neil Brown <neilb@suse.de>, mingo@redhat.com, linux-raid@vger.kernel.org, Dave Jones <davej@redhat.com>, cpufreq@lists.linux.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org, Jan Altenberg <jan@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, Andrew Clayton <andrew@digital-domain.net>, Trond Myklebust <trond.myklebust@fys.uio.no>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+with patches available.
 
---===============1207941224==--
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
+
+Due to the huge amount of recipients, please trim the Cc when answering.
+
+
+Subject    : RAID: annoying "hunk_aligned_read : non aligned" messages
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7835
+Submitter  : Duncan <1i5t5.duncan@cox.net>
+Handled-By : Neil Brown <neilb@suse.de>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7835
+Status     : patch available
+
+
+Subject    : ACPI: fix cpufreq regression
+References : http://lkml.org/lkml/2007/1/16/120
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Caused-By  : Dave Jones <davej@redhat.com>
+             commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
+Handled-By : Ingo Molnar <mingo@elte.hu>
+Patch      : http://lkml.org/lkml/2007/1/16/120
+Status     : patch available
+
+
+Subject    : MIPS Malta: CONFIG_MTD=n compile error
+References : http://lkml.org/lkml/2007/1/25/122
+Submitter  : Jan Altenberg <jan@linutronix.de>
+Caused-By  : Ralf Baechle <ralf@linux-mips.org>
+             commit b228f4c54df37b53c6f364aa7f3efa4280bcc4f0
+Handled-By : Jan Altenberg <jan@linutronix.de>
+Patch      : http://lkml.org/lkml/2007/1/25/122
+Status     : patch available
+
+
+Subject    : NFS triggers WARN_ON() in invalidate_inode_pages2_range()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7826
+Submitter  : Andrew Clayton <andrew@digital-domain.net>
+Caused-By  : Andrew Morton <akpm@osdl.org>
+             commit 8258d4a574d3a8c01f0ef68aa26b969398a0e140
+Handled-By : Trond Myklebust <trond.myklebust@fys.uio.no>
+Patch      : http://lkml.org/lkml/2007/1/24/323
+Status     : patch available
 
