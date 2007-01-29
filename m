@@ -1,12 +1,9 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: Re: Enhanced PowerSaver driver
-Date: Sun, 28 Jan 2007 17:53:52 +0100
-Message-ID: <45BCD520.4080308@interia.pl>
-References: <45BC9E94.6080701@interia.pl> <20070128142543.GA1676@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7880] cpufreq detects wrong frequency on VIA Esther CPU
+	(C7-1500)
+Date: Sun, 28 Jan 2007 18:33:58 -0800
+Message-ID: <200701290233.l0T2Xwlg011406@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20070128142543.GA1676@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,41 +14,119 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-9"; format="flowed"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-> On Sun, Jan 28, 2007 at 02:01:08PM +0100, Rafa=B3 Bilski wrote:
->  > Hello,
->  >=20
->  > Looks like VIA have add support for C7 processors to Longhaul patch=20
->  > available from www.viaarena.com. It is done using hardcoded tables=20
->  > with P-states. I wasn't aware that driver for C7 already exists=20
->  > when I posted my patch. Please ignore it.
->=20
-> I wish they'd send patches upstream instead of creating their own
-> world to live in.  It's not just cpufreq patches either, I've just
-> had to sift through a 6.7MB AGP patch they released just to fish
-> out some additional PCI IDs.
->=20
-> Annoying.
->=20
-> Are you going to sift through their C7 driver and send diffs, or shall
-> I add to my todo ?
->=20
-> thanks,
->=20
-> 		Dave
+http://bugzilla.kernel.org/show_bug.cgi?id=7880
 
-Well, this driver is based on 2.6.16 Longhaul. I have a couple of=20
-small patches for C3 which I would like to send first. I would like=20
-to help, but I don't have access to any motherboard with C7 CPU.=20
-I can't test it. I just think that there is no need to add my version=20
-to kernel when there is official VIA driver available.
+len.brown@intel.com changed:
 
-Regards
-Rafa=B3
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |acpi-
+                   |                            |bugzilla@lists.sourceforge.n
+                   |                            |et
 
 
-----------------------------------------------------------------------
-Zalety czapki niewidki. Zobacz >> http://link.interia.pl/f19e3
+
+------- Additional Comments From len.brown@intel.com  2007-01-28 18:25 -------
+65535000 isn't a random number, it is 0xFFFF * 1000
+
+This is curious because...
+
+The DSDT has two possible _PSS structures, each with 8 packages,
+but only the 1st two packages used -- the following 6 are all F's:
+
+        Name (PPS1, Package (0x02)
+        {
+            Package (0x06)
+            {
+                0x05DC,
+                0x3A98,
+                0x0A,
+                0x0A,
+                0x0F13,
+                0x0F13
+            },
+
+            Package (0x06)
+            {
+                0x0320,
+                0x1F40,
+                0x0A,
+                0x0A,
+                0x0810,
+                0x0810
+            },
+
+            Package (0x06)
+            {
+                0xFFFF,
+                0xFFFF,
+                0xFF,
+                0xFF,
+                0xFFFF,
+                0xFFFF
+            },
+
+and 
+       Name (PPS2, Package (0x02)
+        {
+            Package (0x06)
+            {
+                0x05DC,
+                0x3A98,
+                0x0A,
+                0x0A,
+                0x00B0,
+                0x00B0
+            },
+
+            Package (0x06)
+            {
+                0x0320,
+                0x1F40,
+                0x0A,
+                0x0A,
+                0x00B1,
+                0x00B1
+            },
+
+            Package (0x06)
+            {
+                0xFFFF,
+                0xFFFF,
+                0xFF,
+                0xFF,
+                0xFFFF,
+                0xFFFF
+            },
+        Method (_PSS, 0, NotSerialized)
+        {
+            If (LEqual (PDCT, 0x00))
+            {
+                Return (PPS2)
+            }
+            Else
+            {
+                Return (PPS1)
+            }
+        }
+
+This system has a hard-coded _PPC of 0, which means that PPC
+will always allow all states that PSS has to be exported.
+        Method (_PPC, 0, NotSerialized)
+        {
+            Return (0x00)
+        }
+
+So if there were some bug where the number of packages (2) above
+did not limit what the kernel saw, then it would pick up an entry
+for 65535000 KHz.
+
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
