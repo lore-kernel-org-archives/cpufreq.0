@@ -1,33 +1,31 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7880] cpufreq detects wrong frequency on VIA Esther CPU
-	(C7-1500)
-Date: Sun, 28 Jan 2007 23:29:37 -0800
-Message-ID: <200701290729.l0T7Tb7i018678@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.20-rc6: known regressions with patches
+Date: Mon, 29 Jan 2007 09:45:48 +0100
+Message-ID: <20070129084548.GA10578@elte.hu>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070126181853.GO17836@stusta.de>
+Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933274AbXA2Iuv@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20070126181853.GO17836@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=7880
-
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Duncan <1i5t5.duncan@cox.net>, Neil Brown <neilb@suse.de>, mingo@redhat.com, linux-raid@vger.kernel.org, Dave Jones <davej@redhat.com>, cpufreq@lists.linux.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org, Jan Altenberg <jan@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, Andrew Clayton <andrew@digital-domain.net>, Trond Myklebust <trond.myklebust@fys.uio.no>
 
 
+* Adrian Bunk <bunk@stusta.de> wrote:
 
+> Subject    : ACPI: fix cpufreq regression
+> References : http://lkml.org/lkml/2007/1/16/120
+> Submitter  : Ingo Molnar <mingo@elte.hu>
+> Caused-By  : Dave Jones <davej@redhat.com>
+>              commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
+> Handled-By : Ingo Molnar <mingo@elte.hu>
+> Patch      : http://lkml.org/lkml/2007/1/16/120
+> Status     : patch available
 
-------- Additional Comments From claas@rootdir.de  2007-01-28 23:21 -------
-Does that mean, that it is an ACPI bug of the used mainboard/bios?
-What do you suggest doing?
+this is commit e4233dec749a3519069d9390561b5636a75c7579 meanwhile.
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+	Ingo
