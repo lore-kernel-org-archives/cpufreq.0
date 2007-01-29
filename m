@@ -1,41 +1,47 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: 2.6.20-rc6: known regressions with patches
-Date: Mon, 29 Jan 2007 07:58:55 -0500
-Message-ID: <20070129125855.GA30599@redhat.com>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070126181853.GO17836@stusta.de> <20070129084548.GA10578@elte.hu>
-Mime-Version: 1.0
-Return-path: <linux-mips-bounce@linux-mips.org>
-Content-Disposition: inline
-In-Reply-To: <20070129084548.GA10578@elte.hu>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7880] cpufreq detects wrong frequency on VIA Esther CPU
+	(C7-1500)
+Date: Mon, 29 Jan 2007 10:44:58 -0800
+Message-ID: <200701291844.l0TIiwnN007155@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Adrian Bunk <bunk@stusta.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Duncan <1i5t5.duncan@cox.net>, Neil Brown <neilb@suse.de>, mingo@redhat.com, linux-raid@vger.kernel.org, cpufreq@lists.linux.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org, Jan Altenberg <jan@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, Andrew Clayton <andrew@digital-domain.net>, Trond Myklebust <trond.myklebust@fys.uio.no>
+To: cpufreq@www.linux.org.uk
 
-On Mon, Jan 29, 2007 at 09:45:48AM +0100, Ingo Molnar wrote:
- > 
- > * Adrian Bunk <bunk@stusta.de> wrote:
- > 
- > > Subject    : ACPI: fix cpufreq regression
- > > References : http://lkml.org/lkml/2007/1/16/120
- > > Submitter  : Ingo Molnar <mingo@elte.hu>
- > > Caused-By  : Dave Jones <davej@redhat.com>
- > >              commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
- > > Handled-By : Ingo Molnar <mingo@elte.hu>
- > > Patch      : http://lkml.org/lkml/2007/1/16/120
- > > Status     : patch available
- > 
- > this is commit e4233dec749a3519069d9390561b5636a75c7579 meanwhile.
+http://bugzilla.kernel.org/show_bug.cgi?id=7880
 
-Thanks for pushing this on in my absense btw.
-FWIW, it has my belated ACK :)
-I've asked for it to be in 19.3 too as the same bug exists there.
 
-		Dave
 
--- 
-http://www.codemonkey.org.uk
 
+
+------- Additional Comments From rafalbilski@interia.pl  2007-01-29 10:36 -------
+What is incorrect here? I see that "Name (PPS1, Package (0x02)" is claiming that
+it contains only two packages. Why is third, place holder/incorrect, package
+ever read?
+states[0].core_frequency is max frequency here.
+I think that there are two different packages because one is for Centaur C7 with
+brand C3:
+0x00B0,
+0x00B0
+0x00B1,
+0x00B1
+And second for Centaur C7 with brand C7 or C7-m or Eden.
+0x0F13, = x15.0, 1004mV
+0x0F13
+0x0810, = x8.0, 956mV
+0x0810
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
