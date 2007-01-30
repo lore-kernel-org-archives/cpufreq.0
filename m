@@ -1,8 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7880] cpufreq detects wrong frequency on VIA Esther CPU
-	(C7-1500)
-Date: Mon, 29 Jan 2007 17:44:35 -0800
-Message-ID: <200701300144.l0U1iZOA020125@fire-2.osdl.org>
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Subject: [PATCH] fix cpuinfo_cur_freq for CPU_HW_PSTATE
+Date: Tue, 30 Jan 2007 16:53:54 +0100
+Message-ID: <45BF6A12.9090801@amd.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,32 +15,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7880
+This fixes the cpuinfo_cur_freq value by using the correct
+find_khz_freq_from_fiddid() when the CPU uses hardware p-states.
 
-rui.zhang@intel.com changed:
+Signed-Off-by: Joachim Deguara <joachim.deguara@amd.com>
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |rui.zhang@intel.com
-             Status|NEW                         |ASSIGNED
+--- arch/i386/kernel/cpu/cpufreq/powernow-k8.c.orig	2007-01-30
+16:23:39.000000000 +0100
++++ arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2007-01-30
+16:26:44.000000000 +0100
+@@ -1289,7 +1289,11 @@ static unsigned int powernowk8_get (unsi
+ 	if (query_current_values_with_pending_wait(data))
+ 		goto out;
 
+-	khz = find_khz_freq_from_fid(data->currfid);
++	if (cpu_family == CPU_HW_PSTATE)
++		khz = find_khz_freq_from_fiddid(data->currfid, data->currdid);
++	else
++		khz = find_khz_freq_from_fid(data->currfid);
++	
 
-
-------- Additional Comments From rui.zhang@intel.com  2007-01-29 17:36 -------
-Claas:
-Maybe you can do this test:
-1. recompile the kernel with CONFIG_CPU_FREQ_DEBUG=y and CONFIG_ACPI_DEBUG=y
-2. remove module acpi_cpufreq after boot
-2. #dmesg -c
-   #echo 0x1f >/proc/acpi/debug_level
-   #echo 7 >/sys/module/cpufreq/parameters/debug
-3. load module acpi_cpufreq
-and attach the dmesg output then.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+ out:
+ 	set_cpus_allowed(current, oldmask);
