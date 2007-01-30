@@ -1,10 +1,11 @@
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Subject: [PATCH] fix cpuinfo_cur_freq for CPU_HW_PSTATE
-Date: Tue, 30 Jan 2007 16:53:54 +0100
-Message-ID: <45BF6A12.9090801@amd.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: re: [PATCH] fix cpuinfo_cur_freq for CPU_HW_PSTATE
+Date: Tue, 30 Jan 2007 10:54:14 -0600
+Message-ID: <1449F58C868D8D4E9C72945771150BDFD9655D@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,6 +18,10 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
+
+Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+
+Subject: [PATCH] fix cpuinfo_cur_freq for CPU_HW_PSTATE
 
 This fixes the cpuinfo_cur_freq value by using the correct
 find_khz_freq_from_fiddid() when the CPU uses hardware p-states.
@@ -31,12 +36,20 @@ Signed-Off-by: Joachim Deguara <joachim.deguara@amd.com>
  	if (query_current_values_with_pending_wait(data))
  		goto out;
 
--	khz = find_khz_freq_from_fid(data->currfid);
-+	if (cpu_family == CPU_HW_PSTATE)
-+		khz = find_khz_freq_from_fiddid(data->currfid, data->currdid);
+-	khz =3D find_khz_freq_from_fid(data->currfid);
++	if (cpu_family =3D=3D CPU_HW_PSTATE)
++		khz =3D find_khz_freq_from_fiddid(data->currfid,
+data->currdid);
 +	else
-+		khz = find_khz_freq_from_fid(data->currfid);
-+	
++		khz =3D find_khz_freq_from_fid(data->currfid);
++=09
 
  out:
  	set_cpus_allowed(current, oldmask);
+
+
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
