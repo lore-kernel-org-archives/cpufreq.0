@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5122] cpufreq/powernowd is still not working on my AMD64x2
-	3800+
-Date: Wed, 31 Jan 2007 01:30:24 -0800
-Message-ID: <200701310930.l0V9UOp1018334@fire-2.osdl.org>
+Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
+	p4-clockmod anymore
+Date: Wed, 31 Jan 2007 01:32:45 -0800
+Message-ID: <200701310932.l0V9Wj3r018410@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,7 +19,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5122
+http://bugzilla.kernel.org/show_bug.cgi?id=6367
 
 akpm@osdl.org changed:
 
@@ -29,8 +29,8 @@ akpm@osdl.org changed:
 
 
 
-------- Additional Comments From akpm@osdl.org  2007-01-31 01:21 -------
-Is this problem still prsenet in 2.6.20-rc7?
+------- Additional Comments From akpm@osdl.org  2007-01-31 01:24 -------
+Is this crash still happening in 2.6.20-rc7?
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
