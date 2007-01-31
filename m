@@ -1,72 +1,38 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: ACPI C and P states on Conroe
-Date: Tue, 30 Jan 2007 20:17:47 -0500
-Message-ID: <200701302017.47599.lenb@kernel.org>
-References: <45BF81CF.2060801@dogpad.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932106AbXAaBUw@vger.kernel.org>
-In-Reply-To: <45BF81CF.2060801@dogpad.net>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5353] cpufreq_conservative: cpu always in slowest mode even
+	under high load
+Date: Wed, 31 Jan 2007 01:28:53 -0800
+Message-ID: <200701310928.l0V9SrOv018196@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Joe Harvell <jharvell+lists.linux-kernel@dogpad.net>
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-On Tuesday 30 January 2007 12:35, Joe Harvell wrote:
-> I am trying to enable all the power saving features I can on my Conroe
-> E6600.  After much searching on the web, I am a little confused about
-> the Linux kernel support for ACPI on the Conroe.
-> 
-> Here is my setup:
-> Intel Core2 Duo E6600
-> Asus P5-B Deluxe board (Intel P965).
-> I am running a Gentoo kernel based on 2.6.19.4.
-> 
-> I have managed to enable EIST using cpufreq with the speedstep-centrino
-> driver.  But my understanding from browsing the ACPI spec is that this
-> is still within C0, i.e. not much power savings.
+http://bugzilla.kernel.org/show_bug.cgi?id=5353
 
-Right, P-states are effective only when code is executing,
-and on this processor (with C1E) will have no effect on idle power.
+akpm@osdl.org changed:
 
-> Here are my questions:
-> 
-> 1) For P states, which cpufreq driver should I be using?  I've heard
-> speedstep-centrino is deprecated (but only some aspects of it) that are
-> being moved into acpi-cpufreq.  But I can't get acpi-cpufreq to load in
-> my kernel version.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |akpm@osdl.org
 
-In 2.6.19 I believe that speedstep-centrino is the one to use.
-The transition to acpi-cpufreq happens in 2.6.20.
 
-> Also, I would have thought speedstep-ich would be 
-> the driver, just based on the name.
 
-Don't use speedstep-ich.
+------- Additional Comments From akpm@osdl.org  2007-01-31 01:20 -------
+Are these problems still present in 2.6.20-rc7?
 
-> How do I know (other than trying 
-> all modules to see which one loads) which one I should be using?
-> 2) What kind of support for C1-C3 does the Conroe have?  The ACPI spec
-> says C2 and C3 require chipset support on the motherboard.  Does P965
-> have that.  Does it matter between boards (e.g. P5B)?
+Thanks.
 
-I believe that Conroe currently supports just C1 --
-this is true for the ones I have.
-
-Internally it is an "Enhanced C1" called C1E where the voltage is reduced
-in C1-- but this is transparent to software, which thinks it is just C1.
-
-You can observe this in
-/proc/acpi/processor/*/power
-
-> 3) What versions of the kernel support C1-C3 states?  What kernel
-> options are germane to this?  What libraries/tools are involved?
-
-C1-C3 have been supported for a long time.
-2.6.20 adds a few tweaks to use a more efficient implementation,
-but you'll not notice a difference on today's desktop processor.
-
-cheers,
--Len
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
