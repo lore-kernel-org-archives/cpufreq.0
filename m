@@ -1,14 +1,8 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Failure on Gigabyte GA-965P-DS4 motherboard with Intel P965
-	chipset& core 2 duo CPU
-Date: Wed, 31 Jan 2007 13:41:12 -0800
-Message-ID: <EB12A50964762B4D8111D55B764A845401331365@scsmsx413.amr.corp.intel.com>
-References: <be6081710701311327i31f1fcb2h679c2a3a1675dba5@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6558] Cpufreq reports nominal CPU speed instead of actual
+Date: Wed, 31 Jan 2007 14:22:18 -0800
+Message-ID: <200701312222.l0VMMITj013524@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <be6081710701311327i31f1fcb2h679c2a3a1675dba5@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,104 +13,40 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Mattias Flodin <flodin@gmail.com>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=6558
+
+davej@codemonkey.org.uk changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |REJECTED
+         Resolution|                            |INVALID
 
 
-Is this a regression with recent kernels and was working in earlier
-kernels?
-If it never worked on this platform, I would suggest to make sure you
-have the
-latest BIOS and also check whether there are any options in BIOS to
-enable this feature.
 
-Thanks,
-Venki
+------- Additional Comments From davej@codemonkey.org.uk  2007-01-31 14:13 -------
+If the FSB has been overclocked, we have no chance to report the correct speed.  
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Mattias Flodin
->Sent: Wednesday, January 31, 2007 1:28 PM
->To: cpufreq@lists.linux.org.uk
->Subject: Failure on Gigabyte GA-965P-DS4 motherboard with=20
->Intel P965 chipset& core 2 duo CPU
->
->Hi,
->
->I tried to see if anyone else had the same problem but I couldn't find
->any way to search the mailing-list archives. This is with vanilla
->kernel on Gentoo 2006.1.
->
->Interesting dmesg bits:
->cpufreq-core: trying to register driver centrino
->cpufreq-core: adding CPU 0
->speedstep-centrino: Invalid control/status registers (1 - 1)
->speedstep-centrino: speedstep-centrino: invalid ACPI data
->speedstep-centrino: found unsupported CPU with Enhanced=20
->SpeedStep: send /proc/cp
->uinfo to cpufreq@lists.linux.org.uk
->cpufreq-core: initialization failed
->
->% uname -a
->Linux zaphod 2.6.19.2 #1 SMP PREEMPT Thu Feb 1 22:00:51 CET 2007 i686
->Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz GenuineIntel GNU/Linux
->
->% cat /proc/cpuinfo
->processor       : 0
->vendor_id       : GenuineIntel
->cpu family      : 6
->model           : 15
->model name      : Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
->stepping        : 6
->cpu MHz         : 2400.072
->cache size      : 4096 KB
->physical id     : 0
->siblings        : 2
->core id         : 0
->cpu cores       : 2
->fdiv_bug        : no
->hlt_bug         : no
->f00f_bug        : no
->coma_bug        : no
->fpu             : yes
->fpu_exception   : yes
->cpuid level     : 10
->wp              : yes
->flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
->mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
->lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
->bogomips        : 4801.95
->
->processor       : 1
->vendor_id       : GenuineIntel
->cpu family      : 6
->model           : 15
->model name      : Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
->stepping        : 6
->cpu MHz         : 2400.072
->cache size      : 4096 KB
->physical id     : 0
->siblings        : 2
->core id         : 1
->cpu cores       : 2
->fdiv_bug        : no
->hlt_bug         : no
->f00f_bug        : no
->coma_bug        : no
->fpu             : yes
->fpu_exception   : yes
->cpuid level     : 10
->wp              : yes
->flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
->mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
->lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
->bogomips        : 4799.32
->
->Regards,
->  Mattias Flodin
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
+The CPU can only report FSB values back to cpufreq that it knows about (Which
+are typically the common 100/133/266 etc multiples.  Go outside these, and all
+bets are off).
+
+If the CPU has a x10 multiplier and thinks its at 266FSB but the user has it
+clocked up to 300, cpufreq will report 266*10, whilst it's actually running at
+400MHz faster than we report.
+
+Additionally, any BIOS tables detailing the frequencies the chip can run at are
+determined using fixed FSB values.  If that has an entry for "2.6GHz", that's
+what cpufreq exports, since it's not based on what the FSB is actually running
+at, but the FSB speed the platform supports.
+
+There's really no good way to deal with this.   There are good reasons not to
+under/overclock, and this is one of them.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
