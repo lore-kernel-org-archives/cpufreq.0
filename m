@@ -1,133 +1,39 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: CPU hotplug vs. cpufreq on ppc64
-Date: Thu, 01 Feb 2007 21:14:50 +0100
-Message-ID: <1170360890.4036.19.camel@johannes.berg>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Speedstep centrino
+Date: Fri, 02 Feb 2007 13:25:41 -0800
+Message-ID: <45C3AC55.9010004@goop.org>
+References: <736dda5d0701221243o5a096240v1142ccdf9133f1f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0625468115=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Cc: davej@codemonkey.org.uk, Jacob Shin <jacob.shin@amd.com>, Ashok Raj <ashok.raj@intel.com>, cpufreq <cpufreq@lists.linux.org.uk>
-
-
---===============0625468115==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6+lia2OP/e+3uX+RD09z"
-
-
---=-6+lia2OP/e+3uX+RD09z
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-I'm having an odd problem with ppc64 cpufreq and cpu hotplug. The cpu
-hotplug I'm doing is just fake, but I need to unplug the CPUs for
-suspend.
-
-When the system boots up, all CPUs are added as such:
-[   18.132830] cpufreq-core: trying to register driver powermac
-[   18.132835] cpufreq-core: adding CPU 0
-[   18.132976] cpufreq-core: CPU 1 already managed, adding link
-[   18.132983] cpufreq-core: CPU 2 already managed, adding link
-[   18.132989] cpufreq-core: CPU 3 already managed, adding link
-[   18.132998] cpufreq-core: setting new policy for CPU 0: 1250000 - 250000=
-0 kHz
-[   18.133025] cpufreq-core: new min and max freqs are 1250000 - 2500000 kH=
-z
-[   18.133029] cpufreq-core: governor switch
-[   18.133033] cpufreq-core: __cpufreq_governor for CPU 0, event 1
-[   18.133043] cpufreq-core: target for CPU 0: 2500000 kHz, relation 1
-[   18.133056] cpufreq-core: governor: change or update limits
-[   18.133060] cpufreq-core: __cpufreq_governor for CPU 0, event 3
-[   18.133069] cpufreq-core: target for CPU 0: 2500000 kHz, relation 1
-[   18.133082] cpufreq-core: initialization complete
-[   18.133086] cpufreq-core: adding CPU 1
-[   18.133089] cpufreq-core: adding CPU 2
-[   18.133092] cpufreq-core: adding CPU 3
-[   18.133097] cpufreq-core: driver powermac up and running
-
-This says that the 4 CPUs can actually only be switched all together
-with CPU0. This is achieved by doing
-
-        policy->cpus =3D cpu_possible_map;
-in
-g5_cpufreq_cpu_init (arch/powerpc/platforms/powermac/cpufreq_64.c)
-
-
-When I suspend now, I get
-[  167.563428] cpufreq-core: unregistering CPU 1
-[  167.563440] cpufreq-core: removing link
-[  167.569139] cpufreq-core: target for CPU 0: 1250000 kHz, relation 1
-[  167.573690] cpufreq-core: unregistering CPU 2
-[  167.573704] cpufreq-core: removing link
-[  167.576175] cpufreq-core: target for CPU 0: 1250000 kHz, relation 1
-[  167.582261] cpufreq-core: unregistering CPU 3
-[  167.582270] cpufreq-core: removing link
-[  168.415156] cpufreq-core: suspending cpu 0
-[  168.415164] cpufreq-core: suspending cpu 1
-[  168.415170] cpufreq-core: suspending cpu 2
-[  168.415177] cpufreq-core: suspending cpu 3
-
-which seems fine. However, when I resume, I get
-[  168.446692] cpufreq-core: resuming cpu 0
-[  168.446708] cpufreq-core: resuming cpu 1
-[  168.446715] cpufreq-core: resuming cpu 2
-[  168.446721] cpufreq-core: resuming cpu 3
-[  168.624880] cpufreq-core: handle_update for cpu 0 called
-[  168.624893] cpufreq-core: updating policy for CPU 0
-[  168.624905] cpufreq-core: setting new policy for CPU 0: 1250000 - 250000=
-0 kHz
-[  168.624965] cpufreq-core: new min and max freqs are 1250000 - 2500000 kH=
-z
-[  168.624974] cpufreq-core: governor: change or update limits
-[  168.624982] cpufreq-core: __cpufreq_governor for CPU 0, event 3
-[  168.625009] cpufreq-core: target for CPU 0: 1250000 kHz, relation 0
-[  169.232726] cpufreq-core: adding CPU 1
-[  169.232741] cpufreq-core: initialization failed
-[  169.239623] cpufreq-core: adding CPU 2
-[  169.239636] cpufreq-core: initialization failed
-[  169.247240] cpufreq-core: adding CPU 3
-[  169.247255] cpufreq-core: initialization failed
-
-The question now is where this needs to be handled, and how. The driver
-can't really say that it initialised fine because it's still initialised
-on CPU0. However, I suppose that for real CPU hotplug cpufreq can't try
-to remember the pre-unplug groups either...
-
-johannes
-
---=-6+lia2OP/e+3uX+RD09z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFwko6/ETPhpq3jKURAlRmAJ43QjJtZbxwJQgPu1HJkFjBeiCe6QCggeBQ
-b9YXniKeqTfK3dqEwFFzEWw=
-=/Wk3
------END PGP SIGNATURE-----
-
---=-6+lia2OP/e+3uX+RD09z--
-
-
---===============0625468115==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <736dda5d0701221243o5a096240v1142ccdf9133f1f@mail.gmail.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: David Tunkrans <david.tunkrans@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============0625468115==--
+David Tunkrans wrote:
+> I found your email adress in the speedstep centrino kernel source. Ive
+> put down a lot of time into getting ACPI and speedstep working on my
+> Mac Pro Ubuntu amd64 installation, with no success. Seems like the
+> cpufreq parameters are "missing" even though the specification says
+> that woodcrest Xeons do support speedstep. Also I suspect that there
+> has to be specific support for Xeon processors in this driver? I would
+> really appreciate if you could point me in the right direction.
 
+In general, the newer CPUs require ACPI support to get the right
+operating point parameters for the CPU; only the older Banias Pentium
+M's have support built directly into the driver.  I don't know if Mac
+Pros have ACPI; perhaps there needs to be some other way of getting that
+info out of the BIOS, assuming its there at all.
+
+    J
