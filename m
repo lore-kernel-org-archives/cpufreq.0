@@ -1,10 +1,13 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Add VT8235 support
-Date: Sun, 04 Feb 2007 18:43:12 +0100
-Message-ID: <45C61B30.6020209@interia.pl>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: "new" (aus of 2.6.20) acpi_cpufreq and thinkpad z61m
+Date: Mon, 05 Feb 2007 00:20:00 +0100
+Message-ID: <1170631201.4751.24.camel@sublime.site>
+References: <200702041157.15234.dietz@rotfl.franken.de>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <200702041157.15234.dietz@rotfl.franken.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,155 +18,53 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Jones <davej@codemonkey.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+To: Dietz Proepper <dietz@rotfl.franken.de>
 Cc: cpufreq@lists.linux.org.uk
 
+On Sun, 2007-02-04 at 11:57 +0100, Dietz Proepper wrote:
+> Hi,
+> 
+> I've been playing around a lttle with a thikpad z61m (core 2 duo cpu,  945 
+> chipset) and acpi_cpufreq from 2.6.20-rc6 and found the follwoing strage 
+> behaviour:
+> 
+> Under "normal" circumstances, if I disconnect the ac power, the laptop 
+> pulls about 18W from the battery when idle (which nearly matchs idle 
+> consumption under Windows XP and is totally ok for the machine). 
+> 
+> But, every now and then, idle consumption goes up to about 25W, and goes 
+> down again only after a reboot (suspending to disk and resuming does not 
+> help). Needlessly to say that max/min frequencies are set to the right 
+> value and /sys/.../cpuinfo_cur_freq is at the min freq.
+It could also be the processor sleeping states:
+cat /proc/acpi/processor/*/power
 
-I don't know why it is working and how, but it is working. On my=20
-Epia transition time is by default set to 100us. I'm changing it to=20
-200us. After that I can change frequency from min (x4.0) to max (x7.5)=20
-without lockup. Many times.
-There is a paranoid check at a beginning of a patch. Probably dead=20
-code, but I don't have better ideas for CL10000 case at the moment.=20
-Only way to to detect broken chip seems to be looking in log for=20
-spurious interrupts.
+Try to unload drivers that could poll hardware and/or produce bus master
+activity.
+AFAIK this could be some wlan and USB modules and possibly others.
 
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- arch/i386/kernel/cpu/cpufreq/longhaul.c |   62 +++++++++++++++++++++++++--=
-----
- 1 files changed, 50 insertions(+), 12 deletions(-)
+If you want to play a bit with power consumption:
+latest -mm kernel should have dyntick patches in, which disables the
+frequent
+timer interrupt for a while in idle to be able to stay in deeper
+sleeping states
+for longer time. This should save you (if bus master activity stays low
+and userspace
+programs do not poll too much) a lot of battery life time.
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu=
-/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -56,6 +56,7 @@
- /* Flags */
- #define USE_ACPI_C3		(1 << 1)
- #define USE_NORTHBRIDGE		(1 << 2)
-+#define USE_VT8235		(1 << 3)
-=20
- static int cpu_model;
- static unsigned int numscales=3D16;
-@@ -544,20 +545,50 @@ static int enable_arbiter_disable(void)
- 	if (dev !=3D NULL) {
- 		/* Enable access to port 0x22 */
- 		pci_read_config_byte(dev, reg, &pci_cmd);
--		if ( !(pci_cmd & 1<<7) ) {
-+		if (!(pci_cmd & 1<<7)) {
- 			pci_cmd |=3D 1<<7;
- 			pci_write_config_byte(dev, reg, pci_cmd);
-+			pci_read_config_byte(dev, reg, &pci_cmd);
-+			if (!(pci_cmd & 1<<7)) {
-+				printk(KERN_ERR PFX
-+					"Can't enable access to port 0x22.\n");
-+				return 0;
-+			}
- 		}
- 		return 1;
- 	}
- 	return 0;
- }
-=20
-+static int longhaul_setup_vt8235(void)
-+{
-+	struct pci_dev *dev;
-+	u8 pci_cmd;
-+
-+	/* Find VT8235 southbridge */
-+	dev =3D pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235, NULL);
-+	if (dev !=3D NULL) {
-+		/* Set transition time to max */
-+		pci_read_config_byte(dev, 0xec, &pci_cmd);
-+		pci_cmd &=3D ~(1 << 2);
-+		pci_write_config_byte(dev, 0xec, pci_cmd);
-+		pci_read_config_byte(dev, 0xe4, &pci_cmd);
-+		pci_cmd &=3D ~(1 << 7);
-+		pci_write_config_byte(dev, 0xe4, pci_cmd);
-+		pci_read_config_byte(dev, 0xe5, &pci_cmd);
-+		pci_cmd |=3D 1 << 7;
-+		pci_write_config_byte(dev, 0xe5, pci_cmd);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
- static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpuinfo_x86 *c =3D cpu_data;
- 	char *cpuname=3DNULL;
- 	int ret;
-+	int vt8235_present;
-=20
- 	/* Check what we have on this motherboard */
- 	switch (c->x86_model) {
-@@ -641,12 +672,16 @@ static int __init longhaul_cpu_init(struct cpufreq_po=
-licy *policy)
- 		break;
- 	};
-=20
-+	/* Doesn't hurt */
-+	vt8235_present =3D longhaul_setup_vt8235();
-+
- 	/* Find ACPI data for processor */
--	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT, ACPI_UINT32_MA=
-X,
--			    &longhaul_walk_callback, NULL, (void *)&pr);
-+	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT,
-+				ACPI_UINT32_MAX, &longhaul_walk_callback,
-+				NULL, (void *)&pr);
-=20
- 	/* Check ACPI support for C3 state */
--	if ((pr !=3D NULL) && (longhaul_version =3D=3D TYPE_POWERSAVER)) {
-+	if (pr !=3D NULL && longhaul_version =3D=3D TYPE_POWERSAVER) {
- 		cx =3D &pr->power.states[ACPI_STATE_C3];
- 		if (cx->address > 0 && cx->latency <=3D 1000) {
- 			longhaul_flags |=3D USE_ACPI_C3;
-@@ -658,8 +693,11 @@ static int __init longhaul_cpu_init(struct cpufreq_pol=
-icy *policy)
- 		longhaul_flags |=3D USE_NORTHBRIDGE;
- 		goto print_support_type;
- 	}
--
--	/* No ACPI C3 or we can't use it */
-+	/* Use VT8235 southbridge if present */
-+	if (longhaul_version =3D=3D TYPE_POWERSAVER && vt8235_present) {
-+		longhaul_flags |=3D USE_VT8235;
-+		goto print_support_type;
-+	}
- 	/* Check ACPI support for bus master arbiter disable */
- 	if ((pr =3D=3D NULL) || !(pr->flags.bm_control)) {
- 		printk(KERN_ERR PFX
-@@ -668,18 +706,18 @@ static int __init longhaul_cpu_init(struct cpufreq_po=
-licy *policy)
- 	}
-=20
- print_support_type:
--	if (!(longhaul_flags & USE_NORTHBRIDGE)) {
--		printk (KERN_INFO PFX "Using ACPI support.\n");
--	} else {
-+	if (longhaul_flags & USE_NORTHBRIDGE)
- 		printk (KERN_INFO PFX "Using northbridge support.\n");
--	}
-+	else if (longhaul_flags & USE_VT8235)
-+		printk (KERN_INFO PFX "Using VT8235 support.\n");
-+	else
-+		printk (KERN_INFO PFX "Using ACPI support.\n");
-=20
- 	ret =3D longhaul_get_ranges();
- 	if (ret !=3D 0)
- 		return ret;
-=20
--	if ((longhaul_version=3D=3DTYPE_LONGHAUL_V2 || longhaul_version=3D=3DTYPE=
-_POWERSAVER) &&
--		 (scale_voltage !=3D 0))
-+	if ((longhaul_version !=3D TYPE_LONGHAUL_V1) && (scale_voltage !=3D 0))
- 		longhaul_setup_voltagescaling();
-=20
- 	policy->governor =3D CPUFREQ_DEFAULT_GOVERNOR;
-
---------------------------------------------------------------------
-Telefonia internetowa bez w=B3=B1czonego komputera. Do tego 1000 minut w=20
-promocji! >> http://link.interia.pl/f1a08
+    Thomas
+> 
+> It seems that I can reproduce the above behaviour by setting the laptop 
+> under heavy load for some minutes (building a kernel seems to be 
+> sufficient).
+> 
+> Any idea?
+> 
+> thx alot,
+> 	Dietz
+> 
+> _______________________________________________
+> Cpufreq mailing list
+> Cpufreq@lists.linux.org.uk
+> http://lists.linux.org.uk/mailman/listinfo/cpufreq
