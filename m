@@ -1,13 +1,11 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Speedstep centrino
-Date: Fri, 2 Feb 2007 14:04:17 -0800
-Message-ID: <EB12A50964762B4D8111D55B764A84540135F027@scsmsx413.amr.corp.intel.com>
-References: <45C3AC55.9010004@goop.org>
+From: Dietz Proepper <dietz@rotfl.franken.de>
+Subject: "new" (aus of 2.6.20) acpi_cpufreq and thinkpad z61m
+Date: Sun, 4 Feb 2007 11:57:14 +0100
+Message-ID: <200702041157.15234.dietz@rotfl.franken.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <45C3AC55.9010004@goop.org>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,42 +17,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Jeremy Fitzhardinge <jeremy@goop.org>, David Tunkrans <david.tunkrans@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-=20
+Hi,
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
->Jeremy Fitzhardinge
->Sent: Friday, February 02, 2007 1:26 PM
->To: David Tunkrans
->Cc: cpufreq@lists.linux.org.uk
->Subject: Re: Speedstep centrino
->
->David Tunkrans wrote:
->> I found your email adress in the speedstep centrino kernel=20
->source. Ive
->> put down a lot of time into getting ACPI and speedstep working on my
->> Mac Pro Ubuntu amd64 installation, with no success. Seems like the
->> cpufreq parameters are "missing" even though the specification says
->> that woodcrest Xeons do support speedstep. Also I suspect that there
->> has to be specific support for Xeon processors in this=20
->driver? I would
->> really appreciate if you could point me in the right direction.
->
->In general, the newer CPUs require ACPI support to get the right
->operating point parameters for the CPU; only the older Banias Pentium
->M's have support built directly into the driver.  I don't know if Mac
->Pros have ACPI; perhaps there needs to be some other way of=20
->getting that
->info out of the BIOS, assuming its there at all.
->
+I've been playing around a lttle with a thikpad z61m (core 2 duo cpu,  945 
+chipset) and acpi_cpufreq from 2.6.20-rc6 and found the follwoing strage 
+behaviour:
 
-Can you try acpi-cpufreq driver instead. If that doesn't work, probably
-BIOS is not exporting needed ACPI information to support speedstep. We
-will have to look at acpidump and see the BIOS ACPI information.
+Under "normal" circumstances, if I disconnect the ac power, the laptop 
+pulls about 18W from the battery when idle (which nearly matchs idle 
+consumption under Windows XP and is totally ok for the machine). 
 
-Thanks,
-Venki
+But, every now and then, idle consumption goes up to about 25W, and goes 
+down again only after a reboot (suspending to disk and resuming does not 
+help). Needlessly to say that max/min frequencies are set to the right 
+value and /sys/.../cpuinfo_cur_freq is at the min freq.
+
+It seems that I can reproduce the above behaviour by setting the laptop 
+under heavy load for some minutes (building a kernel seems to be 
+sufficient).
+
+Any idea?
+
+thx alot,
+	Dietz
