@@ -1,13 +1,13 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: CPU hotplug vs. cpufreq on ppc64
-Date: Mon, 05 Feb 2007 12:39:16 +1100
-Message-ID: <1170639556.2620.75.camel@localhost.localdomain>
+Date: Mon, 05 Feb 2007 07:45:51 +0100
+Message-ID: <1170657951.23273.22.camel@johannes.berg>
 References: <1170360890.4036.19.camel@johannes.berg>
+	<1170639556.2620.75.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0495269051=="
 Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1170360890.4036.19.camel@johannes.berg>
+In-Reply-To: <1170639556.2620.75.camel@localhost.localdomain>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,38 +16,69 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, cpufreq <cpufreq@lists.linux.org.uk>, Ashok Raj <ashok.raj@intel.com>, davej@codemonkey.org.uk
 
 
-> which seems fine. However, when I resume, I get
-> [  168.446692] cpufreq-core: resuming cpu 0
-> [  168.446708] cpufreq-core: resuming cpu 1
-> [  168.446715] cpufreq-core: resuming cpu 2
-> [  168.446721] cpufreq-core: resuming cpu 3
-> [  168.624880] cpufreq-core: handle_update for cpu 0 called
-> [  168.624893] cpufreq-core: updating policy for CPU 0
-> [  168.624905] cpufreq-core: setting new policy for CPU 0: 1250000 - 2500000 kHz
-> [  168.624965] cpufreq-core: new min and max freqs are 1250000 - 2500000 kHz
-> [  168.624974] cpufreq-core: governor: change or update limits
-> [  168.624982] cpufreq-core: __cpufreq_governor for CPU 0, event 3
-> [  168.625009] cpufreq-core: target for CPU 0: 1250000 kHz, relation 0
-> [  169.232726] cpufreq-core: adding CPU 1
-> [  169.232741] cpufreq-core: initialization failed
-> [  169.239623] cpufreq-core: adding CPU 2
-> [  169.239636] cpufreq-core: initialization failed
-> [  169.247240] cpufreq-core: adding CPU 3
-> [  169.247255] cpufreq-core: initialization failed
-> 
-> The question now is where this needs to be handled, and how. The driver
-> can't really say that it initialised fine because it's still initialised
-> on CPU0. However, I suppose that for real CPU hotplug cpufreq can't try
-> to remember the pre-unplug groups either...
+--===============0495269051==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4glY/Rtv7aRNuX68vvqn"
 
-So you mean that the policy->cpus mask is lost on unplug/replug ? Hrm...
-I'm not sure what's the best way to restore it. Do we have a cpufreq
-backend callback on hotplug to restore things ?
 
-Ben.
+--=-4glY/Rtv7aRNuX68vvqn
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2007-02-05 at 12:39 +1100, Benjamin Herrenschmidt wrote:
+
+> So you mean that the policy->cpus mask is lost on unplug/replug ? Hrm...
+
+Yes, but fixing that wouldn't fix the problem.
+
+> I'm not sure what's the best way to restore it. Do we have a cpufreq
+> backend callback on hotplug to restore things ?
+
+Not afaict, but you can of course always use register_hotcpu_notifier.
+
+This, however, is what cpufreq.c uses to be notified of a new CPU that
+is coming online, and it then calls cpufreq_add_dev which even with a
+correct policy->cpus mask wouldn't go back to adding the links back,
+this is only done when CPU#0 comes online.
+
+I think this is a more generic problem and code will need to be added to
+cpufreq to
+ (a) call into the cpufreq_driver asking it to update the mask on
+     hotplug
+ (b) after that, check the mask and re-link on hotplug.
+
+johannes
+
+--=-4glY/Rtv7aRNuX68vvqn
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFxtKf/ETPhpq3jKURAr7uAKCxu52CVwxYZiZRX5q9MIb/q5ccOwCgpVHp
+k/UQGfRJ0qYRJFKVkesSNAE=
+=OxfZ
+-----END PGP SIGNATURE-----
+
+--=-4glY/Rtv7aRNuX68vvqn--
+
+
+--===============0495269051==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============0495269051==--
+
