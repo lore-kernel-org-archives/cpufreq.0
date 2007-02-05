@@ -1,70 +1,53 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: "new" (aus of 2.6.20) acpi_cpufreq and thinkpad z61m
-Date: Mon, 05 Feb 2007 00:20:00 +0100
-Message-ID: <1170631201.4751.24.camel@sublime.site>
-References: <200702041157.15234.dietz@rotfl.franken.de>
-Reply-To: trenn@suse.de
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: CPU hotplug vs. cpufreq on ppc64
+Date: Mon, 05 Feb 2007 12:39:16 +1100
+Message-ID: <1170639556.2620.75.camel@localhost.localdomain>
+References: <1170360890.4036.19.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200702041157.15234.dietz@rotfl.franken.de>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dietz Proepper <dietz@rotfl.franken.de>
-Cc: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <1170360890.4036.19.camel@johannes.berg>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, cpufreq <cpufreq@lists.linux.org.uk>, Ashok Raj <ashok.raj@intel.com>, davej@codemonkey.org.uk
 
-On Sun, 2007-02-04 at 11:57 +0100, Dietz Proepper wrote:
-> Hi,
-> 
-> I've been playing around a lttle with a thikpad z61m (core 2 duo cpu,  945 
-> chipset) and acpi_cpufreq from 2.6.20-rc6 and found the follwoing strage 
-> behaviour:
-> 
-> Under "normal" circumstances, if I disconnect the ac power, the laptop 
-> pulls about 18W from the battery when idle (which nearly matchs idle 
-> consumption under Windows XP and is totally ok for the machine). 
-> 
-> But, every now and then, idle consumption goes up to about 25W, and goes 
-> down again only after a reboot (suspending to disk and resuming does not 
-> help). Needlessly to say that max/min frequencies are set to the right 
-> value and /sys/.../cpuinfo_cur_freq is at the min freq.
-It could also be the processor sleeping states:
-cat /proc/acpi/processor/*/power
 
-Try to unload drivers that could poll hardware and/or produce bus master
-activity.
-AFAIK this could be some wlan and USB modules and possibly others.
+> which seems fine. However, when I resume, I get
+> [  168.446692] cpufreq-core: resuming cpu 0
+> [  168.446708] cpufreq-core: resuming cpu 1
+> [  168.446715] cpufreq-core: resuming cpu 2
+> [  168.446721] cpufreq-core: resuming cpu 3
+> [  168.624880] cpufreq-core: handle_update for cpu 0 called
+> [  168.624893] cpufreq-core: updating policy for CPU 0
+> [  168.624905] cpufreq-core: setting new policy for CPU 0: 1250000 - 2500000 kHz
+> [  168.624965] cpufreq-core: new min and max freqs are 1250000 - 2500000 kHz
+> [  168.624974] cpufreq-core: governor: change or update limits
+> [  168.624982] cpufreq-core: __cpufreq_governor for CPU 0, event 3
+> [  168.625009] cpufreq-core: target for CPU 0: 1250000 kHz, relation 0
+> [  169.232726] cpufreq-core: adding CPU 1
+> [  169.232741] cpufreq-core: initialization failed
+> [  169.239623] cpufreq-core: adding CPU 2
+> [  169.239636] cpufreq-core: initialization failed
+> [  169.247240] cpufreq-core: adding CPU 3
+> [  169.247255] cpufreq-core: initialization failed
+> 
+> The question now is where this needs to be handled, and how. The driver
+> can't really say that it initialised fine because it's still initialised
+> on CPU0. However, I suppose that for real CPU hotplug cpufreq can't try
+> to remember the pre-unplug groups either...
 
-If you want to play a bit with power consumption:
-latest -mm kernel should have dyntick patches in, which disables the
-frequent
-timer interrupt for a while in idle to be able to stay in deeper
-sleeping states
-for longer time. This should save you (if bus master activity stays low
-and userspace
-programs do not poll too much) a lot of battery life time.
+So you mean that the policy->cpus mask is lost on unplug/replug ? Hrm...
+I'm not sure what's the best way to restore it. Do we have a cpufreq
+backend callback on hotplug to restore things ?
 
-    Thomas
-> 
-> It seems that I can reproduce the above behaviour by setting the laptop 
-> under heavy load for some minutes (building a kernel seems to be 
-> sufficient).
-> 
-> Any idea?
-> 
-> thx alot,
-> 	Dietz
-> 
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@lists.linux.org.uk
-> http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Ben.
