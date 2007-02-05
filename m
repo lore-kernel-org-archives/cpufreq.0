@@ -1,84 +1,44 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: CPU hotplug vs. cpufreq on ppc64
-Date: Mon, 05 Feb 2007 07:45:51 +0100
-Message-ID: <1170657951.23273.22.camel@johannes.berg>
-References: <1170360890.4036.19.camel@johannes.berg>
-	<1170639556.2620.75.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0495269051=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1170639556.2620.75.camel@localhost.localdomain>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
+	p4-clockmod anymore
+Date: Mon, 5 Feb 2007 07:09:03 -0800
+Message-ID: <200702051509.l15F93TY013502@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, cpufreq <cpufreq@lists.linux.org.uk>, Ashok Raj <ashok.raj@intel.com>, davej@codemonkey.org.uk
-
-
---===============0495269051==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4glY/Rtv7aRNuX68vvqn"
-
-
---=-4glY/Rtv7aRNuX68vvqn
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2007-02-05 at 12:39 +1100, Benjamin Herrenschmidt wrote:
-
-> So you mean that the policy->cpus mask is lost on unplug/replug ? Hrm...
-
-Yes, but fixing that wouldn't fix the problem.
-
-> I'm not sure what's the best way to restore it. Do we have a cpufreq
-> backend callback on hotplug to restore things ?
-
-Not afaict, but you can of course always use register_hotcpu_notifier.
-
-This, however, is what cpufreq.c uses to be notified of a new CPU that
-is coming online, and it then calls cpufreq_add_dev which even with a
-correct policy->cpus mask wouldn't go back to adding the links back,
-this is only done when CPU#0 comes online.
-
-I think this is a more generic problem and code will need to be added to
-cpufreq to
- (a) call into the cpufreq_driver asking it to update the mask on
-     hotplug
- (b) after that, check the mask and re-link on hotplug.
-
-johannes
-
---=-4glY/Rtv7aRNuX68vvqn
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFxtKf/ETPhpq3jKURAr7uAKCxu52CVwxYZiZRX5q9MIb/q5ccOwCgpVHp
-k/UQGfRJ0qYRJFKVkesSNAE=
-=OxfZ
------END PGP SIGNATURE-----
-
---=-4glY/Rtv7aRNuX68vvqn--
-
-
---===============0495269051==
-Content-Type: text/plain; charset="us-ascii"
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============0495269051==--
+http://bugzilla.kernel.org/show_bug.cgi?id=6367
 
+
+
+
+
+------- Additional Comments From oopla@users.sf.net  2007-02-05 06:59 -------
+can't tell, have no more that P4 notebook handy, sorry.
+
+Can only report that, on a "Intel(R) Celeron(R) M processor 1400MHz" which looks
+like a PM but isn't - ie speedstep won't work while p4_clockmod does - I had
+similar problems, but 2.6.18.6 works fine. rmmod cpufreq_stats won't oops here,
+either.
+
+Also, 2.6.20-rc* broke too many things on this pc, running Debian Etch, that I
+refrained from going on 2.6.19 and above.
+
+Not 100% sure, but it might be reasonable to close this bugrep.
+
+thx
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
