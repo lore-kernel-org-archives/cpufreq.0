@@ -1,14 +1,16 @@
-From: "Guilherme Salgado" <gsalgado@gmail.com>
+From: =?iso-8859-2?q?Micha=B3_Pytasz?= <pytasz@lodz.home.pl>
 Subject: Re: Centrino duo - frequency not switching with cpufrqd nor
 	ondemand govenor
-Date: Tue, 6 Feb 2007 15:14:09 -0200
-Message-ID: <3d7cf86d0702060914l46b56546w28d54790c4ea8111@mail.gmail.com>
+Date: Tue, 6 Feb 2007 18:20:55 +0100
+Message-ID: <200702061820.56209.pytasz@lodz.home.pl>
 References: <20061118110642.GA10713@feivel.credativ.de>
 	<200702061445.22913.pytasz@lodz.home.pl>
+	<3d7cf86d0702060914l46b56546w28d54790c4ea8111@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0176633329=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200702061445.22913.pytasz@lodz.home.pl>
+In-Reply-To: <3d7cf86d0702060914l46b56546w28d54790c4ea8111@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,38 +21,41 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: =?ISO-8859-2?Q?Micha=B3_Pytasz?= <pytasz@lodz.home.pl>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@lists.linux.org.uk
 
---===============0176633329==
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Tuesday 06 of February 2007 18:14:09 napisa=B3e=B6(-=B3a=B6):
+> Hi Michal,
+>
+> On 2/6/07, Micha=B3 Pytasz <pytasz@lodz.home.pl> wrote:
+> > Hi,
+> >
+> > I have a centrino-duo based tablet (Siemens Lifebook T4210).
+> > /proc/cpuinfo says:
+>
+> [...]
+>
+> > The root of a problem (at least at least in my opinion) might be
+> > thecontent of scaling_min_freq reported as 1667000, the same as scaling
+> > max_freq, although scaling_available_frequencies has 3 levels:
+> > 1667000 1333000 1000000
+> >
+> > How do I make it work (scale frequency), I have no experience with inte=
+l,
+> > previously I used amd (and powernow).
+>
+> Can you manually change the value of scaling_min_freq to 1000000?
+> (echo 1000000 > scaling_min_freq)
+>
+> I have the exact same processor as you (on a Thinkpad T60, in my case)
+> and the scaling works fine.
+>
+> Cheers,
+> Guilherme
 
-SGkgTWljaGFsLAoKT24gMi82LzA3LCBNaWNoYbMgUHl0YXN6IDxweXRhc3pAbG9kei5ob21lLnBs
-PiB3cm90ZToKPiBIaSwKPgo+IEkgaGF2ZSBhIGNlbnRyaW5vLWR1byBiYXNlZCB0YWJsZXQgKFNp
-ZW1lbnMgTGlmZWJvb2sgVDQyMTApLiAvcHJvYy9jcHVpbmZvCj4gc2F5czoKWy4uLl0KPgo+IFRo
-ZSByb290IG9mIGEgcHJvYmxlbSAoYXQgbGVhc3QgYXQgbGVhc3QgaW4gbXkgb3BpbmlvbikgbWln
-aHQgYmUgdGhlY29udGVudCBvZgo+IHNjYWxpbmdfbWluX2ZyZXEgcmVwb3J0ZWQgYXMgMTY2NzAw
-MCwgdGhlIHNhbWUgYXMgc2NhbGluZyBtYXhfZnJlcSwgYWx0aG91Z2gKPiBzY2FsaW5nX2F2YWls
-YWJsZV9mcmVxdWVuY2llcyBoYXMgMyBsZXZlbHM6Cj4gMTY2NzAwMCAxMzMzMDAwIDEwMDAwMDAK
-Pgo+IEhvdyBkbyBJIG1ha2UgaXQgd29yayAoc2NhbGUgZnJlcXVlbmN5KSwgSSBoYXZlIG5vIGV4
-cGVyaWVuY2Ugd2l0aCBpbnRlbCwKPiBwcmV2aW91c2x5IEkgdXNlZCBhbWQgKGFuZCBwb3dlcm5v
-dykuCj4KCkNhbiB5b3UgbWFudWFsbHkgY2hhbmdlIHRoZSB2YWx1ZSBvZiBzY2FsaW5nX21pbl9m
-cmVxIHRvIDEwMDAwMDA/CihlY2hvIDEwMDAwMDAgPiBzY2FsaW5nX21pbl9mcmVxKQoKSSBoYXZl
-IHRoZSBleGFjdCBzYW1lIHByb2Nlc3NvciBhcyB5b3UgKG9uIGEgVGhpbmtwYWQgVDYwLCBpbiBt
-eSBjYXNlKQphbmQgdGhlIHNjYWxpbmcgd29ya3MgZmluZS4KCkNoZWVycywKR3VpbGhlcm1lCg==
 
+Yes I can, thanks, interesting part is that after restart it somehow=20
+remembered the value and now does work well :)
 
---===============0176633329==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
---===============0176633329==--
+Thanks and best regards,
+Micha=B3
