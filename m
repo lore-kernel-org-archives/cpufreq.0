@@ -1,73 +1,61 @@
 From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC 10/10] powermac: fix G5-cpufreq for cpu
-	on/offline
-Date: Wed, 07 Feb 2007 13:21:23 +0100
-Message-ID: <1170850883.6798.27.camel@johannes.berg>
-References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185838.837935000@sipsolutions.net>
+Subject: [PATCH 08/12] powermac: fix G5-cpufreq for cpu on/offline
+Date: Wed, 07 Feb 2007 13:45:44 +0100
+Message-ID: <20070207124613.702615000@sipsolutions.net>
+References: <20070207124536.963531000@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0230190523=="
-Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <20070205185838.837935000@sipsolutions.net>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline; filename=powermac-fix-cpufreq.patch
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.osdl.org>
-List-Help: <mailto:linux-pm-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.osdl.org
-Errors-To: linux-pm-bounces@lists.osdl.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 To: linuxppc-dev@ozlabs.org
-Cc: cpufreq list <cpufreq@lists.linux.org.uk>, linux-pm@lists.osdl.org, Jacob Shin <jacob.shin@amd.com>, Torrance <torrance123@gmail.com>
+Cc: Paul Mackeras <paulus@samba.org>, cpufreq@lists.linux.org.uk, linux-pm@lists.osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+The original code here is wrong, it applies "previous" knowledge.
+The way the cpufreq core is designed is that the policy for the
+secondary CPU that comes online says that it must in fact not
+use this policy but use the same as the other CPUs that are
+listed, which in fact is CPU#0.
 
---===============0230190523==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2ybR2Rnv/PhBoQo+DTyJ"
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Paul Mackeras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: cpufreq@lists.linux.org.uk
+Cc: Jacob Shin <jacob.shin@amd.com>
 
+---
+Tested on my powermac with suspend-to-disk.
+Paul, please apply to powerpc.
 
---=-2ybR2Rnv/PhBoQo+DTyJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2007-02-07 02:54:58.341884289 +0100
++++ linux-2.6-git/arch/powerpc/platforms/powermac/cpufreq_64.c	2007-02-07 02:55:34.023884289 +0100
+@@ -357,13 +357,13 @@ static unsigned int g5_cpufreq_get_speed
+ 
+ static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	if (policy->cpu != 0)
+-		return -ENODEV;
+-
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
+-	policy->cpus = cpu_possible_map;
++	/* secondary CPUs are tied to the primary one by the
++	 * cpufreq core if in the secondary policy we tell it that
++	 * it actually must be one policy together with all others. */
++	policy->cpus = cpu_online_map;
+ 	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
+ 
+ 	return cpufreq_frequency_table_cpuinfo(policy,
 
-On Mon, 2007-02-05 at 19:30 +0100, Johannes Berg wrote:
-
-> The original code here is wrong, it applies "previous" knowledge.
-> The way the cpufreq core is designed is that the policy for the
-> secondary CPU that comes online says that it must in fact not
-> use this policy but use the same as the other CPUs that are
-> listed, which in fact is CPU#0.
-
-> Not tested yet but from what Jacob said this should work.
-
-Works great, will resend with proper signed-off-by etc. Thanks again
-Jacob for explaining how it should work.
-
-johannes
-
---=-2ybR2Rnv/PhBoQo+DTyJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFycRD/ETPhpq3jKURAsELAJ9iHqYVXP4qp1dc+mWyph5ivJoN5gCeMLQV
-VtOydeOUEsZGrl/bNdg+vP4=
-=MKhI
------END PGP SIGNATURE-----
-
---=-2ybR2Rnv/PhBoQo+DTyJ--
-
-
---===============0230190523==
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-
---===============0230190523==--
+--
