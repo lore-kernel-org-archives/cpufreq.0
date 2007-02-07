@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7866] cpufreq fails to correctly identify Intel Conroe
 	operating frequencies
-Date: Wed, 7 Feb 2007 05:57:45 -0800
-Message-ID: <200702071357.l17Dvjq8003673@fire-2.osdl.org>
+Date: Wed, 7 Feb 2007 05:57:59 -0800
+Message-ID: <200702071357.l17DvxYc003690@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
