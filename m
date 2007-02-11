@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6558] Cpufreq reports nominal CPU speed instead of actual
-Date: Sun, 11 Feb 2007 01:02:56 -0800
-Message-ID: <200702110902.l1B92udw024875@fire-2.osdl.org>
+Subject: [Bug 4379] Default sampling rates for ondemand governor are too
+	high on a amd64
+Date: Sun, 11 Feb 2007 01:10:29 -0800
+Message-ID: <200702110910.l1B9AT9S025130@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,7 +19,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6558
+http://bugzilla.kernel.org/show_bug.cgi?id=4379
 
 sigra@home.se changed:
 
