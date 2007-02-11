@@ -1,7 +1,9 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Models of Nehemiah
-Date: Thu, 08 Feb 2007 23:12:02 +0100
-Message-ID: <45CBA032.8030604@interia.pl>
+From: Christian Unger <chakkerz@gmail.com>
+Subject: Re: [Bug 7866] New: cpufreq fails to correctly identify Intel
+	Conroe	operating frequencies
+Date: Sun, 11 Feb 2007 01:59:10 +0000 (UTC)
+Message-ID: <loom.20070211T025410-718@post.gmane.org>
+References: <200701230813.l0N8Dtuj027723@fire-2.osdl.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
@@ -16,39 +18,47 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+
+>            Summary: cpufreq fails to correctly identify Intel Conroe
+>                     operating frequencies
+> Intel Conroe E6660  <at>  2.4ghz
+> 
+> cat /proc/cpuinfo 
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 15
+> model name      : Intel(R) Core(TM)2 CPU          6600   <at>  2.40GHz
+> stepping        : 6
+> cpu MHz         : 600.000
+> cache size      : 4096 KB
+> physical id     : 0
+> siblings        : 2
+> core id         : 0
+> cpu cores       : 2
+> 
 
 
-Borowed from VIA driver.
+Hello there
 
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- arch/i386/kernel/cpu/cpufreq/longhaul.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+different hardware here:
+MOBO GA-965P-DS3
+uname -a :
+Linux swamp-monkey 2.6.19-gentoo-r4 #1 SMP Sat Dec 30 10:42:07 UTC 2006 x86_64
+Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz GenuineIntel GNU/Linux
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -713,15 +713,15 @@ static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
- 		switch (c->x86_mask) {
- 		case 0 ... 1:
- 			cpu_model = CPU_NEHEMIAH;
--			cpuname = "C3 'Nehemiah A' [C5N]";
-+			cpuname = "C3 'Nehemiah A' [C5XLOE]";
- 			break;
- 		case 2 ... 4:
- 			cpu_model = CPU_NEHEMIAH;
--			cpuname = "C3 'Nehemiah B' [C5N]";
-+			cpuname = "C3 'Nehemiah B' [C5XLOH]";
- 			break;
- 		case 5 ... 15:
- 			cpu_model = CPU_NEHEMIAH_C;
--			cpuname = "C3 'Nehemiah C' [C5N]";
-+			cpuname = "C3 'Nehemiah C' [C5P]";
- 			break;
- 		}
- 		break;
+chakkerz@swamp-monkey ~ $ cat /etc/sabayon-release
+Sabayon Linux x86-64 3.25
 
-----------------------------------------------------------------------
-Nawet 50MB w jednym liscie>>> http://link.interia.pl/f19e7
+
+Exactly the same symptom:
+
+Workaround: Disable EIST in the BIOS - causes CPU to run at full speed.
+Testing in Windows XP with Intel Thermal Analysis Tool indicates that although
+the CPU Frequency remains up, power is still cut to the CPU, causing the CPU
+temperature to drop.
+
+NOTE: my CPU is overclocked. (which makes this a really ironic bug)
+
+Also: Although my kernel is an older revision, it contains 2.6.20 backports.
