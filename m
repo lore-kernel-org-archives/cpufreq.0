@@ -1,8 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 4379] Default sampling rates for ondemand governor are too
-	high on a amd64
-Date: Sun, 11 Feb 2007 01:10:29 -0800
-Message-ID: <200702110910.l1B9AT9S025130@fire-2.osdl.org>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: [PATCH] EPS - Correct 2nd brand test
+Date: Mon, 12 Feb 2007 22:19:12 +0100
+Message-ID: <45D0D9D0.2020107@interia.pl>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,20 +15,33 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=4379
-
-sigra@home.se changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |sigra@home.se
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk
 
 
+Solution for small, but nasty bug: access beyond end of f_table 
+for C7 brand.
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
+---
+ arch/i386/kernel/cpu/cpufreq/e_powersaver.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/i386/kernel/cpu/cpufreq/e_powersaver.c b/arch/i386/kernel/cpu/cpufreq/e_powersaver.c
+--- a/arch/i386/kernel/cpu/cpufreq/e_powersaver.c
++++ b/arch/i386/kernel/cpu/cpufreq/e_powersaver.c
+@@ -234,7 +234,7 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	/* Fill frequency and MSR value table */
+ 	f_table = &centaur->freq_table[0];
+-	if (brand == EPS_BRAND_EDEN) {
++	if (brand != EPS_BRAND_C7M) {
+ 		f_table[0].frequency = fsb * min_multiplier;
+ 		f_table[0].index = (min_multiplier << 8) | min_voltage;
+ 		f_table[1].frequency = fsb * max_multiplier;
+
+
+----------------------------------------------------------------------
+Na Walentynki odwiedz A.Morka 
+>> http://link.interia.pl/f1a10
