@@ -1,131 +1,75 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: kernel BUG at drivers/acpi/osl.c:373! (acpi-cpufreq)
-Date: Fri, 16 Feb 2007 10:05:46 -0800
-Message-ID: <EB12A50964762B4D8111D55B764A845401485F3A@scsmsx413.amr.corp.intel.com>
-References: <EB12A50964762B4D8111D55B764A845401485EFD@scsmsx413.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <EB12A50964762B4D8111D55B764A845401485EFD@scsmsx413.amr.corp.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8033] New: CPU loses cpufreq link after offline/online
+	transition
+Date: Sun, 18 Feb 2007 04:18:28 -0800
+Message-ID: <200702181218.l1ICIS71018051@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, Len Brown <lenb@kernel.org>, Henri Hunnekens <henrihunnekens@gmail.com>
-Cc: cpufreq <cpufreq@lists.linux.org.uk>, linux-acpi@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=8033
+
+           Summary: CPU loses cpufreq link after offline/online transition
+    Kernel Version: 2.6.20
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: bernhard.bender@web.de
 
 
-Looks like the BIOS is having wrong value in ACPI _PSS table for
-bit_width field. Previous code use to ignore the error silently and the
-new code has a BUG statement to catch the error. With both previous and
-current code, due to this bug, cpufreq would not have worked correctly
-on your platform.
+Most recent kernel where this bug did *NOT* occur: unknown
+Distribution: openSuSE10.2 (probably irrelevant)
+A previous descussion of this problem is here:
+https://bugzilla.novell.com/show_bug.cgi?id=246525
 
-We need to look at what BIOS has in bit_width field. So, I will have to
-repeat Len's comment from below.
+Hardware Environment: hp compaq nx6325 (AMD Turion64 X2
+Software Environment:
 
->>Please attach the output from acpidump > acpidump.out into a 
->>new bugzilla entry here:
->>http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
->>
->>You can get acpidump from the latest pmtools here:
->>http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
->>
+Problem Description:
+After taking CPU1 offline and online again, the
+/sys/devices/system/cpu/cpu1/cpufreq link is missing.
+This also happens after suspend2disk and resume.
 
-Thanks,
-Venki
+While the CPU will work normally, kpowersave will report it as disabled.
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk 
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of 
->Pallipadi, Venkatesh
->Sent: Friday, February 16, 2007 9:49 AM
->To: Len Brown; Henri Hunnekens
->Cc: cpufreq; linux-acpi@vger.kernel.org
->Subject: RE: kernel BUG at drivers/acpi/osl.c:373! (acpi-cpufreq)
->
->
->Hmm.. I recently changed acpi-cpufreq to use acpi_os_write_port(),
->instead of its local copy of read port. Let me look at that patch
->again...
->
->Thanks,
->Venki
->
->>-----Original Message-----
->>From: cpufreq-bounces@lists.linux.org.uk 
->>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Len Brown
->>Sent: Friday, February 16, 2007 8:52 AM
->>To: Henri Hunnekens
->>Cc: cpufreq; linux-acpi@vger.kernel.org
->>Subject: Re: kernel BUG at drivers/acpi/osl.c:373! (acpi-cpufreq)
->>
->>On Friday 16 February 2007 10:03, Henri Hunnekens wrote:
->>
->>> Loading the acpi_cpufreq module reports a kernel bug using kernel
->>> version 2.6.20.  versions 2.6.18 and older work fine.
->>
->>> kernel BUG at drivers/acpi/osl.c:373!
->>
->>>  [<e0074455>] acpi_cpufreq_target+0x185/0x290 [acpi_cpufreq]
->>>  [<c037881f>] __cpufreq_driver_target+0x3f/0x50
->>>  [<c037a0de>] cpufreq_governor_performance+0x1e/0x30
->>>  [<c0378984>] __cpufreq_governor+0x24/0xd0
->>>  [<c0378e9b>] __cpufreq_set_policy+0xeb/0x140
->>>  [<c03790fe>] cpufreq_set_policy+0x4e/0x80
->>>  [<c0379d4a>] cpufreq_add_dev+0x31a/0x3e0
->>>  [<c02bdfc9>] sysdev_driver_register+0x59/0xa0
->>>  [<c037a027>] cpufreq_register_driver+0x67/0x100
->>>  [<e007809d>] acpi_cpufreq_init+0x9d/0xa4 [acpi_cpufreq]
->>>  [<c01423f7>] sys_init_module+0x137/0x1b90
->>>  [<c0104620>] syscall_call+0x7/0xb
->>>  =======================
->>> Code: f9 10 89 e5 53 89 c3 89 d0 74 12 83 f9 20 74 16 83 f9 
->>08 75 16 0f b6 c2 89
->>>  da ee eb 12 0f b7 c2 89 da 66 ef eb 09 89 da ef eb 04 <0f> 
->>0b eb fe 5b 31 c0 5d
->>>  c3 55 89 e5 5d c3 55 85 c0 89 e5 89 c1
->>> EIP: [<c027dbd9>] acpi_os_write_port+0x2d/0x36 SS:ESP 0068:dd3d1c8c
->>
->>acpi_status acpi_os_write_port(acpi_io_address port, u32 
->>value, u32 width)
->>{
->>        switch (width) {
->>        case 8:
->>                outb(value, port);
->>                break;
->>        case 16:
->>                outw(value, port);
->>                break;
->>        case 32:
->>                outl(value, port);
->>                break;
->>        default:
->>373:            BUG();
->>        }
->>
->>        return AE_OK;
->>}
->>
->>Well, acpi_os_write_port itself has not changed -- so it
->>is either acpi_cpufreq, cpufreq, or how they've read and 
->>interpreted the tables.
->>
->>Please attach the output from acpidump > acpidump.out into a 
->>new bugzilla entry here:
->>http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
->>
->>You can get acpidump from the latest pmtools here:
->>http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
->>
->>Also, you can build with CONFIG_ACPI_DEBUG=y and boot with 
->>"acpi_dbg_layer=2"
->>plus "acpi_dbg_level=0xffffffff" and capture the console log.
->>(or you can set these values after booted in /proc/acpi just before
->>you try to load the module)
->>
->>and, maybe some clues from the cpufreq subsystem will help.
->>cpufreq.debug=3 looks like it may give us a clue.
->>
->>thanks,
->>-Len
+Steps to reproduce:
+as root user:
+# echo 0 >/sys/devices/system/cpu/cpu1/online
+# echo 1 >/sys/devices/system/cpu/cpu1/online
+# l /sys/devices/system/cpu/*
+-rw-r--r-- 1 root root 4096 2007-02-16 23:12
+/sys/devices/system/cpu/sched_mc_power_savings
+
+/sys/devices/system/cpu/cpu0:
+total 0
+drwxr-xr-x 5 root root    0 2007-02-16 23:12 ./
+drwxr-xr-x 4 root root    0 2007-02-16 23:12 ../
+drwxr-xr-x 5 root root    0 2007-02-17 00:08 cache/
+drwxr-xr-x 3 root root    0 2007-02-16 23:12 cpufreq/
+-r-------- 1 root root 4096 2007-02-16 23:12 crash_notes
+drwxr-xr-x 2 root root    0 2007-02-17 00:08 topology/
+
+/sys/devices/system/cpu/cpu1:
+total 0
+drwxr-xr-x 4 root root    0 2007-02-16 23:13 ./
+drwxr-xr-x 4 root root    0 2007-02-16 23:12 ../
+drwxr-xr-x 5 root root    0 2007-02-16 23:13 cache/
+-r-------- 1 root root 4096 2007-02-16 23:12 crash_notes
+-rw------- 1 root root    0 2007-02-16 23:13 online
+drwxr-xr-x 2 root root    0 2007-02-16 23:13 topology/
+#
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
