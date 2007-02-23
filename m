@@ -1,14 +1,11 @@
-From: Dietz Proepper <dietz@rotfl.franken.de>
-Subject: Re: "new" (aus of 2.6.20) acpi_cpufreq and thinkpad z61m
-Date: Tue, 20 Feb 2007 15:01:53 +0100
-Message-ID: <200702201501.53890.dietz@rotfl.franken.de>
-References: <200702041157.15234.dietz@rotfl.franken.de>
-	<1170631201.4751.24.camel@sublime.site>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: [PATCH] Handle RevF processors with large cpufreq numbers
+Date: Fri, 23 Feb 2007 13:27:26 -0600
+Message-ID: <1449F58C868D8D4E9C72945771150BDFD9665D@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1170631201.4751.24.camel@sublime.site>
-Content-Disposition: inline
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,60 +17,31 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: trenn@suse.de
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Hi,
+The PowerNow! driver is not working on some RevF parts
+because the CPUID limit is too low.  This patch sets
+it to the correct value to handle newer RevF processors.
 
-Thomas Renninger:
-> On Sun, 2007-02-04 at 11:57 +0100, Dietz Proepper wrote:
-> > Hi,
-> >
-> > I've been playing around a lttle with a thikpad z61m (core 2 duo cpu, 
-> > 945 chipset) and acpi_cpufreq from 2.6.20-rc6 and found the follwoing
-> > strage behaviour:
-> >
-> > Under "normal" circumstances, if I disconnect the ac power, the laptop
-> > pulls about 18W from the battery when idle (which nearly matchs idle
-> > consumption under Windows XP and is totally ok for the machine).
-> >
-> > But, every now and then, idle consumption goes up to about 25W, and
-> > goes down again only after a reboot (suspending to disk and resuming
-> > does not help). Needlessly to say that max/min frequencies are set to
-> > the right value and /sys/.../cpuinfo_cur_freq is at the min freq.
->
-> It could also be the processor sleeping states:
-> cat /proc/acpi/processor/*/power
+This was originally detected and corrected by
+Hannes Mayer [kontakt@ecarux.de].
 
-They look like they should, as far as I can see, also the state transition 
-statistics.
+Signed-Off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-> Try to unload drivers that could poll hardware and/or produce bus master
-> activity.
-> AFAIK this could be some wlan and USB modules and possibly others.
 
-I see the behaviour even with no (apart from the cpufreq stuff) modules 
-loaded and init=/bin/sh.
-
-> If you want to play a bit with power consumption:
-> latest -mm kernel should have dyntick patches in, which disables the
-> frequent
-> timer interrupt for a while in idle to be able to stay in deeper
-> sleeping states
-> for longer time. This should save you (if bus master activity stays low
-> and userspace
-> programs do not poll too much) a lot of battery life time.
-
-For 2.6.20-final the beaviour changed a bit.  Now everything is fine, until 
-I do a software suspend/resume (by means of swsusp2), then again the 
-laptop hangs on high power consumption (and the cpus *are* in fact clocked 
-down, run time of a little three liner that does some loops shows it 
-clearly).
-
-What leads me to the assumption that something in acpi-cpufreq might smell 
-fishy is that if I use another driver (i.e. centrino-speedstep) I can not 
-reproduce the above behaviour (reduction of power consumption is not as 
-big as with acpi-cpufreq, but it works after a resume too ;-).
-
-regards,
-	Dietz
+--- arch/i386/kernel/cpu/cpufreq/powernow-k8.h.orig	2007-02-20
+23:26:45.832577558 +0100
++++ arch/i386/kernel/cpu/cpufreq/powernow-k8.h	2007-02-20
+23:26:28.805175194 +0100
+@@ -46,7 +46,7 @@
+ #define CPUID_XFAM			0x0ff00000	/* extended
+family */
+ #define CPUID_XFAM_K8			0
+ #define CPUID_XMOD			0x000f0000	/* extended
+model */
+-#define CPUID_XMOD_REV_G		0x00060000
++#define CPUID_XMOD_REV_G		0x00080000
+ #define CPUID_XFAM_10H 			0x00100000	/*
+family 0x10 */
+ #define CPUID_USE_XFAM_XMOD		0x00000f00
+ #define CPUID_GET_MAX_CAPABILITIES	0x80000000
