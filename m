@@ -1,8 +1,8 @@
 From: "stefano ferri" <ferriste@libero.it>
 Subject: Re: [Bug 8081] Conservative governor sets wrong and too high
 	sampling rates
-Date: Sun, 25 Feb 2007 22:14:28 +0100
-Message-ID: <JE1F04$4E62DB0CC1451E62BACB8C17C6CA1DF8@libero.it>
+Date: Sun, 25 Feb 2007 22:24:39 +0100
+Message-ID: <JE1FH3$64A7C47FE3A2367714996D45D173E659@libero.it>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
