@@ -1,13 +1,11 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: Re: [Bug 8081] New: Conservative governor sets wrong and too high
- sampling rates
-Date: Sun, 25 Feb 2007 21:23:58 +0100
-Message-ID: <45E1F05E.40104@interia.pl>
-References: <200702251628.l1PGS3YC021654@fire-2.osdl.org>
+From: "stefano ferri" <ferriste@libero.it>
+Subject: Re: [Bug 8081] Conservative governor sets wrong and too high
+	sampling rates
+Date: Sun, 25 Feb 2007 22:14:28 +0100
+Message-ID: <JE1F04$4E62DB0CC1451E62BACB8C17C6CA1DF8@libero.it>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200702251628.l1PGS3YC021654@fire-2.osdl.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,36 +16,84 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-9"
-To: ferriste@libero.it
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: rafalbilski <rafalbilski@interia.pl>
+Cc: cpufreq <cpufreq@lists.linux.org.uk>
 
-> Distribution: Slackware 11.0
-Distribution: Gentoo
-> Hardware Environment: Asus laptop with amd athlon xp-m 2800+
-Hardware Environment: Modified VIA EPIA M10000
-> [...]
-> most of users=20
-> will find the conservative governor useless if they don't know how to mod=
-ify=20
-> it, because the system will not respond to a rapid increasing load.
-NACK. I find it usefull. Can these users read?
-"2.5 Conservative
-----------------
-The CPUfreq governor "conservative", much like the "ondemand"
-governor, sets the CPU depending on the current usage.  It differs in
-behavior in that it gracefully increases and decreases the CPU speed
-rather than jumping to max speed the moment there is any load on the
-CPU.  This behavior more suitable in a battery powered environment. [...]"
-Response to rapidly increasing load is "ondemand" job if I remember right.
-> [...]
-> You can also load the cpufreq_stats module and look in the stats folder=20
-> (/sys/.../cpufreq/stats). You will see that ondemand causes a lot of=20
-> transitions, while conservative does not.
-Great! Exacly what I need.
+Hi Rafal, I think you have not understood what is the core of the problem=
+...
+The problem is not to make possible to change sampling rates, anyone with=
+ the current code of the kernel can do it.
+The problem is that conservative has a 10x factor of polling times if com=
+pared to ondemand.
 
-Rafa=B3
+>The CPUfreq governor "conservative", much like the "ondemand"
+>governor, sets the CPU depending on the current usage. It differs in
+>behavior in that it gracefully increases and decreases the CPU speed
+>rather than jumping to max speed the moment there is any load on the
+>CPU.
+
+Right, but if ondemand has a minimum polling time of 99500 milliseconds, =
+also conservative should have it, even if it "gracefully" increases and d=
+ecreases the CPU speed. The policy of the transition of a governor is ano=
+ther thing. It is a kernel space governor and it should do the things gra=
+cefully but rapidly ;-)!
+
+The problem is that line 497 in the conservative.c code.
+I don't know if the problem depends on my specific hardware, but my syste=
+m does not respond at all to a variable system load witout deleting that =
+10x factor, my cpu goes at 400 Mhz all the time, also transition to 800 M=
+hz are rare.
+
+>NACK from me. Current values are working for me. If these values are
+>not good for You then write patch to Kconfig which will allow user to
+>change sampling rate during "make config". Later "make oldconfig" will
+>preserve Your values.
+
+I said, it's not that the problem. Users will NOT be able to set a decent=
+ polling time if that 10x factor wil not be removed. I can choose a miniu=
+m time of 995000 millisecond (1 second!). Now that I recompiled I obtain =
+a 99500 with both ondemand and conservative, as it should be.
+And I see the frequency increasing and decreasing gracefully :-)!
+
+Stefano
 
 
-----------------------------------------------------------------------
-Przedluz domene.PL za 75 z=B3 >> http://link.interia.pl/f1a19
+
+
+---------- Initial Header -----------
+
+From      : "Rafal Bilski" rafalbilski@interia.pl
+To          : ferriste@libero.it
+Cc          : cpufreq@lists.linux.org.uk
+Date      : Sun, 25 Feb 2007 21:29:59 +0100
+Subject : Re: [Bug 8081] Conservative governor sets wrong and too high sa=
+mpling rates
+
+
+
+
+
+
+
+> > ------- Additional Comments From ferriste@libero.it  2007-02-25 08:37=
+ -------
+> > Created an attachment (id=3D10530)
+> >  --> (http://bugzilla.kernel.org/attachment.cgi?id=3D10530&action=3Dv=
+iew)
+> > This is a simple patch to fix the bug. Apply it at conservative.c
+> NACK from me. Current values are working for me. If these values are 
+> not good for You then write patch to Kconfig which will allow user to 
+> change sampling rate during "make config". Later "make oldconfig" will =
+
+> preserve Your values.
+> 
+> Rafal
+> 
+> 
+> ----------------------------------------------------------------------
+> Przedluz domene.PL za 75 zl >> http://link.interia.pl/f1a19
+> 
+> =0A=0A=0A------------------------------------------------------=0APassa=
+ a Infostrada. ADSL e Telefono senza limiti e senza canone Telecom=0Ahttp=
+://click.libero.it/infostrada25feb07=0A
