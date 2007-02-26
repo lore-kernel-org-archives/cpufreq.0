@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
 	structure
-Date: Sun, 25 Feb 2007 22:07:47 -0800
-Message-ID: <200702260607.l1Q67lrx011731@fire-2.osdl.org>
+Date: Sun, 25 Feb 2007 22:29:26 -0800
+Message-ID: <200702260629.l1Q6TQcL012301@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,25 +21,18 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
-len.brown@intel.com changed:
+davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |acpi-
-                   |                            |bugzilla@lists.sourceforge.n
-                   |                            |et
-              Owner|acpi_power-processor@kernel-|cpufreq@www.linux.org.uk
-                   |bugs.osdl.org               |
-          Component|Power-Processor             |cpufreq
-           Category|ACPI                        |Power Management
-            Summary|CPUFreq for Powernow-8 does |powernow-k8: MP systems not
-                   |not work anymore            |supported by PSB BIOS
-                   |                            |structure
+             Status|NEW                         |NEEDINFO
 
 
 
-------- Additional Comments From len.brown@intel.com  2007-02-25 22:07 -------
-appears to be powernow-k8 specific, not ACPI specific.
+------- Additional Comments From davej@codemonkey.org.uk  2007-02-25 22:29 -------
+please attach the output of grep POWERNOW .config
+
+also, the powernow parts of the dmesg from the working kernel might be useful.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
