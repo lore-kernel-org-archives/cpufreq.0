@@ -1,13 +1,11 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+From: "stefano ferri" <ferriste@libero.it>
 Subject: Re: [Bug 8081] Conservative governor sets wrong and too high
- sampling rates
-Date: Tue, 27 Feb 2007 20:27:44 +0100
-Message-ID: <45E48630.7060708@interia.pl>
-References: <JE4E69$34CFDAE2EA17565934BFEA5A3CDD1785@libero.it>
+	sampling rates
+Date: Wed, 28 Feb 2007 09:33:25 +0100
+Message-ID: <JE5ZRP$B081F2DA00BA3B983E6C3095805551EA@libero.it>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <JE4E69$34CFDAE2EA17565934BFEA5A3CDD1785@libero.it>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,92 +17,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: stefano ferri <ferriste@libero.it>
-Cc: cpufreq@lists.linux.org.uk
+To: rafalbilski <rafalbilski@interia.pl>
+Cc: cpufreq <cpufreq@lists.linux.org.uk>
 
-> [...]
-> Correcting that line of code I mentioned above one can choose a value between 0.0995 seconds and 9.95. I don't know what should I do with a maximum of 99.5...
-Me too, but maybe there is someone using it. I don't see the reason to touch it.
-> I hope we can agree a little on this... If you want the kernel 
-> set a default value of 1 second ok, but let users free to set it 
-> to a vrey lower value decreasing the value contained in sampling_rate_min.
-I agree.
-> [...]
-> fan starts very rarely also with my version of conservative, ondemand, yes, makes it start for too much time.
-> Why don't you try?
-Current value is good for me.
->> [...]
-> If the load is constant (as you said, when compiling) conservative increases 
-> frequency, but it takes ten second to pass from 400 Mhz to 2133, 
-> it's too much... The governor works but I think it's not very useful 
-> for a desktop use if I am not free to set a sampling rate lower than a second...
-It takes ten seconds for me too (66MHz step). It isn't probem for me. 
->> You are changing *default* value. If You don't like min value then change 
->> min value. I disagree with Your change because You are changing *powersaver* 
->> governor into step-by-step ondemand.
-> 
-> If you think, the default value can remain the same, 1 or 2 seconds as now, 
-> but I would have the opportunity to set it to 0.1 seconds for example, while 
-> my sampling_rate_min is 995000, it is not possible in this condition! 
-> A conservative governor with the possibility to choose a lower sampling 
-> rate could be useful. As you said, it would be a step-by-step ondemand.
-OK. Patch below is touching only min value. It is for 2.6.20. Is it sufficent?
----
- drivers/cpufreq/cpufreq_conservative.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -49,12 +49,11 @@
-  * All times here are in uS.
-  */
- static unsigned int 				def_sampling_rate;
-+static unsigned int 				min_sampling_rate;
- #define MIN_SAMPLING_RATE_RATIO			(2)
- /* for correct statistics, we need at least 10 ticks between each measure */
- #define MIN_STAT_SAMPLING_RATE			\
- 			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
--#define MIN_SAMPLING_RATE			\
--			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
- #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define DEF_SAMPLING_DOWN_FACTOR		(1)
-@@ -125,7 +124,7 @@ static ssize_t show_sampling_rate_max(struct cpufreq_policy *policy, char *buf)
- 
- static ssize_t show_sampling_rate_min(struct cpufreq_policy *policy, char *buf)
- {
--	return sprintf (buf, "%u\n", MIN_SAMPLING_RATE);
-+	return sprintf (buf, "%u\n", min_sampling_rate);
- }
- 
- #define define_one_ro(_name) 					\
-@@ -173,7 +172,7 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
- 	ret = sscanf (buf, "%u", &input);
- 
- 	mutex_lock(&dbs_mutex);
--	if (ret != 1 || input > MAX_SAMPLING_RATE || input < MIN_SAMPLING_RATE) {
-+	if (ret != 1 || input > MAX_SAMPLING_RATE || input < min_sampling_rate) {
- 		mutex_unlock(&dbs_mutex);
- 		return -EINVAL;
- 	}
-@@ -510,10 +509,14 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 
- 			def_sampling_rate = 10 * latency *
- 					DEF_SAMPLING_RATE_LATENCY_MULTIPLIER;
--
- 			if (def_sampling_rate < MIN_STAT_SAMPLING_RATE)
- 				def_sampling_rate = MIN_STAT_SAMPLING_RATE;
- 
-+			min_sampling_rate = latency *
-+					DEF_SAMPLING_RATE_LATENCY_MULTIPLIER;
-+			if (min_sampling_rate < MIN_STAT_SAMPLING_RATE)
-+				min_sampling_rate = MIN_STAT_SAMPLING_RATE;
-+
- 			dbs_tuners_ins.sampling_rate = def_sampling_rate;
- 
- 			dbs_timer_init();
+> > I hope we can agree a little on this... If you want the kernel 
+> > set a default value of 1 second ok, but let users free to set it 
+> > to a vrey lower value decreasing the value contained in sampling_rate=
+_min.
+> I agree.
 
-----------------------------------------------------------------------
-Oficjalne konto pocztowe europejskich internautow! 
->>> http://link.interia.pl/f19e8
+Ok :-)
+
+> Current value is good for me.
+
+Rafal, I believe that, but you should consider that for some people curre=
+nt values are not the best... With the new code you wrote the governor sh=
+ould satisfy more users. I'll try the patch as soon as possible.
+So now, if I have a default sampling rate of 199000, the min will be 1990=
+0... good
+
+
+> OK. Patch below is touching only min value. It is for 2.6.20. Is it suf=
+ficent?
+
+Yes, if it will be a change in the next release of the kernel!
+
+Thanks
+Stefano
+
+
+
+
+
+=0A=0A=0A------------------------------------------------------=0APassa a=
+ Infostrada. ADSL e Telefono senza limiti e senza canone Telecom=0Ahttp:/=
+/click.libero.it/infostrada28eb07=0A
