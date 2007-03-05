@@ -1,179 +1,43 @@
-From: "Henri Hunnekens" <henrihunnekens@gmail.com>
-Subject: Re: kernel BUG at drivers/acpi/osl.c:373! (acpi-cpufreq)
-Date: Sat, 3 Mar 2007 08:54:46 +0100
-Message-ID: <e9f486400703022354n2f92ce77t54c9fddcb1318076@mail.gmail.com>
-References: <EB12A50964762B4D8111D55B764A845401485EFD@scsmsx413.amr.corp.intel.com>
-	 <EB12A50964762B4D8111D55B764A845401485F3A@scsmsx413.amr.corp.intel.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: Re: [PATCH] Longhaul - Need timer tick
+Date: Mon, 05 Mar 2007 23:42:56 +0100
+Message-ID: <45EC9CF0.7@interia.pl>
+References: <45E89FAA.7050008@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed;
-        d=gmail.com; s=beta;
-        h=domainkey-signature:received:received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rL+4a+WtLxyhvT9qUspoae2A1hlVH+2FOi8/9fyH1WHiO5H31NeKD7lQFdts/7X2O3mDKy/rKfaHfY1oobsyXt0JeOAohE0XMipaHE5n+G8G+G7uXjWIYP781htcNBSqla+4uhdGRE7OCVmGxYtIGs0rMSUOviJ4LbwCg/Y03HQ=
-In-Reply-To: <EB12A50964762B4D8111D55B764A845401485F3A@scsmsx413.amr.corp.intel.com>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <45E89FAA.7050008@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, Len Brown <lenb@kernel.org>
-Cc: cpufreq <cpufreq@lists.linux.org.uk>, linux-acpi@vger.kernel.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-9"
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk
 
-Dear Len, Venki
+> There is no support for dynamic ticks in Longhaul.=20
+> Current code is assuming that timer tick is present and=20
+> constant.
+Please ignore this patch. Somehow NO_HZ option don't change=20
+anything. Average tick frequency is reduced to 20% for me=20
+(uptime / interrupt 0 count), but somehow when Longhaul=20
+is changing CPU frequency it is always equal to value set=20
+by "Timer frequency" option. Probably this is how NO_HZ=20
+author want it to work. Anyway, tested (with help of ACPI=20
+PM timer) and even if help for this option may sound scary=20
+for me, there is no change in transition latency. At least=20
+on my system.
 
-Thanks for you replies. I've done some analysis and with the following results.
-
-- The bit_width field contains value 1, which causes the OOPS using
-the acpi_os_write_port routine. The local copy of this function used
-in kernel version 2.6.18 accepted this bit_width value.
-
-- I've analysed the acpi tables. There are no _PSS or _PCC tables.
-
-    Scope (\_PR)
-    {
-        Processor (\_PR.CPU0, 0x00, 0x0000F010, 0x06) {}
-        Processor (\_PR.CPU1, 0x01, 0x0000F010, 0x06) {}
-        Processor (\_PR.CPU2, 0x02, 0x0000F010, 0x06) {}
-        Processor (\_PR.CPU3, 0x03, 0x0000F010, 0x06) {}
-    }
-
-I've contacted the hardware manufacturer about this. He answered that
-this was correctly, since i'm using a celeron 341 D processor which
-doesn't support performance states. (p-states).
-
-When this processor doesn't support p-states, how is it possible that
-I was able to switch between P0 and P1 using kernel version 2.6.18?
-The cpufreq driver did really work in kernel version 2.6.18 since the
-power consumption was 60 watts in powersave mode and 75 watts in
-performance mode.
-
-Where does the cpufreq driver get it's information from when the _PSS
-and _PCC data are not available? I want to know why the bit_width
-field contains value 1, and why the cpufreq is able to work when there
-is no _PSS and _PCC data available.
-
-Best regards,
-Henri Hunnekens
+Sorry
+Rafa=B3
 
 
-
-
-
-
-2007/2/16, Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>:
->
-> Looks like the BIOS is having wrong value in ACPI _PSS table for
-> bit_width field. Previous code use to ignore the error silently and the
-> new code has a BUG statement to catch the error. With both previous and
-> current code, due to this bug, cpufreq would not have worked correctly
-> on your platform.
->
-> We need to look at what BIOS has in bit_width field. So, I will have to
-> repeat Len's comment from below.
->
-> >>Please attach the output from acpidump > acpidump.out into a
-> >>new bugzilla entry here:
-> >>http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> >>
-> >>You can get acpidump from the latest pmtools here:
-> >>http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
-> >>
->
-> Thanks,
-> Venki
->
-> >-----Original Message-----
-> >From: cpufreq-bounces@lists.linux.org.uk
-> >[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of
-> >Pallipadi, Venkatesh
-> >Sent: Friday, February 16, 2007 9:49 AM
-> >To: Len Brown; Henri Hunnekens
-> >Cc: cpufreq; linux-acpi@vger.kernel.org
-> >Subject: RE: kernel BUG at drivers/acpi/osl.c:373! (acpi-cpufreq)
-> >
-> >
-> >Hmm.. I recently changed acpi-cpufreq to use acpi_os_write_port(),
-> >instead of its local copy of read port. Let me look at that patch
-> >again...
-> >
-> >Thanks,
-> >Venki
-> >
-> >>-----Original Message-----
-> >>From: cpufreq-bounces@lists.linux.org.uk
-> >>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Len Brown
-> >>Sent: Friday, February 16, 2007 8:52 AM
-> >>To: Henri Hunnekens
-> >>Cc: cpufreq; linux-acpi@vger.kernel.org
-> >>Subject: Re: kernel BUG at drivers/acpi/osl.c:373! (acpi-cpufreq)
-> >>
-> >>On Friday 16 February 2007 10:03, Henri Hunnekens wrote:
-> >>
-> >>> Loading the acpi_cpufreq module reports a kernel bug using kernel
-> >>> version 2.6.20.  versions 2.6.18 and older work fine.
-> >>
-> >>> kernel BUG at drivers/acpi/osl.c:373!
-> >>
-> >>>  [<e0074455>] acpi_cpufreq_target+0x185/0x290 [acpi_cpufreq]
-> >>>  [<c037881f>] __cpufreq_driver_target+0x3f/0x50
-> >>>  [<c037a0de>] cpufreq_governor_performance+0x1e/0x30
-> >>>  [<c0378984>] __cpufreq_governor+0x24/0xd0
-> >>>  [<c0378e9b>] __cpufreq_set_policy+0xeb/0x140
-> >>>  [<c03790fe>] cpufreq_set_policy+0x4e/0x80
-> >>>  [<c0379d4a>] cpufreq_add_dev+0x31a/0x3e0
-> >>>  [<c02bdfc9>] sysdev_driver_register+0x59/0xa0
-> >>>  [<c037a027>] cpufreq_register_driver+0x67/0x100
-> >>>  [<e007809d>] acpi_cpufreq_init+0x9d/0xa4 [acpi_cpufreq]
-> >>>  [<c01423f7>] sys_init_module+0x137/0x1b90
-> >>>  [<c0104620>] syscall_call+0x7/0xb
-> >>>  =======================
-> >>> Code: f9 10 89 e5 53 89 c3 89 d0 74 12 83 f9 20 74 16 83 f9
-> >>08 75 16 0f b6 c2 89
-> >>>  da ee eb 12 0f b7 c2 89 da 66 ef eb 09 89 da ef eb 04 <0f>
-> >>0b eb fe 5b 31 c0 5d
-> >>>  c3 55 89 e5 5d c3 55 85 c0 89 e5 89 c1
-> >>> EIP: [<c027dbd9>] acpi_os_write_port+0x2d/0x36 SS:ESP 0068:dd3d1c8c
-> >>
-> >>acpi_status acpi_os_write_port(acpi_io_address port, u32
-> >>value, u32 width)
-> >>{
-> >>        switch (width) {
-> >>        case 8:
-> >>                outb(value, port);
-> >>                break;
-> >>        case 16:
-> >>                outw(value, port);
-> >>                break;
-> >>        case 32:
-> >>                outl(value, port);
-> >>                break;
-> >>        default:
-> >>373:            BUG();
-> >>        }
-> >>
-> >>        return AE_OK;
-> >>}
-> >>
-> >>Well, acpi_os_write_port itself has not changed -- so it
-> >>is either acpi_cpufreq, cpufreq, or how they've read and
-> >>interpreted the tables.
-> >>
-> >>Please attach the output from acpidump > acpidump.out into a
-> >>new bugzilla entry here:
-> >>http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> >>
-> >>You can get acpidump from the latest pmtools here:
-> >>http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
-> >>
-> >>Also, you can build with CONFIG_ACPI_DEBUG=y and boot with
-> >>"acpi_dbg_layer=2"
-> >>plus "acpi_dbg_level=0xffffffff" and capture the console log.
-> >>(or you can set these values after booted in /proc/acpi just before
-> >>you try to load the module)
-> >>
-> >>and, maybe some clues from the cpufreq subsystem will help.
-> >>cpufreq.debug=3 looks like it may give us a clue.
-> >>
-> >>thanks,
-> >>-Len
->
+----------------------------------------------------------------------
+Oficjalne konto pocztowe europejskich internautow!=20
+>>> http://link.interia.pl/f19e8
