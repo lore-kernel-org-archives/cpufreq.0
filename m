@@ -1,12 +1,10 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: Re: [PATCH] Longhaul - Need timer tick
-Date: Mon, 05 Mar 2007 23:42:56 +0100
-Message-ID: <45EC9CF0.7@interia.pl>
-References: <45E89FAA.7050008@interia.pl>
+From: markus reichelt <ml@mareichelt.de>
+Subject: CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
+Date: Tue, 06 Mar 2007 17:16:22 +0100
+Message-ID: <20070306161622.GJ4168@tatooine.rebelbase.local>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <45E89FAA.7050008@interia.pl>
+Content-Type: multipart/mixed; boundary="===============0903155556=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,28 +14,62 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-9"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
-
-> There is no support for dynamic ticks in Longhaul.=20
-> Current code is assuming that timer tick is present and=20
-> constant.
-Please ignore this patch. Somehow NO_HZ option don't change=20
-anything. Average tick frequency is reduced to 20% for me=20
-(uptime / interrupt 0 count), but somehow when Longhaul=20
-is changing CPU frequency it is always equal to value set=20
-by "Timer frequency" option. Probably this is how NO_HZ=20
-author want it to work. Anyway, tested (with help of ACPI=20
-PM timer) and even if help for this option may sound scary=20
-for me, there is no change in transition latency. At least=20
-on my system.
-
-Sorry
-Rafa=B3
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
 
-----------------------------------------------------------------------
-Oficjalne konto pocztowe europejskich internautow!=20
->>> http://link.interia.pl/f19e8
+--===============0903155556==
+Content-type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary=sHrvAb52M6C8blB9
+Content-disposition: inline
+
+
+--sHrvAb52M6C8blB9
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+I'm running 2.6.21-rc1 and during make menuconfig I was wondering...
+
+What's the roadmap of this? Will it be dropped and speedstep made
+rely solely on ACPI?
+
+I'm asking because I'd very much like to see it stay - I'm using
+tables to underclock my Banias CPU down to 400/200/100 MHz. No idea
+how that could be done without tables.
+
+--=20
+left blank, right bald
+
+--sHrvAb52M6C8blB9
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFF7ZPWLMyTO8Kj/uQRAhkgAJoCXuDag2IrqUrBgZY5ba78HLTrzQCfTe7X
+KDhbogg5PLJK6Afdvi/5Ry4=
+=atWC
+-----END PGP SIGNATURE-----
+
+--sHrvAb52M6C8blB9--
+
+
+
+--===============0903155556==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0903155556==--
+
+
