@@ -1,13 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
-Date: Tue, 6 Mar 2007 09:24:31 -0800
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F50E3DFF@scsmsx415.amr.corp.intel.com>
-References: <20070306161622.GJ4168@tatooine.rebelbase.local>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: ondemand as default governor
+Date: Wed, 7 Mar 2007 01:24:28 -0500
+Message-ID: <200703070124.29058.lenb@kernel.org>
+References: <1172770914.10619.587.camel@d36.suse.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <20070306161622.GJ4168@tatooine.rebelbase.local>
+In-Reply-To: <1172770914.10619.587.camel@d36.suse.de>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,34 +19,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: markus reichelt <ml@mareichelt.de>, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk, trenn@suse.de
 
+On Thursday 01 March 2007 12:41, Thomas Renninger wrote:
+> I just read in drivers/cpufreq/Kconfig:
+> 
+> # Note that it is not currently possible to set the other governors
+> (such as ondemand)
+> # as the default, since if they fail to initialise, cpufreq will be
+> # left in an undefined state.
+> 
+> Is this a bigger problem to solve?
+> Is there already someone working/thinking on/about a solution?
+> 
+> Allowing this would be convenient...
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk=20
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of=20
->markus reichelt
->Sent: Tuesday, March 06, 2007 8:16 AM
->To: cpufreq@lists.linux.org.uk
->Subject: CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
->
->Hi,
->
->I'm running 2.6.21-rc1 and during make menuconfig I was wondering...
->
->What's the roadmap of this? Will it be dropped and speedstep made
->rely solely on ACPI?
->
->I'm asking because I'd very much like to see it stay - I'm using
->tables to underclock my Banias CPU down to 400/200/100 MHz. No idea
->how that could be done without tables.
->
+Yes, it would, then we could delete the other governors,
+and then delete the concept of multiple governors alltogether.
 
-Long term view is, on any platform with ACPI support, cpufreq is handled
-by acpi-cpufreq driver.
-Speedstep-centrino will continue to exist in its table based format and
-will not depend on ACPI and can be used on systems that do not have ACPI
-support or want to use table based scheme.
-
-Thanks,
-Venki
+-Len
