@@ -1,92 +1,160 @@
-From: Holger Macht <hmacht@suse.de>
-Subject: Re: ondemand as default governor
-Date: Wed, 7 Mar 2007 22:09:11 +0100
-Message-ID: <20070307210910.GC4872@homac2>
-References: <1172770914.10619.587.camel@d36.suse.de>
-	<200703070124.29058.lenb@kernel.org>
-	<20070307070208.GB15453@redhat.com>
-	<20070307092506.GA20722@inskipp.digriz.org.uk>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [patch 04/13] Exit ACPI processor module gracefully if acpi is
+	disabled
+Date: Thu, 08 Mar 2007 14:20:32 +0100
+Message-ID: <1173360032.5863.57.camel@queen.suse.de>
+References: <200702060010.l160ADKR003729@shell0.pdx.osdl.net>
+	 <200702090047.25044.lenb@kernel.org>
+	 <1171010060.25027.616.camel@d36.suse.de>
+	 <200703070300.55821.lenb@kernel.org>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20070307092506.GA20722@inskipp.digriz.org.uk>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200703070300.55821.lenb@kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexander Clouter <alex-kernel@digriz.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="utf-8"
+To: Len Brown <lenb@kernel.org>
+Cc: cpufreq@lists.linux.org.uk, akpm@linux-foundation.org, linux-acpi@vger.kernel.org
 
-On Wed 07. Mar - 09:25:06, Alexander Clouter wrote:
-> Hi,
-> 
-> Dave Jones <davej@redhat.com> [20070307 02:02:08 -0500]:
-> >
-> > On Wed, Mar 07, 2007 at 01:24:28AM -0500, Len Brown wrote:
-> >  > On Thursday 01 March 2007 12:41, Thomas Renninger wrote:
-> >  > > I just read in drivers/cpufreq/Kconfig:
-> >  > > 
-> >  > > # Note that it is not currently possible to set the other governors
-> >  > > (such as ondemand)
-> >  > > # as the default, since if they fail to initialise, cpufreq will be
-> >  > > # left in an undefined state.
-> >  > > 
-> >  > > Is this a bigger problem to solve?
-> >  > > Is there already someone working/thinking on/about a solution?
-> >  > > 
-> >  > > Allowing this would be convenient...
-> >  > 
-> >  > Yes, it would, then we could delete the other governors,
-> >  > and then delete the concept of multiple governors alltogether.
-> > 
-> > It's not feasible unless you have a way of making various
-> > older CPUs transition faster.  Ondemand on longhaul,powernow-k6,longrun,
-> > elanfreq, as well as lots of non-x86 implementations is just not
-> > a feasible option.
-> > 
-> As a compromise I guess someone could make a patch that 'forces' 
-> ondemand/conservative by default with a few '#ifdef's.  Slap a huge "we will 
-> simply laugh at you if you complain this does not work" in the Kconfig help 
-> section and everyones happy.  It should be a rather un-intrusive patch.
-> 
-> > However.. conservative might be.  I'd still like to see conservative
-> > folded into ondemand sometime, and just be a module param.
-> > 
-> This was originally touted as this but Dominik[1] suggested it would be a far 
-> better use of the modular governor system if I forked a different governor 
-> instead.  Also if you look at the current userland tools out there that tweak 
-> the /sys/.../cpufreq/ settings you will find they really are all kitted out 
-> to flip between completely different governors on system events rather than 
-> sit on a particular one and tweak a few parameters when someone yanks the 
-> power lead[2].
-> 
-> I would admit it looks and feel the kind of thing that should be run into a 
-> single governor[3] but this would really muck around the userland tools as 
-> they would have to be re-written to actually know the workings of each 
-> particular governor rather than just being told "use this one when on AC and 
-> this one when not".  It would clean up the kernel land forking, but the cost 
-> to the userland side would be horrible.
+On Wed, 2007-03-07 at 03:00 -0500, Len Brown wrote:
+> On Friday 09 February 2007 03:34, Thomas Renninger wrote:
+> > On Fri, 2007-02-09 at 00:47 -0500, Len Brown wrote:
+> > > Why not simply check acpi_disabled, like other drivers do?
+> > >=20
+> > See comment from Dominik when I sent something similar some time ag=
+o:
+> > http://marc.theaimsgroup.com/?l=3Dlinux-acpi&m=3D114563882012355&w=3D=
+2
+>=20
+> Dominik is right right driver registration should fail w/o
+> a check for acpi_disabled.  However, we use acpi_disabled all
+> over the place already when that is not sufficient, so if we
+> need it here, we can use it..
+>=20
+> >> [Dominik wrote]
+> >> No. For example powernow-k8 and speedstep-centrino do have a depen=
+dency on a
+> >> function which is exported by processor_perflib.c. THis means you =
+cannot
+> >> load these modules (which can run without ACPI support) if loading=
+ the
+> >> processor module fails. Therefore its init function must not fail.
+>=20
+> Blech, so the drivers that can be either native or ACPI can't link
+> in native mode unless their ACPI processor driver symbols resolve?
+>=20
+> Hmmm.  Perhaps we should delete the ACPI part of speedstep_centrino
+> now that it is deprecated by acpi-cpufreq?  That way it can be
+> just a native driver for folks who want to run
+> with hard-coded tables and no ACPI.
+> Or perhaps at this point we should delete speedstep_centrino entirely=
+?
+>=20
+> Looks like powernow-k7.c and powernow-k8.c have the same issue --
+> acpi_processor_register_performance() ain't gonna resolve if the acpi=
+ processor
+> driver isn't present.  Perhaps they can be split into native and ACPI=
+ drivers?
+But all this sounds like a lot work?
+Can you just add the patch for now, to solve the "oops or whatever bad
+happened when booted without acpi and processor module gets unloaded"?
 
-Well, but there are also userland tools which are heading into another
-direction. The quite new CPUFreq addon which comes along with HAL tries to
-go away from the modular governor system. It doesn't limit anyone to set
-whichever governor is available, but ideally it encourages applications to
-set one dynamic scaling governor such as ondemand. After setting the
-governor, you have a scale between 1 and 100 which in turn just tweaks the
-different settings of this one governor set. And in the long run,
-distributions will have to use this mechanism if they like to use the most
-common power management desktop applets out there (gnome-power-manager,
-kpowersave, etc.).
+Thanks,
 
-[...]
+   Thomas
 
-Regards,
-	Holger
+> -Len
+>=20
+>=20
+> > > On Monday 05 February 2007 19:09, akpm@linux-foundation.org wrote=
+:
+> > > > From: Thomas Renninger <trenn@suse.de>
+> > > >=20
+> > > > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > > > Cc: Len Brown <lenb@kernel.org>
+> > > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > > ---
+> > > >=20
+> > > >  drivers/acpi/processor_core.c |   13 +++++++++----
+> > > >  1 file changed, 9 insertions(+), 4 deletions(-)
+> > > >=20
+> > > > diff -puN drivers/acpi/processor_core.c~exit-acpi-processor-mod=
+ule-gracefully-if-acpi-is-disabled drivers/acpi/processor_core.c
+> > > > --- a/drivers/acpi/processor_core.c~exit-acpi-processor-module-=
+gracefully-if-acpi-is-disabled
+> > > > +++ a/drivers/acpi/processor_core.c
+> > > > @@ -994,6 +994,8 @@ void acpi_processor_uninstall_hotplug_no
+> > > >   * ACPI, but needs symbols from this driver
+> > > >   */
+> > > > =20
+> > > > +static int processor_driver_registered;
+> > > > +
+> > > >  static int __init acpi_processor_init(void)
+> > > >  {
+> > > >  	int result =3D 0;
+> > > > @@ -1019,6 +1021,8 @@ static int __init acpi_processor_init(vo
+> > > >  		return result;
+> > > >  	}
+> > > > =20
+> > > > +	processor_driver_registered =3D 1;
+> > > > +
+> > > >  	acpi_processor_install_hotplug_notify();
+> > > > =20
+> > > >  	acpi_thermal_cpufreq_init();
+> > > > @@ -1035,12 +1039,13 @@ static void __exit acpi_processor_exit(=
+v
+> > > > =20
+> > > >  	acpi_thermal_cpufreq_exit();
+> > > > =20
+> > > > -	acpi_processor_uninstall_hotplug_notify();
+> > > > -
+> > > > -	acpi_bus_unregister_driver(&acpi_processor_driver);
+> > > > +	if (processor_driver_registered) {
+> > > > +		acpi_processor_uninstall_hotplug_notify();
+> > > > =20
+> > > > -	remove_proc_entry(ACPI_PROCESSOR_CLASS, acpi_root_dir);
+> > > > +		acpi_bus_unregister_driver(&acpi_processor_driver);
+> > > > =20
+> > > > +		remove_proc_entry(ACPI_PROCESSOR_CLASS, acpi_root_dir);
+> > > > +	}
+> > > >  	return;
+> > > >  }
+> > > > =20
+> > > > _
+> > > > -
+> > > > To unsubscribe from this list: send the line "unsubscribe linux=
+-acpi" in
+> > > > the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.h=
+tml
+> > > >=20
+> >=20
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-acp=
+i" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >=20
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi"=
+ in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+Thomas Renninger
+
+Research and Developement Departement
+SUSE LINUX Products GmbH,
+Maxfeldstr. 5, D - 90409 N=C3=BCrnberg
+Phone: +49 (0)911 - 740 53 675
+e-mail: trenn@suse.de
+
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG N=C3=BCrnberg)
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
