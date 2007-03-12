@@ -1,13 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: ondemand excessive wakeups.
-Date: Mon, 12 Mar 2007 12:09:29 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F5170C6A@scsmsx415.amr.corp.intel.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: ondemand excessive wakeups.
+Date: Mon, 12 Mar 2007 15:12:27 -0400
+Message-ID: <20070312191227.GA21835@redhat.com>
 References: <20070312190240.GA19796@redhat.com>
+	<653FFBB4508B9042B5D43DC9E18836F5170C6A@scsmsx415.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <20070312190240.GA19796@redhat.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5170C6A@scsmsx415.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,41 +17,28 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 Cc: cpufreq@lists.linux.org.uk
 
+On Mon, Mar 12, 2007 at 12:09:29PM -0700, Pallipadi, Venkatesh wrote:
 
->-----Original Message-----
->From: Dave Jones [mailto:davej@redhat.com]=20
->Sent: Monday, March 12, 2007 12:03 PM
->To: Pallipadi, Venkatesh
->Cc: cpufreq@lists.linux.org.uk
->Subject: ondemand excessive wakeups.
->
->A colleague noticed that his laptop in runlevel 3 was doing=20
->~120 context
->switches a second whilst completely idle.  Process of=20
->elimation worked out
->that after disabling acpi-cpufreq & ondemand, the cs drop to=20
->around 4 per sec.
->
-<deleted>
->
->Any ideas?  With tickless now being default on i386, it's somewhat
->nasty that a part of the system responsible for power saving is
->causing us to waste power ;-)
->
+ > Yes. I had previously sent a patch to eliminate this needless ondemand
+ > polling
+ > when system is idle.
+ > http://lkml.org/lkml/2006/11/21/300
 
-Yes. I had previously sent a patch to eliminate this needless ondemand
-polling
-when system is idle.
-http://lkml.org/lkml/2006/11/21/300
+Ahh, I had completely forgotten about that thread.
 
-But, bunch of other changes in workqueue infrastructure made this patch
-invalid.
-I will rework this one over latest base soon.
+ > But, bunch of other changes in workqueue infrastructure made this patch
+ > invalid.
+ > I will rework this one over latest base soon.
 
-Thanks,=20
-Venki
+Cool, looking forward to it :)
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
