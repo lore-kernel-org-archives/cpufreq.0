@@ -1,10 +1,13 @@
-From: Dave Jones <davej@redhat.com>
-Subject: ondemand excessive wakeups.
-Date: Mon, 12 Mar 2007 15:02:40 -0400
-Message-ID: <20070312190240.GA19796@redhat.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: ondemand excessive wakeups.
+Date: Mon, 12 Mar 2007 12:09:29 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F5170C6A@scsmsx415.amr.corp.intel.com>
+References: <20070312190240.GA19796@redhat.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
+In-Reply-To: <20070312190240.GA19796@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,48 +17,41 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@lists.linux.org.uk
 
-A colleague noticed that his laptop in runlevel 3 was doing ~120 context
-switches a second whilst completely idle.  Process of elimation worked out
-that after disabling acpi-cpufreq & ondemand, the cs drop to around 4 per sec.
 
-cpufreq.debug=7 yields ..
+>-----Original Message-----
+>From: Dave Jones [mailto:davej@redhat.com]=20
+>Sent: Monday, March 12, 2007 12:03 PM
+>To: Pallipadi, Venkatesh
+>Cc: cpufreq@lists.linux.org.uk
+>Subject: ondemand excessive wakeups.
+>
+>A colleague noticed that his laptop in runlevel 3 was doing=20
+>~120 context
+>switches a second whilst completely idle.  Process of=20
+>elimation worked out
+>that after disabling acpi-cpufreq & ondemand, the cs drop to=20
+>around 4 per sec.
+>
+<deleted>
+>
+>Any ideas?  With tickless now being default on i386, it's somewhat
+>nasty that a part of the system responsible for power saving is
+>causing us to waste power ;-)
+>
 
-cpufreq-core: target for CPU 0: 1200000 kHz, relation 1
-acpi-cpufreq: acpi_cpufreq_target 1200000 (0)
-freq-table: request for target 1200000 kHz (relation: 1) for cpu 0
-freq-table: target is 0 (1200000 kHz, 0)
-acpi-cpufreq: get_cur_val = 100664839
-cpufreq-core: notification 0 of frequency transition to 1200000 kHz
-userspace: saving cpu_cur_freq of cpu 0 to be 1200000 kHz
-cpufreq-core: notification 1 of frequency transition to 1200000 kHz
-userspace: saving cpu_cur_freq of cpu 0 to be 1200000 kHz
-cpufreq-core: target for CPU 0: 771428 kHz, relation 0
-printk: 35 messages suppressed.
-cpufreq-core: target for CPU 0: 1200000 kHz, relation 1
-printk: 17 messages suppressed.
-cpufreq-core: target for CPU 0: 1200000 kHz, relation 1
-acpi-cpufreq: acpi_cpufreq_target 1200000 (0)
-freq-table: request for target 1200000 kHz (relation: 1) for cpu 0
-printk: 15 messages suppressed.
-cpufreq-core: target for CPU 0: 1200000 kHz, relation 1
-acpi-cpufreq: acpi_cpufreq_target 1200000 (0)
-printk: 61 messages suppressed.
-cpufreq-core: target for CPU 0: 1200000 kHz, relation 1
-printk: 17 messages suppressed.
-cpufreq-core: target for CPU 0: 1200000 kHz, relation 1
-acpi-cpufreq: acpi_cpufreq_target 1200000 (0)
+Yes. I had previously sent a patch to eliminate this needless ondemand
+polling
+when system is idle.
+http://lkml.org/lkml/2006/11/21/300
 
-Any ideas?  With tickless now being default on i386, it's somewhat
-nasty that a part of the system responsible for power saving is
-causing us to waste power ;-)
+But, bunch of other changes in workqueue infrastructure made this patch
+invalid.
+I will rework this one over latest base soon.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Thanks,=20
+Venki
