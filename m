@@ -1,13 +1,14 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: ondemand excessive wakeups.
-Date: Mon, 12 Mar 2007 15:12:27 -0400
-Message-ID: <20070312191227.GA21835@redhat.com>
-References: <20070312190240.GA19796@redhat.com>
-	<653FFBB4508B9042B5D43DC9E18836F5170C6A@scsmsx415.amr.corp.intel.com>
+From: "Ralf Meyer" <ranfyy@gmail.com>
+Subject: Mobile Celeron
+Date: Mon, 12 Mar 2007 21:20:13 +0100
+Message-ID: <50df9eb80703121320k182b0aa9x8fd7c6c7969384d7@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
+	h=domainkey-signature:received:received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+	b=LtYcbGHJS/bJz5jhaiRzxMEbR/oOddnEcQPkwvQQGgrL+IbY5Kc9Wxt7te/IFfGLTFz7NPNlixHIZxWFNfa5i00hKBnqR81lcgCtAEE+2lDUHD5nl+GEPe6E2CeN9P/JZXzz8rPY6WviHfiiJavfo5FnmF/vc83rcjAJYWhHv/M=
 Content-Disposition: inline
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5170C6A@scsmsx415.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,27 +19,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-On Mon, Mar 12, 2007 at 12:09:29PM -0700, Pallipadi, Venkatesh wrote:
+Hi,
 
- > Yes. I had previously sent a patch to eliminate this needless ondemand
- > polling
- > when system is idle.
- > http://lkml.org/lkml/2006/11/21/300
+is a Mobile Celeron supposed to be able to do CPU frequency scaling?
 
-Ahh, I had completely forgotten about that thread.
+$ cat /proc/cpuinfo
+---
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 11
+model name      : Mobile Intel(R) Celeron(TM) CPU          733MHz
+stepping        : 4
+cpu MHz         : 730.993
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 mmx fxsr sse up
+bogomips        : 1463.43
+---
 
- > But, bunch of other changes in workqueue infrastructure made this patch
- > invalid.
- > I will rework this one over latest base soon.
-
-Cool, looking forward to it :)
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Thanks for any pointers.
