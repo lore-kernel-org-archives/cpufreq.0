@@ -1,80 +1,49 @@
-From: john stultz <johnstul@us.ibm.com>
-Subject: Re: Stolen and degraded time and schedulers
-Date: Tue, 13 Mar 2007 13:12:48 -0700
-Message-ID: <1173816769.22180.14.camel@localhost>
-References: <45F6D1D0.6080905@goop.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Mobile Celeron
+Date: Tue, 13 Mar 2007 16:27:58 -0400
+Message-ID: <20070313202758.GA18519@redhat.com>
+References: <50df9eb80703121320k182b0aa9x8fd7c6c7969384d7@mail.gmail.com>
+	<20070313013801.GA5364@tatooine.rebelbase.local>
+	<50df9eb80703131114wcff0a56g1d93499531eee9a@mail.gmail.com>
+	<20070313190121.GD27471@redhat.com>
+	<50df9eb80703131233u6b1a3c87r5a759cdf8e89c097@mail.gmail.com>
+	<20070313194200.GB10653@redhat.com>
+	<50df9eb80703131247s3e618640y6f0c74e76c11d5e3@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933174AbXCMUNA@vger.kernel.org>
-In-Reply-To: <45F6D1D0.6080905@goop.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <50df9eb80703131247s3e618640y6f0c74e76c11d5e3@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk, Virtualization Mailing List <virtualization@lists.osdl.org>, Daniel Walker <dwalker@mvista.com>
+Content-Transfer-Encoding: 7bit
+To: Ralf Meyer <ranfyy@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-On Tue, 2007-03-13 at 09:31 -0700, Jeremy Fitzhardinge wrote:
-> The current Linux scheduler makes one big assumption: that 1ms of CPU
-> time is the same as any other 1ms of CPU time, and that therefore a
-> process makes the same amount of progress regardless of which particular
-> ms of time it gets.
-> 
-> This assumption is wrong now, and will become more wrong as
-> virtualization gets more widely used.
-> 
-> It's wrong now, because it fails to take into account of several kinds
-> of missing time:
-> 
->    1. interrupts - time spent in an ISR is accounted to the current
->       process, even though it gets no direct benefit
->    2. SMM - time is completely lost from the kernel
->    3. slow CPUs - 1ms of 600MHz CPU is less useful than 1ms of 2.4GHz CPU
-> 
-[snip]
-> So how to deal with this?  Basically we need a clock which measures "CPU
-> work units", and have the scheduler use this clock.
-> 
-> A "CPU work unit" clock has these properties:
-> 
->     * inherently per-CPU (from the kernel's perspective, so it would be
->       per-VCPU in a virtual machine)
->     * monotonic - you can't do negative work
->     * measured in "work units"
-[snip]
-> So, how to implement this?
-> 
-> One quick hack would be to just make a new clocksource entrypoint, which
-> returns work units rather than real-time cycles.  That would be fairly
-> simple to implement, but it doesn't really take the per-cpu nature of
-> the clock into account (since its possible that different cpus on the
-> same machine might need their own methods).
-> 
-> Perhaps a better fit would be an entity which is equivalent to a
-> clocksource, but registered per-cpu like (some) clockevents.
-> 
-> I don't have a particular preference, but I wonder what the clock gurus
-> think.
+On Tue, Mar 13, 2007 at 08:47:00PM +0100, Ralf Meyer wrote:
 
-My gut reaction would be to avoid using clocksources for now. While
-there is some thought going into how to expand clocksources for other
-uses (Daniel is working on this, for example), the design for
-clocksources has been very focused on its utility to timekeeping, so I'm
-hesitant to try complicate the clocksources in order to multiplex
-functionality until what is really needed is well understood.
+This is really suspect..
 
-I suspect the best approach would be see how the sched_clock interface
-can be reworked/used for what you want, as it's design goals map closest
-to the work-unit properties you list above.
+ >  	if (*low_speed == *high_speed) {
+ > -		ret = -ENODEV;
+ > +		dprintk("low speed is same as high speed?\n");
+ > +		/* Workaround for celeron-M */
+ > +		//ret = -ENODEV;
+ >  		goto out;
+ >  	}
 
-Then we can look to see how clocksources can be best used to implement
-the sched_clock interface.
+So it has low speed == high speed ? Then what's the point ?
+Very strange.
 
--john
+	Dave
 
-
-
-
-
-
-
-
+-- 
+http://www.codemonkey.org.uk
