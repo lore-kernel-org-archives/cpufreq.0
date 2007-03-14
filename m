@@ -1,60 +1,40 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Subject: Re: Stolen and degraded time and schedulers
-Date: Tue, 13 Mar 2007 23:52:12 -0700
-Message-ID: <45F79B9C.20609@goop.org>
-References: <45F6D1D0.6080905@goop.org>	 <1173816769.22180.14.camel@localhost>  <45F70A71.9090205@goop.org>	 <1173821224.1416.24.camel@dwalker1>  <45F71EA5.2090203@goop.org> <1173837606.23595.32.camel@imap.mvista.com>
+Date: Wed, 14 Mar 2007 09:58:45 -0400
+Message-ID: <20070314135845.GG22466@csclub.uwaterloo.ca>
+References: <45F6D1D0.6080905@goop.org> <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030666AbXCNGwP@vger.kernel.org>
-In-Reply-To: <1173837606.23595.32.camel@imap.mvista.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030856AbXCNN6r@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <45F77C27.8090604@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Daniel Walker <dwalker@mvista.com>
-Cc: john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>, Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk, Virtualization Mailing List <virtualization@lists.osdl.org>
+Content-Transfer-Encoding: 7bit
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com, cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 
-Daniel Walker wrote:
-> The adjustments that I spoke of above are working regardless of ntp ..
-> The stability of the TSC directly effects the clock mult adjustments in
-> timekeeping, as does interrupt latency since the clock is essentially
-> validated against the timer interrupt.
->   
+On Tue, Mar 13, 2007 at 09:37:59PM -0700, Jeremy Fitzhardinge wrote:
+> (By monotonic time, I presume you mean monotonic real time.)  Yes, I
+> suppose you could, but I don't think that's terribly useful.   I think
+> work_time is probably most naturally measured in cpu clock cycles rather
+> than an actual time unit.  You could convert it to ns, but I don't see
+> the point.
+> 
+> I know its a term in general use, but I don't think the term "stolen
+> time" is all that useful, particularly when we're talking about a more
+> general notion of cpu work contributing to the progress of process
+> execution.  In the cpufreq case, time isn't "stolen" per se.
 
-Yep.  But the tsc is just an example of a clocksource, and doesn't have
-any real bearing on what I'm saying.
+How would you deal with something like a pentium 4 HT processor where
+you may run slower just because you got scheduled on the sibling of a
+cpu that happens to run something else needing the same execution units
+you do, causing you to get delayed more, even though the cpu is running
+full speed and nothing else is trying to use your "cpu"?  I don't think
+there is any way to know what the real impact of two processes on a HT
+cpu have on each other.
 
-> like I said there are other factors so that's not going to exactly model
-> cpu speed changes. You could come up with another method, but that would
-> likely require another known constant clock.
->   
+Interesting goal.  Not sure it can be done.
 
-Well, it doesn't need to be a constant clock if its modelling a changing
-rate.  And it doesn't need to be an exact model; it just needs to be
-better than the current situation.
-
-> sched_clock doesn't measure amounts of cpu work either, it's all about
-> timing. 
->   
-
-Specifically, how much cpu time a process has used.  But if the CPU is
-running at half speed (or 50% duty cycle), then claiming that the
-process got the full amount of time is just an error.
-
->> Well, lots of cpus have dynamic frequencies.  Any scheduler which
->> maintains history will suffer the same problem, even on UP.  If
->> processes A and B are supposed to have the same priority and they both
->> execute for 1ms of real time, did they make the same amount of
->> progress?  Not if the cpu changed speed in between.
->>     
->
-> That's true, but given a constant clock (like what sched_clock should
-> have) then the accounting is similarly inaccurate. Any connection
-> between the scheduler and the TSC frequency changes aren't part of the
-> design AFAIK ..
->   
-
-Well, my whole argument is that sched_clock /should not/ be a constant
-clock.  And I'm not quite sure why you keep bringing up the tsc, because
-it has no relevance.
-
-    J
+--
+Len Sorensen
