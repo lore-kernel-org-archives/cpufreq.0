@@ -1,29 +1,37 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Stolen and degraded time and schedulers
-Date: Wed, 14 Mar 2007 13:59:51 -0700
-Message-ID: <45F86247.40109@goop.org>
-References: <45F6D1D0.6080905@goop.org> <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <20070314203826.GA15394@elte.hu>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422653AbXCNU7y@vger.kernel.org>
-In-Reply-To: <20070314203826.GA15394@elte.hu>
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
+	structure
+Date: Wed, 14 Mar 2007 14:04:42 -0700
+Message-ID: <200703142104.l2EL4gfE015361@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com, cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com, schwidefsky@de.ibm.com, Rik van Riel <riel@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Ingo Molnar wrote:
-> touching the 'timer tick' is the wrong approach. 'stolen time' only 
-> matters to the /scheduler tick/. So extend the hypervisor interface to 
-> allow the injection of 'virtual' scheduler tick events: via the use of a 
-> special clockevents device - do not change clockevents itself.
+http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
-I didn't.  I was using sloppy terminology: I hang the stolen time
-accounting off the Xen timer interrupt routine, just so that it gets run
-every now and again.
 
-I suppose I could explicitly hook stolen time accounting into the
-scheduler, but its not obvious to me that it's necessary.
 
-    J
+
+
+------- Additional Comments From yann@kierun.org  2007-03-14 14:04 -------
+I have the same problem booting from CD (Gentoo, Ubuntu and Fedora core) iwth my
+dual AMD64 X2.  Setting the kernel to acpi=off does not work either.  The kernel
+panics.
+
+I'm happy to test a new kernel but since I do not have a Linux install, it maybe
+hard.  Still, please let me know (yann-AT-kierun-org) if I can test this. 
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
