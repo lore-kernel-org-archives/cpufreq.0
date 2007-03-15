@@ -1,49 +1,34 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: Stolen and degraded time and schedulers
-Date: Thu, 15 Mar 2007 16:14:50 -0400
-Message-ID: <45F9A93A.2030400@redhat.com>
-References: <45F6D1D0.6080905@goop.org>	
-	<1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org>
-	<1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org>
-	<45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org>
-	<45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
-	<45F85A62.8050001@vmware.com> <45F85BBB.70707@goop.org>
-	<45F85F43.9030803@vmware.com> <45F866AF.9060609@goop.org>
-	<45F999D4.6080602@vmware.com> <45F9A42D.7090205@goop.org>
-	<45F9A788.1010008@vmware.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <virtualization-bounces@lists.osdl.org>
-In-Reply-To: <45F9A788.1010008@vmware.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
+	structure
+Date: Thu, 15 Mar 2007 13:33:41 -0700
+Message-ID: <200703152033.l2FKXfIH023117@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/virtualization>
-List-Post: <mailto:virtualization@lists.osdl.org>
-List-Help: <mailto:virtualization-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.osdl.org?subject=subscribe>
-Sender: virtualization-bounces@lists.osdl.org
-Errors-To: virtualization-bounces@lists.osdl.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Dan Hecht <dhecht@vmware.com>
-Cc: dwalker@mvista.com, john stultz <johnstul@us.ibm.com>, paulus@au.ibm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, cpufreq@lists.linux.org.uk, schwidefsky@de.ibm.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Dan Hecht wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
-> Yes, the part in the "i.e." above is describing available time.  So, it =
 
-> is essentially is the same definition of stolen time VMI uses:
 
-> stolen time     =3D=3D ready to run but not running
-> available time  =3D=3D running or not ready to run
 
-S390 too.  We were quite careful to make sure that steal time
-means the same on the different platforms when the code was
-introduced.
 
--- =
+------- Additional Comments From mark.langsdorf@amd.com  2007-03-15 13:33 -------
+Is there a way to force the APCI processor module to load before the powernow_k8
+module on your systems?  The failure of the ACPI processor module to load is
+what is causing PowerNow! to fail.
 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
