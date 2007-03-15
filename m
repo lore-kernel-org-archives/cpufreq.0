@@ -1,41 +1,36 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Stolen and degraded time and schedulers
-Date: Thu, 15 Mar 2007 12:53:17 -0700
-Message-ID: <45F9A42D.7090205@goop.org>
-References: <45F6D1D0.6080905@goop.org>	
-	<1173816769.22180.14.camel@localhost>	<45F70A71.9090205@goop.org>
-	<1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org>
-	<45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org>
-	<45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
-	<45F85A62.8050001@vmware.com> <45F85BBB.70707@goop.org>
-	<45F85F43.9030803@vmware.com> <45F866AF.9060609@goop.org>
-	<45F999D4.6080602@vmware.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <virtualization-bounces@lists.osdl.org>
-In-Reply-To: <45F999D4.6080602@vmware.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
+	structure
+Date: Thu, 15 Mar 2007 12:55:07 -0700
+Message-ID: <200703151955.l2FJt742021824@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/virtualization>
-List-Post: <mailto:virtualization@lists.osdl.org>
-List-Help: <mailto:virtualization-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.osdl.org?subject=subscribe>
-Sender: virtualization-bounces@lists.osdl.org
-Errors-To: virtualization-bounces@lists.osdl.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Dan Hecht <dhecht@vmware.com>
-Cc: dwalker@mvista.com, john stultz <johnstul@us.ibm.com>, paulus@au.ibm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, cpufreq@lists.linux.org.uk, schwidefsky@de.ibm.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Dan Hecht wrote:
-> Available time is defined to be (real_time - stolen_time).  i.e. time
-> in which the vcpu is either running or not ready to run [because it is
-> halted, and nothing is pending]).
+http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
-Hm, the Xen definition of stolen time is "time VCPU spent in runnable
-(vs running) or offline state".  If the VCPU was blocked anyway, then
-its never considered to be stolen.  Offline means the VCPU was paused by
-the administrator, or during suspend/resume.
 
-    J
+
+
+
+------- Additional Comments From yann@kierun.org  2007-03-15 12:55 -------
+Created an attachment (id=10783)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10783&action=view)
+Just before kernel crash
+
+This is just before the kernel crash. 
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
