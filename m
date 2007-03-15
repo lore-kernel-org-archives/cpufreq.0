@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
 	structure
-Date: Thu, 15 Mar 2007 12:55:52 -0700
-Message-ID: <200703151955.l2FJtqUT021877@fire-2.osdl.org>
+Date: Thu, 15 Mar 2007 12:56:53 -0700
+Message-ID: <200703151956.l2FJurpa021951@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,12 +25,12 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
 
 
-------- Additional Comments From yann@kierun.org  2007-03-15 12:55 -------
-Created an attachment (id=10784)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=10784&action=view)
-Actual kernel diump trace
+------- Additional Comments From yann@kierun.org  2007-03-15 12:56 -------
+Created an attachment (id=10785)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10785&action=view)
+Just before crash with apci=off option
 
-This is the actual kernel dump trace.
+Just before the kernel apci=off crashes 
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
