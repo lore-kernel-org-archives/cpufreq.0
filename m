@@ -1,36 +1,61 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
-	structure
-Date: Fri, 16 Mar 2007 01:17:26 -0700
-Message-ID: <200703160817.l2G8HQAx012486@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Stolen and degraded time and schedulers
+Date: Fri, 16 Mar 2007 09:38:28 +0100
+Message-ID: <20070316083828.GA22168@elte.hu>
+References: <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org>
+	<1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org>
+	<45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org>
+	<45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org>
+	<20070314203826.GA15394@elte.hu> <45F86247.40109@goop.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Return-path: <virtualization-bounces@lists.osdl.org>
+Content-Disposition: inline
+In-Reply-To: <45F86247.40109@goop.org>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/virtualization>
+List-Post: <mailto:virtualization@lists.osdl.org>
+List-Help: <mailto:virtualization-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.osdl.org?subject=subscribe>
+Sender: virtualization-bounces@lists.osdl.org
+Errors-To: virtualization-bounces@lists.osdl.org
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=8075
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: dwalker@mvista.com, john stultz <johnstul@us.ibm.com>, paulus@au.ibm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, cpufreq@lists.linux.org.uk, schwidefsky@de.ibm.com, Thomas Gleixner <tglx@linutronix.de>
 
 
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
+> Ingo Molnar wrote:
+> > touching the 'timer tick' is the wrong approach. 'stolen time' only =
 
+> > matters to the /scheduler tick/. So extend the hypervisor interface to =
 
-------- Additional Comments From yann@kierun.org  2007-03-16 01:17 -------
-Mark, 
+> > allow the injection of 'virtual' scheduler tick events: via the use of =
+a =
 
-I do not think so.  I have no running system and all installers I have (Gentoo,
-Fedora Core 6, Ubuntu and OpenSuse) do not have much option in what to do.  I
-can pass some arguments to the default kernel but that's it.  
+> > special clockevents device - do not change clockevents itself.
+> =
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+> I didn't.  I was using sloppy terminology: I hang the stolen time =
+
+> accounting off the Xen timer interrupt routine, just so that it gets =
+
+> run every now and again.
+
+i dont understand: how are you separating 'stolen time' drifts from =
+
+events generated for absolute timeouts?
+
+> I suppose I could explicitly hook stolen time accounting into the =
+
+> scheduler, but its not obvious to me that it's necessary.
+
+right now i dont see any clean way to solve this problem without having =
+
+two clockevents drivers: one for the scheduler, one for timer events.
+
+	Ingo
