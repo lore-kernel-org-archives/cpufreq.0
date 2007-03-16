@@ -1,69 +1,38 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: Report the number of processors in PowerNow-k8 correctly
-Date: Fri, 16 Mar 2007 10:50:26 -0500
-Message-ID: <1449F58C868D8D4E9C72945771150BDFD96723@SAUSEXMB1.amd.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: Stolen and degraded time and schedulers
+Date: Fri, 16 Mar 2007 09:53:34 -0700
+Message-ID: <45FACB8E.7000505@goop.org>
+References: <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <20070314203826.GA15394@elte.hu> <45F86247.40109@goop.org> <20070316083828.GA22168@elte.hu>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C767E2.D0D85ADB"
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C767E2.D0D85ADB
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-
-The PowerNow! driver for Opteron reports the number of
-cores in the system, but claims to report the number of
-processors.  Fix this minor cosmetic bug.
-
-Signed-Off-by: Bhavana Nagendra <bhavana.nagendra@amd.com>
-Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
-
-------_=_NextPart_001_01C767E2.D0D85ADB
-Content-Type: application/octet-stream;
- name=Correct_number_of_procs.patch
-Content-Transfer-Encoding: base64
-Content-Description: Correct_number_of_procs.patch
-Content-Disposition: attachment;
- filename=Correct_number_of_procs.patch
-
-LS0tIGxpbnV4LTIuNi4xOC54ODZfNjQvYXJjaC9pMzg2L2tlcm5lbC9jcHUvY3B1ZnJlcS9wb3dl
-cm5vdy1rOC5jLm9yaWcJMjAwNy0wMy0xNSAwNTo1MzoxMi4wMDAwMDAwMDAgLTA0MDANCisrKyBs
-aW51eC0yLjYuMTgueDg2XzY0L2FyY2gvaTM4Ni9rZXJuZWwvY3B1L2NwdWZyZXEvcG93ZXJub3ct
-azguYwkyMDA3LTAzLTE3IDA0OjQwOjQ5LjAwMDAwMDAwMCAtMDQwMA0KQEAgLTE0MjUsOCArMTQy
-NSw4IEBAIHN0YXRpYyBpbnQgX19jcHVpbml0IHBvd2Vybm93azhfaW5pdCh2b2kNCiAJCQl9DQog
-CQl9DQogCQlwcmludGsoS0VSTl9JTkZPIFBGWCAiRm91bmQgJWQgJXMgIg0KLQkJCSJwcm9jZXNz
-b3JzICgiIFZFUlNJT04gIilcbiIsIHN1cHBvcnRlZF9jcHVzLA0KLQkJCWJvb3RfY3B1X2RhdGEu
-eDg2X21vZGVsX2lkKTsNCisJCQkicHJvY2Vzc29ycyAoJWQgY3B1IGNvcmVzKSAoIiBWRVJTSU9O
-ICIpXG4iLCBzdXBwb3J0ZWRfY3B1cy9jcHVfZGF0YVswXS5ib290ZWRfY29yZXMsDQorCQkJYm9v
-dF9jcHVfZGF0YS54ODZfbW9kZWxfaWQsIHN1cHBvcnRlZF9jcHVzKTsNCiAJCXJldHVybiBjcHVm
-cmVxX3JlZ2lzdGVyX2RyaXZlcigmY3B1ZnJlcV9hbWQ2NF9kcml2ZXIpOw0KIAl9DQogDQo=
-
-------_=_NextPart_001_01C767E2.D0D85ADB
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965626AbXCPQxf@vger.kernel.org>
+In-Reply-To: <20070316083828.GA22168@elte.hu>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com, cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com, schwidefsky@de.ibm.com, Rik van Riel <riel@redhat.com>
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Ingo Molnar wrote:
+> i dont understand: how are you separating 'stolen time' drifts from 
+> events generated for absolute timeouts?
+>   
 
-------_=_NextPart_001_01C767E2.D0D85ADB--
+I'm not sure what you're asking; I think we're talking past each other.
 
+I can extract from Xen how much time was stolen over some real-time
+interval.  If I call do_stolen_accounting() at any two arbitrary points,
+it will compute the amount of time stolen in the interval.  So that
+means I can call it from time to time to update stolen time.  Of course,
+this accounting will be out of date for a while, but it doesn't matter
+too much.  I call it from the timer interrupt, since it will be called
+occasionally on idle CPUs and often on busy CPUs, which is what we want.
 
+Oh, its worth pointing out that stolen time is accounted against CPUs
+rather than individual processes, so it doesn't need to be related to
+process scheduling.
 
+Also, none of this is in the patch set I posted; I've implemented it
+since, and it will be in the next batch.
+
+    J
