@@ -1,38 +1,33 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Stolen and degraded time and schedulers
-Date: Fri, 16 Mar 2007 09:53:34 -0700
-Message-ID: <45FACB8E.7000505@goop.org>
-References: <1173816769.22180.14.camel@localhost> <45F70A71.9090205@goop.org> <1173821224.1416.24.camel@dwalker1> <45F71EA5.2090203@goop.org> <45F74515.7010808@vmware.com> <45F77C27.8090604@goop.org> <45F846AB.6060200@vmware.com> <45F84E39.7030507@goop.org> <20070314203826.GA15394@elte.hu> <45F86247.40109@goop.org> <20070316083828.GA22168@elte.hu>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965626AbXCPQxf@vger.kernel.org>
-In-Reply-To: <20070316083828.GA22168@elte.hu>
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8228] CPU Scaling doesn't work.
+Date: Sun, 18 Mar 2007 12:34:57 -0700
+Message-ID: <200703181934.l2IJYv91026596@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dan Hecht <dhecht@vmware.com>, dwalker@mvista.com, cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Con Kolivas <kernel@kolivas.org>, Chris Wright <chrisw@sous-sol.org>, Virtualization Mailing List <virtualization@lists.osdl.org>, john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, paulus@au.ibm.com, schwidefsky@de.ibm.com, Rik van Riel <riel@redhat.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Ingo Molnar wrote:
-> i dont understand: how are you separating 'stolen time' drifts from 
-> events generated for absolute timeouts?
->   
+http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
-I'm not sure what you're asking; I think we're talking past each other.
+davej@codemonkey.org.uk changed:
 
-I can extract from Xen how much time was stolen over some real-time
-interval.  If I call do_stolen_accounting() at any two arbitrary points,
-it will compute the amount of time stolen in the interval.  So that
-means I can call it from time to time to update stolen time.  Of course,
-this accounting will be out of date for a while, but it doesn't matter
-too much.  I call it from the timer interrupt, since it will be called
-occasionally on idle CPUs and often on busy CPUs, which is what we want.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+              Owner|akpm@osdl.org               |cpufreq@www.linux.org.uk
+             Status|NEEDINFO                    |NEW
 
-Oh, its worth pointing out that stolen time is accounted against CPUs
-rather than individual processes, so it doesn't need to be related to
-process scheduling.
 
-Also, none of this is in the patch set I posted; I've implemented it
-since, and it will be in the next batch.
 
-    J
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
