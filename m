@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] CPU Scaling doesn't work.
-Date: Mon, 19 Mar 2007 05:02:15 -0700
-Message-ID: <200703191202.l2JC2FM4021246@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Date: Mon, 19 Mar 2007 10:48:49 -0700
+Message-ID: <200703191748.l2JHmnQO000493@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -12,7 +12,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,13 +20,16 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
-trenn@suse.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |trenn@suse.de
 
 
+
+
+------- Additional Comments From alphatrax@t-online.de  2007-03-19 10:48 -------
+Created an attachment (id=10839)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10839&action=view)
+dmesg output :)
+
+If you need any more information please contact me. :)
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
