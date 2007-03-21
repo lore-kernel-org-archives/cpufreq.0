@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8243] Problem with Throttling and CPU power state
-Date: Wed, 21 Mar 2007 01:28:13 -0700
-Message-ID: <200703210828.l2L8SDAY010556@fire-2.osdl.org>
+Date: Wed, 21 Mar 2007 09:22:10 -0700
+Message-ID: <200703211622.l2LGMA2G027484@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,9 +24,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8243
 
 
 
-------- Additional Comments From akolisek@linuxx.hyperlinx.cz  2007-03-21 01:28 -------
-Sorry, bug is present in 2.6.20.X (my current kernel is 2.6.20.3, this bug is
-present in 2.6.20.3 too).
+------- Additional Comments From akpm@osdl.org  2007-03-21 09:22 -------
+OK.  And are you able to identify the most recent kernel which did not have this
+bug?  So we can work out when it was introduced?
+
+Thanks.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
