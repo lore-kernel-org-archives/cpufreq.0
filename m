@@ -1,12 +1,8 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Report the number of processors in PowerNow-k8 correctly
-Date: Thu, 22 Mar 2007 16:56:30 -0400
-Message-ID: <20070322205630.GC9763@redhat.com>
-References: <1449F58C868D8D4E9C72945771150BDFD96723@SAUSEXMB1.amd.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1449F58C868D8D4E9C72945771150BDFD96723@SAUSEXMB1.amd.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8228] CPU Scaling doesn't work.
+Date: Sat, 24 Mar 2007 05:16:28 -0700
+Message-ID: <200703241216.l2OCGSLm024790@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,25 +12,26 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Fri, Mar 16, 2007 at 10:50:26AM -0500, Langsdorf, Mark wrote:
- > The PowerNow! driver for Opteron reports the number of
- > cores in the system, but claims to report the number of
- > processors.  Fix this minor cosmetic bug.
- > 
- > Signed-Off-by: Bhavana Nagendra <bhavana.nagendra@amd.com>
- > Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
-MIME, and ^M damaged.
 
-Please resend a patch that git-apply will eat.
 
-	Dave
 
--- 
-http://www.codemonkey.org.uk
+
+------- Additional Comments From alphatrax@t-online.de  2007-03-24 05:16 -------
+Created an attachment (id=10930)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10930&action=view)
+cat /proc/cpuinfo output
+
+Someone of the Ubuntu Team has commited a patch but I don't want to recompile
+my kernel so I need to wait until the patch gets merged into the standard
+kernel. I'll report back as soon as this happens.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
