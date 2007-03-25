@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Sat, 24 Mar 2007 16:48:31 -0700
-Message-ID: <200703242348.l2ONmV1d011854@fire-2.osdl.org>
+Subject: [Bug 8228] CPU Scaling doesn't work.
+Date: Sun, 25 Mar 2007 00:42:12 -0700
+Message-ID: <200703250742.l2P7gCGd004356@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,19 +18,18 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8255
-
-dsd@gentoo.org changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |kernel@gentoo.org
+http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Additional Comments From dsd@gentoo.org  2007-03-24 16:48 -------
-This is a 2.6.19 regression (2.6.18 was OK) which has been reproduced as of
-2.6.21-rc3
+
+
+------- Additional Comments From alphatrax@t-online.de  2007-03-25 00:42 -------
+FATAL: Error inserting acpi_cpufreq 
+(/lib/modules/2.6.20-12-generic/kernel/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.ko): 
+No such device
+
+I don't know what DTRT means. :)
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
