@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load
-Date: Sun, 25 Mar 2007 20:12:09 -0700
-Message-ID: <200703260312.l2Q3C9rU002885@fire-2.osdl.org>
+Date: Sun, 25 Mar 2007 21:26:50 -0700
+Message-ID: <200703260426.l2Q4QoPf004745@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,22 +20,15 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
-len.brown@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |acpi-
-                   |                            |bugzilla@lists.sourceforge.n
-                   |                            |et
-            Summary|CPU Scaling doesn't work.   |acpi-cpufreq does not load
 
 
 
-------- Additional Comments From len.brown@intel.com  2007-03-25 20:12 -------
-rather than just the DSDT, please attach the complete output from acpidump.
-If the distro doesn't have it, you can get a copy of the acpidump
-utility in the latest pmtools there:
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
+
+------- Additional Comments From alphatrax@t-online.de  2007-03-25 21:26 -------
+Created an attachment (id=10944)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10944&action=view)
+dsdt.log
+
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
