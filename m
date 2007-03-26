@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Mon, 26 Mar 2007 12:52:22 -0700
-Message-ID: <200703261952.l2QJqMbV032239@fire-2.osdl.org>
+Date: Mon, 26 Mar 2007 13:07:01 -0700
+Message-ID: <200703262007.l2QK71Dn032763@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,20 +25,24 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Additional Comments From alphatrax@t-online.de  2007-03-26 12:52 -------
-I'm unsure if Bug 8245 really is a duplicate as I'm was also using 6.10 Edgy 
-and 6.06 Dapper and this bug was always present.
-In Bug 8245 Daniel Swarbrick said:
+------- Additional Comments From alphatrax@t-online.de  2007-03-26 13:06 -------
+Created an attachment (id=10951)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10951&action=view)
+dmesg log with current kernel with linux-phc
 
-> Under 2.6.17 (Ubuntu 6.10), speedstep-centrino loads successfully, and the
-> frequency scales from 600MHz to 1.6GHz as it should. acpi-cpufreq fails to > 
-> load
-> with ENODEV.
+Oh I forgot to mention - the Kernel I'm using now is another one than the one I
+was using when I first reported this Bug. The one I'm using now is the one with
+Ubuntu's fix (about the linux-phc tables).
+The one I'm using now is: 
+2.6.20-13-generic #2 SMP
+and I was using 2.6.20-12.
 
-For me it was the same problem as no - no scaling at all.
+What I want to say is, the dmesg.log and cpuinfo.log where from another kernel
+without the phc stuff.
 
-If there's any information needed please tell me. I don't have anything to do 
-with kernels and stuff I'm just a normal Linux user. ;)
+I've attached the new dmesg output as dmesg2.log - maybe that explains the
+differences. But as you know I absolutely don't know anything about kernel
+stuff and how all that stuff works.
 
 ------- You are receiving this mail because: -------
 You are on the CC list for the bug, or are watching someone who is.
