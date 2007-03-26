@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] CPU Scaling doesn't work.
-Date: Sun, 25 Mar 2007 17:52:52 -0700
-Message-ID: <200703260052.l2Q0qqxM031724@fire-2.osdl.org>
+Subject: [Bug 8228] acpi-cpufreq does not load
+Date: Sun, 25 Mar 2007 20:12:09 -0700
+Message-ID: <200703260312.l2Q3C9rU002885@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,17 +20,22 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
+len.brown@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |acpi-
+                   |                            |bugzilla@lists.sourceforge.n
+                   |                            |et
+            Summary|CPU Scaling doesn't work.   |acpi-cpufreq does not load
 
 
 
-
-------- Additional Comments From davej@codemonkey.org.uk  2007-03-25 17:52 -------
-merging linux-phc is not the right way to fix this.
-
-I truly hope that Ubuntu haven't merged that stuff in their kernel.  Forking
-whole subsystems (especially ones that are unlikely to ever get merged back)
-isn't the way to get stuff fixed in the upstream kernel.
-
+------- Additional Comments From len.brown@intel.com  2007-03-25 20:12 -------
+rather than just the DSDT, please attach the complete output from acpidump.
+If the distro doesn't have it, you can get a copy of the acpidump
+utility in the latest pmtools there:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
