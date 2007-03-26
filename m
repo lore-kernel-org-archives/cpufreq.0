@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
 	dualcore AMD64
-Date: Mon, 26 Mar 2007 14:01:02 -0700
-Message-ID: <200703262101.l2QL12cV002017@fire-2.osdl.org>
+Date: Mon, 26 Mar 2007 15:25:37 -0700
+Message-ID: <200703262225.l2QMPbE0004666@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -21,38 +21,11 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
+cw@f00f.org changed:
 
-
-
-
-------- Additional Comments From mark.langsdorf@amd.com  2007-03-26 14:01 -------
-> ------- Additional Comments From babassu@postmaster.co.uk  
-> 2007-03-26 13:48 -------
-> After some more testing, it happens going from low power to 
-> high power as well.
-
-> Ex. ramp-up from 1Ghz 1.17 V to 2GHz 1.41 V, it changes to 
-> 1.41V but frequency
-> gets stuck at 1GHz (never reaches the desired 2GHz). dmesg 
-> shows again:
-> 
-> [13496.636380] powernow-k8: Hardware error - pending bit very 
-> stuck - no further pstate changes possible
-> [13496.636388] powernow-k8: transition frequency failed
-
-What chipset are you using?  Could you send me the 
-pstate tables the driver prints when it first loads?
-
-At first glance, it looks like you have a hardware error
-(hence the error message saying that).  The processor
-attempted to perform the transition 1000 times and the
-chipset never signaled that it was finished.  
-
--Mark Langsdorf
-Operating Systems Research Center
-AMD, Inc.
-
-
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |cw@f00f.org
 
 
 
