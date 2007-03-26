@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load
-Date: Mon, 26 Mar 2007 04:05:24 -0700
-Message-ID: <200703261105.l2QB5OWP015313@fire-2.osdl.org>
+Date: Mon, 26 Mar 2007 04:06:41 -0700
+Message-ID: <200703261106.l2QB6fDd015351@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,7 +24,7 @@ martin@gamesplace.info changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEEDINFO                    |NEW
+                 CC|                            |martin@gamesplace.info
 
 
 
