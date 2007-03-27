@@ -1,10 +1,13 @@
-From: "nate" <cpufreq@linuxpowered.net>
-Subject: CPU throttling & power conservation expectations
-Date: Tue, 27 Mar 2007 13:35:15 -0700 (PDT)
-Message-ID: <33887.72.165.61.226.1175027715.squirrel@webmail.linuxpowered.net>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: CPU throttling & power conservation expectations
+Date: Tue, 27 Mar 2007 15:54:30 -0500
+Message-ID: <1449F58C868D8D4E9C72945771150BDFD96798@SAUSEXMB1.amd.com>
+References: <33887.72.165.61.226.1175027715.squirrel@webmail.linuxpowered.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
+In-Reply-To: <33887.72.165.61.226.1175027715.squirrel@webmail.linuxpowered.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,46 +19,33 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+To: nate <cpufreq@linuxpowered.net>, cpufreq@lists.linux.org.uk
 
-I've been on this list for about a week and have only seen
-1 email from a human, wonder if anyone else is out there.
+> kernels were primarily 2.6.17-1.2142_FC4smp. I used the
+> p4-clockmod and cpufreq_powersave modules. cpufreq-info
+> reported that the cpus were successfully clocked down to
+> the ~300-400mhz range(forgot exactly what speed).
 
-Anyways I had a quick question on using cpufreq to reduce
-power usage by clocking the CPUs down.
+p4-clockmod throttles the clock frequency but doesn't
+adjust the processor voltage.  You should be using the
+speedstep-centrino or acpi drivers.
+=20
+> I expected at least some reduction in power usage, but
+> to my suprise my intelligent power strips did not report
+> even 0.1 amps(@110V) worth of power savings.
 
-I tested it out on a selection of about a half dozen
-HP DL320G4s running Pentium D 3Ghz, which appear to be
-the '925' model.
+Shouldn't power utilization be measured in watts, not
+amps?  My electrical engineering classes were a long
+time ago.
 
-kernels were primarily 2.6.17-1.2142_FC4smp. I used the
-p4-clockmod and cpufreq_powersave modules. cpufreq-info
-reported that the cpus were successfully clocked down to
-the ~300-400mhz range(forgot exactly what speed).
+I've observed a dual-processor Opteron system pulling=20
+150 watts from the wall at full frequency and voltage,
+and then dropping to 75 watts at a lower pstate.  We
+did this as a demo at Linux World Expo in 2004.
 
-I expected at least some reduction in power usage, but
-to my suprise my intelligent power strips did not report
-even 0.1 amps(@110V) worth of power savings.
+Also see Paul Devriendt's paper on the same:
+http://www.linuxsymposium.org/proceedings/LinuxSymposium2004_V1.pdf
 
-I did the same on a selection of HP DL360G4p systems
-with Xeon 3.0-3.6Ghz, with similar results, no measurable
-drop in power utilization, despite cpufreq saying that
-the cpus were clocked down.
-
-I was just wondering if this mirrors other people's
-experiences or if something is broken.
-
-I do notice of course that power usage goes up if I run
-high loads on the systems. I was just expecting that
-clocking a cpu from 3+Ghz down to sub 500mhz would show
-some measurable amount of power savings, and if not then
-there doesn't seem to be a lot of point in supporting
-these CPUs.
-
-We intend to migrate to a newer distribution soon and I can
-try again on that kernel, but these systems are fairly
-old as-is(especially the DL360G4s).
-
-thanks!
-
-nate
+-Mark Langsdorf
+Operating System Research Center
+AMD, Inc.
