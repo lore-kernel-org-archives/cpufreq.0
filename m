@@ -1,10 +1,8 @@
-From: "Mark Langsdorf" <mark.langsdorf@amd.com>
-Subject: [PATCH][retry] Report the number of processors in PowerNow-k8
- correctly [2/2]
-Date: Tue, 27 Mar 2007 14:23:11 -0500
-Message-ID: <46096F1F.8030201@amd.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
+	dualcore AMD64
+Date: Tue, 27 Mar 2007 12:40:54 -0700
+Message-ID: <200703271940.l2RJesT7011280@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -16,25 +14,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-The PowerNow! driver for Opteron reports the number of cores
-in the system, but claims to report the number of processors.
-Fix this minor cosmetic bug.
+http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
-Signed-Off-By: Bhavana Nagendra <bhavana.nagendra@amd.com>
-Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
---- linux-2.6.18.x86_64/arch/i386/kernel/cpu/cpufreq/powernow-k8.c.orig	2007-03-22 16:13:04.630175768 -0500
-+++ linux-2.6.18.x86_64/arch/i386/kernel/cpu/cpufreq/powernow-k8.c	2007-03-22 16:19:40.153047152 -0500
-@@ -840,7 +840,8 @@ static int powernow_k8_cpu_init_acpi(str
- 
- 	/* fill in data */
- 	data->numps = data->acpi_data.state_count;
--	print_basics(data);
-+	if (first_cpu(cpu_core_map[data->cpu]) == data->cpu)
-+		print_basics(data);
- 	powernow_k8_acpi_pst_values(data, 0);
- 
- 	/* notify BIOS that we exist */
+
+
+
+------- Additional Comments From babassu@postmaster.co.uk  2007-03-27 12:40 -------
+Fair enough. I will try to compile some variants and try them.
+>>Your issue with 
+>>	u32 i = 0;
+>>is what, exactly?
+
+I was just glancing at the line
+  i = lo & HW_PSTATE_MASK;
+just before the loop trying to figure out what is the starting value of
+i(fortunately the mask is just 0x07 making for a small number)
+
+I noticed this function too trying to do a delay I think:
+count_off_irt(data);
+
+Can we put it inside the do loop after setting the MSR ?
+
+Thank you.
+
+
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
