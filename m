@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
 	dualcore AMD64
-Date: Wed, 28 Mar 2007 21:01:21 -0700
-Message-ID: <200703290401.l2T41LAa001744@fire-2.osdl.org>
+Date: Wed, 28 Mar 2007 21:09:26 -0700
+Message-ID: <200703290409.l2T49QT4001929@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,22 +25,13 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
 
 
-------- Additional Comments From babassu@postmaster.co.uk  2007-03-28 21:01 -------
-I finaly built the new kernel (what an adventure when you have kernel tools from
-Ubuntu edgy with kernel source from feisty - the make-kpkg would not add
-vmlinuz* to the pkg).
-I have increased the loop in "query_current_values_with_pending_wait" by a
-factor of 10 (100000). The problem is gone.
-Now it is time for experimenting. This is likely going to take some time. I will
-keep you posted with my experiments. Unfortunately I have only one machine
-available and cannot mess with it too much.
-I believe that the loop may be replaced by a timed wait that does not depend of
-the CPU freq (something like udelay/mdelay/sleep with a time value). This
-reminds me of the Win9x boot problem with AMD K6 I think when some counter was
-going to fast.
-Also it would help if the module would recover from the "pending bit stuck
-state" somehow without the need to reboot the kernel (I hate reboots).
+------- Additional Comments From babassu@postmaster.co.uk  2007-03-28 21:09 -------
+Created an attachment (id=10988)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=10988&action=view)
+dmesg output with some debug prior to the problem
 
+I spoke too soon. Here is some debug info I captured prior to the bit getting
+stuck.
 
 ------- You are receiving this mail because: -------
 You are on the CC list for the bug, or are watching someone who is.
