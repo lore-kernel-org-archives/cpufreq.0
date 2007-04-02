@@ -1,14 +1,12 @@
-From: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
-Date: Mon, 2 Apr 2007 18:55:55 +0200
-Message-ID: <200704021855.55935.ak@suse.de>
-References: <20070402113831.GA6785@localhost.sw.ru>
-	<200704021410.29623.ak@suse.de> <46112D40.20508@zytor.com>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 3/3] cpuid: switch to cpuid_on_cpu()
+Date: Mon, 02 Apr 2007 16:25:42 -0700
+Message-ID: <461190F6.3060108@zytor.com>
+References: <20070402113947.GC6785@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <46112D40.20508@zytor.com>
-Content-Disposition: inline
+In-Reply-To: <20070402113947.GC6785@localhost.sw.ru>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,14 +17,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: akpm@osdl.org, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@sw.ru>, devel@openvz.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: akpm@osdl.org, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, ak@suse.de, devel@openvz.org
 
+Alexey Dobriyan wrote:
+> Now that cpuid_on_cpu() is in core, cpuid driver can be shrinked.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
 
-> The CPUID and MSR drivers do not schedule to the target CPU; instead, on 
-> hardware,
+Hi Alexey,
 
-But powernow-k8 does.
+This, and your other changes in this area does conflict with the work 
+that I've been doing on extending the usability of the CPUID and MSR 
+drivers (which is part of why this work has dragged out seemingly forever.)
 
--Andi
+I would really appreciate it if we could work together on this; there 
+needs to be new paravirtualization entry points for this.  Consequently, 
+I just updated and uploaded a git tree with the current status.  It 
+still needs porting to x86-64, however.
+
+The current cpuid/msr work is at:
+
+http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-cpuidmsr.git;a=summary
+
+	-hpa
