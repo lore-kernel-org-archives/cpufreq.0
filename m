@@ -1,79 +1,47 @@
-From: Alexey Dobriyan <adobriyan@sw.ru>
-Subject: [PATCH 3/3] cpuid: switch to cpuid_on_cpu()
-Date: Mon, 2 Apr 2007 15:39:47 +0400
-Message-ID: <20070402113947.GC6785@localhost.sw.ru>
+From: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
+Date: Mon, 2 Apr 2007 14:10:29 +0200
+Message-ID: <200704021410.29623.ak@suse.de>
+References: <20070402113831.GA6785@localhost.sw.ru>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753494AbXDBLcz@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933984AbXDBMKo@vger.kernel.org>
+In-Reply-To: <20070402113831.GA6785@localhost.sw.ru>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org, cpufreq@lists.linux.org.uk, hpa@zytor.com, ak@suse.de, davej@codemonkey.org.uk
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org, cpufreq@lists.linux.org.uk, hpa@zytor.com, davej@codemonkey.org.uk
 
-Now that cpuid_on_cpu() is in core, cpuid driver can be shrinked.
+On Monday 02 April 2007 13:38, Alexey Dobriyan wrote:
+> They will be used by cpuid driver and powernow-k8 cpufreq driver.
+> 
+> With these changes powernow-k8 driver could run correctly on OpenVZ kernels
+> with virtual cpus enabled (SCHED_VCPU).
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+This means openvz has multiple virtual CPU levels? One for cpuid/rdmsr and one
+for the rest of the kernel? Both powernow-k8 and cpuid attempt to schedule
+to the target CPU so they should already run there. But it is some other CPU,
+but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
+Where is the difference between these levels of virtualness? 
 
- arch/i386/kernel/cpuid.c |   41 +----------------------------------------
- 1 file changed, 1 insertion(+), 40 deletions(-)
+That sounds quite fragile and will likely break often.  I just rejected a similar 
+concept -- virtual nodes and "physical nodes" for similar reasons.
 
---- a/arch/i386/kernel/cpuid.c
-+++ b/arch/i386/kernel/cpuid.c
-@@ -45,45 +45,6 @@ #include <asm/system.h>
- 
- static struct class *cpuid_class;
- 
--#ifdef CONFIG_SMP
--
--struct cpuid_command {
--	u32 reg;
--	u32 *data;
--};
--
--static void cpuid_smp_cpuid(void *cmd_block)
--{
--	struct cpuid_command *cmd = (struct cpuid_command *)cmd_block;
--
--	cpuid(cmd->reg, &cmd->data[0], &cmd->data[1], &cmd->data[2],
--		      &cmd->data[3]);
--}
--
--static inline void do_cpuid(int cpu, u32 reg, u32 * data)
--{
--	struct cpuid_command cmd;
--
--	preempt_disable();
--	if (cpu == smp_processor_id()) {
--		cpuid(reg, &data[0], &data[1], &data[2], &data[3]);
--	} else {
--		cmd.reg = reg;
--		cmd.data = data;
--
--		smp_call_function_single(cpu, cpuid_smp_cpuid, &cmd, 1, 1);
--	}
--	preempt_enable();
--}
--#else				/* ! CONFIG_SMP */
--
--static inline void do_cpuid(int cpu, u32 reg, u32 * data)
--{
--	cpuid(reg, &data[0], &data[1], &data[2], &data[3]);
--}
--
--#endif				/* ! CONFIG_SMP */
--
- static loff_t cpuid_seek(struct file *file, loff_t offset, int orig)
- {
- 	loff_t ret;
-@@ -119,7 +80,7 @@ static ssize_t cpuid_read(struct file *f
- 		return -EINVAL;	/* Invalid chunk size */
- 
- 	for (; count; count -= 16) {
--		do_cpuid(cpu, reg, data);
-+		cpuid_on_cpu(cpu, reg, &data[0], &data[1], &data[2], &data[3]);
- 		if (copy_to_user(tmp, &data, 16))
- 			return -EFAULT;
- 		tmp += 16;
+Also it has weird semantics. For example if you have multiple
+virtual CPUs mapping to a single CPU then would the powernow-k8 driver
+try to set the frequency multiple times on the same physical CPU? That might
+go wrong actually because the CPU might not be happy to be poked again
+while it is already in a frequency change. Also there is no locking
+so in theory two vcpus might try to change frequency in parallel with
+probably quite bad effects. 
+
+I'm sure there are other scenarios with similar problems. e.g. what
+happens with microcode updates etc.? 
+
+Before adding any hacks like this I think your vcpu concept
+needs to be discussed properly on l-k. For me it doesn't look like it is 
+something good right now though.
+
+-Andi
