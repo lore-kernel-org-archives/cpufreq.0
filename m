@@ -1,47 +1,53 @@
-From: Andi Kleen <ak@suse.de>
+From: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH 1/3] Introduce cpuid_on_cpu() and cpuid_eax_on_cpu()
-Date: Mon, 2 Apr 2007 14:10:29 +0200
-Message-ID: <200704021410.29623.ak@suse.de>
+Date: Mon, 02 Apr 2007 09:20:16 -0700
+Message-ID: <46112D40.20508@zytor.com>
 References: <20070402113831.GA6785@localhost.sw.ru>
+	<200704021410.29623.ak@suse.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933984AbXDBMKo@vger.kernel.org>
-In-Reply-To: <20070402113831.GA6785@localhost.sw.ru>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <200704021410.29623.ak@suse.de>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org, cpufreq@lists.linux.org.uk, hpa@zytor.com, davej@codemonkey.org.uk
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andi Kleen <ak@suse.de>
+Cc: akpm@osdl.org, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@sw.ru>, devel@openvz.org
 
-On Monday 02 April 2007 13:38, Alexey Dobriyan wrote:
-> They will be used by cpuid driver and powernow-k8 cpufreq driver.
+Andi Kleen wrote:
+> On Monday 02 April 2007 13:38, Alexey Dobriyan wrote:
+>> They will be used by cpuid driver and powernow-k8 cpufreq driver.
+>>
+>> With these changes powernow-k8 driver could run correctly on OpenVZ kernels
+>> with virtual cpus enabled (SCHED_VCPU).
 > 
-> With these changes powernow-k8 driver could run correctly on OpenVZ kernels
-> with virtual cpus enabled (SCHED_VCPU).
+> This means openvz has multiple virtual CPU levels? One for cpuid/rdmsr and one
+> for the rest of the kernel? Both powernow-k8 and cpuid attempt to schedule
+> to the target CPU so they should already run there. But it is some other CPU,
+> but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
+> Where is the difference between these levels of virtualness? 
+> 
 
-This means openvz has multiple virtual CPU levels? One for cpuid/rdmsr and one
-for the rest of the kernel? Both powernow-k8 and cpuid attempt to schedule
-to the target CPU so they should already run there. But it is some other CPU,
-but when they ask your _on_cpu() functions they suddenly get a "real" CPU?
-Where is the difference between these levels of virtualness? 
+The CPUID and MSR drivers do not schedule to the target CPU; instead, on 
+hardware, they rely on IPI'ing the target processor if it is not the one 
+that's currently running.
 
-That sounds quite fragile and will likely break often.  I just rejected a similar 
-concept -- virtual nodes and "physical nodes" for similar reasons.
+There were a lot of discussion back when about which was the better 
+solution.  Alan Cox, in particular, really preferred the interrupt 
+solution as being less likely to cause implicit deadlock.
 
-Also it has weird semantics. For example if you have multiple
-virtual CPUs mapping to a single CPU then would the powernow-k8 driver
-try to set the frequency multiple times on the same physical CPU? That might
-go wrong actually because the CPU might not be happy to be poked again
-while it is already in a frequency change. Also there is no locking
-so in theory two vcpus might try to change frequency in parallel with
-probably quite bad effects. 
+I do want to add that it's been on my list for some time -- in fact, I 
+keep implementing it half-way and then having other things to do -- to 
+add MSR and CPUID ioctls() that allow the full register file to be set 
+and read back, in order to support architecturally broken MSR and CPUID 
+levels.
 
-I'm sure there are other scenarios with similar problems. e.g. what
-happens with microcode updates etc.? 
-
-Before adding any hacks like this I think your vcpu concept
-needs to be discussed properly on l-k. For me it doesn't look like it is 
-something good right now though.
-
--Andi
+	-hpa
