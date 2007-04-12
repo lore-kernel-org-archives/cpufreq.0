@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Wed, 11 Apr 2007 07:52:57 -0700
-Message-ID: <200704111452.l3BEqvWl010017@fire-2.osdl.org>
+Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
+	M1437G - Intel(R) Pentium(R) M
+Date: Thu, 12 Apr 2007 02:08:29 -0700
+Message-ID: <200704120908.l3C98TPS003479@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,27 +19,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8255
+http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
 
 
-------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-04-11 07:52 -------
-This bug seems not to be of much interest...
-I would love to look myself but I am really a noob. Could at least someone give
-me a hint, which piece of code is responsible to set these:
-
-state count:             5
-active state:            P0
-states:
-   *P0:                  950 MHz, 24000 mW, 125 uS
-    P1:                  750 MHz, 16337 mW, 125 uS
-    P2:                  700 MHz, 15248 mW, 125 uS
-    P3:                  600 MHz, 12084 mW, 125 uS
-    P4:                  500 MHz, 9280 mW, 125 uS
-
-Thanks.
+------- Additional Comments From rui.zhang@intel.com  2007-04-12 02:08 -------
+>Len, hope this is sufficient info for you. Kernel compiled with cpufreq debug
+>enabled, and booted with cpufreq.debug=7
+Please
+#echo 0x1f >/sys/module/acpi/parameter/debug_level
+and modprobe the cpufreq driver again.
+Hope we can get more information from the _dmesg_ output.
 
 ------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+You are on the CC list for the bug, or are watching someone who is.
