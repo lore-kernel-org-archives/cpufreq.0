@@ -1,9 +1,14 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
-	M1437G - Intel(R) Pentium(R) M
-Date: Thu, 12 Apr 2007 02:08:29 -0700
-Message-ID: <200704120908.l3C98TPS003479@fire-2.osdl.org>
+From: claudio <claudioeddy@gmail.com>
+Subject: help with po
+Date: Sun, 15 Apr 2007 10:55:47 -0400
+Message-ID: <bb5d68b20704150755x500932a7je2da368ed34e9e44@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
+	h=domainkey-signature:received:received:message-id:date:from:to:subject:mime-version:content-type;
+	b=Ubz6qt1JzV1+wAurndIAyX9Yvg8Znqd7WRUTvS0Q89rdHI+BZEnbpbg755dgk4r/YCFbUppwYnEH7rDFU+g6jZ+Abdydco60Tlva8HVLRWjJJf/fCCSqZZaspbg1iX9Vl4BoMjWHXQb3K7G5UI0G0NSHxbKMuACP3Z6CGTZRsaw=
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,24 +19,10 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8228
-
-
-
-
-
-------- Additional Comments From rui.zhang@intel.com  2007-04-12 02:08 -------
->Len, hope this is sufficient info for you. Kernel compiled with cpufreq debug
->enabled, and booted with cpufreq.debug=7
-Please
-#echo 0x1f >/sys/module/acpi/parameter/debug_level
-and modprobe the cpufreq driver again.
-Hope we can get more information from the _dmesg_ output.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+I'd like to know what I need to post my .po in portuguese for cpufreq so
+that it can be utilzed because it's been larged used here in Brazil (I'm in
+a project that needs it =) )
+thanx
