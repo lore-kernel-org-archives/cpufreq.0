@@ -1,16 +1,8 @@
-From: Roberto Gordo Saez <roberto.gordo@gmail.com>
-Subject: Re: Voltage tweaking in powernow_k8
-Date: Mon, 16 Apr 2007 17:25:52 +0200
-Message-ID: <46239583.67d3ffa6.271c.2ed5@mx.google.com>
-References: <20070415171810.GA3096@thing.nowhere>
-	<1449F58C868D8D4E9C72945771150BDF02076D07@SAUSEXMB1.amd.com>
-Mime-Version: 1.0
+From: Rafal Bilski <rafalbilski@interia.pl>
+Subject: [PATCH] Longhaul - Revert ACPI C3 on Longhaul ver. 2
+Date: Thu, 19 Apr 2007 08:28:03 +0200
+Message-ID: <11769640832644-git-send-email-rafalbilski@interia.pl>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:date:from:to:subject:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:message-id;
-	b=WTZaNRa5rWJlXLdPk5/Zy57Klk38rwxNQPSOdgpGidphh/fU+DvMvv46LPHYfY/yjMP7iHaPDo6ecf09wDGl001bkF6Z+Oa+ZFFQb9N4zcaR1gob93eeyiyhWZ5cevK3Zmrslsz1Upk0FVqJcwlAVpXw5lek+xNTFTJDk+6tuBM=
-Content-Disposition: inline
-In-Reply-To: <1449F58C868D8D4E9C72945771150BDF02076D07@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,35 +13,41 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>, cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq@lists.linux.org.uk
 
-On Mon, Apr 16, 2007 at 08:55:38AM -0500, Langsdorf, Mark wrote:
-> AMD policy is that the ACPI values must be used.  I
-> can't support a patch that overrides the ACPI values.
-> 
-> I have no objection to it being in the code, but I
-> can't support it.
+Support for Longhaul ver. 2 broke driver for VIA C3 Eden
+600MHz with Samuel 2 core. Processor is not able to switch
+frequency anymore. I don't know much about this issue at
+the moment, but until (if ever) I will know why, this part
+should be reversed. I hope it isn't to late to include it in
+2.6.21.
 
-Hi, thanks for replying.
+Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
+---
+ arch/i386/kernel/cpu/cpufreq/longhaul.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I understand your position about this. Please, correct me if I'm
-giving a wrong interpretation to your message; in the way I read it,
-you are unable to support those changes (because of your position at
-AMD you are required to strictly follow the policy), but you could
-live with those changes provided that your name is not attached to
-them...
+diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+index a1f1b71..2b030d6 100644
+--- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
++++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+@@ -758,7 +758,7 @@ static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
+ 				NULL, (void *)&pr);
+ 
+ 	/* Check ACPI support for C3 state */
+-	if (pr != NULL && longhaul_version != TYPE_LONGHAUL_V1) {
++	if (pr != NULL && longhaul_version == TYPE_POWERSAVER) {
+ 		cx = &pr->power.states[ACPI_STATE_C3];
+ 		if (cx->address > 0 && cx->latency <= 1000) {
+ 			longhaul_flags |= USE_ACPI_C3;
+-- 
+1.5.0.6
 
-Admittely, it is not such an elegant solution, but people are indeed
-doing other hacks anyway, like statically overriding the ACPI table
-with a hacked DSDT at kernel compile time (distributions like gentoo
-have HOWTOs for this). I'm not sure if this would be a preferred
-approach, but it does look even uglier to me. If you have any
-suggestion or alternative proposal, I would be interested in your
-opinion.
 
-It may be a good idea to print warnings when the parameter is used,
-to clearly state the unsupported and potentally dangerous effect of
-the parameter (though it would not be enough to change your view,
-I guess...).
+----------------------------------------------------------------------
+Playery MP3 za drogie?
+Sprawdz, kto ma najtaniej >> http://link.interia.pl/f1a63
