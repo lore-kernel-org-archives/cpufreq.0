@@ -1,8 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 2/2] Remove deprecated /proc/acpi/processor/performance
-	write support
-Date: Thu, 19 Apr 2007 15:49:09 +0200
-Message-ID: <1176990549.1231.393.camel@queen.suse.de>
+Subject: [PATCH 1/2] Fix limited cpufreq when booted on battery
+Date: Thu, 19 Apr 2007 15:48:34 +0200
+Message-ID: <1176990514.1231.392.camel@queen.suse.de>
 Reply-To: trenn@suse.de
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -21,168 +20,63 @@ Content-Type: text/plain; charset="us-ascii"
 To: cpufreq <cpufreq@lists.linux.org.uk>
 Cc: Dave Jones <davej@redhat.com>
 
-I also sent this a while ago and got a ok from Dominik.
-Don't know how to provide a link to the archive, the link added at each
-mail posted to the cpufreq list at the end:
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-seems to be dead.
+Hi,
 
-The message was:
------------------------------------------------------------
-Mon, 2 Oct 2006 20:29
-Re: [PATCH] Disallow writing to /proc/acpi/processor/xy/performance
+References:
+https://bugzilla.novell.com/show_bug.cgi?id=231107
+https://bugzilla.novell.com/show_bug.cgi?id=264077
 
-On Thu, Aug 17, 2006 at 05:01:26PM +0200, Thomas Renninger wrote:
-> On Thu, 2006-08-17 at 16:51 +0200, Thomas Renninger wrote:
-> > Makes the cpufreq stuff at least a bit easier...
-> > 
-> > Compile tested, patched against 2.6.18-rc2
-
-Somehow I like this patch. What's the status on it?
-
-Thanks,
-        Dominik
------------------------------------------------------------
-
-So here it is again, can it please be added in 2.6.22.
+I already posted this a while ago..., hopefully it's picked up for
+2.6.22 now.
 
 Thanks,
 
-    Thomas
+   Thomas
 
-Remove deprecated /proc/acpi/processor/performance write support
+Fix limited cpufreq when booted on battery
 
-Writing to /proc/acpi/processor/xy/performance interferes with sysfs
-cpufreq interface. Also removes buggy cpufreq_set_policy exported symbol.
+If booted on battery:
+cpufreq_set_policy (evil) is invoked which calls verify_within_limits.
+max_freq gets lowered and therefore users_policy.max, which
+is used to restore higher freqs via update_policy later is set to the
+already limited frequency -> you can never go up again, even BIOS
+allows higher freqs later.
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 
 ---
- drivers/acpi/processor_perflib.c |   45 ---------------------------------------
- drivers/cpufreq/cpufreq.c        |   37 --------------------------------
- include/linux/cpufreq.h          |    1 
- 3 files changed, 1 insertion(+), 82 deletions(-)
+ drivers/cpufreq/cpufreq.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.20/drivers/cpufreq/cpufreq.c
+Index: linux-2.6.21-rc3/drivers/cpufreq/cpufreq.c
 ===================================================================
---- linux-2.6.20.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.20/drivers/cpufreq/cpufreq.c
-@@ -1626,43 +1626,6 @@ error_out:
- }
+--- linux-2.6.21-rc3.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6.21-rc3/drivers/cpufreq/cpufreq.c
+@@ -768,7 +768,10 @@ static int cpufreq_add_dev (struct sys_d
+ 		unlock_policy_rwsem_write(cpu);
+ 		goto err_out;
+ 	}
+-
++	policy->user_policy.min = policy->cpuinfo.min_freq;
++	policy->user_policy.max = policy->cpuinfo.max_freq;
++	policy->user_policy.governor = policy->governor;
++	
+ #ifdef CONFIG_SMP
+ 	for_each_cpu_mask(j, policy->cpus) {
+ 		if (cpu == j)
+@@ -858,10 +861,13 @@ static int cpufreq_add_dev (struct sys_d
  
- /**
-- *	cpufreq_set_policy - set a new CPUFreq policy
-- *	@policy: policy to be set.
-- *
-- *	Sets a new CPU frequency and voltage scaling policy.
-- */
--int cpufreq_set_policy(struct cpufreq_policy *policy)
--{
--	int ret = 0;
--	struct cpufreq_policy *data;
--
--	if (!policy)
--		return -EINVAL;
--
--	data = cpufreq_cpu_get(policy->cpu);
--	if (!data)
--		return -EINVAL;
--
--	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
--		return -EINVAL;
--
--
--	ret = __cpufreq_set_policy(data, policy);
--	data->user_policy.min = data->min;
--	data->user_policy.max = data->max;
--	data->user_policy.policy = data->policy;
--	data->user_policy.governor = data->governor;
--
--	unlock_policy_rwsem_write(policy->cpu);
--
--	cpufreq_cpu_put(data);
--
--	return ret;
--}
--EXPORT_SYMBOL(cpufreq_set_policy);
--
--
--/**
-  *	cpufreq_update_policy - re-evaluate an existing cpufreq policy
-  *	@cpu: CPU which shall be re-evaluated
-  *
-Index: linux-2.6.20/include/linux/cpufreq.h
-===================================================================
---- linux-2.6.20.orig/include/linux/cpufreq.h
-+++ linux-2.6.20/include/linux/cpufreq.h
-@@ -257,7 +257,6 @@ struct freq_attr {
- /*********************************************************************
-  *                        CPUFREQ 2.6. INTERFACE                     *
-  *********************************************************************/
--int cpufreq_set_policy(struct cpufreq_policy *policy);
- int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
- int cpufreq_update_policy(unsigned int cpu);
+ 	policy->governor = NULL; /* to assure that the starting sequence is
+ 				  * run in cpufreq_set_policy */
+-	unlock_policy_rwsem_write(cpu);
  
-Index: linux-2.6.20/drivers/acpi/processor_perflib.c
-===================================================================
---- linux-2.6.20.orig/drivers/acpi/processor_perflib.c
-+++ linux-2.6.20/drivers/acpi/processor_perflib.c
-@@ -433,49 +433,6 @@ static int acpi_processor_perf_open_fs(s
- 			   PDE(inode)->data);
- }
- 
--static ssize_t
--acpi_processor_write_performance(struct file *file,
--				 const char __user * buffer,
--				 size_t count, loff_t * data)
--{
--	int result = 0;
--	struct seq_file *m = file->private_data;
--	struct acpi_processor *pr = m->private;
--	struct acpi_processor_performance *perf;
--	char state_string[12] = { '\0' };
--	unsigned int new_state = 0;
--	struct cpufreq_policy policy;
--
--
--	if (!pr || (count > sizeof(state_string) - 1))
--		return -EINVAL;
--
--	perf = pr->performance;
--	if (!perf)
--		return -EINVAL;
--
--	if (copy_from_user(state_string, buffer, count))
--		return -EFAULT;
--
--	state_string[count] = '\0';
--	new_state = simple_strtoul(state_string, NULL, 0);
--
--	if (new_state >= perf->state_count)
--		return -EINVAL;
--
--	cpufreq_get_policy(&policy, pr->id);
--
--	policy.cpu = pr->id;
--	policy.min = perf->states[new_state].core_frequency * 1000;
--	policy.max = perf->states[new_state].core_frequency * 1000;
--
--	result = cpufreq_set_policy(&policy);
--	if (result)
--		return result;
--
--	return count;
--}
--
- static void acpi_cpufreq_add_file(struct acpi_processor *pr)
- {
- 	struct proc_dir_entry *entry = NULL;
-@@ -487,7 +444,7 @@ static void acpi_cpufreq_add_file(struct
- 
- 	/* add file 'performance' [R/W] */
- 	entry = create_proc_entry(ACPI_PROCESSOR_FILE_PERFORMANCE,
--				  S_IFREG | S_IRUGO | S_IWUSR,
-+				  S_IFREG | S_IRUGO,
- 				  acpi_device_dir(device));
- 	if (entry){
- 		acpi_processor_perf_fops.write = acpi_processor_write_performance;
+ 	/* set default policy */
+-	ret = cpufreq_set_policy(&new_policy);
++	ret = __cpufreq_set_policy(policy, &new_policy);
++	policy->user_policy.policy = policy->policy;
++
++	unlock_policy_rwsem_write(cpu);
++
+ 	if (ret) {
+ 		dprintk("setting policy failed\n");
+ 		goto err_out_unregister;
