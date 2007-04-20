@@ -1,11 +1,15 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 1/2] Fix limited cpufreq when booted on battery
-Date: Thu, 19 Apr 2007 15:48:34 +0200
-Message-ID: <1176990514.1231.392.camel@queen.suse.de>
-Reply-To: trenn@suse.de
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: RE: Voltage tweaking in powernow_k8
+Date: Fri, 20 Apr 2007 13:35:23 -0500
+Message-ID: <1449F58C868D8D4E9C72945771150BDF02076D28@SAUSEXMB1.amd.com>
+References: <20070415171810.GA3096@thing.nowhere>
+	<1449F58C868D8D4E9C72945771150BDF02076D07@SAUSEXMB1.amd.com>
+	<46239583.67d3ffa6.271c.2ed5@mx.google.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
+In-Reply-To: <46239583.67d3ffa6.271c.2ed5@mx.google.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,66 +21,47 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq <cpufreq@lists.linux.org.uk>
-Cc: Dave Jones <davej@redhat.com>
+To: Roberto Gordo Saez <roberto.gordo@gmail.com>, cpufreq@lists.linux.org.uk
 
-Hi,
+=20
 
-References:
-https://bugzilla.novell.com/show_bug.cgi?id=231107
-https://bugzilla.novell.com/show_bug.cgi?id=264077
+> -----Original Message-----
+> From: Roberto Gordo Saez [mailto:roberto.gordo@gmail.com]=20
+> Sent: Monday, April 16, 2007 10:26 AM
+> To: Langsdorf, Mark; cpufreq@lists.linux.org.uk
+> Subject: Re: Voltage tweaking in powernow_k8
+>=20
+> On Mon, Apr 16, 2007 at 08:55:38AM -0500, Langsdorf, Mark wrote:
+> > AMD policy is that the ACPI values must be used.  I
+> > can't support a patch that overrides the ACPI values.
+> >=20
+> > I have no objection to it being in the code, but I
+> > can't support it.
+>=20
+> Hi, thanks for replying.
+>=20
+> I understand your position about this. Please, correct me if I'm
+> giving a wrong interpretation to your message; in the way I read it,
+> you are unable to support those changes (because of your position at
+> AMD you are required to strictly follow the policy), but you could
+> live with those changes provided that your name is not attached to
+> them...
 
-I already posted this a while ago..., hopefully it's picked up for
-2.6.22 now.
+Correct.
 
-Thanks,
+Also, if I make changes to the driver for future processors, or
+to fix bugs, I won't make any great effort to fix bugs in this
+code or to make sure my code supports this code.  And I will not
+do bug fixes on this code.
 
-   Thomas
+> It may be a good idea to print warnings when the parameter is used,
+> to clearly state the unsupported and potentally dangerous effect of
+> the parameter (though it would not be enough to change your view,
+> I guess...).
 
-Fix limited cpufreq when booted on battery
+I still wouldn't be able to support it, no.  That's out of my
+hands.
 
-If booted on battery:
-cpufreq_set_policy (evil) is invoked which calls verify_within_limits.
-max_freq gets lowered and therefore users_policy.max, which
-is used to restore higher freqs via update_policy later is set to the
-already limited frequency -> you can never go up again, even BIOS
-allows higher freqs later.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-
----
- drivers/cpufreq/cpufreq.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.21-rc3/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.21-rc3.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.21-rc3/drivers/cpufreq/cpufreq.c
-@@ -768,7 +768,10 @@ static int cpufreq_add_dev (struct sys_d
- 		unlock_policy_rwsem_write(cpu);
- 		goto err_out;
- 	}
--
-+	policy->user_policy.min = policy->cpuinfo.min_freq;
-+	policy->user_policy.max = policy->cpuinfo.max_freq;
-+	policy->user_policy.governor = policy->governor;
-+	
- #ifdef CONFIG_SMP
- 	for_each_cpu_mask(j, policy->cpus) {
- 		if (cpu == j)
-@@ -858,10 +861,13 @@ static int cpufreq_add_dev (struct sys_d
- 
- 	policy->governor = NULL; /* to assure that the starting sequence is
- 				  * run in cpufreq_set_policy */
--	unlock_policy_rwsem_write(cpu);
- 
- 	/* set default policy */
--	ret = cpufreq_set_policy(&new_policy);
-+	ret = __cpufreq_set_policy(policy, &new_policy);
-+	policy->user_policy.policy = policy->policy;
-+
-+	unlock_policy_rwsem_write(cpu);
-+
- 	if (ret) {
- 		dprintk("setting policy failed\n");
- 		goto err_out_unregister;
+-Mark Langsdorf
+Operating System Research Center
+AMD
