@@ -1,15 +1,15 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: Voltage tweaking in powernow_k8
-Date: Fri, 20 Apr 2007 13:35:23 -0500
-Message-ID: <1449F58C868D8D4E9C72945771150BDF02076D28@SAUSEXMB1.amd.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Voltage tweaking in powernow_k8
+Date: Fri, 20 Apr 2007 14:55:33 -0400
+Message-ID: <20070420185533.GE13939@redhat.com>
 References: <20070415171810.GA3096@thing.nowhere>
 	<1449F58C868D8D4E9C72945771150BDF02076D07@SAUSEXMB1.amd.com>
 	<46239583.67d3ffa6.271c.2ed5@mx.google.com>
+	<1449F58C868D8D4E9C72945771150BDF02076D28@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <46239583.67d3ffa6.271c.2ed5@mx.google.com>
+Content-Disposition: inline
+In-Reply-To: <1449F58C868D8D4E9C72945771150BDF02076D28@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,47 +21,33 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Roberto Gordo Saez <roberto.gordo@gmail.com>, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: cpufreq@lists.linux.org.uk
 
-=20
+On Fri, Apr 20, 2007 at 01:35:23PM -0500, Langsdorf, Mark wrote:
 
-> -----Original Message-----
-> From: Roberto Gordo Saez [mailto:roberto.gordo@gmail.com]=20
-> Sent: Monday, April 16, 2007 10:26 AM
-> To: Langsdorf, Mark; cpufreq@lists.linux.org.uk
-> Subject: Re: Voltage tweaking in powernow_k8
->=20
-> On Mon, Apr 16, 2007 at 08:55:38AM -0500, Langsdorf, Mark wrote:
-> > AMD policy is that the ACPI values must be used.  I
-> > can't support a patch that overrides the ACPI values.
-> >=20
-> > I have no objection to it being in the code, but I
-> > can't support it.
->=20
-> Hi, thanks for replying.
->=20
-> I understand your position about this. Please, correct me if I'm
-> giving a wrong interpretation to your message; in the way I read it,
-> you are unable to support those changes (because of your position at
-> AMD you are required to strictly follow the policy), but you could
-> live with those changes provided that your name is not attached to
-> them...
+ > > It may be a good idea to print warnings when the parameter is used,
+ > > to clearly state the unsupported and potentally dangerous effect of
+ > > the parameter (though it would not be enough to change your view,
+ > > I guess...).
+ > 
+ > I still wouldn't be able to support it, no.  That's out of my
+ > hands.
 
-Correct.
+I'm not enthusiastic about merging this code at all.
+The big problem I see is that a lot of the reasons people want
+to do this is "The bios say xyz, but the datasheet says it can do xyz+-1"
+In many cases, the bios *really* does know best.  Board layout differences,
+differences in quality of VRMs etc between vendors may mean that yes, you
+can get away with tweaking things on one board, but someone else with
+the "same" board may notice stability problems.
+The kind of bugs that manifest with incorrectly configured frequency scaling
+are nigh on impossible to track down, and as someone who sits on the
+recieving end of user bugreports, I don't want to have to deal with that,
+and I can't imagine other distributors would feel differently.
 
-Also, if I make changes to the driver for future processors, or
-to fix bugs, I won't make any great effort to fix bugs in this
-code or to make sure my code supports this code.  And I will not
-do bug fixes on this code.
+	Dave
 
-> It may be a good idea to print warnings when the parameter is used,
-> to clearly state the unsupported and potentally dangerous effect of
-> the parameter (though it would not be enough to change your view,
-> I guess...).
-
-I still wouldn't be able to support it, no.  That's out of my
-hands.
-
--Mark Langsdorf
-Operating System Research Center
-AMD
+-- 
+http://www.codemonkey.org.uk
