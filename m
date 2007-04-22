@@ -1,13 +1,8 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Longhaul - Revert ACPI C3 on Longhaul ver. 2
-Date: Sat, 21 Apr 2007 15:44:05 -0400
-Message-ID: <20070421194405.GB4293@redhat.com>
-References: <462A2249.7020503@interia.pl>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: Rafal Bilski <rafalbilski@interia.pl>
+Subject: [PATCH] Longhaul - Revert Longhaul ver. 2
+Date: Sun, 22 Apr 2007 12:27:04 +0200
+Message-ID: <1177237624577-git-send-email-rafalbilski@interia.pl>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <462A2249.7020503@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,19 +13,38 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: cpufreq@lists.linux.org.uk, Linus Torvalds <torvalds@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@lists.linux.org.uk
 
-On Sat, Apr 21, 2007 at 04:40:09PM +0200, Rafa=C5=82 Bilski wrote:
- > Please ignore. It isn't fixing anything. I don't=20
- > know at the moment if ver. 2 support is to blame,=20
- > or frequency test is doing it's job and it is=20
- > returning correct CPU frequency.
+There is something wrong with this code. It needs more
+testing. It is better to disable it for now because support
+for some machines will be broken.
 
-gah, this went to linus yesterday, hopefully he hasn't applied it yet.
+Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
+---
+ arch/i386/kernel/cpu/cpufreq/longhaul.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Dave
+diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+index 2b030d6..14dde62 100644
+--- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
++++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+@@ -678,7 +678,7 @@ static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
+ 				sizeof(samuel2_eblcr));
+ 			break;
+ 		case 1 ... 15:
+-			longhaul_version = TYPE_LONGHAUL_V2;
++			longhaul_version = TYPE_LONGHAUL_V1;
+ 			if (c->x86_mask < 8) {
+ 				cpu_model = CPU_SAMUEL2;
+ 				cpuname = "C3 'Samuel 2' [C5B]";
+-- 
+1.5.0.6
 
---=20
-http://www.codemonkey.org.uk
+
+
+----------------------------------------------------------------------
+NIE KUPUJ!!!
+...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
