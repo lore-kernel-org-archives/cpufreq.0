@@ -1,16 +1,16 @@
-From: olof@lixom.net (Olof Johansson)
+From: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-Date: Thu, 26 Apr 2007 11:48:36 -0500
-Message-ID: <20070426164835.GA14149@lixom.net>
+Date: Thu, 26 Apr 2007 19:11:21 +0200
+Message-ID: <200704261911.22553.arnd@arndb.de>
 References: <20070425204633.GC19781@lixom.net>
-	<20070426053700.GA23922@lixom.net>
 	<200704261055.33739.arnd@arndb.de>
+	<20070426164835.GA14149@lixom.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <20070426164835.GA14149@lixom.net>
 Content-Disposition: inline
-In-Reply-To: <200704261055.33739.arnd@arndb.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,74 +21,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Arnd Bergmann <arnd@arndb.de>
+To: Olof Johansson <olof@lixom.net>
 Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, cpufreq@lists.linux.org.uk
 
-On Thu, Apr 26, 2007 at 10:55:33AM +0200, Arnd Bergmann wrote:
-> On Thursday 26 April 2007, Olof Johansson wrote:
-> 
-> > I chose not to do this as an of_platform driver since it doesn't fit
-> > that well with the cpufreq driver model; having 3 levels of init/probe
-> > functions is excessive.
-> 
-> <snip>
-> 
-> > +	dn = of_find_compatible_node(NULL, "sdc", "1682m-sdc");
-> > +	if (!dn)
-> > +		goto out;
-> > +	err = of_address_to_resource(dn, 0, &res);
-> > +	of_node_put(dn);
-> > +	if (err)
-> > +		goto out;
-> > +	sdcasr_mapbase = ioremap(res.start + SDCASR_OFFSET, 0x2000);
-> > +	if (!sdcasr_mapbase) {
-> > +		err = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	dn = of_find_compatible_node(NULL, "gizmo", "1682m-gizmo");
-> > +	if (!dn) {
-> > +		err = -ENODEV;
-> > +		goto out_unmap_sdcasr;
-> > +	}
-> > +	err = of_address_to_resource(dn, 0, &res);
-> > +	of_node_put(dn);
-> > +	if (err)
-> > +		goto out_unmap_sdcasr;
-> > +	sdcpwr_mapbase = ioremap(res.start, 0x1000);
-> > +	if (!sdcpwr_mapbase) {
-> > +		err = -EINVAL;
-> > +		goto out_unmap_sdcasr;
-> > +	}
-> 
-> What are sdc and gizmo anyway? If they are both only used for cpufreq, maybe the
-> easiest way to do this with an of_platform_driver would be to have a single
-> node that has two register ranges.
+On Thursday 26 April 2007, Olof Johansson wrote:
+> SDC is the system and debug controller, it contains a number of smaller
+> devices such as the PIC, the PMU (Gizmo), RNG, and various debug
+> features. Some already have drivers submitted, others will later on.
 
-SDC is the system and debug controller, it contains a number of smaller
-devices such as the PIC, the PMU (Gizmo), RNG, and various debug
-features. Some already have drivers submitted, others will later on.
+Oh well, these chips all seem to be the same. On cell, we have solved
+the problem by introducing the 'cbe_regs' helper library that gives
+access to all those miscellaneous registers to the individual device
+drivers, so that not all of them need to scan the device tree for
+the same registers and map them individually.
 
-Unfortunately the setting of the current active state is done to an SDC
-register, while information of the states is in the PMU, so access to
-both is needed in the driver.
+The problem with an of_platform_driver for this would be that you
+can only have _one_ driver attached to the registers.
 
-That doesn't change the fact that making this an of_platform driver
-is excessive:
+> Unfortunately the setting of the current active state is done to an SDC
+> register, while information of the states is in the PMU, so access to
+> both is needed in the driver.
 
-* module_init to register an of_platform driver
-* of_platform walks the tree, calls probes
-* of_platform driver probe code to register the cpufreq driver
-* cpufreq calls it's registered drivers
-* the cpufreq driver in turn will do the inits
-
-Compare to:
-* module_init registers cpufreq driver if machine_is_compatible()
-* cpufreq calls it's registered drivers
-* the cpufreq driver in turn will do the inits
-
-Don't get me wrong, of_platform drivers are often convenient, but I
-don't see it being a benefit to use them in this case.
-
-
--Olof
+One thing that you could do is to list only this one register of the
+SDC in the reg property, not all of the SDC. 
+ 
+	Arnd <><
