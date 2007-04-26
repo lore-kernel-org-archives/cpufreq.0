@@ -1,74 +1,47 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8033] CPU loses cpufreq link after offline/online transition
-Date: Thu, 26 Apr 2007 10:15:07 -0700
-Message-ID: <200704261715.l3QHF7Gb021339@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
+Date: Thu, 26 Apr 2007 21:05:59 +0200
+Message-ID: <c8fb6a47d8be41f856ab9cf19fc3814d@kernel.crashing.org>
+References: <20070425204633.GC19781@lixom.net>
+	<200704261055.33739.arnd@arndb.de>
+	<20070426164835.GA14149@lixom.net>
+	<200704261911.22553.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <200704261911.22553.arnd@arndb.de>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8033
+>> Unfortunately the setting of the current active state is done to an 
+>> SDC
+>> register, while information of the states is in the PMU, so access to
+>> both is needed in the driver.
+>
+> One thing that you could do is to list only this one register of the
+> SDC in the reg property, not all of the SDC.
 
-trenn@suse.de changed:
+The system-controller node should really describe
+all of the system controller.  If the Linux driver
+needs to access two separate devices, it should
+really just do that.  Don't try to make things
+"simpler" in the device tree.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |ak@suse.de
+You probably should map the SDC registers in the
+platform startop code, and then have the various
+platform drivers use that.  Maybe even do an
+abstraction ;-)
 
 
-
-------- Additional Comments From trenn@suse.de  2007-04-26 10:15 -------
-This does not look like a cpufreq problem... for now I found out that the 
-vendor string gets overridden when the CPU gets offlined:
-
-Apr 26 19:10:47 adalid kernel: Checking CPU 0
-Apr 26 19:10:47 adalid kernel: k
-Apr 26 19:10:47 adalid kernel: u
-Apr 26 19:10:47 adalid kernel: vendor: 2 - We have an AMD CPU ...
-Apr 26 19:10:47 adalid kernel: a
-Apr 26 19:10:47 adalid kernel: b
-Apr 26 19:10:47 adalid kernel: c
-Apr 26 19:10:47 adalid kernel: d
-Apr 26 19:10:47 adalid kernel: e
-Apr 26 19:10:47 adalid kernel: CPU 0 supported
-Apr 26 19:10:47 adalid kernel: Checking CPU 1
-Apr 26 19:10:47 adalid kernel: k
-Apr 26 19:10:47 adalid kernel: u
-Apr 26 19:10:47 adalid kernel: vendor: 255 - NOT AN AMD CPU ?!?
-Apr 26 19:10:47 adalid kernel: Checking CPU 2
-Apr 26 19:10:47 adalid kernel: k
-Apr 26 19:10:47 adalid kernel: u
-Apr 26 19:10:47 adalid kernel: vendor: 255 - NOT AN AMD CPU ?!?
-Apr 26 19:10:47 adalid kernel: Checking CPU 3
-Apr 26 19:10:47 adalid kernel: k
-Apr 26 19:10:47 adalid kernel: u
-Apr 26 19:10:47 adalid kernel: vendor: 255 - NOT AN AMD CPU ?!?
-Apr 26 19:10:47 adalid kernel: Num online: 4
-
-This is in powernow-k8.c:check_supported_cpu(unsigned int cpu) here:
-
-	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD){
-		printk ("vendor: %d - NOT AN AMD CPU ?!?\n", 
-current_cpu_data.x86_vendor);
-		goto out;
-	}
-
-	printk ("vendor: %d - We have an AMD CPU ...\n", 
-current_cpu_data.x86_vendor);
-
-Remember: This is a 32 bit kernel problem!
-I will try some more tomorrow...
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Segher
