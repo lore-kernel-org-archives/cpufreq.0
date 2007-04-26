@@ -1,15 +1,13 @@
-From: Arnd Bergmann <arnd@arndb.de>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-Date: Thu, 26 Apr 2007 10:55:33 +0200
-Message-ID: <200704261055.33739.arnd@arndb.de>
+Date: Thu, 26 Apr 2007 12:26:00 +0200
+Message-ID: <1177583160.6814.37.camel@johannes.berg>
 References: <20070425204633.GC19781@lixom.net>
 	<20070426053700.GA23922@lixom.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2059613997=="
 Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
 In-Reply-To: <20070426053700.GA23922@lixom.net>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,49 +16,69 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: linuxppc-dev@ozlabs.org
-Cc: Olof Johansson <olof@lixom.net>, egor@pasemi.com, paulus@samba.org, cpufreq@lists.linux.org.uk
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de, cpufreq@lists.linux.org.uk
 
-On Thursday 26 April 2007, Olof Johansson wrote:
 
-> I chose not to do this as an of_platform driver since it doesn't fit
-> that well with the cpufreq driver model; having 3 levels of init/probe
-> functions is excessive.
+--===============2059613997==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xjJKaMAnWVCuD66V6FnN"
 
-<snip>
 
-> +	dn = of_find_compatible_node(NULL, "sdc", "1682m-sdc");
-> +	if (!dn)
-> +		goto out;
-> +	err = of_address_to_resource(dn, 0, &res);
-> +	of_node_put(dn);
-> +	if (err)
-> +		goto out;
-> +	sdcasr_mapbase = ioremap(res.start + SDCASR_OFFSET, 0x2000);
-> +	if (!sdcasr_mapbase) {
-> +		err = -EINVAL;
-> +		goto out;
-> +	}
-> +
-> +	dn = of_find_compatible_node(NULL, "gizmo", "1682m-gizmo");
-> +	if (!dn) {
-> +		err = -ENODEV;
-> +		goto out_unmap_sdcasr;
-> +	}
-> +	err = of_address_to_resource(dn, 0, &res);
-> +	of_node_put(dn);
-> +	if (err)
-> +		goto out_unmap_sdcasr;
-> +	sdcpwr_mapbase = ioremap(res.start, 0x1000);
-> +	if (!sdcpwr_mapbase) {
-> +		err = -EINVAL;
-> +		goto out_unmap_sdcasr;
-> +	}
+--=-xjJKaMAnWVCuD66V6FnN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-What are sdc and gizmo anyway? If they are both only used for cpufreq, maybe the
-easiest way to do this with an of_platform_driver would be to have a single
-node that has two register ranges.
+On Thu, 2007-04-26 at 00:37 -0500, Olof Johansson wrote:
+>=20
+> +       policy->cur =3D pas_freqs[cur_astate].frequency;
+> +       policy->cpus =3D cpu_possible_map;=20
 
-	Arnd <><
+That doesn't seem right.
+
+Either, all your processors scale along each other in which case you
+should use cpu_online_map here, or they scale each on their own in which
+case you just set a single bit here.
+
+The generic code works like this:
+CPU 0 is brought online and cpufreq initialised for it
+CPU 1 is brought online and cpufreq initialised for it. if cpus includes
+more than a single bit, cpufreq is linked to the first other CPU in
+policy->cpus and then cpufreq for CPU1 is deinitialised again.
+
+We have the same bug on powermac but for some reason the patch to fix it
+that I posted a long time ago (look for "powermac: fix G5-cpufreq for
+cpu on/offline") wasn't applied yet. Look at it though, it includes a
+comment on what needs to be done.
+
+johannes
+
+--=-xjJKaMAnWVCuD66V6FnN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGMH44/ETPhpq3jKURAlU+AJ9d/LDRDKOppdnvVSqq12PC9NhAIACeL4cp
+XMKnXESIr5HWBvG3mNmaV98=
+=S0c+
+-----END PGP SIGNATURE-----
+
+--=-xjJKaMAnWVCuD66V6FnN--
+
+
+--===============2059613997==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============2059613997==--
+
