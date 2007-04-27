@@ -1,39 +1,42 @@
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-Date: Fri, 27 Apr 2007 02:10:21 +0200
-Message-ID: <f30b4e9138137515cafc0276d93812e0@kernel.crashing.org>
-References: <20070425204633.GC19781@lixom.net>
-	<200704261055.33739.arnd@arndb.de>
-	<20070426164835.GA14149@lixom.net>
-	<200704261911.22553.arnd@arndb.de>
-	<c8fb6a47d8be41f856ab9cf19fc3814d@kernel.crashing.org>
-	<20070426203802.GC17302@lixom.net>
-Mime-Version: 1.0 (Apple Message framework v623)
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
+Date: Thu, 26 Apr 2007 18:52:57 -0700
+Message-ID: <200704270152.l3R1qvZq032562@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <20070426203802.GC17302@lixom.net>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, egor@pasemi.com, Arnd Bergmann <arnd@arndb.de>, cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
->> You probably should map the SDC registers in the
->> platform startop code, and then have the various
->> platform drivers use that.  Maybe even do an
->> abstraction ;-)
->
-> Yep, it's a good idea to do and I'll look at it for 2.6.23 time frame.
-
-Oh I'm sure you can get that done in time for .22 still ;-)
+http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
-Segher
+
+
+
+------- Additional Comments From dsd@gentoo.org  2007-04-26 18:52 -------
+Created an attachment (id=11279)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11279&action=view)
+diagnostic patch
+
+I'm not knowledgeable about any of this stuff, but here's an attempt to further
+clarify what's going on: Please apply this patch and attach new dmesg output.
+
+I think one important part of the issue is that powernow-k7 can't look up the
+frequency tables on it's own (possibly broken BIOS), so it falls back on ACPI.
+
+Also, sometimes the ACPI developers find acpidump output useful. You can emerge
+pmtools to get this utility - I suggest you attach the output here.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
