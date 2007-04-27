@@ -1,67 +1,45 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8033] CPU loses cpufreq link after offline/online transition
-Date: Fri, 27 Apr 2007 08:43:41 -0700
-Message-ID: <200704271543.l3RFhfkb017180@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+From: olof@lixom.net (Olof Johansson)
+Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
+Date: Fri, 27 Apr 2007 13:09:33 -0500
+Message-ID: <20070427180933.GB15582@lixom.net>
+References: <20070425204633.GC19781@lixom.net>
+	<20070426053700.GA23922@lixom.net>
+	<1177583160.6814.37.camel@johannes.berg>
+	<20070426203710.GB17302@lixom.net>
+	<1177666803.7828.30.camel@johannes.berg>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <1177666803.7828.30.camel@johannes.berg>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8033
+On Fri, Apr 27, 2007 at 11:40:03AM +0200, Johannes Berg wrote:
+
+> > Hmm, I just tried adding debugging to the cpu_init code, and I'm not
+> > seeing it called more than once (i.e. only for cpu 0). Mind you, I don't
+> > have cpu hotplug support at this time.
+> 
+> Oh right, you need cpu hotplug support for the bug to show up. What
+> happens then is you unplug and replug a CPU and the sysfs cpufreq stuff
+> for the CPU you just replugged is gone.
+
+Ok. Nothing for me to worry about right now then, but it's good to keep
+in mind for when the time comes.
 
 
+Thanks,
 
-
-
-------- Additional Comments From trenn@suse.de  2007-04-27 08:43 -------
-Created an attachment (id=11290)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11290&action=view)
-Don't delete cpu_devs data to identify different x86 types in late_initcall
-
-This one should fix it.
-
-Dave, Andi will someone of you pick this one up or do I have to explicitly post
-it to lkml or somewhere?
-
-I did test this with i386 -> works and test compiled with and without
-CONFIG_HOTPLUG_CPU
-
----------------------------------
-*Unrelated*:
-Some change to older or x86_64 kernel I realized:
-when doing:
-
-l -d cpu*/cpufreq
-drwxr-xr-x cpu0/cpufreq/
-lrwxrwxrwx cpu1/cpufreq -> ../../../../devices/system/cpu/cpu0/cpufreq/
-drwxr-xr-x cpu2/cpufreq/
-lrwxrwxrwx cpu3/cpufreq -> ../../../../devices/system/cpu/cpu2/cpufreq/
-
-then doing:
-adalid:/sys/devices/system/cpu # echo 0 >cpu2/online 
-adalid:/sys/devices/system/cpu # l -d cpu*/cpufreq
-drwxr-xr-x cpu0/cpufreq/
-lrwxrwxrwx cpu1/cpufreq -> ../../../../devices/system/cpu/cpu0/cpufreq/
-
-The cpufreq dir in both cores, cpu2 and cpu3 vanishes.
-This was on a recent i386 kernel.
-I am pretty sure I saw the cpu3/cpufreq getting a real directory when offlining
-cpu2 and when adding cpu2 again, cpu2/cpufreq gets linked to cpu3/cpufreq.
-This should be the right behaviour, so the kernel is broken here, right?
-
--> You might want to reply to the list, this one is forwarded to, should be
-easiest, don't want to write a separate mail now...
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+-Olof
