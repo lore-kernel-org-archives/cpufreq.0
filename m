@@ -1,85 +1,35 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-Date: Fri, 27 Apr 2007 11:40:03 +0200
-Message-ID: <1177666803.7828.30.camel@johannes.berg>
-References: <20070425204633.GC19781@lixom.net>
-	<20070426053700.GA23922@lixom.net>
-	<1177583160.6814.37.camel@johannes.berg>
-	<20070426203710.GB17302@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0772450249=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <20070426203710.GB17302@lixom.net>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
+Date: Fri, 27 Apr 2007 04:12:15 -0700
+Message-ID: <200704271112.l3RBCFLD011554@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de, cpufreq@lists.linux.org.uk
-
-
---===============0772450249==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mUg4s20WoJnePDUqzhIL"
-
-
---=-mUg4s20WoJnePDUqzhIL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-04-26 at 15:37 -0500, Olof Johansson wrote:
-
-> You can set the requested speed per-processor, but the actual speed
-> will be the max of them. Because of this, it's less surprising to set
-> it on both at the same time since then you'll at least know what you're
-> running at.
->=20
-> So yes, I'll change it to online_map instead of possible_map.
-
-Ok, yeah, so effectively they all just go together (that additional
-complication of running at the max probably should be hidden as you
-note)
-
-> Hmm, I just tried adding debugging to the cpu_init code, and I'm not
-> seeing it called more than once (i.e. only for cpu 0). Mind you, I don't
-> have cpu hotplug support at this time.
-
-Oh right, you need cpu hotplug support for the bug to show up. What
-happens then is you unplug and replug a CPU and the sysfs cpufreq stuff
-for the CPU you just replugged is gone.
-
-johannes
-
---=-mUg4s20WoJnePDUqzhIL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMcTz/ETPhpq3jKURAqPRAKCM6VZoX11OIWIN/EzQLp60ly2YDwCgmz2a
-Xsr6asMNPK9qt4benaVz8MU=
-=VSPs
------END PGP SIGNATURE-----
-
---=-mUg4s20WoJnePDUqzhIL--
-
-
---===============0772450249==
-Content-Type: text/plain; charset="us-ascii"
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============0772450249==--
+http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
+
+
+
+
+------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-04-27 04:12 -------
+Okay, here comes the new dmesg output after applying the patch to the
+2.6.21-gentoo kernel source. I enabled acpi debugging and added cpufreq.debug=7
+to my kernel parameters.
+
+Output of acpidump to be attached as well.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
