@@ -1,8 +1,14 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Sat, 28 Apr 2007 06:56:32 -0700
-Message-ID: <200704281356.l3SDuW7c011509@fire-2.osdl.org>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH v3] [2.6.22] pasemi: cpufreq driver
+Date: Sat, 28 Apr 2007 22:50:21 -0400
+Message-ID: <20070429025021.GC2781@isilmar.linta.de>
+References: <20070425204633.GC19781@lixom.net>
+	<20070426053700.GA23922@lixom.net>
+	<20070427054601.GB7755@lixom.net>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20070427054601.GB7755@lixom.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,19 +19,38 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8255
+Hi,
+
+On Fri, Apr 27, 2007 at 12:46:01AM -0500, Olof Johansson wrote:
+> +	max_freq = (u32*) get_property(cpu, "clock-frequency", NULL);
+
+(u32) or (32*) ?
+
+> +	cur_astate = get_cur_astate(policy->cpu);
+
+May the different cores have different settings at initalization? e.g.
+
+core 0:		freq A
+core 1:		freq B
+
+with (freq B > freq A)? If so, cur_astate is set wrongly, as the _effective_
+frequency would be freq B, right?
+
+> +#ifndef CONFIG_PPC_PASEMI_CPUFREQ
+> +	printk(KERN_WARNING "No cpufreq driver, powersavings modes disabled\n");
+> +	current_mode = 0;
+> +#endif
+> +
+
+This confuses me a bit -- does something else than cpufreq not work if
+cpufreq is disabled?
 
 
+Overall, the patch looks good to me.
 
-
-
-------- Additional Comments From dsd@gentoo.org  2007-04-28 06:56 -------
-apply it instead of the first one
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+	Dominik
