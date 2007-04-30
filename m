@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Mon, 30 Apr 2007 07:10:46 -0700
-Message-ID: <200704301410.l3UEAkFP023103@fire-2.osdl.org>
+Date: Mon, 30 Apr 2007 07:11:30 -0700
+Message-ID: <200704301411.l3UEBUeW023158@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,10 +25,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Additional Comments From remur@gmx.net  2007-04-30 07:10 -------
-Created an attachment (id=11341)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11341&action=view)
-lsmod when wrong modules are loaded
+------- Additional Comments From remur@gmx.net  2007-04-30 07:11 -------
+Created an attachment (id=11342)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11342&action=view)
+dmesg with the right modules loaded
 
 
 ------- You are receiving this mail because: -------
