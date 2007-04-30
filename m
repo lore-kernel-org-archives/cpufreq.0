@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Mon, 30 Apr 2007 06:42:08 -0700
-Message-ID: <200704301342.l3UDg8m2022365@fire-2.osdl.org>
+Date: Mon, 30 Apr 2007 07:09:18 -0700
+Message-ID: <200704301409.l3UE9I3S022964@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,15 +25,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Additional Comments From remur@gmx.net  2007-04-30 06:42 -------
-speedstep_lib was still loaded as module for me and a module for pentium 4 
-processors, guess that was the issue.
+------- Additional Comments From remur@gmx.net  2007-04-30 07:09 -------
+Created an attachment (id=11339)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11339&action=view)
+Dmesg when wrong modules are loaded
 
-adding acpi-cpufreq to the modules array in rc.conf fixed the issue and the 
-faulty speedstep_lib didn't got loaded anymore
-
-(i have a amilo m1439g which is pretty much equal to the m1437g, but i think 
-it's a general centrino issue)
 
 ------- You are receiving this mail because: -------
 You are on the CC list for the bug, or are watching someone who is.
