@@ -1,7 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5133] Ondemand governor makes system unstable
-Date: Sun, 29 Apr 2007 07:51:46 -0700
-Message-ID: <200704291451.l3TEpkSj026624@fire-2.osdl.org>
+Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
+	M1437G - Intel(R) Pentium(R) M
+Date: Mon, 30 Apr 2007 06:42:08 -0700
+Message-ID: <200704301342.l3UDg8m2022365@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,19 +19,21 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5133
-
-dsd@gentoo.org changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |CLOSED
-         Resolution|                            |CODE_FIX
+http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Additional Comments From dsd@gentoo.org  2007-04-29 07:51 -------
-Great, thanks for the update.
+
+
+------- Additional Comments From remur@gmx.net  2007-04-30 06:42 -------
+speedstep_lib was still loaded as module for me and a module for pentium 4 
+processors, guess that was the issue.
+
+adding acpi-cpufreq to the modules array in rc.conf fixed the issue and the 
+faulty speedstep_lib didn't got loaded anymore
+
+(i have a amilo m1439g which is pretty much equal to the m1437g, but i think 
+it's a general centrino issue)
 
 ------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+You are on the CC list for the bug, or are watching someone who is.
