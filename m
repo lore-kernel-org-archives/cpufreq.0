@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Tue, 1 May 2007 13:12:06 -0700
-Message-ID: <200705012012.l41KC6rW031148@fire-2.osdl.org>
+Date: Tue, 1 May 2007 13:20:43 -0700
+Message-ID: <200705012020.l41KKhL7031411@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,12 +24,26 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
 
-------- Additional Comments From dsd@gentoo.org  2007-05-01 13:12 -------
-Created an attachment (id=11365)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11365&action=view)
-DSDT ASL diff
+------- Additional Comments From dsd@gentoo.org  2007-05-01 13:20 -------
+(the above diff is accidentally reversed)
 
-for reference
+Dustin,
+
+First reverse the above patches so that you're working from clean kernel sources.
+
+I have generated a custom ACPI BIOS for you. The one stored in the system has
+those incorrect frequencies.
+
+Download the modified DSDT and compile it with:
+
+ # iasl -tc DSDT.dsl
+
+You'll then get a "DSDT.hex" file in the same directory.
+
+Now in the kernel config, enable CONFIG_ACPI_CUSTOM_DSDT and provide the path to
+the .hex file
+
+Then recompile the kernel, boot into the new one, and see if things have improved.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
