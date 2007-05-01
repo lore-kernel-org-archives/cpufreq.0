@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Tue, 1 May 2007 13:11:26 -0700
-Message-ID: <200705012011.l41KBQKg031109@fire-2.osdl.org>
+Date: Tue, 1 May 2007 13:12:06 -0700
+Message-ID: <200705012012.l41KC6rW031148@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,11 +24,12 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
 
-------- Additional Comments From dsd@gentoo.org  2007-05-01 13:11 -------
-Created an attachment (id=11364)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11364&action=view)
-modified DSDT
+------- Additional Comments From dsd@gentoo.org  2007-05-01 13:12 -------
+Created an attachment (id=11365)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11365&action=view)
+DSDT ASL diff
 
+for reference
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
