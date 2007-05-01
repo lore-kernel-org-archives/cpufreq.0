@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Tue, 1 May 2007 13:56:49 -0700
-Message-ID: <200705012056.l41KuniV032257@fire-2.osdl.org>
+Subject: [Bug 8033] CPU loses cpufreq link after offline/online transition
+Date: Tue, 1 May 2007 14:07:36 -0700
+Message-ID: <200705012107.l41L7aF6032548@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,17 +18,18 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8255
+http://bugzilla.kernel.org/show_bug.cgi?id=8033
 
 
 
 
 
-------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-01 13:56 -------
-Managed to compile the DSDT.dsl file. But I can't find any
-CONFIG_ACPI_CUSTOM_DSDT in menuconfig (2.6.21-gentoo). grepping for it in the
-.config gives no match either...
-Can I just add it to the .config file and f yes where?
+------- Additional Comments From lucke@o2.pl  2007-05-01 14:07 -------
+Actually, it works - at first tried on a kernel with some other patches, 
+must've been their fault. Mea culpa.
+
+Thanks a lot for this - now I can use suspend and not worry about processes on 
+cpu1 not triggering throttling.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
