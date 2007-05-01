@@ -1,8 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
-	M1437G - Intel(R) Pentium(R) M
-Date: Mon, 30 Apr 2007 07:15:46 -0700
-Message-ID: <200704301415.l3UEFkCh023471@fire-2.osdl.org>
+Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
+Date: Tue, 1 May 2007 02:09:22 -0700
+Message-ID: <200705010909.l4199Mrf016391@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,15 +18,20 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8228
-
-remur@gmx.net changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |remur@gmx.net
+http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
+
+
+
+------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-01 02:09 -------
+Created an attachment (id=11357)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11357&action=view)
+dmesg output after applying 2nd patch
+
+The patch did not solve the problem, it even got worse. CPU just running with
+800MHz now. Available frequencies in the log are looking quite weird. There is
+the slowest frequency 633MHz and then other entries state 800MHz.
 
 ------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+You are the assignee for the bug, or are watching the assignee.
