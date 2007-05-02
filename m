@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8033] CPU loses cpufreq link after offline/online transition
-Date: Wed, 2 May 2007 02:15:27 -0700
-Message-ID: <200705020915.l429FRcr014595@fire-2.osdl.org>
+Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
+Date: Wed, 2 May 2007 03:43:20 -0700
+Message-ID: <200705021043.l42AhKV2016339@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,25 +18,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8033
-
-trenn@suse.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |trenn@suse.de
-             Status|NEW                         |ASSIGNED
-          Component|cpufreq                     |i386
-           Category|Power Management            |Platform Specific/Hardware
+http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
 
-------- Additional Comments From trenn@suse.de  2007-05-02 02:15 -------
-Thanks for verification.
-Hopefully Andi or Dave can just pick the patch up.
 
-If there is no msg the next days I'll send a little pointer to lkml for review 
-and ask for integration...
+
+------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-02 03:43 -------
+Patch works. CPU runs at highest frequency now.
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
