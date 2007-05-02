@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Wed, 2 May 2007 08:26:40 -0700
-Message-ID: <200705021526.l42FQeK1022394@fire-2.osdl.org>
+Date: Wed, 2 May 2007 11:41:10 -0700
+Message-ID: <200705021841.l42IfA9l026794@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,22 +20,25 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
-dsd@gentoo.org changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-  Attachment #11367|0                           |1
-        is obsolete|                            |
 
 
 
-------- Additional Comments From dsd@gentoo.org  2007-05-02 08:26 -------
-Created an attachment (id=11373)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11373&action=view)
-hopefully final patch
 
-This should fix the rounding problem (but not the 1333mhz one). It replaces all
-previous patches/DSDTs. Please post dmesg output from using this patch.
+------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-02 11:41 -------
+Created an attachment (id=11376)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11376&action=view)
+dmesg output
+
+You are correct, Daniel. I applied now your latest patch and the frequency
+table should now be correct.
+
+Concerning the discrepancy between 'detected 1333.446MHz processor' and max
+frequency of 1266768MHz: Could this be related with my broken BIOS and do I
+then need to correct the DSDT or is this a more general prob? In the latter
+case, I would file another bug.
+
+BR,
+Dustin
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
