@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Wed, 2 May 2007 11:41:10 -0700
-Message-ID: <200705021841.l42IfA9l026794@fire-2.osdl.org>
+Date: Wed, 2 May 2007 14:04:11 -0700
+Message-ID: <200705022104.l42L4B5D030017@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,21 +24,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
 
-------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-02 11:41 -------
-Created an attachment (id=11376)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11376&action=view)
-dmesg output
-
-You are correct, Daniel. I applied now your latest patch and the frequency
-table should now be correct.
-
-Concerning the discrepancy between 'detected 1333.446MHz processor' and max
-frequency of 1266768MHz: Could this be related with my broken BIOS and do I
-then need to correct the DSDT or is this a more general prob? In the latter
-case, I would file another bug.
-
-BR,
-Dustin
+------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-02 14:04 -------
+I recompiled the patched kernel without frequency scaling and, of course, the
+CPU is then running at 1333MHz. Should I file a seperate bug?
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
