@@ -1,7 +1,7 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Wed, 2 May 2007 15:09:32 -0700
-Message-ID: <200705022209.l42M9WbR031583@fire-2.osdl.org>
+From: Daniel Drake <dsd@gentoo.org>
+Subject: [PATCH] powernow-k7: fix MHz rounding issue with perflib
+Date: Wed,  2 May 2007 23:19:05 +0100 (BST)
+Message-ID: <20070502221906.2976D7B409F@zog.reactivated.net>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -16,19 +16,110 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk, bugzilla.20.dsurawicz@spamgourmet.com
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8255
+When the PST tables are broken, powernow-k7 uses ACPI's processor_perflib to
+deduce the available frequency multipliers from the _PSS tables.
 
+Upon frequency change, processor_perflib performs some verification on the
+frequency (checks that it's within allowable bounds).
 
+powernow-k7 deals with absolute frequencies in KHz, whereas perflib only
+deals with MHz values. When performing the above verification, perflib
+multiplies the MHz values by 1000 to obtain the KHz value.
 
+We then end up with situations like the following:
+ - powernow-k7 multiplies the multiplier by the FSB, and obtains a value
+   such as 1266768 KHz
+ - perflib belives the same state has frequency of 1266 MHz
+ - acpi_processor_ppc_notifier calls cpufreq_verify_within_limits to verify
+   that 1266768 is in the allowable range of 0 to 1266000 (i.e. 1266 * 1000)
+ - it's not, so that frequency is rejected
+ - the maximum CPU frequency is not reachable
 
+This patch solves the problem by rounding up the MHz values stored in perflib's
+tables. Additionally it corrects a broken URL.
 
-------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-02 15:09 -------
-I understood what you mean. I am using an AMD1500+ processor, not sure whether
-it is a mobile one. Is it possible to get the needed information for it so that
-I can use a corrected DSDT locally? I could open my laptop to see the exact
-label of it if this helps.
+It also fixes http://bugzilla.kernel.org/show_bug.cgi?id=8255 although this
+case is a bit different: the frequencies in the _PSS tables are wildly wrong,
+but we get better results if we force ACPI to respect the fsb * multiplier
+calculations (even though it seems that the multiplier values aren't entirely
+correct either).
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
+
+Index: linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+===================================================================
+--- linux.orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
++++ linux/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+@@ -341,15 +341,17 @@ static int powernow_acpi_init(void)
+ 	pc.val = (unsigned long) acpi_processor_perf->states[0].control;
+ 	for (i = 0; i < number_scales; i++) {
+ 		u8 fid, vid;
+-		unsigned int speed;
++		struct acpi_processor_px *state =
++			&acpi_processor_perf->states[i];
++		unsigned int speed, speed_mhz;
+ 
+-		pc.val = (unsigned long) acpi_processor_perf->states[i].control;
++		pc.val = (unsigned long) state->control;
+ 		dprintk ("acpi:  P%d: %d MHz %d mW %d uS control %08x SGTC %d\n",
+ 			 i,
+-			 (u32) acpi_processor_perf->states[i].core_frequency,
+-			 (u32) acpi_processor_perf->states[i].power,
+-			 (u32) acpi_processor_perf->states[i].transition_latency,
+-			 (u32) acpi_processor_perf->states[i].control,
++			 (u32) state->core_frequency,
++			 (u32) state->power,
++			 (u32) state->transition_latency,
++			 (u32) state->control,
+ 			 pc.bits.sgtc);
+ 
+ 		vid = pc.bits.vid;
+@@ -360,6 +362,18 @@ static int powernow_acpi_init(void)
+ 		powernow_table[i].index |= (vid << 8); /* upper 8 bits */
+ 
+ 		speed = powernow_table[i].frequency;
++		speed_mhz = speed / 1000;
++
++		/* processor_perflib will multiply the MHz value by 1000 to
++		 * get a KHz value (e.g. 1266000). However, powernow-k7 works
++		 * with true KHz values (e.g. 1266768). To ensure that all
++		 * powernow frequencies are available, we must ensure that
++		 * ACPI doesn't restrict them, so we round up the MHz value
++		 * to ensure that perflib's computed KHz value is greater than
++		 * or equal to powernow's KHz value.
++		 */
++		if (speed % 1000 > 0)
++			speed_mhz++;
+ 
+ 		if ((fid_codes[fid] % 10)==5) {
+ 			if (have_a0 == 1)
+@@ -368,10 +382,16 @@ static int powernow_acpi_init(void)
+ 
+ 		dprintk ("   FID: 0x%x (%d.%dx [%dMHz])  "
+ 			 "VID: 0x%x (%d.%03dV)\n", fid, fid_codes[fid] / 10,
+-			 fid_codes[fid] % 10, speed/1000, vid,
++			 fid_codes[fid] % 10, speed_mhz, vid,
+ 			 mobile_vid_table[vid]/1000,
+ 			 mobile_vid_table[vid]%1000);
+ 
++		if (state->core_frequency != speed_mhz) {
++			state->core_frequency = speed_mhz;
++			dprintk("   Corrected ACPI frequency to %d\n",
++				speed_mhz);
++		}
++
+ 		if (latency < pc.bits.sgtc)
+ 			latency = pc.bits.sgtc;
+ 
+@@ -602,7 +622,7 @@ static int __init powernow_cpu_init (str
+ 			result = powernow_acpi_init();
+ 			if (result) {
+ 				printk (KERN_INFO PFX "ACPI and legacy methods failed\n");
+-				printk (KERN_INFO PFX "See http://www.codemonkey.org.uk/projects/cpufreq/powernow-k7.shtml\n");
++				printk (KERN_INFO PFX "See http://www.codemonkey.org.uk/projects/cpufreq/powernow-k7.html\n");
+ 			}
+ 		} else {
+ 			/* SGTC use the bus clock as timer */
