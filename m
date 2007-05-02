@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Wed, 2 May 2007 15:43:44 -0700
-Message-ID: <200705022243.l42MhiFS032380@fire-2.osdl.org>
+Date: Wed, 2 May 2007 15:55:35 -0700
+Message-ID: <200705022255.l42MtZkc032678@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,11 +24,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
 
-------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-02 15:43 -------
-One comment: If write a value smaller than f_max to
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq and want to revert
-afterwards to f_max, the CPU freq will not be set to the correct value due to
-kHz/MHz rounding issue.
+------- Additional Comments From dsd@gentoo.org  2007-05-02 15:55 -------
+I'm not sure what you mean. Can you expand on that, perhaps with annotated debug
+logs?
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
