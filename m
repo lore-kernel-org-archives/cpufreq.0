@@ -1,51 +1,48 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 Subject: Re: cpufreq longhaul locks up
-Date: Fri, 04 May 2007 20:40:32 +0200
-Message-ID: <463B7E20.7070206@interia.pl>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> <463B687D.1020600@interia.pl> <463B7097.7070300@redhat.com>
+Date: Fri, 4 May 2007 20:48:27 +0200 (MEST)
+Message-ID: <Pine.LNX.4.61.0705042042270.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+	<463B687D.1020600@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161520AbXEDSlJ@vger.kernel.org>
-In-Reply-To: <463B7097.7070300@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <463B687D.1020600@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-
-> [...]
-> 
-> The below is in the cpufreq git tree.
-> 
-> (Maybe also ondemand needs to be disabled for Longhaul?)
-Would be great. Is this possible? Just kidding. I don't like 
-ondemand. It isn't doing anything good for C3. There is no 
-significant difference between halt/ACPI C2/ACPI C3 on 533Mhz 
-and 999MHz. Difference is when processor is *running*. With 
-ondemand it is running very short on 533MHz. When I was 
-testing ondemand my CPU was running max f most the time. With 
-conservative it is running min f most the time. CPU is much 
-cooler and it is running fanless for most the time. Best part 
-is that conservative is doing more transitions when system is 
-busy because it needs to do all the steps (66MHz step for me) 
-from min (533) to max (999). Ondemand is doing only one 
-transition - from min to max.
-> From: Rafal Bilski <rafalbilski@interia.pl>
-> Date: Sun, 22 Apr 2007 10:26:04 +0000 (+0200)
-> Subject: [CPUFREQ] Longhaul - Revert Longhaul ver. 2
-> X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fdavej%2Fcpufreq.git;a=commitdiff_plain;h=07844252ffd81ec192a62014bada1016c9703765
-> 
-> [CPUFREQ] Longhaul - Revert Longhaul ver. 2
-> 
-No. It is new thing in 2.6.21 which will stop Longhaul 
-from changing frequencies. As usual tested by email. Works 
-for one, not works for others. Without this patch older 
-C3 will not change frequency. Longhaul will be disabled for 
-good. But both processors which we are talking about are 
-"Powersaver". New.
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="windows-1252"
+To: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
+Cc: Dave Jones <davej@codemonkey.org.uk>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
 
+On May 4 2007 19:08, Rafa=C5=82 Bilski wrote:
+>
+>Btw. I've been writting many times: if You want to use ondemand with=20
+>Longhaul You don't need cpufreq at all.
 
-----------------------------------------------------------------------
-Wicie, rozumicie....
-Zobacz >>> http://link.interia.pl/f1a74
+Does VIA Nehemiah do hardware-driven autoregulation like Transmeta
+Crusoe too? (I suspect no, have not seen that happen.)
+
+>It is just one another cool gadget for You.
+>Longhaul wasn't designed to change frequency often.=20
+
+Is there a way I can start with a specific governor (powersave) right
+from the start so that all devices that Linux will initialize assume
+the CPU runs at <choose something> MHz?
+
+>It has big latency and requires so much preparation that it isn't worth=20
+>if You don't need to save power or cool down CPU.=20
+
+I found frequency switching on my VIA to be fast enough.
+
+
+Jan
+--=20
