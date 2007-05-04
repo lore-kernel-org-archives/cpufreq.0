@@ -1,74 +1,122 @@
-From: Chuck Ebbert <cebbert@redhat.com>
+From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
 Subject: Re: cpufreq longhaul locks up
-Date: Fri, 04 May 2007 13:42:47 -0400
-Message-ID: <463B7097.7070300@redhat.com>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> <463B687D.1020600@interia.pl>
+Date: Fri, 4 May 2007 20:08:24 +0200
+Message-ID: <5699f8f00705041108t67425997w42e6268f9076abc9@mail.gmail.com>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+	<463B687D.1020600@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1031418AbXEDRnk@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============0508014075=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
+	h=domainkey-signature:received:received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+	b=jiY31+HJ6qPyhZsE3m9iJ96vPIaz2xCAlcznDnoWWt9dCrzXyaFp5narwyuQCFY9I0HvAbjRnepQmXbScoPBkJB5vwp6gQCn5YnvsrGfgvR8rUEtXwIBzSYzPOPkZ7Jazk5KZzvWUudBCftag7SApFhLiRrKWvPLsyG/KxayKvs=
 In-Reply-To: <463B687D.1020600@interia.pl>
-Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
 
-Rafa=C5=82 Bilski wrote:
->> Hi,
-> Hello all
->> I found that setting the cpufreq governor to ondemand making the box=
-=20
->> lock up solid in 2.6.20.2 and 2.6.21 after a few seconds.
->> [...]
->=20
-> I can't explain this. Some motherboards are running fine, some don't.
-> I'm running longhaul too. It is working fine. No lockups at all.=20
-> So far I heard only about one Epia which had problems with longhaul.=20
-> It was almost like my Epia but older.
-> What is possible:
-> - some chipsets revisions are broken and aren't blocking DMA,
-> - special setup is required, some versions of BIOS are doing=20
-> necessary things, some don't,
-> - some chipsets revisions are broken and drivers are not aware. At=20
-> the beginning Unichrome driver was causing lockups on my machine, but=
-=20
-> Openchrome was fine. Longhaul may trigger, somehow, other hardware bu=
-g.=20
->=20
+--===============0508014075==
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-The below is in the cpufreq git tree.
+T24gNS80LzA3LCBSYWZhsyBCaWxza2kgPHJhZmFsYmlsc2tpQGludGVyaWEucGw+IHdyb3RlOgo+
+ID4gSGksCj4gSGVsbG8gYWxsCgpIaSBSYWZhsywKCj4gPgo+ID4gSSBmb3VuZCB0aGF0IHNldHRp
+bmcgdGhlIGNwdWZyZXEgZ292ZXJub3IgdG8gb25kZW1hbmQgbWFraW5nIHRoZSBib3gKPiA+IGxv
+Y2sgdXAgc29saWQgaW4gMi42LjIwLjIgYW5kIDIuNi4yMSBhZnRlciBhIGZldyBzZWNvbmRzLgo+
+ID4gWy4uLl0KPgo+IEkgY2FuJ3QgZXhwbGFpbiB0aGlzLiBTb21lIG1vdGhlcmJvYXJkcyBhcmUg
+cnVubmluZyBmaW5lLCBzb21lIGRvbid0Lgo+IEknbSBydW5uaW5nIGxvbmdoYXVsIHRvby4gSXQg
+aXMgd29ya2luZyBmaW5lLiBObyBsb2NrdXBzIGF0IGFsbC4KPiBTbyBmYXIgSSBoZWFyZCBvbmx5
+IGFib3V0IG9uZSBFcGlhIHdoaWNoIGhhZCBwcm9ibGVtcyB3aXRoIGxvbmdoYXVsLgo+IEl0IHdh
+cyBhbG1vc3QgbGlrZSBteSBFcGlhIGJ1dCBvbGRlci4KPiBXaGF0IGlzIHBvc3NpYmxlOgo+IC0g
+c29tZSBjaGlwc2V0cyByZXZpc2lvbnMgYXJlIGJyb2tlbiBhbmQgYXJlbid0IGJsb2NraW5nIERN
+QSwKPiAtIHNwZWNpYWwgc2V0dXAgaXMgcmVxdWlyZWQsIHNvbWUgdmVyc2lvbnMgb2YgQklPUyBh
+cmUgZG9pbmcKPiBuZWNlc3NhcnkgdGhpbmdzLCBzb21lIGRvbid0LAoKV2hpY2ggQklPUyBhcmUg
+eW91IHVzaW5nPwoKPiBBbnl3YXkgSSBkb24ndCBiZWxpdmUgaW4gTG9uZ2hhdWwgYW55bW9yZS4g
+SXQgaXMgd29ya2luZyBmb3IgbWUuIEl0IGlzCj4gd29ya2luZyBmb3Igb3RoZXJzLiBBbmQgaXQg
+aXNuJ3Qgd29ya2luZyBmb3Igb3RoZXJzLiBWSUEgaXNuJ3Qgc3VwcG9ydGluZwo+IHRoaXMgZHJp
+dmVyLiBTdXBwb3J0IGNhbWUgb25seSBmcm9tIENlbnRhdXIgYW5kIERhdmUgSm9uZXMuIElmIHNw
+ZWNpYWwKPiBzZXR1cCBpcyByZXF1aXJlZCBmb3Igbm9ydGgvc291dGhicmlkZ2UgdGhlbiBpdCBp
+cyBuZWNlc3NhcnkgdG8gaGF2ZQo+IGRvY3VtZW50YXRpb24uIEkgd2lsbCBub3QgcmVjZWl2ZSBp
+dCBmcm9tIFZJQS4KClRoYXQgaXMgdG8gYmFkLCBJIHdhcyBhbGwgZXhjaXRlZCB0aGF0IHNvbWVv
+bmUgd2FzIGRvaW5nIHdvcmsgb24gdGhlCmxvbmdoYXVsIGNvZGUgYWdhaW4uCgo+Cj4gQnR3LiBJ
+J3ZlIGJlZW4gd3JpdHRpbmcgbWFueSB0aW1lczogaWYgWW91IHdhbnQgdG8gdXNlIG9uZGVtYW5k
+IHdpdGgKPiBMb25naGF1bCBZb3UgZG9uJ3QgbmVlZCBjcHVmcmVxIGF0IGFsbC4gSXQgaXMganVz
+dCBvbmUgYW5vdGhlciBjb29sCj4gZ2FkZ2V0IGZvciBZb3UuIExvbmdoYXVsIHdhc24ndCBkZXNp
+Z25lZCB0byBjaGFuZ2UgZnJlcXVlbmN5IG9mdGVuLgo+IEl0IGhhcyBiaWcgbGF0ZW5jeSBhbmQg
+cmVxdWlyZXMgc28gbXVjaCBwcmVwYXJhdGlvbiB0aGF0IGl0IGlzbid0IHdvcnRoCj4gaWYgWW91
+IGRvbid0IG5lZWQgdG8gc2F2ZSBwb3dlciBvciBjb29sIGRvd24gQ1BVLgoKV2hhdCBzaG91bGQg
+SSB1c2UgaW5zdGVhZCBvZiBvbmRlbWFuZD8gSSBkbyB3YW50IHRvIHNhdmUgcG93ZXIgYW5kCmhh
+dmUgbXkgbWFjaGluZSBydW4gY29vbGVyIChJIGhhdmUgYSBodHBjIHRoYXQgaXMgb24gMjQvNywg
+aXQncwpydW5uaW5nIGtpbmQgb2YgaG90IGFuZCBhbGxyZWFkeSBoYXMgYmxvd24gYSBQU1UpCgpE
+b2VzIHRoZSB1c2Vyc3BhY2UgZ292ZXJub3IgaGF2ZSB0aGUgc2FtZSBwcm9ibGVtcz8gKEknZCBn
+dWVzcyBzbykKCj4KPiBTb3JyeSBmb3IgYmFkIEVuZ2xpc2gKPiBSYWZhswo+CgpJJ2QgbGlrZSB0
+byB0YWtlIHRoaXMgb3Bwb3J0dW5pdHkgdG8gdGhhbmsgeW91IGZvciB0aGUgd29yayB5b3UgaGF2
+ZQphbHJlYWR5IGRvbmUgb24gY3B1ZnJlcSEKU286IHRoYW5rcyBSYWZhsyEgSSBhcHByZWNpYXRl
+IGl0IQoKIEluIGNhc2Ugc29tZW9uZSB3YW50cyBzb21lIG1vcmUgaW5mbyBhYm91dCBteSBib3gs
+IGhlcmUgaXQgaXM6CgpJdCdzIGEgVmlhIFNQMTMwMCBNaW5pQVRYLgoKL3Byb2MvY3B1aW5mbzoK
+CnByb2Nlc3NvciAgICAgICA6IDAKdmVuZG9yX2lkICAgICAgIDogQ2VudGF1ckhhdWxzCmNwdSBm
+YW1pbHkgICAgICA6IDYKbW9kZWwgICAgICAgICAgIDogOQptb2RlbCBuYW1lICAgICAgOiBWSUEg
+TmVoZW1pYWgKc3RlcHBpbmcgICAgICAgIDogOApjcHUgTUh6ICAgICAgICAgOiAxMzMwLjAwMApj
+YWNoZSBzaXplICAgICAgOiA2NCBLQgpmZGl2X2J1ZyAgICAgICAgOiBubwpobHRfYnVnICAgICAg
+ICAgOiBubwpmMDBmX2J1ZyAgICAgICAgOiBubwpjb21hX2J1ZyAgICAgICAgOiBubwpmcHUgICAg
+ICAgICAgICAgOiB5ZXMKZnB1X2V4Y2VwdGlvbiAgIDogeWVzCmNwdWlkIGxldmVsICAgICA6IDEK
+d3AgICAgICAgICAgICAgIDogeWVzCmZsYWdzICAgICAgICAgICA6IGZwdSB2bWUgZGUgcHNlIHRz
+YyBtc3IgY3g4IHNlcCBtdHJyIHBnZSBjbW92IHBhdCBtbXgKZnhzciBzc2Ugcm5nIHJuZ19lbiBh
+Y2UgYWNlX2VuCmJvZ29taXBzICAgICAgICA6IDI2NjguNjYKY2xmbHVzaCBzaXplICAgIDogMzIK
+CmxzcGNpOgowMDAwOjAwOjAwLjAgSG9zdCBicmlkZ2U6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4g
+Q040MDAvUE04ODAgSG9zdCBCcmlkZ2UKMDAwMDowMDowMC4xIEhvc3QgYnJpZGdlOiBWSUEgVGVj
+aG5vbG9naWVzLCBJbmMuIENONDAwL1BNODgwIEhvc3QgQnJpZGdlCjAwMDA6MDA6MDAuMiBIb3N0
+IGJyaWRnZTogVklBIFRlY2hub2xvZ2llcywgSW5jLiBDTjQwMC9QTTg4MCBIb3N0IEJyaWRnZQow
+MDAwOjAwOjAwLjMgSG9zdCBicmlkZ2U6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4gQ040MDAvUE04
+ODAgSG9zdCBCcmlkZ2UKMDAwMDowMDowMC40IEhvc3QgYnJpZGdlOiBWSUEgVGVjaG5vbG9naWVz
+LCBJbmMuIENONDAwL1BNODgwIEhvc3QgQnJpZGdlCjAwMDA6MDA6MDAuNyBIb3N0IGJyaWRnZTog
+VklBIFRlY2hub2xvZ2llcywgSW5jLiBDTjQwMC9QTTg4MCBIb3N0IEJyaWRnZQowMDAwOjAwOjAx
+LjAgUENJIGJyaWRnZTogVklBIFRlY2hub2xvZ2llcywgSW5jLiBWVDgyMzcgUENJIEJyaWRnZQow
+MDAwOjAwOjBkLjAgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4g
+SUVFRSAxMzk0Ckhvc3QgQ29udHJvbGxlciAocmV2IDgwKQowMDAwOjAwOjBmLjAgSURFIGludGVy
+ZmFjZTogVklBIFRlY2hub2xvZ2llcywgSW5jLgpWVDgyQzU4NkEvQi9WVDgyQzY4Ni9BL0IvVlQ4
+MjN4L0EvQyBQSVBDIEJ1cyBNYXN0ZXIgSURFIChyZXYgMDYpCjAwMDA6MDA6MTAuMCBVU0IgQ29u
+dHJvbGxlcjogVklBIFRlY2hub2xvZ2llcywgSW5jLiBWVDgyeHh4eHggVUhDSSBVU0IKMS4xIENv
+bnRyb2xsZXIgKHJldiA4MSkKMDAwMDowMDoxMC4xIFVTQiBDb250cm9sbGVyOiBWSUEgVGVjaG5v
+bG9naWVzLCBJbmMuIFZUODJ4eHh4eCBVSENJIFVTQgoxLjEgQ29udHJvbGxlciAocmV2IDgxKQow
+MDAwOjAwOjEwLjIgVVNCIENvbnRyb2xsZXI6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4gVlQ4Mnh4
+eHh4IFVIQ0kgVVNCCjEuMSBDb250cm9sbGVyIChyZXYgODEpCjAwMDA6MDA6MTAuMyBVU0IgQ29u
+dHJvbGxlcjogVklBIFRlY2hub2xvZ2llcywgSW5jLiBWVDgyeHh4eHggVUhDSSBVU0IKMS4xIENv
+bnRyb2xsZXIgKHJldiA4MSkKMDAwMDowMDoxMC40IFVTQiBDb250cm9sbGVyOiBWSUEgVGVjaG5v
+bG9naWVzLCBJbmMuIFVTQiAyLjAgKHJldiA4NikKMDAwMDowMDoxMS4wIElTQSBicmlkZ2U6IFZJ
+QSBUZWNobm9sb2dpZXMsIEluYy4gVlQ4MjM3IElTQSBicmlkZ2UKW0tUNjAwL0s4VDgwMC9LOFQ4
+OTAgU291dGhdCjAwMDA6MDA6MTEuNSBNdWx0aW1lZGlhIGF1ZGlvIGNvbnRyb2xsZXI6IFZJQSBU
+ZWNobm9sb2dpZXMsIEluYy4KVlQ4MjMzL0EvODIzNS84MjM3IEFDOTcgQXVkaW8gQ29udHJvbGxl
+ciAocmV2IDYwKQowMDAwOjAwOjEyLjAgRXRoZXJuZXQgY29udHJvbGxlcjogVklBIFRlY2hub2xv
+Z2llcywgSW5jLiBWVDYxMDIKW1JoaW5lLUlJXSAocmV2IDc4KQowMDAwOjAwOjE0LjAgTXVsdGlt
+ZWRpYSB2aWRlbyBjb250cm9sbGVyOiBJbnRlcm5leHQgQ29tcHJlc3Npb24gSW5jCmlUVkMxNiAo
+Q1gyMzQxNikgTVBFRy0yIEVuY29kZXIgKHJldiAwMSkKMDAwMDowMTowMC4wIFZHQSBjb21wYXRp
+YmxlIGNvbnRyb2xsZXI6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4gUzMKVW5pY2hyb21lIFBybyBW
+R0EgQWRhcHRlciAocmV2IDAyKQoKdW5hbWUgLWE6CgpMaW51eCBkb29kc3Bvb3IgMi42LjIwLjYg
+IzEgUFJFRU1QVCBTdW4gQXByIDggMTU6MDY6MzQgQ0VTVCAyMDA3IGk2ODYgR05VL0xpbnV4CgpJ
+IGFtIHVzaW5nIHRoZSBvbmJvYXJkIG1wZWcyIGhhcmR3YXJlIGRlY29kZXIgd2l0aCB0aGUgT3Bl
+bmNocm9tZSBkcml2ZXJzCgpJIGhvcGUgdGhpcyBoZWxwcyBzb21lb25lCldhbmRlci4K
 
-(Maybe also ondemand needs to be disabled for Longhaul?)
 
-=46rom: Rafal Bilski <rafalbilski@interia.pl>
-Date: Sun, 22 Apr 2007 10:26:04 +0000 (+0200)
-Subject: [CPUFREQ] Longhaul - Revert Longhaul ver. 2
-X-Git-Url: http://git.kernel.org/?p=3Dlinux%2Fkernel%2Fgit%2Fdavej%2Fcp=
-ufreq.git;a=3Dcommitdiff_plain;h=3D07844252ffd81ec192a62014bada1016c970=
-3765
+--===============0508014075==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-[CPUFREQ] Longhaul - Revert Longhaul ver. 2
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-There is something wrong with this code. It needs more
-testing. It is better to disable it for now because support
-for some machines will be broken.
-
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
-Signed-off-by: Dave Jones <davej@redhat.com>
----
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel=
-/cpu/cpufreq/longhaul.c
-index e5fee72..a3df9c0 100644
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -683,7 +683,7 @@ static int __init longhaul_cpu_init(struct cpufreq_=
-policy *policy)
- 				sizeof(samuel2_eblcr));
- 			break;
- 		case 1 ... 15:
--			longhaul_version =3D TYPE_LONGHAUL_V2;
-+			longhaul_version =3D TYPE_LONGHAUL_V1;
- 			if (c->x86_mask < 8) {
- 				cpu_model =3D CPU_SAMUEL2;
- 				cpuname =3D "C3 'Samuel 2' [C5B]";
+--===============0508014075==--
