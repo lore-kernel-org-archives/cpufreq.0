@@ -1,8 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8423] "powernow-k8: Processor cpuid 70ff1 not supported" on
-	Athlon64 3800+ AM2 which supports Cool'n'Quiet
-Date: Thu, 3 May 2007 09:29:00 -0700
-Message-ID: <200705031629.l43GT0e9021907@fire-2.osdl.org>
+From: Chris Pemberton <cjpembo@gmail.com>
+Subject: Use proc or sysfs with cpufrequtils
+Date: Thu, 03 May 2007 21:31:52 -0500
+Message-ID: <463A9B18.9020200@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,25 +15,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8423
+Hello,
 
-mark.langsdorf@amd.com changed:
+I'm compiling cpufrequtils from scratch.  My kernel contains ACPI/proc 
+support only (not ACPI/sysfs).
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-              Owner|cpufreq@www.linux.org.uk    |mark.langsdorf@amd.com
-             Status|NEW                         |ASSIGNED
+1.  Why does the kernel state that ACPI/sysfs depreciated while 
+cpufrequtils states that ACPI/proc is depreciated?
 
+2.  Can you enable both ACPI/sysfs and ACPI/proc in the kernel without 
+any issues?
 
+3.  Does this list have a searchable webpage?
 
-------- Additional Comments From mark.langsdorf@amd.com  2007-05-03 09:28 -------
-Known bug; correcting patch was submitted on February 23, 2007.
-Correcting patch attached.
+Thanks,
 
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Chris
