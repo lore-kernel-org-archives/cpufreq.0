@@ -1,36 +1,39 @@
-From: Chris Pemberton <cjpembo@gmail.com>
-Subject: Use proc or sysfs with cpufrequtils
-Date: Thu, 03 May 2007 21:31:52 -0500
-Message-ID: <463A9B18.9020200@gmail.com>
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: cpufreq longhaul locks up
+Date: Fri, 4 May 2007 12:16:21 +0200 (MEST)
+Message-ID: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423592AbXEDKRL@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: davej@codemonkey.org.uk
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
 
-Hello,
+Hi,
 
-I'm compiling cpufrequtils from scratch.  My kernel contains ACPI/proc 
-support only (not ACPI/sysfs).
 
-1.  Why does the kernel state that ACPI/sysfs depreciated while 
-cpufrequtils states that ACPI/proc is depreciated?
+I found that setting the cpufreq governor to ondemand making the box 
+lock up solid in 2.6.20.2 and 2.6.21 after a few seconds. Sysrq 
+does not work anymore, and the last messages are:
 
-2.  Can you enable both ACPI/sysfs and ACPI/proc in the kernel without 
-any issues?
+May  3 19:16:58 cn kernel: longhaul: VIA C3 'Nehemiah C' [C5P] CPU 
+detected.  Powersaver supported.
+May  3 19:16:58 cn kernel: longhaul: Using northbridge support.
+May  3 19:17:22 cn kernel: Time: acpi_pm clocksource has been installed.
+May  3 19:17:22 cn kernel: Clocksource tsc unstable (delta = -136422685 
+ns)
 
-3.  Does this list have a searchable webpage?
+I have also tried 2.6.20.2 in single-user mode (so that I can have 
+the disk readonly), and it take a little longer (magnitude: minutes) 
+to lock up; not sure if it's 20.2 or the single-user mode but I suspect 
+the latter since nothing is running then that could potentially 
+contribute to quickly changing workloads/frequencies.
+
+If you need more info, please let me know.
+
 
 Thanks,
-
-Chris
+Jan
+-- 
