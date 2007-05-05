@@ -1,51 +1,51 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 Subject: Re: cpufreq longhaul locks up
-Date: Sat, 05 May 2007 20:04:37 +0200
-Message-ID: <463CC735.9080709@interia.pl>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> <200705042320.41278.dj@david-web.co.uk> <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr> <463C18C4.7030304@interia.pl> <Pine.LNX.4.61.0705051114130.18504@yvahk01.tjqt.qr> <463C9070.7020007@interia.pl> <Pine.LNX.4.61.0705051932210.18504@yvahk01.tjqt.qr>
+Date: Sat, 5 May 2007 20:13:22 +0200 (MEST)
+Message-ID: <Pine.LNX.4.61.0705052011340.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> 
+ <1178311052.6094.0.camel@localhost.localdomain> 
+ <Pine.LNX.4.61.0705042259160.18504@yvahk01.tjqt.qr>
+ <1178318978.6094.29.camel@localhost.localdomain>
+ <Pine.LNX.4.61.0705050130090.18504@yvahk01.tjqt.qr> <463C01FA.8070206@interia.pl>
+ <Pine.LNX.4.61.0705051000030.18504@yvahk01.tjqt.qr> <463C8D72.5070003@interia.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S934212AbXEESEs@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0705051932210.18504@yvahk01.tjqt.qr>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S934282AbXEESQD@vger.kernel.org>
+In-Reply-To: <463C8D72.5070003@interia.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-9"
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: David Johnson <dj@david-web.co.uk>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, Wander Winkelhorst <w.winkelhorst@gmail.com>
-
-> I just wonder why x86info says I have a C5XL while `modprobe longhaul=
-`
-> says it is a C5P.
-I have changed names to names which VIA is using.=20
->=20
-> cn:/dev/shm # ./x86info -v -v
-You need to be root and use -a option. I'm interested in:
-=46CR: MSR: 0x00001107=3D0x9e3f1ad6 : 10011110 00111111 00011010 110101=
-10
-Power management: Powersaver
-MSR: 0x0000110a=3D0x07ff000d000280f0 : 00000111 11111111 00000000 00001=
-101
-           00000000 00000010 10000000 11110000
-
- RevisionID: 0 : Initial revision (Software clock multiplier only, no S=
-oftVID)
- Software clock multiplier is disabled
-Please send me below part of Your dmesg too:
-CPU: After generic identify, caps: 0381b83f 00000000 00000000 00000000 =
-00000000 00000000 00000000
-CPU: L1 I Cache: 64K (32 bytes/line), D cache 64K (32 bytes/line)
-CPU: L2 Cache: 64K (32 bytes/line)
-CPU: After all inits, caps: 0381b93f 00000000 00000000 00000000 0000000=
-0 000000dd 00000000
->=20
-> And the BIOS announces it as a "Via Eden ESP 6000" (as does the manuf=
-acturer).
-Great. I think that I saw datasheet somewhere.
-> Jan
-Rafa=B3
+Content-Type: TEXT/PLAIN; charset="windows-1252"
+To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Cc: john stultz <johnstul@us.ibm.com>, davej@codemonkey.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, cpufreq@lists.linux.org.uk
 
 
+On May 5 2007 15:58, Rafa=C5=82 Bilski wrote:
+>>>>>> Switching from acpi_pm+performance to acpi_pm+ondemand also
+>>>>>> locks up after a few minutes.
+>>>>> Yep. Sounds like an ondemand issue. Thanks for verifying this for=
+ me.
+>>>> Nah, it also happens with cpufreq_powersave. I just need to check=20
+>>>> through some archives and try booting with governor=3Dpowersave so=
+ that it=20
+>>>> always stays low.=20
+>>> You have a lockup when switching from other governor to powersave? =
+Or if =20
+>>> You are using it for some time?
+>>=20
+>> After some time.
 
-----------------------------------------------------------------------
-Wicie, rozumicie....
-Zobacz >>> http://link.interia.pl/f1a74
+>Don't understand me wrong, but this is very weird. I think that
+>powersave is changing frequency only one time, when it is loaded. I
+>will look into its code to be sure. Probably Longhaul is making
+>something what isn't allowed or there is hardware bug somewhere.
+
+I patched Kconfig and the kernel source so that powersave
+is the only governor available at boot
+(CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy, CPU_FREQ_DEFAULT_GOV_POWERSAVE=3Dy,
+CONFIG_X86_LONGHAUL=3Dy) -- also locks up.
+
+I'll keep you posted.
+
+
+Jan
+--=20
