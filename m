@@ -1,16 +1,8 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: Re: cpufreq longhaul locks up
-Date: Sat, 05 May 2007 16:10:56 +0200
-Message-ID: <463C9070.7020007@interia.pl>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
-	<200705042320.41278.dj@david-web.co.uk>
-	<Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
-	<463C18C4.7030304@interia.pl>
-	<Pine.LNX.4.61.0705051114130.18504@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
+Date: Sat, 5 May 2007 07:56:31 -0700
+Message-ID: <200705051456.l45EuVQF009355@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <Pine.LNX.4.61.0705051114130.18504@yvahk01.tjqt.qr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,18 +13,20 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: David Johnson <dj@david-web.co.uk>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
->> Can You send output of x86info program and output of 
-> 
-> Where do I find this?
-
-http://www.codemonkey.org.uk/projects/x86info/
-It needs msr device support in kernel.
+http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
-----------------------------------------------------------------------
-NIE KUPUJ!!!
-...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
+
+
+
+------- Additional Comments From bugzilla.20.dsurawicz@spamgourmet.com  2007-05-05 07:56 -------
+I am quite busy right now and on vacation the next three weeks. After I am back,
+I will give you the desired information.
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
