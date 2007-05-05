@@ -1,69 +1,108 @@
-From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 Subject: Re: cpufreq longhaul locks up
-Date: Sat, 5 May 2007 10:44:22 +0200
-Message-ID: <5699f8f00705050144s5c00a455s8f7dba9258d83986@mail.gmail.com>
+Date: Sat, 5 May 2007 11:37:51 +0200 (MEST)
+Message-ID: <Pine.LNX.4.61.0705051114130.18504@yvahk01.tjqt.qr>
 References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
-	<200705042320.41278.dj@david-web.co.uk>
-	<Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
-	<463C18C4.7030304@interia.pl>
+ <200705042320.41278.dj@david-web.co.uk> <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
+ <463C18C4.7030304@interia.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2106655503=="
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-	b=Hd3oMZAyVb1n9QMbodNtw2MpqE4uJI6ywf9r8Q9rkpUfhifkh72LdvtzU+XV3M2GqGf0jzx7VSwr1MlJMpVVUAxvU7HC0yxhV6FQAnb153PAgAlLs7NQptxrOWUwCv7gcb+PVqvemFn8Z+X+AclELqXQIvoJsXVe8MqrEmieDoA=
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423228AbXEEJjw@vger.kernel.org>
 In-Reply-To: <463C18C4.7030304@interia.pl>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: TEXT/PLAIN; charset="windows-1252"
 To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Cc: David Johnson <dj@david-web.co.uk>, cpufreq@lists.linux.org.uk, Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
-
---===============2106655503==
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
-
-T24gNS81LzA3LCBSYWZhsyBCaWxza2kgPHJhZmFsYmlsc2tpQGludGVyaWEucGw+IHdyb3RlOgo+
-IEphbiwKPgo+IENhbiBZb3Ugc2VuZCBvdXRwdXQgb2YgeDg2aW5mbyBwcm9ncmFtIGFuZCBvdXRw
-dXQgb2YKPiBsc3BjaSBjb21tYW5kPyBMb25naGF1bCB3YXNuJ3Qgd29ya2luZyBmb3IgWW91IHNp
-bmNlIDIuNi4xOCByaWdodD8KPiBJJ20gZ29pbmcgdG8gd29yayBub3csIGJ1dCBJIHdpbGwgYmUg
-YXZhaWxhYmxlIGFmdGVyIDE0OjAwIFVUQy4KPgoKT3V0cHV0IGZyb20geDg2aW5mbyAoSSBrbm93
-IHlvdSBkaWRuJ3QgYXNrIG1lLCBidXQgaGV5LCBpbmZvcm1hdGlvbgp3YW50cyB0byBiZSBmcmVl
-KQoKeDg2aW5mbyB2MS4yMC4gIERhdmUgSm9uZXMgMjAwMS0yMDA2CkZlZWRiYWNrIHRvIDxkYXZl
-akByZWRoYXQuY29tPi4KCkZvdW5kIDEgQ1BVCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkZhbWlseTogNiBN
-b2RlbDogOSBTdGVwcGluZzogOApDUFUgTW9kZWwgOiBWSUEgQzMgKE5laGVtaWFoKSBbQzVYTF0K
-RmVhdHVyZSBmbGFnczoKIGZwdSB2bWUgZGUgcHNlIHRzYyBtc3IgY3g4IHNlcCBtdHJyIHBnZSBj
-bW92IHBhdCBtbXggZnhzciBzc2UKRXh0ZW5kZWQgZmVhdHVyZSBmbGFnczoKCgo+IFRoaW5ncyB3
-b3J0aCBjaGVja2luZzogZGlzYWJsZSBQUkVFTVBULCBjaGFuZ2UgaXQgdG8gIlZvbHVudGFyeSBw
-cmVlbXB0aW9uIi4KPiBDaGVjayBpZiB1c2luZyBjb25zZXJ2YXRpdmUgZ292ZXJub3IgbWFrZXMg
-YW55IGRpZmZlcmVuY2UuIEkga25vdyB0aGF0Cj4gdGhpcyBtYXkgc291bmQgc3RyYW5nZSwgYnV0
-IHRyYW5zaXRpb24gbGF0ZW5jeSBpcyBkaXJlY3RseSBwcm9wb3J0aW9uYWwgdG8KPiBkaWZmZXJl
-bmNlIGJldHdlZW4gY3VycmVudCBhbmQgZGVzdGluYXRpb24gZnJlcXVlbmN5LiBNYXliZSBmb3Ig
-ZmFzdGVyCj4gcHJvY2Vzc29ycyBpdCBpc24ndCBhbGxvd2VkIHRvIGNoYW5nZSBmcmVxdWVuY3kg
-ZGlyZWN0bHkgZnJvbSBtaW4gdG8gbWF4Pwo+Cj4gUmFmYbMKCk15IGdpcmxmcmllbmQgaXMgZ29p
-bmcgdG8gaGF0ZSB5b3UgZm9yIGdldHRpbmcgbWUgdG8gdGlua2VyIHdpdGggdGhlCkhUUEMgYWdh
-aW4gOikKCldpbGwgY2hlY2sgaWYgdGhlc2Ugc3VnZ2VzdGlvbnMgaGVscC4gUHJvYmFibHkgb24g
-c3VuZGF5IHRob3VnaC4uCgpXYW5kZXIuCg==
+Cc: David Johnson <dj@david-web.co.uk>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
 
---===============2106655503==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On May 5 2007 07:40, Rafa=C5=82 Bilski wrote:
+>Jan,
+>
+>Can You send output of x86info program and output of=20
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Where do I find this?
 
---===============2106655503==--
+>lspci command? Longhaul wasn't working for You since 2.6.18 right?
+
+# lspci
+00:00.0 Host bridge: VIA Technologies, Inc. CN400/PM880 Host Bridge
+00:00.1 Host bridge: VIA Technologies, Inc. CN400/PM880 Host Bridge
+00:00.2 Host bridge: VIA Technologies, Inc. CN400/PM880 Host Bridge
+00:00.3 Host bridge: VIA Technologies, Inc. CN400/PM880 Host Bridge
+00:00.4 Host bridge: VIA Technologies, Inc. CN400/PM880 Host Bridge
+00:00.7 Host bridge: VIA Technologies, Inc. CN400/PM880 Host Bridge
+00:01.0 PCI bridge: VIA Technologies, Inc. VT8237 PCI Bridge
+00:0d.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8=
+139C/8139C+ (rev 10)
+00:0e.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8=
+139C/8139C+ (rev 10)
+00:0f.0 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/=
+VT823x/A/C PIPC Bus Master IDE (rev 06)
+00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 C=
+ontroller (rev 81)
+00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 C=
+ontroller (rev 81)
+00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 C=
+ontroller (rev 81)
+00:10.3 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 C=
+ontroller (rev 81)
+00:10.4 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 86)
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8237 ISA bridge [KT600/K8T=
+800/K8T890 South]
+00:11.5 Multimedia audio controller: VIA Technologies, Inc. VT8233/A/82=
+35/8237 AC97 Audio Controller (rev 60)
+01:00.0 VGA compatible controller: VIA Technologies, Inc. S3 Unichrome =
+Pro VGA Adapter (rev 02)
+
+# dmidecode
+Handle 0x0000, DMI type 0, 20 bytes
+BIOS Information
+        Vendor: Phoenix Technologies, LTD
+        Version: 6.00 PG
+        Release Date: 11/30/2005
+        Address: 0xE0000
+        Runtime Size: 128 kB
+        ROM Size: 512 kB
+        Characteristics:
+
+
+>I'm going to work now, but I will be available after 14:00 UTC.
+
+2.6.20.2 (2.6.20.2-ccj45-default, slightly different config
+than openSUSE 10.2), no preemption, lockup.
+
+2.6.21 (openSUSE 10.3 Alpha 3 2.6.21-3-default), voluntary
+preemption, lockup.
+
+If I shall try more combinations, let me know.
+
+>If You have problem with longhaul+powersave there may be one thing=20
+>related. When I started to change Longhaul it was causing lockups=20
+>on Epia 800. I added transition protection. Helped, but not for=20
+>long. After one or two hours machine locked up anyway. I found=20
+>datasheet in Google and changed "disable BMDMA bit on PCI device" to=20
+>northbridge support. Problem fixed. Somehow CLE133 chipset didn't=20
+>like touching "BMDMA master" bits.
+>Second: I didn't get answer from VIA why they are blocking ACPI C3 on =
+CPU's=20
+>faster then 1GHz. I don't know if it is standard practice and if
+>Intel and AMD are doing it too.
+>
+>Things worth checking: disable PREEMPT, change it to "Voluntary preemp=
+tion".=20
+>Check if using conservative governor makes any difference. I know that=
+=20
+>this may sound strange, but transition latency is directly proportiona=
+l to=20
+>difference between current and destination frequency. Maybe for faster=
+=20
+>processors it isn't allowed to change frequency directly from min to m=
+ax?
+
+I'll try that .. too.
+
+
+Thanks,
+Jan
+--=20
