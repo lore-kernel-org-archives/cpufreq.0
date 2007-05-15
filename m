@@ -1,13 +1,9 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Minor updates to powernow-k8
-Date: Mon, 14 May 2007 19:04:29 -0400
-Message-ID: <20070514230429.GC7242@redhat.com>
-References: <4648D2E1.5030802@amd.com> <20070514215317.GE29024@redhat.com>
-	<1449F58C868D8D4E9C72945771150BDF02076DC0@SAUSEXMB1.amd.com>
-Mime-Version: 1.0
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
+	structure
+Date: Tue, 15 May 2007 04:54:14 -0700
+Message-ID: <200705151154.l4FBsE3Q023170@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1449F58C868D8D4E9C72945771150BDF02076DC0@SAUSEXMB1.amd.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,27 +14,20 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, May 14, 2007 at 04:55:32PM -0500, Langsdorf, Mark wrote:
- > > On Mon, May 14, 2007 at 04:21:37PM -0500, Mark Langsdorf wrote:
- > >  > I've submitted the following patches before, but they don't
- > >  > seem to have made it into the tree yet.
- > > 
- > > I merged something into cpufreq.git yesterday, though not
- > > your patch, as I couldn't find it anywhere :-/
- > > 
- > > I only bumped as far as 0x70000 though which is what the user
- > > reported was necessary to make it work on his system.
- > 
- > 0x80000 is the correct value.
+http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
-Ok, updated and pushed out, thanks.
+duaneg@dghda.com changed:
 
-	Dave
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |duaneg@dghda.com
 
--- 
-http://www.codemonkey.org.uk
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
