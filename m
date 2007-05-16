@@ -1,13 +1,10 @@
-From: Jan Piechotta <j@diesedomainwarnochfrei.de>
-Subject: Re: cpuinfo / speedstep-centrino
-Date: Wed, 16 May 2007 21:26:33 +0200
-Message-ID: <20070516212633.3b905afc@snowcat.jan>
-References: <20070516170413.2861c83d@snowcat.jan>
-	<653FFBB4508B9042B5D43DC9E18836F5E6FC7C@scsmsx415.amr.corp.intel.com>
+From: Matthieu CASTET <castet.matthieu@free.fr>
+Subject: cpufreq throttling driver
+Date: Wed, 16 May 2007 19:36:52 +0000 (UTC)
+Message-ID: <loom.20070516T213237-839@post.gmane.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5E6FC7C@scsmsx415.amr.corp.intel.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,16 +14,24 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Wed, 16 May 2007 09:18:47 -0700
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
-> What is the kernel version?
+Hi,
 
-Just checked it with 2.6.22-rc1 today after first using 2.6.20.7. Both
-versions display the same message.
+I have a desktop cpu supporting only throttling (no C-state and no P-state
+(acpi-cpufreq refuse to load)).
 
-Jan
+Does it make sense to use throttling to save some power ?
+
+
+If yes why aren't there a cpufreq driver for managing throttling ?
+That way governor could be used with throttling.
+
+Does it make sense ?
+
+
+Thanks
+
+Matthieu
