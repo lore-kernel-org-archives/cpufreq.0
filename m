@@ -1,9 +1,10 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
-	structure
-Date: Tue, 15 May 2007 18:24:26 -0700
-Message-ID: <200705160124.l4G1OQOH008249@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+From: Jan Piechotta <j@diesedomainwarnochfrei.de>
+Subject: cpuinfo / speedstep-centrino
+Date: Wed, 16 May 2007 17:04:13 +0200
+Message-ID: <20070516170413.2861c83d@snowcat.jan>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,26 +14,48 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8075
+Hi, 
 
+my kernel wants me to send you a mail:
 
+<<<snip>>> 
+cpufreq-core: trying to register driver centrino
+cpufreq-core: adding CPU 0 speedstep-centrino: found unsupported CPU
+with Enhanced SpeedStep: send /proc/cpuinfo to
+cpufreq@lists.linux.org.uk 
+cpufreq-core: initialization failed
+<<<snip>>>
 
+Mainboard is MSI 915GM Speedster-FA4 bought Dec 2005.
+Here you go:
 
+<<<snip>>>
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 13
+model name	: Intel(R) Pentium(R) M processor 1.73GHz
+stepping	: 8
+cpu MHz		: 1729.049
+cache size	: 2048 KB
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx est tm2
+bogomips	: 3460.62
+clflush size	: 64
+<<<snip>>>
 
-------- Additional Comments From j_kernel@hoblitt.com  2007-05-15 18:26 -------
-I believe that I reported the same issue to the Gentoo bug tracker:
+I also tried acpi-cpufreq without success.
 
-http://bugs.gentoo.org/show_bug.cgi?id=178585
-
-and I've just sent a possible 1 line Kconfig fix to LKML:
-
-http://lkml.org/lkml/2007/5/15/352
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+HTH, Jan
