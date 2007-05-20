@@ -1,108 +1,87 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Workaround for _PPC (BIOS cpufreq limitations)
-Date: Sat, 19 May 2007 14:41:57 -0500
-Message-ID: <1179603717.16465.71.camel@sublime.suse.de>
-References: <1179543568.16465.35.camel@sublime.suse.de>
-	 <200705190055.58626.lenb@kernel.org>
-Reply-To: trenn@suse.de
+From: Elimar Riesebieter <riesebie@lxtec.de>
+Subject: 2.6.22-rc2 built on ppc
+Date: Sun, 20 May 2007 13:19:53 +0200
+Message-ID: <20070520111953.GH3253@aragorn.home.lxtec.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200705190055.58626.lenb@kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============2079766718=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk
+
+
+--===============2079766718==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LZFKeWUZP29EKQNE"
+Content-Disposition: inline
+
+
+--LZFKeWUZP29EKQNE
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+FYI, building the kernel with
+gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+on my powerbook (PPC) gives:
+
+=2E..
+drivers/cpufreq/cpufreq.c: In function 'cpufreq_add_dev':
+drivers/cpufreq/cpufreq.c:829: warning: ignoring return value of 'sysfs_cre=
+ate_file', declared with attribute warn_unused_result
+drivers/cpufreq/cpufreq.c:833: warning: ignoring return value of 'sysfs_cre=
+ate_file', declared with attribute warn_unused_result
+drivers/cpufreq/cpufreq.c:835: warning: ignoring return value of 'sysfs_cre=
+ate_file', declared with attribute warn_unused_result
+=2E..
+
+If more info is needed, please contact me via PM, as I am not
+subscribed.
+
+Thanks for your patience
+Elimar
+
+--=20
+  Never make anything simple and efficient when a way=20
+  can be found to make it complex and wonderful ;-)
+
+--LZFKeWUZP29EKQNE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGUC7Z3Ig8bsVPf7ARAiNBAJwPJllzeCiOJ3tpuSR6SEK4vTfcSACcCtmC
+DhriZ7IA09R+NcRoXA1p1zw=
+=ZU+/
+-----END PGP SIGNATURE-----
+
+--LZFKeWUZP29EKQNE--
+
+
+--===============2079766718==
 Content-Type: text/plain; charset="us-ascii"
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Sat, 2007-05-19 at 00:55 -0400, Len Brown wrote:
-> On Friday 18 May 2007 22:59, Thomas Renninger wrote:
-> > Len, can you apply this one, pls.
-> > 
-> > Workaround for _PPC (BIOS cpufreq limitations)
-> > 
-> > There have been fixes using _PPC, which seem to unhide a problem
-> > on HP nx6125 (double cpufreq switch freezes the machine for
-> > several seconds).
-> > This one should provide a workaround for the nx6125 and for
-> > possible other machines that show any weird _PPC behaviour.
-> 
-> I don't understand what the failure is, and why this workaround
-> is effective.  Is this a clue here to a real bug
-> that requires a real fix, rather than a workaround?
-I am not sure what the real cause is, the machine hangs because
-CPU freq is limited and then all freqs are allowed again at the same
-time.
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-Also this is a SLES bug, not sure whether this also happens in mainline.
-(I mentioned that so if someone else with this machine experience that
-problem he has a pointer).
-The reason why I think this should go into mainline is because there
-were
-three patches concerning _PPC in the last months:
-  - one from Bruno Ducrot (which I expect unhided the other problems)
-  - one from Ingo Molnar (Do not read _PPC on startup - fixes some
-ThinkPads)
-  - one from me to get highest freq again if booted on battery/limited
-freq.
-
-I expect more machines have problems here (or will have in future) and
-this is a nice
-and easy possibility to workaround such problems, without loosing
-frequency
-scaling functionality.
-
-    Thomas
-> 
-> -Len
-> 
-> > Signed-off-by: Thomas Renninger <trenn@suse.de>
-> > 
-> > ---
-> >  drivers/acpi/processor_perflib.c |   16 +++++++++++++++-
-> >  1 file changed, 15 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.21/drivers/acpi/processor_perflib.c
-> > ===================================================================
-> > --- linux-2.6.21.orig/drivers/acpi/processor_perflib.c
-> > +++ linux-2.6.21/drivers/acpi/processor_perflib.c
-> > @@ -60,6 +60,11 @@ static DEFINE_MUTEX(performance_mutex);
-> >   * policy is adjusted accordingly.
-> >   */
-> >  
-> > +static unsigned int ignore_ppc = 0;
-> > +module_param(ignore_ppc, uint, 0644);
-> > +MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
-> > +		 "limited by BIOS, this should help");
-> > +
-> >  #define PPC_REGISTERED   1
-> >  #define PPC_IN_USE       2
-> >  
-> > @@ -72,6 +77,9 @@ static int acpi_processor_ppc_notifier(s
-> >  	struct acpi_processor *pr;
-> >  	unsigned int ppc = 0;
-> >  
-> > +	if (ignore_ppc)
-> > +		return 0;
-> > +
-> >  	mutex_lock(&performance_mutex);
-> >  
-> >  	if (event != CPUFREQ_INCOMPATIBLE)
-> > @@ -130,7 +138,13 @@ static int acpi_processor_get_platform_l
-> >  
-> >  int acpi_processor_ppc_has_changed(struct acpi_processor *pr)
-> >  {
-> > -	int ret = acpi_processor_get_platform_limit(pr);
-> > +	int ret;
-> > +
-> > +	if (ignore_ppc)
-> > +		return 0;
-> > +
-> > +	ret = acpi_processor_get_platform_limit(pr);
-> > +
-> >  	if (ret < 0)
-> >  		return (ret);
-> >  	else
-> > 
-> > 
+--===============2079766718==--
 
