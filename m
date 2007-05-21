@@ -1,15 +1,13 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: removal of cpufreq_set_policy()
-Date: Mon, 21 May 2007 06:54:13 -0500
-Message-ID: <1179748453.20299.68.camel@sublime.suse.de>
-References: <1178522195.6353.246.camel@localhost.localdomain>
-	<1178528071.1231.942.camel@queen.suse.de>
-	<1178529617.14928.4.camel@localhost.localdomain>
+Subject: [PATCH] Re: 2.6.22-rc2 built on ppc
+Date: Mon, 21 May 2007 07:20:04 -0500
+Message-ID: <1179750004.20299.75.camel@sublime.suse.de>
+References: <20070520111953.GH3253@aragorn.home.lxtec.de>
 Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-Hzx+Pg+lBncYZX+nEfyQ"
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1178529617.14928.4.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="=-kZrAek7IH2ngOD7JKw6x"
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <20070520111953.GH3253@aragorn.home.lxtec.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,230 +17,113 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: davej@redhat.com, cpufreq@lists.linux.org.uk, Arnd Bergmann <arnd@arndb.de>, Christian Krafft <krafft@de.ibm.com>
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Elimar Riesebieter <riesebie@lxtec.de>
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk
 
 
---=-Hzx+Pg+lBncYZX+nEfyQ
+--=-kZrAek7IH2ngOD7JKw6x
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2007-05-07 at 19:20 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-05-07 at 10:54 +0200, Thomas Renninger wrote:
+On Sun, 2007-05-20 at 13:19 +0200, Elimar Riesebieter wrote:
+> Hi,
 > 
-> > set_policy is buggy:
-> >   It calls verify_within_limits (where max_freq might get reduced)
-> >   then sets
-> >   data->user_policy.max = data->max;
-> >   which is used to restore to highest freq with update_policy, but
-> >   an already lowered freq might get assigned (e.g. if initialized
-> >   on battery with limited freq, you will never ever reach higher
-> >   freqs again).
-> > 
-> > I grepped the whole kernel and couldn't find cpufreq_set_policy to be
-> > used anywhere else.
-> 
-> Looks like cbe_cpufreq driver was merged at the same time as you were
-> removing set_polcy :-)
-Yes.
-> 
-> > The cell cpufreq driver also does not match?:
-> > linux-2.6.21_tests/arch/powerpc/platforms/cell/cbe_cpufreq.c
-> > 
-> > Can you give me a pointer to the code, is this an external project?
-> 
-> It should be in that cbe_cpufreq.c file in current -git. I'm not the
-> author of the driver though, I'm just reporting the build failure :-) 
-> 
-> Arnd and Christian, can you check what's up ?
-> 
-> I think that driver uses set_policy to enforce new limits upon request
-> from the system management.
-> 
-> I know I did something similar, though slightly different, for powermac,
-> in drivers/macintosh/windfarm_cpufreq_clamp.c which is a module in my
-> thermal control infrastructure that clamps down the cpufreq when an
-> overtemp condition is detected.
+> FYI, building the kernel with
+> gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+> on my powerbook (PPC) gives:
+> P
+> ...
+> drivers/cpufreq/cpufreq.c: In function 'cpufreq_add_dev':
+> drivers/cpufreq/cpufreq.c:829: warning: ignoring return value of 'sysfs_create_file', declared with attribute warn_unused_result
+> drivers/cpufreq/cpufreq.c:833: warning: ignoring return value of 'sysfs_create_file', declared with attribute warn_unused_result
+> drivers/cpufreq/cpufreq.c:835: warning: ignoring return value of 'sysfs_create_file', declared with attribute warn_unused_result
+> ...
+This one should fix it:
 
-I can reproduce this with -rc2.
-cpufreq_set_policy came in with this one:
-2007-04-23 Christian Krafft [POWERPC] cell: use pmi in cpufreq driver
-
-Attached patch is setting the limit like it's done for x86 in
-driver/acpi/processor_perflib.c
-IMO the interface is more complicated as it needs to be (maybe I am
-wrong),
-but it seems that this is the way it's intended to work.
-
-Please review, ehh, I don't have HW to test and don't even know what pmi
-is,
-can someone give this patch a test and try whether freq is limited and
-increased again correctly if "pmi" kicks in (compile tested...).
-
-       Thomas
-
-Limit frequency for cell powerpc via cpufreq notifier chain
-
-and get rid of cpufreq_set_policy call that caused a build
-failure due interfering commits
+Eliminate build warning (sysfs_create_file return value must be checked)
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 
-
 ---
- arch/powerpc/platforms/cell/cbe_cpufreq.c |   28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ drivers/cpufreq/cpufreq.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+Index: linux-2.6.22-rc2/drivers/cpufreq/cpufreq.c
 ===================================================================
---- linux-2.6.22-rc2.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -67,6 +67,7 @@ static u64 MIC_Slow_Next_Timer_table[] =
- 	0x00003FC000000000ull,
- };
+--- linux-2.6.22-rc2.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6.22-rc2/drivers/cpufreq/cpufreq.c
+@@ -826,13 +826,18 @@ static int cpufreq_add_dev (struct sys_d
+ 	/* set up files for this cpu device */
+ 	drv_attr = cpufreq_driver->attr;
+ 	while ((drv_attr) && (*drv_attr)) {
+-		sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
++		if (sysfs_create_file(&policy->kobj, &((*drv_attr)->attr)))
++			goto err_out_driver_exit;
+ 		drv_attr++;
+ 	}
+-	if (cpufreq_driver->get)
+-		sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
+-	if (cpufreq_driver->target)
+-		sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
++	if (cpufreq_driver->get){
++		if (sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr))
++			goto err_out_driver_exit;
++	}
++	if (cpufreq_driver->target){
++		if (sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr))
++			goto err_out_driver_exit;
++	}
  
-+static unsigned int pmi_frequency_limit = 0;
- /*
-  * hardware specific functions
-  */
-@@ -164,7 +165,6 @@ static int set_pmode(int cpu, unsigned i
- 
- static void cbe_cpufreq_handle_pmi(struct of_device *dev, pmi_message_t pmi_msg)
- {
--	struct cpufreq_policy policy;
- 	u8 cpu;
- 	u8 cbe_pmode_new;
- 
-@@ -173,15 +173,27 @@ static void cbe_cpufreq_handle_pmi(struc
- 	cpu = cbe_node_to_cpu(pmi_msg.data1);
- 	cbe_pmode_new = pmi_msg.data2;
- 
--	cpufreq_get_policy(&policy, cpu);
-+	pmi_frequency_limit = cbe_freqs[cbe_pmode_new].frequency;
- 
--	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
--	policy.min = min(policy.min, policy.max);
-+	pr_debug("cbe_handle_pmi: max freq=%d\n", pmi_frequency_limit);
-+}
-+
-+static int pmi_notifier(struct notifier_block *nb,
-+				       unsigned long event, void *data)
-+{
-+	struct cpufreq_policy *policy = data;
-+
-+	if (event != CPUFREQ_INCOMPATIBLE)
-+		return 0;
- 
--	pr_debug("cbe_handle_pmi: new policy.min=%d policy.max=%d\n", policy.min, policy.max);
--	cpufreq_set_policy(&policy);
-+	cpufreq_verify_within_limits(policy, 0, pmi_frequency_limit);
-+	return 0;
- }
- 
-+static struct notifier_block pmi_notifier_block = {
-+	.notifier_call = pmi_notifier,
-+};
-+
- static struct pmi_handler cbe_pmi_handler = {
- 	.type			= PMI_TYPE_FREQ_CHANGE,
- 	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
-@@ -238,6 +250,10 @@ static int cbe_cpufreq_cpu_init(struct c
- 
- 	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
- 
-+	/* frequency might get limited later, initialize limit with max_freq */
-+	pmi_frequency_limit = max_freq;
-+	cpufreq_register_notifier(&pmi_notifier_block, CPUFREQ_POLICY_NOTIFIER);
-+
- 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max are set correctly */
- 	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
- }
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	for_each_cpu_mask(j, policy->cpus) {
 
 
---=-Hzx+Pg+lBncYZX+nEfyQ
-Content-Disposition: attachment; filename=ppc_cpufreq_pmi_notifier.patch
-Content-Type: text/x-patch; name=ppc_cpufreq_pmi_notifier.patch; charset=UTF-8
+--=-kZrAek7IH2ngOD7JKw6x
+Content-Disposition: attachment;
+	filename=cpufreq_sysfs_create_file_warning.patch
+Content-Type: text/x-patch; name=cpufreq_sysfs_create_file_warning.patch;
+	charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-Limit frequency for cell powerpc via cpufreq notifier chain
-
-and get rid of cpufreq_set_policy call that caused a build
-failure due interfering commits
+Eliminate build warning (sysfs_create_file return value must be checked)
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 
-
 ---
- arch/powerpc/platforms/cell/cbe_cpufreq.c |   28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ drivers/cpufreq/cpufreq.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+Index: linux-2.6.22-rc2/drivers/cpufreq/cpufreq.c
 ===================================================================
---- linux-2.6.22-rc2.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -67,6 +67,7 @@ static u64 MIC_Slow_Next_Timer_table[] =
- 	0x00003FC000000000ull,
- };
+--- linux-2.6.22-rc2.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6.22-rc2/drivers/cpufreq/cpufreq.c
+@@ -826,13 +826,18 @@ static int cpufreq_add_dev (struct sys_d
+ 	/* set up files for this cpu device */
+ 	drv_attr = cpufreq_driver->attr;
+ 	while ((drv_attr) && (*drv_attr)) {
+-		sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
++		if (sysfs_create_file(&policy->kobj, &((*drv_attr)->attr)))
++			goto err_out_driver_exit;
+ 		drv_attr++;
+ 	}
+-	if (cpufreq_driver->get)
+-		sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
+-	if (cpufreq_driver->target)
+-		sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
++	if (cpufreq_driver->get){
++		if (sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr))
++			goto err_out_driver_exit;
++	}
++	if (cpufreq_driver->target){
++		if (sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr))
++			goto err_out_driver_exit;
++	}
  
-+static unsigned int pmi_frequency_limit = 0;
- /*
-  * hardware specific functions
-  */
-@@ -164,7 +165,6 @@ static int set_pmode(int cpu, unsigned i
- 
- static void cbe_cpufreq_handle_pmi(struct of_device *dev, pmi_message_t pmi_msg)
- {
--	struct cpufreq_policy policy;
- 	u8 cpu;
- 	u8 cbe_pmode_new;
- 
-@@ -173,15 +173,27 @@ static void cbe_cpufreq_handle_pmi(struc
- 	cpu = cbe_node_to_cpu(pmi_msg.data1);
- 	cbe_pmode_new = pmi_msg.data2;
- 
--	cpufreq_get_policy(&policy, cpu);
-+	pmi_frequency_limit = cbe_freqs[cbe_pmode_new].frequency;
- 
--	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
--	policy.min = min(policy.min, policy.max);
-+	pr_debug("cbe_handle_pmi: max freq=%d\n", pmi_frequency_limit);
-+}
-+
-+static int pmi_notifier(struct notifier_block *nb,
-+				       unsigned long event, void *data)
-+{
-+	struct cpufreq_policy *policy = data;
-+
-+	if (event != CPUFREQ_INCOMPATIBLE)
-+		return 0;
- 
--	pr_debug("cbe_handle_pmi: new policy.min=%d policy.max=%d\n", policy.min, policy.max);
--	cpufreq_set_policy(&policy);
-+	cpufreq_verify_within_limits(policy, 0, pmi_frequency_limit);
-+	return 0;
- }
- 
-+static struct notifier_block pmi_notifier_block = {
-+	.notifier_call = pmi_notifier,
-+};
-+
- static struct pmi_handler cbe_pmi_handler = {
- 	.type			= PMI_TYPE_FREQ_CHANGE,
- 	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
-@@ -238,6 +250,10 @@ static int cbe_cpufreq_cpu_init(struct c
- 
- 	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
- 
-+	/* frequency might get limited later, initialize limit with max_freq */
-+	pmi_frequency_limit = max_freq;
-+	cpufreq_register_notifier(&pmi_notifier_block, CPUFREQ_POLICY_NOTIFIER);
-+
- 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max are set correctly */
- 	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
- }
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	for_each_cpu_mask(j, policy->cpus) {
 
---=-Hzx+Pg+lBncYZX+nEfyQ
+--=-kZrAek7IH2ngOD7JKw6x
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -253,6 +134,6 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---=-Hzx+Pg+lBncYZX+nEfyQ--
+--=-kZrAek7IH2ngOD7JKw6x--
 
 
