@@ -1,14 +1,15 @@
-From: Gionn <scurippio@gmail.com>
-Subject: Lost cpu scaling after BIOS upgrade on Asus F3jc (Intel T2050)
-Date: Sun, 20 May 2007 16:38:29 +0200
-Message-ID: <2e2245b30705200738wcfed3bbqa0019c962740fac5@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: removal of cpufreq_set_policy()
+Date: Mon, 21 May 2007 06:54:13 -0500
+Message-ID: <1179748453.20299.68.camel@sublime.suse.de>
+References: <1178522195.6353.246.camel@localhost.localdomain>
+	<1178528071.1231.942.camel@queen.suse.de>
+	<1178529617.14928.4.camel@localhost.localdomain>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="=-Hzx+Pg+lBncYZX+nEfyQ"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-	b=QNFJ1j2GBVYnze4GDSaGf7Hgzx2mfSLrOV9hR4/VA1svLbvxQI1iRwvDDGnsjTte9Crb3nQZqIUoTlnVFY6aVOCrDIgZ2zCMuH2+lDq5yPO/sVEFaaQgGFjJqdbULjU1lSGClgiIh9cwWYrSkX0oGsSrJ5etMLNI88dJWZPgG4Q=
-Content-Disposition: inline
+In-Reply-To: <1178529617.14928.4.camel@localhost.localdomain>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,37 +20,239 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
-
-Hi to all.
-
-I was using, without any problems, frequency scaling with powernowd on
-2.6.20-15-generic (ubuntu feisty default kernel).
-
-After doing a BIOS upgrade for resolving other problems on my Asus
-F3jc, frequency scaling stopped working: both speedstep_centrino and
-acpi-cpufreq say no such device.
-Dislike I was hoping, Asus don't keep older bios release available for
-download, so I cannot downgrade in any way.
-
-If can be useful, last BIOS image is here:
-http://dlsvr01.asus.com/pub/ASUS/nb/F3Jc/F3Jc305AS.ZIP
-and here there is the changelog
-- To fix system cannot do battery pre-charge process when an
-unknown/failure battery insert.
-- Support Intel Extend ID CPU:Merom Celeron 530 CPU.
-
-Also release 304 (the oldest available for download), don't work.
-Link: http://dlsvr01.asus.com/pub/ASUS/nb/Z96J/F3Jc304AS.ZIP
-Changelog:
-- Update new CPU Microcode
-- System plays wave file and causes garbage sound.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: davej@redhat.com, cpufreq@lists.linux.org.uk, Arnd Bergmann <arnd@arndb.de>, Christian Krafft <krafft@de.ibm.com>
 
 
-Every kind of reply is much appreciated :p
+--=-Hzx+Pg+lBncYZX+nEfyQ
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Mon, 2007-05-07 at 19:20 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-05-07 at 10:54 +0200, Thomas Renninger wrote:
+> 
+> > set_policy is buggy:
+> >   It calls verify_within_limits (where max_freq might get reduced)
+> >   then sets
+> >   data->user_policy.max = data->max;
+> >   which is used to restore to highest freq with update_policy, but
+> >   an already lowered freq might get assigned (e.g. if initialized
+> >   on battery with limited freq, you will never ever reach higher
+> >   freqs again).
+> > 
+> > I grepped the whole kernel and couldn't find cpufreq_set_policy to be
+> > used anywhere else.
+> 
+> Looks like cbe_cpufreq driver was merged at the same time as you were
+> removing set_polcy :-)
+Yes.
+> 
+> > The cell cpufreq driver also does not match?:
+> > linux-2.6.21_tests/arch/powerpc/platforms/cell/cbe_cpufreq.c
+> > 
+> > Can you give me a pointer to the code, is this an external project?
+> 
+> It should be in that cbe_cpufreq.c file in current -git. I'm not the
+> author of the driver though, I'm just reporting the build failure :-) 
+> 
+> Arnd and Christian, can you check what's up ?
+> 
+> I think that driver uses set_policy to enforce new limits upon request
+> from the system management.
+> 
+> I know I did something similar, though slightly different, for powermac,
+> in drivers/macintosh/windfarm_cpufreq_clamp.c which is a module in my
+> thermal control infrastructure that clamps down the cpufreq when an
+> overtemp condition is detected.
+
+I can reproduce this with -rc2.
+cpufreq_set_policy came in with this one:
+2007-04-23 Christian Krafft [POWERPC] cell: use pmi in cpufreq driver
+
+Attached patch is setting the limit like it's done for x86 in
+driver/acpi/processor_perflib.c
+IMO the interface is more complicated as it needs to be (maybe I am
+wrong),
+but it seems that this is the way it's intended to work.
+
+Please review, ehh, I don't have HW to test and don't even know what pmi
+is,
+can someone give this patch a test and try whether freq is limited and
+increased again correctly if "pmi" kicks in (compile tested...).
+
+       Thomas
+
+Limit frequency for cell powerpc via cpufreq notifier chain
+
+and get rid of cpufreq_set_policy call that caused a build
+failure due interfering commits
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
 
 
-Scorp
-http://blog.scorpionworld.it/
-L'informatico e` l'anello mancante tra l'uomo ed il computer.
+---
+ arch/powerpc/platforms/cell/cbe_cpufreq.c |   28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+===================================================================
+--- linux-2.6.22-rc2.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
++++ linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+@@ -67,6 +67,7 @@ static u64 MIC_Slow_Next_Timer_table[] =
+ 	0x00003FC000000000ull,
+ };
+ 
++static unsigned int pmi_frequency_limit = 0;
+ /*
+  * hardware specific functions
+  */
+@@ -164,7 +165,6 @@ static int set_pmode(int cpu, unsigned i
+ 
+ static void cbe_cpufreq_handle_pmi(struct of_device *dev, pmi_message_t pmi_msg)
+ {
+-	struct cpufreq_policy policy;
+ 	u8 cpu;
+ 	u8 cbe_pmode_new;
+ 
+@@ -173,15 +173,27 @@ static void cbe_cpufreq_handle_pmi(struc
+ 	cpu = cbe_node_to_cpu(pmi_msg.data1);
+ 	cbe_pmode_new = pmi_msg.data2;
+ 
+-	cpufreq_get_policy(&policy, cpu);
++	pmi_frequency_limit = cbe_freqs[cbe_pmode_new].frequency;
+ 
+-	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
+-	policy.min = min(policy.min, policy.max);
++	pr_debug("cbe_handle_pmi: max freq=%d\n", pmi_frequency_limit);
++}
++
++static int pmi_notifier(struct notifier_block *nb,
++				       unsigned long event, void *data)
++{
++	struct cpufreq_policy *policy = data;
++
++	if (event != CPUFREQ_INCOMPATIBLE)
++		return 0;
+ 
+-	pr_debug("cbe_handle_pmi: new policy.min=%d policy.max=%d\n", policy.min, policy.max);
+-	cpufreq_set_policy(&policy);
++	cpufreq_verify_within_limits(policy, 0, pmi_frequency_limit);
++	return 0;
+ }
+ 
++static struct notifier_block pmi_notifier_block = {
++	.notifier_call = pmi_notifier,
++};
++
+ static struct pmi_handler cbe_pmi_handler = {
+ 	.type			= PMI_TYPE_FREQ_CHANGE,
+ 	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
+@@ -238,6 +250,10 @@ static int cbe_cpufreq_cpu_init(struct c
+ 
+ 	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
+ 
++	/* frequency might get limited later, initialize limit with max_freq */
++	pmi_frequency_limit = max_freq;
++	cpufreq_register_notifier(&pmi_notifier_block, CPUFREQ_POLICY_NOTIFIER);
++
+ 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max are set correctly */
+ 	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
+ }
+
+
+--=-Hzx+Pg+lBncYZX+nEfyQ
+Content-Disposition: attachment; filename=ppc_cpufreq_pmi_notifier.patch
+Content-Type: text/x-patch; name=ppc_cpufreq_pmi_notifier.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Limit frequency for cell powerpc via cpufreq notifier chain
+
+and get rid of cpufreq_set_policy call that caused a build
+failure due interfering commits
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
+
+---
+ arch/powerpc/platforms/cell/cbe_cpufreq.c |   28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+===================================================================
+--- linux-2.6.22-rc2.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
++++ linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+@@ -67,6 +67,7 @@ static u64 MIC_Slow_Next_Timer_table[] =
+ 	0x00003FC000000000ull,
+ };
+ 
++static unsigned int pmi_frequency_limit = 0;
+ /*
+  * hardware specific functions
+  */
+@@ -164,7 +165,6 @@ static int set_pmode(int cpu, unsigned i
+ 
+ static void cbe_cpufreq_handle_pmi(struct of_device *dev, pmi_message_t pmi_msg)
+ {
+-	struct cpufreq_policy policy;
+ 	u8 cpu;
+ 	u8 cbe_pmode_new;
+ 
+@@ -173,15 +173,27 @@ static void cbe_cpufreq_handle_pmi(struc
+ 	cpu = cbe_node_to_cpu(pmi_msg.data1);
+ 	cbe_pmode_new = pmi_msg.data2;
+ 
+-	cpufreq_get_policy(&policy, cpu);
++	pmi_frequency_limit = cbe_freqs[cbe_pmode_new].frequency;
+ 
+-	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
+-	policy.min = min(policy.min, policy.max);
++	pr_debug("cbe_handle_pmi: max freq=%d\n", pmi_frequency_limit);
++}
++
++static int pmi_notifier(struct notifier_block *nb,
++				       unsigned long event, void *data)
++{
++	struct cpufreq_policy *policy = data;
++
++	if (event != CPUFREQ_INCOMPATIBLE)
++		return 0;
+ 
+-	pr_debug("cbe_handle_pmi: new policy.min=%d policy.max=%d\n", policy.min, policy.max);
+-	cpufreq_set_policy(&policy);
++	cpufreq_verify_within_limits(policy, 0, pmi_frequency_limit);
++	return 0;
+ }
+ 
++static struct notifier_block pmi_notifier_block = {
++	.notifier_call = pmi_notifier,
++};
++
+ static struct pmi_handler cbe_pmi_handler = {
+ 	.type			= PMI_TYPE_FREQ_CHANGE,
+ 	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
+@@ -238,6 +250,10 @@ static int cbe_cpufreq_cpu_init(struct c
+ 
+ 	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
+ 
++	/* frequency might get limited later, initialize limit with max_freq */
++	pmi_frequency_limit = max_freq;
++	cpufreq_register_notifier(&pmi_notifier_block, CPUFREQ_POLICY_NOTIFIER);
++
+ 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max are set correctly */
+ 	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
+ }
+
+--=-Hzx+Pg+lBncYZX+nEfyQ
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--=-Hzx+Pg+lBncYZX+nEfyQ--
+
+
