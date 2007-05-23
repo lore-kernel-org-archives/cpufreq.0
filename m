@@ -1,8 +1,10 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8524] Wrong cpu frequency displayed when overclocked
-Date: Wed, 23 May 2007 09:36:32 -0700
-Message-ID: <200705231636.l4NGaWX6016181@fire-2.osdl.org>
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [PATCH] acpi-cpufreq: Proper ReadModifyWrite of PERF_CTL MSR
+Date: Wed, 23 May 2007 15:42:13 -0700
+Message-ID: <20070523224213.GA15887@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -13,30 +15,56 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=8524
-
+To: Dave Jones <davej@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, cpufreq <cpufreq@www.linux.org.uk>
 
 
+During recent acpi-cpufreq changes, writing to PERF_CTL msr
+changed from RMW of entire 64 bit to RMW of low 32 bit and clearing of
+upper 32 bit. Fix it back to do a proper RMW of the MSR.
 
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-------- Additional Comments From paapaa125@hotmail.com  2007-05-23 09:39 -------
-Ok, so in the 1st case the correct frequency is actually measured/read from
-processor and in the second case cpufreq just substitutes the "stock" values and
-hides the true frequency?
-
-Of course, it would be nice to do this the correct way (ie. cpufreq could read
-the actual FSB speed and the usable multiplier range and use those values
-instead [low_multi * FSB, high_multi * FSB]). After all, all that cpufreq does
-is alter the multiplier (on desktop core 2 duo's), right? So showing the correct
-freq range and correct freq should be quite easy.
-
-But luckily this issue affects only the displayed values. The processor works at
-the correct speed and the scaling works fine.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Index: linux-2.6.22-rc-mm/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+===================================================================
+--- linux-2.6.22-rc-mm.orig/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ linux-2.6.22-rc-mm/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -167,11 +167,13 @@ static void do_drv_read(struct drv_cmd *
+ 
+ static void do_drv_write(struct drv_cmd *cmd)
+ {
+-	u32 h = 0;
++	u32 lo, hi;
+ 
+ 	switch (cmd->type) {
+ 	case SYSTEM_INTEL_MSR_CAPABLE:
+-		wrmsr(cmd->addr.msr.reg, cmd->val, h);
++		rdmsr(cmd->addr.msr.reg, lo, hi);
++		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
++		wrmsr(cmd->addr.msr.reg, lo, hi);
+ 		break;
+ 	case SYSTEM_IO_CAPABLE:
+ 		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
+@@ -372,7 +374,6 @@ static int acpi_cpufreq_target(struct cp
+ 	struct cpufreq_freqs freqs;
+ 	cpumask_t online_policy_cpus;
+ 	struct drv_cmd cmd;
+-	unsigned int msr;
+ 	unsigned int next_state = 0; /* Index into freq_table */
+ 	unsigned int next_perf_state = 0; /* Index into perf table */
+ 	unsigned int i;
+@@ -417,11 +418,7 @@ static int acpi_cpufreq_target(struct cp
+ 	case SYSTEM_INTEL_MSR_CAPABLE:
+ 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+ 		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
+-		msr =
+-		    (u32) perf->states[next_perf_state].
+-		    control & INTEL_MSR_RANGE;
+-		cmd.val = get_cur_val(online_policy_cpus);
+-		cmd.val = (cmd.val & ~INTEL_MSR_RANGE) | msr;
++		cmd.val = (u32) perf->states[next_perf_state].control;
+ 		break;
+ 	case SYSTEM_IO_CAPABLE:
+ 		cmd.type = SYSTEM_IO_CAPABLE;
