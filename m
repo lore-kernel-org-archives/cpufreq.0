@@ -1,12 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: failed to load cpufreq
-Date: Thu, 24 May 2007 09:08:42 -0400
-Message-ID: <20070524130842.GA4869@redhat.com>
-References: <be6e8fb10705240351q575b59e5u3f44db8e4daaa119@mail.gmail.com>
+From: Muskat Nuss <muskatnuss@gmx.at>
+Subject: Amd Turion TL-52 X2 on Amilo PA 1510> No way to change Frequency!
+Date: Fri, 25 May 2007 00:14:24 +0200
+Message-ID: <1180044864.16204.11.camel@Tux-Devil>
+Reply-To: muskatnuss@gmx.at
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <be6e8fb10705240351q575b59e5u3f44db8e4daaa119@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,19 +17,25 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Prashanth Tamraparni <prasht@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Thu, May 24, 2007 at 04:21:31PM +0530, Prashanth Tamraparni wrote:
- > Hi,
- > I am pretty new to using cpufreq and wanted to try on one of my test
- > system based on 2.6.18 kernel.  It failed to load speedstep-centrino:
+Distribution: Ubuntu x86_64 Newest Stable release
+Hardware: Laptop Fujistu-Siemens Amilo Pa 1510
+Problem: so the driver correctly detects the two available
+frequencies (800 & 1600 MHz), any governor will always use the lowest
+one.
+Well in Suse 10.2 i rebuild the kernel with the powernowd module for AMD
+64
+with powernow! @ this time the cpu always ran on 1.6 GHz but I wasn able
+to
+change the Frequency to 800 MHz. 
+Now I'm stack I can switch between 800 and 800MHz, whatever i do!
 
-A lot has changed in the year and a half since that kernel.
-Please try acpi-cpufreq on a current kernel.
+I thought I'm not the only guy with that problem... but how do i fix
+this problem?
+already ran a bios update to 1.07 newest version for my Notebook.
+All modules a loaded and running. Powernow-k8, powernowd, also the
+userspace governor
+and the cpufreq module! 
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+greetz muskatnuss. /*sry for wrong posting if done > new to this scene*/
