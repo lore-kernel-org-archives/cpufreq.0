@@ -1,8 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8523] Can't select 'ondemand' as default cpufreq governor
-Date: Thu, 24 May 2007 04:22:20 -0700
-Message-ID: <200705241122.l4OBMKZm020352@fire-2.osdl.org>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: failed to load cpufreq
+Date: Thu, 24 May 2007 09:08:42 -0400
+Message-ID: <20070524130842.GA4869@redhat.com>
+References: <be6e8fb10705240351q575b59e5u3f44db8e4daaa119@mail.gmail.com>
+Mime-Version: 1.0
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <be6e8fb10705240351q575b59e5u3f44db8e4daaa119@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -12,22 +16,21 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Prashanth Tamraparni <prasht@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8523
+On Thu, May 24, 2007 at 04:21:31PM +0530, Prashanth Tamraparni wrote:
+ > Hi,
+ > I am pretty new to using cpufreq and wanted to try on one of my test
+ > system based on 2.6.18 kernel.  It failed to load speedstep-centrino:
 
+A lot has changed in the year and a half since that kernel.
+Please try acpi-cpufreq on a current kernel.
 
+	Dave
 
-
-
-------- Additional Comments From paapaa125@hotmail.com  2007-05-24 04:25 -------
-I already made a patch which allows one to select ondemand as the default
-governor. I try to make a patch which let's one choose any governor as default.
-I'll post the patch here later.
-
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+-- 
+http://www.codemonkey.org.uk
