@@ -1,11 +1,11 @@
-From: "Patrick Oberdorfer" <Muskatnuss@gmx.at>
-Subject: Amd Turion TL-52 X2 on Amilo PA 1510> No way to change Frequency!
-Date: Fri, 25 May 2007 07:09:05 +0200
-Message-ID: <20070525050905.54540@gmx.net>
+From: m0livier <m0livier@orange.fr>
+Subject: unsupported CPU with Enhanced SpeedStep
+Date: Fri, 25 May 2007 13:55:27 +0200 (CEST)
+Message-ID: <27169902.62691180094127601.JavaMail.www@wwinf2631>
+Reply-To: m0livier <m0livier@orange.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,17 +15,52 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-dmesg | grep power
+Hi,
 
-[   54.273858] powernow-k8: Found 2 AMD Turion(tm) 64 X2 Mobile Technology =
-TL-52 processors (version 2.00.00)
-[   54.273973] powernow-k8:     0 : fid 0x8 (1600 MHz), vid 0x13
-[   54.273978] powernow-k8:     1 : fid 0x0 (800 MHz), vid 0x1e
+I send you some informations about my cpu and cpufreq not working with speedstep-centrino ( deprecated in kernel 2.6.21 ) 
+and not working with acpi-cpufreq
 
-so for me it looks like i got no errors.
---=20
-Psssst! Schon vom neuen GMX MultiMessenger geh=F6rt?
-Der kanns mit allen: http://www.gmx.net/de/go/multimessenger
+Actual kernel : 2.6.21-2
+
+/proc/cpufino:
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 13
+model name      : Intel(R) Pentium(R) M processor 1.86GHz
+stepping        : 8
+cpu MHz         : 800.018
+cache size      : 2048 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe est tm2
+bogomips        : 1602.01
+clflush size    : 64
+
+
+With cpufreq.debug=2 i got this when i try to load acpi-cpufreq module:
+
+kernel: cpufreq-core: trying to register driver acpi-cpufreq
+kernel: cpufreq-core: adding CPU 0
+kernel: cpufreq-core: initialization failed
+kernel: cpufreq-core: no CPU initialized for driver acpi-cpufreq
+kernel: cpufreq-core: unregistering CPU 0
+
+
+
+Tell me if you need more informations .
+
+Berst Regards,
+
+Olivier.
