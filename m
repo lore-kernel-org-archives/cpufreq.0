@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8547] "Hardware error - pending bit very stuck" on Mobile AMD
 	Sempron
-Date: Thu, 31 May 2007 13:29:48 -0700
-Message-ID: <200705312029.l4VKTmW3022423@fire-2.osdl.org>
+Date: Thu, 31 May 2007 13:29:20 -0700
+Message-ID: <200705312029.l4VKTKlS022400@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -25,12 +25,11 @@ davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
+              Owner|power-                      |cpufreq@www.linux.org.uk
+                   |management_other@kernel-    |
+                   |bugs.osdl.org               |
+          Component|Other                       |cpufreq
 
-
-
-------- Additional Comments From davej@codemonkey.org.uk  2007-05-31 13:33 -------
-this is a longshot, but is there a BIOS update available for your system ?
 
 
 ------- You are receiving this mail because: -------
