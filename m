@@ -1,16 +1,9 @@
-From: Nicolas Capit <capitn@free.fr>
-Subject: Re: ondemand: cpu load calculation with kernel processus
-Date: Thu, 31 May 2007 20:57:51 -0500
-Message-ID: <20070531205751.2f56da4d@localhost.localdomain>
-References: <20070531165744.4bf6e18b@localhost.localdomain>
-	<200705312057.45963.lenb@kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-	b=Qd2fVDIlEi9WxrWSZiz4MPrSCdNSTx29Ym2QFjQeYV1D48ql3YU7yrqLJiIp497yUzjmYCzI+HUkazktdGaJWzocIv57liWDCpmBjd/AVwZARd63BtM768x7honly4gL/I7KZFxEcmHmkaLqewJCEKmcAuT6eiFG8nOlIYal66Y=
-In-Reply-To: <200705312057.45963.lenb@kernel.org>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8547] "Hardware error - pending bit very stuck" on Mobile AMD
+	Sempron
+Date: Thu, 31 May 2007 23:07:50 -0700
+Message-ID: <200706010607.l5167oMl002319@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,42 +13,64 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Len Brown <lenb@kernel.org>
-Cc: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-On Thu, 31 May 2007 20:57:45 -0400
-Len Brown <lenb@kernel.org> wrote:
-
-> On Thursday 31 May 2007 17:57, Nicolas Capit wrote:
-> > Hello,
-> > 
-> > I am running a Debian unstable with a kernel 2.6.21-1-686 and using
-> > modules powernow_k8 and cpufreq_ondemand.
-> > 
-> > My configuration with the ondemand governor seems to work very well
-> > except when my cpu is busy by the kernel processus kcryptd. The cpu is
-> > 100% busy but the frequency is not increased.
-> > (I am using the module dm_crypt to encrypt my home filesystem)
-> > 
-> > So my question is:
-> > Does the ondemand governor calculate the load of the machine with user
-> > level and *kernel* level processus?
-> 
-> both user and kernel time should count as busy time.
-> 
-> do the cpu stats exposed by top show that you have idle time available?
-
-Ok I am sorry for the noise :-(
-My program that get the CPU stats is buggy... with top, effectively the
-CPU is 0% idle but 10%us and 90%wa
-(wa : Amount of time the CPU has been waiting for I/O to complete.)
-
-Except if increasing the CPU frequency will reduce I/O wait time, the
-cpufreq_ondemand works well...
+http://bugzilla.kernel.org/show_bug.cgi?id=8547
 
 
-> 
-> -Len
-> 
+
+
+
+------- Additional Comments From nm127@freemail.hu  2007-05-31 23:11 -------
+Created an attachment (id=11626)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11626&action=view)
+lspci -v -v output
+
+# lspci
+00:00.0 Host bridge: VIA Technologies, Inc. K8M800 Host Bridge
+00:00.1 Host bridge: VIA Technologies, Inc. K8M800 Host Bridge
+00:00.2 Host bridge: VIA Technologies, Inc. K8M800 Host Bridge
+00:00.3 Host bridge: VIA Technologies, Inc. K8M800 Host Bridge
+00:00.4 Host bridge: VIA Technologies, Inc. K8M800 Host Bridge
+00:00.7 Host bridge: VIA Technologies, Inc. K8M800 Host Bridge
+00:01.0 PCI bridge: VIA Technologies, Inc. VT8237 PCI bridge [K8T800/K8T890
+South]
+00:08.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL-8139/8139C/8139C+ (rev 10)
+00:0c.0 CardBus bridge: ENE Technology Inc CB1410 Cardbus Controller (rev 01)
+00:0e.0 Mass storage controller: Winbond Electronics Corp Unknown device 8481
+(rev 01)
+00:0e.1 Mass storage controller: Winbond Electronics Corp Unknown device 8482
+(rev 01)
+00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+Controller (rev 80)
+00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+Controller (rev 80)
+00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+Controller (rev 80)
+00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82)
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
+00:11.1 IDE interface: VIA Technologies, Inc.
+VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
+00:11.5 Multimedia audio controller: VIA Technologies, Inc. VT8233/A/8235/8237
+AC97 Audio Controller (rev 50)
+00:11.6 Communication controller: VIA Technologies, Inc. AC'97 Modem Controller
+(rev 80)
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+HyperTransport Technology Configuration
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address
+Map
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM
+Controller
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]
+Miscellaneous Control
+01:00.0 VGA compatible controller: VIA Technologies, Inc. S3 Unichrome Pro VGA
+Adapter (rev 01)
+
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
