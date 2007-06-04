@@ -1,9 +1,7 @@
-From: Gabriele Ferri <fif3336@iperbole.bologna.it>
-Subject: geode sc1100 gx-suspmod module
-Date: Fri, 01 Jun 2007 17:44:25 +0200
-Message-ID: <1180712665.46603ed97f1d0@webmail.iperbole.bologna.it>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8581] New: acpi-cpufreq gets very confused on suspend to ram
+Date: Mon, 4 Jun 2007 04:45:24 -0700
+Message-ID: <200706041145.l54BjOA7017413@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,28 +13,40 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hi list!
+http://bugzilla.kernel.org/show_bug.cgi?id=8581
 
-I've recently assembled a "wrap board" pc ( http://www.pcengines.ch/wrap.htm ),
-it uses an AMD SC1100 cpu (
-http://www.amd.com/us-en/ConnectivitySolutions/ProductInformation/0,,50_2330_9863_10524%5E10525,00.html
-). Since this processor is based on the GX design, I hope to be able to use the
-gx-suspmod module to reduce power consumption and heat production.
+           Summary: acpi-cpufreq gets very confused on suspend to ram
+    Kernel Version: 2.6.21.3
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: eo@nebensachen.de
 
-Every time I issue "modprobe gx-suspmod" I get a "FATAL: Error inserting
-gx_suspmod - no such device" error. This happens both with a Debian 2.6.28
-kernel and with a custom-compiled 2.6.22 rc2 kernel.
 
-Another slightly offtopic but related question: I've read in the product brief
-for the SC1100 cpu that it has "ACPI 1.0 compliant power management". When
-linux boots the kernel complains that it cannot find any acpi table. Should I
-load a custom table via the kernel? This way I will be able to get some basic
-power management?
+Most recent kernel where this bug did *NOT* occur: Only switched to
+acpi-cpufreq now.
+Distribution: Ubuntu 06.10
+Hardware Environment: Thinkpad X40
+Software Environment:
+Problem Description:
+After startup acpi-cpufreq works as expected either running the
+ondemand or the conservative governor. When using the conservative
+governor, the cpu frequency stays at full speed after a suspend to ram
+/ resume cycle. Switching to performance and back to conservative
+seems to restore the usual behaviour.
 
-many thanks for your patience with such a newbie
-cheers
+Even more strange are the symptoms when running the ondemand governor.
+A s2ram / resume cycle automatically switches to conservative, for
+some reason, and I made a rather thorough search in /etc to ensure
+that this is not due to some acpi, laptop-mode or similar script. At
+least, cpu frequency drops to the lowest frequency but after a second
+s2ram/resume cycle there it shows the same behaviour as described
+above, i.e., frequency stays at full speed.
 
-Gabriele
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
