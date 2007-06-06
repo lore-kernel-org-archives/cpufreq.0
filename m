@@ -1,8 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
-	M1437G - Intel(R) Pentium(R) M
-Date: Tue, 5 Jun 2007 22:06:22 -0700
-Message-ID: <200706060506.l5656MWA013412@fire-2.osdl.org>
+Subject: [Bug 7211] /proc/cpuinfo reports wrong frequency
+Date: Wed, 6 Jun 2007 00:23:32 -0700
+Message-ID: <200706060723.l567NW8M017415@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -19,15 +18,24 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8228
+http://bugzilla.kernel.org/show_bug.cgi?id=7211
 
 davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|ASSIGNED                    |NEEDINFO
+             Status|NEW                         |REJECTED
+         Resolution|                            |INVALID
 
 
+
+------- Additional Comments From davej@codemonkey.org.uk  2007-06-06 00:27 -------
+"the fsb is clocked at 440mhz"
+
+therein lies your problem.
+
+When you overclock, the BIOS data tables don't match what the CPU is actually
+running at.  There's no way to fix this.
 
 ------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+You are the assignee for the bug, or are watching the assignee.
