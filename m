@@ -1,14 +1,9 @@
-From: tony@bakeyournoodle.com (Tony Breeds)
-Subject: Re: cpufreq_set_policy removed
-Date: Thu, 7 Jun 2007 11:03:46 +1000
-Message-ID: <20070607010346.GA15955@bakeyournoodle.com>
-References: <20070606214243.GX15955@bakeyournoodle.com>
-	<1181170878.31677.272.camel@localhost.localdomain>
-	<20070606231342.GA16771@redhat.com>
-Mime-Version: 1.0
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
+	p4-clockmod anymore
+Date: Thu, 7 Jun 2007 12:04:23 -0700
+Message-ID: <200706071904.l57J4Nrm016602@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20070606231342.GA16771@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,30 +14,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christian Krafft <krafft@de.ibm.com>, cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Wed, Jun 06, 2007 at 07:13:43PM -0400, Dave Jones wrote:
-> On Thu, Jun 07, 2007 at 09:01:18AM +1000, Ben Herrenschmidt wrote:
->  > On Thu, 2007-06-07 at 07:42 +1000, Tony Breeds wrote:
->  > > Hi All,
->  > > 	The git commit  632786ce9ff6206951ee4c84fe5c0d5c1d12f4cc reomved
->  > > the "deprecated and buggy" cpufreq_set_policy().  In the linux powerpc
->  > > tree we have a driver that's using it.
->  > 
->  > Ugh... we still use it ? I though we had fixed that ...
->  > 
->  > CC'ing Christian who maintains the CBE cpufreq driver.
-> 
-> Thomas mailed the following patch a few weeks ago..
+http://bugzilla.kernel.org/show_bug.cgi?id=6367
 
-Thanks Dave and Thomas.
+bunk@stusta.de changed:
 
-We'll see what we can do about getting this tested and pushed.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |bunk@stusta.de
+             Status|NEW                         |REJECTED
+         Resolution|                            |UNREPRODUCIBLE
 
-Yours Tony
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
