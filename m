@@ -1,10 +1,11 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Proper register access
-Date: Thu, 07 Jun 2007 22:31:24 +0200
-Message-ID: <46686B1C.9060009@interia.pl>
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Subject: [PATCH] powernow-k8 typos
+Date: Fri, 8 Jun 2007 11:33:08 +0200
+Message-ID: <200706081133.08650.joachim.deguara@amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,57 +15,36 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
+typos fixed
 
-In previous commit I used u32 for u16 register.
-This code will work only when ACPI block address is set.
-For now it is only for VT8235 and VT8237.
+Signed-off-by: Joachim.Deguara <joachim.deguara@amd.com>
+Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- arch/i386/kernel/cpu/cpufreq/longhaul.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-index 2841735..8eca59d 100644
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -247,7 +247,7 @@ static void longhaul_setstate(unsigned int table_index)
- 	struct cpufreq_freqs freqs;
- 	unsigned long flags;
- 	unsigned int pic1_mask, pic2_mask;
--	u32 bm_status = 0;
-+	u16 bm_status = 0;
- 	u32 bm_timeout = 1000;
- 	unsigned int dir = 0;
+Index: 2.6-vanilla/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+===================================================================
+--- 2.6-vanilla.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
++++ 2.6-vanilla/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
+@@ -599,7 +599,7 @@ static void print_basics(struct powernow
+ 	for (j = 0; j < data->numps; j++) {
+ 		if (data->powernow_table[j].frequency != CPUFREQ_ENTRY_INVALID) {
+ 			if (cpu_family == CPU_HW_PSTATE) {
+-			printk(KERN_INFO PFX "   %d : fid 0x%x gid 0x%x (%d MHz)\n", j, 
+(data->powernow_table[j].index & 0xff00) >> 8,
++			printk(KERN_INFO PFX "   %d : fid 0x%x did 0x%x (%d MHz)\n", j, 
+(data->powernow_table[j].index & 0xff00) >> 8,
+ 				(data->powernow_table[j].index & 0xff0000) >> 16,
+ 				data->powernow_table[j].frequency/1000);
+ 			} else {
+@@ -1084,7 +1084,7 @@ static int powernowk8_target(struct cpuf
  
-@@ -281,14 +281,14 @@ static void longhaul_setstate(unsigned int table_index)
- 	outb(0xFE,0x21);	/* TMR0 only */
- 
- 	/* Wait while PCI bus is busy. */
--	if (longhaul_flags & USE_NORTHBRIDGE
--	    || ((pr != NULL) && pr->flags.bm_control)) {
--		bm_status = inl(acpi_regs_addr);
-+	if (acpi_regs_addr && (longhaul_flags & USE_NORTHBRIDGE
-+	    || ((pr != NULL) && pr->flags.bm_control))) {
-+		bm_status = inw(acpi_regs_addr);
- 		bm_status &= 1 << 4;
- 		while (bm_status && bm_timeout) {
--			outl(1 << 4, acpi_regs_addr);
-+			outw(1 << 4, acpi_regs_addr);
- 			bm_timeout--;
--			bm_status = inl(acpi_regs_addr);
-+			bm_status = inw(acpi_regs_addr);
- 			bm_status &= 1 << 4;
- 		}
- 	}
--- 
-
-
-----------------------------------------------------------------------
-Kasia Cichopek eksponuje biust  
->>> http://link.interia.pl/f1a6f
+ 	if (cpu_family == CPU_HW_PSTATE)
+ 		dprintk("targ: curr fid 0x%x, did 0x%x\n",
+-			data->currfid, data->currvid);
++			data->currfid, data->currdid);
+ 	else {
+ 		dprintk("targ: curr fid 0x%x, vid 0x%x\n",
+ 		data->currfid, data->currvid);
