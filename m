@@ -1,11 +1,9 @@
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Subject: [PATCH] powernow-k8 typos
-Date: Fri, 8 Jun 2007 11:33:08 +0200
-Message-ID: <200706081133.08650.joachim.deguara@amd.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8601] New: 'conservative' governor never changes cpu speed
+	(2.6.21.3)
+Date: Fri, 8 Jun 2007 08:58:44 -0700
+Message-ID: <200706081558.l58Fwiwi024537@fire-2.osdl.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,36 +13,33 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-typos fixed
+http://bugzilla.kernel.org/show_bug.cgi?id=8601
 
-Signed-off-by: Joachim.Deguara <joachim.deguara@amd.com>
-Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+           Summary: 'conservative' governor never changes cpu speed
+                    (2.6.21.3)
+    Kernel Version: 2.6.21.3
+            Status: NEW
+          Severity: normal
+             Owner: cpufreq@www.linux.org.uk
+         Submitter: paul14075@gmail.com
 
-Index: 2.6-vanilla/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-===================================================================
---- 2.6-vanilla.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-+++ 2.6-vanilla/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-@@ -599,7 +599,7 @@ static void print_basics(struct powernow
- 	for (j = 0; j < data->numps; j++) {
- 		if (data->powernow_table[j].frequency != CPUFREQ_ENTRY_INVALID) {
- 			if (cpu_family == CPU_HW_PSTATE) {
--			printk(KERN_INFO PFX "   %d : fid 0x%x gid 0x%x (%d MHz)\n", j, 
-(data->powernow_table[j].index & 0xff00) >> 8,
-+			printk(KERN_INFO PFX "   %d : fid 0x%x did 0x%x (%d MHz)\n", j, 
-(data->powernow_table[j].index & 0xff00) >> 8,
- 				(data->powernow_table[j].index & 0xff0000) >> 16,
- 				data->powernow_table[j].frequency/1000);
- 			} else {
-@@ -1084,7 +1084,7 @@ static int powernowk8_target(struct cpuf
- 
- 	if (cpu_family == CPU_HW_PSTATE)
- 		dprintk("targ: curr fid 0x%x, did 0x%x\n",
--			data->currfid, data->currvid);
-+			data->currfid, data->currdid);
- 	else {
- 		dprintk("targ: curr fid 0x%x, vid 0x%x\n",
- 		data->currfid, data->currvid);
+
+Most recent kernel where this bug did *NOT* occur: 2.6.20
+Distribution: FC7
+Hardware Environment: IMB ThinkPad T42/Pentium-M 1.7 GHz
+Software Environment: FC7/ custom compiled kernel
+Problem Description:  I have built all the cpufreq governors into the kernel. 
+The ondemand governor works exactly how its supposed to, but when I use the
+conservative governor, it NEVER changes the CPU out of the lowest speed (for me,
+600MHz).  Even at full load, it stays at lowest speed.
+
+Steps to reproduce:  Use 2.6.21 w/ conservative governor and Centrino speedstep?
+
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
