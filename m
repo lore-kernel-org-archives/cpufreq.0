@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8255] Frequency Scaling not working properly using powernow-k7
-Date: Sat, 9 Jun 2007 05:56:14 -0700
-Message-ID: <200706091256.l59CuEOv014942@fire-2.osdl.org>
+Date: Sat, 9 Jun 2007 05:57:34 -0700
+Message-ID: <200706091257.l59CvYbw015039@fire-2.osdl.org>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -24,20 +24,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8255
 
 
 
-------- Additional Comments From cimmo@libero.it  2007-06-09 06:00 -------
-Hi,
-I have the same problem here with an asus L3D notebook that previously has an
-Athlon XP-M 2000+ that was 1600 Mhz and was recognized perfectly.
+------- Additional Comments From cimmo@libero.it  2007-06-09 06:01 -------
+Created an attachment (id=11719)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11719&action=view)
+dmesg from ubuntu gutsy daily 9 june 2007
 
-Now there is an Athlon XP-M 2400+ that has 1800 Mhz and when kernel is started
-is recognized well after powernow recognized it as min and max = 1473 Mhz.
-I've tried latest ubuntu gutsy snapshot that has kernel 2.6.22-6 that in theory
-has 2.6.22rc2 but I'm not quite sure, so I don't know if it has this patch
-included or not.
-
-Can be my problem related? I attach dmesg.
-
-Thanx
 
 ------- You are receiving this mail because: -------
 You are the assignee for the bug, or are watching the assignee.
