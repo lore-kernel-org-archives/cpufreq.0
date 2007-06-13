@@ -1,14 +1,11 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: [PATCH] powernow-k8 typos
-Date: Mon, 11 Jun 2007 10:11:38 -0500
-Message-ID: <1449F58C868D8D4E9C72945771150BDF02076E5F@SAUSEXMB1.amd.com>
-References: <200706081133.08650.joachim.deguara@amd.com>
-	<20070611150517.GF9174@redhat.com>
+From: "Patel, Tushar" <tushar.patel@bofasecurities.com>
+Subject: Segmentation faults on AMD
+Date: Wed, 13 Jun 2007 10:55:04 -0400
+Message-ID: <863ADB2B1B757B45A27E4FCCD2DD370648C483@ex2k.bankofamerica.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-class: urn:content-classes:message
-In-Reply-To: <20070611150517.GF9174@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,28 +17,41 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>, "Deguara, Joachim" <joachim.deguara@amd.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
+Hi,
 
- >  >  				(data->powernow_table[j].index=20
-> & 0xff0000) >> 16,
->  >  				data->powernow_table[j].frequency/1000);
->  >  			} else {
->  > @@ -1084,7 +1084,7 @@ static int powernowk8_target(struct cpuf
->  > =20
->  >  	if (cpu_family =3D=3D CPU_HW_PSTATE)
->  >  		dprintk("targ: curr fid 0x%x, did 0x%x\n",
->  > -			data->currfid, data->currvid);
->  > +			data->currfid, data->currdid);
->=20
-> I've been curious for a while.. What is a 'did' ?
-> fid and vid I can figure out, but did has been puzzling me.
+I have followed all instructions to install this tool on :
+1.) AMD Opteron(tm) Processor 252
+2.) AMD Opteron (tm) Processor 885
 
-Divisor ID.  It's part of a new scheme to allow us to
-define a much larger range of allowable voltages and
-frequencies.
+I keep getting segmentation faults.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+Can you please help?
+
+nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -c 0
+cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+Segmentation fault
+nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -c 1
+cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 1:
+Segmentation fault
+nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -e
+cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+Segmentation fault
+nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -o
+          minimum CPU frequency  -  maximum CPU frequency  -  governor
+Segmentation fault
+nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -m
+cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+Segmentation fault
+
+-Thanks
+Tushar
