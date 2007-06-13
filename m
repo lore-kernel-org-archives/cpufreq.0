@@ -1,13 +1,13 @@
 From: "Patel, Tushar" <tushar.patel@bofasecurities.com>
 Subject: RE: Segmentation faults on AMD
-Date: Wed, 13 Jun 2007 11:42:29 -0400
-Message-ID: <863ADB2B1B757B45A27E4FCCD2DD370648C485@ex2k.bankofamerica.com>
+Date: Wed, 13 Jun 2007 13:14:10 -0400
+Message-ID: <863ADB2B1B757B45A27E4FCCD2DD370648C489@ex2k.bankofamerica.com>
 References: <863ADB2B1B757B45A27E4FCCD2DD370648C483@ex2k.bankofamerica.com>
-	<1449F58C868D8D4E9C72945771150BDF02076E8F@SAUSEXMB1.amd.com>
+	<29561.61.206.224.81.1181749420.squirrel@picard.linux.it>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-reply-to: <1449F58C868D8D4E9C72945771150BDF02076E8F@SAUSEXMB1.amd.com>
+In-reply-to: <29561.61.206.224.81.1181749420.squirrel@picard.linux.it>
 Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,84 +20,122 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>, cpufreq@lists.linux.org.uk
+To: Mattia Dongili <malattia@linux.it>
+Cc: cpufreq@lists.linux.org.uk
 
-dmesg |grep power
-powernow-k8: Found 8 AMD Athlon 64 / Opteron processors (version 1.60.0)
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-Kernel:
-cat /proc/version 
-Linux version 2.6.9-42.0.3.ELsmp
-(brewbuilder@hs20-bc2-2.build.redhat.com) (gcc version 3.4.6 20060404
-(Red Hat 3.4.6-3)) #1 SMP Mon Sep 25 17:24:31 EDT 2006
+Following is what ltrace indicates:
 
-Dmesg |grep power :
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8
-powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
-powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
-powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
-powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
-powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
-powernow-k8: cpu_init done, current fid 0x12, vid 0x8 
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 1) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr(" 0 0 0 0 ", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 2) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("0 0 0 0 0", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 3) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr(" 0 0 0 0 ", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 4) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("0 0 0 0 0", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 5) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("ctxt 1217", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 3) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("3620954\n", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 4) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("btime 117", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 4) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("8767050\n", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 2) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("processes", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 5) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr(" 32186597", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 6) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("procs_run", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 0) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+strstr("procs_blo", "cpu ")                      = NULL
+sscanf(0x7fbffff890, 0x401d84, 0x7fbffff88c, 99, 0) = 0
+feof(0x505360)                                   = 0
+fgets("", -1073743728, 0x505440)                 = 0x7fbffff890
+feof(0x505360)                                   = 0
+fgets("\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\
+377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"..., 0,
+0x505440) = NULL
+feof(0x505360)                                   = 1
+fclose(0x505360)                                 = 0
+cpufreq_cpu_exists(0, 0x524000, 126129, 0x505590, 125552) = 0
+cpufreq_cpu_exists(0, 0x7fbffff700, 0, 0x2a95832d25, 1) = 0
+dcgettext(0, 0x401dec, 5, 0x2a95832d25, 1)       = 0x401dec
+printf("analyzing CPU %d:\n", 0analyzing CPU 0:
+)                 = 17
+cpufreq_get_freq_kernel(0, 1024, 0x2a959aa5f0, 0x401dfe, 1 <unfinished
+...>
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++ 
 
-
--Thanks
 -----Original Message-----
-From: Langsdorf, Mark [mailto:mark.langsdorf@amd.com] 
-Sent: Wednesday, June 13, 2007 11:33 AM
-To: Patel, Tushar; cpufreq@lists.linux.org.uk
-Subject: RE: Segmentation faults on AMD
+From: Mattia Dongili [mailto:malattia@linux.it] 
+Sent: Wednesday, June 13, 2007 11:44 AM
+To: Patel, Tushar
+Cc: cpufreq@lists.linux.org.uk
+Subject: Re: Segmentation faults on AMD
+Importance: High
 
+On Wed, June 13, 2007 4:55 pm, Patel, Tushar wrote:
+> Hi,
+>
 > I have followed all instructions to install this tool on :
 > 1.) AMD Opteron(tm) Processor 252
 > 2.) AMD Opteron (tm) Processor 885
-> 
+>
 > I keep getting segmentation faults.
-> 
+>
 > Can you please help?
+>
+> nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -c 
+> 0 cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006 
+> Report errors and bugs to linux@brodo.de, please.
+> analyzing CPU 0:
+> Segmentation fault
 
-What does `dmesg | grep power` return?  What kernel are you running?
+wow, can you build with debugging symbols and get a backtrace with GDB?
+build the utilities with
+  make DEBUG=true
+and run
+  gdb ./cpufreq-info
+at the gdb prompt type
+  (gdb) r
+wait for the program to segfault and type
+  (gdb) bt
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+paste the resulting output.
+
+Thanks
+--
+mattia
+:wq!
