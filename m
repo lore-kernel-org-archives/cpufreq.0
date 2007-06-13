@@ -1,13 +1,13 @@
 From: "Patel, Tushar" <tushar.patel@bofasecurities.com>
 Subject: RE: Segmentation faults on AMD
-Date: Wed, 13 Jun 2007 11:56:11 -0400
-Message-ID: <863ADB2B1B757B45A27E4FCCD2DD370648C486@ex2k.bankofamerica.com>
+Date: Wed, 13 Jun 2007 11:42:29 -0400
+Message-ID: <863ADB2B1B757B45A27E4FCCD2DD370648C485@ex2k.bankofamerica.com>
 References: <863ADB2B1B757B45A27E4FCCD2DD370648C483@ex2k.bankofamerica.com>
-	<29561.61.206.224.81.1181749420.squirrel@picard.linux.it>
+	<1449F58C868D8D4E9C72945771150BDF02076E8F@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-reply-to: <29561.61.206.224.81.1181749420.squirrel@picard.linux.it>
+In-reply-to: <1449F58C868D8D4E9C72945771150BDF02076E8F@SAUSEXMB1.amd.com>
 Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,91 +20,84 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Mattia Dongili <malattia@linux.it>
-Cc: cpufreq@lists.linux.org.uk
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>, cpufreq@lists.linux.org.uk
 
-# gdb cpufreq-infoGNU gdb Red Hat Linux (6.3.0.0-1.132.EL4rh)
-Copyright 2004 Free Software Foundation, Inc.
-GDB is free software, covered by the GNU General Public License, and you
-are
-welcome to change it and/or distribute copies of it under certain
-conditions.
-Type "show copying" to see the conditions.
-There is absolutely no warranty for GDB.  Type "show warranty" for
-details.
-This GDB was configured as "x86_64-redhat-linux-gnu"...
-(no debugging symbols found)
-Using host libthread_db library "/lib64/tls/libthread_db.so.1".
+dmesg |grep power
+powernow-k8: Found 8 AMD Athlon 64 / Opteron processors (version 1.60.0)
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+Kernel:
+cat /proc/version 
+Linux version 2.6.9-42.0.3.ELsmp
+(brewbuilder@hs20-bc2-2.build.redhat.com) (gcc version 3.4.6 20060404
+(Red Hat 3.4.6-3)) #1 SMP Mon Sep 25 17:24:31 EDT 2006
 
-(gdb) r
-Starting program: /var/tmp/tushar/cpufrequtils-002/cpufreq-info 
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-(no debugging symbols found)
-cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
-Report errors and bugs to linux@brodo.de, please.
-analyzing CPU 0:
+Dmesg |grep power :
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8
+powernow-k8:    0 : fid 0x12 (2600 MHz), vid 0x8 (1350 mV)
+powernow-k8:    1 : fid 0x10 (2400 MHz), vid 0xa (1300 mV)
+powernow-k8:    2 : fid 0xe (2200 MHz), vid 0xc (1250 mV)
+powernow-k8:    3 : fid 0xc (2000 MHz), vid 0xe (1200 mV)
+powernow-k8:    4 : fid 0xa (1800 MHz), vid 0x10 (1150 mV)
+powernow-k8: cpu_init done, current fid 0x12, vid 0x8 
 
-Program received signal SIGSEGV, Segmentation fault.
-0x0000002a957ac311 in ____strtoull_l_internal () from
-/lib64/tls/libc.so.6
-(gdb) bt
-#0  0x0000002a957ac311 in ____strtoull_l_internal () from
-/lib64/tls/libc.so.6
-#1  0x0000002a9566e066 in sysfs_get_one_value () from
-/usr/lib/libcpufreq.so.0
-#2  0x0000002a9566d93a in cpufreq_get_freq_kernel ()
-   from /usr/lib/libcpufreq.so.0
-#3  0x000000000040127f in ?? ()
-#4  0x0000000000401a4c in ?? ()
-#5  0x0000002a957963fb in __libc_start_main () from /lib64/tls/libc.so.6
-#6  0x0000000000400f8a in ?? ()
-#7  0x0000007fbffff9b8 in ?? ()
-#8  0x000000000000001c in ?? ()
-#9  0x0000000000000001 in ?? ()
-#10 0x0000007fbffffb99 in ?? ()
-#11 0x0000000000000000 in ?? ()
-(gdb) 
 
+-Thanks
 -----Original Message-----
-From: Mattia Dongili [mailto:malattia@linux.it] 
-Sent: Wednesday, June 13, 2007 11:44 AM
-To: Patel, Tushar
-Cc: cpufreq@lists.linux.org.uk
-Subject: Re: Segmentation faults on AMD
-Importance: High
+From: Langsdorf, Mark [mailto:mark.langsdorf@amd.com] 
+Sent: Wednesday, June 13, 2007 11:33 AM
+To: Patel, Tushar; cpufreq@lists.linux.org.uk
+Subject: RE: Segmentation faults on AMD
 
-On Wed, June 13, 2007 4:55 pm, Patel, Tushar wrote:
-> Hi,
->
 > I have followed all instructions to install this tool on :
 > 1.) AMD Opteron(tm) Processor 252
 > 2.) AMD Opteron (tm) Processor 885
->
+> 
 > I keep getting segmentation faults.
->
+> 
 > Can you please help?
->
-> nbk3fdu@scspgmldap01:/var/tmp/tushar/cpufrequtils-002>cpufreq-info -c 
-> 0 cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006 
-> Report errors and bugs to linux@brodo.de, please.
-> analyzing CPU 0:
-> Segmentation fault
 
-wow, can you build with debugging symbols and get a backtrace with GDB?
-build the utilities with
-  make DEBUG=true
-and run
-  gdb ./cpufreq-info
-at the gdb prompt type
-  (gdb) r
-wait for the program to segfault and type
-  (gdb) bt
+What does `dmesg | grep power` return?  What kernel are you running?
 
-paste the resulting output.
-
-Thanks
---
-mattia
-:wq!
+-Mark Langsdorf
+Operating System Research Center
+AMD
