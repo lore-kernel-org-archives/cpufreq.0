@@ -1,12 +1,10 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Overclocking a Conroe and Using Speedstep/cpufreq.
-Date: Thu, 14 Jun 2007 14:32:51 -0400
-Message-ID: <20070614183251.GD1223@redhat.com>
-References: <414673.66985.qm@web61217.mail.yahoo.com>
+From: "Phil Endecott" <phil_fvnqz_endecott@chezphil.org>
+Subject: How does BIOS "thermal throttling" interact with cpufreq? (on VIA
+	C7)
+Date: Thu, 14 Jun 2007 22:26:59 +0100
+Message-ID: <1181856419753@dmwebmail.belize.chezphil.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <414673.66985.qm@web61217.mail.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,27 +15,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; format="flowed"; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: byteFrame <byteframe@yahoo.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Thu, Jun 14, 2007 at 10:26:01AM -0700, byteFrame wrote:
- > 
- > Word up.
- > 
- > When I dont overclock my cpu (2.4 ghz) cpufreq works
- > fine (with the ondemand governor) but when I overclock
- > the cpu to 3.0 ghz in the bios, cpu freq doesnt work.
- > They neccessary sys files arent in
- > /sys/devices/system/cpu0/ etc etc. I had orginally
- > been using the acpi cpu freq driver, but the "Enhanced
- > Speedstep" inst working either (gonna try it without
- > an option, but I doubt itll work)
+Dear Cpufreq experts,
 
-Your BIOS only knows about speeds the chip is rated for.
+I have a Jetway J7F2 motherboard with a VIA C7 processor and have 
+recently got CPU frequency scaling working with the ondemand governor.  
+It all works very smoothly - thanks.
 
-	Dave
+In the BIOS settup screens there are options for "thermal throttling".  
+They allow me to define a threshold voltage and a "duty cycle"; the 
+screens are rather vague and there's nothing about it in the board 
+documentation.  My guess is that when the CPU temperature reaches this 
+threshold the clock speed is reduced.  I have looked at the datasheet 
+for the chip that includes the temperature monitoring logic, and asked 
+about it on the lm-sensors (aka hwmon) mailing list, and there seems to 
+be an "over temp" output signal from this chip.  (The is also an 
+"alarm" output, with a separate threshold register, which I think goes 
+to the speaker.)
 
--- 
-http://www.codemonkey.org.uk
+Does anyone know how this stuff works, and how it interacts with 
+cpufreq?  Could it be that the "over temperature" signal is actually 
+just an interrupt and software is supposed to respond by changing the 
+frequency?  Does cpufreq need to be aware of this throttling function 
+(i.e. having enabled cpufreq, have I unintentionally disabled this 
+thermal protection?)
+
+Any thoughts would be much appreciated.
+
+Regards,
+
+Phil.
