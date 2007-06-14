@@ -1,10 +1,10 @@
-From: Tobias Klauser <tklauser@distanz.ch>
-Subject: [CPUFREQ PATCH]: Fix sysfs_create_file return value handling
-Date: Thu, 14 Jun 2007 00:28:15 +0200
-Message-ID: <20070613222815.GA26043@distanz.ch>
+From: byteFrame <byteframe@yahoo.com>
+Subject: Overclocking a Conroe and Using Speedstep/cpufreq.
+Date: Thu, 14 Jun 2007 10:26:01 -0700 (PDT)
+Message-ID: <414673.66985.qm@web61217.mail.yahoo.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,42 +14,35 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Commit 0a4b2ccc555fa2ca6873d60219047104e4805d45 in cpufreq.git
-eliminates the build warnings but does not pass on the error code of
-sysfs_create_file to the function calling cpufreq_add_dev. Instead some
-previous value of ret would be returned.
 
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+Word up.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0521427..0db9e1b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -826,16 +826,19 @@ static int cpufreq_add_dev (struct sys_device * sys_dev)
- 	/* set up files for this cpu device */
- 	drv_attr = cpufreq_driver->attr;
- 	while ((drv_attr) && (*drv_attr)) {
--		if (sysfs_create_file(&policy->kobj, &((*drv_attr)->attr)))
-+		ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
-+		if (ret)
- 			goto err_out_driver_exit;
- 		drv_attr++;
- 	}
- 	if (cpufreq_driver->get){
--		if (sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr))
-+		ret = sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
-+		if (ret)
- 			goto err_out_driver_exit;
- 	}
- 	if (cpufreq_driver->target){
--		if (sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr))
-+		ret = sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
-+		if (ret)
- 			goto err_out_driver_exit;
- 	}
+When I dont overclock my cpu (2.4 ghz) cpufreq works
+fine (with the ondemand governor) but when I overclock
+the cpu to 3.0 ghz in the bios, cpu freq doesnt work.
+They neccessary sys files arent in
+/sys/devices/system/cpu0/ etc etc. I had orginally
+been using the acpi cpu freq driver, but the "Enhanced
+Speedstep" inst working either (gonna try it without
+an option, but I doubt itll work)
+
+
+Does anybody know anything about this? Ive been told
+it works in windows.
+
+
+slackware 11 with kernel 2.6.21-ck2/conroe e6600(2.4
+default)/ evga 680i motherboard
+
+Thanks homies.
+
+
+ 
+____________________________________________________________________________________
+Looking for earth-friendly autos? 
+Browse Top Cars by "Green Rating" at Yahoo! Autos' Green Center.
+http://autos.yahoo.com/green_center/
