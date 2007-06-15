@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7060] Thinkpad X60 stuck at low speed without battery
-Date: Thu, 14 Jun 2007 17:37:06 -0700 (PDT)
-Message-ID: <20070615003706.3173C108127@picon.linux-foundation.org>
+Date: Thu, 14 Jun 2007 18:12:40 -0700 (PDT)
+Message-ID: <20070615011240.BA777108127@picon.linux-foundation.org>
 References: <bug-7060-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-7060-3570@http.bugzilla.kernel.org/>
@@ -23,19 +23,11 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=7060
 
 
-protasnb@gmail.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com,
-                   |                            |len.brown@intel.com
 
 
 
-
-------- Comment #9 from protasnb@gmail.com  2007-06-14 17:40 -------
-Are there any updates on this issue?
-Thanks.
+------- Comment #10 from gsalgado@gmail.com  2007-06-14 18:15 -------
+Isn't it clear that this is a BIOS bug?
 
 
 -- 
