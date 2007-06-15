@@ -1,10 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8634] Unstable clocksource reported
-Date: Fri, 15 Jun 2007 13:37:22 -0700 (PDT)
-Message-ID: <20070615203723.03B6D1080F8@picon.linux-foundation.org>
-References: <bug-8634-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8634-3570@http.bugzilla.kernel.org/>
+From: "Mark Langsdorf" <mark.langsdorf@amd.com>
+Subject: [PATCH] powernow-k8: reorder the PST table to match the ACPI table
+Date: Fri, 15 Jun 2007 16:51:49 -0500
+Message-ID: <200706151651.49772.mark.langsdorf@amd.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,25 +15,33 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8634
+The PST code in powernow-k8 orders pstate entries in the opposite order
+from the ACPI code.  This can confuse some userspace tools.  Get both
+codes to order pstates in the same way.
 
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-
-
-
-------- Comment #1 from patrick.matthaei@web.de  2007-06-15 13:40 -------
-Created an attachment (id=11762)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11762&action=view)
-My Kernel config
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+--- powernow-k8.c.orig	2006-08-28 16:14:46.000000000 -0700
++++ powernow-k8.c	2007-06-14 22:35:30.000000000 -0700
+@@ -590,10 +590,14 @@
+ 		return -ENOMEM;
+ 	}
+ 
++	/*
++	 * Reverse order of table entries to match ACPI entry order,
++	 * since all userspace utilities depend on that.
++	 */
+ 	for (j = 0; j < data->numps; j++) {
+-		powernow_table[j].index = pst[j].fid; /* lower 8 bits */
+-		powernow_table[j].index |= (pst[j].vid << 8); /* upper 8 bits */
+-		powernow_table[j].frequency = find_khz_freq_from_fid(pst[j].fid);
++		powernow_table[data->numps - j - 1].index = pst[j].fid; /* lower 8 bits */
++		powernow_table[data->numps - j - 1].index |= (pst[j].vid << 8); /* upper 8 bits */
++		powernow_table[data->numps - j - 1].frequency = find_khz_freq_from_fid(pst[j].fid);
+ 	}
+ 	powernow_table[data->numps].frequency = CPUFREQ_TABLE_END;
+ 	powernow_table[data->numps].index = 0;
