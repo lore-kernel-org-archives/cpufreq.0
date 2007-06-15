@@ -1,47 +1,116 @@
-From: "Mark Langsdorf" <mark.langsdorf@amd.com>
-Subject: [PATCH] powernow-k8: reorder the PST table to match the ACPI table
-Date: Fri, 15 Jun 2007 16:51:49 -0500
-Message-ID: <200706151651.49772.mark.langsdorf@amd.com>
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Subject: [BUG] Interesting race between cpufreq_ondemand and snd_atiixp
+Date: Sat, 16 Jun 2007 02:33:41 +0300
+Message-ID: <200706160233.47659.caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
 Mime-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart24628092.ZCpxYv0aH2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759628AbXFOXfA@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+To: linux-kernel@vger.kernel.org
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, tiwai@suse.de
 
-The PST code in powernow-k8 orders pstate entries in the opposite order
-from the ACPI code.  This can confuse some userspace tools.  Get both
-codes to order pstates in the same way.
+--nextPart24628092.ZCpxYv0aH2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Hi;
 
---- powernow-k8.c.orig	2006-08-28 16:14:46.000000000 -0700
-+++ powernow-k8.c	2007-06-14 22:35:30.000000000 -0700
-@@ -590,10 +590,14 @@
- 		return -ENOMEM;
- 	}
- 
-+	/*
-+	 * Reverse order of table entries to match ACPI entry order,
-+	 * since all userspace utilities depend on that.
-+	 */
- 	for (j = 0; j < data->numps; j++) {
--		powernow_table[j].index = pst[j].fid; /* lower 8 bits */
--		powernow_table[j].index |= (pst[j].vid << 8); /* upper 8 bits */
--		powernow_table[j].frequency = find_khz_freq_from_fid(pst[j].fid);
-+		powernow_table[data->numps - j - 1].index = pst[j].fid; /* lower 8 bits */
-+		powernow_table[data->numps - j - 1].index |= (pst[j].vid << 8); /* upper 8 bits */
-+		powernow_table[data->numps - j - 1].frequency = find_khz_freq_from_fid(pst[j].fid);
- 	}
- 	powernow_table[data->numps].frequency = CPUFREQ_TABLE_END;
- 	powernow_table[data->numps].index = 0;
+One of our colleagues found following problem with his old laptop while=20
+testing Linus's latest git with external alsa-driver (v1.0.14). And we can=
+=20
+also reproduce same problem with 2.6.18.8 so it seems not a new regression=
+=20
+(if it is a regression).
+
+As a summary "sound stops to work if cpufreq_ondemand governor is used" on=
+=20
+that laptop. Problem occurs only if cpufreq_* modules are loaded and %100=20
+reproducable if system configured for ondemand governor.=20
+
+Here are the steps to reproduce the problem on that laptop;
+
+1. Boot system with cpufreq_* modules blacklisted
+   strace -o log -f -tttTTT mpg123 some.mp3
+
+works without a problem [full log @ 1]
+
+2. modprobe cpufreq_ondemand
+   echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+   strace -o log -f -tttTTT mpg123 some.mp3
+
+hangs and no sound at all [full log @ 2]
+
+3. echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+   strace -o log -f -tttTTT mpg123 some.mp3
+
+works without a problem [full log @ 3]
+=09
+And with both 2.6.18.8 and 2.6.22-rc4 KDE (artsd) starts to gave "Operation=
+=20
+not denied" errors on login, and after that error occured stracing mpg123=20
+from console gaves following output (the very same check of semctl fails wi=
+th=20
+EINTR with second) [full log @ 4];
+=20
+=2E..
+4004  1181948891.899907 semget(5678293, 1, IPC_CREAT|0660) =3D 1081344=20
+<0.000010>
+4004  1181948891.899945 semctl(1081344, 0, IPC_64|IPC_STAT, 0xbfd1b498) =3D=
+ 0=20
+<0.000009>
+4004  1181948891.899981 semctl(1081344, 0, IPC_64|IPC_SET, 0xbfd1b498) =3D =
+=2D1=20
+EPERM (Operation not permitted) <0.000009>
+4004  1181948891.900026 semop(1081344, 0xbfd1b6a0, 2) =3D -1 EINTR (Interru=
+pted=20
+system call) <15.979441>
+4004  1181948907.879574 --- SIGTERM (Terminated) @ 0 (0) ---
+4004  1181948907.879782 +++ killed by SIGTERM +++
+
+You can also find dmesg [5], lspci -vv [6], lsmod [7], /proc/cpuinfo=20
+[8], /proc/interrupts [9] and used .config [10] from there.
+
+I have also a physical access to that laptop so please just ask if you want=
+=20
+anything else.
+
+[1] http://cekirdek.pardus.org.tr/~caglar/kernel/working
+[2] http://cekirdek.pardus.org.tr/~caglar/kernel/notworking
+[3] http://cekirdek.pardus.org.tr/~caglar/kernel/againworking
+[4] http://cekirdek.pardus.org.tr/~caglar/kernel/perm
+[5] http://cekirdek.pardus.org.tr/~caglar/kernel/dmesg_2.6.22
+[6] http://cekirdek.pardus.org.tr/~caglar/kernel/lspci
+[7] http://cekirdek.pardus.org.tr/~caglar/kernel/lsmod_2.6.22
+[8] http://cekirdek.pardus.org.tr/~caglar/kernel/cpuinfo
+[9] http://cekirdek.pardus.org.tr/~caglar/kernel/interrupts
+[10] http://cekirdek.pardus.org.tr/~caglar/kernel/config
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart24628092.ZCpxYv0aH2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGcyHby7E6i0LKo6YRAkvYAKDIhgcMCWGbOXwP8TXehrzFHflBPQCfZ45p
+7OlhZWulC0uJmGcSvR+j5KQ=
+=lxt9
+-----END PGP SIGNATURE-----
+
+--nextPart24628092.ZCpxYv0aH2--
