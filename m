@@ -1,9 +1,9 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7060] Thinkpad X60 stuck at low speed without battery
-Date: Thu, 14 Jun 2007 19:27:21 -0700 (PDT)
-Message-ID: <20070615022721.E3399108127@picon.linux-foundation.org>
+Date: Thu, 14 Jun 2007 21:30:12 -0700 (PDT)
+Message-ID: <20070615043012.E0D34108127@picon.linux-foundation.org>
 References: <bug-7060-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-7060-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,7 +14,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -23,14 +23,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=7060
 
 
+len.brown@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+          Component|cpufreq                     |Power-Processor
+            Product|Power Management            |ACPI
 
 
-
-------- Comment #12 from gsalgado@gmail.com  2007-06-14 19:30 -------
-In this case the "It works on windows, it must also work on Linux" argument is
-not valid since it doesn't work on windows either. I think we should be
-demanding a proper fix from BIOS vendors. It's something that doesn't work on
-windows and that fact is hopefully enough to convince them to fix their BIOSes.
 
 
 -- 
