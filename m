@@ -1,13 +1,14 @@
-From: Wes Felter <wesley@felter.org>
-Subject: Re: How does BIOS "thermal throttling" interact with cpufreq? (on
- VIA   C7)
-Date: Fri, 15 Jun 2007 11:31:10 -0500
-Message-ID: <f4ueso$kgn$1@sea.gmane.org>
-References: <1181856419753@dmwebmail.belize.chezphil.org>
+From: "Klaus.K Pedersen (Nokia-M/Helsinki)" <klaus.k.pedersen@nokia.com>
+Subject: Re: cpufreq_set_policy removed
+Date: Fri, 15 Jun 2007 20:45:25 +0300
+Message-ID: <1181929526.3436.8.camel@kp-core.localdomain>
+References: <20070606214243.GX15955@bakeyournoodle.com>
+	<1181170878.31677.272.camel@localhost.localdomain>
+	<20070606231342.GA16771@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1181856419753@dmwebmail.belize.chezphil.org>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <20070606231342.GA16771@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,40 +18,66 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-Phil Endecott wrote:
-> Dear Cpufreq experts,
-> 
-> I have a Jetway J7F2 motherboard with a VIA C7 processor and have 
-> recently got CPU frequency scaling working with the ondemand governor.  
-> It all works very smoothly - thanks.
-> 
-> In the BIOS settup screens there are options for "thermal throttling".  
-> They allow me to define a threshold voltage and a "duty cycle"; the 
-> screens are rather vague and there's nothing about it in the board 
-> documentation.  My guess is that when the CPU temperature reaches this 
-> threshold the clock speed is reduced.  I have looked at the datasheet 
-> for the chip that includes the temperature monitoring logic, and asked 
-> about it on the lm-sensors (aka hwmon) mailing list, and there seems to 
-> be an "over temp" output signal from this chip.  (The is also an "alarm" 
-> output, with a separate threshold register, which I think goes to the 
-> speaker.)
-> 
-> Does anyone know how this stuff works, and how it interacts with 
-> cpufreq?  Could it be that the "over temperature" signal is actually 
-> just an interrupt and software is supposed to respond by changing the 
-> frequency?  Does cpufreq need to be aware of this throttling function 
-> (i.e. having enabled cpufreq, have I unintentionally disabled this 
-> thermal protection?)
+I currently use set_policy() to get around some peculiar features 
+of OMAP2420, so at first I was a little scared. But now after fixing
+my code - I agree that it is much better to only rely on the
+CPUFREQ_POLICY_NOTIFIER chain.
 
-If they've done it really right (like Intel TM1/TM2), then the CPU will 
-handle everything transparently for you. If they've done it right, then 
-overtemp will trigger a system management interrupt (SMI) and BIOS code 
-will set the IA32_CLOCK_MODULATION register; because clock modulation is 
-(supposed to be) orthogonal to EIST it should work fine. If they do it 
-some other way then who knows.
+I have some comments to patch in-line:
 
-Wes Felter - wesley@felter.org
+On Thu, 2007-06-07 at 00:14 +0000, an unknown sender wrote:
+... 
+> On Mon, 2007-05-07 at 19:20 +1000, Benjamin Herrenschmidt wrote:
+... 
+> Index: linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+> ===================================================================
+> --- linux-2.6.22-rc2.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
+> +++ linux-2.6.22-rc2/arch/powerpc/platforms/cell/cbe_cpufreq.c
+...
+> @@ -173,15 +173,27 @@ static void cbe_cpufreq_handle_pmi(struc
+>  	cpu = cbe_node_to_cpu(pmi_msg.data1);
+>  	cbe_pmode_new = pmi_msg.data2;
+>  
+> -	cpufreq_get_policy(&policy, cpu);
+> +	pmi_frequency_limit = cbe_freqs[cbe_pmode_new].frequency;
+>  
+> -	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
+> -	policy.min = min(policy.min, policy.max);
+> +	pr_debug("cbe_handle_pmi: max freq=%d\n", pmi_frequency_limit);
+> +}
+
+Shouldn't cpufreq_update_policy() be called from this function? 
+
+> +
+> +static int pmi_notifier(struct notifier_block *nb,
+> +				       unsigned long event, void *data)
+...
+> +	cpufreq_verify_within_limits(policy, 0, pmi_frequency_limit);
+> +	return 0;
+>  }
+
+... because pmi_notifier() is updating the policy...
+
+... 
+> @@ -238,6 +250,10 @@ static int cbe_cpufreq_cpu_init(struct c
+>  
+>  	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
+>  
+> +	/* frequency might get limited later, initialize limit with max_freq */
+> +	pmi_frequency_limit = max_freq;
+> +	cpufreq_register_notifier(&pmi_notifier_block, CPUFREQ_POLICY_NOTIFIER);
+
+... and pmi_notifier() is registered on the CPUFREQ_POLICY_NOTIFIER
+chain.
+
+So, how is the CPUFREQ_POLICY_NOTIFIER chain executed with no calls to
+cpufreq_update_policy() (or __cpufreq_set_policy())?
+
+And if pmi_notifier() is not called, how is the policy updated?
+
+
+BR, Klaus Pedersen
