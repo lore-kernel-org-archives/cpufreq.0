@@ -1,14 +1,13 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: Segmentation faults on AMD
-Date: Fri, 15 Jun 2007 15:15:48 +0900
-Message-ID: <20070615061548.GC9034@inferi.kami.home>
-References: <863ADB2B1B757B45A27E4FCCD2DD370648C483@ex2k.bankofamerica.com>
-	<29561.61.206.224.81.1181749420.squirrel@picard.linux.it>
-	<863ADB2B1B757B45A27E4FCCD2DD370648C486@ex2k.bankofamerica.com>
+From: Wes Felter <wesley@felter.org>
+Subject: Re: How does BIOS "thermal throttling" interact with cpufreq? (on
+ VIA   C7)
+Date: Fri, 15 Jun 2007 11:31:10 -0500
+Message-ID: <f4ueso$kgn$1@sea.gmane.org>
+References: <1181856419753@dmwebmail.belize.chezphil.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <863ADB2B1B757B45A27E4FCCD2DD370648C486@ex2k.bankofamerica.com>
+In-Reply-To: <1181856419753@dmwebmail.belize.chezphil.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,39 +18,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Patel, Tushar" <tushar.patel@bofasecurities.com>
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-On Wed, Jun 13, 2007 at 11:56:11AM -0400, Patel, Tushar wrote:
-> # gdb cpufreq-infoGNU gdb Red Hat Linux (6.3.0.0-1.132.EL4rh)
-...
-> Program received signal SIGSEGV, Segmentation fault.
-> 0x0000002a957ac311 in ____strtoull_l_internal () from
-> /lib64/tls/libc.so.6
-> (gdb) bt
-> #0  0x0000002a957ac311 in ____strtoull_l_internal () from
-> /lib64/tls/libc.so.6
-> #1  0x0000002a9566e066 in sysfs_get_one_value () from
-> /usr/lib/libcpufreq.so.0
-> #2  0x0000002a9566d93a in cpufreq_get_freq_kernel ()
->    from /usr/lib/libcpufreq.so.0
+Phil Endecott wrote:
+> Dear Cpufreq experts,
+> 
+> I have a Jetway J7F2 motherboard with a VIA C7 processor and have 
+> recently got CPU frequency scaling working with the ondemand governor.  
+> It all works very smoothly - thanks.
+> 
+> In the BIOS settup screens there are options for "thermal throttling".  
+> They allow me to define a threshold voltage and a "duty cycle"; the 
+> screens are rather vague and there's nothing about it in the board 
+> documentation.  My guess is that when the CPU temperature reaches this 
+> threshold the clock speed is reduced.  I have looked at the datasheet 
+> for the chip that includes the temperature monitoring logic, and asked 
+> about it on the lm-sensors (aka hwmon) mailing list, and there seems to 
+> be an "over temp" output signal from this chip.  (The is also an "alarm" 
+> output, with a separate threshold register, which I think goes to the 
+> speaker.)
+> 
+> Does anyone know how this stuff works, and how it interacts with 
+> cpufreq?  Could it be that the "over temperature" signal is actually 
+> just an interrupt and software is supposed to respond by changing the 
+> frequency?  Does cpufreq need to be aware of this throttling function 
+> (i.e. having enabled cpufreq, have I unintentionally disabled this 
+> thermal protection?)
 
-hmmm, strtoul segfaults when the first argument is NULL, but given the
-code in sysfs_get_one_value I'd say there's something strange going on:
+If they've done it really right (like Intel TM1/TM2), then the CPU will 
+handle everything transparently for you. If they've done it right, then 
+overtemp will trigger a system management interrupt (SMI) and BIOS code 
+will set the IA32_CLOCK_MODULATION register; because clock modulation is 
+(supposed to be) orthogonal to EIST it should work fine. If they do it 
+some other way then who knows.
 
-        if ( sysfs_read_attribute(attr) || attr->value == NULL || attr->len == 0 )
-        {
-                sysfs_close_attribute(attr);
-                return 0;
-        }
-
-        value = strtoul(attr->value, &endp, 0);
-
-What does /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq
-contains on your system?
-
--- 
-mattia
-:wq!
+Wes Felter - wesley@felter.org
