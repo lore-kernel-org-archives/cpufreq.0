@@ -1,10 +1,10 @@
-From: "Phil Endecott" <phil_fvnqz_endecott@chezphil.org>
-Subject: How does BIOS "thermal throttling" interact with cpufreq? (on VIA
-	C7)
-Date: Thu, 14 Jun 2007 22:26:59 +0100
-Message-ID: <1181856419753@dmwebmail.belize.chezphil.org>
-Mime-Version: 1.0
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7060] Thinkpad X60 stuck at low speed without battery
+Date: Thu, 14 Jun 2007 17:37:06 -0700 (PDT)
+Message-ID: <20070615003706.3173C108127@picon.linux-foundation.org>
+References: <bug-7060-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-7060-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,36 +15,30 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; format="flowed"; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Dear Cpufreq experts,
+http://bugzilla.kernel.org/show_bug.cgi?id=7060
 
-I have a Jetway J7F2 motherboard with a VIA C7 processor and have 
-recently got CPU frequency scaling working with the ondemand governor.  
-It all works very smoothly - thanks.
 
-In the BIOS settup screens there are options for "thermal throttling".  
-They allow me to define a threshold voltage and a "duty cycle"; the 
-screens are rather vague and there's nothing about it in the board 
-documentation.  My guess is that when the CPU temperature reaches this 
-threshold the clock speed is reduced.  I have looked at the datasheet 
-for the chip that includes the temperature monitoring logic, and asked 
-about it on the lm-sensors (aka hwmon) mailing list, and there seems to 
-be an "over temp" output signal from this chip.  (The is also an 
-"alarm" output, with a separate threshold register, which I think goes 
-to the speaker.)
+protasnb@gmail.com changed:
 
-Does anyone know how this stuff works, and how it interacts with 
-cpufreq?  Could it be that the "over temperature" signal is actually 
-just an interrupt and software is supposed to respond by changing the 
-frequency?  Does cpufreq need to be aware of this throttling function 
-(i.e. having enabled cpufreq, have I unintentionally disabled this 
-thermal protection?)
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |protasnb@gmail.com,
+                   |                            |len.brown@intel.com
 
-Any thoughts would be much appreciated.
 
-Regards,
 
-Phil.
+
+------- Comment #9 from protasnb@gmail.com  2007-06-14 17:40 -------
+Are there any updates on this issue?
+Thanks.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
