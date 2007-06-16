@@ -1,13 +1,10 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [BUG] Interesting race between cpufreq_ondemand and snd_atiixp
-Date: Fri, 15 Jun 2007 20:54:28 -0400
-Message-ID: <20070616005428.GG23417@redhat.com>
-References: <200706160233.47659.caglar@pardus.org.tr>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <200706160233.47659.caglar@pardus.org.tr>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8634] Unstable clocksource reported
+Date: Sat, 16 Jun 2007 00:05:43 -0700 (PDT)
+Message-ID: <20070616070543.8AE0A11C001@picon.linux-foundation.org>
+References: <bug-8634-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8634-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,31 +14,56 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="utf-8"
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: tiwai@suse.de, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-On Sat, Jun 16, 2007 at 02:33:41AM +0300, S.Çağlar Onur wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=8634
 
- > One of our colleagues found following problem with his old laptop while 
- > testing Linus's latest git with external alsa-driver (v1.0.14). And we can 
- > also reproduce same problem with 2.6.18.8 so it seems not a new regression 
- > (if it is a regression).
- > 
- > As a summary "sound stops to work if cpufreq_ondemand governor is used" on 
- > that laptop. Problem occurs only if cpufreq_* modules are loaded and %100 
- > reproducable if system configured for ondemand governor. 
 
-I'm puzzled.  The cpuinfo shows that this cpu doesn't have speedstep, so
-why acpi-cpufreq successfully loads is a mystery.
+patrick.matthaei@web.de changed:
 
-What's in/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies  ?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |patrick.matthaei@web.de
 
-Maybe the acpi implementation is faking multiple speeds using throttling
-a la p4-clockmod, which would be a bit loopy, but possible I guess.
 
-	Dave
+
+
+------- Comment #2 from patrick.matthaei@web.de  2007-06-16 00:08 -------
+Some additional infos:
+
+the-me:~# cat
+/sys/devices/system/clocksource/clocksource0/available_clocksource
+acpi_pm pit jiffies tsc
+
+the-me:~# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 55
+model name      : AMD Athlon(tm) 64 Processor 4000+
+stepping        : 2
+cpu MHz         : 1000.000
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm 3dnowext
+3dnow pni lahf_lm ts fid vid ttp
+bogomips        : 2011.84
+clflush size    : 64
+
 
 -- 
-http://www.codemonkey.org.uk
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
