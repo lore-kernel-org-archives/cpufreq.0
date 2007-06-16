@@ -1,58 +1,47 @@
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: [BUG] Interesting race between cpufreq_ondemand and snd_atiixp
-Date: Sat, 16 Jun 2007 02:36:18 +0300
-Message-ID: <200706160236.18841.caglar@pardus.org.tr>
+Date: Fri, 15 Jun 2007 20:54:28 -0400
+Message-ID: <20070616005428.GG23417@redhat.com>
 References: <200706160233.47659.caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1760366.UEGl4Iu3Rm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755991AbXFOXhj@vger.kernel.org>
-In-Reply-To: <200706160233.47659.caglar@pardus.org.tr>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, tiwai@suse.de
-
---nextPart1760366.UEGl4Iu3Rm
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <200706160233.47659.caglar@pardus.org.tr>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="utf-8"
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: tiwai@suse.de, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-16 Haz 2007 Cts tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
-=C4=B1=C5=9Ft=C4=B1:=20
-=2E..
-> 3. echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-		^^^ performance
+On Sat, Jun 16, 2007 at 02:33:41AM +0300, S.Çağlar Onur wrote:
 
-Sorry for typo!
+ > One of our colleagues found following problem with his old laptop while 
+ > testing Linus's latest git with external alsa-driver (v1.0.14). And we can 
+ > also reproduce same problem with 2.6.18.8 so it seems not a new regression 
+ > (if it is a regression).
+ > 
+ > As a summary "sound stops to work if cpufreq_ondemand governor is used" on 
+ > that laptop. Problem occurs only if cpufreq_* modules are loaded and %100 
+ > reproducable if system configured for ondemand governor. 
 
->    strace -o log -f -tttTTT mpg123 some.mp3
->
-> works without a problem [full log @ 3]
+I'm puzzled.  The cpuinfo shows that this cpu doesn't have speedstep, so
+why acpi-cpufreq successfully loads is a mystery.
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+What's in/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies  ?
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
+Maybe the acpi implementation is faking multiple speeds using throttling
+a la p4-clockmod, which would be a bit loopy, but possible I guess.
 
---nextPart1760366.UEGl4Iu3Rm
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+	Dave
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGcyJyy7E6i0LKo6YRAlRUAKCfLMmTSiBw/rDGh8yZ0keQYacqMwCbBEvc
-8/O/x7a89jzy2ZC8kgcxjHo=
-=bp19
------END PGP SIGNATURE-----
-
---nextPart1760366.UEGl4Iu3Rm--
+-- 
+http://www.codemonkey.org.uk
