@@ -1,14 +1,10 @@
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Subject: Re: [BUG] Interesting race between cpufreq_ondemand and snd_atiixp
-Date: Sat, 16 Jun 2007 14:44:08 +0300
-Message-ID: <200706161444.08999.caglar@pardus.org.tr>
-References: <200706160233.47659.caglar@pardus.org.tr>
-	<20070616005428.GG23417@redhat.com>
-Reply-To: caglar@pardus.org.tr
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0078486698=="
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8634] Unstable clocksource reported
+Date: Sun, 17 Jun 2007 18:16:57 -0700 (PDT)
+Message-ID: <20070618011657.65E0C1080F8@picon.linux-foundation.org>
+References: <bug-8634-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20070616005428.GG23417@redhat.com>
+In-Reply-To: <bug-8634-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,83 +15,30 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Dave Jones <davej@redhat.com>
-Cc: tiwai@suse.de, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-
---===============0078486698==
-Content-Type: multipart/signed; boundary="nextPart2377874.3WZIVusdfQ";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-
---nextPart2377874.3WZIVusdfQ
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi;
-
-16 Haz 2007 Cts tarihinde, Dave Jones =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> On Sat, Jun 16, 2007 at 02:33:41AM +0300, S.=C3=87a=C4=9Flar Onur wrote:
->  > One of our colleagues found following problem with his old laptop while
->  > testing Linus's latest git with external alsa-driver (v1.0.14). And we
->  > can also reproduce same problem with 2.6.18.8 so it seems not a new
->  > regression (if it is a regression).
->  >
->  > As a summary "sound stops to work if cpufreq_ondemand governor is used"
->  > on that laptop. Problem occurs only if cpufreq_* modules are loaded and
->  > %100 reproducable if system configured for ondemand governor.
->
-> I'm puzzled.  The cpuinfo shows that this cpu doesn't have speedstep, so
-> why acpi-cpufreq successfully loads is a mystery.
->
-> What's in/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequenci=
-es
->  ?
-
-mavi ~ #=20
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-2793000 1596000
-
-> Maybe the acpi implementation is faking multiple speeds using throttling
-> a la p4-clockmod, which would be a bit loopy, but possible I guess.
-
-modprobe p4-clockmod with 2.6.18.8 ends up with "Device or resource busy"
-
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart2377874.3WZIVusdfQ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGc80Iy7E6i0LKo6YRAjBLAJ9+FyoUyPNV2jPcYACp/A06x1xqxgCggVgt
-+cyf3deKroYdgxr5zsLS7nA=
-=8ER2
------END PGP SIGNATURE-----
-
---nextPart2377874.3WZIVusdfQ--
-
-
---===============0078486698==
-Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: cpufreq@www.linux.org.uk
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+http://bugzilla.kernel.org/show_bug.cgi?id=8634
 
---===============0078486698==--
 
+bunk@stusta.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|patrick.matthaei@web.de     |tglx@linutronix.de,
+                   |                            |mingo@elte.hu,
+                   |                            |bunk@stusta.de
+         AssignedTo|cpufreq@www.linux.org.uk    |johnstul@us.ibm.com
+          Component|cpufreq                     |Other
+            Product|Power Management            |Timers
+
+
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
+You are the assignee for the bug, or are watching the assignee.
