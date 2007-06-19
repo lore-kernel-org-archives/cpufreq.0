@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Mon, 18 Jun 2007 23:12:28 -0700 (PDT)
-Message-ID: <20070619061228.77C64108129@picon.linux-foundation.org>
+Date: Mon, 18 Jun 2007 23:16:11 -0700 (PDT)
+Message-ID: <20070619061611.1AD8C108129@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
@@ -24,17 +24,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
+aystarik@gmail.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEEDINFO                    |REJECTED
+         Resolution|                            |INVALID
 
 
-
-------- Comment #32 from aystarik@gmail.com  2007-06-18 23:15 -------
-Daniel,
-Did you look at comment #29 or ignored it?
-And yes, you can not "modprobe acpi", as it is compiled statically into kernel.
-modprobe acpi-cpufreq will fail until you enable frequency scaling in BIOS, as
-per #29.
-Regards,
-Alex.
 
 
 -- 
