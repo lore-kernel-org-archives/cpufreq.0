@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Tue, 19 Jun 2007 03:37:37 -0700 (PDT)
-Message-ID: <20070619103737.216A510812A@picon.linux-foundation.org>
+Date: Tue, 19 Jun 2007 03:40:51 -0700 (PDT)
+Message-ID: <20070619104051.771EA10812C@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
@@ -27,20 +27,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Comment #37 from daniel@pressure.net.nz  2007-06-19 03:40 -------
-(In reply to comment #36)
-> yes.
-> and you have same string in your DSDT:
-> "OperationRegion (SSDT, SystemMemory, 0xFFFF0000, 0xFFFF)"
-> 
-> So, the only chance for you to get frequency control is to enable it in BIOS.
-> 
-
-...which as I've said, is not possible. There is no option whatsoever to
-enable/disable frequency scaling in these BIOSes. It's a pity that this is now
-broken, because up until 2.6.18, it worked fine.
-
-<sigh> back to linux-phc... that's progress for ya.
+------- Comment #38 from aystarik@gmail.com  2007-06-19 03:44 -------
+Please post dmesg from 2.6.18, showing either acpi-cpufreq or
+speedstep-centrino working.
 
 
 -- 
