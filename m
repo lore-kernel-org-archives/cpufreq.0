@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Mon, 18 Jun 2007 22:02:43 -0700 (PDT)
-Message-ID: <20070619050243.C20DB10812A@picon.linux-foundation.org>
+Date: Mon, 18 Jun 2007 22:03:15 -0700 (PDT)
+Message-ID: <20070619050315.15C3510812D@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
@@ -27,20 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Comment #30 from daniel@pressure.net.nz  2007-06-18 22:06 -------
-(In reply to comment #20)
-> >Len, hope this is sufficient info for you. Kernel compiled with cpufreq debug
-> >enabled, and booted with cpufreq.debug=7
-> Please
-> #echo 0x1f >/sys/module/acpi/parameter/debug_level
-> and modprobe the cpufreq driver again.
-> Hope we can get more information from the _dmesg_ output.
-
-With 2.6.22-rc3, I'm unable to modprobe acpi or acpi-cpufreq ("No such device")
-and thus unable to echo the 0x1f debug flag. lsmod shows asus-acpi already
-loaded however.
-
-Attaching an updated dmesg output.
+------- Comment #31 from daniel@pressure.net.nz  2007-06-18 22:06 -------
+Created an attachment (id=11790)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11790&action=view)
+dmesg output from 2.6.22-rc3
 
 
 -- 
