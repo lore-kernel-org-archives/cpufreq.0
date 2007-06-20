@@ -1,10 +1,10 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Tue, 19 Jun 2007 20:49:47 -0700 (PDT)
-Message-ID: <20070620034947.4E4E410812B@picon.linux-foundation.org>
+Date: Tue, 19 Jun 2007 20:50:32 -0700 (PDT)
+Message-ID: <20070620035032.CF88D10812D@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,7 +15,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Comment #41 from daniel@pressure.net.nz  2007-06-19 20:53 -------
-Created an attachment (id=11803)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11803&action=view)
-dmesg output from 2.6.17
+------- Comment #43 from daniel@pressure.net.nz  2007-06-19 20:53 -------
+Created an attachment (id=11805)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11805&action=view)
+sysfs entries for cpufreq on 2.6.17
 
 
 -- 
