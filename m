@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Tue, 19 Jun 2007 18:40:04 -0700 (PDT)
-Message-ID: <20070620014004.B3CE010812A@picon.linux-foundation.org>
+Date: Tue, 19 Jun 2007 20:49:04 -0700 (PDT)
+Message-ID: <20070620034904.A39FE108129@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
@@ -27,13 +27,17 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Comment #39 from daniel@pressure.net.nz  2007-06-19 18:43 -------
-It does not work in 2.6.18. I said that it worked _up until_ 2.6.18 (ie, 2.6.17
-and earlier). I've never seen acpi-cpufreq work on this hardware regardless,
-but speedstep-centrino used to work until it had its entrails ripped out in
-2.6.18.
+------- Comment #40 from daniel@pressure.net.nz  2007-06-19 20:52 -------
+(In reply to comment #38)
+> Please post dmesg from 2.6.18, showing either acpi-cpufreq or
+> speedstep-centrino working.
+> 
 
-I will try to boot up a 2.6.17 livecd distro and get the evidence you ask for.
+The dmesg output I'm about to attach does not show the speedstep_centrino
+driver loading (not verbose enough), but I will also attach an 'lsmod' output,
+and the output of the various cpufreq sysfs files.
+
+I used Ubuntu 6.10 Desktop (livecd), which is a 2.6.17 kernel.
 
 
 -- 
