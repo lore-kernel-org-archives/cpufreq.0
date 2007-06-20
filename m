@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Tue, 19 Jun 2007 20:51:52 -0700 (PDT)
-Message-ID: <20070620035152.771A0108140@picon.linux-foundation.org>
+Date: Wed, 20 Jun 2007 02:03:32 -0700 (PDT)
+Message-ID: <20070620090332.2A558108129@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
@@ -24,14 +24,20 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
-daniel@pressure.net.nz changed:
+aystarik@gmail.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-  Attachment #11804|application/octet-stream    |text/plain
-          mime type|                            |
+             Status|REJECTED                    |REOPENED
+         Resolution|INVALID                     |
 
 
+
+
+------- Comment #44 from aystarik@gmail.com  2007-06-20 02:06 -------
+ok, this looks promising, but Ubuntu kernel is known to be highly modified.
+I think you still need to _compile_ 2.6.17 with cpufreq debug and acpi debug
+info. Could you also attach /proc/acpi/processor/* ?
 
 
 -- 
