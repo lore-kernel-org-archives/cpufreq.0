@@ -1,11 +1,16 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
-	M1437G - Intel(R) Pentium(R) M
-Date: Wed, 20 Jun 2007 04:35:06 -0700 (PDT)
-Message-ID: <20070620113506.41D5D108128@picon.linux-foundation.org>
-References: <bug-8228-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
+From: Myron Stowe <myron.stowe@hp.com>
+Subject: Re: cpufreq_set_policy removed
+Date: Wed, 20 Jun 2007 15:20:31 -0600
+Message-ID: <1182374431.8149.30.camel@localhost>
+References: <20070606214243.GX15955@bakeyournoodle.com>
+	<1181170878.31677.272.camel@localhost.localdomain>
+	<20070606231342.GA16771@redhat.com>
+	<1181929526.3436.8.camel@kp-core.localdomain>
+	<1182255270.28514.620.camel@queen.suse.de>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <1182255270.28514.620.camel@queen.suse.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,25 +20,27 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=8228
+To: trenn@suse.de, Dave Jones <davej@redhat.com>
+Cc: cpufreq <cpufreq@lists.linux.org.uk>
 
 
-aystarik@gmail.com changed:
+Thomas, Dave:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REOPENED                    |NEEDINFO
+Do either of you have a problem with the existence of
+cpufreq_set_policy() or was it only removed because there were no
+remaining callers in the tree and it had bugs?
 
+The reason why I ask is that I have been working on a module that
+changes cpufreq governors and I don't see any other way for a module to
+be able to change governors without this interface.
 
+If there is another way please let me know.  Otherwise I would like to
+fix the cpufreq_set_policy() related bugs and make it available for
+modules to use.
 
+Myron
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Myron Stowe                             HP Open Source & Linux Org
