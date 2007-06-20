@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
 	M1437G - Intel(R) Pentium(R) M
-Date: Tue, 19 Jun 2007 20:50:32 -0700 (PDT)
-Message-ID: <20070620035032.CF88D10812D@picon.linux-foundation.org>
+Date: Tue, 19 Jun 2007 20:50:12 -0700 (PDT)
+Message-ID: <20070620035012.0CCD5108131@picon.linux-foundation.org>
 References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-------- Comment #43 from daniel@pressure.net.nz  2007-06-19 20:53 -------
-Created an attachment (id=11805)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=11805&action=view)
-sysfs entries for cpufreq on 2.6.17
+------- Comment #42 from daniel@pressure.net.nz  2007-06-19 20:53 -------
+Created an attachment (id=11804)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11804&action=view)
+lsmod output from 2.6.17
 
 
 -- 
