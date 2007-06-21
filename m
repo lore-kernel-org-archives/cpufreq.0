@@ -1,10 +1,10 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8081] Conservative governor sets wrong and too high sampling
 	rates
-Date: Wed, 20 Jun 2007 17:04:51 -0700 (PDT)
-Message-ID: <20070621000451.796A51080F8@picon.linux-foundation.org>
+Date: Wed, 20 Jun 2007 17:12:33 -0700 (PDT)
+Message-ID: <20070621001234.0DAF01080F9@picon.linux-foundation.org>
 References: <bug-8081-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8081-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,7 +15,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,9 +28,16 @@ protasnb@gmail.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |alex-kernel@digriz.org.uk
+                 CC|                            |protasnb@gmail.com,
+                   |                            |venkatesh.pallipadi@intel.co
+                   |                            |m
 
 
+
+
+------- Comment #2 from protasnb@gmail.com  2007-06-20 17:16 -------
+This patch needs a review, adding CCs.
+Thanks.
 
 
 -- 
