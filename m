@@ -1,11 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
-	structure
-Date: Wed, 20 Jun 2007 17:01:51 -0700 (PDT)
-Message-ID: <20070621000151.05A77108128@picon.linux-foundation.org>
-References: <bug-8075-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8081] Conservative governor sets wrong and too high sampling
+	rates
+Date: Wed, 20 Jun 2007 17:04:51 -0700 (PDT)
+Message-ID: <20070621000451.796A51080F8@picon.linux-foundation.org>
+References: <bug-8081-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8075-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8081-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,22 +21,16 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8075
+http://bugzilla.kernel.org/show_bug.cgi?id=8081
 
 
 protasnb@gmail.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com,
-                   |                            |ak@suse.de
+                 CC|                            |alex-kernel@digriz.org.uk
 
 
-
-
-------- Comment #17 from protasnb@gmail.com  2007-06-20 17:05 -------
-Does this patch need more testing? Yann, does it resolve your problem?
-Thanks.
 
 
 -- 
