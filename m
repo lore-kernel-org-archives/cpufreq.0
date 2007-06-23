@@ -1,11 +1,9 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
-	p4-clockmod anymore
-Date: Fri, 22 Jun 2007 00:14:59 -0700 (PDT)
-Message-ID: <20070622071459.99A8211C001@picon.linux-foundation.org>
-References: <bug-6367-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6367-3570@http.bugzilla.kernel.org/>
+From: "Phil Endecott" <phil_fvnqz_endecott@chezphil.org>
+Subject: Power measurements
+Date: Sat, 23 Jun 2007 13:54:17 +0100
+Message-ID: <1182603257511@dmwebmail.belize.chezphil.org>
+Mime-Version: 1.0
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,44 +13,32 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; format="flowed"; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6367
+Dear All,
 
+I would like to share some power consumption numbers that I have just 
+measured on my VIA C7-M system.  It uses the e_powersaver module and 
+can run at 400MHz or 1.2GHz.  I have measured the power consumption 
+when idle and when running a "while(1){}" program at each speed:
 
-oopla@users.sf.net changed:
+         400    1200
+Idle    16W    16W
+Busy    17W    20W
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REJECTED                    |REOPENED
-         Resolution|UNREPRODUCIBLE              |
+What I find interesting is that the idle power at 1.2GHz is identical 
+to that at 400 MHz.
 
+This makes me wonder if the on-demand governor would actually save any 
+power at all.
 
-
-
-------- Comment #9 from oopla@users.sf.net  2007-06-22 00:18 -------
-this happens again also in 2.6.19.7
-
-acpi_cpufreq sets these scaling freqs, as in original report:
-# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-2700000 65535000 65535000 65535000 65535000 65535000 65535000 65535000 65535000
-65535000 65535000 65535000 65535000 65535000 65535000
-
-once loaded, acpi_cpufreq can't be removed and p4-clockmod can't be loaded.
-
-same for p4_clockmod as in original report, scaling freqs are bound > 2GHz,
-which turns out to be wrong on this CPU. 
-Seems that p4-clockmod can be unloaded.
-
-Seems that loading/unloading cpufreq-stats doesn't oopses anymore, though, so
-there seems to be an improvement.
+I plan to do some more accurate measurements and to experiment with 
+some different workloads.  Has anyone else done anything like this?
 
 
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Regards,
+
+Phil.
