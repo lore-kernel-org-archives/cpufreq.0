@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8671] CPU frequency always on highest frequency after wakeup
 	from suspend to disk
-Date: Mon, 25 Jun 2007 08:12:46 -0700 (PDT)
-Message-ID: <20070625151246.74B4C1080F7@picon.linux-foundation.org>
+Date: Mon, 25 Jun 2007 09:18:53 -0700 (PDT)
+Message-ID: <20070625161853.D8A0A1080F7@picon.linux-foundation.org>
 References: <bug-8671-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8671-3570@http.bugzilla.kernel.org/>
@@ -24,13 +24,17 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8671
 
 
-trenn@suse.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |trenn@suse.de
 
 
+
+------- Comment #3 from malattia@linux.it  2007-06-25 09:22 -------
+ops :)
+does it happen with ondemand as well?
+would you mind setting cpufreq debug=7
+  echo 7 > /sys/module/cpufreq/parameters/debug
+perform a suspend/resume cycle and attach the log?
+
+thanks
 
 
 -- 
