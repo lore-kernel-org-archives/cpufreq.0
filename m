@@ -1,9 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8671] New: CPU frequency always on highest frequency after
-	wakeup from suspend to disk
-Date: Mon, 25 Jun 2007 04:57:33 -0700 (PDT)
-Message-ID: <bug-8671-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8671] CPU frequency always on highest frequency after wakeup
+	from suspend to disk
+Date: Mon, 25 Jun 2007 06:34:03 -0700 (PDT)
+Message-ID: <20070625133403.820121080F9@picon.linux-foundation.org>
+References: <bug-8671-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8671-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,32 +23,19 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=8671
 
-           Summary: CPU frequency always on highest frequency after wakeup
-                    from suspend to disk
-           Product: Power Management
-           Version: 2.5
-     KernelVersion: 2.6.22-rc5-git8
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: low
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@www.linux.org.uk
-        ReportedBy: linux@markus-schaub.de
 
 
-Most recent kernel where this bug did not occur: unkown
-Distribution: Gentoo Linux
-Hardware Environment: IBM Thinkpad T43
-Software Environment:
-Problem Description: cpufreq_conservative doesn't scale CPU frequency anymore
-after wakeup from suspend to disk, instead CPU runs always with the highest
-available frequency. Scaling driver is acpi-cpufreq.
 
-Steps to reproduce: Choose cpufreq_conservative as scaling driver and execute
-"echo disk > /sys/power/state".
+
+------- Comment #1 from malattia@linux.it  2007-06-25 06:37 -------
+aaaah, maybe that's because CPU1 is offlined and when resumed .init is called
+which sets the CPUFREQ_DEFAULT_GOVERNOR.
+In fact after resume CPU1 has the performance governor here, could you check
+it's the case for you as well?
+
+Any suggestion on how to solve that?
+Maybe cpufreq_add_dev should set the CPU0 policy as default when other CPUs are
+up-ed?
 
 
 -- 
