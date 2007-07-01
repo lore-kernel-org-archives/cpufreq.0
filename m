@@ -1,40 +1,74 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8671] CPU frequency always on highest frequency after wakeup
-	from suspend to disk
-Date: Sat, 30 Jun 2007 17:00:17 -0700 (PDT)
-Message-ID: <20070701000017.C04AA108137@picon.linux-foundation.org>
-References: <bug-8671-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8671-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+Subject: Re: speedstep-centrino (no such device)
+Date: Sat, 30 Jun 2007 23:04:39 -0300
+Message-ID: <46870BB7.9020901@mandic.com.br>
+References: <fa.jQgBX5GocqZWw6ordgUe/I1tfb0@ifi.uio.no> <468442D4.2030900@shaw.ca>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755940AbXGACE6@vger.kernel.org>
+In-Reply-To: <468442D4.2030900@shaw.ca>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: cpufreq@lists.linux.org.uk, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jeremy@goop.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8671
+Robert Hancock wrote:
+> Renato S. Yamane wrote:
+>> Is impossible use speedstep in my Laptop with Pentium M 1,86Ghz:
+>>
+>> #modprobe speedstep-centrino
+>> FATAL: Error inserting speedstep_centrino 
+>> (/lib/modules/2.6.18-3-686/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko): 
+>> No such device
+>>
+>> To do that (speedstep), I need install powersaved, but 
+>> speedstep-centrino is not used.
+> 
+> I believe acpi-cpufreq is preferred over speedstep-centrino in most 
+> cases today, does that work?
 
+Robert, acpi_cpufreq works fine to me.
+I insert parameter CPUFREQD_MODULE="acpi_cpufreq" in my 
+/etc/powersave/cpufreq and now is possible use scaling frequency.
 
-bunk@stusta.de changed:
+I read 
+/usr/src/linux-2.6.21.5/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c 
+and see that this module is made using document 25261202.pdf (from 
+Intel) as reference.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-OtherBugsDependingO|                            |7216
-              nThis|                            |
+This document include only some Pentium M models.
 
+My Pentium M is model 750 (1.86GHz) and you can see datasheet on 
+document 30526202.pdf available here:
+<http://download.intel.com/design/mobile/datashts/30526202.pdf>
 
+What I can choose on "CPUFreq Processor drivers" availiable in .config?
+Currently I do that (in Kernel 2.6.21.1):
 
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=m
+# CONFIG_X86_POWERNOW_K6 is not set
+# CONFIG_X86_POWERNOW_K7 is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+# CONFIG_X86_GX_SUSPMOD is not set
+CONFIG_X86_SPEEDSTEP_CENTRINO=y
+CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+CONFIG_X86_SPEEDSTEP_ICH=m
+# CONFIG_X86_SPEEDSTEP_SMI is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+# CONFIG_X86_CPUFREQ_NFORCE2 is not set
+# CONFIG_X86_LONGRUN is not set
+# CONFIG_X86_LONGHAUL is not set
+# CONFIG_X86_E_POWERSAVER is not set
 
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+#
+# shared options
+#
+# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
+CONFIG_X86_SPEEDSTEP_LIB=m
+CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK=y
+
+Best regards,
+Renato S. Yamane
