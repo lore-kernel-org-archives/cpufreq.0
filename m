@@ -1,44 +1,42 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
-	p4-clockmod anymore
-Date: Mon,  2 Jul 2007 16:56:20 -0700 (PDT)
-Message-ID: <20070702235620.DB006108093@picon.linux-foundation.org>
-References: <bug-6367-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6367-3570@http.bugzilla.kernel.org/>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
+Date: Mon, 2 Jul 2007 20:36:48 -0400
+Message-ID: <20070703003648.GA31035@redhat.com>
+References: <20070701202037.GC10869@stusta.de> <20070702232255.GH6403@redhat.com> <20070702234313.GB3492@stusta.de>
+Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758659AbXGCAiV@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20070702234313.GB3492@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org, linux-acpi@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6367
+On Tue, Jul 03, 2007 at 01:43:13AM +0200, Adrian Bunk wrote:
+ > > Applying '[CPUFREQ] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI'
+ > > 
+ > > error: patch failed: arch/x86_64/kernel/cpufreq/Kconfig:65
+ > > error: arch/x86_64/kernel/cpufreq/Kconfig: patch does not apply
+ > 
+ > I made the patch against 2.6.22-rc6-mm1 (based on an older version of 
+ > this patch)  but I missed the fuzz (and GNU patch defaults to accept
+ > patches with a fuzz of 2).
+ > 
+ > Below is a version of the patch with the fuzz edited out.
 
+It also has the context edited out :)
 
-davej@codemonkey.org.uk changed:
+ > @@ -65,1 +60,1 @@
+ > -	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
+ > +	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
+ > --- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
+ > +++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REOPENED                    |NEEDINFO
+This won't apply either.
 
-
-
-
-------- Comment #10 from davej@codemonkey.org.uk  2007-07-02 17:00 -------
-2.6.19.7 is prehistoric.  Please try again with a newer kernel, as some similar
-bugs were definitely fixed after that version.
-
+	Dave
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+http://www.codemonkey.org.uk
