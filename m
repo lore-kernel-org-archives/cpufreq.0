@@ -1,36 +1,60 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
-Date: Mon, 2 Jul 2007 21:13:54 -0400
-Message-ID: <20070703011354.GB31035@redhat.com>
-References: <20070701202037.GC10869@stusta.de> <20070702232255.GH6403@redhat.com> <20070702234313.GB3492@stusta.de> <20070703003648.GA31035@redhat.com> <20070703010611.GD3492@stusta.de>
+From: Nebojsa Trpkovic <trxman@gmail.com>
+Subject: Re: Overclocking a Conroe and Using Speedstep/cpufreq.
+Date: Tue, 03 Jul 2007 22:01:06 +0200
+Message-ID: <468AAB02.8000509@gmail.com>
+References: <414673.66985.qm@web61217.mail.yahoo.com>
+	<20070614183251.GD1223@redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070703010611.GD3492@stusta.de>
-Sender: linux-acpi-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org, linux-acpi@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
+	h=domainkey-signature:received:received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+	b=mp5/7WPOlAA8oIyaZc7MrRlHsvh38reoCNfKBH6R8mhCNGQhlBFGJ71EaYRg0fGP8PH0luZBiFJ7NHiWHMqGpnAyNkTMWFabHt4oePKwMsNQQCe6TOtlJW4RgbhegVZpTcSkBSSD7K1Xj9Ih5MEJWC20oHpeBgl2v55SiKHn3/Q=
+In-Reply-To: <20070614183251.GD1223@redhat.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
 
-On Tue, Jul 03, 2007 at 03:06:11AM +0200, Adrian Bunk wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
- > >  > @@ -65,1 +60,1 @@
- > >  > -	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
- > >  > +	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
- > >  > --- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
- > >  > +++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
- > > 
- > > This won't apply either.
- > 
- >   git-apply --unidiff-zero
+so, BIOS have table with Frequency/Voltage pairs and NOT
+Multiplier/Voltage pairs ?
 
-git-apply isn't the same thing as git-applymbox. (which doesn't know that option)
-The former involves a lot more hassle to get the changelog & comments
-pasted in, along with it getting attribution correct automatically.
 
-	Dave
 
--- 
-http://www.codemonkey.org.uk
+Dave Jones wrote:
+> On Thu, Jun 14, 2007 at 10:26:01AM -0700, byteFrame wrote:
+>  > 
+>  > Word up.
+>  > 
+>  > When I dont overclock my cpu (2.4 ghz) cpufreq works
+>  > fine (with the ondemand governor) but when I overclock
+>  > the cpu to 3.0 ghz in the bios, cpu freq doesnt work.
+>  > They neccessary sys files arent in
+>  > /sys/devices/system/cpu0/ etc etc. I had orginally
+>  > been using the acpi cpu freq driver, but the "Enhanced
+>  > Speedstep" inst working either (gonna try it without
+>  > an option, but I doubt itll work)
+> 
+> Your BIOS only knows about speeds the chip is rated for.
+> 
+> 	Dave
+> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGiqsCqDH2e5UXzrQRAmvEAJ4hx/5GNPF79RNZJRlPmd7tfUIj0wCfbhL0
+qOOSP9mcNDI4aJxhOETOgOY=
+=t3AW
+-----END PGP SIGNATURE-----
