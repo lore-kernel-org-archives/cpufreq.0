@@ -1,16 +1,11 @@
-From: Nebojsa Trpkovic <trxman@gmail.com>
-Subject: Re: Overclocking a Conroe and Using Speedstep/cpufreq.
-Date: Tue, 03 Jul 2007 22:01:06 +0200
-Message-ID: <468AAB02.8000509@gmail.com>
-References: <414673.66985.qm@web61217.mail.yahoo.com>
-	<20070614183251.GD1223@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
+	M1437G - Intel(R) Pentium(R) M
+Date: Thu,  5 Jul 2007 04:23:40 -0700 (PDT)
+Message-ID: <20070705112340.2A8F4108094@picon.linux-foundation.org>
+References: <bug-8228-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-	b=mp5/7WPOlAA8oIyaZc7MrRlHsvh38reoCNfKBH6R8mhCNGQhlBFGJ71EaYRg0fGP8PH0luZBiFJ7NHiWHMqGpnAyNkTMWFabHt4oePKwMsNQQCe6TOtlJW4RgbhegVZpTcSkBSSD7K1Xj9Ih5MEJWC20oHpeBgl2v55SiKHn3/Q=
-In-Reply-To: <20070614183251.GD1223@redhat.com>
+In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,40 +16,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-so, BIOS have table with Frequency/Voltage pairs and NOT
-Multiplier/Voltage pairs ?
+http://bugzilla.kernel.org/show_bug.cgi?id=8228
 
 
 
-Dave Jones wrote:
-> On Thu, Jun 14, 2007 at 10:26:01AM -0700, byteFrame wrote:
->  > 
->  > Word up.
->  > 
->  > When I dont overclock my cpu (2.4 ghz) cpufreq works
->  > fine (with the ondemand governor) but when I overclock
->  > the cpu to 3.0 ghz in the bios, cpu freq doesnt work.
->  > They neccessary sys files arent in
->  > /sys/devices/system/cpu0/ etc etc. I had orginally
->  > been using the acpi cpu freq driver, but the "Enhanced
->  > Speedstep" inst working either (gonna try it without
->  > an option, but I doubt itll work)
+
+
+------- Comment #45 from daniel@pressure.net.nz  2007-07-05 04:28 -------
+(In reply to comment #44)
+> ok, this looks promising, but Ubuntu kernel is known to be highly modified.
+> I think you still need to _compile_ 2.6.17 with cpufreq debug and acpi debug
+> info. Could you also attach /proc/acpi/processor/* ?
 > 
-> Your BIOS only knows about speeds the chip is rated for.
-> 
-> 	Dave
-> 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFGiqsCqDH2e5UXzrQRAmvEAJ4hx/5GNPF79RNZJRlPmd7tfUIj0wCfbhL0
-qOOSP9mcNDI4aJxhOETOgOY=
-=t3AW
------END PGP SIGNATURE-----
+Ok, I think the mystery is solved. Rather than compiling 2.6.17, I compared
+speedstep-centrino.c from Ubuntu's 2.6.17 kernel package, against the upstream
+source. Ubuntu have obviously patched it, adding freq/voltage tables for
+Pentium M Dothan cores (upstream only supports Banias). They've also done this
+in their 2.6.20 package for Feisty.
+
+So I guess my notebook has broken ACPI BIOS, and the frequency scaling has only
+ever worked because of the linux-phc patches that Ubuntu were applying :(
+
+Hopefully they'll at least keep doing that, to save me from having to patch it
+myself each time. I still don't understand why these patches for the Dothan
+cores have never made it into mainline...
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
