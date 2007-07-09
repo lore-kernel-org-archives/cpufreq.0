@@ -1,11 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
-	M1437G - Intel(R) Pentium(R) M
-Date: Sun,  8 Jul 2007 23:47:35 -0700 (PDT)
-Message-ID: <20070709064735.BF935108097@picon.linux-foundation.org>
-References: <bug-8228-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
+	real
+Date: Mon,  9 Jul 2007 10:50:57 -0700 (PDT)
+Message-ID: <20070709175057.2692311C001@picon.linux-foundation.org>
+References: <bug-8720-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,30 +15,27 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8228
-
-
-astarikovskiy@suse.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |REJECTED
-         Resolution|                            |INVALID
+http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
 
 
 
-------- Comment #47 from astarikovskiy@suse.de  2007-07-08 23:52 -------
-ok, thanks for information. Closing it now.
+
+------- Comment #3 from cimmo@libero.it  2007-07-09 10:55 -------
+seems all frequencies detected are the same one!
+
+ale@portatile:~$ cat
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+1472966 1472966 1472966 1472966 1472966 1472966
 
 
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+You are the assignee for the bug, or are watching the assignee.
