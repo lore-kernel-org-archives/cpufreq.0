@@ -1,10 +1,14 @@
-From: Henne <henne@nachtwindheim.de>
-Subject: cpufreq on Toshiba Portege M100 Laptop
-Date: Thu, 12 Jul 2007 13:41:46 +0200
-Message-ID: <4696137A.1010701@nachtwindheim.de>
+From: "Lei Yang" <leiyang@google.com>
+Subject: Re: Problem with acpi-cpufreq on 8-core machines
+Date: Thu, 12 Jul 2007 15:17:12 -0700
+Message-ID: <c583a31b0707121517x509ab63cl2d8a834c153dae02@mail.gmail.com>
+References: <c583a31b0707111737s237dcde8m211ac2c192668300@mail.gmail.com>
+	<1184220147.2720.1.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <1184220147.2720.1.camel@laptopd505.fenrus.org>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,65 +19,87 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: cpufreq@lists.linux.org.uk
 
-Hello,
-this week I got a Toshiba Portege M100 Laptop. I installed Debian (sid) and everything was great.
-I could see the P-States on powertop, which were 600MHz - 1200 MHz in 100MHz steps.
-Then I upgraded the firmware of the Laptop and then it happend:
+Thanks Arjan!
 
-acpi-cpufreq: acpi_cpufreq_init
-acpi-cpufreq: acpi_cpufreq_early_init
-cpufreq-core: trying to register driver acpi-cpufreq
-cpufreq-core: adding CPU 0
-acpi-cpufreq: acpi_cpufreq_cpu_init
-acpi-cpufreq: No P-States 1
-cpufreq-core: initialization failed
-cpufreq-core: no CPU initialized for driver acpi-cpufreq
-cpufreq-core: unregistering CPU 0
+Like you suggested, I ran the Linux-read firmware developer kit on my
+machine and below are cpufreq related results.
 
-That 1 in the line after "No P-States" is the value of perf->state_count from acpi_cpufreq_cpu_init(),
-which I added to acpi-cpufreq to see whats wrong. I used the latest kernel-2.6.22-git2 via git.
-Then I tryed cpeedstep-centrino with this result.
+* Result: FAIL
+================================================
 
-cpufreq-core: trying to register driver centrino
-cpufreq-core: adding CPU 0
-speedstep-centrino: No P-States
-speedstep-centrino: speedstep-centrino: invalid ACPI data
-speedstep-centrino: found "Intel(R) Pentium(R) M processor 1200MHz": max frequency: 1200000kHz
-speedstep-centrino: trying to enable Enhanced SpeedStep (111088)
-speedstep-centrino: couldn't enable Enhanced SpeedStep
-cpufreq-core: initialization failed
-cpufreq-core: no CPU initialized for driver centrino
-cpufreq-core: unregistering CPU 0
+[INFO]-2 CPU frequency steps supported
 
-So can you help/tell me where i have to look for this error.
-Before the firmware upgrade I made hexdump -C of the first MB of /dev/mem, maybe that could help.
+ Frequency | Speed
+-----------+---------
+  2.38 Ghz | 100.0 %
+  2.05 Ghz | 100.0 %
 
-Btw, PFX should not be used in dprintk(), cause speedstep-centrino: is printed twice.
-I'll write a patch for that.
+[FAIL]-Supposedly higher frequency is slower on CPU 7!
 
-Greets, Henne.
+ Frequency | Speed
+-----------+---------
+  2.38 Ghz | 100.0 %
+  2.05 Ghz | 100.0 %
 
-P.S. Here's the output of /proc/cpuinfo
+[PASS]-P-state coordination done by Harware
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 9
-model name	: Intel(R) Pentium(R) M processor 1200MHz
-stepping	: 5
-cpu MHz		: 598.516
-cache size	: 1024 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 2
-wp		: yes
-flags		: fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 tm pbe est tm2
-bogomips	: 1197.79
-clflush size	: 64
+[FAIL]-Firmware not implementing hardware coordination cleanly. Firmware
+using SW_ANY instead?
+
+So the results mean that the hardware coordination isn't implemented
+properly and that's why I got this weird behavior when playing with the
+acpi-cpufreq module and the userspace governor. However, I actually do not
+quite understand the last failure. As explained in the LDFK  documentation,
+this failure means "BIOS wrongly doing Sw_ANY P-State coordination across
+cpus.  We change frequency on all CPUs to the lowest value, then change
+frequency on one particular CPU to the highest. Next, we change the
+frequency of all the cpus back to the lowset.  If BIOS is doing Sw_ANY the
+core in question will also have a low frequency value instead of staying
+high, and you will get this failure.". I thought the one particular CPU
+whose frequence is set to the highest should also have a low frequency value
+when 'all' cpus are scaled back to the lowest. Or am I missing something?
+
+Thank you!!
+Lei
+
+On 7/11/07, Arjan van de Ven <arjan@infradead.org> wrote:
+>
+> On Wed, 2007-07-11 at 17:37 -0700, Lei Yang wrote:
+> > Hi list,
+> >
+> > I found that on my 8 cpu server, the acpi-cpufreq module doesn't work
+> > properly. The CPU is Intel(R) Xeon(R) CPU (E5345  @ 2.33GHz). First of
+> all,
+> > except for /sys/devices/system/cpu/cpu0/cpufreq, for all other 7 cpus
+> the
+> > cpufreq dir is just a link to cpu0/cpufreq. When I use the userspace
+> > governor and scale down the frequency by editing the scaling_setspeed
+> file
+> > in cpu0/cpufreq, only cpu0 and cpu4 have their frequencies changed. I
+> > verified this with a simple loop test that would report different timing
+> > number at different frequencies. Even though the /proc/cpuinfo shows
+> that
+> > all cpus are running at a lower frequency. Has anyone had the same
+> problem
+> > before? Is there a fix for this?
+>
+> note that this can be a bios issue; have you run the linux-ready
+> firmware developer kit? (see http://www.linuxfirmwarekit.org)
+> the bios is supposed to tell linux which cores share frequency etc etc
+> (and in theory the setting is supposed to be per core, and the hardware
+> then takes the maximum of these values on whatever granularity the
+> hardware has to group things)
+>
+> if your bios doesn't do this correctly then yes you get funky results...
+>
+>
+> --
+> if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+> Test the interaction between Linux and your BIOS via
+> http://www.linuxfirmwarekit.org
+>
+>
