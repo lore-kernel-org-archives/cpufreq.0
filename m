@@ -1,10 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8243] Problem with Throttling and CPU power state
-Date: Fri, 13 Jul 2007 20:42:49 -0700 (PDT)
-Message-ID: <20070714034249.750F6108095@picon.linux-foundation.org>
-References: <bug-8243-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8547] "Hardware error - pending bit very stuck" on Mobile AMD
+	Sempron
+Date: Fri, 13 Jul 2007 20:51:27 -0700 (PDT)
+Message-ID: <20070714035127.4069F108098@picon.linux-foundation.org>
+References: <bug-8547-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8243-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8547-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,7 +21,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8243
+http://bugzilla.kernel.org/show_bug.cgi?id=8547
 
 
 bunk@stusta.de changed:
@@ -28,16 +29,9 @@ bunk@stusta.de changed:
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
                  CC|                            |bunk@stusta.de
-             Status|NEW                         |REJECTED
-         Resolution|                            |INSUFFICIENT_DATA
+             Status|NEEDINFO                    |NEW
 
 
-
-
-------- Comment #4 from bunk@stusta.de  2007-07-13 20:47 -------
-Please reopen this bug if:
-- it is still present with kernel 2.6.22 and
-- you can provide the requested information.
 
 
 -- 
