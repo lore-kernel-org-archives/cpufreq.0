@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS
 	structure
-Date: Tue, 17 Jul 2007 00:36:10 -0700 (PDT)
-Message-ID: <20070717073610.ED2771080F6@picon.linux-foundation.org>
+Date: Tue, 17 Jul 2007 00:37:14 -0700 (PDT)
+Message-ID: <20070717073714.7E7441080F9@picon.linux-foundation.org>
 References: <bug-8075-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8075-3570@http.bugzilla.kernel.org/>
@@ -24,30 +24,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
 
-davemilter@gmail.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |davemilter@gmail.com
 
 
 
-
-------- Comment #19 from davemilter@gmail.com  2007-07-17 00:41 -------
-Hi guys, I had the same issue here, but kernel 2.6.22:
-# uname -a
-Linux localhost 2.6.22-gentoo #5 SMP Mon Jul 16 15:08:03 MSD 2007 i686 AMD
-Athlon(tm) 64 X2 Dual Core Processor 4200+ AuthenticAMD GNU/Linux
-# modprobe powernow-k8
-FATAL: Error inserting powernow_k8
-(/lib/modules/2.6.22-gentoo/kernel/arch/i386/kernel/cpu/cpufreq/powernow-k8.ko):
-No such device
-
-# dmesg | tail -n 3
-powernow-k8: Found 2 AMD Athlon(tm) 64 X2 Dual Core Processor 4200+ processors
-(version 2.00.00)
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
+------- Comment #20 from davemilter@gmail.com  2007-07-17 00:42 -------
+Created an attachment (id=12059)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=12059&action=view)
+kernel config
 
 
 -- 
