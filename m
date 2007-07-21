@@ -1,12 +1,10 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 2/2] Allow ondemand and conservative cpufreq governors to
-	be used as default
-Date: Fri, 20 Jul 2007 19:38:47 +0200
-Message-ID: <1184953127.15328.259.camel@queen.suse.de>
-Reply-To: trenn@suse.de
+From: Dave Jones <davej@redhat.com>
+Subject: Merge status for .23
+Date: Sat, 21 Jul 2007 14:10:25 -0400
+Message-ID: <20070721181025.GA14064@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,255 +14,21 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq <cpufreq@lists.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: cpufreq <cpufreq@lists.linux.org.uk>
 
-Allow ondemand and conservative cpufreq governors to be used as default
+I think I'm done merging bits for the 2.6.23 merge window
+(which should close shortly), which is just as well, as it
+coincides with me disappearing for a week to go to OSCON.
 
-Depending on the transition latency of the HW for cpufreq switches, the
-ondemand or conservative governor cannot be used with certain cpufreq drivers.
-Still the ondemand should be the default governor on a wide range of systems.
-This patch allows this and lets the governor fallback to the performance
-governor at cpufreq driver load time, if the driver does not support fast
-enough frequency switching.
+I'll be keeping an eye on mail for regressions etc once rc1
+lands, but patch submissions will be backlogged until I get back.
 
-Main benefit is that on e.g. installation or other systems without userspace
-support a working dynamic cpufreq support can be achieved on most systems by
-simply loading the cpufreq driver. This is especially essential for recent
-x86(_64) laptop hardware which may rely on working dynamic cpufreq OS support.
+Thanks.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+	Dave
 
----
- drivers/cpufreq/Kconfig                |   27 +++++++++++++++++++++++----
- drivers/cpufreq/cpufreq.c              |   12 ++++++++++++
- drivers/cpufreq/cpufreq_conservative.c |   19 +++++++++----------
- drivers/cpufreq/cpufreq_ondemand.c     |   22 +++++++++-------------
- include/linux/cpufreq.h                |   20 +++++++++++++++++---
- 5 files changed, 70 insertions(+), 30 deletions(-)
-
-Index: cpufreq/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- cpufreq.orig/drivers/cpufreq/cpufreq_ondemand.c
-+++ cpufreq/drivers/cpufreq/cpufreq_ondemand.c
-@@ -47,7 +47,7 @@ static unsigned int def_sampling_rate;
- 			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
- #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
--#define TRANSITION_LATENCY_LIMIT		(10 * 1000)
-+#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
- 
- static void do_dbs_timer(struct work_struct *work);
- 
-@@ -508,12 +508,6 @@ static int cpufreq_governor_dbs(struct c
- 		if ((!cpu_online(cpu)) || (!policy->cur))
- 			return -EINVAL;
- 
--		if (policy->cpuinfo.transition_latency >
--				(TRANSITION_LATENCY_LIMIT * 1000)) {
--			printk(KERN_WARNING "ondemand governor failed to load "
--			       "due to too long transition latency\n");
--			return -EINVAL;
--		}
- 		if (this_dbs_info->enable) /* Already enabled */
- 			break;
- 
-@@ -585,11 +579,13 @@ static int cpufreq_governor_dbs(struct c
- 	return 0;
- }
- 
--static struct cpufreq_governor cpufreq_gov_dbs = {
--	.name = "ondemand",
--	.governor = cpufreq_governor_dbs,
--	.owner = THIS_MODULE,
-+struct cpufreq_governor cpufreq_gov_ondemand = {
-+	.name			= "ondemand",
-+	.governor		= cpufreq_governor_dbs,
-+	.max_transition_latency = TRANSITION_LATENCY_LIMIT,
-+	.owner			= THIS_MODULE,
- };
-+EXPORT_SYMBOL(cpufreq_gov_ondemand);
- 
- static int __init cpufreq_gov_dbs_init(void)
- {
-@@ -598,12 +594,12 @@ static int __init cpufreq_gov_dbs_init(v
- 		printk(KERN_ERR "Creation of kondemand failed\n");
- 		return -EFAULT;
- 	}
--	return cpufreq_register_governor(&cpufreq_gov_dbs);
-+	return cpufreq_register_governor(&cpufreq_gov_ondemand);
- }
- 
- static void __exit cpufreq_gov_dbs_exit(void)
- {
--	cpufreq_unregister_governor(&cpufreq_gov_dbs);
-+	cpufreq_unregister_governor(&cpufreq_gov_ondemand);
- 	destroy_workqueue(kondemand_wq);
- }
- 
-Index: cpufreq/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- cpufreq.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ cpufreq/drivers/cpufreq/cpufreq_conservative.c
-@@ -58,7 +58,7 @@ static unsigned int 				def_sampling_rat
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define DEF_SAMPLING_DOWN_FACTOR		(1)
- #define MAX_SAMPLING_DOWN_FACTOR		(10)
--#define TRANSITION_LATENCY_LIMIT		(10 * 1000)
-+#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
- 
- static void do_dbs_timer(struct work_struct *work);
- 
-@@ -466,9 +466,6 @@ static int cpufreq_governor_dbs(struct c
- 		    (!policy->cur))
- 			return -EINVAL;
- 
--		if (policy->cpuinfo.transition_latency >
--				(TRANSITION_LATENCY_LIMIT * 1000))
--			return -EINVAL;
- 		if (this_dbs_info->enable) /* Already enabled */
- 			break;
- 		 
-@@ -551,15 +548,17 @@ static int cpufreq_governor_dbs(struct c
- 	return 0;
- }
- 
--static struct cpufreq_governor cpufreq_gov_dbs = {
--	.name		= "conservative",
--	.governor	= cpufreq_governor_dbs,
--	.owner		= THIS_MODULE,
-+struct cpufreq_governor cpufreq_gov_conservative = {
-+	.name			= "conservative",
-+	.governor		= cpufreq_governor_dbs,
-+	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
-+	.owner			= THIS_MODULE,
- };
-+EXPORT_SYMBOL(cpufreq_gov_conservative);
- 
- static int __init cpufreq_gov_dbs_init(void)
- {
--	return cpufreq_register_governor(&cpufreq_gov_dbs);
-+	return cpufreq_register_governor(&cpufreq_gov_conservative);
- }
- 
- static void __exit cpufreq_gov_dbs_exit(void)
-@@ -567,7 +566,7 @@ static void __exit cpufreq_gov_dbs_exit(
- 	/* Make sure that the scheduled work is indeed not running */
- 	flush_scheduled_work();
- 
--	cpufreq_unregister_governor(&cpufreq_gov_dbs);
-+	cpufreq_unregister_governor(&cpufreq_gov_conservative);
- }
- 
- 
-Index: cpufreq/include/linux/cpufreq.h
-===================================================================
---- cpufreq.orig/include/linux/cpufreq.h
-+++ cpufreq/include/linux/cpufreq.h
-@@ -163,6 +163,9 @@ struct cpufreq_governor {
- 	char	name[CPUFREQ_NAME_LEN];
- 	int 	(*governor)	(struct cpufreq_policy *policy,
- 				 unsigned int event);
-+	unsigned int max_transition_latency; /* HW must be able to switch to
-+			next freq faster than this value in nano secs or we
-+			will fallback to performance governor */
- 	struct list_head	governor_list;
- 	struct module		*owner;
- };
-@@ -292,12 +295,23 @@ static inline unsigned int cpufreq_get(u
-  *********************************************************************/
- 
- 
--#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-+/*
-+  Performance governor is fallback governor if any other gov failed to
-+  auto load due latency restrictions
-+*/
- extern struct cpufreq_governor cpufreq_gov_performance;
--#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_performance
-+#define CPUFREQ_PERFORMANCE_GOVERNOR	(&cpufreq_gov_performance)
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_performance)
- #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
- extern struct cpufreq_governor cpufreq_gov_userspace;
--#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_userspace
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_userspace)
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND)
-+extern struct cpufreq_governor cpufreq_gov_ondemand;
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_ondemand)
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
-+extern struct cpufreq_governor cpufreq_gov_conservative;
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
- #endif
- 
- 
-Index: cpufreq/drivers/cpufreq/Kconfig
-===================================================================
---- cpufreq.orig/drivers/cpufreq/Kconfig
-+++ cpufreq/drivers/cpufreq/Kconfig
-@@ -56,10 +56,6 @@ config CPU_FREQ_STAT_DETAILS
- 
- 	  If in doubt, say N.
- 
--# Note that it is not currently possible to set the other governors (such as ondemand)
--# as the default, since if they fail to initialise, cpufreq will be
--# left in an undefined state.
--
- choice
- 	prompt "Default CPUFreq governor"
- 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
-@@ -85,6 +81,29 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
- 	  program shall be able to set the CPU dynamically without having
- 	  to enable the userspace governor manually.
- 
-+config CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+	bool "ondemand"
-+	select CPU_FREQ_GOV_ONDEMAND
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	help
-+	  Use the CPUFreq governor 'ondemand' as default. This allows
-+	  you to get a full dynamic frequency capable system by simply
-+	  loading your cpufreq low-level hardware driver.
-+	  Be aware that not all cpufreq drivers support the ondemand
-+	  governor. If unsure have a look at the help section of the
-+	  driver. Fallback governor will be the performance governor.
-+
-+config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-+	bool "conservative"
-+	select CPU_FREQ_GOV_CONSERVATIVE
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	help
-+	  Use the CPUFreq governor 'conservative' as default. This allows
-+	  you to get a full dynamic frequency capable system by simply
-+	  loading your cpufreq low-level hardware driver.
-+	  Be aware that not all cpufreq drivers support the conservative
-+	  governor. If unsure have a look at the help section of the
-+	  driver. Fallback governor will be the performance governor.
- endchoice
- 
- config CPU_FREQ_GOV_PERFORMANCE
-Index: cpufreq/drivers/cpufreq/cpufreq.c
-===================================================================
---- cpufreq.orig/drivers/cpufreq/cpufreq.c
-+++ cpufreq/drivers/cpufreq/cpufreq.c
-@@ -1484,6 +1484,18 @@ static int __cpufreq_governor(struct cpu
- 					unsigned int event)
- {
- 	int ret;
-+	struct cpufreq_governor *gov = CPUFREQ_PERFORMANCE_GOVERNOR;
-+
-+	if (policy->governor->max_transition_latency &&
-+	    policy->cpuinfo.transition_latency >
-+	    policy->governor->max_transition_latency) {
-+		printk(KERN_WARNING "%s governor failed, too long"
-+		       " transition latency of HW, fallback"
-+		       " to %s governor\n",
-+		       policy->governor->name,
-+		       gov->name);
-+		       policy->governor = gov;
-+	}
- 
- 	if (!try_module_get(policy->governor->owner))
- 		return -EINVAL;
+-- 
+http://www.codemonkey.org.uk
