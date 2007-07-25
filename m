@@ -1,46 +1,36 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]gx-suspmod.c use boot_cpu_data instead of
- current_cpu_data
-Date: Tue, 24 Jul 2007 23:40:45 -0700
-Message-ID: <20070724234045.2cec5525.akpm@linux-foundation.org>
-References: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: Merge status for .23
+Date: Wed, 25 Jul 2007 11:36:45 +0200
+Message-ID: <1185356205.3968.34.camel@noname>
+References: <20070721181025.GA14064@redhat.com>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763511AbXGYGln@vger.kernel.org>
-In-Reply-To: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <20070721181025.GA14064@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>, cpufreq@www.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, cpufreq@lists.linux.org.uk
 
-On Wed, 25 Jul 2007 14:19:05 +0000 Dave Young <hidave.darkstar@gmail.com> wrote:
+On Sat, 2007-07-21 at 14:10 -0400, Dave Jones wrote:
+> I think I'm done merging bits for the 2.6.23 merge window
+> (which should close shortly), which is just as well, as it
+> coincides with me disappearing for a week to go to OSCON.
+Ok, so the "use ondemand/conservative governor per default" did not make
+it into 2.6.23?
+Any chance it still does?
+If not, I can post to akpm, maybe Andrew could take them until .24?
 
-> Hi,
-> in preemptible kernel will report BUG: using smp_processor_id() in preemptible, so use boot_cpu_data instead of current_cpu_data.
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-> 
-> ---
-> arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -pur linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
-> --- linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 14:11:06.000000000 +0000
-> +++ linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 13:57:29.000000000 +0000
-> @@ -181,8 +181,8 @@ static __init struct pci_dev *gx_detect_
->  	struct pci_dev *gx_pci = NULL;
->  
->  	/* check if CPU is a MediaGX or a Geode. */
-> -	if ((current_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
-> -	    (current_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
-> +	if ((boot_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
-> +	    (boot_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
->  		dprintk("error: no MediaGX/Geode processor found!\n");
->  		return NULL;
->  	}
+Thanks,
 
-um, I suspect it really wants to get at the current CPU.  But putting a
-preempt_disable() around just that code is meaningless: the current CPU
-could change immediately before or after the code block. It needs deeper
-fixing, methinks.
+  Thomas
