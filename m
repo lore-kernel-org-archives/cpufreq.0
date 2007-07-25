@@ -1,40 +1,46 @@
-From: "Andy Spencer" <andy753421@gmail.com>
-Subject: Re: Cannot set max cpu frequency
-Date: Wed, 25 Jul 2007 03:58:35 +0000
-Message-ID: <490dd6310707242058n310fc4b5x1beee6605a3c5fc4@mail.gmail.com>
-References: <490dd6310707230943n753b8955q3f20fd24ce6f5314@mail.gmail.com>
-	<1185283417.4023.21.camel@noname>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]gx-suspmod.c use boot_cpu_data instead of
+ current_cpu_data
+Date: Tue, 24 Jul 2007 23:40:45 -0700
+Message-ID: <20070724234045.2cec5525.akpm@linux-foundation.org>
+References: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-	b=blCwVWsCguzzm+iSmlcRwOxqwF8bMrUcloEQLzUBY8x0nQK/tl6dkhjVNOErZr1w58Dhc8UkXTo6dpuYpf//W3afdam8YuqOy6dfsIkyoeaLLkuVdoRJaLlkLPvkklEoK6Fk6isS8DK/bOoBoqahfQ3Zwg6freUy37xxfvD14Ec=
-In-Reply-To: <1185283417.4023.21.camel@noname>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1763511AbXGYGln@vger.kernel.org>
+In-Reply-To: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: trenn@suse.de
-Cc: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>, cpufreq@www.linux.org.uk
 
-> It could be that cpufreq gets limited, because of temperature limits.
-> But this is unlikely (49 C and so much freq steps, making sure the fan
-> slots are clean is still a good idea).
+On Wed, 25 Jul 2007 14:19:05 +0000 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-A couple hours after posting that message I noticed that the battery
-light was blinking orange/green. According to the Dell website that
-means that the battery was to hot to charge. I think this may have
-been the problem, however I'm at a loss to what exactly happened. I
-had my computer plugged in the whole time so I don't know why it would
-be hot or trying to charge. All the other temperature sensors
-(thm,sda,i8k,gpu) were within normal ranges. To be honest I didn't
-even know there was a temperature sensor on the battery.
+> Hi,
+> in preemptible kernel will report BUG: using smp_processor_id() in preemptible, so use boot_cpu_data instead of current_cpu_data.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> 
+> ---
+> arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    4 ++--
+> 1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -pur linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
+> --- linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 14:11:06.000000000 +0000
+> +++ linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 13:57:29.000000000 +0000
+> @@ -181,8 +181,8 @@ static __init struct pci_dev *gx_detect_
+>  	struct pci_dev *gx_pci = NULL;
+>  
+>  	/* check if CPU is a MediaGX or a Geode. */
+> -	if ((current_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
+> -	    (current_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
+> +	if ((boot_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
+> +	    (boot_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
+>  		dprintk("error: no MediaGX/Geode processor found!\n");
+>  		return NULL;
+>  	}
+
+um, I suspect it really wants to get at the current CPU.  But putting a
+preempt_disable() around just that code is meaningless: the current CPU
+could change immediately before or after the code block. It needs deeper
+fixing, methinks.
