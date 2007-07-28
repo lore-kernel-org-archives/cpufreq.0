@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
 	real
-Date: Sat, 28 Jul 2007 07:40:03 -0700 (PDT)
-Message-ID: <20070728144003.1E028108057@picon.linux-foundation.org>
+Date: Sat, 28 Jul 2007 07:42:44 -0700 (PDT)
+Message-ID: <20070728144244.C87A2108057@picon.linux-foundation.org>
 References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
@@ -24,20 +24,23 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
 
-cimmo@libero.it changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-      KernelVersion|2.6.22-rc5                  |2.6.22
 
 
 
+------- Comment #7 from cimmo@libero.it  2007-07-28 07:48 -------
+Created an attachment (id=12188)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=12188&action=view)
+dmesg from kubuntu 7.10 tribe3 + XP-M 2500+
 
-------- Comment #6 from cimmo@libero.it  2007-07-28 07:45 -------
-Tried a third cpu with the same notebook and this seems well recognized.
+this cpu is correctly recognized by linux
 
-The cpu is an Athlon XP-M 2500+ at 1874 Mhz so probably there are still some
-problems with cpu scaling frequencies calculation.
+
+[    0.000000] Detected 1874.742 MHz processor.
+
+[  217.438431] powernow: PowerNOW! Technology present. Can scale: frequency and
+voltage.
+[  217.490428] powernow: SGTC: 13333
+[  217.490431] powernow: Minimum speed 535 MHz. Maximum speed 1874 MHz.
 
 
 -- 
