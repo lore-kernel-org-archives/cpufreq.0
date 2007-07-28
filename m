@@ -1,25 +1,46 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH]gx-suspmod.c use boot_cpu_data instead of
- current_cpu_data
-Date: Thu, 26 Jul 2007 18:11:53 +0100
-Message-ID: <20070726181153.17f83e21@the-village.bc.nu>
-References: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
-	<20070724234045.2cec5525.akpm@linux-foundation.org>
-	<a8e1da0707252120l5e9e441bm53e2ba25bc9c20f0@mail.gmail.com>
-	<20070725212638.79bc3945.akpm@linux-foundation.org>
-	<20070726164654.GC32159@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1764841AbXGZRF2@vger.kernel.org>
-In-Reply-To: <20070726164654.GC32159@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
+	real
+Date: Sat, 28 Jul 2007 07:40:03 -0700 (PDT)
+Message-ID: <20070728144003.1E028108057@picon.linux-foundation.org>
+References: <bug-8720-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>, cpufreq@www.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-O> a non-identical CPU system with a geode + something else doesn't exist
-> and is very unlikely to happen.
+http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
-As the Geode isn't used SMP (and afaik isnt SMP capable) that would be a
-reasonable assumption
+
+cimmo@libero.it changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+      KernelVersion|2.6.22-rc5                  |2.6.22
+
+
+
+
+------- Comment #6 from cimmo@libero.it  2007-07-28 07:45 -------
+Tried a third cpu with the same notebook and this seems well recognized.
+
+The cpu is an Athlon XP-M 2500+ at 1874 Mhz so probably there are still some
+problems with cpu scaling frequencies calculation.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
