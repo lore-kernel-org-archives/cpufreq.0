@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
 	real
-Date: Sun, 29 Jul 2007 19:50:02 -0700 (PDT)
-Message-ID: <20070730025002.E7ACF108059@picon.linux-foundation.org>
+Date: Mon, 30 Jul 2007 11:21:35 -0700 (PDT)
+Message-ID: <20070730182135.3BA26108059@picon.linux-foundation.org>
 References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
@@ -27,9 +27,13 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
 
 
-------- Comment #9 from dsd@gentoo.org  2007-07-29 19:55 -------
-Please boot an affected system with the "cpufreq.debug=3" parameter and attach
-full dmesg output here.
+------- Comment #10 from cimmo@libero.it  2007-07-30 11:27 -------
+Daniel thanx so much for your answer.
+
+There are other tests that I can do? Because the pc affected is not mine, so
+when I go to my friend I do as many tests ad I can.
+
+thanx
 
 
 -- 
