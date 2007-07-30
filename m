@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
 	real
-Date: Mon, 30 Jul 2007 11:53:05 -0700 (PDT)
-Message-ID: <20070730185305.D833C10805A@picon.linux-foundation.org>
+Date: Mon, 30 Jul 2007 15:46:58 -0700 (PDT)
+Message-ID: <20070730224658.D5A82108059@picon.linux-foundation.org>
 References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
@@ -27,12 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
 
 
-------- Comment #11 from dsd@gentoo.org  2007-07-30 11:59 -------
-Theres nothing I can do without that info, sorry. You may also wish to dump the
-ACPI DSDT as detailed in the other bug as I suspect it will be needed later.
-
-I think you also need to compile cpufreq debug support into your kernel for
-that debug parameter to have an effect.
+------- Comment #12 from cimmo@libero.it  2007-07-30 15:52 -------
+this can be a problem.
+Is there a live cd with a debugging kernel that I can just launch? All that I
+have is ubuntu tribe 3 for now.
 
 
 -- 
