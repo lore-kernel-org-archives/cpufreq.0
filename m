@@ -1,13 +1,11 @@
-From: Wes Felter <wesley@felter.org>
-Subject: Re: voltage tables
-Date: Tue, 31 Jul 2007 14:56:29 -0500
-Message-ID: <f8o4nh$u2o$1@sea.gmane.org>
-References: <20070730230439.GB6949@tatooine.rebelbase.local>
-	<200707302241.29635.lenb@kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
+	real
+Date: Wed,  1 Aug 2007 12:48:33 -0700 (PDT)
+Message-ID: <20070801194833.CB50A108059@picon.linux-foundation.org>
+References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <200707302241.29635.lenb@kernel.org>
+In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,42 +16,25 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Len Brown wrote:
-> On Monday 30 July 2007 19:04, markus reichelt wrote:
->> Hi,
->>
->> just a thought.... with more and more people wondering why cpufreq
->> doesn't work on their over/underclocked systems, what about offering
->> the possibility to use static (and thus easily tweakable) voltage
->> tables instead of/parallel to the ACPI-approach? 
+http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
-[snip]
 
-> Going forward, I believe that the hardware guys have no plans to
-> maintain any sort of reasonable compatibility or even straightforward
-> decoding of the bit pattern that gets written to PERF_CTL --
-> so the reason that speedstep-centrino and its hard-coded tables
-> became deprecated will be even more true in the future.
 
-User-provided tables != hard-coded tables. What if acpi-cpufreq dumped 
-the ACPI table in some semi-human-readable format and then allowed the 
-user to tweak it (by guessing, since the hardware is undocumented) and 
-then push the tweaked table back into the driver at runtime? The driver 
-would still not contain any tables and thus the old speedstep-centrino 
-maintenance problem would not exist.
 
-There is a patch for speedstep-centrino that adds an op_points_table 
-file in sysfs; it could be ported to acpi-cpufreq.
 
-http://gentoo-wiki.com/HOWTO_Undervolt_a_Pentium_M_CPU#Getting_the_current_voltage_settings
+------- Comment #13 from cimmo@libero.it  2007-08-01 12:54 -------
+well probably ubuntu 7.10 tribe3 is not built with debug level that I need
+[    0.000000] Unknown boot option `cpufreq.debug=3': ignoring
 
-> Further, I've not played with this, but my understanding is that
-> on the Extreme parts, the way to over-clock them is to have
+but I have the ACPI dump that I obtained with acpidump utility, can be helpful?
 
-Most overclockers buy cheap non-extreme parts and set the FSB frequency 
-out of spec; that's why the ACPI tables are wrong.
 
-Wes Felter - wesley@felter.org
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
