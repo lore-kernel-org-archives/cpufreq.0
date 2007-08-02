@@ -1,43 +1,87 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
-	real
-Date: Wed,  1 Aug 2007 12:50:11 -0700 (PDT)
-Message-ID: <20070801195011.ACEDB108059@picon.linux-foundation.org>
-References: <bug-8720-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [-mm patch] CPU_FREQ_GOV_PERFORMANCE must always be y
+Date: Thu, 2 Aug 2007 15:48:38 +0200
+Message-ID: <20070802134838.GV3972@stusta.de>
+References: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com> <20070801165704.a26961b7.akpm@linux-foundation.org> <46B12516.4090006@googlemail.com>
+Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757987AbXHBNtQ@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <46B12516.4090006@googlemail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: Gabriel C <nix.or.die@googlemail.com>, davej@codemonkey.org.uk
+Cc: Andrew Morton <akpm@linux-foundation.org>, Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Thomas Renninger <trenn@suse.de>, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8720
+On Thu, Aug 02, 2007 at 02:28:06AM +0200, Gabriel C wrote:
+> Andrew Morton wrote:
+> > On Wed, 1 Aug 2007 16:31:46 -0700
+> > "Miles Lane" <miles.lane@gmail.com> wrote:
+> > 
+> >>   LD      .tmp_vmlinux1
+> >> drivers/built-in.o: In function `__cpufreq_governor':
+> >> cpufreq.c:(.text+0xaf178): undefined reference to `cpufreq_gov_performance'
+> >> cpufreq.c:(.text+0xaf18a): undefined reference to `cpufreq_gov_performance'
+> >> make: *** [.tmp_vmlinux1] Error 1
+> > 
+> > One for Thomas, I expect.
+> 
+> Is this patch :
+> 
+> cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
+> 
+> Reverting it here fixes the error.
+
+Possible fix below.
+
+> Gabriel
+
+cu
+Adrian
 
 
+<--  snip  -->
 
 
+With the 'performance' governor always as a fallback it must always be 
+compiled into the kernel.
 
-------- Comment #14 from cimmo@libero.it  2007-08-01 12:56 -------
-Created an attachment (id=12229)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=12229&action=view)
-acpidump with ubuntu 7.10 tribe3 and XP-M 2800+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-obtained with:
+---
 
-sudo acpidump
+ drivers/cpufreq/Kconfig |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+d7418849ec236338ec5ac74c0d66e5aaae466ffe 
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 721f86f..91f7cfd 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -84,7 +84,6 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
+ config CPU_FREQ_DEFAULT_GOV_ONDEMAND
+ 	bool "ondemand"
+ 	select CPU_FREQ_GOV_ONDEMAND
+-	select CPU_FREQ_GOV_PERFORMANCE
+ 	help
+ 	  Use the CPUFreq governor 'ondemand' as default. This allows
+ 	  you to get a full dynamic frequency capable system by simply
+@@ -96,7 +95,6 @@ config CPU_FREQ_DEFAULT_GOV_ONDEMAND
+ config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+ 	bool "conservative"
+ 	select CPU_FREQ_GOV_CONSERVATIVE
+-	select CPU_FREQ_GOV_PERFORMANCE
+ 	help
+ 	  Use the CPUFreq governor 'conservative' as default. This allows
+ 	  you to get a full dynamic frequency capable system by simply
+@@ -107,7 +105,8 @@ config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+ endchoice
+ 
+ config CPU_FREQ_GOV_PERFORMANCE
+-	tristate "'performance' governor"
++	tristate
++	default y
+ 	help
+ 	  This cpufreq governor sets the frequency statically to the
+ 	  highest available CPU frequency.
