@@ -1,12 +1,13 @@
-From: "Mark Langsdorf" <mark.langsdorf@amd.com>
-Subject: [PATCH] Support different families in fid/did to frequency
- conversion
-Date: Fri, 3 Aug 2007 14:09:05 -0500
-Message-ID: <200708031409.05727.mark.langsdorf@amd.com>
+From: Roberto De Leo <deleo@unica.it>
+Subject: Re: do Pentium4 & PentiumM consume about the same at their lowest
+ possible freq?
+Date: Fri, 03 Aug 2007 22:16:20 +0200
+Message-ID: <46B38D14.4080806@unica.it>
+References: <46B35E55.6080705@unica.it> <200708031416.58746.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <200708031416.58746.lenb@kernel.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,29 +17,20 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk, bhavana.nagendra@amd.com
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-The equation to find the frequency given the fid and did is family dependant.
 
-Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
-Signed-off-by: Joachim Deguara <joachim.deguara@amd.com>
 
---
-Index: 2.6-git/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-===================================================================
---- 2.6-git.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-+++ 2.6-git/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-@@ -76,7 +76,10 @@ static u32 find_khz_freq_from_fid(u32 fi
- /* Return a frequency in MHz, given an input fid and did */
- static u32 find_freq_from_fiddid(u32 fid, u32 did)
- {
--	return 100 * (fid + 0x10) >> did;
-+	if (current_cpu_data.x86 == 0x10)
-+		return 100 * (fid + 0x10) >> did;
-+	else
-+		return 100 * (fid + 0x8) >> did;
- }
- 
- static u32 find_khz_freq_from_fiddid(u32 fid, u32 did)
+> indeed, under many conditions, using pentium 4 clock modulation will
+> actually increase energy use, rather than decrease it.
+>
+Jeez, that's odd!
+Then maybe this is the reason why I don't notice any particular 
+improvement when I slow down my celeron-m, which uses indeed the P4 
+modulation sw rather than the speedstep centrino. But then, why slowing 
+down the CPU at all if it doesn't save you any watt? I guess I'll stop 
+using it.
+Thanks a lot for the preciuos info,
+Roberto
