@@ -1,15 +1,12 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: do Pentium4 & PentiumM consume about the same at their
- lowest possible freq?
-Date: Fri, 3 Aug 2007 15:59:22 -0500
-Message-ID: <1449F58C868D8D4E9C72945771150BDF02076FA8@SAUSEXMB1.amd.com>
+From: Erich Boleyn <erich@uruk.org>
+Subject: Re: do Pentium4 & PentiumM consume about the same at their lowest
+	possible freq?
+Date: Fri, 03 Aug 2007 15:34:50 -0700
+Message-ID: <E1IH5jO-0002Yz-GW@uruk.org>
 References: <653FFBB4508B9042B5D43DC9E18836F50139486C@scsmsx415.amr.corp.intel.com>
 	<46B394D5.4030509@unica.it>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <46B394D5.4030509@unica.it>
+In-reply-to: <46B394D5.4030509@unica.it> 
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,41 +17,81 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Roberto De Leo <deleo@unica.it>
 Cc: cpufreq@lists.linux.org.uk
 
-> >It is meant to be used under thermal condition where slowing down CPU
-> >will result in reducing the temperature and not for power savings in
-> >normal conditions.
-> >
-> I thought that power consumption and heat dissipation in the CPU were=20
+
+FYI, I work at AMD currently, and worked at Intel in the past.  The
+model discussed below is an approximation, and some circuit or process
+geek can correct me if they care to.  ;-)
+
+
+Roberto De Leo <deleo@unica.it> wrote:
+
+> I thought that power consumption and heat dissipation in the CPU were 
 > more or less proportional but evidently my belief was too naif  :-)
->=20
-> I guess that the same thing holds for the Athlon64
+> 
+> I guess that the same thing holds for the Athlon64 so prolly centrino is 
+> the only CPU were I can get a substantial power saving by decreasing the 
+> freq when I don't need much of it (which is almost always), is this 
+> correct?
 
-Most processors reduce power consumption faster than they reduce
-frequency, because reducing frequency allows the processor to
-also reduce voltage.  There is a corner case that if you only
-reduce frequency, you do not get much power reduction, but the
-standard powernow-k[7,8] driver reduces both voltage and
-frequency.
 
-The only numbers I have handy are a bit old, but here's the
-original Opteron/Athlon FX at 2.2 GHz:
+  --  "Frequency Scaling" is when the freqency is increased or decreased,
+        usually by fixed factors or to fixed step values.  In an ideal
+        world, power consumption is linear with frequency given you keep
+        the voltage(s) the same.  In practice, you have leakage, so,
+        roughly, at a given set of voltages the eq, looks like:
 
-Frequency (GHz)	Voltage (V)		Power (W)
-2.2			1.5			89
-2.0			1.4			69
-1.8			1.3			50
-1.0			1.1			22
+           Power =  Fixed_Power + Freq * (watt/Hz)
 
-A drop of 50% in frequency cuts maximum power
-by more than 66%.  Actual measured power may be
-lower, since idle blocks consume less power,
-and a processor at minimum pstate may also be
-going into C1 (Halt) a good deal of the time.
+        NOTE: The Fixed_Power and (watt/Hz) values vary based on the
+        processor and voltage type.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+  --  "Throttling" is a bit like frequency scaling.  The number of clock
+        edges is reduced, often by stuttering (times the clock is running
+        vs. times it is not), with similar power results.
+
+  --  "Voltage Scaling" roughly changes power as a square with another
+        semi-constant:
+
+           Power =  Fixed_Power_2 + V^2 * (watt/V^2)
+
+
+Now, with all that intro, here's the mechanisms used by the different
+chips involved to my knowledge:
+
+  --  Pentium 4 supported Throttling - used to keep the part from
+        overheating, and not really useful for power savings in general.
+
+  --  Pentium M, Core, and Core 2 support freq/voltage scaling and maybe (?)
+        also Throttling.  Don't know when they started supporting it in
+        server configs.
+
+  --  (don't remember what Athlon (K7) supported, I think the mobile
+        version had freq/voltage scaling)
+
+  --  Opteron/Athlon64 support freq/voltage scaling across the whole line.
+
+
+I think the multi-socket (i.e. SMP server) support for freq/voltage
+scaling only came into products since about 2004-2005.  I know
+Opterons/Athlon64's had it in 2004, but don't know/remember where it
+intersected into Intel products.
+
+Results of all this says that you get *less* than linear benefits from
+scaling frequency back or throttling alone.  Luckily, you can often
+reduce voltage when scaling back the frequency, and in that case it's
+really the voltage reduction which gives you most of the power savings.
+
+
+So, whenever possible use a freq/voltage scaling combination, which is
+what Enhanced Speedstep and Powernow have been doing for a while.
+
+
+--
+    Erich Stefan Boleyn     <erich@uruk.org>     http://www.uruk.org/
+"Reality is truly stranger than fiction; Probably why fiction is so popular"
