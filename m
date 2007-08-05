@@ -1,12 +1,14 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: freq scaling
-Date: Fri, 3 Aug 2007 20:28:16 -0400
-Message-ID: <20070804002816.GA19845@redhat.com>
-References: <1186181309.4002.4.camel@XANJTLTGL>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: do Pentium4 & PentiumM consume about the same at their lowest
+	possible freq?
+Date: Sun, 05 Aug 2007 11:49:47 -0700
+Message-ID: <1186339787.17247.2.camel@laptopd505.fenrus.org>
+References: <653FFBB4508B9042B5D43DC9E18836F50139486C@scsmsx415.amr.corp.intel.com>
+	<46B394D5.4030509@unica.it>  <E1IH5jO-0002Yz-GW@uruk.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1186181309.4002.4.camel@XANJTLTGL>
+In-Reply-To: <E1IH5jO-0002Yz-GW@uruk.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,20 +20,31 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Xandros Desktop OS User <jtltgl@sbcglobal.net>
+To: Erich Boleyn <erich@uruk.org>
 Cc: cpufreq@lists.linux.org.uk
 
-On Fri, Aug 03, 2007 at 06:48:28PM -0400, Xandros Desktop OS User wrote:
- > hi i have a amd k6 3 and kernel 2.6.18 . I am trying to get freq scaling
- > on my machine. Is this the program needed to give freq scaling.
+On Fri, 2007-08-03 at 15:34 -0700, Erich Boleyn wrote:
 
-If you have a mobile version of the K6-3 (model 13 in /proc/cpuinfo)
-then the powernow-k6 driver will work.  It's literally been about
-5 years since I last heard of someone using it, but it's hardly changed
-in that time, so should still work.
+> Results of all this says that you get *less* than linear benefits from
+> scaling frequency back or throttling alone.  Luckily, you can often
+> reduce voltage when scaling back the frequency, and in that case it's
+> really the voltage reduction which gives you most of the power savings.
+> 
+> 
+> So, whenever possible use a freq/voltage scaling combination, which is
+> what Enhanced Speedstep and Powernow have been doing for a while.
 
-	Dave
+the situation is more complex than this though....
+
+The CPU uses a LOT less power when idle. In practice on most cpus
+(except when you overclock like crazy and go to high voltages) it's more
+power efficient to go full speed to be idle as quickly as possible, so
+that you get the power saving from idle.
+
+This is especially the case for things like throttling; where you
+basically keep the cpu just at a higher voltage for a longer time than
+you would have otherwise...
 
 -- 
-http://www.codemonkey.org.uk
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
