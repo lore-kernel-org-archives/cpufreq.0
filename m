@@ -1,13 +1,12 @@
-From: Nebojsa Trpkovic <trx.lists@gmail.com>
-Subject: how to set ondemand governor
-Date: Mon, 06 Aug 2007 22:19:39 +0200
-Message-ID: <46B7825B.7090007@gmail.com>
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: how to set ondemand governor
+Date: Mon, 06 Aug 2007 16:27:47 -0400
+Message-ID: <46B78443.4070402@redhat.com>
+References: <46B7825B.7090007@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-	b=uTuT+SLRsE5H8EKeq8LbBaJJg92CaW1dGPTAiT83HsBAB1qb9FqjnxnBwTQ5rZ0xgmKg5+lpc6d806woZurnF/MMEB58bRBrs7uRSwaLJzKT5dN5s2zCsJQrNsHqbwoDYjHRu14foMgt/Eg8vhTfbQKk7qMVGVgl+6LYVHWmiCo=
+Content-Type: multipart/mixed; boundary="===============0334808942=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <46B7825B.7090007@gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,63 +16,73 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Nebojsa Trpkovic <trx.lists@gmail.com>
+Cc: cpufreq@www.linux.org.uk
+
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============0334808942==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig06346E8F60C07707277129BF"
+
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig06346E8F60C07707277129BF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Nebojsa Trpkovic wrote:
+> I've got Core 2 Duo CPU and tried to set ondemand governor. result that=
+
+> I've got shows that only one core is affected:
+>=20
+>> titan old # echo -n "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/=
+scaling_governor
+
+Note that the path you're echoing into contains 'cpu0'...
+
+> does this mean that I should (and can) set different governors/variable=
+s
+> for different cores of my CPU ?
+
+I suppose you can, but its a little batty (never actually tried myself).
+In fedora-land, we have an initscript that defaults to setting ondemand
+for all cpus. Part of the setup is to essentially echo 'ondemand' into
+the scaling_governor sysfs file for each cpu on the system.
+
+--=20
+Jarod Wilson
+jwilson@redhat.com
+
+
+
+--------------enig06346E8F60C07707277129BF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGt4RItO+bni+75QMRAqTVAJ9qu9mSOtGmnqNMpQj0x/LZsb2xxgCgj9RK
+f3WfsU3Jec7V9gMs0kdJyXk=
+=gGw/
+-----END PGP SIGNATURE-----
+
+--------------enig06346E8F60C07707277129BF--
+
+
+--===============0334808942==
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@www.linux.org.uk
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I've got Core 2 Duo CPU and tried to set ondemand governor. result that
-I've got shows that only one core is affected:
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-> titan old # echo -n "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> titan old # cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 Duo CPU     E6550  @ 2.33GHz
-> stepping        : 11
-> cpu MHz         : 2000.000
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 0
-> cpu cores       : 2
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall nx lm constant_tsc pni monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr lahf_lm
-> bogomips        : 4669.25
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 36 bits physical, 48 bits virtual
-> power management:
-> 
-> processor       : 1
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 Duo CPU     E6550  @ 2.33GHz
-> stepping        : 11
-> cpu MHz         : 2333.000
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 1
-> cpu cores       : 2
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall nx lm constant_tsc pni monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr lahf_lm
-> bogomips        : 4666.81
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 36 bits physical, 48 bits virtual
-> power management:
-> 
-> titan old #                                    
+--===============0334808942==--
 
-
-does this mean that I should (and can) set different governors/variables
-for different cores of my CPU ?
