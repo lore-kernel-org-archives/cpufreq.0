@@ -1,11 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8228] acpi-cpufreq does not load - Fujitsu Siemens Amilo M1425,
-	M1437G - Intel(R) Pentium(R) M
-Date: Tue,  7 Aug 2007 15:58:17 -0700 (PDT)
-Message-ID: <20070807225818.6A6F910805A@picon.linux-foundation.org>
-References: <bug-8228-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8671] CPU frequency always on highest frequency after wakeup
+	from suspend to disk
+Date: Wed,  8 Aug 2007 09:57:05 -0700 (PDT)
+Message-ID: <20070808165705.BCB2D10801B@picon.linux-foundation.org>
+References: <bug-8671-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8228-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8671-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,33 +21,22 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8228
-
-
-len.brown@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REJECTED                    |CLOSED
-          Component|Config-Processors           |BIOS
+http://bugzilla.kernel.org/show_bug.cgi?id=8671
 
 
 
 
-------- Comment #48 from len.brown@intel.com  2007-08-07 16:04 -------
-Thanks for following-up Daniel.
-Curious that speedstep-centrino tables for Dothan
-was what made this work for you in Ubuntu-2.6.17
-and that upgrading the BIOS make acpi-cpufreq start working.
-It makes one wonder what Windows would do with the old BIOS
-on that machine.
 
-As we haven't heard from Uwe, the original poster, in months,
-we'll assume he's somehow magically happy with the upstream kernel
-and we'll file this one into the broken BIOS bucket.
+------- Comment #14 from rjwysocki@sisk.pl  2007-08-08 10:03 -------
+(In reply to comment #9)
+> Created an attachment (id=11884)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=11884&action=view) [details]
+> Restore previously used governor on a hot-replugged CPU
+
+Can you please tell me what the status of this patch is?
 
 
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+You are the assignee for the bug, or are watching the assignee.
