@@ -1,10 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8581] acpi-cpufreq gets very confused on suspend to ram
-Date: Wed,  8 Aug 2007 10:04:52 -0700 (PDT)
-Message-ID: <20070808170452.13AD410801A@picon.linux-foundation.org>
-References: <bug-8581-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8671] CPU frequency always on highest frequency after wakeup
+	from suspend to disk
+Date: Wed,  8 Aug 2007 21:35:51 -0700 (PDT)
+Message-ID: <20070809043551.A2263108061@picon.linux-foundation.org>
+References: <bug-8671-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8581-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8671-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,14 +21,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8581
+http://bugzilla.kernel.org/show_bug.cgi?id=8671
 
 
 
 
 
-------- Comment #2 from rjwysocki@sisk.pl  2007-08-08 10:11 -------
-Does the issue remain in the newest kernels (eg. 2.6.23-rc2)?
+------- Comment #15 from davej@codemonkey.org.uk  2007-08-08 21:42 -------
+It's in Linus' tree for 2.6.23
 
 
 -- 
