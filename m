@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8671] CPU frequency always on highest frequency after wakeup
 	from suspend to disk
-Date: Wed,  8 Aug 2007 21:35:51 -0700 (PDT)
-Message-ID: <20070809043551.A2263108061@picon.linux-foundation.org>
+Date: Thu,  9 Aug 2007 07:07:28 -0700 (PDT)
+Message-ID: <20070809140728.2ECD610801C@picon.linux-foundation.org>
 References: <bug-8671-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8671-3570@http.bugzilla.kernel.org/>
@@ -24,11 +24,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8671
 
 
+bunk@kernel.org changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|REOPENED                    |CLOSED
+         Resolution|                            |CODE_FIX
 
 
-
-------- Comment #15 from davej@codemonkey.org.uk  2007-08-08 21:42 -------
-It's in Linus' tree for 2.6.23
 
 
 -- 
