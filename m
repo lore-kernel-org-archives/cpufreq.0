@@ -1,30 +1,31 @@
-From: joe@perches.com
-Subject: [PATCH] [135/2many] MAINTAINERS - CPU FREQUENCY DRIVERS
-Date: Sun, 12 Aug 2007 23:25:38 -0700
-Message-ID: <46bff962.fBD4aAz2pZsNqDAn%joe@perches.com>
+From: fikin <nikolai.fiikov@gmail.com>
+Subject: mobile pentium mmx?
+Date: Fri, 17 Aug 2007 23:19:05 +0300
+Message-ID: <ebebfcb60708171319g4db97e0fy8ea93999634d688@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S941724AbXHMHhq@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
+	h=domainkey-signature:received:received:message-id:date:from:to:subject:mime-version:content-type;
+	b=VC5BeGEZHQOEpCTbfYAQfQIUfCGIVUPrMWK70znhMiHJ36fgpBkriJTgq02d5q7eKBl8J4r+vvE1TevB7Jae6C8DX7ndkVXmuWtR8dXclUp0oyD+V67MRlc0FnaRD60qruplWBHfW3k8y2f1TSKJSxHIlKoOQM8KxtO7AnzwLLE=
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, akpm@linux-foundation.org
+To: cpufreq@lists.linux.org.uk
 
-Add file pattern to MAINTAINER entry
+could someone direct me at a solution to frequency scaling of intel "mobile
+pentium mmx" ?
 
-Signed-off-by: Joe Perches <joe@perches.com>
+some years ago i think there was some  kind of support for them but now i
+can't find anything at all ...
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a51b89e..60e6fb5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1309,6 +1309,9 @@ L:	cpufreq@lists.linux.org.uk
- W:	http://www.codemonkey.org.uk/projects/cpufreq/
- T:	git kernel.org/pub/scm/linux/kernel/git/davej/cpufreq.git
- S:	Maintained
-+F:	arch/i386/kernel/cpu/cpufreq/
-+F:	drivers/cpufreq/
-+F:	include/linux/cpufreq.h
- 
- CPUID/MSR DRIVER
- P:	H. Peter Anvin
+fikin
