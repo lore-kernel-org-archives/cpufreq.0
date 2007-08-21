@@ -1,10 +1,10 @@
 From: M C <kingming0811@yahoo.com>
-Subject: how many throttling levels xeon has
-Date: Mon, 20 Aug 2007 06:54:36 -0700 (PDT)
-Message-ID: <817883.60173.qm@web39713.mail.mud.yahoo.com>
+Subject: about p-state on xeon processors
+Date: Mon, 20 Aug 2007 19:38:32 -0700 (PDT)
+Message-ID: <449932.83753.qm@web39712.mail.mud.yahoo.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,14 +14,14 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 To: cpufreq@lists.linux.org.uk
 
-Hi.=0A=0AI am doing frequency throttling on xeon processors. But I have che=
-cked a lot of data sheets from intel and i cannot find any information abou=
-t the number of throttling levels xeon has. Could you please give me some g=
-uidance on it? Thanks.=0A=0AMing=0A=0A=0A=0A=0A       =0A__________________=
-__________________________________________________________________=0ABuildi=
-ng a website is a piece of cake. Yahoo! Small Business gives you all the to=
-ols to get online.=0Ahttp://smallbusiness.yahoo.com/webhosting 
+Hi. Who knows how many p-states the xeon 5000 processors have. I have searc=
+hed a lot on the intel website, but I cannot find anything about it. Could =
+you please give me some guidance on how to find it? Thanks.=0A=0AMing=0A=0A=
+=0A=0A=0A       =0A________________________________________________________=
+____________________________=0AChoose the right car based on your needs.  C=
+heck out Yahoo! Autos new Car Finder tool.=0Ahttp://autos.yahoo.com/carfind=
+er/
