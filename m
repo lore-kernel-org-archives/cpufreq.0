@@ -1,9 +1,9 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8924] module speedstep-centrino does not load
-Date: Wed, 22 Aug 2007 16:45:05 -0700 (PDT)
-Message-ID: <20070822234505.4F67210802E@picon.linux-foundation.org>
+Date: Wed, 22 Aug 2007 16:49:59 -0700 (PDT)
+Message-ID: <20070822234959.DECB210801A@picon.linux-foundation.org>
 References: <bug-8924-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -14,7 +14,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,46 +26,12 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8924
 
 
 
-------- Comment #3 from anonymous@kernel-bugs.osdl.org  2007-08-22 16:52 -------
-Reply-To: akpm@linux-foundation.org
+------- Comment #4 from davej@codemonkey.org.uk  2007-08-22 16:57 -------
+This isn't a regression. It's intentional deprecation that has been warned
+about since October 2006.
 
-On Wed, 22 Aug 2007 15:12:09 -0700 (PDT)
-bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=8924
-> 
->            Summary: module speedstep-centrino does not load
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.23-rc3
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Other
->         AssignedTo: drivers_other@kernel-bugs.osdl.org
->         ReportedBy: frank@harenberg.ch
-> 
-> 
-> Most recent kernel where this bug did not occur:2.6.22
-> Distribution:gentoo
-> Hardware Environment: Intel Centrino Duo, cpu family 6, model 14, Model Name
-> T2300 In a Dell Inspiron 9400.
-> Software Environment: i386
-> Problem Description: modprobe speedstep-centrino quits with error "no such
-> device"
-> same module loads successfully with older versions on the same computer.
-> Steps to reproduce:
-> modprobe speedstep-centrino
-> 
-
-I'd have thought that a lot of people would be seeing this?
-
-Oh well.  Michal, can we please track this as a post-2.6.22 regression?
-
-Thanks.
+The speedstep-centrino driver itself will remain however for systems that don't
+have working/present ACPI tables.
 
 
 -- 
