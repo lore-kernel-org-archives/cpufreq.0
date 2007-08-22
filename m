@@ -1,10 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8924] module speedstep-centrino does not load
-Date: Wed, 22 Aug 2007 16:49:59 -0700 (PDT)
-Message-ID: <20070822234959.DECB210801A@picon.linux-foundation.org>
-References: <bug-8924-3570@http.bugzilla.kernel.org/>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: mobile pentium mmx?
+Date: Wed, 22 Aug 2007 19:57:31 -0400
+Message-ID: <20070822235731.GA18739@redhat.com>
+References: <ebebfcb60708171319g4db97e0fy8ea93999634d688@mail.gmail.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <ebebfcb60708171319g4db97e0fy8ea93999634d688@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,26 +17,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: fikin <nikolai.fiikov@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8924
+On Fri, Aug 17, 2007 at 11:19:05PM +0300, fikin wrote:
+ > could someone direct me at a solution to frequency scaling of intel "mobile
+ > pentium mmx" ?
+ > 
+ > some years ago i think there was some  kind of support for them but now i
+ > can't find anything at all ...
 
+Intel didn't add speedstep capability until the Mobile Pentium III.
 
-
-
-
-------- Comment #4 from davej@codemonkey.org.uk  2007-08-22 16:57 -------
-This isn't a regression. It's intentional deprecation that has been warned
-about since October 2006.
-
-The speedstep-centrino driver itself will remain however for systems that don't
-have working/present ACPI tables.
-
+	Dave
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+http://www.codemonkey.org.uk
