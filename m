@@ -1,37 +1,25 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: mobile pentium mmx?
-Date: Wed, 22 Aug 2007 19:57:31 -0400
-Message-ID: <20070822235731.GA18739@redhat.com>
-References: <ebebfcb60708171319g4db97e0fy8ea93999634d688@mail.gmail.com>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Bugme-new] [Bug 8924] New: module speedstep-centrino does not
+ load
+Date: Wed, 22 Aug 2007 16:55:19 -0700
+Message-ID: <20070822165519.10ec5d68@laptopd505.fenrus.org>
+References: <bug-8924-10286@http.bugzilla.kernel.org/>
+	<20070822164451.1481d745.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <ebebfcb60708171319g4db97e0fy8ea93999634d688@mail.gmail.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fikin <nikolai.fiikov@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S934215AbXHWABU@vger.kernel.org>
+In-Reply-To: <20070822164451.1481d745.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, frank@harenberg.ch
 
-On Fri, Aug 17, 2007 at 11:19:05PM +0300, fikin wrote:
- > could someone direct me at a solution to frequency scaling of intel "mobile
- > pentium mmx" ?
- > 
- > some years ago i think there was some  kind of support for them but now i
- > can't find anything at all ...
+On Wed, 22 Aug 2007 16:44:51 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> > Problem Description: modprobe speedstep-centrino quits with error
+> > "no such device"
 
-Intel didn't add speedstep capability until the Mobile Pentium III.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+does the acpi-cpufreq driver work? on such new hardware that really
+should be used rather than the legacy-hw speedstep-centrino
