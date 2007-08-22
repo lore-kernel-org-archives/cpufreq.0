@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8924] module speedstep-centrino does not load
-Date: Wed, 22 Aug 2007 15:43:15 -0700 (PDT)
-Message-ID: <20070822224315.9B11210801A@picon.linux-foundation.org>
+Date: Wed, 22 Aug 2007 16:32:49 -0700 (PDT)
+Message-ID: <20070822233249.8B91410801C@picon.linux-foundation.org>
 References: <bug-8924-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
@@ -23,15 +23,20 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8924
 
 
-davej@codemonkey.org.uk changed:
+frank@harenberg.ch changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-         AssignedTo|drivers_other@kernel-       |cpufreq@www.linux.org.uk
-                   |bugs.osdl.org               |
-             Status|NEEDINFO                    |NEW
+             Status|NEW                         |CLOSED
+         Resolution|                            |PATCH_ALREADY_AVAILABLE
 
 
+
+
+------- Comment #2 from frank@harenberg.ch  2007-08-22 16:40 -------
+Thanks for info, getting too late in CH, should have dmesg'ed the old kernel.
+acpi-cpufreq resolves the problem.
+I'm suggesting to mark the module in the kernel config ui as deprecated.
 
 
 -- 
