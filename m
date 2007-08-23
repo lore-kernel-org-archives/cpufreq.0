@@ -1,60 +1,48 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [Bugme-new] [Bug 8924] New: module speedstep-centrino does not
-	load
-Date: Wed, 22 Aug 2007 20:25:23 -0400
-Message-ID: <20070823002523.GE18739@redhat.com>
-References: <bug-8924-10286@http.bugzilla.kernel.org/> <20070822164451.1481d745.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759388AbXHWAZv@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070822164451.1481d745.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 7463] CPU frequency scaling(cpufreq) does not work.
+	speedstep-centrino.c problem
+Date: Wed, 22 Aug 2007 17:44:30 -0700 (PDT)
+Message-ID: <20070823004430.5A38B108057@picon.linux-foundation.org>
+References: <bug-7463-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-7463-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, frank@harenberg.ch
+To: cpufreq@www.linux.org.uk
 
-On Wed, Aug 22, 2007 at 04:44:51PM -0700, Andrew Morton wrote:
- > On Wed, 22 Aug 2007 15:12:09 -0700 (PDT)
- > bugme-daemon@bugzilla.kernel.org wrote:
- > 
- > > http://bugzilla.kernel.org/show_bug.cgi?id=8924
- > > 
- > >            Summary: module speedstep-centrino does not load
- > >            Product: Drivers
- > >            Version: 2.5
- > >      KernelVersion: 2.6.23-rc3
- > >           Platform: All
- > >         OS/Version: Linux
- > >               Tree: Mainline
- > >             Status: NEW
- > >           Severity: normal
- > >           Priority: P1
- > >          Component: Other
- > >         AssignedTo: drivers_other@kernel-bugs.osdl.org
- > >         ReportedBy: frank@harenberg.ch
- > > 
- > > 
- > > Most recent kernel where this bug did not occur:2.6.22
- > > Distribution:gentoo
- > > Hardware Environment: Intel Centrino Duo, cpu family 6, model 14, Model Name
- > > T2300 In a Dell Inspiron 9400.
- > > Software Environment: i386
- > > Problem Description: modprobe speedstep-centrino quits with error "no such
- > > device"
- > > same module loads successfully with older versions on the same computer.
- > > Steps to reproduce:
- > > modprobe speedstep-centrino
- > > 
- > 
- > I'd have thought that a lot of people would be seeing this?
- > 
- > Oh well.  Michal, can we please track this as a post-2.6.22 regression?
+http://bugzilla.kernel.org/show_bug.cgi?id=7463
 
-As mentioned in the now-closed bz, NOTABUG.
 
-	Dave
+len.brown@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|acpi_power-processor@kernel-|cpufreq@www.linux.org.uk
+                   |bugs.osdl.org               |
+
+
+
+
+------- Comment #11 from len.brown@intel.com  2007-08-22 17:51 -------
+acpi-cpufreq works on the system at hand,
+and so I advocate that this sighting be closed as WILL_NOT_FIX.
+
+Nobody is maintaining speedstep-centrino, and I do not advocate
+that it be enhanced.
+
 
 -- 
-http://www.codemonkey.org.uk
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
