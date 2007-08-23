@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8924] module speedstep-centrino does not load
-Date: Wed, 22 Aug 2007 17:01:08 -0700 (PDT)
-Message-ID: <20070823000108.BCBFE10801C@picon.linux-foundation.org>
+Date: Wed, 22 Aug 2007 17:04:33 -0700 (PDT)
+Message-ID: <20070823000433.6540010801A@picon.linux-foundation.org>
 References: <bug-8924-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
@@ -23,18 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8924
 
 
+ismail@pardus.org.tr changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |ismail@pardus.org.tr
 
 
-
-------- Comment #5 from arjan@infradead.org  2007-08-22 17:08 -------
-On Wed, 22 Aug 2007 16:44:51 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> > Problem Description: modprobe speedstep-centrino quits with error
-> > "no such device"
-
-
-does the acpi-cpufreq driver work? on such new hardware that really
-should be used rather than the legacy-hw speedstep-centrino
 
 
 -- 
