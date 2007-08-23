@@ -1,37 +1,58 @@
 From: Dave Jones <davej@redhat.com>
-Subject: Re: about cpufreq on intel dual core processor
-Date: Wed, 22 Aug 2007 20:18:15 -0400
-Message-ID: <20070823001815.GD18739@redhat.com>
-References: <193428.18959.qm@web39710.mail.mud.yahoo.com>
+Subject: Re: [Bugme-new] [Bug 8924] New: module speedstep-centrino does not
+	load
+Date: Wed, 22 Aug 2007 20:25:23 -0400
+Message-ID: <20070823002523.GE18739@redhat.com>
+References: <bug-8924-10286@http.bugzilla.kernel.org/> <20070822164451.1481d745.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759388AbXHWAZv@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <193428.18959.qm@web39710.mail.mud.yahoo.com>
+In-Reply-To: <20070822164451.1481d745.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: M C <kingming0811@yahoo.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, frank@harenberg.ch
 
-On Sat, Aug 18, 2007 at 07:54:01AM -0700, M C wrote:
- > Hi, I have a simple question about cpufreq on intel dualcore processor.
+On Wed, Aug 22, 2007 at 04:44:51PM -0700, Andrew Morton wrote:
+ > On Wed, 22 Aug 2007 15:12:09 -0700 (PDT)
+ > bugme-daemon@bugzilla.kernel.org wrote:
  > 
- > if each core has six frequency levels, then should i change the frequency levels for both of the cores simultaneously or i can change them separately?
+ > > http://bugzilla.kernel.org/show_bug.cgi?id=8924
+ > > 
+ > >            Summary: module speedstep-centrino does not load
+ > >            Product: Drivers
+ > >            Version: 2.5
+ > >      KernelVersion: 2.6.23-rc3
+ > >           Platform: All
+ > >         OS/Version: Linux
+ > >               Tree: Mainline
+ > >             Status: NEW
+ > >           Severity: normal
+ > >           Priority: P1
+ > >          Component: Other
+ > >         AssignedTo: drivers_other@kernel-bugs.osdl.org
+ > >         ReportedBy: frank@harenberg.ch
+ > > 
+ > > 
+ > > Most recent kernel where this bug did not occur:2.6.22
+ > > Distribution:gentoo
+ > > Hardware Environment: Intel Centrino Duo, cpu family 6, model 14, Model Name
+ > > T2300 In a Dell Inspiron 9400.
+ > > Software Environment: i386
+ > > Problem Description: modprobe speedstep-centrino quits with error "no such
+ > > device"
+ > > same module loads successfully with older versions on the same computer.
+ > > Steps to reproduce:
+ > > modprobe speedstep-centrino
+ > > 
  > 
- > because the processor supports hyper threading techonogy, so there are fours cores in the linux system. then how should i treat the four cpu when i want to do the frequency scaling?
+ > I'd have thought that a lot of people would be seeing this?
+ > 
+ > Oh well.  Michal, can we please track this as a post-2.6.22 regression?
 
-You are able to set different frequencies per core, however you only
-save power per-socket, so unless they're all ramped down, you won't
-be lowering the voltage of the socket if one core keeps the package busy.
+As mentioned in the now-closed bz, NOTABUG.
 
 	Dave
 
