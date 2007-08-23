@@ -1,19 +1,32 @@
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Subject: Re: [Bugme-new] [Bug 8924] New: module speedstep-centrino does not load
-Date: Thu, 23 Aug 2007 03:06:09 +0300
-Message-ID: <200708230306.09815.ismail@pardus.org.tr>
-References: <bug-8924-10286@http.bugzilla.kernel.org/> <20070822164451.1481d745.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964808AbXHWAE7@vger.kernel.org>
-In-Reply-To: <20070822164451.1481d745.akpm@linux-foundation.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8924] module speedstep-centrino does not load
+Date: Wed, 22 Aug 2007 17:05:20 -0700 (PDT)
+Message-ID: <20070823000520.E39A110802E@picon.linux-foundation.org>
+References: <bug-8924-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk, frank@harenberg.ch
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
+http://bugzilla.kernel.org/show_bug.cgi?id=8924
+
+
+
+
+
+------- Comment #6 from ismail@pardus.org.tr  2007-08-22 17:12 -------
 On Thursday 23 August 2007 02:44:51 Andrew Morton wrote:
 > On Wed, 22 Aug 2007 15:12:09 -0700 (PDT)
 >
@@ -56,5 +69,8 @@ cpu family 6, model 15" . Btw acpi-cpufreq works fine.
 Regards,
 ismail
 
+
 -- 
-Perfect is the enemy of good
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
