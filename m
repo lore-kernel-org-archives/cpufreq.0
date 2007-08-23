@@ -1,13 +1,10 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: about cpufreq on intel dual core processor
-Date: Wed, 22 Aug 2007 21:48:38 -0700
-Message-ID: <20070822214838.5e48f585@laptopd505.fenrus.org>
-References: <193428.18959.qm@web39710.mail.mud.yahoo.com>
-	<20070823001815.GD18739@redhat.com>
+From: GW <gw.kernel@tnode.com>
+Subject: Memory leak in cpufreq-nforce2.c
+Date: Thu, 23 Aug 2007 14:21:58 +0200
+Message-ID: <46CD7BE6.5040904@tnode.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20070823001815.GD18739@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,29 +16,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@lists.linux.org.uk, M C <kingming0811@yahoo.com>
+To: cpufreq@lists.linux.org.uk
 
-On Wed, 22 Aug 2007 20:18:15 -0400
-Dave Jones <davej@redhat.com> wrote:
+Hello.
 
-> On Sat, Aug 18, 2007 at 07:54:01AM -0700, M C wrote:
->  > Hi, I have a simple question about cpufreq on intel dualcore
->  > processor.
->  > 
->  > if each core has six frequency levels, then should i change the
->  > frequency levels for both of the cores simultaneously or i can
->  > change them separately?
->  > 
->  > because the processor supports hyper threading techonogy, so there
->  > are fours cores in the linux system. then how should i treat the
->  > four cpu when i want to do the frequency scaling?
+I accidentally found something missing in cpufreq-nforce2.c and asked on linux-pci mailing list about it:
+
+Greg KH wrote:
+> On Wed, Aug 22, 2007 at 11:27:29PM +0200, GW wrote:
+>> I was wondering if after every usage of pci_get_subsys() when you
+>> don't need the device anymore you need to call pci_dev_put(dev)?
 > 
-> You are able to set different frequencies per core, however you only
-> save power per-socket, so unless they're all ramped down, you won't
-> be lowering the voltage of the socket if one core keeps the package
-> busy.
+> Yes, that is a requirement.
+> 
+> I don't understand why you would think it would not be necessary.
 
-and in fact, both your cores will run at the same frequency (the
-maximum of the ones you set) anyway... they will NOT run at separate
-frequencies.
+This means that there are some memory leaks in the following driver that uses pci_get_subsys(), but no pci_dev_put():
+
+arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
+  in function nforce2_fsb_read()
+  in function __exit nforce2_exit(), because in __init nforce2_init() it calls nforce2_detect_chipset() that doesn't release the device
+
+I don't have this chip, therefore I couldn't test a patch if I would written it.
+
+
+    gw
