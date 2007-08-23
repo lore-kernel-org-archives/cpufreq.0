@@ -1,10 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8924] module speedstep-centrino does not load
-Date: Wed, 22 Aug 2007 17:05:20 -0700 (PDT)
-Message-ID: <20070823000520.E39A110802E@picon.linux-foundation.org>
-References: <bug-8924-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: about cpufreq on intel dual core processor
+Date: Wed, 22 Aug 2007 20:18:15 -0400
+Message-ID: <20070823001815.GD18739@redhat.com>
+References: <193428.18959.qm@web39710.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <193428.18959.qm@web39710.mail.mud.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,63 +16,24 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: M C <kingming0811@yahoo.com>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8924
+On Sat, Aug 18, 2007 at 07:54:01AM -0700, M C wrote:
+ > Hi, I have a simple question about cpufreq on intel dualcore processor.
+ > 
+ > if each core has six frequency levels, then should i change the frequency levels for both of the cores simultaneously or i can change them separately?
+ > 
+ > because the processor supports hyper threading techonogy, so there are fours cores in the linux system. then how should i treat the four cpu when i want to do the frequency scaling?
 
+You are able to set different frequencies per core, however you only
+save power per-socket, so unless they're all ramped down, you won't
+be lowering the voltage of the socket if one core keeps the package busy.
 
-
-
-
-------- Comment #6 from ismail@pardus.org.tr  2007-08-22 17:12 -------
-On Thursday 23 August 2007 02:44:51 Andrew Morton wrote:
-> On Wed, 22 Aug 2007 15:12:09 -0700 (PDT)
->
-> bugme-daemon@bugzilla.kernel.org wrote:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8924
-> >
-> >            Summary: module speedstep-centrino does not load
-> >            Product: Drivers
-> >            Version: 2.5
-> >      KernelVersion: 2.6.23-rc3
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: normal
-> >           Priority: P1
-> >          Component: Other
-> >         AssignedTo: drivers_other@kernel-bugs.osdl.org
-> >         ReportedBy: frank@harenberg.ch
-> >
-> >
-> > Most recent kernel where this bug did not occur:2.6.22
-> > Distribution:gentoo
-> > Hardware Environment: Intel Centrino Duo, cpu family 6, model 14, Model
-> > Name T2300 In a Dell Inspiron 9400.
-> > Software Environment: i386
-> > Problem Description: modprobe speedstep-centrino quits with error "no
-> > such device"
-> > same module loads successfully with older versions on the same computer.
-> > Steps to reproduce:
-> > modprobe speedstep-centrino
->
-> I'd have thought that a lot of people would be seeing this?
->
-> Oh well.  Michal, can we please track this as a post-2.6.22 regression?
-
-Also can be reproduced on "Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz, 
-cpu family 6, model 15" . Btw acpi-cpufreq works fine.
-
-Regards,
-ismail
-
+	Dave
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+http://www.codemonkey.org.uk
