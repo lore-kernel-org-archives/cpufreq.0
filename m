@@ -1,11 +1,10 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
-	p4-clockmod anymore
-Date: Thu, 23 Aug 2007 21:14:53 -0700 (PDT)
-Message-ID: <20070824041454.028E410801A@picon.linux-foundation.org>
-References: <bug-6367-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6367-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8924] module speedstep-centrino does not load
+Date: Fri, 24 Aug 2007 02:48:51 -0700 (PDT)
+Message-ID: <20070824094851.F2D2410801D@picon.linux-foundation.org>
+References: <bug-8924-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,21 +14,20 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6367
+http://bugzilla.kernel.org/show_bug.cgi?id=8924
 
 
-len.brown@intel.com changed:
+mustafagunay@gmail.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |REJECTED
-         Resolution|                            |UNREPRODUCIBLE
+                 CC|                            |mustafagunay@gmail.com
 
 
 
