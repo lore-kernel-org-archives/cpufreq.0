@@ -1,10 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8924] module speedstep-centrino does not load
-Date: Fri, 24 Aug 2007 02:48:51 -0700 (PDT)
-Message-ID: <20070824094851.F2D2410801D@picon.linux-foundation.org>
-References: <bug-8924-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8924-3570@http.bugzilla.kernel.org/>
+From: Sebastian Witt <hasw@hasw.net>
+Subject: Re: Memory leak in cpufreq-nforce2.c
+Date: Fri, 24 Aug 2007 19:43:38 +0200
+Message-ID: <46CF18CA.1020209@hasw.net>
+References: <46CD7BE6.5040904@tnode.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <46CD7BE6.5040904@tnode.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -14,25 +16,26 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+To: GW <gw.kernel@tnode.com>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8924
+Hello,
 
+GW wrote:
 
-mustafagunay@gmail.com changed:
+> 
+> This means that there are some memory leaks in the following driver that uses pci_get_subsys(), but no pci_dev_put():
+> 
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |mustafagunay@gmail.com
+Yes, pci_dev_put(nforce2_chipset_dev) is missing in nforce2_exit()...
 
+> I don't have this chip, therefore I couldn't test a patch if I would written it.
 
+...unfortunately I don't own the original hardware with nForce2 chipset anymore.
+     I don't think a patch for correcting this bug modifies the expected
+behaviour...but it should be tested by someone who ones compatible hardware.
 
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Regards,
+Sebastian
