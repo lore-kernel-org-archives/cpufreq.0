@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8243] Problem with Throttling and CPU power state
-Date: Mon, 27 Aug 2007 12:46:33 -0700 (PDT)
-Message-ID: <20070827194633.5278D108078@picon.linux-foundation.org>
+Date: Mon, 27 Aug 2007 13:18:52 -0700 (PDT)
+Message-ID: <20070827201852.A3E0B10807D@picon.linux-foundation.org>
 References: <bug-8243-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8243-3570@http.bugzilla.kernel.org/>
@@ -23,18 +23,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8243
 
 
-akolisek@linuxx.hyperlinx.cz changed:
+davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|REJECTED                    |REOPENED
-         Resolution|INSUFFICIENT_DATA           |
+          Component|cpufreq                     |Power-Processor
+            Product|Power Management            |ACPI
 
 
-
-
-------- Comment #5 from akolisek@linuxx.hyperlinx.cz  2007-08-27 12:46 -------
-This bug is present in kernel 2.6.22(.1,2,3,4,5) too :(
 
 
 -- 
