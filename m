@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8243] Problem with Throttling and CPU power state
-Date: Mon, 27 Aug 2007 13:18:52 -0700 (PDT)
-Message-ID: <20070827201852.A3E0B10807D@picon.linux-foundation.org>
+Date: Mon, 27 Aug 2007 13:19:21 -0700 (PDT)
+Message-ID: <20070827201921.0C431108091@picon.linux-foundation.org>
 References: <bug-8243-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8243-3570@http.bugzilla.kernel.org/>
@@ -27,8 +27,9 @@ davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-          Component|cpufreq                     |Power-Processor
-            Product|Power Management            |ACPI
+         AssignedTo|cpufreq@www.linux.org.uk    |acpi_power-processor@kernel-
+                   |                            |bugs.osdl.org
+             Status|REOPENED                    |NEW
 
 
 
@@ -36,4 +37,5 @@ davej@codemonkey.org.uk changed:
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
 You are the assignee for the bug, or are watching the assignee.
