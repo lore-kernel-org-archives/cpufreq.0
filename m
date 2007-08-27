@@ -1,10 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8243] Problem with Throttling and CPU power state
-Date: Mon, 27 Aug 2007 13:19:21 -0700 (PDT)
-Message-ID: <20070827201921.0C431108091@picon.linux-foundation.org>
-References: <bug-8243-3570@http.bugzilla.kernel.org/>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Subject: Re: [Bug 8243] Problem with Throttling and CPU power state
+Date: Mon, 27 Aug 2007 22:27:11 +0200
+Message-ID: <46D3339F.3090203@interia.pl>
+References: <20070827194633.5278D108078@picon.linux-foundation.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8243-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <20070827194633.5278D108078@picon.linux-foundation.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,27 +17,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-9"; format="flowed"
+To: akolisek@linuxx.hyperlinx.cz
+Cc: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8243
+> This bug is present in kernel 2.6.22(.1,2,3,4,5) too :(
+I don't get it. Where is the bug?
+> Why my CPU is not in C1 state, when works on 100%? And where is C0 state?
+C0 means that CPU is working so it isn't listed.
+I think that You have misunderstood this file. It isn't printing current=20
+CPU state. It is listing all available sleep states in order from=20
+low latency and higher power consumption to high latency and lower power=20
+consumption. Star means state that will be used when CPU become idle.=20
+"Latency" means time needed to enter sleep state and time needed to wakeup =
 
+when something will happen (interrupt or BM DMA for example). So it is=20
+perfectly OK to use C4 when there it isn't much to do and C2 when CPU is=20
+spending less time sleeping.
+Kernel compilation isn't causing 100% CPU usage. Processor is sleeping=20
+during I/O wait. Well, unless You are using -j2 or higher.
+> state T4 is activated, but only a few seconds and then it goes back to T0=
+. Is
+> this ok?
+Yes. BIOS option "use throttling to rescue CPU when it is overheating"=20
+interfering.
 
-davej@codemonkey.org.uk changed:
+Regards
+Rafa=B3
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-         AssignedTo|cpufreq@www.linux.org.uk    |acpi_power-processor@kernel-
-                   |                            |bugs.osdl.org
-             Status|REOPENED                    |NEW
+----------------------------------------------------------------------
+Jak najszybciej dostac sie na wymarzona plaze?
+Znajdz trase ekspresowa
 
-
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
-You are the assignee for the bug, or are watching the assignee.
+>>>http://link.interia.pl/f1b0c
