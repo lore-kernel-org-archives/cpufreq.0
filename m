@@ -1,24 +1,22 @@
-From: "Herbert G. Fischer" <herbert.fischer@gmail.com>
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
 Subject: Re: VIA C3 'Ezra-T' [C5M] - longhaul - do nothing
-Date: Wed, 29 Aug 2007 16:40:29 -0300
-Message-ID: <9f90e8bf0708291240v4b816e9bvf29a103cf446b26e@mail.gmail.com>
-References: <9f90e8bf0708280759x6068ae15j9f24e654307a3037@mail.gmail.com>
-	<46D4433A.7000509@interia.pl>
-	<9f90e8bf0708281101q19afb3ableb3589b7c363759c@mail.gmail.com>
-	<46D46CC2.6080405@interia.pl>
-	<9f90e8bf0708281314v28f29cb3o8e68a3b77701e656@mail.gmail.com>
-	<46D5000D.7010503@interia.pl>
-	<9f90e8bf0708290624m592290a0v6ae9d76b7d4d19a0@mail.gmail.com>
-	<46D5AE8F.2080209@interia.pl>
-	<9f90e8bf0708291135v289c3244xef7a2ac0187c32ea@mail.gmail.com>
+Date: Wed, 29 Aug 2007 22:21:17 +0200
+Message-ID: <46D5D53D.8030902@interia.pl>
+References: <9f90e8bf0708280759x6068ae15j9f24e654307a3037@mail.gmail.com>	
+	<46D4433A.7000509@interia.pl>	
+	<9f90e8bf0708281101q19afb3ableb3589b7c363759c@mail.gmail.com>	
+	<46D46CC2.6080405@interia.pl>	
+	<9f90e8bf0708281314v28f29cb3o8e68a3b77701e656@mail.gmail.com>	
+	<46D5000D.7010503@interia.pl>	
+	<9f90e8bf0708290624m592290a0v6ae9d76b7d4d19a0@mail.gmail.com>	
+	<46D5AE8F.2080209@interia.pl>	
+	<9f90e8bf0708291135v289c3244xef7a2ac0187c32ea@mail.gmail.com>	
 	<46D5C60D.8080809@interia.pl>
+	<9f90e8bf0708291240v4b816e9bvf29a103cf446b26e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1424290708=="
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
-	h=domainkey-signature:received:received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-	b=i6aTgoMYGodQxi0og53BQ6Bhdf06wsGgDiY5Hs7iPB5rXBFrHVo3B2NQ0J6Gg58QdQqWZoHXmKjqcS/yElbsUZvR+VFfhmKFq4ZtKJ5WDsL4tMoeRHUz6/BbdJQuiEZip1PmOzvbCRbRovjzJF2Dz4e76+MyaBz/1Bwu3Bg4WjE=
-In-Reply-To: <46D5C60D.8080809@interia.pl>
+In-Reply-To: <9f90e8bf0708291240v4b816e9bvf29a103cf446b26e@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -29,132 +27,53 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Herbert G. Fischer" <herbert.fischer@gmail.com>
 Cc: cpufreq@lists.linux.org.uk
 
---===============1424290708==
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+> [...]
+> longhaul: Using northbridge support.
+Can You uncomment ACPI C3 support and check if it is working too?
+Restore these lines to original state below:
+    /* Check ACPI support for C3 state */
+    if (pr != NULL && longhaul_version == TYPE_POWERSAVER) {
+        cx = &pr->power.states[ACPI_STATE_C3];
+        if (cx->address > 0 && cx->latency <= 1000)
+            longhaul_flags |= USE_ACPI_C3;
+    } 
 
-U3VyZS4uLi4gSSBkaWQuLi4gbG9nZ2VkOgoKbG9uZ2hhdWw6IFZJQSBDMyAnRXpyYS1UJyBbQzVN
-XSBDUFUgZGV0ZWN0ZWQuICBQb3dlcnNhdmVyIHN1cHBvcnRlZC4KbG9uZ2hhdWw6IFVzaW5nIG5v
-cnRoYnJpZGdlIHN1cHBvcnQuCmxvbmdoYXVsOiBNaW5NdWx0OjMuMHggTWF4TXVsdDo3LjV4Cmxv
-bmdoYXVsOiBGU0I6MTMzTUh6ICBMb3dlc3Qgc3BlZWQ6IDM5OU1IeiAgIEhpZ2hlc3Qgc3BlZWQ6
-Mzk5TUh6CmZyZXEtdGFibGU6IHRhYmxlIGVudHJ5IDA6IDM5OTAwMCBrSHosIDEgaW5kZXgKZnJl
-cS10YWJsZTogdGFibGUgZW50cnkgMTogNTMyMDAwIGtIeiwgMiBpbmRleApmcmVxLXRhYmxlOiB0
-YWJsZSBlbnRyeSAyOiA0NjUwMDAga0h6LCA1IGluZGV4CmZyZXEtdGFibGU6IHRhYmxlIGVudHJ5
-IDM6IDU5ODAwMCBrSHosIDYgaW5kZXgKZnJlcS10YWJsZTogdGFibGUgZW50cnkgNDogNzMxMDAw
-IGtIeiwgNyBpbmRleApmcmVxLXRhYmxlOiB0YWJsZSBlbnRyeSA1OiA3OTgwMDAga0h6LCA4IGlu
-ZGV4CmZyZXEtdGFibGU6IHRhYmxlIGVudHJ5IDY6IDkzMTAwMCBrSHosIDkgaW5kZXgKZnJlcS10
-YWJsZTogdGFibGUgZW50cnkgNzogNjY1MDAwIGtIeiwgMTEgaW5kZXgKZnJlcS10YWJsZTogdGFi
-bGUgZW50cnkgODogODY0MDAwIGtIeiwgMTIgaW5kZXgKZnJlcS10YWJsZTogdGFibGUgZW50cnkg
-OTogOTk3MDAwIGtIeiwgMTMgaW5kZXgKZnJlcS10YWJsZTogc2V0dGluZyBzaG93X3RhYmxlIGZv
-ciBjcHUgMCB0byBkZDQxY2EwMApjcHVmcmVxLWNvcmU6IHNldHRpbmcgbmV3IHBvbGljeSBmb3Ig
-Q1BVIDA6IDM5OTAwMCAtIDk5NzAwMCBrSHoKZnJlcS10YWJsZTogcmVxdWVzdCBmb3IgdmVyaWZp
-Y2F0aW9uIG9mIHBvbGljeSAoMzk5MDAwIC0gOTk3MDAwIGtIeikgZm9yIGNwdQowCmZyZXEtdGFi
-bGU6IHZlcmlmaWNhdGlvbiBsZWFkIHRvICgzOTkwMDAgLSA5OTcwMDAga0h6KSBmb3IgY3B1IDAK
-ZnJlcS10YWJsZTogcmVxdWVzdCBmb3IgdmVyaWZpY2F0aW9uIG9mIHBvbGljeSAoMzk5MDAwIC0g
-OTk3MDAwIGtIeikgZm9yIGNwdQowCmZyZXEtdGFibGU6IHZlcmlmaWNhdGlvbiBsZWFkIHRvICgz
-OTkwMDAgLSA5OTcwMDAga0h6KSBmb3IgY3B1IDAKY3B1ZnJlcS1jb3JlOiBuZXcgbWluIGFuZCBt
-YXggZnJlcXMgYXJlIDM5OTAwMCAtIDk5NzAwMCBrSHoKY3B1ZnJlcS1jb3JlOiBnb3Zlcm5vciBz
-d2l0Y2gKY3B1ZnJlcS1jb3JlOiBfX2NwdWZyZXFfZ292ZXJub3IgZm9yIENQVSAwLCBldmVudCAx
-CnVzZXJzcGFjZTogbWFuYWdpbmcgY3B1IDAgc3RhcnRlZCAoMzk5MDAwIC0gOTk3MDAwIGtIeiwg
-Y3VycmVudGx5IDk5NzAwMAprSHopCmNwdWZyZXEtY29yZTogZ292ZXJub3I6IGNoYW5nZSBvciB1
-cGRhdGUgbGltaXRzCmNwdWZyZXEtY29yZTogX19jcHVmcmVxX2dvdmVybm9yIGZvciBDUFUgMCwg
-ZXZlbnQgMwp1c2Vyc3BhY2U6IGxpbWl0IGV2ZW50IGZvciBjcHUgMDogMzk5MDAwIC0gOTk3MDAw
-IGtIeixjdXJyZW50bHkgOTk3MDAwIGtIeiwKbGFzdCBzZXQgdG8gOTk3MDAwIGtIegpjcHVmcmVx
-LWNvcmU6IHRhcmdldCBmb3IgQ1BVIDA6IDk5NzAwMCBrSHosIHJlbGF0aW9uIDAKZnJlcS10YWJs
-ZTogcmVxdWVzdCBmb3IgdGFyZ2V0IDk5NzAwMCBrSHogKHJlbGF0aW9uOiAwKSBmb3IgY3B1IDAK
-ZnJlcS10YWJsZTogdGFyZ2V0IGlzIDkgKDk5NzAwMCBrSHosIDEzKQpjcHVmcmVxLWNvcmU6IG5v
-dGlmaWNhdGlvbiAwIG9mIGZyZXF1ZW5jeSB0cmFuc2l0aW9uIHRvIDk5NzAwMCBrSHoKdXNlcnNw
-YWNlOiBzYXZpbmcgY3B1X2N1cl9mcmVxIG9mIGNwdSAwIHRvIGJlIDk5NzAwMCBrSHoKbG9uZ2hh
-dWw6IFNldHRpbmcgdG8gRlNCOjEzM01IeiBNdWx0OjcuNXggKDk5N01IeikKY3B1ZnJlcS1jb3Jl
-OiBub3RpZmljYXRpb24gMSBvZiBmcmVxdWVuY3kgdHJhbnNpdGlvbiB0byA5OTcwMDAga0h6CnVz
-ZXJzcGFjZTogc2F2aW5nIGNwdV9jdXJfZnJlcSBvZiBjcHUgMCB0byBiZSA5OTcwMDAga0h6CmNw
-dWZyZXEtY29yZTogaW5pdGlhbGl6YXRpb24gY29tcGxldGUKY3B1ZnJlcS1jb3JlOiBkcml2ZXIg
-bG9uZ2hhdWwgdXAgYW5kIHJ1bm5pbmcKCkFmdGVyIGNoYW5naW5nIGdvdmVybm9yIHRvIHBvd2Vy
-c2F2ZToKCmNwdWZyZXEtY29yZTogc2V0dGluZyBuZXcgcG9saWN5IGZvciBDUFUgMDogMzk5MDAw
-IC0gOTk3MDAwIGtIegpmcmVxLXRhYmxlOiByZXF1ZXN0IGZvciB2ZXJpZmljYXRpb24gb2YgcG9s
-aWN5ICgzOTkwMDAgLSA5OTcwMDAga0h6KSBmb3IgY3B1CjAKZnJlcS10YWJsZTogdmVyaWZpY2F0
-aW9uIGxlYWQgdG8gKDM5OTAwMCAtIDk5NzAwMCBrSHopIGZvciBjcHUgMApmcmVxLXRhYmxlOiBy
-ZXF1ZXN0IGZvciB2ZXJpZmljYXRpb24gb2YgcG9saWN5ICgzOTkwMDAgLSA5OTcwMDAga0h6KSBm
-b3IgY3B1CjAKZnJlcS10YWJsZTogdmVyaWZpY2F0aW9uIGxlYWQgdG8gKDM5OTAwMCAtIDk5NzAw
-MCBrSHopIGZvciBjcHUgMApjcHVmcmVxLWNvcmU6IG5ldyBtaW4gYW5kIG1heCBmcmVxcyBhcmUg
-Mzk5MDAwIC0gOTk3MDAwIGtIegpjcHVmcmVxLWNvcmU6IGdvdmVybm9yIHN3aXRjaApjcHVmcmVx
-LWNvcmU6IF9fY3B1ZnJlcV9nb3Zlcm5vciBmb3IgQ1BVIDAsIGV2ZW50IDIKdXNlcnNwYWNlOiBt
-YW5hZ2luZyBjcHUgMCBzdG9wcGVkCmNwdWZyZXEtY29yZTogX19jcHVmcmVxX2dvdmVybm9yIGZv
-ciBDUFUgMCwgZXZlbnQgMQpwb3dlcnNhdmU6IHNldHRpbmcgdG8gMzk5MDAwIGtIeiBiZWNhdXNl
-IG9mIGV2ZW50IDEKY3B1ZnJlcS1jb3JlOiB0YXJnZXQgZm9yIENQVSAwOiAzOTkwMDAga0h6LCBy
-ZWxhdGlvbiAwCmZyZXEtdGFibGU6IHJlcXVlc3QgZm9yIHRhcmdldCAzOTkwMDAga0h6IChyZWxh
-dGlvbjogMCkgZm9yIGNwdSAwCmZyZXEtdGFibGU6IHRhcmdldCBpcyAwICgzOTkwMDAga0h6LCAx
-KQpjcHVmcmVxLWNvcmU6IG5vdGlmaWNhdGlvbiAwIG9mIGZyZXF1ZW5jeSB0cmFuc2l0aW9uIHRv
-IDM5OTAwMCBrSHoKdXNlcnNwYWNlOiBzYXZpbmcgY3B1X2N1cl9mcmVxIG9mIGNwdSAwIHRvIGJl
-IDM5OTAwMCBrSHoKbG9uZ2hhdWw6IFNldHRpbmcgdG8gRlNCOjEzM01IeiBNdWx0OjMuMHggKDM5
-OU1IeikKY3B1ZnJlcS1jb3JlOiBub3RpZmljYXRpb24gMSBvZiBmcmVxdWVuY3kgdHJhbnNpdGlv
-biB0byAzOTkwMDAga0h6CmNwdWZyZXEtY29yZTogc2NhbGluZyBsb29wc19wZXJfamlmZnkgdG8g
-MTYwMTUyNmZvciBmcmVxdWVuY3kgMzk5MDAwIGtIegp1c2Vyc3BhY2U6IHNhdmluZyBjcHVfY3Vy
-X2ZyZXEgb2YgY3B1IDAgdG8gYmUgMzk5MDAwIGtIegpjcHVmcmVxLWNvcmU6IGdvdmVybm9yOiBj
-aGFuZ2Ugb3IgdXBkYXRlIGxpbWl0cwpjcHVmcmVxLWNvcmU6IF9fY3B1ZnJlcV9nb3Zlcm5vciBm
-b3IgQ1BVIDAsIGV2ZW50IDMKcG93ZXJzYXZlOiBzZXR0aW5nIHRvIDM5OTAwMCBrSHogYmVjYXVz
-ZSBvZiBldmVudCAzCmNwdWZyZXEtY29yZTogdGFyZ2V0IGZvciBDUFUgMDogMzk5MDAwIGtIeiwg
-cmVsYXRpb24gMApmcmVxLXRhYmxlOiByZXF1ZXN0IGZvciB0YXJnZXQgMzk5MDAwIGtIeiAocmVs
-YXRpb246IDApIGZvciBjcHUgMApmcmVxLXRhYmxlOiB0YXJnZXQgaXMgMCAoMzk5MDAwIGtIeiwg
-MSkKQ2xvY2tzb3VyY2UgdHNjIHVuc3RhYmxlIChkZWx0YSA9IC0yMDg2NTc0MjMgbnMpCgoxNjoz
-MDo1NiByb290QGV6cmEoMSkgMCBsaW51eCAjIGNwdWZyZXEtaW5mbwoKY3B1ZnJlcXV0aWxzIDAw
-MjogY3B1ZnJlcS1pbmZvIChDKSBEb21pbmlrIEJyb2Rvd3NraSAyMDA0LTIwMDYKUmVwb3J0IGVy
-cm9ycyBhbmQgYnVncyB0byBsaW51eEBicm9kby5kZSwgcGxlYXNlLgphbmFseXppbmcgQ1BVIDA6
-CiAgZHJpdmVyOiBsb25naGF1bAogIENQVXMgd2hpY2ggbmVlZCB0byBzd2l0Y2ggZnJlcXVlbmN5
-IGF0IHRoZSBzYW1lIHRpbWU6IDAKICBoYXJkd2FyZSBsaW1pdHM6IDM5OSBNSHogLSA5OTcgTUh6
-CiAgYXZhaWxhYmxlIGZyZXF1ZW5jeSBzdGVwczogMzk5IE1IeiwgNTMyIE1IeiwgNDY1IE1Ieiwg
-NTk4IE1IeiwgNzMxIE1IeiwKNzk4IE1IeiwgOTMxIE1IeiwgNjY1IE1IeiwgODY0IE1IeiwgOTk3
-IE1IegogIGF2YWlsYWJsZSBjcHVmcmVxIGdvdmVybm9yczogcG93ZXJzYXZlLCB1c2Vyc3BhY2UK
-ICBjdXJyZW50IHBvbGljeTogZnJlcXVlbmN5IHNob3VsZCBiZSB3aXRoaW4gMzk5IE1IeiBhbmQg
-OTk3IE1Iei4KICAgICAgICAgICAgICAgICAgVGhlIGdvdmVybm9yICJwb3dlcnNhdmUiIG1heSBk
-ZWNpZGUgd2hpY2ggc3BlZWQgdG8gdXNlCiAgICAgICAgICAgICAgICAgIHdpdGhpbiB0aGlzIHJh
-bmdlLgogIGN1cnJlbnQgQ1BVIGZyZXF1ZW5jeSBpcyAzOTkgTUh6IChhc3NlcnRlZCBieSBjYWxs
-IHRvIGhhcmR3YXJlKS4KCkp1c3QgdG8gYmUgc2h1cmUsIGhlcmUgaXMgY3B1aW5mbzoKCnByb2Nl
-c3NvciAgICAgICA6IDAKdmVuZG9yX2lkICAgICAgIDogQ2VudGF1ckhhdWxzCmNwdSBmYW1pbHkg
-ICAgICA6IDYKbW9kZWwgICAgICAgICAgIDogOAptb2RlbCBuYW1lICAgICAgOiBWSUEgQzMgRXpy
-YQpzdGVwcGluZyAgICAgICAgOiA5CmNwdSBNSHogICAgICAgICA6IDk5Ny4wMDAKY2FjaGUgc2l6
-ZSAgICAgIDogNjQgS0IKZmRpdl9idWcgICAgICAgIDogbm8KaGx0X2J1ZyAgICAgICAgIDogbm8K
-ZjAwZl9idWcgICAgICAgIDogbm8KY29tYV9idWcgICAgICAgIDogbm8KZnB1ICAgICAgICAgICAg
-IDogeWVzCmZwdV9leGNlcHRpb24gICA6IHllcwpjcHVpZCBsZXZlbCAgICAgOiAxCndwICAgICAg
-ICAgICAgICA6IHllcwpmbGFncyAgICAgICAgICAgOiBmcHUgZGUgdHNjIG1zciBjeDggbXRyciBw
-Z2UgbW14IDNkbm93CmJvZ29taXBzICAgICAgICA6IDIwMDAuOTAKY2xmbHVzaCBzaXplICAgIDog
-MzIKCm5iZW5jaCBzaG93ZWQgdGhhdCB0aGUgc3BlZWQgcmVhbGx5IHJlZHVjZWQuLi4gZ3JlYXQh
-CgpUaGUgIkNsb2Nrc291cmNlIHRzYyB1bnN0YWJsZSAoZGVsdGEgPSAtMjA4NjU3NDIzIG5zKSIg
-aXMgc29tZXRoaW5nIHRvIHdvcnJ5CmFib3V0PwoKT24gOC8yOS8wNywgUmFmYbMgQmlsc2tpIDxy
-YWZhbGJpbHNraUBpbnRlcmlhLnBsPiB3cm90ZToKPgo+ID4gV2l0aCBzY2FsZV92b2x0YWdlPTE6
-Cj4gPgo+ID4gbG9uZ2hhdWw6IFZJQSBDMyAnRXpyYS1UJyBbQzVNXSBDUFUgZGV0ZWN0ZWQuICBQ
-b3dlcnNhdmVyIHN1cHBvcnRlZC4KPiA+IGxvbmdoYXVsOiBVc2luZyBub3J0aGJyaWRnZSBzdXBw
-b3J0Lgo+ID4gbG9uZ2hhdWw6IE1pbk11bHQ6My4weCBNYXhNdWx0OjcuNXgKPiA+IGxvbmdoYXVs
-OiBGU0I6MTMzTUh6ICBMb3dlc3Qgc3BlZWQ6IDM5OU1IeiAgIEhpZ2hlc3Qgc3BlZWQ6Mzk5TUh6
-Cj4gPiBsb25naGF1bDogVlJNIDguNQo+ID4gbG9uZ2hhdWw6IENsYWltcyB0byBzdXBwb3J0IHZv
-bHRhZ2Ugc2NhbGluZyBidXQgbWluICYgbWF4IGFyZSBib3RoCj4gPiAxLjI1MC4gVm9sdGFnZSBz
-Y2FsaW5nIGRpc2FibGVkCj4gT0suIFlvdXIgcHJvY2Vzc29yIGhhcyBSZXZpc2lvbklEIGVxdWFs
-IHRvIDEsIGJ1dCBpdCBpc24ndCBzdXBwb3J0aW5nCj4gdm9sdGFnZSBzY2FsaW5nLgo+ID4gWy4u
-Ll0KPiA+Cj4gPiBJIGFsc28gYmVuY2htYXJrZWQgd2l0aCBuYmVuY2ggYW5kIHRoZSBjaGFuZ2Vz
-IGRpZCBub3QgY2hhbmdlZCBwcm9jZXNzb3IKPiA+IHBlcmZvcm1hbmNlLgo+ID4KPiA+IFRoYW5r
-cwo+IENhbiBZb3UgY2hlY2sgaWYgY2hhbmdpbmcgZm9sbG93aW5nIGxpbmVzIGluICJkb19wb3dl
-cnNhdmVyIiBpbiBsb25naGF1bC5jCj4gbWFrZXMgYW55IGRpZmVyZW5jZT8KPiAgICAgICAgIC8q
-IFNldHVwIG5ldyBmcmVxdWVuY3kgKi8KPiAgICAgICAgIGxvbmdoYXVsLmJpdHMuUmV2aXNpb25L
-ZXkgPSBsb25naGF1bC5iaXRzLlJldmlzaW9uSUQ7Cj4gQ2hhbmdlIGl0IHRvOgo+ICAgICAgICAg
-LyogU2V0dXAgbmV3IGZyZXF1ZW5jeSAqLwo+ICAgICAgICAgbG9uZ2hhdWwuYml0cy5SZXZpc2lv
-bktleSA9IDA7Cj4KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gUGlla25lIGtvYmlldHkgd3Nyb2Qgc2FteWNo
-IHN3aW4hCj4gT2JlanJ6eWoKPgo+ID4+Pmh0dHA6Ly9saW5rLmludGVyaWEucGwvZjFiMTgKPgo+
-Cg==
---===============1424290708==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> After changing governor to powersave:
+> [...]
+> longhaul: Setting to FSB:133MHz Mult:3.0x (399MHz)
+> cpufreq-core: notification 1 of frequency transition to 399000 kHz
+> cpufreq-core: scaling loops_per_jiffy to 1601526for frequency 399000 kHz
+> userspace: saving cpu_cur_freq of cpu 0 to be 399000 kHz
+> cpufreq-core: governor: change or update limits
+> cpufreq-core: __cpufreq_governor for CPU 0, event 3
+> powersave: setting to 399000 kHz because of event 3
+> cpufreq-core: target for CPU 0: 399000 kHz, relation 0
+> freq-table: request for target 399000 kHz (relation: 0) for cpu 0
+> freq-table: target is 0 (399000 kHz, 1)
+Yes. It is working. Longhaul ver. 2 wasn't working probably because of the 
+same reason. Now I have to think how to deal with this situation. I have 
+Nehemiah with RevID = 0. Good. I have Ezra with RevID = 1 and voltage 
+scaling. Bad. I have to check if it is working with RevID = 0. Probably 
+not because VIA documentation advise to poke RevKey with RevID. But 
+I will read it again to refresh my memory.
+> Clocksource tsc unstable (delta = -208657423 ns)
+> 
+> [...]
+> 
+> The "Clocksource tsc unstable (delta = -208657423 ns)" is something to 
+> worry about?
+No. It isn't used anyway because of "Marking TSC unstable due to: possible 
+TSC halt in C2."
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Do You agree to test patch(es) that I will write (probably) tommorow?
 
---===============1424290708==--
+Thanks
 
+
+----------------------------------------------------------------------
+Sprawdz co sie dzieje w Twojej okolicy!
+Kliknij >>> http://link.interia.pl/f1b7e
