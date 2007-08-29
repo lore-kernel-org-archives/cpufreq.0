@@ -1,12 +1,20 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: Re: [Bug 8243] Problem with Throttling and CPU power state
-Date: Mon, 27 Aug 2007 22:27:11 +0200
-Message-ID: <46D3339F.3090203@interia.pl>
-References: <20070827194633.5278D108078@picon.linux-foundation.org>
+From: "Herbert G. Fischer" <herbert.fischer@gmail.com>
+Subject: Re: VIA C3 'Ezra-T' [C5M] - longhaul - do nothing
+Date: Wed, 29 Aug 2007 10:24:09 -0300
+Message-ID: <9f90e8bf0708290624m592290a0v6ae9d76b7d4d19a0@mail.gmail.com>
+References: <9f90e8bf0708280759x6068ae15j9f24e654307a3037@mail.gmail.com>
+	<46D4433A.7000509@interia.pl>
+	<9f90e8bf0708281101q19afb3ableb3589b7c363759c@mail.gmail.com>
+	<46D46CC2.6080405@interia.pl>
+	<9f90e8bf0708281314v28f29cb3o8e68a3b77701e656@mail.gmail.com>
+	<46D5000D.7010503@interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20070827194633.5278D108078@picon.linux-foundation.org>
+Content-Type: multipart/mixed; boundary="===============1114766116=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+DKIM-Signature: a=rsa-sha1; c=relaxed/relaxed; d=gmail.com; s=beta;
+	h=domainkey-signature:received:received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+	b=KvB7uPc/f8OvV2WBnhRUm3nlal59vxzWpr3tUZh9RHtwzGcOiDXqNWnrirVRqeHB5AO7pWAku90/cJa1iGkwJ49nJwBQVjTxI9i9izST6zWCNjM6QFbdZBP9u6lC7zDyfSZ9tCnKcLBBEkQHV9UK4L9aPw8Uqc6nu4z9ydpX/to=
+In-Reply-To: <46D5000D.7010503@interia.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,37 +24,109 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-9"; format="flowed"
-To: akolisek@linuxx.hyperlinx.cz
-Cc: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+Cc: cpufreq@lists.linux.org.uk
 
-> This bug is present in kernel 2.6.22(.1,2,3,4,5) too :(
-I don't get it. Where is the bug?
-> Why my CPU is not in C1 state, when works on 100%? And where is C0 state?
-C0 means that CPU is working so it isn't listed.
-I think that You have misunderstood this file. It isn't printing current=20
-CPU state. It is listing all available sleep states in order from=20
-low latency and higher power consumption to high latency and lower power=20
-consumption. Star means state that will be used when CPU become idle.=20
-"Latency" means time needed to enter sleep state and time needed to wakeup =
+--===============1114766116==
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-when something will happen (interrupt or BM DMA for example). So it is=20
-perfectly OK to use C4 when there it isn't much to do and C2 when CPU is=20
-spending less time sleeping.
-Kernel compilation isn't causing 100% CPU usage. Processor is sleeping=20
-during I/O wait. Well, unless You are using -j2 or higher.
-> state T4 is activated, but only a few seconds and then it goes back to T0=
-. Is
-> this ok?
-Yes. BIOS option "use throttling to rescue CPU when it is overheating"=20
-interfering.
+SGVyZSBpcyB0aGUgb3V0cHV0IGFmdGVyOgoKIyBtb2Rwcm9iZSBsb25naGF1bAojIGNwdWZyZXEt
+aW5mbwojIGNwdWZyZXEtc2V0IC1mMzk5CiMgY3B1ZnJlcS1zZXQgLWdwb3dlcnNhdmUKIyBjcHVm
+cmVxLWluZm8KCisrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KwoKY3B1ZnJlcS1jb3JlOiB0cnlpbmcgdG8gcmVnaXN0ZXIgZHJpdmVyIGxvbmdoYXVsCmNwdWZy
+ZXEtY29yZTogYWRkaW5nIENQVSAwCmxvbmdoYXVsOiBWSUEgQzMgJ0V6cmEtVCcgW0M1TV0gQ1BV
+IGRldGVjdGVkLiAgUG93ZXJzYXZlciBzdXBwb3J0ZWQuCmxvbmdoYXVsOiBVc2luZyBub3J0aGJy
+aWRnZSBzdXBwb3J0Lgpsb25naGF1bDogTWluTXVsdDozLjB4IE1heE11bHQ6Ny41eApsb25naGF1
+bDogRlNCOjEzM01IeiAgTG93ZXN0IHNwZWVkOiAzOTlNSHogICBIaWdoZXN0IHNwZWVkOjM5OU1I
+egpmcmVxLXRhYmxlOiB0YWJsZSBlbnRyeSAwOiAzOTkwMDAga0h6LCAxIGluZGV4CmZyZXEtdGFi
+bGU6IHRhYmxlIGVudHJ5IDE6IDUzMjAwMCBrSHosIDIgaW5kZXgKZnJlcS10YWJsZTogdGFibGUg
+ZW50cnkgMjogNDY1MDAwIGtIeiwgNSBpbmRleApmcmVxLXRhYmxlOiB0YWJsZSBlbnRyeSAzOiA1
+OTgwMDAga0h6LCA2IGluZGV4CmZyZXEtdGFibGU6IHRhYmxlIGVudHJ5IDQ6IDczMTAwMCBrSHos
+IDcgaW5kZXgKZnJlcS10YWJsZTogdGFibGUgZW50cnkgNTogNzk4MDAwIGtIeiwgOCBpbmRleApm
+cmVxLXRhYmxlOiB0YWJsZSBlbnRyeSA2OiA5MzEwMDAga0h6LCA5IGluZGV4CmZyZXEtdGFibGU6
+IHRhYmxlIGVudHJ5IDc6IDY2NTAwMCBrSHosIDExIGluZGV4CmZyZXEtdGFibGU6IHRhYmxlIGVu
+dHJ5IDg6IDg2NDAwMCBrSHosIDEyIGluZGV4CmZyZXEtdGFibGU6IHRhYmxlIGVudHJ5IDk6IDk5
+NzAwMCBrSHosIDEzIGluZGV4CmZyZXEtdGFibGU6IHNldHRpbmcgc2hvd190YWJsZSBmb3IgY3B1
+IDAgdG8gZGEyMDQwMDAKY3B1ZnJlcS1jb3JlOiBzZXR0aW5nIG5ldyBwb2xpY3kgZm9yIENQVSAw
+OiAzOTkwMDAgLSA5OTcwMDAga0h6CmZyZXEtdGFibGU6IHJlcXVlc3QgZm9yIHZlcmlmaWNhdGlv
+biBvZiBwb2xpY3kgKDM5OTAwMCAtIDk5NzAwMCBrSHopIGZvciBjcHUKMApmcmVxLXRhYmxlOiB2
+ZXJpZmljYXRpb24gbGVhZCB0byAoMzk5MDAwIC0gOTk3MDAwIGtIeikgZm9yIGNwdSAwCmZyZXEt
+dGFibGU6IHJlcXVlc3QgZm9yIHZlcmlmaWNhdGlvbiBvZiBwb2xpY3kgKDM5OTAwMCAtIDk5NzAw
+MCBrSHopIGZvciBjcHUKMApmcmVxLXRhYmxlOiB2ZXJpZmljYXRpb24gbGVhZCB0byAoMzk5MDAw
+IC0gOTk3MDAwIGtIeikgZm9yIGNwdSAwCmNwdWZyZXEtY29yZTogbmV3IG1pbiBhbmQgbWF4IGZy
+ZXFzIGFyZSAzOTkwMDAgLSA5OTcwMDAga0h6CmNwdWZyZXEtY29yZTogZ292ZXJub3Igc3dpdGNo
+CmNwdWZyZXEtY29yZTogX19jcHVmcmVxX2dvdmVybm9yIGZvciBDUFUgMCwgZXZlbnQgMQp1c2Vy
+c3BhY2U6IG1hbmFnaW5nIGNwdSAwIHN0YXJ0ZWQgKDM5OTAwMCAtIDk5NzAwMCBrSHosIGN1cnJl
+bnRseSA5OTcwMDAKa0h6KQpjcHVmcmVxLWNvcmU6IGdvdmVybm9yOiBjaGFuZ2Ugb3IgdXBkYXRl
+IGxpbWl0cwpjcHVmcmVxLWNvcmU6IF9fY3B1ZnJlcV9nb3Zlcm5vciBmb3IgQ1BVIDAsIGV2ZW50
+IDMKdXNlcnNwYWNlOiBsaW1pdCBldmVudCBmb3IgY3B1IDA6IDM5OTAwMCAtIDk5NzAwMCBrSHos
+Y3VycmVudGx5IDk5NzAwMCBrSHosCmxhc3Qgc2V0IHRvIDk5NzAwMCBrSHoKY3B1ZnJlcS1jb3Jl
+OiB0YXJnZXQgZm9yIENQVSAwOiA5OTcwMDAga0h6LCByZWxhdGlvbiAwCmZyZXEtdGFibGU6IHJl
+cXVlc3QgZm9yIHRhcmdldCA5OTcwMDAga0h6IChyZWxhdGlvbjogMCkgZm9yIGNwdSAwCmZyZXEt
+dGFibGU6IHRhcmdldCBpcyA5ICg5OTcwMDAga0h6LCAxMykKY3B1ZnJlcS1jb3JlOiBub3RpZmlj
+YXRpb24gMCBvZiBmcmVxdWVuY3kgdHJhbnNpdGlvbiB0byA5OTcwMDAga0h6CnVzZXJzcGFjZTog
+c2F2aW5nIGNwdV9jdXJfZnJlcSBvZiBjcHUgMCB0byBiZSA5OTcwMDAga0h6CmNwdWZyZXEtY29y
+ZTogc2F2aW5nIDQwMDE3ODQgYXMgcmVmZXJlbmNlIHZhbHVlIGZvciBsb29wc19wZXJfamlmZnk7
+ZnJlcSBpcwo5OTcwMDAga0h6CmxvbmdoYXVsOiBTZXR0aW5nIHRvIEZTQjoxMzNNSHogTXVsdDo3
+LjV4ICg5OTdNSHopCmNwdWZyZXEtY29yZTogbm90aWZpY2F0aW9uIDEgb2YgZnJlcXVlbmN5IHRy
+YW5zaXRpb24gdG8gOTk3MDAwIGtIegp1c2Vyc3BhY2U6IHNhdmluZyBjcHVfY3VyX2ZyZXEgb2Yg
+Y3B1IDAgdG8gYmUgOTk3MDAwIGtIegpjcHVmcmVxLWNvcmU6IGluaXRpYWxpemF0aW9uIGNvbXBs
+ZXRlCmNwdWZyZXEtY29yZTogZHJpdmVyIGxvbmdoYXVsIHVwIGFuZCBydW5uaW5nCnVzZXJzcGFj
+ZTogY3B1ZnJlcV9zZXQgZm9yIGNwdSAwLCBmcmVxIDM5OSBrSHoKY3B1ZnJlcS1jb3JlOiB0YXJn
+ZXQgZm9yIENQVSAwOiAzOTkwMDAga0h6LCByZWxhdGlvbiAwCmZyZXEtdGFibGU6IHJlcXVlc3Qg
+Zm9yIHRhcmdldCAzOTkwMDAga0h6IChyZWxhdGlvbjogMCkgZm9yIGNwdSAwCmZyZXEtdGFibGU6
+IHRhcmdldCBpcyAwICgzOTkwMDAga0h6LCAxKQpjcHVmcmVxLWNvcmU6IG5vdGlmaWNhdGlvbiAw
+IG9mIGZyZXF1ZW5jeSB0cmFuc2l0aW9uIHRvIDM5OTAwMCBrSHoKdXNlcnNwYWNlOiBzYXZpbmcg
+Y3B1X2N1cl9mcmVxIG9mIGNwdSAwIHRvIGJlIDM5OTAwMCBrSHoKbG9uZ2hhdWw6IFNldHRpbmcg
+dG8gRlNCOjEzM01IeiBNdWx0OjMuMHggKDM5OU1IeikKY3B1ZnJlcS1jb3JlOiBub3RpZmljYXRp
+b24gMSBvZiBmcmVxdWVuY3kgdHJhbnNpdGlvbiB0byA5OTcwMDAga0h6CnVzZXJzcGFjZTogc2F2
+aW5nIGNwdV9jdXJfZnJlcSBvZiBjcHUgMCB0byBiZSA5OTcwMDAga0h6CmNwdWZyZXEtY29yZTog
+c2V0dGluZyBuZXcgcG9saWN5IGZvciBDUFUgMDogMzk5MDAwIC0gOTk3MDAwIGtIegpmcmVxLXRh
+YmxlOiByZXF1ZXN0IGZvciB2ZXJpZmljYXRpb24gb2YgcG9saWN5ICgzOTkwMDAgLSA5OTcwMDAg
+a0h6KSBmb3IgY3B1CjAKZnJlcS10YWJsZTogdmVyaWZpY2F0aW9uIGxlYWQgdG8gKDM5OTAwMCAt
+IDk5NzAwMCBrSHopIGZvciBjcHUgMApmcmVxLXRhYmxlOiByZXF1ZXN0IGZvciB2ZXJpZmljYXRp
+b24gb2YgcG9saWN5ICgzOTkwMDAgLSA5OTcwMDAga0h6KSBmb3IgY3B1CjAKZnJlcS10YWJsZTog
+dmVyaWZpY2F0aW9uIGxlYWQgdG8gKDM5OTAwMCAtIDk5NzAwMCBrSHopIGZvciBjcHUgMApjcHVm
+cmVxLWNvcmU6IG5ldyBtaW4gYW5kIG1heCBmcmVxcyBhcmUgMzk5MDAwIC0gOTk3MDAwIGtIegpj
+cHVmcmVxLWNvcmU6IGdvdmVybm9yIHN3aXRjaApjcHVmcmVxLWNvcmU6IF9fY3B1ZnJlcV9nb3Zl
+cm5vciBmb3IgQ1BVIDAsIGV2ZW50IDIKdXNlcnNwYWNlOiBtYW5hZ2luZyBjcHUgMCBzdG9wcGVk
+CmNwdWZyZXEtY29yZTogX19jcHVmcmVxX2dvdmVybm9yIGZvciBDUFUgMCwgZXZlbnQgMQpwb3dl
+cnNhdmU6IHNldHRpbmcgdG8gMzk5MDAwIGtIeiBiZWNhdXNlIG9mIGV2ZW50IDEKY3B1ZnJlcS1j
+b3JlOiB0YXJnZXQgZm9yIENQVSAwOiAzOTkwMDAga0h6LCByZWxhdGlvbiAwCmZyZXEtdGFibGU6
+IHJlcXVlc3QgZm9yIHRhcmdldCAzOTkwMDAga0h6IChyZWxhdGlvbjogMCkgZm9yIGNwdSAwCmZy
+ZXEtdGFibGU6IHRhcmdldCBpcyAwICgzOTkwMDAga0h6LCAxKQpjcHVmcmVxLWNvcmU6IGdvdmVy
+bm9yOiBjaGFuZ2Ugb3IgdXBkYXRlIGxpbWl0cwpjcHVmcmVxLWNvcmU6IF9fY3B1ZnJlcV9nb3Zl
+cm5vciBmb3IgQ1BVIDAsIGV2ZW50IDMKcG93ZXJzYXZlOiBzZXR0aW5nIHRvIDM5OTAwMCBrSHog
+YmVjYXVzZSBvZiBldmVudCAzCmNwdWZyZXEtY29yZTogdGFyZ2V0IGZvciBDUFUgMDogMzk5MDAw
+IGtIeiwgcmVsYXRpb24gMApmcmVxLXRhYmxlOiByZXF1ZXN0IGZvciB0YXJnZXQgMzk5MDAwIGtI
+eiAocmVsYXRpb246IDApIGZvciBjcHUgMApmcmVxLXRhYmxlOiB0YXJnZXQgaXMgMCAoMzk5MDAw
+IGtIeiwgMSkKCisrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KwoKT24gOC8yOS8wNywgUmFmYbMgQmlsc2tpIDxyYWZhbGJpbHNraUBpbnRlcmlhLnBsPiB3cm90
+ZToKPgo+ID4gT2ssCj4gPgo+ID4gSnVzdCB0byBiZSBzaHVyZToKPiA+Cj4gPiAtIGVuYWJsZSBj
+cHVmcmVxIGluIG1vZHVsZXMuY29uZiA/Cj4gTm8uIFBsZWFzZSBlbmFibGUgY3B1ZnJlcSBkZWJ1
+Z2dpbmcgaW4ga2VybmVsIGNvbmZpZy4gWW91IHdpbGwgZmluZAo+IGl0IGluIHRoZSBmb2xsb3dp
+bmcgbWVudXM6Cj4gUG93ZXIgbWFuYWdlbWVudCBvcHRpb25zIChBQ1BJLCBBUE0pCj4gICAgICAg
+ICBDUFUgRnJlcXVlbmN5IHNjYWxpbmcgIC0tLT4KPiAgICAgICAgICAgICAgICAgWypdICAgRW5h
+YmxlIENQVWZyZXEgZGVidWdnaW5nCj4gPiAtIGFkZCAiY3B1ZnJlcS5kZWJ1Zz03IiBhcyBrZXJu
+ZWwgcGFyYW1ldGVyID8KPiBJbiBjYXNlIG9mIGNwdWZyZXEgY29tcGlsZWQgaW4gaW50byBrZXJu
+ZWwgLSB5ZXMuIElmIFlvdSBoYXZlIGNwdWZyZXEgYXMKPiBtb2R1bGVzIGp1c3QgdXNlICJtb2Rw
+cm9iZSBjcHVmcmVxIGRlYnVnPTciLgo+Cj4KPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gUGlla25lIGtvYmll
+dHkgd3Nyb2Qgc2FteWNoIHN3aW4hCj4gT2JlanJ6eWoKPgo+ID4+Pmh0dHA6Ly9saW5rLmludGVy
+aWEucGwvZjFiMTgKPgo+Cg==
+--===============1114766116==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Regards
-Rafa=B3
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-----------------------------------------------------------------------
-Jak najszybciej dostac sie na wymarzona plaze?
-Znajdz trase ekspresowa
+--===============1114766116==--
 
->>>http://link.interia.pl/f1b0c
