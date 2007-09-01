@@ -1,14 +1,11 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: mobile pentium mmx?
-Date: Fri, 31 Aug 2007 16:29:15 -0400
-Message-ID: <20070831202915.GB11499@redhat.com>
-References: <ebebfcb60708171319g4db97e0fy8ea93999634d688@mail.gmail.com>
-	<20070822235731.GA18739@redhat.com>
-	<ebebfcb60708270326kda0509ax2527d7e18ca9df10@mail.gmail.com>
-Mime-Version: 1.0
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
+	real
+Date: Sat,  1 Sep 2007 05:41:55 -0700 (PDT)
+Message-ID: <20070901124155.20B00108013@picon.linux-foundation.org>
+References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <ebebfcb60708270326kda0509ax2527d7e18ca9df10@mail.gmail.com>
+In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,40 +16,29 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fikin <nikolai.fiikov@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, Aug 27, 2007 at 01:26:20PM +0300, fikin wrote:
- > >Intel didn't add speedstep capability until the Mobile Pentium III.
- > 
- > right, here question is about something older.
- > 
- > this processor family apparently has freq scaling as the bios is able to do
- > it.
+http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
-Probably implemented using clock modulation, which doesn't really save
-any power.  Although, prior to speedsteps existance there were a few
-implementations of clock frequency shifting by some vendors, but they
-were vendor specific, and no documentation on how these work exists.
-They were also usually not able to shift at runtime (messing with
-bus speeds before speedstep arrived was extremely fragile), only selectable
-in the BIOS.
 
- > and few years back i remember kernel 2.6 had acpi or cpufreq proc/sys
- > interface where i could play with the throttling.
- > this did the job of scaling.
 
-throttling != scaling.
 
- > but nowadays i can't find anything which remotely would do the same job...
 
-acpi throttling interface should still be present in
-/proc/acpi/processor/throttling, but this has nothing to do with cpufreq
-at all.
+------- Comment #16 from cimmo@libero.it  2007-09-01 05:41 -------
+Created an attachment (id=12659)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=12659&action=view)
+acpidump with athlon xp-m 2400+ and kernel 2.6.22.5
 
-	Dave
+this is a self-compiled 2.6.22.5 kernel with cpu freq debug support
+
+acpidump attached and kernel started with cpufreq.debug=3 parameter under
+athlon-m  2400+ where the bug occurs
+
 
 -- 
-http://www.codemonkey.org.uk
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
