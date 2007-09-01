@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
 	real
-Date: Sat,  1 Sep 2007 05:46:07 -0700 (PDT)
-Message-ID: <20070901124607.39E47108011@picon.linux-foundation.org>
+Date: Sat,  1 Sep 2007 07:34:08 -0700 (PDT)
+Message-ID: <20070901143409.0406D108011@picon.linux-foundation.org>
 References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
@@ -24,17 +24,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
 
+dsd@gentoo.org changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+  Attachment #12659|application/octet-stream    |text/plain
+          mime type|                            |
 
 
-
-------- Comment #18 from cimmo@libero.it  2007-09-01 05:46 -------
-sorry for so many attachments, but I think last 3 files are what count.
-
-SUMMARY with kernel 2.6.22.5:
-
-Athlon XP-M 2400+ BUGGY
-Athlon XP-M 2500+ NON BUGGY
-Athlon XP-M 2800+ BUGGY
 
 
 -- 
