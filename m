@@ -1,11 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
-	real
-Date: Thu,  6 Sep 2007 07:46:58 -0700 (PDT)
-Message-ID: <20070906144658.9C1B1108012@picon.linux-foundation.org>
-References: <bug-8720-3570@http.bugzilla.kernel.org/>
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
+From: Wes Felter <wesley@felter.org>
+Subject: Re: do the clock throttling, not freq scaling
+Date: Thu, 06 Sep 2007 15:49:35 -0500
+Message-ID: <46E067DF.7090007@felter.org>
+References: <901941.37012.qm@web39715.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <901941.37012.qm@web39715.mail.mud.yahoo.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,23 +16,18 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8720
+M C wrote:
+> Hi, everybody.
+> 
+> Who knows how to do clock throttling in linux on xeon or opteron processors? I want to change the clock duty-cycle(not the cpu frequency). Please give me some guidance. Thanks.
 
+You probably don't want to do this, but on Xeon you can load the 
+p4-clockmod driver.
 
+What are you trying to accomplish?
 
-
-
-------- Comment #21 from dsd@gentoo.org  2007-09-06 07:46 -------
-I'm not certain, but yes I think so.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Wes Felter - wesley@felter.org
