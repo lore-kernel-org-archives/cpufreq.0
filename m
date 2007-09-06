@@ -1,9 +1,9 @@
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Add auto enabled "revid_errata" option
-Date: Wed, 05 Sep 2007 11:55:06 +0200
-Message-ID: <46DE7CFA.6020006@interia.pl>
+From: M C <kingming0811@yahoo.com>
+Subject: do the clock throttling, not freq scaling
+Date: Wed, 5 Sep 2007 23:09:04 -0700 (PDT)
+Message-ID: <901941.37012.qm@web39715.mail.mud.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -15,158 +15,12 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk, "Herbert G. Fischer" <herbert.fischer@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@lists.linux.org.uk
 
-
-VIA C3 Ezra-T has RevisionID equal to 1, but it needs
-RevisionKey to be 0 or CPU will ignore new frequency
-and will continue to work at old frequency. New
-"revid_errata" option will force RevisionKey to be
-set to 0, whatever RevisionID is.
-Additionaly "Longhaul" will not silently ignore
-unsuccessful transition. It will try to check if
-"revid_errata" or "disable_acpi_c3" options need to
-be enabled for this processor/system.
-Same for Longhaul ver. 2 support. It will be disabled if
-none of above options will work.
-
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- Please submit this patch for 2.6.23 kernel. This is fix for 
- bug which I have introduced and was present since at least 
- four Linux versions.
-
- Best case scenario (with patch apllied and v2 enabled):
- longhaul: VIA C3 'Ezra' [C5C] CPU detected.  Longhaul v2 supported.
- longhaul: Using northbridge support.
- longhaul: VRM 8.5
- longhaul: Max VID=1.350  Min VID=1.050, 13 possible voltage scales
- longhaul: f: 300000 kHz, index: 0, vid: 1050 mV
- [...]
- longhaul: Voltage scaling enabled.
- Worst case scenario:
- longhaul: VIA C3 'Ezra-T' [C5M] CPU detected.  Powersaver supported.
- longhaul: Using northbridge support.
- longhaul: Using ACPI support.
- longhaul: VRM 8.5
- longhaul: Claims to support voltage scaling but min & max are both 1.250. Voltage scaling disabled
- longhaul: Failed to set requested frequency!
- longhaul: Enabling "Ignore Revision ID" option.
- longhaul: Failed to set requested frequency!
- longhaul: Disabling ACPI C3 support.
- longhaul: Disabling "Ignore Revision ID" option.
- longhaul: Failed to set requested frequency!
- longhaul: Enabling "Ignore Revision ID" option.
-
- arch/i386/kernel/cpu/cpufreq/longhaul.c |   58 +++++++++++++++++++++++++++++--
- 1 files changed, 55 insertions(+), 3 deletions(-)
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -76,6 +76,7 @@ static unsigned int longhaul_index;
- /* Module parameters */
- static int scale_voltage;
- static int disable_acpi_c3;
-+static int revid_errata;
- 
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "longhaul", msg)
- 
-@@ -168,7 +169,10 @@ static void do_powersaver(int cx_address, unsigned int clock_ratio_index,
- 
- 	rdmsrl(MSR_VIA_LONGHAUL, longhaul.val);
- 	/* Setup new frequency */
--	longhaul.bits.RevisionKey = longhaul.bits.RevisionID;
-+	if (!revid_errata)
-+		longhaul.bits.RevisionKey = longhaul.bits.RevisionID;
-+	else
-+		longhaul.bits.RevisionKey = 0;
- 	longhaul.bits.SoftBusRatio = clock_ratio_index & 0xf;
- 	longhaul.bits.SoftBusRatio4 = (clock_ratio_index & 0x10) >> 4;
- 	/* Setup new voltage */
-@@ -272,7 +276,7 @@ static void longhaul_setstate(unsigned int table_index)
- 
- 	dprintk ("Setting to FSB:%dMHz Mult:%d.%dx (%s)\n",
- 			fsb, mult/10, mult%10, print_speed(speed/1000));
--
-+retry_loop:
- 	preempt_disable();
- 	local_irq_save(flags);
- 
-@@ -344,6 +348,45 @@ static void longhaul_setstate(unsigned int table_index)
- 	preempt_enable();
- 
- 	freqs.new = calc_speed(longhaul_get_cpu_mult());
-+	/* Check if requested frequency is set. */
-+	if (unlikely(freqs.new != speed)) {
-+		printk(KERN_INFO PFX "Failed to set requested frequency!\n");
-+		/* Revision ID = 1 but processor is expecting revision key
-+		 * equal to 0. Jumpers at the bottom of processor will change
-+		 * multiplier and FSB, but will not change bits in Longhaul
-+		 * MSR nor enable voltage scaling. */
-+		if (!revid_errata) {
-+			printk(KERN_INFO PFX "Enabling \"Ignore Revision ID\" option.\n");
-+			revid_errata = 1;
-+			msleep(200);
-+			goto retry_loop;
-+		}
-+		/* Why ACPI C3 sometimes doesn't work is a mystery for me.
-+		 * But it does happen. Processor is entering ACPI C3 state,
-+		 * but it doesn't change frequency. I tried poking various
-+		 * bits in northbridge registers, but without success. */
-+		if (longhaul_flags & USE_ACPI_C3) {
-+			printk(KERN_INFO PFX "Disabling ACPI C3 support.\n");
-+			longhaul_flags &= ~USE_ACPI_C3;
-+			if (revid_errata) {
-+				printk(KERN_INFO PFX "Disabling \"Ignore Revision ID\" option.\n");
-+				revid_errata = 0;
-+			}
-+			msleep(200);
-+			goto retry_loop;
-+		}
-+		/* This shouldn't happen. Longhaul ver. 2 was reported not
-+		 * working on processors without voltage scaling, but with
-+		 * RevID = 1. RevID errata will make things right. Just
-+		 * to be 100% sure. */
-+		if (longhaul_version == TYPE_LONGHAUL_V2) {
-+			printk(KERN_INFO PFX "Switching to Longhaul ver. 1\n");
-+			longhaul_version = TYPE_LONGHAUL_V1;
-+			msleep(200);
-+			goto retry_loop;
-+		}
-+	}
-+	/* Report true CPU frequency */
- 	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 
- 	if (!bm_timeout)
-@@ -956,11 +999,20 @@ static void __exit longhaul_exit(void)
- 	kfree(longhaul_table);
- }
- 
-+/* Even if BIOS is exporting ACPI C3 state, and it is used
-+ * with success when CPU is idle, this state doesn't
-+ * trigger frequency transition in some cases. */
- module_param (disable_acpi_c3, int, 0644);
- MODULE_PARM_DESC(disable_acpi_c3, "Don't use ACPI C3 support");
--
-+/* Change CPU voltage with frequency. Very usefull to save
-+ * power, but most VIA C3 processors aren't supporting it. */
- module_param (scale_voltage, int, 0644);
- MODULE_PARM_DESC(scale_voltage, "Scale voltage of processor");
-+/* Force revision key to 0 for processors which doesn't
-+ * support voltage scaling, but are introducing itself as
-+ * such. */
-+module_param (revid_errata, int, 0644);
-+MODULE_PARM_DESC(revid_errata, "Ignore CPU Revision ID");
- 
- MODULE_AUTHOR ("Dave Jones <davej@codemonkey.org.uk>");
- MODULE_DESCRIPTION ("Longhaul driver for VIA Cyrix processors.");
--- 
-
-
-
-----------------------------------------------------------------------
-Zamiesc ogloszenie za darmo!
-Kliknij >>> http://link.interia.pl/f1b7f
+Hi, everybody.=0A=0AWho knows how to do clock throttling in linux on xeon o=
+r opteron processors? I want to change the clock duty-cycle(not the cpu fre=
+quency). Please give me some guidance. Thanks.=0A=0A=0A=0A=0A       =0A____=
+___________________________________________________________________________=
+_____=0AYahoo! oneSearch: Finally, mobile search =0Athat gives answers, not=
+ web links. =0Ahttp://mobile.yahoo.com/mobileweb/onesearch?refer=3D1ONXIC
