@@ -1,10 +1,11 @@
-From: M C <kingming0811@yahoo.com>
-Subject: do the clock throttling, not freq scaling
-Date: Wed, 5 Sep 2007 23:09:04 -0700 (PDT)
-Message-ID: <901941.37012.qm@web39715.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8720] still problems with k7 mobile frequency is lower than
+	real
+Date: Thu,  6 Sep 2007 07:33:46 -0700 (PDT)
+Message-ID: <20070906143346.E855E108012@picon.linux-foundation.org>
+References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,12 +16,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-Hi, everybody.=0A=0AWho knows how to do clock throttling in linux on xeon o=
-r opteron processors? I want to change the clock duty-cycle(not the cpu fre=
-quency). Please give me some guidance. Thanks.=0A=0A=0A=0A=0A       =0A____=
-___________________________________________________________________________=
-_____=0AYahoo! oneSearch: Finally, mobile search =0Athat gives answers, not=
- web links. =0Ahttp://mobile.yahoo.com/mobileweb/onesearch?refer=3D1ONXIC
+http://bugzilla.kernel.org/show_bug.cgi?id=8720
+
+
+
+
+
+------- Comment #20 from cimmo@libero.it  2007-09-06 07:33 -------
+So it's a bios bug?
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
