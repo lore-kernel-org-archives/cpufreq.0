@@ -1,11 +1,11 @@
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Subject: writing a frequency scaling processor module
-Date: Fri, 7 Sep 2007 13:04:51 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C066B5BD9@USA0300MS03.na.xerox.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 6367] acpi-cpufreq: fancy CPUfreq values - can't load
+	p4-clockmod anymore
+Date: Tue, 11 Sep 2007 00:20:37 -0700 (PDT)
+Message-ID: <20070911072037.9B749108015@picon.linux-foundation.org>
+References: <bug-6367-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
+In-Reply-To: <bug-6367-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,19 +16,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-I'm writing a cpufreq module for the ppc 7448 processor.
+http://bugzilla.kernel.org/show_bug.cgi?id=6367
 
-Its very nice the way cpufreq is laid out with the governors...is there
-a=20
-"cookbook" approach to writing a processor interface?
 
-I looked at cpu-drivers.txt in the kernel tree, and it's somewhat vague
-and=20
-confusing (IMHO).
 
-I'm using p4-clocmod.c as an example, are there better examples?
 
-marty
+
+------- Comment #12 from oopla@users.sf.net  2007-09-11 00:20 -------
+I will, provided that I'll find a way to get 2.6.22.* to work: 2.6.22.* doesn't
+even boot on any of 4 brands/flavours of notebooks I tried: P3, P4, PM; it
+hangs on ACPI stuff :(
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
