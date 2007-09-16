@@ -1,11 +1,13 @@
-From: sylvain@cmapx.polytechnique.fr
-Subject: Longhaul support for Via C3 (samuel 2) CPU and  Via prosavage 
+From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
+Subject: Re: Longhaul support for Via C3 (samuel 2) CPU and  Via prosavage
  PM133 northbridge
-Date: Sun, 16 Sep 2007 16:34:22 +0200 (CEST)
-Message-ID: <2934.82.241.45.83.1189953262.squirrel@www.cmap.polytechnique.fr>
+Date: Sun, 16 Sep 2007 21:10:41 +0200
+Message-ID: <46ED7FB1.60000@interia.pl>
+References: <2934.82.241.45.83.1189953262.squirrel@www.cmap.polytechnique.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <2934.82.241.45.83.1189953262.squirrel@www.cmap.polytechnique.fr>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,86 +18,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="windows-1254"; format="flowed"
+To: sylvain@cmapx.polytechnique.fr
+Cc: cpufreq@lists.linux.org.uk
 
-Hi,
-
-I try to use cpufreq with a Comwell Lv602 motherboard ( VT8605 [ProSavage
-PM133]) and a Via C3 (samuel 2) CPU.
-I have a 2.6.22.6 kernel with C3 longhaul (CONFIG_X86_LONGHAUL=y) set.
-Unfortunatly, at boot time, I get the messages:
-
-CPU: Centaur VIA Samuel 2 stepping 03
-[...]
-longhaul: VIA C3 'Samuel 2' [C5B] CPU detected.  Longhaul v1 supported.
-longhaul: No ACPI support. Unsupported northbridge
-
-
-Does it mean that this motherboard is not supported, or I missed something?
-
-Thanks
-
-Sylvain
-
-The output of lspci -vv follows:
-
-00:00.0 Host bridge: VIA Technologies, Inc. VT8605 [ProSavage PM133] (rev 01)
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR-
-        Latency: 0
-        Region 0: Memory at e8000000 (32-bit, prefetchable) [size=64M]
-        Capabilities: [a0] AGP version 2.0
-                Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64-
-HTrans- 64bit- FW- AGP3- Rate=x1,x2,x4
-                Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW-
-Rate=<none>
-        Capabilities: [c0] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:01.0 PCI bridge: VIA Technologies, Inc. VT8605 [PM133 AGP] (prog-if 00
-[Normal decode])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR+
-        Latency: 0
-        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
-        Memory behind bridge: ec000000-edffffff
-        Prefetchable memory behind bridge: e0000000-e7ffffff
-        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- <SERR- <PERR-
-        BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B-
-        Capabilities: [80] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:07.0 ISA bridge: VIA Technologies, Inc. VT82C686 [Apollo Super South]
-(rev 40)
-        Subsystem: VIA Technologies, Inc. VT82C686/A PCI to ISA Bridge
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping+ SERR- FastB2B-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-        Latency: 0
-        Capabilities: [c0] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:07.4 Bridge: VIA Technologies, Inc. VT82C686 [Apollo Super ACPI] (rev 40)
-        Subsystem: VIA Technologies, Inc. VT82C686 [Apollo Super ACPI]
-        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-        Interrupt: pin ? routed to IRQ 5
-        Capabilities: [68] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+PiBIaSwKSGkgCj4gSSB0cnkgdG8gdXNlIGNwdWZyZXEgd2l0aCBhIENvbXdlbGwgTHY2MDIgbW90
+aGVyYm9hcmQgKCBWVDg2MDUgW1Byb1NhdmFnZQo+IFBNMTMzXSkgYW5kIGEgVmlhIEMzIChzYW11
+ZWwgMikgQ1BVLgo+IEkgaGF2ZSBhIDIuNi4yMi42IGtlcm5lbCB3aXRoIEMzIGxvbmdoYXVsIChD
+T05GSUdfWDg2X0xPTkdIQVVMPXkpIHNldC4KPiBVbmZvcnR1bmF0bHksIGF0IGJvb3QgdGltZSwg
+SSBnZXQgdGhlIG1lc3NhZ2VzOgo+IAo+IENQVTogQ2VudGF1ciBWSUEgU2FtdWVsIDIgc3RlcHBp
+bmcgMDMKPiBbLi4uXQo+IGxvbmdoYXVsOiBWSUEgQzMgJ1NhbXVlbCAyJyBbQzVCXSBDUFUgZGV0
+ZWN0ZWQuICBMb25naGF1bCB2MSBzdXBwb3J0ZWQuCj4gbG9uZ2hhdWw6IE5vIEFDUEkgc3VwcG9y
+dC4gVW5zdXBwb3J0ZWQgbm9ydGhicmlkZ2UKPiAKPiAKPiBEb2VzIGl0IG1lYW4gdGhhdCB0aGlz
+IG1vdGhlcmJvYXJkIGlzIG5vdCBzdXBwb3J0ZWQsIG9yIEkgbWlzc2VkIHNvbWV0aGluZz8KTm9y
+dGhicmlkZ2UgaGFzIEFHUC9QQ0kgYXJiaXRlciBkaXNhYmxlIGJpdHMsIGJ1dCBzdXBwb3J0IGZv
+ciB0aGlzIApub3J0aGJyaWRnZSB3YXMgbmV2ZXIgdGVzdGVkLiBMZXQgbWUga25vdyBpZiBZb3Ug
+YXJlIGludGVyZXN0ZWQgaW4gCnRlc3RpbmcgaXQuCj4gVGhhbmtzCj4gCj4gU3lsdmFpbgpSZWdh
+cmRzClJhZmHFggoKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCld5Z3Jhc3osIGN6eSBwcnplZ3Jhc3o/Cgo+Pj4g
+aHR0cDovL2xpbmsuaW50ZXJpYS5wbC9mMWJiZA==
