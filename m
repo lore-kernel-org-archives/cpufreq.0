@@ -1,15 +1,11 @@
-From: Sylvain Ferrand <sylvain.ferrand@polytechnique.edu>
-Subject: Re: Longhaul support for Via C3 (samuel 2) CPU and  Via prosavage
- PM133 northbridge
-Date: Mon, 17 Sep 2007 09:39:10 +0200
-Message-ID: <46EE2F1E.5000900@polytechnique.edu>
-References: <2934.82.241.45.83.1189953262.squirrel@www.cmap.polytechnique.fr>
-	<46ED7FB1.60000@interia.pl>
-Reply-To: sylvain.ferrand@polytechnique.edu
-Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9035] cpufreq k8 module trouble during modprobe on gigabyte
+	board
+Date: Wed, 19 Sep 2007 19:26:09 -0700 (PDT)
+Message-ID: <20070920022609.09797108010@picon.linux-foundation.org>
+References: <bug-9035-3570@http.bugzilla.kernel.org/>
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <46ED7FB1.60000@interia.pl>
+In-Reply-To: <bug-9035-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,16 +16,25 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1254"; format="flowed"
-To: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-Cc: cpufreq@lists.linux.org.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@www.linux.org.uk
 
-SGksCgpTdXJlLCBJJ20gaW50ZXJlc3RlZCBmb3IgdGVzdGluZyBpdCEgV2hhdCBjYW4gSSBkbz8K
-UmVnYXJkcwoKU3lsdmFpbgpSYWZhxYIgQmlsc2tpIGEgw6ljcml0IDoKPj4gWy4uLl0KPj4gbG9u
-Z2hhdWw6IFZJQSBDMyAnU2FtdWVsIDInIFtDNUJdIENQVSBkZXRlY3RlZC4gIExvbmdoYXVsIHYx
-IHN1cHBvcnRlZC4KPj4gbG9uZ2hhdWw6IE5vIEFDUEkgc3VwcG9ydC4gVW5zdXBwb3J0ZWQgbm9y
-dGhicmlkZ2UKPj4KPj4KPj4gRG9lcyBpdCBtZWFuIHRoYXQgdGhpcyBtb3RoZXJib2FyZCBpcyBu
-b3Qgc3VwcG9ydGVkLCBvciBJIG1pc3NlZCAKPj4gc29tZXRoaW5nPwo+IE5vcnRoYnJpZGdlIGhh
-cyBBR1AvUENJIGFyYml0ZXIgZGlzYWJsZSBiaXRzLCBidXQgc3VwcG9ydCBmb3IgdGhpcyAKPiBu
-b3J0aGJyaWRnZSB3YXMgbmV2ZXIgdGVzdGVkLiBMZXQgbWUga25vdyBpZiBZb3UgYXJlIGludGVy
-ZXN0ZWQgaW4gCj4gdGVzdGluZyBpdC4=
+http://bugzilla.kernel.org/show_bug.cgi?id=9035
+
+
+len.brown@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|acpi_bios@kernel-           |cpufreq@www.linux.org.uk
+                   |bugs.osdl.org               |
+
+
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
