@@ -1,16 +1,18 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: writing a frequency scaling processor module
-Date: Tue, 25 Sep 2007 13:02:42 -0400
-Message-ID: <20070925170242.GF2769@redhat.com>
-References: <556445368AFA1C438794ABDA8901891C066B5BD9@USA0300MS03.na.xerox.net>
-	<20070924233135.GK8127@redhat.com>
-	<556445368AFA1C438794ABDA8901891C06460088@USA0300MS03.na.xerox.net>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more}
+	ARM/StrongARM
+Date: Tue, 25 Sep 2007 10:08:39 -0700
+Message-ID: <20070925100839.8d2e7b40.akpm@linux-foundation.org>
+References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com>
+	<20070925073132.GA29127@flint.arm.linux.org.uk>
+	<20070925143651.GA2769@redhat.com>
+	<20070925095229.d1aec1a5.akpm@linux-foundation.org>
+	<20070925165834.GE2769@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <556445368AFA1C438794ABDA8901891C06460088@USA0300MS03.na.xerox.net>
+In-Reply-To: <20070925165834.GE2769@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,27 +23,52 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, dan.j.williams@intel.com
 
-On Tue, Sep 25, 2007 at 12:48:55PM -0400, Leisner, Martin wrote:
- > Its pretty much written...it could (should) be very simple...
- > in a simple case...
- > 
- > All it really needed was:
- >    1) a method to set the frequency
- >    2) a method to get the frequency
- >    3) a frequency array
- > 
- > I copied some code from the powernow-k7...and banged on it until it worked...
- > 
- > Why does 
- > cpufreq_frequency_table have an index entry on each entry?
+On Tue, 25 Sep 2007 12:58:34 -0400 Dave Jones <davej@redhat.com> wrote:
 
-When searching through the table for an entry, it's used as
-a 'key' to find the match.
+> On Tue, Sep 25, 2007 at 09:52:29AM -0700, Andrew Morton wrote:
+>  > On Tue, 25 Sep 2007 10:36:51 -0400 Dave Jones <davej@redhat.com> wrote:
+>  > > 
+>  > > commit 184c44d2049c4db7ef6ec65794546954da2c6a0e
+>  > > Author: Andrew Morton <akpm@linux-foundation.org>
+>  > > Date:   Wed May 2 19:27:08 2007 +0200
+>  > > 
+>  > >     [PATCH] x86-64: fix x86_64-mm-sched-clock-share
+>  > >     
+>  > >     Fix for the following patch. Provide dummy cpufreq functions when
+>  > >     CPUFREQ is not compiled in.
+>  > >     
+>  > >     Cc: Andi Kleen <ak@suse.de>
+>  > >     Cc: Dave Jones <davej@codemonkey.org.uk>
+>  > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>  > >     Signed-off-by: Andi Kleen <ak@suse.de>
+>  > > 
+>  > > I don't remember seeing any problem here, so I'm not entirely sure what
+>  > > this was supposed to be fixing.  Perhaps the -mm-esque patch name
+>  > > will provide Andrew/Andi clues. It lacks sufficient information for
+>  > > my brain to guess what the problem was.
+>  > 
+>  > Oh geeze.  sched-clock-share went through about 18 different versions, was
+>  > merged, unmerged, remerged, dropped, etc.  I don't recall at what stage in
+>  > this mess the above fix was inserted, sorry.
+>  > 
+>  > > "Fix for the following patch" is also something that really should
+>  > > never be added to a git changelog too, because 'next' means absolutely
+>  > > nothing to me, nor I expect 99% of changelog readers.
+>  > 
+>  > 184c44d2049c4db7ef6ec65794546954da2c6a0e should never have existed,
+>  > actually.  I intended that Andi fold it into the base patch prior to
+>  > sending it to Linus.  He normally does that, but it looks like this
+>  > one was handled as a standalone commit for some reason.
+> 
+> So lets see what happens if we revert it ?
+> 
 
-	Dave
+<grep flurry>
 
--- 
-http://www.codemonkey.org.uk
+OK, here: ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/broken-out/fix-x86_64-mm-sched-clock-share.patch
+
+So I guess what we want to do here is to revert that patch, test i386
+allnoconfig and then fix up anything which breaks.
