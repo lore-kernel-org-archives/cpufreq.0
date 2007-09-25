@@ -1,50 +1,94 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more}
-	ARM/StrongARM
-Date: Tue, 25 Sep 2007 13:51:56 -0400
-Message-ID: <20070925175156.GG2769@redhat.com>
-References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com> <20070925073132.GA29127@flint.arm.linux.org.uk> <20070925143651.GA2769@redhat.com> <20070925095229.d1aec1a5.akpm@linux-foundation.org> <20070925165834.GE2769@redhat.com> <20070925100839.8d2e7b40.akpm@linux-foundation.org> <20070925172255.GL8127@redhat.com> <20070925103142.c93719b3.akpm@linux-foundation.org>
+From: <Greg.Chandler@wellsfargo.com>
+Subject: RE: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more} ARM/StrongARM
+Date: Tue, 25 Sep 2007 12:31:38 -0500
+Message-ID: <1E7A4807A136DF45AD33DB341D93C3BD1F0C7F@msgswbmnmsp46.wellsfargo.com>
+References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com> <20070925073132.GA29127@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758348AbXIYRw0@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070925103142.c93719b3.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756378AbXIYSye@vger.kernel.org>
+content-class: urn:content-classes:message
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, dan.j.williams@intel.com, Andi Kleen <ak@suse.de>
+To: rmk+lkml@arm.linux.org.uk, cpufreq@lists.linux.org.uk, davej@redhat.com
+Cc: linux-kernel@vger.kernel.org, dan.j.williams@intel.com
 
-On Tue, Sep 25, 2007 at 10:31:42AM -0700, Andrew Morton wrote:
- > On Tue, 25 Sep 2007 13:22:55 -0400 Dave Jones <davej@redhat.com> wrote:
- > 
- > >  > 
- > >  > OK, here: ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm3/broken-out/fix-x86_64-mm-sched-clock-share.patch
- > >  > 
- > >  > So I guess what we want to do here is to revert that patch, test i386
- > >  > allnoconfig and then fix up anything which breaks.
- > > 
- > > Nothing breaks for me with make ARCH=i386 bzImage on my x86-64 box
- > > (which should be the same as a native build).
- > 
- > Was that with allnoconfig?
 
-yeah.
+Well then, now I guess I know why the FB isn't working...
+Sorry to open up the can of worms this turned out to be {after reading
+all the other replies first}...
 
- > > The functions that complain in that patch header don't seem to actually
- > > exist in mainline at all. (`init_sched_clock' and `call_r_s_f')
- > > Did this patch perhaps jump the gun, and these are -mm only ?
- > 
- > Could be that this patch fixed version 17 of sched-clock-share and we ended
- > up merging verion 56.  It was awful.
+ 
 
-heh.
+-----Original Message-----
+From: Russell King [mailto:rmk@arm.linux.org.uk] On Behalf Of Russell
+King
+Sent: Tuesday, September 25, 2007 2:32 AM
+To: Chandler, Greg; cpufreq@lists.linux.org.uk; davej@redhat.com
+Cc: linux-kernel@vger.kernel.org; dan.j.williams@intel.com
+Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more}
+ARM/StrongARM
 
-I think just reverting that change for .23 makes sense. It doesn't
-seem that anything breaks by not having it there, and we know it
-definitly breaks arm at least.
+On Mon, Sep 24, 2007 at 05:53:57PM -0500, Greg.Chandler@wellsfargo.com
+wrote:
+> I was building a kernel for an iPaq {SA1110} and ran into this.
+> 
+> linux-2.6.22.7/arch/arm/mach-sa1100/generic.c:
+> Has a: #include <linux/cpufreq.h>
+> Then afterwards there is a: #if defined(CONFIG_CPU_FREQ_SA1100) ||
+> defined(CONFIG_CPU_FREQ_SA1110)
+> who's else section redefines the cpufreq_get function inhereited from 
+> the header....
+> 
+> I'm guessing no one ever ended up in the "else" section until now, and
 
-	Dave
+> that the header was added some time ago and no one caught this.
+> This patch worked for me to get rid of the compile time problems.  I'm
 
--- 
-http://www.codemonkey.org.uk
+> having issues with the kernel, but as far as I can tell they are form 
+> the Frame buffer and not because of this.  If this assessment is 
+> correct {the not needing this code anymore} then please pass this 
+> along so it makes it into an upcoming release.
+> 
+> --- linux-2.6.22.7/arch/arm/mach-sa1100/generic.c.orig  2007-09-24 
+> 17:36:21.000000000 -0500
+> +++ linux-2.6.22.7/arch/arm/mach-sa1100/generic.c       2007-09-24
+> 17:40:02.000000000 -0500
+> @@ -107,15 +107,6 @@ unsigned int sa11x0_getspeed(unsigned in
+>         return cclk_frequency_100khz[PPCR & 0xf] * 100;  }
+> 
+> -#else
+> -/*
+> - * We still need to provide this so building without cpufreq works.
+> - */
+> -unsigned int cpufreq_get(unsigned int cpu) -{
+> -       return cclk_frequency_100khz[PPCR & 0xf] * 100;
+> -}
+> -EXPORT_SYMBOL(cpufreq_get);
+>  #endif
+> 
+>  /*
+
+No.  That code is required - the StrongARM 1100 framebuffer driver
+*needs* to know what the CPU frequency is so it can set the pixel clock
+divisor.
+
+The real problem is the silly people who added this to cpufreq.h:
+
+#ifdef CONFIG_CPU_FREQ
+unsigned int cpufreq_quick_get(unsigned int cpu); unsigned int
+cpufreq_get(unsigned int cpu); #else static inline unsigned int
+cpufreq_quick_get(unsigned int cpu) {
+        return 0;
+}
+static inline unsigned int cpufreq_get(unsigned int cpu) {
+        return 0;
+}
+#endif
+
+which utterly bogus.
+
+--
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
