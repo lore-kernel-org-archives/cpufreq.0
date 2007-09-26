@@ -1,11 +1,17 @@
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-Subject: [PATCH] Longhaul - Add support for PM133 northbridge
-Date: Wed, 26 Sep 2007 17:08:14 +0200
-Message-ID: <46FA75DE.3080403@interia.pl>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more}
+	ARM/StrongARM
+Date: Wed, 26 Sep 2007 16:53:14 -0400
+Message-ID: <20070926205314.GB25747@redhat.com>
+References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com>
+	<20070925073132.GA29127@flint.arm.linux.org.uk>
+	<20070925143651.GA2769@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20070925143651.GA2769@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,34 +22,99 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+To: Russell King <rmk+lkml@arm.linux.org.uk>, Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, dan.j.williams@intel.com, Andrew Morton <akpm@linux-fo>
 
-Add support for PM133 northbridge. Tested by Sylvain Ferrand.
+On Tue, Sep 25, 2007 at 10:36:51AM -0400, Dave Jones wrote:
+ > On Tue, Sep 25, 2007 at 08:31:32AM +0100, Russell King wrote:
+ >  > On Mon, Sep 24, 2007 at 05:53:57PM -0500, Greg.Chandler@wellsfargo.com wrote:
+ >  > > I was building a kernel for an iPaq {SA1110} and ran into this.
+ >  > > 
+ >  > > linux-2.6.22.7/arch/arm/mach-sa1100/generic.c:
+ >  > > Has a: #include <linux/cpufreq.h>
+ >  > > Then afterwards there is a: #if defined(CONFIG_CPU_FREQ_SA1100) ||
+ >  > > defined(CONFIG_CPU_FREQ_SA1110)
+ >  > > who's else section redefines the cpufreq_get function inhereited from
+ >  > > the header....
+ >  > > 
+ >  > > I'm guessing no one ever ended up in the "else" section until now, and
+ >  > > that the header was added some time ago and no one caught this.
+ >  > > This patch worked for me to get rid of the compile time problems.  I'm
+ >  > > having issues with the kernel, but as far as I can tell they are form
+ >  > > the Frame buffer and not because of this.  If this assessment is correct
+ >  > > {the not needing this code anymore} then please pass this along so it
+ >  > > makes it into an upcoming release.
+ >  > > 
+ >  > > --- linux-2.6.22.7/arch/arm/mach-sa1100/generic.c.orig  2007-09-24
+ >  > > 17:36:21.000000000 -0500
+ >  > > +++ linux-2.6.22.7/arch/arm/mach-sa1100/generic.c       2007-09-24
+ >  > > 17:40:02.000000000 -0500
+ >  > > @@ -107,15 +107,6 @@ unsigned int sa11x0_getspeed(unsigned in
+ >  > >         return cclk_frequency_100khz[PPCR & 0xf] * 100;
+ >  > >  }
+ >  > > 
+ >  > > -#else
+ >  > > -/*
+ >  > > - * We still need to provide this so building without cpufreq works.
+ >  > > - */
+ >  > > -unsigned int cpufreq_get(unsigned int cpu)
+ >  > > -{
+ >  > > -       return cclk_frequency_100khz[PPCR & 0xf] * 100;
+ >  > > -}
+ >  > > -EXPORT_SYMBOL(cpufreq_get);
+ >  > >  #endif
+ >  > > 
+ >  > >  /*
+ >  > 
+ >  > No.  That code is required - the StrongARM 1100 framebuffer driver
+ >  > *needs* to know what the CPU frequency is so it can set the pixel
+ >  > clock divisor.
+ >  > 
+ >  > The real problem is the silly people who added this to cpufreq.h:
+ >  > 
+ >  > #ifdef CONFIG_CPU_FREQ
+ >  > unsigned int cpufreq_quick_get(unsigned int cpu);
+ >  > unsigned int cpufreq_get(unsigned int cpu);
+ >  > #else
+ >  > static inline unsigned int cpufreq_quick_get(unsigned int cpu)
+ >  > {
+ >  >         return 0;
+ >  > }
+ >  > static inline unsigned int cpufreq_get(unsigned int cpu)
+ >  > {
+ >  >         return 0;
+ >  > }
+ >  > #endif
+ >  > 
+ >  > which utterly bogus.
+ > 
+ > Which came from ...
+ > 
+ > commit 184c44d2049c4db7ef6ec65794546954da2c6a0e
+ > Author: Andrew Morton <akpm@linux-foundation.org>
+ > Date:   Wed May 2 19:27:08 2007 +0200
+ > 
+ >     [PATCH] x86-64: fix x86_64-mm-sched-clock-share
+ >     
+ >     Fix for the following patch. Provide dummy cpufreq functions when
+ >     CPUFREQ is not compiled in.
+ >     
+ >     Cc: Andi Kleen <ak@suse.de>
+ >     Cc: Dave Jones <davej@codemonkey.org.uk>
+ >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+ >     Signed-off-by: Andi Kleen <ak@suse.de>
+ > 
 
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- arch/i386/kernel/cpu/cpufreq/longhaul.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Following up on this from yesterday, Linus please revert the above cset.
+It doesn't seem to be necessary (it was added to fix a miscompile in
+'make allnoconfig' which doesn't seem to be repeatable with it reverted)
+and actively breaks the ARM SA1100 framebuffer driver.
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
---- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
-@@ -708,6 +708,10 @@ static int enable_arbiter_disable(void)
- 	reg = 0x78;
- 	dev = pci_get_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8601_0,
- 			     NULL);
-+	/* Find PM133/VT8605 host bridge */
-+	if (dev == NULL)
-+		dev = pci_get_device(PCI_VENDOR_ID_VIA,
-+				     PCI_DEVICE_ID_VIA_8605_0, NULL);
- 	/* Find CLE266 host bridge */
- 	if (dev == NULL) {
- 		reg = 0x76;
+(If you'd prefer a patch reverting it, I'll send one, but I'm
+ hoping that git-revert will just dtrt).
+
+Thanks,
+
+	Dave
+
 -- 
-
-
-
----------------------------------------------------------------------- 	
-Zaplanuj i zrob to. Na pewno potrafisz!
-Sprawdz >>> http://link.interia.pl/f1bba
+http://www.codemonkey.org.uk
