@@ -1,12 +1,10 @@
-From: realded@mail.ru
+From: Jarod Wilson <jwilson@redhat.com>
 Subject: Re: Intel Core2Quad Q6600 2,4 GHz Socket775 FSB1066
-Date: Fri, 28 Sep 2007 01:14:06 +0400
-Message-ID: <1373497972.20070928011406@mail.ru>
+Date: Thu, 27 Sep 2007 17:18:54 -0400
+Message-ID: <46FC1E3E.6070200@redhat.com>
 References: <200709272259.18445.ederstefan@gmx.de>
-Reply-To: realded@mail.ru
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1835015109=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <200709272259.18445.ederstefan@gmx.de>
 List-Id: <cpufreq.vger.kernel.org>
@@ -19,43 +17,65 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: Stefan Eder <ederstefan@gmx.de>
+Cc: cpufreq@lists.linux.org.uk
 
-Hi, I have the same question. Tryed all powersaving modules, but
-no one worked.
-Stefan> Hallo everyone,
-Stefan> ist there a chance for powersaving with the following CPU? And if so, what are
-Stefan> the related modules to load?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============1835015109==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enigC787DDD151A69BD6E89F5D4E"
 
-Stefan> Thanks a lot
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC787DDD151A69BD6E89F5D4E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Stefan> cpuid | grep SpeedStep
-Stefan> Enhanced Intel SpeedStep Technology    = true
+Stefan Eder wrote:
+> Hallo everyone,
+> ist there a chance for powersaving with the following CPU?
+
+Yes.
+
+> And if so, what are=20
+> the related modules to load?
+
+acpi-cpufreq for freq scaling support, cpufreq-ondemand for your
+governor (may be built-in though)
+
+--=20
+Jarod Wilson
+jwilson@redhat.com
 
 
-Stefan> cat /proc/cpuinfo
-Stefan> processor       : 0
-Stefan> vendor_id       : GenuineIntel
-Stefan> cpu family      : 6
-Stefan> model           : 15
-Stefan> model name      : Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
-Stefan> stepping        : 11
-Stefan> cpu MHz         : 2393.984
-Stefan> cache size      : 4096 KB
-Stefan> physical id     : 0
-Stefan> siblings        : 4
-Stefan> core id         : 0
-Stefan> cpu cores       : 4
-Stefan> fdiv_bug        : no
-Stefan> hlt_bug         : no
-Stefan> f00f_bug        : no
-Stefan> coma_bug        : no
-Stefan> fpu             : yes
-Stefan> fpu_exception   : yes
-Stefan> cpuid level     : 10
-Stefan> wp              : yes
-Stefan> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-Stefan> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm 
-Stefan> constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-Stefan> bogomips        : 4791.85
-Stefan> clflush size    : 64
+
+--------------enigC787DDD151A69BD6E89F5D4E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFG/B5CtO+bni+75QMRAjhOAJ9RHOxMKUzoIczjBCRFpR9hGw2nxQCfdtFF
+0kAV+k/37V9PJ59fd1bMWKo=
+=6vpK
+-----END PGP SIGNATURE-----
+
+--------------enigC787DDD151A69BD6E89F5D4E--
+
+
+--===============1835015109==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1835015109==--
+
