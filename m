@@ -1,14 +1,12 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Intel Core2Quad Q6600 2,4 GHz Socket775 FSB1066
-Date: Thu, 27 Sep 2007 14:48:31 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F501715910@scsmsx415.amr.corp.intel.com>
-References: <200709272259.18445.ederstefan@gmx.de><46FC1E3E.6070200@redhat.com>
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: Intel Core2Quad Q6600 2,4 GHz Socket775 FSB1066
+Date: Thu, 27 Sep 2007 17:51:04 -0400
+Message-ID: <46FC25C8.4020005@redhat.com>
+References: <200709272259.18445.ederstefan@gmx.de>	<46FC1E3E.6070200@redhat.com>
 	<200709272333.14046.ederstefan@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1423486736=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
 In-Reply-To: <200709272333.14046.ederstefan@gmx.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -20,42 +18,79 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Stefan Eder <ederstefan@gmx.de>, cpufreq@lists.linux.org.uk
+To: Stefan Eder <ederstefan@gmx.de>
+Cc: cpufreq@lists.linux.org.uk
 
- 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============1423486736==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig4102D792A872699011C6DE25"
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk 
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Stefan Eder
->Sent: Thursday, September 27, 2007 2:33 PM
->To: cpufreq@lists.linux.org.uk
->Subject: Re: Intel Core2Quad Q6600 2,4 GHz Socket775 FSB1066
->
->Am Donnerstag, 27. September 2007 23:18:54 schrieb Jarod Wilson:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4102D792A872699011C6DE25
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Stefan Eder wrote:
+> Am Donnerstag, 27. September 2007 23:18:54 schrieb Jarod Wilson:
 >> Stefan Eder wrote:
->> > Hallo everyone,
->> > ist there a chance for powersaving with the following CPU?
->>
+>>> Hallo everyone,
+>>> ist there a chance for powersaving with the following CPU?
 >> Yes.
 >>
->> > And if so, what are
->> > the related modules to load?
->>
+>>> And if so, what are
+>>> the related modules to load?
 >> acpi-cpufreq for freq scaling support, cpufreq-ondemand for your
 >> governor (may be built-in though)
->
->Hallo, tried this module on openSUSE 10.3 RC1:
->
->modprobe acpi-cpufreq
->FATAL: Error inserting acpi_cpufreq 
->(/lib/modules/2.6.22.5-29-bigsmp/kernel/arch/i386/kernel/cpu/cp
->ufreq/acpi-cpufreq.ko): 
->No such device
->
+>=20
+> Hallo, tried this module on openSUSE 10.3 RC1:
+>=20
+> modprobe acpi-cpufreq
+> FATAL: Error inserting acpi_cpufreq=20
+> (/lib/modules/2.6.22.5-29-bigsmp/kernel/arch/i386/kernel/cpu/cpufreq/ac=
+pi-cpufreq.ko):=20
+> No such device
 
-Depends on whether your BIOS is enabling this feature. Check in BIOS
-options for any switch related to this feature. Also make sure you have
-the latest BIOS for the platform.
+Boot with the added kernel param cpufreq.debug=3D7 and check dmesg after
+trying to load the module. Should say a bit more about what's going
+awry. It works fine under a Fedora 2.6.22.7 kernel, so I think your
+kernel should be fine, and I'm inclined to think its your BIOS at fault.
 
-Thanks,
-Venki
+
+--=20
+Jarod Wilson
+jwilson@redhat.com
+
+
+
+--------------enig4102D792A872699011C6DE25
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFG/CXItO+bni+75QMRAjNwAJ9iV+vIimxc0CBk5ow+0QvSp3I1OwCgvoqT
+qNgqxjx1Ehlv/4kJwFw6Exw=
+=POPl
+-----END PGP SIGNATURE-----
+
+--------------enig4102D792A872699011C6DE25--
+
+
+--===============1423486736==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1423486736==--
+
