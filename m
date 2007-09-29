@@ -1,78 +1,32 @@
-From: realded@mail.ru
-Subject: Re[2]: Intel Core2Quad Q6600 2,4 GHz Socket775 FSB1066
-Date: Fri, 28 Sep 2007 10:37:17 +0400
-Message-ID: <994125581.20070928103717@mail.ru>
-References: <200709272259.18445.ederstefan@gmx.de>
-	<46FC1E3E.6070200@redhat.com>
-	<200709272333.14046.ederstefan@gmx.de>
-	<46FC25C8.4020005@redhat.com>
-Reply-To: realded@mail.ru
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more} ARM/StrongARM
+Date: Sat, 29 Sep 2007 18:59:40 +0100
+Message-ID: <20070929175940.GA14500@flint.arm.linux.org.uk>
+References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com> <20070925073132.GA29127@flint.arm.linux.org.uk> <20070925143651.GA2769@redhat.com> <20070926205314.GB25747@redhat.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758113AbXI2SF1@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20070926205314.GB25747@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <46FC25C8.4020005@redhat.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: Dave Jones <davej@redhat.com>, Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, dan.j.williams@intel.com, Andrew Morton <akpm@linux-foundation.o>
 
-Jarod> Stefan Eder wrote:
->> Am Donnerstag, 27. September 2007 23:18:54 schrieb Jarod Wilson:
->>> Stefan Eder wrote:
->>>> Hallo everyone,
->>>> ist there a chance for powersaving with the following CPU?
->>> Yes.
->>>
->>>> And if so, what are
->>>> the related modules to load?
->>> acpi-cpufreq for freq scaling support, cpufreq-ondemand for your
->>> governor (may be built-in though)
->> 
->> Hallo, tried this module on openSUSE 10.3 RC1:
->> 
->> modprobe acpi-cpufreq
->> FATAL: Error inserting acpi_cpufreq 
->> (/lib/modules/2.6.22.5-29-bigsmp/kernel/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.ko): 
->> No such device
+On Wed, Sep 26, 2007 at 04:53:14PM -0400, Dave Jones wrote:
+> Following up on this from yesterday, Linus please revert the above cset.
+> It doesn't seem to be necessary (it was added to fix a miscompile in
+> 'make allnoconfig' which doesn't seem to be repeatable with it reverted)
+> and actively breaks the ARM SA1100 framebuffer driver.
+> 
+> (If you'd prefer a patch reverting it, I'll send one, but I'm
+>  hoping that git-revert will just dtrt).
 
-Jarod> Boot with the added kernel param cpufreq.debug=7 and check dmesg after
-Jarod> trying to load the module. Should say a bit more about what's going
-Jarod> awry. It works fine under a Fedora 2.6.22.7 kernel, so I think your
-Jarod> kernel should be fine, and I'm inclined to think its your BIOS at fault.
+Dave,
 
-uname -a
-Linux 2.6.22-gentoo-r5 #25 SMP ... i686 Intel(R) Core(TM)2 Quad
-CPU Q6600 @ 2.40Ghz
+Thanks for checking this out on x86, and getting it reverted.
 
-Added cpufreq.debug=7
-modprobe acpi-cpufreq
-FATAL: Error inserting acpi_cpufreq
-(.../acpi-cpufreq.ko):
-No such device
-
-dmesg | grep freq
-conf cpufreq.debug=7
-acpi-cpufreq: acpi_cpufreq_init
-acpi-cpufreq: acpi_cpufreq_early_init
-cpufreq-core: trying to register friver acpi-cpufreq
-cpufreq-core: adding CPU 0
-acpi-cpufreq: acpi_cpufreq_cpu_init
-cpufreq-core: initialization failed
-.... same for CPU1,CPU2,CPU3
-cpufreq-core: unregistering CPU0,CPU1,CPU2,CPU3
-
-modprobe centrino-speedstep
-cpufreq-core: trying to register driver centrino
-cpufreq-core: adding CPU0
-speedstep-centrino: found unsupported CPU with Enhanced SpeedStep:
-send /proc/cpuinfo to cpufreq@lists.linux.org.uk
-
-Hardware: Intel DG33TL with latest BIOS.
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
