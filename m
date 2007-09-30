@@ -1,32 +1,46 @@
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 1/1] Kernel compile bug in 2.6.22.6/7 {maybe more} ARM/StrongARM
-Date: Sat, 29 Sep 2007 18:59:40 +0100
-Message-ID: <20070929175940.GA14500@flint.arm.linux.org.uk>
-References: <1E7A4807A136DF45AD33DB341D93C3BD1F0C19@msgswbmnmsp46.wellsfargo.com> <20070925073132.GA29127@flint.arm.linux.org.uk> <20070925143651.GA2769@redhat.com> <20070926205314.GB25747@redhat.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8720] still problems with k7 mobile frequency is lower than real
+Date: Sun, 30 Sep 2007 08:07:58 -0700 (PDT)
+Message-ID: <20070930150758.4390A108011@picon.linux-foundation.org>
+References: <bug-8720-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758113AbXI2SF1@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070926205314.GB25747@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, Greg.Chandler@wellsfargo.com, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, dan.j.williams@intel.com, Andrew Morton <akpm@linux-foundation.o>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8720-3570@http.bugzilla.kernel.org/>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Wed, Sep 26, 2007 at 04:53:14PM -0400, Dave Jones wrote:
-> Following up on this from yesterday, Linus please revert the above cset.
-> It doesn't seem to be necessary (it was added to fix a miscompile in
-> 'make allnoconfig' which doesn't seem to be repeatable with it reverted)
-> and actively breaks the ARM SA1100 framebuffer driver.
-> 
-> (If you'd prefer a patch reverting it, I'll send one, but I'm
->  hoping that git-revert will just dtrt).
+http://bugzilla.kernel.org/show_bug.cgi?id=8720
 
-Dave,
 
-Thanks for checking this out on x86, and getting it reverted.
+cimmo@libero.it changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |REJECTED
+         Resolution|                            |INVALID
+
+
+
+
+------- Comment #24 from cimmo@libero.it  2007-09-30 08:07 -------
+Ok tried the same cpu in another motherboard and it's correctly recognized, so
+I close this bug as "my bios is fucking buggy" :(
+
+thanx Daniel for your time!
+
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
