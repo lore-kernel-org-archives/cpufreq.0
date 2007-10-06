@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8075] powernow-k8: MP systems not supported by PSB BIOS structure
-Date: Sat,  6 Oct 2007 13:05:35 -0700 (PDT)
-Message-ID: <20071006200535.BD4C9108036@picon.linux-foundation.org>
+Date: Sat,  6 Oct 2007 13:06:38 -0700 (PDT)
+Message-ID: <20071006200638.B1D49108070@picon.linux-foundation.org>
 References: <bug-8075-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,20 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=8075
 
 
+jim@jimbocorp.uklinux.net changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |jim@jimbocorp.uklinux.net
 
 
-
-------- Comment #22 from jim@jimbocorp.uklinux.net  2007-10-06 13:05 -------
-I've now had this same problem. I've contact my motherboard manufacturer (Asus)
-and they have totally failed to help.
-
-Clearly it is a BIOS problem and the correct solution is for the BIOS to be
-fixed. I'm still e-mailing Asus but I'm not hopeful.
-
-I'm wondering if there's some way to fake the data. This would have to be done
-by hard-coding the values into the module. This blatantly sucks but I can't see
-any other way. This is also inappropriate for the mainline kernel as it's the
-Wrong Way to do it.
 
 
 -- 
