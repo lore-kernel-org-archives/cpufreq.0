@@ -1,43 +1,50 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH][try 2] architectural pstate driver for powernow-k8
-Date: Tue, 9 Oct 2007 19:41:25 -0400
-Message-ID: <20071009234125.GB6879@redhat.com>
-References: <200710091446.38432.mark.langsdorf@amd.com> <p73fy0k3ve8.fsf@bingen.suse.de> <200710091543.21350.mark.langsdorf@amd.com>
+From: Andi Kleen <ak@suse.de>
+Subject: [PATCH] Don't take semaphore in cpufreq_quick_get()
+Date: Wed, 10 Oct 2007 02:18:27 +0200
+Message-ID: <20071010001827.GA23762@wotan.suse.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754650AbXJIXlp@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200710091543.21350.mark.langsdorf@amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk
 
-On Tue, Oct 09, 2007 at 03:43:20PM -0500, Mark Langsdorf wrote:
- > This patch should apply cleanly to the 2.6.23-rc8-mm2 kernel. =A0It =
-changes=20
- > the powernow-k8 driver code that deals with 3rd generation Opteron, =
-Phenom,
- > and later processors to match the architectual pstate driver describ=
-ed
- > in the AMD64 Architecture Programmer's Manual Volume 2 Chapter 18. =A0=
-The
- > initial implementation of the hardware pstate driver for PowerNow!
- > used some processor-version specific features, and would not be
- > maintainable in the long term as the processor features changed.
- > This architectural driver should work on all future AMD processors.
-=20
-Has this been tested on older implementations of powernow yet?
-I'm happy to merge this and give it some time in -mm, before it
-goes to mainline, but if no-one is testing on those older
-opterons/turions etc then we're not going to know we regressed
-until its too late.   If it hasn't been tested yet, any chance
-you can scrounge some up at AMD and give it a spin just to be sure?
 
-Thanks,
+I don't see any reason to take an expensive lock in cpufreq_quick_get()
+Reading policy->cur is a single atomic operation and after
+the lock is dropped again the state could change any time anyways.
 
-	Dave
+So don't take the lock in the first place.
 
---=20
-http://www.codemonkey.org.uk
+This also makes this function interrupt safe which is useful
+for some code of mine.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux.orig/drivers/cpufreq/cpufreq.c
++++ linux/drivers/cpufreq/cpufreq.c
+@@ -1109,12 +1109,7 @@ unsigned int cpufreq_quick_get(unsigned 
+ 	unsigned int ret_freq = 0;
+ 
+ 	if (policy) {
+-		if (unlikely(lock_policy_rwsem_read(cpu)))
+-			return ret_freq;
+-
+ 		ret_freq = policy->cur;
+-
+-		unlock_policy_rwsem_read(cpu);
+ 		cpufreq_cpu_put(policy);
+ 	}
