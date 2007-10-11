@@ -1,68 +1,89 @@
-From: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH][try 2] architectural pstate driver for powernow-k8
-Date: Thu, 11 Oct 2007 08:59:58 +0100
-Message-ID: <20071011075958.GK1130@shadowen.org>
-References: <200710091446.38432.mark.langsdorf@amd.com> <p73fy0k3ve8.fsf@bingen.suse.de> <200710091543.21350.mark.langsdorf@amd.com>
+From: Andras.Horvath@cern.ch
+Subject: Intel Clovertown vs. frequency scaling
+Date: Thu, 11 Oct 2007 17:06:33 +0200
+Message-ID: <20071011150633.GL6058@cern.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756894AbXJKIAr@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200710091543.21350.mark.langsdorf@amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Tue, Oct 09, 2007 at 03:43:20PM -0500, Mark Langsdorf wrote:
-> On Tuesday 09 October 2007 15:06, Andi Kleen wrote:
-> > "Mark Langsdorf" <mark.langsdorf@amd.com> writes:
-> >=20
-> > > This patch should apply cleanly to the 2.6.22.6 kernel.
-> >=20
-> > Isn't that a little old? The earliest this could be merged
-> > is the upcomming 2.6.24 tree. Best you submit it against .23
-> > or better -mm.
->=20
-> Good point.
->=20
-> This patch should apply cleanly to the 2.6.23-rc8-mm2 kernel. =A0It c=
-hanges=20
-> the powernow-k8 driver code that deals with 3rd generation Opteron, P=
-henom,
-> and later processors to match the architectual pstate driver describe=
-d
-> in the AMD64 Architecture Programmer's Manual Volume 2 Chapter 18. =A0=
-The
-> initial implementation of the hardware pstate driver for PowerNow!
-> used some processor-version specific features, and would not be
-> maintainable in the long term as the processor features changed.
-> This architectural driver should work on all future AMD processors.
->=20
-> -Mark Langsdorf
-> Operating System Resarch Center
-> AMD
->=20
-> Signed-off-by <mark.langsdorf@amd.com>
-> Acked-by <andreas.herrmann3@amd.com>
-[...]
->  	/* get fid did for hardware pstate transition */
->  	pstate =3D index & HW_PSTATE_MASK;
-> -	if (pstate > MAX_HW_PSTATE)
-> +	if (pstate > data->max_hw_pstate);
->  		return 0;
+Hi,
 
-checkpatch picked up this dodgy if.  I suspect that the ';' is wrong
-from the context.
+I have a number of Clovertown (intel quadcore) machines and, even with
+the latest 2.6.23, it seems to me that frequency scaling is not
+supported (e.g. the /sys/devices/system/cpu/cpu0/cpufreq/* stuff does
+not appear even though CONFIG_X86_SPEEDSTEP_CENTRINO is "y").
 
-> -	fid =3D (index & HW_FID_INDEX_MASK) >> HW_FID_INDEX_SHIFT;
-> -	did =3D (index & HW_DID_INDEX_MASK) >> HW_DID_INDEX_SHIFT;
-> -	freqs.old =3D find_khz_freq_from_fiddid(data->currfid, data->currdi=
-d);
-> -	freqs.new =3D find_khz_freq_from_fiddid(fid, did);
-> +	freqs.old =3D find_khz_freq_from_pstate(data->powernow_table, data-=
->currpstate);
-> +	freqs.new =3D find_khz_freq_from_pstate(data->powernow_table, pstat=
-e);
+Is that as expected?
 
--apw
+This is what the CPU (one core in one of the two sockets) looks like:
+
+# head -24 /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Xeon(R) CPU           L5335  @ 2.00GHz
+stepping        : 11
+cpu MHz         : 1995.105
+cache size      : 4096 KB
+physical id     : 0
+siblings        : 4
+core id         : 0
+cpu cores       : 4
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx tm2 ssse3 cx16 xtpr dca lahf_lm
+bogomips        : 3994.09
+clflush size    : 64
+
+
+also:
+
+# cat /proc/acpi/processor/CPU0/info 
+processor id:            0
+acpi id:                 0
+bus mastering control:   no
+power management:        yes
+throttling control:      yes
+limit interface:         yes
+
+# cat /proc/acpi/processor/CPU0/power 
+active state:            C2
+max_cstate:              C8
+bus master activity:     00000000
+maximum allowed latency: 20000 usec
+states:
+    C1:                  type[C1] promotion[C2] demotion[--] latency[020] usage[00003940] duration[00000000000000000000]
+   *C2:                  type[C2] promotion[--] demotion[C1] latency[040] usage[00013668] duration[00000000000359543325]
+
+
+FWIW, I also have some other Core-based (Woodcrest, Intel L5160) systems
+and cpufreq works fine there.
+
+Any help or insight would be appreciated. 
+
+(I'm experimenting with ways to lower the average power consumption of a
+large number of servers, working my way through http://www.lesswatts.org
+etc.  I'm willing to patch kernels, run tests, and I have proper power
+meters to check the results.)
+
+Andras
