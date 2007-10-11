@@ -1,12 +1,12 @@
-From: Andras.Horvath@cern.ch
-Subject: Intel Clovertown vs. frequency scaling
-Date: Thu, 11 Oct 2007 17:06:33 +0200
-Message-ID: <20071011150633.GL6058@cern.ch>
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: Intel Clovertown vs. frequency scaling
+Date: Thu, 11 Oct 2007 11:25:00 -0400
+Message-ID: <470E404C.10304@redhat.com>
+References: <20071011150633.GL6058@cern.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0102352507=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <20071011150633.GL6058@cern.ch>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,71 +19,60 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@lists.linux.org.uk
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============0102352507==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enigA9B93BEC73D87BF8EB5652F0"
 
-I have a number of Clovertown (intel quadcore) machines and, even with
-the latest 2.6.23, it seems to me that frequency scaling is not
-supported (e.g. the /sys/devices/system/cpu/cpu0/cpufreq/* stuff does
-not appear even though CONFIG_X86_SPEEDSTEP_CENTRINO is "y").
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA9B93BEC73D87BF8EB5652F0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Is that as expected?
+Andras.Horvath@cern.ch wrote:
+> I have a number of Clovertown (intel quadcore) machines and, even with
+> the latest 2.6.23, it seems to me that frequency scaling is not
+> supported (e.g. the /sys/devices/system/cpu/cpu0/cpufreq/* stuff does
+> not appear even though CONFIG_X86_SPEEDSTEP_CENTRINO is "y").
 
-This is what the CPU (one core in one of the two sockets) looks like:
+I believe you want acpi-cpufreq, not speedstep-centrino. Works just fine
+for my quad-core systems, anyhow. If that doesn't work, its probably the
+bios at fault.
 
-# head -24 /proc/cpuinfo 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Xeon(R) CPU           L5335  @ 2.00GHz
-stepping        : 11
-cpu MHz         : 1995.105
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 4
-core id         : 0
-cpu cores       : 4
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips        : 3994.09
-clflush size    : 64
+--=20
+Jarod Wilson
+jwilson@redhat.com
 
 
-also:
 
-# cat /proc/acpi/processor/CPU0/info 
-processor id:            0
-acpi id:                 0
-bus mastering control:   no
-power management:        yes
-throttling control:      yes
-limit interface:         yes
+--------------enigA9B93BEC73D87BF8EB5652F0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-# cat /proc/acpi/processor/CPU0/power 
-active state:            C2
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 20000 usec
-states:
-    C1:                  type[C1] promotion[C2] demotion[--] latency[020] usage[00003940] duration[00000000000000000000]
-   *C2:                  type[C2] promotion[--] demotion[C1] latency[040] usage[00013668] duration[00000000000359543325]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFHDkBRtO+bni+75QMRAnk9AJ9fgWsSy35XH2VN/kVFpbZPkfqUdwCeIl9p
+cdAj3cGwHumJp0SKilOy/ao=
+=V8pU
+-----END PGP SIGNATURE-----
+
+--------------enigA9B93BEC73D87BF8EB5652F0--
 
 
-FWIW, I also have some other Core-based (Woodcrest, Intel L5160) systems
-and cpufreq works fine there.
+--===============0102352507==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Any help or insight would be appreciated. 
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
-(I'm experimenting with ways to lower the average power consumption of a
-large number of servers, working my way through http://www.lesswatts.org
-etc.  I'm willing to patch kernels, run tests, and I have proper power
-meters to check the results.)
+--===============0102352507==--
 
-Andras
