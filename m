@@ -1,13 +1,13 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9151] Something broke cpufreq on laptop with lid behavior
-Date: Fri, 12 Oct 2007 11:00:18 -0700 (PDT)
-Message-ID: <20071012180018.6C10710806F@picon.linux-foundation.org>
-References: <bug-9151-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8581] acpi-cpufreq gets very confused on suspend to ram
+Date: Fri, 12 Oct 2007 12:48:37 -0700 (PDT)
+Message-ID: <20071012194837.55226108014@picon.linux-foundation.org>
+References: <bug-8581-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9151-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8581-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,16 +20,15 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9151
+http://bugzilla.kernel.org/show_bug.cgi?id=8581
 
 
-davej@codemonkey.org.uk changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|davej@codemonkey.org.uk     |
 
 
+
+------- Comment #6 from rjwysocki@sisk.pl  2007-10-12 12:48 -------
+Well, I'm not familiar with the cpufreq code.  I'll try to have a look at it,
+though (I can't promise that will be soon).
 
 
 -- 
