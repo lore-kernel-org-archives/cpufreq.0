@@ -1,14 +1,15 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: Intel Clovertown vs. frequency scaling
-Date: Thu, 11 Oct 2007 10:15:29 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F5017D897B@scsmsx415.amr.corp.intel.com>
+From: Andras.Horvath@cern.ch
+Subject: Re: Intel Clovertown vs. frequency scaling
+Date: Fri, 12 Oct 2007 17:01:26 +0200
+Message-ID: <20071012150126.GY6058@cern.ch>
 References: <20071011150633.GL6058@cern.ch>
+	<653FFBB4508B9042B5D43DC9E18836F5017D897B@scsmsx415.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <20071011150633.GL6058@cern.ch>
+Content-Disposition: inline
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5017D897B@scsmsx415.amr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,110 +20,57 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Andras.Horvath@cern.ch, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+
+> With latest kernels (2.6.22 and beyond) you should use acpi-cpufreq and
+> not speedstep-centrino.
+
+ah, thanks. :-) I found that that too was compiled in (and in fact
+that's what's driving the Woodcrest box as well).
+
+> The frequencies supported depends on bus speed and voltages supported by
+> the CPU. I think the thing here is you have a low voltage part which is
+> already running at lowest possible voltage and does not support any more
+> frequency/voltage reduction.
+
+Hm. So there are no P* states available (always running at top speed)
+but the CPU just goes to some C* state when it's idle?
+
+This looks right (even if I find it strange) as the specs
+(http://download.intel.com/design/Xeon/datashts/31556903.pdf ) say that
+"Note: Not all Quad-Core Intel=AE Xeon=AE Processor 5300 Series are capable
+of supporting Enhanced Intel SpeedStep Technology. More details on which
+processor frequencies will support this feature will be provided in
+future releases of the Quad-Core Intel=AE Xeon=AE Processor 5300 Series NDA
+Specification Update when available."
+
+Nevertheless http://processorfinder.intel.com/details.aspx?sSpec=3DSLAEN
+says the L5335 has Enhanced Intel Speedstep support.
+
+> You mentioned that cpufreq works fine on Woodcrest, Intel L5160.
+> What are the freqs supported and what is the max freq for this part?
+
+As I said I was mistaken and it's using acpi-cpufreq. However, this:
+
+model name      : Intel(R) Xeon(R) CPU            5160  @ 3.00GHz
+
+supports the following frequencies (2.6.23):
+
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies =
+
+2997000 2664000 2331000 1998000 =
 
 
-With latest kernels (2.6.22 and beyond) you should use acpi-cpufreq and
-not speedstep-centrino.
 
-The frequencies supported depends on bus speed and voltages supported by
-the CPU. I think the thing here is you have a low voltage part which is
-already running at lowest possible voltage and does not support any more
-frequency/voltage reduction.
+Also, I have found myself another Clovertown:
+model name      : Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz
 
-You mentioned that cpufreq works fine on Woodcrest, Intel L5160.
-What are the freqs supported and what is the max freq for this part?
+and this seems not to support no frequency scaling, no C-states, only
+thermal throttling. Can this be true? From the specs mentioned above I'd
+have expected at least some sort of halt state.
+http://processorfinder.intel.com/details.aspx?sSpec=3DSL9YL says 'enhanced
+intel speedstep' and C1E support, same as Mr. L5335 above.
 
-Thanks,
-Venki
- 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk 
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of 
->Andras.Horvath@cern.ch
->Sent: Thursday, October 11, 2007 8:07 AM
->To: cpufreq@lists.linux.org.uk
->Subject: Intel Clovertown vs. frequency scaling
->
->Hi,
->
->I have a number of Clovertown (intel quadcore) machines and, even with
->the latest 2.6.23, it seems to me that frequency scaling is not
->supported (e.g. the /sys/devices/system/cpu/cpu0/cpufreq/* stuff does
->not appear even though CONFIG_X86_SPEEDSTEP_CENTRINO is "y").
->
->Is that as expected?
->
->This is what the CPU (one core in one of the two sockets) looks like:
->
-># head -24 /proc/cpuinfo 
->processor       : 0
->vendor_id       : GenuineIntel
->cpu family      : 6
->model           : 15
->model name      : Intel(R) Xeon(R) CPU           L5335  @ 2.00GHz
->stepping        : 11
->cpu MHz         : 1995.105
->cache size      : 4096 KB
->physical id     : 0
->siblings        : 4
->core id         : 0
->cpu cores       : 4
->fdiv_bug        : no
->hlt_bug         : no
->f00f_bug        : no
->coma_bug        : no
->fpu             : yes
->fpu_exception   : yes
->cpuid level     : 10
->wp              : yes
->flags           : fpu vme de pse tsc msr pae mce cx8 apic sep 
->mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 
->ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni 
->monitor ds_cpl vmx tm2 ssse3 cx16 xtpr dca lahf_lm
->bogomips        : 3994.09
->clflush size    : 64
->
->
->also:
->
-># cat /proc/acpi/processor/CPU0/info 
->processor id:            0
->acpi id:                 0
->bus mastering control:   no
->power management:        yes
->throttling control:      yes
->limit interface:         yes
->
-># cat /proc/acpi/processor/CPU0/power 
->active state:            C2
->max_cstate:              C8
->bus master activity:     00000000
->maximum allowed latency: 20000 usec
->states:
->    C1:                  type[C1] promotion[C2] demotion[--] 
->latency[020] usage[00003940] duration[00000000000000000000]
->   *C2:                  type[C2] promotion[--] demotion[C1] 
->latency[040] usage[00013668] duration[00000000000359543325]
->
->
->FWIW, I also have some other Core-based (Woodcrest, Intel 
->L5160) systems
->and cpufreq works fine there.
->
->Any help or insight would be appreciated. 
->
->(I'm experimenting with ways to lower the average power 
->consumption of a
->large number of servers, working my way through 
->http://www.lesswatts.org
->etc.  I'm willing to patch kernels, run tests, and I have proper power
->meters to check the results.)
->
->Andras
->
->_______________________________________________
->Cpufreq mailing list
->Cpufreq@lists.linux.org.uk
->http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
+I'm getting more and more confused about this :)
+
+Andras
