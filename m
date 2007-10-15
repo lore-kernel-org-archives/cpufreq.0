@@ -1,13 +1,17 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9151] Something broke cpufreq on laptop with lid behavior
-Date: Sat, 13 Oct 2007 13:06:50 -0700 (PDT)
-Message-ID: <20071013200650.78E8B108010@picon.linux-foundation.org>
-References: <bug-9151-3570@http.bugzilla.kernel.org/>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH][try 2] architectural pstate driver for powernow-k8
+Date: Mon, 15 Oct 2007 11:40:31 -0400
+Message-ID: <20071015154031.GA30754@redhat.com>
+References: <200710091446.38432.mark.langsdorf@amd.com>
+	<p73fy0k3ve8.fsf@bingen.suse.de>
+	<200710091543.21350.mark.langsdorf@amd.com>
+	<20071011075958.GK1130@shadowen.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9151-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20071011075958.GK1130@shadowen.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,31 +21,28 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: cpufreq@lists.linux.org.uk, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9151
+On Thu, Oct 11, 2007 at 08:59:58AM +0100, Andy Whitcroft wrote:
+ 
+ > >  	/* get fid did for hardware pstate transition */
+ > >  	pstate = index & HW_PSTATE_MASK;
+ > > -	if (pstate > MAX_HW_PSTATE)
+ > > +	if (pstate > data->max_hw_pstate);
+ > >  		return 0;
+ > 
+ > checkpatch picked up this dodgy if.  I suspect that the ';' is wrong
+ > from the context.
+ 
+Indeed.  Mark/Andreas, want to send me a new patch against latest
+Linus HEAD ?  I didn't apply the old one yet, as it conflicted with
+the changes already queued for merging.
 
+Thanks,
 
-
-
-
-------- Comment #2 from stevenm@umd.edu  2007-10-13 13:06 -------
-Created an attachment (id=13148)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=13148&action=view)
-Dmesg output with odd behavior and cpufreq.debug=7
-
-There is the debug info. Messages starting with ** are echoed by me into kmsg
-so that you can see what I tried to do then. The system was booted up using
-battery power and then an AC adapter was attached when indicated. This time it
-didn't do any odd things with throttling, but it definitely magically shot up
-to 2GHz and wouldn't go to 600MHz unless I set it to 800MHz first. The test was
-done in a console environment without any windowing stuff or KDE battery
-monitor running. ACPID and laptop_mode were removed from rc.d before the system
-was booted with this kernel.
-
+	Dave
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+http://www.codemonkey.org.uk
