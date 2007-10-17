@@ -1,45 +1,60 @@
-From: Dave Young <hidave.darkstar@gmail.com>
-Subject: [PATCH][resend]gx-suspmod.c use boot_cpu_data instead of current_cpu_data
-Date: Wed, 17 Oct 2007 13:47:30 +0800
-Message-ID: <20071017054729.GA7741@darkstar.te-china.tietoenator.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9177] New: speedstep_centrino can't find device any more
+Date: Wed, 17 Oct 2007 10:47:48 -0700 (PDT)
+Message-ID: <bug-9177-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758767AbXJQFsk@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=beta;
-        h=domainkey-signature:received:received:received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        bh=wRZTp+ZvljyRsQVzMluY0R2Bj0Cs/dCbB4lrSlv6vhQ=;
-        b=mRxRgc+Kwjn951fWCBypyDCOGWaKzeNquiOlPqFN5pVtB9AvElQowT5J4zQGhhaZVpPH+lWEHCGqolz2WnkcQ2MbZpzoE0X/ue6j/owAlvVSGH7oSXChFmpnzwkaLyMIhE352VlYrn9N82WYeRFpihCC0F7npWmJqyCaH2fWPJs=
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@codemonkey.org.uk>
-Cc: linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-in preemptible kernel will report BUG: using smp_processor_id() in
-preemptible, so use boot_cpu_data instead of current_cpu_data.
+http://bugzilla.kernel.org/show_bug.cgi?id=9177
 
-discussion in :
-http://lkml.org/lkml/2007/7/25/32
+           Summary: speedstep_centrino can't find device any more
+           Product: Power Management
+           Version: 2.5
+     KernelVersion: 2.6.23.1
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@www.linux.org.uk
+        ReportedBy: alexander.heinlein@web.de
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
----
-arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    4 ++--
-1 file changed, 2 insertions(+), 2 deletions(-)
+Most recent kernel where this bug did not occur: 2.6.22.6
+Distribution: Debian GNU/Linux unstable
+Hardware Environment: Thinkpad R52, Pentium M Dothan 750
+Problem Description:
+# modprobe speedstep_centrino
+FATAL: Error inserting speedstep_centrino
+(/lib/modules/2.6.23.1/kernel/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.ko):
+No such device
+speedstep_centrino can't find a device any more. Earlier kernel versions worked
+without problems.
 
-diff -pur linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
---- linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 14:11:06.000000000 +0000
-+++ linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c	2007-07-25 13:57:29.000000000 +0000
-@@ -181,8 +181,8 @@ static __init struct pci_dev *gx_detect_
- 	struct pci_dev *gx_pci = NULL;
- 
- 	/* check if CPU is a MediaGX or a Geode. */
--	if ((current_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
--	    (current_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
-+	if ((boot_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
-+	    (boot_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
- 		dprintk("error: no MediaGX/Geode processor found!\n");
- 		return NULL;
- 	}
+CONFIG_ACPI=y
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_X86_SPEEDSTEP_CENTRINO=m
+CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
