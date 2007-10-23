@@ -1,16 +1,12 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [Bug 8581] acpi-cpufreq gets very confused on suspend to ram
-Date: Mon, 22 Oct 2007 16:49:24 -0400
-Message-ID: <20071022204924.GB7793@redhat.com>
-References: <bug-8581-3570@http.bugzilla.kernel.org/>
-	<20071022002423.3FC91108014@picon.linux-foundation.org>
-	<87640zr3ka.fsf@denkblock.local>
+From: "Kwon, Owen" <owen.kwon@intel.com>
+Subject: Enabling CPU freq in a new CPU
+Date: Tue, 23 Oct 2007 15:04:28 +0900
+Message-ID: <9981749032FE174C9F521A11BDEEBDFC4C4774@jpsmsx411.gar.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <87640zr3ka.fsf@denkblock.local>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,32 +17,39 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Elias Oltmanns <eo@nebensachen.de>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Mon, Oct 22, 2007 at 09:50:13AM +0200, Elias Oltmanns wrote:
+Hello
 
- > > there's some whitespace damage in this patch (spaces instead of tabs).
- > > Asides from that though, it looks like the right thing to do.
- > > Can you fix that up, and bounce a copy to cpufreq@www.linux.org.uk please?
- > 
- > Well, since this patch was mainly a copy-and-paste job from
- > cpufreq_userspace.c, the whitespace damages have been inherited once. In
- > fact, I have stumbled upon some more whitespace issues in in the cpufreq
- > subsystem and there are also some problems with lacking whitespace
- > causing misprinted debugging messages. If you're interested, I can come
- > up with a patch fixing all those problems I've accidentally come across.
+ 
 
-Yeah, it does seem to be a bit of a disaster.  I've just removed some
-of the more obvious whitespace damage in cpufreq.git.  If you spot
-any others after that, patches gratefully accepted.
+I am testing speedstep function with newer Intel CPU. Kernel option is
+enabled at compile time, but while booting, CPUID check seemed to fail.
+The message is
 
- > Here is the patch fixing cpufreq_conservative.c anyway. It applies to
- > 2.6.23.
+"p4-clockmod : Unknown p4-clockmod-capable CPU ~~~"
 
-Applied, thanks Elias.
+ 
 
-	Dave
+Do I need to implement additional code to test this function? Or is it
+safe to bypass the CPUID check part?
 
--- 
-http://www.codemonkey.org.uk
+ 
+
+I don't know this is required, but Kernel version is 2.6.22.
+
+ 
+
+Thanks,
+
+Owen
+
+ 
+
+Owen Kwon (Ohkeun Kwon)
+
+Technical Marketing Engineer
+
++82 2 767 2428 (Office)
+
++82 10 9034 4820 (Mobile)
