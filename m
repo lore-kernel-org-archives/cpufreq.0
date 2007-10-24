@@ -1,57 +1,44 @@
-From: "Kwon, Owen" <owen.kwon@intel.com>
-Subject: RE: Enabling CPU freq in a new CPU
-Date: Wed, 24 Oct 2007 09:54:47 +0900
-Message-ID: <9981749032FE174C9F521A11BDEEBDFC4C4906@jpsmsx411.gar.corp.intel.com>
-References: <9981749032FE174C9F521A11BDEEBDFC4C4774@jpsmsx411.gar.corp.intel.com>
-	<471DEC97.4070705@redhat.com>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: [2.6 patch] #if 0 cpufreq.c:cpufreq_get()
+Date: Wed, 24 Oct 2007 18:23:12 +0200
+Message-ID: <20071024162312.GH30533@stusta.de>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759537AbXJXQYN@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <471DEC97.4070705@redhat.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: cpufreq@lists.linux.org.uk
+To: Thomas Gleixner <tglx@linutronix.de>, davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-Acpi-cpufreq works with my CPU.
-Thank you. :)
+cpufreq.c:cpufreq_get() no longer has any user.
 
------Original Message-----
-From: Jarod Wilson [mailto:jwilson@redhat.com] 
-Sent: Tuesday, October 23, 2007 9:44 PM
-To: Kwon, Owen
-Cc: cpufreq@lists.linux.org.uk
-Subject: Re: Enabling CPU freq in a new CPU
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Kwon, Owen wrote:
-> I am testing speedstep function with newer Intel CPU. Kernel option is
-> enabled at compile time, but while booting, CPUID check seemed to
-fail.
-> The message is
-> 
-> "p4-clockmod : Unknown p4-clockmod-capable CPU ~~~"
-> 
-> 
-> Do I need to implement additional code to test this function? Or is it
-> safe to bypass the CPUID check part?
-> 
-> 
-> I don't know this is required, but Kernel version is 2.6.22.
+---
 
-p4-clockmod is for much older p4 processors, and even then, often isn't
-recommended for use. What you want for any reasonably new intel
-processor is acpi-cpufreq, not p4-clockmod.
+ drivers/cpufreq/cpufreq.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+099a5401a3c0322177866d4ba4e791825fe921d4 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5e626b1..d27c802 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1143,6 +1143,7 @@ static unsigned int __cpufreq_get(unsigned int cpu)
+ 	return (ret_freq);
+ }
+ 
++#if 0
+ /**
+  * cpufreq_get - get the current CPU frequency (in kHz)
+  * @cpu: CPU number
+@@ -1170,6 +1171,7 @@ out:
+ 	return (ret_freq);
+ }
+ EXPORT_SYMBOL(cpufreq_get);
++#endif  /*  0  */
+ 
+ 
+ /**
