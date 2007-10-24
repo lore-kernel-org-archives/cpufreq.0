@@ -1,13 +1,15 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Adrian Bunk <bunk@kernel.org>
 Subject: Re: [2.6 patch] #if 0 cpufreq.c:cpufreq_get()
-Date: Wed, 24 Oct 2007 09:38:39 -0700
-Message-ID: <20071024093839.232e5cd5@laptopd505.fenrus.org>
+Date: Wed, 24 Oct 2007 18:46:16 +0200
+Message-ID: <20071024164616.GY30533@stusta.de>
 References: <20071024162312.GH30533@stusta.de>
+	<20071024163245.GF32333@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20071024162312.GH30533@stusta.de>
+Content-Disposition: inline
+In-Reply-To: <20071024163245.GF32333@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,15 +20,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Adrian Bunk <bunk@kernel.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
 Cc: davej@codemonkey.org.uk, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-On Wed, 24 Oct 2007 18:23:12 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> cpufreq.c:cpufreq_get() no longer has any user.
+On Wed, Oct 24, 2007 at 05:32:45PM +0100, Russell King wrote:
+> On Wed, Oct 24, 2007 at 06:23:12PM +0200, Adrian Bunk wrote:
+> > cpufreq.c:cpufreq_get() no longer has any user.
 > 
+> Your checking seems to be flawed.
+> 
+> drivers/video/sa1100fb.c:               cpufreq_get(smp_processor_id()));
+> drivers/video/sa1100fb.c:       pcd = get_pcd(var->pixclock, cpufreq_get(0));
 
-it's... also a really bad/buggy interface... frquency is a per cpu
-property for one, and constantly changing (esp in a multi-core world)
-even depending on what other parts of the system are doing.
+Thanks for spotting this.
+
+My mistake was that I thought this was handled by the following without 
+checking closer:
+
+arch/arm/mach-sa1100/generic.c:unsigned int cpufreq_get(unsigned int cpu)
+arch/arm/mach-sa1100/generic.c:EXPORT_SYMBOL(cpufreq_get);
+
+> Russell King
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
