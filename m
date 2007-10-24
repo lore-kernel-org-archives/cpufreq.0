@@ -1,38 +1,32 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: [2.6 patch] #if 0 cpufreq.c:cpufreq_get()
-Date: Wed, 24 Oct 2007 19:34:27 +0200
-Message-ID: <20071024173427.GA1723@isilmar.linta.de>
+Date: Wed, 24 Oct 2007 14:39:20 -0400
+Message-ID: <20071024183920.GF14357@redhat.com>
 References: <20071024162312.GH30533@stusta.de>
-	<20071024093839.232e5cd5@laptopd505.fenrus.org>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758927AbXJXSkF@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20071024162312.GH30533@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <20071024093839.232e5cd5@laptopd505.fenrus.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: davej@codemonkey.org.uk, Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, cpufreq@lists.linux.org.uk
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-On Wed, Oct 24, 2007 at 09:38:39AM -0700, Arjan van de Ven wrote:
-> On Wed, 24 Oct 2007 18:23:12 +0200
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > cpufreq.c:cpufreq_get() no longer has any user.
-> > 
-> 
-> it's... also a really bad/buggy interface... frquency is a per cpu
-> property for one,
+On Wed, Oct 24, 2007 at 06:23:12PM +0200, Adrian Bunk wrote:
+ > cpufreq.c:cpufreq_get() no longer has any user.
+ > 
+ > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-... which is why cpufreq_get() has one argument, the CPU id.
+ARM uses it.
 
-	Dominik
+drivers/pcmcia/sa11xx_base.c:   return sa1100_pcmcia_set_mecr(skt, cpufreq_get(0));
+drivers/pcmcia/sa11xx_base.c:   unsigned int clock = cpufreq_get(0);
+drivers/video/sa1100fb.c:               cpufreq_get(smp_processor_id()));
+drivers/video/sa1100fb.c:       pcd = get_pcd(var->pixclock, cpufreq_get(0));
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
