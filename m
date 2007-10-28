@@ -1,14 +1,14 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: ondemand documentation.
-Date: Fri, 26 Oct 2007 13:43:00 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F5019344D6@scsmsx415.amr.corp.intel.com>
-References: <20071026190726.GB10881@redhat.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: help with po
+Date: Sun, 28 Oct 2007 17:35:59 +0100
+Message-ID: <20071028163559.GF17556@isilmar.linta.de>
+References: <bb5d68b20704150755x500932a7je2da368ed34e9e44@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <20071026190726.GB10881@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <bb5d68b20704150755x500932a7je2da368ed34e9e44@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,29 +19,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq <cpufreq@www.linux.org.uk>
+To: claudio <claudioeddy@gmail.com>
+Cc: Cpufreq@lists.linux.org.uk
 
- 
+Hi,
 
->-----Original Message-----
->From: Dave Jones [mailto:davej@redhat.com] 
->Sent: Friday, October 26, 2007 12:07 PM
->To: Pallipadi, Venkatesh
->Cc: cpufreq
->Subject: ondemand documentation.
->
->I've had a number of people ask me now for documentation
->on the sysfs knobs that ondemand creates, and afaict,
->we don't have any.
->
->Venki, any chance you can write up a short doc for
->Documentation/  ?
->
+On Sun, Apr 15, 2007 at 10:55:47AM -0400, claudio wrote:
+> I'd like to know what I need to post my .po in portuguese for cpufreq so
+> that it can be utilzed because it's been larged used here in Brazil (I'm in
+> a project that needs it =) )
 
-It is there scattered in some conference papers/websites. 
-Will put together something under Documentation/cpu-freq/ and send it in
-soon.
+just send the file to me stating that you accept this to be included in
+cpufrequtils (license: GPLv2), and then I'll gladly include it for the next
+version.
 
-Thanks,
-Venki
+Best,
+	Dominik
