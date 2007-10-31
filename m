@@ -1,12 +1,12 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] Print _PPC changes via cpufreq debug layer
-Date: Wed, 31 Oct 2007 15:41:42 +0100
-Message-ID: <1193841703.4590.479.camel@queen.suse.de>
-Reply-To: trenn@suse.de
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: lock_cpu_hotplug() BUG in XEN dom0 linux-2.6.18.8
+Date: Wed, 31 Oct 2007 16:49:55 -0500
+Message-ID: <1449F58C868D8D4E9C72945771150BDF020770C8@SAUSEXMB1.amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,56 +17,27 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq <cpufreq@lists.linux.org.uk>
-Cc: davej <davej@codemonkey.org.uk>
+To: cpufreq@lists.linux.org.uk
 
-Ferdinand, you might want to give this one a try.
-With CPU_FREQ_DEBUG set and cpufreq core debug enabled you should see
-_PPC value changes. As soon as the value is not 0, you could be rather
-sure the limitation comes from there...
+I'm working on getting the 3rd generation
+Opteron PowerNow! driver to work with
+Xen's linux-2.6.18.8 dom0 kernel.  Everything
+seems to work fine on my side, but I keep
+hitting a bug in cpufreq_ondemad.c:do_dbs_timer() 
+on the  unlock_cpu_hotplug() call: 
+current != recursive.
 
+From the comments in unlock_cpu_hotplug, this
+has something to do with cpufreq, and the 
+do_dbs_timer code has evolved a great deal 
+from 2.6.18 to 2.6.23.
 
-Dave, Len: Can this be added, pls.
-Testcompiled with CPU freq enabled/disabled and cpufreq debug
-enabled/disabled on x86_64.
+Can anyone explain to me what this BUG is about,
+why the cpufreq ondemand code changed, and what
+is the simplest way to bring the Xen code up to
+speed and get rid of the bug?  Thanks in advance
+for any help or pointers.
 
-Thanks,
-
-   Thomas
-
-----------------------------
-
-
-Print _PPC changes via cpufreq debug layer
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-
----
- drivers/acpi/processor_perflib.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: cpufreq/drivers/acpi/processor_perflib.c
-===================================================================
---- cpufreq.orig/drivers/acpi/processor_perflib.c
-+++ cpufreq/drivers/acpi/processor_perflib.c
-@@ -50,6 +50,10 @@ ACPI_MODULE_NAME("processor_perflib");
- 
- static DEFINE_MUTEX(performance_mutex);
- 
-+/* Use cpufreq debug layer for _PPC changes. */
-+#define cpufreq_printk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_CORE, \
-+						"cpufreq-core", msg)
-+
- /*
-  * _PPC support is implemented as a CPUfreq policy notifier:
-  * This means each time a CPUfreq driver registered also with
-@@ -123,6 +127,9 @@ static int acpi_processor_get_platform_l
- 		return -ENODEV;
- 	}
- 
-+	cpufreq_printk("CPU %d: _PPC is %d - frequency %s limited\n", pr->id,
-+		       (int)ppc, ppc ? "" : "not");
-+
- 	pr->performance_platform_limit = (int)ppc;
- 
- 	return 0;
+-Mark Langsdorf
+Operating System Research Center
+AMD
