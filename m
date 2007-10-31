@@ -1,10 +1,14 @@
-From: =?ISO-8859-1?Q?Ferdinand_H=FCbner?= <fh@cvmx.org>
-Subject: CPU-Frequency limited to lowest available frequency while under load
-Date: Tue, 30 Oct 2007 11:23:42 +0100
-Message-ID: <4727062E.9090806@cvmx.org>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: CPU-Frequency limited to lowest available frequency while
+	under load
+Date: Wed, 31 Oct 2007 14:28:39 +0100
+Message-ID: <1193837319.4590.466.camel@queen.suse.de>
+References: <4727062E.9090806@cvmx.org>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------040307080602020306000108"
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <4727062E.9090806@cvmx.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,239 +19,146 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: Ferdinand =?ISO-8859-1?Q?H=FCbner?= <fh@cvmx.org>
+Cc: cpufreq@lists.linux.org.uk
 
-This is a multi-part message in MIME format.
---------------040307080602020306000108
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Hello,
-
-since I've upgraded to 2.6.23, the current frequency scaling policy is
-being changed whenever the CPU is under load.
-My CPU is a Core2Duo T7200, frequency steps: 2.00 GHz, 1.67 GHz, 1.33
-GHz, 1000 MHz
-I'm using the acpi-cpufreq driver and am setting the governor to
-'ondemand' via cpufrequtils.
-When the system is booted, the scaling works as expected, the partial
-output from cpufreq-info:
-
-current policy: frequency should be within 1000 MHz and 2.00 GHz.
-
-However, when I start compiling something the policy is being changed to
-the following:
-
-current policy: frequency should be within 1000 MHz and 1000 MHz.
-
-This problem didn't exist with kernels prior to 2.6.23 (I was using
-gentoo-sources most of the time), same behaviour as with 2.6.23 can be
-observed with 2.6.24-rc1.
-
-I'm not entirely sure if this is a problem with cpufreq, so I apologize
-if this is not the right place to ask for help.
-
-Anyway, everytime the maximum CPU frequency is being changed, I receive
-the following ACPI events a few seconds afterwards (these events are not
-being handled)
-
-processor CPU0 00000080 00000003
-processor CPU1 00000080 00000003
-
-Setting the maximum frequency back to 2GHz (cpufreq-set -u 2000MHz) has
-either no effect at all, or is being reverted to 1GHz 30 seconds after that.
-The 'performance' governor is showing the same behaviour.
-
-I've attached my kernel config for ACPI/CPUFREQ and the output from
-acpitool -e.
-
-What can I do to get the "old" behaviour back? I just want the maximum
-frequency to stay at 2GHz...
-
-
-Thank you,
-
-Ferdinand
-
-
---------------040307080602020306000108
-Content-Type: text/plain;
- name="kernel-config.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kernel-config.txt"
-
-#
-# Power management options (ACPI, APM)
-#
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-CONFIG_PM_SLEEP_SMP=y
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND_SMP_POSSIBLE=y
-CONFIG_SUSPEND=y
-CONFIG_HIBERNATION_SMP_POSSIBLE=y
-# CONFIG_HIBERNATION is not set
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-# CONFIG_ACPI_PROCFS is not set
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_BUTTON=y
-# CONFIG_ACPI_VIDEO is not set
-CONFIG_ACPI_FAN=y
-CONFIG_ACPI_DOCK=y
-# CONFIG_ACPI_BAY is not set
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_ACPI_THERMAL=y
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_ACPI_TOSHIBA is not set
-CONFIG_ACPI_BLACKLIST_YEAR=2001
-CONFIG_ACPI_DEBUG=y
-# CONFIG_ACPI_DEBUG_FUNC_TRACE is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_ACPI_CONTAINER=y
-# CONFIG_APM is not set
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_DEBUG=y
-# CONFIG_CPU_FREQ_STAT is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-
-#
-# CPUFreq processor drivers
-#
-CONFIG_X86_ACPI_CPUFREQ=y
-# CONFIG_X86_POWERNOW_K6 is not set
-# CONFIG_X86_POWERNOW_K7 is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-# CONFIG_X86_GX_SUSPMOD is not set
-# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
-# CONFIG_X86_SPEEDSTEP_ICH is not set
-# CONFIG_X86_SPEEDSTEP_SMI is not set
-# CONFIG_X86_P4_CLOCKMOD is not set
-# CONFIG_X86_CPUFREQ_NFORCE2 is not set
-# CONFIG_X86_LONGRUN is not set
-# CONFIG_X86_LONGHAUL is not set
-# CONFIG_X86_E_POWERSAVER is not set
-
-#
-# shared options
-#
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-# CONFIG_X86_SPEEDSTEP_LIB is not set
-CONFIG_CPU_IDLE=y
-CONFIG_CPU_IDLE_GOV_LADDER=y
-CONFIG_CPU_IDLE_GOV_MENU=y
-
---------------040307080602020306000108
-Content-Type: text/plain;
- name="acpitool.txt"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline;
- filename="acpitool.txt"
-
-  Kernel version : 2.6.24-rc1   -    ACPI version : ������������2.6
-  -----------------------------------------------------------
-  Battery status : <not available>
-
-  AC adapter     : <not available>
-  Fan            : enabled
-  Fan Speed      : 3507 RPM
-
-  CPU type               : Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz 
-  Min/Max frequency      : 1000/1000 MHz
-  Current frequency      : 1000 MHz
-  Frequency governor     : ondemand 
-  Freq. scaling driver   : acpi-cpufreq 
-  Cache size             : 4096 KB
-  Bogomips               : 4023.70 
-  Bogomips               : 3990.04 
-
-  # of CPU's found       : 2
-
-  Processor ID           : 0
-  Bus mastering control  : yes
-  Power management       : yes
-  Throttling control     : yes
-  Limit interface        : yes
-  Active C-state         : C0
-  C-states (incl. C0)    : 4
-  Usage of state C1      : 4148 (0.0 %)
-  Usage of state C2      : 13181091 (74.0 %)
-  Usage of state C3      : 4636873 (26.0 %)
-  T-state count          : 8
-  Active T-state         : T8
-
-
-  Processor ID           : 1
-  Bus mastering control  : yes
-  Power management       : yes
-  Throttling control     : yes
-  Limit interface        : yes
-  Active C-state         : C0
-  C-states (incl. C0)    : 4
-  Usage of state C1      : 6062 (0.0 %)
-  Usage of state C2      : 15254283 (67.6 %)
-  Usage of state C3      : 2673667 (11.8 %)
-  T-state count          : 8
-  Active T-state         : T8
-
-
-
-  Thermal zone 1 : ok, 52 C
-  Trip points : 
-  ------------- 
-  critical (S5):           127 C
-
-  Thermal zone 2 : ok, 53 C
-  Trip points : 
-  ------------- 
-  critical (S5):           99 C
-  passive:                 95 C: tc1=5 tc2=4 tsp=600 devices=CPU0 CPU1 
-
-
-   Device	S-state	  Status   Sysfs node
-  ---------------------------------------
-  1. LID	  S3	*enabled   
-  2. SLPB	  S3	*enabled   
-  3. EXP0	  S4	 disabled  pci:0000:00:1c.0
-  4. EXP1	  S4	 disabled  pci:0000:00:1c.1
-  5. EXP2	  S4	 disabled  pci:0000:00:1c.2
-  6. EXP3	  S4	 disabled  pci:0000:00:1c.3
-  7. PCI1	  S4	 disabled  pci:0000:00:1e.0
-  8. USB0	  S3	 disabled  pci:0000:00:1d.0
-  9. USB1	  S3	 disabled  pci:0000:00:1d.1
-  10. USB2	  S3	 disabled  pci:0000:00:1d.2
-  11. USB7	  S3	 disabled  pci:0000:00:1d.7
-  12. HDEF	  S4	 disabled  pci:0000:00:1b.0
-
---------------040307080602020306000108
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
-
---------------040307080602020306000108--
-
+T24gVHVlLCAyMDA3LTEwLTMwIGF0IDExOjIzICswMTAwLCBGZXJkaW5hbmQgSMO8Ym5lciB3cm90
+ZToKPiBIZWxsbywKPiAKPiBzaW5jZSBJJ3ZlIHVwZ3JhZGVkIHRvIDIuNi4yMywgdGhlIGN1cnJl
+bnQgZnJlcXVlbmN5IHNjYWxpbmcgcG9saWN5IGlzCj4gYmVpbmcgY2hhbmdlZCB3aGVuZXZlciB0
+aGUgQ1BVIGlzIHVuZGVyIGxvYWQuCj4gTXkgQ1BVIGlzIGEgQ29yZTJEdW8gVDcyMDAsIGZyZXF1
+ZW5jeSBzdGVwczogMi4wMCBHSHosIDEuNjcgR0h6LCAxLjMzCj4gR0h6LCAxMDAwIE1Iego+IEkn
+bSB1c2luZyB0aGUgYWNwaS1jcHVmcmVxIGRyaXZlciBhbmQgYW0gc2V0dGluZyB0aGUgZ292ZXJu
+b3IgdG8KPiAnb25kZW1hbmQnIHZpYSBjcHVmcmVxdXRpbHMuCj4gV2hlbiB0aGUgc3lzdGVtIGlz
+IGJvb3RlZCwgdGhlIHNjYWxpbmcgd29ya3MgYXMgZXhwZWN0ZWQsIHRoZSBwYXJ0aWFsCj4gb3V0
+cHV0IGZyb20gY3B1ZnJlcS1pbmZvOgo+IAo+IGN1cnJlbnQgcG9saWN5OiBmcmVxdWVuY3kgc2hv
+dWxkIGJlIHdpdGhpbiAxMDAwIE1IeiBhbmQgMi4wMCBHSHouCj4gCj4gSG93ZXZlciwgd2hlbiBJ
+IHN0YXJ0IGNvbXBpbGluZyBzb21ldGhpbmcgdGhlIHBvbGljeSBpcyBiZWluZyBjaGFuZ2VkIHRv
+Cj4gdGhlIGZvbGxvd2luZzoKPiAKPiBjdXJyZW50IHBvbGljeTogZnJlcXVlbmN5IHNob3VsZCBi
+ZSB3aXRoaW4gMTAwMCBNSHogYW5kIDEwMDAgTUh6Lgo+IAo+IFRoaXMgcHJvYmxlbSBkaWRuJ3Qg
+ZXhpc3Qgd2l0aCBrZXJuZWxzIHByaW9yIHRvIDIuNi4yMyAoSSB3YXMgdXNpbmcKPiBnZW50b28t
+c291cmNlcyBtb3N0IG9mIHRoZSB0aW1lKSwgc2FtZSBiZWhhdmlvdXIgYXMgd2l0aCAyLjYuMjMg
+Y2FuIGJlCj4gb2JzZXJ2ZWQgd2l0aCAyLjYuMjQtcmMxLgo+IAo+IEknbSBub3QgZW50aXJlbHkg
+c3VyZSBpZiB0aGlzIGlzIGEgcHJvYmxlbSB3aXRoIGNwdWZyZXEsIHNvIEkgYXBvbG9naXplCj4g
+aWYgdGhpcyBpcyBub3QgdGhlIHJpZ2h0IHBsYWNlIHRvIGFzayBmb3IgaGVscC4KPiAKPiBBbnl3
+YXksIGV2ZXJ5dGltZSB0aGUgbWF4aW11bSBDUFUgZnJlcXVlbmN5IGlzIGJlaW5nIGNoYW5nZWQs
+IEkgcmVjZWl2ZQo+IHRoZSBmb2xsb3dpbmcgQUNQSSBldmVudHMgYSBmZXcgc2Vjb25kcyBhZnRl
+cndhcmRzICh0aGVzZSBldmVudHMgYXJlIG5vdAo+IGJlaW5nIGhhbmRsZWQpCj4gCj4gcHJvY2Vz
+c29yIENQVTAgMDAwMDAwODAgMDAwMDAwMDMKPiBwcm9jZXNzb3IgQ1BVMSAwMDAwMDA4MCAwMDAw
+MDAwMwo+IAo+IFNldHRpbmcgdGhlIG1heGltdW0gZnJlcXVlbmN5IGJhY2sgdG8gMkdIeiAoY3B1
+ZnJlcS1zZXQgLXUgMjAwME1IeikgaGFzCj4gZWl0aGVyIG5vIGVmZmVjdCBhdCBhbGwsIG9yIGlz
+IGJlaW5nIHJldmVydGVkIHRvIDFHSHogMzAgc2Vjb25kcyBhZnRlciB0aGF0Lgo+IFRoZSAncGVy
+Zm9ybWFuY2UnIGdvdmVybm9yIGlzIHNob3dpbmcgdGhlIHNhbWUgYmVoYXZpb3VyLgo+IAo+IEkn
+dmUgYXR0YWNoZWQgbXkga2VybmVsIGNvbmZpZyBmb3IgQUNQSS9DUFVGUkVRIGFuZCB0aGUgb3V0
+cHV0IGZyb20KPiBhY3BpdG9vbCAtZS4KPiAKPiBXaGF0IGNhbiBJIGRvIHRvIGdldCB0aGUgIm9s
+ZCIgYmVoYXZpb3VyIGJhY2s/IEkganVzdCB3YW50IHRoZSBtYXhpbXVtCj4gZnJlcXVlbmN5IHRv
+IHN0YXkgYXQgMkdIei4uLgoKSXQgY2FuIGJlOgogMSkgZnJlcXVlbmN5IGxpbWl0ZWQgYnkgQklP
+UyB0aHJvdWdoIF9QUEMKIDIpIGZyZXF1ZW5jeSByZWR1Y2VkIGJ5IHRoZXJtYWwgcGFzc2l2ZSBs
+aW1pdAogMykgc29tZSByZWFsbHkgb2RkIGNwdWZyZXEgY29yZSBidWcKCj5Gcm9tIHRoZSBsYXN0
+IGJ1Z3Mgb2NjdXJyaW5nIGluIHRoaXMgYXJlYSBJIGV4cGVjdCBpdCdzIDEuCgpZb3Ugc2hvdWxk
+IGFkZCBhIHByaW50ayBpbiBkcml2ZXJzL2FjcGkvcHJvY2Vzc29yX3BlcmZsaWIuYwphY3BpX3By
+b2Nlc3Nvcl9nZXRfcGxhdGZvcm1fbGltaXQoKToKCXN0YXR1cyA9IGFjcGlfZXZhbHVhdGVfaW50
+ZWdlcihwci0+aGFuZGxlLCAiX1BQQyIsIE5VTEwsICZwcGMpOwphbmQgcHJpbnQgb3V0IHRoZSBw
+cGMgdmFsdWUgaGVyZSwgYmVzdCBhZnRlciB0aGUgY2hlY2tzIHdoZXRoZXIgdGhpcwpjYWxsIHN1
+Y2NlZWRlZC4KClRoaXMgc2hvdWxkIGJlIHBpY2tlZCB1cCBpbiBjcHVmcmVxIGRlYnVnIG91dHB1
+dCBhcyBfUFBDIG9mdGVuIGNhdXNlZApjcHVmcmVxIHByb2JsZW1zLiBBIHF1aWNrIGxvb2sgdGVs
+bHMgbWUgdGhhdCBpdCBpcyBhIGJpdCB1Z2x5IHRvIHVzZQpjcHVmcmVxIGRlYnVnIHN5bnRheCBp
+biBhY3BpIGxheWVyLCBidXQgaXQgc2hvdWxkIGJlIHBvc3NpYmxlIGFuZAphcHByb3ByaWF0ZS4K
+CklmIF9QUEMgaXMgMCBhbGwgZnJlcXMgYXJlIGFsbG93ZWQsIGlmIGl0IGlzIDEgdGhlIGhpZ2hl
+c3QgZnJlcSBpcyBub3QKYWxsb3dlZCBhbnltb3JlLi4uLCBzbyB0aGlzIHNob3VsZCBhbHdheXMg
+YmUgMCB3aGVuIHdvcmtpbmcgb24gQUMgcG93ZXIuCgpJZiBpdCBpcyB0aGlzIGl0IGNvdWxkIGJl
+IHRoYXQ6CiAgLSBBQ1BJIGlzIGNvbmZ1c2VkCiAgLSBJdCBpcyBpbnRlbmRlZCBieSBCSU9TIChh
+cmUgeW91IHdvcmtpbmcgb24gYmF0dGVyeSAtPiBsb29rIHVwCiAgICB5b3VyIEJJT1Mgb3B0aW9u
+cywgbWF5YmUgeW91IGNhbiBtb2RpZnkgYW55dGhpbmcgcmVsYXRlZCkKICAtIF9QUEMgaXMgd3Jv
+bmcgYXQgaW5pdCAob3IgbGF0ZXIpIGFuZCB0aGUgdmFsdWUgaXMgbm90IHJlZXZhbHVhdGVkCiAg
+ICBhdCBsYXRlciBwb2ludAogIC0gLi4uCgpNYXliZSB5b3Ugc2hvdWxkIG9wZW4gYSBidWdyZXBv
+cnQgb24gaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcsIHBscyBhZGQKbWUgdG8gQ0MgdGhlbi4K
+CiAgIFRob21hcwoKCj4gVGhhbmsgeW91LAo+IAo+IEZlcmRpbmFuZAo+IAo+IHBsYWluIHRleHQg
+ZG9jdW1lbnQgYXR0YWNobWVudCAoa2VybmVsLWNvbmZpZy50eHQpCj4gIwo+ICMgUG93ZXIgbWFu
+YWdlbWVudCBvcHRpb25zIChBQ1BJLCBBUE0pCj4gIwo+IENPTkZJR19QTT15Cj4gIyBDT05GSUdf
+UE1fTEVHQUNZIGlzIG5vdCBzZXQKPiAjIENPTkZJR19QTV9ERUJVRyBpcyBub3Qgc2V0Cj4gQ09O
+RklHX1BNX1NMRUVQX1NNUD15Cj4gQ09ORklHX1BNX1NMRUVQPXkKPiBDT05GSUdfU1VTUEVORF9T
+TVBfUE9TU0lCTEU9eQo+IENPTkZJR19TVVNQRU5EPXkKPiBDT05GSUdfSElCRVJOQVRJT05fU01Q
+X1BPU1NJQkxFPXkKPiAjIENPTkZJR19ISUJFUk5BVElPTiBpcyBub3Qgc2V0Cj4gQ09ORklHX0FD
+UEk9eQo+IENPTkZJR19BQ1BJX1NMRUVQPXkKPiAjIENPTkZJR19BQ1BJX1BST0NGUyBpcyBub3Qg
+c2V0Cj4gQ09ORklHX0FDUElfUFJPQ19FVkVOVD15Cj4gQ09ORklHX0FDUElfQlVUVE9OPXkKPiAj
+IENPTkZJR19BQ1BJX1ZJREVPIGlzIG5vdCBzZXQKPiBDT05GSUdfQUNQSV9GQU49eQo+IENPTkZJ
+R19BQ1BJX0RPQ0s9eQo+ICMgQ09ORklHX0FDUElfQkFZIGlzIG5vdCBzZXQKPiBDT05GSUdfQUNQ
+SV9QUk9DRVNTT1I9eQo+IENPTkZJR19BQ1BJX0hPVFBMVUdfQ1BVPXkKPiBDT05GSUdfQUNQSV9U
+SEVSTUFMPXkKPiAjIENPTkZJR19BQ1BJX0FTVVMgaXMgbm90IHNldAo+ICMgQ09ORklHX0FDUElf
+VE9TSElCQSBpcyBub3Qgc2V0Cj4gQ09ORklHX0FDUElfQkxBQ0tMSVNUX1lFQVI9MjAwMQo+IENP
+TkZJR19BQ1BJX0RFQlVHPXkKPiAjIENPTkZJR19BQ1BJX0RFQlVHX0ZVTkNfVFJBQ0UgaXMgbm90
+IHNldAo+IENPTkZJR19BQ1BJX0VDPXkKPiBDT05GSUdfQUNQSV9QT1dFUj15Cj4gQ09ORklHX0FD
+UElfU1lTVEVNPXkKPiBDT05GSUdfWDg2X1BNX1RJTUVSPXkKPiBDT05GSUdfQUNQSV9DT05UQUlO
+RVI9eQo+ICMgQ09ORklHX0FQTSBpcyBub3Qgc2V0Cj4gCj4gIwo+ICMgQ1BVIEZyZXF1ZW5jeSBz
+Y2FsaW5nCj4gIwo+IENPTkZJR19DUFVfRlJFUT15Cj4gQ09ORklHX0NQVV9GUkVRX1RBQkxFPXkK
+PiBDT05GSUdfQ1BVX0ZSRVFfREVCVUc9eQo+ICMgQ09ORklHX0NQVV9GUkVRX1NUQVQgaXMgbm90
+IHNldAo+ICMgQ09ORklHX0NQVV9GUkVRX0RFRkFVTFRfR09WX1BFUkZPUk1BTkNFIGlzIG5vdCBz
+ZXQKPiAjIENPTkZJR19DUFVfRlJFUV9ERUZBVUxUX0dPVl9VU0VSU1BBQ0UgaXMgbm90IHNldAo+
+IENPTkZJR19DUFVfRlJFUV9ERUZBVUxUX0dPVl9PTkRFTUFORD15Cj4gIyBDT05GSUdfQ1BVX0ZS
+RVFfREVGQVVMVF9HT1ZfQ09OU0VSVkFUSVZFIGlzIG5vdCBzZXQKPiBDT05GSUdfQ1BVX0ZSRVFf
+R09WX1BFUkZPUk1BTkNFPXkKPiBDT05GSUdfQ1BVX0ZSRVFfR09WX1BPV0VSU0FWRT15Cj4gIyBD
+T05GSUdfQ1BVX0ZSRVFfR09WX1VTRVJTUEFDRSBpcyBub3Qgc2V0Cj4gQ09ORklHX0NQVV9GUkVR
+X0dPVl9PTkRFTUFORD15Cj4gQ09ORklHX0NQVV9GUkVRX0dPVl9DT05TRVJWQVRJVkU9eQo+IAo+
+ICMKPiAjIENQVUZyZXEgcHJvY2Vzc29yIGRyaXZlcnMKPiAjCj4gQ09ORklHX1g4Nl9BQ1BJX0NQ
+VUZSRVE9eQo+ICMgQ09ORklHX1g4Nl9QT1dFUk5PV19LNiBpcyBub3Qgc2V0Cj4gIyBDT05GSUdf
+WDg2X1BPV0VSTk9XX0s3IGlzIG5vdCBzZXQKPiAjIENPTkZJR19YODZfUE9XRVJOT1dfSzggaXMg
+bm90IHNldAo+ICMgQ09ORklHX1g4Nl9HWF9TVVNQTU9EIGlzIG5vdCBzZXQKPiAjIENPTkZJR19Y
+ODZfU1BFRURTVEVQX0NFTlRSSU5PIGlzIG5vdCBzZXQKPiAjIENPTkZJR19YODZfU1BFRURTVEVQ
+X0lDSCBpcyBub3Qgc2V0Cj4gIyBDT05GSUdfWDg2X1NQRUVEU1RFUF9TTUkgaXMgbm90IHNldAo+
+ICMgQ09ORklHX1g4Nl9QNF9DTE9DS01PRCBpcyBub3Qgc2V0Cj4gIyBDT05GSUdfWDg2X0NQVUZS
+RVFfTkZPUkNFMiBpcyBub3Qgc2V0Cj4gIyBDT05GSUdfWDg2X0xPTkdSVU4gaXMgbm90IHNldAo+
+ICMgQ09ORklHX1g4Nl9MT05HSEFVTCBpcyBub3Qgc2V0Cj4gIyBDT05GSUdfWDg2X0VfUE9XRVJT
+QVZFUiBpcyBub3Qgc2V0Cj4gCj4gIwo+ICMgc2hhcmVkIG9wdGlvbnMKPiAjCj4gIyBDT05GSUdf
+WDg2X0FDUElfQ1BVRlJFUV9QUk9DX0lOVEYgaXMgbm90IHNldAo+ICMgQ09ORklHX1g4Nl9TUEVF
+RFNURVBfTElCIGlzIG5vdCBzZXQKPiBDT05GSUdfQ1BVX0lETEU9eQo+IENPTkZJR19DUFVfSURM
+RV9HT1ZfTEFEREVSPXkKPiBDT05GSUdfQ1BVX0lETEVfR09WX01FTlU9eQo+IHBsYWluIHRleHQg
+ZG9jdW1lbnQgYXR0YWNobWVudCAoYWNwaXRvb2wudHh0KQo+ICAgS2VybmVsIHZlcnNpb24gOiAy
+LjYuMjQtcmMxICAgLSAgICBBQ1BJIHZlcnNpb24gOiAYMi42Cj4gICAtLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+ICAgQmF0dGVyeSBz
+dGF0dXMgOiA8bm90IGF2YWlsYWJsZT4KPiAKPiAgIEFDIGFkYXB0ZXIgICAgIDogPG5vdCBhdmFp
+bGFibGU+Cj4gICBGYW4gICAgICAgICAgICA6IGVuYWJsZWQKPiAgIEZhbiBTcGVlZCAgICAgIDog
+MzUwNyBSUE0KPiAKPiAgIENQVSB0eXBlICAgICAgICAgICAgICAgOiBJbnRlbChSKSBDb3JlKFRN
+KTIgQ1BVICAgICAgICAgVDcyMDAgIEAgMi4wMEdIeiAKPiAgIE1pbi9NYXggZnJlcXVlbmN5ICAg
+ICAgOiAxMDAwLzEwMDAgTUh6Cj4gICBDdXJyZW50IGZyZXF1ZW5jeSAgICAgIDogMTAwMCBNSHoK
+PiAgIEZyZXF1ZW5jeSBnb3Zlcm5vciAgICAgOiBvbmRlbWFuZCAKPiAgIEZyZXEuIHNjYWxpbmcg
+ZHJpdmVyICAgOiBhY3BpLWNwdWZyZXEgCj4gICBDYWNoZSBzaXplICAgICAgICAgICAgIDogNDA5
+NiBLQgo+ICAgQm9nb21pcHMgICAgICAgICAgICAgICA6IDQwMjMuNzAgCj4gICBCb2dvbWlwcyAg
+ICAgICAgICAgICAgIDogMzk5MC4wNCAKPiAKPiAgICMgb2YgQ1BVJ3MgZm91bmQgICAgICAgOiAy
+Cj4gCj4gICBQcm9jZXNzb3IgSUQgICAgICAgICAgIDogMAo+ICAgQnVzIG1hc3RlcmluZyBjb250
+cm9sICA6IHllcwo+ICAgUG93ZXIgbWFuYWdlbWVudCAgICAgICA6IHllcwo+ICAgVGhyb3R0bGlu
+ZyBjb250cm9sICAgICA6IHllcwo+ICAgTGltaXQgaW50ZXJmYWNlICAgICAgICA6IHllcwo+ICAg
+QWN0aXZlIEMtc3RhdGUgICAgICAgICA6IEMwCj4gICBDLXN0YXRlcyAoaW5jbC4gQzApICAgIDog
+NAo+ICAgVXNhZ2Ugb2Ygc3RhdGUgQzEgICAgICA6IDQxNDggKDAuMCAlKQo+ICAgVXNhZ2Ugb2Yg
+c3RhdGUgQzIgICAgICA6IDEzMTgxMDkxICg3NC4wICUpCj4gICBVc2FnZSBvZiBzdGF0ZSBDMyAg
+ICAgIDogNDYzNjg3MyAoMjYuMCAlKQo+ICAgVC1zdGF0ZSBjb3VudCAgICAgICAgICA6IDgKPiAg
+IEFjdGl2ZSBULXN0YXRlICAgICAgICAgOiBUOAo+IAo+IAo+ICAgUHJvY2Vzc29yIElEICAgICAg
+ICAgICA6IDEKPiAgIEJ1cyBtYXN0ZXJpbmcgY29udHJvbCAgOiB5ZXMKPiAgIFBvd2VyIG1hbmFn
+ZW1lbnQgICAgICAgOiB5ZXMKPiAgIFRocm90dGxpbmcgY29udHJvbCAgICAgOiB5ZXMKPiAgIExp
+bWl0IGludGVyZmFjZSAgICAgICAgOiB5ZXMKPiAgIEFjdGl2ZSBDLXN0YXRlICAgICAgICAgOiBD
+MAo+ICAgQy1zdGF0ZXMgKGluY2wuIEMwKSAgICA6IDQKPiAgIFVzYWdlIG9mIHN0YXRlIEMxICAg
+ICAgOiA2MDYyICgwLjAgJSkKPiAgIFVzYWdlIG9mIHN0YXRlIEMyICAgICAgOiAxNTI1NDI4MyAo
+NjcuNiAlKQo+ICAgVXNhZ2Ugb2Ygc3RhdGUgQzMgICAgICA6IDI2NzM2NjcgKDExLjggJSkKPiAg
+IFQtc3RhdGUgY291bnQgICAgICAgICAgOiA4Cj4gICBBY3RpdmUgVC1zdGF0ZSAgICAgICAgIDog
+VDgKPiAKPiAKPiAKPiAgIFRoZXJtYWwgem9uZSAxIDogb2ssIDUyIEMKPiAgIFRyaXAgcG9pbnRz
+IDogCj4gICAtLS0tLS0tLS0tLS0tIAo+ICAgY3JpdGljYWwgKFM1KTogICAgICAgICAgIDEyNyBD
+Cj4gCj4gICBUaGVybWFsIHpvbmUgMiA6IG9rLCA1MyBDCj4gICBUcmlwIHBvaW50cyA6IAo+ICAg
+LS0tLS0tLS0tLS0tLSAKPiAgIGNyaXRpY2FsIChTNSk6ICAgICAgICAgICA5OSBDCj4gICBwYXNz
+aXZlOiAgICAgICAgICAgICAgICAgOTUgQzogdGMxPTUgdGMyPTQgdHNwPTYwMCBkZXZpY2VzPUNQ
+VTAgQ1BVMSAKPiAKPiAKPiAgICBEZXZpY2UJUy1zdGF0ZQkgIFN0YXR1cyAgIFN5c2ZzIG5vZGUK
+PiAgIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+ICAgMS4gTElECSAg
+UzMJKmVuYWJsZWQgICAKPiAgIDIuIFNMUEIJICBTMwkqZW5hYmxlZCAgIAo+ICAgMy4gRVhQMAkg
+IFM0CSBkaXNhYmxlZCAgcGNpOjAwMDA6MDA6MWMuMAo+ICAgNC4gRVhQMQkgIFM0CSBkaXNhYmxl
+ZCAgcGNpOjAwMDA6MDA6MWMuMQo+ICAgNS4gRVhQMgkgIFM0CSBkaXNhYmxlZCAgcGNpOjAwMDA6
+MDA6MWMuMgo+ICAgNi4gRVhQMwkgIFM0CSBkaXNhYmxlZCAgcGNpOjAwMDA6MDA6MWMuMwo+ICAg
+Ny4gUENJMQkgIFM0CSBkaXNhYmxlZCAgcGNpOjAwMDA6MDA6MWUuMAo+ICAgOC4gVVNCMAkgIFMz
+CSBkaXNhYmxlZCAgcGNpOjAwMDA6MDA6MWQuMAo+ICAgOS4gVVNCMQkgIFMzCSBkaXNhYmxlZCAg
+cGNpOjAwMDA6MDA6MWQuMQo+ICAgMTAuIFVTQjIJICBTMwkgZGlzYWJsZWQgIHBjaTowMDAwOjAw
+OjFkLjIKPiAgIDExLiBVU0I3CSAgUzMJIGRpc2FibGVkICBwY2k6MDAwMDowMDoxZC43Cj4gICAx
+Mi4gSERFRgkgIFM0CSBkaXNhYmxlZCAgcGNpOjAwMDA6MDA6MWIuMAo+IF9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gQ3B1ZnJlcSBtYWlsaW5nIGxpc3QK
+PiBDcHVmcmVxQGxpc3RzLmxpbnV4Lm9yZy51awo+IGh0dHA6Ly9saXN0cy5saW51eC5vcmcudWsv
+bWFpbG1hbi9saXN0aW5mby9jcHVmcmVxCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KQ3B1ZnJlcSBtYWlsaW5nIGxpc3QKQ3B1ZnJlcUBsaXN0cy5saW51
+eC5vcmcudWsKaHR0cDovL2xpc3RzLmxpbnV4Lm9yZy51ay9tYWlsbWFuL2xpc3RpbmZvL2NwdWZy
+ZXEK
