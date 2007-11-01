@@ -1,15 +1,14 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: CPU-Frequency limited to lowest available frequency
-	while	under load
-Date: Thu, 01 Nov 2007 19:31:18 +0100
-Message-ID: <1193941879.4202.17.camel@noname>
-References: <4727062E.9090806@cvmx.org>
-	<1193837319.4590.466.camel@queen.suse.de> <472A15FF.5040504@cvmx.org>
-Reply-To: trenn@suse.de
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: CPU-Frequency limited to lowest available frequency	while	under
+	load
+Date: Thu, 01 Nov 2007 14:36:48 -0400
+Message-ID: <472A1CC0.5080409@redhat.com>
+References: <4727062E.9090806@cvmx.org>	<1193837319.4590.466.camel@queen.suse.de>
+	<472A15FF.5040504@cvmx.org> <1193941879.4202.17.camel@noname>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============0390419502=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <472A15FF.5040504@cvmx.org>
+In-Reply-To: <1193941879.4202.17.camel@noname>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,31 +19,100 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ferdinand =?ISO-8859-1?Q?H=FCbner?= <fh@cvmx.org>
+To: =?UTF-8?B?RmVyZGluYW5kIEjDvGJuZXI=?= <fh@cvmx.org>
 Cc: cpufreq@lists.linux.org.uk
 
-SGkgRmVyZGluYW5kLAoKSSBjdXQgZG93biB0aGUgbWFpbCBhIGJpdC4uLgpPbiBUaHUsIDIwMDct
-MTEtMDEgYXQgMTk6MDcgKzAxMDAsIEZlcmRpbmFuZCBIw7xibmVyIHdyb3RlOgo+IFRob21hcyBS
-ZW5uaW5nZXIgd3JvdGU6Cj4gCj4gPiBJdCBjYW4gYmU6Cj4gPiAgMSkgZnJlcXVlbmN5IGxpbWl0
-ZWQgYnkgQklPUyB0aHJvdWdoIF9QUEMKPiA+ICAyKSBmcmVxdWVuY3kgcmVkdWNlZCBieSB0aGVy
-bWFsIHBhc3NpdmUgbGltaXQKPiA+ICAzKSBzb21lIHJlYWxseSBvZGQgY3B1ZnJlcSBjb3JlIGJ1
-Zwo+ID4gCj4gPj5Gcm9tIHRoZSBsYXN0IGJ1Z3Mgb2NjdXJyaW5nIGluIHRoaXMgYXJlYSBJIGV4
-cGVjdCBpdCdzIDEuCgo+IEkgcmVwZWF0ZWQgdGhlIHRlc3QgYSBjb3VwbGUgb2YgdGltZXMgYW5k
-IHRoZSBfUFBDIHZhbHVlcyBoYXZlIGFsd2F5cwo+IGJlZW4gMCBleGNlcHQgZm9yIHRoZSBsYXN0
-IHRlc3QgSSBkaWQuIFRoZSB2YWx1ZSB3YXMgMyBpbiB0aGUgbGFzdCB0ZXN0Lgo+IERvZXMgdGhh
-dCBtZWFuIHRoYXQgdGhlIEJJT1MgaXMgcGFydGlhbGx5IHJlc3BvbnNpYmxlPwpJZiB0aGUgdmFs
-dWUgaXMgMywgdGhlIGhpZ2hlc3QgdGhyZWUgZnJlcXMgYXJlIG5vdCBhbGxvd2VkIGJ5IEJJT1Mu
-ClRoaXMgbWF5IGJlIGludGVuZGVkLCBwcm9iYWJseSBub3QuCgpJTU8gYmVzdCBpcyB5b3Ugb3Bl
-biBhIGJ1ZyBhdCBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZyB0byBjb2xsZWN0IGluZm8KYXQg
-b25lIHBsYWNlLi4uLCBmb3Igbm93IEknZCBhc3NpZ24gaXQgdG8gdGhlIEFDUEkgY29tcG9uZW50
-LgoKYWNwaWR1bXAgb3V0cHV0IHNob3VsZCBiZSBtb3N0IGltcG9ydGFudCBhdG0sIHBscyBhdHRh
-Y2ggaXQgdGhlcmUgYW5kCnRha2UgbWUgaW50byBDQyBsaXN0LgoKSXMgaXQgcG9zc2libGUgZm9y
-IHlvdSB0byByZXByb2R1Y2UgdGhpcyBlYXNpbHk/Ck1heWJlIHNvbWV0aGluZyB5b3Ugbm90aWNl
-ZCBsaWtlOiBpdCBhbHdheXMgaGFwcGVucyBhZnRlciB4IG1pbnMgb3IKYWZ0ZXIgbG9hZGluZyBt
-b2R1bGUgeS4uLgpZb3UgY291bGQgYWxzbyB0cnkgdG8gbm90IGxvYWQgb3RoZXIgQUNQSSBtb2R1
-bGVzOiBiYXR0ZXJ5LCB0aGVybWFsLApidXR0b24sIGZhbiwgYWMuCk1heWJlIGl0IGRvZXMgbm90
-IGhhcHBlbiB0aGVuIGFueW1vcmU/CgpEbyB5b3UgdXNlIGh3bW9uLCB0aGVybWFsIHNlbnNvciBt
-b2R1bGVzPwoKICAgVGhvbWFzCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KQ3B1ZnJlcSBtYWlsaW5nIGxpc3QKQ3B1ZnJlcUBsaXN0cy5saW51eC5vcmcu
-dWsKaHR0cDovL2xpc3RzLmxpbnV4Lm9yZy51ay9tYWlsbWFuL2xpc3RpbmZvL2NwdWZyZXEK
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============0390419502==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig25EE8839EDBDD84DA531C47A"
+
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig25EE8839EDBDD84DA531C47A
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Thomas Renninger wrote:
+> Hi Ferdinand,
+>=20
+> I cut down the mail a bit...
+> On Thu, 2007-11-01 at 19:07 +0100, Ferdinand H=C3=BCbner wrote:
+>> Thomas Renninger wrote:
+>>
+>>> It can be:
+>>>  1) frequency limited by BIOS through _PPC
+>>>  2) frequency reduced by thermal passive limit
+>>>  3) some really odd cpufreq core bug
+>>>
+>>> >From the last bugs occurring in this area I expect it's 1.
+>=20
+>> I repeated the test a couple of times and the _PPC values have always
+>> been 0 except for the last test I did. The value was 3 in the last tes=
+t.
+>> Does that mean that the BIOS is partially responsible?
+> If the value is 3, the highest three freqs are not allowed by BIOS.
+> This may be intended, probably not.
+>=20
+> IMO best is you open a bug at http://bugzilla.kernel.org to collect inf=
+o
+> at one place..., for now I'd assign it to the ACPI component.
+>=20
+> acpidump output should be most important atm, pls attach it there and
+> take me into CC list.
+>=20
+> Is it possible for you to reproduce this easily?
+> Maybe something you noticed like: it always happens after x mins or
+> after loading module y...
+> You could also try to not load other ACPI modules: battery, thermal,
+> button, fan, ac.
+> Maybe it does not happen then anymore?
+
+I didn't pay much attention to earlier posts in this thread, so pardon
+if this has already been covered, but...
+
+I had a similar sounding case reported in the Red Hat bugzilla, where a
+Dell laptop wouldn't scale above its minimum frequency if the system was
+running on a travel charger. This turned out to be a limitation imposed
+intentionally by the system BIOS (and documented somewhere on Dell's web
+site). On battery and on the normal charger, the same system had no
+problems whatsoever.
+
+Just throwing it out there, ignore me if its irrelevant. :)
+
+--=20
+Jarod Wilson
+jwilson@redhat.com
+
+
+
+--------------enig25EE8839EDBDD84DA531C47A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFHKhzAtO+bni+75QMRAjz8AJ4ktH+pp/ivL3pGmm51OxhcQ//AZwCfZADg
+SMxoxeiIqtX0E7IWyA5KtdE=
+=jPvK
+-----END PGP SIGNATURE-----
+
+--------------enig25EE8839EDBDD84DA531C47A--
+
+
+--===============0390419502==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============0390419502==--
+
