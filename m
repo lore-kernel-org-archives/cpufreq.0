@@ -1,16 +1,15 @@
-From: =?UTF-8?B?RmVyZGluYW5kIEjDvGJuZXI=?= <fh@cvmx.org>
-Subject: Re: CPU-Frequency limited to lowest available frequency	while	under
-	load
-Date: Tue, 06 Nov 2007 17:01:25 +0100
-Message-ID: <47308FD5.4060707@cvmx.org>
-References: <4727062E.9090806@cvmx.org>	<1193837319.4590.466.camel@queen.suse.de>
-	<472A15FF.5040504@cvmx.org> <1193941879.4202.17.camel@noname>
-	<472A1CC0.5080409@redhat.com>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: [PATCH] Eliminate cpufreq_userspace scaling_setspeed deadlock
+Date: Wed, 7 Nov 2007 21:56:39 +0900
+Message-ID: <20071107125638.GB27092@inferi.kami.home>
+References: <20071026171821.GA20924@linux-os.sc.intel.com>
+	<08DF4D958216244799FC84F3514D70F0B5555C@pdsmsx415.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <472A1CC0.5080409@redhat.com>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <08DF4D958216244799FC84F3514D70F0B5555C@pdsmsx415.ccr.corp.intel.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,29 +19,18 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: "Yu, Luming" <luming.yu@intel.com>
+Cc: Dave Jones <davej@redhat.com>, cpufreq <cpufreq@www.linux.org.uk>, "Yu,
+	Fenghua" <fenghua.yu@intel.com>
 
-Jarod Wilson wrote:
-> I didn't pay much attention to earlier posts in this thread, so pardon
-> if this has already been covered, but...
-> 
-> I had a similar sounding case reported in the Red Hat bugzilla, where a
-> Dell laptop wouldn't scale above its minimum frequency if the system was
-> running on a travel charger. This turned out to be a limitation imposed
-> intentionally by the system BIOS (and documented somewhere on Dell's web
-> site). On battery and on the normal charger, the same system had no
-> problems whatsoever.
-> 
-> Just throwing it out there, ignore me if its irrelevant. :)
-> 
+On Mon, Nov 05, 2007 at 04:58:18PM +0800, Yu, Luming wrote:
+> Based on my current testing results, this patch fixes my problem.
+> Please help push it upstream.
 
-I gave it a shot and did a BIOS update and played around with the
-options in the BIOS.
-Now it does scale correctly... I should have tried that earlier, I did
-not expect that, because I "only" did a kernel upgrade and did not touch
-the BIOS in any way...
+BTW, this will break some userspace apps. I can think of cpufrequtils
+and some deamons that use the userspace governor to set frequencies.
 
-Thanks!
-
-Ferdinand
+-- 
+mattia
+:wq!
