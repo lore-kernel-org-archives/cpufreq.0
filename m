@@ -1,15 +1,16 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: [PATCH] Eliminate cpufreq_userspace scaling_setspeed deadlock
-Date: Wed, 7 Nov 2007 21:56:39 +0900
-Message-ID: <20071107125638.GB27092@inferi.kami.home>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: RE: [PATCH] Eliminate cpufreq_userspace scaling_setspeed deadlock
+Date: Wed, 7 Nov 2007 22:45:35 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE15F13A@orsmsx423.amr.corp.intel.com>
 References: <20071026171821.GA20924@linux-os.sc.intel.com>
 	<08DF4D958216244799FC84F3514D70F0B5555C@pdsmsx415.ccr.corp.intel.com>
+	<20071107125638.GB27092@inferi.kami.home>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <08DF4D958216244799FC84F3514D70F0B5555C@pdsmsx415.ccr.corp.intel.com>
+Content-class: urn:content-classes:message
+In-Reply-To: <20071107125638.GB27092@inferi.kami.home>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,17 +21,32 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: "Yu, Luming" <luming.yu@intel.com>
+To: Mattia Dongili <malattia@linux.it>, "Yu, Luming" <luming.yu@intel.com>
 Cc: Dave Jones <davej@redhat.com>, cpufreq <cpufreq@www.linux.org.uk>, "Yu,
 	Fenghua" <fenghua.yu@intel.com>
 
-On Mon, Nov 05, 2007 at 04:58:18PM +0800, Yu, Luming wrote:
-> Based on my current testing results, this patch fixes my problem.
-> Please help push it upstream.
+ 
 
-BTW, this will break some userspace apps. I can think of cpufrequtils
-and some deamons that use the userspace governor to set frequencies.
+>-----Original Message-----
+>From: Mattia Dongili [mailto:malattia@linux.it] 
+>Sent: Wednesday, November 07, 2007 4:57 AM
+>To: Yu, Luming
+>Cc: Pallipadi, Venkatesh; Dave Jones; Yu, Fenghua; cpufreq
+>Subject: Re: [PATCH] Eliminate cpufreq_userspace 
+>scaling_setspeed deadlock
+>
+>On Mon, Nov 05, 2007 at 04:58:18PM +0800, Yu, Luming wrote:
+>> Based on my current testing results, this patch fixes my problem.
+>> Please help push it upstream.
+>
+>BTW, this will break some userspace apps. I can think of cpufrequtils
+>and some deamons that use the userspace governor to set frequencies.
+>
 
--- 
-mattia
-:wq!
+Yes. But, this is the only solution we have for the deadlock right now
+and I think it should goto upstream as soon as possible, unless we have
+some better alternative. Userspace breakage is better bargain than a
+kernel deadlock. Isn't it :-).
+
+Thanks,
+Venki
