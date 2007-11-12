@@ -1,12 +1,12 @@
-From: "Uli Brueggemann" <uli.brueggemann@gmail.com>
-Subject: Modprobe of cpufreq modules fails
-Date: Mon, 12 Nov 2007 10:43:19 +0100
-Message-ID: <10a58eee0711120143v7b82e98cncb16e9f07a9de21f@mail.gmail.com>
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: Modprobe of cpufreq modules fails
+Date: Mon, 12 Nov 2007 10:04:38 -0500
+Message-ID: <47386B86.3010306@redhat.com>
+References: <10a58eee0711120143v7b82e98cncb16e9f07a9de21f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2125781766=="
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <10a58eee0711120143v7b82e98cncb16e9f07a9de21f@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,105 +17,72 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: Uli Brueggemann <uli.brueggemann@gmail.com>
+Cc: cpufreq@lists.linux.org.uk
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============2125781766==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enigCEFD67818B25469EA5A625BF"
 
-I'm running a Core 2 Duo system. With different kernels (up to 2.6.23.1 or
-2.6.24-rc2) I cannot modprobe acpi_cpufreq or speedsteep-centrino or ...
-So I always get the report "no such device".
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCEFD67818B25469EA5A625BF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Kernel configuration:
+Uli Brueggemann wrote:
+> I'm running a Core 2 Duo system. With different kernels (up to 2.6.23.1=
+ or
+> 2.6.24-rc2) I cannot modprobe acpi_cpufreq or speedsteep-centrino or ..=
+=2E
+> So I always get the report "no such device".
 
-CONFIG_ACPI=y
-CONFIG_ACPI_PROCFS=y
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_VIDEO=m
-CONFIG_ACPI_FAN=m
-CONFIG_ACPI_DOCK=m
-# CONFIG_ACPI_BAY is not set
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_ACPI_TOSHIBA is not set
-# CONFIG_ACPI_FUJ02B1 is not set
-# CONFIG_ACPI_CUSTOM_DSDT is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_ACPI_CONTAINER=m
-CONFIG_ACPI_SBS=m
+You definitely want acpi-cpufreq, not speedstep-centrino... The 'no such
+device' message usually indicates that upon querying your BIOS ACPI
+tables, acpi-cpufreq found no valid frequency scaling information, which
+suggests either freq scaling is disabled in the BIOS or your BIOS has
+busted ACPI (in which case a newer BIOS for your board, if available,
+might help).
 
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-# CONFIG_CPU_FREQ_DEBUG is not set
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+Also, you can boot with the added parameter 'cpufreq.debug=3D7' to get a
+bit more info spit out in dmesg about what's going on when you try to
+load acpi-cpufreq. Could give some further insight into what went wrong
+and/or verify what I suggested above.
 
-(I've also tried ondemand or userspace)
+--=20
+Jarod Wilson
+jwilson@redhat.com
 
-According to dmesg there should be no problem:
 
-Initializing CPU#0
-CPU: After generic identify, caps: bfebfbff 20100000 00000000 00000000
-0000e3bd 00000000 00000001 00000000
-monitor/mwait feature present.
-using mwait in idle threads.
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 2048K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-CPU: After all inits, caps: bfebfbff 20100000 00000000 00003940 0000e3bd
-00000000 00000001 00000000
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#0.
-Compat vDSO mapped to ffffe000.
-Checking 'hlt' instruction... disabled
-Freeing SMP alternatives: 8k freed
-ACPI: Core revision 20070126
-CPU0: Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz stepping 02
-Booting processor 1/1 eip 2000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4246.30 BogoMIPS
-(lpj=212315)
-CPU: After generic identify, caps: bfebfbff 20100000 00000000 00000000
-0000e3bd 00000000 00000001 00000000
-monitor/mwait feature present.
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 2048K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU: After all inits, caps: bfebfbff 20100000 00000000 00003940 0000e3bd
-00000000 00000001 00000000
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#1.
-CPU1: Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz stepping 02
-Total of 2 processors activated (8496.22 BogoMIPS).
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Brought up 2 CPUs
 
-Can someone help?
+--------------enigCEFD67818B25469EA5A625BF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Best
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-Uli
+iD8DBQFHOGuKtO+bni+75QMRArwBAJoCWCf3DqYv/YCWUNuusy41Th3XMgCggMoZ
+SL96L0Yxmqqk5808icLf2MA=
+=4613
+-----END PGP SIGNATURE-----
+
+--------------enigCEFD67818B25469EA5A625BF--
+
+
+--===============2125781766==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============2125781766==--
+
