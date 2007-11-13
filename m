@@ -1,61 +1,76 @@
-From: Eric Piel <Eric.Piel@lifl.fr>
-Subject: Re: Kernel panic at boot with ondemand governor as default	(2.6.24-rc2)
-Date: Tue, 13 Nov 2007 00:09:46 +0100
-Message-ID: <4738DD3A.1080109@lifl.fr>
-References: <4737539F.2070401@lifl.fr> <1194859012.4590.595.camel@queen.suse.de> <47385D05.20705@lifl.fr> <1194880989.5474.12.camel@queen.suse.de> <20071112202629.GA31763@redhat.com>
+From: "Uli Brueggemann" <uli.brueggemann@gmail.com>
+Subject: Modprobe of cpufreq modules fails
+Date: Tue, 13 Nov 2007 09:25:49 +0100
+Message-ID: <10a58eee0711130025oc60f879n74c082695b8b8ee5@mail.gmail.com>
+References: <10a58eee0711120143v7b82e98cncb16e9f07a9de21f@mail.gmail.com>
+	<47386B86.3010306@redhat.com>
+	<10a58eee0711130024u2fb6f1das29db87d0932323@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760138AbXKLXKb@vger.kernel.org>
-In-Reply-To: <20071112202629.GA31763@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <10a58eee0711130024u2fb6f1das29db87d0932323@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-To: Dave Jones <davej@redhat.com>, Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, cpufreq <cpufreq@lists.linux.org.uk>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-2007=E5=B9=B411=E6=9C=8812=E6=97=A5 21:26, Dave Jones wrote/a =C3=A9cri=
-t:
-> On Mon, Nov 12, 2007 at 04:23:09PM +0100, Thomas Renninger wrote:
->  > On Mon, 2007-11-12 at 15:02 +0100, Eric Piel wrote:
-:
->  > > Yes, it works if I compile speedstep-ich as module. I've put the=
- module=20
->  > > in initramfs and as soon it is loaded, the ondemand governor is =
-selected=20
->  > > and works.
->  > >=20
->  > > However, do you think it's ok to prevent cpufreq drivers to be b=
-uilt-in=20
->  > > if ondemand governor is selected as default?
->  > > Another way would be to=20
->  > > reorganise the initialisation code so that workqueue is initiali=
-sed=20
->  > > before the cpufreq framework is started, do you think it's possi=
-ble?
->  > Making all this work with low-level drivers built in would be perf=
-ect of
->  > course...
->  > If nobody answers the next days, could you open a bug at
->  > bugzilla.kernel.org, so that this does not get lost, pls.
->  > Add myself and Venkatesh to CC...
->  > I try to have a look at it ASAP.
->  > If someone already finds out more, this would be great.
->=20
-> I'm actually surprised that speedstep-ich works with a low enough
-> latency for ondemand.  On the kernel that works, can you boot
-> with cpufreq.debug=3D7 and send the cpufreq messages from dmesg?
-I'm not surprised, contrarly to speedstep-smi, speedstep-ich has been=20
-working with ondemand for quite a long time, since commit=20
-1a10760c91c394dfe4adfefeeaf85cd8098c4894 precisely :-) As stated in the=
-=20
-commit message, the latency transition is about 200=C2=B5s, much smalle=
-r than=20
-the 10ms required by ondemand. Actually, on my laptop the transition=20
-time is set to even higher due to problems of measurement, but it's=20
-still fine for ondemand. I get this at boot:
-speedstep: frequency transition measured seems out of range (4800 nSec)=
-,=20
-falling back to a safe one of 500000 nSec.
+Hi Jarod,
+
+thanks for your answer. I start to understand a bit.
+
+Anyway cpufreq.debug=7 leads to
+
+cpufreq-core: trying to register driver acpi-cpufreq
+cpufreq-core: adding CPU 0
+cpufreq-core: initialization failed
+cpufreq-core: adding CPU 1
+cpufreq-core: initialization failed
+cpufreq-core: no CPU initialized for driver acpi-cpufreq
+cpufreq-core: unregistering CPU 0
+cpufreq-core: unregistering CPU 1
+
+So it seems that the mainboard (Jetway) is not the right one. I have not
+found any BIOS setting which would help. Also the latest BIOS update has not
+solved the problem. Why does the initialization fail? Any other reason?
+
+So this finally leads to my question: how to detect the right mainboard/BIOS
+before buying?
+
+Uli
 
 
-See you,
-Eric
+
+On Nov 12, 2007 4:04 PM, Jarod Wilson < jwilson@redhat.com> wrote:
+
+> Uli Brueggemann wrote:
+> > I'm running a Core 2 Duo system. With different kernels (up to 2.6.23.1or
+> > 2.6.24-rc2) I cannot modprobe acpi_cpufreq or speedsteep-centrino or ...
+> > So I always get the report "no such device".
+>
+> You definitely want acpi-cpufreq, not speedstep-centrino... The 'no such
+> device' message usually indicates that upon querying your BIOS ACPI
+> tables, acpi-cpufreq found no valid frequency scaling information, which
+> suggests either freq scaling is disabled in the BIOS or your BIOS has
+> busted ACPI (in which case a newer BIOS for your board, if available,
+> might help).
+>
+> Also, you can boot with the added parameter 'cpufreq.debug=7' to get a
+> bit more info spit out in dmesg about what's going on when you try to
+> load acpi-cpufreq. Could give some further insight into what went wrong
+> and/or verify what I suggested above.
+>
+> --
+> Jarod Wilson
+> jwilson@redhat.com
+>
+>
+>
