@@ -1,37 +1,45 @@
-From: Eric Piel <Eric.Piel@lifl.fr>
-Subject: Re: Kernel panic at boot with ondemand governor as	default	(2.6.24-rc2)
-Date: Fri, 16 Nov 2007 00:37:28 +0100
-Message-ID: <473CD838.8060300@lifl.fr>
-References: <4737539F.2070401@lifl.fr>	 <1194859012.4590.595.camel@queen.suse.de>  <47385D05.20705@lifl.fr> <1194880989.5474.12.camel@queen.suse.de>
+From: claudio <claudioeddy@gmail.com>
+Subject: Help with git-clone
+Date: Fri, 16 Nov 2007 13:57:19 -0400
+Message-ID: <bb5d68b20711160957o204a09ecob0366b813b4eff9c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933918AbXKOXiW@vger.kernel.org>
-In-Reply-To: <1194880989.5474.12.camel@queen.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-To: trenn@suse.de
-Cc: linux-kernel@vger.kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, Dave Jones <davej@redhat.com>, cpufreq <cpufreq@lists.linux.org.uk>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-2007=E5=B9=B411=E6=9C=8812=E6=97=A5 16:23, Thomas Renninger wrote/a =C3=
-=A9crit:
-> On Mon, 2007-11-12 at 15:02 +0100, Eric Piel wrote:
-:
->> Another way would be to=20
->> reorganise the initialisation code so that workqueue is initialised=20
->> before the cpufreq framework is started, do you think it's possible?
-> Making all this work with low-level drivers built in would be perfect=
- of
-> course...
-Hi, I've just checked and it seems a bit weird, at least not as I=20
-expected: the workqueue is already initialized _before_ cpufreq! At=20
-least, from what I read in init/main.c, in do_basic_setup(), first ther=
-e=20
-is a call to init_workqueues(), then there is a call to do_initcalls()=20
-(which indirectly calls cpufreq_core_init()). So maybe workqueues need=20
-something more than being initialized to work? What could it be? (My=20
-kernel is compiled for monoprocessor,  I can't see what goes wrong in=20
-wq_per_cpu()).
+Hi, a friend of mine and I tried to git-clone
+http://git.kernel.org/?p=3Dlinux/kernel/git/davej/cpufreq.git;a=3Dsummary a=
+nd
+got the following message:
 
-See you,
-Eric
+"stress@cache-hit-machine:~/Desktop$ git-clone
+http://git.kernel.org/?p=3Dlinux/kernel/git/davej/cpufreq.git;a=3Dsummary
+Initialized empty Git repository in /home/stress/Desktop/cpufreq/.git/
+cd: 409: can't cd to /home/stress/Desktop/cpufreq/.git/refs/remotes/origin
+fatal: Not a valid object name HEAD"
+
+Could someone tell me what's going on?
+thanx in advance
+
+
+-- =
+
+Claudio Eduardo Marques Gomes
+Estudante de Engenharia da Computa=E7=E3o
+Diretor de Tecnologia do CAECOM
+Projeto DCC-INDT em Baixo Consumo de Energia em Sistemas Embarcados
+Universidade Federal do Amazonas (UFAM)
+Tell: 92 3088-3845
+Cel:  92 9183-8100
