@@ -1,14 +1,14 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Help with git-clone
-Date: Fri, 16 Nov 2007 14:09:07 -0500
-Message-ID: <20071116190907.GE32293@redhat.com>
-References: <bb5d68b20711160957o204a09ecob0366b813b4eff9c@mail.gmail.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 4379] Default sampling rates for ondemand governor are too high
+	on a amd64
+Date: Sat, 17 Nov 2007 23:02:08 -0800 (PST)
+Message-ID: <20071118070208.F228310806C@picon.linux-foundation.org>
+References: <bug-4379-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <bb5d68b20711160957o204a09ecob0366b813b4eff9c@mail.gmail.com>
+In-Reply-To: <bug-4379-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,28 +19,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: claudio <claudioeddy@gmail.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Fri, Nov 16, 2007 at 01:57:19PM -0400, claudio wrote:
- > Hi, a friend of mine and I tried to git-clone
- > http://git.kernel.org/?p=linux/kernel/git/davej/cpufreq.git;a=summary and
- > got the following message:
- > 
- > "stress@cache-hit-machine:~/Desktop$ git-clone
- > http://git.kernel.org/?p=linux/kernel/git/davej/cpufreq.git;a=summary
- > Initialized empty Git repository in /home/stress/Desktop/cpufreq/.git/
- > cd: 409: can't cd to /home/stress/Desktop/cpufreq/.git/refs/remotes/origin
- > fatal: Not a valid object name HEAD"
- > 
- > Could someone tell me what's going on?
- 
-You're trying to git clone a web page.
-Point it at the repository instead..
+http://bugzilla.kernel.org/show_bug.cgi?id=4379
 
-git clone git://git.kernel.org/pub/scm/linux/kernel/git/davej/cpufreq.git
 
-	Dave
+protasnb@gmail.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |protasnb@gmail.com
+
+
+
+
+------- Comment #5 from protasnb@gmail.com  2007-11-17 23:02 -------
+Eric, what about commit df8b59be0976c56820453730078bef99a8d1dbda, "Avoid the
+ondemand cpufreq governor to use a too high frequency for stats" - does it
+resolve this problem?
+Thanks.
+
 
 -- 
-http://www.codemonkey.org.uk
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
