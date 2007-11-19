@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 4379] Default sampling rates for ondemand governor are too high
 	on a amd64
-Date: Sat, 17 Nov 2007 23:02:08 -0800 (PST)
-Message-ID: <20071118070208.F228310806C@picon.linux-foundation.org>
+Date: Mon, 19 Nov 2007 05:17:42 -0800 (PST)
+Message-ID: <20071119131742.925B710806C@picon.linux-foundation.org>
 References: <bug-4379-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,20 +24,23 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=4379
 
 
-protasnb@gmail.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com
 
 
 
+------- Comment #6 from piel@lifl.fr  2007-11-19 05:17 -------
+(Sorry for answering late, I haven't received directly any email, just saw the
+message on the mailing list.)
 
-------- Comment #5 from protasnb@gmail.com  2007-11-17 23:02 -------
-Eric, what about commit df8b59be0976c56820453730078bef99a8d1dbda, "Avoid the
-ondemand cpufreq governor to use a too high frequency for stats" - does it
-resolve this problem?
-Thanks.
+What I was talking about in comment #4 was this commit. It's to keep the the
+frequency low enough compared to the scheduler. The attached patch, on the
+contrary, _increases_ the frequency. 
+
+Unfortunately Gunther hasn't confirm this patch helps with his problem.
+However, now the sampling down is done as often as the sampling up so it should
+be less problematic anyway. 1000 is a very conservative value but nowadays,
+with the great hunt for reducing the wakeups that can probably be considered
+fine. It would be nice if Gunther could confirm the behavior is currently
+better (slow down happens fast enough)...
 
 
 -- 
