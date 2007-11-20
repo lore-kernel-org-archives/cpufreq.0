@@ -1,14 +1,29 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 4379] Default sampling rates for ondemand governor are too high
-	on a amd64
-Date: Mon, 19 Nov 2007 05:17:42 -0800 (PST)
-Message-ID: <20071119131742.925B710806C@picon.linux-foundation.org>
-References: <bug-4379-3570@http.bugzilla.kernel.org/>
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 14/59] drivers/cpufreq: Add missing "space"
+Date: Mon, 19 Nov 2007 17:48:06 -0800
+Message-ID: <1195523331-15303-15-git-send-email-joe@perches.com>
+References: 1234567 <1195523331-15303-1-git-send-email-joe@perches.com>
+	<1195523331-15303-2-git-send-email-joe@perches.com>
+	<1195523331-15303-3-git-send-email-joe@perches.com>
+	<1195523331-15303-4-git-send-email-joe@perches.com>
+	<1195523331-15303-5-git-send-email-joe@perches.com>
+	<1195523331-15303-6-git-send-email-joe@perches.com>
+	<1195523331-15303-7-git-send-email-joe@perches.com>
+	<1195523331-15303-8-git-send-email-joe@perches.com>
+	<1195523331-15303-9-git-send-email-joe@perches.com>
+	<1195523331-15303-10-git-send-email-joe@perches.com>
+	<1195523331-15303-11-git-send-email-joe@perches.com>
+	<1195523331-15303-12-git-send-email-joe@perches.com>
+	<1195523331-15303-13-git-send-email-joe@perches.com>
+	<1195523331-15303-14-git-send-email-joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-4379-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <1195523331-15303-14-git-send-email-joe@perches.com>
+Message-Id: <f6014cdba9a3d017d1dcd0623a5da61777c919bb.1195454435.git.joe@perches.com>
+In-Reply-To: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
+References: <ee1678e1bc8b80b7ae420059fffc7241486ea91a.1195454434.git.joe@perches.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,31 +34,45 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=4379
-
+To: linux-kernel@vger.kernel.org
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
 
 
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/cpufreq/cpufreq.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-
-------- Comment #6 from piel@lifl.fr  2007-11-19 05:17 -------
-(Sorry for answering late, I haven't received directly any email, just saw the
-message on the mailing list.)
-
-What I was talking about in comment #4 was this commit. It's to keep the the
-frequency low enough compared to the scheduler. The attached patch, on the
-contrary, _increases_ the frequency. 
-
-Unfortunately Gunther hasn't confirm this patch helps with his problem.
-However, now the sampling down is done as often as the sampling up so it should
-be less problematic anyway. 1000 is a very conservative value but nowadays,
-with the great hunt for reducing the wakeups that can probably be considered
-fine. It would be nice if Gunther could confirm the behavior is currently
-better (slow down happens fast enough)...
-
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5e626b1..5d5f52f 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -287,7 +287,7 @@ static void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+ 	if (!l_p_j_ref_freq) {
+ 		l_p_j_ref = loops_per_jiffy;
+ 		l_p_j_ref_freq = ci->old;
+-		dprintk("saving %lu as reference value for loops_per_jiffy;"
++		dprintk("saving %lu as reference value for loops_per_jiffy; "
+ 			"freq is %u kHz\n", l_p_j_ref, l_p_j_ref_freq);
+ 	}
+ 	if ((val == CPUFREQ_PRECHANGE  && ci->old < ci->new) ||
+@@ -295,7 +295,7 @@ static void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+ 	    (val == CPUFREQ_RESUMECHANGE || val == CPUFREQ_SUSPENDCHANGE)) {
+ 		loops_per_jiffy = cpufreq_scale(l_p_j_ref, l_p_j_ref_freq,
+ 								ci->new);
+-		dprintk("scaling loops_per_jiffy to %lu"
++		dprintk("scaling loops_per_jiffy to %lu "
+ 			"for frequency %u kHz\n", loops_per_jiffy, ci->new);
+ 	}
+ }
+@@ -1311,7 +1311,7 @@ static int cpufreq_resume(struct sys_device * sysdev)
+ 			struct cpufreq_freqs freqs;
+ 
+ 			if (!(cpufreq_driver->flags & CPUFREQ_PM_NO_WARN))
+-				dprintk("Warning: CPU frequency"
++				dprintk("Warning: CPU frequency "
+ 				       "is %u, cpufreq assumed %u kHz.\n",
+ 				       cur_freq, cpu_policy->cur);
+ 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+1.5.3.5.652.gf192c
