@@ -1,18 +1,18 @@
-From: claudio <claudioeddy@gmail.com>
+From: Mattia Dongili <malattia@linux.it>
 Subject: Re: [PATCH] Eliminate cpufreq_userspace scaling_setspeed deadlock
-Date: Tue, 20 Nov 2007 23:04:57 -0400
-Message-ID: <bb5d68b20711201904j4566ecf8pf957e273302e3d94@mail.gmail.com>
+Date: Wed, 21 Nov 2007 21:02:45 +0900
+Message-ID: <20071121120245.GA4609@inferi.kami.home>
 References: <20071026171821.GA20924@linux-os.sc.intel.com>
 	<08DF4D958216244799FC84F3514D70F0B5555C@pdsmsx415.ccr.corp.intel.com>
 	<20071107125638.GB27092@inferi.kami.home>
 	<924EFEDD5F540B4284297C4DC59F3DEE15F13A@orsmsx423.amr.corp.intel.com>
 	<20071120234132.GA9882@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20071120234132.GA9882@redhat.com>
 Content-Disposition: inline
+In-Reply-To: <20071120234132.GA9882@redhat.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -23,25 +23,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk, luming.yu@intel.com, fenghua.yu@intel.com, venkatesh.pallipadi@intel.com
+To: Dave Jones <davej@redhat.com>
+Cc: "Yu, Fenghua" <fenghua.yu@intel.com>, "Yu, Luming" <luming.yu@intel.com>, cpufreq <cpufreq@www.linux.org.uk>
 
-Is it what I'm reading: userspacer will be over?
-Sorry I haven't been aware of "how the problem happens", so how has
-"userspace" deadlocked the kernel?I'd like to understand (any link to the
-problem?) it.
-[]s
-
-On Nov 20, 2007 7:41 PM, Dave Jones <davej@redhat.com> wrote:
-
+On Tue, Nov 20, 2007 at 06:41:33PM -0500, Dave Jones wrote:
 > On Wed, Nov 07, 2007 at 10:45:35PM -0800, Venki Pallipadi wrote:
->  >
->  >
+>  >  
+>  > 
 >  > >-----Original Message-----
->  > >From: Mattia Dongili [mailto:malattia@linux.it]
+>  > >From: Mattia Dongili [mailto:malattia@linux.it] 
 >  > >Sent: Wednesday, November 07, 2007 4:57 AM
 >  > >To: Yu, Luming
 >  > >Cc: Pallipadi, Venkatesh; Dave Jones; Yu, Fenghua; cpufreq
->  > >Subject: Re: [PATCH] Eliminate cpufreq_userspace
+>  > >Subject: Re: [PATCH] Eliminate cpufreq_userspace 
 >  > >scaling_setspeed deadlock
 >  > >
 >  > >On Mon, Nov 05, 2007 at 04:58:18PM +0800, Yu, Luming wrote:
@@ -51,35 +45,26 @@ On Nov 20, 2007 7:41 PM, Dave Jones <davej@redhat.com> wrote:
 >  > >BTW, this will break some userspace apps. I can think of cpufrequtils
 >  > >and some deamons that use the userspace governor to set frequencies.
 >  > >
->  >
+>  > 
 >  > Yes. But, this is the only solution we have for the deadlock right now
 >  > and I think it should goto upstream as soon as possible, unless we have
 >  > some better alternative. Userspace breakage is better bargain than a
 >  > kernel deadlock. Isn't it :-).
->
+> 
 > I'm torn over this patch.  I don't see a better way to fix this either,
 > but the potential for breaking userspace is there. I think I'm going to
 > merge this, and see how things go in -mm for a while.
->
->        Dave
->
-> --
-> http://www.codemonkey.org.uk
->
-> _______________________________________________
-> Cpufreq mailing list
-> Cpufreq@lists.linux.org.uk
-> http://lists.linux.org.uk/mailman/listinfo/cpufreq
->
 
+I have to reconsider my words actually.
+It's probably not breaking anything (AFAICT) as the scaling_setspeed
+file will just sit there forever. In the beginning I thought the file
+would move somewhere else but that is not the case.
 
+No userspace chould rely on the presence of the file as an indicator of
+which governor is being used so hopefully the patch will do much more
+good than bad ;)
 
--- =
-
-Claudio Eduardo Marques Gomes
-Estudante de Engenharia da Computa=E7=E3o
-Diretor de Tecnologia do CAECOM
-Projeto DCC-INDT em Baixo Consumo de Energia em Sistemas Embarcados
-Universidade Federal do Amazonas (UFAM)
-Tell: 92 3088-3845
-Cel:  92 9183-8100
+cheers
+-- 
+mattia
+:wq!
