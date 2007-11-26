@@ -1,19 +1,14 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] Eliminate cpufreq_userspace scaling_setspeed deadlock
-Date: Mon, 26 Nov 2007 09:40:33 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE2524DC@orsmsx423.amr.corp.intel.com>
-References: <20071026171821.GA20924@linux-os.sc.intel.com>
-	<08DF4D958216244799FC84F3514D70F0B5555C@pdsmsx415.ccr.corp.intel.com>
-	<20071107125638.GB27092@inferi.kami.home>
-	<924EFEDD5F540B4284297C4DC59F3DEE15F13A@orsmsx423.amr.corp.intel.com>
-	<20071120234132.GA9882@redhat.com>
-	<bb5d68b20711201904j4566ecf8pf957e273302e3d94@mail.gmail.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Core2Duo locked at 800MHz
+Date: Mon, 26 Nov 2007 14:09:29 -0500
+Message-ID: <20071126190929.GE15764@redhat.com>
+References: <474A6C62.3070103@reinelt.co.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <bb5d68b20711201904j4566ecf8pf957e273302e3d94@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <474A6C62.3070103@reinelt.co.at>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -24,110 +19,41 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: claudio <claudioeddy@gmail.com>, Dave Jones <davej@redhat.com>, cpufreq@www.linux.org.uk, "Yu, Luming" <luming.yu@intel.com>, "Yu, Fenghua" <fenghua.yu@intel.com>
+To: Michael Reinelt <michael@reinelt.co.at>
+Cc: cpufreq@lists.linux.org.uk
 
- =
+On Mon, Nov 26, 2007 at 06:49:06AM +0000, Michael Reinelt wrote:
 
-Userspace will still be there. Just the semantics of scaling_setspeed will =
-change slightly.
- =
+ > What I found out is that the problem seems to be related to ACPI or the 
+ > acpi-cpufreq module. When I boot the notebook into single-user mode 
+ > (using vanilla 2.6.23 or 2.6.24-rc3), with no modules loaded, the cpu 
+ > runs at 2.4GHz. As soon as I laod the acpi-cpufreq module, the upper 
+ > limit falls in some steps (2 GHz, 1200MHz) to 800 MHz. Note that there 
+ > is neither acpid nor any powersave daemon running!
 
-The problem below, userspace did not deadlock the kernel. Userspace deadloc=
-ks the cpufreq sub system.
-The two threads that can reproduce the problem is: One thread that changes =
-the governors across say performance, userspace and ondemand on all CPUs co=
-ntinuously and other thread just keeps on doing 'cat /sys/devices/system/cp=
-u/cpu*/cpufreq/*' in an infinite loop.
- =
+Do you have CONFIG_CPU_FREQ_GOV_ONDEMAND enabled in your kernel ?
+ 
+ > I tried to play with cpufreq.debug, but I don't know what all the 
+ > messages are about :-(
 
-Thanks,
-Venki =
+If you had attached them, we might have had some clues.
 
+ > I already installed the latest BIOS 1.08 from Fujitsu, but nothing changes.
+ > 
+ > At the moment my workaround is *not* to load acpi-cpufreq, so the CPU 
+ > stays at 2.4GHz all the time, but I really want to use powersaving with 
+ > the machine....
 
+I'm confused.  It sounds like you _are_ using power saving.
+The whole purpose of cpufreq is to lower the cpu speed when idle.
+If you run some cpu intensive load like a big compile, does the
+speed go back up ?
+ 
+ > I'm willing to provide all necessary infos If you tell me what to to.
 
+the cpufreq.debug=7 logs would be a good start.
 
-________________________________
+	Dave
 
-	From: claudio [mailto:claudioeddy@gmail.com] =
-
-	Sent: Tuesday, November 20, 2007 7:05 PM
-	To: Dave Jones; cpufreq@www.linux.org.uk; Yu, Luming; Yu, Fenghua; Pallipa=
-di, Venkatesh
-	Subject: Re: [PATCH] Eliminate cpufreq_userspace scaling_setspeed deadlock
-	=
-
-	=
-
-	Is it what I'm reading: userspacer will be over?
-	Sorry I haven't been aware of "how the problem happens", so how has "users=
-pace" deadlocked the kernel?I'd like to understand (any link to the problem=
-?) it. =
-
-	[]s
-	=
-
-	=
-
-	On Nov 20, 2007 7:41 PM, Dave Jones <davej@redhat.com> wrote:
-	=
-
-
-		On Wed, Nov 07, 2007 at 10:45:35PM -0800, Venki Pallipadi wrote:
-		 >
-		 >
-		 > >-----Original Message-----
-		 > >From: Mattia Dongili [mailto:malattia@linux.it ]
-		 > >Sent: Wednesday, November 07, 2007 4:57 AM
-		 > >To: Yu, Luming
-		 > >Cc: Pallipadi, Venkatesh; Dave Jones; Yu, Fenghua; cpufreq
-		 > >Subject: Re: [PATCH] Eliminate cpufreq_userspace
-		 > >scaling_setspeed deadlock
-		 > >
-		 > >On Mon, Nov 05, 2007 at 04:58:18PM +0800, Yu, Luming wrote:
-		 > >> Based on my current testing results, this patch fixes my problem.
-		 > >> Please help push it upstream. =
-
-		 > >
-		 > >BTW, this will break some userspace apps. I can think of cpufrequtils
-		 > >and some deamons that use the userspace governor to set frequencies.
-		 > >
-		 >
-		 > Yes. But, this is the only solution we have for the deadlock right now =
-
-		 > and I think it should goto upstream as soon as possible, unless we have
-		 > some better alternative. Userspace breakage is better bargain than a
-		 > kernel deadlock. Isn't it :-).
-		=
-
-		I'm torn over this patch.  I don't see a better way to fix this either, =
-
-		but the potential for breaking userspace is there. I think I'm going to
-		merge this, and see how things go in -mm for a while.
-		=
-
-		       Dave
-		=
-
-		--
-		http://www.codemonkey.org.uk
-		=
-
-		_______________________________________________
-		Cpufreq mailing list
-		Cpufreq@lists.linux.org.uk
-		http://lists.linux.org.uk/mailman/listinfo/cpufreq
-		=
-
-
-
-
-
-	-- =
-
-	Claudio Eduardo Marques Gomes
-	Estudante de Engenharia da Computa=E7=E3o
-	Diretor de Tecnologia do CAECOM
-	Projeto DCC-INDT em Baixo Consumo de Energia em Sistemas Embarcados
-	Universidade Federal do Amazonas (UFAM)
-	Tell: 92 3088-3845
-	Cel:  92 9183-8100 =
+-- 
+http://www.codemonkey.org.uk
