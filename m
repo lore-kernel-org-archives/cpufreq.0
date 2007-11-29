@@ -1,12 +1,11 @@
-From: "Saru Addep" <saru.dpm@gmail.com>
-Subject: cpu freq architecture...
-Date: Thu, 29 Nov 2007 11:21:50 -0800
-Message-ID: <9f79f7f50711291121p772c61e9h905c21cd35bee870@mail.gmail.com>
+From: Stefano Brivio <stefano.brivio@polimi.it>
+Subject: [PATCH] cpufreq: fix configuration help message
+Date: Thu, 29 Nov 2007 19:37:41 +0100
+Message-ID: <20071129193741.6b84164a@morte>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,11 +16,34 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk
 
-Hi All,
+cpufreq support can't be built as a module. Fix the related configuration
+help message.
 
-Can someone please direct me to new CPUfreq Architecture documents.
 
-Thanks
-Saringni
+Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
+
+---
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 721f86f..c159ae6 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -9,9 +9,6 @@ config CPU_FREQ
+ 	  clock speed, you need to either enable a dynamic cpufreq governor
+ 	  (see below) after boot, or use a userspace tool.
+ 
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called cpufreq.
+-
+ 	  For details, take a look at <file:Documentation/cpu-freq>.
+ 
+ 	  If in doubt, say N.
+
+
+
+-- 
+Ciao
+Stefano
