@@ -1,11 +1,13 @@
-From: Stefano Brivio <stefano.brivio@polimi.it>
-Subject: [PATCH] cpufreq: fix configuration help message
-Date: Thu, 29 Nov 2007 19:37:41 +0100
-Message-ID: <20071129193741.6b84164a@morte>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
+Date: Sat,  1 Dec 2007 12:35:07 -0800 (PST)
+Message-ID: <20071201203507.7F491108069@picon.linux-foundation.org>
+References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-9475-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,34 +18,27 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-cpufreq support can't be built as a module. Fix the related configuration
-help message.
+http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
-Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
+rjwysocki@sisk.pl changed:
 
----
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |mingo@elte.hu
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 721f86f..c159ae6 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -9,9 +9,6 @@ config CPU_FREQ
- 	  clock speed, you need to either enable a dynamic cpufreq governor
- 	  (see below) after boot, or use a userspace tool.
- 
--	  To compile this driver as a module, choose M here: the
--	  module will be called cpufreq.
--
- 	  For details, take a look at <file:Documentation/cpu-freq>.
- 
- 	  If in doubt, say N.
 
+
+
+------- Comment #1 from rjwysocki@sisk.pl  2007-12-01 12:35 -------
+Please mark it as a regression.
+
+Apart from this, I'm going to add it to the list of recent regressions.
 
 
 -- 
-Ciao
-Stefano
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
