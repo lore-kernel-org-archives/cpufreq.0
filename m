@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Sat,  1 Dec 2007 12:35:07 -0800 (PST)
-Message-ID: <20071201203507.7F491108069@picon.linux-foundation.org>
+Date: Sat,  1 Dec 2007 12:35:44 -0800 (PST)
+Message-ID: <20071201203545.0517810806C@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,15 +27,10 @@ rjwysocki@sisk.pl changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |mingo@elte.hu
+OtherBugsDependingO|                            |9243
+              nThis|                            |
 
 
-
-
-------- Comment #1 from rjwysocki@sisk.pl  2007-12-01 12:35 -------
-Please mark it as a regression.
-
-Apart from this, I'm going to add it to the list of recent regressions.
 
 
 -- 
