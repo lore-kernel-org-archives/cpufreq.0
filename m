@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Tue,  4 Dec 2007 13:28:25 -0800 (PST)
-Message-ID: <20071204212825.38EDE108069@picon.linux-foundation.org>
+Date: Tue,  4 Dec 2007 13:47:07 -0800 (PST)
+Message-ID: <20071204214707.3DD26108069@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,14 +26,23 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
 
-------- Comment #3 from davej@codemonkey.org.uk  2007-12-04 13:28 -------
-we've been doing adjust_jiffies() on cpu speed transitions forever, so this
-isn't a regression in that sense.  Why it's causing a problem now is a mystery
-though.
+------- Comment #4 from mingo@elte.hu  2007-12-04 13:47 -------
 
-Even more puzzling, on lkml, Stefano commented out the adjust_jiffies() code,
-and still saw leaping counters, so I'm really at a loss to explain what's going
-on.
+> we've been doing adjust_jiffies() on cpu speed transitions forever, so 
+> this isn't a regression in that sense.  Why it's causing a problem now 
+> is a mystery though.
+> 
+> Even more puzzling, on lkml, Stefano commented out the 
+> adjust_jiffies() code, and still saw leaping counters, so I'm really 
+> at a loss to explain what's going on.
+
+hm, maybe i'm missing something obvious, but adjust_jiffies() seems to 
+fix up loops_per_jiffy, not the jiffies variable. The bugreport included 
+a /var/log/messages snippets that showed printk timestamps - the printk 
+timestamps are directly derived from the 'jiffies' variable. Those 
+timestamps jumped back and forth according to CPU frequency. So 
+_something_ does seem to affect the jiffies variable - and it's not 
+adjust_jiffies(). Or at least so i think.
 
 
 -- 
