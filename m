@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Tue,  4 Dec 2007 13:47:07 -0800 (PST)
-Message-ID: <20071204214707.3DD26108069@picon.linux-foundation.org>
+Date: Tue,  4 Dec 2007 14:04:20 -0800 (PST)
+Message-ID: <20071204220420.1F146108010@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,23 +26,24 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
 
-------- Comment #4 from mingo@elte.hu  2007-12-04 13:47 -------
+------- Comment #5 from stefano.brivio@polimi.it  2007-12-04 14:04 -------
+(In reply to comment #4)
 
-> we've been doing adjust_jiffies() on cpu speed transitions forever, so 
-> this isn't a regression in that sense.  Why it's causing a problem now 
-> is a mystery though.
-> 
-> Even more puzzling, on lkml, Stefano commented out the 
-> adjust_jiffies() code, and still saw leaping counters, so I'm really 
-> at a loss to explain what's going on.
+> hm, maybe i'm missing something obvious, but adjust_jiffies() seems to 
+> fix up loops_per_jiffy, not the jiffies variable. The bugreport included 
+> a /var/log/messages snippets that showed printk timestamps - the printk 
+> timestamps are directly derived from the 'jiffies' variable. Those 
+> timestamps jumped back and forth according to CPU frequency. So 
+> _something_ does seem to affect the jiffies variable - and it's not 
+> adjust_jiffies(). Or at least so i think.
 
-hm, maybe i'm missing something obvious, but adjust_jiffies() seems to 
-fix up loops_per_jiffy, not the jiffies variable. The bugreport included 
-a /var/log/messages snippets that showed printk timestamps - the printk 
-timestamps are directly derived from the 'jiffies' variable. Those 
-timestamps jumped back and forth according to CPU frequency. So 
-_something_ does seem to affect the jiffies variable - and it's not 
-adjust_jiffies(). Or at least so i think.
+Yes, I'm wondering about this as well. But so far, I hadn't been able to find
+out where in the kernel a CPU frequency switch could trigger a sudden change to
+the jiffies counter. The only related thing I observed is that adjust_jiffies()
+is called, but that doesn't seem to be the culprit.
+
+BTW, I just sorted out the dm-crypt issue which prevented me to test 2.6.23.
+Will let you know ASAP about further tests.
 
 
 -- 
