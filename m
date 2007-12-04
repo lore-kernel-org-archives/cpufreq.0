@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Tue,  4 Dec 2007 13:12:43 -0800 (PST)
-Message-ID: <20071204211243.EC5DA108010@picon.linux-foundation.org>
+Date: Tue,  4 Dec 2007 13:14:49 -0800 (PST)
+Message-ID: <20071204211449.C1CB4108010@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,13 +23,15 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
-mingo@elte.hu changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |davej@codemonkey.org.uk
 
 
+
+------- Comment #2 from mingo@elte.hu  2007-12-04 13:14 -------
+Ugh, this seems to be a nasty regression.
+
+Dave, is this some GTOD weirdness? I didnt know jiffies are fixed up during
+cpu-freq change - that would mess up all sorts of things like all timer_list
+timers.
 
 
 -- 
