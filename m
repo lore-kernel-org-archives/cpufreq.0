@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Tue,  4 Dec 2007 13:14:49 -0800 (PST)
-Message-ID: <20071204211449.C1CB4108010@picon.linux-foundation.org>
+Date: Tue,  4 Dec 2007 13:28:25 -0800 (PST)
+Message-ID: <20071204212825.38EDE108069@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,12 +26,14 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
 
-------- Comment #2 from mingo@elte.hu  2007-12-04 13:14 -------
-Ugh, this seems to be a nasty regression.
+------- Comment #3 from davej@codemonkey.org.uk  2007-12-04 13:28 -------
+we've been doing adjust_jiffies() on cpu speed transitions forever, so this
+isn't a regression in that sense.  Why it's causing a problem now is a mystery
+though.
 
-Dave, is this some GTOD weirdness? I didnt know jiffies are fixed up during
-cpu-freq change - that would mess up all sorts of things like all timer_list
-timers.
+Even more puzzling, on lkml, Stefano commented out the adjust_jiffies() code,
+and still saw leaping counters, so I'm really at a loss to explain what's going
+on.
 
 
 -- 
