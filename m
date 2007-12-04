@@ -1,48 +1,38 @@
-From: Adrian Bunk <bunk@kernel.org>
-Subject: [2.6 patch] drivers/cpufreq/cpufreq_stats.c section fix
-Date: Sun, 2 Dec 2007 01:43:04 +0100
-Message-ID: <20071202004304.GG15974@stusta.de>
-References: <200711291419.49261.chris2553@googlemail.com>
+From: "=?ISO-8859-1?Q?Petri_J=E4rvenp=E4=E4?=" <petri.jarvenpaa@gmail.com>
+Subject: Intel E21x0 processors
+Date: Tue, 4 Dec 2007 16:39:27 +0200
+Message-ID: <2a993050712040639p40d0a8e8s45a2a73378c73c39@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755406AbXLBAn0@vger.kernel.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <200711291419.49261.chris2553@googlemail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Chris Clayton <chris2553@googlemail.com>, davej@codemonkey.org.uk
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Content-Type: text/plain; charset="macroman"
+To: cpufreq@lists.linux.org.uk
 
-cpufreq_stats_free_table() mustn't be __cpuexit since it's called by the 
-__cpuinit cpufreq_stat_cpu_callback().
+Hello all and well met.
+I=B4ve tried searching Google and your list archives, but one answer to this
+question still eludes me:
+Does Intel E21x0 processor (E2180 to be exact) work with cpufreq currently?
 
-This patch fixes the following section mismatch reported by
-Chris Clayton:
+If not:
+       is it going to work at all?
+       I wont bore you with more details.
+if yes:
+       Since what version of Kernel and cpufreq?
+       More info on my predicament to follow, maybe.
 
-<--  snip  -->
+Best regards,
+Petri J=E4rvenp=E4=E4
 
-...
-WARNING: vmlinux.o(.init.text+0x143dd): Section mismatch: reference to .exit.text:cpufreq_stats_free_table (between 'cpufreq_stat_cpu_callback' and 'cpufreq_stats_init')
-...
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-b845706570b48f091f855c33cdb9979d7e83a424 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 8a45d0f..1b8312b 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -164,7 +164,7 @@ freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
- 	return -1;
- }
- 
--static void __cpuexit cpufreq_stats_free_table(unsigned int cpu)
-+static void cpufreq_stats_free_table(unsigned int cpu)
- {
- 	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-
+PS. Hopefully this goes by-the-book, I am pretty new to this mailing list
+thing.
