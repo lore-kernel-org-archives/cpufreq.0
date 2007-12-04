@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Tue,  4 Dec 2007 14:09:15 -0800 (PST)
-Message-ID: <20071204220915.B524B108069@picon.linux-foundation.org>
+Date: Tue,  4 Dec 2007 14:25:04 -0800 (PST)
+Message-ID: <20071204222504.E9071108069@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,16 +26,8 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
 
-------- Comment #6 from mingo@elte.hu  2007-12-04 14:09 -------
-
-> Yes, I'm wondering about this as well. But so far, I hadn't been able 
-> to find out where in the kernel a CPU frequency switch could trigger a 
-> sudden change to the jiffies counter. The only related thing I 
-> observed is that adjust_jiffies() is called, but that doesn't seem to 
-> be the culprit.
-
-one thing that changes jiffies is the NOHZ code. But that should really 
-only be a forwards adjustment. NTP also changes it. Weird.
+------- Comment #7 from davej@codemonkey.org.uk  2007-12-04 14:25 -------
+does booting with nohz=off change anything?
 
 
 -- 
