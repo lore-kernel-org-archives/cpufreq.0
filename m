@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Wed,  5 Dec 2007 11:28:43 -0800 (PST)
-Message-ID: <20071205192843.05EE2108010@picon.linux-foundation.org>
+Date: Wed,  5 Dec 2007 11:38:31 -0800 (PST)
+Message-ID: <20071205193831.77C5F108010@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,11 +26,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
 
-------- Comment #8 from stefano.brivio@polimi.it  2007-12-05 11:28 -------
-(In reply to comment #7)
-> does booting with nohz=off change anything?
-
-That was already off. I tried to turn it on, but nothing changed.
+------- Comment #9 from stefano.brivio@polimi.it  2007-12-05 11:38 -------
+I just managed to boot 2.6.23. Nothing changes. Do you want me to bisect some
+specific tree?
 
 
 -- 
