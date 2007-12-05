@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Wed,  5 Dec 2007 11:38:31 -0800 (PST)
-Message-ID: <20071205193831.77C5F108010@picon.linux-foundation.org>
+Date: Wed,  5 Dec 2007 12:43:59 -0800 (PST)
+Message-ID: <20071205204359.4721911D108@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,9 +26,17 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
 
-------- Comment #9 from stefano.brivio@polimi.it  2007-12-05 11:38 -------
-I just managed to boot 2.6.23. Nothing changes. Do you want me to bisect some
-specific tree?
+------- Comment #10 from mingo@elte.hu  2007-12-05 12:43 -------
+
+> I just managed to boot 2.6.23. Nothing changes. Do you want me to 
+> bisect some specific tree?
+
+nothing changes == same problem?
+
+If yes then please try to find the oldest kernel that still works fine. 
+2.6.20 would be a good pick i think, 2.6.16 after that. Then if you 
+could try to bisect between the youngest "good" and the oldest "bad" 
+tree that would be fantastic ... Expect a compile-fest though.
 
 
 -- 
