@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Thu,  6 Dec 2007 20:32:14 -0800 (PST)
-Message-ID: <20071207043214.C3F1F10806A@picon.linux-foundation.org>
+Date: Thu,  6 Dec 2007 21:16:09 -0800 (PST)
+Message-ID: <20071207051609.B549910806C@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,45 +23,46 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
-len.brown@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |acpi-
-                   |                            |bugzilla@lists.sourceforge.n
-                   |                            |et
 
 
 
+------- Comment #13 from stefano.brivio@polimi.it  2007-12-06 21:16 -------
+(In reply to comment #12)
+> Some Intel TSC facts, for the record:
+> 
+> if (family == 6 && model < 14) || (family == 15 && model < 3)
+>    TSC rate = Core MHz rate (ie. it changes with core/bus ratio shifts)
+>    WRMSR on the TSC writes bottom 32-bits, clears upper 32 bits.
 
-------- Comment #12 from len.brown@intel.com  2007-12-06 20:32 -------
-Some Intel TSC facts, for the record:
+Thank you for the info.
 
-if (family == 6 && model < 14) || (family == 15 && model < 3)
-   TSC rate = Core MHz rate (ie. it changes with core/bus ratio shifts)
-   WRMSR on the TSC writes bottom 32-bits, clears upper 32 bits.
+> But note that the bigger problem may be that on all Intel processors
+> with C3 that have shipped to date, the TSC COMPLETELY STOPS
+> for the duration of C3.
 
-For these families with models later than above
-   TSC rate = constant (does not change with core/bus ratio shifts)
-   WRMSR TSC writes all 64 bits.
+During C2 as well, maybe?
 
-The system here is a family 6, model 13, so it it will
-indeed see variable speed.
+> I believe that tsc_unstable is set upon either of these situations.
 
-But note that the bigger problem may be that on all Intel processors
-with C3 that have shipped to date, the TSC COMPLETELY STOPS
-for the duration of C3.
+Yes, no worries, I hit both :)
 
-I believe that tsc_unstable is set upon either of these situations.
+Nov 29 07:55:29 morte [    6.530752] Marking TSC unstable due to: possible TSC
+halt in C2.
+Nov 29 07:55:29 morte [    6.530761] Time: acpi_pm clocksource has been
+installed.
+Nov 29 07:55:29 morte [    6.620700] Clocksource tsc unstable (delta =
+-456217276 ns)
 
-I don't follow all the twisty turny paths in the code here --
-and it is wonderful that you bisected and found the cause;
-but it isn't immediately obvious that this is due to variable
-speed TSC, but it may be due to TSC stoppage.
+and
 
-if you disable cpufreq and it goes away, you know it was variable TSC.
-if you boot with "idle=poll" and keep cpufreq enabled and it goes
-away, then you know it was TSC stoppage.
+Nov 29 20:50:31 morte [  297.562722] Marking TSC unstable due to: cpufreq
+changes.
+
+Anyway, I tried to follow your two suggestions and I must say that variable TSC
+causes issues, while TSC stoppage doesn't, in my case. In both cases, the
+timestamp isn't correct, but while TSC stoppage causes, well, a stop, the big
+trouble is when the timestamp leaps back because of cpufreq changes, and
+drivers get confused by this behaviour.
 
 
 -- 
