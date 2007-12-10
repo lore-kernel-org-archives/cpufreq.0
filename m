@@ -1,13 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Fri,  7 Dec 2007 17:40:56 -0800 (PST)
-Message-ID: <20071208014056.3CDAB10806E@picon.linux-foundation.org>
-References: <bug-9475-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
+	dualcore AMD64
+Date: Sun,  9 Dec 2007 23:01:49 -0800 (PST)
+Message-ID: <20071210070149.1F8C210806D@picon.linux-foundation.org>
+References: <bug-8264-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9475-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8264-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,23 +21,19 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9475
-
-
-rjwysocki@sisk.pl changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |rjwysocki@sisk.pl
+http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
 
 
 
-------- Comment #14 from rjwysocki@sisk.pl  2007-12-07 17:40 -------
-*** Bug 9524 has been marked as a duplicate of this bug. ***
+
+------- Comment #24 from nils.neumann@rwth-aachen.de  2007-12-09 23:01 -------
+Is this a hardware bug of all VIA K8M890 chips? It seems that many users with
+the K8M8xx has the problem. Is it possible to write a workaround for buggy
+hardware or it's better to dispose this board?
 
 
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+You are on the CC list for the bug, or are watching someone who is.
