@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9549] [crash] kernel BUG at drivers/cpufreq/cpufreq.c:1060!
-Date: Wed, 12 Dec 2007 10:33:51 -0800 (PST)
-Message-ID: <20071212183351.37BC710806A@picon.linux-foundation.org>
+Date: Wed, 12 Dec 2007 10:56:36 -0800 (PST)
+Message-ID: <20071212185636.129A5108069@picon.linux-foundation.org>
 References: <bug-9549-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,15 +23,11 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9549
 
 
-rjwysocki@sisk.pl changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-OtherBugsDependingO|                            |9243
-              nThis|                            |
-         Regression|0                           |1
 
 
+
+------- Comment #1 from rjwysocki@sisk.pl  2007-12-12 10:56 -------
+Patch is available: http://lkml.org/lkml/2007/12/12/268
 
 
 -- 
