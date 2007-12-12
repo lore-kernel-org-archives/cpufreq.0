@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
 	dualcore AMD64
-Date: Tue, 11 Dec 2007 22:41:51 -0800 (PST)
-Message-ID: <20071212064152.04E0710806E@picon.linux-foundation.org>
+Date: Wed, 12 Dec 2007 09:04:00 -0800 (PST)
+Message-ID: <20071212170400.22C0810806A@picon.linux-foundation.org>
 References: <bug-8264-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,11 +27,12 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
 
 
-------- Comment #25 from protasnb@gmail.com  2007-12-11 22:41 -------
-I guess it's a fair question. The faulty chipset was identified, but I'm not
-sure a workaround has been found. Mark, do you think it is possible to quirk
-this board? downgrade/restrict governor to something like performance, or user
-space and have frequency changed "gently" by careful user process?  
+------- Comment #26 from mark.langsdorf@amd.com  2007-12-12 09:03 -------
+It might be possible to quirk the board, but I don't know that cpufreq has the
+infrastructure to handle it.
+
+I certainly don't have time to write the patch, nor hardware to test it on, but
+I will support/answer questions for anyone who wants to give it a try.
 
 
 -- 
