@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
 	dualcore AMD64
-Date: Sun,  9 Dec 2007 23:01:49 -0800 (PST)
-Message-ID: <20071210070149.1F8C210806D@picon.linux-foundation.org>
+Date: Tue, 11 Dec 2007 22:41:51 -0800 (PST)
+Message-ID: <20071212064152.04E0710806E@picon.linux-foundation.org>
 References: <bug-8264-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
 
 
-------- Comment #24 from nils.neumann@rwth-aachen.de  2007-12-09 23:01 -------
-Is this a hardware bug of all VIA K8M890 chips? It seems that many users with
-the K8M8xx has the problem. Is it possible to write a workaround for buggy
-hardware or it's better to dispose this board?
+------- Comment #25 from protasnb@gmail.com  2007-12-11 22:41 -------
+I guess it's a fair question. The faulty chipset was identified, but I'm not
+sure a workaround has been found. Mark, do you think it is possible to quirk
+this board? downgrade/restrict governor to something like performance, or user
+space and have frequency changed "gently" by careful user process?  
 
 
 -- 
