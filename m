@@ -1,13 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9151] Something broke cpufreq on laptop with lid behavior
-Date: Thu, 13 Dec 2007 11:03:34 -0800 (PST)
-Message-ID: <20071213190334.48D2911D108@picon.linux-foundation.org>
-References: <bug-9151-3570@http.bugzilla.kernel.org/>
+From: Scott Tester <scott@smbc.com.au>
+Subject: unsupported Speed Step cpu.
+Date: Fri, 14 Dec 2007 09:26:08 +1100
+Message-ID: <4761B180.7090502@smbc.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9151-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,19 +16,53 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9151
+speedstep-centrino: found unsupported CPU with Enhanced SpeedStep: send
+/proc/cpuinfo to cpufreq@lists.linux.org.uk
+
+*coota ~ # cat /proc/cpuinfo*
+processor    : 0
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 13
+model name    : Intel(R) Pentium(R) M processor 2.00GHz
+stepping    : 8
+cpu MHz        : 1995.024
+cache size    : 2048 KB
+fdiv_bug    : no
+hlt_bug        : no
+f00f_bug    : no
+coma_bug    : no
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 2
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx bts est tm2
+bogomips    : 3992.39
+clflush size    : 64
 
 
+SpeedStep was working on this cpu prior to kernel 2.6.22
 
+Much Thanks,
+Scott.
 
-
-------- Comment #4 from stevenm@umd.edu  2007-12-13 11:03 -------
-I guess I should point out that this is the speedstep-centrino driver
 
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+
+Scott Tester
+
+IT Department
+
+SMBC  www.smbc.com.au <http://www.smbc.com.au>
+
+Sydney Missionary and Bible College
+
+43 Badminton Road, Croydon NSW 2132
+
+Phone: 02 9747 4780  ext 147
+
+Mobile: 0411 145 584
