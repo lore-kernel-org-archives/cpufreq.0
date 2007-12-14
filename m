@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9561] powernow-k8 cpuid c0f13 not supported w/ fx-74 CPUs
-Date: Fri, 14 Dec 2007 09:47:44 -0800 (PST)
-Message-ID: <20071214174744.2505311D107@picon.linux-foundation.org>
+Date: Fri, 14 Dec 2007 10:08:54 -0800 (PST)
+Message-ID: <20071214180854.5E46B11D107@picon.linux-foundation.org>
 References: <bug-9561-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,16 +23,36 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9561
 
 
+mark.langsdorf@amd.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|cpufreq@www.linux.org.uk    |mark.langsdorf@amd.com
+             Status|NEW                         |ASSIGNED
 
 
 
-------- Comment #1 from blackprince2000@hotmail.com  2007-12-14 09:47 -------
-Created an attachment (id=14038)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=14038&action=view)
-x86info output
+
+------- Comment #2 from mark.langsdorf@amd.com  2007-12-14 10:08 -------
+Looks like it should be pretty easy to fix.  Try this patch:
+
+--- linux-2.6.23-git18-vanilla/arch/x86/kernel/cpu/cpufreq/powernow-k8.h.old   
+2007-12-14 12:15:06.000000000 -0600
++++ linux-2.6.23-git18-vanilla/arch/x86/kernel/cpu/cpufreq/powernow-k8.h       
+2007-12-14 12:15:27.000000000 -0600
+@@ -47,7 +47,7 @@ struct powernow_k8_data {
+ #define CPUID_XFAM                     0x0ff00000      /* extended family */
+ #define CPUID_XFAM_K8                  0
+ #define CPUID_XMOD                     0x000f0000      /* extended model */
+-#define CPUID_XMOD_REV_MASK            0x00080000
++#define CPUID_XMOD_REV_MASK            0x000c0000
+ #define CPUID_XFAM_10H                 0x00100000      /* family 0x10 */
+ #define CPUID_USE_XFAM_XMOD            0x00000f00
+ #define CPUID_GET_MAX_CAPABILITIES     0x80000000
 
 
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
 You are the assignee for the bug, or are watching the assignee.
