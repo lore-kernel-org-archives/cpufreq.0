@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9558] Frequency scaling not working after BIOS upgrade on Asus
 	F3jc
-Date: Fri, 14 Dec 2007 00:22:59 -0800 (PST)
-Message-ID: <20071214082259.7FEB111D107@picon.linux-foundation.org>
+Date: Fri, 14 Dec 2007 01:44:29 -0800 (PST)
+Message-ID: <20071214094429.74B5F11D107@picon.linux-foundation.org>
 References: <bug-9558-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,21 +24,29 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9558
 
 
-davej@codemonkey.org.uk changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
 
 
 
+------- Comment #5 from scurippio@gmail.com  2007-12-14 01:44 -------
+I have done some tests, and a strange behavior occurs:
 
-------- Comment #4 from davej@codemonkey.org.uk  2007-12-14 00:22 -------
-The errors in the dmesg log about incorrect checksums on ACPI tables don't
-really inspire confidence.
+The first time the kernel try to load the acpi-cpufreq module:
+ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFC) is
+beyond end of object [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU1._PSS]
+(Node df925cd8), AE_AML_PACKAGE_LIMIT
+ACPI Exception (processor_perflib-0234): AE_AML_PACKAGE_LIMIT, Evaluating _PSS
+[20070126]
+ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (0FFFFFFFC) is
+beyond end of object [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.CPU2._PSS]
+(Node df925ee8), AE_AML_PACKAGE_LIMIT
+ACPI Exception (processor_perflib-0234): AE_AML_PACKAGE_LIMIT, Evaluating _PSS
+[20070126]
+with consequent Cannot insert module (Device not found)
 
-I don't see any signs in the log that you've loaded the acpi-cpufreq module at
-all. Do you have CONFIG_X86_ACPI_CPUFREQ set ?
+If I retry to load the module a second time, it works.
+Could be something solvable or should I damn Asus for making clueless BIOSes?
 
 
 -- 
