@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9558] Frequency scaling not working after BIOS upgrade on Asus
 	F3jc
-Date: Thu, 13 Dec 2007 23:01:29 -0800 (PST)
-Message-ID: <20071214070129.D97CE11D107@picon.linux-foundation.org>
+Date: Fri, 14 Dec 2007 00:19:20 -0800 (PST)
+Message-ID: <20071214081920.E851D11D107@picon.linux-foundation.org>
 References: <bug-9558-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,13 +24,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9558
 
 
+davej@codemonkey.org.uk changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+  Attachment #14017|text/x-log                  |text/plain
+          mime type|                            |
 
 
-
-------- Comment #3 from scurippio@gmail.com  2007-12-13 23:01 -------
-Created an attachment (id=14019)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=14019&action=view)
-lspci log
 
 
 -- 
