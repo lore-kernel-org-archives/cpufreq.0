@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9558] Frequency scaling not working after BIOS upgrade on Asus
 	F3jc
-Date: Fri, 14 Dec 2007 00:19:20 -0800 (PST)
-Message-ID: <20071214081920.E851D11D107@picon.linux-foundation.org>
+Date: Fri, 14 Dec 2007 00:22:59 -0800 (PST)
+Message-ID: <20071214082259.7FEB111D107@picon.linux-foundation.org>
 References: <bug-9558-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -28,10 +28,17 @@ davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-  Attachment #14017|text/x-log                  |text/plain
-          mime type|                            |
+             Status|NEW                         |NEEDINFO
 
 
+
+
+------- Comment #4 from davej@codemonkey.org.uk  2007-12-14 00:22 -------
+The errors in the dmesg log about incorrect checksums on ACPI tables don't
+really inspire confidence.
+
+I don't see any signs in the log that you've loaded the acpi-cpufreq module at
+all. Do you have CONFIG_X86_ACPI_CPUFREQ set ?
 
 
 -- 
