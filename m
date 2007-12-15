@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9151] Something broke cpufreq on laptop with lid behavior
 	between 2.6.17 and 2.6.23
-Date: Fri, 14 Dec 2007 22:37:57 -0800 (PST)
-Message-ID: <20071215063757.904D811D109@picon.linux-foundation.org>
+Date: Sat, 15 Dec 2007 08:44:11 -0800 (PST)
+Message-ID: <20071215164411.1F50E108069@picon.linux-foundation.org>
 References: <bug-9151-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,18 +24,23 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9151
 
 
+deller@gmx.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |deller@gmx.de
 
 
 
-------- Comment #8 from stevenm@umd.edu  2007-12-14 22:37 -------
-My tests were done in single-user mode, console, no X, no laptop-mode, no dbus
-or hal, nothing. As far as I could tell (and I stared at ps -e for a long time)
-nothing could be running that was changing the CPU frequency, not even acpid.
 
-The fact that the system was thinking it was at one frequency and actually
-being at another (hence refusing to change) tells me it is a kernel problem.
-Ie, I set it to 600. It is stuck at 2000. Setting it to 600 has no effect. But
-setting it to 800 and then 600 worked fine. Go figure
+------- Comment #9 from deller@gmx.de  2007-12-15 08:44 -------
+I see this problem sometimes too. (acpi-cpufreq driver does not speed down)
+System: HP NC6000 Laptop, Pentium M 1.6GHz, Fedora7, Kernel 2.6.24-rc4.
+When running on AC at full CPU speed, then plugging AC, CPU speed stays at 1600
+MHz. Even when switching manually to powersafe governour, acpi-cpufreq does not
+change back to 600 MHz. It seems it thinks it is already running on 600 MHz.
+Only when I switch to ondemand and then back to powersafe governour the speed
+finally goes down to 600 MHz.
 
 
 -- 
