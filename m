@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9151] Something broke cpufreq on laptop with lid behavior
 	between 2.6.17 and 2.6.23
-Date: Sat, 15 Dec 2007 08:44:11 -0800 (PST)
-Message-ID: <20071215164411.1F50E108069@picon.linux-foundation.org>
+Date: Mon, 17 Dec 2007 21:11:11 -0800 (PST)
+Message-ID: <20071218051111.5D7C110806C@picon.linux-foundation.org>
 References: <bug-9151-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,23 +24,22 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9151
 
 
-deller@gmx.de changed:
+stevenm@umd.edu changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |deller@gmx.de
+             Status|NEEDINFO                    |NEW
 
 
 
 
-------- Comment #9 from deller@gmx.de  2007-12-15 08:44 -------
-I see this problem sometimes too. (acpi-cpufreq driver does not speed down)
-System: HP NC6000 Laptop, Pentium M 1.6GHz, Fedora7, Kernel 2.6.24-rc4.
-When running on AC at full CPU speed, then plugging AC, CPU speed stays at 1600
-MHz. Even when switching manually to powersafe governour, acpi-cpufreq does not
-change back to 600 MHz. It seems it thinks it is already running on 600 MHz.
-Only when I switch to ondemand and then back to powersafe governour the speed
-finally goes down to 600 MHz.
+------- Comment #10 from stevenm@umd.edu  2007-12-17 21:11 -------
+Yup! Stiiilll happening! Extremely annoying. Unplug AC, open lid... 2GHz. And
+sometimes it gets STUCK there! That is, set to 600 and it jumps right back to
+2GHz. Have to go through some intermediate speed first.
+
+Oh, and it insists on going into 25% throttling when on battery power, but at
+least THAT I can set to 0% and it will stay. Still annoying as crap, however.
 
 
 -- 
