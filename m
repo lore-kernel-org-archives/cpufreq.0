@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Tue, 18 Dec 2007 16:59:36 -0800 (PST)
-Message-ID: <20071219005936.31D4C10806C@picon.linux-foundation.org>
+Date: Wed, 19 Dec 2007 05:46:56 -0800 (PST)
+Message-ID: <20071219134656.E865910806D@picon.linux-foundation.org>
 References: <bug-9475-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,18 +23,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9475
 
 
-stefano.brivio@polimi.it changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REOPENED                    |RESOLVED
-         Resolution|                            |CODE_FIX
 
 
 
+------- Comment #16 from mingo@elte.hu  2007-12-19 05:46 -------
 
-------- Comment #15 from stefano.brivio@polimi.it  2007-12-18 16:59 -------
-Fix: http://lkml.org/lkml/2007/12/7/100
+> Fix: http://lkml.org/lkml/2007/12/7/100
+
+note that due to intrusiveness this will likely only show up in v2.6.25.
 
 
 -- 
