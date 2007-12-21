@@ -1,13 +1,12 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9177] speedstep_centrino can't find device any more
-Date: Fri, 21 Dec 2007 07:22:28 -0800 (PST)
-Message-ID: <20071221152228.16AEC108069@picon.linux-foundation.org>
-References: <bug-9177-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 9615] New: Bug with cpufreq when using ondemand governor as
+	default
+Date: Fri, 21 Dec 2007 14:06:06 -0800 (PST)
+Message-ID: <bug-9615-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9177-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,20 +19,28 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9177
+http://bugzilla.kernel.org/show_bug.cgi?id=9615
+
+           Summary: Bug with cpufreq when using ondemand governor as default
+           Product: Power Management
+           Version: 2.5
+     KernelVersion: 2.6.24-rc5
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@www.linux.org.uk
+        ReportedBy: rjwysocki@sisk.pl
 
 
-
-
-
-------- Comment #2 from alexander.heinlein@web.de  2007-12-21 07:22 -------
-Hi.
-
-What's up? Any plans to fix this problem? Or will this module become obsolete?
-Some responses would be really nice.
-
-Regards,
-Alex
+Subject         : Bug with cpufreq when using ondemand governor as default
+Submitter       : Johannes Weiner <hannes@saeurebad.de>
+References      : http://lkml.org/lkml/2007/12/21/127
+Handled-By      :
+Patch           : http://lkml.org/lkml/2007/12/21/127
 
 
 -- 
