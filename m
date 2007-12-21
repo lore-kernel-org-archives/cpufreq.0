@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9615] Bug with cpufreq when using ondemand governor as default
-Date: Fri, 21 Dec 2007 14:06:48 -0800 (PST)
-Message-ID: <20071221220648.48734108011@picon.linux-foundation.org>
+Date: Fri, 21 Dec 2007 14:06:21 -0800 (PST)
+Message-ID: <20071221220621.4B8CA10806F@picon.linux-foundation.org>
 References: <bug-9615-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,7 +27,10 @@ rjwysocki@sisk.pl changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |davej@codemonkey.org.uk
+                 CC|                            |hannes@saeurebad.de
+OtherBugsDependingO|                            |9243
+              nThis|                            |
+         Regression|0                           |1
 
 
 
