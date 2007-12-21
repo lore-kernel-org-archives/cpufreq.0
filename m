@@ -1,13 +1,13 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9549] [crash] kernel BUG at drivers/cpufreq/cpufreq.c:1060!
-Date: Thu, 20 Dec 2007 16:09:54 -0800 (PST)
-Message-ID: <20071221000954.E2359108077@picon.linux-foundation.org>
-References: <bug-9549-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 9177] speedstep_centrino can't find device any more
+Date: Fri, 21 Dec 2007 07:22:28 -0800 (PST)
+Message-ID: <20071221152228.16AEC108069@picon.linux-foundation.org>
+References: <bug-9177-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9549-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-9177-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,29 +20,20 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9549
-
-
-rjwysocki@sisk.pl changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |CLOSED
-         Resolution|                            |CODE_FIX
+http://bugzilla.kernel.org/show_bug.cgi?id=9177
 
 
 
 
-------- Comment #2 from rjwysocki@sisk.pl  2007-12-20 16:09 -------
-Fixed by:
 
-commit bd6cba53c524dccf72900435d29722b22f61d835
-Author: Dave Jones <davej@redhat.com>
-Date:   Mon Dec 17 16:19:58 2007 -0800
+------- Comment #2 from alexander.heinlein@web.de  2007-12-21 07:22 -------
+Hi.
 
-    cpufreq: fix missing unlocks in cpufreq_add_dev error paths.
+What's up? Any plans to fix this problem? Or will this module become obsolete?
+Some responses would be really nice.
 
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bd6cba53c524dccf72900435d29722b22f61d835
+Regards,
+Alex
 
 
 -- 
