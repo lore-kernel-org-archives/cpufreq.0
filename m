@@ -1,13 +1,13 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9475] jiffies counter leaps on CPU frequency changes
-Date: Wed, 19 Dec 2007 05:46:56 -0800 (PST)
-Message-ID: <20071219134656.E865910806D@picon.linux-foundation.org>
-References: <bug-9475-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 9549] [crash] kernel BUG at drivers/cpufreq/cpufreq.c:1060!
+Date: Thu, 20 Dec 2007 16:09:54 -0800 (PST)
+Message-ID: <20071221000954.E2359108077@picon.linux-foundation.org>
+References: <bug-9549-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9475-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-9549-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,17 +20,29 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9475
+http://bugzilla.kernel.org/show_bug.cgi?id=9549
+
+
+rjwysocki@sisk.pl changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |CLOSED
+         Resolution|                            |CODE_FIX
 
 
 
 
+------- Comment #2 from rjwysocki@sisk.pl  2007-12-20 16:09 -------
+Fixed by:
 
-------- Comment #16 from mingo@elte.hu  2007-12-19 05:46 -------
+commit bd6cba53c524dccf72900435d29722b22f61d835
+Author: Dave Jones <davej@redhat.com>
+Date:   Mon Dec 17 16:19:58 2007 -0800
 
-> Fix: http://lkml.org/lkml/2007/12/7/100
+    cpufreq: fix missing unlocks in cpufreq_add_dev error paths.
 
-note that due to intrusiveness this will likely only show up in v2.6.25.
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bd6cba53c524dccf72900435d29722b22f61d835
 
 
 -- 
