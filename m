@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9177] speedstep_centrino can't find device any more
-Date: Fri, 21 Dec 2007 21:48:52 -0800 (PST)
-Message-ID: <20071222054852.9EC88108011@picon.linux-foundation.org>
+Date: Sat, 22 Dec 2007 04:37:15 -0800 (PST)
+Message-ID: <20071222123715.843E0108011@picon.linux-foundation.org>
 References: <bug-9177-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,20 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9177
 
 
-protasnb@gmail.com changed:
+alexander.heinlein@web.de changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |davej@codemonkey.org.uk
+      KernelVersion|2.6.23.1                    |2.6.23.12
 
 
-
-
-------- Comment #3 from protasnb@gmail.com  2007-12-21 21:48 -------
-There is a plan to use acpi-cpufreq, so it's a good news. As for breakage of
-speedstep-centrino, maybe you can enable ACPI_DEBUG and provide dmesg and
-/var/log/messages while inserting the module. 
-Have you tried latest kernel by chance?
 
 
 -- 
