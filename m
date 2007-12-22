@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9177] speedstep_centrino can't find device any more
-Date: Sat, 22 Dec 2007 04:37:15 -0800 (PST)
-Message-ID: <20071222123715.843E0108011@picon.linux-foundation.org>
+Date: Sat, 22 Dec 2007 04:39:28 -0800 (PST)
+Message-ID: <20071222123928.EABE3108011@picon.linux-foundation.org>
 References: <bug-9177-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,13 +23,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9177
 
 
-alexander.heinlein@web.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-      KernelVersion|2.6.23.1                    |2.6.23.12
 
 
+
+------- Comment #4 from alexander.heinlein@web.de  2007-12-22 04:39 -------
+There are no messages while inserting speedstep-centrino. CONFIG_ACPI_DEBUG,
+CONFIG_CPU_FREQ_DEBUG, CONFIG_DEBUG_KERNEL and CONFIG_DEBUG_BUGVERBOSE enabled.
+
+Same problem with kernel 2.6.23.12.
 
 
 -- 
