@@ -1,13 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9177] speedstep_centrino can't find device any more
-Date: Sat, 22 Dec 2007 04:39:28 -0800 (PST)
-Message-ID: <20071222123928.EABE3108011@picon.linux-foundation.org>
-References: <bug-9177-3570@http.bugzilla.kernel.org/>
+From: Robin at Home <cremersdh@hotmail.com>
+Subject: Unknown p4-clockmod-capable CPU
+Date: Sun, 23 Dec 2007 14:48:03 +0100
+Message-ID: <BAY128-W46E3FE474337AD482C59CBE580@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9177-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,22 +16,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9177
-
-
-
-
-
-------- Comment #4 from alexander.heinlein@web.de  2007-12-22 04:39 -------
-There are no messages while inserting speedstep-centrino. CONFIG_ACPI_DEBUG,
-CONFIG_CPU_FREQ_DEBUG, CONFIG_DEBUG_KERNEL and CONFIG_DEBUG_BUGVERBOSE enabled.
-
-Same problem with kernel 2.6.23.12.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Hi there,
+ 
+I try to use p4-clockmod on my Intel D201GLY2 board with the Intel Celeron (I thought P4 based) and get the following error:
+ 
+[    0.000000] Initializing CPU#0[   26.858800] SLUB: Genslabs=22, HWalign=64, Order=0-1, MinObjects=4, CPUs=1, Nodes=1[   26.939086] CPU: After generic identify, caps: afebfbff 20100000 00000000 00000000 0000e31d 00000000 00000001[   26.939107] CPU: L1 I cache: 32K, L1 D cache: 32K[   26.939111] CPU: L2 cache: 512K[   26.939115] CPU: After all inits, caps: afebfbff 20100000 00000000 00003940 0000e31d 00000000 00000001[   27.460620] CPU0: Intel(R) Celeron(R) CPU          220  @ 1.20GHz stepping 01[   27.606666] Brought up 1 CPUs[   27.722820] checking if image is initramfs...<6>Switched to high resolution mode on CPU 0[   30.413214] ACPI: Processor [CPU0] (supports 8 throttling states)[  178.426634] p4-clockmod: Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux
+ .org.uk>[ 1169.599736] p4-clockmod: Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux.org.uk>[ 2441.131010] acpi_cpufreq: no version for "struct_module" found: kernel tainted.
+I am using Mythbuntu 7.10 (which is a version off Ubuntu 7.10) with kernel 2.6.22-14-generic
+ 
+Some more info about the CPU:
+/proc/cpuinfoprocessor       : 0vendor_id       : GenuineIntelcpu family      : 6model           : 22model name      : Intel(R) Celeron(R) CPU          220  @ 1.20GHzstepping        : 1cpu MHz         : 1200.134cache size      : 512 KBfdiv_bug        : nohlt_bug         : nof00f_bug        : nocoma_bug        : nofpu             : yesfpu_exception   : yescpuid level     : 10wp              : yesflags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmovpat pse36 clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx lm constant_tsc up pni monitor ds_cpl tm2 ssse3 cx16 xtpr lahf_lmbogomips        : 2401.82clflush size    : 64
+Is there a way I can use/patch the p4-clockmod so it will work in my system ?
+ 
+ 
+_________________________________________________________________
+Download Messenger op je mobiel!
+http://www.windowslivemobile.msn.com/nl/ 
