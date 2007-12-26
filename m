@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9636] cpufreq reports too low max freq on Intel P4
-Date: Wed, 26 Dec 2007 04:35:37 -0800 (PST)
-Message-ID: <20071226123537.80BEF10806A@picon.linux-foundation.org>
+Date: Wed, 26 Dec 2007 04:39:09 -0800 (PST)
+Message-ID: <20071226123909.F2C38108010@picon.linux-foundation.org>
 References: <bug-9636-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,10 +26,13 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9636
 
 
 
-------- Comment #1 from peter.ganzhorn@googlemail.com  2007-12-26 04:35 -------
-Created an attachment (id=14189)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=14189&action=view)
-/proc/cpuinfo of the affected machine.
+------- Comment #2 from peter.ganzhorn@googlemail.com  2007-12-26 04:39 -------
+BTW: I'm using the ondemand-governor and acpi-cpufreq as driver:
+
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver 
+acpi-cpufreq
+# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 
+ondemand
 
 
 -- 
