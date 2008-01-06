@@ -1,57 +1,82 @@
-From: Helge Deller <deller@gmx.de>
-Subject: [PATCH]add gcc printf format checking and fix wrong format
-	in speedstep-smi.c
-Date: Sun, 6 Jan 2008 14:27:01 +0100
-Message-ID: <200801061427.01811.deller@gmx.de>
+From: Julia Lawall <julia@diku.dk>
+Subject: [PATCH] drivers/cpufreq: Add calls to cpufreq_cpu_put
+Date: Sun, 6 Jan 2008 17:05:48 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0801061704500.24950@ask.diku.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754438AbYAFQGC@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
+To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-[PATCH] [CPUFREQ] add gcc printf format checking to cpufreq.h
+From: Julia Lawall <julia@diku.dk>
 
-ist_info.signature and the other variables in speedstep-smi.c are of type 
-"unsigned int", not "unsigned long". Detected with the added printf
-format check.
+A call to cpufreq_cpu_get should be matched by a call to cpufreq_cpu_put.
 
-Signed-off-by: Helge Deller <deller@gmx.de>
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 23932d7..7a276a6 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -365,7 +365,7 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
- #ifdef CONFIG_CPU_FREQ_DEBUG
+The problem was fixed using the following semantic patch.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+type T;
+identifier E;
+expression E1, E2;
+int ret;
+statement S;
+@@
+
+  T E;
+  ... when any
+(
+  E = cpufreq_cpu_get(...);
+  if (E == NULL) S
+|
+  if ((E = cpufreq_cpu_get(...)) == NULL) S
+)
+  ... when != E2 = E
+      when strict
+(
+  cpufreq_cpu_put(E);
+|
+  E1 = E;
+|
++ cpufreq_cpu_put(E);
+  return;
+|
++ cpufreq_cpu_put(E);
+  return ret;
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+
+diff -u -p a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+--- a/drivers/cpufreq/cpufreq.c 2008-01-06 11:51:40.000000000 +0100
++++ b/drivers/cpufreq/cpufreq.c 2008-01-06 12:01:47.000000000 +0100
+@@ -649,8 +649,10 @@ static ssize_t show(struct kobject * kob
+ 	if (!policy)
+ 		return -EINVAL;
  
- extern void cpufreq_debug_printk(unsigned int type, const char *prefix, 
--				 const char *fmt, ...);
-+				 const char *fmt, ...) __printf(3,4);
+-	if (lock_policy_rwsem_read(policy->cpu) < 0)
++	if (lock_policy_rwsem_read(policy->cpu) < 0) {
++		cpufreq_cpu_put(policy);
+ 		return -EINVAL;
++	}
  
- #else
-
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-index f2b5a62..f0dffe9 100644
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-@@ -368,7 +368,7 @@ static int __init speedstep_init(void)
- 		return -ENODEV;
- 	}
+ 	if (fattr->show)
+ 		ret = fattr->show(policy, buf);
+@@ -673,8 +675,10 @@ static ssize_t store(struct kobject * ko
+ 	if (!policy)
+ 		return -EINVAL;
  
--	dprintk("signature:0x%.8lx, command:0x%.8lx, event:0x%.8lx, perf_level:0x%.8lx.\n",
-+	dprintk("signature:0x%.8x, command:0x%.8x, event:0x%.8x, perf_level:0x%.8x.\n",
- 		ist_info.signature, ist_info.command, ist_info.event, ist_info.perf_level);
+-	if (lock_policy_rwsem_write(policy->cpu) < 0)
++	if (lock_policy_rwsem_write(policy->cpu) < 0) {
++		cpufreq_cpu_put(policy);
+ 		return -EINVAL;
++	}
  
- 	/* Error if no IST-SMI BIOS or no PARM
+ 	if (fattr->store)
+ 		ret = fattr->store(policy, buf, count);
