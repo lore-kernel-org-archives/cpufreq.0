@@ -1,15 +1,12 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH]add gcc printf format checking and fix wrong
-	format in speedstep-smi.c
-Date: Sun, 6 Jan 2008 21:18:05 +0100
-Message-ID: <200801062118.05964.deller@gmx.de>
-References: <200801061427.01811.deller@gmx.de>
+From: <walker01@alice.it>
+Subject: Cpufreq ondemand works just to one frequency
+Date: Mon, 7 Jan 2008 17:37:28 +0100
+Message-ID: <FBCMMO03Cx1Dy3riCTV0000156c@FBCMMO03.fbc.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200801061427.01811.deller@gmx.de>
-Content-Disposition: inline
+content-class: urn:content-classes:message
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,42 +17,48 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
-Cc: davej@codemonkey.org.uk
+Cc: cpufreq@lists.linux.org.uk
 
-Updated patch below
-==============
+Hello!!!
+This is my first mail in a mailing list...i'm sorry for my bad english but it's not my mother language...
+I have a problem with cpufreq...i use the ondemand governor but the problem is what it works just to frequency 498 MHz but my processor support 498 MHz, 598 MHz, 698 MHz, 1.1 GHz like you can see in the cpufreq-info out:
 
-[PATCH] [CPUFREQ] add gcc printf format checking to cpufreq.h
+cpufreq-info
+analyzing CPU 0:
+driver: powernow-k7
+CPUs which need to switch frequency at the same time: 0
+hardware limits: 498 MHz - 1.1 GHz
+available frequency steps: 498 MHz, 598 MHz, 698 MHz, 1.1 GHz
+available cpufreq governors: performance, conservative, ondemand, userspace
+current policy: frequency should be within 498 MHz and 498 MHz.
 
-ist_info.signature and the other variables in speedstep-smi.c are of type 
-"unsigned int", not "unsigned long". Detected with the added printf
-format check.
+The out of cpuinfo_max_freq is:
+/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
+1096392
+And cpuinfo_min_freq is:
+/sys/devices/system/cpu//cpufreq/cpuinfo_min_freq
+498360
+But looking the content of all files in /sys/devices/system/cpu/cpu0/cpufreq i saw that the content of the file scaling_max_freq and scaling_min_freq is the same:
 
-Signed-off-by: Helge Deller <deller@gmx.de>
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+498360
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-index f2b5a62..f0dffe9 100644
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c
-@@ -368,7 +368,7 @@ static int __init speedstep_init(void)
- 		return -ENODEV;
- 	}
- 
--	dprintk("signature:0x%.8lx, command:0x%.8lx, event:0x%.8lx, perf_level:0x%.8lx.\n",
-+	dprintk("signature:0x%.8x, command:0x%.8x, event:0x%.8x, perf_level:0x%.8x.\n",
- 		ist_info.signature, ist_info.command, ist_info.event, ist_info.perf_level);
- 
- 	/* Error if no IST-SMI BIOS or no PARM
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 23932d7..774add6 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -365,7 +365,7 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
- #ifdef CONFIG_CPU_FREQ_DEBUG
- 
- extern void cpufreq_debug_printk(unsigned int type, const char *prefix, 
--				 const char *fmt, ...);
-+		const char *fmt, ...) __attribute__ ((format(printf,3,4)));
- 
- #else
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+498360
+
+I think this is the problem...because i think the content of scaling_max_freq should be 1096392...
+I tried to change it by root with:
+
+echo 1096392 >/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+
+But the content dosen't change:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+498360
+
+I tried to change with the text editor kate...i open the file and repleaced 498360 with 1096392 and i save the file but if i reopen the file it looks empty...
+At reboot it's again 498360...
+
+I also search for the file cpufrequtils in /etc/init.d and in /etc/default but there isn't...
+I would what the ondemand governor use all the frequencis aviable...
+I use slackware 11 and the kernel 2.6.17.13...
+Thank you!!!
