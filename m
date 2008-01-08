@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9708] powersave governor does not scale down when power gets
 	connected
-Date: Mon,  7 Jan 2008 13:12:12 -0800 (PST)
-Message-ID: <20080107211212.D05EF108069@picon.linux-foundation.org>
+Date: Tue,  8 Jan 2008 03:46:56 -0800 (PST)
+Message-ID: <20080108114656.C5121108069@picon.linux-foundation.org>
 References: <bug-9708-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,15 +24,17 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9708
 
 
-deller@gmx.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-            Summary|powersave governor does not |powersave governor does not
-                   |work when power cable gets  |scale down when power gets
-                   |plugged in                  |connected
 
 
+
+------- Comment #1 from trenn@suse.de  2008-01-08 03:46 -------
+Do you use the latest BIOS for this machine?
+Do you have a related option in BIOS configuration set, like:
+"Full performance on AC"
+or similar?
+
+Do you see ACPI PACKAGE_LIMIT errors in dmesg? (-> then this is probably
+related to: http://bugzilla.kernel.org/show_bug.cgi?id=9558)
 
 
 -- 
