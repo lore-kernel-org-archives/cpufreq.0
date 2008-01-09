@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9708] powersave governor does not scale down when power gets
 	connected
-Date: Tue,  8 Jan 2008 10:51:55 -0800 (PST)
-Message-ID: <20080108185155.3CD87108069@picon.linux-foundation.org>
+Date: Wed,  9 Jan 2008 01:41:29 -0800 (PST)
+Message-ID: <20080109094129.90E88108069@picon.linux-foundation.org>
 References: <bug-9708-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,18 +27,15 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9708
 
 
 
-------- Comment #2 from deller@gmx.de  2008-01-08 10:51 -------
-Yes, I'm using the latest BIOS.
+------- Comment #3 from trenn@suse.de  2008-01-09 01:41 -------
+I expect you are seeing the same bug:
+https://bugzilla.novell.com/show_bug.cgi?id=334378
 
-In the BIOS there is no specific Performance/ACPI changes possibile. The only
-option I found was something like "Use Intel SpeedStep Technology" with Yes,
-No, Automatic. I choosed Automatic.
-
-I don't see any ACPI error messages in dmesg. The problem in
-http://bugzilla.kernel.org/show_bug.cgi?id=9558 does not seem related to my
-bug.
-
-Any other ideas or any other information needed?
+Compiling the kernel with CONFIG_CPU_FREQ_DEBUG=y and boot with cpufreq.debug=7
+parameter. Also add ACPI_DEBUG=y and add acpi.debug_level=0x1f boot parameter
+(maybe an ACPI event happens at a certain time that leads to this condition?).
+It may also help if you do the performance and back to powersave governor
+switches and mark the positions in dmesg logs when those have been issued.
 
 
 -- 
