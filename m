@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9708] powersave governor does not scale down when power gets
 	connected
-Date: Wed,  9 Jan 2008 01:41:29 -0800 (PST)
-Message-ID: <20080109094129.90E88108069@picon.linux-foundation.org>
+Date: Wed,  9 Jan 2008 12:40:40 -0800 (PST)
+Message-ID: <20080109204040.12E32108069@picon.linux-foundation.org>
 References: <bug-9708-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,15 +27,21 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9708
 
 
 
-------- Comment #3 from trenn@suse.de  2008-01-09 01:41 -------
-I expect you are seeing the same bug:
-https://bugzilla.novell.com/show_bug.cgi?id=334378
+------- Comment #4 from deller@gmx.de  2008-01-09 12:40 -------
+Created an attachment (id=14385)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=14385&action=view)
+Full syslog from bootup to shutdown. Problem happened shortly before timestamp
+"Jan  9 21:14:59"
 
-Compiling the kernel with CONFIG_CPU_FREQ_DEBUG=y and boot with cpufreq.debug=7
-parameter. Also add ACPI_DEBUG=y and add acpi.debug_level=0x1f boot parameter
-(maybe an ACPI event happens at a certain time that leads to this condition?).
-It may also help if you do the performance and back to powersave governor
-switches and mark the positions in dmesg logs when those have been issued.
+Good news! Attached is the full syslog from startup of system to shutdown with
+ACPI debug enabled.
+If you watch out for the "MARKER:" flags, you'll see what I just started to do,
+or what I just found. The real problem happens between timestamp 21:14:35 and
+21:14:59 
+Hope that helps to find the bug.
+
+PS: It seems cpufreq debugging is not visible. maybe the boot option you
+mentioned was wrong? (I'll check if necessary).
 
 
 -- 
