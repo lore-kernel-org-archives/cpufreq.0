@@ -1,7 +1,7 @@
-From: "=?ISO-8859-7?B?xN7s5/Tx4SDN6erv69zv9Q==?=" <demetra1986@gmail.com>
-Subject: read lm-sensors
-Date: Fri, 11 Jan 2008 18:37:00 +0200
-Message-ID: <a0b491410801110837j73f718cfj56bfa693ee01bd7b@mail.gmail.com>
+From: "Saru Addep" <saru.dpm@gmail.com>
+Subject: Overall picture of cpufreq..
+Date: Fri, 11 Jan 2008 14:15:14 -0800
+Message-ID: <9f79f7f50801111415w354dc91fwfeec98b16a00fb74@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,14 +17,17 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Hello,
-I'm trying to write a program for an assignment I have, for reading the
-temperatures of my laptop sensors. My  laptop is  a Toshiba A200-19L model
-(core2 Duo).
-I have read a lot of articles and I have search a lot for this assignment.
-Can you please help me about that?
+Hi All,
 
-Thank you in advanced,
-Demetra Nicolaou
+1) The kernel part of cpufreq seems quite understandable, but I am not able
+to get a complete picture of how an application/process in userspace can
+use/change a governor, with an interface to kernel ( not from command line),
+may be like an ioctl. Basically how can a userspace process change a
+governor at runtime.
+
+2) What is the purpose of userspace governor.
+
+Thanks
+Saringni.
