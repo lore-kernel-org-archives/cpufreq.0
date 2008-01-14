@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 05:45:43 -0800 (PST)
-Message-ID: <20080114134543.C6835108010@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 05:46:09 -0800 (PST)
+Message-ID: <20080114134609.9DB9410806A@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,10 +26,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #4 from schoenfeld@in-medias-res.com  2008-01-14 05:45 -------
-Created an attachment (id=14451)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=14451&action=view)
-bootlog
+------- Comment #5 from schoenfeld@in-medias-res.com  2008-01-14 05:46 -------
+Created an attachment (id=14452)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=14452&action=view)
+output of cat /proc/timer_list
 
 
 -- 
