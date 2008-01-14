@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 06:01:02 -0800 (PST)
-Message-ID: <20080114140102.5139210806C@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 06:06:29 -0800 (PST)
+Message-ID: <20080114140629.C24BA10806A@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,25 +26,13 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #7 from tglx@linutronix.de  2008-01-14 06:01 -------
-> I'm not exactly sure what do you mean by "full boot log"? A full boot log of
-> the problematic kernel or a log including boots of working kernels? I've added
-> the part of /var/log/kern.log where I booted the kernel the last time.
+------- Comment #8 from schoenfeld@in-medias-res.com  2008-01-14 06:06 -------
+Created an attachment (id=14453)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=14453&action=view)
+output file of at /proc/interrupts >irqs.txt; sleep 10; cat /proc/interrupts
+>>irqs.txt
 
-boot log of the problematic kernel. kern.log is fine. The output of
-dmesg is easier to read though.
-
-According to the output of /proc/timer_list there is no fast rearming
-timer, so it's likely to be something else.
-
-Can you please do the following:
-
-# cat /proc/interrupts >irqs.txt; sleep 10; cat /proc/interrupts >>irqs.txt
-
-and upload irqs.txt 
-
-Thanks,
-        tglx
+Here you are.
 
 
 -- 
