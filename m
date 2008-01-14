@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 08:43:06 -0800 (PST)
-Message-ID: <20080114164306.45D2810806C@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 08:43:49 -0800 (PST)
+Message-ID: <20080114164349.0A4D110806A@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,13 +23,14 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
+schoenfeld@in-medias-res.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+  Attachment #14450|0                           |1
+        is obsolete|                            |
 
 
-
-------- Comment #17 from schoenfeld@in-medias-res.com  2008-01-14 08:43 -------
-Created an attachment (id=14454)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=14454&action=view)
-kernel config (the right one :o)
 
 
 -- 
