@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 06:27:51 -0800 (PST)
-Message-ID: <20080114142751.A01EF10806A@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 06:38:56 -0800 (PST)
+Message-ID: <20080114143856.BB19210806C@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,29 +23,15 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
-tglx@linutronix.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |arjan@infradead.org
 
 
 
+------- Comment #10 from schoenfeld@in-medias-res.com  2008-01-14 06:38 -------
+Hmm. So probably this really is a powertop issue. However why isn't it
+triggered by 2.6.22? Btw. you can see [1] for an example on a powertop output,
+where the value is beyond 16000.
 
-------- Comment #9 from tglx@linutronix.de  2008-01-14 06:27 -------
-Hmm. The deltas are:                                                            
-
-   0:   742                                                                     
-  14:     4                                                                     
-  15:    90                                                                     
-  18:     1                                                                     
- LOC:   724                                                                     
------------                                                                     
-       1561                                                                     
-
-1561/10 ~= 156 interrupts/sec                                                   
-
-Not amazing, but not really in the range of 2500+.                              
+[1] http://just-imho.net/16000wakeupspersecond.png
 
 
 -- 
