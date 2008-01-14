@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 08:42:04 -0800 (PST)
-Message-ID: <20080114164204.7701710806C@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 08:43:06 -0800 (PST)
+Message-ID: <20080114164306.45D2810806C@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,19 +26,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #16 from schoenfeld@in-medias-res.com  2008-01-14 08:42 -------
-(In reply to comment #15)
-> If you decide to reboot, could you please try to capture something,
-> which shows us the large number of interrupts (via the shell command I
-> gave you before).
-
-You mean With those above stated workarounds?
-
-> I looked at your .config again. That's the .22 one. Is the .23
-> significantly different? Can you please upload it as well.
-
-Oh. You are right. I'll attach the one for .24. Sorry, my mistake.
-However I don't have a .23 version ;)
+------- Comment #17 from schoenfeld@in-medias-res.com  2008-01-14 08:43 -------
+Created an attachment (id=14454)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=14454&action=view)
+kernel config (the right one :o)
 
 
 -- 
