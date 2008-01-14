@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 07:01:51 -0800 (PST)
-Message-ID: <20080114150151.9B7D310806D@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 07:19:50 -0800 (PST)
+Message-ID: <20080114151950.508BE10806A@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,21 +26,14 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #13 from trenn@suse.de  2008-01-14 07:01 -------
-Then a workaround for you should be processor.max_cstate=2 boot param, if this
-does not help processor.max_cstate=1.
-But it would be great to know more about the root cause (and get this fixed to
-fully support the C-states).
-Could you try to keep processor driver without max_cstate workaround and
-blacklist yenta_socket, e.g. add a line:
-install yenta_socket /bin/echo "Yenta socket blacklisted, it will not get
-loaded"
-to /etc/modprobe.conf
-I already asked Arjan about the yenta_socket problem and he said it would be
-the yenta driver's fault... As there seem to be quite some people affected, it
-would be great to bring them together and find out a bit more about the problem
-(Did this machine ever worked correctly with C-states? If yes, one might want
-to start a git bisect...).
+------- Comment #14 from schoenfeld@in-medias-res.com  2008-01-14 07:19 -------
+Thomas Renninger,
+
+the current workaround for me is to use 2.6.22 which seems not to be affected
+by the problem. However in my case it does help nothing to blacklist
+yenta_socket.
+Well, I haven't yet tried the max_cstate thing as it requires me to reboot
+again.
 
 
 -- 
