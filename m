@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 05:12:09 -0800 (PST)
-Message-ID: <20080114131209.3B57E10806D@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 05:32:08 -0800 (PST)
+Message-ID: <20080114133208.B7FAC10806C@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,27 +23,15 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
-trenn@suse.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |tglx@linutronix.de,
-                   |                            |trenn@suse.de, mingo@elte.hu
 
 
 
+------- Comment #2 from tglx@linutronix.de  2008-01-14 05:32 -------
+Patrick, can you please upload your .config, a full boot log and the output of
+/proc/timer_list ?
 
-------- Comment #1 from trenn@suse.de  2008-01-14 05:12 -------
-This has nothing to do with cpufreq, but with timers.
-I also saw a similar bugreport somewhere else.
-
-I cannot help here (but would like to learn how to debug this...), if you have
-some luck Ingo Molnar or Thomas Gleixner can give you some hints how to debug
-this.
-
-I expect this has been introduced (just a guess, git should help) by the
-clockevents/highres/tickless timer patches. If you could prove this with git,
-you should get some help from the author of the patchsets...
+Thanks,
+       tglx
 
 
 -- 
