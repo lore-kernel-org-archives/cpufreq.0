@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 06:38:56 -0800 (PST)
-Message-ID: <20080114143856.BB19210806C@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 06:46:06 -0800 (PST)
+Message-ID: <20080114144606.0A24610806D@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,12 +26,17 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #10 from schoenfeld@in-medias-res.com  2008-01-14 06:38 -------
-Hmm. So probably this really is a powertop issue. However why isn't it
-triggered by 2.6.22? Btw. you can see [1] for an example on a powertop output,
-where the value is beyond 16000.
+------- Comment #11 from trenn@suse.de  2008-01-14 06:46 -------
+Maybe this is related to:
+https://bugzilla.novell.com/show_bug.cgi?id=335086
+and
+https://bugzilla.novell.com/show_bug.cgi?id=334170 (there only after s2ram
+case)
+and
+https://bugs.launchpad.net/ubuntu/+bug/145377
 
-[1] http://just-imho.net/16000wakeupspersecond.png
+there also powertop shows extrem interrupt activity and blacklisting
+yenta_socket driver helps.
 
 
 -- 
