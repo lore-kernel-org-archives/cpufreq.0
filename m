@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 07:19:50 -0800 (PST)
-Message-ID: <20080114151950.508BE10806A@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 07:40:09 -0800 (PST)
+Message-ID: <20080114154009.8767610806D@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,14 +26,22 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #14 from schoenfeld@in-medias-res.com  2008-01-14 07:19 -------
-Thomas Renninger,
+------- Comment #15 from tglx@linutronix.de  2008-01-14 07:40 -------
+> the current workaround for me is to use 2.6.22 which seems not to be affected
+> by the problem. However in my case it does help nothing to blacklist
+> yenta_socket.
+> Well, I haven't yet tried the max_cstate thing as it requires me to reboot
+> again.
 
-the current workaround for me is to use 2.6.22 which seems not to be affected
-by the problem. However in my case it does help nothing to blacklist
-yenta_socket.
-Well, I haven't yet tried the max_cstate thing as it requires me to reboot
-again.
+If you decide to reboot, could you please try to capture something,
+which shows us the large number of interrupts (via the shell command I
+gave you before).
+
+I looked at your .config again. That's the .22 one. Is the .23
+significantly different? Can you please upload it as well.
+
+Thanks,
+        tglx
 
 
 -- 
