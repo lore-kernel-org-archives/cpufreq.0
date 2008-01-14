@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 06:06:29 -0800 (PST)
-Message-ID: <20080114140629.C24BA10806A@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 06:27:51 -0800 (PST)
+Message-ID: <20080114142751.A01EF10806A@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,16 +23,29 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
+tglx@linutronix.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |arjan@infradead.org
 
 
 
-------- Comment #8 from schoenfeld@in-medias-res.com  2008-01-14 06:06 -------
-Created an attachment (id=14453)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=14453&action=view)
-output file of at /proc/interrupts >irqs.txt; sleep 10; cat /proc/interrupts
->>irqs.txt
 
-Here you are.
+------- Comment #9 from tglx@linutronix.de  2008-01-14 06:27 -------
+Hmm. The deltas are:                                                            
+
+   0:   742                                                                     
+  14:     4                                                                     
+  15:    90                                                                     
+  18:     1                                                                     
+ LOC:   724                                                                     
+-----------                                                                     
+       1561                                                                     
+
+1561/10 ~= 156 interrupts/sec                                                   
+
+Not amazing, but not really in the range of 2500+.                              
 
 
 -- 
