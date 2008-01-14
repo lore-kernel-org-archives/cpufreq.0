@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 06:46:06 -0800 (PST)
-Message-ID: <20080114144606.0A24610806D@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 06:51:39 -0800 (PST)
+Message-ID: <20080114145139.97B7A10806A@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,17 +26,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #11 from trenn@suse.de  2008-01-14 06:46 -------
-Maybe this is related to:
-https://bugzilla.novell.com/show_bug.cgi?id=335086
-and
-https://bugzilla.novell.com/show_bug.cgi?id=334170 (there only after s2ram
-case)
-and
-https://bugs.launchpad.net/ubuntu/+bug/145377
-
-there also powertop shows extrem interrupt activity and blacklisting
-yenta_socket driver helps.
+------- Comment #12 from schoenfeld@in-medias-res.com  2008-01-14 06:51 -------
+Yeah, indeed it seems related to 335086 @ Novell Bugzilla. If I do rmmod
+processor (i need to force it but that just besides) then the situation is
+relative normal with an average of 100-200 wakeups. Thats better then 2500, but
+still worse as with 2.6.22 (there the average is 80 and sometimes less then 50)
 
 
 -- 
