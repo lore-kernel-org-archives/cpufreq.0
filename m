@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Mon, 14 Jan 2008 23:58:18 -0800 (PST)
-Message-ID: <20080115075818.810DD10806A@picon.linux-foundation.org>
+Date: Mon, 14 Jan 2008 23:59:55 -0800 (PST)
+Message-ID: <20080115075955.0A6D610806C@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,15 +26,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #18 from schoenfeld@in-medias-res.com  2008-01-14 23:58 -------
-Okay I did some additional testing. With the cstate options from above I
-experience the following result (NOK = NOT OK)
-
-max_cstate = 2 = NOK
-max_cstate = 1 = NOK (increased (!) value in powertop!)
-
-I have created files with the cat /proc interupts.. command again and will
-attach them in a minute.
+------- Comment #19 from schoenfeld@in-medias-res.com  2008-01-14 23:59 -------
+Created an attachment (id=14460)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=14460&action=view)
+ircqs with max_cstate=1
 
 
 -- 
