@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9745] CPU is waking up too often
-Date: Tue, 15 Jan 2008 00:08:02 -0800 (PST)
-Message-ID: <20080115080802.E914410806C@picon.linux-foundation.org>
+Date: Tue, 15 Jan 2008 06:35:41 -0800 (PST)
+Message-ID: <20080115143541.84A9D10806D@picon.linux-foundation.org>
 References: <bug-9745-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,9 +26,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9745
 
 
 
-------- Comment #21 from schoenfeld@in-medias-res.com  2008-01-15 00:08 -------
-BTW. interesting: If I do cat /proc.. on a 2.6.22 system the interrupts/sec is
-even higher. So is this probably really a bug in powertop?
+------- Comment #22 from arjan@infradead.org  2008-01-15 06:35 -------
+max_cstate=1 is a red herring btw
+the kernel doesn't count wakeups for C1 so powertop doesnt get to see them
+either; that makes it a counting game not something reflecting what is actually
+happening on the system
 
 
 -- 
