@@ -1,14 +1,14 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9729] ondemand cpufreq governor doesn't see when
-	kcryptd/dm-crypt is busy
-Date: Fri, 18 Jan 2008 14:42:43 -0800 (PST)
-Message-ID: <20080118224243.DE720108069@picon.linux-foundation.org>
-References: <bug-9729-3570@http.bugzilla.kernel.org/>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] Subject: cell: add spu aware cpufreq governor
+Date: Sat, 19 Jan 2008 22:38:44 +0100
+Message-ID: <200801192238.45636.arnd@arndb.de>
+References: <20080118171119.3faa4a6a@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9729-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <20080118171119.3faa4a6a@de.ibm.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,47 +19,82 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cbe-oss-dev@ozlabs.org
+Cc: Christian Krafft <krafft@de.ibm.com>, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9729
+On Friday 18 January 2008, Christian Krafft wrote:
+> +#include <linux/cpufreq.h>
+> +#include <linux/sched.h>
+> +#include <linux/timer.h>
+> +#include <asm/atomic.h>
+> +#include <asm/machdep.h>
+> +#include <asm/spu.h>
+> +
+> +#include "asm/cell-regs.h"
+> +
+> +#define DEBUG		1
 
+You should have the '#define DEBUG' _before_ the #includes, otherwise pr_debug
+and friends don't do what you think they do.
 
-tch@wpkg.org changed:
+> +static void spu_gov_init_work(struct spu_gov_info_struct *info);
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REOPENED                    |REJECTED
-         Resolution|                            |INVALID
+Try to avoid forward declarations for static functions, instead reorder
+the functions in call order.
 
+> +
+> +static void spu_gov_timer(struct work_struct *work)
 
+'timer' is a bad name for a work function, because it suggests
+you're working on a timer_list.
 
+> +static void spu_gov_init_work(struct spu_gov_info_struct *info)
+> +{
+> +	int delay = usecs_to_jiffies(info->poll_int * 1000);
+> +	delay -= jiffies % delay;
+> +	INIT_DELAYED_WORK_DEFERRABLE(&info->work, spu_gov_timer);
+> +	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
+> +}
 
-------- Comment #3 from tch@wpkg.org  2008-01-18 14:42 -------
-This indeed must be some kind of dm-crypt/kcryptd "feature" and/or some
-confusion on how to read CPU usage.
+I think you shouldn't call INIT_DELAYED_WORK_DEFERRABLE() more than once.
+While I'm not sure if it's actually broken like you do it, it's certainly
+not how this interface was meant to be used.
 
-While reading from that dm-crypt device, the following CPU usage was shown (the
-numbers are consistent across a few tests):
+What's the point of the computation, can't you just always queue the
+work to be run in info->poll_int miliseconds from the time you call it?
 
-187 MHz -> ~75% system CPU time in top
-375 MHz -> ~66% system CPU time in top
-562 MHz -> ~94% system CPU time in top
-750 MHz -> ~85% system CPU time in top
-937 MHz -> ~85% system CPU time in top
-1125 MHz -> ~83% system CPU time in top
-1312 MHz -> ~70% system CPU time in top
-1500 MHz -> ~70% system CPU time in top
+> +static void spu_gov_cancel_work(struct spu_gov_info_struct *info)
+> +{
+> +	cancel_delayed_work(&info->work);
+> +}
 
+Doesn't that need to be cancel_delayed_work_sync() for rearming work queues?
 
-Looks like dm-crypt won't eat the whole CPU power for some reason.
+> +static int __init spu_gov_init(void)
+> +{
+> +	if (!machine_is(cell))
+> +		return -ENODEV;
 
-With default 80 as up_threshold for "ondemand" governor, no wonder the
-frequency didn't scale up.
+This seems wrong, why would you only allow that on cell platforms,
+but e.g. not celleb or even ps3 (assuming they had a cpufreq
+backend)? I think the only dependency is on spufs being loaded and
+that should work using module dependencies.
 
-So a "fix" for this bug is a matter of lowering up_threshold.
+> +	kspugov_wq = create_workqueue("kspugov");
+> +	if (!kspugov_wq) {
+> +		printk(KERN_ERR "creation of kspugov failed\n");
+> +		return -EFAULT;
+> +	}
+> +
+> +	return cpufreq_register_governor(&spu_governor);
+> +}
+> +
+> +static void __exit spu_gov_exit(void)
+> +{
+> +	cpufreq_unregister_governor(&spu_governor);
+> +	destroy_workqueue(kspugov_wq);
+> +}
 
+What happens when the work functions is called after unregistering?
 
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+	Arnd <><
