@@ -1,13 +1,14 @@
-From: "Akinobu Mita" <mita@fixstars.com>
-Subject: Re: [Cbe-oss-dev] Subject: cell: add spu aware cpufreq governor
-Date: Mon, 21 Jan 2008 12:09:23 +0900 (JST)
-Message-ID: <60952.202.227.43.1.1200884963.squirrel@m.fixstars.com>
-References: <20080118171119.3faa4a6a@de.ibm.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9151] Something broke cpufreq on laptop with lid behavior
+	between 2.6.17 and 2.6.23
+Date: Tue, 22 Jan 2008 16:43:38 -0800 (PST)
+Message-ID: <20080123004338.4F34410806A@picon.linux-foundation.org>
+References: <bug-9151-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20080118171119.3faa4a6a@de.ibm.com>
+In-Reply-To: <bug-9151-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,37 +19,33 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Christian Krafft <krafft@de.ibm.com>
-Cc: cpufreq@lists.linux.org.uk, cbe-oss-dev@ozlabs.org
+To: cpufreq@www.linux.org.uk
 
-> +/*
-> + * module init and destoy
-> + */
-> +
-> +static int __init spu_gov_init(void)
-> +{
-> +if (!machine_is(cell))
-> +return -ENODEV;
-> +
-> +kspugov_wq = create_workqueue("kspugov");
-> +if (!kspugov_wq) {
-> +printk(KERN_ERR "creation of kspugov failed\n");
-> +return -EFAULT;
-> +}
-> +
-> +return cpufreq_register_governor(&spu_governor);
+http://bugzilla.kernel.org/show_bug.cgi?id=9151
 
-Missing an error handling. This line should be something like:
 
-    err = cpufreq_register_governor(&spu_governor);
-    if (err) {
-        destroy_workqueue(kspugov_wq);
-        return err;
-    }
+trenn@suse.de changed:
 
-    return 0;
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|cpufreq@www.linux.org.uk    |trenn@suse.de
+             Status|NEW                         |ASSIGNED
 
-It seems like this is copied from drivers/cpufreq/cpufreq_governor.c
-Althought this is not big problem, it would be nice to fix as well.
 
-> +}
+
+
+------- Comment #11 from trenn@suse.de  2008-01-22 16:43 -------
+On a Dell, I expect this is because the BIOS itself sets the frequncy when
+(un-)plugging AC behind the kernel's back, instead of sending a ACPI notify
+0x80 on the CPU and let the OS reevaluate _PPC and then let the kernel adjust
+frequency (it should do this also, but it also sets the freq itself AFAIK).
+I try to get a DELL and track this down.
+I take over this bug and hope I can set it to a duplicate to bug #9708, these
+are the same...
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
+You are the assignee for the bug, or are watching the assignee.
