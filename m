@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9805] Cpu frequency failure on reboot caused by kernel
-Date: Thu, 24 Jan 2008 00:31:55 -0800 (PST)
-Message-ID: <20080124083155.4BB8910806F@picon.linux-foundation.org>
+Date: Thu, 24 Jan 2008 12:44:51 -0800 (PST)
+Message-ID: <20080124204451.8B13E10806F@picon.linux-foundation.org>
 References: <bug-9805-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,19 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=9805
 
 
-akpm@osdl.org changed:
+bunk@kernel.org changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |akpm@osdl.org,
-                   |                            |cpufreq@www.linux.org.uk
-         Regression|0                           |1
+                 CC|                            |bunk@kernel.org
 
 
-
-
-------- Comment #1 from akpm@osdl.org  2008-01-24 00:31 -------
-It wold be really good if you could test 2.6.23 please.
 
 
 -- 
