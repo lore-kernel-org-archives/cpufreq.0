@@ -1,100 +1,44 @@
-From: Yi Yang <yi.y.yang@intel.com>
-Subject: [PATCH 2.6.24-rc8] cpufreq: fix obvious condition statement error
-Date: Wed, 23 Jan 2008 07:05:26 +0800
-Message-ID: <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-Reply-To: yi.y.yang@intel.com
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9805] Cpu frequency failure on reboot caused by kernel
+Date: Thu, 24 Jan 2008 00:31:55 -0800 (PST)
+Message-ID: <20080124083155.4BB8910806F@picon.linux-foundation.org>
+References: <bug-9805-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754609AbYAWIQT@vger.kernel.org>
-In-Reply-To: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: torvalds@linux-foundation.org
-Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-9805-3570@http.bugzilla.kernel.org/>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-The function __cpufreq_set_policy in file drivers/cpufreq/cpufreq.c
-has a very obvious error:
-
-        if (policy->min > data->min && policy->min > policy->max) {
-                ret = -EINVAL;
-                goto error_out;
-        }
-
-This condtion statement is wrong because it returns -EINVAL only if
-policy->min is greater than policy->max (in this case, 
-"policy->min > data->min" is true for ever.). In fact, it should
-return -EINVAL as well if policy->max is less than data->min.
-
-The correct condition should be:
-
-	if (policy->min > data->max || policy->max < data->min) {
-
-The following test result testifies the above conclusion:
-
-Before applying this patch:
-
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-2394000 1596000
-[root@yangyi-dev /]# echo 1596000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-1596000
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-1596000
-[root@yangyi-dev /]# echo "2000000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
--bash: echo: write error: Invalid argument
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-1596000
-[root@yangyi-dev /]# echo "0" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-1596000
-[root@yangyi-dev /]# echo "1595000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-1596000
-[root@yangyi-dev /]#
+http://bugzilla.kernel.org/show_bug.cgi?id=9805
 
 
-After applying this patch:
+akpm@osdl.org changed:
 
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-2394000 1596000
-[root@yangyi-dev /]# echo 1596000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-1596000
-[root@yangyi-dev /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-1596000
-[root@localhost /]# echo "2000000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
--bash: echo: write error: Invalid argument
-[root@localhost /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-1596000
-[root@localhost /]# echo "0" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
--bash: echo: write error: Invalid argument
-[root@localhost /]# echo "1595000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
--bash: echo: write error: Invalid argument
-[root@localhost /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-1596000
-[root@localhost /]# echo "1596000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-[root@localhost /]# echo "2394000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-[root@localhost /]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-2394000
-[root@localhost /]
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |akpm@osdl.org,
+                   |                            |cpufreq@www.linux.org.uk
+         Regression|0                           |1
 
 
-Signed-off-by: Yi Yang <yi.y.yang@intel.com>
----
- cpufreq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/cpufreq/cpufreq.c	2008-01-23 05:02:28.000000000 +0800
-+++ b/drivers/cpufreq/cpufreq.c	2008-01-23 06:11:21.000000000 +0800
-@@ -1608,7 +1608,7 @@ static int __cpufreq_set_policy(struct c
- 	memcpy(&policy->cpuinfo, &data->cpuinfo,
- 				sizeof(struct cpufreq_cpuinfo));
- 
--	if (policy->min > data->min && policy->min > policy->max) {
-+	if (policy->min > data->max || policy->max < data->min) {
- 		ret = -EINVAL;
- 		goto error_out;
- 	}
 
+------- Comment #1 from akpm@osdl.org  2008-01-24 00:31 -------
+It wold be really good if you could test 2.6.23 please.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
