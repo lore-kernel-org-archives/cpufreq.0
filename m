@@ -1,11 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9851] New: cpufreq is not works with Intel Celeron 420
-Date: Wed, 30 Jan 2008 07:05:10 -0800 (PST)
-Message-ID: <bug-9851-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 9708] powersave governor does not scale down when power gets
+	connected
+Date: Fri,  1 Feb 2008 05:32:15 -0800 (PST)
+Message-ID: <20080201133215.36B58108018@picon.linux-foundation.org>
+References: <bug-9708-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-9708-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,35 +21,36 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9851
-
-           Summary: cpufreq is not works with Intel Celeron 420
-           Product: Power Management
-           Version: 2.5
-     KernelVersion: 2.6.24
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@www.linux.org.uk
-        ReportedBy: sanarin@nikiet.ru
+http://bugzilla.kernel.org/show_bug.cgi?id=9708
 
 
-Hardware Environment: Intel G33 chipset, Intel Celeron 420 
-Problem Description: I got Intel G33-based motherboard and 2 processors - Intel
-Core 2 Duo E6300 and Intel Celeron 420. Then I put E6300 into motherboard,
-cpufreq works fine. But with Celeron 420 and same hardware ans software,
-spufreq is not works. I tried ACPI Processor P-States driver and  Pentium 4
-clock modulation driver. Both drivers are not works with Celeron 420. If I use
-p4-clockmod, I got following message : "Unknown p4-clockmod-capable CPU. Please
-send an e-mail to <cpufreq@lists.linux.org.uk>". ACPI Processor P-States driver
-simple not works. No any error messages.
+trenn@suse.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|cpufreq@www.linux.org.uk    |trenn@suse.de
+             Status|NEW                         |ASSIGNED
+
+
+
+
+------- Comment #7 from trenn@suse.de  2008-02-01 05:32 -------
+> PS: It seems cpufreq debugging is not visible. maybe the boot option you
+> mentioned was wrong? (I'll check if necessary).
+The parameter should be right. Are you sure you compiled CPU_FREQ_DEBUG into
+the kernel? You can double check with:
+zcat /proc/config.gz|less
+Maybe it is wrong, you should find help with google...
+
+Can you also add a debug patch (which hopefully will be mainline soon...,
+Dave?), I posted it to the cpufreq list a while ago:
+http://article.gmane.org/gmane.linux.kernel.cpufreq/5642
+
+Also add another patch (I will attach it)
 
 
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
 You are the assignee for the bug, or are watching the assignee.
