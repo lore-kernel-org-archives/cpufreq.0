@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9878] cpufreq not working on HP tx1000
-Date: Sat,  2 Feb 2008 17:47:20 -0800 (PST)
-Message-ID: <20080203014720.720FC108017@picon.linux-foundation.org>
+Subject: [Bug 9878] cpufreq governors do not change frequency on HP tx1000
+Date: Sat,  2 Feb 2008 18:38:14 -0800 (PST)
+Message-ID: <20080203023814.BBBD2108017@picon.linux-foundation.org>
 References: <bug-9878-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,7 +27,9 @@ rap@ramonantonio.net changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |rap@ramonantonio.net
+            Summary|cpufreq not working on HP   |cpufreq governors do not
+                   |tx1000                      |change frequency on HP
+                   |                            |tx1000
 
 
 
