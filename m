@@ -1,45 +1,38 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/4] cpufreq: change cpu freq tables to per_cpu
-	variables
-Date: Mon, 11 Feb 2008 12:56:15 -0500
-Message-ID: <20080211175615.GA5408@redhat.com>
-References: <20080208233738.108449000@polaris-admin.engr.sgi.com> <20080208233738.292421000@polaris-admin.engr.sgi.com> <20080211024835.GD26696@codemonkey.org.uk> <47B086A3.9040508@sgi.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9960] [2.6.25-rc0 System no longer powers off after shutdown
+Date: Wed, 13 Feb 2008 12:55:15 -0800 (PST)
+Message-ID: <20080213205515.2FCD110806F@picon.linux-foundation.org>
+References: <bug-9960-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758241AbYBKR73@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <47B086A3.9040508@sgi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-9960-3570@http.bugzilla.kernel.org/>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Mon, Feb 11, 2008 at 09:32:19AM -0800, Mike Travis wrote:
- > Dave Jones wrote:
- > > On Fri, Feb 08, 2008 at 03:37:39PM -0800, Mike Travis wrote:
- > >  > Change cpu frequency tables from arrays to per_cpu variables.
- > >  > 
- > >  > Based on linux-2.6.git + x86.git
- > > 
- > > Looks ok to me.   Would you like me to push this though cpufreq.git,
- > > or do you want the series to go through all in one?
- > 
- > Thanks Dave.  The patches are pretty much independent but it is
- > easier to keep track of them if they go in together.
+http://bugzilla.kernel.org/show_bug.cgi?id=9960
 
-No problem.  Feel free to add my
-Signed-off-by: Dave Jones <davej@redhat.com>
 
- >  Btw, I have
- > another set coming shortly that I'm testing now.  It should remove
- > most of the remaining references to NR_CPUS.
+rjw@sisk.pl changed:
 
-Cool! As a distro kernel maintainer, this is appreciated.
-Keeping everyone happy isn't easy, and work like this definitly
-goes a long way towards that goal.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |elendil@planet.nl
 
-	Dave
+
+
 
 -- 
-http://www.codemonkey.org.uk
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
