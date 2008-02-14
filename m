@@ -1,7 +1,7 @@
 From: Yi Yang <yi.y.yang@intel.com>
 Subject: [PATCH 2.6.25-rc1] cpufreq: fix cpufreq policy refcount imbalance
-Date: Fri, 15 Feb 2008 07:44:29 +0800
-Message-ID: <1203032669.3897.8.camel@yangyi-dev.bj.intel.com>
+Date: Fri, 15 Feb 2008 07:48:41 +0800
+Message-ID: <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
 References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
 	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
 Reply-To: yi.y.yang@intel.com
@@ -12,8 +12,8 @@ In-Reply-To: <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: akpm@linux-foundation.org, torvalds@linux-foundation.org, gregkh@suse.de
-Cc: davej@codemonkey.org.uk, mingo@elte.hu, cpufreq@lists.linux.org.uk, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, yhlu.kernel@gmail.com, elendil@planet.nl
+To: akpm@linux-foundation.org
+Cc: torvalds@linux-foundation.org, gregkh@suse.de, davej@codemonkey.org.uk, mingo@elte.hu, cpufreq@lists.linux.org.uk, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 
 When one cpu is set to offline, the caller process will hang, according to
 the trace data, the problem lies in the refcount error in cpufreq driver,
