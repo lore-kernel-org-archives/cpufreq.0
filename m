@@ -1,62 +1,66 @@
-From: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH] Use menuconfig for CONFIG_CPU_FREQ
-Date: Thu, 14 Feb 2008 19:03:03 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0802141814530.1822@scrub.home>
-References: <200802132330.23817.alessandro.guido@gmail.com>
-	<20080213225058.GA20358@flint.arm.linux.org.uk>
-	<200802140000.52936.alessandro.guido@gmail.com>
-	<20080213231512.GB20358@flint.arm.linux.org.uk>
-	<Pine.LNX.4.64.0802140246440.1822@scrub.home>
-	<20080214075115.GB17110@flint.arm.linux.org.uk>
-	<Pine.LNX.4.64.0802141351220.1822@scrub.home>
-	<20080214150802.GA16789@flint.arm.linux.org.uk>
+From: Yi Yang <yi.y.yang@intel.com>
+Subject: [PATCH 2.6.25-rc1] cpufreq: fix cpufreq policy refcount imbalance
+Date: Fri, 15 Feb 2008 07:44:29 +0800
+Message-ID: <1203032669.3897.8.camel@yangyi-dev.bj.intel.com>
+References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
+	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
+Reply-To: yi.y.yang@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20080214150802.GA16789@flint.arm.linux.org.uk>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-arch@vger.kernel.org, Alessandro Guido <alessandro.guido@gmail.com>, cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: akpm@linux-foundation.org, torvalds@linux-foundation.org, gregkh@suse.de
+Cc: davej@codemonkey.org.uk, mingo@elte.hu, cpufreq@lists.linux.org.uk, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, yhlu.kernel@gmail.com, elendil@planet.nl
 
-Hi,
+When one cpu is set to offline, the caller process will hang, according to
+the trace data, the problem lies in the refcount error in cpufreq driver,
+cpufreq_cpu_callback will wait for completion policy->kobj_unregister
+which is nerver completed because a refcount error in function
+__cpufreq_remove_dev in file driver/cpufreq/cpufreq.c results in not
+calling kobject release method.
 
-On Thu, 14 Feb 2008, Russell King wrote:
+In driver/cpufreq/cpufreq.c, the refcount of data->kobj isn't 1 when it
+will be unregistered, this problem didn't exist in 2.6.24 and earlier.
 
-> > > Yes, I read that and didn't get the answer to the question above.  It's
-> > > unclear how:
-> > > 
-> > > config CPU_FREQ_INTEGRATOR
-> > >         tristate "CPUfreq driver for ARM Integrator CPUs"
-> > >         depends on ARCH_INTEGRATOR && CPU_FREQ
-> > > 
-> > > being under CPU_FREQ rather than ARCH_INTEGRATOR
-> > 
-> > The doc says it looks at "the previous entry" and ARCH_INTEGRATOR isn't 
-> > exactly the previous entry.
-> 
-> Neither is CPU_FREQ "the previous entry".  The documentation is unclear.
-> [..]
-> Well, I still don't have the necessary understanding to work out how
-> CPU_FREQ is preferred over ARCH_INTEGRATOR, even with your statements
-> that "it is the case".  So I'm not in a position to improve the
-> documentation except by adding a sentence to suggest people ask you
-> about it.
+The root cause is kobject API switch, kobject_init_and_add and kobject_put
+replace older kobject_register and kobject_unregister in 2.6.25-rc1,
+compared to 2.6.24, kobject_unregister is deleted in function
+__cpufreq_remove_dev but it isn't replaced with kobject_put.
 
-The best thing right now in such cases is to use menuconfig/xconfig and 
-actually look at it. xconfig can even show the hidden entries, so it's 
-also easier to answer why some entry isn't becoming a child entry.
-I can provide a technical explanation of what's happening, but it's likely 
-to be even more confusing, I really have no good idea on how to translate 
-what is quite easily visible in xconfig to actual written documentation.
+This patch adds kobject_put to balance refcount. I noticed Greg suggests
+it will fix a power-off issue to remove kobject_get statement block, but i
+think that isn't the best way because those code block has existed very long
+and it is helpful because the successive statements are invoking relevant
+data.
 
-bye, Roman
+
+Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+---
+ cpufreq.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- a/drivers/cpufreq/cpufreq.c	2008-02-15 04:41:29.000000000 +0800
++++ b/drivers/cpufreq/cpufreq.c	2008-02-15 06:56:56.000000000 +0800
+@@ -1057,12 +1057,17 @@ static int __cpufreq_remove_dev (struct 
+ 
+ 	unlock_policy_rwsem_write(cpu);
+ 
++	/* it matches the previous kobject_get */
+ 	kobject_put(&data->kobj);
+ 
+ 	/* we need to make sure that the underlying kobj is actually
+ 	 * not referenced anymore by anybody before we proceed with
+ 	 * unloading.
+ 	 */
++
++	/* unregister data->kobj, it matches kobject_init_and_add */
++	kobject_put(&data->kobj);
++
+ 	dprintk("waiting for dropping of refcount\n");
+ 	wait_for_completion(&data->kobj_unregister);
+ 	dprintk("wait complete\n");
+
+
