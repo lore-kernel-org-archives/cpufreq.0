@@ -1,38 +1,50 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9960] [2.6.25-rc0 System no longer powers off after shutdown
-Date: Fri, 15 Feb 2008 02:20:13 -0800 (PST)
-Message-ID: <20080215102013.667A8108011@picon.linux-foundation.org>
-References: <bug-9960-3570@http.bugzilla.kernel.org/>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH 2.6.25-rc1] cpufreq: fix cpufreq policy refcount
+ imbalance
+Date: Fri, 15 Feb 2008 10:52:51 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0802151043230.3423-100000@iolanthe.rowland.org>
+References: <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9960-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Yi Yang <yi.y.yang@intel.com>
+Cc: akpm@linux-foundation.org, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org, linux-pm@lists.linux-foundation.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9960
+On Fri, 15 Feb 2008, Yi Yang wrote:
 
+> This patch adds kobject_put to balance refcount. I noticed Greg suggests
+> it will fix a power-off issue to remove kobject_get statement block, but i
+> think that isn't the best way because those code block has existed very long
+> and it is helpful because the successive statements are invoking relevant
+> data.
 
+Are you referring to this section of code (before the region affected 
+by your patch)?
 
+	if (!kobject_get(&data->kobj)) {
+		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+		cpufreq_debug_enable_ratelimit();
+		unlock_policy_rwsem_write(cpu);
+		return -EFAULT;
+	}
 
+Greg is correct that the kobject_get() here is useless and should be
+removed.  kobject_get() never returns NULL unless its argument is NULL.  
+Since &data->kobj can never be NULL, the "if" test will never fail.  
+Hence there's no point in making the test at all.
 
-------- Comment #2 from elendil@planet.nl  2008-02-15 02:20 -------
-Confirmed that with this patch applied the system powers off again.
+The fact that a section of code has existed for a long time doesn't 
+mean that it is right.  :-)
 
-Thanks.
+Furthermore, there's no reason to do the kobject_get().  Holding 2 
+references to a kobject is no better than holding just 1 reference.  
+Assuming you know that the kobject is still registered, then you also 
+know that there is already a reference to it.  So you have no reason to 
+take an additional reference.
 
+Alan Stern
 
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
