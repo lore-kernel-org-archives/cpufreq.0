@@ -1,13 +1,13 @@
-From: Wes Felter <wesley@felter.org>
-Subject: Re: Intel Core2Duo mobile - how does the VID get set?
-Date: Tue, 19 Feb 2008 13:12:29 -0600
-Message-ID: <47BB2A1D.1090306@felter.org>
-References: <47BAC961.6030808@fenrir.org.uk>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 9960] [2.6.25-rc0 System no longer powers off after shutdown
+Date: Tue, 19 Feb 2008 16:33:53 -0800 (PST)
+Message-ID: <20080220003353.C1551108010@picon.linux-foundation.org>
+References: <bug-9960-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <47BAC961.6030808@fenrir.org.uk>
+In-Reply-To: <bug-9960-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,45 +18,19 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Brian Morrison <bdm@fenrir.org.uk>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Brian Morrison wrote:
-> After a fair bit of Googling and reading around, I'm none the wiser =
+http://bugzilla.kernel.org/show_bug.cgi?id=9960
 
-> about exactly how Linux 2.6.x sets the processor VID (or for that matter =
 
-> how it decides the FID settings) when using the ondemand governor and =
 
-> cpufreq stuff.
-> =
 
-> Can anyone tell me a) whether this is obtained from the BIOS, something =
 
-> in the MSR of the processor or elsewhere and b) whether there is an =
+------- Comment #3 from cadu@nerdfeliz.com  2008-02-19 16:33 -------
+With this patch applied the system powers off again.
 
-> interface in /proc or /sys where one can find out what is set and modify =
 
-> it?
-
-There is an ACPI table created by the BIOS that lists all the P-states; =
-
-a P-state is a <frequency, opaque value> tuple where the opaque value =
-
-contains the FID and VID but Intel pretends it is magic. The =
-
-acpi-cpufreq driver reads this table and uses it to change states by =
-
-writing the opaque value into the appropriate MSR.
-
-The Intel 64 and IA-32 Architectures Software Developer=92s Manual, Volume =
-
-3A, chapter 13 describes the hardware (vaguely).
-
-If you want to see what is going on under the hood, try Linux-PHC: =
-
-http://phc.athousandnights.de/
-
-(Setting followup to cpufreq list.)
-
-Wes Felter - wesley@felter.org
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
