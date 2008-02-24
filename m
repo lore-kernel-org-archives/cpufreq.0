@@ -1,13 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9960] [2.6.25-rc0 System no longer powers off after shutdown
-Date: Sat, 23 Feb 2008 13:29:34 -0800 (PST)
-Message-ID: <20080223212934.980A211D2FC@picon.linux-foundation.org>
-References: <bug-9960-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10055] conservative governor doesn't increase frequency,
+	just decrease. powernow-k7
+Date: Sun, 24 Feb 2008 15:01:01 -0800 (PST)
+Message-ID: <20080224230101.1E5FB11D3FF@picon.linux-foundation.org>
+References: <bug-10055-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9960-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-10055-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,22 +21,22 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9960
+http://bugzilla.kernel.org/show_bug.cgi?id=10055
 
 
-rjw@sisk.pl changed:
+dsd@gentoo.org changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |CLOSED
-         Resolution|                            |CODE_FIX
+                 CC|                            |kernel@gentoo.org
 
 
 
 
-------- Comment #4 from rjw@sisk.pl  2008-02-23 13:29 -------
-Fixed by:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7ab47050453c10da13940114dea9c7f1c6ad323f;hp=b6c24de77cbe9afe4962f0738e6444e709e83c81
+------- Comment #3 from dsd@gentoo.org  2008-02-24 15:01 -------
+downstream bug report
+https://bugs.gentoo.org/show_bug.cgi?id=210747
+(identical, link for reference only)
 
 
 -- 
