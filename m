@@ -1,42 +1,46 @@
-From: Yi Yang <yi.y.yang@intel.com>
-Subject: Re: [PATCH 2.6.25-rc3] cpuidle: fix cpuidle time and usage overflow
-Date: Mon, 25 Feb 2008 09:10:26 +0800
-Message-ID: <1203901826.4954.11.camel@yangyi-dev.bj.intel.com>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
-	 <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
-	 <1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
-	 <20080225101533.GB30685@elte.hu>
-Reply-To: yi.y.yang@intel.com
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: Unknown p4-clockmode capable CPU
+Date: Mon, 25 Feb 2008 09:02:01 -0500
+Message-ID: <200802250902.01276.jwilson@redhat.com>
+References: <47C25A7C.3020305@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20080225101533.GB30685@elte.hu>
-Sender: linux-acpi-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, venkatesh.pallipadi@intel.com, cpufreq@lists.linux.org.uk, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <47C25A7C.3020305@gmail.com>
+Content-Disposition: inline
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+Cc: Emmanuel Andreu <emmanuel.andreu@gmail.com>
 
-On Mon, 2008-02-25 at 11:15 +0100, Ingo Molnar wrote:
-> * Yi Yang <yi.y.yang@intel.com> wrote:
-> 
-> > cpuidle C-state sysfs node time and usage are very easy to overflow 
-> > because they are all of unsigned int type, time will overflow within 
-> > about two hours, usage will take longer time to overflow, but they are 
-> > increasing for ever.
-> > 
-> > This patch will convert them to unsigned long long.
-> 
-> what happens if such an overflow happens - any particular regression or 
-> other misbehavior, or just funny looking stats in sysfs?
-They are just stats info in sysfs, cpuidle's behaviors don't depend on
-them. I didn't notice any regression or misbehaviors.
+On Monday 25 February 2008 01:04:44 am Emmanuel Andreu wrote:
+> Hello,
+>
+> Cpufreqd tells me at syslog :
+> Feb 24 22:57:23 underworld kernel: [  247.512000] p4-clockmod: Unknown
+> p4-clockmod-capable CPU. Please send an e-mail to
+> <cpufreq@lists.linux.org.uk>.
+> My CPU is a Celeron M 530, that works "fine" (a little bit slowly !!) on
+> Vista, but that doesn't get recognized yet, neither by p4-clockmod, nor
+> by all the lm-sensors stuff. Laptops running this CPU (most "low cost
+> long battery-life" recent laptops, in my case the Lenovn 3000 N200
+> 0769-A42) will have to run with full speed CPU and sometimes overheat
+> problems, for now).
+>
+> Hope my little report will help, best regards,
 
-> 
-> 	Ingo
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Something that new hopefully works with acpi-cpufreq instead of the ancient 
+and crappy p4-clockmod. Have you tried acpi-cpufreq instead?
 
+-- 
+Jarod Wilson
+jwilson@redhat.com
