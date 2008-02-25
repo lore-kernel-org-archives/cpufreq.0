@@ -1,14 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10055] conservative governor doesn't increase frequency,
-	just decrease. powernow-k7
-Date: Thu, 21 Feb 2008 00:55:21 -0800 (PST)
-Message-ID: <20080221085521.A89D3108010@picon.linux-foundation.org>
-References: <bug-10055-3570@http.bugzilla.kernel.org/>
+From: Emmanuel Andreu <emmanuel.andreu@gmail.com>
+Subject: Unknown p4-clockmode capable CPU
+Date: Mon, 25 Feb 2008 07:04:44 +0100
+Message-ID: <47C25A7C.3020305@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10055-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,21 +16,21 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10055
+Hello,
 
+Cpufreqd tells me at syslog :
+Feb 24 22:57:23 underworld kernel: [  247.512000] p4-clockmod: Unknown 
+p4-clockmod-capable CPU. Please send an e-mail to 
+<cpufreq@lists.linux.org.uk>.
+My CPU is a Celeron M 530, that works "fine" (a little bit slowly !!) on 
+Vista, but that doesn't get recognized yet, neither by p4-clockmod, nor 
+by all the lm-sensors stuff. Laptops running this CPU (most "low cost 
+long battery-life" recent laptops, in my case the Lenovn 3000 N200 
+0769-A42) will have to run with full speed CPU and sometimes overheat 
+problems, for now).
 
-alex-kernel@digriz.org.uk changed:
+Hope my little report will help, best regards,
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |alex-kernel@digriz.org.uk
-
-
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Emmanuel Andreu
