@@ -1,14 +1,13 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9848] acpi-cpufreq: Incomplete freq list on ASUS P5N32-E SLI
-	PLUS with Intel(R) Core(TM)2 Quad
-Date: Wed, 27 Feb 2008 07:51:32 -0800 (PST)
-Message-ID: <20080227155132.3695D11D108@picon.linux-foundation.org>
-References: <bug-9848-3570@http.bugzilla.kernel.org/>
+From: "Saru Addep" <saru.dpm@gmail.com>
+Subject: sys interface for get/set clock frequencies of all clocks in the
+	system...
+Date: Thu, 28 Feb 2008 14:47:41 -0800
+Message-ID: <9f79f7f50802281447i6af8ce5do391a9c8014aea57f@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9848-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,94 +18,26 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk, dynamicpower-devel@lists.sourceforge.net
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9848
+Hi All,
 
+Is there a generic sys interface to get and set various (devices) clock
+frequencies of the system in the 2.6.23 distribution.
 
-trenn@suse.de changed:
+Following is a more detaild description of my question :
+There is /sys/devices/system/cpu/cpu0/cpufreq directory which has files that
+can be used to set processor frequency when cpufreq is enabled.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-         AssignedTo|cpufreq@www.linux.org.uk    |trenn@suse.de
-             Status|NEW                         |ASSIGNED
+So lets say I have an i2c device, and I want to change the i2c clock
+frequency. Is there a generic framework where in all clocks for the system
+are present in one place, so that I can do a get/set on the clock
+frequencies.
 
+I tried searching in /sys/devices but didn't find anything.
 
+It will be good if there is something like
+/sys/devices/system/clocks/<names_of_clocks>
 
-
-------- Comment #3 from trenn@suse.de  2008-02-27 07:51 -------
-This is the relevant part in one of the SSDTs.
-You can search the ACPI spec for _PSS to be able to evaluate what exactly is
-returned. It is either NPSS or SPSS which both include two frequencies with:
- a) 900 MHz (0x384)
- b) 600 MHz (0x258)
-
-So this is a BIOS issue.
-You may be able to tell more whether the value 900 MHz (and you enter real max,
-2,6 GHZ or similar) or not by evaluating the other values, but I expect you
-need Intel's/Venkatesh's help here.
-But it would not make sense much anyway, this should get fixed in BIOS.
-
-
-        Method (_PSS, 0, NotSerialized)
-        {
-            If (LOr (And (CFGD, 0x4000), And (CFGD, 0x00010000)))
-            {
-                Return (NPSS)
-            }
-
-            Return (SPSS)
-        }
-
-        Name (SPSS, Package (0x02)
-        {
-            Package (0x06)
-            {
-                0x00000384, 
-                0x000157C0, 
-                0x000000A0, 
-                0x0000000A, 
-                0x00000036, 
-                0x00000000
-            }, 
-
-            Package (0x06)
-            {
-                0x00000258, 
-                0x0000E678, 
-                0x000000A0, 
-                0x0000000A, 
-                0x00000136, 
-                0x00000001
-            }
-        })
-        Name (NPSS, Package (0x02)
-        {
-            Package (0x06)
-            {
-                0x00000384, 
-                0x000157C0, 
-                0x0000000A, 
-                0x0000000A, 
-                0x00000925, 
-                0x00000925
-            }, 
-
-            Package (0x06)
-            {
-                0x00000258, 
-                0x0000E678, 
-                0x0000000A, 
-                0x0000000A, 
-                0x0000061B, 
-                0x0000061B
-            }
-        })
-    }
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
-You are the assignee for the bug, or are watching the assignee.
+Thanks
+Saringni.
