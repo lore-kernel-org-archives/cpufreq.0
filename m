@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10144] Wrong cpufreq speeds detected when overclocking (speeds
 	reported using stock FSB, not overclocked)
-Date: Sun,  2 Mar 2008 15:20:04 -0800 (PST)
-Message-ID: <20080302232004.4D1FD108066@picon.linux-foundation.org>
+Date: Sun,  2 Mar 2008 15:20:32 -0800 (PST)
+Message-ID: <20080302232032.56CA8108068@picon.linux-foundation.org>
 References: <bug-10144-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10144
 
 
 
-------- Comment #7 from knuckles@gmail.com  2008-03-02 15:20 -------
-Created an attachment (id=15112)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=15112&action=view)
-acpidump --addr 0x0D0 --length 0x0214x0143 >ssdte_cpu0.dump
+------- Comment #8 from knuckles@gmail.com  2008-03-02 15:20 -------
+Created an attachment (id=15113)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=15113&action=view)
+acpidump --addr 0x2F0 --length 0x0143x0143 >ssdte_cpu2.dump
 
 
 -- 
