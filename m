@@ -1,11 +1,14 @@
-From: Henne <henne@nachtwindheim.de>
-Subject: speedstep-centrino on Toshiba Portege M100 V1.50 doesn't work
-Date: Sun, 02 Mar 2008 20:05:03 +0100
-Message-ID: <47CAFA5F.6060803@nachtwindheim.de>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10144] Wrong cpufreq speeds detected when overclocking (speeds
+	reported using stock FSB, not overclocked)
+Date: Sun,  2 Mar 2008 15:17:45 -0800 (PST)
+Message-ID: <20080302231745.9C5DA108067@picon.linux-foundation.org>
+References: <bug-10144-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10144-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,48 +19,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Hi,
+http://bugzilla.kernel.org/show_bug.cgi?id=10144
 
-I've upgraded the BIOS of my Toshiba Portege M100 from V1.10 to V1.50.
-Now "modprobe speedstep-centrino" and "modprobe acpi-cpufreq" leads to the same result.
 
-FATAL: Error inserting acpi_cpufreq
-(/lib/modules/2.6.22-3-686/kernel/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.ko):
- No such device
 
-dmesg says:
-speedstep-centrino: couldn't enable Enhanced SpeedStep
 
-I've tracked it down that bit 16 of MSR_IA32_MISC_ENABLE can't be set.
 
-Under WindowsXP does it work. Somehow!
+------- Comment #6 from knuckles@gmail.com  2008-03-02 15:17 -------
+I just confirmed, release "0902" is the latest version of the bios.
 
-Do you know something I could try to enable it or how I may
-find out how it now, after the update, works?
+I don't know if this is related to the device you are referring, but I have an
+option in the bios called "ACPI Version" that is enabled, and it's description
+says "Add additional tables as per ACPI 2.0 specifications". I've tried
+disabling it and the cpufreq result is the same as with it enabled.
 
-Greets,
-Henne
 
-P.S.: cat /proc/cpufreq
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 9
-model name      : Intel(R) Pentium(R) M processor 1200MHz
-stepping        : 5
-cpu MHz         : 598.513
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 tm pbe up est tm2
-bogomips        : 1198.22
-clflush size    : 64
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
