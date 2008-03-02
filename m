@@ -1,14 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10144] Wrong cpufreq speeds detected when overclocking (speeds
-	reported using stock FSB, not overclocked)
-Date: Sun,  2 Mar 2008 11:52:57 -0800 (PST)
-Message-ID: <20080302195257.3378E108067@picon.linux-foundation.org>
-References: <bug-10144-3570@http.bugzilla.kernel.org/>
+From: Henne <henne@nachtwindheim.de>
+Subject: speedstep-centrino on Toshiba Portege M100 V1.50 doesn't work
+Date: Sun, 02 Mar 2008 20:05:03 +0100
+Message-ID: <47CAFA5F.6060803@nachtwindheim.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10144-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,43 +16,48 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10144
+Hi,
 
+I've upgraded the BIOS of my Toshiba Portege M100 from V1.10 to V1.50.
+Now "modprobe speedstep-centrino" and "modprobe acpi-cpufreq" leads to the same result.
 
-trenn@suse.de changed:
+FATAL: Error inserting acpi_cpufreq
+(/lib/modules/2.6.22-3-686/kernel/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.ko):
+ No such device
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |corentincj@iksaif.net
+dmesg says:
+speedstep-centrino: couldn't enable Enhanced SpeedStep
 
+I've tracked it down that bit 16 of MSR_IA32_MISC_ENABLE can't be set.
 
+Under WindowsXP does it work. Somehow!
 
+Do you know something I could try to enable it or how I may
+find out how it now, after the update, works?
 
-------- Comment #5 from trenn@suse.de  2008-03-02 11:52 -------
-This ACPI device looks quite powerful, it seems to be a new ASUS specific ACPI
-device we do not support yet:
-Device (ASOC)
-{
-     Name (_HID, "ATK0110")
-Maybe Corentin knows more about this machine, do you know about this device?
-There also overclocking data and much more is included...
+Greets,
+Henne
 
-The cpufreq tables are included in another table that gets loaded at runtime.
-Hopefully you can fetch them via:
-acpidump --addr 0x7FF8E0D0 --length 0x0214 >ssdt_table_cpu0.dump
-acpidump --addr 0x7FF8E2F0 --length 0x0143 >ssdt_table_cpu2.dump
+P.S.: cat /proc/cpufreq
 
-Two should be enough..., can you attach these (best each and as plain text,
-that's easier to handle).
-
-Hmm before you attach new tables, you should make sure you run the latest BIOS.
-If not and you still have problems, better re-attach acpidump.
-CPUfreq problems often get resolved with a BIOS update on rather new machines.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 9
+model name      : Intel(R) Pentium(R) M processor 1200MHz
+stepping        : 5
+cpu MHz         : 598.513
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 tm pbe up est tm2
+bogomips        : 1198.22
+clflush size    : 64
