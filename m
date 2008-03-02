@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10144] Wrong cpufreq speeds detected when overclocking (speeds
 	reported using stock FSB, not overclocked)
-Date: Sun,  2 Mar 2008 15:17:45 -0800 (PST)
-Message-ID: <20080302231745.9C5DA108067@picon.linux-foundation.org>
+Date: Sun,  2 Mar 2008 15:20:04 -0800 (PST)
+Message-ID: <20080302232004.4D1FD108066@picon.linux-foundation.org>
 References: <bug-10144-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,13 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10144
 
 
 
-------- Comment #6 from knuckles@gmail.com  2008-03-02 15:17 -------
-I just confirmed, release "0902" is the latest version of the bios.
-
-I don't know if this is related to the device you are referring, but I have an
-option in the bios called "ACPI Version" that is enabled, and it's description
-says "Add additional tables as per ACPI 2.0 specifications". I've tried
-disabling it and the cpufreq result is the same as with it enabled.
+------- Comment #7 from knuckles@gmail.com  2008-03-02 15:20 -------
+Created an attachment (id=15112)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=15112&action=view)
+acpidump --addr 0x0D0 --length 0x0214x0143 >ssdte_cpu0.dump
 
 
 -- 
