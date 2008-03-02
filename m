@@ -1,13 +1,12 @@
-From: "Saru Addep" <saru.dpm@gmail.com>
-Subject: sys interface for get/set clock frequencies of all clocks in the
-	system...
-Date: Thu, 28 Feb 2008 14:47:41 -0800
-Message-ID: <9f79f7f50802281447i6af8ce5do391a9c8014aea57f@mail.gmail.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10144] New: Wrong cpufreq speeds detected when overclocking
+	(speeds reported using stock FSB, not overclocked)
+Date: Sun,  2 Mar 2008 07:41:34 -0800 (PST)
+Message-ID: <bug-10144-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,26 +17,52 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk, dynamicpower-devel@lists.sourceforge.net
+To: cpufreq@www.linux.org.uk
 
-Hi All,
+http://bugzilla.kernel.org/show_bug.cgi?id=10144
 
-Is there a generic sys interface to get and set various (devices) clock
-frequencies of the system in the 2.6.23 distribution.
+           Summary: Wrong cpufreq speeds detected when overclocking (speeds
+                    reported using stock FSB, not overclocked)
+           Product: Power Management
+           Version: 2.5
+     KernelVersion: 2.6.22.17-0.1-default
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@www.linux.org.uk
+        ReportedBy: knuckles@gmail.com
 
-Following is a more detaild description of my question :
-There is /sys/devices/system/cpu/cpu0/cpufreq directory which has files that
-can be used to set processor frequency when cpufreq is enabled.
 
-So lets say I have an i2c device, and I want to change the i2c clock
-frequency. Is there a generic framework where in all clocks for the system
-are present in one place, so that I can do a get/set on the clock
-frequencies.
+Latest working kernel version: Don't know
+Earliest failing kernel version: Don't know
+Distribution: openSUSE, Ubuntu
+Hardware Environment: ASUS P5K (latest bios: 0902), Intel E2180, 2GB Ram
+Software Environment: Normal opensuse install
+Problem Description:
 
-I tried searching in /sys/devices but didn't find anything.
+The E2180 is spec'd to work with 200Mhz front side bus, and has 6x thru 10x
+multipliers, so, with speedstep, it should go from 1.2ghz to 2.0ghz, and that
+happens fine.
 
-It will be good if there is something like
-/sys/devices/system/clocks/<names_of_clocks>
+The problem is, I overclocked the frontside bus to 313Mhz, (and still have
+speedstep enabled), so speeds should be between 1.88ghz and 3.13ghz, but the
+problem is cpufreq still reports the "available" speeds as being between 1.2
+and 2.0ghz. I think this is only visual, since when booting the kernel says
+"Detected 3130.093 MHz processor.", but after booting, /proc/cpuinfo and other
+places all assume the aforementioned speeds.
 
-Thanks
-Saringni.
+I've also tested, and this still happens on Ubuntu Herdy alpha 5 that uses
+2.6.24.2, so this should be distro-unrelated.
+
+Steps to reproduce:
+Overclock the FSB, and check reported cpufreq speeds.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
