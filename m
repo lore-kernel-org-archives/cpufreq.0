@@ -1,43 +1,39 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8547] "Hardware error - pending bit very stuck" on Mobile AMD
-	Sempron
-Date: Wed,  5 Mar 2008 23:18:09 -0800 (PST)
-Message-ID: <20080306071809.3B04A108066@picon.linux-foundation.org>
-References: <bug-8547-3570@http.bugzilla.kernel.org/>
+From: Stephan Diestelhorst <langer_mann@web.de>
+Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
+Date: Thu, 6 Mar 2008 09:38:19 +0100
+Message-ID: <200803060938.20944.langer_mann@web.de>
+References: <200803051559.09962.langer_mann@web.de> <20080305153520.GB19300@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8547-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762832AbYCFIih@vger.kernel.org>
+In-Reply-To: <20080305153520.GB19300@elte.hu>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8547
+On, March 5th 2008 16:35:20 Ingo Molnar wrote:
+> * Stephan Diestelhorst <langer_mann@web.de> wrote:
+> > @@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
+> >  		__asm__ __volatile__(
+> >  			"movl $0, %%edi\n"
+> >  			"out %%al, (%%dx)\n"
+> > -			: "=b" (new_state), "=D" (result)
+> > +			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
+> >
+> >  			: "a" (command), "b" (function), "c" (state), "d" (smi_port),
+> >  			: "S" (0)
+> >
+> >  			);
+>
+> stupid suggestion: why not do a pusha/popa around those
+> instructions, to make sure everything is restored? This isnt a
+> fastpath and being conservative about SMI side-effects cannot hurt
 
+That sounds like a sane thing to do to me. Should I provide a 'patch'? 
+Or leave that (and the decision about it) to the maintainer?
 
-
-
-
-------- Comment #7 from nm127@freemail.hu  2008-03-05 23:18 -------
-As of linux-2.6.23 the "powernow-k8" messages are the same:
-
-powernow-k8: Found 1 Mobile AMD Sempron(tm) Processor 2600+ processors (1 cpu
-cores) (version 2.00.00)
-powernow-k8:    0 : fid 0x8 (1600 MHz), vid 0x6
-powernow-k8:    1 : fid 0x0 (800 MHz), vid 0x18
-powernow-k8: ph2 null fid transition 0x8
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Regards,
+  Stephan
