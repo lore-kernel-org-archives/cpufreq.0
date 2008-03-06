@@ -1,12 +1,12 @@
 From: Stephan Diestelhorst <langer_mann@web.de>
 Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Thu, 6 Mar 2008 09:38:19 +0100
-Message-ID: <200803060938.20944.langer_mann@web.de>
-References: <200803051559.09962.langer_mann@web.de> <20080305153520.GB19300@elte.hu>
+Date: Thu, 6 Mar 2008 09:51:10 +0100
+Message-ID: <200803060951.12002.langer_mann@web.de>
+References: <200803051559.09962.langer_mann@web.de> <20080305153520.GB19300@elte.hu> <200803060938.20944.langer_mann@web.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762832AbYCFIih@vger.kernel.org>
-In-Reply-To: <20080305153520.GB19300@elte.hu>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758214AbYCFIv0@vger.kernel.org>
+In-Reply-To: <200803060938.20944.langer_mann@web.de>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -14,26 +14,47 @@ Content-Type: text/plain; charset="us-ascii"
 To: Ingo Molnar <mingo@elte.hu>
 Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-On, March 5th 2008 16:35:20 Ingo Molnar wrote:
-> * Stephan Diestelhorst <langer_mann@web.de> wrote:
-> > @@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
-> >  		__asm__ __volatile__(
-> >  			"movl $0, %%edi\n"
-> >  			"out %%al, (%%dx)\n"
-> > -			: "=b" (new_state), "=D" (result)
-> > +			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
+> On, March 5th 2008 16:35:20 Ingo Molnar wrote:
+> > * Stephan Diestelhorst <langer_mann@web.de> wrote:
+> > > @@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
+> > >  		__asm__ __volatile__(
+> > >  			"movl $0, %%edi\n"
+> > >  			"out %%al, (%%dx)\n"
+> > > -			: "=b" (new_state), "=D" (result)
+> > > +			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
+> > >
+> > >  			: "a" (command), "b" (function), "c" (state), "d"
+> > >  			: (smi_port), "S" (0)
+> > >
+> > >  			);
 > >
-> >  			: "a" (command), "b" (function), "c" (state), "d" (smi_port),
-> >  			: "S" (0)
-> >
-> >  			);
->
-> stupid suggestion: why not do a pusha/popa around those
-> instructions, to make sure everything is restored? This isnt a
-> fastpath and being conservative about SMI side-effects cannot hurt
+> > stupid suggestion: why not do a pusha/popa around those
+> > instructions, to make sure everything is restored? This isnt a
+> > fastpath and being conservative about SMI side-effects cannot
+> > hurt
 
-That sounds like a sane thing to do to me. Should I provide a 'patch'? 
-Or leave that (and the decision about it) to the maintainer?
+Stephan Diestelhorst wrote:
+> That sounds like a sane thing to do to me. Should I provide a
+> 'patch'? Or leave that (and the decision about it) to the
+> maintainer?
+
+H. Peter Anvin wrote: 
+> You can't pusha/popa if you expect a result.  You can, of course,
+> push and pop individual registers.
+>
+> It's also kind of odd to do "movl $0,%%edi" instead of just setting
+> EDI as an input.
+
+Whoops, HPA is correct, of course. Manually pushing / popping the 
+registers is ugly, how about a larger clobber-list? Let the compiler 
+figure out what it wants to save/restore. Only thing to worry about 
+is EBP then.
+
+Again, should I provide these patches? This thing just annoyed me for 
+a while as I have been patching it in my personal kernels for too 
+long.
 
 Regards,
   Stephan
+
+PS: I'm not on LKML, please CC me at your discretion.
