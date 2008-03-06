@@ -1,60 +1,38 @@
-From: Stephan Diestelhorst <langer_mann@web.de>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Thu, 6 Mar 2008 09:51:10 +0100
-Message-ID: <200803060951.12002.langer_mann@web.de>
-References: <200803051559.09962.langer_mann@web.de> <20080305153520.GB19300@elte.hu> <200803060938.20944.langer_mann@web.de>
+Date: Thu, 6 Mar 2008 11:56:03 +0100
+Message-ID: <20080306105603.GL13391@elte.hu>
+References: <200803051559.09962.langer_mann@web.de>
+	<20080305153520.GB19300@elte.hu>
+	<200803060938.20944.langer_mann@web.de>
+	<200803060951.12002.langer_mann@web.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758214AbYCFIv0@vger.kernel.org>
-In-Reply-To: <200803060938.20944.langer_mann@web.de>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Ingo Molnar <mingo@elte.hu>
-Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <200803060951.12002.langer_mann@web.de>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Stephan Diestelhorst <langer_mann@web.de>
+Cc: davej@codemonkey.org.uk, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-> On, March 5th 2008 16:35:20 Ingo Molnar wrote:
-> > * Stephan Diestelhorst <langer_mann@web.de> wrote:
-> > > @@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
-> > >  		__asm__ __volatile__(
-> > >  			"movl $0, %%edi\n"
-> > >  			"out %%al, (%%dx)\n"
-> > > -			: "=b" (new_state), "=D" (result)
-> > > +			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
-> > >
-> > >  			: "a" (command), "b" (function), "c" (state), "d"
-> > >  			: (smi_port), "S" (0)
-> > >
-> > >  			);
-> >
-> > stupid suggestion: why not do a pusha/popa around those
-> > instructions, to make sure everything is restored? This isnt a
-> > fastpath and being conservative about SMI side-effects cannot
-> > hurt
 
-Stephan Diestelhorst wrote:
-> That sounds like a sane thing to do to me. Should I provide a
-> 'patch'? Or leave that (and the decision about it) to the
-> maintainer?
+* Stephan Diestelhorst <langer_mann@web.de> wrote:
 
-H. Peter Anvin wrote: 
-> You can't pusha/popa if you expect a result.  You can, of course,
-> push and pop individual registers.
->
-> It's also kind of odd to do "movl $0,%%edi" instead of just setting
-> EDI as an input.
+> Again, should I provide these patches? This thing just annoyed me for 
+> a while as I have been patching it in my personal kernels for too 
+> long.
 
-Whoops, HPA is correct, of course. Manually pushing / popping the 
-registers is ugly, how about a larger clobber-list? Let the compiler 
-figure out what it wants to save/restore. Only thing to worry about 
-is EBP then.
+yes, please do keep sending them (and any other patches you might have) 
+- it's a real issue on real hardware so we want this fix upstream.
 
-Again, should I provide these patches? This thing just annoyed me for 
-a while as I have been patching it in my personal kernels for too 
-long.
-
-Regards,
-  Stephan
-
-PS: I'm not on LKML, please CC me at your discretion.
+	Ingo
