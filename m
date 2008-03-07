@@ -1,13 +1,12 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10062] cpufreq scaling for via c3 no longer works
-Date: Fri,  7 Mar 2008 03:34:27 -0800 (PST)
-Message-ID: <20080307113427.39D8F11D107@picon.linux-foundation.org>
-References: <bug-10062-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10194] New: cpufreq P-state tables can change during runtime,
+	handle it
+Date: Fri,  7 Mar 2008 09:35:30 -0800 (PST)
+Message-ID: <bug-10194-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10062-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,44 +16,38 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10062
+http://bugzilla.kernel.org/show_bug.cgi?id=10194
+
+           Summary: cpufreq P-state tables can change during runtime, handle
+                    it
+           Product: Power Management
+           Version: 2.5
+     KernelVersion: 2.6.25-rc4
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@www.linux.org.uk
+        ReportedBy: Matt_Domsch@dell.com
+                CC: wwlinuxengineering@dell.com
 
 
-bugzilla.kernel.org@rolf.leggewie.biz changed:
+ACPI now allows a BIOS to change the P-state tables during runtime.  This can
+happen as the result of a power cord being plugged in or out, of a thermal
+alarm of some sort which BIOS catches, of a "green" power savings mode set in
+BIOS, or possibly other situations.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REJECTED                    |REOPENED
-         Resolution|INVALID                     |
+When BIOS wants to change the tables, it issues an SCI.
 
-
-
-
-------- Comment #2 from bugzilla.kernel.org@rolf.leggewie.biz  2008-03-07 03:34 -------
-Dave, thank you for your comment.  I have been enduring this problem for quite
-some time, trying out all kinds of different things in the process.  While you
-are right that normally I run a vendor-supplied kernel, I did test this with a
-couple of self-compiled kernels, too.  I'll try to do this again as soon as
-possible, but I don't expect any changes.
-
-# grep -i longhaul /boot/config-2.6.22-14-386 
-CONFIG_X86_LONGHAUL=m
-# modprobe longhaul
-FATAL: Error inserting longhaul
-(/lib/modules/2.6.22-14-386/kernel/arch/i386/kernel/cpu/cpufreq/longhaul.ko):
-No such device
-# grep -i longhaul /var/log/syslog
-Mar  7 12:30:51 Rie kernel: [3705563.931789] longhaul: VIA C3 'Samuel' [C5A]
-CPU detected.  Longhaul v1 supported.
-Mar  7 12:30:51 Rie kernel: [3705563.931925] longhaul: No ACPI support.
-Unsupported northbridge.
-
-So, it looks like the module is there, but it does not work as expected.
-
-https://bugs.launchpad.net/bugs/50431 has some more information.
+acpi-cpufreq does not presently have a way to catch that SCI.  It does not
+re-read the P-state tables.  And it does not inform userspace that the values
+have changed.
 
 
 -- 
