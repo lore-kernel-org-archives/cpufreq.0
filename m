@@ -1,57 +1,33 @@
-From: Stephan Diestelhorst <langer_mann@web.de>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Tue, 11 Mar 2008 00:14:39 +0100
-Message-ID: <200803110014.40246.langer_mann@web.de>
-References: <200803051559.09962.langer_mann@web.de>
-	<87iqzu8r2q.fsf@basil.nowhere.org>
-	<200803102226.39044.langer_mann@web.de>
+Date: Tue, 11 Mar 2008 10:39:07 +0100
+Message-ID: <20080311093903.GS25110@elte.hu>
+References: <200803051559.09962.langer_mann@web.de> <200803101605.42251.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org> <200803102226.39044.langer_mann@web.de>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753887AbYCKJjd@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200803102226.39044.langer_mann@web.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200803102226.39044.langer_mann@web.de>
-Content-Disposition: inline
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Andi Kleen <andi@firstfloor.org>
-Cc: davej@codemonkey.org.uk, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+To: Stephan Diestelhorst <langer_mann@web.de>
+Cc: Andi Kleen <andi@firstfloor.org>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-Stephan Diestelhorst wrote:
-> Andi Kleen wrote:
-> > Stephan Diestelhorst <langer_mann@web.de> writes:
-> > > 
-> > > New attempt with full clobbers, note that I deliberatly did not change
-> > > the order of the output registers. Real output operands still preceede
-> > > outputs used for potential clobbering.
-> > > 
-> > > I'm not too sure about the EBP push/pop frame, but as folks pointed
-> > > out already, we should not trust the SMI code too much.
-> > 
-> > Be careful -- older gcc versions tend to abort for inline asm
-> > that clobbers too many registers. Especially when the register
-> > is already used (like ebp in a frame pointer enabled kernel) 
-> 
-> > Make sure it at least works on the oldest supported gcc version 
-> > (gcc 3.2) and with frame pointer on.
-> 
-> As I've said, I do not expect this to be problematic, but will test,
-> just to be sure! 
 
-I've tried it on the following GCCs: 3.3, 3.4, 4.0, 4.1, all with and
-without frame-pointer ommission.
-Result: As expected. Worked w/o problems, warnings anything.
+* Stephan Diestelhorst <langer_mann@web.de> wrote:
 
-Apologies for not testing gcc-3.2, but compiling it from source did
-not work with libtool complaining about tags in libmath. I'd be
-grateful if someone with working gcc-3.2 could try this out.
+> Please also note that these are not clobbers in the strict inline asm 
+> syntax, but rather dummy output values that correspond to actual input 
+> parameters. I'd consider this a serious compiler flaw, if not bug, if 
+> these would not work. But let's not get into GCC vs. 
+> Fancy-inline-asm-hacker flames, like the mplayer folks do ;-)
 
-Cheers,
-  Stephan
+yep, that's my experience as well - output constraints are pretty robust 
+in general, but if one tries the same effect via the clobber list it's 
+easy to run into gcc internal errors. I've applied your patch to 
+x86.git. Do you think it's 2.6.25 material? I'm inclined to have it in 
+the 2.6.26 bucket. We could do your first, minimal fix in 2.6.25 and do 
+this second, full fix in 2.6.26.
+
+	Ingo
