@@ -1,33 +1,42 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Tue, 11 Mar 2008 10:39:07 +0100
-Message-ID: <20080311093903.GS25110@elte.hu>
-References: <200803051559.09962.langer_mann@web.de> <200803101605.42251.langer_mann@web.de> <87iqzu8r2q.fsf@basil.nowhere.org> <200803102226.39044.langer_mann@web.de>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 5507] longhaul driver breaks 8139too
+Date: Tue, 11 Mar 2008 11:14:59 -0700 (PDT)
+Message-ID: <20080311181459.6D66211D108@picon.linux-foundation.org>
+References: <bug-5507-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753887AbYCKJjd@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200803102226.39044.langer_mann@web.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephan Diestelhorst <langer_mann@web.de>
-Cc: Andi Kleen <andi@firstfloor.org>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-5507-3570@http.bugzilla.kernel.org/>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=5507
 
 
-* Stephan Diestelhorst <langer_mann@web.de> wrote:
 
-> Please also note that these are not clobbers in the strict inline asm 
-> syntax, but rather dummy output values that correspond to actual input 
-> parameters. I'd consider this a serious compiler flaw, if not bug, if 
-> these would not work. But let's not get into GCC vs. 
-> Fancy-inline-asm-hacker flames, like the mplayer folks do ;-)
 
-yep, that's my experience as well - output constraints are pretty robust 
-in general, but if one tries the same effect via the clobber list it's 
-easy to run into gcc internal errors. I've applied your patch to 
-x86.git. Do you think it's 2.6.25 material? I'm inclined to have it in 
-the 2.6.26 bucket. We could do your first, minimal fix in 2.6.25 and do 
-this second, full fix in 2.6.26.
 
-	Ingo
+------- Comment #11 from ulrich@holeschak.de  2008-03-11 11:14 -------
+Yes i have tried suggestion #9 with no change.
+With newer kernel versions i had no problem with the 8139too driver,
+but i got instabilities during hard disk access.
+
+I have measured the current consumption of my computer with and without the
+longhaul driver, i nearly identical. So i did not see any reasion for using
+driver any more ...
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
