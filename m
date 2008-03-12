@@ -1,45 +1,43 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6426] Working Longhaul driver removed from kernel
-Date: Tue, 11 Mar 2008 18:18:26 -0700 (PDT)
-Message-ID: <20080312011826.EE3CD11D108@picon.linux-foundation.org>
-References: <bug-6426-3570@http.bugzilla.kernel.org/>
+From: Stephan Diestelhorst <langer_mann@web.de>
+Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
+Date: Wed, 12 Mar 2008 16:04:04 +0100
+Message-ID: <200803121604.05065.langer_mann@web.de>
+References: <200803051559.09962.langer_mann@web.de> <200803102226.39044.langer_mann@web.de> <20080311093903.GS25110@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6426-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753910AbYCLPFa@vger.kernel.org>
+In-Reply-To: <20080311093903.GS25110@elte.hu>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6426
+Ingo Molnar wrote:
+> 
+> I've applied your patch to  x86.git. 
 
+Many thanks!
 
-protasnb@gmail.com changed:
+> Do you think it's 2.6.25 material? I'm inclined to have it in  
+> the 2.6.26 bucket. We could do your first, minimal fix in 2.6.25 and do 
+> this second, full fix in 2.6.26.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com
+I am not familiar with the policies regarding the time-frame for
+inclusion. So I guess the decision is up to you. I feel that the
+changes are fairly small (at least for the first patch) so perhaps
+splitting the release as you suggested allows people to get more
+confidence in the larger patches with the clobbers and manual ebp
+push/pop.
 
+Doing this one step after the other has the additional benefit of
+havinga fix for the core problem in fairly soon, so I can continue
+using prebuilt distro kernels again, soon. :-) ( I know. I'm just lazy
+sometimes. )
 
+Apart from that: Feel free to do as you like, after all this code is
+GPL.
 
-
-------- Comment #3 from protasnb@gmail.com  2008-03-11 18:18 -------
-What is the status of longhaul now? There is another bug (5507) where the user
-claims that driver does work, but he doesn't see any power savings. Is the
-driver functional?
-Thanks.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Kind regards,
+  Stephan
