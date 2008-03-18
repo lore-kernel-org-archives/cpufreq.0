@@ -1,13 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 5951] Acer Aspire BIOS 3A29 reports to high min. frequency
-Date: Sat, 15 Mar 2008 11:51:00 -0700 (PDT)
-Message-ID: <20080315185100.D7683108069@picon.linux-foundation.org>
-References: <bug-5951-3570@http.bugzilla.kernel.org/>
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+Subject: [PATCH] powernow-k8: improve error messages
+Date: Tue, 18 Mar 2008 15:24:32 -0500
+Message-ID: <200803181524.32397.mark.langsdorf@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-5951-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,29 +17,48 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=5951
+The most common error with powernow-k8 is an ACPI _PSS error
+caused either by failure to load the ACPI processor module
+or a bad parse of the _PSS object.  Make the error message
+returned to the user in these situations more straightforward
+and easier to understand.
 
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
-protasnb@gmail.com changed:
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com,
-                   |                            |davej@codemonkey.org.uk
-
-
-
-
-------- Comment #1 from protasnb@gmail.com  2008-03-15 11:51 -------
-The workaround there was "powernow-k7 acpi_force=1" on load.
-Is this sufficient resolution? Does powernow-k7 require fixing? Or should this
-bug be closed.
-Thanks.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index c99d59d..7dbafe5 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1127,12 +1127,23 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 		 * an UP version, and is deprecated by AMD.
+ 		 */
+ 		if (num_online_cpus() != 1) {
+-			printk(KERN_ERR PFX "MP systems not supported by PSB BIOS structure\n");
++#ifndef CONFIG_ACPI_PROCESSOR
++			printk(KERN_ERR PFX "ACPI Processor support is required "
++			       "for SMP systems but is absent. Please load the "
++			       "ACPI Processor module before starting this "
++			       "driver.\n");
++#else
++			printk(KERN_ERR PFX "Your BIOS does not provide ACPI "
++			       "_PSS objects in a way that Linux understands. "
++			       "Please report this to the Linux ACPI maintainers"
++			       " and complain to your BIOS vendor.\n");
++#endif
+ 			kfree(data);
+ 			return -ENODEV;
+ 		}
+ 		if (pol->cpu != 0) {
+-			printk(KERN_ERR PFX "No _PSS objects for CPU other than CPU0\n");
++			printk(KERN_ERR PFX "No ACPI _PSS objects for CPU other than "
++			       "CPU0. Complain to your BIOS vendor.\n");
+ 			kfree(data);
+ 			return -ENODEV;
+ 		}
