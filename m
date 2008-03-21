@@ -1,43 +1,126 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6382] Random lockups, no kernel panic just a compleate hang
-Date: Thu, 20 Mar 2008 01:08:38 -0700 (PDT)
-Message-ID: <20080320080838.5009B108035@picon.linux-foundation.org>
-References: <bug-6382-3570@http.bugzilla.kernel.org/>
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] cpufreq: Expose cpufreq coordination requirements
+	regardless of coordination mechanism
+Date: Thu, 20 Mar 2008 17:43:54 -0700
+Message-ID: <20080321004354.GQ5529@tree.beaverton.ibm.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756683AbYCUAoR@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6382-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6382
+Currently, affected_cpus shows which CPUs need to have their frequency
+coordinated in software.  When hardware coordination is in use, the
+contents of this file appear the same as when no coordination is
+required.  This can lead to some confusion among user-space programs,
+for example, that do not know that extra coordination is required to
+force a CPU core to a particular speed to control power consumption.
 
+To fix this, create a "related_cpus" attribute that always displays
+the coordination map regardless of whatever coordination strategy
+the cpufreq driver uses (sw or hw).  If the cpufreq driver does not
+provide a value, fall back to policy->cpus.
 
-protasnb@gmail.com changed:
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    1 +
+ drivers/cpufreq/cpufreq.c                  |   29 +++++++++++++++++++++++-----
+ include/linux/cpufreq.h                    |    3 ++-
+ 3 files changed, 27 insertions(+), 6 deletions(-)
 
-
-
-
-------- Comment #14 from protasnb@gmail.com  2008-03-20 01:08 -------
-Has anyone tried recent kernel? the power management has been greatly improved,
-the bug might has been fixed.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+index a962dcb..2e21d35 100644
+--- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -591,6 +591,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+ 		policy->cpus = perf->shared_cpu_map;
+ 	}
++	policy->related_cpus = perf->shared_cpu_map;
+ 
+ #ifdef CONFIG_SMP
+ 	dmi_check_system(sw_any_bug_dmi_table);
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 35a26a3..38bf03f 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -582,15 +582,13 @@ out:
+ 	i += sprintf(&buf[i], "\n");
+ 	return i;
+ }
+-/**
+- * show_affected_cpus - show the CPUs affected by each transition
+- */
+-static ssize_t show_affected_cpus (struct cpufreq_policy * policy, char *buf)
++
++static ssize_t show_cpus(cpumask_t mask, char *buf)
+ {
+ 	ssize_t i = 0;
+ 	unsigned int cpu;
+ 
+-	for_each_cpu_mask(cpu, policy->cpus) {
++	for_each_cpu_mask(cpu, mask) {
+ 		if (i)
+ 			i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), " ");
+ 		i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), "%u", cpu);
+@@ -601,6 +599,25 @@ static ssize_t show_affected_cpus (struct cpufreq_policy * policy, char *buf)
+ 	return i;
+ }
+ 
++/**
++ * show_related_cpus - show the CPUs affected by each transition even if
++ * hw coordination is in use
++ */
++static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
++{
++	if (cpus_empty(policy->related_cpus))
++		return show_cpus(policy->cpus, buf);
++	return show_cpus(policy->related_cpus, buf);
++}
++
++/**
++ * show_affected_cpus - show the CPUs affected by each transition
++ */
++static ssize_t show_affected_cpus(struct cpufreq_policy *policy, char *buf)
++{
++	return show_cpus(policy->cpus, buf);
++}
++
+ static ssize_t store_scaling_setspeed(struct cpufreq_policy *policy,
+ 		const char *buf, size_t count)
+ {
+@@ -645,6 +662,7 @@ define_one_ro(cpuinfo_max_freq);
+ define_one_ro(scaling_available_governors);
+ define_one_ro(scaling_driver);
+ define_one_ro(scaling_cur_freq);
++define_one_ro(related_cpus);
+ define_one_ro(affected_cpus);
+ define_one_rw(scaling_min_freq);
+ define_one_rw(scaling_max_freq);
+@@ -657,6 +675,7 @@ static struct attribute * default_attrs[] = {
+ 	&scaling_min_freq.attr,
+ 	&scaling_max_freq.attr,
+ 	&affected_cpus.attr,
++	&related_cpus.attr,
+ 	&scaling_governor.attr,
+ 	&scaling_driver.attr,
+ 	&scaling_available_governors.attr,
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index ddd8652..a881fd6 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -83,7 +83,8 @@ struct cpufreq_real_policy {
+ };
+ 
+ struct cpufreq_policy {
+-	cpumask_t		cpus;	/* affected CPUs */
++	cpumask_t		cpus;	/* CPUs requiring sw coordination */
++	cpumask_t		related_cpus; /* CPUs with any coordination */
+ 	unsigned int		shared_type; /* ANY or ALL affected CPUs
+ 						should set cpufreq */
+ 	unsigned int		cpu;    /* cpu nr of registered CPU */
