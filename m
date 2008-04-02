@@ -1,13 +1,13 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10383] CPU FREQ policy value scaling_max_freq gets stuck at
 	800MHz on core2duo
-Date: Wed,  2 Apr 2008 10:42:40 -0700 (PDT)
-Message-ID: <20080402174240.7314D108062@picon.linux-foundation.org>
+Date: Wed,  2 Apr 2008 10:44:00 -0700 (PDT)
+Message-ID: <20080402174400.EEC25108060@picon.linux-foundation.org>
 References: <bug-10383-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <bug-10383-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -18,7 +18,7 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=10383
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10383
 
 
 
-------- Comment #1 from ralf.kaestner@web.de  2008-04-02 10:42 -------
-Created an attachment (id=15572)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=15572&action=view)
-cpufreq-info when the problem is visible
+------- Comment #3 from ralf.kaestner@web.de  2008-04-02 10:44 -------
+Created an attachment (id=15574)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=15574&action=view)
+dmesg without debug data
 
 
 -- 
