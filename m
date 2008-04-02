@@ -1,7 +1,7 @@
-From: Christoph Biedl <cpufreq.arzs@manchmal.in-ulm.de>
-Subject: "Unknown p4-clockmod-capable CPU"
-Date: Mon, 31 Mar 2008 22:43:10 +0200
-Message-ID: <1206995704@msgid.manchmal.in-ulm.de>
+From: "Lei Yang" <lei.d.yang@gmail.com>
+Subject: How ondemand governor works for two-core system?
+Date: Tue, 1 Apr 2008 23:25:17 -0500
+Message-ID: <4e4bd25a0804012125n7ddc3042wb3719954f0fe3500@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,46 +19,20 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@lists.linux.org.uk
 
-Hello,
+Hi list,
 
-as requested by dmesg:
+I have a question about the ondemand governor in general. For single
+processor system, it controls the frequency according to the current
+CPU load and certain thresholds. Then, for a dual core system (where
+the frequency of the two cores must be changed at the same time, i.e.,
+you can't decrease the frequency of one core and make the other stay
+at the original frequency. I think the Intel core-2-duo CPU operates
+like this. Correct me if I'm wrong.), how does the ondemand governor
+decide the frequency? Let's say if the CPU load of one core is higher
+than the threshold, say 80%, then both core would stay at high
+frequency? In other words, does the governor always evaluate the "max"
+CPU load of the two cores, and decide the appropriate frequency?
 
-| p4-clockmod: Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux.org.uk>
+I'm new to the list so I'd appreciate any comments from you! Thanks in advance!
 
-This is a mini-ITX mainboard from Intel, product name is
-"D201GLY2A", running a vanilla 2.6.25-rc6 kernel.
-
-Output from /proc/cpuinfo
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 22
-model name      : Intel(R) Celeron(R) CPU          220  @ 1.20GHz
-stepping        : 1
-cpu MHz         : 1200.058
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx lm constant_tsc arch_perfmon pebs bts pni monitor ds_cpl tm2 ssse3 cx16 xtpr lahf_lm
-bogomips        : 2401.29
-clflush size    : 64
-
-Output from /proc/acpi/processor/CPU0/info
-
-processor id:            0
-acpi id:                 1
-bus mastering control:   yes
-power management:        no
-throttling control:      yes
-
-
-Let me know if you need further information.
-
-    Christoph
+Lei
