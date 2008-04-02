@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10383] CPU FREQ policy value scaling_max_freq gets stuck at
 	800MHz on core2duo
-Date: Wed,  2 Apr 2008 11:14:16 -0700 (PDT)
-Message-ID: <20080402181416.BA95E10805E@picon.linux-foundation.org>
+Date: Wed,  2 Apr 2008 11:17:38 -0700 (PDT)
+Message-ID: <20080402181738.8EF4A10805E@picon.linux-foundation.org>
 References: <bug-10383-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,11 +27,15 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10383
 
 
 
-------- Comment #12 from ralf.kaestner@web.de  2008-04-02 11:14 -------
-looks like "bingo"
-you made my day buddy!
+------- Comment #13 from alex-kernel@digriz.org.uk  2008-04-02 11:17 -------
+WARNING WILL ROBINSON DANGER DANGER
 
-giving acpi_osi="!Window2006" as kernel arg fixes the problem.
+This is not a fix at least on my laptop.  Suspend/Resume one works for one
+cycle, I lose the cute beeps of the ACPI bits and some other ACPI functionality
+goes icky.
+
+Worth making sure you can still do anything.  I personally prefer to be able to
+suspend/resume over get 400Mhz higher speeds on a nasty x86 box... :)
 
 
 -- 
