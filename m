@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10383] CPU FREQ policy value scaling_max_freq gets stuck at
 	800MHz on core2duo
-Date: Wed,  2 Apr 2008 10:54:47 -0700 (PDT)
-Message-ID: <20080402175447.634CE10805E@picon.linux-foundation.org>
+Date: Wed,  2 Apr 2008 11:03:16 -0700 (PDT)
+Message-ID: <20080402180316.6E0A810805E@picon.linux-foundation.org>
 References: <bug-10383-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10383
 
 
 
-------- Comment #10 from alex-kernel@digriz.org.uk  2008-04-02 10:54 -------
-Smells like the same problem I'm suffering:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9919
+------- Comment #11 from ralf.kaestner@web.de  2008-04-02 11:03 -------
+thanks a lot for that info, sounds very similar. acpi_osi=!Window2006 as kernel
+arg sounds as a nice workaround to me, will try that right now, or are there
+any gotchas that I've missed?
 
 
 -- 
