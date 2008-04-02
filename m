@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10383] CPU FREQ policy value scaling_max_freq gets stuck at
 	800MHz on core2duo
-Date: Wed,  2 Apr 2008 10:48:15 -0700 (PDT)
-Message-ID: <20080402174815.646AC108062@picon.linux-foundation.org>
+Date: Wed,  2 Apr 2008 10:43:22 -0700 (PDT)
+Message-ID: <20080402174323.011E6108064@picon.linux-foundation.org>
 References: <bug-10383-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10383
 
 
 
-------- Comment #9 from ralf.kaestner@web.de  2008-04-02 10:48 -------
-Created an attachment (id=15580)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=15580&action=view)
-content of /proc/cpuinfo
+------- Comment #2 from ralf.kaestner@web.de  2008-04-02 10:43 -------
+Created an attachment (id=15573)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=15573&action=view)
+cpufreq-info called multiple times showing the down-scaling of the policy
 
 
 -- 
