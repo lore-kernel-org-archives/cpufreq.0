@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10386] cpufreq reports wrong scaling_freqs on AcerExtensa
-Date: Wed,  2 Apr 2008 14:42:24 -0700 (PDT)
-Message-ID: <20080402214224.3CCF110805E@picon.linux-foundation.org>
+Date: Wed,  2 Apr 2008 14:43:52 -0700 (PDT)
+Message-ID: <20080402214352.6D4B510805E@picon.linux-foundation.org>
 References: <bug-10386-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,12 +26,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10386
 
 
 
-------- Comment #1 from miste78@web.de  2008-04-02 14:42 -------
-Created an attachment (id=15582)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=15582&action=view)
-output of 'lspci -vvv'
-
-attached output of 'lspci -vvv'
+------- Comment #2 from miste78@web.de  2008-04-02 14:43 -------
+Created an attachment (id=15583)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=15583&action=view)
+output of 'acpidump'
 
 
 -- 
