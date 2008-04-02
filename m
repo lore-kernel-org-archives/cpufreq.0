@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10383] CPU FREQ policy value scaling_max_freq gets stuck at
 	800MHz on core2duo
-Date: Wed,  2 Apr 2008 11:55:40 -0700 (PDT)
-Message-ID: <20080402185540.73D3A10805E@picon.linux-foundation.org>
+Date: Wed,  2 Apr 2008 12:15:46 -0700 (PDT)
+Message-ID: <20080402191546.C43D910805D@picon.linux-foundation.org>
 References: <bug-10383-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,19 +24,31 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10383
 
 
+trenn@suse.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|cpufreq@www.linux.org.uk    |trenn@suse.de
+             Status|NEW                         |ASSIGNED
 
 
 
-------- Comment #14 from ralf.kaestner@web.de  2008-04-02 11:55 -------
-thx, I got that, anyhow - suspend/resume is not even working at all on my
-laptop (will test that later) So I will test this Anti-V*sta option for a while
-and leave the bug open as reference. kernel dev may decide to close it as
-duplicate of 9919. However, seems that the Lifebook W 8010 needs some
-blacklisting as well. The acpi table error mentioned in comment #8 is gone with
-putting the acpi_osi option in.
+
+------- Comment #15 from trenn@suse.de  2008-04-02 12:15 -------
+The message:
+ACPI Error (tbinstal-0134): Table has invalid signature [    ], must be SSDT,
+PSDT or OEMx [20070126]
+
+Comes from the visit table (see the other bug)which is missing the "SSDT" in
+the table header.
+This is clearly a BIOS bug.
+The table is not loaded when osi=!Winows 2006 is passed.
+
+These machines are so similar, I mark the bugs as duplicates now.
 
 
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
 You are the assignee for the bug, or are watching the assignee.
