@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 7420] cpufreq/powernowd limiting CPU frequency on kernels
 	>=2.6.16
-Date: Thu,  3 Apr 2008 22:09:28 -0700 (PDT)
-Message-ID: <20080404050928.169A210805D@picon.linux-foundation.org>
+Date: Fri,  4 Apr 2008 03:52:00 -0700 (PDT)
+Message-ID: <20080404105200.14AC110805D@picon.linux-foundation.org>
 References: <bug-7420-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,19 +24,15 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=7420
 
 
-protasnb@gmail.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com
-         Regression|0                           |1
 
 
 
-
-------- Comment #2 from protasnb@gmail.com  2008-04-03 22:09 -------
-Flavio, can you re-test with recent kernel please?
-Thanks.
+------- Comment #3 from interfc@jumpy.it  2008-04-04 03:51 -------
+Hi Natalie,
+unfortunately I can't at the moment, but that was the same until 2.6.22, I
+couldn't find any other infos in the web because people told: You can't
+overclock with Linux.
+Thanks
 
 
 -- 
