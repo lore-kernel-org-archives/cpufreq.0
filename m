@@ -1,14 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7463] CPU frequency scaling(cpufreq) does not work.
-	speedstep-centrino.c problem
-Date: Fri,  4 Apr 2008 08:50:03 -0700 (PDT)
-Message-ID: <20080404155003.09E05108065@picon.linux-foundation.org>
-References: <bug-7463-3570@http.bugzilla.kernel.org/>
+From: "Gaurav Dhiman" <dimanuec@gmail.com>
+Subject: Unexpected behavior while using "Userspace" governor
+Date: Fri, 4 Apr 2008 14:35:09 -0700
+Message-ID: <5bd3c56f0804041435x29c422fdl26c9ed49c9612495@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-7463-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,57 +17,32 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7463
+Hello All,
 
+I am running Linux 2.6.24 on my Intel Quad Core Xeon based machine
+with cpufreq enabled. The scaling driver being used is acpi-cpufreq. I
+want to perform some experiments with the CPU running statically at
+different frequencies. To accomplish that I first of all stop
+powernowd, switch the governor to userspace, and then scale the
+frequency using scaling_setspeed in the /sys interface of cpufreq.
 
+All this seems to change the frequency (as displayed by
+cpuinfo_cur_freq), however when I run some workload, it sometimes
+bumps up the frequency to the maximum (2.66GHz for my machine) in
+between. It happens intermittently and I confirmed this by running a
+background shell script, which collects statistics on the CPU
+frequency, while the workload is running. This happens only when I run
+some intensive workload. Normally it stays at the frequency that is
+set using scaling_setspeed.
 
+I am failing to understand why this should happen with a userspace
+governor. I have done similar experiments on other machines, but have
+never encountered such a problem. Is there some daemon (other than
+powernowd), which is also accessing the cpufreq subsystem? If anyone
+can point out what could be the potential reason, it would be really
+helpful.
 
-
-------- Comment #16 from renatoyamane@mandic.com.br  2008-04-04 08:50 -------
-This work fine to me:
-
-grep -i acpi ../linux-2.6.23.16/.config
-
-# Power management options (ACPI, APM)
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-CONFIG_ACPI_PROCFS=y
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_AC=m
-CONFIG_ACPI_BATTERY=m
-CONFIG_ACPI_BUTTON=m
-CONFIG_ACPI_VIDEO=m
-CONFIG_ACPI_FAN=m
-CONFIG_ACPI_DOCK=m
-CONFIG_ACPI_BAY=m
-CONFIG_ACPI_PROCESSOR=m
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_ACPI_THERMAL=m
-# CONFIG_ACPI_ASUS is not set
-CONFIG_ACPI_TOSHIBA=m
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_ACPI_CONTAINER=m
-CONFIG_ACPI_SBS=m
-CONFIG_X86_ACPI_CPUFREQ=m
-# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-CONFIG_PNPACPI=y
-CONFIG_THINKPAD_ACPI=m
-# CONFIG_THINKPAD_ACPI_DEBUG is not set
-CONFIG_THINKPAD_ACPI_BAY=y
-CONFIG_BLK_DEV_IDEACPI=y
-CONFIG_ATA_ACPI=y
-
-Regards,
-Renato S. Yamane
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Thanks in advance,
+-Gaurav
