@@ -1,13 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10386] cpufreq reports wrong scaling_freqs on AcerExtensa
-Date: Wed,  2 Apr 2008 14:44:49 -0700 (PDT)
-Message-ID: <20080402214449.3921910805E@picon.linux-foundation.org>
-References: <bug-10386-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 7420] cpufreq/powernowd limiting CPU frequency on kernels
+	>=2.6.16
+Date: Thu,  3 Apr 2008 22:09:28 -0700 (PDT)
+Message-ID: <20080404050928.169A210805D@picon.linux-foundation.org>
+References: <bug-7420-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10386-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-7420-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,19 +18,25 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10386
+http://bugzilla.kernel.org/show_bug.cgi?id=7420
+
+
+protasnb@gmail.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |protasnb@gmail.com
+         Regression|0                           |1
 
 
 
 
-
-------- Comment #3 from miste78@web.de  2008-04-02 14:44 -------
-Created an attachment (id=15584)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=15584&action=view)
-output of 'dmesg | grep -i acpi'
+------- Comment #2 from protasnb@gmail.com  2008-04-03 22:09 -------
+Flavio, can you re-test with recent kernel please?
+Thanks.
 
 
 -- 
