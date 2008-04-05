@@ -1,12 +1,12 @@
-From: "Gaurav Dhiman" <dimanuec@gmail.com>
-Subject: Unexpected behavior while using "Userspace" governor
-Date: Fri, 4 Apr 2008 14:35:09 -0700
-Message-ID: <5bd3c56f0804041435x29c422fdl26c9ed49c9612495@mail.gmail.com>
+From: "adaca@tiscali.it" <adaca@tiscali.it>
+Subject: Intel Celeron M 530 cpu not recognized by cpufreq nor p4_clockmod
+Date: Sat, 5 Apr 2008 11:04:38 +0200 (CEST)
+Message-ID: <15643306.1207386278296.JavaMail.root@ps13>
+Reply-To: "adaca@tiscali.it" <adaca@tiscali.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,30 +19,43 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@lists.linux.org.uk
 
-Hello All,
+Hi,
+on my new Toshiba A20 laptop I've never been able to see cpufreq working, so the cpu is always at max speed (1.73GHz); this applies to kernel 2.6.23 on both Ubuntu 7.10 and Fedora 8, and now 2.6.24 on Fedora (2.6.24.4-64.fc8).
+This post says I need the p4_clockmod driver: 
+http://lists.opensuse.org/opensuse-bugs/2008-03/msg05714.html
+So I compiled the p4_clockmod module from the kernel sources but when I do:
+modprobe p4_clockmod
+I get:
+FATAL: Error inserting p4_clockmod (/lib/modules/2.6.24.4-64.fc8/kernel/arch/x86/kernel/cpu/cpufreq/p4-clockmod.ko): No such device
+Here's what I found in the syslog:
+Apr  5 10:51:12 amc kernel: p4-clockmod: Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux.org.uk>
+And here's my /proc/cpuinfo output:
+[root@amc 2.6.24.4-64.fc8]# cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 22
+model name      : Intel(R) Celeron(R) CPU          530  @ 1.73GHz
+stepping        : 1
+cpu MHz         : 1729.036
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx lm constant_tsc up arch_perfmon pebs bts pni monitor ds_cpl tm2 ssse3 cx16 xtpr lahf_lm
+bogomips        : 3460.44
+clflush size    : 64
 
-I am running Linux 2.6.24 on my Intel Quad Core Xeon based machine
-with cpufreq enabled. The scaling driver being used is acpi-cpufreq. I
-want to perform some experiments with the CPU running statically at
-different frequencies. To accomplish that I first of all stop
-powernowd, switch the governor to userspace, and then scale the
-frequency using scaling_setspeed in the /sys interface of cpufreq.
+Please help!
+Thank you
+Adalberto M. Caccia
 
-All this seems to change the frequency (as displayed by
-cpuinfo_cur_freq), however when I run some workload, it sometimes
-bumps up the frequency to the maximum (2.66GHz for my machine) in
-between. It happens intermittently and I confirmed this by running a
-background shell script, which collects statistics on the CPU
-frequency, while the workload is running. This happens only when I run
-some intensive workload. Normally it stays at the frequency that is
-set using scaling_setspeed.
 
-I am failing to understand why this should happen with a userspace
-governor. I have done similar experiments on other machines, but have
-never encountered such a problem. Is there some daemon (other than
-powernowd), which is also accessing the cpufreq subsystem? If anyone
-can point out what could be the potential reason, it would be really
-helpful.
-
-Thanks in advance,
--Gaurav
+___________________________________________________
+Tiscali.Fax: ricevi gratis sulla tua email e invii 
+a 12 cent per pagina senza scatto alla risposta 
