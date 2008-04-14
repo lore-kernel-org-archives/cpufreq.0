@@ -1,15 +1,12 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [Patch] Resending: cell: add spu aware cpufreq
-	governor
-Date: Mon, 14 Apr 2008 02:21:41 +0200
-Message-ID: <200804140221.41726.arnd@arndb.de>
-References: <20080118171119.3faa4a6a@de.ibm.com>
-	<20080128190341.21c8fc97@de.ibm.com>
-	<20080128191225.092a6143@de.ibm.com>
+From: =?iso-8859-2?q?Micha=B3_Pytasz?= <pytasz@lodz.home.pl>
+Subject: Turion64 x2 TL-68 (HP Pavilion tx2010eo) low freq. hang
+Date: Mon, 14 Apr 2008 16:35:10 +0200
+Message-ID: <200804141635.10308.pytasz@lodz.home.pl>
+References: <200712141300.23975.mark.langsdorf@amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20080128191225.092a6143@de.ibm.com>
+In-Reply-To: <200712141300.23975.mark.langsdorf@amd.com>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -22,44 +19,60 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 Content-Type: text/plain; charset="iso-8859-1"
-To: cbe-oss-dev@ozlabs.org
-Cc: parabelboi@bopserverein.de, Christian Krafft <krafft@de.ibm.com>, cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Sorry for my late reply, I lost track of this discussion when it happened
-during LCA and never got back to it. The patch looks good enough for 2.6.26,
-I think, but one thing still really bothers me:
+Hi,
 
-On Monday 28 January 2008, Christian Krafft wrote:
-> +/* parts of this function should go into spu scheduler */
-> +static int spu_gov_calc_load(struct spu_gov_info_struct *info)
-> +{
-> +=A0=A0=A0=A0=A0=A0=A0unsigned long active_tasks; /* fixed-point */
-> +=A0=A0=A0=A0=A0=A0=A0int cpu, load;
-> +
-> +=A0=A0=A0=A0=A0=A0=A0cpu =3D info->policy->cpu;
-> +=A0=A0=A0=A0=A0=A0=A0active_tasks =3D cbe_spu_info[cpu_to_node(cpu)].nr_=
-active * FIXED_1;
-> +
-> +=A0=A0=A0=A0=A0=A0=A0/* this is also a bit too trivial
-> +=A0=A0=A0=A0=A0=A0=A0 * actually we want the max load of all spu's belon=
-ging together */
-> +=A0=A0=A0=A0=A0=A0=A0CALC_LOAD(info->load, EXP_1, active_tasks);
-> +
-> +=A0=A0=A0=A0=A0=A0=A0load =3D (info->load + FIXED_1 / 200) >> FSHIFT;
-> +
-> +=A0=A0=A0=A0=A0=A0=A0return load;
-> +}
+The problem occurs when CPU is running on low freq. (800 MHz). The hangs oc=
+cur =
 
-The nr_active variable in cbe_spu_info has a completely different meaning
-from nr_active() in the linux scheduler. AFAICS, basing your computation
-on this makes no sense whatsoever. Instead of looking at what threads are
-running on the SPUs, you look at what is loaded. Because of our lazy loading
-scheduler mechanism, a task occupying all SPUs at 10% of the time and
-otherwise calling nanosleep or futex_wait will still show up as 100% load
-here, so we don't lower the frequency although we should.
+(not neccesarily immediately) with Machine Check Exception, however the =
 
-What's worse, a compute-intensive task running on half of the SPUs with the
-rest of them being idle shows up as 50% load and causes the frequency to be
-dropped to 50%, when it should run at full speed.
+message is not always displayed (or I am too slow to see it), there were tw=
+o =
 
-	Arnd <><
+messages I did not manage to write down (fully) both of them, one of them w=
+as  =
+
+CPU. 0: Machine Check Exception: 0....4 Bank 4: b20...70f0f =
+
+In place of dots were zeroes I did not manage to count before reboot. =
+
+Sometimes it does not reboot but just hangs hard with no message but blinki=
+ng =
+
+capslock (kernel panic).
+
+System attempted to instal is linux Gentoo, kernel 2.6.23, it does not matt=
+er =
+
+whether the frequency is switched after startup or low from the beginning =
+
+(switched by bios on startup with battery power.  Chipset is Nvidia MCP51.
+
+Also, the system does exactlu the same booted from x86 as well as amd64 liv=
+ecd =
+
+gentoo, SystemRescueCD (0.4.3 and 1.0.0) - mostly during some compiling or =
+
+un-tarring, but sometimes it just does that "out of the box", during boot o=
+r =
+
+right after that).
+
+On 2.4GHz, system is running without any problems (govenor - performance or =
+
+userspace). It doess not seem to be a memory problem - I have tested it on =
+2 =
+
+sets of modules - (original ones 2x1GB 667MHz CL5 as well as elpida 2x2GB =
+
+800MHz CL5). Moreover, frequency scaling (or keeping low frequency, =
+
+unexpectedly) does not affect system stability in bundled vista - which als=
+o =
+
+suggests no memory problem. memtest86 also passes.
+
+Best regards,
+Micha=B3 Pytasz
