@@ -1,14 +1,14 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: cpufreq-info fails for Intel Quad-Core X9650 (45nm Penryn)
-Date: Mon, 14 Apr 2008 17:13:43 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEEE17A55@orsmsx423.amr.corp.intel.com>
-References: <a8472c960804141603o67daca87hedb8b7294d9fb962@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: Turion64 x2 TL-68 (HP Pavilion tx2010eo) low freq. hang
+Date: Tue, 15 Apr 2008 14:54:16 +0200
+Message-ID: <1208264056.1784.164.camel@queen.suse.de>
+References: <200712141300.23975.mark.langsdorf@amd.com>
+	<200804141635.10308.pytasz@lodz.home.pl>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-Reply-To: <a8472c960804141603o67daca87hedb8b7294d9fb962@mail.gmail.com>
+In-Reply-To: <200804141635.10308.pytasz@lodz.home.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,43 +19,65 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Trevor Bowen <m27315@gmail.com>, cpufreq@lists.linux.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: =?UTF-8?Q?Micha=C5=82?= Pytasz <pytasz@lodz.home.pl>
+Cc: cpufreq@lists.linux.org.uk
 
- 
-
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk 
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Trevor Bowen
->Sent: Monday, April 14, 2008 4:03 PM
->To: cpufreq@lists.linux.org.uk
->Subject: cpufreq-info fails for Intel Quad-Core X9650 (45nm Penryn)
->
->Whenever I run cpufreq-info for the X9650, I get the following 
->output error:
->
->$ cpufreq-info
->cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
->Report errors and bugs to linux@brodo.de, please.
->analyzing CPU 0:
->  no or unknown cpufreq driver is active on this CPU
->analyzing CPU 1:
->  no or unknown cpufreq driver is active on this CPU
->analyzing CPU 2:
->  no or unknown cpufreq driver is active on this CPU
->analyzing CPU 3:
->  no or unknown cpufreq driver is active on this CPU
->
->I am using the 2.6.24-gentoo-r4 version of the kernel.  What am I doing
->wrong?
->
-
-Most likely BIOS is not enabling frequency control on this CPU. Can you
-check that you have the latest BIOS. Can you check whether there are any
-frequency control related options in BIOS (Typically called Speedstep,
-Enhanced Speedstep, EIST etc). If you don't see any such option, send in
-output of acpidump to me (or better still, open a bug here
-(http://bugzilla.kernel.org). You can find acpidump in pmtools package
-here (http://www.lesswatts.org/projects/acpi/utilities.php)
-
-Thanks,
-Venki
+T24gTW9uLCAyMDA4LTA0LTE0IGF0IDE2OjM1ICswMjAwLCBNaWNoYcWCIFB5dGFzeiB3cm90ZToK
+PiBIaSwKPiAKPiBUaGUgcHJvYmxlbSBvY2N1cnMgd2hlbiBDUFUgaXMgcnVubmluZyBvbiBsb3cg
+ZnJlcS4gKDgwMCBNSHopLiBUaGUgaGFuZ3Mgb2NjdXIgCj4gKG5vdCBuZWNjZXNhcmlseSBpbW1l
+ZGlhdGVseSkgd2l0aCBNYWNoaW5lIENoZWNrIEV4Y2VwdGlvbiwgaG93ZXZlciB0aGUgCj4gbWVz
+c2FnZSBpcyBub3QgYWx3YXlzIGRpc3BsYXllZCAob3IgSSBhbSB0b28gc2xvdyB0byBzZWUgaXQp
+LCB0aGVyZSB3ZXJlIHR3byAKPiBtZXNzYWdlcyBJIGRpZCBub3QgbWFuYWdlIHRvIHdyaXRlIGRv
+d24gKGZ1bGx5KSBib3RoIG9mIHRoZW0sIG9uZSBvZiB0aGVtIHdhcyAgCj4gQ1BVLiAwOiBNYWNo
+aW5lIENoZWNrIEV4Y2VwdGlvbjogMC4uLi40IEJhbmsgNDogYjIwLi4uNzBmMGYgCj4gSW4gcGxh
+Y2Ugb2YgZG90cyB3ZXJlIHplcm9lcyBJIGRpZCBub3QgbWFuYWdlIHRvIGNvdW50IGJlZm9yZSBy
+ZWJvb3QuIAo+IFNvbWV0aW1lcyBpdCBkb2VzIG5vdCByZWJvb3QgYnV0IGp1c3QgaGFuZ3MgaGFy
+ZCB3aXRoIG5vIG1lc3NhZ2UgYnV0IGJsaW5raW5nIAo+IGNhcHNsb2NrIChrZXJuZWwgcGFuaWMp
+Lgo+IAo+IFN5c3RlbSBhdHRlbXB0ZWQgdG8gaW5zdGFsIGlzIGxpbnV4IEdlbnRvbywga2VybmVs
+IDIuNi4yMywgaXQgZG9lcyBub3QgbWF0dGVyIAo+IHdoZXRoZXIgdGhlIGZyZXF1ZW5jeSBpcyBz
+d2l0Y2hlZCBhZnRlciBzdGFydHVwIG9yIGxvdyBmcm9tIHRoZSBiZWdpbm5pbmcgCj4gKHN3aXRj
+aGVkIGJ5IGJpb3Mgb24gc3RhcnR1cCB3aXRoIGJhdHRlcnkgcG93ZXIuICBDaGlwc2V0IGlzIE52
+aWRpYSBNQ1A1MS4KPiAKPiBBbHNvLCB0aGUgc3lzdGVtIGRvZXMgZXhhY3RsdSB0aGUgc2FtZSBi
+b290ZWQgZnJvbSB4ODYgYXMgd2VsbCBhcyBhbWQ2NCBsaXZlY2QgCj4gZ2VudG9vLCBTeXN0ZW1S
+ZXNjdWVDRCAoMC40LjMgYW5kIDEuMC4wKSAtIG1vc3RseSBkdXJpbmcgc29tZSBjb21waWxpbmcg
+b3IgCj4gdW4tdGFycmluZywgYnV0IHNvbWV0aW1lcyBpdCBqdXN0IGRvZXMgdGhhdCAib3V0IG9m
+IHRoZSBib3giLCBkdXJpbmcgYm9vdCBvciAKPiByaWdodCBhZnRlciB0aGF0KS4KPiAKPiBPbiAy
+LjRHSHosIHN5c3RlbSBpcyBydW5uaW5nIHdpdGhvdXQgYW55IHByb2JsZW1zIChnb3Zlbm9yIC0g
+cGVyZm9ybWFuY2Ugb3IgCj4gdXNlcnNwYWNlKS4gSXQgZG9lc3Mgbm90IHNlZW0gdG8gYmUgYSBt
+ZW1vcnkgcHJvYmxlbSAtIEkgaGF2ZSB0ZXN0ZWQgaXQgb24gMiAKPiBzZXRzIG9mIG1vZHVsZXMg
+LSAob3JpZ2luYWwgb25lcyAyeDFHQiA2NjdNSHogQ0w1IGFzIHdlbGwgYXMgZWxwaWRhIDJ4MkdC
+IAo+IDgwME1IeiBDTDUpLiBNb3Jlb3ZlciwgZnJlcXVlbmN5IHNjYWxpbmcgKG9yIGtlZXBpbmcg
+bG93IGZyZXF1ZW5jeSwgCj4gdW5leHBlY3RlZGx5KSBkb2VzIG5vdCBhZmZlY3Qgc3lzdGVtIHN0
+YWJpbGl0eSBpbiBidW5kbGVkIHZpc3RhIC0gd2hpY2ggYWxzbyAKPiBzdWdnZXN0cyBubyBtZW1v
+cnkgcHJvYmxlbS4gbWVtdGVzdDg2IGFsc28gcGFzc2VzLgo+IAoKSSBoYXZlIGFub3RoZXIgcHJv
+YmxlbSBvbiBtaW5lIChGZXJyYXJpIEY1MDAwKSBhbmQgSSB3b25kZXIgd2hldGhlciB5b3UKYWxz
+byBoYXZlIHNlZW4gc29tZXRoaW5nIHNpbWlsYXIuIEkgaGF2ZSBhIHNpbWlsYXIgVHVyaW9uIChU
+LTYwPykuClNpbmNlIHRoZSBjbG9ja2V2ZW50cyBwYXRjaGVzIGFscmVhZHkgc29tZSBrZXJuZWwg
+aXRlcmF0aW9ucyBhZ28sIEkgbmVlZAp0byBwYXNzIG5vYXBpY3RpbWVyIGFzIGJvb3QgcGFyYW1l
+dGVyLgpPdGhlcndpc2UgdGhlIGtlcm5lbCB3aWxsIGZyZWV6ZSBhdCBlYXJseSBib290IHRpbWUs
+IGJ1dCBvbmx5IGV2ZXJ5CnNlY29uZCB0aW1lLgpOb3QgZXZlcnkgc2Vjb25kLCBidXQgc3RhdGlz
+dGljYWxseSBldmVyeSBzZWNvbmQgdGltZS4gSXQgY291bGQgYmUgdGhhdApJIGNhbiBib290IDMg
+dGltZXMsIHRoZW4gaXQgZnJlZXplcyAyIHRpbWVzIC4uLgpJdCBsb29rcyBsaWtlIHdoZXRoZXIg
+aXQgZGVwZW5kcyB0aGF0IGl0J3MgcmFuZG9tIHdoaWNoIENQVS9hcGljIGNvcmUgaXMKdXNlZCAo
+c2V0dXAgdXApIGZpcnN0IGFuZCBpZiB0aGUgYnJva2VuIG9uZSBpcyB0YWtlbiB0aGUgQVBJQyB0
+aW1lciBkb2VzCm5vdCB0aWNrIGFuZCB0aGUgbWFjaGluZSBoYW5ncy4KCkkgd29uZGVyIHdoZXRo
+ZXIgeW91IGFsc28gc2VlIHRoaXMgKHRoZW4gSSBjb3VsZCBzdWJtaXQgYSBwYXRjaCB0byBhbHNv
+CnVzZSBub2FwaWN0aW1lciBmb3IgVHVyaW9ucykgb3Igd2hldGhlciBJIHJlYWxseSBoYXZlIGJy
+b2tlbiBIVyBoZXJlIGFuZApoYXZlIHRvIGxpdmUgd2l0aCB0aGUgd29ya2Fyb3VuZCBib290IHBh
+cmFtZXRlci4KSSB3YXNuJ3QgYWJsZSB0byBzZWUvZ29vZ2xlIG15IGJhY2t0cmFjZSBhbnl3aGVy
+ZToKQSBkaXZpc2lvbiB0aHJvdWdoIHplcm86CnNldHVwX2Jvb3RfQVBJQ19jbG9jawprZXJuZWxf
+aW5pdApjaGlsZF9yaXAKdmdhY29uX2N1cnNvcgprZXJuZWxfaW5pdApjaGlsZF9yaXAKUklQOiBj
+bG9ja2V2ZW50X2RlbHRhMm5zKzB4MTEvMHgzYgoKdGhlcmVmb3JlIEkgY291bGQgaW1hZ2luZSBJ
+IHNob3VsZCBnbyBmb3IgdGhlIGJvb3QgcGFyYW0/CgpGb3IgeW91ciBtZW1vcnkgcHJvYmxlbS4u
+LiBKdXN0IGEgZ3Vlc3MsIGJ1dCBpdCBjb3VsZCBiZSB0aGF0IHlvdXIKbWFjaGluZSBoYXMgdm9s
+dGFnZSByZWd1bGF0aW5nIHByb2JsZW1zLiBJJ2QgcmF0aGVyIGV4cGVjdCB0aGF0IGlmIHJ1bgpv
+biBmdWxsIHBvd2VyLCBidXQgSSBhbHNvIGNvdWxkIGltYWdpbmUgdGhpcyBoYXBwZW5zIG9uIGxv
+dyBjcHVmcmVxCnZhbHVlcyAoaWYgSFcgaXMvZ290IGJyb2tlbikuIEknZCBydW4gYSBtZW10ZXN0
+IHdpdGggbG93ZXIgY3B1ZnJlcSwKbWF5YmUgc29tZXRoaW5nIGxpa2UgdGhpczoKaHR0cDovL3d3
+dy5rcnVnbGUub3JnL2V4YW1wbGVzL3AtR2s3QUtkcTFHbVI5dE5jeS9tZW1lYXRlci5jCkRvZXMg
+dGhpcyBvbmUgaGVscCB0byBsZXQgeW91ciBtYWNoaW5lIGZyZWV6ZSBxdWlja2VyIChzdGlsbCBv
+bmx5IGlmCmNwdWZyZXEgaXMgbG93ZXJlZCAtPiBJJ2Qgc2F5IGl0J3MgYSBIVyBwcm9ibGVtIHRo
+ZW4pPwoKICAgVGhvbWFzCgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkNwdWZyZXEgbWFpbGluZyBsaXN0CkNwdWZyZXFAbGlzdHMubGludXgub3JnLnVr
+Cmh0dHA6Ly9saXN0cy5saW51eC5vcmcudWsvbWFpbG1hbi9saXN0aW5mby9jcHVmcmVxCg==
