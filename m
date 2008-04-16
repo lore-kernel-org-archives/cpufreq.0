@@ -1,14 +1,16 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: Turion64 x2 TL-68 (HP Pavilion tx2010eo) low freq. hang
-Date: Tue, 15 Apr 2008 14:54:16 +0200
-Message-ID: <1208264056.1784.164.camel@queen.suse.de>
-References: <200712141300.23975.mark.langsdorf@amd.com>
-	<200804141635.10308.pytasz@lodz.home.pl>
-Reply-To: trenn@suse.de
+From: Christian Krafft <krafft@de.ibm.com>
+Subject: Re: [Cbe-oss-dev] [Patch] Resending:
+	cell_add_spuaware_cpufreq_governor.diff
+Date: Wed, 16 Apr 2008 13:49:38 +0200
+Message-ID: <20080416134938.01d27dc2@de.ibm.com>
+References: <20080118171119.3faa4a6a@de.ibm.com>
+	<20080128190341.21c8fc97@de.ibm.com>
+	<20080128191225.092a6143@de.ibm.com>
+	<200804140221.41726.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200804141635.10308.pytasz@lodz.home.pl>
+Content-Type: multipart/mixed; boundary="===============1046472949=="
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <200804140221.41726.arnd@arndb.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,66 +20,327 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="windows-1252"
-To: =?UTF-8?Q?Micha=C5=82?= Pytasz <pytasz@lodz.home.pl>
-Cc: cpufreq@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: parabelboi@bopserverein.de, cpufreq@lists.linux.org.uk, cbe-oss-dev@ozlabs.org
 
-T24gTW9uLCAyMDA4LTA0LTE0IGF0IDE2OjM1ICswMjAwLCBNaWNoYcWCIFB5dGFzeiB3cm90ZToK
-PiBIaSwKPiAKPiBUaGUgcHJvYmxlbSBvY2N1cnMgd2hlbiBDUFUgaXMgcnVubmluZyBvbiBsb3cg
-ZnJlcS4gKDgwMCBNSHopLiBUaGUgaGFuZ3Mgb2NjdXIgCj4gKG5vdCBuZWNjZXNhcmlseSBpbW1l
-ZGlhdGVseSkgd2l0aCBNYWNoaW5lIENoZWNrIEV4Y2VwdGlvbiwgaG93ZXZlciB0aGUgCj4gbWVz
-c2FnZSBpcyBub3QgYWx3YXlzIGRpc3BsYXllZCAob3IgSSBhbSB0b28gc2xvdyB0byBzZWUgaXQp
-LCB0aGVyZSB3ZXJlIHR3byAKPiBtZXNzYWdlcyBJIGRpZCBub3QgbWFuYWdlIHRvIHdyaXRlIGRv
-d24gKGZ1bGx5KSBib3RoIG9mIHRoZW0sIG9uZSBvZiB0aGVtIHdhcyAgCj4gQ1BVLiAwOiBNYWNo
-aW5lIENoZWNrIEV4Y2VwdGlvbjogMC4uLi40IEJhbmsgNDogYjIwLi4uNzBmMGYgCj4gSW4gcGxh
-Y2Ugb2YgZG90cyB3ZXJlIHplcm9lcyBJIGRpZCBub3QgbWFuYWdlIHRvIGNvdW50IGJlZm9yZSBy
-ZWJvb3QuIAo+IFNvbWV0aW1lcyBpdCBkb2VzIG5vdCByZWJvb3QgYnV0IGp1c3QgaGFuZ3MgaGFy
-ZCB3aXRoIG5vIG1lc3NhZ2UgYnV0IGJsaW5raW5nIAo+IGNhcHNsb2NrIChrZXJuZWwgcGFuaWMp
-Lgo+IAo+IFN5c3RlbSBhdHRlbXB0ZWQgdG8gaW5zdGFsIGlzIGxpbnV4IEdlbnRvbywga2VybmVs
-IDIuNi4yMywgaXQgZG9lcyBub3QgbWF0dGVyIAo+IHdoZXRoZXIgdGhlIGZyZXF1ZW5jeSBpcyBz
-d2l0Y2hlZCBhZnRlciBzdGFydHVwIG9yIGxvdyBmcm9tIHRoZSBiZWdpbm5pbmcgCj4gKHN3aXRj
-aGVkIGJ5IGJpb3Mgb24gc3RhcnR1cCB3aXRoIGJhdHRlcnkgcG93ZXIuICBDaGlwc2V0IGlzIE52
-aWRpYSBNQ1A1MS4KPiAKPiBBbHNvLCB0aGUgc3lzdGVtIGRvZXMgZXhhY3RsdSB0aGUgc2FtZSBi
-b290ZWQgZnJvbSB4ODYgYXMgd2VsbCBhcyBhbWQ2NCBsaXZlY2QgCj4gZ2VudG9vLCBTeXN0ZW1S
-ZXNjdWVDRCAoMC40LjMgYW5kIDEuMC4wKSAtIG1vc3RseSBkdXJpbmcgc29tZSBjb21waWxpbmcg
-b3IgCj4gdW4tdGFycmluZywgYnV0IHNvbWV0aW1lcyBpdCBqdXN0IGRvZXMgdGhhdCAib3V0IG9m
-IHRoZSBib3giLCBkdXJpbmcgYm9vdCBvciAKPiByaWdodCBhZnRlciB0aGF0KS4KPiAKPiBPbiAy
-LjRHSHosIHN5c3RlbSBpcyBydW5uaW5nIHdpdGhvdXQgYW55IHByb2JsZW1zIChnb3Zlbm9yIC0g
-cGVyZm9ybWFuY2Ugb3IgCj4gdXNlcnNwYWNlKS4gSXQgZG9lc3Mgbm90IHNlZW0gdG8gYmUgYSBt
-ZW1vcnkgcHJvYmxlbSAtIEkgaGF2ZSB0ZXN0ZWQgaXQgb24gMiAKPiBzZXRzIG9mIG1vZHVsZXMg
-LSAob3JpZ2luYWwgb25lcyAyeDFHQiA2NjdNSHogQ0w1IGFzIHdlbGwgYXMgZWxwaWRhIDJ4MkdC
-IAo+IDgwME1IeiBDTDUpLiBNb3Jlb3ZlciwgZnJlcXVlbmN5IHNjYWxpbmcgKG9yIGtlZXBpbmcg
-bG93IGZyZXF1ZW5jeSwgCj4gdW5leHBlY3RlZGx5KSBkb2VzIG5vdCBhZmZlY3Qgc3lzdGVtIHN0
-YWJpbGl0eSBpbiBidW5kbGVkIHZpc3RhIC0gd2hpY2ggYWxzbyAKPiBzdWdnZXN0cyBubyBtZW1v
-cnkgcHJvYmxlbS4gbWVtdGVzdDg2IGFsc28gcGFzc2VzLgo+IAoKSSBoYXZlIGFub3RoZXIgcHJv
-YmxlbSBvbiBtaW5lIChGZXJyYXJpIEY1MDAwKSBhbmQgSSB3b25kZXIgd2hldGhlciB5b3UKYWxz
-byBoYXZlIHNlZW4gc29tZXRoaW5nIHNpbWlsYXIuIEkgaGF2ZSBhIHNpbWlsYXIgVHVyaW9uIChU
-LTYwPykuClNpbmNlIHRoZSBjbG9ja2V2ZW50cyBwYXRjaGVzIGFscmVhZHkgc29tZSBrZXJuZWwg
-aXRlcmF0aW9ucyBhZ28sIEkgbmVlZAp0byBwYXNzIG5vYXBpY3RpbWVyIGFzIGJvb3QgcGFyYW1l
-dGVyLgpPdGhlcndpc2UgdGhlIGtlcm5lbCB3aWxsIGZyZWV6ZSBhdCBlYXJseSBib290IHRpbWUs
-IGJ1dCBvbmx5IGV2ZXJ5CnNlY29uZCB0aW1lLgpOb3QgZXZlcnkgc2Vjb25kLCBidXQgc3RhdGlz
-dGljYWxseSBldmVyeSBzZWNvbmQgdGltZS4gSXQgY291bGQgYmUgdGhhdApJIGNhbiBib290IDMg
-dGltZXMsIHRoZW4gaXQgZnJlZXplcyAyIHRpbWVzIC4uLgpJdCBsb29rcyBsaWtlIHdoZXRoZXIg
-aXQgZGVwZW5kcyB0aGF0IGl0J3MgcmFuZG9tIHdoaWNoIENQVS9hcGljIGNvcmUgaXMKdXNlZCAo
-c2V0dXAgdXApIGZpcnN0IGFuZCBpZiB0aGUgYnJva2VuIG9uZSBpcyB0YWtlbiB0aGUgQVBJQyB0
-aW1lciBkb2VzCm5vdCB0aWNrIGFuZCB0aGUgbWFjaGluZSBoYW5ncy4KCkkgd29uZGVyIHdoZXRo
-ZXIgeW91IGFsc28gc2VlIHRoaXMgKHRoZW4gSSBjb3VsZCBzdWJtaXQgYSBwYXRjaCB0byBhbHNv
-CnVzZSBub2FwaWN0aW1lciBmb3IgVHVyaW9ucykgb3Igd2hldGhlciBJIHJlYWxseSBoYXZlIGJy
-b2tlbiBIVyBoZXJlIGFuZApoYXZlIHRvIGxpdmUgd2l0aCB0aGUgd29ya2Fyb3VuZCBib290IHBh
-cmFtZXRlci4KSSB3YXNuJ3QgYWJsZSB0byBzZWUvZ29vZ2xlIG15IGJhY2t0cmFjZSBhbnl3aGVy
-ZToKQSBkaXZpc2lvbiB0aHJvdWdoIHplcm86CnNldHVwX2Jvb3RfQVBJQ19jbG9jawprZXJuZWxf
-aW5pdApjaGlsZF9yaXAKdmdhY29uX2N1cnNvcgprZXJuZWxfaW5pdApjaGlsZF9yaXAKUklQOiBj
-bG9ja2V2ZW50X2RlbHRhMm5zKzB4MTEvMHgzYgoKdGhlcmVmb3JlIEkgY291bGQgaW1hZ2luZSBJ
-IHNob3VsZCBnbyBmb3IgdGhlIGJvb3QgcGFyYW0/CgpGb3IgeW91ciBtZW1vcnkgcHJvYmxlbS4u
-LiBKdXN0IGEgZ3Vlc3MsIGJ1dCBpdCBjb3VsZCBiZSB0aGF0IHlvdXIKbWFjaGluZSBoYXMgdm9s
-dGFnZSByZWd1bGF0aW5nIHByb2JsZW1zLiBJJ2QgcmF0aGVyIGV4cGVjdCB0aGF0IGlmIHJ1bgpv
-biBmdWxsIHBvd2VyLCBidXQgSSBhbHNvIGNvdWxkIGltYWdpbmUgdGhpcyBoYXBwZW5zIG9uIGxv
-dyBjcHVmcmVxCnZhbHVlcyAoaWYgSFcgaXMvZ290IGJyb2tlbikuIEknZCBydW4gYSBtZW10ZXN0
-IHdpdGggbG93ZXIgY3B1ZnJlcSwKbWF5YmUgc29tZXRoaW5nIGxpa2UgdGhpczoKaHR0cDovL3d3
-dy5rcnVnbGUub3JnL2V4YW1wbGVzL3AtR2s3QUtkcTFHbVI5dE5jeS9tZW1lYXRlci5jCkRvZXMg
-dGhpcyBvbmUgaGVscCB0byBsZXQgeW91ciBtYWNoaW5lIGZyZWV6ZSBxdWlja2VyIChzdGlsbCBv
-bmx5IGlmCmNwdWZyZXEgaXMgbG93ZXJlZCAtPiBJJ2Qgc2F5IGl0J3MgYSBIVyBwcm9ibGVtIHRo
-ZW4pPwoKICAgVGhvbWFzCgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkNwdWZyZXEgbWFpbGluZyBsaXN0CkNwdWZyZXFAbGlzdHMubGludXgub3JnLnVr
-Cmh0dHA6Ly9saXN0cy5saW51eC5vcmcudWsvbWFpbG1hbi9saXN0aW5mby9jcHVmcmVxCg==
+--===============1046472949==
+Content-Type: multipart/signed; boundary="Sig_/R6qUQOvqFl7tO4T4q1DfjHY";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+
+--Sig_/R6qUQOvqFl7tO4T4q1DfjHY
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+From: Christian Krafft <krafft@de.ibm.com>
+
+This patch adds a cpufreq governor that takes the spu load into account.
+It's very similar to the ondemand governor, but not as complex.
+Instead of hacking spu load into the ondemand governor I'd like to see
+cpufreq accepting multiple governors per cpu in future. Don't know if this =
+is
+the right way, but it would keep the governors simple.
+
+This patch is also missing a correct load calculation.
+It works pretty well for spu's running at full time or idling, but not so w=
+ell
+for mixed load (i.e. each spu running 50 percent of the time we would
+switch to fullspeed instead of half speed).
+
+This resent version fixes also corrects the depends clause in the Kconfig f=
+ile.
+
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+
+
+
+
+---
+Index: linux.git/arch/powerpc/platforms/cell/Kconfig
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.git.orig/arch/powerpc/platforms/cell/Kconfig
++++ linux.git/arch/powerpc/platforms/cell/Kconfig
+@@ -94,6 +94,16 @@ config CBE_CPUFREQ_PMI
+ 	  processor will not only be able to run at lower speed,
+ 	  but also at lower core voltage.
+=20
++config CBE_CPUFREQ_SPU_GOVERNOR
++	tristate "CBE frequency scaling based on SPU usage"
++	depends on SPU_FS
++	select CBE_CPUFREQ
++	default m
++	help
++	  This governor checks for spu usage to adjust the cpu frequency.
++	  If no spu is running on a given cpu, that cpu will be throttled to
++	  the minimal possible frequency.
++
+ endmenu
+=20
+ config OPROFILE_CELL
+Index: linux.git/arch/powerpc/platforms/cell/Makefile
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.git.orig/arch/powerpc/platforms/cell/Makefile
++++ linux.git/arch/powerpc/platforms/cell/Makefile
+@@ -7,6 +7,7 @@ obj-$(CONFIG_CBE_THERM)			+=3D cbe_thermal
+ obj-$(CONFIG_CBE_CPUFREQ_PMI)		+=3D cbe_cpufreq_pmi.o
+ obj-$(CONFIG_CBE_CPUFREQ)		+=3D cbe-cpufreq.o
+ cbe-cpufreq-y				+=3D cbe_cpufreq_pervasive.o cbe_cpufreq.o
++obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+=3D cbe_spu_governor.o
+=20
+ ifeq ($(CONFIG_SMP),y)
+ obj-$(CONFIG_PPC_CELL_NATIVE)		+=3D smp.o
+Index: linux.git/arch/powerpc/platforms/cell/cbe_spu_governor.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- /dev/null
++++ linux.git/arch/powerpc/platforms/cell/cbe_spu_governor.c
+@@ -0,0 +1,199 @@
++/*
++ * spu aware cpufreq governor for the cell processor
++ *
++ * (C) Copyright IBM Deutschland Entwicklung GmbH 2005-2007
++ *
++ * Author: Christian Krafft <krafft@de.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/cpufreq.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
++#include <asm/atomic.h>
++#include <asm/machdep.h>
++#include <asm/spu.h>
++
++#include "asm/cell-regs.h"
++
++#define POLL_TIME	1000	/* in ms */
++
++struct spu_gov_info_struct {
++	unsigned long load;
++	unsigned long last_load;
++	struct cpufreq_policy *policy;
++	struct delayed_work work;
++	unsigned int poll_int;
++};
++static DEFINE_PER_CPU(struct spu_gov_info_struct, spu_gov_info);
++
++static struct workqueue_struct *kspugov_wq;
++
++/* parts of this function should go into spu scheduler */
++static int spu_gov_calc_load(struct spu_gov_info_struct *info)
++{
++	unsigned long active_tasks; /* fixed-point */
++	int cpu, load;
++
++	cpu =3D info->policy->cpu;
++	active_tasks =3D cbe_spu_info[cpu_to_node(cpu)].nr_active * FIXED_1;
++
++	/* this is also a bit too trivial
++	 * actually we want the max load of all spu's belonging together */
++	CALC_LOAD(info->load, EXP_1, active_tasks);
++
++	load =3D (info->load + FIXED_1 / 200) >> FSHIFT;
++
++	return load;
++}
++
++static void spu_gov_work(struct work_struct *work)
++{
++	struct spu_gov_info_struct *info;
++	unsigned int load_int;
++	int delay;
++
++	info =3D container_of(work, struct spu_gov_info_struct, work.work);
++
++	/* after cancel_delayed_work_sync we unset info->policy */
++	BUG_ON(info->policy =3D=3D NULL);
++
++	load_int =3D spu_gov_calc_load(info);
++
++	if ((load_int =3D=3D 0) && (info->policy->cur !=3D info->policy->min)) {
++		pr_debug("switching cpu %d to low frequency\n", info->policy->cpu);
++		__cpufreq_driver_target(info->policy,
++			info->policy->min,
++			CPUFREQ_RELATION_L);
++	} else if ((load_int > 0) && (info->policy->cur !=3D info->policy->max)) {
++		pr_debug("switching cpu %d to high frequency\n", info->policy->cpu);
++		__cpufreq_driver_target(info->policy,
++			info->policy->max,
++			CPUFREQ_RELATION_H);
++	}
++
++	delay =3D msecs_to_jiffies(info->poll_int);
++	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
++}
++
++static void spu_gov_init_work(struct spu_gov_info_struct *info)
++{
++	int delay =3D msecs_to_jiffies(info->poll_int);
++	INIT_DELAYED_WORK_DEFERRABLE(&info->work, spu_gov_work);
++	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
++}
++
++static void spu_gov_cancel_work(struct spu_gov_info_struct *info)
++{
++	cancel_delayed_work_sync(&info->work);
++}
++
++static int spu_gov_govern(struct cpufreq_policy *policy, unsigned int even=
+t)
++{
++	unsigned int cpu =3D policy->cpu;
++	struct spu_gov_info_struct *info, *affected_info;
++	int i;
++	int ret =3D 0;
++
++	info =3D &per_cpu(spu_gov_info, cpu);
++
++	switch (event) {
++	case CPUFREQ_GOV_START:
++		if (!cpu_online(cpu)) {
++			printk(KERN_ERR "cpu %d is not online\n", cpu);
++			ret =3D -EINVAL;
++			break;
++		}
++
++		if (!policy->cur) {
++			printk(KERN_ERR "no cpu specified in policy\n");
++			ret =3D -EINVAL;
++			break;
++		}
++
++		/* initialize spu_gov_info for all affected cpus */
++		for_each_cpu_mask(i, policy->cpus) {
++			affected_info =3D &per_cpu(spu_gov_info, i);
++			affected_info->policy =3D policy;
++		}
++
++		info->poll_int =3D POLL_TIME;
++
++		/* setup timer */
++		spu_gov_init_work(info);
++
++		break;
++
++	case CPUFREQ_GOV_STOP:
++		/* cancel timer */
++		spu_gov_cancel_work(info);
++
++		/* clean spu_gov_info for all affected cpus */
++		for_each_cpu_mask (i, policy->cpus) {
++			info =3D &per_cpu(spu_gov_info, i);
++			info->policy =3D NULL;
++		}
++
++		break;
++	}
++
++	return ret;
++}
++
++static struct cpufreq_governor spu_governor =3D {
++	.name =3D "spu_governor",
++	.governor =3D spu_gov_govern,
++	.owner =3D THIS_MODULE,
++};
++
++/*
++ * module init and destoy
++ */
++
++static int __init spu_gov_init(void)
++{
++	int ret;
++
++	kspugov_wq =3D create_workqueue("kspugov");
++	if (!kspugov_wq) {
++		printk(KERN_ERR "creation of kspugov failed\n");
++		ret =3D -EFAULT;
++		goto out;
++	}
++
++	ret =3D cpufreq_register_governor(&spu_governor);
++	if (ret) {
++		printk(KERN_ERR "registration of governor failed\n");
++		destroy_workqueue(kspugov_wq);
++		goto out;;
++	}
++out:
++	return ret;
++}
++
++static void __exit spu_gov_exit(void)
++{
++	cpufreq_unregister_governor(&spu_governor);
++	destroy_workqueue(kspugov_wq);
++}
++
++
++module_init(spu_gov_init);
++module_exit(spu_gov_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
++
+
+--=20
+Mit freundlichen Gruessen,
+kind regards,
+
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Martin Jetter
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+--Sig_/R6qUQOvqFl7tO4T4q1DfjHY
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQFIBefU6rqK4qDx+dcRAu6IAKDhYGpGZi5ECn1u/Xg/ADP/Pq4/7ACgyUqa
+jtYpriVgRvHejN2O9MExByo=
+=wpGM
+-----END PGP SIGNATURE-----
+
+--Sig_/R6qUQOvqFl7tO4T4q1DfjHY--
+
+
+--===============1046472949==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Cpufreq mailing list
+Cpufreq@lists.linux.org.uk
+http://lists.linux.org.uk/mailman/listinfo/cpufreq
+
+--===============1046472949==--
+
