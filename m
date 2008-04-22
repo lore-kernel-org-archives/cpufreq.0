@@ -1,14 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
-	dualcore AMD64
-Date: Sat, 19 Apr 2008 07:44:07 -0700 (PDT)
-Message-ID: <20080419144407.A0032108060@picon.linux-foundation.org>
-References: <bug-8264-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8547] "Hardware error - pending bit very stuck" on Mobile AMD
+	Sempron
+Date: Tue, 22 Apr 2008 00:48:03 -0700 (PDT)
+Message-ID: <20080422074803.1F51D108038@picon.linux-foundation.org>
+References: <bug-8547-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8264-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8547-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,7 +21,7 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8264
+http://bugzilla.kernel.org/show_bug.cgi?id=8547
 
 
 izaera@autentia.com changed:
@@ -36,4 +36,4 @@ izaera@autentia.com changed:
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+You are the assignee for the bug, or are watching the assignee.
