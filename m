@@ -1,13 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6382] Random lockups, no kernel panic just a compleate hang
-Date: Tue, 22 Apr 2008 00:51:15 -0700 (PDT)
-Message-ID: <20080422075115.7D3B0108035@picon.linux-foundation.org>
-References: <bug-6382-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 8547] "Hardware error - pending bit very stuck" on Mobile AMD
+	Sempron
+Date: Tue, 22 Apr 2008 00:56:11 -0700 (PDT)
+Message-ID: <20080422075611.7DC9E108038@picon.linux-foundation.org>
+References: <bug-8547-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6382-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8547-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,25 +21,15 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6382
+http://bugzilla.kernel.org/show_bug.cgi?id=8547
 
 
 
 
 
-------- Comment #15 from izaera@autentia.com  2008-04-22 00:51 -------
-Hi Natalie:
-
-I have tried with kernel 2.6.24 and it still hangs. I think this bug is related
-(if not the same) to 8547 and 8264.
-
-I propose to follow this problem in bug 8264 to centralize all comments (mark
-8547 and 6382 as duplicats of 8264) 
-
-What do you think? Can anyone confirm if those three are the same bug?
-
-Thanks.
-Ivan
+------- Comment #8 from izaera@autentia.com  2008-04-22 00:56 -------
+Please have a look at bugs 6382 and 8264 because I think they are the same
+error.
 
 
 -- 
