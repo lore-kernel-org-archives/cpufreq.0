@@ -1,45 +1,39 @@
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Subject: RE: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
-Date: Tue, 22 Apr 2008 11:51:21 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273093908@sausexmb4.amd.com>
-References: <Pine.LNX.4.64.0804221609130.12972@jikos.suse.cz>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
+	dualcore AMD64
+Date: Tue, 22 Apr 2008 10:13:33 -0700 (PDT)
+Message-ID: <20080422171333.B644910805F@picon.linux-foundation.org>
+References: <bug-8264-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <Pine.LNX.4.64.0804221609130.12972@jikos.suse.cz>
-Sender: linux-acpi-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Jiri Kosina <jkosina@suse.cz>, davej@codemonkey.org.uk, lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-8264-3570@http.bugzilla.kernel.org/>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-> From: cpufreq-bounces@lists.linux.org.uk 
-> [mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Jiri Kosina
-> Sent: Tuesday, April 22, 2008 9:12 AM
-> To: davej@codemonkey.org.uk; lenb@kernel.org
-> 
-> Hi,
-> 
-> I am getting the acpi-cpufreq-drivercore warning below when booting 
-> current git (807501475)
-> 
-> powernow-k8: Found 1 AMD Athlon(tm) 64 Processor 3000+ 
-> processors (1 cpu 
-> cores) (version 2.20.00)
-> powernow-k8: BIOS error - no PSB or ACPI _PSS objects
-> sysdev: class cpu: driver (ffffffff8057fd10) has already been 
-> registered to a class, something is wrong, but will forge on!
-> 
-Why is the acpi-cpufreq driver trying to
-instantiate on an AMD processor?  It shouldn't
-do that.
+http://bugzilla.kernel.org/show_bug.cgi?id=8264
 
-PowerNow! failed to load because the BIOS wasn't 
-set up correctly.  But the acpi-cpufreq driver
-shouldn't have loaded at all.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+nm127@freemail.hu changed:
 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |nm127@freemail.hu
+
+
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
