@@ -1,38 +1,29 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 6382] Random lockups, no kernel panic just a compleate hang
-Date: Tue, 22 Apr 2008 10:14:13 -0700 (PDT)
-Message-ID: <20080422171413.2254B108035@picon.linux-foundation.org>
-References: <bug-6382-3570@http.bugzilla.kernel.org/>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: RE: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
+Date: Tue, 22 Apr 2008 21:56:52 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0804222155070.12972@jikos.suse.cz>
+References: <Pine.LNX.4.64.0804221609130.12972@jikos.suse.cz>
+ <6453C3CB8E2B3646B0D020C112613273093908@sausexmb4.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273093908@sausexmb4.amd.com>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-6382-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: davej@codemonkey.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6382
+On Tue, 22 Apr 2008, Langsdorf, Mark wrote:
 
+> PowerNow! failed to load because the BIOS wasn't set up correctly.  But 
+> the acpi-cpufreq driver shouldn't have loaded at all.
 
-nm127@freemail.hu changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |nm127@freemail.hu
-
-
-
+I'd guess that it is because acpi_cpufreq_init() doesn't contain any check 
+at all that will make sure that the CPU supports needed features (as 
+opposed to powernow/speedstep/etc modules, which perform such checks), 
+right?
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Jiri Kosina
+SUSE Labs
