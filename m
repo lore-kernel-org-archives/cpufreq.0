@@ -1,14 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 8264] powernow-k8 module gets stuck switching powerlevels on
-	dualcore AMD64
-Date: Tue, 22 Apr 2008 01:00:42 -0700 (PDT)
-Message-ID: <20080422080042.E2974108066@picon.linux-foundation.org>
-References: <bug-8264-3570@http.bugzilla.kernel.org/>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
+Date: Tue, 22 Apr 2008 16:12:15 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0804221609130.12972@jikos.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-8264-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,32 +15,46 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: davej@codemonkey.org.uk, lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8264
+Hi,
 
+I am getting the acpi-cpufreq-drivercore warning below when booting 
+current git (807501475)
 
+powernow-k8: Found 1 AMD Athlon(tm) 64 Processor 3000+ processors (1 cpu 
+cores) (version 2.20.00)
+powernow-k8: BIOS error - no PSB or ACPI _PSS objects
+sysdev: class cpu: driver (ffffffff8057fd10) has already been registered 
+to a class, something is wrong, but will forge on!
+------------[ cut here ]------------
+WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
+Modules linked in: acpi_cpufreq(+) snd_mixer_oss freq_table snd_seq loop 
+dm_mod snd_via82xx gameport snd_ac97_codec ac97_bus snd_pcm snd_timer 
+snd_page_alloc snd_mpu401_uart snd_rawmidi parport_pc snd_seq_device 
+parport snd shpchp floppy i2c_viapro i2c_core soundcore pci_hotplug sr_mod 
+r8169 cdrom button sg usbhid hid sd_mod edd ext3 mbcache jbd fan pata_via 
+sata_via libata scsi_mod dock thermal processor
+Pid: 2284, comm: modprobe Not tainted 2.6.25-default-03410-g8075014 #27
 
+Call Trace:
+ [<ffffffff8022dcc7>] warn_on_slowpath+0x58/0x6b
+ [<ffffffff8022eba7>] ? printk+0x67/0x69
+ [<ffffffff8042777a>] ? __mutex_unlock_slowpath+0xf9/0x105
+ [<ffffffff8042778f>] ? mutex_unlock+0x9/0xb
+ [<ffffffff8042927d>] ? _spin_unlock_irqrestore+0x3f/0x47
+ [<ffffffff80368b33>] sysdev_driver_register+0x75/0x12e
+ [<ffffffff803a9fb3>] cpufreq_register_driver+0x95/0x12f
+ [<ffffffffa00f503f>] :acpi_cpufreq:acpi_cpufreq_init+0x3f/0x41
+ [<ffffffff80252b4b>] sys_init_module+0x19d1/0x1b02
+ [<ffffffff80285eda>] ? __kmalloc+0x0/0xea
+ [<ffffffff8024a87b>] ? trace_hardirqs_on+0xf1/0x115
+ [<ffffffff80428afc>] ? trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff8020bf7b>] system_call_after_swapgs+0x7b/0x80
 
-
-------- Comment #27 from izaera@autentia.com  2008-04-22 01:00 -------
-Hi everybody:
-
-I have added comments in bugs 6382 and 8547 because I think they are duplicates
-of this problem. I also proposed to follow the solution in this bug as it seems
-the most active/explanatory.
-
-Mark and Natalie: I'm thinking in setting the governor to userspace and make a
-program to do smooth transitions (for example: no more than one per second). Do
-you think that would suffice to bypass the problem? Also, do you think this can
-be achieved by using powerfreqd or a custom script/daemon should be written?
-
-Thanks for your help.
-Ivan
-
+---[ end trace 21ad653327c7db6f ]---
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Jiri Kosina
