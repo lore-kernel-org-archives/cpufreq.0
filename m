@@ -1,29 +1,30 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: RE: WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x75/0x12e()
-Date: Tue, 22 Apr 2008 21:56:52 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804222155070.12972@jikos.suse.cz>
-References: <Pine.LNX.4.64.0804221609130.12972@jikos.suse.cz>
- <6453C3CB8E2B3646B0D020C112613273093908@sausexmb4.amd.com>
+From: "Ing. Michal Zahor" <mzahor@dtech.sk>
+Subject: Celeron 220
+Date: Wed, 23 Apr 2008 23:20:26 +0200
+Message-ID: <480FA81A.1060308@dtech.sk>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <6453C3CB8E2B3646B0D020C112613273093908@sausexmb4.amd.com>
-Sender: linux-acpi-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-Cc: davej@codemonkey.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Tue, 22 Apr 2008, Langsdorf, Mark wrote:
+Hi,
 
-> PowerNow! failed to load because the BIOS wasn't set up correctly.  But 
-> the acpi-cpufreq driver shouldn't have loaded at all.
+Celeron 220 in MoBo D201GLY2  said:
+p4-clockmod: Unknown p4-clockmod-capable CPU. Please send an e-mail to 
+<cpufreq@lists.linux.org.uk>
 
-I'd guess that it is because acpi_cpufreq_init() doesn't contain any check 
-at all that will make sure that the CPU supports needed features (as 
-opposed to powernow/speedstep/etc modules, which perform such checks), 
-right?
+Is it possible to use any clockmod ?
 
--- 
-Jiri Kosina
-SUSE Labs
+Best regards,
+Michal Zahor
