@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10564] Randomly sets max freq equal to min freq
-Date: Sun, 27 Apr 2008 09:35:33 -0700 (PDT)
-Message-ID: <20080427163533.A7A5710805D@picon.linux-foundation.org>
+Date: Sun, 27 Apr 2008 10:10:14 -0700 (PDT)
+Message-ID: <20080427171014.A8A8B10805F@picon.linux-foundation.org>
 References: <bug-10564-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,19 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10564
 
 
-akpm@osdl.org changed:
+andrew@andrewyates.net changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |akpm@osdl.org
+                 CC|                            |andrew@andrewyates.net
 
 
-
-
-------- Comment #1 from akpm@osdl.org  2008-04-27 09:35 -------
-Is this a regression?  Did any earlier kernel work OK?  If so, which version?
-
-Thanks.
 
 
 -- 
