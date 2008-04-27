@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10564] Randomly sets max freq equal to min freq
-Date: Sun, 27 Apr 2008 10:30:15 -0700 (PDT)
-Message-ID: <20080427173015.3F1B7108062@picon.linux-foundation.org>
+Date: Sun, 27 Apr 2008 10:39:12 -0700 (PDT)
+Message-ID: <20080427173912.B646D10805D@picon.linux-foundation.org>
 References: <bug-10564-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,16 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10564
 
 
+akpm@osdl.org changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         Regression|0                           |1
 
 
-
-------- Comment #3 from stonecrest@gmail.com  2008-04-27 10:30 -------
-Andrew,
-
-Yes it's a regression, cpufreq scaling has worked properly for years with this
-laptop. I'm unsure which kernel version it started with (I'd guess it's around
-2.6.24), but I'll do some testing with different versions and see if I can
-narrow it down.
 
 
 -- 
