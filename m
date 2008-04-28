@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10564] Randomly sets max freq equal to min freq
-Date: Mon, 28 Apr 2008 08:26:19 -0700 (PDT)
-Message-ID: <20080428152619.762D7108060@picon.linux-foundation.org>
+Date: Mon, 28 Apr 2008 11:54:59 -0700 (PDT)
+Message-ID: <20080428185459.0D64E108060@picon.linux-foundation.org>
 References: <bug-10564-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,22 +23,15 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10564
 
 
-trenn@suse.de changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |davej@codemonkey.org.uk
 
 
 
+------- Comment #7 from stonecrest@gmail.com  2008-04-28 11:54 -------
+Yes, we both use acpi-cpufreq. For what it's worth, I always use my laptop
+plugged into AC, so hopefully that other bug report is not specific to
+switching power state. 
 
-------- Comment #6 from trenn@suse.de  2008-04-28 08:26 -------
-Could this be a duplicate of:
-http://bugzilla.kernel.org/show_bug.cgi?id=9708
-Do you both use acpi-cpufreq?
-
-If yes, the patch there should be added. Dave asked me to send him a reminder
-(should have done so last weeek...), hope adding you here is enough...
+I'll be happy to test a kernel with this patch, thanks for pointing it out.
 
 
 -- 
