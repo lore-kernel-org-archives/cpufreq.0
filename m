@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10562] Powersave feature not available on VIA C7-D CPU's
-Date: Tue, 29 Apr 2008 05:29:25 -0700 (PDT)
-Message-ID: <20080429122925.3F2CE10805F@picon.linux-foundation.org>
+Date: Tue, 29 Apr 2008 11:40:11 -0700 (PDT)
+Message-ID: <20080429184011.AA604108064@picon.linux-foundation.org>
 References: <bug-10562-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,11 +26,54 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10562
 
 
 
-------- Comment #3 from axelgenus@gmail.com  2008-04-29 05:29 -------
-I tried to update the BIOS and the VIA flash utility corrupted it! I'm going to
-retry when I receive the motherboard's replacement.
+------- Comment #4 from rafalbilski@interia.pl  2008-04-29 11:40 -------
+Below discussion from Via Arena forums.
 
-There is something I can try that avoids BIOS update? I'm kinda scared... :(
+> Dear All,
+>
+> C7-D Model A (1.5/2 GHz) and model D (1.5 Ghz) dosen't support PowerSaver.
+> C7-D Model D (1.8/2 GHz) support PowerSaver (P-States P0-P1).
+> The e_powersaver driver of kernel 2.6.21-rc6 need to update for new VIA C7/C7D/C7M/Eden Model D CPU.
+> VIA is testing it.
+> If the driver was tested by VIA QA approval, VIA will deliver it.
+And they did. Patch was available from Viaarena. I don't know it's current
+state.
+>
+> BRs,
+> Venus
+
+> Hi Venus,
+>
+> What are the differences between model A and B.
+> Also how can I know which I have?
+>
+> Thanks! 
+
+> Dear nori,
+>
+> #cat /proc/cpuinfo
+>
+> Model A CPU=>
+>
+> processor : 0
+> vendor_id : CentaurHauls
+> cpu family : 6
+> model : 10
+> model name : VIA Esther processor 1500MHz
+> stepping : 9
+> cpu MHz : 800.040
+>
+> Model D CPU=>
+> processor : 0
+> vendor_id : CentaurHauls
+> cpu family : 6
+> model : 13
+> model name : VIA C7-M Processor 2000MHz
+> stepping : 0
+> cpu MHz : 2000.022
+>
+> BRs,
+> Venus
 
 
 -- 
