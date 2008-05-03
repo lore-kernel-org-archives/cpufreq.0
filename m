@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10564] Randomly sets max freq equal to min freq
-Date: Wed, 30 Apr 2008 03:29:35 -0700 (PDT)
-Message-ID: <20080430102935.BA3EF108061@picon.linux-foundation.org>
+Date: Sat,  3 May 2008 07:41:07 -0700 (PDT)
+Message-ID: <20080503144107.4877A10805F@picon.linux-foundation.org>
 References: <bug-10564-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,16 +26,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10564
 
 
 
-------- Comment #8 from trenn@suse.de  2008-04-30 03:29 -------
-commit e56a727b023d40d1adf660168883f30f2e6abe0a
-Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Date:   Mon Apr 28 15:13:43 2008 -0400
-
-    [CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind
-our back.
-
-If this does not help, I wonder whether ignore_ppc=1 as processor module
-parameter helps?
+------- Comment #9 from stonecrest@gmail.com  2008-05-03 07:41 -------
+I just tried 2.6.25-git19, which has the above cpufreq commit, and still
+observe the problem. 
 
 
 -- 
