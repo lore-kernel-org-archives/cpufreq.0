@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10564] Randomly sets max freq equal to min freq
-Date: Sat,  3 May 2008 08:13:14 -0700 (PDT)
-Message-ID: <20080503151314.E1F84108060@picon.linux-foundation.org>
+Date: Sat,  3 May 2008 09:50:00 -0700 (PDT)
+Message-ID: <20080503165000.B1424108062@picon.linux-foundation.org>
 References: <bug-10564-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,23 +23,28 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10564
 
 
+trenn@suse.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |venkatesh.pallipadi@intel.co
+                   |                            |m
 
 
 
-------- Comment #10 from stonecrest@gmail.com  2008-05-03 08:13 -------
-I also now tried ignore_ppc=1. This is interesting, as cpufreq-info shows the
-correct min/max frequencies, but I can tell that the issue is definitely not
-resolved. Things were normal when I first booted up, but now I'm back to the
-system not even being able to keep up with my typing and everything sluggish.
-So despite cpufreq-info reporting the correct max freq, I don't know that
-anything else fundamentally changed.
 
-It looks like there are a number of people with this issue
-(http://bbs.archlinux.org/viewtopic.php?pid=363228#p363228), and they claim it
-started with the 2.6.24 kernel. That's consistent with what I guessed, although
-I have not yet verified that this was definitely the kernel version where
-things changed. And I should note that I'm testing on the mainline kernel
-without patches, despite the reference to Archlinux.
+------- Comment #11 from trenn@suse.de  2008-05-03 09:50 -------
+> but now I'm back to the system not even being able to keep up with my typing
+> and everything sluggish.
+Puhh, could be the latest locking changes? Maybe irqs are held too long or
+similar?
+
+Scott, if you could do a git bisect, as you already know about which kernel
+versions are affected it shouldn't be that much work...
+If you could tell Venkatesh which patch it is then, it should be easy to fix.
+
+You should spinlock debug compile in, maybe you already get a hint that
+somewhere things get stuck for a while...
 
 
 -- 
