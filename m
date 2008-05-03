@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] Remove p4_clockmode driver
-Date: Sat, 03 May 2008 21:47:10 +0200
-Message-ID: <1209844030.13290.5.camel@linux-2bdv.site>
+Subject: [PATCH] Remove deprecated speedstep-centrino driver
+Date: Sat, 03 May 2008 21:53:21 +0200
+Message-ID: <1209844401.13290.9.camel@linux-2bdv.site>
 Reply-To: trenn@suse.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,381 +18,709 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq <cpufreq@lists.linux.org.uk>
-Cc: Dave Jones <davej@redhat.com>, mzahor@dtech.sk, Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Dave Jones <davej@redhat.com>
 
-Remove p4_clockmode driver
+Remove deprecated speedstep-centrino driver
 
-The driver is doing throttling which is supposed to be done through another
-ACPI interface. If both interfaces are used, the machine may get very slow.
-Remove this driver which should never be used.
+Not 100% sure whether there are machines out there that still need the
+static Banias tables, Venkatesh?
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 
 
 ---
- arch/x86/kernel/cpu/cpufreq/Kconfig       |   20 -
- arch/x86/kernel/cpu/cpufreq/Makefile      |    1 
- arch/x86/kernel/cpu/cpufreq/p4-clockmod.c |  315 ------------------------------
- 3 files changed, 336 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/Kconfig              |   30 -
+ arch/x86/kernel/cpu/cpufreq/Makefile             |    1 
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |  634 -----------------------
+ 3 files changed, 665 deletions(-)
 
 Index: linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/Kconfig
 ===================================================================
 --- linux-acpi-2.6_video_native_vs_vendor.orig/arch/x86/kernel/cpu/cpufreq/Kconfig
 +++ linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/Kconfig
-@@ -179,26 +179,6 @@ config X86_SPEEDSTEP_SMI
+@@ -122,36 +122,6 @@ config X86_GX_SUSPMOD
  
- 	  If in doubt, say N.
+ 	 If in doubt, say N.
  
--config X86_P4_CLOCKMOD
--	tristate "Intel Pentium 4 clock modulation"
+-config X86_SPEEDSTEP_CENTRINO
+-	tristate "Intel Enhanced SpeedStep (deprecated)"
 -	select CPU_FREQ_TABLE
+-	select X86_SPEEDSTEP_CENTRINO_TABLE if X86_32
+-	depends on X86_32 || (X86_64 && ACPI_PROCESSOR)
 -	help
--	  This adds the CPUFreq driver for Intel Pentium 4 / XEON
--	  processors.  When enabled it will lower CPU temperature by skipping
--	  clocks.
--
--	  This driver should be only used in exceptional
--	  circumstances when very low power is needed because it causes severe
--	  slowdowns and noticeable latencies.  Normally Speedstep should be used
--	  instead.
+-	  This is deprecated and this functionality is now merged into
+-	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
+-	  speedstep_centrino.
+-	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+-	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
+-	  or 64bit enabled Intel Xeons.
 -
 -	  To compile this driver as a module, choose M here: the
--	  module will be called p4-clockmod.
+-	  module will be called speedstep-centrino.
 -
 -	  For details, take a look at <file:Documentation/cpu-freq/>.
 -
--	  Unless you are absolutely sure say N.
+-	  If in doubt, say N.
 -
- config X86_CPUFREQ_NFORCE2
- 	tristate "nVidia nForce2 FSB changing"
- 	depends on X86_32 && EXPERIMENTAL
-Index: linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/Makefile
+-config X86_SPEEDSTEP_CENTRINO_TABLE
+-	bool "Built-in tables for Banias CPUs"
+-	depends on X86_32 && X86_SPEEDSTEP_CENTRINO
+-	default y
+-	help
+-	  Use built-in tables for Banias CPUs if ACPI encoding
+-	  is not available.
+-
+-	  If in doubt, say N.
+-
+ config X86_SPEEDSTEP_ICH
+ 	tristate "Intel Speedstep on ICH-M chipsets (ioport interface)"
+ 	select CPU_FREQ_TABLE
+Index: linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
 ===================================================================
---- linux-acpi-2.6_video_native_vs_vendor.orig/arch/x86/kernel/cpu/cpufreq/Makefile
-+++ linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/Makefile
-@@ -12,5 +12,4 @@ obj-$(CONFIG_X86_SPEEDSTEP_LIB)		+= spee
- obj-$(CONFIG_X86_SPEEDSTEP_SMI)		+= speedstep-smi.o
- obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
- obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
--obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
- obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
-Index: linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-===================================================================
---- linux-acpi-2.6_video_native_vs_vendor.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+--- linux-acpi-2.6_video_native_vs_vendor.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
 +++ /dev/null
-@@ -1,315 +0,0 @@
+@@ -1,634 +0,0 @@
 -/*
-- *	Pentium 4/Xeon CPU on demand clock modulation/speed scaling
-- *	(C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
-- *	(C) 2002 Zwane Mwaikambo <zwane@commfireservices.com>
-- *	(C) 2002 Arjan van de Ven <arjanv@redhat.com>
-- *	(C) 2002 Tora T. Engstad
-- *	All Rights Reserved
+- * cpufreq driver for Enhanced SpeedStep, as found in Intel's Pentium
+- * M (part of the Centrino chipset).
 - *
-- *	This program is free software; you can redistribute it and/or
-- *      modify it under the terms of the GNU General Public License
-- *      as published by the Free Software Foundation; either version
-- *      2 of the License, or (at your option) any later version.
+- * Since the original Pentium M, most new Intel CPUs support Enhanced
+- * SpeedStep.
 - *
-- *      The author(s) of this software shall not be held liable for damages
-- *      of any nature resulting due to the use of this software. This
-- *      software is provided AS-IS with no warranties.
+- * Despite the "SpeedStep" in the name, this is almost entirely unlike
+- * traditional SpeedStep.
 - *
-- *	Date		Errata			Description
-- *	20020525	N44, O17	12.5% or 25% DC causes lockup
+- * Modelled on speedstep.c
 - *
+- * Copyright (C) 2003 Jeremy Fitzhardinge <jeremy@goop.org>
 - */
 -
 -#include <linux/kernel.h>
 -#include <linux/module.h>
 -#include <linux/init.h>
--#include <linux/smp.h>
 -#include <linux/cpufreq.h>
--#include <linux/slab.h>
--#include <linux/cpumask.h>
+-#include <linux/sched.h>	/* current */
+-#include <linux/delay.h>
+-#include <linux/compiler.h>
 -
--#include <asm/processor.h>
 -#include <asm/msr.h>
--#include <asm/timex.h>
+-#include <asm/processor.h>
+-#include <asm/cpufeature.h>
 -
--#include "speedstep-lib.h"
+-#define PFX		"speedstep-centrino: "
+-#define MAINTAINER	"cpufreq@lists.linux.org.uk"
 -
--#define PFX	"p4-clockmod: "
--#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "p4-clockmod", msg)
+-#define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "speedstep-centrino", msg)
+-
+-#define INTEL_MSR_RANGE	(0xffff)
+-
+-struct cpu_id
+-{
+-	__u8	x86;            /* CPU family */
+-	__u8	x86_model;	/* model */
+-	__u8	x86_mask;	/* stepping */
+-};
+-
+-enum {
+-	CPU_BANIAS,
+-	CPU_DOTHAN_A1,
+-	CPU_DOTHAN_A2,
+-	CPU_DOTHAN_B0,
+-	CPU_MP4HT_D0,
+-	CPU_MP4HT_E0,
+-};
+-
+-static const struct cpu_id cpu_ids[] = {
+-	[CPU_BANIAS]	= { 6,  9, 5 },
+-	[CPU_DOTHAN_A1]	= { 6, 13, 1 },
+-	[CPU_DOTHAN_A2]	= { 6, 13, 2 },
+-	[CPU_DOTHAN_B0]	= { 6, 13, 6 },
+-	[CPU_MP4HT_D0]	= {15,  3, 4 },
+-	[CPU_MP4HT_E0]	= {15,  4, 1 },
+-};
+-#define N_IDS	ARRAY_SIZE(cpu_ids)
+-
+-struct cpu_model
+-{
+-	const struct cpu_id *cpu_id;
+-	const char	*model_name;
+-	unsigned	max_freq; /* max clock in kHz */
+-
+-	struct cpufreq_frequency_table *op_points; /* clock/voltage pairs */
+-};
+-static int centrino_verify_cpu_id(const struct cpuinfo_x86 *c, const struct cpu_id *x);
+-
+-/* Operating points for current CPU */
+-static struct cpu_model *centrino_model[NR_CPUS];
+-static const struct cpu_id *centrino_cpu[NR_CPUS];
+-
+-static struct cpufreq_driver centrino_driver;
+-
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE
+-
+-/* Computes the correct form for IA32_PERF_CTL MSR for a particular
+-   frequency/voltage operating point; frequency in MHz, volts in mV.
+-   This is stored as "index" in the structure. */
+-#define OP(mhz, mv)							\
+-	{								\
+-		.frequency = (mhz) * 1000,				\
+-		.index = (((mhz)/100) << 8) | ((mv - 700) / 16)		\
+-	}
 -
 -/*
-- * Duty Cycle (3bits), note DC_DISABLE is not specified in
-- * intel docs i just use it to mean disable
+- * These voltage tables were derived from the Intel Pentium M
+- * datasheet, document 25261202.pdf, Table 5.  I have verified they
+- * are consistent with my IBM ThinkPad X31, which has a 1.3GHz Pentium
+- * M.
 - */
--enum {
--	DC_RESV, DC_DFLT, DC_25PT, DC_38PT, DC_50PT,
--	DC_64PT, DC_75PT, DC_88PT, DC_DISABLE
+-
+-/* Ultra Low Voltage Intel Pentium M processor 900MHz (Banias) */
+-static struct cpufreq_frequency_table banias_900[] =
+-{
+-	OP(600,  844),
+-	OP(800,  988),
+-	OP(900, 1004),
+-	{ .frequency = CPUFREQ_TABLE_END }
 -};
 -
--#define DC_ENTRIES	8
--
--
--static int has_N44_O17_errata[NR_CPUS];
--static unsigned int stock_freq;
--static struct cpufreq_driver p4clockmod_driver;
--static unsigned int cpufreq_p4_get(unsigned int cpu);
--
--static int cpufreq_p4_setdc(unsigned int cpu, unsigned int newstate)
+-/* Ultra Low Voltage Intel Pentium M processor 1000MHz (Banias) */
+-static struct cpufreq_frequency_table banias_1000[] =
 -{
--	u32 l, h;
+-	OP(600,   844),
+-	OP(800,   972),
+-	OP(900,   988),
+-	OP(1000, 1004),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
 -
--	if (!cpu_online(cpu) || (newstate > DC_DISABLE) || (newstate == DC_RESV))
--		return -EINVAL;
+-/* Low Voltage Intel Pentium M processor 1.10GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1100[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1020),
+-	OP( 900, 1100),
+-	OP(1000, 1164),
+-	OP(1100, 1180),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
 -
--	rdmsr_on_cpu(cpu, MSR_IA32_THERM_STATUS, &l, &h);
 -
--	if (l & 0x01)
--		dprintk("CPU#%d currently thermal throttled\n", cpu);
+-/* Low Voltage Intel Pentium M processor 1.20GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1200[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1004),
+-	OP( 900, 1020),
+-	OP(1000, 1100),
+-	OP(1100, 1164),
+-	OP(1200, 1180),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
 -
--	if (has_N44_O17_errata[cpu] && (newstate == DC_25PT || newstate == DC_DFLT))
--		newstate = DC_38PT;
+-/* Intel Pentium M processor 1.30GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1300[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1260),
+-	OP(1000, 1292),
+-	OP(1200, 1356),
+-	OP(1300, 1388),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
 -
--	rdmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, &l, &h);
--	if (newstate == DC_DISABLE) {
--		dprintk("CPU#%d disabling modulation\n", cpu);
--		wrmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, l & ~(1<<4), h);
--	} else {
--		dprintk("CPU#%d setting duty cycle to %d%%\n",
--			cpu, ((125 * newstate) / 10));
--		/* bits 63 - 5	: reserved
--		 * bit  4	: enable/disable
--		 * bits 3-1	: duty cycle
--		 * bit  0	: reserved
--		 */
--		l = (l & ~14);
--		l = l | (1<<4) | ((newstate & 0x7)<<1);
--		wrmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, l, h);
+-/* Intel Pentium M processor 1.40GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1400[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1180),
+-	OP(1000, 1308),
+-	OP(1200, 1436),
+-	OP(1400, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
+-
+-/* Intel Pentium M processor 1.50GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1500[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1116),
+-	OP(1000, 1228),
+-	OP(1200, 1356),
+-	OP(1400, 1452),
+-	OP(1500, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
+-
+-/* Intel Pentium M processor 1.60GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1600[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1036),
+-	OP(1000, 1164),
+-	OP(1200, 1276),
+-	OP(1400, 1420),
+-	OP(1600, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
+-
+-/* Intel Pentium M processor 1.70GHz (Banias) */
+-static struct cpufreq_frequency_table banias_1700[] =
+-{
+-	OP( 600,  956),
+-	OP( 800, 1004),
+-	OP(1000, 1116),
+-	OP(1200, 1228),
+-	OP(1400, 1308),
+-	OP(1700, 1484),
+-	{ .frequency = CPUFREQ_TABLE_END }
+-};
+-#undef OP
+-
+-#define _BANIAS(cpuid, max, name)	\
+-{	.cpu_id		= cpuid,	\
+-	.model_name	= "Intel(R) Pentium(R) M processor " name "MHz", \
+-	.max_freq	= (max)*1000,	\
+-	.op_points	= banias_##max,	\
+-}
+-#define BANIAS(max)	_BANIAS(&cpu_ids[CPU_BANIAS], max, #max)
+-
+-/* CPU models, their operating frequency range, and freq/voltage
+-   operating points */
+-static struct cpu_model models[] =
+-{
+-	_BANIAS(&cpu_ids[CPU_BANIAS], 900, " 900"),
+-	BANIAS(1000),
+-	BANIAS(1100),
+-	BANIAS(1200),
+-	BANIAS(1300),
+-	BANIAS(1400),
+-	BANIAS(1500),
+-	BANIAS(1600),
+-	BANIAS(1700),
+-
+-	/* NULL model_name is a wildcard */
+-	{ &cpu_ids[CPU_DOTHAN_A1], NULL, 0, NULL },
+-	{ &cpu_ids[CPU_DOTHAN_A2], NULL, 0, NULL },
+-	{ &cpu_ids[CPU_DOTHAN_B0], NULL, 0, NULL },
+-	{ &cpu_ids[CPU_MP4HT_D0], NULL, 0, NULL },
+-	{ &cpu_ids[CPU_MP4HT_E0], NULL, 0, NULL },
+-
+-	{ NULL, }
+-};
+-#undef _BANIAS
+-#undef BANIAS
+-
+-static int centrino_cpu_init_table(struct cpufreq_policy *policy)
+-{
+-	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
+-	struct cpu_model *model;
+-
+-	for(model = models; model->cpu_id != NULL; model++)
+-		if (centrino_verify_cpu_id(cpu, model->cpu_id) &&
+-		    (model->model_name == NULL ||
+-		     strcmp(cpu->x86_model_id, model->model_name) == 0))
+-			break;
+-
+-	if (model->cpu_id == NULL) {
+-		/* No match at all */
+-		dprintk("no support for CPU model \"%s\": "
+-		       "send /proc/cpuinfo to " MAINTAINER "\n",
+-		       cpu->x86_model_id);
+-		return -ENOENT;
 -	}
+-
+-	if (model->op_points == NULL) {
+-		/* Matched a non-match */
+-		dprintk("no table support for CPU model \"%s\"\n",
+-		       cpu->x86_model_id);
+-		dprintk("try using the acpi-cpufreq driver\n");
+-		return -ENOENT;
+-	}
+-
+-	centrino_model[policy->cpu] = model;
+-
+-	dprintk("found \"%s\": max frequency: %dkHz\n",
+-	       model->model_name, model->max_freq);
 -
 -	return 0;
 -}
 -
+-#else
+-static inline int centrino_cpu_init_table(struct cpufreq_policy *policy) { return -ENODEV; }
+-#endif /* CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE */
 -
--static struct cpufreq_frequency_table p4clockmod_table[] = {
--	{DC_RESV, CPUFREQ_ENTRY_INVALID},
--	{DC_DFLT, 0},
--	{DC_25PT, 0},
--	{DC_38PT, 0},
--	{DC_50PT, 0},
--	{DC_64PT, 0},
--	{DC_75PT, 0},
--	{DC_88PT, 0},
--	{DC_DISABLE, 0},
--	{DC_RESV, CPUFREQ_TABLE_END},
--};
--
--
--static int cpufreq_p4_target(struct cpufreq_policy *policy,
--			     unsigned int target_freq,
--			     unsigned int relation)
+-static int centrino_verify_cpu_id(const struct cpuinfo_x86 *c, const struct cpu_id *x)
 -{
--	unsigned int    newstate = DC_RESV;
--	struct cpufreq_freqs freqs;
+-	if ((c->x86 == x->x86) &&
+-	    (c->x86_model == x->x86_model) &&
+-	    (c->x86_mask == x->x86_mask))
+-		return 1;
+-	return 0;
+-}
+-
+-/* To be called only after centrino_model is initialized */
+-static unsigned extract_clock(unsigned msr, unsigned int cpu, int failsafe)
+-{
 -	int i;
 -
--	if (cpufreq_frequency_table_target(policy, &p4clockmod_table[0], target_freq, relation, &newstate))
--		return -EINVAL;
+-	/*
+-	 * Extract clock in kHz from PERF_CTL value
+-	 * for centrino, as some DSDTs are buggy.
+-	 * Ideally, this can be done using the acpi_data structure.
+-	 */
+-	if ((centrino_cpu[cpu] == &cpu_ids[CPU_BANIAS]) ||
+-	    (centrino_cpu[cpu] == &cpu_ids[CPU_DOTHAN_A1]) ||
+-	    (centrino_cpu[cpu] == &cpu_ids[CPU_DOTHAN_B0])) {
+-		msr = (msr >> 8) & 0xff;
+-		return msr * 100000;
+-	}
 -
--	freqs.old = cpufreq_p4_get(policy->cpu);
--	freqs.new = stock_freq * p4clockmod_table[newstate].index / 8;
--
--	if (freqs.new == freqs.old)
+-	if ((!centrino_model[cpu]) || (!centrino_model[cpu]->op_points))
 -		return 0;
 -
--	/* notifiers */
--	for_each_cpu_mask(i, policy->cpus) {
--		freqs.cpu = i;
--		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+-	msr &= 0xffff;
+-	for (i=0;centrino_model[cpu]->op_points[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		if (msr == centrino_model[cpu]->op_points[i].index)
+-			return centrino_model[cpu]->op_points[i].frequency;
+-	}
+-	if (failsafe)
+-		return centrino_model[cpu]->op_points[i-1].frequency;
+-	else
+-		return 0;
+-}
+-
+-/* Return the current CPU frequency in kHz */
+-static unsigned int get_cur_freq(unsigned int cpu)
+-{
+-	unsigned l, h;
+-	unsigned clock_freq;
+-	cpumask_t saved_mask;
+-
+-	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	if (smp_processor_id() != cpu)
+-		return 0;
+-
+-	rdmsr(MSR_IA32_PERF_STATUS, l, h);
+-	clock_freq = extract_clock(l, cpu, 0);
+-
+-	if (unlikely(clock_freq == 0)) {
+-		/*
+-		 * On some CPUs, we can see transient MSR values (which are
+-		 * not present in _PSS), while CPU is doing some automatic
+-		 * P-state transition (like TM2). Get the last freq set 
+-		 * in PERF_CTL.
+-		 */
+-		rdmsr(MSR_IA32_PERF_CTL, l, h);
+-		clock_freq = extract_clock(l, cpu, 1);
 -	}
 -
--	/* run on each logical CPU, see section 13.15.3 of IA32 Intel Architecture Software
--	 * Developer's Manual, Volume 3
--	 */
--	for_each_cpu_mask(i, policy->cpus)
--		cpufreq_p4_setdc(i, p4clockmod_table[newstate].index);
--
--	/* notifiers */
--	for_each_cpu_mask(i, policy->cpus) {
--		freqs.cpu = i;
--		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
--	}
--
--	return 0;
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-	return clock_freq;
 -}
 -
 -
--static int cpufreq_p4_verify(struct cpufreq_policy *policy)
+-static int centrino_cpu_init(struct cpufreq_policy *policy)
 -{
--	return cpufreq_frequency_table_verify(policy, &p4clockmod_table[0]);
--}
+-	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
+-	unsigned freq;
+-	unsigned l, h;
+-	int ret;
+-	int i;
 -
+-	/* Only Intel makes Enhanced Speedstep-capable CPUs */
+-	if (cpu->x86_vendor != X86_VENDOR_INTEL || !cpu_has(cpu, X86_FEATURE_EST))
+-		return -ENODEV;
 -
--static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
--{
--	if (c->x86 == 0x06) {
--		if (cpu_has(c, X86_FEATURE_EST))
--			printk(KERN_WARNING PFX "Warning: EST-capable CPU detected. "
--			       "The acpi-cpufreq module offers voltage scaling"
--			       " in addition of frequency scaling. You should use "
--			       "that instead of p4-clockmod, if possible.\n");
--		switch (c->x86_model) {
--		case 0x0E: /* Core */
--		case 0x0F: /* Core Duo */
--			p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
--			return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PCORE);
--		case 0x0D: /* Pentium M (Dothan) */
--			p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
--			/* fall through */
--		case 0x09: /* Pentium M (Banias) */
--			return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PM);
+-	if (cpu_has(cpu, X86_FEATURE_CONSTANT_TSC))
+-		centrino_driver.flags |= CPUFREQ_CONST_LOOPS;
+-
+-	if (policy->cpu != 0)
+-		return -ENODEV;
+-
+-	for (i = 0; i < N_IDS; i++)
+-		if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
+-			break;
+-
+-	if (i != N_IDS)
+-		centrino_cpu[policy->cpu] = &cpu_ids[i];
+-
+-	if (!centrino_cpu[policy->cpu]) {
+-		dprintk("found unsupported CPU with "
+-		"Enhanced SpeedStep: send /proc/cpuinfo to "
+-		MAINTAINER "\n");
+-		return -ENODEV;
+-	}
+-
+-	if (centrino_cpu_init_table(policy)) {
+-		return -ENODEV;
+-	}
+-
+-	/* Check to see if Enhanced SpeedStep is enabled, and try to
+-	   enable it if not. */
+-	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-
+-	if (!(l & (1<<16))) {
+-		l |= (1<<16);
+-		dprintk("trying to enable Enhanced SpeedStep (%x)\n", l);
+-		wrmsr(MSR_IA32_MISC_ENABLE, l, h);
+-
+-		/* check to see if it stuck */
+-		rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-		if (!(l & (1<<16))) {
+-			printk(KERN_INFO PFX "couldn't enable Enhanced SpeedStep\n");
+-			return -ENODEV;
 -		}
 -	}
 -
--	if (c->x86 != 0xF) {
--		printk(KERN_WARNING PFX "Unknown p4-clockmod-capable CPU. Please send an e-mail to <cpufreq@lists.linux.org.uk>\n");
--		return 0;
--	}
+-	freq = get_cur_freq(policy->cpu);
 -
--	/* on P-4s, the TSC runs with constant frequency independent whether
--	 * throttling is active or not. */
--	p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
+-	policy->cpuinfo.transition_latency = 10000; /* 10uS transition latency */
+-	policy->cur = freq;
 -
--	if (speedstep_detect_processor() == SPEEDSTEP_PROCESSOR_P4M) {
--		printk(KERN_WARNING PFX "Warning: Pentium 4-M detected. "
--		       "The speedstep-ich or acpi cpufreq modules offer "
--		       "voltage scaling in addition of frequency scaling. "
--		       "You should use either one instead of p4-clockmod, "
--		       "if possible.\n");
--		return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4M);
--	}
+-	dprintk("centrino_cpu_init: cur=%dkHz\n", policy->cur);
 -
--	return speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_P4D);
--}
+-	ret = cpufreq_frequency_table_cpuinfo(policy, centrino_model[policy->cpu]->op_points);
+-	if (ret)
+-		return (ret);
 -
+-	cpufreq_frequency_table_get_attr(centrino_model[policy->cpu]->op_points, policy->cpu);
 -
--
--static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
--{
--	struct cpuinfo_x86 *c = &cpu_data(policy->cpu);
--	int cpuid = 0;
--	unsigned int i;
--
--#ifdef CONFIG_SMP
--	policy->cpus = per_cpu(cpu_sibling_map, policy->cpu);
--#endif
--
--	/* Errata workaround */
--	cpuid = (c->x86 << 8) | (c->x86_model << 4) | c->x86_mask;
--	switch (cpuid) {
--	case 0x0f07:
--	case 0x0f0a:
--	case 0x0f11:
--	case 0x0f12:
--		has_N44_O17_errata[policy->cpu] = 1;
--		dprintk("has errata -- disabling low frequencies\n");
--	}
--
--	/* get max frequency */
--	stock_freq = cpufreq_p4_get_frequency(c);
--	if (!stock_freq)
--		return -EINVAL;
--
--	/* table init */
--	for (i=1; (p4clockmod_table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		if ((i<2) && (has_N44_O17_errata[policy->cpu]))
--			p4clockmod_table[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			p4clockmod_table[i].frequency = (stock_freq * i)/8;
--	}
--	cpufreq_frequency_table_get_attr(p4clockmod_table, policy->cpu);
--
--	/* cpuinfo and default policy values */
--	policy->cpuinfo.transition_latency = 1000000; /* assumed */
--	policy->cur = stock_freq;
--
--	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
--}
--
--
--static int cpufreq_p4_cpu_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
 -	return 0;
 -}
 -
--static unsigned int cpufreq_p4_get(unsigned int cpu)
+-static int centrino_cpu_exit(struct cpufreq_policy *policy)
 -{
--	u32 l, h;
+-	unsigned int cpu = policy->cpu;
 -
--	rdmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, &l, &h);
+-	if (!centrino_model[cpu])
+-		return -ENODEV;
 -
--	if (l & 0x10) {
--		l = l >> 1;
--		l &= 0x7;
--	} else
--		l = DC_DISABLE;
+-	cpufreq_frequency_table_put_attr(cpu);
 -
--	if (l != DC_DISABLE)
--		return (stock_freq * l / 8);
+-	centrino_model[cpu] = NULL;
 -
--	return stock_freq;
+-	return 0;
 -}
 -
--static struct freq_attr* p4clockmod_attr[] = {
+-/**
+- * centrino_verify - verifies a new CPUFreq policy
+- * @policy: new policy
+- *
+- * Limit must be within this model's frequency range at least one
+- * border included.
+- */
+-static int centrino_verify (struct cpufreq_policy *policy)
+-{
+-	return cpufreq_frequency_table_verify(policy, centrino_model[policy->cpu]->op_points);
+-}
+-
+-/**
+- * centrino_setpolicy - set a new CPUFreq policy
+- * @policy: new policy
+- * @target_freq: the target frequency
+- * @relation: how that frequency relates to achieved frequency (CPUFREQ_RELATION_L or CPUFREQ_RELATION_H)
+- *
+- * Sets a new CPUFreq policy.
+- */
+-static int centrino_target (struct cpufreq_policy *policy,
+-			    unsigned int target_freq,
+-			    unsigned int relation)
+-{
+-	unsigned int    newstate = 0;
+-	unsigned int	msr, oldmsr = 0, h = 0, cpu = policy->cpu;
+-	struct cpufreq_freqs	freqs;
+-	cpumask_t		online_policy_cpus;
+-	cpumask_t		saved_mask;
+-	cpumask_t		set_mask;
+-	cpumask_t		covered_cpus;
+-	int			retval = 0;
+-	unsigned int		j, k, first_cpu, tmp;
+-
+-	if (unlikely(centrino_model[cpu] == NULL))
+-		return -ENODEV;
+-
+-	if (unlikely(cpufreq_frequency_table_target(policy,
+-			centrino_model[cpu]->op_points,
+-			target_freq,
+-			relation,
+-			&newstate))) {
+-		return -EINVAL;
+-	}
+-
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
+-#else
+-	online_policy_cpus = policy->cpus;
+-#endif
+-
+-	saved_mask = current->cpus_allowed;
+-	first_cpu = 1;
+-	cpus_clear(covered_cpus);
+-	for_each_cpu_mask(j, online_policy_cpus) {
+-		/*
+-		 * Support for SMP systems.
+-		 * Make sure we are running on CPU that wants to change freq
+-		 */
+-		cpus_clear(set_mask);
+-		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			cpus_or(set_mask, set_mask, online_policy_cpus);
+-		else
+-			cpu_set(j, set_mask);
+-
+-		set_cpus_allowed_ptr(current, &set_mask);
+-		preempt_disable();
+-		if (unlikely(!cpu_isset(smp_processor_id(), set_mask))) {
+-			dprintk("couldn't limit to CPUs in this domain\n");
+-			retval = -EAGAIN;
+-			if (first_cpu) {
+-				/* We haven't started the transition yet. */
+-				goto migrate_end;
+-			}
+-			preempt_enable();
+-			break;
+-		}
+-
+-		msr = centrino_model[cpu]->op_points[newstate].index;
+-
+-		if (first_cpu) {
+-			rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-			if (msr == (oldmsr & 0xffff)) {
+-				dprintk("no change needed - msr was and needs "
+-					"to be %x\n", oldmsr);
+-				retval = 0;
+-				goto migrate_end;
+-			}
+-
+-			freqs.old = extract_clock(oldmsr, cpu, 0);
+-			freqs.new = extract_clock(msr, cpu, 0);
+-
+-			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+-				target_freq, freqs.old, freqs.new, msr);
+-
+-			for_each_cpu_mask(k, online_policy_cpus) {
+-				freqs.cpu = k;
+-				cpufreq_notify_transition(&freqs,
+-					CPUFREQ_PRECHANGE);
+-			}
+-
+-			first_cpu = 0;
+-			/* all but 16 LSB are reserved, treat them with care */
+-			oldmsr &= ~0xffff;
+-			msr &= 0xffff;
+-			oldmsr |= msr;
+-		}
+-
+-		wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-			preempt_enable();
+-			break;
+-		}
+-
+-		cpu_set(j, covered_cpus);
+-		preempt_enable();
+-	}
+-
+-	for_each_cpu_mask(k, online_policy_cpus) {
+-		freqs.cpu = k;
+-		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+-	}
+-
+-	if (unlikely(retval)) {
+-		/*
+-		 * We have failed halfway through the frequency change.
+-		 * We have sent callbacks to policy->cpus and
+-		 * MSRs have already been written on coverd_cpus.
+-		 * Best effort undo..
+-		 */
+-
+-		if (!cpus_empty(covered_cpus)) {
+-			for_each_cpu_mask(j, covered_cpus) {
+-				set_cpus_allowed_ptr(current,
+-						     &cpumask_of_cpu(j));
+-				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-			}
+-		}
+-
+-		tmp = freqs.new;
+-		freqs.new = freqs.old;
+-		freqs.old = tmp;
+-		for_each_cpu_mask(j, online_policy_cpus) {
+-			freqs.cpu = j;
+-			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+-			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+-		}
+-	}
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-	return 0;
+-
+-migrate_end:
+-	preempt_enable();
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-	return 0;
+-}
+-
+-static struct freq_attr* centrino_attr[] = {
 -	&cpufreq_freq_attr_scaling_available_freqs,
 -	NULL,
 -};
 -
--static struct cpufreq_driver p4clockmod_driver = {
--	.verify		= cpufreq_p4_verify,
--	.target		= cpufreq_p4_target,
--	.init		= cpufreq_p4_cpu_init,
--	.exit		= cpufreq_p4_cpu_exit,
--	.get		= cpufreq_p4_get,
--	.name		= "p4-clockmod",
+-static struct cpufreq_driver centrino_driver = {
+-	.name		= "centrino", /* should be speedstep-centrino,
+-					 but there's a 16 char limit */
+-	.init		= centrino_cpu_init,
+-	.exit		= centrino_cpu_exit,
+-	.verify		= centrino_verify,
+-	.target		= centrino_target,
+-	.get		= get_cur_freq,
+-	.attr           = centrino_attr,
 -	.owner		= THIS_MODULE,
--	.attr		= p4clockmod_attr,
 -};
 -
 -
--static int __init cpufreq_p4_init(void)
+-/**
+- * centrino_init - initializes the Enhanced SpeedStep CPUFreq driver
+- *
+- * Initializes the Enhanced SpeedStep support. Returns -ENODEV on
+- * unsupported devices, -ENOENT if there's no voltage table for this
+- * particular CPU model, -EINVAL on problems during initiatization,
+- * and zero on success.
+- *
+- * This is quite picky.  Not only does the CPU have to advertise the
+- * "est" flag in the cpuid capability flags, we look for a specific
+- * CPU model and stepping, and we need to have the exact model name in
+- * our voltage tables.  That is, be paranoid about not releasing
+- * someone's valuable magic smoke.
+- */
+-static int __init centrino_init(void)
 -{
--	struct cpuinfo_x86 *c = &cpu_data(0);
--	int ret;
+-	struct cpuinfo_x86 *cpu = &cpu_data(0);
 -
--	/*
--	 * THERM_CONTROL is architectural for IA32 now, so
--	 * we can rely on the capability checks
--	 */
--	if (c->x86_vendor != X86_VENDOR_INTEL)
+-	if (!cpu_has(cpu, X86_FEATURE_EST))
 -		return -ENODEV;
 -
--	if (!test_cpu_cap(c, X86_FEATURE_ACPI) ||
--				!test_cpu_cap(c, X86_FEATURE_ACC))
--		return -ENODEV;
--
--	ret = cpufreq_register_driver(&p4clockmod_driver);
--	if (!ret)
--		printk(KERN_INFO PFX "P4/Xeon(TM) CPU On-Demand Clock Modulation available\n");
--
--	return (ret);
+-	return cpufreq_register_driver(&centrino_driver);
 -}
 -
--
--static void __exit cpufreq_p4_exit(void)
+-static void __exit centrino_exit(void)
 -{
--	cpufreq_unregister_driver(&p4clockmod_driver);
+-	cpufreq_unregister_driver(&centrino_driver);
 -}
 -
--
--MODULE_AUTHOR ("Zwane Mwaikambo <zwane@commfireservices.com>");
--MODULE_DESCRIPTION ("cpufreq driver for Pentium(TM) 4/Xeon(TM)");
+-MODULE_AUTHOR ("Jeremy Fitzhardinge <jeremy@goop.org>");
+-MODULE_DESCRIPTION ("Enhanced SpeedStep driver for Intel Pentium M processors.");
 -MODULE_LICENSE ("GPL");
 -
--late_initcall(cpufreq_p4_init);
--module_exit(cpufreq_p4_exit);
+-late_initcall(centrino_init);
+-module_exit(centrino_exit);
+Index: linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/Makefile
+===================================================================
+--- linux-acpi-2.6_video_native_vs_vendor.orig/arch/x86/kernel/cpu/cpufreq/Makefile
++++ linux-acpi-2.6_video_native_vs_vendor/arch/x86/kernel/cpu/cpufreq/Makefile
+@@ -11,5 +11,4 @@ obj-$(CONFIG_X86_SPEEDSTEP_ICH)		+= spee
+ obj-$(CONFIG_X86_SPEEDSTEP_LIB)		+= speedstep-lib.o
+ obj-$(CONFIG_X86_SPEEDSTEP_SMI)		+= speedstep-smi.o
+ obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
+-obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
+ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
