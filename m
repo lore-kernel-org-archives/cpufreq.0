@@ -1,11 +1,14 @@
-From: CHIKAMA masaki <masaki.chikama@gmail.com>
-Subject: [PATCH] cpufreq: Fix null object access on Transmeta CPU
-Date: Fri, 9 May 2008 18:32:24 +0900
-Message-ID: <20080509183224.0c937c1c.masaki.chikama@gmail.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+	gets BUG on Transmeta Crusoe CPU
+Date: Fri,  9 May 2008 05:13:43 -0700 (PDT)
+Message-ID: <20080509121343.9CBAF10805F@picon.linux-foundation.org>
+References: <bug-10654-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10654-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -15,42 +18,29 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: akpm@linux-foundation.org, cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10654
 
 
-If cpu specific cpufreq driver(i.e. longrun) has "setpolicy" function,
-governor object isn't set into cpufreq_policy object at 
-"__cpufreq_set_policy" function in driver/cpufreq/cpufreq.c .
 
-This cause null object access at "store_scaling_setspeed" and
-"show_scaling_setspeed" function in driver/cpufreq/cpufreq.c 
-when reading or writing through /sys interface
-(ex. cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed)
 
-Here is a proposed patch to check governor against 2.6.25.
 
-Signed-off-by: CHIKAMA Masaki <masaki.chikama@gmail.com>
+------- Comment #3 from trenn@suse.de  2008-05-09 05:13 -------
+The p4-clockmod must not be used, take the throttling interface exposed through
+drivers/acpi/processor_throttling.c
+instead.
 
----
+I hope it finally gets removed from the kernel, here a quote from the cpufreq
+list a while ago (Subject: Celeron 220):
+-----------
+DaveJ shut it off in the Fedora kernels a while ago now, and only a few people 
+have even noticed, and most understood that it was for the best...
+-----------
 
---- drivers/cpufreq/cpufreq.c.org	2008-05-01 13:55:19.000000000 +0900
-+++ drivers/cpufreq/cpufreq.c	2008-05-01 13:59:34.000000000 +0900
-@@ -607,7 +607,7 @@ static ssize_t store_scaling_setspeed(st
- 	unsigned int freq = 0;
- 	unsigned int ret;
- 
--	if (!policy->governor->store_setspeed)
-+	if (!policy->governor || !policy->governor->store_setspeed)
- 		return -EINVAL;
- 
- 	ret = sscanf(buf, "%u", &freq);
-@@ -621,7 +621,7 @@ static ssize_t store_scaling_setspeed(st
- 
- static ssize_t show_scaling_setspeed(struct cpufreq_policy *policy, char *buf)
- {
--	if (!policy->governor->show_setspeed)
-+	if (!policy->governor || !policy->governor->show_setspeed)
- 		return sprintf(buf, "<unsupported>\n");
- 
- 	return policy->governor->show_setspeed(policy, buf);
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
