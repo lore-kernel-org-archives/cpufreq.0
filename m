@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ondemand governor fails to throttle sufficiently.
-Date: Fri,  9 May 2008 10:39:45 -0700 (PDT)
-Message-ID: <20080509173945.5425710805F@picon.linux-foundation.org>
+Date: Fri,  9 May 2008 10:40:21 -0700 (PDT)
+Message-ID: <20080509174021.736CE108038@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #1 from martin-kernel-bugzilla@earth.li  2008-05-09 10:39 -------
-Created an attachment (id=16087)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=16087&action=view)
-/proc/cpuinfo
+------- Comment #2 from martin-kernel-bugzilla@earth.li  2008-05-09 10:40 -------
+Created an attachment (id=16088)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=16088&action=view)
+acpidump output
 
 
 -- 
