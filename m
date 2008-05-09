@@ -1,14 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-	gets BUG on Transmeta Crusoe CPU
-Date: Fri,  9 May 2008 00:09:56 -0700 (PDT)
-Message-ID: <20080509070956.243B010805F@picon.linux-foundation.org>
-References: <bug-10654-3570@http.bugzilla.kernel.org/>
+From: CHIKAMA masaki <masaki.chikama@gmail.com>
+Subject: [PATCH] cpufreq: Fix null object access on Transmeta CPU
+Date: Fri, 9 May 2008 18:32:24 +0900
+Message-ID: <20080509183224.0c937c1c.masaki.chikama@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10654-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,28 +15,42 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=10654
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: akpm@linux-foundation.org, cpufreq@www.linux.org.uk, davej@codemonkey.org.uk
 
 
+If cpu specific cpufreq driver(i.e. longrun) has "setpolicy" function,
+governor object isn't set into cpufreq_policy object at 
+"__cpufreq_set_policy" function in driver/cpufreq/cpufreq.c .
 
+This cause null object access at "store_scaling_setspeed" and
+"show_scaling_setspeed" function in driver/cpufreq/cpufreq.c 
+when reading or writing through /sys interface
+(ex. cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed)
 
+Here is a proposed patch to check governor against 2.6.25.
 
-------- Comment #2 from akpm@osdl.org  2008-05-09 00:09 -------
-Oh. that's you ;)
+Signed-off-by: CHIKAMA Masaki <masaki.chikama@gmail.com>
 
-Please email the patch as per Documentation/SubmittingPatches to
+---
 
-Andrew Morton <akpm@linux-foundation.org>
-cpufreq@www.linux.org.uk
-Dave Jones <davej@codemonkey.org.uk>
-
-Thanks.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+--- drivers/cpufreq/cpufreq.c.org	2008-05-01 13:55:19.000000000 +0900
++++ drivers/cpufreq/cpufreq.c	2008-05-01 13:59:34.000000000 +0900
+@@ -607,7 +607,7 @@ static ssize_t store_scaling_setspeed(st
+ 	unsigned int freq = 0;
+ 	unsigned int ret;
+ 
+-	if (!policy->governor->store_setspeed)
++	if (!policy->governor || !policy->governor->store_setspeed)
+ 		return -EINVAL;
+ 
+ 	ret = sscanf(buf, "%u", &freq);
+@@ -621,7 +621,7 @@ static ssize_t store_scaling_setspeed(st
+ 
+ static ssize_t show_scaling_setspeed(struct cpufreq_policy *policy, char *buf)
+ {
+-	if (!policy->governor->show_setspeed)
++	if (!policy->governor || !policy->governor->show_setspeed)
+ 		return sprintf(buf, "<unsupported>\n");
+ 
+ 	return policy->governor->show_setspeed(policy, buf);
