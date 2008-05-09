@@ -1,12 +1,13 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10653] New: p4-clockmod gets a wrong max clock (1.2GHz insted
-	1.6GHz)
-Date: Thu,  8 May 2008 18:10:17 -0700 (PDT)
-Message-ID: <bug-10653-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10653] p4-clockmod gets a wrong max clock (1.2GHz insted 1.6GHz)
+Date: Thu,  8 May 2008 18:18:24 -0700 (PDT)
+Message-ID: <20080509011824.AC52110805E@picon.linux-foundation.org>
+References: <bug-10653-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10653-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,57 +22,16 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=10653
 
-           Summary: p4-clockmod gets a wrong max clock (1.2GHz insted
-                    1.6GHz)
-           Product: Power Management
-           Version: 2.5
-     KernelVersion: 2.6.25
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@www.linux.org.uk
-        ReportedBy: andrea.cimitan@gmail.com
 
 
-Latest working kernel version: I don't know
-Hardware Environment: P4 1.6 GHz
-Problem Description:
-My p4 1.6GHz gets a wrong max speed using p4-clockmod.
-Available frequencies taken from cpufreq-info (same output for cat
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies).
 
-Using acpi-cpufreq:
-1.20 GHz, 1.60GHz
-using p4-clockmod: 
-150 MHz, 300 MHz, 450 MHz, 600 MHz, 750 MHz, 900 MHz, 1.05 GHz, 1.20 GHz
 
-I'm forced to use acpi-cpufreq :).
-
-Useful cpuinfo for model and stepping:
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) Pentium(R) 4 Mobile CPU 1.60GHz
-stepping        : 4
-cpu MHz         : 1200.000
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat
-pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm up pebs bts
-bogomips        : 2395.99
-clflush size    : 64
+------- Comment #1 from andrea.cimitan@gmail.com  2008-05-08 18:18 -------
+Another notice:
+I've just done a benchmark (PI calculation) and the 1.2GHz reported using
+p4-clockmod is not a fake number, it is _really_ working at 1.2GHz, because
+with acpi-cpufreq the PI calculation is done in 14 seconds, while with
+p4-clockmod set at full speed I reach PI calculation in 18 seconds.
 
 
 -- 
