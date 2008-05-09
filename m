@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ondemand governor fails to throttle sufficiently.
-Date: Fri,  9 May 2008 10:45:02 -0700 (PDT)
-Message-ID: <20080509174502.D5427108038@picon.linux-foundation.org>
+Date: Fri,  9 May 2008 14:05:39 -0700 (PDT)
+Message-ID: <20080509210539.98123108060@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,12 +24,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
+lure@ubuntu.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |lure@ubuntu.com
 
 
-
-------- Comment #3 from martin-kernel-bugzilla@earth.li  2008-05-09 10:45 -------
-I should add that I have checked the fan which is clean and runs at full speed,
-the heatsink is attached and looks okay. The system works okay in Windows.
 
 
 -- 
