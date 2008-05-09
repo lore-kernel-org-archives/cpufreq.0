@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
 	gets BUG on Transmeta Crusoe CPU
-Date: Fri,  9 May 2008 00:08:46 -0700 (PDT)
-Message-ID: <20080509070846.B6A99108038@picon.linux-foundation.org>
+Date: Fri,  9 May 2008 00:09:56 -0700 (PDT)
+Message-ID: <20080509070956.243B010805F@picon.linux-foundation.org>
 References: <bug-10654-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,17 +24,19 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10654
 
 
-akpm@osdl.org changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |akpm@osdl.org
 
 
 
+------- Comment #2 from akpm@osdl.org  2008-05-09 00:09 -------
+Oh. that's you ;)
 
-------- Comment #1 from akpm@osdl.org  2008-05-09 00:08 -------
-Masaki Chikama has proposed a patch there.  Did you try it?
+Please email the patch as per Documentation/SubmittingPatches to
+
+Andrew Morton <akpm@linux-foundation.org>
+cpufreq@www.linux.org.uk
+Dave Jones <davej@codemonkey.org.uk>
+
+Thanks.
 
 
 -- 
