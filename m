@@ -1,14 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-	gets BUG on Transmeta Crusoe CPU
-Date: Fri,  9 May 2008 05:13:43 -0700 (PDT)
-Message-ID: <20080509121343.9CBAF10805F@picon.linux-foundation.org>
-References: <bug-10654-3570@http.bugzilla.kernel.org/>
+From: =?ISO-8859-1?Q?Alex_Villac=ED=ADs_Lasso?=
+	<avillaci@ceibo.fiec.espol.edu.ec>
+Subject: About p4-clockmod breakage/removal
+Date: Fri, 09 May 2008 10:22:38 -0500
+Message-ID: <48246C3E.7010608@ceibo.fiec.espol.edu.ec>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10654-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,29 +16,24 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10654
+In a somewhat old computer I use at home, I have a Pentium 4 CPU running 
+at 1.7GHz. On this computer, acpi-cpufreq does not work (modprobe fails 
+with -ENODEV), only p4-clockmod. Lately this means I have to compile my 
+own kernel to get speed throttling on my computer.
 
-
-
-
-
-------- Comment #3 from trenn@suse.de  2008-05-09 05:13 -------
-The p4-clockmod must not be used, take the throttling interface exposed through
-drivers/acpi/processor_throttling.c
-instead.
-
-I hope it finally gets removed from the kernel, here a quote from the cpufreq
-list a while ago (Subject: Celeron 220):
------------
-DaveJ shut it off in the Fedora kernels a while ago now, and only a few people 
-have even noticed, and most understood that it was for the best...
------------
-
+Recently, patch ed9cbcd40004904dbe61ccc16d6106a7de38c998 (Revert 
+"speedstep-lib.c: fix frequency multiplier for Pentium4 models 0&1") 
+broke clock speed reporting. It now reports I have a max speed of 13.80 
+GHz instead of 1.7GHz. I only wish my CPU were that fast... Reverting 
+this patch fixes the problem for me. However, since I suscribed 
+yesterday to this list, I see talk about removing p4-clockmod altogether 
+from the tree. Maybe my real problem is that acpi-cpufreq does not work 
+even though it should, but I have yet to find a way to make the module 
+print the information that is supposed to be displayed through dprintk() 
+messages. What else can I do to debug acpi-cpufreq on my machine?
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+perl -e '$x=2.4;print sprintf("%.0f + %.0f = %.0f\n",$x,$x,$x+$x);'
