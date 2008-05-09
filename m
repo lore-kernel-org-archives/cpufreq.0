@@ -1,13 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10654] New: cat
-	/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed gets BUG
-	on Transmeta Crusoe CPU
-Date: Thu,  8 May 2008 19:22:45 -0700 (PDT)
-Message-ID: <bug-10654-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+	gets BUG on Transmeta Crusoe CPU
+Date: Fri,  9 May 2008 00:08:46 -0700 (PDT)
+Message-ID: <20080509070846.B6A99108038@picon.linux-foundation.org>
+References: <bug-10654-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10654-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,31 +23,18 @@ To: cpufreq@www.linux.org.uk
 
 http://bugzilla.kernel.org/show_bug.cgi?id=10654
 
-           Summary: cat
-                    /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-                    gets BUG on Transmeta Crusoe CPU
-           Product: Power Management
-           Version: 2.5
-     KernelVersion: 2.6.25
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@www.linux.org.uk
-        ReportedBy: masaki-c@nict.go.jp
+
+akpm@osdl.org changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |akpm@osdl.org
 
 
-Latest working kernel version: 2.6.24
-Distribution: Fedora 9(rawhide)
 
-Problem Description:
 
-Reading from /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-gets BUG() on Transmeta CPU.
-See https://bugzilla.redhat.com/show_bug.cgi?id=443354 for more info.
+------- Comment #1 from akpm@osdl.org  2008-05-09 00:08 -------
+Masaki Chikama has proposed a patch there.  Did you try it?
 
 
 -- 
