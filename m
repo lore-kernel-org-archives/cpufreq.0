@@ -1,14 +1,13 @@
-From: Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] Remove p4_clockmode driver
-Date: Sun, 11 May 2008 12:19:34 -0400
-Message-ID: <20080511161934.GI15445@codemonkey.org.uk>
-References: <1209844030.13290.5.camel@linux-2bdv.site>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10653] p4-clockmod gets a wrong max clock (1.2GHz insted 1.6GHz)
+Date: Sun, 11 May 2008 09:21:36 -0700 (PDT)
+Message-ID: <20080511162136.95A6210805E@picon.linux-foundation.org>
+References: <bug-10653-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1209844030.13290.5.camel@linux-2bdv.site>
+In-Reply-To: <bug-10653-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,43 +18,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Thomas Renninger <trenn@suse.de>
-Cc: cpufreq <cpufreq@lists.linux.org.uk>, mzahor@dtech.sk, Dominik Brodowski <linux@dominikbrodowski.net>
+To: cpufreq@www.linux.org.uk
 
-On Sat, May 03, 2008 at 09:47:10PM +0200, Thomas Renninger wrote:
- > Remove p4_clockmode driver
- >
- > The driver is doing throttling which is supposed to be done through another
- > ACPI interface. If both interfaces are used, the machine may get very slow.
- > Remove this driver which should never be used.
- >
- > Signed-off-by: Thomas Renninger <trenn@suse.de>
+http://bugzilla.kernel.org/show_bug.cgi?id=10653
 
-I agree this is long overdue being taken out back and shot.
 
-Some thoughts though:
 
-* Should we deprecate this for a release first ?
-  I'm torn over this, because I think no matter how long we do this for,
-  we're going to get people who claim to be surprised.
-  Though given this driver is 99% useless, perhaps just ripping it out
-  is for the best.
 
-* Matthew Garrett mentioned something interesting this morning..
 
-mjg59 | davej: On machines that don't support acpi throttling, I was under the impression that there was supposed to be a hook between the thermal code and cpufreq
-mjg59 | Which would then let p4-clockmod be kicked even if it's below the threshold at which the CPU would throttle itself
-davej | having that code expose T states rather than pretend to be P states is probably for the best.
-mjg59 | Yeah, true
+------- Comment #2 from davej@codemonkey.org.uk  2008-05-11 09:21 -------
+the 'frequencies' that p4-clockmod reports are utterly bogus. they always have
+been.  This driver doesn't actually scale frequency at all. It does thermal
+throttling, which is usually expressed as a percentage.  There's discussion
+going on right now on cpufreq-list whether or not to actually just remove
+p4-clockmod entirely, as it's a cause of frequent confusion with very few
+benefits.
 
-  So whilst killing this off is probably the right thing to do, there may be
-  some value in parts of it living on in the ACPI code ?
 
-I'll queue up this removal patch for linux-next, and we'll see if anyone screams.
-(I doubt it, given the amount of testing that gets right now. It'll probably
-not really get noticed until after it's in a Linus sanctioned release)
-
-        Dave
-
---
-http://www.codemonkey.org.uk
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
