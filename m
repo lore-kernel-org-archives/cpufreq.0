@@ -1,14 +1,14 @@
-From: Goran <gkoruga@siol.net>
-Subject: Re: cpufreq and modular build
-Date: Sun, 11 May 2008 15:48:33 +0200
-Message-ID: <20080511154833.20dfc6bb@cornholio.confused.org>
-References: <20080505175817.3ee17fb6@cornholio.confused.org>
-	<1210086763.4802.57.camel@linux-2bdv.site>
+From: Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH] Remove deprecated speedstep-centrino driver
+Date: Sun, 11 May 2008 12:18:45 -0400
+Message-ID: <20080511161845.GH15445@codemonkey.org.uk>
+References: <1209844401.13290.9.camel@linux-2bdv.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1210086763.4802.57.camel@linux-2bdv.site>
+Content-Disposition: inline
+In-Reply-To: <1209844401.13290.9.camel@linux-2bdv.site>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,22 +19,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: trenn@suse.de
-Cc: cpufreq@lists.linux.org.uk
+To: Thomas Renninger <trenn@suse.de>
+Cc: cpufreq <cpufreq@lists.linux.org.uk>, jeremy@goop.org
 
-On Tue, 06 May 2008 17:12:43 +0200
-Thomas Renninger <trenn@suse.de> wrote:
+On Sat, May 03, 2008 at 09:53:21PM +0200, Thomas Renninger wrote:
+ > Remove deprecated speedstep-centrino driver
+ >
+ > Not 100% sure whether there are machines out there that still need the
+ > static Banias tables, Venkatesh?
 
-Hi again.
+Hmm, if we decide to remove this for 2.6.27, I think we should
+get a printk into .26 on module load to say that it's going away.
+This likely has more valid use cases than the clockmod driver, so I
+think a heads-up to any potential users of it who still haven't seen
+the warning in the Kconfig might be a good idea.
 
-> >           To compile this driver as a module, choose M here: the
-> >           module will be called cpufreq.
-> 
-> This should just be cut out. Could you send a patch?
+        Dave
 
-I have checked cpufreq git tree as well as latest official linux-2.6 tree
-and it has been fixed already in both (as early as february).  Sorry for
-the noise, I should have checked the git repositories before asking.
-
-Thanks,
-        Goran
+--
+http://www.codemonkey.org.uk
