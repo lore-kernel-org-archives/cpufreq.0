@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
-	ondemand governor fails to throttle sufficiently.
-Date: Sun, 11 May 2008 11:04:11 -0700 (PDT)
-Message-ID: <20080511180411.7EC6510805F@picon.linux-foundation.org>
+	ACPI fails to throttle sufficiently.
+Date: Sun, 11 May 2008 11:09:06 -0700 (PDT)
+Message-ID: <20080511180906.66D2710805F@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,12 +24,16 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
+martin-kernel-bugzilla@earth.li changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+            Summary|CPU overheats at high       |CPU overheats at high
+                   |frequencies, ondemand       |frequencies, ACPI fails to
+                   |governor fails to throttle  |throttle sufficiently.
+                   |sufficiently.               |
 
 
-
-------- Comment #7 from martin-kernel-bugzilla@earth.li  2008-05-11 11:04 -------
-Yeah, it looks like this is the business of drivers/acpi/processor_thermal.c,
-but I don't really know enough about this stuff to debug it.
 
 
 -- 
