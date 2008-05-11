@@ -1,14 +1,14 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] CPU overheats at high frequencies,
-	ondemand governor fails to throttle sufficiently.
-Date: Fri,  9 May 2008 14:05:39 -0700 (PDT)
-Message-ID: <20080509210539.98123108060@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: Goran <gkoruga@siol.net>
+Subject: Re: cpufreq and modular build
+Date: Sun, 11 May 2008 15:48:33 +0200
+Message-ID: <20080511154833.20dfc6bb@cornholio.confused.org>
+References: <20080505175817.3ee17fb6@cornholio.confused.org>
+	<1210086763.4802.57.camel@linux-2bdv.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <1210086763.4802.57.camel@linux-2bdv.site>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,21 +19,22 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: trenn@suse.de
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+On Tue, 06 May 2008 17:12:43 +0200
+Thomas Renninger <trenn@suse.de> wrote:
 
+Hi again.
 
-lure@ubuntu.com changed:
+> >           To compile this driver as a module, choose M here: the
+> >           module will be called cpufreq.
+> 
+> This should just be cut out. Could you send a patch?
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |lure@ubuntu.com
+I have checked cpufreq git tree as well as latest official linux-2.6 tree
+and it has been fixed already in both (as early as february).  Sorry for
+the noise, I should have checked the git repositories before asking.
 
-
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Thanks,
+        Goran
