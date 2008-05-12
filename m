@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ACPI fails to throttle sufficiently.
-Date: Sun, 11 May 2008 18:40:30 -0700 (PDT)
-Message-ID: <20080512014030.5A01F108060@picon.linux-foundation.org>
+Date: Sun, 11 May 2008 19:27:45 -0700 (PDT)
+Message-ID: <20080512022745.C889910805F@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #9 from mjg59-kernel@srcf.ucam.org  2008-05-11 18:40 -------
-If there's a defined critical temperature, then we should probably ensure that
-the procesor doesn't reach it - regardless of whether we have a listed passive
-cooling method or not.
+------- Comment #10 from rui.zhang@intel.com  2008-05-11 19:27 -------
+Right, so the main problem is the overheating.
+I saw an interrupt storm bug report on the Dell M20, don't know if it is
+related.
+please attach the content of "/proc/interrupt".
 
 
 -- 
