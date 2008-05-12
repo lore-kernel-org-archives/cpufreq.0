@@ -1,14 +1,13 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] CPU overheats at high frequencies,
-	ACPI fails to throttle sufficiently.
-Date: Mon, 12 May 2008 00:52:01 -0700 (PDT)
-Message-ID: <20080512075201.704E410805F@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Remove deprecated speedstep-centrino driver
+Date: Mon, 12 May 2008 08:49:58 +0100
+Message-ID: <4827F6A6.8070909@goop.org>
+References: <20080511161845.GH15445@codemonkey.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <20080511161845.GH15445@codemonkey.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,22 +18,26 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: cpufreq <cpufreq@lists.linux.org.uk>
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+Dave Jones wrote:
+> On Sat, May 03, 2008 at 09:53:21PM +0200, Thomas Renninger wrote:
+>  > Remove deprecated speedstep-centrino driver
+>  >
+>  > Not 100% sure whether there are machines out there that still need the
+>  > static Banias tables, Venkatesh?
+>
+> Hmm, if we decide to remove this for 2.6.27, I think we should
+> get a printk into .26 on module load to say that it's going away.
+> This likely has more valid use cases than the clockmod driver, so I
+> think a heads-up to any potential users of it who still haven't seen
+> the warning in the Kconfig might be a good idea.
+>   
 
+The one function difference from cpufreq_acpi is that it doens't rely on 
+acpi.  On my laptop of the time that was a useful distinction, but it 
+may have been more due to the shoddy state of acpi in Linux rather than 
+the BIOS.
 
-
-
-
-------- Comment #16 from martin-kernel-bugzilla@earth.li  2008-05-12 00:52 -------
-Re: heatsink paste, it might help, but the reason this is a bug is that Windows
-copes fine, and that it is clearly possible to stop the system overheating.
-From the point of view of a non-technical user, Windows works but Linux just
-switches itself off when they do anything intensive for a long period.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+    J
