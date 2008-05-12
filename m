@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ACPI fails to throttle sufficiently.
-Date: Mon, 12 May 2008 00:45:53 -0700 (PDT)
-Message-ID: <20080512074553.4014E11D10A@picon.linux-foundation.org>
+Date: Mon, 12 May 2008 00:52:01 -0700 (PDT)
+Message-ID: <20080512075201.704E410805F@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,13 +27,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #15 from martin-kernel-bugzilla@earth.li  2008-05-12 00:45 -------
-The fan on this system can be monitored and controlled via the i8k module. The
-BIOS seems to do a good job of managing it by itself - it runs slow most of the
-time and ramps up to high speed above about 85C - so I don't bother loading
-that module and running the userspace daemons that go with it for configurable
-fan control. Making that driver register a cooling device with the generic
-thermal code would probably be straightforward.
+------- Comment #16 from martin-kernel-bugzilla@earth.li  2008-05-12 00:52 -------
+Re: heatsink paste, it might help, but the reason this is a bug is that Windows
+copes fine, and that it is clearly possible to stop the system overheating.
+From the point of view of a non-technical user, Windows works but Linux just
+switches itself off when they do anything intensive for a long period.
 
 
 -- 
