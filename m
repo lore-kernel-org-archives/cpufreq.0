@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ACPI fails to throttle sufficiently.
-Date: Sun, 11 May 2008 18:36:49 -0700 (PDT)
-Message-ID: <20080512013649.12A30108060@picon.linux-foundation.org>
+Date: Sun, 11 May 2008 18:40:30 -0700 (PDT)
+Message-ID: <20080512014030.5A01F108060@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,22 +24,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
-rui.zhang@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |venkatesh.pallipadi@intel.co
-                   |                            |m
 
 
 
-
-------- Comment #8 from rui.zhang@intel.com  2008-05-11 18:36 -------
-Hmm, it's true that ACPI may change the processor P/T-state for thermal
-control.
-But all of this is done _IF_ the processor is used as the passive cooling
-device in this thermal zone, i.e. it's listed in the _PSL method, which is not
-true in the acpidump attached.
+------- Comment #9 from mjg59-kernel@srcf.ucam.org  2008-05-11 18:40 -------
+If there's a defined critical temperature, then we should probably ensure that
+the procesor doesn't reach it - regardless of whether we have a listed passive
+cooling method or not.
 
 
 -- 
