@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ACPI fails to throttle sufficiently.
-Date: Tue, 13 May 2008 01:31:30 -0700 (PDT)
-Message-ID: <20080513083130.0AE6D10805F@picon.linux-foundation.org>
+Date: Tue, 13 May 2008 02:19:48 -0700 (PDT)
+Message-ID: <20080513091948.27050108060@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,12 +27,17 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #19 from martin-kernel-bugzilla@earth.li  2008-05-13 01:31 -------
-Having the i8k module loaded doesn't make any difference to the thermal
-situation. All it does is expose some ioctls that let you read and write the
-fan status. Without it, or with it loaded and the fan status not changed, the
-BIOS deals with the fans. The BIOS is already setting the fan speed to maximum
-long before the CPU overheats.
+------- Comment #20 from kvolny@redhat.com  2008-05-13 02:19 -------
+I have similar problem with FSC Amilo Pro V3505 ... there is something wrong
+between temperature sensing and the fan control, it often happens that the fan
+runs at the same speed regardless of the temperature. In such case, if the
+system gets under continuous load, it reaches the limit and switches off.
+
+As comments #9 and #16 suggest, something should be done to stop the processor
+generating more heat before the critical point is reached, not relying on
+anything external like increasing the fan speed etc. Even if "something" means
+completely stopping system and doing only empty cycles for a few seconds, it
+would be better then leaving it to die, risking filesystem corruption etc.
 
 
 -- 
