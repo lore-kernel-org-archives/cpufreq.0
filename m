@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] CPU overheats at high frequencies,
 	ACPI fails to throttle sufficiently.
-Date: Tue, 13 May 2008 04:19:55 -0700 (PDT)
-Message-ID: <20080513111955.972FF10805F@picon.linux-foundation.org>
+Date: Tue, 13 May 2008 05:24:36 -0700 (PDT)
+Message-ID: <20080513122436.77DA511D107@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,12 +27,21 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #21 from martin-kernel-bugzilla@earth.li  2008-05-13 04:19 -------
-Re: comment #20, failure to spin up the fan on the V3505 is a separate problem
-and should be filed as a separate bug, I think. The issue being discussed here
-is about throttling the CPU to prevent an overheat when the fan is not doing
-enough. Getting this right might prevent an overheat on the V3505 machine also,
-but the fan problem needs to be addressed separately as well.
+------- Comment #22 from kvolny@redhat.com  2008-05-13 05:24 -------
+(In reply to comment #21)
+> Re: comment #20, failure to spin up the fan on the V3505 is a separate
+> problem and should be filed as a separate bug, I think.
+
+I'll have to investigate further, I suspect some hardware failure ...
+
+> The issue being discussed here is about throttling the CPU to prevent
+> an overheat when the fan is not doing enough. Getting this right might
+> prevent an overheat on the V3505 machine also, but the fan problem needs
+> to be addressed separately as well.
+
+exactly - I just wanted to say that it is not a matter of renewing the heatsink
+paste, but rather a common problem which should be prevented at any point where
+it is possible
 
 
 -- 
