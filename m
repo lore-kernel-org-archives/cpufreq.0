@@ -1,51 +1,30 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue, 13 May 2008 17:53:51 -0700 (PDT)
-Message-ID: <20080514005351.C9677108060@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: About p4-clockmod breakage/removal
+Date: Wed, 14 May 2008 01:56:36 +0100
+Message-ID: <20080514005636.GA21608@srcf.ucam.org>
+References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec> <200805132048.00653.lenb@kernel.org>
 Mime-Version: 1.0
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200805132048.00653.lenb@kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Len Brown <lenb@kernel.org>
+Cc: cpufreq@lists.linux.org.uk, Alex =?iso-8859-1?B?VmlsbGFj7a1z?= Lasso <avillaci@ceibo.fiec.espol.edu.ec>, linux-acpi@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+On Tue, May 13, 2008 at 08:48:00PM -0400, Len Brown wrote:
 
+> Assuming this is a laptop with a batter,
+> I'd certainly be interested if you could run BLTK
+> and measure any benefit to p4-clockmod (I've never
+> been able to)
 
-
-
-
-------- Comment #27 from mjg59-kernel@srcf.ucam.org  2008-05-13 17:53 -------
-Created an attachment (id=16135)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=16135&action=view)
-Add a passive cooling limit to zones which don't have one
-
-If a thermal zone is provided with a critical temperature, then there is
-obviously a concern on the part of the vendor that it may overheat. Currently
-Linux will only attempt to do something about that if the vendor has explicitly
-added a passive cooling trip point. However, it's clear that allowing the
-system to hit the critical trip point is far from ideal - the system will
-immediately shut down, and data will almost certainly be lost. This patch adds
-a default passive cooling zone if the platform does not provide its own, with
-the default being to have it be 5 degrees below the critical shutoff
-temperature. This should avoid the kernel limiting performance unless it's
-genuinely likely that the hardware is about to overheat and shut down. The
-default temperature value can be overridden by passing the thermal.psv argument
-at boot or module load time.
-
+The most plausible benefit to p4-clockmod is its utility in throttling 
+the CPU if it would otherwise cause the system to overheat. From that 
+point of view, I think it's worth keeping around - especially since not 
+all machines expose T states via ACPI.
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Matthew Garrett | mjg59@srcf.ucam.org
