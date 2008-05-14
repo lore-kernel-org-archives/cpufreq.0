@@ -1,19 +1,14 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: About p4-clockmod breakage/removal
-Date: Wed, 14 May 2008 13:56:18 +0100
-Message-ID: <20080514125618.GA32422@srcf.ucam.org>
-References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec>
-	<200805132048.00653.lenb@kernel.org>
-	<20080514005636.GA21608@srcf.ucam.org>
-	<1210764974.29724.181.camel@queen.suse.de>
-	<20080514114215.GA31135@srcf.ucam.org>
-	<1210769358.21269.21.camel@queen.suse.de>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 4379] Default sampling rates for ondemand governor are too high
+	on a amd64
+Date: Wed, 14 May 2008 06:39:33 -0700 (PDT)
+Message-ID: <20080514133933.7B50A11D108@picon.linux-foundation.org>
+References: <bug-4379-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1210769358.21269.21.camel@queen.suse.de>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-4379-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -23,18 +18,33 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: Thomas Renninger <trenn@suse.de>
-Cc: cpufreq@lists.linux.org.uk, linux-acpi@vger.kernel.org
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Wed, May 14, 2008 at 02:49:18PM +0200, Thomas Renninger wrote:
+http://bugzilla.kernel.org/show_bug.cgi?id=4379
 
-> You might find a hack to modify this, by reading P4 (this seem to sit in
-> the CPU itself?) or chipset specs. But again, is it worth it for a P4
-> where no power saving capabilities are present anyway?
 
-If the alternative is thermal shutdown, sure. I'll take a look through 
-the specs.
+kernel-io@fionn.de changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |kernel-io@fionn.de
+
+
+
+
+------- Comment #7 from kernel-io@fionn.de  2008-05-14 06:39 -------
+This problem has has been HUGELY WORSENED in kernel 2.6.25 since someone
+apparently opted to RAISE the minimum sampling rate to whopping 2500000.
+Even with the minimum settings, the ondemand governor now acts so sluggish that
+it is basically unusuable. I had to switch to userspace governor and powernowd
+which I consider a significant step backwards.
+
+Would someone with sufficient rights please add 2.6.25 to the kernel version in
+bugzilla? Otherwise I'll open a new bug for that version soon.
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
