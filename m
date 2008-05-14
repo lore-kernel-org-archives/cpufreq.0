@@ -1,49 +1,51 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: About p4-clockmod breakage/removal
-Date: Wed, 14 May 2008 13:36:14 +0200
-Message-ID: <1210764974.29724.181.camel@queen.suse.de>
-References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec>
-	 <200805132048.00653.lenb@kernel.org> <20080514005636.GA21608@srcf.ucam.org>
-Reply-To: trenn@suse.de
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
+Date: Wed, 14 May 2008 04:40:19 -0700 (PDT)
+Message-ID: <20080514114019.588A0108061@picon.linux-foundation.org>
+References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20080514005636.GA21608@srcf.ucam.org>
-Sender: linux-acpi-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Len Brown <lenb@kernel.org>, cpufreq@lists.linux.org.uk, Alex =?ISO-8859-1?Q?Villac=ED=ADs?= Lasso <avillaci@ceibo.fiec.espol.edu.ec>, linux-acpi@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-On Wed, 2008-05-14 at 01:56 +0100, Matthew Garrett wrote:
-> On Tue, May 13, 2008 at 08:48:00PM -0400, Len Brown wrote:
-> 
-> > Assuming this is a laptop with a batter,
-> > I'd certainly be interested if you could run BLTK
-> > and measure any benefit to p4-clockmod (I've never
-> > been able to)
-> 
-> The most plausible benefit to p4-clockmod is its utility in throttling 
-> the CPU if it would otherwise cause the system to overheat. From that 
-> point of view, I think it's worth keeping around - especially since not 
-> all machines expose T states via ACPI.
+http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
-If you think it's worth it..., but it needs a new implementation (at
-another place). So just removing it for now should be best to avoid
-further confusion.
 
-Also there is another interface via mce:
-arch/x86/kernel/cpu/mcheck/therm_throt.c
 
-AFAIK this should be implemented in (all?) P4s, but Intel people should
-know for sure.
 
-This one should kick in for sure on high temperatures, are there any P4s
-with a passive trip point defined?
 
-I like the idea of reimplementing this via throttling interface. But
-this is more for calming P4 users conscience (I saw my P4 running at 300
-MHz on Windows) than for any real use.
+------- Comment #29 from martin-kernel-bugzilla@earth.li  2008-05-14 04:40 -------
+> After you verify that you're running the latest BIOS
+> and that it provides no BIOS SETUP knobs related to cooling
 
-   Thomas
+I can confirm that the BIOS is the latest version, A06. There are no options
+related to cooling in the BIOS setup. 
 
+> and after you re-assemble your thermal solution using arctic-silver
+> or whatever and find that it doesn't help...
+
+I am not rebuilding my laptop at this point. Even if some fancy thermal paste
+helps, I very much doubt I am the only person with this issue, and Linux should
+work for everybody, not just those willing to hack around with the kernel and
+disassemble their laptops. I am keeping it as-is for now so that we have a
+readily accessible test case.
+
+Matthew - I will test the patches you have posted.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
