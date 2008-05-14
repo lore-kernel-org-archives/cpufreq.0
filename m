@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue, 13 May 2008 17:47:22 -0700 (PDT)
-Message-ID: <20080514004722.A0BE210805F@picon.linux-foundation.org>
+Date: Tue, 13 May 2008 17:49:14 -0700 (PDT)
+Message-ID: <20080514004914.A6C2010805F@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,12 +26,15 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #24 from mjg59-kernel@srcf.ucam.org  2008-05-13 17:47 -------
-Len,
+------- Comment #25 from mjg59-kernel@srcf.ucam.org  2008-05-13 17:49 -------
+Created an attachment (id=16133)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=16133&action=view)
+Enable polling when no _TZP method in thermal zone
 
-I disagree. Here's a patch-set I've been working on that provides what should
-be a decent workaround for this issue, without having any negative impact on
-functional machines.
+Fix Linux to conform to 11.3.18 of the ACPI spec 3.0. In the absence of a _TZP
+method, we should be polling at a default frequency. While it can be argued
+that "0" is a default frequency, I don't think that's what the spec authors had
+in mind.
 
 
 -- 
