@@ -1,13 +1,14 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10671] [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
-Date: Wed, 14 May 2008 11:37:44 -0700 (PDT)
-Message-ID: <20080514183744.28F9910805E@picon.linux-foundation.org>
-References: <bug-10671-3570@http.bugzilla.kernel.org/>
+From: Jarod Wilson <jwilson@redhat.com>
+Subject: Re: cpufreq question
+Date: Wed, 14 May 2008 14:44:04 -0400
+Message-ID: <200805141444.05019.jwilson@redhat.com>
+References: <B6790881E7413D4092359CC9B3D8EEFD04EADAAE@dlee12.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10671-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <B6790881E7413D4092359CC9B3D8EEFD04EADAAE@dlee12.ent.ti.com>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,21 +19,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
+Cc: "Frazier, John" <j-frazier2@ti.com>
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10671
+On Wednesday 14 May 2008 02:28:02 pm Frazier, John wrote:
+> I am new to Linux and I am having a little problem with my cpu power
+> saving.
+>
+> Kernel: 2.6.9-67.0.4.ELsmp
+>
+> I am using cpuspeed to control my cpus and I have just upgraded to a
+> newer version of it and it is looking for the file
+> /sys/devices/system/cpu/cpu%u/cpufreq/affected_cpus.
+>
+> This file does not exist on my system. What is the correct way to
+> resolve this issue?
 
-
-rjw@sisk.pl changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REJECTED                    |CLOSED
-
-
-
+Probably best to file a bug at bugzilla.redhat.com for issues on a RHEL4 
+system -- wildly divergent from upstream by now. :) Will need some additional 
+info though, along the lines of what cpu(s) you have, what architecture and 
+what cpuspeed version and/or kernel-utils version you have 
+('rpm -qf /etc/init.d/cpuspeed' should get the right answer).
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Jarod Wilson
+jwilson@redhat.com
