@@ -1,56 +1,34 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Wed, 14 May 2008 00:36:34 -0700 (PDT)
-Message-ID: <20080514073634.332BC108062@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: About p4-clockmod breakage/removal
+Date: Wed, 14 May 2008 10:15:03 +0100
+Message-ID: <20080514091503.GA28678@srcf.ucam.org>
+References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec> <200805132048.00653.lenb@kernel.org> <20080514005636.GA21608@srcf.ucam.org> <200805132335.33118.lenb@kernel.org>
 Mime-Version: 1.0
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200805132335.33118.lenb@kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Len Brown <lenb@kernel.org>
+Cc: cpufreq@lists.linux.org.uk, Alex =?iso-8859-1?B?VmlsbGFj7a1z?= Lasso <avillaci@ceibo.fiec.espol.edu.ec>, linux-acpi@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+On Tue, May 13, 2008 at 11:35:32PM -0400, Len Brown wrote:
 
+> cpufreq is not designed to manage thermals, and putting p4_clockmod
+> underneath it to manage thermals is a mistake.
 
-len.brown@intel.com changed:
+Check processor_thermal.c. It explicitly interfaces with cpufreq in 
+order to perform P state management.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REJECTED                    |CLOSED
+> There is already a well known thermal throttling interface
+> available via ACPI and it does not need p4_clockmod to run.
+> Passive trip points work automatically even without cpufreq being present.
+> If they do not, then we need to fix them.
 
-
-
-
-------- Comment #28 from len.brown@intel.com  2008-05-14 00:36 -------
-re: comment #25
-
-The wording in ACPI 3.0 is incorrect, and will be fixed in ACPI 4.0:
-http://www.acpica.org/bugzilla/show_bug.cgi?id=714
-
-This has come up before, and until the ACPI bug report above,
-the "documentation" has been this commit log:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=730ff34de766a6fddee25ac1c32bc49c1a2fd758
-
-If we implemented the patch in comment #25, we would be
-swimming against the stream of "common industry practice".
-The proof is systems like that in bug #8842, which would break.
-
-Thus, the patch in comment #25 must not be applied.
-
+You're assuming that the throttling interface is always exposed via 
+ACPI. I've seen machines where this isn't the case.
 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Matthew Garrett | mjg59@srcf.ucam.org
