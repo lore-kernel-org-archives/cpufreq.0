@@ -1,51 +1,29 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Wed, 14 May 2008 04:40:19 -0700 (PDT)
-Message-ID: <20080514114019.588A0108061@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: About p4-clockmod breakage/removal
+Date: Wed, 14 May 2008 12:42:15 +0100
+Message-ID: <20080514114215.GA31135@srcf.ucam.org>
+References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec> <200805132048.00653.lenb@kernel.org> <20080514005636.GA21608@srcf.ucam.org> <1210764974.29724.181.camel@queen.suse.de>
 Mime-Version: 1.0
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1210764974.29724.181.camel@queen.suse.de>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Thomas Renninger <trenn@suse.de>
+Cc: Len Brown <lenb@kernel.org>, cpufreq@lists.linux.org.uk, Alex =?iso-8859-1?B?VmlsbGFj7a1z?= Lasso <avillaci@ceibo.fiec.espol.edu.ec>, linux-acpi@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+On Wed, May 14, 2008 at 01:36:14PM +0200, Thomas Renninger wrote:
 
+> Also there is another interface via mce:
+> arch/x86/kernel/cpu/mcheck/therm_throt.c
+> 
+> AFAIK this should be implemented in (all?) P4s, but Intel people should
+> know for sure.
 
-
-
-
-------- Comment #29 from martin-kernel-bugzilla@earth.li  2008-05-14 04:40 -------
-> After you verify that you're running the latest BIOS
-> and that it provides no BIOS SETUP knobs related to cooling
-
-I can confirm that the BIOS is the latest version, A06. There are no options
-related to cooling in the BIOS setup. 
-
-> and after you re-assemble your thermal solution using arctic-silver
-> or whatever and find that it doesn't help...
-
-I am not rebuilding my laptop at this point. Even if some fancy thermal paste
-helps, I very much doubt I am the only person with this issue, and Linux should
-work for everybody, not just those willing to hack around with the kernel and
-disassemble their laptops. I am keeping it as-is for now so that we have a
-readily accessible test case.
-
-Matthew - I will test the patches you have posted.
-
-
+Hm. The MCE interface is only for reporting, rather than control. Do you 
+know if it's possible to set the temperature at which the CPU will start 
+its own throttling? That would potentially be more straightforward.
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Matthew Garrett | mjg59@srcf.ucam.org
