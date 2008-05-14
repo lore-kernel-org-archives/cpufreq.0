@@ -1,14 +1,13 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 4379] Default sampling rates for ondemand governor are too high
-	on a amd64
-Date: Wed, 14 May 2008 06:54:22 -0700 (PDT)
-Message-ID: <20080514135422.87D4311D108@picon.linux-foundation.org>
-References: <bug-4379-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10671] [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
+Date: Wed, 14 May 2008 10:55:04 -0700 (PDT)
+Message-ID: <20080514175504.21AD8108035@picon.linux-foundation.org>
+References: <bug-10671-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-4379-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10671-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,19 +17,24 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=4379
+http://bugzilla.kernel.org/show_bug.cgi?id=10671
 
 
-kernel-io@fionn.de changed:
+davej@codemonkey.org.uk changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|kernel-io@fionn.de          |
+             Status|NEW                         |REJECTED
+         Resolution|                            |INVALID
 
 
+
+
+------- Comment #1 from davej@codemonkey.org.uk  2008-05-14 10:55 -------
+was a false positive, fixed by db176c6ed8974fae94328ad5ac9e70b094ff22fd
 
 
 -- 
