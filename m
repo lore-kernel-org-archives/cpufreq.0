@@ -1,65 +1,37 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 Subject: Re: About p4-clockmod breakage/removal
-Date: Thu, 15 May 2008 00:11:29 +0100
-Message-ID: <20080514231129.GB11960@srcf.ucam.org>
-References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec> <200805132335.33118.lenb@kernel.org> <20080514091503.GA28678@srcf.ucam.org> <200805141118.38324.lenb@kernel.org>
+Date: Wed, 14 May 2008 22:55:10 -0300
+Message-ID: <20080515015510.GD3415@khazad-dum.debian.net>
+References: <48246C3E.7010608@ceibo.fiec.espol.edu.ec> <20080514005636.GA21608@srcf.ucam.org> <20080514111817.GA21186@tangens.sinus.cz> <200805141322.26879.lenb@kernel.org>
 Mime-Version: 1.0
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <200805141118.38324.lenb@kernel.org>
+In-Reply-To: <200805141322.26879.lenb@kernel.org>
 Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Len Brown <lenb@kernel.org>
-Cc: cpufreq@lists.linux.org.uk, Alex =?iso-8859-1?B?VmlsbGFj7a1z?= Lasso <avillaci@ceibo.fiec.espol.edu.ec>, linux-acpi@vger.kernel.org
+Cc: Pavel Troller <patrol@sinus.cz>, Matthew Garrett <mjg59@srcf.ucam.org>, cpufreq@lists.linux.org.uk, Alex =?iso-8859-1?B?VmlsbGFj7a1z?= Lasso <avillaci@ceibo.fiec.espol.edu.ec>, linux-acpi@vger.kernel.org
 
-On Wed, May 14, 2008 at 11:18:37AM -0400, Len Brown wrote:
-> On Wednesday 14 May 2008, Matthew Garrett wrote:
-> > Check processor_thermal.c. It explicitly interfaces with cpufreq in 
-> > order to perform P state management.
-> 
-> The hook above is so that ACPI thermal throttling
-> does not invoke T-states until the more  efficient
-> P-states have already been exhausted.
-> 
-> It doesn't imply the presence of thermal awareness
-> anywhere in the cpufreq sub-system.
+On Wed, 14 May 2008, Len Brown wrote:
+> But the cost is that others with actual working hardware
+> unnwittingly run p4-clockmod and slow down their machine with
+> no energy savings benefit.
 
-The cpufreq sub-system itself isn't aware of thermal issues, but the 
-ACPI system is. I'm not sure that the distinction's especially 
-important.
+Well, there ARE ways to make sure p4-clockmod is only used as a last
+ressort, and we CAN make sure the user will be told it is using a last
+ressort measure that does not save energy.  Major nasty printks come to
+mind.
 
-> It also doesn't imply that running cpufreq on top
-> of T-states is a good idea.  Cpufreq as implemented,
-> say by the ondemand governor, is based
-> on the assumption that it is running on top of
-> P-states.  Deeper P-states result in
-> more efficient operation  (less energy/instruction)
-> due to their lower voltage, because energy varies with voltage^2.
-> T-states violate that assumpion and provide
-> all the performance cost with none of the efficiency
-> gains of P-states, because energy varies directly
-> with frequencey -- but so does performance cost.
+p4-clockmod has saved my bacon on an Intel D875PBZ motherboard whose
+processor was overheating, as well (older kernel, though. That box runs
+2.6.16.y).  I can't check right now if that motherboard has proper ACPI
+thermal zones that would do the same in a new kernel without
+p4-clockmod, but I will do so when I have the chance.
 
-Right. I'm not implying that this is a desirable situation, but the fact 
-remains that some machines will reach critical shutdown temperature 
-unless something is done to reduce the speed of the processor. If you 
-don't have P states or ACPI-exposed T states, then p4-clockmod is about 
-the best you can manage.
-
-> > > There is already a well known thermal throttling interface
-> > > available via ACPI and it does not need p4_clockmod to run.
-> > > Passive trip points work automatically even without cpufreq being present.
-> > > If they do not, then we need to fix them.
-> > 
-> > You're assuming that the throttling interface is always exposed via 
-> > ACPI. I've seen machines where this isn't the case.
-> 
-> Please show me those machines.
-
-http://www.google.co.uk/search?hl=en&client=firefox-a&rls=org.mozilla%3Aen-US%3Aofficial&hs=R8P&q=acpi+throttling+"<not+supported>"+-C3&btnG=Search&meta=
-
-(a lot of false positives, but many of these are genuine)
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
