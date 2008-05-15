@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Thu, 15 May 2008 04:48:33 -0700 (PDT)
-Message-ID: <20080515114833.A64A311D107@picon.linux-foundation.org>
+Date: Thu, 15 May 2008 04:50:03 -0700 (PDT)
+Message-ID: <20080515115003.7900011D107@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,9 +26,10 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #31 from mjg59-kernel@srcf.ucam.org  2008-05-15 04:48 -------
-My proposal would be to only enable polling if there's no existing passive trip
-point. THat would avoid breaking the system in #8842.
+------- Comment #32 from martin-kernel-bugzilla@earth.li  2008-05-15 04:50 -------
+Note that there is an error in the comment #26 patch, the
+EXPORT_SYMBOL(processor_list) line should read
+EXPORT_SYMBOL(acpi_processor_list).
 
 
 -- 
