@@ -1,15 +1,13 @@
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] Remove deprecated speedstep-centrino driver
-Date: Fri, 16 May 2008 11:35:11 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE010D5208@orsmsx423.amr.corp.intel.com>
-References: <20080511161845.GH15445@codemonkey.org.uk><4827F6A6.8070909@goop.org>
-	<20080515105825.GC8015@dominikbrodowski.net>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
+Date: Fri, 16 May 2008 11:36:56 -0700 (PDT)
+Message-ID: <20080516183656.CB037108061@picon.linux-foundation.org>
+References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-class: urn:content-classes:message
-In-reply-to: <20080515105825.GC8015@dominikbrodowski.net>
+In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,53 +18,36 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Dominik Brodowski <linux@dominikbrodowski.net>, Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq <cpufreq@lists.linux.org.uk>
+To: cpufreq@www.linux.org.uk
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
->-----Original Message-----
->From: cpufreq-bounces@lists.linux.org.uk 
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of 
->Dominik Brodowski
->Sent: Thursday, May 15, 2008 3:58 AM
->To: Jeremy Fitzhardinge
->Cc: Dave Jones; cpufreq
->Subject: Re: [PATCH] Remove deprecated speedstep-centrino driver
->
->On Mon, May 12, 2008 at 08:49:58AM +0100, Jeremy Fitzhardinge wrote:
->> Dave Jones wrote:
->> > On Sat, May 03, 2008 at 09:53:21PM +0200, Thomas Renninger wrote:
->> >  > Remove deprecated speedstep-centrino driver
->> >  >
->> >  > Not 100% sure whether there are machines out there that 
->still need the
->> >  > static Banias tables, Venkatesh?
->> >
->> > Hmm, if we decide to remove this for 2.6.27, I think we should
->> > get a printk into .26 on module load to say that it's going away.
->> > This likely has more valid use cases than the clockmod driver, so I
->> > think a heads-up to any potential users of it who still 
->haven't seen
->> > the warning in the Kconfig might be a good idea.
->> >   
->> 
->> The one function difference from cpufreq_acpi is that it 
->doens't rely on 
->> acpi.  On my laptop of the time that was a useful 
->distinction, but it 
->> may have been more due to the shoddy state of acpi in Linux 
->rather than 
->> the BIOS.
->
->And that's the reason why I'd propose to keep it unless ACPI 
->is actually
->required to be set to "y" on those systems -- which I doubt.
->
+mjg59-kernel@srcf.ucam.org changed:
 
-I don't think we can remove speedstep_centrino. There are few systems
-out
-there that don't have proper ACPI P-state tables and depend on
-speedstep-centrino static table to change freq.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+  Attachment #16135|0                           |1
+        is obsolete|                            |
 
-Thanks,
-Venki
+
+
+
+------- Comment #35 from mjg59-kernel@srcf.ucam.org  2008-05-16 11:36 -------
+Created an attachment (id=16166)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=16166&action=view)
+Add a passive cooling limit to zones which don't have one
+
+This patch does two new things. Firstly, it only enables polling when the
+hardware doesn't already have a passive zone. That stops bug #8842 from hitting
+us. Secondly, if a thermal zone contains a _TZD package, that is used rather
+than flagging it as applying to all CPUs. This won't currently do anything for
+devices other than CPUs as there's no kernel support, but it could be tied in
+through the generic thermal layer once we start seeing devices that can handle
+it.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
