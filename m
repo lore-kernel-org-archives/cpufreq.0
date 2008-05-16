@@ -1,11 +1,11 @@
 From: Carl Thompson <cet@carlthompson.net>
 Subject: Re: cpufreq question
-Date: Fri, 16 May 2008 15:05:59 -0700
-Message-ID: <482E0547.3060907@carlthompson.net>
+Date: Fri, 16 May 2008 14:58:11 -0700
+Message-ID: <482E0373.1070105@carlthompson.net>
 References: <B6790881E7413D4092359CC9B3D8EEFD04EADAAE@dlee12.ent.ti.com>	<200805141444.05019.jwilson@redhat.com>	<6453C3CB8E2B3646B0D020C112613273093959@sausexmb4.amd.com>	<B6790881E7413D4092359CC9B3D8EEFD04EADB27@dlee12.ent.ti.com>	<6453C3CB8E2B3646B0D020C11261327309395A@sausexmb4.amd.com>
 	<B6790881E7413D4092359CC9B3D8EEFD04EADB5F@dlee12.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------080904020402000308070903"
+Content-Type: multipart/mixed; boundary="------------090501090200040005080408"
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 In-Reply-To: <B6790881E7413D4092359CC9B3D8EEFD04EADB5F@dlee12.ent.ti.com>
 List-Id: <cpufreq.vger.kernel.org>
@@ -21,7 +21,7 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 Cc: cpufreq@lists.linux.org.uk
 
 This is a multi-part message in MIME format.
---------------080904020402000308070903
+--------------090501090200040005080408
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
@@ -143,7 +143,7 @@ Date: Wed May 14 2008 12:31:38 GMT-0700 (PDT)
 >   
 
 
---------------080904020402000308070903
+--------------090501090200040005080408
 Content-Type: application/x-gzip;
  name="cpuspeed.tar.gz"
 Content-Transfer-Encoding: base64
@@ -409,7 +409,7 @@ MGxB+X/oTHnv1T+UCXmKLuHb08srWVz8oBX2yjcRJMQdkXIkwy/4tTJ5mq9+3apfh38a+es7
 /3Vb+79Hms0df6dDHjeb5HGjtdMiba/pP/YbpN30Og3itxotUvc63mPiEa8Es4+0/B2v0ST1
 pufBP+2dHVqp095ptEljp0mb2KG/0LZ2RBV//l4a8/fSnL+X1vy9tOfvpTNnL8XNtHiKp3iK
 p3iKp3iKp3iKp3iKp3iKp3iKp3iKp3iKp3iKp3iKp3iKp3iKp3iKp3jyPv8PrpEy4ABoAQA=
---------------080904020402000308070903
+--------------090501090200040005080408
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -420,5 +420,5 @@ Cpufreq mailing list
 Cpufreq@lists.linux.org.uk
 http://lists.linux.org.uk/mailman/listinfo/cpufreq
 
---------------080904020402000308070903--
+--------------090501090200040005080408--
 
