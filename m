@@ -1,15 +1,15 @@
 From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: RE: [PATCH] Remove p4_clockmode driver
-Date: Fri, 16 May 2008 11:32:24 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE010D5204@orsmsx423.amr.corp.intel.com>
-References: <1209844030.13290.5.camel@linux-2bdv.site>
-	<20080511161934.GI15445@codemonkey.org.uk>
+Subject: RE: [PATCH] Remove deprecated speedstep-centrino driver
+Date: Fri, 16 May 2008 11:35:11 -0700
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE010D5208@orsmsx423.amr.corp.intel.com>
+References: <20080511161845.GH15445@codemonkey.org.uk><4827F6A6.8070909@goop.org>
+	<20080515105825.GC8015@dominikbrodowski.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-class: urn:content-classes:message
-In-reply-to: <20080511161934.GI15445@codemonkey.org.uk>
+In-reply-to: <20080515105825.GC8015@dominikbrodowski.net>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,68 +19,54 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
-To: Dave Jones <davej@codemonkey.org.uk>, Thomas Renninger <trenn@suse.de>
-Cc: cpufreq <cpufreq@lists.linux.org.uk>, mzahor@dtech.sk, Dominik Brodowski <linux@dominikbrodowski.net>
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: Dominik Brodowski <linux@dominikbrodowski.net>, Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq <cpufreq@lists.linux.org.uk>
 
- 
 
 >-----Original Message-----
 >From: cpufreq-bounces@lists.linux.org.uk 
->[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of Dave Jones
->Sent: Sunday, May 11, 2008 9:20 AM
->To: Thomas Renninger
->Cc: cpufreq; mzahor@dtech.sk; Dominik Brodowski
->Subject: Re: [PATCH] Remove p4_clockmode driver
+>[mailto:cpufreq-bounces@lists.linux.org.uk] On Behalf Of 
+>Dominik Brodowski
+>Sent: Thursday, May 15, 2008 3:58 AM
+>To: Jeremy Fitzhardinge
+>Cc: Dave Jones; cpufreq
+>Subject: Re: [PATCH] Remove deprecated speedstep-centrino driver
 >
->On Sat, May 03, 2008 at 09:47:10PM +0200, Thomas Renninger wrote:
-> > Remove p4_clockmode driver
-> >
-> > The driver is doing throttling which is supposed to be done 
->through another
-> > ACPI interface. If both interfaces are used, the machine 
->may get very slow.
-> > Remove this driver which should never be used.
-> >
-> > Signed-off-by: Thomas Renninger <trenn@suse.de>
+>On Mon, May 12, 2008 at 08:49:58AM +0100, Jeremy Fitzhardinge wrote:
+>> Dave Jones wrote:
+>> > On Sat, May 03, 2008 at 09:53:21PM +0200, Thomas Renninger wrote:
+>> >  > Remove deprecated speedstep-centrino driver
+>> >  >
+>> >  > Not 100% sure whether there are machines out there that 
+>still need the
+>> >  > static Banias tables, Venkatesh?
+>> >
+>> > Hmm, if we decide to remove this for 2.6.27, I think we should
+>> > get a printk into .26 on module load to say that it's going away.
+>> > This likely has more valid use cases than the clockmod driver, so I
+>> > think a heads-up to any potential users of it who still 
+>haven't seen
+>> > the warning in the Kconfig might be a good idea.
+>> >   
+>> 
+>> The one function difference from cpufreq_acpi is that it 
+>doens't rely on 
+>> acpi.  On my laptop of the time that was a useful 
+>distinction, but it 
+>> may have been more due to the shoddy state of acpi in Linux 
+>rather than 
+>> the BIOS.
 >
->I agree this is long overdue being taken out back and shot.
+>And that's the reason why I'd propose to keep it unless ACPI 
+>is actually
+>required to be set to "y" on those systems -- which I doubt.
 >
->Some thoughts though:
->
->* Should we deprecate this for a release first ?
->  I'm torn over this, because I think no matter how long we do 
->this for,
->  we're going to get people who claim to be surprised.
->  Though given this driver is 99% useless, perhaps just ripping it out
->  is for the best.
->
->* Matthew Garrett mentioned something interesting this morning..
->
->mjg59 | davej: On machines that don't support acpi throttling, 
->I was under the impression that there was supposed to be a 
->hook between the thermal code and cpufreq
->mjg59 | Which would then let p4-clockmod be kicked even if 
->it's below the threshold at which the CPU would throttle itself
->davej | having that code expose T states rather than pretend 
->to be P states is probably for the best.
->mjg59 | Yeah, true
->
->  So whilst killing this off is probably the right thing to 
->do, there may be
->  some value in parts of it living on in the ACPI code ?
 
-ACPI code already has support for T-states, which uses the same
-mechanism as P4-clockmod
-in response to thermal events (once the CPU is at lowest freq). However,
-it needs the BIOS
-to export T-state information. May be there is some value to add a
-driver to do T-states even
-without ACPI T-states and hook into thermal code.
-
-Agree that sooner we get this out of cpufreq better it is. I don't think
-we can explain it
-any more that "P4-clockmod works does not mean it is saving any power".
+I don't think we can remove speedstep_centrino. There are few systems
+out
+there that don't have proper ACPI P-state tables and depend on
+speedstep-centrino static table to change freq.
 
 Thanks,
 Venki
