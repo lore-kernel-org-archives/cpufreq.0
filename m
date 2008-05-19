@@ -1,13 +1,13 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Mon, 19 May 2008 08:34:04 -0700 (PDT)
-Message-ID: <20080519153404.322D7108061@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: Christian Flamm <alcc@gmx.de>
+Subject: I haven't been able to set the chosen policy for CPU0
+Date: Mon, 19 May 2008 18:42:21 +0200
+Message-ID: <200805191842.22216.alcc@gmx.de>
+Reply-To: alcc@gmx.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,26 +18,68 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+I think I can now reproduce that misbehaviour. I happens when both of my cores 
+are at 100%  - than min- *and* max-frequency fall down to minimum (1000000Hz)
 
+$ cpufreq-info
+	cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+	Report errors and bugs to linux@brodo.de, please.
+	analyzing CPU 0:
+	  driver: acpi-cpufreq
+	  CPUs which need to switch frequency at the same time: 0 1
+	  hardware limits: 1000 MHz - 1.67 GHz
+	  available frequency steps: 1.67 GHz, 1.33 GHz, 1000 MHz
+	  available cpufreq governors: conservative, ondemand, userspace, powersave, 
+performance
+	  current policy: frequency should be within 1000 MHz and 1000 MHz.
+	                  The governor "performance" may decide which speed to use
+	                  within this range.
+	  current CPU frequency is 1000 MHz (asserted by call to hardware).
+	analyzing CPU 1:
+	  driver: acpi-cpufreq
+	  CPUs which need to switch frequency at the same time: 0 1
+	  hardware limits: 1000 MHz - 1.67 GHz
+	  available frequency steps: 1.67 GHz, 1.33 GHz, 1000 MHz
+	  available cpufreq governors: conservative, ondemand, userspace, powersave, 	
+performance	
+	  current policy: frequency should be within 1000 MHz and 1000 MHz.
+                  	The governor "performance" may decide which speed to use
+        	        within this range.
+	  current CPU frequency is 1000 MHz (asserted by call to hardware).
 
+If I then try to force another policy manually by
 
+(just to show you) 
+$ cpufreqd-get
+	Name (#1):      Halbgas
+	Governor:       ondemand
+	Min freq:       1000000
+	Max freq:       1667000
+	
+	Name (#2):      Vollgas
+	Active on CPU#: 0, 1
+	Governor:       performance
+	Min freq:       1667000
+	Max freq:       1667000
 
+$ cpufreqd-set 2
 
-------- Comment #38 from mjg59-kernel@srcf.ucam.org  2008-05-19 08:34 -------
-Because there's no reason to believe that it's something that can be well
-determined at the per-model level. I can't see any situation in which polling
-could trigger bugs, other than the one described in #8842 (which this won't
-hit). I appreciate the concerns about performance, though I haven't been able
-to trigger any on machines here. If it's an issue, then we could simply skip
-this on any hardware where reading the trip points takes a significant quantity
-of time. I suspect that most of the thermal zone performance issues have
-vanished now we default to burst mode in the ec driver, though.
+the log says: 
+	"cpufreqd_set_profile     : Couldn't set profile "Vollgas" set for cpu 
+(1667000-1667000-performance)_"
 
+or
 
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+$ cpufreqd-set 1
+
+the log says: 
+	"I haven't been able to set the chosen policy for CPU0._I set 
+1667000-1000000-ondemand_System says 1000000-1000000-ondemand_"
+
+After a certain while (10 minutes) the manual commands work and stay for about 
+5 minutes if both of my cores are fully stressed and than the whole story 
+starts all over.
+
+Regards, Christian.
