@@ -1,14 +1,13 @@
-From: Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: acpi_cpufreq stepping issue on Pentium M 1.2GHz
-Date: Sun, 18 May 2008 20:08:10 -0400
-Message-ID: <20080519000810.GA11313@codemonkey.org.uk>
-References: <482DCF52.6030307@awtrey.com>
+From: Christian Flamm <alcc@gmx.de>
+Subject: I haven't been able to set the chosen policy for CPU0
+Date: Mon, 19 May 2008 12:31:56 +0200
+Message-ID: <200805191231.56508.alcc@gmx.de>
+Reply-To: alcc@gmx.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <482DCF52.6030307@awtrey.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,25 +18,76 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: "Anthony L. Awtrey" <tony@awtrey.com>
-Cc: cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-On Fri, May 16, 2008 at 02:15:46PM -0400, Anthony L. Awtrey wrote:
- > Hi,
- > 
- > I've been trying to get the acpi_cpufreq working on my Panasonic 
- > Toughbook CF-18 (Intel Pentium M 1.2GHz). It works just fine on my CF-19 
- > (Intel Core Duo U2400) just fine.
- > 
- > When I am on wall power, the system runs at full speed (1.2GHz) and when 
- > I pull it off wall power it steps to 600MHz and nothing I have tried 
- > changes that. I need to be able to run full speed while on battery.
+"I haven't been able to set the chosen policy for CPU0._I set 
+1667000-1000000-ondemand_System says 1000000-1000000-ondemand_"
 
-Some BIOSes take away P states when theres a transition in power source.
-Nothing much we can do about it.  Check if your BIOS has an option to
-let this be 'OS controlled', as opposed to 'automatic' or similar wording.
+That's what the log files says. CPU's frequenzy randomly falls to minimum 
+(1000000). Sometimes I can manually correct that, but more often I can't and 
+the above message appears.
 
-	Dave
+$ zcat /proc/config.gz | grep -i freq
+	# CPU Frequency scaling
+	CONFIG_CPU_FREQ=y
+	CONFIG_CPU_FREQ_TABLE=y
+	# CONFIG_CPU_FREQ_DEBUG is not set
+	CONFIG_CPU_FREQ_STAT=y
+	# CONFIG_CPU_FREQ_STAT_DETAILS is not set
+	CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+	# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+	# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+	# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+	CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+	CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+	CONFIG_CPU_FREQ_GOV_USERSPACE=y
+	CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+	CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+	# CPUFreq processor drivers
+	CONFIG_X86_ACPI_CPUFREQ=m
+	# CONFIG_X86_CPUFREQ_NFORCE2 is not set
+	# CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
 
--- 
-http://www.codemonkey.org.uk
+$ cat /etc/cpufreqd.conf
+	[General]
+	pidfile=/var/run/cpufreqd.pid
+	poll_interval=2
+	verbosity=7
+	double_check=1
+	#enable_plugins=apci_ac,cpu,acpi_battery
+	enable_remote=1
+	remote_group=wheel
+	[/General]
+	
+	[Profile]
+	name=Halbgas
+	minfreq=1000000
+	maxfreq=1667000
+	policy=ondemand
+	[/Profile]
+	
+	[Profile]
+	name=Vollgas
+	minfreq=1667000
+	maxfreq=1667000
+	policy=performance
+	[/Profile]
+	
+	[Rule]
+	name=none
+	ac=on
+	profile=Vollgas
+	[/Rule]
+
+	[Rule]
+	name=battery
+	ac=off
+	profile=Halbgas
+	[/Rule]
+
+Already upgraded to kernel 2.6.25-gentoo-r2 and cpufreqd 2.2.1... nothing 
+changes. Processor is an Intel(R) Core(TM) Duo CPU L2400 @ 1.66GHz. Would you 
+say thats probably a broken kernel or a broken bios?
+
+Regards,
+alcCapone.
