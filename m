@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Mon, 19 May 2008 14:34:11 -0700 (PDT)
-Message-ID: <20080519213411.CC605108062@picon.linux-foundation.org>
+Date: Mon, 19 May 2008 14:39:37 -0700 (PDT)
+Message-ID: <20080519213937.CABCA108062@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,11 +26,11 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #39 from martin-kernel-bugzilla@earth.li  2008-05-19 14:34 -------
-Unless I'm missing something we're talking about polling every 10 seconds until
-we hit the passive limit, and then every second. It surprises me that this is a
-performance issue. Does one need some slow & intensive polled I/O loop to read
-the temperature sensor or something?
+------- Comment #40 from mjg59-kernel@srcf.ucam.org  2008-05-19 14:39 -------
+It used to be the case that reading some hardware attached to embedded
+controllers would block the kernel for a significant period of time while it
+polled for completion, but I believe that we're interrupt driven on pretty much
+all hardware now.
 
 
 -- 
