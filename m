@@ -1,13 +1,15 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Wed, 21 May 2008 05:26:32 -0700 (PDT)
-Message-ID: <20080521122632.A431B10805D@picon.linux-foundation.org>
-References: <bug-10658-3570@http.bugzilla.kernel.org/>
+From: "Anthony L. Awtrey" <tony@awtrey.com>
+Subject: Re: acpi_cpufreq stepping issue on Pentium M 1.2GHz
+Date: Wed, 21 May 2008 08:51:04 -0400
+Message-ID: <48341AB8.3090401@awtrey.com>
+References: <482DCF52.6030307@awtrey.com>	
+	<20080519000810.GA11313@codemonkey.org.uk>
+	<1211279939.21269.403.camel@queen.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <1211279939.21269.403.camel@queen.suse.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,27 +20,24 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: trenn@suse.de
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10658
+On 05/20/2008 06:38 AM, Thomas Renninger wrote:
+> It could be that you hit a bug that might get fixed with a recent
+> commit:
+> commit e56a727b023d40d1adf660168883f30f2e6abe0a
+> Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Date:   Mon Apr 28 15:13:43 2008 -0400
+> 
+>     [CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes
+> behind our back.
 
+Hi,
 
+Sorry for the public display of ignorance, but I can't seem to find this 
+patch as a simple diff so I can test it in one of my vanilla kernel 
+builds (either 2.6.24.2 or 2.6.25.4, please). Can you provide me a 
+general patch or some example git commands to get a build-able source tree?
 
-
-
-------- Comment #44 from trenn@suse.de  2008-05-21 05:26 -------
-> To clarify: Matthew's updated patch in comment #35 only enables polling where
-> the system has a critical trip point but no passive trip point.
-This should be a lot laptops and most recent desktops.
-In very rare cases you could also have several thermal zones with a critical
-trip point defined.
-
-I like the patch (when several EC reads do not take more than a second anymore
-and HW access is not a concern which seem to be the case...), it makes the
-whole ACPI thermal management more robust.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Tony
