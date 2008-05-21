@@ -1,11 +1,13 @@
-From: Alexander Griesser <work@tuxx-home.at>
-Subject: Unknown p4-clockmod-capable CPU
-Date: Wed, 21 May 2008 12:54:25 +0200
-Message-ID: <4833FF61.6000504@tuxx-home.at>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
+Date: Wed, 21 May 2008 05:26:32 -0700 (PDT)
+Message-ID: <20080521122632.A431B10805D@picon.linux-foundation.org>
+References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-10658-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,52 +18,27 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
-Hi there!
 
-My computer told me to send you an e-mail.
-It's a Lenovo Thinkpad R61e and `cat /proc/cpuinfo` looks like this:
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 22
-model name      : Intel(R) Celeron(R) CPU          540  @ 1.86GHz
-stepping        : 1
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse msr pae mce cx8 apic sep mtrr pge mca
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx lm
-constant_tsc arch_perfmon pebs bts pni monitor ds_cpl tm2 ssse3 cx16
-xtpr lahf_lm
-bogomips        : 3678.20
-clflush size    : 64
-power management:
 
-Please CC me in replies, as I'm not subscribed to this list.
 
-hth,
-- --
-|   .-.  |    Alexander Griesser -- <private@tuxx-home.at>     | .''`. |
-|   /v\   \              http://www.tuxx-home.at/             / : :' : |
-| /(   )\  |              GPG-KeyID: 0xA2949B5A              |  `. `'  |
-|  ^^ ^^   `-------------------------------------------------'    `-   |
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+------- Comment #44 from trenn@suse.de  2008-05-21 05:26 -------
+> To clarify: Matthew's updated patch in comment #35 only enables polling where
+> the system has a critical trip point but no passive trip point.
+This should be a lot laptops and most recent desktops.
+In very rare cases you could also have several thermal zones with a critical
+trip point defined.
 
-iD8DBQFIM/9h66HVD6KUm1oRAlAEAJ4/lcHHy6g5mcjIpUF7NAV0dBlydgCgk6eb
-ndkZYN+S9fERudRMhAsXK2s=
-=mib6
------END PGP SIGNATURE-----
+I like the patch (when several EC reads do not take more than a second anymore
+and HW access is not a concern which seem to be the case...), it makes the
+whole ACPI thermal management more robust.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
