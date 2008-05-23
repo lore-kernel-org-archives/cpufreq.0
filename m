@@ -1,12 +1,20 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH] cpufreq: clarify license of freq_table.c
-Date: Thu, 22 May 2008 08:52:05 +0200
-Message-ID: <20080522065205.GA1931@comet.dominikbrodowski.net>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] Make acpi-cpufreq more robust against BIOS
+	freq	changes behind our back
+Date: Fri, 23 May 2008 11:20:21 +0200
+Message-ID: <1211534421.29901.22.camel@queen.suse.de>
+References: <482DCF52.6030307@awtrey.com>
+	<20080519000810.GA11313@codemonkey.org.uk>
+	<1211279939.21269.403.camel@queen.suse.de>
+	<48341AB8.3090401@awtrey.com>
+	<1211375286.29901.7.camel@queen.suse.de>
+	<1211375701.29901.11.camel@queen.suse.de> <48346E66.10800@awtrey.com>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <48346E66.10800@awtrey.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,35 +25,35 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: davej@redhat.com
-Cc: cpufreq@lists.linux.org.uk
+To: "Anthony L. Awtrey" <tony@awtrey.com>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Greg KH <gregkh@suse.de>, Stable <Stable@kernel.org>, cpufreq@lists.linux.org.uk
 
-Dave,
+On Wed, 2008-05-21 at 14:48 -0400, Anthony L. Awtrey wrote:
+> On 05/21/2008 09:15 AM, Thomas Renninger wrote:
+> > On Wed, 2008-05-21 at 15:08 +0200, Thomas Renninger wrote:
+> >> Hi,
+> >>
+> >> Please consider this one for stable integration.
+> > ...
+> >> If this one patches for you for 2.6.24.4 also, maybe it even gets in
+> >> there.
+> > Hmm, I added this to OpenSUSE 10.3, means 2.6.22.
+> > I only had to adjust the arch/i386 vs arch/x86 patch.
+> > If this gets into the stable kernel, I wonder how far back this makes
+> > sense. Shall I send a 2.6.22 based version?
+> 
+> FYI, on 2.6.24.2 this patch keeps the CPU set at max off power, but 
+> running the userspace governor and changing scaling_setspeed does not 
+> actually do anything.
+But this has nothing to do with the patch, but must be another 2.6.24
+problem. AFAIK there has been a sysfs locking problem resolved, maybe
+it's that.
 
-please consider applying this patch.
+> On 2.6.25.4 the patch keeps the CPU at max and 
+> allows frequency changes via the userspace governor. This is on a 
+> Toughbook CF-18 with a Pentium M processor.
 
-Thanks and best wishes,
-	Dominik
+> Thanks for the fix!
+Thanks for testing!
 
-[PATCH] cpufreq: clarify license of freq_table.c
-
-A license statement next to the copyright statement was missing.
-
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index ae6cd60..b64c6bc 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -2,6 +2,11 @@
-  * linux/drivers/cpufreq/freq_table.c
-  *
-  * Copyright (C) 2002 - 2003 Dominik Brodowski
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-  */
- 
- #include <linux/kernel.h>
+   Thomas
