@@ -1,20 +1,16 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Make acpi-cpufreq more robust against BIOS
-	freq	changes behind our back
-Date: Fri, 23 May 2008 11:20:21 +0200
-Message-ID: <1211534421.29901.22.camel@queen.suse.de>
-References: <482DCF52.6030307@awtrey.com>
-	<20080519000810.GA11313@codemonkey.org.uk>
-	<1211279939.21269.403.camel@queen.suse.de>
-	<48341AB8.3090401@awtrey.com>
-	<1211375286.29901.7.camel@queen.suse.de>
-	<1211375701.29901.11.camel@queen.suse.de> <48346E66.10800@awtrey.com>
+Subject: Re: [PATCH] Remove p4_clockmode driver
+Date: Fri, 23 May 2008 13:21:18 +0200
+Message-ID: <1211541678.29901.78.camel@queen.suse.de>
+References: <1209844030.13290.5.camel@linux-2bdv.site>
+	<20080511161934.GI15445@codemonkey.org.uk>
+	<20080522040118.GA28737@anvil.corenet.prv>
 Reply-To: trenn@suse.de
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <48346E66.10800@awtrey.com>
+In-Reply-To: <20080522040118.GA28737@anvil.corenet.prv>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -25,35 +21,82 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: "Anthony L. Awtrey" <tony@awtrey.com>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Greg KH <gregkh@suse.de>, Stable <Stable@kernel.org>, cpufreq@lists.linux.org.uk
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Dave Jones <davej@codemonkey.org.uk>, mzahor@dtech.sk, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq <cpufreq@lists.linux.org.uk>
 
-On Wed, 2008-05-21 at 14:48 -0400, Anthony L. Awtrey wrote:
-> On 05/21/2008 09:15 AM, Thomas Renninger wrote:
-> > On Wed, 2008-05-21 at 15:08 +0200, Thomas Renninger wrote:
-> >> Hi,
-> >>
-> >> Please consider this one for stable integration.
-> > ...
-> >> If this one patches for you for 2.6.24.4 also, maybe it even gets in
-> >> there.
-> > Hmm, I added this to OpenSUSE 10.3, means 2.6.22.
-> > I only had to adjust the arch/i386 vs arch/x86 patch.
-> > If this gets into the stable kernel, I wonder how far back this makes
-> > sense. Shall I send a 2.6.22 based version?
+On Thu, 2008-05-22 at 00:01 -0400, Dmitry Torokhov wrote:
+> Hi Dave,
 > 
-> FYI, on 2.6.24.2 this patch keeps the CPU set at max off power, but 
-> running the userspace governor and changing scaling_setspeed does not 
-> actually do anything.
-But this has nothing to do with the patch, but must be another 2.6.24
-problem. AFAIK there has been a sysfs locking problem resolved, maybe
-it's that.
+> On Sun, May 11, 2008 at 12:19:34PM -0400, Dave Jones wrote:
+> > On Sat, May 03, 2008 at 09:47:10PM +0200, Thomas Renninger wrote:
+> >  > Remove p4_clockmode driver
+> >  >
+> >  > The driver is doing throttling which is supposed to be done through another
+> >  > ACPI interface. If both interfaces are used, the machine may get very slow.
+> >  > Remove this driver which should never be used.
+> >  >
+> >  > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > 
+> > I agree this is long overdue being taken out back and shot.
+> > 
+> > Some thoughts though:
+> > 
+> > * Should we deprecate this for a release first ?
+> >   I'm torn over this, because I think no matter how long we do this for,
+> >   we're going to get people who claim to be surprised.
+> >   Though given this driver is 99% useless, perhaps just ripping it out
+> >   is for the best.
+> > 
+> > * Matthew Garrett mentioned something interesting this morning..
+> > 
+> > mjg59 | davej: On machines that don't support acpi throttling, I was under the impression that there was supposed to be a hook between the thermal code and cpufreq
+> > mjg59 | Which would then let p4-clockmod be kicked even if it's below the threshold at which the CPU would throttle itself
+> > davej | having that code expose T states rather than pretend to be P states is probably for the best.
+> > mjg59 | Yeah, true
+> > 
+> >   So whilst killing this off is probably the right thing to do, there may be
+> >   some value in parts of it living on in the ACPI code ?
+> > 
+> > I'll queue up this removal patch for linux-next, and we'll see if anyone screams.
+> > (I doubt it, given the amount of testing that gets right now. It'll probably
+> > not really get noticed until after it's in a Linus sanctioned release)
+> > 
+> 
+> AAAAAAA!</scream>
+> 
+> I am using p4_clockmod in attempt to keep my old P4-based box a bit
+> cooler. It does not support anything besides C0 (no P-states, no
+> throttling) so acpi-based driver does not work.
 
-> On 2.6.25.4 the patch keeps the CPU at max and 
-> allows frequency changes via the userspace governor. This is on a 
-> Toughbook CF-18 with a Pentium M processor.
+P4 CPUs do waste power, it is not designed for power savings.
+How much do you save with p4-clockmod?
 
-> Thanks for the fix!
-Thanks for testing!
+But maybe a reimplementation as Matthew suggested it may really be worth
+it. If it is, someone probably will do it.
 
-   Thomas
+The cpufreq interface is the wrong place for this driver.
+If you have a machine that exposes throttling as expected and you make
+use of it (and there are userspace tools doing this), you are busted.
+
+Instead of screaming, better provide suggestions for a proper
+integration for machines which are capable of throttling, but have a
+broken BIOS which does not export it (maybe they are just doing this
+because it's not worth it?).
+
+AFAIK there are AMD drivers with static cpufreq tables which were never
+accepted. People with a BIOS who's CPU is not detected and cpufreq info
+is not exposed have bad luck and must either poke the vendor or
+self-compile the out-of-tree static table solution.
+I would 10 times more support this to be integrated because:
+  - It fits the design and does not slow down other machines as a side
+    effect
+  - It really saves some power
+I still think it's ok that it did not go mainline, for maintenance and
+"it's the wrong way" reasons.
+
+Please, if you have verified that it really saves power (I'd really like
+to see some figures here, I never saw any for p4-clockmod) and it's
+worth having it, help to get this implemented properly, but do not delay
+a process which is overdue for a long time already.
+
+    Thomas
