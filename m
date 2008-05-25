@@ -1,16 +1,12 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: help with po
-Date: Sun, 25 May 2008 13:47:47 +0200
-Message-ID: <20080525114747.GB24567@comet.dominikbrodowski.net>
-References: <bb5d68b20704150755x500932a7je2da368ed34e9e44@mail.gmail.com>
-	<20071028163559.GF17556@isilmar.linta.de>
-	<bb5d68b20805211251g47e15ccvd1438e9bece2087e@mail.gmail.com>
+Subject: [ANNOUNCE] cpufrequtils-003 released
+Date: Sun, 25 May 2008 14:13:57 +0200
+Message-ID: <20080525121357.GA4522@comet.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <bb5d68b20805211251g47e15ccvd1438e9bece2087e@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,17 +17,20 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Claudio Eduardo <claudioeddy@gmail.com>
-Cc: Cpufreq@lists.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-Hi,
+Hi!
 
-On Wed, May 21, 2008 at 03:51:36PM -0400, Claudio Eduardo wrote:
-> Hi, Dominik Brodowski, as I had talked to you before about cpufreq-utils
-> translation, follows atached my translation for pt-BR (portuguese).
+cpufrequtils-003 is released and available at
 
-Thanks! It's now in the cpufrequtils git tree whose current state should
-become cpufrequtils-003 momentarily.
+http://www.kernel.org/pub/linux/utils/kernel/cpufreq/
 
-Best wishes,
+See also:
+http://www.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html
+
+A Czech and Portuguese translation have been added -- thanks to Claudio
+Eduardo and Karel Voln=FD. A few kernel debug module updates can also be fo=
+und
+in this release.
+
 	Dominik
