@@ -1,16 +1,23 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: cpufreq limits avilable frequencies to 800MHz on git kernel
-Date: Sun, 25 May 2008 17:03:55 +0200
-Message-ID: <1211727835.3422.36.camel@linux-2bdv.site>
-References: <200805231944.57320.arekm@maven.pl>
-	<20080523182507.29a2b10c.akpm@linux-foundation.org>
-	<200805251136.24313.arekm@maven.pl>
+Subject: Re: [PATCH] Remove p4_clockmode driver
+Date: Sun, 25 May 2008 17:39:31 +0200
+Message-ID: <1211729971.3422.52.camel@linux-2bdv.site>
+References: <1209844030.13290.5.camel@linux-2bdv.site>
+	<20080511161934.GI15445@codemonkey.org.uk>
+	<20080522040118.GA28737@anvil.corenet.prv>
+	<1211541678.29901.78.camel@queen.suse.de>
+	<20080523084737.ZZRA012@mailhub.coreip.homeip.net>
+	<1211555977.29901.110.camel@queen.suse.de>
+	<20080523113206.ZZRA012@mailhub.coreip.homeip.net>
+	<1211559367.29901.140.camel@queen.suse.de>
+	<20080523133809.ZZRA012@mailhub.coreip.homeip.net>
+	<20080524110309.GB13173@isilmar.linta.de>
 Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <200805251136.24313.arekm@maven.pl>
+In-Reply-To: <20080524110309.GB13173@isilmar.linta.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,69 +28,104 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: gnorton@novell.com, cpufreq@lists.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, miguel@novell.com
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, mzahor@dtech.sk, cpufreq <cpufreq@lists.linux.org.uk>
 
-T24gU3VuLCAyMDA4LTA1LTI1IGF0IDExOjM2ICswMjAwLCBBcmthZGl1c3ogTWlza2lld2ljeiB3
-cm90ZToKPiBPbiBTYXR1cmRheSAyNCBNYXkgMjAwOCwgQW5kcmV3IE1vcnRvbiB3cm90ZToKPiA+
-IE9uIEZyaSwgMjMgTWF5IDIwMDggMTk6NDQ6NTcgKzAyMDAgQXJrYWRpdXN6IE1pc2tpZXdpY3og
-PGFyZWttQG1hdmVuLnBsPiAKPiB3cm90ZToKPiA+ID4gdGhpbmtwYWQgejYwbSwgSW50ZWwoUikg
-UGVudGl1bShSKSBNIHByb2Nlc3NvciAyLjAwR0h6LiBrZXJuZWwgZnJvbSBnaXQKPiA+ID4gZnJv
-bSAxLTIgZGF5cyBhZ28uCj4gPiA+Cj4gPiA+IFVuZm9ydHVuYXRlbHkgaXQgc2VlbXMgdGhhdCBz
-dXNwZW5kIHRvIHJhbS9yZXN1bWUgY2F1c2VzIGZyZXF1ZW5jeQo+ID4gPiB0byBiZSBsaW1pdGVk
-IHRvIDgwME1IeiBvbmx5LiBJIGNhbid0IHNldCBpdCB0byAyR0h6IGFnYWluIDotLwo+ID4gPgo+
-ID4gPiBzY2FsaW5nX21heF9mcmVxIGlzIHRoZW4gODAwMDAwIGFuZCBjYW5ub3QgYmUgY2hhbmdl
-ZC4KPiA+ID4KPiA+ID4gcmVib290IGFuZCB0aGUgcHJvYmxlbSBkaXNhcHBlYXJzIHVudGlsIG5l
-dyBzdXNwZW5kL3Jlc3VtZSBjeWNsZS4KPiA+ID4KPiA+ID4gY3B1ZnJlcSBzdHVmZiBpcyBkcml2
-ZW4gYnkgYWNwaS1jcHVmcmVxCj4gPiA+Cj4gPiA+ICQgY3B1ZnJlcS1pbmZvCj4gPiA+IGNwdWZy
-ZXF1dGlscyAwMDI6IGNwdWZyZXEtaW5mbyAoQykgRG9taW5payBCcm9kb3dza2kgMjAwNC0yMDA2
-Cj4gPiA+IFJlcG9ydCBlcnJvcnMgYW5kIGJ1Z3MgdG8gbGludXhAYnJvZG8uZGUsIHBsZWFzZS4K
-PiA+ID4gYW5hbHl6aW5nIENQVSAwOgo+ID4gPiAgIGRyaXZlcjogYWNwaS1jcHVmcmVxCj4gPiA+
-ICAgQ1BVcyB3aGljaCBuZWVkIHRvIHN3aXRjaCBmcmVxdWVuY3kgYXQgdGhlIHNhbWUgdGltZTog
-MAo+ID4gPiAgIGhhcmR3YXJlIGxpbWl0czogODAwIE1IeiAtIDIuMDAgR0h6Cj4gPiA+ICAgYXZh
-aWxhYmxlIGZyZXF1ZW5jeSBzdGVwczogMi4wMCBHSHosIDEuNjAgR0h6LCAxLjMzIEdIeiwgMS4w
-NyBHSHosIDgwMAo+ID4gPiBNSHogYXZhaWxhYmxlIGNwdWZyZXEgZ292ZXJub3JzOiBwb3dlcnNh
-dmUsIHVzZXJzcGFjZSwgb25kZW1hbmQsCj4gPiA+IHBlcmZvcm1hbmNlIGN1cnJlbnQgcG9saWN5
-OiBmcmVxdWVuY3kgc2hvdWxkIGJlIHdpdGhpbiA4MDAgTUh6IGFuZCA4MDAKPiA+ID4gTUh6LiBU
-aGUgZ292ZXJub3IgInBlcmZvcm1hbmNlIiBtYXkgZGVjaWRlIHdoaWNoIHNwZWVkIHRvIHVzZSB3
-aXRoaW4gdGhpcwo+ID4gPiByYW5nZS4KPiA+ID4gICBjdXJyZW50IENQVSBmcmVxdWVuY3kgaXMg
-ODAwIE1Iei4KPiA+ID4KPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVx
-L2FmZmVjdGVkX2NwdXM6MAo+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZy
-ZXEvY3B1aW5mb19jdXJfZnJlcTo4MDAwMDAKPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUv
-Y3B1MC9jcHVmcmVxL2NwdWluZm9fbWF4X2ZyZXE6MjAwMDAwMAo+ID4gPiAvc3lzL2RldmljZXMv
-c3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvY3B1aW5mb19taW5fZnJlcTo4MDAwMDAKPiA+ID4gL3N5
-cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL3JlbGF0ZWRfY3B1czowCj4gPiA+IC9z
-eXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcS9zY2FsaW5nX2F2YWlsYWJsZV9mcmVx
-dWVuY2llczoyMDAwMDAKPiA+ID4wIDE2MDAwMDAgMTMzMzAwMCAxMDY2MDAwIDgwMDAwMAo+ID4g
-PiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvc2NhbGluZ19hdmFpbGFibGVf
-Z292ZXJub3JzOnBvd2Vyc2F2Cj4gPiA+ZSB1c2Vyc3BhY2Ugb25kZW1hbmQgcGVyZm9ybWFuY2UK
-PiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL3NjYWxpbmdfY3VyX2Zy
-ZXE6ODAwMDAwCj4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcS9zY2Fs
-aW5nX2RyaXZlcjphY3BpLWNwdWZyZXEKPiA+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1
-MC9jcHVmcmVxL3NjYWxpbmdfZ292ZXJub3I6cGVyZm9ybWFuY2UKPiA+ID4gL3N5cy9kZXZpY2Vz
-L3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL3NjYWxpbmdfbWF4X2ZyZXE6ODAwMDAwCj4gPiA+IC9z
-eXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcS9zY2FsaW5nX21pbl9mcmVxOjgwMDAw
-MAo+ID4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvc2NhbGluZ19zZXRz
-cGVlZDo8dW5zdXBwb3J0ZWQ+Cj4gPgo+ID4gVGhhbmtzLiAgSXMgdGhpcyBhIG5ld2x5LW9jY3Vy
-cmluZyBidWcgb3IgZGlkIGVhcmxpZXIga2VybmVscyBkbyB0aGlzIGFsc28/Cj4gPgo+ID4gSWYg
-aXQgd2FzIG5ld2x5IGFkZGVkLCBkbyB5b3Uga25vdyBpbiB3aGljaCBrZXJuZWwgdmVyc2lvbiB3
-ZSBtaWdodAo+ID4gaGF2ZSBhZGRlZCBpdD8KPiAKPiBJIHdhc24ndCBhYmxlIHRvIHJlcHJvZHVj
-ZSB0aGUgcHJvYmxlbSBvbiBmaW5hbCAyLjYuMjQgYnV0IHdhcyBhYmxlIHRvIAo+IHJlcHJvZHVj
-ZSBvbiBmaW5hbCAyLjYuMjUuIFByb2JsZW0gaW50cm9kdWNlZCBzb21ld2hlcmUgYmV0d2VlbiBp
-dCBzZWVtcy4KPiAKPiBOb3RlIHRoYXQgMi0zIHN1c3BlbmQgdG8gcmFtL3Jlc3VtZSBjeWNsZXMg
-aXMgbmVlZGVkIHRvIGdldCBpbnRvIHRoZSBwcm9ibGVtLgoKU291bmRzIHJlbGF0ZWQgdG86Cu+7
-v1tCdWcgMzc0MDk5XSBUNjFwIHNwZWVkc3RlcCBwcm9ibGVtcyAob25kZW1hbmQgc2NoZWR1bGVy
-KQrvu79odHRwczovL2J1Z3ppbGxhLm5vdmVsbC5jb20vc2hvd19idWcuY2dpP2lkPTM3NDA5OQoK
-TWlndWVsIHNwZWFrcyBmcm9tICJnb29kIGJvb3RzIiBhbmQgImJhZCBib290cyIuCgpDb3VsZCB5
-b3UgY2hlY2sgd2hldGhlciB0aGUgT1MgdGhpbmtzIGl0IGlzIHRvbyBob3QuCu+7v0kgZGVzY3Jp
-YmVkIHNvbWUgYmFzaWNzIGhvdyB0byBtb25pdG9yIHRlbXBlcmF0dXJlIGFuZCBjcHVmcmVxIChp
-ZgpwYXNzaXZlIGNvb2xpbmcga2lja3MgaW4pIGhlcmU6Cmh0dHBzOi8vYnVnemlsbGEubm92ZWxs
-LmNvbS9zaG93X2J1Zy5jZ2k/aWQ9Mzg3NzAyI2MxMwoKSG1tLCBpdCBtYXkganVzdCBoYXZlIGJl
-ZW4gZml4ZWQgYnkgdGhpcyBvbmU6Cu+7v2NvbW1pdCBlNTZhNzI3YjAyM2Q0MGQxYWRmNjYwMTY4
-ODgzZjMwZjJlNmFiZTBhCkF1dGhvcjogVmVua2F0ZXNoIFBhbGxpcGFkaSA8dmVua2F0ZXNoLnBh
-bGxpcGFkaUBpbnRlbC5jb20+CkRhdGU6ICAgTW9uIEFwciAyOCAxNToxMzo0MyAyMDA4IC0wNDAw
-CgpNaWd1ZWwsIEdlb2ZmOiBUaGlzIGlzIGFscmVhZHkgaW4gMTEuMCBmb3Igc29tZSB0aW1lIGFu
-ZCBpbiAxMC4zIGZvcgpzb21lIGRheXMuCgogICAgICAgVGhvbWFzCgoKX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KQ3B1ZnJlcSBtYWlsaW5nIGxpc3QKQ3B1
-ZnJlcUBsaXN0cy5saW51eC5vcmcudWsKaHR0cDovL2xpc3RzLmxpbnV4Lm9yZy51ay9tYWlsbWFu
-L2xpc3RpbmZvL2NwdWZyZXEK
+On Sat, 2008-05-24 at 13:03 +0200, Dominik Brodowski wrote:
+> Hi,
+> 
+> On Fri, May 23, 2008 at 01:40:22PM -0400, Dmitry Torokhov wrote:
+> > On Fri, May 23, 2008 at 06:16:07PM +0200, Thomas Renninger wrote:
+> > > ...
+> > > > > How much Watts does the machine
+> > > > > save power when it is idle using p4-clockmod?
+> > > > 
+> > > > Don't care. Don't care. Do I need to repeat it? I don't care. All I
+> > > > know is that it87 reports lower temperature when CPU is throttled.
+> > > How much is it, constantly?
+> > > 
+> > 
+> > Hmm, it looks ike on ide it is about 78C throttled and 81 unthrottled
+> > (I would not pay attention to absolute numbers, I never actually tried
+> > to calibrate the readings). So apparently not a lot... For some reason
+> > I remember the difference a bit bigger, maybe I was lookig under light
+> > load?
+> 
+> Probably you were looking under more or less heavy load, for then and only
+> then p4-clockmod makes a difference. (>12.5 load at least)
+> 
+> Thomas: the question whether it saves power when it is idle is not a good
+> criterion -- IIRC, some Intel SpeedStep-capable processors do enter the same
+> low voltage idle state, so on a 100% idle system acpi-cpufreq wouldn't make
+> a difference there either. Similarily, some cpufreq drivers which only do
+> frequency scaling but not frequency and voltage scaling will also only see
+> limited energy savings on 100% idle.
+> 
+> To summarize: If the CPU load is constantly x (0<x<1) within a timeframe,
+> the _CPU_ energy consumption of an ideal system is approximately
+> 
+> - if the CPU does not support frequency or voltage scaling:
+> 
+> 	E_none	=  E_idle * (1-x) + E_max * x
+> 
+> - if the CPU supports frequency scaling (with linear energy savings):
+> 
+> 	E_fs	=  E_idle + (E_max - E_idle) * x  = E_none
+> 
+> - if the CPU supports throttling:
+> 
+> 	E_t	=  E_idle * (1-x) + E_max * x = E_none
+> 
+> - if the CPU supports frequency and voltage scaling (with energy savings to
+>   the power of two)
+> 
+> 	E_fvs	=  E_idle + (E_max - E_idle) * x^2
+> 
+> 
+> This shows that:
+> 1) _if_ idle states work properly, and
+> 2) _if_ the system needs to finish tasks as soon as possible,
+> neither frequency scaling alone nor throttling will get you anything.
+> 
+> Now, let's test whether these two requirements are met:
+> 
+> ad 1) to the Intel folks out here: is C1 entered during throttling, or some
+> deeper sleep level? If it's something deeper, this requirement is not met on
+> my desktop P4 which only offers C1. 
+> 
+> ad 2) I can see of two aspects where this is invalid:
+> 	- programs which will eat up as much CPU as possible e.g. for
+> 	  even more frames per seconds, and
+> 	- thermal side-effects: if the CPU energy consumption surpasses
+> 	  certain thresholds, fans might be needed for cooling, or their
+> 	  rotational speed increased, thereby also increasing the noise,
+> 	  and not to forget the increased hardware wear by increased
+> 	  temperatures...
+> 
+> However, this second requirement alone might be able to be met by software
+> alone, as long as the first requirement -- a proper idle state is entered --
+> is fulfilled:
+> (1) Currently, _all_ tasks preempt the idle task -- if there's only one task
+> running in nice level 19, that one gets 100% of the CPU, and the idle thread
+> gets none.
+> (2) One could now start a task with a very high priority, which schedules
+> its own wakeup, and then calls cpuidle_idle_call(). Caveat: this would not
+> work properly in a high-interrupt system.
+> 
+> Now, such a kernel module would do what -- it would _emulate_ frequency
+> scaling in a software level, while p4-clockmod _emulates_ frequency scaling
+> in hardware. Therefore, the correct place for p4-clockmod and such a generic
+> "I do not want to use my hardware 100%"-module is within the framework which
+> is made for the capabilities they emulate: cpufreq.
+
+Could you explain this in two easy sentences again, why this should not
+use the throttling interface?
+(former /proc/acpi/processor/*/throttling, now somewhere located in
+sysfs. Also used for passive cooling if no cpufreq is available).
+Throttling is what this driver is doing and with which it will interfere
+and slow down the machine to be closed to unresponsive if both
+(throttling and cpufreq interface) are using it?
+
+Thanks,
+
+   Thomas
