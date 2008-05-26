@@ -1,23 +1,17 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Remove p4_clockmode driver
-Date: Mon, 26 May 2008 13:05:07 +0100
-Message-ID: <20080526120507.GA23310@srcf.ucam.org>
-References: <20080511161934.GI15445@codemonkey.org.uk>
-	<20080522040118.GA28737@anvil.corenet.prv>
-	<1211541678.29901.78.camel@queen.suse.de>
-	<20080523084737.ZZRA012@mailhub.coreip.homeip.net>
-	<1211555977.29901.110.camel@queen.suse.de>
-	<20080523113206.ZZRA012@mailhub.coreip.homeip.net>
-	<1211559367.29901.140.camel@queen.suse.de>
-	<20080523133809.ZZRA012@mailhub.coreip.homeip.net>
-	<20080524110309.GB13173@isilmar.linta.de>
-	<1211729971.3422.52.camel@linux-2bdv.site>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: cpufreq limits avilable frequencies to 800MHz on git kernel
+Date: Mon, 26 May 2008 14:28:38 +0200
+Message-ID: <1211804918.29901.187.camel@queen.suse.de>
+References: <200805231944.57320.arekm@maven.pl>
+	<200805251136.24313.arekm@maven.pl>
+	<1211727835.3422.36.camel@linux-2bdv.site>
+	<200805260907.05561.arekm@maven.pl>
+Reply-To: trenn@suse.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1211729971.3422.52.camel@linux-2bdv.site>
+In-Reply-To: <200805260907.05561.arekm@maven.pl>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -28,28 +22,16 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Thomas Renninger <trenn@suse.de>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, mzahor@dtech.sk, Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq <cpufreq@lists.linux.org.uk>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: gnorton@novell.com, cpufreq@lists.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, miguel@novell.com
 
-On Sun, May 25, 2008 at 05:39:31PM +0200, Thomas Renninger wrote:
-
-> Could you explain this in two easy sentences again, why this should not
-> use the throttling interface?
-
-Because it involves rewriting code for purely aesthetic benefit. I agree 
-that, in an ideal world, p4-clockmod would integrate into the throttling 
-system. But unless someone wants to rewrite it, that doesn't look 
-likely...
-
-> (former /proc/acpi/processor/*/throttling, now somewhere located in
-> sysfs. Also used for passive cooling if no cpufreq is available).
-> Throttling is what this driver is doing and with which it will interfere
-> and slow down the machine to be closed to unresponsive if both
-> (throttling and cpufreq interface) are using it?
-
-The ACPI throttling interface will only be used if the minimum cpufreq 
-state has already been reached. Users really shouldn't play with the 
-throttling interface themselves, given its lack of useful functionality.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Li4uCj4gPiBTb3VuZHMgcmVsYXRlZCB0bzoKPiA+IO+7v1tCdWcgMzc0MDk5XSBUNjFwIHNwZWVk
+c3RlcCBwcm9ibGVtcyAob25kZW1hbmQgc2NoZWR1bGVyKQo+ID4g77u/aHR0cHM6Ly9idWd6aWxs
+YS5ub3ZlbGwuY29tL3Nob3dfYnVnLmNnaT9pZD0zNzQwOTkKPiAKPiBsb2dpbi9wYXNzIHByb3Rl
+Y3RlZApTb3JyeSwgT3BlblNVU0UgYnVncyBzaG91bGQgYnkgZGVmYXVsdCBiZSBwdWJsaWMsIG5v
+IGlkZWEgd2h5IHRoaXMgb25lCndhcyBub3QuClNob3VsZCBiZSBwdWJsaWMgbm93LgpSZWFkYWJs
+ZSBmb3IgdGhlIHB1YmxpYywgeW91IGNhbiBwb3N0IGlmIHlvdSBnZXQgYW4gYnVnemlsbGEubm92
+ZWxsLmNvbQphY2NvdW50LgoKVGhhbmtzLAoKICAgIFRob21hcwoKCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkNwdWZyZXEgbWFpbGluZyBsaXN0CkNwdWZy
+ZXFAbGlzdHMubGludXgub3JnLnVrCmh0dHA6Ly9saXN0cy5saW51eC5vcmcudWsvbWFpbG1hbi9s
+aXN0aW5mby9jcHVmcmVxCg==
