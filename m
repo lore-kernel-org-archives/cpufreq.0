@@ -1,14 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7463] CPU frequency scaling(cpufreq) does not work.
-	speedstep-centrino.c problem
-Date: Wed, 28 May 2008 06:08:02 -0700 (PDT)
-Message-ID: <20080528130802.93E58108060@picon.linux-foundation.org>
-References: <bug-7463-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 7420] cpufreq/powernowd limiting CPU frequency on kernels
+	>=2.6.16
+Date: Wed, 28 May 2008 06:10:17 -0700 (PDT)
+Message-ID: <20080528131017.B70D8108038@picon.linux-foundation.org>
+References: <bug-7420-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-7463-3570@http.bugzilla.kernel.org/>
+Return-path: <cpufreq-bounces+glkc-cpufreq=gmane.org@lists.linux.org.uk>
+In-Reply-To: <bug-7420-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,17 +18,19 @@ List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
 List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=gmane.org+glkc-cpufreq=gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7463
+http://bugzilla.kernel.org/show_bug.cgi?id=7420
 
 
 
 
 
-------- Comment #18 from linux@brodo.de  2008-05-28 06:08 -------
-Can't we close this bug then, if upgrading the BIOS fixes this issue?
+------- Comment #4 from linux@brodo.de  2008-05-28 06:10 -------
+Overclocking the CPU is not supported by the cpufreq infrastructure, and so I'm
+really not suprised that the frequencies shown by cpufreq here do not match.
+Therefore, I'd suggest closing this bug as WILLNOTFIX / DOCUMENTED.
 
 
 -- 
