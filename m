@@ -1,14 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 7420] cpufreq/powernowd limiting CPU frequency on kernels
-	>=2.6.16
-Date: Wed, 28 May 2008 06:15:28 -0700 (PDT)
-Message-ID: <20080528131528.45C16108038@picon.linux-foundation.org>
-References: <bug-7420-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+	gets BUG on Transmeta Crusoe CPU
+Date: Wed, 28 May 2008 06:15:43 -0700 (PDT)
+Message-ID: <20080528131543.66E83108047@picon.linux-foundation.org>
+References: <bug-10654-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-7420-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-10654-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,14 +21,17 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=7420
+http://bugzilla.kernel.org/show_bug.cgi?id=10654
 
 
 
 
 
-------- Comment #5 from interfc@jumpy.it  2008-05-28 06:15 -------
-Anyway I must say that other users do it without problems.
+------- Comment #4 from linux@brodo.de  2008-05-28 06:15 -------
+Masaki Chikama: your patch at redhat's bugzilla seems to be the proper fix.
+Could you submit it to the cpufreq mailing list, please?
+
+@Thomas: this is not p4-clockmod.
 
 
 -- 
