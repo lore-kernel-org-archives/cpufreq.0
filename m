@@ -1,14 +1,14 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10654] cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-	gets BUG on Transmeta Crusoe CPU
-Date: Wed, 28 May 2008 12:07:20 -0700 (PDT)
-Message-ID: <20080528190720.CC474108038@picon.linux-foundation.org>
-References: <bug-10654-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 7463] CPU frequency scaling(cpufreq) does not work.
+	speedstep-centrino.c problem
+Date: Wed, 28 May 2008 18:37:57 -0700 (PDT)
+Message-ID: <20080529013757.7B6CD11D107@picon.linux-foundation.org>
+References: <bug-7463-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10654-3570@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-7463-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,25 +21,17 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10654
+http://bugzilla.kernel.org/show_bug.cgi?id=7463
 
 
-akpm@osdl.org changed:
+shaohua.li@intel.com changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|                            |CODE_FIX
+             Status|NEW                         |REJECTED
+         Resolution|                            |INVALID
 
 
-
-
-------- Comment #5 from akpm@osdl.org  2008-05-28 12:07 -------
-I already have this patch in -mm, as
-cpufreq-fix-null-object-access-on-transmeta-cpu.patch
-It has been sent to davej once but he is asleep.  I'll merge it up.
-
-I'll add your acked-by to the patch and I'll close this report, thanks.
 
 
 -- 
