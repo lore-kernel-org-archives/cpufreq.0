@@ -1,12 +1,14 @@
-From: "Johnathon Harris" <jmharris@gmail.com>
-Subject: Unknown p4-clockmod-capable CPU- Celeron 530
-Date: Sun, 1 Jun 2008 22:19:11 +0100
-Message-ID: <fb0d09570806011419j29951764n975db3649cad8e4b@mail.gmail.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10055] conservative governor doesn't increase frequency,
+	just decrease. powernow-k7
+Date: Sun,  1 Jun 2008 16:57:50 -0700 (PDT)
+Message-ID: <20080601235750.9A95911D108@picon.linux-foundation.org>
+References: <bug-10055-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
+In-Reply-To: <bug-10055-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -17,37 +19,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-Hello,
+http://bugzilla.kernel.org/show_bug.cgi?id=10055
 
-I was attempting to use p4-clockmod with an Acer Aspire 4315 and received:
 
-p4-clockmod: Unknown p4-clockmod-capable CPU. Please send an e-mail to
-<cpufreq@lists.linux.org.uk>
+protasnb@gmail.com changed:
 
-In absence of more information on what to provide you, here is the
-cpuinfo. Please let me know if you need further details.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |protasnb@gmail.com
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 22
-model name      : Intel(R) Celeron(R) CPU          530  @ 1.73GHz
-stepping        : 1
-cpu MHz         : 1729.039
-cache size      : 1024 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss tm pbe nx lm
-constant_tsc arch_perfmon pebs bts pni monitor ds_cpl tm2 ssse3 cx16
-xtpr lahf_lm
-bogomips        : 3462.10
-clflush size    : 64
+
+
+
+------- Comment #4 from protasnb@gmail.com  2008-06-01 16:57 -------
+Eric, is this still a problem with current kernel?
+If so, you can try enabling CPU_FREQ_DEBUG in the config and either boot with
+cpufreq.debug=X or load cpufreq with debug=X parameter, where X is 1(core)
+2(driver) or 4(governor) debug.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
