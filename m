@@ -1,11 +1,20 @@
-From: "Anatoliy Guskov" <anatoliy.guskov@gmail.com>
-Subject: cpufreq not work on cpu1 after suspend
-Date: Mon, 2 Jun 2008 21:56:21 +0300
-Message-ID: <c55d8bf0806021156w5cf35033n2a0c04f5f1539ffd@mail.gmail.com>
+From: Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [stable] [PATCH] Make acpi-cpufreq more robust against BIOS
+	freq changes behind our back
+Date: Mon, 2 Jun 2008 15:36:17 -0700
+Message-ID: <20080602223617.GO30402@sequoia.sous-sol.org>
+References: <482DCF52.6030307@awtrey.com>
+	<20080519000810.GA11313@codemonkey.org.uk>
+	<1211279939.21269.403.camel@queen.suse.de>
+	<48341AB8.3090401@awtrey.com>
+	<1211375286.29901.7.camel@queen.suse.de>
+	<483443BE.9000002@awtrey.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 Content-Disposition: inline
+In-Reply-To: <483443BE.9000002@awtrey.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -16,30 +25,51 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="macroman"
-To: cpufreq@lists.linux.org.uk
+To: "Anthony L. Awtrey" <tony@awtrey.com>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk, Greg KH <gregkh@suse.de>, Stable <Stable@kernel.org>
 
-SSBoZXZlIHBvYmxlbSB3aXRoIGNwdWZyZXEgb24gdGhlIHNlY29uZCBwcm9jZXNzb3IgY29yZS4g
-TXkgbm90ZWJvb2sgTTEzMzAKd2l0aCBwcm9jZXNzb3IgaW50ZWwgY29yZSAyIGR1byBUNzI1MCBh
-bmQgbXkgT1MgRmVkb3JhIDguIFdoZW4gbXkgbm90ZWJvb2sKYm9vdCB3b3JrIGNwdWZyZXEgb24g
-dHdvIHByb2Nlc3NvciBjb3JlcyBhZnRlciBzdXNwZW5kIGNwdWZyZXEgd29yayBvbmx5IG9uCmZp
-cnN0IHByb2Nlc3NvciBjb3JlLgoKQmVmb3JlIHN1c3BlbmQKCmxzIC1sYSAvc3lzL2RldmljZXMv
-c3lzdGVtL2NwdS9jcHUxLwoKZHJ3eHIteHIteCA1IHJvb3Qgcm9vdCAgICAwIOnAziAgMiAyMDoz
-OCAuCmRyd3hyLXhyLXggNSByb290IHJvb3QgICAgMCDpwM4gIDIgMjA6MzggLi4KZHJ3eHIteHIt
-eCA1IHJvb3Qgcm9vdCAgICAwIOnAziAgMiAyMTozOCBjYWNoZQpscnd4cnd4cnd4IDEgcm9vdCBy
-b290ICAgIDAg6cDOICAyIDIwOjM4IGNwdWZyZXEgLT4KLi4vLi4vLi4vLi4vZGV2aWNlcy9zeXN0
-ZW0vY3B1L2NwdTAvY3B1ZnJlcQpkcnd4ci14ci14IDUgcm9vdCByb290ICAgIDAg6cDOICAyIDIx
-OjM4IGNwdWlkbGUKLXItLS0tLS0tLSAxIHJvb3Qgcm9vdCA0MDk2IOnAziAgMiAyMTozOCBjcmFz
-aF9ub3Rlcwotcnctci0tci0tIDEgcm9vdCByb290IDQwOTYg6cDOICAyIDIxOjM4IG9ubGluZQpk
-cnd4ci14ci14IDIgcm9vdCByb290ICAgIDAg6cDOICAyIDIxOjM4IHRvcG9sb2d5CgoKQWZ0ZXIg
-c3VzcGVuZAoKbHMgLWxhIC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTEvCgpkcnd4ci14ci14
-IDUgcm9vdCByb290ICAgIDAg6cDOICAyIDIwOjM4IC4KZHJ3eHIteHIteCA1IHJvb3Qgcm9vdCAg
-ICAwIOnAziAgMiAyMDozOCAuLgpkcnd4ci14ci14IDUgcm9vdCByb290ICAgIDAg6cDOICAyIDIx
-OjM4IGNhY2hlCmRyd3hyLXhyLXggNSByb290IHJvb3QgICAgMCDpwM4gIDIgMjE6MzggY3B1aWRs
-ZQotci0tLS0tLS0tIDEgcm9vdCByb290IDQwOTYg6cDOICAyIDIxOjM4IGNyYXNoX25vdGVzCi1y
-dy1yLS1yLS0gMSByb290IHJvb3QgNDA5NiDpwM4gIDIgMjE6Mzggb25saW5lCmRyd3hyLXhyLXgg
-MiByb290IHJvb3QgICAgMCDpwM4gIDIgMjE6MzggdG9wb2xvZ3kKCldoeSBhZnRlciBzdXNwZW5k
-IGdvbmUgc3ltYm9saWMgbGluaz8gVGhhbmtzIGluIGFkdmFuY2UgYW5kIHNvcnJ5IGZvciBteQpF
-bmdsaXNoLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpD
-cHVmcmVxIG1haWxpbmcgbGlzdApDcHVmcmVxQGxpc3RzLmxpbnV4Lm9yZy51awpodHRwOi8vbGlz
-dHMubGludXgub3JnLnVrL21haWxtYW4vbGlzdGluZm8vY3B1ZnJlcQo=
+* Anthony L. Awtrey (tony@awtrey.com) wrote:
+> On 05/21/2008 09:08 AM, Thomas Renninger wrote:
+> > commit e56a727b023d40d1adf660168883f30f2e6abe0a
+> > Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > Date:   Mon Apr 28 15:13:43 2008 -0400
+> > 
+> >     [CPUFREQ] Make acpi-cpufreq more robust against BIOS freq changes behind our back.
+> >     
+> >     We checked the hardware freq with OS cached freq value in get_cur_freqon_cpu().
+> >     
+> >     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> >     Signed-off-by: Thomas Renninger <trenn@suse.de>
+> >     Signed-off-by: Dave Jones <davej@redhat.com>
+> > 
+> > diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > index e2d870d..8db8f73 100644
+> > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > @@ -339,6 +339,7 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+> >  {
+> >  	struct acpi_cpufreq_data *data = per_cpu(drv_data, cpu);
+> >  	unsigned int freq;
+> > +	unsigned int cached_freq;
+> >  
+> >  	dprintk("get_cur_freq_on_cpu (%d)\n", cpu);
+> >  
+> > @@ -347,7 +348,16 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+> >  		return 0;
+> >  	}
+> >  
+> > +	cached_freq = data->freq_table[data->acpi_data->state].frequency;
+> >  	freq = extract_freq(get_cur_val(&cpumask_of_cpu(cpu)), data);
+                                       -^-
+This does not apply cleanly to 2.6.25.4 (doesn't have commit: fc0e4748).
+
+> I worked! This patch applied to 2.6.25.4 fixed the CPU stepping problem 
+> on the Panasonic CF-18 (Pentium M) I was having.
+
+I suppose you manually applied the patch?
+
+Anyway, I backported and will add to -stable, please holler if this is
+wrong.
+
+thanks,
+-chris
