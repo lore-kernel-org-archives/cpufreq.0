@@ -1,13 +1,11 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9851] cpufreq is not works with Intel Celeron 420
-Date: Mon,  2 Jun 2008 08:32:03 -0700 (PDT)
-Message-ID: <20080602153203.EDDB1108048@picon.linux-foundation.org>
-References: <bug-9851-3570@http.bugzilla.kernel.org/>
+From: "Anatoliy Guskov" <anatoliy.guskov@gmail.com>
+Subject: cpufreq not work on cpu1 after suspend
+Date: Mon, 2 Jun 2008 21:56:21 +0300
+Message-ID: <c55d8bf0806021156w5cf35033n2a0c04f5f1539ffd@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9851-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,27 +16,30 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+Content-Type: text/plain; charset="macroman"
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9851
-
-
-protasnb@gmail.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com
-
-
-
-
-------- Comment #1 from protasnb@gmail.com  2008-06-02 08:32 -------
-Dmitry,
-Can you provide dmesg and dmidecode with the failing processor?
-Thanks.
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+SSBoZXZlIHBvYmxlbSB3aXRoIGNwdWZyZXEgb24gdGhlIHNlY29uZCBwcm9jZXNzb3IgY29yZS4g
+TXkgbm90ZWJvb2sgTTEzMzAKd2l0aCBwcm9jZXNzb3IgaW50ZWwgY29yZSAyIGR1byBUNzI1MCBh
+bmQgbXkgT1MgRmVkb3JhIDguIFdoZW4gbXkgbm90ZWJvb2sKYm9vdCB3b3JrIGNwdWZyZXEgb24g
+dHdvIHByb2Nlc3NvciBjb3JlcyBhZnRlciBzdXNwZW5kIGNwdWZyZXEgd29yayBvbmx5IG9uCmZp
+cnN0IHByb2Nlc3NvciBjb3JlLgoKQmVmb3JlIHN1c3BlbmQKCmxzIC1sYSAvc3lzL2RldmljZXMv
+c3lzdGVtL2NwdS9jcHUxLwoKZHJ3eHIteHIteCA1IHJvb3Qgcm9vdCAgICAwIOnAziAgMiAyMDoz
+OCAuCmRyd3hyLXhyLXggNSByb290IHJvb3QgICAgMCDpwM4gIDIgMjA6MzggLi4KZHJ3eHIteHIt
+eCA1IHJvb3Qgcm9vdCAgICAwIOnAziAgMiAyMTozOCBjYWNoZQpscnd4cnd4cnd4IDEgcm9vdCBy
+b290ICAgIDAg6cDOICAyIDIwOjM4IGNwdWZyZXEgLT4KLi4vLi4vLi4vLi4vZGV2aWNlcy9zeXN0
+ZW0vY3B1L2NwdTAvY3B1ZnJlcQpkcnd4ci14ci14IDUgcm9vdCByb290ICAgIDAg6cDOICAyIDIx
+OjM4IGNwdWlkbGUKLXItLS0tLS0tLSAxIHJvb3Qgcm9vdCA0MDk2IOnAziAgMiAyMTozOCBjcmFz
+aF9ub3Rlcwotcnctci0tci0tIDEgcm9vdCByb290IDQwOTYg6cDOICAyIDIxOjM4IG9ubGluZQpk
+cnd4ci14ci14IDIgcm9vdCByb290ICAgIDAg6cDOICAyIDIxOjM4IHRvcG9sb2d5CgoKQWZ0ZXIg
+c3VzcGVuZAoKbHMgLWxhIC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTEvCgpkcnd4ci14ci14
+IDUgcm9vdCByb290ICAgIDAg6cDOICAyIDIwOjM4IC4KZHJ3eHIteHIteCA1IHJvb3Qgcm9vdCAg
+ICAwIOnAziAgMiAyMDozOCAuLgpkcnd4ci14ci14IDUgcm9vdCByb290ICAgIDAg6cDOICAyIDIx
+OjM4IGNhY2hlCmRyd3hyLXhyLXggNSByb290IHJvb3QgICAgMCDpwM4gIDIgMjE6MzggY3B1aWRs
+ZQotci0tLS0tLS0tIDEgcm9vdCByb290IDQwOTYg6cDOICAyIDIxOjM4IGNyYXNoX25vdGVzCi1y
+dy1yLS1yLS0gMSByb290IHJvb3QgNDA5NiDpwM4gIDIgMjE6Mzggb25saW5lCmRyd3hyLXhyLXgg
+MiByb290IHJvb3QgICAgMCDpwM4gIDIgMjE6MzggdG9wb2xvZ3kKCldoeSBhZnRlciBzdXNwZW5k
+IGdvbmUgc3ltYm9saWMgbGluaz8gVGhhbmtzIGluIGFkdmFuY2UgYW5kIHNvcnJ5IGZvciBteQpF
+bmdsaXNoLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpD
+cHVmcmVxIG1haWxpbmcgbGlzdApDcHVmcmVxQGxpc3RzLmxpbnV4Lm9yZy51awpodHRwOi8vbGlz
+dHMubGludXgub3JnLnVrL21haWxtYW4vbGlzdGluZm8vY3B1ZnJlcQo=
