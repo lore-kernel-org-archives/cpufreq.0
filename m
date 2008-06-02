@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10055] conservative governor doesn't increase frequency,
 	just decrease. powernow-k7
-Date: Sun,  1 Jun 2008 16:57:50 -0700 (PDT)
-Message-ID: <20080601235750.9A95911D108@picon.linux-foundation.org>
+Date: Sun,  1 Jun 2008 17:19:25 -0700 (PDT)
+Message-ID: <20080602001925.8F38D11D10A@picon.linux-foundation.org>
 References: <bug-10055-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,20 +24,12 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10055
 
 
-protasnb@gmail.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |protasnb@gmail.com
 
 
 
-
-------- Comment #4 from protasnb@gmail.com  2008-06-01 16:57 -------
-Eric, is this still a problem with current kernel?
-If so, you can try enabling CPU_FREQ_DEBUG in the config and either boot with
-cpufreq.debug=X or load cpufreq with debug=X parameter, where X is 1(core)
-2(driver) or 4(governor) debug.
+------- Comment #5 from alex-kernel@digriz.org.uk  2008-06-01 17:19 -------
+Could you try the patch on:
+http://bugzilla.kernel.org/show_bug.cgi?id=8081
 
 
 -- 
