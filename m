@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue,  3 Jun 2008 12:12:37 -0700 (PDT)
-Message-ID: <20080603191237.A04A310805E@picon.linux-foundation.org>
+Date: Tue,  3 Jun 2008 12:21:28 -0700 (PDT)
+Message-ID: <20080603192128.398BF11D107@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,10 +26,9 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #51 from martin-kernel-bugzilla@earth.li  2008-06-03 12:12 -------
-Created an attachment (id=16384)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=16384&action=view)
-dmidecode output
+------- Comment #52 from martin-kernel-bugzilla@earth.li  2008-06-03 12:21 -------
+See previous attachments, and I will see what I can do about figuring out why
+Windows works.
 
 
 -- 
