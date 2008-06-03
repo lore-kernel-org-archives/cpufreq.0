@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue,  3 Jun 2008 10:29:37 -0700 (PDT)
-Message-ID: <20080603172937.E6A8211D107@picon.linux-foundation.org>
+Date: Tue,  3 Jun 2008 10:55:58 -0700 (PDT)
+Message-ID: <20080603175558.33DFF11D108@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,86 +23,32 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
-len.brown@intel.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
 
 
 
+------- Comment #47 from mjg59-kernel@srcf.ucam.org  2008-06-03 10:55 -------
+Len,
 
-------- Comment #46 from len.brown@intel.com  2008-06-03 10:29 -------
-Consider the cause of bug 8842.
-The BIOS exported a bogus _PSV of 50C.
-Linux polled the thermal zone and dutifully throttled the
-processor when it hit 50C, severely impacting
-performance under normal use.
+if there were any significant body of hardware where infrequently reading the
+temperature caused problems, I suspect we'd have heard about it. However, this
+is a straightforward patch with no further dependencies - it's trivial to back
+it out if it turns out it does break things.
 
-Why did windows not run into this problem?
-Because Windows doesn't poll, and thus never
-exposed a very obvious BIOS bug.
+Our hardware usage profile is always going to diverge from Windows to some
+extent. Where that results in undesirable behaviour, the obvious fix is to
+modify our behaviour to be more like Windows. That doesn't mean that we should
+constrain our functionality by refusing to diverge from Windows' behaviour even
+if we have no reason to believe it would break anything! The issue with bug
+#8842 was not the polling per se, but the ridiculously low passive cooling
+point. Nobody has yet demonstrated a system where polling would genuinely cause
+problems, but we have a demonstrated case where this code helps existing users. 
 
-If Linux polls, it exposes itself to an area
-of BIOS and EC which was NOT VALIDATED ON WINDOWS.
-
-Whelp, the reality today is that in the horizontal PC
-computer industry, if it isn't validated on Windows,
-it isn't validated at all.
-
-So the stated goal of the Linux/ACPI sub-system is to
-take the pragmatic course of making systems work
-by attempting to exercise the validated paths through
-their BIOS/EC/firmware rather than the non-validated paths.
-However, any other strategy would be wildly impractical.
-
-That is why Linux must NOT enable
-polling by default on any system which hasn't
-been validated to handle it properly.
-
-So I'll be delighted to accept a patch that recognizes
-a broken machine via DMI and invokes a workaround --
--- as long as it doesn't hurt other instances of
-the same machine that do not have the problem.
-The workaround must not be deployed for all machines --
-even if the profile where it is applied seems narrow,
-it would apply to thousands of models.
-
-Re: making Linux smarter about thermals.
-I agree with this desire, and we implemented the generic thermal I/F
-was  explicitly to help out with this.
-It applies to both ACPI and non-ACPI systems.
-However, you must realize that on the population of
-ACPI systems in the marketplace, there are some
-significant practical constraints on the ability of the OS
-to do something other than what ACPI intends.
-
-In particular, the ACPI BIOS owns the trip points --
-Linux does not.  The ACPI EC decides if and when
-to send an event to the OS.  If we change what
-Linux thinks is a trip point, that doesn't mean
-that the EC will send us an event when the temperature
-crosses it.  Further, the ACPI BIOS has the right to re-define
-trip points at run time, and to implement hysteresis it often does this.
-On some machines the EC will send us interesting
-temperature change events, and on some machines it will not.
-ie. the phantom _PSV scheme may work on some systems
-and not on others -- it would require polling to make sure
-we notice the temperature change;
-but polling is itself problematic per above.
-
-Martin,
-
-> The system works okay in Windows.
-
-Can you figure out what it is doing?
-Are there any Dell or platforms specific drivers present?
-Is it throttling the processor when it gets hot?
-
-Please attach the output from this command when the machine is warm:
-grep . /sys/firmware/acpi/interrupts/*
-It will show us which GPEs are firing and perhaps give some insight
-into a DSDT which is apparently full of SMI abuse.
+In the long run we'll want functionality like this for non-broken hardware
+anyway (datacentre thermal constraints, for instance), and putting it in the
+kernel is significantly safer than leaving it sitting in userspace with unknown
+latency requirements. It's something that could be done at the generic thermal
+class layer instead, but I'd prefer for that to mature further before moving it
+there.
 
 
 -- 
