@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue,  3 Jun 2008 11:40:46 -0700 (PDT)
-Message-ID: <20080603184046.86B7A11D108@picon.linux-foundation.org>
+Date: Tue,  3 Jun 2008 12:00:28 -0700 (PDT)
+Message-ID: <20080603190028.2725210805E@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,29 +26,21 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #48 from len.brown@intel.com  2008-06-03 11:40 -------
-Phantom ACPI _PSV trip points are not how datacenter
-thermal constraints will be managed.  In datacenters,
-Node Manager informs the OS to stay within a maximum
-P-state, and if that is insufficient, then it resorts
-to a maximum T-state.  This mechanism is already in place
-and already working.  And it is not dependent on Node Manager,
-that is just an example of a commercial implementation.
+------- Comment #49 from mjg59-kernel@srcf.ucam.org  2008-06-03 12:00 -------
+Your description of node manager is effectively identical to using a fake _PSV
+- it's just got a wider range of temperature information available to it. In
+either case you're polling the temperature sensors and limiting P states if the
+temperature rises above a certain point and is trending upwards. Implementing
+this in-kernel in a generic way would facilitate both, and avoid the issues
+with hadling it in userspace (such as OOM situations allowing your machine to
+leave its thermal envelope - the current implemetation of the generic thermal
+class even disables in-kernel handling of critical shutdown temperatures!)
 
-The object of this bug report is to work-around a single instance
-of a single 3-year-old notebook that has broken thermals --
-while not breaking any other systems.
-
-If we could figure out how Windows copes with this box
-in the process, that might also be useful in pointing
-out a gap in the Linux implementation.
-
-So lets get this sighting dealt with and if we find a torrent
-of systems such the the DMI list becomes large, then it makes
-sense to consider broader deployment.
-
-Martin,
-Please attach the output from dmidecode.
+But this is not purely an issue with a single machine. Distribution bugzillas
+have multiple entries from users facing this issue, on a range of hardware
+platforms. If the sole objection to this is "Windows doesn't behave like this,
+and hypothetical hardware might not like it" then I'd rather we went with it
+until an example of such hardware is shown to exist.
 
 
 -- 
