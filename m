@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue,  3 Jun 2008 10:55:58 -0700 (PDT)
-Message-ID: <20080603175558.33DFF11D108@picon.linux-foundation.org>
+Date: Tue,  3 Jun 2008 11:40:46 -0700 (PDT)
+Message-ID: <20080603184046.86B7A11D108@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,29 +26,29 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #47 from mjg59-kernel@srcf.ucam.org  2008-06-03 10:55 -------
-Len,
+------- Comment #48 from len.brown@intel.com  2008-06-03 11:40 -------
+Phantom ACPI _PSV trip points are not how datacenter
+thermal constraints will be managed.  In datacenters,
+Node Manager informs the OS to stay within a maximum
+P-state, and if that is insufficient, then it resorts
+to a maximum T-state.  This mechanism is already in place
+and already working.  And it is not dependent on Node Manager,
+that is just an example of a commercial implementation.
 
-if there were any significant body of hardware where infrequently reading the
-temperature caused problems, I suspect we'd have heard about it. However, this
-is a straightforward patch with no further dependencies - it's trivial to back
-it out if it turns out it does break things.
+The object of this bug report is to work-around a single instance
+of a single 3-year-old notebook that has broken thermals --
+while not breaking any other systems.
 
-Our hardware usage profile is always going to diverge from Windows to some
-extent. Where that results in undesirable behaviour, the obvious fix is to
-modify our behaviour to be more like Windows. That doesn't mean that we should
-constrain our functionality by refusing to diverge from Windows' behaviour even
-if we have no reason to believe it would break anything! The issue with bug
-#8842 was not the polling per se, but the ridiculously low passive cooling
-point. Nobody has yet demonstrated a system where polling would genuinely cause
-problems, but we have a demonstrated case where this code helps existing users. 
+If we could figure out how Windows copes with this box
+in the process, that might also be useful in pointing
+out a gap in the Linux implementation.
 
-In the long run we'll want functionality like this for non-broken hardware
-anyway (datacentre thermal constraints, for instance), and putting it in the
-kernel is significantly safer than leaving it sitting in userspace with unknown
-latency requirements. It's something that could be done at the generic thermal
-class layer instead, but I'd prefer for that to mature further before moving it
-there.
+So lets get this sighting dealt with and if we find a torrent
+of systems such the the DMI list becomes large, then it makes
+sense to consider broader deployment.
+
+Martin,
+Please attach the output from dmidecode.
 
 
 -- 
