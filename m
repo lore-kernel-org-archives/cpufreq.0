@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue,  3 Jun 2008 12:21:28 -0700 (PDT)
-Message-ID: <20080603192128.398BF11D107@picon.linux-foundation.org>
+Date: Tue,  3 Jun 2008 18:09:58 -0700 (PDT)
+Message-ID: <20080604010958.E8EF3108065@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,9 +26,14 @@ http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
 
-------- Comment #52 from martin-kernel-bugzilla@earth.li  2008-06-03 12:21 -------
-See previous attachments, and I will see what I can do about figuring out why
-Windows works.
+------- Comment #53 from rui.zhang@intel.com  2008-06-03 18:09 -------
+(In reply to comment #49)
+> the current implemetation of the generic thermal
+> class even disables in-kernel handling of critical shutdown temperatures!
+> 
+Hah, after talk with thomas, the guy who works on the menlow thermal user
+application, I'm about to send out the patch to fix this.
+i.e. ACPI thermal driver will handle critical shutdown even in "user" mode.
 
 
 -- 
