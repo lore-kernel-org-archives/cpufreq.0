@@ -1,42 +1,50 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 9745] CPU is waking up too often
-Date: Thu,  5 Jun 2008 08:07:01 -0700 (PDT)
-Message-ID: <20080605150701.67DF410805F@picon.linux-foundation.org>
-References: <bug-9745-3570@http.bugzilla.kernel.org/>
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: bug? acpi p-state + ondemand keeps dropping max freq
+Date: Thu, 05 Jun 2008 15:30:56 -0700
+Message-ID: <48486920.4040006@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-9745-3570@http.bugzilla.kernel.org/>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9745
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk, Dave Jones <davej@codemonkey.org.uk>
 
 
-davej@codemonkey.org.uk changed:
+I've consistently experienced the following bizarre problem since 2.6.20, all the
+way up to 2.6.25.3 (regressed yesterday and each of these kernels exposes this
+behaviour):
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-         AssignedTo|cpufreq@www.linux.org.uk    |platform_i386@kernel-
-                   |                            |bugs.osdl.org
-          Component|cpufreq                     |i386
-            Product|Power Management            |Platform Specific/Hardware
-
+/sys/devices/system/cpu/cpu0/cpufreq # grep . *
+affected_cpus:0
+cpuinfo_cur_freq:800000
+cpuinfo_max_freq:1866000
+cpuinfo_min_freq:800000
+scaling_available_frequencies:1866000 1600000 1333000 1066000 800000
+scaling_available_governors:ondemand performance
+scaling_cur_freq:800000
+scaling_driver:acpi-cpufreq
+scaling_governor:ondemand
+scaling_max_freq:800000
+scaling_min_freq:800000
 
 
 
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
-You are the assignee for the bug, or are watching the assignee.
+Notice that scaling_mx_freq dropped down to the lowest possible value and as such
+my CPU is only working at 800MHz. At boot time this field properly displays
+1866MHz and everything works OK. After a certain period (?) this value drops down
+and I cannot manually elevate it back to the normal level:
+
+# echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+800000
+# echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+800000
+
+
+This renders my Dothan to utterly poor speeds. (standard T43)
+
+performance cpufreq governor makes no difference - I still can't change the
+frequency upper/lower values.
+
+Auke
