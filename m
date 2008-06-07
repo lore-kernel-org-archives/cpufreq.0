@@ -1,61 +1,76 @@
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+From: Len Brown <lenb@kernel.org>
 Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-Date: Fri, 06 Jun 2008 16:47:38 -0300
-Message-ID: <1212781658.28267.1257170963@webmail.messagingengine.com>
+Date: Fri, 06 Jun 2008 22:46:17 -0400 (EDT)
+Message-ID: <alpine.LFD.1.10.0806062240410.3110@localhost.localdomain>
 References: <48486920.4040006@intel.com>
- <20080606041358.GA3457@khazad-dum.debian.net>
- <48496714.6030005@intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <48496714.6030005@intel.com>
+In-reply-to: <48486920.4040006@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk, Dave Jones <davej@codemonkey.org.uk>
+Cc: linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dave Jones <davej@codemonkey.org.uk>, "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk
 
-On Fri, 06 Jun 2008 09:34:28 -0700, "Kok, Auke" <auke-jan.h.kok@intel.com> said:
-> Henrique de Moraes Holschuh wrote:
-> > On Thu, 05 Jun 2008, Kok, Auke wrote:
-> >> This renders my Dothan to utterly poor speeds. (standard T43)
-> > 
-> > Which ThinkPad T43 model and BIOS revision?
-> > 
-> > I have a T43 2687DDU with the latest BIOS, and I have never seen
-> > anything like that happening.  Is it overheating or something like that?
+
+
+On Thu, 5 Jun 2008, Kok, Auke wrote:
+
 > 
-> T43 2668NU3 Version: 1YET59WW (1.24 )
-
-Older version of the planar card, but should be close enough to the
-2687 I have...
-
-Your BIOS is horribly old, and your EC firmware is very old too.  You
-really should upgrade to BIOS 1.29 (1YET65WW) and EC 1.06.  Lenovo has
-CDs you can use to upgrade even without Windows.  thinkwiki.org has the 
-links to the support pages with the downloads.
-
-After you upgrade, go into the BIOS configuration screen, and set everything
-related to Speedstep and performance management to highest performance.  You
-can let the BIOS do BUS power management, and you should let it do screen
-brightness power management, but don't let it mess with the processor speed
-or the disks.   It can have bad interactions with Linux power management.
-
-> hardly overheating:
+> I've consistently experienced the following bizarre problem since 2.6.20, all the
+> way up to 2.6.25.3 (regressed yesterday and each of these kernels exposes this
+> behaviour):
 > 
->   Thermal zone 1 : ok, 49 C
+> /sys/devices/system/cpu/cpu0/cpufreq # grep . *
+> affected_cpus:0
+> cpuinfo_cur_freq:800000
+> cpuinfo_max_freq:1866000
+> cpuinfo_min_freq:800000
+> scaling_available_frequencies:1866000 1600000 1333000 1066000 800000
+> scaling_available_governors:ondemand performance
+> scaling_cur_freq:800000
+> scaling_driver:acpi-cpufreq
+> scaling_governor:ondemand
+> scaling_max_freq:800000
+> scaling_min_freq:800000
+> 
+> 
+> 
+> Notice that scaling_mx_freq dropped down to the lowest possible value and as such
+> my CPU is only working at 800MHz. At boot time this field properly displays
+> 1866MHz and everything works OK. After a certain period (?) this value drops down
+> and I cannot manually elevate it back to the normal level:
+> 
+> # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+> 800000
+> # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+> 800000
+> 
+> 
+> This renders my Dothan to utterly poor speeds. (standard T43)
+> 
+> performance cpufreq governor makes no difference - I still can't change the
+> frequency upper/lower values.
 
-It is probably a bad interaction from SMBIOS power management with the native
-Linux power management.
+could be two causes:
+1. thermal
+2. user space
 
-BTW: install thinkpad-acpi and lm-sensors 3.0, and you will be able to see the
-11 thermal zones the EC controls in a T43.
+for #1....
+
+watch grep . /proc/acpi/thermal_zone/THM*/*
+and see if anythign is climbing
+you can build w/o CONFIG_ACPI_THERMAL
+and see if they symptom goes away -- for that
+is the module which would force cpufreq to Pn.
 
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+for #2...
+
+see if it happens in single user mode without
+hal or distro daemons running.
+
+cheers,
+-Len
 
