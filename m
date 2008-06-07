@@ -1,23 +1,20 @@
-From: Len Brown <lenb@kernel.org>
+From: Pavel Machek <pavel@suse.cz>
 Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-Date: Fri, 06 Jun 2008 22:46:17 -0400 (EDT)
-Message-ID: <alpine.LFD.1.10.0806062240410.3110@localhost.localdomain>
-References: <48486920.4040006@intel.com>
+Date: Sat, 7 Jun 2008 23:39:18 +0200
+Message-ID: <20080607213918.GC1746@elf.ucw.cz>
+References: <20080606140846.GA9580@ucw.cz>
 Mime-Version: 1.0
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-reply-to: <48486920.4040006@intel.com>
+Content-Disposition: inline
+In-Reply-To: <20080606140846.GA9580@ucw.cz>
 Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dave Jones <davej@codemonkey.org.uk>, "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk
+To: pavel@suse.cz, auke-jan.h.kok@intel.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, len.brown@intel.com, cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
 
+Hi!
 
-
-On Thu, 5 Jun 2008, Kok, Auke wrote:
-
-> 
 > I've consistently experienced the following bizarre problem since 2.6.20, all the
 > way up to 2.6.25.3 (regressed yesterday and each of these kernels exposes this
 > behaviour):
@@ -53,24 +50,12 @@ On Thu, 5 Jun 2008, Kok, Auke wrote:
 > performance cpufreq governor makes no difference - I still can't change the
 > frequency upper/lower values.
 
-could be two causes:
-1. thermal
-2. user space
+Hmm, I have similar problem in Novell bugzilla, on very different hw:
 
-for #1....
+https://bugzilla.novell.com/show_bug.cgi?id=396311
 
-watch grep . /proc/acpi/thermal_zone/THM*/*
-and see if anythign is climbing
-you can build w/o CONFIG_ACPI_THERMAL
-and see if they symptom goes away -- for that
-is the module which would force cpufreq to Pn.
+								Pavel
 
-
-for #2...
-
-see if it happens in single user mode without
-hal or distro daemons running.
-
-cheers,
--Len
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
