@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 9703] T5500 1.66GHz: kernel reports bogus available frequencies
 	and downscales only to 996MHz
-Date: Wed, 11 Jun 2008 09:27:42 -0700 (PDT)
-Message-ID: <20080611162742.D994511D109@picon.linux-foundation.org>
+Date: Wed, 11 Jun 2008 09:30:49 -0700 (PDT)
+Message-ID: <20080611163049.E9E2511D10C@picon.linux-foundation.org>
 References: <bug-9703-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,10 +27,18 @@ http://bugzilla.kernel.org/show_bug.cgi?id=9703
 
 
 
-------- Comment #2 from olel@ans.pl  2008-06-11 09:27 -------
-Created an attachment (id=16457)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=16457&action=view)
-acpidump
+------- Comment #3 from olel@ans.pl  2008-06-11 09:30 -------
+(In reply to comment #1)
+> Krzysztof, have you had better luck with recent kernels?
+
+Hard to tell as both 2.6.25 and 2.6.26-rc5 hang during a kernel boot. I need to
+create new bugreports to solve this problem before I'll be able to check
+cpufreq on that kernels.
+
+> If so, you should
+> probably provide acpidump from your system.
+
+attached
 
 
 -- 
