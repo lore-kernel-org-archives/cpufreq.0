@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Wed, 11 Jun 2008 09:56:56 -0700 (PDT)
-Message-ID: <20080611165657.0164711D10C@picon.linux-foundation.org>
+Date: Thu, 12 Jun 2008 13:14:58 -0700 (PDT)
+Message-ID: <20080612201458.EFE78108060@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,26 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
-mjg59-kernel@srcf.ucam.org changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-  Attachment #16166|0                           |1
-        is obsolete|                            |
-  Attachment #16227|0                           |1
-        is obsolete|                            |
 
 
 
-
-------- Comment #54 from mjg59-kernel@srcf.ucam.org  2008-06-11 09:56 -------
-Created an attachment (id=16459)
- --> (http://bugzilla.kernel.org/attachment.cgi?id=16459&action=view)
-Implement management in the generic thermal class
-
-Martin, any chance you can give this a go? It works fine here, keeping the
-temperature at the defined level. It uses the generic thermal class rather than
-the somewhat hacky approach of doing it in the ACPI layer.
+------- Comment #55 from martin-kernel-bugzilla@earth.li  2008-06-12 13:14 -------
+I've just tested the patch in comment #54 on 2.6.26-rc5. I had to add an
+#include <linux/workqueue.h> to the patched thermal_sys.c to build it. It works
+just the same as the previous ACPI patch, i.e. perfectly.
 
 
 -- 
