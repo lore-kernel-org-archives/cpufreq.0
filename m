@@ -1,10 +1,10 @@
-From: "Joseph Xu" <josephzxu@gmail.com>
-Subject: problem in sysfs_set_policy
-Date: Sun, 22 Jun 2008 22:38:09 -0400
-Message-ID: <bc342bf90806221938k34788a57v991396c371bf4943@mail.gmail.com>
+From: bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10968] New: p4-clockmod reports false frequency
+Date: Mon, 23 Jun 2008 10:11:14 -0700 (PDT)
+Message-ID: <bug-10968-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_2599_31732319.1214188689276"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -16,66 +16,75 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
 
-------=_Part_2599_31732319.1214188689276
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+http://bugzilla.kernel.org/show_bug.cgi?id=10968
 
-Hi everyone:
+           Summary: p4-clockmod reports false frequency
+           Product: Power Management
+           Version: 2.5
+     KernelVersion: 2.6.25.7
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@www.linux.org.uk
+        ReportedBy: ott@enolink.de
 
-I ran into a bug using cpufreqd, which utilizes cpufrequtils to set
-the CPU frequency. In particular, if you switch from an old policy
-whose minimum frequency is greater than the new policy's max
-frequency, writing the new max value to cpufreq/scaling_max_freq in
-sysfs_set_policy will fail on my computer because it doesn't allow max
-values that are lower than min values at any time. I don't know if
-other people have run into this problem before, but I don't see any
-fixes in the new release, so I've made a small patch that reads the
-minimum value from file first and checks if the new max is less than
-the old min. If it is, the patched version will write the new min
-value before the new max value, and this solves the problem.
 
-Joseph
+# uname -a
+Linux hyperix 2.6.25.7 #2 Sat Jun 21 14:12:02 CEST 2008 i686 Intel(R)
+Pentium(R) 4 CPU 1.80GHz GenuineIntel GNU/Linux
+# cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 15
+model           : 1
+model name      : Intel(R) Pentium(R) 4 CPU 1.80GHz
+stepping        : 2
+cpu MHz         : 3650.000
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pebs bts
+bogomips        : 3603.33
+clflush size    : 64
 
-------=_Part_2599_31732319.1214188689276
-Content-Type: application/octet-stream; name=patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fhsgh9c10
-Content-Disposition: attachment; filename=patch
+# cpufreq-info 
+cpufrequtils 0.4: cpufreq-info (C) Dominik Brodowski 2004
+Report errors and bugs to linux@brodo.de, please.
+analyzing CPU 0:
+  driver: p4-clockmod
+  CPUs which need to switch frequency at the same time: 0
+  hardware limits: 3.65 GHz - 14.60 GHz
+  available frequency steps: 3.65 GHz, 5.48 GHz, 7.30 GHz, 9.13 GHz, 10.95 GHz,
+12.78 GHz, 14.60 GHz
+  available cpufreq governors: ondemand, userspace
+  current policy: frequency should be within 3.65 GHz and 14.60 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 5.48 GHz (asserted by call to hardware).
 
-LS0tIC4uLy4uL2NwdWZyZXF1dGlscy0wMDMvbGliL3N5c2ZzLmMJMjAwOC0wNS0yNSAwNzo0OToz
-MC4wMDAwMDAwMDAgLTA0MDAKKysrIHN5c2ZzLmMJMjAwOC0wNi0yMiAyMjoyNToxOS4wMDAwMDAw
-MDAgLTA0MDAKQEAgLTQ5NSw2ICs0OTUsOCBAQAogCWNoYXIgbWF4W1NZU0ZTX1BBVEhfTUFYXTsK
-IAljaGFyIGdvdltTWVNGU19QQVRIX01BWF07CiAJaW50IHJldDsKKyAgdW5zaWduZWQgbG9uZyBv
-bGRfbWluOworICBpbnQgd3JpdGVfbWF4X2ZpcnN0OwogCiAJaWYgKCFwb2xpY3kgfHwgIShwb2xp
-Y3ktPmdvdmVybm9yKSkKIAkJcmV0dXJuIC1FSU5WQUw7CkBAIC01MDgsMTQgKzUxMCwyNSBAQAog
-CXNucHJpbnRmKG1pbiwgU1lTRlNfUEFUSF9NQVgsICIlbHUiLCBwb2xpY3ktPm1pbik7CiAJc25w
-cmludGYobWF4LCBTWVNGU19QQVRIX01BWCwgIiVsdSIsIHBvbGljeS0+bWF4KTsKIAotCXJldCA9
-IHN5c2ZzX3dyaXRlX29uZV92YWx1ZShjcHUsIFdSSVRFX1NDQUxJTkdfTUFYX0ZSRVEsIG1heCwg
-c3RybGVuKG1heCkpOwotCWlmIChyZXQpCi0JCXJldHVybiByZXQ7CisgIG9sZF9taW4gPSBzeXNm
-c19nZXRfb25lX3ZhbHVlKGNwdSwgU0NBTElOR19NSU5fRlJFUSk7CisgIHdyaXRlX21heF9maXJz
-dCA9IChvbGRfbWluICYmIChwb2xpY3ktPm1heCA8IG9sZF9taW4pID8gMCA6IDEpOworCisgIGlm
-ICh3cml0ZV9tYXhfZmlyc3QpIHsKKyAgICByZXQgPSBzeXNmc193cml0ZV9vbmVfdmFsdWUoY3B1
-LCBXUklURV9TQ0FMSU5HX01BWF9GUkVRLCBtYXgsIHN0cmxlbihtYXgpKTsKKyAgICBpZiAocmV0
-KQorICAgICAgcmV0dXJuIHJldDsKKyAgfQogCiAJcmV0ID0gc3lzZnNfd3JpdGVfb25lX3ZhbHVl
-KGNwdSwgV1JJVEVfU0NBTElOR19NSU5fRlJFUSwgbWluLCBzdHJsZW4obWluKSk7CiAJaWYgKHJl
-dCkKIAkJcmV0dXJuIHJldDsKIAorICBpZiAoIXdyaXRlX21heF9maXJzdCkgeworICAgIHJldCA9
-IHN5c2ZzX3dyaXRlX29uZV92YWx1ZShjcHUsIFdSSVRFX1NDQUxJTkdfTUFYX0ZSRVEsIG1heCwg
-c3RybGVuKG1heCkpOworICAgIGlmIChyZXQpCisgICAgICByZXR1cm4gcmV0OworICB9CisKIAly
-ZXR1cm4gc3lzZnNfd3JpdGVfb25lX3ZhbHVlKGNwdSwgV1JJVEVfU0NBTElOR19HT1ZFUk5PUiwg
-Z292LCBzdHJsZW4oZ292KSk7CiB9CiAK
-------=_Part_2599_31732319.1214188689276
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Latest working kernel version: 2.6.23 (last version that I tried)
 
-_______________________________________________
-Cpufreq mailing list
-Cpufreq@lists.linux.org.uk
-http://lists.linux.org.uk/mailman/listinfo/cpufreq
+Any suggestions?
 
-------=_Part_2599_31732319.1214188689276--
+To me it seems that the bit shift width is incorrect. I had a similar problems
+years ago and fixed by adding a different bit shift width for Pentium 4 Model 0
+and 1.
 
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
