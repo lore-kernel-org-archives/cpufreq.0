@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10982] scaling_max_freq locked - Thinkpad T42
-Date: Wed, 25 Jun 2008 15:25:57 -0700 (PDT)
-Message-ID: <20080625222557.180DA108038@picon.linux-foundation.org>
+Date: Wed, 25 Jun 2008 15:32:19 -0700 (PDT)
+Message-ID: <20080625223220.052C5108035@picon.linux-foundation.org>
 References: <bug-10982-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,26 +23,18 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10982
 
 
-len.brown@intel.com changed:
+akpm@osdl.org changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |acpi-
-                   |                            |bugzilla@lists.sourceforge.n
-                   |                            |et
-             Status|NEW                         |NEEDINFO
-            Summary|scaling_max_freq locked     |scaling_max_freq locked -
-                   |                            |Thinkpad T42
+                 CC|                            |akpm@osdl.org
+         Regression|0                           |1
 
 
 
 
-------- Comment #1 from len.brown@intel.com  2008-06-25 15:25 -------
-Please boot with processor.ignore_ppc=1
-or
-# echo 1 > /sys/module/processor/parameters/ignore_ppc 
-
-and report if scaling_max_freq stops changing.
+------- Comment #2 from akpm@osdl.org  2008-06-25 15:32 -------
+I marked this as a regression.
 
 
 -- 
