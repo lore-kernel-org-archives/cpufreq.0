@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10658] thermal shutdown - Dell Precision M20, Latitude D610
-Date: Tue, 24 Jun 2008 07:21:54 -0700 (PDT)
-Message-ID: <20080624142154.E56BA108047@picon.linux-foundation.org>
+Date: Wed, 25 Jun 2008 06:58:12 -0700 (PDT)
+Message-ID: <20080625135812.C8A10108045@picon.linux-foundation.org>
 References: <bug-10658-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,26 +23,24 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10658
 
 
-martin-kernel-bugzilla@earth.li changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |NEW
 
 
 
+------- Comment #60 from trenn@suse.de  2008-06-25 06:58 -------
+> how is the machine violating the specs?
+The thermal zone must provide a sane _TZP Thermal Zone Polling and a passive
+cooling trip point to provide a proper thermal management.
+Ok, in strict sense they are not violating the spec here if the critical shut
+down is intended. But it is not.
 
-------- Comment #59 from martin-kernel-bugzilla@earth.li  2008-06-24 07:21 -------
-Thomas - just curious, how is the machine violating the specs? You said in
-comment #44 that having a critical trip point without a passive one was normal
-in "a lot laptops and most recent desktops"?
-
-I'd much rather see a generic solution to this than just a DMI special case for
-this machine. There are lots of similar reports in various forums and distro
-bugzillas, and the solutions people are using are messy userspace hacks.
-
-How do people feel about Matthew's approach in the comment #54 patch, of doing
-this in the generic thermal layer rather than in ACPI?
+> I'd much rather see a generic solution to this...
+I am all against compatibility to specific Microsoft OS bugs and workarounds.
+(This depends, say all workarounds that can be fixed with _OSI hooks).
+We will end up with double polling temp on a lot machines and punish those who
+are doing it right, e.g. HP sends thermal events. While Microsoft will fix
+their bug with their next OS Release or a Service Pack.
+But as I already said, I agree that thermal management is too important and a
+generic solution is also very appreciated from my side.
 
 
 -- 
