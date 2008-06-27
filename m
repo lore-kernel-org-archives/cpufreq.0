@@ -1,13 +1,11 @@
 From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10982] scaling_max_freq locked - Thinkpad T42
-Date: Thu, 26 Jun 2008 05:30:27 -0700 (PDT)
-Message-ID: <20080626123027.A62EA108045@picon.linux-foundation.org>
-References: <bug-10982-3570@http.bugzilla.kernel.org/>
+Subject: [Bug 10992] New: b44: hangs on resume if interface is up.
+Date: Thu, 26 Jun 2008 22:46:31 -0700 (PDT)
+Message-ID: <bug-10992-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10982-3570@http.bugzilla.kernel.org/>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -20,20 +18,34 @@ Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
 To: cpufreq@www.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10982
+http://bugzilla.kernel.org/show_bug.cgi?id=10992
+
+           Summary: b44: hangs on resume if interface is up.
+           Product: Power Management
+           Version: 2.5
+     KernelVersion: 2.6.26-rc8
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@www.linux.org.uk
+        ReportedBy: kirill@shutemov.name
+                CC: mb@bu3sch.de
 
 
+Earliest failing kernel version: 2.6.26-rc8
+Hardware Environment: laptop Dell XPS M1210, x86_64
+Problem Description:
 
+If interface is up on suspend, the system hangs on resume.
 
-
-------- Comment #4 from nicolas.vinot@gmail.com  2008-06-26 05:30 -------
-With ignore_ppc=1, no problem at all since my last boot.
-
-But this problem occures very randomly and in very differente cases (with hot
-or cold cpu, on heavy load or not, at the launch of screensaver...).
-
-So, not sure for the moment the problem is completely resolved with
-ignore_ppc=1, but in good way.
+Steps to reproduce:
+1. Up the interface.
+2. Suspend the system to RAM.
+3. Hangs on wake up.
 
 
 -- 
