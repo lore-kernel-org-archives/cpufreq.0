@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10992] b44: hangs on resume if interface is up.
-Date: Fri, 27 Jun 2008 03:02:01 -0700 (PDT)
-Message-ID: <20080627100201.1C925108061@picon.linux-foundation.org>
+Date: Fri, 27 Jun 2008 03:07:05 -0700 (PDT)
+Message-ID: <20080627100705.B9F30108009@picon.linux-foundation.org>
 References: <bug-10992-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,11 +23,13 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10992
 
 
-mb@bu3sch.de changed:
+bunk@kernel.org changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|mb@bu3sch.de                |
+         AssignedTo|cpufreq@www.linux.org.uk    |jgarzik@pobox.com
+          Component|cpufreq                     |Network
+            Product|Power Management            |Drivers
 
 
 
@@ -35,4 +37,5 @@ mb@bu3sch.de changed:
 -- 
 Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
+You are the assignee for the bug, or are watching the assignee.
 You are the assignee for the bug, or are watching the assignee.
