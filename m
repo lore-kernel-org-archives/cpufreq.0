@@ -1,14 +1,16 @@
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-Date: Tue, 8 Jul 2008 12:57:50 +0200
-Message-ID: <200807081257.51313.arekm@maven.pl>
-References: <1559428365.1484491213137657411.JavaMail.root@mail4.gatech.edu>
-	<1213366888.16101.226.camel@queen.suse.de>
+From: Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
+Date: Tue, 8 Jul 2008 11:27:28 -0400
+Message-ID: <20080708152728.GF4997@codemonkey.org.uk>
+References: <200807071702.31240.arnd@arndb.de>
+	<20080707213105.GD4997@codemonkey.org.uk>
+	<200807080843.43674.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1213366888.16101.226.camel@queen.suse.de>
 Content-Disposition: inline
+In-Reply-To: <200807080843.43674.arnd@arndb.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,57 +21,28 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-Content-Type: text/plain; charset="macroman"
-To: trenn@suse.de
-Cc: cpufreq@lists.linux.org.uk, "Beglin, Brad R" <brad.beglin@gatech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, cpufreq@lists.linux.org.uk, linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, cbe-oss-dev@ozlabs.org
 
-T24gRnJpZGF5IDEzIEp1bmUgMjAwOCwgVGhvbWFzIFJlbm5pbmdlciB3cm90ZToKPiBPbiBUdWUs
-IDIwMDgtMDYtMTAgYXQgMTg6NDAgLTA0MDAsIEJlZ2xpbiwgQnJhZCBSIHdyb3RlOgo+ID4gPkkg
-YW0gYWxzbyB1bmFibGUgdG8gY2hhbmdlIG15IG1heCBzY2FsaW5nIGZyZXF1ZW5jeSBvbiBteSBU
-aGlua3BhZCBUNjEuCj4gPiA+SW50ZXJlc3RpbmdseSBlbm91Z2gsIEkgY2FuIGNoYW5nZSB0aGUg
-ZnJlcXVlbmN5IGFzIGxvbmcgYXMgdGhlIG5ldwo+ID4gPiB2YWx1ZSBpcyBsZXNzIHRoYW4gMS4y
-IEdIei4gIElmIEkgdHJ5IHRvIHNldCB0aGUgbmV3IG1heCBmcmVxdWVuY3kKPiA+ID4gaGlnaGVy
-IHRoYW4gdGhhdCwgdGhlIG1heCBzY2FsaW5nIGZyZXF1ZW5jeSBmaWxlIHJldmVydHMgdG8gMS4y
-R0h6LiAKPiA+ID4gSGVyZSBpcyBpbiBleGFtcGxlOgo+ID4KPiA+IFdlbGwsIEkgZGlkIGEgbG90
-IG1vcmUgcmVzZWFyY2gsIGFuZCBpdCBzZWVtcywgYXQgbGVhc3QgaW4gbXkgY2FzZSBhbmQKPiA+
-IHByb2JhYmx5IG90aGVycywgdGhhdCB0aGlzIGlzIGEgbG9uZy10aW1lIGtub3cgYnVnLCBhcyBk
-ZXRhaWxlZCBoZXJlOgo+ID4KPiA+IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVn
-LmNnaT9pZD03MDYwCj4gPiBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA3LzEvMTYvMTIwCj4gPiBo
-dHRwOi8vd3d3LnRoaW5rd2lraS5vcmcvd2lraS9Qcm9ibGVtX3dpdGhfQ1BVX2ZyZXF1ZW5jeV9z
-Y2FsaW5nCj4gPiBodHRwOi8vZm9ydW1zLmxlbm92by5jb20vbG52L2JvYXJkL21lc3NhZ2U/Ym9h
-cmQuaWQ9VF9TZXJpZXNfVGhpbmtwYWRzJnRoCj4gPnJlYWQuaWQ9NzQyMAo+Cj4gQmUgY2FyZWZ1
-bCwgdGhlc2UgcmVwb3J0cyBoYXZlIGRpZmZlcmVudCBjYXVzZXMuCj4gRS5nLjoKPiAtLS0KPiBJ
-ZiB0aGUgYmF0dGVyeSBwYWNrIGlzIHJlbW92ZWQgYW5kIHRoZSBsYXB0b3AgaXMgcG93ZXJlZCBi
-eSBBQyBvbmx5LCB0aGUKPiBDUFUgZG93bmNsb2NrcyB0byB0aGUgbG93ZXN0IG11bHRpcGxpZXIg
-YW5kIHJlbWFpbnMgbG9ja2VkIGluIGxvdyBzcGVlZAo+IC0tLQo+IE1pZ2h0IGJlIGEgQklPUyBi
-dWcgKG9yIGV2ZW4gaW50ZW5kZWQ/KS4KPgo+ID4gSG93ZXZlciwgSSBjYW4gcmVwb3J0LCBhcyBv
-dXRsaW5lZCBpbiB0aGUgVGhpbmt3aWtpLm9yZyBhcnRpY2xlLCB0aGF0Cj4gPiBhZGRpbmcKPiA+
-ICJwcm9jZXNzb3IuaWdub3JlX3BwYz0xIiB0byB0aGUga2VybmVsIGJvb3QgcGFyYW1ldGVycyBm
-aXhlZCB0aGUKPiA+IHByb2JsZW0gZm9yIG1lCj4gPiAod2l0aCBrZXJuZWwgMi42LjI1LXI0KS4K
-PiA+Cj4gPiBJIGhvcGUgdGhpcyBoZWxwcyB0aGUgb3RoZXJzIHdobyBhcmUgaGF2aW5nIHRoZSBz
-YW1lIHByb2JsZW0uIG1wLgo+Cj4gQXJrYWRpdXN6IGhhcyBwcm92aWRlZCBzb21lIGludGVyZXN0
-aW5nIGRlYnVnIHJlc3VsdHMuCj4gSGUgYW5kIHNvbWUgb3RoZXJzIHJlcG9ydGVkIGNwdWZyZXEg
-bGltaXRhdGlvbiB0byB0aGUgbG93ZXN0IGZyZXEgb24KPiBzb21lIGJvb3RzLiBJIGFtIHByZXR0
-eSBzdXJlIHRoaXMgaXMgbm90IGEgQklPUyBpc3N1ZSBhcyBfUFBDIGlzIGFsd2F5cwo+IDAgdGhl
-cmUuCj4KPiBCZWdsaW46IElmIHlvdSBjb3VsZCBjb21waWxlIENQVV9GUkVRX0RFQlVHIGluIGFu
-ZCBib290IHdpdGgKPiBjcHVmcmVxLmRlYnVnPTcuIElmIHlvdSBydW4gaW50byB0aGlzIGlzc3Vl
-IGFuZCBncmVwIGZvcjoKPiBkbWVzZyB8Z3JlcCAtaSBwcGMKPiB5b3UgcHJvYmFibHkgc2VlIHRo
-ZSBzYW1lIGlzc3VlIHRoYW4gQXJrYWRpdXN6IHdoaWNoIHByb2JhYmx5IGlzIG5vdCBhCj4gQklP
-UyBidXQgYSBrZXJuZWwgZXJyb3IuCj4KPiBBcmthZGl1c3o6IElmIHlvdSBydW4gaW50byB0aGlz
-IGFnYWluIGNhbiB5b3UgY2hlY2sgd2hldGhlciB5b3UgaGF2ZToKPiBjYXQgL3N5cy9kZXZpY2Vz
-L3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL29uZGVtYW5kL3Bvd2Vyc2F2ZV9iaWFzCj4gc2V0IChp
-ZiB5ZXMsIHRoaXMgc2hvdWxkIG9ubHkgYmUgc2V0IHdoZW4gd29ya2luZyBvbiBiYXR0ZXJ5Pyku
-CgpXYXMgemVybyB0aGVyZSBhZmFpbC4gKEkgZGlkIHRoZSB0ZXN0IHNvbWUgdGltZSBhZ28gYWZ0
-ZXIgc2VlaW5nIHRoaXMgbWFpbCBidXQgCmZvcmdvdCB0byByZXBseSA4LSkKCj4gQW5vdGhlciBp
-ZGVhOgo+IE1heWJlIGluY3JlYXNpbmcKPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2Nw
-dWZyZXEvb25kZW1hbmQvc2FtcGxpbmdfcmF0ZQo+IGhlbHBzPwoKRGlkbid0IGhlbHAuIEkgd2Fz
-IHRyeWluZyB0byB2YXJpb3VzIHZhbHVlcyB0aGVyZS4KCj4KPiBTdHJhbmdlIHNlZW0gdG8gYmUg
-dGhlIGR1cGxpY2F0ZSBtZXNzYWdlcyBhbmQgZHVwbGljYXRlIHRyaWVzIHRvIHNldCB0aGUKPiBz
-YW1lIGZyZXEgb3ZlciBhbmQgb3ZlciBhZ2Fpbi4KPgo+IEFsc28gdGhlcmUgc2VlbSBzb21lIGZy
-ZXF1ZW5jaWVzIHRyaWVkIHRvIGJlIHNldCB3aGljaCBzaG91bGQgbm90IGV4aXN0Ogo+IDE1MjM0
-MiBrSHosIDU3MTQyIGtIeiwgMCBrSHoKCj4gICAgVGhvbWFzCgotLSAKQXJrYWRpdXN6IE1pxZtr
-aWV3aWN6ICAgICAgICBQTEQvTGludXggVGVhbQphcmVrbSAvIG1hdmVuLnBsICAgICAgICAgICAg
-aHR0cDovL2Z0cC5wbGQtbGludXgub3JnLwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KQ3B1ZnJlcSBtYWlsaW5nIGxpc3QKQ3B1ZnJlcUBsaXN0cy5saW51
-eC5vcmcudWsKaHR0cDovL2xpc3RzLmxpbnV4Lm9yZy51ay9tYWlsbWFuL2xpc3RpbmZvL2NwdWZy
-ZXEK
+On Tue, Jul 08, 2008 at 08:43:43AM +0200, Arnd Bergmann wrote:
+ > On Monday 07 July 2008, Dave Jones wrote:
+ > > One question I do have though, is how userspace scripts are supposed
+ > > to know they're to echo cbe_spu_governor into the relevant parts of
+ > > sysfs. =A0I've not used anything with a cell. Do they expose the SPUs
+ > > as regular CPUs, or do they show up in a different part of the tree?
+ > =
+
+ > An SPU is very different from a CPU from the user perspective.
+ > SPUs show up in /sys/devices/system/spus, and if a user wants to access
+ > them, the "spufs" file system needs to be mounted in the system, by
+ > convention on /spu. =
+
+
+Ok, that should be fairly simple to write scripts for.
+All sounds good to me.
+
+	Dave
+
+-- =
+
+http://www.codemonkey.org.uk
