@@ -1,17 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
-Date: Thu, 10 Jul 2008 23:16:13 +0200
-Message-ID: <20080710211613.GA7868@isilmar.linta.de>
-References: <200807071702.31240.arnd@arndb.de>
-	<20080708152728.GF4997@codemonkey.org.uk>
-	<20080710180553.GB13890@isilmar.linta.de>
-	<200807102305.08752.arnd@arndb.de>
+From: "Joseph Xu" <josephzxu@gmail.com>
+Subject: Re: problem in sysfs_set_policy
+Date: Fri, 11 Jul 2008 00:14:54 -0400
+Message-ID: <bc342bf90807102114p6e58e696rae7c84f416904ecd@mail.gmail.com>
+References: <bc342bf90806221938k34788a57v991396c371bf4943@mail.gmail.com>
+	<20080710200339.GA29755@isilmar.linta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20080710200339.GA29755@isilmar.linta.de>
 Content-Disposition: inline
-In-Reply-To: <200807102305.08752.arnd@arndb.de>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,23 +20,56 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk, linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>, cbe-oss-dev@ozlabs.org
+To: cpufreq@lists.linux.org.uk
 
-On Thu, Jul 10, 2008 at 11:05:08PM +0200, Arnd Bergmann wrote:
-> On Thursday 10 July 2008, Dominik Brodowski wrote:
-> > Actually, "cpufreq-set -g spu_governor" should be enough. (BTW, do we really
-> > want this name?)
-> 
-> Do you have a better suggestion for the name? I don't think there was a
-> particularly strong reason to choose it over something else.
+Here you go. I've never submitted a kernel patch before, the rules
+seem kind of stringent. Hope this format is correct.
+---
+Fixes a bug that causes failure when trying to write a new cpufreq
+policy whose minimum frequency value is greater than the old policy's
+maximum frequency value. Since the min value is not allowed to be
+greater than the max value, writing to the proc file scaling_min_freq
+will fail. The patch checks for this situation, and if it occurs, will
+write the max value before writing the min value.
 
-The issue I was pondering is whether to include "governor" in the name, for
-we do not do this for the other governors. So here are my suggestions :)
+Signed-off-by: Joseph Xu <josephzxu@gmail.com>
 
-	spu
-	spuload
-	spudemand
+--- cpufrequtils-002/lib/sysfs.c	2006-06-01 04:54:41.000000000 -0400
++++ cpufrequtils-002-patched/lib/sysfs.c	2008-07-10 23:50:08.000000000 -0400
+@@ -495,6 +495,8 @@
+ 	char max[SYSFS_PATH_MAX];
+ 	char gov[SYSFS_PATH_MAX];
+ 	int ret;
++	unsigned long old_min;
++	int write_max_first;
 
-Best,
-	Dominik
+ 	if (!policy || !(policy->governor))
+ 		return -EINVAL;
+@@ -508,14 +510,25 @@
+ 	snprintf(min, SYSFS_PATH_MAX, "%lu", policy->min);
+ 	snprintf(max, SYSFS_PATH_MAX, "%lu", policy->max);
+
+-	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
+-	if (ret)
+-		return ret;
++	old_min = sysfs_get_one_value(cpu, SCALING_MIN_FREQ);
++	write_max_first = (old_min && (policy->max < old_min) ? 0 : 1);
++
++	if (write_max_first) {
++		ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
++		if (ret)
++			return ret;
++	}
+
+ 	ret = sysfs_write_one_value(cpu, WRITE_SCALING_MIN_FREQ, min, strlen(min));
+ 	if (ret)
+ 		return ret;
+
++	if (!write_max_first) {
++		ret = sysfs_write_one_value(cpu, WRITE_SCALING_MAX_FREQ, max, strlen(max));
++		if (ret)
++			return ret;
++	}
++
+ 	return sysfs_write_one_value(cpu, WRITE_SCALING_GOVERNOR, gov, strlen(gov));
+ }
