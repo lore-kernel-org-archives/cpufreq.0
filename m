@@ -1,8 +1,8 @@
 From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH] acpi-cpufreq: add error handling for
-	cpufreq_register_driver() error
-Date: Mon, 14 Jul 2008 11:59:44 +0900
-Message-ID: <20080714025944.GA17281@sssvn.sssvn>
+Subject: [PATCH] cpufreq: add error handling for
+	cpufreq_register_governor() error
+Date: Mon, 14 Jul 2008 12:00:45 +0900
+Message-ID: <20080714030045.GB17281@sssvn.sssvn>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,38 +21,36 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 To: Dave Jones <davej@codemonkey.org.uk>
 Cc: cpufreq@lists.linux.org.uk
 
-add error handling for cpufreq_register_driver() error
+Add error handling for cpufreq_register_governor() error
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Cc: Dave Jones <davej@codemonkey.org.uk>
 Cc: cpufreq@lists.linux.org.uk
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Index: 2.6-mmotm/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+Index: 2.6-mmotm/drivers/cpufreq/cpufreq_ondemand.c
 ===================================================================
---- 2.6-mmotm.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ 2.6-mmotm/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -785,7 +785,11 @@ static int __init acpi_cpufreq_init(void
- 	if (ret)
- 		return ret;
+--- 2.6-mmotm.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ 2.6-mmotm/drivers/cpufreq/cpufreq_ondemand.c
+@@ -589,12 +589,18 @@ EXPORT_SYMBOL(cpufreq_gov_ondemand);
  
--	return cpufreq_register_driver(&acpi_cpufreq_driver);
-+	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
-+	if (ret)
-+		free_percpu(acpi_perf_data);
+ static int __init cpufreq_gov_dbs_init(void)
+ {
++	int err;
 +
-+	return ret;
+ 	kondemand_wq = create_workqueue("kondemand");
+ 	if (!kondemand_wq) {
+ 		printk(KERN_ERR "Creation of kondemand failed\n");
+ 		return -EFAULT;
+ 	}
+-	return cpufreq_register_governor(&cpufreq_gov_ondemand);
++	err = cpufreq_register_governor(&cpufreq_gov_ondemand);
++	if (err)
++		destroy_workqueue(kondemand_wq);
++
++	return err;
  }
  
- static void __exit acpi_cpufreq_exit(void)
-@@ -795,8 +799,6 @@ static void __exit acpi_cpufreq_exit(voi
- 	cpufreq_unregister_driver(&acpi_cpufreq_driver);
- 
- 	free_percpu(acpi_perf_data);
--
--	return;
- }
- 
- module_param(acpi_pstate_strict, uint, 0644);
+ static void __exit cpufreq_gov_dbs_exit(void)
