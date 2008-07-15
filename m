@@ -1,11 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [ANNOUNCE] cpufrequtils-004 released
-Date: Mon, 14 Jul 2008 15:28:35 +0200
-Message-ID: <20080714132834.GB6949@isilmar.linta.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: powerpc/cell/cpufreq: add spu aware cpufreq governor
+Date: Tue, 15 Jul 2008 15:02:00 +0200
+Message-ID: <200807151502.01540.arnd@arndb.de>
+References: <200807071702.31240.arnd@arndb.de>
+	<1215580739.8970.317.camel@pasglop>
+	<20080709062958.GA24570@codemonkey.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+In-Reply-To: <20080709062958.GA24570@codemonkey.org.uk>
 Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
@@ -17,67 +21,31 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+To: linuxppc-dev@ozlabs.org
+Cc: Dave Jones <davej@codemonkey.org.uk>, Stephen Rothwell <sfr@canb.auug.org.au>, cpufreq@lists.linux.org.uk, Jeremy Kerr <jk@ozlabs.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, cbe-oss-dev@ozlabs.org
 
-Hi!
+On Wednesday 09 July 2008, Dave Jones wrote:
+> =
 
-cpufrequtils-004 is released and available at
+> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms=
+/cell/Kconfig
+> index 3959fcf..19f4b4d 100644
+> --- a/arch/powerpc/platforms/cell/Kconfig
+> +++ b/arch/powerpc/platforms/cell/Kconfig
+> @@ -91,6 +91,7 @@ config CBE_THERM
+> =A0config CBE_CPUFREQ
+> =A0=A0=A0=A0=A0=A0=A0=A0tristate "CBE frequency scaling"
+> =A0=A0=A0=A0=A0=A0=A0=A0depends on CBE_RAS && CPU_FREQ
+> +=A0=A0=A0=A0=A0=A0=A0select CPU_FREQ_TABLE
+> =A0=A0=A0=A0=A0=A0=A0=A0default m
+> =A0=A0=A0=A0=A0=A0=A0=A0help
+> =A0=A0=A0=A0=A0=A0=A0=A0 =A0This adds the cpufreq driver for Cell BE proc=
+essors.
 
-http://www.kernel.org/pub/linux/utils/kernel/cpufreq/
+I found the problem now, there was an incorrect 'select CBE_CPUFREQ'
+in the spudemand governor, but no 'depends on CPUFREQ', so it was
+possible to build CBE_CPUFREQ without the base CPUFREQ support.
 
-See also:
-http://www.kernel.org/pub/linux/utils/kernel/cpufreq/cpufrequtils.html
+Fixed in the current version, will post later.
 
-A newly added feature for cpufrequtils is the statisitics output to
-cpufreq-info, and the corresponding libcpufreq update.
-
-The diffstat and list of changes follows below. Many thanks to all who
-contributed for this release.
-
-	Dominik
-
-----
- .gitignore         |    4 =
-
- AUTHORS            |    4 =
-
- Makefile           |    3 =
-
- lib/cpufreq.c      |   27 +++++
- lib/cpufreq.h      |   19 +++
- lib/interfaces.h   |    4 =
-
- lib/sysfs.c        |  282 ++++++++++++++++++++++++++++++++++--------------=
------
- man/cpufreq-info.1 |   22 ++--
- man/cpufreq-set.1  |   21 +--
- po/cs.po           |   97 ++++++++++--------
- po/de.po           |   82 ++++++++-------
- po/fr.po           |   85 +++++++++------
- po/it.po           |   90 +++++++++-------
- po/pt.po           |   91 +++++++++--------
- utils/info.c       |   53 +++++++++
- 15 files changed, 562 insertions(+), 322 deletions(-)
-----
-Claudio Eduardo (1):
-      i18n: update Brazilian Portuguese translation
-
-Dominik Brodowski (4):
-      man: avoid low-level troff hackery
-      i18n: update German translation
-      i18n update
-      cpufrequtils-004
-
-Goran Koruga (3):
-      Fixed memory leak in sysfs_get_policy().
-      Removed dependency on libsysfs.
-      Added support for cpufreq statistics.
-
-Joseph Xu (1):
-      sysfs: fix sysfs_set_policy()
-
-Karel Voln=FD (1):
-      i18n: update Czech translation
-
-Mattia Dongili (1):
-      i18n: update Italian translation
+	Arnd <><
