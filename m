@@ -1,126 +1,130 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] Re: cpufreq limits avilable frequencies to 800MHz on git kernel
-Date: Thu, 17 Jul 2008 15:48:02 +0200
-Message-ID: <200807171548.04584.trenn@suse.de>
-References: <200805231944.57320.arekm@maven.pl> <200805261815.40601.arekm@maven.pl> <200805261823.03140.arekm@maven.pl>
+From: venkatesh.pallipadi@intel.com
+Subject: [patch 6/6] cpufreq: Add idle microaccounting in ondemand governor
+Date: Thu, 17 Jul 2008 13:56:00 -0700
+Message-ID: <20080717205616.663052000@intel.com>
+References: <20080717205554.214645000@intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <200805261823.03140.arekm@maven.pl>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Arkadiusz Miskiewicz <arekm@maven.pl>
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>, gnorton@novell.com, miguel@novell.com, linux-acpi <linux-acpi@vger.kernel.org>, Dave Jones <davej@redhat.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
+Content-Disposition: inline; filename=intro_idle_microaccounting.patch
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
+List-Post: <mailto:cpufreq@lists.linux.org.uk>
+List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
+	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
+Sender: cpufreq-bounces@lists.linux.org.uk
+Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
+To: cpufreq@www.linux.org.uk
+Cc: davej@redhat.com
 
-Hi,
+Use get_cpu_idle_time_us() to get micro-accounted idle information.
+This enables ondemand to get more accurate idle and busy timings
+than the jiffy based calculation. As a result, we can decrease
+the ondemand safety gaurd band from 80-10 to 95-3.
 
-maybe I found something..., can someone review/test this.
+Results in more aggressive power savings.
 
-Thanks,
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-         Thomas
-
-------------
-CPUFREQ ACPI: Only call _PPC after cpufreq ACPI init funcs got called already
-
-Ingo Molnar provided a fix to not call _PPC at processor driver initialization 
-time.
-Git commit #e4233dec749a3519069d9390561b5636a75c7579
-
-But it can still happen that _PPC is called at  processor driver 
-initialization time.
-
-This patch should make sure that this is not possible anymore.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++++
- drivers/acpi/processor_perflib.c              |   13 ++++++++++++-
- drivers/cpufreq/cpufreq.c                     |    3 +++
- include/linux/cpufreq.h                       |    1 +
- 4 files changed, 22 insertions(+), 1 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c |   46 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 45 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c 
-b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-index 69288f6..3233fe8 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-+++ b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
-@@ -96,6 +96,12 @@ static int pmi_notifier(struct notifier_block *nb,
- 	struct cpufreq_frequency_table *cbe_freqs;
- 	u8 node;
+Index: linux-2.6/drivers/cpufreq/cpufreq_ondemand.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:19:08.000000000 -0700
++++ linux-2.6/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:27:33.000000000 -0700
+@@ -18,6 +18,9 @@
+ #include <linux/jiffies.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/mutex.h>
++#include <linux/hrtimer.h>
++#include <linux/tick.h>
++#include <linux/ktime.h>
  
-+	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
-+	 * and CPUFREQ_NOTIFY policy events?)
-+	 */
-+	if (event == CPUFREQ_START)
-+		return 0;
+ /*
+  * dbs is used in this file as a shortform for demandbased switching
+@@ -26,6 +29,8 @@
+ 
+ #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
++#define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
++#define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+ #define MIN_FREQUENCY_UP_THRESHOLD		(11)
+ #define MAX_FREQUENCY_UP_THRESHOLD		(100)
+ 
+@@ -58,6 +63,7 @@ enum {DBS_NORMAL_SAMPLE, DBS_SUB_SAMPLE}
+ struct cpu_dbs_info_s {
+ 	cputime64_t prev_cpu_idle;
+ 	cputime64_t prev_cpu_wall;
++	cputime64_t prev_cpu_nice;
+ 	struct cpufreq_policy *cur_policy;
+  	struct delayed_work work;
+ 	struct cpufreq_frequency_table *freq_table;
+@@ -97,7 +103,8 @@ static struct dbs_tuners {
+ 	.powersave_bias = 0,
+ };
+ 
+-static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
++static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
++							cputime64_t *wall)
+ {
+ 	cputime64_t idle_time;
+ 	cputime64_t cur_wall_time;
+@@ -123,6 +130,33 @@ static inline cputime64_t get_cpu_idle_t
+ 	return idle_time;
+ }
+ 
++static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
++{
++	u64 idle_time = get_cpu_idle_time_us(cpu, wall);
 +
- 	cbe_freqs = cpufreq_frequency_get_table(policy->cpu);
- 	node = cbe_cpu_to_node(policy->cpu);
++	if (idle_time == -1ULL)
++		return get_cpu_idle_time_jiffy(cpu, wall);
++
++	if (dbs_tuners_ins.ignore_nice) {
++		cputime64_t cur_nice;
++		unsigned long cur_nice_jiffies;
++		struct cpu_dbs_info_s *dbs_info;
++
++		dbs_info = &per_cpu(cpu_dbs_info, cpu);
++		cur_nice = cputime64_sub(kstat_cpu(cpu).cpustat.nice,
++					 dbs_info->prev_cpu_nice);
++		/*
++		 * Assumption: nice time between sampling periods will be
++		 * less than 2^32 jiffies for 32 bit sys
++		 */
++		cur_nice_jiffies = (unsigned long)
++					cputime64_to_jiffies64(cur_nice);
++		dbs_info->prev_cpu_nice = kstat_cpu(cpu).cpustat.nice;
++		return idle_time + jiffies_to_usecs(cur_nice_jiffies);
++	}
++	return idle_time;
++}
++
+ /*
+  * Find right freq to be set now with powersave_bias on.
+  * Returns the freq_hi to be used right now and will set freq_hi_jiffies,
+@@ -602,6 +636,16 @@ EXPORT_SYMBOL(cpufreq_gov_ondemand);
  
-diff --git a/drivers/acpi/processor_perflib.c 
-b/drivers/acpi/processor_perflib.c
-index b474996..63ccf80 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -72,7 +72,13 @@ MODULE_PARM_DESC(ignore_ppc, "If the frequency of your 
-machine gets wrongly" \
- #define PPC_REGISTERED   1
- #define PPC_IN_USE       2
- 
--static int acpi_processor_ppc_status = 0;
-+/* ignore_ppc:
-+ * -1 -> cpufreq low level drivers not initialized -> _PSS, etc. not called 
-yet
-+ *       ignore _PPC
-+ *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-+ *  1 -> ignore _PPC totally -> forced by user through boot param
-+ */
-+static int acpi_processor_ppc_status = -1;
- 
- static int acpi_processor_ppc_notifier(struct notifier_block *nb,
- 				       unsigned long event, void *data)
-@@ -81,6 +87,11 @@ static int acpi_processor_ppc_notifier(struct 
-notifier_block *nb,
- 	struct acpi_processor *pr;
- 	unsigned int ppc = 0;
- 
-+	if (event == CPUFREQ_START && ignore_ppc <= 0) {
-+		ignore_ppc = 0;
-+		return 0;
+ static int __init cpufreq_gov_dbs_init(void)
+ {
++	cputime64_t wall;
++	u64 idle_time = get_cpu_idle_time_us(smp_processor_id(), &wall);
++
++	if (idle_time != -1ULL) {
++		/* Idle micro accounting is supported. Use finer thresholds */
++		dbs_tuners_ins.up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
++		dbs_tuners_ins.down_differential =
++					MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
 +	}
 +
- 	if (ignore_ppc)
- 		return 0;
- 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1d41496..0471ef5 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -825,6 +825,9 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
- 	policy->user_policy.min = policy->cpuinfo.min_freq;
- 	policy->user_policy.max = policy->cpuinfo.max_freq;
- 
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+				     CPUFREQ_START, policy);
-+
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e7e91db..07cb761 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -109,6 +109,7 @@ struct cpufreq_policy {
- #define CPUFREQ_ADJUST		(0)
- #define CPUFREQ_INCOMPATIBLE	(1)
- #define CPUFREQ_NOTIFY		(2)
-+#define CPUFREQ_START		(3)
- 
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
--- 
-1.5.4.5
+ 	kondemand_wq = create_workqueue("kondemand");
+ 	if (!kondemand_wq) {
+ 		printk(KERN_ERR "Creation of kondemand failed\n");
 
+-- 
