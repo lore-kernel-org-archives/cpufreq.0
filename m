@@ -1,14 +1,13 @@
 From: venkatesh.pallipadi@intel.com
-Subject: [patch 1/6] cpufreq: Add cpu number parameter to
-	__cpufreq_driver_getavg()
-Date: Thu, 17 Jul 2008 13:55:55 -0700
-Message-ID: <20080717205615.928888000@intel.com>
+Subject: [patch 4/6] cpufreq_ondemand: Parameterize down differential
+Date: Thu, 17 Jul 2008 13:55:58 -0700
+Message-ID: <20080717205616.373739000@intel.com>
 References: <20080717205554.214645000@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline; filename=cpufreq_getavg_cpu_param.patch
+Content-Disposition: inline; filename=add_down_differential.patch
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,88 +21,56 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 To: cpufreq@www.linux.org.uk
 Cc: davej@redhat.com
 
-Add a cpu parameter to __cpufreq_driver_getavg(). This is needed for software
-cpufreq coordination where policy->cpu may not be same as the CPU on which we
-want to getavg frequency. 
-
-A follow-on patch will use this parameter to getavg freq from all cpus
-in policy->cpus.
+Use a parameter for down differential, instead of hardcoded 10%. Follow-on
+patch changes the down-differential dynamically, based on whether
+we are using idle micro-accounting or not.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    5 +++++
- drivers/cpufreq/cpufreq.c                  |    6 +++---
- drivers/cpufreq/cpufreq_ondemand.c         |    2 +-
- include/linux/cpufreq.h                    |    3 ++-
- 4 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq.c	2008-07-16 10:58:51.000000000 -0700
-+++ linux-2.6/drivers/cpufreq/cpufreq.c	2008-07-17 10:02:23.000000000 -0700
-@@ -1482,7 +1482,7 @@ int cpufreq_driver_target(struct cpufreq
- }
- EXPORT_SYMBOL_GPL(cpufreq_driver_target);
- 
--int __cpufreq_driver_getavg(struct cpufreq_policy *policy)
-+int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
- {
- 	int ret = 0;
- 
-@@ -1490,8 +1490,8 @@ int __cpufreq_driver_getavg(struct cpufr
- 	if (!policy)
- 		return -EINVAL;
- 
--	if (cpu_online(policy->cpu) && cpufreq_driver->getavg)
--		ret = cpufreq_driver->getavg(policy->cpu);
-+	if (cpu_online(cpu) && cpufreq_driver->getavg)
-+		ret = cpufreq_driver->getavg(cpu);
- 
- 	cpufreq_cpu_put(policy);
- 	return ret;
 Index: linux-2.6/drivers/cpufreq/cpufreq_ondemand.c
 ===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq_ondemand.c	2008-07-16 10:58:51.000000000 -0700
-+++ linux-2.6/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 10:02:23.000000000 -0700
-@@ -415,7 +415,7 @@ static void dbs_check_cpu(struct cpu_dbs
- 	if (load < (dbs_tuners_ins.up_threshold - 10)) {
- 		unsigned int freq_next, freq_cur;
+--- linux-2.6.orig/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:12:26.000000000 -0700
++++ linux-2.6/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:17:06.000000000 -0700
+@@ -24,6 +24,7 @@
+  * It helps to keep variable names smaller, simpler
+  */
  
--		freq_cur = __cpufreq_driver_getavg(policy);
-+		freq_cur = __cpufreq_driver_getavg(policy, policy->cpu);
- 		if (!freq_cur)
- 			freq_cur = policy->cur;
++#define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
+ #define MIN_FREQUENCY_UP_THRESHOLD		(11)
+ #define MAX_FREQUENCY_UP_THRESHOLD		(100)
+@@ -86,10 +87,12 @@ static struct workqueue_struct	*kondeman
+ static struct dbs_tuners {
+ 	unsigned int sampling_rate;
+ 	unsigned int up_threshold;
++	unsigned int down_differential;
+ 	unsigned int ignore_nice;
+ 	unsigned int powersave_bias;
+ } dbs_tuners_ins = {
+ 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
++	.down_differential = DEF_FREQUENCY_DOWN_DIFFERENTIAL,
+ 	.ignore_nice = 0,
+ 	.powersave_bias = 0,
+ };
+@@ -424,9 +427,13 @@ static void dbs_check_cpu(struct cpu_dbs
+ 	 * can support the current CPU usage without triggering the up
+ 	 * policy. To be safe, we focus 10 points under the threshold.
+ 	 */
+-	if (max_load_freq < (dbs_tuners_ins.up_threshold - 10) * policy->cur) {
++	if (max_load_freq <
++	    (dbs_tuners_ins.up_threshold - dbs_tuners_ins.down_differential) *
++	     policy->cur) {
+ 		unsigned int freq_next;
+-		freq_next = max_load_freq / (dbs_tuners_ins.up_threshold - 10);
++		freq_next = max_load_freq /
++				(dbs_tuners_ins.up_threshold -
++				 dbs_tuners_ins.down_differential);
  
-Index: linux-2.6/include/linux/cpufreq.h
-===================================================================
---- linux-2.6.orig/include/linux/cpufreq.h	2008-07-16 10:58:51.000000000 -0700
-+++ linux-2.6/include/linux/cpufreq.h	2008-07-17 10:02:23.000000000 -0700
-@@ -189,7 +189,8 @@ extern int __cpufreq_driver_target(struc
- 				   unsigned int relation);
- 
- 
--extern int __cpufreq_driver_getavg(struct cpufreq_policy *policy);
-+extern int __cpufreq_driver_getavg(struct cpufreq_policy *policy,
-+				   unsigned int cpu);
- 
- int cpufreq_register_governor(struct cpufreq_governor *governor);
- void cpufreq_unregister_governor(struct cpufreq_governor *governor);
-Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2008-07-16 10:58:51.000000000 -0700
-+++ linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c	2008-07-17 10:02:23.000000000 -0700
-@@ -611,6 +611,11 @@ static int acpi_cpufreq_cpu_init(struct 
- 	}
- #endif
- 
-+	/* Set drv_data for all secondary CPUs in policy->cpus mask */
-+	for_each_cpu_mask(i, policy->cpus)
-+		if (i != policy->cpu)
-+			per_cpu(drv_data, i) = data;
-+
- 	/* capability check */
- 	if (perf->state_count <= 1) {
- 		dprintk("No P-States\n");
+ 		if (!dbs_tuners_ins.powersave_bias) {
+ 			__cpufreq_driver_target(policy, freq_next,
 
 -- 
