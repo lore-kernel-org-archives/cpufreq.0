@@ -1,13 +1,14 @@
 From: venkatesh.pallipadi@intel.com
-Subject: [patch 6/6] cpufreq: Add idle microaccounting in ondemand governor
-Date: Thu, 17 Jul 2008 13:56:00 -0700
-Message-ID: <20080717205616.663052000@intel.com>
+Subject: [patch 5/6] cpufreq: Changes to get_cpu_idle_time_us(),
+	to be used in ondemand governor
+Date: Thu, 17 Jul 2008 13:55:59 -0700
+Message-ID: <20080717205616.515582000@intel.com>
 References: <20080717205554.214645000@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline; filename=intro_idle_microaccounting.patch
+Content-Disposition: inline; filename=generic_microaccounting_changes.patch
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -21,110 +22,60 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 To: cpufreq@www.linux.org.uk
 Cc: davej@redhat.com
 
-Use get_cpu_idle_time_us() to get micro-accounted idle information.
-This enables ondemand to get more accurate idle and busy timings
-than the jiffy based calculation. As a result, we can decrease
-the ondemand safety gaurd band from 80-10 to 95-3.
-
-Results in more aggressive power savings.
+export get_cpu_idle_time_us() for it to be used in ondemand governor.
+Last update time can be current time when the CPU is currently non-idle,
+accounting for the busy time since last idle.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
 ---
- drivers/cpufreq/cpufreq_ondemand.c |   46 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
+ include/linux/tick.h     |    2 +-
+ kernel/time/tick-sched.c |   11 ++++++++++-
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/drivers/cpufreq/cpufreq_ondemand.c
+Index: linux-2.6/kernel/time/tick-sched.c
 ===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:19:08.000000000 -0700
-+++ linux-2.6/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:27:33.000000000 -0700
-@@ -18,6 +18,9 @@
- #include <linux/jiffies.h>
- #include <linux/kernel_stat.h>
- #include <linux/mutex.h>
-+#include <linux/hrtimer.h>
-+#include <linux/tick.h>
-+#include <linux/ktime.h>
+--- linux-2.6.orig/kernel/time/tick-sched.c	2008-07-17 13:19:08.000000000 -0700
++++ linux-2.6/kernel/time/tick-sched.c	2008-07-17 13:27:29.000000000 -0700
+@@ -20,6 +20,7 @@
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+ #include <linux/tick.h>
++#include <linux/module.h>
  
- /*
-  * dbs is used in this file as a shortform for demandbased switching
-@@ -26,6 +29,8 @@
+ #include <asm/irq_regs.h>
  
- #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
- #define DEF_FREQUENCY_UP_THRESHOLD		(80)
-+#define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
-+#define MICRO_FREQUENCY_UP_THRESHOLD		(95)
- #define MIN_FREQUENCY_UP_THRESHOLD		(11)
- #define MAX_FREQUENCY_UP_THRESHOLD		(100)
- 
-@@ -58,6 +63,7 @@ enum {DBS_NORMAL_SAMPLE, DBS_SUB_SAMPLE}
- struct cpu_dbs_info_s {
- 	cputime64_t prev_cpu_idle;
- 	cputime64_t prev_cpu_wall;
-+	cputime64_t prev_cpu_nice;
- 	struct cpufreq_policy *cur_policy;
-  	struct delayed_work work;
- 	struct cpufreq_frequency_table *freq_table;
-@@ -97,7 +103,8 @@ static struct dbs_tuners {
- 	.powersave_bias = 0,
- };
- 
--static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-+static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
-+							cputime64_t *wall)
+@@ -184,9 +185,17 @@ u64 get_cpu_idle_time_us(int cpu, u64 *l
  {
- 	cputime64_t idle_time;
- 	cputime64_t cur_wall_time;
-@@ -123,6 +130,33 @@ static inline cputime64_t get_cpu_idle_t
- 	return idle_time;
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+ 
+-	*last_update_time = ktime_to_us(ts->idle_lastupdate);
++	if (!tick_nohz_enabled)
++		return -1;
++
++	if (ts->idle_active)
++		*last_update_time = ktime_to_us(ts->idle_lastupdate);
++	else
++		*last_update_time = ktime_to_us(ktime_get());
++
+ 	return ktime_to_us(ts->idle_sleeptime);
  }
++EXPORT_SYMBOL_GPL(get_cpu_idle_time_us);
  
-+static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-+{
-+	u64 idle_time = get_cpu_idle_time_us(cpu, wall);
-+
-+	if (idle_time == -1ULL)
-+		return get_cpu_idle_time_jiffy(cpu, wall);
-+
-+	if (dbs_tuners_ins.ignore_nice) {
-+		cputime64_t cur_nice;
-+		unsigned long cur_nice_jiffies;
-+		struct cpu_dbs_info_s *dbs_info;
-+
-+		dbs_info = &per_cpu(cpu_dbs_info, cpu);
-+		cur_nice = cputime64_sub(kstat_cpu(cpu).cpustat.nice,
-+					 dbs_info->prev_cpu_nice);
-+		/*
-+		 * Assumption: nice time between sampling periods will be
-+		 * less than 2^32 jiffies for 32 bit sys
-+		 */
-+		cur_nice_jiffies = (unsigned long)
-+					cputime64_to_jiffies64(cur_nice);
-+		dbs_info->prev_cpu_nice = kstat_cpu(cpu).cpustat.nice;
-+		return idle_time + jiffies_to_usecs(cur_nice_jiffies);
-+	}
-+	return idle_time;
-+}
-+
- /*
-  * Find right freq to be set now with powersave_bias on.
-  * Returns the freq_hi to be used right now and will set freq_hi_jiffies,
-@@ -602,6 +636,16 @@ EXPORT_SYMBOL(cpufreq_gov_ondemand);
+ /**
+  * tick_nohz_stop_sched_tick - stop the idle tick from the idle task
+Index: linux-2.6/include/linux/tick.h
+===================================================================
+--- linux-2.6.orig/include/linux/tick.h	2008-07-17 13:19:08.000000000 -0700
++++ linux-2.6/include/linux/tick.h	2008-07-17 13:27:29.000000000 -0700
+@@ -122,7 +122,7 @@ static inline ktime_t tick_nohz_get_slee
+ 	return len;
+ }
+ static inline void tick_nohz_stop_idle(int cpu) { }
+-static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return 0; }
++static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+ # endif /* !NO_HZ */
  
- static int __init cpufreq_gov_dbs_init(void)
- {
-+	cputime64_t wall;
-+	u64 idle_time = get_cpu_idle_time_us(smp_processor_id(), &wall);
-+
-+	if (idle_time != -1ULL) {
-+		/* Idle micro accounting is supported. Use finer thresholds */
-+		dbs_tuners_ins.up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
-+		dbs_tuners_ins.down_differential =
-+					MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
-+	}
-+
- 	kondemand_wq = create_workqueue("kondemand");
- 	if (!kondemand_wq) {
- 		printk(KERN_ERR "Creation of kondemand failed\n");
+ #endif
 
 -- 
