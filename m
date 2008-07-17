@@ -1,52 +1,126 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: Core 2 Duo E8400 stepping 6 not recognised
-Date: Thu, 17 Jul 2008 14:44:25 +0200
-Message-ID: <200807171444.26396.trenn@suse.de>
-References: <20080717001145.122c97b7.ldarby@tuffmail.com>
+Subject: [PATCH] Re: cpufreq limits avilable frequencies to 800MHz on git kernel
+Date: Thu, 17 Jul 2008 15:48:02 +0200
+Message-ID: <200807171548.04584.trenn@suse.de>
+References: <200805231944.57320.arekm@maven.pl> <200805261815.40601.arekm@maven.pl> <200805261823.03140.arekm@maven.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <20080717001145.122c97b7.ldarby@tuffmail.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <200805261823.03140.arekm@maven.pl>
 Content-Disposition: inline
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@lists.linux.org.uk
+Sender: linux-acpi-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>, gnorton@novell.com, miguel@novell.com, linux-acpi <linux-acpi@vger.kernel.org>, Dave Jones <davej@redhat.com>
 
 Hi,
 
-sorry this is a bit unrelated...
+maybe I found something..., can someone review/test this.
 
-On Thursday 17 July 2008 01:11:45 Laurence Darby wrote:
-> Hi,
->
-> I booted linux 2.6.26 with cpufreq.debug=3, and it gives the following:
->
-> [    0.391292] cpufreq-core: CPU 0: _PPC is 0 - frequency not limited
-> [    0.391623] ACPI: ACPI0007:00 is registered as cooling_device0
-> [    0.391623] ACPI: Processor [CPU0] (supports 8 throttling states)
-> [    0.391623] cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
-> [    0.391292] ACPI: ACPI0007:01 is registered as cooling_device1
-> [    0.391292] ACPI: Processor [CPU1] (supports 8 throttling states)
+Thanks,
 
-Wow, _PPC is evaluated before cpufreq is activated even the initial _PPC call 
-got removed some time ago.
-This could be related to the ThinkPads get stuck on lowest freq problem.
-Ingo Molnar already sent something similar, but did not fully ensure that _PPC 
-is only called after cpufreq has been initialized:
-git commit e4233dec749a3519069d9390561b5636a75c7579
-I send something to the related bug...
+         Thomas
 
-> [    8.228001] acpi-cpufreq: acpi_cpufreq_init
-> [    8.228001] acpi-cpufreq: acpi_cpufreq_early_init
-_PPC should not be called before these...
+------------
+CPUFREQ ACPI: Only call _PPC after cpufreq ACPI init funcs got called already
 
-       Thomas
+Ingo Molnar provided a fix to not call _PPC at processor driver initialization 
+time.
+Git commit #e4233dec749a3519069d9390561b5636a75c7579
+
+But it can still happen that _PPC is called at  processor driver 
+initialization time.
+
+This patch should make sure that this is not possible anymore.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+---
+ arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c |    6 ++++++
+ drivers/acpi/processor_perflib.c              |   13 ++++++++++++-
+ drivers/cpufreq/cpufreq.c                     |    3 +++
+ include/linux/cpufreq.h                       |    1 +
+ 4 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c 
+b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
+index 69288f6..3233fe8 100644
+--- a/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
++++ b/arch/powerpc/platforms/cell/cbe_cpufreq_pmi.c
+@@ -96,6 +96,12 @@ static int pmi_notifier(struct notifier_block *nb,
+ 	struct cpufreq_frequency_table *cbe_freqs;
+ 	u8 node;
+ 
++	/* Should this really be called for CPUFREQ_ADJUST, CPUFREQ_INCOMPATIBLE
++	 * and CPUFREQ_NOTIFY policy events?)
++	 */
++	if (event == CPUFREQ_START)
++		return 0;
++
+ 	cbe_freqs = cpufreq_frequency_get_table(policy->cpu);
+ 	node = cbe_cpu_to_node(policy->cpu);
+ 
+diff --git a/drivers/acpi/processor_perflib.c 
+b/drivers/acpi/processor_perflib.c
+index b474996..63ccf80 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -72,7 +72,13 @@ MODULE_PARM_DESC(ignore_ppc, "If the frequency of your 
+machine gets wrongly" \
+ #define PPC_REGISTERED   1
+ #define PPC_IN_USE       2
+ 
+-static int acpi_processor_ppc_status = 0;
++/* ignore_ppc:
++ * -1 -> cpufreq low level drivers not initialized -> _PSS, etc. not called 
+yet
++ *       ignore _PPC
++ *  0 -> cpufreq low level drivers initialized -> consider _PPC values
++ *  1 -> ignore _PPC totally -> forced by user through boot param
++ */
++static int acpi_processor_ppc_status = -1;
+ 
+ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+ 				       unsigned long event, void *data)
+@@ -81,6 +87,11 @@ static int acpi_processor_ppc_notifier(struct 
+notifier_block *nb,
+ 	struct acpi_processor *pr;
+ 	unsigned int ppc = 0;
+ 
++	if (event == CPUFREQ_START && ignore_ppc <= 0) {
++		ignore_ppc = 0;
++		return 0;
++	}
++
+ 	if (ignore_ppc)
+ 		return 0;
+ 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1d41496..0471ef5 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -825,6 +825,9 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
+ 	policy->user_policy.min = policy->cpuinfo.min_freq;
+ 	policy->user_policy.max = policy->cpuinfo.max_freq;
+ 
++	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
++				     CPUFREQ_START, policy);
++
+ #ifdef CONFIG_SMP
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index e7e91db..07cb761 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -109,6 +109,7 @@ struct cpufreq_policy {
+ #define CPUFREQ_ADJUST		(0)
+ #define CPUFREQ_INCOMPATIBLE	(1)
+ #define CPUFREQ_NOTIFY		(2)
++#define CPUFREQ_START		(3)
+ 
+ #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
+ #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
+-- 
+1.5.4.5
+
