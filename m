@@ -1,14 +1,14 @@
 From: venkatesh.pallipadi@intel.com
-Subject: [patch 3/6] cpufreq: get_cpu_idle_time() changes in ondemand to suit
-	idle-microaccounting
-Date: Thu, 17 Jul 2008 13:55:57 -0700
-Message-ID: <20080717205616.230872000@intel.com>
+Subject: [patch 2/6] cpufreq: Change load calculation in ondemand for software
+	coordination
+Date: Thu, 17 Jul 2008 13:55:56 -0700
+Message-ID: <20080717205616.091452000@intel.com>
 References: <20080717205554.214645000@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline; filename=prepare_idle_microaccounting.patch
+Content-Disposition: inline; filename=ondemand_swcoord_simplify.patch
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -22,96 +22,126 @@ Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lis
 To: cpufreq@www.linux.org.uk
 Cc: davej@redhat.com
 
-Preparatory changes for doing idle micro-accounting in ondemand governor.
-get_cpu_idle_time() gets extra parameter and returns idle time and also the
-wall time that corresponds to the idle time measurement.
+Change the load calculation algorithm in ondemand to work well with software
+coordination of frequency across the dependent cpus.
+
+Multiply individual CPU utilization with the average freq of that logical CPU
+during the measurement interval (using getavg call). And find the max CPU
+utilization number in terms of CPU freq. That number is then used to
+get to the target freq for next sampling interval.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
 ---
- drivers/cpufreq/cpufreq_ondemand.c |   29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c |   65 +++++++++++++++++++------------------
+ 1 file changed, 35 insertions(+), 30 deletions(-)
 
 Index: linux-2.6/drivers/cpufreq/cpufreq_ondemand.c
 ===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:05:51.000000000 -0700
-+++ linux-2.6/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:12:26.000000000 -0700
-@@ -94,13 +94,13 @@ static struct dbs_tuners {
- 	.powersave_bias = 0,
- };
+--- linux-2.6.orig/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 12:59:31.000000000 -0700
++++ linux-2.6/drivers/cpufreq/cpufreq_ondemand.c	2008-07-17 13:05:51.000000000 -0700
+@@ -334,9 +334,7 @@ static struct attribute_group dbs_attr_g
  
--static inline cputime64_t get_cpu_idle_time(unsigned int cpu)
-+static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
  {
- 	cputime64_t idle_time;
+-	unsigned int idle_ticks, total_ticks;
+-	unsigned int load = 0;
 -	cputime64_t cur_jiffies;
-+	cputime64_t cur_wall_time;
- 	cputime64_t busy_time;
++	unsigned int max_load_freq;
  
+ 	struct cpufreq_policy *policy;
+ 	unsigned int j;
+@@ -346,13 +344,7 @@ static void dbs_check_cpu(struct cpu_dbs
+ 
+ 	this_dbs_info->freq_lo = 0;
+ 	policy = this_dbs_info->cur_policy;
 -	cur_jiffies = jiffies64_to_cputime64(get_jiffies_64());
-+	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
- 	busy_time = cputime64_add(kstat_cpu(cpu).cpustat.user,
- 			kstat_cpu(cpu).cpustat.system);
+-	total_ticks = (unsigned int) cputime64_sub(cur_jiffies,
+-			this_dbs_info->prev_cpu_wall);
+-	this_dbs_info->prev_cpu_wall = get_jiffies_64();
  
-@@ -113,7 +113,10 @@ static inline cputime64_t get_cpu_idle_t
- 				kstat_cpu(cpu).cpustat.nice);
- 	}
+-	if (!total_ticks)
+-		return;
+ 	/*
+ 	 * Every sampling_rate, we check, if current idle time is less
+ 	 * than 20% (default), then we try to increase frequency
+@@ -365,27 +357,46 @@ static void dbs_check_cpu(struct cpu_dbs
+ 	 * 5% (default) of current frequency
+ 	 */
  
--	idle_time = cputime64_sub(cur_jiffies, busy_time);
-+	idle_time = cputime64_sub(cur_wall_time, busy_time);
-+	if (wall)
-+		*wall = cur_wall_time;
+-	/* Get Idle Time */
+-	idle_ticks = UINT_MAX;
++	/* Get Absolute Load - in terms of freq */
++	max_load_freq = 0;
 +
- 	return idle_time;
- }
- 
-@@ -277,8 +280,8 @@ static ssize_t store_ignore_nice_load(st
- 	for_each_online_cpu(j) {
- 		struct cpu_dbs_info_s *dbs_info;
- 		dbs_info = &per_cpu(cpu_dbs_info, j);
--		dbs_info->prev_cpu_idle = get_cpu_idle_time(j);
--		dbs_info->prev_cpu_wall = get_jiffies_64();
-+		dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
-+						&dbs_info->prev_cpu_wall);
- 	}
- 	mutex_unlock(&dbs_mutex);
- 
-@@ -368,21 +371,19 @@ static void dbs_check_cpu(struct cpu_dbs
- 		int freq_avg;
+ 	for_each_cpu_mask(j, policy->cpus) {
+-		cputime64_t total_idle_ticks;
+-		unsigned int tmp_idle_ticks;
+ 		struct cpu_dbs_info_s *j_dbs_info;
++		cputime64_t cur_wall_time, cur_idle_time;
++		unsigned int idle_time, wall_time;
++		unsigned int load, load_freq;
++		int freq_avg;
  
  		j_dbs_info = &per_cpu(cpu_dbs_info, j);
--		cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
+-		total_idle_ticks = get_cpu_idle_time(j);
+-		tmp_idle_ticks = (unsigned int) cputime64_sub(total_idle_ticks,
++		cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
++		wall_time = (unsigned int) cputime64_sub(cur_wall_time,
++				j_dbs_info->prev_cpu_wall);
++		j_dbs_info->prev_cpu_wall = cur_wall_time;
 +
-+		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
-+
- 		wall_time = (unsigned int) cputime64_sub(cur_wall_time,
- 				j_dbs_info->prev_cpu_wall);
- 		j_dbs_info->prev_cpu_wall = cur_wall_time;
- 
--		cur_idle_time = get_cpu_idle_time(j);
- 		idle_time = (unsigned int) cputime64_sub(cur_idle_time,
++		cur_idle_time = get_cpu_idle_time(j);
++		idle_time = (unsigned int) cputime64_sub(cur_idle_time,
  				j_dbs_info->prev_cpu_idle);
- 		j_dbs_info->prev_cpu_idle = cur_idle_time;
+-		j_dbs_info->prev_cpu_idle = total_idle_ticks;
++		j_dbs_info->prev_cpu_idle = cur_idle_time;
++
++		if (unlikely(wall_time <= idle_time ||
++			     (cputime_to_msecs(wall_time) <
++			      dbs_tuners_ins.sampling_rate / (2 * 1000)))) {
++			continue;
++		}
++
++		load = 100 * (wall_time - idle_time) / wall_time;
  
--		if (unlikely(wall_time <= idle_time ||
--			     (cputime_to_msecs(wall_time) <
--			      dbs_tuners_ins.sampling_rate / (2 * 1000)))) {
-+		if (unlikely(!wall_time || wall_time < idle_time))
- 			continue;
--		}
+-		if (tmp_idle_ticks < idle_ticks)
+-			idle_ticks = tmp_idle_ticks;
++		freq_avg = __cpufreq_driver_getavg(policy, j);
++		if (freq_avg <= 0)
++			freq_avg = policy->cur;
++
++		load_freq = load * freq_avg;
++		if (load_freq > max_load_freq)
++			max_load_freq = load_freq;
+ 	}
+-	if (likely(total_ticks > idle_ticks))
+-		load = (100 * (total_ticks - idle_ticks)) / total_ticks;
  
- 		load = 100 * (wall_time - idle_time) / wall_time;
+ 	/* Check for frequency increase */
+-	if (load > dbs_tuners_ins.up_threshold) {
++	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
+ 		/* if we are already at full speed then break out early */
+ 		if (!dbs_tuners_ins.powersave_bias) {
+ 			if (policy->cur == policy->max)
+@@ -412,15 +423,9 @@ static void dbs_check_cpu(struct cpu_dbs
+ 	 * can support the current CPU usage without triggering the up
+ 	 * policy. To be safe, we focus 10 points under the threshold.
+ 	 */
+-	if (load < (dbs_tuners_ins.up_threshold - 10)) {
+-		unsigned int freq_next, freq_cur;
+-
+-		freq_cur = __cpufreq_driver_getavg(policy, policy->cpu);
+-		if (!freq_cur)
+-			freq_cur = policy->cur;
+-
+-		freq_next = (freq_cur * load) /
+-			(dbs_tuners_ins.up_threshold - 10);
++	if (max_load_freq < (dbs_tuners_ins.up_threshold - 10) * policy->cur) {
++		unsigned int freq_next;
++		freq_next = max_load_freq / (dbs_tuners_ins.up_threshold - 10);
  
-@@ -531,8 +532,8 @@ static int cpufreq_governor_dbs(struct c
- 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
- 			j_dbs_info->cur_policy = policy;
- 
--			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j);
--			j_dbs_info->prev_cpu_wall = get_jiffies_64();
-+			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
-+						&j_dbs_info->prev_cpu_wall);
- 		}
- 		this_dbs_info->cpu = cpu;
- 		/*
+ 		if (!dbs_tuners_ins.powersave_bias) {
+ 			__cpufreq_driver_target(policy, freq_next,
 
 -- 
