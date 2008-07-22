@@ -1,13 +1,12 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 11139] warning in cpufreq.c on E450
-Date: Mon, 21 Jul 2008 15:44:39 -0700 (PDT)
-Message-ID: <20080721224439.320ED10800A@picon.linux-foundation.org>
-References: <bug-11139-3570@http.bugzilla.kernel.org/>
+From: "Vinod Hegde" <vinod.hegde.c@gmail.com>
+Subject: cpu
+Date: Tue, 22 Jul 2008 14:36:30 +0300
+Message-ID: <d01ec2f30807220436j12d64f6bh3ceb8ac10f280ef0@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-11139-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -18,22 +17,15 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11139
+Hi,
 
+I am new to this topic. So the question could be fundamental.
 
-bunk@kernel.org changed:
+What action does cpufreq take for the memory sub system. I mean, once
+cpuload is known, does it assume anything about the memory usage and alter
+the voltage of any memory module. Is any change brought for any other
+hardware components based on cpu load except cpu.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |bunk@kernel.org
-         Regression|0                           |1
-
-
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+Thanks ....
