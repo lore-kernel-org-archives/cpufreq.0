@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 11139] warning in cpufreq.c on E450
-Date: Tue, 22 Jul 2008 17:38:32 -0700 (PDT)
-Message-ID: <20080723003832.B3EB910800A@picon.linux-foundation.org>
+Date: Wed, 23 Jul 2008 02:04:32 -0700 (PDT)
+Message-ID: <20080723090432.862C210800A@picon.linux-foundation.org>
 References: <bug-11139-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,14 +26,17 @@ http://bugzilla.kernel.org/show_bug.cgi?id=11139
 
 
 
-------- Comment #2 from cesarb@cesarb.net  2008-07-22 17:38 -------
-There's another auxio_probe, at arch/sparc/kernel/auxio.c, which seems to be
-called deep within setup_arch() if I followed the code paths correctly. The one
-called at fs_initcall is the one at arch/sparc64/kernel/auxio.c.
+------- Comment #3 from bunk@kernel.org  2008-07-23 02:04 -------
+(In reply to comment #1)
+> This looks strange.
+> 
+> The warning is because init_cpufreq_transition_notifier_list_called is not set
+> to true (yet). However, that should have been done in pure_initcall stage which
+> is waaaaay before auxio_probe, which is at fs_initcall stage. Any experts on
+> the ordering of initcalls, and why this is messed up here?
 
-This is probably not a regression; the warning was added after 2.6.25 (see
-commit 74212ca432982903d0fc6a0f282b199e000ad8b1). The bug probably was there
-all the time.
+cpufreq_register_notifier() is called by arch/sparc64/kernel/time.c:time_init()
+which runs before the normal initcalls.
 
 
 -- 
