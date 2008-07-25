@@ -1,50 +1,137 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 1/2] acpi cpufreq cleanup: Move bailing out of function before
-	locking the mutex
-Date: Fri, 25 Jul 2008 15:58:56 +0200
-Message-ID: <1216994337-6613-2-git-send-email-trenn@suse.de>
-References: <1216994337-6613-1-git-send-email-trenn@suse.de>
+From: Julia Lawall <julia@diku.dk>
+Subject: [PATCH] drivers/cpufreq/cpufreq.c: Adjust error handling code
+ involving cpufreq_cpu_put
+Date: Fri, 25 Jul 2008 22:44:53 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0807252243510.1602@ask.diku.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756748AbYGYUpT@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <1216994337-6613-1-git-send-email-trenn@suse.de>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.linux.org.uk/mailman/private/cpufreq>
-List-Post: <mailto:cpufreq@lists.linux.org.uk>
-List-Help: <mailto:cpufreq-request@lists.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
-	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
-Sender: cpufreq-bounces@lists.linux.org.uk
-Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: davej@codemonkey.org.uk
-Cc: akpm@osdl.org, cpufreq@lists.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>, miguel@novell.com
+To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+From: Julia Lawall <julia@diku.dk>
+
+After calling cpufreq_cpu_get, error handling code should call
+cpufreq_cpu_put.
+
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r@
+expression x,E;
+statement S;
+position p1,p2,p3;
+@@
+
+(
+if ((x = cpufreq_cpu_get@p1(...)) == NULL || ...) S
+|
+x = cpufreq_cpu_get@p1(...)
+... when != x
+if (x == NULL || ...) S
+)
+<...
+if@p3 (...) { ... when != cpufreq_cpu_put(x)
+                  when != if (x) { ... cpufreq_cpu_put(x); ...}
+    return@p2 ...;
+}
+...>
+(
+return x;
+|
+return 0;
+|
+x = E
+|
+E = x
+|
+cpufreq_cpu_put(x)
+)
+
+@exists@
+position r.p1,r.p2,r.p3;
+expression x;
+int ret != 0;
+statement S;
+@@
+
+* x = cpufreq_cpu_get@p1(...)
+  <...
+* if@p3 (...)
+  S
+  ...>
+* return@p2 \(NULL\|ret\);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- drivers/acpi/processor_perflib.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq.c     |   24 +++++++++++++------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index d80b2d1..4d16f59 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -84,10 +84,10 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
- 	if (ignore_ppc)
- 		return 0;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8d6a3ff..d4de015 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1464,20 +1464,22 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+ 			  unsigned int target_freq,
+ 			  unsigned int relation)
+ {
+-	int ret;
++	int ret = -EINVAL;
  
--	mutex_lock(&performance_mutex);
--
- 	if (event != CPUFREQ_INCOMPATIBLE)
--		goto out;
-+		return 0;
-+
-+	mutex_lock(&performance_mutex);
+ 	policy = cpufreq_cpu_get(policy->cpu);
+ 	if (!policy)
+-		return -EINVAL;
++		goto no_policy;
  
- 	pr = processors[policy->cpu];
- 	if (!pr || !pr->performance)
--- 
-1.5.4.5
+ 	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
+-		return -EINVAL;
++		goto fail;
+ 
+ 	ret = __cpufreq_driver_target(policy, target_freq, relation);
+ 
+ 	unlock_policy_rwsem_write(policy->cpu);
+ 
++fail:
+ 	cpufreq_cpu_put(policy);
++no_policy:
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+@@ -1714,13 +1716,17 @@ int cpufreq_update_policy(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
+ 	struct cpufreq_policy policy;
+-	int ret = 0;
++	int ret;
+ 
+-	if (!data)
+-		return -ENODEV;
++	if (!data) {
++		ret = -ENODEV;
++		goto no_policy;
++	}
+ 
+-	if (unlikely(lock_policy_rwsem_write(cpu)))
+-		return -EINVAL;
++	if (unlikely(lock_policy_rwsem_write(cpu))) {
++		ret = -EINVAL;
++		goto fail;
++	}
+ 
+ 	dprintk("updating policy for CPU %u\n", cpu);
+ 	memcpy(&policy, data, sizeof(struct cpufreq_policy));
+@@ -1747,7 +1753,9 @@ int cpufreq_update_policy(unsigned int cpu)
+ 
+ 	unlock_policy_rwsem_write(cpu);
+ 
++fail:
+ 	cpufreq_cpu_put(data);
++no_policy:
+ 	return ret;
+ }
+ EXPORT_SYMBOL(cpufreq_update_policy);
