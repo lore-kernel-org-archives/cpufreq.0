@@ -1,8 +1,8 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 10055] conservative governor doesn't increase frequency,
 	just decrease. powernow-k7
-Date: Tue, 29 Jul 2008 01:37:02 -0700 (PDT)
-Message-ID: <20080729083702.D531210800B@picon.linux-foundation.org>
+Date: Tue, 29 Jul 2008 02:04:18 -0700 (PDT)
+Message-ID: <20080729090418.D5E33108009@picon.linux-foundation.org>
 References: <bug-10055-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,23 +24,17 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=10055
 
 
-art-kbt@broomstick.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |art-kbt@broomstick.com
 
 
 
+------- Comment #7 from art-kbt@broomstick.com  2008-07-29 02:04 -------
+Created an attachment (id=17022)
+ --> (http://bugzilla.kernel.org/attachment.cgi?id=17022&action=view)
+kern log for cpufreq scaling not working
 
-------- Comment #6 from art-kbt@broomstick.com  2008-07-29 01:37 -------
-Still a problem with 2.6.25
-
-Alex:  This is NOT the same bug as with conservative climbing extremely slowly
-due to a high scaling_min value.  In this case, it will not climb AT ALL --
-even hours pegged at 100%, and it will stay at the same frequency.  The bug you
-reference also appeared much earlier -- this one appeared with 2.6.24, and
-2.6.23 is fine.
+Kernel log for cpufreq conservative scaling not working, cpufreq.debug=7.  For
+the last few minutes of this log, the CPU was pegged at 95-100%, yet the
+frequency stood still at the lowest possible value.
 
 
 -- 
