@@ -1,14 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH] add missing newline after stats printing
-Date: Sat, 2 Aug 2008 09:20:08 +0200
-Message-ID: <20080802072008.GA17743@comet.dominikbrodowski.net>
-References: <1217598032-24441-1-git-send-email-julien@danjou.info>
+From: Cesar Eduardo Barros <cesarb@cesarb.net>
+Subject: Re: list moving.
+Date: Sat, 02 Aug 2008 16:03:47 -0300
+Message-ID: <4894AF93.7020504@cesarb.net>
+References: <20080730162628.GI2361@codemonkey.org.uk>	<20080731222144.GH29139@codemonkey.org.uk>	<20080801083649.GA5136@flint.arm.linux.org.uk>	<20080801084832.GA31092@isilmar.linta.de>
+	<20080801100020.GA17479@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <1217598032-24441-1-git-send-email-julien@danjou.info>
+In-Reply-To: <20080801100020.GA17479@flint.arm.linux.org.uk>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,35 +19,42 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: Julien Danjou <julien@danjou.info>
-Cc: cpufreq@lists.linux.org.uk
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk
 
-Thanks, applied.
+***
+*** This list is moving to cpufreq@vger.kernel.org.
+*** Please resubscribe to the new list, and send your message there.  Thanks.
+***
+Russell King escreveu:
+> On Fri, Aug 01, 2008 at 10:48:32AM +0200, Dominik Brodowski wrote:
+>> On Fri, Aug 01, 2008 at 09:36:49AM +0100, Russell King wrote:
+>>> I've received no requests for the archives; unless I do before Sunday,
+>>> I shall assume no one's interested and they'll also go into the circular
+>>> filing cabinet.
+>> Deleting the archives would be a nightmare, in my opinion. Not sure,
+>> though, on where to keep or host them.
+> 
+> If I delete the list, the links to the archive vanish.  I can leave
+> the archive sitting around, but it will effectively become an orphan.
+> Also, cpufreq is the last real list on the machine, so after it goes,
+> we're probably not going to maintain mailman here any longer - which
+> increases the chance of it being lost.
+> 
+> Therefore, I'd prefer someone else to host them.
+> 
+> Currently, the archives are around 180MB (that's including all the
+> pipermail data - mbox archives, html, databases, indexes etc).
+> 
 
-From: Julien Danjou <julien@danjou.info>
-Date: Fri, 1 Aug 2008 15:40:32 +0200
-Subject: [PATCH] add missing newline after stats printing
+It would be good to save at least the mbox archives somewhere. While 
+nobody today might be too interested on these archives, in the future 
+someone might want them (I recall there being some people trying to 
+reconstruct the archives of the LKML, for instance). Unfortunately, I 
+also have no idea on where to host them; perhaps somewhere on the public 
+downloads area of kernel.org?
 
-[linux@dominikbrodowski.net: avoid double newline when total_trans
- is printed]
-Signed-off-by: Julien Danjou <julien@danjou.info>
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
----
- utils/info.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/utils/info.c b/utils/info.c
-index 115a446..05bf9d6 100644
---- a/utils/info.c
-+++ b/utils/info.c
-@@ -223,6 +223,8 @@ static void debug_output_one(unsigned int cpu)
- 		total_trans = cpufreq_get_transitions(cpu);
- 		if (total_trans)
- 			printf("  (%lu)\n", total_trans);
-+		else
-+			printf("\n");
- 	}
- }
- 
 -- 
-1.5.4.3
+Cesar Eduardo Barros
+cesarb@cesarb.net
+cesar.barros@gmail.com
