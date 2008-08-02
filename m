@@ -1,14 +1,14 @@
-From: bugme-daemon@bugzilla.kernel.org
-Subject: [Bug 10055] conservative governor doesn't increase frequency,
-	just decrease. powernow-k7
-Date: Fri,  1 Aug 2008 10:19:53 -0700 (PDT)
-Message-ID: <20080801171953.BFCF5108009@picon.linux-foundation.org>
-References: <bug-10055-3570@http.bugzilla.kernel.org/>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH] add missing newline after stats printing
+Date: Sat, 2 Aug 2008 09:20:08 +0200
+Message-ID: <20080802072008.GA17743@comet.dominikbrodowski.net>
+References: <1217598032-24441-1-git-send-email-julien@danjou.info>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-bounces+glkc-cpufreq=m.gmane.org@lists.linux.org.uk>
-In-Reply-To: <bug-10055-3570@http.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <1217598032-24441-1-git-send-email-julien@danjou.info>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=unsubscribe>
@@ -19,22 +19,35 @@ List-Subscribe: <http://lists.linux.org.uk/mailman/listinfo/cpufreq>,
 	<mailto:cpufreq-request@lists.linux.org.uk?subject=subscribe>
 Sender: cpufreq-bounces@lists.linux.org.uk
 Errors-To: cpufreq-bounces+glkc-cpufreq=m.gmane.org+glkc-cpufreq=m.gmane.org@lists.linux.org.uk
-To: cpufreq@www.linux.org.uk
+To: Julien Danjou <julien@danjou.info>
+Cc: cpufreq@lists.linux.org.uk
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10055
+Thanks, applied.
 
+From: Julien Danjou <julien@danjou.info>
+Date: Fri, 1 Aug 2008 15:40:32 +0200
+Subject: [PATCH] add missing newline after stats printing
 
-art-kbt@broomstick.com changed:
+[linux@dominikbrodowski.net: avoid double newline when total_trans
+ is printed]
+Signed-off-by: Julien Danjou <julien@danjou.info>
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+---
+ utils/info.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-  Attachment #17022|application/octet-stream    |text/plain
-          mime type|                            |
-
-
-
-
+diff --git a/utils/info.c b/utils/info.c
+index 115a446..05bf9d6 100644
+--- a/utils/info.c
++++ b/utils/info.c
+@@ -223,6 +223,8 @@ static void debug_output_one(unsigned int cpu)
+ 		total_trans = cpufreq_get_transitions(cpu);
+ 		if (total_trans)
+ 			printf("  (%lu)\n", total_trans);
++		else
++			printf("\n");
+ 	}
+ }
+ 
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug, or are watching the assignee.
+1.5.4.3
