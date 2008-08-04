@@ -1,7 +1,7 @@
 From: bugme-daemon@bugzilla.kernel.org
 Subject: [Bug 11170] 2.6.24 w/ nohz=off runs cooler than 2.6.25 tickless
-Date: Sun,  3 Aug 2008 22:58:35 -0700 (PDT)
-Message-ID: <20080804055835.E3391108035@picon.linux-foundation.org>
+Date: Sun,  3 Aug 2008 22:58:52 -0700 (PDT)
+Message-ID: <20080804055852.F216810805D@picon.linux-foundation.org>
 References: <bug-11170-3570@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,17 +27,15 @@ To: cpufreq@www.linux.org.uk
 http://bugzilla.kernel.org/show_bug.cgi?id=11170
 
 
+yakui.zhao@intel.com changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |acpi-
+                   |                            |bugzilla@lists.sourceforge.n
+                   |                            |et
 
 
-
-------- Comment #4 from yakui.zhao@intel.com  2008-08-03 22:58 -------
-Will you please attach the following outputs?
-    acpidump --addr 0x7f6d4e23 --length 0x2A8 -o cpu0ist
-    acpidump --addr 0x7f6d50cb --length 0xb1  -o cpu1ist
-    acpidump --addr 0x7f6d48f4 --length 0x4aa -o cpu0cst
-    acpidump --addr 0x7f6d4d9e --length 0x85  -o cpu1cst  
-
-Thanks.
 
 
 -- 
