@@ -1,138 +1,242 @@
-From: Sven Wegener <sven.wegener@stealer.net>
-Subject: [PATCH] cpufreq: Don't export governors for default governor
-Date: Sat, 20 Sep 2008 16:50:08 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.0809201643470.22510@titan.stealer.net>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754009AbYITOuo@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] ACPI: cpufreq: Remove deprecated /proc/acpi/processor/../performance proc entries
+Date: Thu, 29 Jan 2009 16:10:20 +0100
+Message-ID: <1233241820-25853-8-git-send-email-trenn@suse.de>
+References: <1233241820-25853-1-git-send-email-trenn@suse.de>
+ <1233241820-25853-2-git-send-email-trenn@suse.de>
+ <1233241820-25853-3-git-send-email-trenn@suse.de>
+ <1233241820-25853-4-git-send-email-trenn@suse.de>
+ <1233241820-25853-5-git-send-email-trenn@suse.de>
+ <1233241820-25853-6-git-send-email-trenn@suse.de>
+ <1233241820-25853-7-git-send-email-trenn@suse.de>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1233241820-25853-7-git-send-email-trenn@suse.de>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk
+Cc: Thomas Renninger <trenn@suse.de>, Len Brown <lenb@kernel.org>, Linux ACPI list <linux-acpi@vger.kernel.org>
 
-We don't need to export the governors for use as the default governor,
-because the default governor will be built-in anyway and we can access
-the symbol directly.
+They were long enough set deprecated...
 
-This also fixes the following sparse warnings:
+Update Documentation/cpu-freq/users-guide.txt:
+The deprecated files listed there seen not to exist for some time anymore
+already.
 
-drivers/cpufreq/cpufreq_conservative.c:578:25: warning: symbol 'cpufreq_gov_conservative' was not declared. Should it be static?
-drivers/cpufreq/cpufreq_ondemand.c:582:25: warning: symbol 'cpufreq_gov_ondemand' was not declared. Should it be static?
-drivers/cpufreq/cpufreq_performance.c:39:25: warning: symbol 'cpufreq_gov_performance' was not declared. Should it be static?
-drivers/cpufreq/cpufreq_powersave.c:38:25: warning: symbol 'cpufreq_gov_powersave' was not declared. Should it be static?
-drivers/cpufreq/cpufreq_userspace.c:190:25: warning: symbol 'cpufreq_gov_userspace' was not declared. Should it be static?
-
-Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Len Brown <lenb@kernel.org>
+CC: Linux ACPI list <linux-acpi@vger.kernel.org>
 ---
- drivers/cpufreq/cpufreq_conservative.c |    4 +++-
- drivers/cpufreq/cpufreq_ondemand.c     |    4 +++-
- drivers/cpufreq/cpufreq_performance.c  |    4 +++-
- drivers/cpufreq/cpufreq_powersave.c    |    4 +++-
- drivers/cpufreq/cpufreq_userspace.c    |    4 +++-
- 5 files changed, 15 insertions(+), 5 deletions(-)
+ Documentation/cpu-freq/user-guide.txt |   16 -----
+ arch/x86/kernel/cpu/cpufreq/Kconfig   |   11 ----
+ drivers/acpi/processor_perflib.c      |  105 ---------------------------------
+ 3 files changed, 0 insertions(+), 132 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index c1dd266..cf0ab1b 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -576,13 +576,15 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
+index 57f23cb..75f4119 100644
+--- a/Documentation/cpu-freq/user-guide.txt
++++ b/Documentation/cpu-freq/user-guide.txt
+@@ -207,19 +207,3 @@ scaling_setspeed.		By "echoing" a new frequency into this
+ 				you can change the speed of the CPU,
+ 				but only within the limits of
+ 				scaling_min_freq and scaling_max_freq.
+-				
+-
+-3.2 Deprecated Interfaces
+--------------------------
+-
+-Depending on your kernel configuration, you might find the following 
+-cpufreq-related files:
+-/proc/cpufreq
+-/proc/sys/cpu/*/speed
+-/proc/sys/cpu/*/speed-min
+-/proc/sys/cpu/*/speed-max
+-
+-These are files for deprecated interfaces to cpufreq, which offer far
+-less functionality. Because of this, these interfaces aren't described
+-here.
+-
+diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig b/arch/x86/kernel/cpu/cpufreq/Kconfig
+index b63b0db..52c8398 100644
+--- a/arch/x86/kernel/cpu/cpufreq/Kconfig
++++ b/arch/x86/kernel/cpu/cpufreq/Kconfig
+@@ -230,17 +230,6 @@ config X86_E_POWERSAVER
+ 
+ comment "shared options"
+ 
+-config X86_ACPI_CPUFREQ_PROC_INTF
+-	bool "/proc/acpi/processor/../performance interface (deprecated)"
+-	depends on PROC_FS
+-	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
+-	help
+-	  This enables the deprecated /proc/acpi/processor/../performance
+-	  interface. While it is helpful for debugging, the generic,
+-	  cross-architecture cpufreq interfaces should be used.
+-
+-	  If in doubt, say N.
+-
+ config X86_SPEEDSTEP_LIB
+ 	tristate
+ 	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 846e227..9cc769b 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -31,14 +31,6 @@
+ #include <linux/init.h>
+ #include <linux/cpufreq.h>
+ 
+-#ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
+-#include <linux/proc_fs.h>
+-#include <linux/seq_file.h>
+-#include <linux/mutex.h>
+-
+-#include <asm/uaccess.h>
+-#endif
+-
+ #ifdef CONFIG_X86
+ #include <asm/cpufeature.h>
+ #endif
+@@ -434,96 +426,6 @@ int acpi_processor_notify_smm(struct module *calling_module)
+ 
+ EXPORT_SYMBOL(acpi_processor_notify_smm);
+ 
+-#ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
+-/* /proc/acpi/processor/../performance interface (DEPRECATED) */
+-
+-static int acpi_processor_perf_open_fs(struct inode *inode, struct file *file);
+-static struct file_operations acpi_processor_perf_fops = {
+-	.owner = THIS_MODULE,
+-	.open = acpi_processor_perf_open_fs,
+-	.read = seq_read,
+-	.llseek = seq_lseek,
+-	.release = single_release,
+-};
+-
+-static int acpi_processor_perf_seq_show(struct seq_file *seq, void *offset)
+-{
+-	struct acpi_processor *pr = seq->private;
+-	int i;
+-
+-
+-	if (!pr)
+-		goto end;
+-
+-	if (!pr->performance) {
+-		seq_puts(seq, "<not supported>\n");
+-		goto end;
+-	}
+-
+-	seq_printf(seq, "state count:             %d\n"
+-		   "active state:            P%d\n",
+-		   pr->performance->state_count, pr->performance->state);
+-
+-	seq_puts(seq, "states:\n");
+-	for (i = 0; i < pr->performance->state_count; i++)
+-		seq_printf(seq,
+-			   "   %cP%d:                  %d MHz, %d mW, %d uS\n",
+-			   (i == pr->performance->state ? '*' : ' '), i,
+-			   (u32) pr->performance->states[i].core_frequency,
+-			   (u32) pr->performance->states[i].power,
+-			   (u32) pr->performance->states[i].transition_latency);
+-
+-      end:
+-	return 0;
+-}
+-
+-static int acpi_processor_perf_open_fs(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, acpi_processor_perf_seq_show,
+-			   PDE(inode)->data);
+-}
+-
+-static void acpi_cpufreq_add_file(struct acpi_processor *pr)
+-{
+-	struct acpi_device *device = NULL;
+-
+-
+-	if (acpi_bus_get_device(pr->handle, &device))
+-		return;
+-
+-	/* add file 'performance' [R/W] */
+-	proc_create_data(ACPI_PROCESSOR_FILE_PERFORMANCE, S_IFREG | S_IRUGO,
+-			 acpi_device_dir(device),
+-			 &acpi_processor_perf_fops, acpi_driver_data(device));
+-	return;
+-}
+-
+-static void acpi_cpufreq_remove_file(struct acpi_processor *pr)
+-{
+-	struct acpi_device *device = NULL;
+-
+-
+-	if (acpi_bus_get_device(pr->handle, &device))
+-		return;
+-
+-	/* remove file 'performance' */
+-	remove_proc_entry(ACPI_PROCESSOR_FILE_PERFORMANCE,
+-			  acpi_device_dir(device));
+-
+-	return;
+-}
+-
+-#else
+-static void acpi_cpufreq_add_file(struct acpi_processor *pr)
+-{
+-	return;
+-}
+-static void acpi_cpufreq_remove_file(struct acpi_processor *pr)
+-{
+-	return;
+-}
+-#endif				/* CONFIG_X86_ACPI_CPUFREQ_PROC_INTF */
+-
+ static int acpi_processor_get_psd(struct acpi_processor	*pr)
+ {
+ 	int result = 0;
+@@ -747,14 +649,12 @@ err_ret:
+ }
+ EXPORT_SYMBOL(acpi_processor_preregister_performance);
+ 
+-
+ int
+ acpi_processor_register_performance(struct acpi_processor_performance
+ 				    *performance, unsigned int cpu)
+ {
+ 	struct acpi_processor *pr;
+ 
+-
+ 	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
+ 		return -EINVAL;
+ 
+@@ -781,8 +681,6 @@ acpi_processor_register_performance(struct acpi_processor_performance
+ 		return -EIO;
+ 	}
+ 
+-	acpi_cpufreq_add_file(pr);
+-
+ 	mutex_unlock(&performance_mutex);
  	return 0;
  }
- 
-+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-+static
-+#endif
- struct cpufreq_governor cpufreq_gov_conservative = {
- 	.name			= "conservative",
- 	.governor		= cpufreq_governor_dbs,
- 	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
- 	.owner			= THIS_MODULE,
- };
--EXPORT_SYMBOL(cpufreq_gov_conservative);
- 
- static int __init cpufreq_gov_dbs_init(void)
+@@ -795,7 +693,6 @@ acpi_processor_unregister_performance(struct acpi_processor_performance
  {
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index aaa9e19..35e63e9 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -626,13 +626,15 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 	return 0;
- }
+ 	struct acpi_processor *pr;
  
-+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+static
-+#endif
- struct cpufreq_governor cpufreq_gov_ondemand = {
- 	.name			= "ondemand",
- 	.governor		= cpufreq_governor_dbs,
- 	.max_transition_latency = TRANSITION_LATENCY_LIMIT,
- 	.owner			= THIS_MODULE,
- };
--EXPORT_SYMBOL(cpufreq_gov_ondemand);
+-
+ 	mutex_lock(&performance_mutex);
  
- static int __init cpufreq_gov_dbs_init(void)
- {
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
-index e8e1451..7e2e515 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -36,12 +36,14 @@ static int cpufreq_governor_performance(struct cpufreq_policy *policy,
- 	return 0;
- }
+ 	pr = per_cpu(processors, cpu);
+@@ -808,8 +705,6 @@ acpi_processor_unregister_performance(struct acpi_processor_performance
+ 		kfree(pr->performance->states);
+ 	pr->performance = NULL;
  
-+#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
-+static
-+#endif
- struct cpufreq_governor cpufreq_gov_performance = {
- 	.name		= "performance",
- 	.governor	= cpufreq_governor_performance,
- 	.owner		= THIS_MODULE,
- };
--EXPORT_SYMBOL(cpufreq_gov_performance);
+-	acpi_cpufreq_remove_file(pr);
+-
+ 	mutex_unlock(&performance_mutex);
  
- 
- static int __init cpufreq_gov_performance_init(void)
-diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
-index 88d2f44..e6db5fa 100644
---- a/drivers/cpufreq/cpufreq_powersave.c
-+++ b/drivers/cpufreq/cpufreq_powersave.c
-@@ -35,12 +35,14 @@ static int cpufreq_governor_powersave(struct cpufreq_policy *policy,
- 	return 0;
- }
- 
-+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
-+static
-+#endif
- struct cpufreq_governor cpufreq_gov_powersave = {
- 	.name		= "powersave",
- 	.governor	= cpufreq_governor_powersave,
- 	.owner		= THIS_MODULE,
- };
--EXPORT_SYMBOL(cpufreq_gov_powersave);
- 
- static int __init cpufreq_gov_powersave_init(void)
- {
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index 32244aa..1442bba 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -187,6 +187,9 @@ static int cpufreq_governor_userspace(struct cpufreq_policy *policy,
- }
- 
- 
-+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
-+static
-+#endif
- struct cpufreq_governor cpufreq_gov_userspace = {
- 	.name		= "userspace",
- 	.governor	= cpufreq_governor_userspace,
-@@ -194,7 +197,6 @@ struct cpufreq_governor cpufreq_gov_userspace = {
- 	.show_setspeed	= show_speed,
- 	.owner		= THIS_MODULE,
- };
--EXPORT_SYMBOL(cpufreq_gov_userspace);
- 
- static int __init cpufreq_gov_userspace_init(void)
- {
+ 	return;
+-- 
+1.6.0.2
+
