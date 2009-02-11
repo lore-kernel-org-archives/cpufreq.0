@@ -1,242 +1,254 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] ACPI: cpufreq: Remove deprecated /proc/acpi/processor/../performance proc entries
-Date: Thu, 29 Jan 2009 16:10:20 +0100
-Message-ID: <1233241820-25853-8-git-send-email-trenn@suse.de>
-References: <1233241820-25853-1-git-send-email-trenn@suse.de>
- <1233241820-25853-2-git-send-email-trenn@suse.de>
- <1233241820-25853-3-git-send-email-trenn@suse.de>
- <1233241820-25853-4-git-send-email-trenn@suse.de>
- <1233241820-25853-5-git-send-email-trenn@suse.de>
- <1233241820-25853-6-git-send-email-trenn@suse.de>
- <1233241820-25853-7-git-send-email-trenn@suse.de>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: ACPI regression in 2.6.29 - cpufreq_performance doesn't work
+Date: Wed, 11 Feb 2009 14:10:18 +0900
+Message-ID: <20090211051017.GA641@kamineko.org>
+References: <cc0fa41f0902091953y2ab718fcmdbd1c42acf270e08@mail.gmail.com> <20090210045803.GA31755@kamineko.org> <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com> <20090210110802.GB31755@kamineko.org> <cc0fa41f0902101810m77d7054ar7df7b3804cc61e66@mail.gmail.com> <cc0fa41f0902101815s149b3b06mb3fbb72363b49765@mail.gmail.com>
+Mime-Version: 1.0
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1233241820-25853-7-git-send-email-trenn@suse.de>
+Content-Disposition: inline
+In-Reply-To: <cc0fa41f0902101815s149b3b06mb3fbb72363b49765@mail.gmail.com>
 Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk
-Cc: Thomas Renninger <trenn@suse.de>, Len Brown <lenb@kernel.org>, Linux ACPI list <linux-acpi@vger.kernel.org>
+To: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 
-They were long enough set deprecated...
+On Wed, Feb 11, 2009 at 12:15:35AM -0200, Guilherme Malschitzky Schroeder wrote:
+> On Tue, Feb 10, 2009 at 9:08 AM, Mattia Dongili <malattia@linux.it> wrote:
+> > A: Because it messes up the order in which people normally read text.
+> > Q: Why is top-posting such a bad thing?
+> > A: Top-posting.
+> > Q: What is the most annoying thing in e-mail?
+> >
+> > On Tue, Feb 10, 2009 at 04:15:00AM -0200, Guilherme Malschitzky Schroeder wrote:
+> >> yeah mattia, you were right about ondemand module was being used on
+> >> cpu1, so i couldn't remove it.
+> >> with this commited patch, both cpu's can now have different speeds.
+> >
+> > afair this has always been the case. the only difference the patch
+> > introduces is telling the BIOS where the coordination is actually done.
+> >> i was just comparing cat /proc/cpuinfo and didn't notice that cpu0 was
+> >> at 2268MHz.
+> >> cpufrequtils will need an update do deal with this change.
+> >
+> > why? what's wrong with cpufrequtils?
+> 
+> The thing i said about changing cpufrequtils it's because cpufreq-set
+> just set cpu0 governor.
+> With 2.6.29, it'll need to change cpu1 too from what i have understood right?
+> 
+> 2.6.28:
+> 
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> ondemand
+> ondemand
+> # cpufreq-set -g performance
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> performance
+> performance
+> 
+> 2.6.29:
+> 
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> performance
+> performance
+> # cpufreq-set -g ondemand
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> ondemand
+> performance
 
-Update Documentation/cpu-freq/users-guide.txt:
-The deprecated files listed there seen not to exist for some time anymore
-already.
+Ha! can you check the value for
+/sys/devices/system/cpu/cpu{0,1}/cpufreq/related_cpus
+?
+or even include the full output of cpufreq-info with both kernels.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: Len Brown <lenb@kernel.org>
-CC: Linux ACPI list <linux-acpi@vger.kernel.org>
----
- Documentation/cpu-freq/user-guide.txt |   16 -----
- arch/x86/kernel/cpu/cpufreq/Kconfig   |   11 ----
- drivers/acpi/processor_perflib.c      |  105 ---------------------------------
- 3 files changed, 0 insertions(+), 132 deletions(-)
+cpufreq-set behaviour has always been to only change on cpu at a time
+(defaults to cpu0, check the manpage or the notes with --help), what
+might have changed is the cpus that are required to change at the same
+time, i.e. the coordination actually switched from sw to hw for you
+(with d96f94c604453f87fe24154b87e1e9a3a72511f8).
 
-diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
-index 57f23cb..75f4119 100644
---- a/Documentation/cpu-freq/user-guide.txt
-+++ b/Documentation/cpu-freq/user-guide.txt
-@@ -207,19 +207,3 @@ scaling_setspeed.		By "echoing" a new frequency into this
- 				you can change the speed of the CPU,
- 				but only within the limits of
- 				scaling_min_freq and scaling_max_freq.
--				
--
--3.2 Deprecated Interfaces
---------------------------
--
--Depending on your kernel configuration, you might find the following 
--cpufreq-related files:
--/proc/cpufreq
--/proc/sys/cpu/*/speed
--/proc/sys/cpu/*/speed-min
--/proc/sys/cpu/*/speed-max
--
--These are files for deprecated interfaces to cpufreq, which offer far
--less functionality. Because of this, these interfaces aren't described
--here.
--
-diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig b/arch/x86/kernel/cpu/cpufreq/Kconfig
-index b63b0db..52c8398 100644
---- a/arch/x86/kernel/cpu/cpufreq/Kconfig
-+++ b/arch/x86/kernel/cpu/cpufreq/Kconfig
-@@ -230,17 +230,6 @@ config X86_E_POWERSAVER
- 
- comment "shared options"
- 
--config X86_ACPI_CPUFREQ_PROC_INTF
--	bool "/proc/acpi/processor/../performance interface (deprecated)"
--	depends on PROC_FS
--	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
--	help
--	  This enables the deprecated /proc/acpi/processor/../performance
--	  interface. While it is helpful for debugging, the generic,
--	  cross-architecture cpufreq interfaces should be used.
--
--	  If in doubt, say N.
--
- config X86_SPEEDSTEP_LIB
- 	tristate
- 	default (X86_SPEEDSTEP_ICH || X86_SPEEDSTEP_SMI || X86_P4_CLOCKMOD)
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index 846e227..9cc769b 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -31,14 +31,6 @@
- #include <linux/init.h>
- #include <linux/cpufreq.h>
- 
--#ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
--#include <linux/proc_fs.h>
--#include <linux/seq_file.h>
--#include <linux/mutex.h>
--
--#include <asm/uaccess.h>
--#endif
--
- #ifdef CONFIG_X86
- #include <asm/cpufeature.h>
- #endif
-@@ -434,96 +426,6 @@ int acpi_processor_notify_smm(struct module *calling_module)
- 
- EXPORT_SYMBOL(acpi_processor_notify_smm);
- 
--#ifdef CONFIG_X86_ACPI_CPUFREQ_PROC_INTF
--/* /proc/acpi/processor/../performance interface (DEPRECATED) */
--
--static int acpi_processor_perf_open_fs(struct inode *inode, struct file *file);
--static struct file_operations acpi_processor_perf_fops = {
--	.owner = THIS_MODULE,
--	.open = acpi_processor_perf_open_fs,
--	.read = seq_read,
--	.llseek = seq_lseek,
--	.release = single_release,
--};
--
--static int acpi_processor_perf_seq_show(struct seq_file *seq, void *offset)
--{
--	struct acpi_processor *pr = seq->private;
--	int i;
--
--
--	if (!pr)
--		goto end;
--
--	if (!pr->performance) {
--		seq_puts(seq, "<not supported>\n");
--		goto end;
--	}
--
--	seq_printf(seq, "state count:             %d\n"
--		   "active state:            P%d\n",
--		   pr->performance->state_count, pr->performance->state);
--
--	seq_puts(seq, "states:\n");
--	for (i = 0; i < pr->performance->state_count; i++)
--		seq_printf(seq,
--			   "   %cP%d:                  %d MHz, %d mW, %d uS\n",
--			   (i == pr->performance->state ? '*' : ' '), i,
--			   (u32) pr->performance->states[i].core_frequency,
--			   (u32) pr->performance->states[i].power,
--			   (u32) pr->performance->states[i].transition_latency);
--
--      end:
--	return 0;
--}
--
--static int acpi_processor_perf_open_fs(struct inode *inode, struct file *file)
--{
--	return single_open(file, acpi_processor_perf_seq_show,
--			   PDE(inode)->data);
--}
--
--static void acpi_cpufreq_add_file(struct acpi_processor *pr)
--{
--	struct acpi_device *device = NULL;
--
--
--	if (acpi_bus_get_device(pr->handle, &device))
--		return;
--
--	/* add file 'performance' [R/W] */
--	proc_create_data(ACPI_PROCESSOR_FILE_PERFORMANCE, S_IFREG | S_IRUGO,
--			 acpi_device_dir(device),
--			 &acpi_processor_perf_fops, acpi_driver_data(device));
--	return;
--}
--
--static void acpi_cpufreq_remove_file(struct acpi_processor *pr)
--{
--	struct acpi_device *device = NULL;
--
--
--	if (acpi_bus_get_device(pr->handle, &device))
--		return;
--
--	/* remove file 'performance' */
--	remove_proc_entry(ACPI_PROCESSOR_FILE_PERFORMANCE,
--			  acpi_device_dir(device));
--
--	return;
--}
--
--#else
--static void acpi_cpufreq_add_file(struct acpi_processor *pr)
--{
--	return;
--}
--static void acpi_cpufreq_remove_file(struct acpi_processor *pr)
--{
--	return;
--}
--#endif				/* CONFIG_X86_ACPI_CPUFREQ_PROC_INTF */
--
- static int acpi_processor_get_psd(struct acpi_processor	*pr)
- {
- 	int result = 0;
-@@ -747,14 +649,12 @@ err_ret:
- }
- EXPORT_SYMBOL(acpi_processor_preregister_performance);
- 
--
- int
- acpi_processor_register_performance(struct acpi_processor_performance
- 				    *performance, unsigned int cpu)
- {
- 	struct acpi_processor *pr;
- 
--
- 	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
- 		return -EINVAL;
- 
-@@ -781,8 +681,6 @@ acpi_processor_register_performance(struct acpi_processor_performance
- 		return -EIO;
- 	}
- 
--	acpi_cpufreq_add_file(pr);
--
- 	mutex_unlock(&performance_mutex);
- 	return 0;
- }
-@@ -795,7 +693,6 @@ acpi_processor_unregister_performance(struct acpi_processor_performance
- {
- 	struct acpi_processor *pr;
- 
--
- 	mutex_lock(&performance_mutex);
- 
- 	pr = per_cpu(processors, cpu);
-@@ -808,8 +705,6 @@ acpi_processor_unregister_performance(struct acpi_processor_performance
- 		kfree(pr->performance->states);
- 	pr->performance = NULL;
- 
--	acpi_cpufreq_remove_file(pr);
--
- 	mutex_unlock(&performance_mutex);
- 
- 	return;
+I'm adding linux-acpi and cpufreq ML for more. Also, leaving the full
+context below for them.
+
+> >> btw, this looks strange:
+> >>
+> >> dub:~# echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> >> performance
+> >> ondemand
+> >>
+> >> dub:~# cat /proc/cpuinfo | grep MH
+> >> cpu MHz         : 2268.000
+> >> cpu MHz         : 800.000
+> >>
+> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+> >> 2267000
+> >> 2267000
+> >
+> > well the former displays what the kernel thinks the frequency is, the
+> > latter reads from hw registers and displays the real frequency.
+> > It's consistent. The kernel doesn't (and can't) know about what the hw
+> > is doing behind its back and present the user consistent information.
+> 
+> Still, i have a doubt with the frequencie of cpu1:
+> 
+> # uname -a
+> Linux dub 2.6.28.4 #1 SMP Tue Feb 10 16:35:16 BRST 2009 x86_64 GNU/Linux
+> 
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> ondemand
+> ondemand
+> 
+> # echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> performance
+> performance
+> 
+> # cat /proc/cpuinfo | grep MH
+> cpu MHz         : 2268.000
+> cpu MHz         : 2268.000
+> 
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+> 2267000
+> 2267000
+> 
+> # echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> ondemand
+> ondemand
+> 
+> # uname -a
+> Linux dub 2.6.29-rc4 #28 SMP Tue Feb 10 02:22:06 BRST 2009 x86_64 GNU/Linux
+> 
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> ondemand
+> ondemand
+> 
+> # echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> performance
+> ondemand
+> 
+> # cat /proc/cpuinfo | grep MH
+> cpu MHz         : 2268.000
+> cpu MHz         : 800.000
+> 
+> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+> 2267000
+> 2268000
+> 
+> So, cpu1 is working at 2268MHz or 800? It's using the ondemand
+> governor or performance governor?
+> 
+> >
+> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_min_freq
+> >> 800000
+> >> 800000
+> >>
+> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_available_frequencies
+> >> 2268000 2267000 1600000 800000
+> >> 2268000 2267000 1600000 800000
+> >>
+> >> doesn't cpu0/cpufreq/scaling_min_freq needs to be 2268000 and
+> >> scaling_frequencies
+> >> just have 2268000 because it's set to "performance"?
+> >>
+> >> am i forgetting anything else to set?
+> >
+> > no, if I understand your question correctly you're just misinterpreting
+> > what those files are for, take a look at Documentation/cpu-freq
+> >
+> >> thanks,
+> >>
+> >>
+> >> On Tue, Feb 10, 2009 at 2:58 AM, Mattia Dongili <malattia@linux.it> wrote:
+> >> > On Tue, Feb 10, 2009 at 01:53:13AM -0200, Guilherme Malschitzky Schroeder wrote:
+> >> >> Hi,
+> >> >>
+> >> >> If i set performance for scaling_governor using 2.6.29-rc4-git2,
+> >> >> ondemand stills control my CPU.
+> >> >> I get just 800MHz instead of 2268MHz.
+> >> >>
+> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
+> >> >> 800000
+> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# echo performance > scaling_governor
+> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor
+> >> >> performance
+> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
+> >> >> 2267000
+> >> >>
+> >> >> But, /proc/cpuinfo still shows 800MHz:
+> >> >>
+> >> >> model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
+> >> >> stepping        : 6
+> >> >> cpu MHz         : 800.000
+> >> >>
+> >> >> And i cannot remove the ondemand module, that is not used anymore:
+> >> >>
+> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# rmmod cpufreq_ondemand
+> >> >> ERROR: Module cpufreq_ondemand is in use
+> >> >
+> >> > yes, I guess it is used by cpu1, you should repeat the above commands
+> >> > for /sys/devices/system/cpu/cpu1/cpufreq too.
+> >> >
+> >> > ...
+> >> >> I've git bisect from 2.6.28.4 (which was working) to 2.6.29-rc4-git2
+> >> >> and i get into this:
+> >> >>
+> >> >> alemao@dub:~/linux-2.6$ git bisect good
+> >> >> d96f94c604453f87fe24154b87e1e9a3a72511f8 is first bad commit
+> >> >> commit d96f94c604453f87fe24154b87e1e9a3a72511f8
+> >> >> Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+> >> >> Date:   Mon Feb 2 11:57:18 2009 -0800
+> >> >>
+> >> >>     ACPI: Enable bit 11 in _PDC to advertise hw coord
+> >> >>
+> >> >>     Bit 11 in intel PDC definitions is meant for OS capability to handle
+> >> >>     hardware coordination of P-states. In Linux we have always supported
+> >> >>     hwardware coordination of P-states. Just let the BIOSes know that we
+> >> >>     support it, by setting this bit.
+> >> >>
+> >> >>     Some BIOSes use this bit to choose between hardware or software coordination
+> >> >>     and without this change below, BIOSes switch to software coordination, which
+> >> >>     is not very optimal in terms of power consumption and extra
+> >> >> wakeups from idle.
+> >> >>
+> >> >>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> >> >>     Signed-off-by: Len Brown <len.brown@intel.com>
+> >> >
+> >> > the "coordination of P-states" is required when you have an SMP system
+> >> > that cannot scale cpu voltage independently on each cpu, so the best
+> >> > voltage/frequency have to be selected mediating between all the applied
+> >> > policies.
+> >> > The commit you found above just makes use hw coordination instead of sw
+> >> > and the message explains why.
+> >> >
+> >> > If you make sure you change *all* of the cpu policies you won't see the
+> >> > behaviour you describe.
+> >> >
+> >> > hth
+> >> > --
+> >> > mattia
+> >> > :wq
+> >> >
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >> Please read the FAQ at  http://www.tux.org/lkml/
+> >>
+> > --
+> > mattia
+> > :wq!
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 -- 
-1.6.0.2
-
+mattia
+:wq!
