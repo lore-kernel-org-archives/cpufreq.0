@@ -1,84 +1,33 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: ACPI regression in 2.6.29 - cpufreq_performance doesn't work
-Date: Wed, 11 Feb 2009 15:42:53 +0900
-Message-ID: <20090211064253.GC641@kamineko.org>
-References: <cc0fa41f0902091953y2ab718fcmdbd1c42acf270e08@mail.gmail.com> <20090210045803.GA31755@kamineko.org> <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com> <20090210110802.GB31755@kamineko.org> <cc0fa41f0902101810m77d7054ar7df7b3804cc61e66@mail.gmail.com> <cc0fa41f0902101815s149b3b06mb3fbb72363b49765@mail.gmail.com> <20090211051017.GA641@kamineko.org> <cc0fa41f0902102158y146aa60dmcddbe4c6be2ad56f@mail.gmail.com>
+From: Frans Pop <elendil@planet.nl>
+Subject: Re: cpuinfo shows wrong MHz value
+Date: Fri, 20 Feb 2009 03:52:50 +0100
+Message-ID: <200902200352.51173.elendil@planet.nl>
+References: <200902142217.51655.jplatte@naasa.net> <200902182205.47737.elendil@planet.nl> <200902191803.55347.jplatte@naasa.net>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755017AbZBTCxI@vger.kernel.org>
+In-Reply-To: <200902191803.55347.jplatte@naasa.net>
 Content-Disposition: inline
-In-Reply-To: <cc0fa41f0902102158y146aa60dmcddbe4c6be2ad56f@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
-Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com, CPUFreq Mailing List <cpufreq@lists.linux.org.uk>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+To: jplatte@naasa.net
+Cc: Kasper Sandberg <lkml@metanurb.dk>, linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>, Matthias-Christian Ott <ott@mirix.org>, cpufreq <cpufreq@www.linux.org.uk>
 
-On Wed, Feb 11, 2009 at 03:58:07AM -0200, Guilherme Malschitzky Schroeder wrote:
-> On Wed, Feb 11, 2009 at 3:10 AM, Mattia Dongili <malattia@linux.it> wrote:
-> > On Wed, Feb 11, 2009 at 12:15:35AM -0200, Guilherme Malschitzky Schroeder wrote:
-...
-> > Ha! can you check the value for
-> > /sys/devices/system/cpu/cpu{0,1}/cpufreq/related_cpus
-> > ?
+On Thursday 19 February 2009, Joerg Platte wrote:
+> Am Mittwoch, 18. Februar 2009 schrieb Frans Pop:
+> > commit ed9cbcd40004904dbe61ccc16d6106a7de38c998
+> > Author: Zhao Yakui <yakui.zhao@intel.com>
+> > Date:   Tue Nov 20 14:20:21 2007 -0500
+> >     Revert "speedstep-lib.c: fix frequency multiplier for Pentium4
+> > models 0&1"
+> >
+> > That would exactly explain the factor 8 of the error.
+>
+> Yes, looks like thats the reason.
 
-errr... sorry, I meant to say
-/sys/devices/system/cpu/cpu{0,1}/cpufreq/affected_cpus
+It looks as if http://bugzilla.kernel.org/10968 has a fix for this issue, 
+but that that patch never got included in the kernel.
 
-> > or even include the full output of cpufreq-info with both kernels.
-
-anyway from this you can see that there is actually a change
-(cpufreq-info reads from affected_cpus and in 2.6.28
-sys/.../cpu1/cpufreq should be a link to ../cpu0/cpufreq):
-
-> Here it's:
-> 
-> 2.6.28.4
-...
-> # cpufreq-info
-> cpufrequtils 004: cpufreq-info (C) Dominik Brodowski 2004-2006
-> Report errors and bugs to cpufreq@lists.linux.org.uk, please.
-> analyzing CPU 0:
->   driver: acpi-cpufreq
->   CPUs which need to switch frequency at the same time: 0 1
-...
-> 2.6.29-rc4
-...
-> # cpufreq-info
-> cpufrequtils 004: cpufreq-info (C) Dominik Brodowski 2004-2006
-> Report errors and bugs to cpufreq@lists.linux.org.uk, please.
-> analyzing CPU 0:
->   driver: acpi-cpufreq
->   CPUs which need to switch frequency at the same time: 0
-...
-> analyzing CPU 1:
->   driver: acpi-cpufreq
->   CPUs which need to switch frequency at the same time: 1
-
-So I guess you have one of those bioses that prefer sw coordination if
-not told to use hw's as explained in the commit message.
-And cpufreq-set behaves as it always did ;)
-
-...
-> >> >> >> commit d96f94c604453f87fe24154b87e1e9a3a72511f8
-> >> >> >> Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-> >> >> >> Date:   Mon Feb 2 11:57:18 2009 -0800
-> >> >> >>
-> >> >> >>     ACPI: Enable bit 11 in _PDC to advertise hw coord
-> >> >> >>
-> >> >> >>     Bit 11 in intel PDC definitions is meant for OS capability to handle
-> >> >> >>     hardware coordination of P-states. In Linux we have always supported
-> >> >> >>     hwardware coordination of P-states. Just let the BIOSes know that we
-> >> >> >>     support it, by setting this bit.
-> >> >> >>
-> >> >> >>     Some BIOSes use this bit to choose between hardware or software coordination
-> >> >> >>     and without this change below, BIOSes switch to software coordination, which
-> >> >> >>     is not very optimal in terms of power consumption and extra
-> >> >> >> wakeups from idle.
-> >> >> >>
-> >> >> >>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> >> >> >>     Signed-off-by: Len Brown <len.brown@intel.com>
-
--- 
-mattia
-:wq!
+For start of current thread, see: 
+http://www.gossamer-threads.com/lists/linux/kernel/1034291?page=last
