@@ -1,60 +1,43 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16489] New: kmemleak after suspend2ram in cpufreq driver
-Date: Sun, 1 Aug 2010 14:19:35 GMT
-Message-ID: <bug-16489-12968@https.bugzilla.kernel.org/>
+From: Carl Wenninger <charles@carl-wenninger.de>
+Subject: ACPI-CPUFREQ problem on VIA C7-D 1800 MHz
+Date: Sun, 01 Aug 2010 16:36:59 +0200
+Message-ID: <4C55868B.6070901@carl-wenninger.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: cpufreq@vger.kernel.org
-
-https://bugzilla.kernel.org/show_bug.cgi?id=16489
-
-           Summary: kmemleak after suspend2ram in cpufreq driver
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 2.6.35-rc6+
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: toralf.foerster@gmx.de
-        Regression: No
+Cc: Tim Mager <tim.mager@himmer.de>
 
 
-If I suspend2ram my ThinkPad T400 and wake it up, then
-/sys/kernel/debug/kmemleak contains an entry like this:
+Hello,
 
-unreferenced object 0xf6788640 (size 64):
-  comm "modprobe", pid 1038, jiffies 4294676277 (age 7682.155s)
-  hex dump (first 32 bytes):
-    00 00 00 00 e8 a2 24 00 01 00 00 00 00 9f 24 00  ......$.......$.
-    02 00 00 00 00 6a 18 00 03 00 00 00 00 35 0c 00  .....j.......5..
-  backtrace:
-    [<c122f8f7>] kmemleak_alloc+0x27/0x50
-    [<c109cb6f>] __kmalloc+0xcf/0x110
-    [<f94f87de>] acpi_cpufreq_cpu_init+0x1ee/0x4e4 [acpi_cpufreq]
-    [<c11c3a72>] cpufreq_add_dev+0x142/0x3a0
-    [<c1187e27>] sysdev_driver_register+0x97/0x110
-    [<c11c2a06>] cpufreq_register_driver+0x86/0x140
-    [<f94fc080>] 0xf94fc080
-    [<c100112d>] do_one_initcall+0x2d/0x180
-    [<c105ef29>] sys_init_module+0x99/0x1e0
-    [<c1002d97>] sysenter_do_call+0x12/0x26
-    [<ffffffff>] 0xffffffff
+I run a stock 2.6.34.1 kernel on a VIOTECH 3100+ board with a
+
+    CPU: Centaur VIA C7-D Processor 1800MHz stepping 00
+
+Having compiled acpi-cpufreq as a module, the system boots up with no 
+cpufreq driver, i.e. at 1800 MHz. Here my heavily cpu-bound test 
+application takes 0.43s to complete.
+
+After "modprobe acpi_cpufreq" (with default governor = userspace) the 
+system still claims to run on 1800MHz, but my test app now needs 0.97s 
+to complete. I.e. the system runs in fact on a reduced speed, 
+presumeably on 800 MHz. (The system is supposed to support 2 P-States: 
+1800 and 800 MHz).
+
+Changing frequency down to 800 MHz via 
+    /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+changes the indicated frequency in scaling_cur_freq and /proc/cpuinfo,
+but has absolutly no effect on the runtime of my test app: still 0.97s
+Changing back to 1800 MHz again changes the indicated frequencies, but 
+has no effect on cpu performance.
+
+I'd be happy to provide any further technical information you may require.
+
+Rgds
+Carl
 
 
-What's interesting is that this entry only appears after the wakeup (and an
-additional wait time of usually 20 minutes) however the "age" is from the boot
-time of that system.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
