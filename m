@@ -1,72 +1,137 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Make PowerTOP generic, by removing hard coded values
-Date: Wed, 25 Aug 2010 16:20:08 +0200
-Message-ID: <201008251620.09154.trenn@suse.de>
-References: <1281684356-7454-1-git-send-email-amit.arora@linaro.org> <AANLkTimdmQd8m30KuDBMqmXBsjW0zDY9uYpHoXQrJn=L@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH 1/3] powertop: Use cpufreqlib for getting cpufreqstats info
+Date: Wed, 25 Aug 2010 16:23:29 +0200
+Message-ID: <1282746211-1227-2-git-send-email-trenn@suse.de>
+References: <1282746211-1227-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <AANLkTimdmQd8m30KuDBMqmXBsjW0zDY9uYpHoXQrJn=L@mail.gmail.com>
+In-Reply-To: <1282746211-1227-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: power@bughost.org, cpufreq@vger.kernel.org
-Cc: Amit Arora <amit.arora@linaro.org>, auke@linux.intel.com, amit.kucheria@linaro.org, yong.shen@linaro.org, vishwanath.bs@ti.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: trenn@suse.de
+Cc: power@bughost.org, Amit Arora <amit.arora@linaro.org>, auke@linux.intel.com, cpufreq@vger.kernel.org
 
-On Tuesday 24 August 2010 12:58:41 Amit Arora wrote:
-> Hello Auke,
-> 
-> Could you please look at this patch and provide your feedback ? 
-> Thanks!
-While this is probably needed for your purposes for a shortterm 
-solution, I hope powertop can link against cpufrequtils library in the 
-future to fetch general cpu freq info.
-cpufrequtils is well maintained by one of the cpufreq kernel authors
-and should be available on every distro for quite some time.
+Sharing code is a good idea.
+cpufrequtils/libs exist for years and every distribution
+should have them. It's also well maintained and ideally is
+the only userspace tool which needs adjusting if cpufreq
+sysfs api changes at some time.
 
-When I looked at this, I realized that this is perfect for using 
-cpufreqlib and I wrote a patch making use of it.
-I'll send 3 patches.
-The first 2, I'd like to see getting applied, the third isn't that much
-of use, but also an improvement.
 
-There also was the discussion about cleaner sysfs access for pci stuff
-(instead of lspci external binary executions and similar).
-It would also be nice to see libpci getting used instead of 
-reimplementing its functionality.
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Amit Arora <amit.arora@linaro.org>
+CC: auke@linux.intel.com
+CC: power@bughost.org
+CC: cpufreq@vger.kernel.org
+---
+ Makefile       |    1 +
+ cpufreqstats.c |   52 ++++++++++++++++++++--------------------------------
+ 2 files changed, 21 insertions(+), 32 deletions(-)
 
-Amit: Your problem seem not to be the 16 static freqs, oldfreqs, delta
-arrays, but that only 6 frequencies max are displayed?:
+diff --git a/Makefile b/Makefile
+index e4e1671..ee10a84 100644
+--- a/Makefile
++++ b/Makefile
+@@ -6,6 +6,7 @@ MANDIR=/usr/share/man/man8
+ WARNFLAGS=-Wall -Wshadow -W -Wformat -Wimplicit-function-declaration -Wimplicit-int
+ CFLAGS?=-O1 -g ${WARNFLAGS}
+ CC?=gcc
++LDFLAGS = -lcpufreq
+ 
+ CFLAGS+=-D VERSION=\"$(VERSION)\"
+ 
+diff --git a/cpufreqstats.c b/cpufreqstats.c
+index d10b047..303c3cf 100644
+--- a/cpufreqstats.c
++++ b/cpufreqstats.c
+@@ -29,6 +29,7 @@
+ #include <stdint.h>
+ #include <sys/types.h>
+ #include <dirent.h>
++#include <cpufreq.h>
+ 
+ #include "powertop.h"
+ 
+@@ -100,15 +101,11 @@ static char *HzToHuman(unsigned long hz)
+ 
+ void  do_cpufreq_stats(void)
+ {
+-	DIR *dir;
+-	struct dirent *dirent;
+-	FILE *file;
+-	char filename[PATH_MAX];
+-	char line[1024];
+-
+-	int ret = 0;
++	struct cpufreq_stats *freq_stats, *tmp;
++	int cpu = 0, ret = 0;
+ 	int maxfreq = 0;
+ 	uint64_t total_time = 0;
++	unsigned long long time_dummy = 0;
+ 
+ 	memcpy(&oldfreqs, &freqs, sizeof(freqs));
+ 	memset(&cpufreqstrings, 0, sizeof(cpufreqstrings));
+@@ -117,30 +114,21 @@ void  do_cpufreq_stats(void)
+ 	for (ret = 0; ret<16; ret++)
+ 		freqs[ret].count = 0;
+ 
+-	dir = opendir("/sys/devices/system/cpu");
+-	if (!dir)
++	freq_stats = cpufreq_get_stats(0, &time_dummy);
++	if (!freq_stats)
++		/* Probably cpufreq_stats not compiled in or no cpufreq
++		   support, printing a debug message is appropriate */
+ 		return;
+ 
+-	while ((dirent = readdir(dir))) {
+-		int i;
+-		if (dirent->d_name[0]=='.')
+-			continue;
+-		sprintf(filename, "/sys/devices/system/cpu/%s/cpufreq/stats/time_in_state", dirent->d_name);
+-		file = fopen(filename, "r");
+-		if (!file)
+-			continue;
+-		memset(line, 0, 1024);
+-
+-		i = 0;
+-		while (!feof(file)) {
+-			uint64_t f,count;
+-			char *c;
+-			if (fgets(line, 1023,file)==NULL)
+-				break;
+-			f = strtoull(line, &c, 10);
+-			if (!c)
+-				break;
+-			count = strtoull(c, NULL, 10);
++	/* cpu loop */
++	while (freq_stats) {
++		int i = 0;
++		tmp = freq_stats;
++		/* freq loop */
++		for (;freq_stats; freq_stats = freq_stats->next) {
++
++			unsigned long f = freq_stats->frequency;
++			unsigned long long count = freq_stats->time_in_state;
+ 
+ 			if (freqs[i].frequency && freqs[i].frequency != f) {
+ 				zap();
+@@ -156,11 +144,11 @@ void  do_cpufreq_stats(void)
+ 			if (i>15)
+ 				break;
+ 		}
+-		fclose(file);
++		cpu++;
++		cpufreq_put_stats(tmp);
++		freq_stats = cpufreq_get_stats(cpu, &time_dummy);
+ 	}
+ 
+-	closedir(dir);
+-
+ 	for (ret = 0; ret < 16; ret++) {
+ 		delta[ret].count = freqs[ret].count - oldfreqs[ret].count;
+ 		total_time += delta[ret].count;
+-- 
+1.6.4.2
 
-char cpufreqstrings[6][80];
-...
-if (maxfreq>4)
-	maxfreq=4;
-which should limit the frequency information string to 6 lines.
-This you should have to touch?
-On the other hand side there already is sorting for most relevant/mostly
-used frequencies and only these are cut out. So if you have 16 (or do 
-you really have more?) frequencies you should see the 6 mostly used 
-ones, which sounds sane -> display size is limited.
-
-Thanks,
-
-    Thomas
-
-> Regards,
-> Amit Arora
-> 
-> On Fri, Aug 13, 2010 at 12:55 PM, Amit Arora <amit.arora@linaro.org>
-> wrote:
-> > Background:
-> > Currently, PowerTOP has hard coded values for the number of C and P
-> > states supported. Hence it doesn't work well on systems which may
-> > have more states than these hard coded ones. This is specially true
-> > for some of the ARM SoCs which may have as many as 8 to 9 C-states.
-> >
-> > Suggested fix:
-> > This patch defines MAX values of C and P states for allocating
-> > enough memory for data structures statically. But, uses actual
-> > values of the MAX C and P states for display (using, maxcstate and
-> > maxpstate variables).
-...
