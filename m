@@ -1,87 +1,90 @@
-From: "Roman V. Nikolaev" <rshadow@rambler.ru>
-Subject: Unknown cpufreq driver
-Date: Mon, 23 Aug 2010 21:08:41 +0400
-Message-ID: <4C72AB19.6010907@rambler.ru>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 17001] New: ondemand governor non-functional / ACPI P-states
+ driver
+Date: Wed, 25 Aug 2010 11:52:10 GMT
+Message-ID: <bug-17001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-Hello. This is my bugreport.
-I install cpufreqd buf it`s fail on daemon start.
+https://bugzilla.kernel.org/show_bug.cgi?id=17001
 
-# cpufreq-info
+           Summary: ondemand governor non-functional / ACPI P-states
+                    driver
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 2.6.35.3
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: peter.ganzhorn@googlemail.com
+        Regression: No
 
-cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-   no or unknown cpufreq driver is active on this CPU
-   maximum transition latency: 4294.55 ms.
-analyzing CPU 1:
-   no or unknown cpufreq driver is active on this CPU
-   maximum transition latency: 4294.55 ms.
 
-# cat /proc/cpuinfo
-processor    : 0
-vendor_id    : GenuineIntel
-cpu family    : 15
-model        : 4
-model name    : Intel(R) Pentium(R) D CPU 2.80GHz
-stepping    : 7
-cpu MHz        : 2810.101
-cache size    : 1024 KB
-physical id    : 0
-siblings    : 2
-core id        : 0
-cpu cores    : 2
-apicid        : 0
-initial apicid    : 0
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 5
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
-nx lm constant_tsc pebs bts pni dtes64 monitor ds_cpl cid cx16 xtpr lahf_lm
-bogomips    : 5620.20
-clflush size    : 64
-cache_alignment    : 128
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+Hardware:
+Toshiba Tecra A9 notebook
+Intel Core2 Duo T7300 2.0 GHz processor
 
-processor    : 1
-vendor_id    : GenuineIntel
-cpu family    : 15
-model        : 4
-model name    : Intel(R) Pentium(R) D CPU 2.80GHz
-stepping    : 7
-cpu MHz        : 2810.101
-cache size    : 1024 KB
-physical id    : 0
-siblings    : 2
-core id        : 1
-cpu cores    : 2
-apicid        : 1
-initial apicid    : 1
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 5
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
-nx lm constant_tsc pebs bts pni dtes64 monitor ds_cpl cid cx16 xtpr lahf_lm
-bogomips    : 5620.35
-clflush size    : 64
-cache_alignment    : 128
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+Software:
+Debian testing "Squeeze"
+Kernel 2.6.35.3
 
-Debian testing
-Linux 2.6.32 amd64
+Bug description:
+With the cpufreq-ondemand governor enabled, the CPU frequency does not increase
+at all with any workload.
+Even with both cores running at 100% load the CPU frequency will never increase
+above the minimum frequency of 800MHz.
+Using the performance governor makes the CPU switch to 2GHz immediately.
 
-How I can more help to resolve this bug?
+Running on battery or AC power does not have any effect on this issue.
 
-Roman V. Nikolaev
+I am using the exact same software configuration (same distro, kernel .config
+is identical except for different NIC drivers) on a workstation computer with
+an Intel Core2 Quad Q9550, the workstation is not affected by the issue (CPU
+frequency is changed when load situation changes almost instantaneously to a
+frequency fitting the current load situation).
+
+Here's some sysfs info about the cpufreq configuration (looks fine to me):
+
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./cpuinfo_max_freq 
+2001000
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./cpuinfo_min_freq 
+800000
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_max_freq 
+2001000
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_min_freq
+800000
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_setspeed 
+<unsupported>
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_governor 
+performance
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_driver 
+acpi-cpufreq
+centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat
+./scaling_available_frequencies 
+2001000 2000000 1600000 1200000 800000
+
+Please tell me what other information I need to submit to you.
+
+As far as I can tell, the problem exists at least since kernel version 2.6.30,
+I did not test any earlier versions.
+Debian distribution stock kernel is affected from the issue as well.
+
+Thanks for looking into this issue.
+
+best regards,
+Peter Ganzhorn
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
