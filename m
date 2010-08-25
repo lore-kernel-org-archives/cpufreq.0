@@ -1,90 +1,72 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 17001] New: ondemand governor non-functional / ACPI P-states
- driver
-Date: Wed, 25 Aug 2010 11:52:10 GMT
-Message-ID: <bug-17001-12968@https.bugzilla.kernel.org/>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] Make PowerTOP generic, by removing hard coded values
+Date: Wed, 25 Aug 2010 16:20:08 +0200
+Message-ID: <201008251620.09154.trenn@suse.de>
+References: <1281684356-7454-1-git-send-email-amit.arora@linaro.org> <AANLkTimdmQd8m30KuDBMqmXBsjW0zDY9uYpHoXQrJn=L@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <AANLkTimdmQd8m30KuDBMqmXBsjW0zDY9uYpHoXQrJn=L@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: power@bughost.org, cpufreq@vger.kernel.org
+Cc: Amit Arora <amit.arora@linaro.org>, auke@linux.intel.com, amit.kucheria@linaro.org, yong.shen@linaro.org, vishwanath.bs@ti.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=17001
+On Tuesday 24 August 2010 12:58:41 Amit Arora wrote:
+> Hello Auke,
+> 
+> Could you please look at this patch and provide your feedback ? 
+> Thanks!
+While this is probably needed for your purposes for a shortterm 
+solution, I hope powertop can link against cpufrequtils library in the 
+future to fetch general cpu freq info.
+cpufrequtils is well maintained by one of the cpufreq kernel authors
+and should be available on every distro for quite some time.
 
-           Summary: ondemand governor non-functional / ACPI P-states
-                    driver
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 2.6.35.3
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: peter.ganzhorn@googlemail.com
-        Regression: No
+When I looked at this, I realized that this is perfect for using 
+cpufreqlib and I wrote a patch making use of it.
+I'll send 3 patches.
+The first 2, I'd like to see getting applied, the third isn't that much
+of use, but also an improvement.
 
+There also was the discussion about cleaner sysfs access for pci stuff
+(instead of lspci external binary executions and similar).
+It would also be nice to see libpci getting used instead of 
+reimplementing its functionality.
 
-Hardware:
-Toshiba Tecra A9 notebook
-Intel Core2 Duo T7300 2.0 GHz processor
+Amit: Your problem seem not to be the 16 static freqs, oldfreqs, delta
+arrays, but that only 6 frequencies max are displayed?:
 
-Software:
-Debian testing "Squeeze"
-Kernel 2.6.35.3
+char cpufreqstrings[6][80];
+...
+if (maxfreq>4)
+	maxfreq=4;
+which should limit the frequency information string to 6 lines.
+This you should have to touch?
+On the other hand side there already is sorting for most relevant/mostly
+used frequencies and only these are cut out. So if you have 16 (or do 
+you really have more?) frequencies you should see the 6 mostly used 
+ones, which sounds sane -> display size is limited.
 
-Bug description:
-With the cpufreq-ondemand governor enabled, the CPU frequency does not increase
-at all with any workload.
-Even with both cores running at 100% load the CPU frequency will never increase
-above the minimum frequency of 800MHz.
-Using the performance governor makes the CPU switch to 2GHz immediately.
+Thanks,
 
-Running on battery or AC power does not have any effect on this issue.
+    Thomas
 
-I am using the exact same software configuration (same distro, kernel .config
-is identical except for different NIC drivers) on a workstation computer with
-an Intel Core2 Quad Q9550, the workstation is not affected by the issue (CPU
-frequency is changed when load situation changes almost instantaneously to a
-frequency fitting the current load situation).
-
-Here's some sysfs info about the cpufreq configuration (looks fine to me):
-
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./cpuinfo_max_freq 
-2001000
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./cpuinfo_min_freq 
-800000
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_max_freq 
-2001000
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_min_freq
-800000
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_setspeed 
-<unsupported>
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_governor 
-performance
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat ./scaling_driver 
-acpi-cpufreq
-centauri:/sys/devices/system/cpu/cpu0/cpufreq# cat
-./scaling_available_frequencies 
-2001000 2000000 1600000 1200000 800000
-
-Please tell me what other information I need to submit to you.
-
-As far as I can tell, the problem exists at least since kernel version 2.6.30,
-I did not test any earlier versions.
-Debian distribution stock kernel is affected from the issue as well.
-
-Thanks for looking into this issue.
-
-best regards,
-Peter Ganzhorn
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+> Regards,
+> Amit Arora
+> 
+> On Fri, Aug 13, 2010 at 12:55 PM, Amit Arora <amit.arora@linaro.org>
+> wrote:
+> > Background:
+> > Currently, PowerTOP has hard coded values for the number of C and P
+> > states supported. Hence it doesn't work well on systems which may
+> > have more states than these hard coded ones. This is specially true
+> > for some of the ARM SoCs which may have as many as 8 to 9 C-states.
+> >
+> > Suggested fix:
+> > This patch defines MAX values of C and P states for allocating
+> > enough memory for data structures statically. But, uses actual
+> > values of the MAX C and P states for display (using, maxcstate and
+> > maxpstate variables).
+...
