@@ -1,52 +1,44 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 17001] ondemand governor non-functional / ACPI P-states driver
-Date: Mon, 6 Sep 2010 10:46:21 GMT
-Message-ID: <201009061046.o86AkLgD009484@demeter1.kernel.org>
-References: <bug-17001-12968@https.bugzilla.kernel.org/>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Discuss] Speedstep on Celeron SU2300 - 20% more battery	lifetime
+ on Windows
+Date: Mon, 06 Sep 2010 08:47:28 -0700
+Message-ID: <4C850D10.2050801@linux.intel.com>
+References: <AANLkTiktJ5Xgnsmq2je7T3Yc5Sf53Bu8vWMM1XT1V_vm@mail.gmail.com>	<201009020152.37466.trenn@suse.de>	<AANLkTi=WDEA+prG26g5R9oG1uZ7cNgaMrYDtug_LM7bY@mail.gmail.com> <201009061035.03727.trenn@suse.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-17001-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <201009061035.03727.trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Thomas Renninger <trenn@suse.de>
+Cc: Tiago Marques <tiagomnm@gmail.com>, discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=17001
+  On 9/6/2010 1:35 AM, Thomas Renninger wrote:
+> Hi,
+>
+> I am adding lesswatts.org and linux-pm list.
+> I expect you found out why you do not get frequency/P- states and it
+> seem to be correct. On these lists, people can help you further
+> to find out Linux vs Windows battery drain differences.
+>
+> If you have the same backlight settings, I expect C-state or graphics
+> card must be the reason. There is nothing else than CPU or GPU
+> that drains so much energy for being the reason of
+> 20% more battery life time.
+> Which graphics card and driver do you use (for nvidia/ati, trying the
+> binary one for comparison, might show a big difference on a recent
+> card)?
+> Which C-state driver do you use (there is an acpi and intel_idle one
+> with latest kernels):
+> cat /sys/devices/system/cpu/cpuidle/current_driver
+> I hope to be able to provide a c-state tool soon, for now you have to
+> go through:
+> cat /sys/devices/system/cpu/cpu*/cpuidle/state*
+> to check which and how often/efficient C-states are used.
+
+powertop will tell you exactly this
+
+(and the next version will provide much much more detail)
 
 
-
-
-
---- Comment #16 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-09-06 10:46:19 ---
-Yes, I do compile kernels myself. The distro kernels usually are patched and
-contain back-ports of all kind, so filing a bug report on bugzilla.kernel.org
-with a distro kernel is somewhat pointless I figure...
-On top of that I only include drivers and features I need and usually compile
-the stuff in - the Linux kernel was designed to be a monolithic kernel, not a
-microkernel. ;)
-
-If you want to add some more debugging printks to the ondemand governor
-sources, just send me a patch or tell me where I should put them. Although I
-guess this will be tricky for me to do right, since you know what you'd like to
-see and I'm not a kernel hacker... (I know how to read C and can write small C
-programs, but I'm not a professional programmer or something like that)
-
-And here's a bit of a problem: 2.6.27.* still does have EXT4 marked as
-experimental, will this work with current EXT4 file systems or am I going to
-run into some serious trouble when running this kernel? (My root partition is
-an EXT4 partition, and obviously I didn't pay attention when I installed the
-system...seems Debian Squeeze uses EXT4 as default FS already?!)
-Second problem: 2.6.36-rc3 won't compile, I'm getting an implicit declaration
-error in the i915 DRM driver...
-
-Do you think trying 2.6.28 instead of .27 could help since EXT4 was marked
-stable in .28 if I recall this right.
-Or have there been major changes in the CPUFREQ code after 2.6.27?
-
-I'll tweak my .config to include CPUFREQ as modules as you suggested for now.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug.
