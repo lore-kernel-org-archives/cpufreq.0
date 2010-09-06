@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 17001] ondemand governor non-functional / ACPI P-states driver
-Date: Mon, 6 Sep 2010 10:29:52 GMT
-Message-ID: <201009061029.o86ATqZt007749@demeter1.kernel.org>
+Date: Mon, 6 Sep 2010 10:46:21 GMT
+Message-ID: <201009061046.o86AkLgD009484@demeter1.kernel.org>
 References: <bug-17001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,17 +18,33 @@ https://bugzilla.kernel.org/show_bug.cgi?id=17001
 
 
 
---- Comment #15 from Thomas Renninger <trenn@suse.de>  2010-09-06 10:29:51 ---
-About comment #13:
-There has been a *correct* patch to read out bios frequency limitations at
-cpufreq init time recently (before we only reacted on ACPI processor events to
-take the limitations into account). That is probably why you see this. Please
-at least comment on the other bug, as this one is totally unrelated.
-processor.ignore_ppc=1 boot param will be your workaround. If you like to hunt
-down the limitation initiated by your BIOS (there might be a reason for the
-limitation (only happens on battery or on AC or at specific temp or with a
-specific AC adapter, ...)), please look up:
-https://bugzilla.kernel.org/show_bug.cgi?id=16362
+--- Comment #16 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-09-06 10:46:19 ---
+Yes, I do compile kernels myself. The distro kernels usually are patched and
+contain back-ports of all kind, so filing a bug report on bugzilla.kernel.org
+with a distro kernel is somewhat pointless I figure...
+On top of that I only include drivers and features I need and usually compile
+the stuff in - the Linux kernel was designed to be a monolithic kernel, not a
+microkernel. ;)
+
+If you want to add some more debugging printks to the ondemand governor
+sources, just send me a patch or tell me where I should put them. Although I
+guess this will be tricky for me to do right, since you know what you'd like to
+see and I'm not a kernel hacker... (I know how to read C and can write small C
+programs, but I'm not a professional programmer or something like that)
+
+And here's a bit of a problem: 2.6.27.* still does have EXT4 marked as
+experimental, will this work with current EXT4 file systems or am I going to
+run into some serious trouble when running this kernel? (My root partition is
+an EXT4 partition, and obviously I didn't pay attention when I installed the
+system...seems Debian Squeeze uses EXT4 as default FS already?!)
+Second problem: 2.6.36-rc3 won't compile, I'm getting an implicit declaration
+error in the i915 DRM driver...
+
+Do you think trying 2.6.28 instead of .27 could help since EXT4 was marked
+stable in .28 if I recall this right.
+Or have there been major changes in the CPUFREQ code after 2.6.27?
+
+I'll tweak my .config to include CPUFREQ as modules as you suggested for now.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
