@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 17001] ondemand governor non-functional / ACPI P-states driver
-Date: Mon, 6 Sep 2010 09:20:26 GMT
-Message-ID: <201009060920.o869KQar000565@demeter1.kernel.org>
+Date: Mon, 6 Sep 2010 09:37:28 GMT
+Message-ID: <201009060937.o869bSP1002498@demeter1.kernel.org>
 References: <bug-17001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,25 +18,53 @@ https://bugzilla.kernel.org/show_bug.cgi?id=17001
 
 
 
---- Comment #11 from Thomas Renninger <trenn@suse.de>  2010-09-06 09:20:23 ---
-Gerhard: You probably have another problem. Peter's problem seem to point to a
-real kernel bug, you have to find out why the BIOS is limiting the frequency
-(which the kernel is probably doing correct).
-You find hints how to find that out here:
-https://bugzilla.kernel.org/show_bug.cgi?id=16362
-But best would be to open another bug as the reason why BIOS is limiting the
-freq is probably another one. Update your BIOS first and double check whether
-the problem persists. State HP Compaq 6910p again (in the title?) so that
-others also find the issue quickly.
+--- Comment #12 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-09-06 09:37:26 ---
+Thomas, do you need me to enable cpufreq.debug=7 and upload the results or do I
+just need to check if the ondemand governor works "out of the box" with the
+other kernels?
+I'm going to download 2.6.27.32 and the latest 2.6.36-rc now (Vanilla from
+kernel.org, the 2.6.35.4 I'm running is plain Vanilla as well!) and use my
+current .config .
+If you want me to check if specific kernel options are enabled, please let me
+know.
+My usual CPUfreq .config section looks like this:
 
-Peter: Could you try another kernel version. Either the latest 2.6.36-rcX or
-easier and even better would be something like 2.6.27-32. I can help you to try
-that out easily if you use openSUSE, otherwise you have to find out yourself,
-but it shouldn't be that hard to additionally install and try out an older
-kernel. Also check the "bias" ondemand governor setting (same dir(s) as
-up_threshold), this must be zero. If it's not, it's probably that.
-Unfortunately the ondemand governor is not very verbose about it's load
-statistics, even with cpufreq.debug on.
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_DEBUG=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+
+#
+# CPUFreq processor drivers
+#
+# CONFIG_X86_PCC_CPUFREQ is not set
+CONFIG_X86_ACPI_CPUFREQ=y
+# CONFIG_X86_POWERNOW_K8 is not set
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+
+#
+# shared options
+#
+# CONFIG_X86_SPEEDSTEP_LIB is not set
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+CONFIG_CPU_IDLE_GOV_MENU=y
+CONFIG_INTEL_IDLE=y
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
