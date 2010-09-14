@@ -1,76 +1,52 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: Improving High-Load Performance with the Ondemand Governor
-Date: Mon, 13 Sep 2010 18:02:17 -0400
-Message-ID: <4C8E9F69.3020502@verisign.com>
-References: <4C88EF04.1030908@verisign.com>	<87r5h2t5b5.fsf@basil.nowhere.org>	<4C8E872B.2020503@verisign.com> <20100913225456.13cbbaef@basil.nowhere.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] new kmemleak between 2.6.35.3 and 2.6.35.4
+Date: Tue, 14 Sep 2010 08:53:34 +0200
+Message-ID: <20100914065334.GB1422@ucw.cz>
+References: <201008301628.46130.toralf.foerster@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20100913225456.13cbbaef@basil.nowhere.org>
+Content-Disposition: inline
+In-Reply-To: <201008301628.46130.toralf.foerster@gmx.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Andi Kleen <andi@firstfloor.org>
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Toralf F?rster <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 
-Andi Kleen wrote:
-> On Mon, 13 Sep 2010 16:18:51 -0400
-> David C Niemi <dniemi@verisign.com> wrote:
->
->   
->> I have looked at the latest kernels too, and the changes in the
->> ondemand governor between that and RHEL 6's 2.6.32 kernel are quite
->> modest.  I mention 2.6.18 just because it's what's been out in the
->> field a while.
->>     
->
-> Most of the interesting changes were post 2.6.32 (2.6.32 is ancient
-> too for mainline)  
->   
-I did see a few changes in cpufreq_ondemand.c between 2.6.32 and the git 
-version I grabbed last week, but not really relevant to what I was 
-trying to do.
+On Mon 2010-08-30 16:28:45, Toralf F?rster wrote:
+> Hello,
+> 
+> with the new minor stable version this kmemleak entry seems to be new :
 
->>> FWIW when you're truly idle you typically don't need ondemand,
->>> the idle states on modern CPUs go to the lowest frequency by
->>> themselves or simply turn off the frequency completely.
->>>
->>>       
->> I do see c-states getting used on Intel hardware to save power, and
->>     
->
-> ondemand has nothing to do with c-states, c-states are handled
-> by the menu governor.
->   
-We're using the standard cpuidle on the newer (RHEL 6 beta-based) 
-kernels.  If you think there are compelling improvements in it after 
-2.6.32 I'll certainly take a look.
- 
->> in some cases these are quite effective.  On AMD hardware lowering 
->> frequency tends to be very important to saving power.
->>     
->
-> AFAIK modern AMD doesn't need this either in c-states.
->   
-It makes a dramatic difference in power consumption whether you use a 
-p-state governor on the 2-year-old AMD hardware that matters to me.  On 
-both old (Woodcrest) and new (Nehalem) Intel hardware the difference is 
-much smaller, as c-states are the dominant form of power saving, but 
-using a p-state governor still makes a measurable difference.  On the 
-plus side the power-saving c-states we are using don't measurably hurt 
-performance on our workloads, so cpuidle is doing a pretty good job; 
-whereas the stock ondemand p-state governor does in a big way.
+That should be Dave Jones / cpufreq, right?
+								Pavel
 
->> On moderate load I might agree, but on the servers I care about it is
->> a workload that's a bit like war -- long periods of boredom
->> punctuated by sudden bursts of sheer terror. 
->>     
->
-> In this case on modern hardware you don't need a p-state
-> governor at all except for "performance"
->
-> -Andi
->   
-No doubt true in the long run, but see above.
+>  unreferenced object 0xf61437e0 (size 32):
+>   comm "modprobe", pid 1042, jiffies 4294676655 (age 15869.486s)
+>   hex dump (first 32 bytes):
+>     63 70 75 66 72 65 71 00 55 31 2e 5f 50 50 43 00  cpufreq.U1._PPC.
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>   backtrace:
+>     [<c122f8d7>] kmemleak_alloc+0x27/0x50
+>     [<c109c93f>] __kmalloc+0xcf/0x110
+>     [<c108554c>] kstrdup+0x2c/0x50
+>     [<c10e8604>] sysfs_new_dirent+0xe4/0x100
+>     [<c10e8e8e>] create_dir+0x2e/0xb0
+>     [<c10e8f80>] sysfs_create_dir+0x70/0xb0
+>     [<c11248cc>] kobject_add_internal+0x8c/0x1d0
+>     [<c1124b1d>] kobject_add_varg+0x2d/0x50
+>     [<c1124b67>] kobject_init_and_add+0x27/0x30
+>     [<c11c2fbc>] cpufreq_add_dev_interface+0x3c/0x290
+>     [<c11c3b7c>] cpufreq_add_dev+0x29c/0x3a0
+>     [<c1187db7>] sysdev_driver_register+0x97/0x110
+>     [<c11c29b6>] cpufreq_register_driver+0x86/0x140
+>     [<f9b76080>] 0xf9b76080
+>     [<c100112d>] do_one_initcall+0x2d/0x180
+>     [<c105ecf9>] sys_init_module+0x99/0x1e0
+> 
+> 
 
-DCN
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
