@@ -1,83 +1,87 @@
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: 2.6.35.x: acpi+no_hz+turboboost causing 3ware I/O controller
- resets
-Date: Tue, 21 Sep 2010 10:00:11 -0400 (EDT)
-Message-ID: <alpine.DEB.2.00.1009210934380.4998@p34.internal.lan>
-References: <alpine.DEB.2.00.1009210515210.14504@p34.internal.lan>
+From: Vikram Goyal <vikigoyal@gmail.com>
+Subject: sending cpu info
+Date: Thu, 23 Sep 2010 18:05:57 +0530
+Message-ID: <AANLkTikUkob8V+_iLmH=LnN4Y207_hOnFkcUmYv6RpAo@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.00.1009210515210.14504@p34.internal.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary=000e0cd4d50cf93c540490ec8013
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:mime-version:received:received:date:message-id
+         :subject:from:to:content-type;
+        bh=h1jsaNDBHxuGg95eik2zanHLuKve4rRIUiQRckROM7s=;
+        b=TIo0Nn3VSKHMHuh2lj91MGUCTvLQhxPZUVMhdtnNWYY6GPs5HZ8ePkmQuNXdM4Lv9H
+         SJO2U4Qp27/QxXS/FUoezHtgHkMC+CielpQpQ2znMXUNdFVVf3ifgqDRwLixdsTkpG4U
+         RESgHwvOeNn3Qf5WEUGZX4wfh+ShWrS/GZ9Qs=
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; format="flowed"; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, davej@redhat.com, cpufreq@vger.kernel.org
-Cc: adam radford <aradford@gmail.com>, mingo@redhat.com
+To: cpufreq@vger.kernel.org
 
+--000e0cd4d50cf93c540490ec8013
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
+Due to the following message I am sending some system info for your perusal=
+.
 
-On Tue, 21 Sep 2010, Justin Piszcz wrote:
+Sep 22 11:23:26 localhost kernel: p4-clockmod: Unknown CPU. Please
+send an e-mail to <cpufreq@vger.kernel.org>
 
-> Hello,
->
-> There has been discussion going on here:
-> http://forums.storagereview.com/index.php/topic/28920-3ware-9650se-controller-resets-under-load-on-linux/page__st__30__gopid__264286&#entry264286
->
+Thanks & Regards,
 
-Some additional details from the poster on storage review:
+--
+--
+vikram...
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ||||||||
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ||||||||
+^^'''''^^||root||^^^'''''''^^
+=C2=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 // \\=C2=A0=C2=A0 ))
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 //(( \\// \\
+=C2=A0 =C2=A0 =C2=A0=C2=A0 // /\\ ||=C2=A0=C2=A0 \\
+=C2=A0 =C2=A0 =C2=A0 || / )) ((=C2=A0 =C2=A0 \\
+--
+=C2=A0 o
+~|~
+=C2=A0 =3D
 
-----------------------------------------------------------------------
-It's not specific for turbo boost, and it's not specific for 2.6.34. We had the
-freezes with 2.6.27 and 2.6.32, with both being the first kernels where we
-enabled NOHZ and cpufreq. The older machines are running 2.6.24 without
-frequency scaling, one even with the original firmware that was shipped with the
-9690SA when it came to the market. (yes, we tried downgrading a spare machine
-having issues to that firmware also, but no luck either).
-Our servers are still core2 based, some are just Core2Duo on Intel 3210 chipset,
-others are dual Xeon L5420 on Intel 5000P chipsets. All suffer the same problem:
-resetting 3Ware controllers when cpufreq and nohz were enabled.
+--000e0cd4d50cf93c540490ec8013
+Content-Type: application/x-bzip; name="cpuinfo-tmp.tar.bz"
+Content-Disposition: attachment; filename="cpuinfo-tmp.tar.bz"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_geflv6q80
 
-It's quite funny to read your issues here. When I contacted my vendor about
-this, they told me that I was the only one having these issues, while they're
-selling several hundreds of these controllers every month. LSI also gives me
-that impression when I contact their tech support.
-----------------------------------------------------------------------
-
-Adding Dave to CC list for CPU FREQ driver:
-
-CPU FREQUENCY DRIVERS
-M:  Dave Jones
-L:  cpufreq
-
-Per: kernel/time/tick-sched.c
-  *  Started by: Thomas Gleixner and Ingo Molnar
-
-Maybe someone can shed some light on what is going on here in ref to the 
-CPU FREQ/NO_HZ issue.  In the past I've never used CPU scaling until I got 
-a CPU that could make use of turboboost.  Using NO_HZ will improve 
-turboboost performance (basically makes it work correctly)..
-
-For my machine, the problem is immediately apparent between:
-2.6.34.1 -> 2.6.35.4
-
-With the options enabled; however, (for my case) it only seems to affect
-2.6.35.4 primarily.
-
-With the options mentioned earlier (disabled) I can now run 2.6.35.4 and 
-2.6.35.5 without any problems:
-
--# CONFIG_NO_HZ is not set
--# CONFIG_ACPI_PROCESSOR is not set
--# CONFIG_CPU_FREQ is not set
-
-However, now I can no longer use turbo boost for my i7 CPU.
-
-Opt 1: Enable parameters above with 2.6.34.x (there is no I/O locking, but 
-over several months there may be an occasional reset)
-Opt 2: Run any kernel with the parameters above disabled as shown and 
-forget about turbo boost, but then my system would not lockup/have the 
-controllers reset.
-Opt 3: Try to find out what is triggering this bug so turboboost/freq 
-scaling can be used with 3ware controllers?
-
-Justin.
+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
+ONlwncHt6A4CeZIf/i7kinChIPQFDYI=
+--000e0cd4d50cf93c540490ec8013--
