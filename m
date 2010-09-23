@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/4] cpufrequtils: Rename libcpufreq to libcpupower
-Date: Thu, 23 Sep 2010 17:30:09 +0200
-Message-ID: <1285255810-11252-4-git-send-email-trenn@suse.de>
+Subject: [PATCH 4/4] cpufrequtils: Rename the project/package into cpupowerutils
+Date: Thu, 23 Sep 2010 17:30:10 +0200
+Message-ID: <1285255810-11252-5-git-send-email-trenn@suse.de>
 References: <1285255810-11252-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1285255810-11252-1-git-send-email-trenn@suse.de>
@@ -13,106 +13,61 @@ Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org, linux@dominikbrodowski.net
 Cc: trenn@suse.de
 
-But still provide libcpufreq which links against the new libcpupower now.
-
-Like that binaries linking with -lcpufreq will still work.
-Getting this (-l cpufreq) deprecated should work at packaging layer then.
-
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 CC: linux@dominikbrodowski.net
 CC: cpufreq@vger.kernel.org
 ---
- Makefile |   30 +++++++++++++++++++++---------
- 1 files changed, 21 insertions(+), 9 deletions(-)
+ Makefile |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 07637ed..089fe33 100644
+index 089fe33..a268264 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -152,7 +152,7 @@ endif
+@@ -1,4 +1,4 @@
+-# Makefile for cpufrequtils
++# Makefile for cpupowerutils
+ #
+ # Copyright (C) 2005,2006 Dominik Brodowski <linux@dominikbrodowski.net>
+ #
+@@ -51,7 +51,7 @@ VERSION =			008
+ LIB_MAJ=			0.0.0
+ LIB_MIN=			0
  
- # the actual make rules
+-PACKAGE =			cpufrequtils
++PACKAGE =			cpupowerutils
+ PACKAGE_BUGREPORT =		cpufreq@vger.kernel.org
+ LANGUAGES = 			de fr it cs pt
  
--all: ccdv libcpufreq utils $(COMPILE_NLS) $(COMPILE_BENCH)
-+all: ccdv libcpupower utils $(COMPILE_NLS) $(COMPILE_BENCH)
+@@ -66,7 +66,7 @@ mandir ?=	/usr/man
+ includedir ?=	/usr/include
+ libdir ?=	/usr/lib
+ localedir ?=	/usr/share/locale
+-docdir ?=       /usr/share/doc/packages/cpufrequtils
++docdir ?=       /usr/share/doc/packages/cpupowerutils
+ confdir ?=      /etc/
  
- ccdv: build/ccdv
- build/ccdv: build/ccdv.c
-@@ -162,17 +162,25 @@ build/ccdv: build/ccdv.c
- lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
- 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
- 
--libcpufreq.so.$(LIB_MAJ): $(LIB_OBJS)
--	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
--		-Wl,-soname,libcpufreq.so.$(LIB_MIN) $(LIB_OBJS)
-+libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
-+	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
-+		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
-+	@ln -sf $@ libcpupower.so
-+	@ln -sf $@ libcpupower.so.$(LIB_MIN)
-+
-+# Still Provide the old lib, but apps should get fixed to
-+# not link against it anymore 
-+libcpufreq.so.$(LIB_MAJ): libcpupower.so.$(LIB_MAJ)
-+	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
-+		-Wl,-soname,libcpufreq.so.$(LIB_MIN) -l cpupower -L .
- 	@ln -sf $@ libcpufreq.so
- 	@ln -sf $@ libcpufreq.so.$(LIB_MIN)
- 
--libcpufreq: libcpufreq.so.$(LIB_MAJ)
-+libcpupower: libcpupower.so.$(LIB_MAJ) libcpufreq.so.$(LIB_MAJ)
- 
--$(UTIL_BINS): libcpufreq.so.$(LIB_MAJ) $(UTIL_SRC)
-+$(UTIL_BINS): libcpupower.so.$(LIB_MAJ) $(UTIL_SRC)
- 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -I. -I./lib/ -c $@.c -o $@.o
--	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -L. -o $@ $@.o -lcpufreq
-+	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -L. -o $@ $@.o -lcpupower
- 	$(QUIET) $(STRIPCMD) $@
- 
- utils: $(UTIL_BINS)
-@@ -196,13 +204,14 @@ update-gmo: po/$(PACKAGE).pot
- 		msgfmt --statistics -o po/$$HLANG.gmo po/$$HLANG.po; \
+ # Toolchain: what tools do we use, and what options do they need:
+@@ -237,8 +237,8 @@ install-man:
+ install-gmo:
+ 	$(INSTALL) -d $(DESTDIR)${localedir}
+ 	for HLANG in $(LANGUAGES); do \
+-		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo'; \
+-		$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
++		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupowerutils.mo'; \
++		$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupowerutils.mo; \
  	done;
  
--compile-bench: libcpufreq
-+compile-bench: libcpupower
- 	@V=$(V) confdir=$(confdir) $(MAKE) -C bench
- 
- clean:
- 	-find . \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' \) -type f -print \
- 	 | xargs rm -f
- 	-rm -f $(UTIL_BINS)
-+	-rm -f libcpupower.so*
- 	-rm -f libcpufreq.so*
- 	-rm -f build/ccdv
- 	-rm -rf po/*.gmo po/*.pot
-@@ -211,9 +220,11 @@ clean:
- 
- install-lib:
- 	$(INSTALL) -d $(DESTDIR)${libdir}
-+	$(CP) libcpupower.so* $(DESTDIR)${libdir}/
- 	$(CP) libcpufreq.so* $(DESTDIR)${libdir}/
- 	$(INSTALL) -d $(DESTDIR)${includedir}
- 	$(INSTALL_DATA) lib/cpufreq.h $(DESTDIR)${includedir}/cpufreq.h
-+	$(INSTALL_DATA) lib/cpuidle.h $(DESTDIR)${includedir}/cpuidle.h
- 
- install-tools:
- 	$(INSTALL) -d $(DESTDIR)${bindir}
-@@ -237,6 +248,7 @@ install-bench:
- install: all install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
- 
- uninstall:
-+	- rm -f $(DESTDIR)${libdir}/libcpupower.*
- 	- rm -f $(DESTDIR)${libdir}/libcpufreq.*
- 	- rm -f $(DESTDIR)${includedir}/cpufreq.h
- 	- rm -f $(DESTDIR)${bindir}/cpufreq-set
-@@ -249,5 +261,5 @@ uninstall:
- 		rm -f $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
+ install-bench:
+@@ -258,7 +258,7 @@ uninstall:
+ 	- rm -f $(DESTDIR)${mandir}/man1/cpufreq-set.1
+ 	- rm -f $(DESTDIR)${mandir}/man1/cpufreq-info.1
+ 	- for HLANG in $(LANGUAGES); do \
+-		rm -f $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpufrequtils.mo; \
++		rm -f $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupowerutils.mo; \
  	  done;
  
--.PHONY: all utils libcpufreq ccdv update-po update-gmo install-lib install-tools install-man install-gmo install uninstall \
-+.PHONY: all utils libcpupower ccdv update-po update-gmo install-lib install-tools install-man install-gmo install uninstall \
- 	clean 
+ .PHONY: all utils libcpupower ccdv update-po update-gmo install-lib install-tools install-man install-gmo install uninstall \
 -- 
 1.6.4.2
 
