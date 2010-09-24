@@ -1,32 +1,40 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16489] kmemleak after suspend2ram in cpufreq driver
-Date: Thu, 23 Sep 2010 21:30:40 GMT
-Message-ID: <201009232130.o8NLUeVA009560@demeter2.kernel.org>
-References: <bug-16489-12968@https.bugzilla.kernel.org/>
+From: Davidlohr Bueso <dave@gnu.org>
+Subject: [PATCH] cpufreq: unnecesary double free in pcc_cpufreq_do_osc
+Date: Fri, 24 Sep 2010 13:16:21 -0400
+Message-ID: <1285348581.3031.2.camel@cowboy>
+Reply-To: dave@gnu.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16489-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: davej@redhat.com, cpufreq@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D16489
+x86, cpufreq: avoid an unnecessary double free when finished in pcc_cpufreq_do_osc()
+
+There is no need to fall through the out_free label thus saving a kfree call.
+
+Signed-off-by: Davidlohr Bueso <dave@gnu.org>
+---
+ arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
+index 994230d..db7dc35 100644
+--- a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
+@@ -379,6 +379,8 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *handle)
+ 	if (!(supported & 0x1))
+ 		return -ENODEV;
+ 
++	return ret;
++
+ out_free:
+ 	kfree(output.pointer);
+ 	return ret;
+-- 
+1.7.0.4
 
 
-Toralf F=C3=B6rster <toralf.foerster@gmx.de> changed:
-
-           What    |Removed                     |Added
------------------------------------------------------------------------=
------
-     Kernel Version|2.6.35.3                    |2.6.35.5
-
-
-
-
---=20
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
-l
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
