@@ -1,43 +1,54 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Rename cpufrequtils into cpupowerutils and provide some basic
- cpuidle functionality
-Date: Sat, 25 Sep 2010 14:37:10 +0200
-Message-ID: <20100925123710.GA29610@comet.dominikbrodowski.net>
-References: <1285255810-11252-1-git-send-email-trenn@suse.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 19132] New: Changing the default cpufreq govenor freezes
+ suspend
+Date: Mon, 27 Sep 2010 07:16:57 GMT
+Message-ID: <bug-19132-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1285255810-11252-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Renninger <trenn@suse.de>
-Cc: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-Hey,
+https://bugzilla.kernel.org/show_bug.cgi?id=19132
 
-On Thu, Sep 23, 2010 at 05:30:06PM +0200, Thomas Renninger wrote:
-> here my latest patchset.
+           Summary: Changing the default cpufreq govenor freezes suspend
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 2.6.35
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: lukasgraesslin@gmx.de
+                CC: preining@logic.at
+        Regression: No
 
-Thanks.
 
-> If this isn't totally wrong, I'd appreciate if you could
-> push these already (into a separate branch for now?)
+Since 2.6.35 my Thinkpad X200 with Intel Chipset freezes (the screen is getting
+black with just a cursor and hangs forever there) on suspend when the default
+cpufreq govenor is changed. This happens beacuse pm-utils changes the default
+govenor when going on suspend(-to-ram, but to-disk also I think).
 
-Applied into the "cpupowerutils" branch, and pushed that to
+When I disable that changing of the govenor suspend will work again.
 
-git://git.kernel.org/pub/scm/utils/kernel/cpufreq/cpufrequtils.git 
+This may have to do something with the Intel Graphic as well, because the
+problem only occurs when beeing on X. Without X the suspend works fine.
 
-I split up one patch into two parts, and added two patches on top. Let me
-know what you think about this.
+With 2.6.34 everything worked well.
 
-> I do not want to pollute other lists for now.
-> If you accept this and I did some further testing, packaging,
-> cleanup, etc., I'd like to announce this work on some more lists
-> (lesswatts, linux-pm, acpi, ...).
+See also:
 
-Sounds good.
+http://lkml.org/lkml/2010/7/22/595
+https://bugs.archlinux.org/task/20806
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=586674#51
 
-Best,
-	Dominik
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
