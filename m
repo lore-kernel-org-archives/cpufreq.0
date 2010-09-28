@@ -1,31 +1,32 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 19262] CPU0 locked at slower speed, regardless of governor
-Date: Tue, 28 Sep 2010 19:11:48 GMT
-Message-ID: <201009281911.o8SJBmcv002093@demeter1.kernel.org>
-References: <bug-19262-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 16489] kmemleak after suspend2ram in cpufreq driver
+Date: Tue, 28 Sep 2010 20:30:17 GMT
+Message-ID: <201009282030.o8SKUHY5017763@demeter2.kernel.org>
+References: <bug-16489-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-19262-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-16489-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=19262
+https://bugzilla.kernel.org/show_bug.cgi?id=3D16489
 
 
-Jason Lynch <aexoden@gmail.com> changed:
+Toralf F=C3=B6rster <toralf.foerster@gmx.de> changed:
 
            What    |Removed                     |Added
-----------------------------------------------------------------------------
-  Attachment #31732|application/octet-stream    |text/plain
-          mime type|                            |
+-----------------------------------------------------------------------=
+-----
+     Kernel Version|2.6.35.5                    |2.6.35.6
 
 
 
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
 ------- You are receiving this mail because: -------
 You are the assignee for the bug.
