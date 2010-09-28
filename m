@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19262] CPU0 locked at slower speed, regardless of governor
-Date: Tue, 28 Sep 2010 19:11:26 GMT
-Message-ID: <201009281911.o8SJBQYZ001980@demeter1.kernel.org>
+Date: Tue, 28 Sep 2010 19:11:48 GMT
+Message-ID: <201009281911.o8SJBmcv002093@demeter1.kernel.org>
 References: <bug-19262-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,13 +15,15 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=19262
 
 
+Jason Lynch <aexoden@gmail.com> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+  Attachment #31732|application/octet-stream    |text/plain
+          mime type|                            |
 
 
 
---- Comment #2 from Jason Lynch <aexoden@gmail.com>  2010-09-28 19:11:26 ---
-Created an attachment (id=31752)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=31752)
-dmesg with cpufreq.debug=7
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
