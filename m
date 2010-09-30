@@ -1,62 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 19262] CPU0 locked at slower speed, regardless of governor
-Date: Thu, 30 Sep 2010 12:35:50 GMT
-Message-ID: <201009301235.o8UCZoG7014379@demeter1.kernel.org>
-References: <bug-19262-12968@https.bugzilla.kernel.org/>
+From: Davidlohr Bueso <dave@gnu.org>
+Subject: [RESEND PATCH] cpufreq: unnecesary double free in
+ pcc_cpufreq_do_osc
+Date: Thu, 30 Sep 2010 15:43:24 -0400
+Message-ID: <1285875804.2180.1.camel@cowboy>
+Reply-To: dave@gnu.org
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-19262-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: davej@redhat.com, cpufreq@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=19262
+x86, cpufreq: avoid an unnecessary double free when finished in pcc_cpufreq_do_osc()
 
+There is no need to fall through the out_free label thus saving a kfree call.
 
-Thomas Renninger <trenn@suse.de> changed:
+Signed-off-by: Davidlohr Bueso <dave@gnu.org>
+---
+ arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-          Component|cpufreq                     |Power-Thermal
-         AssignedTo|trenn@suse.de               |acpi_power-thermal@kernel-b
-                   |                            |ugs.osdl.org
-            Product|Power Management            |ACPI
-
-
-
-
---- Comment #5 from Thomas Renninger <trenn@suse.de>  2010-09-30 12:35:45 ---
-... and this is the bug, probably BIOS related:
-
-/proc/acpi/thermal_zone/THRM/trip_points
-passive:                 0 C: tc1=4 tc2=3 tsp=60 devices=CPU0
-
-Please also attach dmesg and acpidump output.
-
-The param to workaround this issue is:
-thermal.psv = 50
-to e.g. let the CPU get throttled at 50 C.
-
-There already is a blacklist in drivers/acpi/thermal.c:
-static struct dmi_system_id thermal_dmi_table[] __initdata = {
-...
-        {
-         .callback = thermal_psv,
-         .ident = "AOpen i915GMm-HFS",
-         .matches = {
-                DMI_MATCH(DMI_BOARD_VENDOR, "AOpen"),
-                DMI_MATCH(DMI_BOARD_NAME, "i915GMm-HFS"),
-                },
-        },
-
-Also attach dmidecode, if we do not find a generic kernel workaround/fix the
-BIOS can get blacklisted to not use the passive trip point by default.
-
-Reassigning to ACPI component -> this is an acpi problem.
-
+diff --git a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
+index 994230d..db7dc35 100644
+--- a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
+@@ -379,6 +379,8 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *handle)
+ 	if (!(supported & 0x1))
+ 		return -ENODEV;
+ 
++	return ret;
++
+ out_free:
+ 	kfree(output.pointer);
+ 	return ret;
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug.
+1.7.0.4
+
+
+
