@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19262] CPU0 locked at slower speed, regardless of governor
-Date: Thu, 30 Sep 2010 08:51:42 GMT
-Message-ID: <201009300851.o8U8pgVD017075@demeter1.kernel.org>
+Date: Thu, 30 Sep 2010 09:46:41 GMT
+Message-ID: <201009300946.o8U9kf5Q024226@demeter1.kernel.org>
 References: <bug-19262-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,31 +15,29 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=19262
 
 
-Thomas Renninger <trenn@suse.de> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |ASSIGNED
-                 CC|                            |cpufreq@vger.kernel.org,
-                   |                            |trenn@suse.de
-         AssignedTo|cpufreq@vger.kernel.org     |trenn@suse.de
 
 
 
+--- Comment #4 from Jason Lynch <aexoden@gmail.com>  2010-09-30 09:46:37 ---
+Here is the requested information:
 
---- Comment #3 from Thomas Renninger <trenn@suse.de>  2010-09-30 08:51:40 ---
-Looks like the passive temperature threshold is exceeded for CPU0.
-Hm, typically there is one thermal sensor/device connected to all CPUs, but if
-this is related to the problem, CPU0 would have its own thermal device.
-Can you provide:
-for x in /proc/acpi/thermal_zone/*/*;do
-       echo $x
-       cat $x
-       echo
-done
+/proc/acpi/thermal_zone/THRM/cooling_mode
+0 - Active; 1 - Passive
+
+/proc/acpi/thermal_zone/THRM/polling_frequency
+<polling disabled>
+
+/proc/acpi/thermal_zone/THRM/state
+state:                   ok
+
+/proc/acpi/thermal_zone/THRM/temperature
+temperature:             20 C
+
+/proc/acpi/thermal_zone/THRM/trip_points
+critical (S5):           255 C
+passive:                 0 C: tc1=4 tc2=3 tsp=60 devices=CPU0
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
 You are on the CC list for the bug.
-You are the assignee for the bug.
