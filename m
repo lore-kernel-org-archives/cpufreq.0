@@ -1,55 +1,32 @@
-From: Davidlohr Bueso <dave@gnu.org>
-Subject: Re: [RESEND PATCH] cpufreq: unnecesary double free in
- pcc_cpufreq_do_osc
-Date: Thu, 30 Sep 2010 16:17:31 -0400
-Message-ID: <1285877851.2180.8.camel@cowboy>
-References: <1285875804.2180.1.camel@cowboy>
-	 <alpine.DEB.2.00.1009301258550.9112@chino.kir.corp.google.com>
-	 <20100930200850.GB4120@redhat.com>
-Reply-To: dave@gnu.org
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 19262] CPU0 locked at slower speed, regardless of governor
+Date: Thu, 30 Sep 2010 21:23:08 GMT
+Message-ID: <201009302123.o8ULN8tG017054@demeter1.kernel.org>
+References: <bug-19262-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20100930200850.GB4120@redhat.com>
+In-Reply-To: <bug-19262-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: David Rientjes <rientjes@google.com>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Thu, 2010-09-30 at 16:08 -0400, Dave Jones wrote:
-> On Thu, Sep 30, 2010 at 01:02:54PM -0700, David Rientjes wrote:
->   > > index 994230d..db7dc35 100644
->  > > --- a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
->  > > +++ b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
->  > > @@ -379,6 +379,8 @@ static int __init pcc_cpufreq_do_osc(acpi_handle *handle)
->  > >  	if (!(supported & 0x1))
->  > >  		return -ENODEV;
->  > >  
->  > > +	return ret;
->  > > +
->  > >  out_free:
->  > >  	kfree(output.pointer);
->  > >  	return ret;
->  > 
->  > Why is the kfree() unnecessary?  acpi_evaluate_object() will allocate a 
->  > new output.pointer if it returns 0, so at this point in the code you would 
->  > now be leaking the buffer.
->  > 
->  > Instead, it would probably be better to fix the existing memory leaks in 
->  > that function where we return -ENODEV without going to out_free when 
->  > output.length is non-zero.
-> 
-> Oh, *duh*. That was subtle.
-
-Yep, anyways, at least we got the correct "fix".
-
-> You, and Pekka are of course correct.  I'll merge up Pekka's patch.
-> 
-> thanks,
-> 
-> 	Dave
-> 
-> 
+https://bugzilla.kernel.org/show_bug.cgi?id=19262
 
 
+
+
+
+--- Comment #6 from Jason Lynch <aexoden@gmail.com>  2010-09-30 21:23:06 ---
+Created an attachment (id=32122)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=32122)
+acpidump
+
+I had previously attached dmesg. If there's something I missed, or if I didn't
+do the acpidump correctly (just ran acpidump with no parameters), let me know.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug.
