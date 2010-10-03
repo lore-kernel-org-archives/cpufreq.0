@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19132] Changing the default cpufreq govenor freezes suspend
-Date: Sat, 2 Oct 2010 11:14:33 GMT
-Message-ID: <201010021114.o92BEXux008143@demeter2.kernel.org>
+Date: Sun, 3 Oct 2010 12:32:48 GMT
+Message-ID: <201010031232.o93CWmPQ005527@demeter2.kernel.org>
 References: <bug-19132-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
@@ -18,9 +18,11 @@ https://bugzilla.kernel.org/show_bug.cgi?id=3D19132
 
 
 
---- Comment #1 from Lukas Gr=C3=A4sslin <lukasgraesslin@gmx.de>  2010-1=
-0-02 11:14:32 ---
-Mh seems that the problem does not exist in .35.7 anymore. I'm happy :)
+--- Comment #2 from Lukas Gr=C3=A4sslin <lukasgraesslin@gmx.de>  2010-1=
+0-03 12:32:45 ---
+Mh or not? I had just the same problem. But yesterday sometimes it work=
+ed!?
+Strange...
 
 --=20
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
