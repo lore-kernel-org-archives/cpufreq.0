@@ -1,29 +1,186 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Mon, 4 Oct 2010 06:44:23 GMT
-Message-ID: <201010040644.o946iN7T014794@demeter1.kernel.org>
-References: <bug-19702-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 3/5] cpupowerutils: Move utils/cpuid.h to lib/cpuid.h
+Date: Tue,  5 Oct 2010 14:23:12 +0200
+Message-ID: <1286281394-14699-4-git-send-email-trenn@suse.de>
+References: <1286281394-14699-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-19702-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <1286281394-14699-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: trenn@suse.de, cpufreq@vger.kernel.org, linux@dominikbrodowski.net
 
-https://bugzilla.kernel.org/show_bug.cgi?id=19702
+So that utils/*.c code can make use of this as well.
 
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Dominik Brodowski <linux@dominikbrodowski.net>
+CC: cpufreq@vger.kernel.org
+---
+ Makefile      |    4 +-
+ lib/cpuid.h   |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ utils/cpuid.h |   63 -------------------------------------------------------
+ 3 files changed, 67 insertions(+), 65 deletions(-)
+ create mode 100644 lib/cpuid.h
+ delete mode 100644 utils/cpuid.h
 
-
-
-
---- Comment #2 from Heinz Diehl <htd@fancy-poultry.org>  2010-10-04 06:44:22 ---
-Created an attachment (id=32522)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=32522)
-Patch from Thomas R.
-
+diff --git a/Makefile b/Makefile
+index b04f85c..2cd9e83 100644
+--- a/Makefile
++++ b/Makefile
+@@ -111,9 +111,9 @@ WARNINGS += -Wshadow
+ CPPFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\" \
+ 		-DPACKAGE_BUGREPORT=\"$(PACKAGE_BUGREPORT)\" -D_GNU_SOURCE
+ 
+-UTIL_SRC = 	utils/cpufreq-info.c utils/cpufreq-set.c utils/cpufreq-aperf.c utils/cpuidle-info.c utils/cpuid.h
++UTIL_SRC = 	utils/cpufreq-info.c utils/cpufreq-set.c utils/cpufreq-aperf.c utils/cpuidle-info.c
+ UTIL_BINS = 	utils/cpufreq-info utils/cpufreq-set utils/cpufreq-aperf utils/cpuidle-info
+-LIB_HEADERS = 	lib/cpufreq.h lib/cpuidle.h lib/sysfs.h lib/msr.h
++LIB_HEADERS = 	lib/cpufreq.h lib/cpuidle.h lib/sysfs.h lib/msr.h lib/cpuid.h
+ LIB_SRC = 	lib/cpufreq.c lib/cpuidle.c lib/sysfs.c lib/msr.c
+ LIB_OBJS = 	lib/cpufreq.o lib/cpuidle.o lib/sysfs.o lib/msr.o
+ 
+diff --git a/lib/cpuid.h b/lib/cpuid.h
+new file mode 100644
+index 0000000..5f179db
+--- /dev/null
++++ b/lib/cpuid.h
+@@ -0,0 +1,65 @@
++#ifndef _CPUFREQ_CPUID_H
++#define _CPUFREQ_CPUID_H
++
++#include <stdint.h>
++
++static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
++				unsigned int *ecx, unsigned int *edx)
++{
++	/* ecx is often an input as well as an output. */
++	asm volatile("cpuid"
++	    : "=a" (*eax),
++	      "=b" (*ebx),
++	      "=c" (*ecx),
++	      "=d" (*edx)
++	    : "0" (*eax), "2" (*ecx));
++}
++static inline void cpuid(unsigned int op,
++			 unsigned int *eax, unsigned int *ebx,
++			 unsigned int *ecx, unsigned int *edx)
++{
++	*eax = op;
++	*ecx = 0;
++	__cpuid(eax, ebx, ecx, edx);
++}
++
++/*
++ * CPUID functions returning a single datum
++ */
++static inline unsigned int cpuid_eax(unsigned int op)
++{
++	unsigned int eax, ebx, ecx, edx;
++
++	cpuid(op, &eax, &ebx, &ecx, &edx);
++
++	return eax;
++}
++
++static inline unsigned int cpuid_ebx(unsigned int op)
++{
++	unsigned int eax, ebx, ecx, edx;
++
++	cpuid(op, &eax, &ebx, &ecx, &edx);
++
++	return ebx;
++}
++
++static inline unsigned int cpuid_ecx(unsigned int op)
++{
++	unsigned int eax, ebx, ecx, edx;
++
++	cpuid(op, &eax, &ebx, &ecx, &edx);
++
++	return ecx;
++}
++
++static inline unsigned int cpuid_edx(unsigned int op)
++{
++	unsigned int eax, ebx, ecx, edx;
++
++	cpuid(op, &eax, &ebx, &ecx, &edx);
++
++	return edx;
++}
++
++#endif /* _CPUFREQ_CPUID_H */
+diff --git a/utils/cpuid.h b/utils/cpuid.h
+deleted file mode 100644
+index 2bac69a..0000000
+--- a/utils/cpuid.h
++++ /dev/null
+@@ -1,63 +0,0 @@
+-#ifndef _CPUFREQ_CPUID_H
+-#define _CPUFREQ_CPUID_H
+-
+-static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
+-				unsigned int *ecx, unsigned int *edx)
+-{
+-	/* ecx is often an input as well as an output. */
+-	asm volatile("cpuid"
+-	    : "=a" (*eax),
+-	      "=b" (*ebx),
+-	      "=c" (*ecx),
+-	      "=d" (*edx)
+-	    : "0" (*eax), "2" (*ecx));
+-}
+-static inline void cpuid(unsigned int op,
+-			 unsigned int *eax, unsigned int *ebx,
+-			 unsigned int *ecx, unsigned int *edx)
+-{
+-	*eax = op;
+-	*ecx = 0;
+-	__cpuid(eax, ebx, ecx, edx);
+-}
+-
+-/*
+- * CPUID functions returning a single datum
+- */
+-static inline unsigned int cpuid_eax(unsigned int op)
+-{
+-	unsigned int eax, ebx, ecx, edx;
+-
+-	cpuid(op, &eax, &ebx, &ecx, &edx);
+-
+-	return eax;
+-}
+-
+-static inline unsigned int cpuid_ebx(unsigned int op)
+-{
+-	unsigned int eax, ebx, ecx, edx;
+-
+-	cpuid(op, &eax, &ebx, &ecx, &edx);
+-
+-	return ebx;
+-}
+-
+-static inline unsigned int cpuid_ecx(unsigned int op)
+-{
+-	unsigned int eax, ebx, ecx, edx;
+-
+-	cpuid(op, &eax, &ebx, &ecx, &edx);
+-
+-	return ecx;
+-}
+-
+-static inline unsigned int cpuid_edx(unsigned int op)
+-{
+-	unsigned int eax, ebx, ecx, edx;
+-
+-	cpuid(op, &eax, &ebx, &ecx, &edx);
+-
+-	return edx;
+-}
+-
+-#endif /* _CPUFREQ_CPUID_H */
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug.
+1.6.4.2
+
