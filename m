@@ -1,92 +1,166 @@
-From: Borislav Petkov <bp@amd64.org>
-Subject: Re: [PATCH 5/5] cpupowerutils: Introduce -b/-t --boost/--turbo
- cpufreq-info param
-Date: Tue, 5 Oct 2010 17:56:24 +0200
-Message-ID: <20101005155624.GD20505@aftab>
-References: <1286281394-14699-1-git-send-email-trenn@suse.de>
- <1286281394-14699-6-git-send-email-trenn@suse.de>
- <20101005144717.GA20505@aftab>
- <201010051718.07081.trenn@suse.de>
+From: David C Niemi <dniemi@verisign.com>
+Subject: [PATCH 1/1] cpufreq: sampling_down_factor to improve ondemand performance
+Date: Wed, 06 Oct 2010 17:20:31 -0400
+Message-ID: <4CACE81F.8030205@verisign.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <201010051718.07081.trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas Renninger <trenn@suse.de>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux@dominikbrodowski.net" <linux@dominikbrodowski.net>, Len Brown <len.brown@intel.com>
+To: cpufreq@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
-Date: Tue, Oct 05, 2010 at 11:18:06AM -0400
+Adds a new global tunable, sampling_down_factor.  Set to 1 it makes no
+changes from existing behavior, but set to greater than 1 (e.g. 100)
+it acts as a multiplier for the scheduling interval for reevaluating
+load when the CPU is at its top speed due to high load.  This improves
+performance by reducing the overhead of load evaluation and helping
+the CPU stay at its top speed when truly busy, rather than shifting
+back and forth in speed.  This tunable has no effect on behavior at
+lower speeds/lower CPU loads.
 
-> > yes. But we keep it consistent so that all cores show either off or on.
-> I am still not sure whether cpufreq-info should access this through
-> /sys/devices/system/cpu/cpu0/cpufreq/cpb
-> or directly via msr.
-> 
-> Hm, if it's accessed via /sys/..cpufreq/cpb it should be enough to only touch
-> CPU0, right? The rest is done by powernow-k8.
-> 
-> I don't like cpb much. It's the only file that has no info in it's name.
-> There should have been a general interface:
-> boost_mode
-> supporting AMD and Intel...
-> Possibly this can still be done and cpb can get marked deprecated
-> (it shows up in 2.6.36 the first time? Which is not released yet?
-> Theoretically this is not part of the ABI yet...).
+This patch is against 2.6.36-rc6.
 
-No, cpb got introduced in .35.
+This patch should help solve kernel bug 19672 "ondemand is slow".
 
-And no, we don't want to remove it because we need to be able to toggle
-CPB without the need for installing a special tool for that.
+Signed-off-by: David Niemi <dniemi@verisign.com>
+CC: Venkatesh Pallipadi <venki@google.com>
+CC: Dave Jones <davej@redhat.com>
+CC: Daniel Hollocher <danielhollocher@gmail.com>
+CC: <cpufreq-list@vger.kernel.org>
+CC: <linux-kernel@vger.kernel.org>
+---
+cpufreq_ondemand.c |   42 +++++++++++++++++++++++++++++++++++++++++-
+1 file changed, 41 insertions(+), 1 deletion(-)
 
-> > > to enable/disable turbo/boost mode.
-> > > 
-> > > For AMD there already is:
-> > > /sys/devices/system/cpu/cpu0/cpufreq/cpb
-> > > but this could all get handled in userspace and this recently introduced
-> > > interface could get removed again.
-> > 
-> > I don't think it will be removed soon. Rather, if you use the /sysfs
-> > interface you need kernel support for it and cpufrequtils might run on
-> > older kernels which don't have the feature yet. So you want to do all
-> > the detection/control in userspace, independent from the kernel version.
-> Hmm, I'd prefer cleaner code (and only differing Intel/AMD once, either in
-> the kernel or in userspace), but the "you need kernel support for it and
-> cpufrequtils might run on older kernel" arguement is interesting.
-> Not sure what is more important. Need to think a bit more about this.
-> Comments are very welcome.
+diff --git a/linux-2.6.36-rc6/drivers/cpufreq/cpufreq_ondemand.c.orig b/linux-2.6.36-rc6/drivers/cpufreq/cpufreq_ondemand.c
+index 7b50936..c631f27 100644
+--- a/linux-2.6.36-rc6/drivers/cpufreq/cpufreq_ondemand.c.orig
++++ b/linux-2.6.36-rc6/drivers/cpufreq/cpufreq_ondemand.c
+@@ -30,6 +30,8 @@
+ 
+ #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
++#define DEF_SAMPLING_DOWN_FACTOR		(1)
++#define MAX_SAMPLING_DOWN_FACTOR		(100000)
+ #define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
+ #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+ #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
+@@ -82,6 +84,7 @@ struct cpu_dbs_info_s {
+ 	unsigned int freq_lo;
+ 	unsigned int freq_lo_jiffies;
+ 	unsigned int freq_hi_jiffies;
++	unsigned int rate_mult;
+ 	int cpu;
+ 	unsigned int sample_type:1;
+ 	/*
+@@ -108,10 +111,12 @@ static struct dbs_tuners {
+ 	unsigned int up_threshold;
+ 	unsigned int down_differential;
+ 	unsigned int ignore_nice;
++	unsigned int sampling_down_factor;
+ 	unsigned int powersave_bias;
+ 	unsigned int io_is_busy;
+ } dbs_tuners_ins = {
+ 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
++	.sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
+ 	.down_differential = DEF_FREQUENCY_DOWN_DIFFERENTIAL,
+ 	.ignore_nice = 0,
+ 	.powersave_bias = 0,
+@@ -259,6 +264,7 @@ static ssize_t show_##file_name						\
+ show_one(sampling_rate, sampling_rate);
+ show_one(io_is_busy, io_is_busy);
+ show_one(up_threshold, up_threshold);
++show_one(sampling_down_factor, sampling_down_factor);
+ show_one(ignore_nice_load, ignore_nice);
+ show_one(powersave_bias, powersave_bias);
+ 
+@@ -340,6 +346,29 @@ static ssize_t store_up_threshold(struct kobject *a, struct attribute *b,
+ 	return count;
+ }
+ 
++static ssize_t store_sampling_down_factor(struct kobject *a,
++			struct attribute *b, const char *buf, size_t count)
++{
++	unsigned int input, j;
++	int ret;
++	ret = sscanf(buf, "%u", &input);
++
++	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
++		return -EINVAL;
++	mutex_lock(&dbs_mutex);
++	dbs_tuners_ins.sampling_down_factor = input;
++
++	/* Reset down sampling multiplier in case it was active */
++	for_each_online_cpu(j) {
++		struct cpu_dbs_info_s *dbs_info;
++		dbs_info = &per_cpu(od_cpu_dbs_info, j);
++		dbs_info->rate_mult = 1;
++	}
++	mutex_unlock(&dbs_mutex);
++
++	return count;
++}
++
+ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+ 				      const char *buf, size_t count)
+ {
+@@ -401,6 +430,7 @@ static ssize_t store_powersave_bias(struct kobject *a, struct attribute *b,
+ define_one_global_rw(sampling_rate);
+ define_one_global_rw(io_is_busy);
+ define_one_global_rw(up_threshold);
++define_one_global_rw(sampling_down_factor);
+ define_one_global_rw(ignore_nice_load);
+ define_one_global_rw(powersave_bias);
+ 
+@@ -409,6 +439,7 @@ static struct attribute *dbs_attributes[] = {
+ 	&sampling_rate_min.attr,
+ 	&sampling_rate.attr,
+ 	&up_threshold.attr,
++	&sampling_down_factor.attr,
+ 	&ignore_nice_load.attr,
+ 	&powersave_bias.attr,
+ 	&io_is_busy.attr,
+@@ -562,6 +593,10 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+ 
+ 	/* Check for frequency increase */
+ 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
++		/* If switching to max speed, apply sampling_down_factor */
++		if (policy->cur < policy->max)
++			this_dbs_info->rate_mult =
++				dbs_tuners_ins.sampling_down_factor;
+ 		dbs_freq_increase(policy, policy->max);
+ 		return;
+ 	}
+@@ -584,6 +619,9 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+ 				(dbs_tuners_ins.up_threshold -
+ 				 dbs_tuners_ins.down_differential);
+ 
++		/* No longer fully busy, reset rate_mult */
++		this_dbs_info->rate_mult = 1;
++
+ 		if (freq_next < policy->min)
+ 			freq_next = policy->min;
+ 
+@@ -607,7 +645,8 @@ static void do_dbs_timer(struct work_struct *work)
+ 	int sample_type = dbs_info->sample_type;
+ 
+ 	/* We want all CPUs to do sampling nearly on same jiffy */
+-	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
++	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
++		* dbs_info->rate_mult);
+ 
+ 	if (num_online_cpus() > 1)
+ 		delay -= jiffies % delay;
+@@ -711,6 +750,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 			}
+ 		}
+ 		this_dbs_info->cpu = cpu;
++		this_dbs_info->rate_mult = 1;
+ 		ondemand_powersave_bias_init_cpu(cpu);
+ 		/*
+ 		 * Start the timerschedule work, when this governor
 
-Ok, look at it this way: On the one hand, you need to be able to toggle
-boosting without having to install a tool for that. On the other, it is
-also important that cpufrequtils runs on as many kernels as possible. So
-you want to implement the toggling in userspace too. And I don't see an
-issue with code duplication because you already have most of it - you
-only need to iterate over the num_online_cpus and toggle the bit on each
-MSR. 10 additional lines tops.
 
-<snip>
 
-> > This should be done differently on AMD: we want to
-> > iterate over all cores and check this bit and see
-> > whether its setting is consistent. See how it is done in
-> > <arch/x86/kernel/cpu/cpufreq/powernow-k8.c::powernowk8_init()> in the
-> > kernel.
-> Yep and this is why the whole code should either sit in userspace
-> or in the kernel, duplicating the code would be stupid.
-> IMO it should be in userspace, it's just for debugging/monitoring, etc.
-> and if it's not too late already cpb sysfs file should better vanish...
 
-see above.
-
--- 
-Regards/Gruss,
-Boris.
-
-Advanced Micro Devices GmbH
-Einsteinring 24, 85609 Dornach
-General Managers: Alberto Bozzo, Andrew Bowd
-Registration: Dornach, Gemeinde Aschheim, Landkreis Muenchen
-Registergericht Muenchen, HRB Nr. 43632
