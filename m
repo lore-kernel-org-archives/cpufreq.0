@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Thu, 14 Oct 2010 09:22:52 GMT
-Message-ID: <201010140922.o9E9MqKb018086@demeter1.kernel.org>
+Date: Thu, 14 Oct 2010 15:20:44 GMT
+Message-ID: <201010141520.o9EFKiEs027855@demeter1.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,10 +18,14 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #10 from Thomas Renninger <trenn@suse.de>  2010-10-14 09:22:48 ---
-Mobusby: Here is a similar bug (but the root cause in BIOS is probably
-different):
-https://bugzilla.kernel.org/show_bug.cgi?id=16362
+--- Comment #11 from Heinz Diehl <htd@fancy-poultry.org>  2010-10-14 15:20:38 ---
+Hi Thomas,
+lowering up_threshold helps. Standard after booting without having the kernel
+patched is 95, after your patch it is set to 40. I didn't install a lot of
+different kernels yet, because the machine is brand new, but I noticed to my
+surprise at 2.6.36-rc7-git3 seems to have cured the problem. There's no cpufreq
+related patch in there, as far as I could see, so I wonder what the f*ck is
+going on here :-)
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
