@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Thu, 14 Oct 2010 05:56:40 GMT
-Message-ID: <201010140556.o9E5ueFo025027@demeter2.kernel.org>
+Date: Thu, 14 Oct 2010 05:58:42 GMT
+Message-ID: <201010140558.o9E5wgqU000369@demeter1.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,24 +15,16 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
-mobusby@yahoo.com changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |mobusby@yahoo.com
 
 
 
+--- Comment #8 from mobusby@yahoo.com  2010-10-14 05:58:41 ---
+Created an attachment (id=33562)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=33562)
+Simple CPU tester and reporter.
 
---- Comment #7 from mobusby@yahoo.com  2010-10-14 05:56:36 ---
-I am having a similar problem, but changing the CPU governor or threshhold
-doesn't help.  I wrote a little script to test my CPU, and it appears that the
-BIOS is limiting the CPU at high work loads, but not at low work loads.  After
-some time at full BIOS limiting ACPI throttling begins.  The temperature never
-gets high enough for throttling.
-
-I am using the stock Kernel from Ubuntu 10.10.  This behavior was not present
-in Ubuntu 10.04, and is not present when running Windows.
+The results from running the test on my computer are attached to the bottom of
+the script in comments.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
