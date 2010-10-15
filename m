@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Fri, 15 Oct 2010 19:25:18 GMT
-Message-ID: <201010151925.o9FJPIRY002586@demeter1.kernel.org>
+Date: Fri, 15 Oct 2010 19:37:05 GMT
+Message-ID: <201010151937.o9FJb5o6012615@demeter2.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,25 +18,19 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #16 from Thomas Renninger <trenn@suse.de>  2010-10-15 19:24:59 ---
-Could have been related to cpuidle and the new intel_idle driver, but I also
-see no recent fixes there as well.
-If this is true:
-fixed between 2.6.36-rc6-git2 and 2.6.36-rc7-git3
-it shouldn't be that hard to bisect on those rather stable versions.
-Be aware that you have to exchange git "good" and "bad" if you search for a fix
-and not for a regression/bug.
+--- Comment #17 from Thomas Renninger <trenn@suse.de>  2010-10-15 19:36:59 ---
+If someone wants to test whether this has to do with intel_idle driver you
+should be able to check the used driver (new intel_idle vs acpi_idle):
+cat /sys/devices/system/cpu/cpuidle/current_driver
 
-That would be:
-git start <bad>           <good>
-git start 2.6.36-rc7-git3 2.6.36-rc6-git2
-If a version works well go for git bad
-if it shows the bug go for git good
+The new cpupowerutils (former cpufrequtils) show this via:
+cpuidle-info
 
-gitX is not tagged in git though, no idea how one can find out the git id of
-these subcommits/merges?
-
-Heinz: How sure are you that it got fixed in 2.6.36-rc7-git3?
+If intel_idle is used the boot param:
+intel_idle.max_cstate=0
+should make the machine fall back to acpi_idle...
+Just an idea..., idle driver sounds possibly related to wrong idle
+accounting... and this is an easy check compared to compiling/bisecting...
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
