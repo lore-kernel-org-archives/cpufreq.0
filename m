@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Fri, 15 Oct 2010 17:52:39 GMT
-Message-ID: <201010151752.o9FHqddM006362@demeter1.kernel.org>
+Date: Fri, 15 Oct 2010 19:25:18 GMT
+Message-ID: <201010151925.o9FJPIRY002586@demeter1.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,60 +18,25 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #15 from vyncere <vyncere@gmail.com>  2010-10-15 17:52:16 ---
-Hi all,
+--- Comment #16 from Thomas Renninger <trenn@suse.de>  2010-10-15 19:24:59 ---
+Could have been related to cpuidle and the new intel_idle driver, but I also
+see no recent fixes there as well.
+If this is true:
+fixed between 2.6.36-rc6-git2 and 2.6.36-rc7-git3
+it shouldn't be that hard to bisect on those rather stable versions.
+Be aware that you have to exchange git "good" and "bad" if you search for a fix
+and not for a regression/bug.
 
-I have an Intel Core i5 520 M (Thinkpad T410). This is when I switched from
-Ubuntu 10.04 (2.6.32.15) to Ubuntu 10.10 (2.6.35.4) that the problem has made
-itself visible.
+That would be:
+git start <bad>           <good>
+git start 2.6.36-rc7-git3 2.6.36-rc6-git2
+If a version works well go for git bad
+if it shows the bug go for git good
 
-* With the stock kernel of Ubuntu 10.04 : (Ondemand WORKS)
-cpufreq-info said for all virtual CPUs :
+gitX is not tagged in git though, no idea how one can find out the git id of
+these subcommits/merges?
 
-hardware limits: 1.20 GHz - 2.40 GHz
-current policy: frequency should be within 1.20 GHz and 2.40 GHz.
-The governor "ondemand" may decide which speed to use within this range.
-current CPU frequency is 1.20 GHz.
-cpufreq stats: 2.40 GHz:3.26%, 2.40 GHz:0.02%, 2.27 GHz:0.05%, 2.13 GHz:0.05%,
-2.00 GHz:0.03%, 1.87 GHz:0.02%, 1.73 GHz:0.03%, 1.60 GHz:0.01%, 1.47 GHz:0.03%,
-1.33 GHz:0.03%, 1.20 GHz:96.48%  (235)
-
-* With the stock kernel of Ubuntu 10.10 : (Ondemand FAILS)
-cpufreq-info said for all virtual CPUs :
-hardware limits: 1.20 GHz - 2.40 GHz
-current policy: frequency should be within 1.20 GHz and 1.20 GHz.
-current CPU frequency is 1.20 GHz.
-cpufreq stats: 2.40 GHz:0.00%, 2.40 GHz:0.00%, 2.27 GHz:0.00%, 2.13 GHz:0.00%,
-2.00 GHz:0.00%, 1.87 GHz:0.00%, 1.73 GHz:0.00%, 1.60 GHz:0.00%, 1.47 GHz:0.00%,
-1.33 GHz:0.00%, 1.20 GHz:100.00%
-
-I took my custom reference configuration (.config) of my laptop which perfectly
-works with the 2.6.32.15 Ubuntu Kernel and tested it with some different kernel
-versions (from kernel.org), in order to reduce the incidence of Ubuntu patches.
-
-* Results :
-
-2.6.32.15 : Ondemand scaling OK
-2.6.32.16 : Ondemand scaling OK
-2.6.32.17 : Ondemand scaling OK
-2.6.32.18 : Ondemand scaling OK
-2.6.32.19 : Ondemand scaling OK
-2.6.32.20 : Ondemand scaling OK
-2.6.32.21 : Ondemand scaling OK
-2.6.32.22 : Ondemand scaling OK
-2.6.32.23 : Ondemand scaling OK
-2.6.32.24 : Ondemand scaling OK
-
-So, at this state, could it be concluded that the problem has came after 2.6.32
-? Not so sure ! Because, as it was underlines higher in this thread, this
-problem may highly be machine specific... In any case, this is the second bug
-reporting, impacting a Core i5 CPU. On Ubuntu launchpad, someone with a Core 2
-Duo T7200 CPU is affected by this problem too (2.6.35.4 from Ubuntu 10.10).
-
-I have tested too with a clean 2.6.35.7 with and without the patch from Thomas
-R. For both, the result is the same : Ondemand scaling KO.
-
-I will tell you what happens with >= 2.6.33 kernels.
+Heinz: How sure are you that it got fixed in 2.6.36-rc7-git3?
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
