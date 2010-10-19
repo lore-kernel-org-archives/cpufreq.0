@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Tue, 19 Oct 2010 03:12:01 GMT
-Message-ID: <201010190312.o9J3C1Zf008703@demeter2.kernel.org>
+Date: Tue, 19 Oct 2010 03:51:43 GMT
+Message-ID: <201010190351.o9J3phlo026041@demeter1.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,20 +18,17 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #21 from Thomas Renninger <trenn@suse.de>  2010-10-19 03:11:56 ---
-Created an attachment (id=34092)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=34092)
-Patch introducing boot param to disable HW_COORD type
+--- Comment #22 from Thomas Renninger <trenn@suse.de>  2010-10-19 03:51:38 ---
+Created an attachment (id=34102)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=34102)
+Provide /sys/devices/system/cpu/cpu*/cpufreq/shared_type
 
-Please try:
-processor.disable_hw_coord=1
-boot param with this patch.
-Hm, pdc is called rather early these days. The param won't be considered for
-the first _PDC call in arch/x86/kernel/acpi/boot.c.
-But that should not matter and I hope it gets used later, otherwise it must be
-an early param...
-I try to come up with another patch to export the coordination type to be able
-to check this...
+This should be:
+CPUFREQ_SHARED_TYPE_ALL  (2)
+if you added the boot param provided in the previous patch
+and
+CPUFREQ_SHARED_TYPE_HW   (1)
+by default.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
