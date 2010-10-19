@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Tue, 19 Oct 2010 03:52:15 GMT
-Message-ID: <201010190352.o9J3qFhL026371@demeter1.kernel.org>
+Date: Tue, 19 Oct 2010 07:34:24 GMT
+Message-ID: <201010190734.o9J7YO7l013739@demeter2.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,17 +15,17 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
-Thomas Renninger <trenn@suse.de> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-  Attachment #34102|application/octet-stream    |text/plain
-          mime type|                            |
-  Attachment #34102|0                           |1
-           is patch|                            |
 
 
 
+--- Comment #23 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-10-19 07:34:20 ---
+Concerning bug 17001, which I filed, I have to report that the issue has not
+magically disappeared for me with the 2.6.36-rc kernels.
+I finally managed to compile 2.6.36-rc7 and -rc8 (had an error building the
+i915 driver before) and Core2 Duo T7300 CPU still is stuck at the lowest
+frequency without lowering up_threshold to 53 or lower.
+
+Would it help if I provided you with some ACPI information? What do you need?
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
