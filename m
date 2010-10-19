@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Tue, 19 Oct 2010 14:13:13 GMT
-Message-ID: <201010191413.o9JEDDdf003439@demeter2.kernel.org>
+Date: Tue, 19 Oct 2010 22:47:20 GMT
+Message-ID: <201010192247.o9JMlKa8020420@demeter1.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,41 +18,33 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #25 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-10-19 14:13:07 ---
-Here's what I have in
+--- Comment #26 from vyncere <vyncere@gmail.com>  2010-10-19 22:47:14 ---
+Hi all,
 
-# ls /sys/firmware/acpi/tables/
-APIC  DSDT     FACP  HPET  SLIC   SSDT2  SSDT4    SSDT6  SSDT8
-BOOT  dynamic  FACS  MCFG  SSDT1  SSDT3  SSDT5    SSDT7  TCPA
+So with my Core i5 520 M (2 physical cores, 4 logical cores):
 
-I guess you want the SSDT* . Do you need any other files from there?
+* 2.6.32.15 (ubuntu), 2.6.35.7 (kernel.org), 2.6.35.7 (kernel.org + 2 patchs) :
 
-Further I applied your two patches to 2.6.36-rc8 and without the boot parameter
-I'm getting:
+- Values of /sys/devices/system/cpu/cpu*/cpufreq/affected_cpus are : "0", "1",
+"2" and "3" respectively for cpu0, cpu1, cpu2 and cpu3.
 
-# cat /sys/devices/system/cpu/cpu*/cpufreq/shared_type
-2
-2
+- Output of /sys/devices/system/cpu/cpu*/cpufreq/related_cpus is always : "0 1
+2 3"
 
-With processor.disable_hw_coord=1 I'm getting the exact same thing:
+No problem.
 
+* 2.6.35.7 (kernel.org + 2 patchs) with and without boot parameter
+"processor.disable_hw_coord=1" :
 
-# uname -rs
-Linux 2.6.36-rc8-pgzh
-# dmesg | grep hw_coord
-Kernel command line: BOOT_IMAGE=/vmlinuz.exp root=/dev/sda3 ro
-processor.disable_hw_coord=1
-centauri:/home/pgzh# cat /sys/devices/system/cpu/cpu*/cpufreq/shared_type
-2
-2
+- Output of /sys/devices/system/cpu/cpu*/cpufreq/shared_type is always :
+1
 
-There's no change in CPUFREQ behavior as well - I'm stuck with the lowest freq
-unless I lower up_threshold.
+Always default value 1 (CPUFREQ_SHARED_TYPE_HW) : so, Thomas, according to what
+you said, there is something wrong here...
 
-In the CPUFREQ drivers section in kconfig I have the following set:
-# CONFIG_X86_PCC_CPUFREQ is not set
-Should this be enabled?
-I only got the ACPI driver enabled right now. (CONFIG_X86_ACPI_CPUFREQ=m)
+- cpufreq-info returns the same result as before (lowest freq).
+- /sys/devices/system/cpu/cpufreq/ondemand/up_threshold is 95 by default.
+- Lower the up_threshold has no effect for me.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
