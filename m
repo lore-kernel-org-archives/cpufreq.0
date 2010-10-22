@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 16072] [HP Pavilion dm1-1110ev] Cpufreq doesn't work at all (
  Intel Celeron U2300 )
-Date: Fri, 22 Oct 2010 21:09:48 GMT
-Message-ID: <201010222109.o9ML9mX9005924@demeter2.kernel.org>
+Date: Fri, 22 Oct 2010 21:49:38 GMT
+Message-ID: <201010222149.o9MLncND017659@demeter1.kernel.org>
 References: <bug-16072-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,47 +19,43 @@ https://bugzilla.kernel.org/show_bug.cgi?id=16072
 
 
 
---- Comment #15 from Robert Bradbury <robert.bradbury@gmail.com>  2010-10-22 21:09:24 ---
-This shiould not be closed as an "undicumemented bug".  The machine is a
-standard HP Pavilion A630N machine (presumably which hundreds of thousands
-were manufactured in the 2003-2005 time frame).
+--- Comment #16 from Robert Bradbury <robert.bradbury@gmail.com>  2010-10-22 21:48:19 ---
+On Fri, Jun 25, 2010 at 5:02 AM, <bugzilla-daemon@bugzilla.kernel.org>wrote:
 
-In monitoring the Gentoo bug framework I am aware that there are laptops
-being manufactured to date (2010) which contain Bios which do not contain
-the proper code to  properly inform about the BIOS capabilities.
+> https://bugzilla.kernel.org/show_bug.cgi?id=16072
+>
+> --- Comment #2 from Markos Chandras <hwoarang@gentoo.org>  2010-06-25
+> 09:01:42 ---
+> Thanks for the quick tip, but I have found multiple references over the
+> inet,
+> complaining about broken support on this kinda of CPU. Is it possible that
+> all
+> of them had a broken bios? Initially, I assumed that this cpu is quite new
+> and
+> kernels developers didn't have time to add support for it
+>
 
-In short there are still machines which exist out there which WILL NOT
-PERFORM properly on what ACPI code is supposed to exisit.  Because it
-doesn't exist or cannot be programmed into the machines.   The P4-clockmod
-change was/is wrong -- the P4 clockmod driver worked fine for these machines
-before the "correction"  I have a machine which works fine backing down to
-1.75 GHz or even 750 Mhz.   And I can watch the power consumption decrease
-on a Watt-Meter which the machine is plugged into.
+Markos, the CPU is very old (~5+ years).  There are still CPU/BIOS
+combinations wch may be coming out which do not properly support the ACPI
+power saving options [1] -- and thus one must fall back on the old
+p4-clockmod power saving features.  Which did indead work and should not be
+effectively disabled as has been the case with more recent releases of
+Linux.
 
-Though I am running a gentoo-2.6.35-r10 kernel (whiich I presume is roughly
-equivalent to the final release of 2.6.35.   The p4-clockmod, e.g.
-arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+Please feel free to contact me for the specific modiification in
+p4-clockmod.c which should be removed in order to provide the normal power
+saving features.
 
-is backtracked to ~the 2.6.28 release (or perhaps somehat later)  Because
-that is the release which worked on these machines.  Subsequent releases do
-not allow P4 clockmod control and are therefore worthless.  There are two
-dividing lines -- some people want their machine to be responsive -- and
-that may have prompted the change in p4-clockmod.c  And there are others who
-may have reasons to leave their computers on (such as to provide web
-services)  who may desire minimal CPU/power consumption at all times.   The
-current p4-clockmod.c situation prevents that and that is why I am forced to
-run an older instantiation of that driver.
+Best,
+Robert
 
-It is not a problem which can be resolved by throwing out the older or
-un-upgraded (in terms of BIOS capabilities with respect to ACPI).  The
-proper response is for Linux to determine if the machine does have advanced
-ACPI control capanilities -- and if it does not allow for old-style P4
-clockmod fallback..
-
-Because that is what works and it should not be a Linux position to force
-people into less than 5 y.o. machines.  p4-clocmod.c used to work perfectly
-in reducing power consumption.  It currently does not.  Thus in the current
-release of Linux it cannot be viewed as being "green".
+1. It is a very complex situation in terms of what the CPUs are capable of
+and what the BIOS is capable of (in terms of managing power conservation).
+ In terms of my current read of the Linux code these are in two separate
+realms from a development standpoint.  In an ideal world everything would be
+going through ACPI and it would manage power use.  In reality that world
+does not exist and one should be able to deal with it.  Thus problems with
+p4-clockmod.c.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
