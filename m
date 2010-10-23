@@ -1,71 +1,98 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 16072] [HP Pavilion dm1-1110ev] Cpufreq doesn't work at all (
  Intel Celeron U2300 )
-Date: Fri, 22 Oct 2010 23:52:37 GMT
-Message-ID: <201010222352.o9MNqbjN011090@demeter2.kernel.org>
+Date: Sat, 23 Oct 2010 06:03:36 GMT
+Message-ID: <201010230603.o9N63a6n023784@demeter1.kernel.org>
 References: <bug-16072-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <bug-16072-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16072
+https://bugzilla.kernel.org/show_bug.cgi?id=3D16072
 
 
 
 
 
---- Comment #18 from Thomas Renninger <trenn@suse.de>  2010-10-22 23:52:22 ---
-Sigh, a p4_clockmod discussion again.
-I promised myself to stay out of those, but as you provide quite some wrong
-information let's clear some things up:
+--- Comment #19 from Patrick Viane <patrickviane@yahoo.com>  2010-10-23=
+ 06:03:16 ---
+Same sentiment here (sadness) as expressed by Markos Chandras in Commen=
+t #17.
 
-> This shiould not be closed as an "undicumemented bug".  The machine is a
-> standard HP Pavilion A630N machine (presumably which hundreds of thousands
-> were manufactured in the 2003-2005 time frame).
-Which does not support CPU frequency scaling, where is the problem?
-The CPU itself simply cannot do it.
+The CPU is clearly capable of frequency scaling (and voltage scaling).
 
-> In monitoring the Gentoo bug framework I am aware that there are laptops
-> being manufactured to date (2010) which contain Bios which do not contain
-> the proper code to  properly inform about the BIOS capabilities.
-This has nothing to do with BIOS capabilities.
+Please consider the following:
+> Comment #14
+> It came out this type of CPU is not speedstep capable
+Somewhat misleading: the CPU is "Enhanced Intel SpeedStep=C2=AE Technol=
+ogy" capable,
+and should (imo) be handled by the acpi-cpufreq driver.=20
 
-> There are two dividing lines -- some people want their machine to be
-> responsive -- and that may have prompted the change in p4-clockmod.c
-This high transition latency will cause that you cannot properly work with it.
-It may not be that bad if you use it as a server without user interaction, but
-also there p4_clockmod will not save any/much power, see below.
+> You might want to verify with the Intel CPU sheet the guy found.
+I did: please see for yourself at
+http://www.intel.com/design/mobile/datashts/321111.pdf
 
-> And I can watch the power consumption decrease on a Watt-Meter which the
-> machine is plugged into.
-How much is this for a totally idle system?
-Please try again, I do not believe this.
+> Comment #15
+> The machine is a standard HP Pavilion A630N machine
+Incorrect: see discription of bug: "[HP Pavilion dm1-1110ev] Cpufreq do=
+esn't
+work at all ( Intel Celeron U2300 )".  AFAIK this notebook was introduc=
+ed in Q1
+2010. (As were many other notebooks using this CPU)
 
-Hmm, this machine does not even support C2...
+> Comment #16
+> Markos, the CPU is very old (~5+ years).=20
+Incorrect: launch date of this CPU was Q3 '09; please see:
+http://ark.intel.com/Product.aspx?id=3D42779
+These CPU's are still being sold/implemented.
 
-Still I doubt you gain any/much power consumption with p4_clockmod.
-Can you do some checks please if you still have the power meter and measure
-power consumption if:
-  1) p4_clockmod not used and machine is as idle as possible
-     (top, kill some processes if necessary)
-  2) p4_clockmod is used and machine is as idle as possible
-     (top, kill some processes if necessary).
-  3) Fully utilized CPU (do "cat /dev/zero >/dev/null &" two or three times and
-     kill it again after measuring) with p4_clockmod unused
-  4) Fully utilized CPU (do "cat /dev/zero >/dev/null &" two or three times and
-     kill it again after measuring) with p4_clockmod used
-  5) You should see such a line in dmesg:
-     "using mwait in idle threads"
-     If this is the case try: idle=halt boot param
-     and measure the same as done in 1. (double check that the message in dmesg
-     disappeared).
+> Comment #18
+> Sigh, a p4_clockmod discussion again.
+Yes, I think the correct discussion should mostly be about acpi-cpufreq=
+=2E
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+But just to make certain: in case of overheating, where does linux cont=
+rol the
+thermal protection of these CPU's? Especially now, WITHOUT drivers?  If=
+ the
+answer here is p4_clockmod (or acpi-cpufreq), one might even think abou=
+t
+raising the importance of this bug, considering the potential overheati=
+ng
+isues, which are of course not uncommon in notebooks.
+
+>  machine is a
+> > standard HP Pavilion A630N machine (presumably which hundreds of th=
+ousands
+> > were manufactured in the 2003-2005 time frame).
+> Which does not support CPU frequency scaling, where is the problem?
+> The CPU itself simply cannot do it.
+I hope it is clear by now that the SU2300 in the HP Pavilion dm1-1110ev=
+ *DOES*
+support CPU frequency scaling.
+
+> Hmm, this machine does not even support C2...
+Luckily for us, the SU2300 supports C1/AutoHALT, C1/MWAIT, C2, C3 and C=
+4,
+otherwise we would all (presumably) be forced to go back to running Win=
+dows on
+our notebooks.
+
+I hope this bug can be truly resolved, if not, can anyone point me to t=
+he=20
+"documentation" with which to "Resolve" this bug, as mentioned in the b=
+ug
+"Status"?
+
+Thanks.
+
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
 ------- You are receiving this mail because: -------
 You are the assignee for the bug.
