@@ -1,41 +1,43 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16072] [HP Pavilion dm1-1110ev] Cpufreq doesn't work at all (
- Intel Celeron U2300 )
-Date: Sun, 24 Oct 2010 23:10:15 GMT
-Message-ID: <201010242310.o9ONAFeR004547@demeter1.kernel.org>
-References: <bug-16072-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 21082] Machine Check Exception on Athlon X2
+Date: Sun, 24 Oct 2010 23:29:19 GMT
+Message-ID: <201010242329.o9ONTJZP006302@demeter1.kernel.org>
+References: <bug-21082-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16072-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-21082-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16072
+https://bugzilla.kernel.org/show_bug.cgi?id=21082
+
+
+Thomas Renninger <trenn@suse.de> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |trenn@suse.de
+          Component|cpufreq                     |x86-64
+         AssignedTo|cpufreq@vger.kernel.org     |platform_x86_64@kernel-bugs
+                   |                            |.osdl.org
+            Product|Power Management            |Platform Specific/Hardware
 
 
 
 
+--- Comment #1 from Thomas Renninger <trenn@suse.de>  2010-10-24 23:29:12 ---
+This is most probably unrelated to CPU freq and powernow-k8 driver.
+I expect the backtrace does not always point to powernow-k8 driver?
 
---- Comment #22 from Thomas Renninger <trenn@suse.de>  2010-10-24 23:10:02 ---
-> But just to make certain: in case of overheating, where does linux control the
-> thermal protection of these CPU's? Especially now, WITHOUT drivers?
-There is for example a HW based thermal protection.
-The HW will throttle (same technique as p4_clockmod) automatically and send a
-MCE (Machine Check Exception) to inform the user.
-Compare with:
-arch/x86/kernel/cpu/mcheck/therm_throt.c
-Even if this should not be implemented, the CPU will always have a "switch off
-hard" mechanism in case of not working or missing fans and similar.
-
-> If the
-> answer here is p4_clockmod (or acpi-cpufreq), one might even think about
-> raising the importance of this bug, considering the potential overheating
-> isues, which are of course not uncommon in notebooks.
-As it's not only HP, but several vendors (every?) showing this issue with this
-specific CPU model, I expect it's working as designed.
+> As far as I can tell, this only happens when X is running as i build gentoo
+> with out problems.
+I saw something similar, also related to the X driver.
+It was very hard to reproduce (run two different 3D X applications in parallel,
+then it would throw such an MCE after 2-30 minutes...) and hang up.
+The fix was about missing TLB flushes related to ioremap.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
