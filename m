@@ -1,33 +1,43 @@
-From: Raj Kumar <rajkumar278@gmail.com>
-Subject: Question regarding during system suspend
-Date: Sun, 24 Oct 2010 21:39:20 +0200
-Message-ID: <AANLkTinXYc6LVHvguY4hnD0OF=56Tww8h_iyso+N_Mx5@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 16072] [HP Pavilion dm1-1110ev] Cpufreq doesn't work at all (
+ Intel Celeron U2300 )
+Date: Sun, 24 Oct 2010 23:10:15 GMT
+Message-ID: <201010242310.o9ONAFeR004547@demeter1.kernel.org>
+References: <bug-16072-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=domainkey-signature:mime-version:received:received:date:message-id
-         :subject:from:to:content-type;
-        bh=itb6d9i+3mmQGsrLi3F7N6mStMdkrlRU50EOL8yEUYw=;
-        b=LgQYc+NfTtfiSnV3eeJ/SmUNGpo84ZtjBcv73uAljshWIwshohH0BVf7gdB01v2vYk
-         FyRld1RyKtrx/FVzvCvGXwUhfvpTY+Qrj0f415XTFhkBwQmTZkDEpDw5U4xjoIx7uKul
-         00A1AO2XTciGMSD+WwGiZRaT6TF/IvOeKYhJ0=
+In-Reply-To: <bug-16072-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-Hi,
+https://bugzilla.kernel.org/show_bug.cgi?id=16072
 
-I have a question regarding DVFS.
 
-1) If the system suspends, Is the DVFS means clock scaling possible
-after system suspend (suspend to ram) . I assume after system
-suspend, all the devices is in the low power mode so no clock scaling
-is possible after system suspend.
 
-right? please correct me if i am wrong.
 
-Regards
-Raj
+
+--- Comment #22 from Thomas Renninger <trenn@suse.de>  2010-10-24 23:10:02 ---
+> But just to make certain: in case of overheating, where does linux control the
+> thermal protection of these CPU's? Especially now, WITHOUT drivers?
+There is for example a HW based thermal protection.
+The HW will throttle (same technique as p4_clockmod) automatically and send a
+MCE (Machine Check Exception) to inform the user.
+Compare with:
+arch/x86/kernel/cpu/mcheck/therm_throt.c
+Even if this should not be implemented, the CPU will always have a "switch off
+hard" mechanism in case of not working or missing fans and similar.
+
+> If the
+> answer here is p4_clockmod (or acpi-cpufreq), one might even think about
+> raising the importance of this bug, considering the potential overheating
+> isues, which are of course not uncommon in notebooks.
+As it's not only HP, but several vendors (every?) showing this issue with this
+specific CPU model, I expect it's working as designed.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
