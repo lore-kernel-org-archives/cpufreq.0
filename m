@@ -1,60 +1,127 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16072] [HP Pavilion dm1-1110ev] Cpufreq doesn't work at all (
- Intel Celeron U2300 )
-Date: Mon, 25 Oct 2010 17:34:07 GMT
-Message-ID: <201010251734.o9PHY7kY026130@demeter2.kernel.org>
-References: <bug-16072-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
+Date: Thu, 28 Oct 2010 15:12:18 GMT
+Message-ID: <201010281512.o9SFCIVa007628@demeter1.kernel.org>
+References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16072-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-19702-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16072
+https://bugzilla.kernel.org/show_bug.cgi?id=3D19702
 
 
 
 
 
---- Comment #23 from Robert Bradbury <robert.bradbury@gmail.com>  2010-10-25 17:33:51 ---
-Thomas, you should have such a P4 machine plugged into a watt-meter as I
-currently have.  I am (with the kernel modified back to the old p4-clockmod
-driver) able to detect a significant power savings as the machine scales itself
-back from 2.8 Ghz to lesser speed power savings [1].
+--- Comment #27 from Thomas Renninger <trenn@suse.de>  2010-10-28 15:12=
+:08 ---
+I expect acpi-cpufreq is fundamentally broken in respect to HW_ALL
+coordination.
+The only aspect acpi-cpufreq or cpufreq subsystem takes into account in=
+ HW_ALL
+case is to make sure that the same governor is running on all dependent=
+ CPUs in
+case CONFIG_HOTPLUG_CPU is set in .config.
+Otherwise the dependent CPUs are only shown as "related" in sysfs, that=
+'s all.
 
-p4-clockmod, as distributed prior to ~2.6.30, *did* work, in at least lowering
-power consumption when it did not need to be running at 2.8GHz (which on my
-machine might be only 2-4 hours/day).  Mucking with the BIOS to add "real" ACPI
-support for reduced power consumption (if the CPU can even support it) is way
-beyond the capabilities of most users of Linux.
+The only thing which makes me wonder is: Why has this not come up earli=
+er...
 
-I think the problem is that some kernel developer didn't like the
-responsiveness of  a machine using p4-clockmod and changed the timing which
-allowed it to work quite effectively on many/most desktop machines [2].
+=46rom ACPI spec it's impossible to guess how OS should deal with HW_AL=
+L.
+Googling about it leads to this bug :) and one interesting discussion:
+http://www.mail-archive.com/linux-acpi@vger.kernel.org/msg11682.html
+-> adding Len and Rui into CC.
+But from there it's also not 100% clear.
 
-Its simple for me -- I just change the code back to what worked when I upgrade
-kernels.  But unless you are comfortable hacking the kernel (not something I
-consider likely with most Ubuntu users) that is difficult.
+While SW_ALL is very clear, I could imagine the difference between HW_A=
+LL and
+SW_ANY is that the (MSR/HW) status registers may/may not get updated. O=
+r that
+HW may or may not transition the other core(s) into the same state and =
+SW has
+to re-evaluate (what would be rather stupid and SW_ALL algorithm should=
+ apply
+then).
 
-Now if the kernel developers would like to release BIOS code for a HP Pavilion
-with a Pentium IV Prescott CPU which *does* support acpi-cpufreq and no longer
-generates the message: "cpufreq-core: initialization failed" then I would be
-willing to consider testing it.
+Hmm, I found:
+14.2 P-STATE HARDWARE COORDINATION
+in
+Intel=C2=AE 64 and IA-32 Architectures Software Developer=E2=80=99s Man=
+ual
+Volume 3A: System Programming Guide, Part 1
 
-1. The power savings dropping from 2.8 GHz to 350 MHz is 144 to 109 W or nearly
-24%.
-2. This is spite of the fact that p4-clockmod has a variety of
-information/adjustment params in /sys/devices/system/cpu/cpu0/cpufreq which
-could be set to manage the responsiveness of the machine for various workloads
-[3].  It seems to be a case of using a sledge-hammer to fix something that
-could have been fixed with a jeweler's screwdriver.
-3. Which appear to be undocumented.  So unless you know how to read the source
-code you cannot "tune" the machine easily.
+But the code in there is so poor.
+Essentially it tells us to use aperf/mperf for switching decisions.
+The part that aperf/mperf should get reset to 0, should vanish from thi=
+s
+document, it's possible to write an algorithm which can handle register
+overflows, setting them back to zero is wrong.
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+And this comment there:
+// This example does not cover the additional logic or algorithms
+// necessary to coordinate multiple logical processors to a target P-st=
+ate.
+makes me wonder whether we also miss this additional logic in
+acpi-cpufreq/ondemand.
+
+The ondemand governor must know about the dependency and look at the
+utilization of all dependent cores when doing decisions which is not th=
+e case.
+I expect Heinz and Peter get "half way correct" switching at about 52
+up_threshold because they have two "related" cores.
+Vyncere you have 4 dependent cores, if your core(s) are switched up wit=
+h an
+up_threshold of 25 I expect you see the same bug.
+
+My patches or say workaround may help for Heinz's BIOS, it may not for =
+others.
+Also this must get fixed properly. For this some input from Intel peopl=
+e would
+be great how HW_ALL must get handled or better how it's done on Windows=
+=2E
+
+You could try to find out how your HW behave by not loading any cpufreq=
+ driver,
+get the msr-tools package and set the frequency on single cores manuall=
+y and
+then read out status MSR whether the dependent cores switched as well (=
+question
+is whether the status is true then, may be CPU specific and may have no=
+thing to
+do how the OS must implement HW_ALL algorithm).
+The MSRs are:
+#define MSR_IA32_PERF_STATUS 0x00000198    =20
+#define MSR_IA32_PERF_CTL    0x00000199
+You have to be careful that only 16 bits (0-15, cmp. with chapter 14.3.=
+2.2 in
+above mentioned document) are used when you write to PERF_CTL, you have=
+ to read
+out and keep the others and write them back as well.
+
+Long story short (Provided my whole research for comments whether I hav=
+e a
+thinko):
+HW_ALL is about taking aperf/mperf into account. We do not rely on BIOS=
+, but
+determine that already by reading out cpuid aperf/mperf capabilities of=
+ the CPU
+directly. Still the governor must consider all dependent cores which is
+currently not the case and which is a major bug.
+Question still is whether all cores (like SW_ALL) or only one core (lik=
+e
+SW_ANY) is enough to switch. SW_ALL should work for sure -> will provid=
+e a
+patch.
+
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
 ------- You are receiving this mail because: -------
-You are the assignee for the bug.
+You are on the CC list for the bug.
