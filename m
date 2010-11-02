@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Mon, 1 Nov 2010 18:16:52 GMT
-Message-ID: <201011011816.oA1IGqGH017618@demeter2.kernel.org>
+Date: Tue, 2 Nov 2010 07:09:07 GMT
+Message-ID: <201011020709.oA2797mT001546@demeter2.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,24 +18,22 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #39 from vyncere <vyncere@gmail.com>  2010-11-01 18:16:46 ---
-Thomas :
+--- Comment #40 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-11-02 07:09:00 ---
+Seems like I am lucky in picking the broken CPUs...the Core2 Quad Q9550 I have
+also has a minor flaw, it has broken temperature sensors - those are stuck at
+one temperature, no matter how much load I put on it :-P
+BTW, I never overclocked or fiddled with any of those CPUs and bought them
+unused and new...
 
-* 2.6.32.15 (Kernel Reference with functionnal cpufreq)
-- Boot params : None
+So, do you need anything else from me?
+If it helps, with the patched kernel CPU frequency scaling tends to be a little
+slower to ramp the freq up and scales down a little earlier compared to the
+unpatched kernel with lowered up_threshold. So system responsiveness is a bit
+worse. You notice that, but its not too bad, it definitely WORKS as it's
+supposed to. I'm now probably saving a bit of power compared to before.
 
---> No /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
-
-* 2.6.36 (+ 4 Patches HW_COORD, SHARED_TYPE, HW_ALL, HW_STATISTICS)
-- Boot params for patch 4 : acpi_cpufreq.disable_average=1
-- Boot params : clocksource=hpet
-
-# cat /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
-1199000
-
-So, 1.20GHz.
-
-Thank you. I will investigate on the BIOS/ACPI track.
+Thanks for looking into this again! If you want me to try more sophisticated
+patches just let me know.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
