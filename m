@@ -1,27 +1,39 @@
-From: "Chidambaram, Praveen" <pchidamb@codeaurora.org>
-Subject: per_cpu Userspace mutex
-Date: Wed, 3 Nov 2010 16:23:52 -0600 (MDT)
-Message-ID: <alpine.DEB.2.00.1011031619140.5066@pchidamb-lnx.qualcomm.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
+Date: Thu, 4 Nov 2010 08:15:18 GMT
+Message-ID: <201011040815.oA48FIcm006175@demeter1.kernel.org>
+References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-19702-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, venkatesh.pallipadi@intel.com
-Cc: bryanh@codeaurora.org, waynelee@codeaurora.org
+To: cpufreq@vger.kernel.org
 
-Hello,
+https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
-Seems in cpufreq_userspace.c the userspace_mutex is common for all 
-CPUs using userspace code to change cpu frequency and could possibly 
-slow down the frequency change on all other cpus. 
 
-Can we have per_cpu mutex so that access to one cpu does not hold up 
-other cpus.
 
-Thanks,
-Praveen
 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+
+--- Comment #44 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-11-04 08:15:11 ---
+> Also the fact that only one CPU is affected very much points to defect HW.
+
+I got only one CPU, but two CPU cores - by CPU you meant "CPU core", right?
+
+> remove the aperfmperf capabilties line from
+arch/x86/kernel/include/asm/cpufeatures.h
+
+I'll try that with a vanilla kernel to see if I run into other problems with
+that. (That will remove the capability system-wide, not only for the cpufreq
+subsystem, right?)
+
+If it helps: I installed Windows XP on another partition on my affected laptop,
+frequency scaling works just fine there...
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug.
