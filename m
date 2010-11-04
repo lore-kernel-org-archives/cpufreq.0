@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Thu, 4 Nov 2010 08:15:18 GMT
-Message-ID: <201011040815.oA48FIcm006175@demeter1.kernel.org>
+Date: Thu, 4 Nov 2010 08:41:40 GMT
+Message-ID: <201011040841.oA48fex3030988@demeter2.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,20 +18,16 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #44 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-11-04 08:15:11 ---
-> Also the fact that only one CPU is affected very much points to defect HW.
+--- Comment #45 from Thomas Renninger <trenn@suse.de>  2010-11-04 08:41:33 ---
+Another possibility that does not require kernel rebuilding is to use the
+userspace governor and a cpufreq userspace daemon. I expect they do not use
+aperf/mperf.
+Here is a nice overview of packages that are out there:
+http://www.gentoo.org/doc/en/power-management-guide.xml
+Other CPU Speed Utilities
 
-I got only one CPU, but two CPU cores - by CPU you meant "CPU core", right?
-
-> remove the aperfmperf capabilties line from
-arch/x86/kernel/include/asm/cpufeatures.h
-
-I'll try that with a vanilla kernel to see if I run into other problems with
-that. (That will remove the capability system-wide, not only for the cpufreq
-subsystem, right?)
-
-If it helps: I installed Windows XP on another partition on my affected laptop,
-frequency scaling works just fine there...
+> by CPU you meant "CPU core", right?
+Yes.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
