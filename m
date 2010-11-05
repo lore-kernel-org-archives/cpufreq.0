@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 12389] acpi-cpufreq doesn't detect speed limit when cold booted
  on battery
-Date: Fri, 5 Nov 2010 18:11:46 GMT
-Message-ID: <201011051811.oA5IBkjQ007331@demeter2.kernel.org>
+Date: Fri, 5 Nov 2010 18:12:06 GMT
+Message-ID: <201011051812.oA5IC6wb007961@demeter2.kernel.org>
 References: <bug-12389-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,11 +16,14 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=12389
 
 
+James Ettle <theholyettlz@googlemail.com> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+     Kernel Version|2.6.27                      |2.6.36
 
 
 
---- Comment #2 from James Ettle <theholyettlz@googlemail.com>  2010-11-05 18:11:45 ---
-Still present in 2.6.36.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
