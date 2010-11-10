@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Wed, 10 Nov 2010 11:18:00 GMT
-Message-ID: <201011101118.oAABI0ie000967@demeter1.kernel.org>
+Date: Wed, 10 Nov 2010 12:51:16 GMT
+Message-ID: <201011101251.oAACpGjG032016@demeter2.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,21 +15,33 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
+Thomas Renninger <trenn@suse.de> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|ASSIGNED                    |RESOLVED
+         Resolution|                            |DOCUMENTED
 
 
 
---- Comment #49 from vyncere <vyncere@gmail.com>  2010-11-10 11:17:50 ---
-Hi all,
 
-Thank you very much Thomas for your hint. As you suggested me to check the BIOS
-limit (which was 1.20 GHz in my case), this morning I set in my BIOS for all
-modes (AC/DC Power + Battery) the "Performance" profile, instead of
-"Power-saving" one.
+--- Comment #50 from Thomas Renninger <trenn@suse.de>  2010-11-10 12:51:11 ---
+> Will the scheduler adapt to the changed cpu features with only that single
+> change?
+Yes, the only part I found using it always checks for:
+if (has_cpu_cap(X86_FEATURE_APERFMPERF))
+     use_it()
+So unsetting the cap effectively disables usage there on the next schedule.
+This may change in the future, as said it's a hack...
+Perfect would be a boot param disbable_cpu_cap=xy, but as most of these caps
+are evaluated early it's hard to implement.
 
-Now the BIOS limit is 2.40GHz, and cpufreq manage to do his job, without any
-patches (2.6.36).
+vyncere: Looks like Linux works correctly according to your BIOS settings :)
 
-Thank you very much again, tracking this bug was very instructive. ^^
+Not sure whether I should set this invalid. I set it documented, if there are
+more machines with broken aperf/mperf timers, they might find it and if this
+should be a more common issue, it still can be thought of a fix/workaround for
+the kernel.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
