@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 19702] i5-450M CPU gets stuck in low/lowest state
-Date: Tue, 9 Nov 2010 17:38:19 GMT
-Message-ID: <201011091738.oA9HcJt4021965@demeter1.kernel.org>
+Date: Wed, 10 Nov 2010 11:18:00 GMT
+Message-ID: <201011101118.oAABI0ie000967@demeter1.kernel.org>
 References: <bug-19702-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,25 +18,18 @@ https://bugzilla.kernel.org/show_bug.cgi?id=19702
 
 
 
---- Comment #48 from Peter Ganzhorn <peter.ganzhorn@googlemail.com>  2010-11-09 17:38:09 ---
-I modified to patch like you suggested:
+--- Comment #49 from vyncere <vyncere@gmail.com>  2010-11-10 11:17:50 ---
+Hi all,
 
-+    if (cpu_has(c, X86_FEATURE_APERFMPERF)) {
-+        if (disable_average) {
-+            printk(KERN_INFO "acpi-cpufreq: average (aperf/mperf) "
-+                   "accounting disabled by user\n");
-+            clear_cpu_cap(c, X86_FEATURE_APERFMPERF);
-+        }
-+        else
-+            acpi_cpufreq_driver.getavg = cpufreq_get_measured_perf;
-+    }
+Thank you very much Thomas for your hint. As you suggested me to check the BIOS
+limit (which was 1.20 GHz in my case), this morning I set in my BIOS for all
+modes (AC/DC Power + Battery) the "Performance" profile, instead of
+"Power-saving" one.
 
-Will the scheduler adapt to the changed cpu features with only that single
-change? Since the sched code probably gets initialized earlier, I wonder if it
-will notice the change.
-Anyways, the system feels a bit more responsive with the modification to the
-patch, but that might be a psychologic deception since I know that I made that
-change...
+Now the BIOS limit is 2.40GHz, and cpufreq manage to do his job, without any
+patches (2.6.36).
+
+Thank you very much again, tracking this bug was very instructive. ^^
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
