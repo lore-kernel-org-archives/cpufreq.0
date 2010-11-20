@@ -1,37 +1,57 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 14771] "ondemand" never raises frequency on an Intel Core2 Due
- (T9900) in a recent Dell E6500
-Date: Mon, 15 Nov 2010 12:04:25 GMT
-Message-ID: <201011151204.oAFC4PdZ021659@demeter1.kernel.org>
-References: <bug-14771-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 23412] New: Only the lowest CPU frequency available on laptop
+ working from battery.
+Date: Sat, 20 Nov 2010 19:55:46 GMT
+Message-ID: <bug-23412-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-14771-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=14771
+https://bugzilla.kernel.org/show_bug.cgi?id=23412
+
+           Summary: Only the lowest CPU frequency available on laptop
+                    working from battery.
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 2.6.30+
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: v_2e@ukr.net
+        Regression: Yes
 
 
-Petr Baudis <pasky@ucw.cz> changed:
+Hello!
+  I use a laptop with Mobile AMD Sempron processor and I've been experiencing
+the following problem since kernel version 2.6.30:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |pasky@ucw.cz
+  When I work from AC power adapter, everything is fine - the whole set of
+frequencies for my processor are avalable (namely, 800 MHz, 1600MHz, 1800MHz,
+2000MHz and 2200MHz).
+  When I unplug the AC adapter, the CPU switches to 800MHz mode and I cannot
+make it use any of the higher frequencies. I know for sure that this worked
+fine with kernel v.2.6.29.
+  This is very inconvenient - to use the lowest available frequency every time
+I work from the battery. I have reported this bug to Gentoo Bugzilla at first.
+Here is the link:
 
+  http://bugs.gentoo.org/show_bug.cgi?id=328395
 
+  There are some details on this story on that page.
 
+I hope the bug (if it is one) will be fixed soon.
+Thanks.
 
---- Comment #25 from Petr Baudis <pasky@ucw.cz>  2010-11-15 12:04:18 ---
-BTW, for me, the problems with ondemand governor boiled down to software issues
-(modulo kernel upgrades throughout 2.6.32.x, this seemed to resolve some most
-basic issues). First, a lot of my load was niced and I was not aware of
-/sys/devices/system/cpu/cpu$i/cpufreq/ondemand/ignore_nice_load. Setting this
-resolved my problems in part. This setting is being reset time by time anyway,
-but that is likely to be some evil desktop thing trying to meddle with stuff.
+Vladimir.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
