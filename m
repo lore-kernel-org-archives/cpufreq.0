@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 23412] Only the lowest CPU frequency available on laptop
  working from battery.
-Date: Sun, 21 Nov 2010 17:07:51 GMT
-Message-ID: <201011211707.oALH7oOL007740@demeter1.kernel.org>
+Date: Sun, 21 Nov 2010 21:36:57 GMT
+Message-ID: <201011212136.oALLavZ0019464@demeter2.kernel.org>
 References: <bug-23412-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,19 +16,25 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=23412
 
 
-Thomas Renninger <trenn@suse.de> changed:
+Vladimir <v_2e@ukr.net> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|                            |INVALID
+             Status|RESOLVED                    |REOPENED
+         Resolution|INVALID                     |
 
 
 
 
---- Comment #2 from Thomas Renninger <trenn@suse.de>  2010-11-21 17:07:49 ---
-I close this one invalid already, as this is most probably a BIOS issue, this
-even sounds intended.
+--- Comment #3 from Vladimir <v_2e@ukr.net>  2010-11-21 21:36:56 ---
+Hello!
+I'm not sure if it is a BIOS problem, since like I have already said above,
+this works properly with 2.6.29 kernel (I double-checked it today). It fails
+with newer kernels with the very same BIOS settings.
+If two different kernels behave differently with exactly the SAME BIOS
+settings, could it be the BIOS issue?
+
+Thanks.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
