@@ -1,39 +1,40 @@
-From: Thomas Renninger <trenn@suse.de>
+From: Christian Robottom Reis <kiko-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: Issues with ondemand governor
-Date: Thu, 25 Nov 2010 15:31:57 +0100
-Message-ID: <201011251531.57920.trenn@suse.de>
-References: <AANLkTi=0hbJ=N6bLRgrmDVzMVZgPyT5gNZbQDhgMV=J=@mail.gmail.com> <4CED1D43.6080900@verisign.com> <AANLkTintd_5LMEPS5OGK0Zh0ydQp-X4D9=kFEpbRFTsg@mail.gmail.com>
+Date: Fri, 26 Nov 2010 20:38:15 -0200
+Message-ID: <20101126223815.GU30563@anthem.async.com.br>
+References: <AANLkTi=0hbJ=N6bLRgrmDVzMVZgPyT5gNZbQDhgMV=J=@mail.gmail.com>
+	<4CEA959F.9000505@verisign.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <AANLkTintd_5LMEPS5OGK0Zh0ydQp-X4D9=kFEpbRFTsg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Vishwanath Sripathy <vishwanath.sripathy@linaro.org>
-Cc: David C Niemi <dniemi@verisign.com>, Amit Kucheria <amit.kucheria@linaro.org>, linaro-dev@lists.linaro.org, cpufreq@vger.kernel.org
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <4CEA959F.9000505-0nFLJxsdniVWk0Htik3J/w@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: David C Niemi <dniemi-0nFLJxsdniVWk0Htik3J/w@public.gmane.org>, Nicolas Pitre <nicolas.pitre-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Thursday 25 November 2010 13:05:49 Vishwanath Sripathy wrote:
-> Thanks David.
-> If I would like to fine tune up_threshold and sampling_down_factor for
-> say OMAP platform, is there any way to do it in kernel itself?
-> I know these are configurable via sysfs entries. But if I want to
-> optimize them in kernel itself, is there anyway? I see that default
-> values are set in cpufreq-ondemand.c which is common kernel file. I
-> would like to know if these can be set in platform specific code?
-Ugly to do...
-This should be done global and not per cpu?
-If per_cpu it could be added to policy, simlar to latency:
-set in driver's init func, evaluated in governor later.
+On Mon, Nov 22, 2010 at 11:09:03AM -0500, David C Niemi wrote:
+> The general problem here is that the ondemand governor is aimed more at
+> power savings than performance.  In cases where the ondemand governor
+> performs worse than the performance governor, the "sampling_down_factor"
+> tunable is often useful.  I submitted the patch to add this tunable a
+> few weeks ago and it was acked by Venki, but I don't know what happened
+> to it after that.
 
-Possibly if in cpufreq.h a struct:
- {
-    unsigned int sampling_down_factor;
-    ...
-} cpufreq_governor_hints;
-is added which gets filled by the platform driver in the .init func
-and then gets evaluated in the governor, but only once also at init
-time. Doing this when the governor is already active involves
-locking which must get avoided.
+Would you like to get it merged into linux-linaro? Given it's been ack'd
+I think Nicolas might be willing to consider it:
 
-    Thomas
+    http://kerneltrap.org/mailarchive/linux-kernel/2010/10/6/4628889/thread
+-- 
+Christian Robottom Reis   | [+55] 16 9112 6430 | http://launchpad.net/~kiko
+Linaro Engineering VP     | [ +1] 612 216 4935 | http://async.com.br/~kiko
