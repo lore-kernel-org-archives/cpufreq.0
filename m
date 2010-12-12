@@ -1,35 +1,20 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 19262] CPU0 locked at slower speed, regardless of governor on
- IP35 Pro(Intel P35-ICH9R)
-Date: Thu, 9 Dec 2010 21:02:15 GMT
-Message-ID: <201012092102.oB9L2F2B018856@demeter1.kernel.org>
-References: <bug-19262-12968@https.bugzilla.kernel.org/>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH] cpufrequtils aperf: Fix MSR read on 32-bit
+Date: Sun, 12 Dec 2010 10:07:40 +0100
+Message-ID: <20101212090740.GB9503@comet.dominikbrodowski.net>
+References: <1291826354.30060.34.camel@mendozza.osrc.amd.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-19262-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <1291826354.30060.34.camel@mendozza.osrc.amd.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Frank Arnold <frank.arnold@amd.com>
+Cc: Thomas Renninger <trenn@suse.de>, Borislav Petkov <borislav.petkov@amd.com>, cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=19262
+Applied, thanks.
 
-
-Len Brown <lenb@kernel.org> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
-                 CC|                            |lenb@kernel.org
-          Component|Power-Thermal               |BIOS
-         AssignedTo|acpi_power-thermal@kernel-b |acpi_bios@kernel-bugs.osdl.
-                   |ugs.osdl.org                |org
-
-
-
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug.
+Best,
+	Dominik
