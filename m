@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 23412] Only the lowest CPU frequency available on laptop
  working from battery.
-Date: Fri, 17 Dec 2010 15:25:49 GMT
-Message-ID: <201012171525.oBHFPnkF008364@demeter2.kernel.org>
+Date: Sat, 18 Dec 2010 08:28:30 GMT
+Message-ID: <201012180828.oBI8SUKT023426@demeter2.kernel.org>
 References: <bug-23412-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,31 +19,20 @@ https://bugzilla.kernel.org/show_bug.cgi?id=23412
 
 
 
---- Comment #5 from Thomas Renninger <trenn@suse.de>  2010-12-17 15:25:40 ---
-> If your ACPI tables are not busted (and you should see this by some obvious
-> ACPI Error messages in dmesg
-Not really true, if there is a logical bug, but syntax, etc. in ACPI code is
-correct you may not see an error message.
-But ACPI interpreting works pretty well these days and chances that the limit
-is wanted by the OEM for whatever reasons are high.
-
-You can override the BIOS limit by the boot param:
-processor.ignore_ppc=1
-But instead of using this all day, you should better find out why the BIOS
-vendor/OEM limits your frequency, there is certainly a reason for it.
-
-Above helps (and this is hopefully what the bug is about) only if you see the
-limit here:
-/sys/devices/system/cpu/cpu0/cpufreq/bios_limit
-
-If your frequency is restricted/limited due to other reasons, please open a new
-bug and state it in the description to avoid confusion and mix ups of several
-problems in one bug.
-
-Hmm, there were quite some people in CC of this bug. I'd be interested how much
-get fixed by BIOS settings, etc.. I keep the bug open for a while, even I am
-pretty sure most/all people seeing BIOS frequency limits is *not* due to a
-kernel bug.
+--- Comment #6 from Vladimir <v_2e@ukr.net>  2010-12-18 08:28:20 ---
+(In reply to comment #5)
+> Above helps (and this is hopefully what the bug is about) only if you see the
+> limit here:
+> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+> 
+  Yes, this is my case. I also mentioned this file in my bugreport on Gentoo
+Bugzilla (the link to that bugreport is in the first message of this thread). I
+do not remember the older kernels (before 2.6.30) to provide this file. And
+like I said before, this file does store the lowest possible CPU frequency with
+AC adapter off.
+  I have found a BIOS feature "Andvanced power management", but triggering it
+has no effect. I don't really know what is this feature for. So, there is no
+way to change this behaviour tweaking the BIOS settings.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
