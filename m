@@ -1,87 +1,77 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 23412] Only the lowest CPU frequency available on laptop
- working from battery.
-Date: Mon, 20 Dec 2010 09:47:21 GMT
-Message-ID: <201012200947.oBK9lLLR002667@demeter1.kernel.org>
-References: <bug-23412-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-23412-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Youquan Song <youquan.song@intel.com>
+Subject: [PATCH 0/6] cpufreq: Add sampling window to enhance ondemand governor power efficiency
+Date: Thu, 23 Dec 2010 14:23:38 +0800
+Message-ID: <1293085424-18212-1-git-send-email-youquan.song@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: davej@redhat.com, cpufreq@vger.kernel.org
+Cc: venki@google.com, arjan@linux.intel.com, lenb@kernel.org, suresh.b.siddha@intel.com, kent.liu@intel.com, chaohong.guo@intel.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Youquan Song <youquan.song@linux.intel.com>, Youquan Song <youquan.song@intel.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=23412
+Running a well-known power performance benchmark, current ondemand governor is
+not power efficiency. Even when workload is at 10%~20% of full capability, the
+CPU will also run much of time at highest frequency. In fact, in this situation,
+the lowest frequency often can meet user requirement. When running this
+benchmark on turbo mode enable machine, I compare the result of different
+governors, the results of ondemand and performance governors are the closest.
+There is no much power saving between ondemand and performance governor. If we
+can ignore the little power saving, the perfomance governor even better than 
+ondemand governor, at leaset for better performance. 
+
+One potential reason for ondemand governor is not power efficiency is that
+ondemand governor decide the next target frequency by instant requirement during
+sampling interval (10ms or possible a little longer for deferrable timer in idle
+tickless). The instant requirement can response quickly to workload change, but
+it does not usually reflect workload real CPU usage requirement in a small 
+longer time and it possibly causes frequently change between highest and lowest
+frequency.     
+
+This patchset add a sampling window for percpu ondemand thread. Each sampling
+window with max 150 record items which slide every sampling interval and use to
+track the workload requirement during latest sampling window timeframe. 
+The average of workload during latest sample windows will be used to decide next
+target frequency. The sampling window targets to be more truly reflects workload
+requirement of CPU usage. 
+
+The sampling window size can be set by user and default max sampling window
+is one second. When it is set to default sampling rate, the sampling window will
+roll back to original behaviour.
+
+The sampling window size also can be dynamicly changed in according to current
+system workload busy situation. The more idle, the smaller sampling window; the
+more busy, the larger sampling window. It will increase the respnose speed by
+decrease sampling window, while it will keep CPU working at high speed when busy
+by increase sampling window and also avoid unefficiently dangle between highest
+and lowest frequency in original ondemand.
+
+We set to up_threshold to 80 and down_differential to 20, so when workload reach
+ 80% of current frequency, it will increase to highest frequency. When workload
+decrease to below (up_threshold - down_differential)60% of current frequency
+capability, it will decrease the frequency, which ensure that CPU work above 60%
+of its current capability, otherwise lowest frequency will be used. 
+   
+The Turbo Mode (P0) will comsume much more power compare with second largest
+frequency (P1) and P1 frequency is often double, even more, with Pn lowest
+frequency; Current logic will increase sharply to highest frequency Turbo Mode
+when workload reach to up_threshold of current frequency capacity, even current
+frequency at lowest frequency. In this patchset, it will firstly evaluate P1 if
+it is enough to support current workload before directly enter into Turbo Mode.
+If P1 can meet workload requirement, it will save power compare of being Turbo
+Mode.  
+
+On my test platform with two sockets Westmere-EP server and run the well-known
+power performance benchmark, when workload is low, the patched governor is 
+power saving like powersave governor; while workload is high, the patched 
+governor is as good as performance governor but the patched governor consume
+less power than performance governor. Along with other patches in this patchset,
+the patched governor power efficiey is improved about 10%, while the performance
+has no apparently decrease.
+Running other benchmarks in phoronix, kernel building save 5% power, while the
+performance without decrease. compress-7zip save power 2%, while the performance
+also does not apparently decrease. However, apache benchmark saves power but its
+performance decrease a lot.
 
 
-Thomas Renninger <trenn@suse.de> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-           Priority|P1                          |P5
-           Severity|normal                      |enhancement
-
-
-
-
---- Comment #7 from Thomas Renninger <trenn@suse.de>  2010-12-20 09:20:27 ---
-> I have found a BIOS feature "Andvanced power management"
-Sounds related.
-
-> I don't really know what is this feature for
-Yep, finding out why the BIOS sets the frequency limit can be cumbersome.
-
-Still, it's not a kernel, but a BIOS/platform issue.
-As said, all initial BIOS limits were ignored by the kernel for quite some time
-and this got fixed. Have you looked for BIOS updates and their changelogs
-already? If not, this would be the next step.
-
-If this also does not help, please attach acpidump output (with the new BIOS!).
-Be aware that this is very low prio bug, as it's very likely that the culprit
-(most likely this is even intended) comes from the BIOS.
-
---- Comment #8 from Vladimir <v_2e@ukr.net>  2010-12-20 09:46:30 ---
-(In reply to comment #7)
-> > I have found a BIOS feature "Andvanced power management"
-> Sounds related.
-  Well, I thik so too, but I tried to switch this option on/off several times,
-and naven't noticed any changes in anything. This feature is also not
-documented in the User's Manual for my laptop.
-
-> Still, it's not a kernel, but a BIOS/platform issue.
-  Yes. Now I'm sure this isn't a kernel issue.
-  I tried to add the "processor.ignore_ppc=1" string to the kernel parameters
-at startup, just like you suggested, and it really gave me access for all the
-CPU frequencies, which is just great! Thank you for this tip! :)
-
-> As said, all initial BIOS limits were ignored by the kernel for quite some time
-> and this got fixed. Have you looked for BIOS updates and their changelogs
-> already? If not, this would be the next step.
-  Yes, I have looked for the BIOS updates, but there are no updates to fix this
-strange behaviour.
-  Moreover, I have been searching trough some fora these days and I see people
-saying that MSI (my laptop vendor) knows about this problem and says that "this
-is a company design policy of this model". This means they refuse to fix the
-bug in their BIOS and release an update, I guess.
-  There are also many Windows users who experience the same problem and they
-found some software to tweak this on Windows too.
-
-> If this also does not help, please attach acpidump output (with the new BIOS!).
-> Be aware that this is very low prio bug, as it's very likely that the culprit
-> (most likely this is even intended) comes from the BIOS.
-  Well, now it certainly is BIOS to blame. Thus it seems to me this bug may be
-closed already.  
-  I think that now it is a question of spreading the information about
-"processor.ignore_ppc" parameter. At least for operating systems using Linux as
-their kernel.
-  Oh, and by the way, I have found on some Debian-related forum that this
-behaviour may be tweaked during run-time also by executing the following
-command:
-    echo 1 > /sys/module/processor/parameters/ignore_ppc
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
