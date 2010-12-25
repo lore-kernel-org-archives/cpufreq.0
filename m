@@ -1,62 +1,39 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH 6/6] cpufreq: Evaluate P1 before enter turbo mode
-Date: Thu, 23 Dec 2010 21:48:21 +0100
-Message-ID: <20101223204821.GA6441@comet.dominikbrodowski.net>
+From: James Cloos <cloos@jhcloos.com>
+Subject: Re: [PATCH 0/6] cpufreq: Add sampling window to enhance ondemand governor power efficiency
+Date: Fri, 24 Dec 2010 23:24:48 -0500
+Message-ID: <m3zkrueaxj.fsf@jhcloos.com>
 References: <1293085424-18212-1-git-send-email-youquan.song@intel.com>
- <1293085424-18212-2-git-send-email-youquan.song@intel.com>
- <1293085424-18212-3-git-send-email-youquan.song@intel.com>
- <1293085424-18212-4-git-send-email-youquan.song@intel.com>
- <1293085424-18212-5-git-send-email-youquan.song@intel.com>
- <1293085424-18212-6-git-send-email-youquan.song@intel.com>
- <1293085424-18212-7-git-send-email-youquan.song@intel.com>
- <20101223105730.GB18363@comet.dominikbrodowski.net>
- <20101223143859.GA1402@srcf.ucam.org>
- <AANLkTi=XkMqUSfO076mVqGCHv-Kw-jnuL8dZiN17ypqZ@mail.gmail.com>
+	<20101223110020.GC18363@comet.dominikbrodowski.net>
+	<20101223173402.GA3821@redhat.com>
+	<20101223205148.GB6441@comet.dominikbrodowski.net>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTi=XkMqUSfO076mVqGCHv-Kw-jnuL8dZiN17ypqZ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jhcloos.com;
+	s=eagle; t=1293252418;
+	bh=VCwGqA63wdbSsG3B+ds4cauvL5obyb+2/d5P553Qrb8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type;
+	b=h6ItQx0qqlD3evTvZeScbCKLJz89eX+IFxXtMNOt603ipXTsGx12fgI0UZC7/LoBL
+	 gpgZgTtb/58UcgaH2vQ70rmZUadYEoxuR6iveEgzO7GA8dm898nEuLN5zquzfjefg5
+	 csXe6+NxAX5sSTbLgxf4pk/lHvlZQWbwVk/eKucg=
+In-Reply-To: <20101223205148.GB6441@comet.dominikbrodowski.net> (Dominik
+	Brodowski's message of "Thu, 23 Dec 2010 21:51:48 +0100")
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Venkatesh Pallipadi <venki@google.com>
-Cc: Matthew Garrett <mjg@redhat.com>, Youquan Song <youquan.song@intel.com>, davej@redhat.com, cpufreq@vger.kernel.org, arjan@linux.intel.com, lenb@kernel.org, suresh.b.siddha@intel.com, kent.liu@intel.com, chaohong.guo@intel.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Youquan Song <youquan.song@linux.intel.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Dave Jones <davej@redhat.com>, Youquan Song <youquan.song@intel.com>, cpufreq@vger.kernel.org, venki@google.com, arjan@linux.intel.com, lenb@kernel.org, suresh.b.siddha@intel.com, kent.liu@intel.com, chaohong.guo@intel.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Youquan Song <youquan.song@linux.intel.com>
 
-Hey,
+>>>>> "DB" == Dominik Brodowski <linux@dominikbrodowski.net> writes:
 
-On Thu, Dec 23, 2010 at 10:13:54AM -0800, Venkatesh Pallipadi wrote:
-> On Thu, Dec 23, 2010 at 6:38 AM, Matthew Garrett <mjg@redhat.com> wrote:
-> > On Thu, Dec 23, 2010 at 11:57:30AM +0100, Dominik Brodowski wrote:
-> >
-> >> NACK. First of all, why is it only a "turbo mode" if it's 1000 kHz
-> >> difference?
-> >
-> > I believe that that's how it's supposed to be defined for Intel systems,
-> > but you're right that this doesn't belong in generic code. AMD have
-> > support for enabling/disabling their equivalent functionality through
-> > sysfs - I'd say that copying that interface and using it to limit the
-> > set of p-states provided to the core makes more sense.
-> >
-> 
-> If this 1000kHz hack is needed, it should be in acpi-cpufreq driver
-> along with Intel CPU and Turbo mode capability check..
-> I had a change earlier and I don't think I ever pushed it out. But, it
-> was doing the max freq transition on turbo capable CPUs in 2 steps.
-> Something like:
-> - cpu is in one of the low freqs.
-> - ondemand asks for highest freq.
-> - acpi-cpufreq will check whether the CPU is turbo capable and will
-> only switch to non-turbo peak freq as first step.
-> - If ondemand asks for highest freq again, acpi-cpufreq will then
-> switch to turbo freq.
-> 
-> Something like that would probably help the problem here?
+DB> AFAICS, we have two in-kernel dynamic frequency scaling governors, one of
+DB> which doesn't seem to get much usage (conservative)...
 
-then we'd put policy in two places, instead of letting the decision be made
-at one place. So I'd not favour such an approach... What should indeed be in
-acpi-cpufreq is to mark certain frequency steps as being not power
-efficient, though.
+Isn't conservative the recommended choice for AMD processors?
 
-Best,
-	Dominik
+Or has that changed?
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
