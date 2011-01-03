@@ -1,41 +1,33 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 02/32] powerpc/cell: use system_wq in cpufreq_spudemand
-Date: Mon,  3 Jan 2011 14:49:25 +0100
-Message-ID: <1294062595-30097-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/32] cpufreq: use system_wq instead of dedicated workqueues
+Date: Mon,  3 Jan 2011 14:49:30 +0100
+Message-ID: <1294062595-30097-8-git-send-email-tj@kernel.org>
 References: <1294062595-30097-1-git-send-email-tj@kernel.org>
-Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:received:received:sender:from:to:cc:subject
+         :date:message-id:x-mailer:in-reply-to:references;
+        bh=eYxcHZWVvid1wr52KumQ5D9yWnGMUZDeQMv7hrbEb/A=;
+        b=XKbaFo3ToOb+vsGZlzez+20WiGNAwqbee7+S3dyqmap0AT8IIHUz6LcFBmSWyl380q
+         WrwY/LKd2sVp87/qwScXCYe9FSVHvKFMeqDfxdmjysWHrV0tBHz8t+zfGWNILkKkmtdQ
+         ZHgTWJx3MQuGCTua+pDJzo0rrpXxD585Nd9FE=
+In-Reply-To: <1294062595-30097-1-git-send-email-tj@kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=gamma;
-	h=domainkey-signature:received:received:sender:from:to:cc:subject
-	:date:message-id:x-mailer:in-reply-to:references;
-	bh=zf6n09ZR2qgwsgqRZ5p4hunS3kgjjGspF5TMBAoVq50=;
-	b=ah8Xw2Emyubmn1cX02sRWi8hSooYXCnNRHj4S3UDMiK39K6xe/Xf/wDPAHgnJvoFHL
-	YyhOQ5U9QdenR4PtsbGY0qzUsL7yw15777XxZY2ZR3xuRpIl/uCH5d5zX7/Lm9OSze1M
-	16BPudR1YkJghikYJ9h6FlIp8cBzvfgDS9+SU=
-In-Reply-To: <1294062595-30097-1-git-send-email-tj@kernel.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
 To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Dave Jones <davej@redhat.com>, linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Cc: Tejun Heo <tj@kernel.org>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
 
-With cmwq, there's no reason to use a separate workqueue in
-cpufreq_spudemand.  Use system_wq instead.  The work items are already
-sync canceled on stop, so it's already guaranteed that no work is
-running when spu_gov_exit() is entered.
+With cmwq, there's no reason for cpufreq drivers to use separate
+workqueues.  Remove the dedicated workqueues from cpufreq_conservative
+and cpufreq_ondemand and use system_wq instead.  The work items are
+already sync canceled on stop, so it's already guaranteed that no work
+is running on module exit.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org
 Cc: Dave Jones <davej@redhat.com>
 Cc: cpufreq@vger.kernel.org
 ---
@@ -44,67 +36,133 @@ tree or simply ack - I'll route it through the wq tree.
 
 Thanks.
 
- arch/powerpc/platforms/cell/cpufreq_spudemand.c |   20 +++-----------------
- 1 files changed, 3 insertions(+), 17 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c |   22 +++-------------------
+ drivers/cpufreq/cpufreq_ondemand.c     |   20 +++-----------------
+ 2 files changed, 6 insertions(+), 36 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/cpufreq_spudemand.c b/arch/powerpc/platforms/cell/cpufreq_spudemand.c
-index 968c1c0..d809836 100644
---- a/arch/powerpc/platforms/cell/cpufreq_spudemand.c
-+++ b/arch/powerpc/platforms/cell/cpufreq_spudemand.c
-@@ -39,8 +39,6 @@ struct spu_gov_info_struct {
- };
- static DEFINE_PER_CPU(struct spu_gov_info_struct, spu_gov_info);
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 526bfbf..94284c8 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -81,8 +81,6 @@ static unsigned int dbs_enable;	/* number of CPUs using this policy */
+  */
+ static DEFINE_MUTEX(dbs_mutex);
  
--static struct workqueue_struct *kspugov_wq;
+-static struct workqueue_struct	*kconservative_wq;
 -
- static int calc_freq(struct spu_gov_info_struct *info)
- {
- 	int cpu;
-@@ -71,14 +69,14 @@ static void spu_gov_work(struct work_struct *work)
- 	__cpufreq_driver_target(info->policy, target_freq, CPUFREQ_RELATION_H);
+ static struct dbs_tuners {
+ 	unsigned int sampling_rate;
+ 	unsigned int sampling_down_factor;
+@@ -560,7 +558,7 @@ static void do_dbs_timer(struct work_struct *work)
  
- 	delay = usecs_to_jiffies(info->poll_int);
--	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
-+	schedule_delayed_work_on(info->policy->cpu, &info->work, delay);
+ 	dbs_check_cpu(dbs_info);
+ 
+-	queue_delayed_work_on(cpu, kconservative_wq, &dbs_info->work, delay);
++	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
+ 	mutex_unlock(&dbs_info->timer_mutex);
  }
  
- static void spu_gov_init_work(struct spu_gov_info_struct *info)
- {
- 	int delay = usecs_to_jiffies(info->poll_int);
- 	INIT_DELAYED_WORK_DEFERRABLE(&info->work, spu_gov_work);
--	queue_delayed_work_on(info->policy->cpu, kspugov_wq, &info->work, delay);
-+	schedule_delayed_work_on(info->policy->cpu, &info->work, delay);
+@@ -572,8 +570,7 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
+ 
+ 	dbs_info->enable = 1;
+ 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
+-	queue_delayed_work_on(dbs_info->cpu, kconservative_wq, &dbs_info->work,
+-				delay);
++	schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work, delay);
  }
  
- static void spu_gov_cancel_work(struct spu_gov_info_struct *info)
-@@ -152,27 +150,15 @@ static int __init spu_gov_init(void)
- {
- 	int ret;
+ static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
+@@ -716,25 +713,12 @@ struct cpufreq_governor cpufreq_gov_conservative = {
  
--	kspugov_wq = create_workqueue("kspugov");
--	if (!kspugov_wq) {
--		printk(KERN_ERR "creation of kspugov failed\n");
--		ret = -EFAULT;
--		goto out;
+ static int __init cpufreq_gov_dbs_init(void)
+ {
+-	int err;
+-
+-	kconservative_wq = create_workqueue("kconservative");
+-	if (!kconservative_wq) {
+-		printk(KERN_ERR "Creation of kconservative failed\n");
+-		return -EFAULT;
 -	}
 -
- 	ret = cpufreq_register_governor(&spu_governor);
--	if (ret) {
-+	if (ret)
- 		printk(KERN_ERR "registration of governor failed\n");
--		destroy_workqueue(kspugov_wq);
--		goto out;
--	}
--out:
- 	return ret;
+-	err = cpufreq_register_governor(&cpufreq_gov_conservative);
+-	if (err)
+-		destroy_workqueue(kconservative_wq);
+-
+-	return err;
++	return cpufreq_register_governor(&cpufreq_gov_conservative);
  }
  
- static void __exit spu_gov_exit(void)
+ static void __exit cpufreq_gov_dbs_exit(void)
  {
- 	cpufreq_unregister_governor(&spu_governor);
--	destroy_workqueue(kspugov_wq);
+ 	cpufreq_unregister_governor(&cpufreq_gov_conservative);
+-	destroy_workqueue(kconservative_wq);
+ }
+ 
+ 
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index c631f27..58aa85e 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -104,8 +104,6 @@ static unsigned int dbs_enable;	/* number of CPUs using this policy */
+  */
+ static DEFINE_MUTEX(dbs_mutex);
+ 
+-static struct workqueue_struct	*kondemand_wq;
+-
+ static struct dbs_tuners {
+ 	unsigned int sampling_rate;
+ 	unsigned int up_threshold;
+@@ -667,7 +665,7 @@ static void do_dbs_timer(struct work_struct *work)
+ 		__cpufreq_driver_target(dbs_info->cur_policy,
+ 			dbs_info->freq_lo, CPUFREQ_RELATION_H);
+ 	}
+-	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work, delay);
++	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
+ 	mutex_unlock(&dbs_info->timer_mutex);
+ }
+ 
+@@ -681,8 +679,7 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
+ 
+ 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
+ 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
+-	queue_delayed_work_on(dbs_info->cpu, kondemand_wq, &dbs_info->work,
+-		delay);
++	schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work, delay);
+ }
+ 
+ static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
+@@ -814,7 +811,6 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 
+ static int __init cpufreq_gov_dbs_init(void)
+ {
+-	int err;
+ 	cputime64_t wall;
+ 	u64 idle_time;
+ 	int cpu = get_cpu();
+@@ -838,22 +834,12 @@ static int __init cpufreq_gov_dbs_init(void)
+ 			MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10);
+ 	}
+ 
+-	kondemand_wq = create_workqueue("kondemand");
+-	if (!kondemand_wq) {
+-		printk(KERN_ERR "Creation of kondemand failed\n");
+-		return -EFAULT;
+-	}
+-	err = cpufreq_register_governor(&cpufreq_gov_ondemand);
+-	if (err)
+-		destroy_workqueue(kondemand_wq);
+-
+-	return err;
++	return cpufreq_register_governor(&cpufreq_gov_ondemand);
+ }
+ 
+ static void __exit cpufreq_gov_dbs_exit(void)
+ {
+ 	cpufreq_unregister_governor(&cpufreq_gov_ondemand);
+-	destroy_workqueue(kondemand_wq);
  }
  
  
 -- 
 1.7.1
+
