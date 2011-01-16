@@ -1,34 +1,36 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 13885] Performance decrease after suspend/resume to ram
-Date: Sun, 16 Jan 2011 21:59:21 GMT
-Message-ID: <201101162159.p0GLxLIG011243@demeter1.kernel.org>
-References: <bug-13885-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 19612] Computer fails to hibernate - problem idling SMP CPU's
+Date: Sun, 16 Jan 2011 22:57:15 GMT
+Message-ID: <201101162257.p0GMvF3T023782@demeter2.kernel.org>
+References: <bug-19612-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-13885-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-19612-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=13885
+https://bugzilla.kernel.org/show_bug.cgi?id=19612
 
 
 Rafael J. Wysocki <rjw@sisk.pl> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
+             Status|ASSIGNED                    |NEEDINFO
+          Component|Hibernation/Suspend         |cpufreq
+         AssignedTo|power-management_other@kern |cpufreq@vger.kernel.org
+                   |el-bugs.osdl.org            |
 
 
 
 
---- Comment #11 from Rafael J. Wysocki <rjw@sisk.pl>  2011-01-16 21:59:20 ---
-Is the issue still present in 2.6.37?
+--- Comment #10 from Rafael J. Wysocki <rjw@sisk.pl>  2011-01-16 22:57:10 ---
+Is the problem still present in 2.6.37?
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
 ------- You are receiving this mail because: -------
-You are on the CC list for the bug.
 You are the assignee for the bug.
