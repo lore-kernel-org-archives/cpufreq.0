@@ -1,48 +1,35 @@
-From: Vishwanath BS <vishwanath.bs@ti.com>
-Subject: [PATCH V2] cpufreq: Add documentation for sampling_down_factor
-Date: Tue, 25 Jan 2011 20:12:41 +0530
-Message-ID: <1295966561-4262-1-git-send-email-vishwanath.bs@ti.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCHSET] workqueue: update workqueue users - replace
+ create_workqueue()
+Date: Tue, 25 Jan 2011 11:26:54 -0500
+Message-ID: <20110125162654.GA4795@redhat.com>
+References: <1294062595-30097-1-git-send-email-tj@kernel.org>
+ <20110125142921.GB27510@htj.dyndns.org>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20110125142921.GB27510@htj.dyndns.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: patches@linaro.org, Vishwanath BS <vishwanath.bs@ti.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org
 
-Update cpufreq governor documentation for sampling_down_factor tunable
-parameter.
+On Tue, Jan 25, 2011 at 03:29:21PM +0100, Tejun Heo wrote:
+ > Hello,
+ > 
+ > There was no response for the following patches and I'm planning on
+ > routing them through workqueue#for-2.6.39.  If you have an objection
+ > or want to take the patch through a different tree, please let me
+ > know.
+ > ..
+ >  0007-cpufreq-use-system_wq-instead-of-dedicated-workqueue.patch
 
-Signed-off-by: Vishwanath BS <vishwanath.bs@ti.com>
----
-V2: Updated based on feedback from David Niemi
- 
-Documentation/cpu-freq/governors.txt |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+Feel free to add my 
+Signed-off-by: Dave Jones <davej@redhat.com> 
+to this.
 
-diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
-index 737988f..e74d0a2
---- a/Documentation/cpu-freq/governors.txt
-+++ b/Documentation/cpu-freq/governors.txt
-@@ -158,6 +158,17 @@ intensive calculation on your laptop that you do not care how long it
- takes to complete as you can 'nice' it and prevent it from taking part
- in the deciding process of whether to increase your CPU frequency.
- 
-+sampling_down_factor: this parameter controls the rate at which the
-+kernel makes a decision on when to decrease the frequency while running
-+at top speed. When set to 1 (the default) decisions to reevaluate load
-+are made at the same interval regardless of current clock speed. But
-+when set to greater than 1 (e.g. 100) it acts as a multiplier for the
-+scheduling interval for reevaluating load when the CPU is at its top
-+speed due to high load. This improves performance by reducing the overhead
-+of load evaluation and helping the CPU stay at its top speed when truly
-+busy, rather than shifting back and forth in speed. This tunable has no
-+effect on behavior at lower speeds/lower CPU loads.
-+
- 
- 2.5 Conservative
- ----------------
--- 
-1.7.0.4
+I looked it over, and didn't see anything objectionable.
 
+	Dave
