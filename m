@@ -1,51 +1,40 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCHSET] workqueue: update workqueue users - replace
- create_workqueue()
-Date: Wed, 26 Jan 2011 11:40:08 +0100
-Message-ID: <20110126104008.GG12520@htj.dyndns.org>
-References: <1294062595-30097-1-git-send-email-tj@kernel.org>
- <20110125142921.GB27510@htj.dyndns.org>
- <20110125162654.GA4795@redhat.com>
+From: mihn <mihnsk@gmail.com>
+Subject: how to do cpu voltage scaling
+Date: Thu, 27 Jan 2011 01:11:11 -0800
+Message-ID: <1296119471.4653.2.camel@genix>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
-        h=domainkey-signature:sender:date:from:to:subject:message-id
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        bh=7RVVxMp/WKTUlPK0DibGKVGUHvzAb9yM/tDJphGBPKE=;
-        b=GiSYFF8BkDXsA8YHtvpreASjxgzliq6pLRMIgnNK/JrcRABUc1zkjVtOQF0HmriGc6
-         zfuNnVlh5/NC04rLLYiOqEumoYurhEk6buowCSgrPUjvaeIHXEeX77j2n5JfegrmL0z+
-         67cgqg/WAvCsIKV5pBtEccVq0THmhKOLIOOH0=
-Content-Disposition: inline
-In-Reply-To: <20110125162654.GA4795@redhat.com>
+        h=domainkey-signature:subject:from:to:content-type:date:message-id
+         :mime-version:x-mailer:content-transfer-encoding;
+        bh=xtYpjFjJky6+FBoZMZq7K7WIaCLwCy6LHPMekV02Tvw=;
+        b=Ku0SxNJvSYGCeg8k7Do9cK01m4zjsb5L3Z7BeRT5MWIIcTJS7gPdMQUmWCo6Mt8kzA
+         6GaXWSoT1mwnFQebK0wN+JUl3/TyYfV11OygsFEI3+D/qMXkyR1d8jvDQugIEbrsdBFZ
+         irl2j/82WGwg1BTrypbAs7bqOazLOjcDkBPz0=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, lenb@kernel.org, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Tue, Jan 25, 2011 at 11:26:54AM -0500, Dave Jones wrote:
-> On Tue, Jan 25, 2011 at 03:29:21PM +0100, Tejun Heo wrote:
->  > Hello,
->  > 
->  > There was no response for the following patches and I'm planning on
->  > routing them through workqueue#for-2.6.39.  If you have an objection
->  > or want to take the patch through a different tree, please let me
->  > know.
->  > ..
->  >  0007-cpufreq-use-system_wq-instead-of-dedicated-workqueue.patch
-> 
-> Feel free to add my 
-> Signed-off-by: Dave Jones <davej@redhat.com> 
-> to this.
-> 
-> I looked it over, and didn't see anything objectionable.
+Hi,
 
-As the patch is going through wq tree, I added Acked-by instead of
-Signed-off-by.
+I want to change voltage and frequency seperately.
+With cpu-freq, i can change frequency, but cannot change voltage AFAIK.
 
-Thank you.
+Can I do this using cpu-freq?
 
--- 
-tejun
+If possible, how can I set voltage with the fixed value?
+If not, is there any way to do that?
+
+FYI, i'm using intel i7-core(nehalem) and ubuntu 10.10.
+FYI2, i found out i can do using IA32_PERF_CTL register, but there's no
+detail from intel.
+FYI3, can i change P-state table so that i can only change voltage in P
+states?
+
+Thanks,
+mihn
+
+
