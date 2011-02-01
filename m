@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 2/4] Make linking quiet again
-Date: Tue,  1 Feb 2011 16:11:42 +0100
-Message-ID: <58fea2632ab018647d40f80b78933a4fe55312b7.1296572755.git.trenn@suse.de>
+Subject: [PATCH 3/4] libcpupower: libcpufreq: Provide boost information also for AMD family 12h and 15h
+Date: Tue,  1 Feb 2011 16:11:43 +0100
+Message-ID: <c415675017a84c013931e1ee0797468c1107ed33.1296572755.git.trenn@suse.de>
 References: <cover.1296572755.git.trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1296572755.git.trenn@suse.de>
@@ -15,35 +15,39 @@ Content-Transfer-Encoding: 7bit
 To: linux@dominikbrodowski.net
 Cc: cpufreq@vger.kernel.org, herrmann.der.user@googlemail.com, Thomas Renninger <trenn@suse.de>
 
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+
+Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Andreas Herrmann <herrmann.der.user@googlemail.com>
 CC: Dominik Brodowski <linux@dominikbrodowski.net>
 CC: cpufreq@vger.kernel.org
 ---
- Makefile |    4 ++--
+ lib/pci.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 0386f53..510b10f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -163,7 +163,7 @@ lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
- 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
+diff --git a/lib/pci.c b/lib/pci.c
+index 8887aa5..83d1581 100644
+--- a/lib/pci.c
++++ b/lib/pci.c
+@@ -66,7 +66,7 @@ int amd_pci_get_num_boost_states(int *active, int *states)
+ {
+ 	struct pci_access *pci_acc;
+ 	int vendor_id = 0x1022;
+-	int boost_dev_ids[2] = {0x1204, 0};
++	int boost_dev_ids[4] = {0x1204, 0x1504, 0x1704, 0};
+ 	struct pci_dev *device;
+ 	uint8_t val = 0;
  
- libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
--	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
-+	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
- 		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
- 	@ln -sf $@ libcpupower.so
- 	@ln -sf $@ libcpupower.so.$(LIB_MIN)
-@@ -171,7 +171,7 @@ libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
- # Still Provide the old lib, but apps should get fixed to
- # not link against it anymore
- libcpufreq.so.$(LIB_MAJ): libcpupower.so.$(LIB_MAJ)
--	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
-+	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
- 		-Wl,-soname,libcpufreq.so.$(LIB_MIN) -l cpupower -L .
- 	@ln -sf $@ libcpufreq.so
- 	@ln -sf $@ libcpufreq.so.$(LIB_MIN)
+@@ -82,7 +82,7 @@ int amd_pci_get_num_boost_states(int *active, int *states)
+ 		*active = 1;
+ 	else
+ 		*active = 0;
+-	*states = (val >> 2) & 1;
++	*states = (val >> 2) & 7;
+ 
+ 	pci_acc_cleanup(pci_acc);
+ 	return 0;
 -- 
 1.7.3.4
 
