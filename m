@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/4] libcpupower: libcpufreq: Provide boost information also for AMD family 12h and 15h
-Date: Tue,  1 Feb 2011 16:11:43 +0100
-Message-ID: <c415675017a84c013931e1ee0797468c1107ed33.1296572755.git.trenn@suse.de>
+Subject: [PATCH 4/4] cpufreq-aperf: mperf might tick faster than expected, esp on Intel
+Date: Tue,  1 Feb 2011 16:11:44 +0100
+Message-ID: <7043858684c755c587d032735f35e5df5e0f624c.1296572755.git.trenn@suse.de>
 References: <cover.1296572755.git.trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1296572755.git.trenn@suse.de>
@@ -15,39 +15,29 @@ Content-Transfer-Encoding: 7bit
 To: linux@dominikbrodowski.net
 Cc: cpufreq@vger.kernel.org, herrmann.der.user@googlemail.com, Thomas Renninger <trenn@suse.de>
 
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-
-Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: Andreas Herrmann <herrmann.der.user@googlemail.com>
 CC: Dominik Brodowski <linux@dominikbrodowski.net>
 CC: cpufreq@vger.kernel.org
 ---
- lib/pci.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ utils/cpufreq-aperf.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/lib/pci.c b/lib/pci.c
-index 8887aa5..83d1581 100644
---- a/lib/pci.c
-+++ b/lib/pci.c
-@@ -66,7 +66,7 @@ int amd_pci_get_num_boost_states(int *active, int *states)
- {
- 	struct pci_access *pci_acc;
- 	int vendor_id = 0x1022;
--	int boost_dev_ids[2] = {0x1204, 0};
-+	int boost_dev_ids[4] = {0x1204, 0x1504, 0x1704, 0};
- 	struct pci_dev *device;
- 	uint8_t val = 0;
+diff --git a/utils/cpufreq-aperf.c b/utils/cpufreq-aperf.c
+index c9461ae..ac5e3ac 100644
+--- a/utils/cpufreq-aperf.c
++++ b/utils/cpufreq-aperf.c
+@@ -153,7 +153,10 @@ static int get_C_state_time(struct timeval time_diff, uint64_t mperf_diff,
+ 	expected_ticks = max_freq * overall_msecs;
+ 	*percent = (mperf_diff * 100) / expected_ticks;
  
-@@ -82,7 +82,7 @@ int amd_pci_get_num_boost_states(int *active, int *states)
- 		*active = 1;
- 	else
- 		*active = 0;
--	*states = (val >> 2) & 1;
-+	*states = (val >> 2) & 7;
+-	cx_time = (expected_ticks - mperf_diff) / max_freq;
++	if (mperf_diff > expected_ticks)
++		cx_time = c0_time;
++	else
++		cx_time = (expected_ticks - mperf_diff) / max_freq;
+ 	c0_time = mperf_diff / max_freq;
  
- 	pci_acc_cleanup(pci_acc);
- 	return 0;
+ 	CX_time->tv_sec  = cx_time / 1000;
 -- 
 1.7.3.4
 
