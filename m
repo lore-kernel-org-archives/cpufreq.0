@@ -1,56 +1,49 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCHSET] workqueue: update workqueue users - replace
- create_workqueue()
-Date: Tue, 1 Feb 2011 11:44:21 +0100
-Message-ID: <20110201104421.GJ14211@htj.dyndns.org>
-References: <1294062595-30097-1-git-send-email-tj@kernel.org>
- <20110125142921.GB27510@htj.dyndns.org>
-Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=domainkey-signature:sender:date:from:to:cc:subject:message-id
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        bh=FmEccFaO/uXk6wU+6XPyN72Iw8x/DSIVSKhmbJ2Ckk4=;
-        b=uwJgX5tY0ShxK7aLeyIId8pbZ1/+tlNgjgMv38UwzHWsadIwODTjC318AAwcuLea4V
-         GgYO5QJK4pvNNdCPeZey+gvj/dSytwzem1ueMtQGUtYzj2+Wdv5EeCwEENnoby9FDHLv
-         qmqQUjHhBusN3RGMMn12rZDA1HCQyF+UMNGC8=
-Content-Disposition: inline
-In-Reply-To: <20110125142921.GB27510@htj.dyndns.org>
-Sender: linux-acpi-owner@vger.kernel.org
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 2/4] Make linking quiet again
+Date: Tue,  1 Feb 2011 16:11:42 +0100
+Message-ID: <58fea2632ab018647d40f80b78933a4fe55312b7.1296572755.git.trenn@suse.de>
+References: <cover.1296572755.git.trenn@suse.de>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1296572755.git.trenn@suse.de>
+In-Reply-To: <cover.1296572755.git.trenn@suse.de>
+References: <cover.1296572755.git.trenn@suse.de>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, davej@redhat.com, cpufreq@vger.kernel.org, Markus.Lidel@shadowconnect.com, tomas.winkler@intel.com, jayamohank@serverengines.com, andrew.vasquez@qlogic.com, James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org, tomof@acm.org, stf_xl@wp.pl, linux-usb@vger.kernel.org, tytso@mit.edu, mfasheh@suse.com, joel.becker@oracle.com, reiserfs-devel@vger.kernel.org, aelder@sgi.com, hch@infradead.org, ericvh@gmail.com, rminnich@sandia.gov, v9fs-developer@lists.sourceforge.net, lucho@ionkov.net, andy.grover@oracle.com
+To: linux@dominikbrodowski.net
+Cc: cpufreq@vger.kernel.org, herrmann.der.user@googlemail.com, Thomas Renninger <trenn@suse.de>
 
-On Tue, Jan 25, 2011 at 03:29:21PM +0100, Tejun Heo wrote:
-> Hello,
-> 
-> There was no response for the following patches and I'm planning on
-> routing them through workqueue#for-2.6.39.  If you have an objection
-> or want to take the patch through a different tree, please let me
-> know.
-> 
->  0006-acpi-kacpi-_wq-don-t-need-WQ_MEM_RECLAIM.patch
->  0007-cpufreq-use-system_wq-instead-of-dedicated-workqueue.patch
->  0012-i2o-use-alloc_workqueue-instead-of-create_workqueue.patch
->  0013-misc-iwmc3200top-use-system_wq-instead-of-dedicated-.patch
->  0016-scsi-be2iscsi-qla2xxx-convert-to-alloc_workqueue.patch
->  0018-scsi-scsi_tgt_lib-scsi_tgtd-isn-t-used-in-memory-rec.patch
->  0019-usb-ueagle-atm-use-system_wq-instead-of-dedicated-wo.patch
->  0025-ext4-convert-to-alloc_workqueue.patch
->  0026-ocfs2-use-system_wq-instead-of-ocfs2_quota_wq.patch
->  0027-reiserfs-make-commit_wq-use-the-default-concurrency-.patch
->  0028-xfs-convert-to-alloc_workqueue.patch
->  0029-net-9p-use-system_wq-instead-of-p9_mux_wq.patch
->  0030-net-9p-replace-p9_poll_task-with-a-work.patch
->  0031-rds-ib-use-system_wq-instead-of-rds_ib_fmr_wq.patch
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Dominik Brodowski <linux@dominikbrodowski.net>
+CC: cpufreq@vger.kernel.org
+---
+ Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Patches applied to wq#for-2.6.39 w/ collected acks added.
-
-Thank you.
-
+diff --git a/Makefile b/Makefile
+index 0386f53..510b10f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -163,7 +163,7 @@ lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
+ 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
+ 
+ libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
+-	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
++	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
+ 		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
+ 	@ln -sf $@ libcpupower.so
+ 	@ln -sf $@ libcpupower.so.$(LIB_MIN)
+@@ -171,7 +171,7 @@ libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
+ # Still Provide the old lib, but apps should get fixed to
+ # not link against it anymore
+ libcpufreq.so.$(LIB_MAJ): libcpupower.so.$(LIB_MAJ)
+-	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
++	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
+ 		-Wl,-soname,libcpufreq.so.$(LIB_MIN) -l cpupower -L .
+ 	@ln -sf $@ libcpufreq.so
+ 	@ln -sf $@ libcpufreq.so.$(LIB_MIN)
 -- 
-tejun
+1.7.3.4
+
