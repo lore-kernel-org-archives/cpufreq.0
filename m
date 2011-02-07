@@ -1,52 +1,68 @@
-From: Mattia Dongili <malattia@linux.it>
-Subject: Re: CPU throttled down to 800 after 15-30mins
-Date: Sun, 6 Feb 2011 13:41:23 +0900
-Message-ID: <20110206044123.GB2703@kamineko.org>
-References: <4D4DAB6A.6090807@gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH] CPUFREQ : calculate delay after dbs_check_cpu
+Date: Mon, 7 Feb 2011 17:14:25 +0100
+Message-ID: <AANLkTiknsVjXMPA6wkcXmd4g4Enkb2oXadk1iYj0o3sy@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4D4DAB6A.6090807@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: J Webster <jw.jwebster@gmail.com>
-Cc: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: Patch Tracking <patches@linaro.org>
 
-Note that this is a kernel development related list, if your problem is
-specific to cpufreqd (note the "d" for deamon, a userspace application)
-please write/reply to me only or to cpufreqd related mailing lists.
+calculate ondemand delay after dbs_check_cpu call because it can
+modify rate_mult value
 
-On Sat, Feb 05, 2011 at 08:56:26PM +0100, J Webster wrote:
-> My laptop is an Inpsiron 9300, which should be able to go up to 1.73GHz.
-> I am having an issue whereby when I first turn the computer on,
-> ondemand is selected and the speed moves between 800 and 1.73
-> successfully.
-> For no apparent reason, after 15mins it is throttled back to 800 and
-> I cannot change it back.
-> I tired manually editing the scaling_max_freq file to 1733000 but
-> when I go back to view it it has changed to 800000 again!
-> I thought it might be this issue:
-> ##
-> # Special Rules
-> ##
-> # CPU Too hot!
-> [Rule]
-> name=CPU Too Hot
-> acpi_temperature=55-100
-> cpu_interval=50-100
-> profile=Performance Low
-> [/Rule]
-> 
-> So I changed it from 70-100 but on the last try the cpu did  not
-> reach 70 and it still throttled it back to 800.
+use freq_lo_jiffies value for the sub sample period of powersave_bias mode
 
-Try to increase cpufreqd verbosity, it will tell you which and why a
-specific rule was selected. From there you can work on modifying your
-rules to better match your usage.
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+---
+ drivers/cpufreq/cpufreq_ondemand.c |   20 +++++++++++++-------
+ 1 files changed, 13 insertions(+), 7 deletions(-)
 
-Regards,
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c
+b/drivers/cpufreq/cpufreq_ondemand.c
+index 58aa85e..44c2dba 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -641,13 +641,7 @@ static void do_dbs_timer(struct work_struct *work)
+ 		container_of(work, struct cpu_dbs_info_s, work.work);
+ 	unsigned int cpu = dbs_info->cpu;
+ 	int sample_type = dbs_info->sample_type;
+-
+-	/* We want all CPUs to do sampling nearly on same jiffy */
+-	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
+-		* dbs_info->rate_mult);
+-
+-	if (num_online_cpus() > 1)
+-		delay -= jiffies % delay;
++	int delay;
+
+ 	mutex_lock(&dbs_info->timer_mutex);
+
+@@ -660,10 +654,22 @@ static void do_dbs_timer(struct work_struct *work)
+ 			/* Setup timer for SUB_SAMPLE */
+ 			dbs_info->sample_type = DBS_SUB_SAMPLE;
+ 			delay = dbs_info->freq_hi_jiffies;
++		} else {
++			/* We want all CPUs to do sampling nearly on
++			 * same jiffy
++			 */
++			delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
++				* dbs_info->rate_mult);
++
++			if (num_online_cpus() > 1)
++				delay -= jiffies % delay;
++
+ 		}
++
+ 	} else {
+ 		__cpufreq_driver_target(dbs_info->cur_policy,
+ 			dbs_info->freq_lo, CPUFREQ_RELATION_H);
++		delay = dbs_info->freq_lo_jiffies;
+ 	}
+ 	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
+ 	mutex_unlock(&dbs_info->timer_mutex);
 -- 
-mattia
-:wq!
+1.7.1
