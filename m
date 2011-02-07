@@ -1,68 +1,52 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH] CPUFREQ : calculate delay after dbs_check_cpu
-Date: Mon, 7 Feb 2011 17:14:25 +0100
-Message-ID: <AANLkTiknsVjXMPA6wkcXmd4g4Enkb2oXadk1iYj0o3sy@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: CPU throttled down to 800 after 15-30mins
+Date: Mon, 7 Feb 2011 20:55:38 +0100
+Message-ID: <201102072055.38707.trenn@suse.de>
+References: <4D4DAB6A.6090807@gmail.com> <20110206044123.GB2703@kamineko.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20110206044123.GB2703@kamineko.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: Patch Tracking <patches@linaro.org>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Mattia Dongili <malattia@linux.it>
+Cc: J Webster <jw.jwebster@gmail.com>, cpufreq@vger.kernel.org
 
-calculate ondemand delay after dbs_check_cpu call because it can
-modify rate_mult value
+On Sunday 06 February 2011 05:41:23 Mattia Dongili wrote:
+> Note that this is a kernel development related list, if your problem is
+> specific to cpufreqd (note the "d" for deamon, a userspace application)
+> please write/reply to me only or to cpufreqd related mailing lists.
+> 
+> On Sat, Feb 05, 2011 at 08:56:26PM +0100, J Webster wrote:
+> > My laptop is an Inpsiron 9300, which should be able to go up to 1.73GHz.
+> > I am having an issue whereby when I first turn the computer on,
+> > ondemand is selected and the speed moves between 800 and 1.73
+> > successfully.
+> > For no apparent reason, after 15mins it is throttled back to 800 and
+> > I cannot change it back.
+> > I tired manually editing the scaling_max_freq file to 1733000 but
+> > when I go back to view it it has changed to 800000 again!
+> > I thought it might be this issue:
+> > ##
+> > # Special Rules
+> > ##
+> > # CPU Too hot!
+> > [Rule]
+> > name=CPU Too Hot
+> > acpi_temperature=55-100
+> > cpu_interval=50-100
+> > profile=Performance Low
+> > [/Rule]
+> > 
+> > So I changed it from 70-100 but on the last try the cpu did  not
+> > reach 70 and it still throttled it back to 800.
+> 
+> Try to increase cpufreqd verbosity, it will tell you which and why a
+> specific rule was selected. From there you can work on modifying your
+> rules to better match your usage.
+Also check whether your BIOS is the reason, if you get 800000 here:
+/sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+you should check your BIOS settings.
 
-use freq_lo_jiffies value for the sub sample period of powersave_bias mode
-
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- drivers/cpufreq/cpufreq_ondemand.c |   20 +++++++++++++-------
- 1 files changed, 13 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c
-b/drivers/cpufreq/cpufreq_ondemand.c
-index 58aa85e..44c2dba 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -641,13 +641,7 @@ static void do_dbs_timer(struct work_struct *work)
- 		container_of(work, struct cpu_dbs_info_s, work.work);
- 	unsigned int cpu = dbs_info->cpu;
- 	int sample_type = dbs_info->sample_type;
--
--	/* We want all CPUs to do sampling nearly on same jiffy */
--	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
--		* dbs_info->rate_mult);
--
--	if (num_online_cpus() > 1)
--		delay -= jiffies % delay;
-+	int delay;
-
- 	mutex_lock(&dbs_info->timer_mutex);
-
-@@ -660,10 +654,22 @@ static void do_dbs_timer(struct work_struct *work)
- 			/* Setup timer for SUB_SAMPLE */
- 			dbs_info->sample_type = DBS_SUB_SAMPLE;
- 			delay = dbs_info->freq_hi_jiffies;
-+		} else {
-+			/* We want all CPUs to do sampling nearly on
-+			 * same jiffy
-+			 */
-+			delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
-+				* dbs_info->rate_mult);
-+
-+			if (num_online_cpus() > 1)
-+				delay -= jiffies % delay;
-+
- 		}
-+
- 	} else {
- 		__cpufreq_driver_target(dbs_info->cur_policy,
- 			dbs_info->freq_lo, CPUFREQ_RELATION_H);
-+		delay = dbs_info->freq_lo_jiffies;
- 	}
- 	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
- 	mutex_unlock(&dbs_info->timer_mutex);
--- 
-1.7.1
+       Thomas
