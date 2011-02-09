@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 2/8] Make linking quiet again
-Date: Wed,  9 Feb 2011 14:56:33 +0100
-Message-ID: <5672097bb2e1ff402df20cbc6f636bded720fdb9.1297259254.git.trenn@suse.de>
+Subject: [PATCH 4/8] cpufreq-aperf: mperf might tick faster than expected, esp on Intel
+Date: Wed,  9 Feb 2011 14:56:35 +0100
+Message-ID: <baf510657c4f1bd118b96dde3d4d56dc0acc17df.1297259254.git.trenn@suse.de>
 References: <cover.1297259254.git.trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1297259254.git.trenn@suse.de>
@@ -19,31 +19,25 @@ Signed-off-by: Thomas Renninger <trenn@suse.de>
 CC: Dominik Brodowski <linux@dominikbrodowski.net>
 CC: cpufreq@vger.kernel.org
 ---
- Makefile |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ utils/cpufreq-aperf.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 0386f53..510b10f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -163,7 +163,7 @@ lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
- 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
+diff --git a/utils/cpufreq-aperf.c b/utils/cpufreq-aperf.c
+index c9461ae..07494a8 100644
+--- a/utils/cpufreq-aperf.c
++++ b/utils/cpufreq-aperf.c
+@@ -153,7 +153,10 @@ static int get_C_state_time(struct timeval time_diff, uint64_t mperf_diff,
+ 	expected_ticks = max_freq * overall_msecs;
+ 	*percent = (mperf_diff * 100) / expected_ticks;
  
- libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
--	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
-+	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
- 		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
- 	@ln -sf $@ libcpupower.so
- 	@ln -sf $@ libcpupower.so.$(LIB_MIN)
-@@ -171,7 +171,7 @@ libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
- # Still Provide the old lib, but apps should get fixed to
- # not link against it anymore
- libcpufreq.so.$(LIB_MAJ): libcpupower.so.$(LIB_MAJ)
--	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
-+	$(QUIET) $(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
- 		-Wl,-soname,libcpufreq.so.$(LIB_MIN) -l cpupower -L .
- 	@ln -sf $@ libcpufreq.so
- 	@ln -sf $@ libcpufreq.so.$(LIB_MIN)
+-	cx_time = (expected_ticks - mperf_diff) / max_freq;
++	if (mperf_diff > expected_ticks)
++		cx_time = 0;
++	else
++		cx_time = (expected_ticks - mperf_diff) / max_freq;
+ 	c0_time = mperf_diff / max_freq;
+ 
+ 	CX_time->tv_sec  = cx_time / 1000;
 -- 
 1.7.3.4
 
