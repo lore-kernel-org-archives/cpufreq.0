@@ -1,284 +1,153 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 1/8] libcpupower/cpufreq-info: Add basic functions to detect AMD CPB information
-Date: Wed,  9 Feb 2011 14:56:32 +0100
-Message-ID: <c1f6704f575e250306095c94486c122af646401d.1297259254.git.trenn@suse.de>
-References: <cover.1297259254.git.trenn@suse.de>
+From: J Webster <jw.jwebster@gmail.com>
+Subject: Re: CPU throttled down to 800 after 15-30mins
+Date: Wed, 09 Feb 2011 20:17:06 +0100
+Message-ID: <4D52E832.9050803@gmail.com>
+References: <4D4DAB6A.6090807@gmail.com> <20110206044123.GB2703@kamineko.org> <201102072055.38707.trenn@suse.de> <4D507895.70204@gmail.com> <4D509E13.6090308@reinelt.co.at>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1297259254.git.trenn@suse.de>
-In-Reply-To: <cover.1297259254.git.trenn@suse.de>
-References: <cover.1297259254.git.trenn@suse.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:message-id:date:from:user-agent:mime-version:to
+         :cc:subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=Gd+GyQ6OXHJeBUbsr61lw2fPgxN2zz6RlxEbJPZxkvU=;
+        b=V2VuBMHoiBCYEy8KpVfXsnONc9mLNdIc8v2m5s0jTK6U3sCS4q3YfPaWCtTnqAYuaB
+         /bH4RJAlAuK+P29w6xh05WcOBN1jDWeJ5LGA1TNq5TGHwIriNQjwJVvrWiDx5KdUuxee
+         l7K2uEmKa7xnctN5YoFTDXTkwL/3WvX4INfOE=
+In-Reply-To: <4D509E13.6090308@reinelt.co.at>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux@dominikbrodowski.net
-Cc: lenb@kernel.org, andreas.herrmann3@amd.com, Andreas Herrmann <herrmann.der.user@googlemail.com>, Thomas Renninger <trenn@suse.de>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Michael Reinelt <michael@reinelt.co.at>
+Cc: Thomas Renninger <trenn@suse.de>, Mattia Dongili <malattia@linux.it>, cpufreq@vger.kernel.org
 
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+I have partially solved this by turning off speedstep in the BIOS.
+Now the computer runs at 1.73 permanently.
+Is there a way to get cpufreqd to control the speed after that and flip 
+between 800 and 1.73 as needed or is that a function completely 
+controlled by the BIOS?
+ie now that I have max speed, I guess I have to leave it on max?
 
-To gather boost state information on AMD we need to access CPU
-northbridge PCI functions.
-
-Thus this change introduces a dependency on libpci (part of pciutils and
-usually installed on Linux systems).
-
-Detect whether CPB is enabled/disabled and number of boosted states.
-
-Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: Dominik Brodowski <linux@dominikbrodowski.net>
-CC: cpufreq@vger.kernel.org
-CC: Andreas Herrmann <herrmann.der.user@googlemail.com>
----
- Makefile             |    8 ++--
- lib/cpufreq.c        |    8 ++--
- lib/cpufreq.h        |    2 +-
- lib/msr.c            |   11 ------
- lib/msr.h            |    2 -
- lib/pci.c            |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++
- lib/pci.h            |    1 +
- utils/cpufreq-info.c |    5 ++-
- 8 files changed, 102 insertions(+), 24 deletions(-)
- create mode 100644 lib/pci.c
- create mode 100644 lib/pci.h
-
-diff --git a/Makefile b/Makefile
-index 2cd9e83..0386f53 100644
---- a/Makefile
-+++ b/Makefile
-@@ -113,9 +113,9 @@ CPPFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\" \
- 
- UTIL_SRC = 	utils/cpufreq-info.c utils/cpufreq-set.c utils/cpufreq-aperf.c utils/cpuidle-info.c
- UTIL_BINS = 	utils/cpufreq-info utils/cpufreq-set utils/cpufreq-aperf utils/cpuidle-info
--LIB_HEADERS = 	lib/cpufreq.h lib/cpuidle.h lib/sysfs.h lib/msr.h lib/cpuid.h
--LIB_SRC = 	lib/cpufreq.c lib/cpuidle.c lib/sysfs.c lib/msr.c
--LIB_OBJS = 	lib/cpufreq.o lib/cpuidle.o lib/sysfs.o lib/msr.o
-+LIB_HEADERS = 	lib/cpufreq.h lib/cpuidle.h lib/sysfs.h lib/msr.h lib/cpuid.h lib/pci.h
-+LIB_SRC = 	lib/cpufreq.c lib/cpuidle.c lib/sysfs.c lib/msr.c lib/pci.c
-+LIB_OBJS = 	lib/cpufreq.o lib/cpuidle.o lib/sysfs.o lib/msr.o lib/pci.o
- 
- CFLAGS +=	-pipe
- 
-@@ -163,7 +163,7 @@ lib/%.o: $(LIB_SRC) $(LIB_HEADERS) build/ccdv
- 	$(QUIET) $(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
- 
- libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
--	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ \
-+	$(CC) -shared $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -l pci \
- 		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
- 	@ln -sf $@ libcpupower.so
- 	@ln -sf $@ libcpupower.so.$(LIB_MIN)
-diff --git a/lib/cpufreq.c b/lib/cpufreq.c
-index 0b5fe9f..731d61f 100644
---- a/lib/cpufreq.c
-+++ b/lib/cpufreq.c
-@@ -14,6 +14,7 @@
- #include "sysfs.h"
- #include "cpuid.h"
- #include "msr.h"
-+#include "pci.h"
- 
- int cpufreq_cpu_exists(unsigned int cpu)
- {
-@@ -191,12 +192,12 @@ unsigned long cpufreq_get_transitions(unsigned int cpu) {
- 	return (ret);
- }
- 
--int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active)
-+int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active, int * states)
- {
- 	struct cpupower_cpu_info cpu_info;
- 	int ret;
- 
--	*support = *active = 0;
-+	*support = *active = *states = 0;
- 
- 	ret = get_cpu_info(0, &cpu_info);
- 	if (ret)
-@@ -218,10 +219,9 @@ int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active)
- 			*support = 1;
- 		else
- 			return 0;
--		ret = msr_amd_boost_is_active(cpu);
-+		amd_pci_get_num_boost_states(active, states);
- 		if (ret <= 0)
- 			return ret;
--		*active = ret;
- 	}
- 	return 0;
- }
-diff --git a/lib/cpufreq.h b/lib/cpufreq.h
-index 506b6fc..378c063 100644
---- a/lib/cpufreq.h
-+++ b/lib/cpufreq.h
-@@ -213,7 +213,7 @@ extern int cpufreq_set_frequency(unsigned int cpu, unsigned long target_frequenc
-  * Check whether Intel's "Turbo Boost Technology" or AMD's
-  * "Dynamic Speed Boost Technology" is supported and if, whether it's activated
-  */
--extern int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active);
-+extern int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active, int *states);
- 
- 
- #ifdef __cplusplus
-diff --git a/lib/msr.c b/lib/msr.c
-index 3b59fb5..285290f 100644
---- a/lib/msr.c
-+++ b/lib/msr.c
-@@ -127,17 +127,6 @@ int msr_amd_get_fidvid(unsigned int cpu, uint32_t *fid, uint32_t *vid)
- 	return 0;
- }
- 
--int msr_amd_boost_is_active(unsigned int cpu)
--{
--	uint64_t k7_hwcr;
--	int ret;
--
--	ret = read_msr(cpu, MSR_K7_HWCR, &k7_hwcr);
--	if (ret)
--		return ret;
--	return !((k7_hwcr >> 25) & 0x1);
--}
--
- /* Intel X86 MSRs **********************************/
- int msr_intel_get_perf_status(unsigned int cpu, uint64_t perf_status)
- {
-diff --git a/lib/msr.h b/lib/msr.h
-index 6b743ce..ac44a6a 100644
---- a/lib/msr.h
-+++ b/lib/msr.h
-@@ -6,5 +6,3 @@ extern int msr_intel_get_perf_status(unsigned int cpu, uint64_t perf_status);
- 
- extern int msr_intel_has_boost_support(unsigned int cpu);
- extern int msr_intel_boost_is_active(unsigned int cpu);
--
--extern int msr_amd_boost_is_active(unsigned int cpu);
-diff --git a/lib/pci.c b/lib/pci.c
-new file mode 100644
-index 0000000..8887aa5
---- /dev/null
-+++ b/lib/pci.c
-@@ -0,0 +1,89 @@
-+/*
-+ *  (C) 2010  Andreas Herrmann <herrmann.der.user@googlemail.com>
-+ *
-+ *  Licensed under the terms of the GNU GPL License version 2.
-+ */
-+
-+
-+#include <stdio.h>
-+#include <errno.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <stdint.h>
-+#include <inttypes.h>
-+
-+#include <pci/pci.h>
-+
-+#include "cpufreq.h"
-+#include "sysfs.h"
-+
-+/*
-+ * pci_acc_init
-+ *
-+ * PCI access helper function depending on libpci
-+ *
-+ * **pacc : if a valid pci_dev is returned
-+ *         *pacc must be passed to pci_acc_cleanup to free it
-+ *
-+ * vendor_id : the pci vendor id matching the pci device to access
-+ * dev_ids :   device ids matching the pci device to access
-+ *
-+ * Returns :
-+ * struct pci_dev which can be used with pci_{read,write}_* functions
-+ *                to access the PCI config space of matching pci devices
-+ */
-+static struct pci_dev *pci_acc_init(struct pci_access **pacc, int vendor_id,
-+			     int *dev_ids)
-+{
-+	struct pci_filter filter_nb_link = { -1, -1, -1, -1, vendor_id, 0};
-+	struct pci_dev *device;
-+	unsigned int i;
-+
-+	*pacc = pci_alloc();
-+	if (*pacc == NULL)
-+		return NULL;
-+
-+	pci_init(*pacc);
-+	pci_scan_bus(*pacc);
-+
-+	for (i = 0; dev_ids[i] != 0; i++) {
-+		filter_nb_link.device = dev_ids[i];
-+		for (device=(*pacc)->devices; device; device = device->next) {
-+			if (pci_filter_match(&filter_nb_link, device))
-+				return device;
-+		}
-+	}
-+	pci_cleanup(*pacc);
-+	return NULL;
-+}
-+
-+static void pci_acc_cleanup(struct pci_access *pacc)
-+{
-+       pci_cleanup(pacc);
-+}
-+
-+int amd_pci_get_num_boost_states(int *active, int *states)
-+{
-+	struct pci_access *pci_acc;
-+	int vendor_id = 0x1022;
-+	int boost_dev_ids[2] = {0x1204, 0};
-+	struct pci_dev *device;
-+	uint8_t val = 0;
-+
-+	*active = *states = 0;
-+
-+	device = pci_acc_init(&pci_acc, vendor_id, boost_dev_ids);
-+
-+	if (device == NULL)
-+		return -ENODEV;
-+
-+	val = pci_read_byte(device, 0x15c);
-+	if (val & 3)
-+		*active = 1;
-+	else
-+		*active = 0;
-+	*states = (val >> 2) & 1;
-+
-+	pci_acc_cleanup(pci_acc);
-+	return 0;
-+}
-diff --git a/lib/pci.h b/lib/pci.h
-new file mode 100644
-index 0000000..d29df49
---- /dev/null
-+++ b/lib/pci.h
-@@ -0,0 +1 @@
-+extern int amd_pci_get_num_boost_states(int *active, int *states);
-diff --git a/utils/cpufreq-info.c b/utils/cpufreq-info.c
-index 4d479f3..bb8e425 100644
---- a/utils/cpufreq-info.c
-+++ b/utils/cpufreq-info.c
-@@ -290,9 +290,9 @@ static void debug_output(unsigned int cpu, unsigned int all) {
- /* --boost / -b */
- 
- static int get_boost_mode(unsigned int cpu) {
--	int support, active, ret;
-+	int support, active, states, ret;
- 
--	ret = cpufreq_has_boost_support(cpu, &support, &active);
-+	ret = cpufreq_has_boost_support(cpu, &support, &active, &states);
- 	if (ret) {
- 		printf(gettext ("Error while evaluating Boost Capabilities"
- 				" on CPU %d -- are you root?\n"), cpu);
-@@ -302,6 +302,7 @@ static int get_boost_mode(unsigned int cpu) {
- 	printf(gettext ("Analyzing Boost Capabilities on CPU %d:\n"), cpu);
- 	printf("Supported: %s\n", support ? "yes" : "no");
- 	printf("Active: %s\n", active ? "yes" : "no");
-+	printf("Boost States: %d\n", states);
- 
- 	return 0;
- }
--- 
-1.7.3.4
-
+On 08/02/11 02:36, Michael Reinelt wrote:
+> I had a similar problem back in 2007: 
+> https://bugzilla.kernel.org/show_bug.cgi?id=9488 In my case a broken 
+> BIOS was the reason. As I could not get a newer (fixed) BIOS, I found 
+> two workarounds: a) using the processor.ignore_ppc flag, and b) (the 
+> "final" solution): using a kernel parameter acpi_osi="!Windows 2006"
+>
+>
+> Am 2011-02-07 23:56, schrieb J Webster:
+>> The BIOS is BIOS revision A05, which has not been updated since 2005.
+>> The BIOS only has settings to turn speedstep on or off. If it is turned
+>> off then the computer will not run higher than 800MHz so that won't
+>> solve the issue.
+>> I have attached the results below when it throttles down to 800 and the
+>> cpu limit says: 80000 but it starts off at 1733000.
+>>
+>> The only thing it could be is a temperature sensor that has gone faulty.
+>> NHC in windows seems to be able to bypass this issue and ramp it up to
+>> 1.73 but there doesn't seem to be an equivalent in Ubuntu that I know 
+>> of.
+>>
+>> when running at 1.73Ghz correctly:
+>> j@j-Inspiron-9300:~$ date
+>> Mon Feb 7 22:44:49 CET 2011
+>> j@j-Inspiron-9300:~$ sudo cat
+>> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+>> 1733000
+>> j@j-Inspiron-9300:~$ cpufreq-info
+>> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+>> Report errors and bugs to cpufreq@vger.kernel.org, please.
+>> analyzing CPU 0:
+>> driver: acpi-cpufreq
+>> CPUs which run at the same hardware frequency: 0
+>> CPUs which need to have their frequency coordinated by software: 0
+>> maximum transition latency: 10.0 us.
+>> hardware limits: 800 MHz - 1.73 GHz
+>> available frequency steps: 1.73 GHz, 1.33 GHz, 1.07 GHz, 800 MHz
+>> available cpufreq governors: conservative, ondemand, userspace,
+>> powersave, performance
+>> current policy: frequency should be within 1.73 GHz and 1.73 GHz.
+>> The governor "performance" may decide which speed to use
+>> within this range.
+>> current CPU frequency is 1.73 GHz.
+>> cpufreq stats: 1.73 GHz:99.46%, 1.33 GHz:0.00%, 1.07 GHz:0.00%, 800
+>> MHz:0.54% (16)
+>>
+>> when limited to 800MHz:
+>> j@j-Inspiron-9300:~$ date
+>> Mon Feb 7 23:54:45 CET 2011
+>> j@j-Inspiron-9300:~$ cpufreq-info
+>> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+>> Report errors and bugs to cpufreq@vger.kernel.org, please.
+>> analyzing CPU 0:
+>> driver: acpi-cpufreq
+>> CPUs which run at the same hardware frequency: 0
+>> CPUs which need to have their frequency coordinated by software: 0
+>> maximum transition latency: 10.0 us.
+>> hardware limits: 800 MHz - 1.73 GHz
+>> available frequency steps: 1.73 GHz, 1.33 GHz, 1.07 GHz, 800 MHz
+>> available cpufreq governors: conservative, ondemand, userspace,
+>> powersave, performance
+>> current policy: frequency should be within 800 MHz and 800 MHz.
+>> The governor "performance" may decide which speed to use
+>> within this range.
+>> current CPU frequency is 800 MHz.
+>> cpufreq stats: 1.73 GHz:69.73%, 1.33 GHz:0.00%, 1.07 GHz:0.00%, 800
+>> MHz:30.27% (17)
+>> j@j-Inspiron-9300:~$ sudo cat
+>> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+>> 800000
+>>
+>>
+>>
+>>
+>>
+>> On 07/02/11 20:55, Thomas Renninger wrote:
+>>> On Sunday 06 February 2011 05:41:23 Mattia Dongili wrote:
+>>>> Note that this is a kernel development related list, if your 
+>>>> problem is
+>>>> specific to cpufreqd (note the "d" for deamon, a userspace 
+>>>> application)
+>>>> please write/reply to me only or to cpufreqd related mailing lists.
+>>>>
+>>>> On Sat, Feb 05, 2011 at 08:56:26PM +0100, J Webster wrote:
+>>>>> My laptop is an Inpsiron 9300, which should be able to go up to
+>>>>> 1.73GHz.
+>>>>> I am having an issue whereby when I first turn the computer on,
+>>>>> ondemand is selected and the speed moves between 800 and 1.73
+>>>>> successfully.
+>>>>> For no apparent reason, after 15mins it is throttled back to 800 and
+>>>>> I cannot change it back.
+>>>>> I tired manually editing the scaling_max_freq file to 1733000 but
+>>>>> when I go back to view it it has changed to 800000 again!
+>>>>> I thought it might be this issue:
+>>>>> ##
+>>>>> # Special Rules
+>>>>> ##
+>>>>> # CPU Too hot!
+>>>>> [Rule]
+>>>>> name=CPU Too Hot
+>>>>> acpi_temperature=55-100
+>>>>> cpu_interval=50-100
+>>>>> profile=Performance Low
+>>>>> [/Rule]
+>>>>>
+>>>>> So I changed it from 70-100 but on the last try the cpu did not
+>>>>> reach 70 and it still throttled it back to 800.
+>>>> Try to increase cpufreqd verbosity, it will tell you which and why a
+>>>> specific rule was selected. From there you can work on modifying your
+>>>> rules to better match your usage.
+>>> Also check whether your BIOS is the reason, if you get 800000 here:
+>>> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+>>> you should check your BIOS settings.
+>>>
+>>> Thomas
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at http://vger.kernel.org/majordomo-info.html
+>>
+>>
+>
