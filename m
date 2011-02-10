@@ -1,30 +1,36 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: CPU throttled down to 800 after 15-30mins
-Date: Wed, 9 Feb 2011 20:50:40 +0100
-Message-ID: <201102092050.41398.trenn@suse.de>
-References: <4D4DAB6A.6090807@gmail.com> <201102092037.21028.trenn@suse.de> <4D52EE58.4010206@gmail.com>
+From: mihn leigh <mihnsk@gmail.com>
+Subject: cpu voltage scaling
+Date: Wed, 9 Feb 2011 23:59:28 -0800
+Message-ID: <AANLkTinAE8-Nu6kUnnEMLxL3=ZJoKS2n3qTwpHBEVyY_@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <4D52EE58.4010206@gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:mime-version:date:message-id:subject:from:to
+         :content-type;
+        bh=ULiJXdysshtN15QecyMsy0JivJmzSdSo9QeGxsmy2hc=;
+        b=IP8a5Fw+pvO97/oWqfb87V8JBdcPBQ/gOeyHGyMeKm0w0S4IYEtpB3HYbA5foe76Kf
+         mSJwV+7OuMqF3fZ4qyubMVwOIxmSVcLGHjUPLkpqJz3/FhGuUREbgGqFXbXJDOeHMcbO
+         L5HotV0+zMFd3LRlTtPkn/sD6DIg19KaobI4Y=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: J Webster <jw.jwebster@gmail.com>
-Cc: Michael Reinelt <michael@reinelt.co.at>, Mattia Dongili <malattia@linux.it>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Wednesday 09 February 2011 20:43:20 J Webster wrote:
-> Tried that but it didn;t ignore the BIOS. Either that or something
-> else is limiting it.
-> That's why I had to turn speedstep off in the BIOS.
+Hi,
 
-Interesting, that would mean the BIOS additionally sets some HW
-registers to limit things or processor.ignore_ppc is broken for you,
-but as it works for others, I can't see why...
+I want to change voltage and frequency seperately in intel i7 core(nehalem).
+With cpu-freq, i can change frequency, but cannot change voltage AFAIK.
 
-Is /sys/devices/.../bios_limit still showing lower values?
-This should not be possible anymore with this param.
-Then better double check that you've written the parameter correctly
-or also try a latest vanilla kernel if not done yet.
+I tried PHC "http://www.linux-phc.org", but change of voltage leads to
+frequency as well.
+Also, i tried to change IA32_PERF_CTL(MSR) register, but i also failed
+to fix the frequency while changing the voltage.
 
-       Thomas
+Now, i have a plan to dig into PPC table, but i'm not sure if it's
+possible or not.
+Could you guys give me some infomartion how to change voltage seperately?
+
+Thanks,
+mihn
