@@ -1,34 +1,33 @@
-From: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
-Subject: [PATCH]: cpufreq: p4-clockmod: print EST-capable warning message only once
-Date: Tue, 15 Feb 2011 17:44:11 +0000 (UTC)
-Message-ID: <20110215174117.2327.1187.sendpatchset@nchumbalkar.americas.hpqcorp.net>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH 1/8] libcpupower/cpufreq-info: Add basic functions to
+ detect AMD CPB information
+Date: Wed, 16 Feb 2011 08:30:09 +0100
+Message-ID: <20110216073009.GB27847@comet.dominikbrodowski.net>
+References: <cover.1297259254.git.trenn@suse.de>
+ <c1f6704f575e250306095c94486c122af646401d.1297259254.git.trenn@suse.de>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <c1f6704f575e250306095c94486c122af646401d.1297259254.git.trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@codemonkey.org.uk
-Cc: Naga Chumbalkar <nagananda.chumbalkar@hp.com>, cpufreq@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: lenb@kernel.org, andreas.herrmann3@amd.com, Andreas Herrmann <herrmann.der.user@googlemail.com>, cpufreq@vger.kernel.org
 
-Print the message only once. I see it 16 times on a 2P box with 16 logical CPUs.
 
-Signed-off-by: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+On Wed, Feb 09, 2011 at 02:56:32PM +0100, Thomas Renninger wrote:
+> From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+> 
+> To gather boost state information on AMD we need to access CPU
+> northbridge PCI functions.
+> 
+> Thus this change introduces a dependency on libpci (part of pciutils and
+> usually installed on Linux systems).
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-index bd1cac7..52c9364 100644
---- a/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-+++ b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-@@ -158,9 +158,9 @@ static unsigned int cpufreq_p4_get_frequency(struct cpuinfo_x86 *c)
- {
- 	if (c->x86 == 0x06) {
- 		if (cpu_has(c, X86_FEATURE_EST))
--			printk(KERN_WARNING PFX "Warning: EST-capable CPU "
--			       "detected. The acpi-cpufreq module offers "
--			       "voltage scaling in addition of frequency "
-+			printk_once(KERN_WARNING PFX "Warning: EST-capable "
-+			       "CPU detected. The acpi-cpufreq module offers "
-+			       "voltage scaling in addition to frequency "
- 			       "scaling. You should use that instead of "
- 			       "p4-clockmod, if possible.\n");
- 		switch (c->x86_model) {
+Do we need to depend on libpci unconditionally, or can we make this
+per-arch?
+
+Best,
+	Dominik
