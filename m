@@ -1,24 +1,85 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: desperately trying to enable maximum supported frequency scaling on a core2
-Date: Wed, 16 Feb 2011 09:49:31 +0100
-Message-ID: <201102160949.31703.trenn@suse.de>
-References: <N1B-mrB4sgbovA@Safe-mail.net> <201102160943.07052.trenn@suse.de>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [RFC/PATCH] OMAP: Fix section mismatch
+Date: Fri, 18 Feb 2011 14:59:41 +0100
+Message-ID: <20110218135941.GB22310@pengutronix.de>
+References: <1298034953-21016-1-git-send-email-weber@corscience.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201102160943.07052.trenn@suse.de>
+Content-Disposition: inline
+In-Reply-To: <1298034953-21016-1-git-send-email-weber@corscience.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: jhopper@safe-mail.net
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Thomas Weber <weber@corscience.de>
+Cc: linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Russell King <linux@arm.linux.org.uk>, "open list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>
 
-On Wednesday, February 16, 2011 09:43:06 AM Thomas Renninger wrote:
-> This is the highest frequency exported from BIOS through ACPI
-> tables, that's the max OS can set/request:
-> # cat /sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_max_freq 
-> 3200000
-Eh, I expect this one does not support turbo mode and 3.2 seem
-really to be max supported freq by this processor.
+Hello,
 
-   Thomas
+[added cpufreq@vger.kernel.org and Dave to Cc:]
+
+On Fri, Feb 18, 2011 at 02:15:53PM +0100, Thomas Weber wrote:
+> When compiling linux-omap with 'make CONFIG_DEBUG_SECTION_MISMATCH=3D=
+y'
+> the following output occurs:
+>=20
+> WARNING: arch/arm/plat-omap/built-in.o(.data+0x6e8): Section mismatch=
+ in
+> reference from the variable omap_driver to the function
+> .init.text:omap_cpu_init()
+> The variable omap_driver references
+> the function __init omap_cpu_init()
+> If the reference is valid then annotate the
+> variable with __init* or __refdata (see linux/init.h) or name the
+> variable:
+> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+>=20
+> This patch fixes this by adding __refdata to the omap_driver variable=
+=2E
+>=20
+> Signed-off-by: Thomas Weber <weber@corscience.de>
+> ---
+>  arch/arm/plat-omap/cpu-omap.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/arm/plat-omap/cpu-omap.c b/arch/arm/plat-omap/cpu-o=
+map.c
+> index 11c54ec..17fdd5f 100644
+> --- a/arch/arm/plat-omap/cpu-omap.c
+> +++ b/arch/arm/plat-omap/cpu-omap.c
+> @@ -144,7 +144,7 @@ static struct freq_attr *omap_cpufreq_attr[] =3D =
+{
+>  	NULL,
+>  };
+> =20
+> -static struct cpufreq_driver omap_driver =3D {
+> +static struct cpufreq_driver omap_driver __refdata =3D {
+>  	.flags		=3D CPUFREQ_STICKY,
+>  	.verify		=3D omap_verify_speed,
+>  	.target		=3D omap_target,
+This is correct for a single case.  But actually the better fix would b=
+e
+to remove the .init member of struct cpufreq_driver and change the
+prototype of cpufreq_register_driver from
+
+	int (*)(struct cpufreq_driver *)
+
+to
+
+	int (*)(struct cpufreq_driver *, int (*)(struct cpufreq_policy *))=20
+
+and pass the init function directly to it.
+This way you don't need __refdata (which should be an exception) and yo=
+u
+don't waste memory for a pointer that is never used after
+cpufreq_register_driver returns.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
+    |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
