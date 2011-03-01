@@ -1,79 +1,30 @@
-From: Fredrik Rambris <fredrik@rambris.com>
-Subject: p4-clockmod: Unknown CPU
-Date: Tue, 1 Mar 2011 22:25:52 +0100
-Message-ID: <AANLkTinJ--hJmv4uGqW2_Ldg8t6q=EOzXNJ6hKLH5-CZ@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 1/1] CPUFREQ: fix BUG on cpufreq policy init failure
+Date: Tue, 1 Mar 2011 22:32:00 +0100
+Message-ID: <201103012232.00666.trenn@suse.de>
+References: <1298997670-5866-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1298997670-5866-1-git-send-email-jslaby@suse.cz>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: davej@redhat.com
+Cc: Jiri Slaby <jslaby@suse.cz>, cpufreq@vger.kernel.org, jirislaby@gmail.com
 
-Hi
+On Tuesday 01 March 2011 17:41:10 Jiri Slaby wrote:
+> cpufreq_register_driver sets cpufreq_driver to a structure owned (and
+> placed) in the caller's memory. If cpufreq policy fails in its ->init
+> function, sysdev_driver_register returns nonzero in
+> cpufreq_register_driver. Now, cpufreq_register_driver returns an error
+> without setting cpufreq_driver back to NULL.
+> 
+> Usually cpufreq policy modules are unloaded because they propagate the
+> error to the module init function and return that.
 
-I'm running Ubuntu something something (moms laptop) 2.6.35-25-generic
-#44-Ubuntu SMP Fri Jan 21 17:40:44 UTC 2011 x86_64 GNU/Linux
-This is a Compaq Presario CQ71 and the fans are running top speed all
-the time. I therefor tried to run cpufreqd but the kernel does not
-recognize the CPU.
+Looks pretty sane and makes the code much nicer.
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 23
-model name	: Celeron(R) Dual-Core CPU       T3000  @ 1.80GHz
-stepping	: 10
-cpu MHz		: 1795.493
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 2
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 13
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-lm constant_tsc arch_perfmon pebs bts rep_good aperfmperf pni dtes64
-monitor ds_cpl tm2 ssse3 cx16 xtpr pdcm xsave lahf_lm dts
-bogomips	: 3590.98
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
+Will you pick it up Dave?
 
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 23
-model name	: Celeron(R) Dual-Core CPU       T3000  @ 1.80GHz
-stepping	: 10
-cpu MHz		: 1795.493
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 2
-core id		: 1
-cpu cores	: 2
-apicid		: 1
-initial apicid	: 1
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 13
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-lm constant_tsc arch_perfmon pebs bts rep_good aperfmperf pni dtes64
-monitor ds_cpl tm2 ssse3 cx16 xtpr pdcm xsave lahf_lm dts
-bogomips	: 3112.96
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-
--- 
-Fredrik Rambris <fredrik@rambris.com> (also GoogleTalk)
+       Thomas
