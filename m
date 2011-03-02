@@ -1,37 +1,47 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/1] CPUFREQ: fix BUG on cpufreq policy init failure
-Date: Tue, 1 Mar 2011 17:39:27 -0500
-Message-ID: <20110301223927.GA18354@redhat.com>
-References: <1298997670-5866-1-git-send-email-jslaby@suse.cz>
- <201103012232.00666.trenn@suse.de>
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+Subject: [2.6.38-rc7, patch] cpuinfo_cur_freq unreadable by non-root
+Date: Wed, 2 Mar 2011 13:52:05 +0800
+Message-ID: <AANLkTikhgKn9ZCqUXP-K2CtSSTiJ_=tXuhF_t7Rbqgdx@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <201103012232.00666.trenn@suse.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:mime-version:date:message-id:subject:from:to:cc
+         :content-type;
+        bh=u6GgUGrtaijnHx6TDWdFBvgsXrgZfLwMMdsNR1/oyyc=;
+        b=vofpyZfoVaUfhhRAk/qevm40g1vsaVcaD+KEjtKfLQ49eZ6dnhZtyRiaRAGYzHn4zk
+         cYfE9e8jJ5rpJEVKn6P7ATlsV+KHAIYWSjxbf/qyrzqUcycz9CcYMH7lMXIhShxtuLIx
+         p5BQ/JfGcms6y0uVI44gfwR+j++hJq5eWgy70=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Renninger <trenn@suse.de>
-Cc: Jiri Slaby <jslaby@suse.cz>, cpufreq@vger.kernel.org, jirislaby@gmail.com
+To: cpufreq@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>
 
-On Tue, Mar 01, 2011 at 10:32:00PM +0100, Thomas Renninger wrote:
- > On Tuesday 01 March 2011 17:41:10 Jiri Slaby wrote:
- > > cpufreq_register_driver sets cpufreq_driver to a structure owned (and
- > > placed) in the caller's memory. If cpufreq policy fails in its ->init
- > > function, sysdev_driver_register returns nonzero in
- > > cpufreq_register_driver. Now, cpufreq_register_driver returns an error
- > > without setting cpufreq_driver back to NULL.
- > > 
- > > Usually cpufreq policy modules are unloaded because they propagate the
- > > error to the module init function and return that.
- > 
- > Looks pretty sane and makes the code much nicer.
- > 
- > Will you pick it up Dave?
+I failed to find why
+/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq is only readable
+by root; the cost of reading it isn't sufficient to cause memory or
+scheduling denial, but may have been in the past.
 
-yep, got it.
+Thus, allow non-root users read permission, consistent with other
+attributes, allowing it to be monitored.
 
-thanks,
-	Dave
- 
+Signed-off-by: Daniel J Blueman <daniel.blueman@gmail.com>
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1109f68..0f491fe 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -664,7 +664,7 @@ static ssize_t show_bios_limit(struct
+cpufreq_policy *policy, char *buf)
+ 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
+ }
+
+-cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
++cpufreq_freq_attr_ro(cpuinfo_cur_freq);
+ cpufreq_freq_attr_ro(cpuinfo_min_freq);
+ cpufreq_freq_attr_ro(cpuinfo_max_freq);
+ cpufreq_freq_attr_ro(cpuinfo_transition_latency);
+-- 
+Daniel J Blueman
