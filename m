@@ -1,18 +1,18 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 13995] Incorrect CPU frequency reported
-Date: Thu, 3 Mar 2011 01:13:59 GMT
-Message-ID: <201103030113.p231DxFn009280@demeter2.kernel.org>
-References: <bug-13995-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 15597] acpi-cpufreq not initializing on corei5-661
+Date: Thu, 3 Mar 2011 01:14:28 GMT
+Message-ID: <201103030114.p231ESgK009852@demeter2.kernel.org>
+References: <bug-15597-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-13995-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-15597-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=13995
+https://bugzilla.kernel.org/show_bug.cgi?id=15597
 
 
 Len Brown <lenb@kernel.org> changed:
