@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 2/4] cpufreq: Remove deprecated sysfs file sampling_rate_max
-Date: Thu,  3 Mar 2011 21:31:25 +0100
-Message-ID: <1299184287-18854-3-git-send-email-trenn@suse.de>
+Subject: [PATCH 4/4] cpufreq: Remove unneeded locks
+Date: Thu,  3 Mar 2011 21:31:27 +0100
+Message-ID: <1299184287-18854-5-git-send-email-trenn@suse.de>
 References: <1299184287-18854-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1299184287-18854-1-git-send-email-trenn@suse.de>
@@ -13,122 +13,226 @@ Content-Transfer-Encoding: 7bit
 To: davej@codemonkey.org.uk
 Cc: Thomas Renninger <trenn@suse.de>, cpufreq@vger.kernel.org
 
-Marked deprecated for quite a whilte now...
+There cannot be any concurrent access to these through
+different cpu sysfs files anymore, because these tunables
+are now all global (not per cpu).
+
+I still have some doubts whether some of these locks
+were needed at all. Anyway, let's get rid of them.
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 CC: davej@codemonkey.org.uk
 CC: cpufreq@vger.kernel.org
 ---
- drivers/cpufreq/cpufreq_conservative.c |   13 -------------
- drivers/cpufreq/cpufreq_ondemand.c     |   13 -------------
- 2 files changed, 0 insertions(+), 26 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c |   34 ++++---------------------------
+ drivers/cpufreq/cpufreq_ondemand.c     |   25 +----------------------
+ 2 files changed, 6 insertions(+), 53 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 526bfbf..f3a9a72 100644
+index 77cadf4..6bc972b 100644
 --- a/drivers/cpufreq/cpufreq_conservative.c
 +++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -164,21 +164,12 @@ static struct notifier_block dbs_cpufreq_notifier_block = {
- };
+@@ -76,8 +76,7 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, cs_cpu_dbs_info);
+ static unsigned int dbs_enable;	/* number of CPUs using this policy */
  
- /************************** sysfs interface ************************/
--static ssize_t show_sampling_rate_max(struct kobject *kobj,
--				      struct attribute *attr, char *buf)
--{
--	printk_once(KERN_INFO "CPUFREQ: conservative sampling_rate_max "
--		    "sysfs file is deprecated - used by: %s\n", current->comm);
--	return sprintf(buf, "%u\n", -1U);
--}
+ /*
+- * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
+- * different CPUs. It protects dbs_enable in governor start/stop.
++ * dbs_mutex protects dbs_enable in governor start/stop.
+  */
+ static DEFINE_MUTEX(dbs_mutex);
+ 
+@@ -197,10 +196,7 @@ static ssize_t store_sampling_down_factor(struct kobject *a,
+ 	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
+ 		return -EINVAL;
+ 
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.sampling_down_factor = input;
+-	mutex_unlock(&dbs_mutex);
 -
- static ssize_t show_sampling_rate_min(struct kobject *kobj,
- 				      struct attribute *attr, char *buf)
- {
- 	return sprintf(buf, "%u\n", min_sampling_rate);
+ 	return count;
  }
  
--define_one_global_ro(sampling_rate_max);
- define_one_global_ro(sampling_rate_min);
+@@ -214,10 +210,7 @@ static ssize_t store_sampling_rate(struct kobject *a, struct attribute *b,
+ 	if (ret != 1)
+ 		return -EINVAL;
  
- /* cpufreq_conservative Governor Tunables */
-@@ -215,10 +206,8 @@ show_one_old(down_threshold);
- show_one_old(ignore_nice_load);
- show_one_old(freq_step);
- show_one_old(sampling_rate_min);
--show_one_old(sampling_rate_max);
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.sampling_rate = max(input, min_sampling_rate);
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
  
- cpufreq_freq_attr_ro_old(sampling_rate_min);
--cpufreq_freq_attr_ro_old(sampling_rate_max);
+@@ -228,16 +221,11 @@ static ssize_t store_up_threshold(struct kobject *a, struct attribute *b,
+ 	int ret;
+ 	ret = sscanf(buf, "%u", &input);
  
- /*** delete after deprecation time ***/
+-	mutex_lock(&dbs_mutex);
+ 	if (ret != 1 || input > 100 ||
+-			input <= dbs_tuners_ins.down_threshold) {
+-		mutex_unlock(&dbs_mutex);
++			input <= dbs_tuners_ins.down_threshold)
+ 		return -EINVAL;
+-	}
  
-@@ -364,7 +353,6 @@ define_one_global_rw(ignore_nice_load);
- define_one_global_rw(freq_step);
+ 	dbs_tuners_ins.up_threshold = input;
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
  
- static struct attribute *dbs_attributes[] = {
--	&sampling_rate_max.attr,
- 	&sampling_rate_min.attr,
- 	&sampling_rate.attr,
- 	&sampling_down_factor.attr,
-@@ -405,7 +393,6 @@ cpufreq_freq_attr_rw_old(ignore_nice_load);
- cpufreq_freq_attr_rw_old(freq_step);
+@@ -248,17 +236,12 @@ static ssize_t store_down_threshold(struct kobject *a, struct attribute *b,
+ 	int ret;
+ 	ret = sscanf(buf, "%u", &input);
  
- static struct attribute *dbs_attributes_old[] = {
--	&sampling_rate_max_old.attr,
- 	&sampling_rate_min_old.attr,
- 	&sampling_rate_old.attr,
- 	&sampling_down_factor_old.attr,
+-	mutex_lock(&dbs_mutex);
+ 	/* cannot be lower than 11 otherwise freq will not fall */
+ 	if (ret != 1 || input < 11 || input > 100 ||
+-			input >= dbs_tuners_ins.up_threshold) {
+-		mutex_unlock(&dbs_mutex);
++			input >= dbs_tuners_ins.up_threshold)
+ 		return -EINVAL;
+-	}
+ 
+ 	dbs_tuners_ins.down_threshold = input;
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
+ 
+@@ -277,11 +260,9 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+ 	if (input > 1)
+ 		input = 1;
+ 
+-	mutex_lock(&dbs_mutex);
+-	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+-		mutex_unlock(&dbs_mutex);
++	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
+ 		return count;
+-	}
++
+ 	dbs_tuners_ins.ignore_nice = input;
+ 
+ 	/* we need to re-evaluate prev_cpu_idle */
+@@ -293,8 +274,6 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+ 		if (dbs_tuners_ins.ignore_nice)
+ 			dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+ 	}
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
+ 
+@@ -313,10 +292,7 @@ static ssize_t store_freq_step(struct kobject *a, struct attribute *b,
+ 
+ 	/* no need to test here if freq_step is zero as the user might actually
+ 	 * want this, they would be crazy though :) */
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.freq_step = input;
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
+ 
 diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index c631f27..efb35ce 100644
+index eef3a38..0acae54 100644
 --- a/drivers/cpufreq/cpufreq_ondemand.c
 +++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -237,21 +237,12 @@ static void ondemand_powersave_bias_init(void)
+@@ -99,8 +99,7 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
+ static unsigned int dbs_enable;	/* number of CPUs using this policy */
  
- /************************** sysfs interface ************************/
+ /*
+- * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
+- * different CPUs. It protects dbs_enable in governor start/stop.
++ * dbs_mutex protects dbs_enable in governor start/stop.
+  */
+ static DEFINE_MUTEX(dbs_mutex);
  
--static ssize_t show_sampling_rate_max(struct kobject *kobj,
--				      struct attribute *attr, char *buf)
--{
--	printk_once(KERN_INFO "CPUFREQ: ondemand sampling_rate_max "
--	       "sysfs file is deprecated - used by: %s\n", current->comm);
--	return sprintf(buf, "%u\n", -1U);
--}
+@@ -267,11 +266,7 @@ static ssize_t store_sampling_rate(struct kobject *a, struct attribute *b,
+ 	ret = sscanf(buf, "%u", &input);
+ 	if (ret != 1)
+ 		return -EINVAL;
 -
- static ssize_t show_sampling_rate_min(struct kobject *kobj,
- 				      struct attribute *attr, char *buf)
- {
- 	return sprintf(buf, "%u\n", min_sampling_rate);
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.sampling_rate = max(input, min_sampling_rate);
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
  }
  
--define_one_global_ro(sampling_rate_max);
- define_one_global_ro(sampling_rate_min);
+@@ -284,11 +279,7 @@ static ssize_t store_io_is_busy(struct kobject *a, struct attribute *b,
+ 	ret = sscanf(buf, "%u", &input);
+ 	if (ret != 1)
+ 		return -EINVAL;
+-
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.io_is_busy = !!input;
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
  
- /* cpufreq_ondemand Governor Tunables */
-@@ -287,10 +278,8 @@ show_one_old(up_threshold);
- show_one_old(ignore_nice_load);
- show_one_old(powersave_bias);
- show_one_old(sampling_rate_min);
--show_one_old(sampling_rate_max);
+@@ -303,11 +294,7 @@ static ssize_t store_up_threshold(struct kobject *a, struct attribute *b,
+ 			input < MIN_FREQUENCY_UP_THRESHOLD) {
+ 		return -EINVAL;
+ 	}
+-
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.up_threshold = input;
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
  
- cpufreq_freq_attr_ro_old(sampling_rate_min);
--cpufreq_freq_attr_ro_old(sampling_rate_max);
+@@ -320,7 +307,6 @@ static ssize_t store_sampling_down_factor(struct kobject *a,
  
- /*** delete after deprecation time ***/
+ 	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
+ 		return -EINVAL;
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.sampling_down_factor = input;
  
-@@ -435,7 +424,6 @@ define_one_global_rw(ignore_nice_load);
- define_one_global_rw(powersave_bias);
+ 	/* Reset down sampling multiplier in case it was active */
+@@ -329,8 +315,6 @@ static ssize_t store_sampling_down_factor(struct kobject *a,
+ 		dbs_info = &per_cpu(od_cpu_dbs_info, j);
+ 		dbs_info->rate_mult = 1;
+ 	}
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
  
- static struct attribute *dbs_attributes[] = {
--	&sampling_rate_max.attr,
- 	&sampling_rate_min.attr,
- 	&sampling_rate.attr,
- 	&up_threshold.attr,
-@@ -472,7 +460,6 @@ cpufreq_freq_attr_rw_old(ignore_nice_load);
- cpufreq_freq_attr_rw_old(powersave_bias);
+@@ -349,9 +333,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+ 	if (input > 1)
+ 		input = 1;
  
- static struct attribute *dbs_attributes_old[] = {
--       &sampling_rate_max_old.attr,
-        &sampling_rate_min_old.attr,
-        &sampling_rate_old.attr,
-        &up_threshold_old.attr,
+-	mutex_lock(&dbs_mutex);
+ 	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+-		mutex_unlock(&dbs_mutex);
+ 		return count;
+ 	}
+ 	dbs_tuners_ins.ignore_nice = input;
+@@ -366,8 +348,6 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+ 			dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+ 
+ 	}
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
+ 
+@@ -384,11 +364,8 @@ static ssize_t store_powersave_bias(struct kobject *a, struct attribute *b,
+ 	if (input > 1000)
+ 		input = 1000;
+ 
+-	mutex_lock(&dbs_mutex);
+ 	dbs_tuners_ins.powersave_bias = input;
+ 	ondemand_powersave_bias_init();
+-	mutex_unlock(&dbs_mutex);
+-
+ 	return count;
+ }
+ 
 -- 
 1.7.3.4
 
