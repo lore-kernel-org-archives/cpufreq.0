@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 12114] AthlonXP-M
-Date: Tue, 8 Mar 2011 10:02:44 GMT
-Message-ID: <201103081002.p28A2iND024370@demeter1.kernel.org>
+Date: Tue, 8 Mar 2011 11:26:35 GMT
+Message-ID: <201103081126.p28BQZPD003764@demeter1.kernel.org>
 References: <bug-12114-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,36 +18,13 @@ https://bugzilla.kernel.org/show_bug.cgi?id=12114
 
 
 
---- Comment #12 from Dominique Larchey-Wendling <larchey@loria.fr>  2011-03-08 10:02:42 ---
-Thx very much for your input. I think might Athlon is XP-M(obile) Barton 2400+.
-
-# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 6
-model           : 10
-model name      : Mobile AMD Athl
-stepping        : 0
-cpu MHz         : 1802.161
-cache size      : 512 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 mmx fxsr sse syscall mp mmxext 3dnowext 3dnow
-bogomips        : 3604.32
-clflush size    : 32
-cache_alignment : 32
-address sizes   : 34 bits physical, 32 bits virtual
-power management: ts fid vid
-
-If I understand well, you say that it is possible to keep sleep state C1 but C2
-is a mess ?
+--- Comment #13 from Thomas Renninger <trenn@suse.de>  2011-03-08 11:26:35 ---
+More interesting would be:
+for x in cat /sys/devices/system/cpu/cpu*/cpuidle/state*/*;do echo $x;cat
+$x;done
+If your kernel still provides:
+cat /proc/acpi/processor/*/power
+That would be interesting as well.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
