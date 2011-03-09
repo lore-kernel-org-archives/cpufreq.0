@@ -1,32 +1,39 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 12114] AthlonXP-M
-Date: Tue, 8 Mar 2011 11:26:35 GMT
-Message-ID: <201103081126.p28BQZPD003764@demeter1.kernel.org>
-References: <bug-12114-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
+From: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+Subject: [PATCH]: cpufreq: pcc-cpufreq: don't load driver if get_freq fails during init.
+Date: Wed,  9 Mar 2011 14:02:49 +0000 (UTC)
+Message-ID: <20110309135906.6554.54389.sendpatchset@nchumbalkar.americas.hpqcorp.net>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-12114-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-
-https://bugzilla.kernel.org/show_bug.cgi?id=12114
-
+To: Dave Jones <davej@codemonkey.org.uk>
+Cc: linux-acpi@vger.kernel.org, Naga Chumbalkar <nagananda.chumbalkar@hp.com>, cpufreq@vger.kernel.org
 
 
+Return 0 on failure. This will cause the initialization of the driver
+to fail and prevent the driver from loading if the BIOS cannot handle
+the PCC interface command to "get frequency". Otherwise, the driver
+will load and display a very high value like "4294967274" (which is
+actually -EINVAL) for frequency:
 
+# cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
+4294967274
 
---- Comment #13 from Thomas Renninger <trenn@suse.de>  2011-03-08 11:26:35 ---
-More interesting would be:
-for x in cat /sys/devices/system/cpu/cpu*/cpuidle/state*/*;do echo $x;cat
-$x;done
-If your kernel still provides:
-cat /proc/acpi/processor/*/power
-That would be interesting as well.
+Signed-off-by: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+---
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+diff --git a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
+index 4f6f679..4a5a42b 100644
+--- a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
+@@ -195,7 +195,7 @@ static unsigned int pcc_get_freq(unsigned int cpu)
+ cmd_incomplete:
+ 	iowrite16(0, &pcch_hdr->status);
+ 	spin_unlock(&pcc_lock);
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
