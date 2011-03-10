@@ -1,55 +1,120 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 12114] AthlonXP-M
-Date: Thu, 10 Mar 2011 16:22:13 GMT
-Message-ID: <201103101622.p2AGMDHP021904@demeter2.kernel.org>
-References: <bug-12114-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] cpufreq: Remove the pm_message_t argument from driver suspend
+Date: Thu, 10 Mar 2011 21:13:05 +0100
+Message-ID: <201103102113.05946.rjw@sisk.pl>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-12114-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=12114
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
+None of the existing cpufreq drivers uses the second argument of
+its .suspend() callback (which isn't useful anyway), so remove it.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
 
+Hi,
 
+This patch is requisite for sysdevs rework discussed here:
+https://lkml.org/lkml/2011/3/9/439
+Please apply or let me know if I can take it to the suspend tree.
 
---- Comment #21 from Dominique Larchey-Wendling <larchey@loria.fr>  2011-03-10 16:22:11 ---
-You are right the machine is a bit old. There is no HPET. The
-processor.max_cstate=1 is indeed a simple workaround. powernow_k7.ko seems to
-work with manual configuration but 
+Thanks,
+Rafael
 
-modprobe powernow-k7 fsb=133 overwrite_table=1 multiplier=75,105,135
-switch_latency=650
+---
+ arch/arm/mach-s5pv210/cpufreq.c              |    3 +--
+ arch/arm/mach-s5pv310/cpufreq.c              |    3 +--
+ arch/arm/plat-s3c24xx/cpu-freq.c             |    2 +-
+ arch/powerpc/platforms/powermac/cpufreq_32.c |    2 +-
+ drivers/cpufreq/cpufreq.c                    |    2 +-
+ include/linux/cpufreq.h                      |    2 +-
+ 6 files changed, 6 insertions(+), 8 deletions(-)
 
-has the immediate consequence that TSC becomes unstable (no because of C2 but
-because of multiplier/frequency chance).
+Index: linux-2.6/include/linux/cpufreq.h
+===================================================================
+--- linux-2.6.orig/include/linux/cpufreq.h
++++ linux-2.6/include/linux/cpufreq.h
+@@ -230,7 +230,7 @@ struct cpufreq_driver {
+ 	int	(*bios_limit)	(int cpu, unsigned int *limit);
+ 
+ 	int	(*exit)		(struct cpufreq_policy *policy);
+-	int	(*suspend)	(struct cpufreq_policy *policy, pm_message_t pmsg);
++	int	(*suspend)	(struct cpufreq_policy *policy);
+ 	int	(*resume)	(struct cpufreq_policy *policy);
+ 	struct freq_attr	**attr;
+ };
+Index: linux-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6/drivers/cpufreq/cpufreq.c
+@@ -1371,7 +1371,7 @@ static int cpufreq_suspend(struct sys_de
+ 		goto out;
+ 
+ 	if (cpufreq_driver->suspend) {
+-		ret = cpufreq_driver->suspend(cpu_policy, pmsg);
++		ret = cpufreq_driver->suspend(cpu_policy);
+ 		if (ret)
+ 			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
+ 					"step on CPU %u\n", cpu_policy->cpu);
+Index: linux-2.6/arch/powerpc/platforms/powermac/cpufreq_32.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/cpufreq_32.c
++++ linux-2.6/arch/powerpc/platforms/powermac/cpufreq_32.c
+@@ -429,7 +429,7 @@ static u32 read_gpio(struct device_node
+ 	return offset;
+ }
+ 
+-static int pmac_cpufreq_suspend(struct cpufreq_policy *policy, pm_message_t pmsg)
++static int pmac_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	/* Ok, this could be made a bit smarter, but let's be robust for now. We
+ 	 * always force a speed change to high speed before sleep, to make sure
+Index: linux-2.6/arch/arm/mach-s5pv210/cpufreq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s5pv210/cpufreq.c
++++ linux-2.6/arch/arm/mach-s5pv210/cpufreq.c
+@@ -390,8 +390,7 @@ static int s5pv210_target(struct cpufreq
+ }
+ 
+ #ifdef CONFIG_PM
+-static int s5pv210_cpufreq_suspend(struct cpufreq_policy *policy,
+-				   pm_message_t pmsg)
++static int s5pv210_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/mach-s5pv310/cpufreq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s5pv310/cpufreq.c
++++ linux-2.6/arch/arm/mach-s5pv310/cpufreq.c
+@@ -458,8 +458,7 @@ static int s5pv310_target(struct cpufreq
+ }
+ 
+ #ifdef CONFIG_PM
+-static int s5pv310_cpufreq_suspend(struct cpufreq_policy *policy,
+-				   pm_message_t pmsg)
++static int s5pv310_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/plat-s3c24xx/cpu-freq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/cpu-freq.c
++++ linux-2.6/arch/arm/plat-s3c24xx/cpu-freq.c
+@@ -433,7 +433,7 @@ static int s3c_cpufreq_verify(struct cpu
+ static struct cpufreq_frequency_table suspend_pll;
+ static unsigned int suspend_freq;
+ 
+-static int s3c_cpufreq_suspend(struct cpufreq_policy *policy, pm_message_t pmsg)
++static int s3c_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	suspend_pll.frequency = clk_get_rate(_clk_mpll);
+ 	suspend_pll.index = __raw_readl(S3C2410_MPLLCON);
 
-Mar 10 12:43:21 minipc klogd: [61408.385984] powernow: PowerNOW! Technology
-present. Can scale: frequency and voltage.
-Mar 10 12:43:21 minipc klogd: [61408.386033] powernow: Overwriting PST table
-with manual settings
-Mar 10 12:43:21 minipc klogd: [61408.386055] VID: 0xb (1.450V)
-Mar 10 12:43:21 minipc klogd: [61408.386068] VID: 0xb (1.450V)
-Mar 10 12:43:21 minipc klogd: [61408.386081] VID: 0xb (1.450V)
-Mar 10 12:43:22 minipc klogd: [61408.386133] powernow: Minimum speed 997 MHz.
-Maximum speed 1795 MHz.
-Mar 10 12:43:22 minipc klogd: [61408.386192] Marking TSC unstable due to
-cpufreq changes
-Mar 10 12:43:22 minipc klogd: [61408.388262] Switching to clocksource acpi_pm
-
-Since my server is not overheated and a working timer seems mandatory, I will
-stick to the workaround 
-
-processor.max_cstate=1 
-
-Thank you very much for your help.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
