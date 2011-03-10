@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 12114] AthlonXP-M
-Date: Thu, 10 Mar 2011 11:35:36 GMT
-Message-ID: <201103101135.p2ABZa01029892@demeter2.kernel.org>
+Date: Thu, 10 Mar 2011 12:47:32 GMT
+Message-ID: <201103101247.p2AClWjI018986@demeter2.kernel.org>
 References: <bug-12114-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,46 +18,67 @@ https://bugzilla.kernel.org/show_bug.cgi?id=12114
 
 
 
---- Comment #18 from Dominique Larchey-Wendling <larchey@loria.fr>  2011-03-10 11:35:35 ---
-(In reply to comment #16)
-
-> That your system only shows C1 is strange.
-> The message you showed:
-> > Marking TSC unstable due to TSC halts in idle
-> should only show up if C2 or deeper states (or C1E, but this should not exist
-> on older machines?) are supported.
-> Compare with drivers/acpi/processor_idle.c:
->                 if (state > ACPI_STATE_C1)
->                         mark_tsc_unstable("TSC halts in idle");
-> Could it be that you tried with processor.max_cstate=1?
-
-Yes yes I did use this command line parameter. So the fact that my system only
-shows C1 is normal in this case I suppose. I will try to boot the system
-without the processor.max_cstate=1 parameter.
-
-> Also a wiki page about this processor tells that the new "mobile" (only
-> AthlonXP "M") feature is to support Powernow!. So it really might have to do
-> with tsc+powernow!.
-
-Powernow does not work on my system. 
-
-----------------------------------------------------------------------------
-
-[  121.157837] Fast TSC calibration using PIT
-[  121.170872] powernow: Trying ACPI perflib
-[  121.170930] powernow: ACPI perflib can not be used on this platform
-[  121.170973] powernow: ACPI and legacy methods failed
+--- Comment #19 from Dominique Larchey-Wendling <larchey@loria.fr>  2011-03-10 12:47:32 ---
+So with my 2.6.32 compiled without TSC (CONFIG_X86_TSC undefined) but with
+ACPI_PROCESSOR=m and running without the "processor.max_cstate=1" command line
+parameter, here are the results :
 
 -----------------------------------------------------------------------------
 
-I bought the XP-M on Ebay. My mainboard (a FX41 from Shuttle) was not supposed
-to run mobile Athlon so I think the BIOS does not support the XP-M. I will try
-patches from 
+$  ls  /proc/acpi/processor/*/power
+/proc/acpi/processor/CPU0/power
 
-http://www.yggdrasl.demon.co.uk/code/
+$ cat /proc/acpi/processor/*/power
+active state:            C0
+max_cstate:              C8
+maximum allowed latency: 2000000000 usec
+states:
+    C1:                  type[C1] promotion[--] demotion[--] latency[000]
+usage[00002176] duration[00000000000000000000]
+    C2:                  type[C2] promotion[--] demotion[--] latency[090]
+usage[00020235] duration[00000000001322893600]
 
-but I need to guess the correct parameters to manually configure Powernow on my
-Athlon.
+-----------------------------------------------------------------------------
+
+$ for x in `ls /sys/devices/system/cpu/cpu*/cpuidle/state*/*` ; do echo $x ;
+cat $x ; done
+
+/sys/devices/system/cpu/cpu0/cpuidle/state0/desc
+CPUIDLE CORE POLL IDLE
+/sys/devices/system/cpu/cpu0/cpuidle/state0/latency
+0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/name
+C0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/power
+4294967295
+/sys/devices/system/cpu/cpu0/cpuidle/state0/time
+0
+/sys/devices/system/cpu/cpu0/cpuidle/state0/usage
+0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/desc
+<null>
+/sys/devices/system/cpu/cpu0/cpuidle/state1/latency
+0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/name
+C1
+/sys/devices/system/cpu/cpu0/cpuidle/state1/power
+0
+/sys/devices/system/cpu/cpu0/cpuidle/state1/time
+1704275
+/sys/devices/system/cpu/cpu0/cpuidle/state1/usage
+2178
+/sys/devices/system/cpu/cpu0/cpuidle/state2/desc
+<null>
+/sys/devices/system/cpu/cpu0/cpuidle/state2/latency
+90
+/sys/devices/system/cpu/cpu0/cpuidle/state2/name
+C2
+/sys/devices/system/cpu/cpu0/cpuidle/state2/power
+0
+/sys/devices/system/cpu/cpu0/cpuidle/state2/time
+416769058
+/sys/devices/system/cpu/cpu0/cpuidle/state2/usage
+22022
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
