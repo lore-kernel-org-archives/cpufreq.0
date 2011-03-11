@@ -1,53 +1,92 @@
-From: Corentin Chary <corentin.chary@gmail.com>
-Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
-Date: Fri, 11 Mar 2011 15:56:01 +0000
-Message-ID: <AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
-References: <201103111247.00212.trenn@suse.de>
+From: Elvis Stansvik <elvstone@gmail.com>
+Subject: Re: Trying to set governor results in instantaneous reboot on MSI K8N
+ Master2-FAR with dual Opterons
+Date: Fri, 11 Mar 2011 19:58:50 +0100
+Message-ID: <AANLkTiks1pXz+jmtAVA360RwovCHPRqoFtTcVA0kbVV8@mail.gmail.com>
+References: <AANLkTinyR0scJB7FPzDx6u3Q8kfM39hRuY5U_wP-C-C8@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
         h=domainkey-signature:mime-version:in-reply-to:references:date
-         :message-id:subject:from:to:cc:content-type;
-        bh=mQz1084JMsRnpfPxNcSxFZZ8cR60HGUMR+6a4jW0/Fo=;
-        b=EVPBqWiMhQWd5U9jF9q5VLMX2EeaDeI3RZb2ZsK27Mx2465X8u9l9siB9ryo1/aYXR
-         plVOl1OYD5n5PmHRjOzOHp212uG171ldZMMnIerApx+7BuQ+FeI02CT615rRC+MuDCKd
-         P+5TvTuhNL/Q3D9ZkUzf9OiwamotkfyovKnH8=
-In-Reply-To: <201103111247.00212.trenn@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
+         :message-id:subject:from:to:content-type;
+        bh=jsZ1Ogsc04pLwIaYH1kFaaCBWXeQ8XmGAWomLGQqBkc=;
+        b=xRCYr0+KnNS38mEUEc5rJ2Fhluw9KojD2myWBwX8Btgsn5tjAc6wt4fF2sFucvc8E2
+         g0MhqA/swoznR3WkqG0kaYg7OO49XxVf1bEPGb7qvJ/HDXUKkB8d55Bz9ABc7x5Up9gJ
+         hbXTIvq2ECCcpwxiK5VPn4ty9tKkeqevJfv7w=
+In-Reply-To: <AANLkTinyR0scJB7FPzDx6u3Q8kfM39hRuY5U_wP-C-C8@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, power@bughost.org, cpufreq@vger.kernel.org, linux@dominikbrodowski.net, Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>, herrmann.der.user@googlemail.com, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: cpufreq@vger.kernel.org
 
-On Fri, Mar 11, 2011 at 11:46 AM, Thomas Renninger <trenn@suse.de> wrote:
-> Why is there need for another tool?
-> -----------------------------------
->
-> CPU power consumption vs performance tuning is not about
-> CPU frequency switching anymore for quite some time.
-> Deep sleep states, traditional dynamic frequency scaling and
-> hidden turbo/boost frequencies are tight close together and
-> depend on each other. The first two exist on different architectures
-> like PPC, Itanium and ARM the latter only on X86.
-> On X86 the APU (CPU+GPU) will only run most efficiently if CPU
-> and GPU has proper power management in place.
->
-> Users and Developers want to have *one* tool to get an overview what their
-> system supports and to monitor and debug CPU power management in detail.
->
-> The tool should compile and work on as much architectures as
-> possible.
->
+Nevermind everyone, I've finally figured out that this is probably a
+hardware bug. My board won't support Cool'n'Quiet/PowerNow! unless I
+send it to MSI for re-work. Found this bit of info in the forum
+thread:
 
-Hi Thomas,
-Do you think handling really vendor specific "boosts" like EeePC's SHE
-is in cpupower scope ?
-Still, it would not solve the issue of setting SHE mode in a standard
-way, or associating it with a governor.
-Thanks,
+http://forum-en.msi.com/index.php?topic=90409.0
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+Sucks! :/
+
+2011/3/11 Elvis Stansvik <elvstone@gmail.com>:
+> Hi all,
+>
+> I'm trying to get CPU frequency scaling to work on an MSI K8N
+> Master2-FAR motherboard running dual Opteron 252.
+>
+> At first, the powernow-k8 module wouldn't load saying "No such
+> device", but after a BIOS upgrade from version 1.1 to version 1.42
+> from MSI, the 'powernow-k8' module loaded without problems. The dmesg
+> output when loading is attached as dmesg.txt.
+>
+> The output of `cpufreq-info' after loading the module looks fine, and
+> is attached as cpufreq-info.txt
+>
+> I can also load the two governor modules cpufreq_conservative and
+> cpufreq_ondemand without any problems.
+>
+> However, whenever I try to change the scaling governor to anything
+> else than the default (performance), by running e.g.
+>
+> cpufreq-set -r -g ondemand
+>
+> or
+>
+> cpufreq-set -c 0 -g ondemand
+>
+> I get an immediate reboot!
+>
+> I've also attached my /proc/cpuinfo as cpuinfo.txt.
+>
+> The two Opterons are OSP252FAABL.
+>
+> I'm running an up-to-date Arch Linux (x64) with kernel 2.6.37.
+>
+> Another interesting bit is that the "Cool'n'Quiet" option that was
+> present in BIOS version 1.1 disappeared when I upgraded to 1.42.
+>
+> I originally posted my problem on the Arch Linux Forum but was adviced
+> to bring it here. My original post can be found at [1].
+>
+> Anyone have this board working with frequency scaling and dual CPUs?
+> Would love to get it to work as I'm more interested in silence than in
+> performance, and frequency scaling would allow my fans to spin down a
+> bit when I'm not doing CPU intensive work.
+>
+> Note that my processor model isn't detected (in /proc/cpuinfo or by
+> cpufreq-info). I believe this could possibly be due to BIOS not
+> recognizing the model either. The OSP252FAABL is identical to the
+> OSA252FAABL I think. It's just that they were only sold to system
+> builders like HP and IBM. Found mine on eBay. Could the fact that the
+> exact model isn't recognized by the kernel have something to do with
+> my reboot problem?
+>
+> Thankful for any advice/help!
+>
+> Best regards,
+> Elvis
+>
+> [1] https://bbs.archlinux.org/viewtopic.php?pid=902284
+>
