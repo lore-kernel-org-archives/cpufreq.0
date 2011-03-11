@@ -1,240 +1,164 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
-Date: Fri, 11 Mar 2011 12:46:59 +0100
-Message-ID: <201103111247.00212.trenn@suse.de>
+From: Elvis Stansvik <elvstone@gmail.com>
+Subject: Trying to set governor results in instantaneous reboot on MSI K8N
+ Master2-FAR with dual Opterons
+Date: Fri, 11 Mar 2011 16:30:43 +0100
+Message-ID: <AANLkTinyR0scJB7FPzDx6u3Q8kfM39hRuY5U_wP-C-C8@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=0016364ed77031f54e049e36a5aa
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:mime-version:date:message-id:subject:from:to
+         :content-type;
+        bh=YPvdrOQRmgpLmiqa8YJF3oAVB9iMniPUf2LpqjxcKQ8=;
+        b=u/ns38U6BBBAbfv1VD/y4Xws140NSQMJvWhfE6vKPQMVk1NNZ2/+7s5u6uNTRpFJno
+         JlMEFEefI2y+C8y5pbrqIe7Axvjqydrmcuz0BZ1MFpjJEbJbzhOi5tTiz7oyssXmAyW2
+         jwZRyhPSKFow1KhX6SvFekCMoBRk8M97xQJXc=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: linux-kernel@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, power@bughost.org, cpufreq@vger.kernel.org, linux@dominikbrodowski.net, Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>, herrmann.der.user@googlemail.com, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: cpufreq@vger.kernel.org
 
-Hi,
+--0016364ed77031f54e049e36a5aa
+Content-Type: text/plain; charset=ISO-8859-1
 
-cpupowerutils is based on the well known cpufrequtils project.
+Hi all,
 
-Where do I find it?
--------------------
+I'm trying to get CPU frequency scaling to work on an MSI K8N
+Master2-FAR motherboard running dual Opteron 252.
 
-A git repository is hosted on gitorious:
-git://gitorious.org/cpupowerutils/cpupowerutils.git
-Be careful, it's not the default, but the cpupowerutils branch!
+At first, the powernow-k8 module wouldn't load saying "No such
+device", but after a BIOS upgrade from version 1.1 to version 1.42
+from MSI, the 'powernow-k8' module loaded without problems. The dmesg
+output when loading is attached as dmesg.txt.
 
-You can also directly download a tarball of the cpupowerutils branch:
-wget http://gitorious.org/cpupowerutils/cpupowerutils/archive-
-tarball/cpupowerutils cpupowerutils.tar.gz
+The output of `cpufreq-info' after loading the module looks fine, and
+is attached as cpufreq-info.txt
 
-How to make it run
-------------------
+I can also load the two governor modules cpufreq_conservative and
+cpufreq_ondemand without any problems.
 
-You need the pcitutils package (or whatever provides libpci) at runtime
-and pcitutils-devel package (or whatever provides /usr/include/pci/pci.h)
-at compile time.
-Also a gcc version that provides cpuid.h is needed, but it's in there for
-some time already afaik.
+However, whenever I try to change the scaling governor to anything
+else than the default (performance), by running e.g.
 
-Don't forget to use the right branch if you use the git repo:
-git branch --track cpupowerutils origin/cpupowerutils
-git checkout cpupowerutils
+cpufreq-set -r -g ondemand
 
-make
-# There is nothing for choosing lib vs lib64, default is
-# /usr/lib,therefore you might need:
-libdir=/usr/lib64 make install-lib
-ldconfig
-./cpupower
+or
 
-There is one known compile warning in get_cpu_topology, it's
-on the ToDo list.
+cpufreq-set -c 0 -g ondemand
 
-Why is there need for another tool?
------------------------------------
+I get an immediate reboot!
 
-CPU power consumption vs performance tuning is not about
-CPU frequency switching anymore for quite some time.
-Deep sleep states, traditional dynamic frequency scaling and
-hidden turbo/boost frequencies are tight close together and
-depend on each other. The first two exist on different architectures
-like PPC, Itanium and ARM the latter only on X86.
-On X86 the APU (CPU+GPU) will only run most efficiently if CPU
-and GPU has proper power management in place.
+I've also attached my /proc/cpuinfo as cpuinfo.txt.
 
-Users and Developers want to have *one* tool to get an overview what their 
-system supports and to monitor and debug CPU power management in detail.
+The two Opterons are OSP252FAABL.
 
-The tool should compile and work on as much architectures as
-possible.
+I'm running an up-to-date Arch Linux (x64) with kernel 2.6.37.
 
-What is this tool doing?
-------------------------
+Another interesting bit is that the "Cool'n'Quiet" option that was
+present in BIOS version 1.1 disappeared when I upgraded to 1.42.
 
-It provides all features cpufrequtils does.
-It got enhanced with cpuidle and turbo/boost mode (on X86) statistics.
-On AMD the exact amount of supported boost states and their frequencies
-are shown. On Intel only turbo/boost support is shown.
+I originally posted my problem on the Arch Linux Forum but was adviced
+to bring it here. My original post can be found at [1].
 
-It got enhanced with a generic HW monitor tool (cpupower monitor).
+Anyone have this board working with frequency scaling and dual CPUs?
+Would love to get it to work as I'm more interested in silence than in
+performance, and frequency scaling would allow my fans to spin down a
+bit when I'm not doing CPU intensive work.
 
-The generic HW monitor tool is the most powerful enhancement.
-It is a framework to monitor kernel or HW power statistics.
-It's easy to extend with additional, architecture or processor model
-specific counters.
-It's based on turbostat which got merged into the kernel recently:
-tools/power/x86/turbostat
+Note that my processor model isn't detected (in /proc/cpuinfo or by
+cpufreq-info). I believe this could possibly be due to BIOS not
+recognizing the model either. The OSP252FAABL is identical to the
+OSA252FAABL I think. It's just that they were only sold to system
+builders like HP and IBM. Found mine on eBay. Could the fact that the
+exact model isn't recognized by the kernel have something to do with
+my reboot problem?
 
-In fact turbostat functionality is integrated as three separate monitors
-implementing the cpupower monitor API:
-  - Nehalem
-  - SandyBridge
-  - Mperf
-While Nehalem and SandyBridge HW sleep counters are Intel specific, the
-mperf functionality is now available on other HW than Intel, supporting 
-the
-needed registers (Functionality includes: average frequency including
-turbo/boost frequency, C0 vs Cx idle count).
+Thankful for any advice/help!
 
-Additionally there is a monitor to collect kernel idle statistics and 
-display them (separate or together) in the same format. This works on all 
-architectures using the cpuidle kernel framework including different ARM
-architectures and there were patches for powerpc (not in the mainline
-kernel yet).
-This allows to compare kernel and HW statistics on specific workloads and
-figure out how the HW performs compared to OS behavior.
+Best regards,
+Elvis
 
-Additionally there is an AMD Liano (fam 12h) and Ontario (fam 14h) family 
-specific monitor. This one shows different Package Core (!PC0, PC1, PC7)
-sleep state statistics directly read out from HW, similar to Nehalem
-and SandyBridge coutners.
-The registers are accessed via PCI and therefore can still be read out 
-while cores have been offlined.
-The Liano/Ontario monitor has one special counter: NBP1 (North Bridge P1).
-This one always returns 0 or 1, depending on whether the North Bridge P1
-power state got entered at least once during measure time.
-Being able to enter NBP1 state also depends on graphics power management.
-Therefore this counter can be used to verify whether the graphics' driver
-power management is working as expected. (E.g. this counter proves that
-radeon KMS graphics drivers are missing functionality and NBP1 will only
-be entered when using the fglrx driver).
+[1] https://bbs.archlinux.org/viewtopic.php?pid=902284
 
+--0016364ed77031f54e049e36a5aa
+Content-Type: text/plain; charset=US-ASCII; name="dmesg.txt"
+Content-Disposition: attachment; filename="dmesg.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gl59al980
 
-Some examples
--------------
+cG93ZXJub3ctazg6IEZvdW5kIDEgQU1EIFByb2Nlc3NvciBNb2RlbCBVbmtub3duICgyIGNwdSBj
+b3JlcykgKHZlcnNpb24gMi4yMC4wMCkKcG93ZXJub3ctazg6ICAgIDAgOiBmaWQgMHgxMiAoMjYw
+MCBNSHopLCB2aWQgMHg2CnBvd2Vybm93LWs4OiAgICAxIDogZmlkIDB4MTAgKDI0MDAgTUh6KSwg
+dmlkIDB4OApwb3dlcm5vdy1rODogICAgMiA6IGZpZCAweGUgKDIyMDAgTUh6KSwgdmlkIDB4YQpw
+b3dlcm5vdy1rODogICAgMyA6IGZpZCAweGMgKDIwMDAgTUh6KSwgdmlkIDB4Ywpwb3dlcm5vdy1r
+ODogICAgNCA6IGZpZCAweGEgKDE4MDAgTUh6KSwgdmlkIDB4ZQpwb3dlcm5vdy1rODogICAgNSA6
+IGZpZCAweDIgKDEwMDAgTUh6KSwgdmlkIDB4MTIKcG93ZXJub3ctazg6ICAgIDAgOiBmaWQgMHgx
+MiAoMjYwMCBNSHopLCB2aWQgMHg2CnBvd2Vybm93LWs4OiAgICAxIDogZmlkIDB4MTAgKDI0MDAg
+TUh6KSwgdmlkIDB4OApwb3dlcm5vdy1rODogICAgMiA6IGZpZCAweGUgKDIyMDAgTUh6KSwgdmlk
+IDB4YQpwb3dlcm5vdy1rODogICAgMyA6IGZpZCAweGMgKDIwMDAgTUh6KSwgdmlkIDB4Ywpwb3dl
+cm5vdy1rODogICAgNCA6IGZpZCAweGEgKDE4MDAgTUh6KSwgdmlkIDB4ZQpwb3dlcm5vdy1rODog
+ICAgNSA6IGZpZCAweDIgKDEwMDAgTUh6KSwgdmlkIDB4MTI=
+--0016364ed77031f54e049e36a5aa
+Content-Type: text/plain; charset=US-ASCII; name="cpufreq-info.txt"
+Content-Disposition: attachment; filename="cpufreq-info.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gl59aqcn1
 
-On a somewhat older Intel machine where turbostat complaints about:
-/archteam/trenn/packages/turbostat/turbostat
-No invariant TSC
+Y3B1ZnJlcXV0aWxzIDAwODogY3B1ZnJlcS1pbmZvIChDKSBEb21pbmlrIEJyb2Rvd3NraSAyMDA0
+LTIwMDkKUmVwb3J0IGVycm9ycyBhbmQgYnVncyB0byBjcHVmcmVxQHZnZXIua2VybmVsLm9yZywg
+cGxlYXNlLgphbmFseXppbmcgQ1BVIDA6CiAgZHJpdmVyOiBwb3dlcm5vdy1rOAogIENQVXMgd2hp
+Y2ggcnVuIGF0IHRoZSBzYW1lIGhhcmR3YXJlIGZyZXF1ZW5jeTogMAogIENQVXMgd2hpY2ggbmVl
+ZCB0byBoYXZlIHRoZWlyIGZyZXF1ZW5jeSBjb29yZGluYXRlZCBieSBzb2Z0d2FyZTogMAogIG1h
+eGltdW0gdHJhbnNpdGlvbiBsYXRlbmN5OiAxMDkgdXMuCiAgaGFyZHdhcmUgbGltaXRzOiAxMDAw
+IE1IeiAtIDIuNjAgR0h6CiAgYXZhaWxhYmxlIGZyZXF1ZW5jeSBzdGVwczogMi42MCBHSHosIDIu
+NDAgR0h6LCAyLjIwIEdIeiwgMi4wMCBHSHosIDEuODAgR0h6LCAxMDAwIE1IegogIGF2YWlsYWJs
+ZSBjcHVmcmVxIGdvdmVybm9yczogY29uc2VydmF0aXZlLCBvbmRlbWFuZCwgcGVyZm9ybWFuY2UK
+ICBjdXJyZW50IHBvbGljeTogZnJlcXVlbmN5IHNob3VsZCBiZSB3aXRoaW4gMTAwMCBNSHogYW5k
+IDIuNjAgR0h6LgogICAgICAgICAgICAgICAgICBUaGUgZ292ZXJub3IgInBlcmZvcm1hbmNlIiBt
+YXkgZGVjaWRlIHdoaWNoIHNwZWVkIHRvIHVzZQogICAgICAgICAgICAgICAgICB3aXRoaW4gdGhp
+cyByYW5nZS4KICBjdXJyZW50IENQVSBmcmVxdWVuY3kgaXMgMi42MCBHSHouCmFuYWx5emluZyBD
+UFUgMToKICBkcml2ZXI6IHBvd2Vybm93LWs4CiAgQ1BVcyB3aGljaCBydW4gYXQgdGhlIHNhbWUg
+aGFyZHdhcmUgZnJlcXVlbmN5OiAxCiAgQ1BVcyB3aGljaCBuZWVkIHRvIGhhdmUgdGhlaXIgZnJl
+cXVlbmN5IGNvb3JkaW5hdGVkIGJ5IHNvZnR3YXJlOiAxCiAgbWF4aW11bSB0cmFuc2l0aW9uIGxh
+dGVuY3k6IDEwOSB1cy4KICBoYXJkd2FyZSBsaW1pdHM6IDEwMDAgTUh6IC0gMi42MCBHSHoKICBh
+dmFpbGFibGUgZnJlcXVlbmN5IHN0ZXBzOiAyLjYwIEdIeiwgMi40MCBHSHosIDIuMjAgR0h6LCAy
+LjAwIEdIeiwgMS44MCBHSHosIDEwMDAgTUh6CiAgYXZhaWxhYmxlIGNwdWZyZXEgZ292ZXJub3Jz
+OiBjb25zZXJ2YXRpdmUsIG9uZGVtYW5kLCBwZXJmb3JtYW5jZQogIGN1cnJlbnQgcG9saWN5OiBm
+cmVxdWVuY3kgc2hvdWxkIGJlIHdpdGhpbiAxMDAwIE1IeiBhbmQgMi42MCBHSHouCiAgICAgICAg
+ICAgICAgICAgIFRoZSBnb3Zlcm5vciAicGVyZm9ybWFuY2UiIG1heSBkZWNpZGUgd2hpY2ggc3Bl
+ZWQgdG8gdXNlCiAgICAgICAgICAgICAgICAgIHdpdGhpbiB0aGlzIHJhbmdlLgogIGN1cnJlbnQg
+Q1BVIGZyZXF1ZW5jeSBpcyAyLjYwIEdIei4=
+--0016364ed77031f54e049e36a5aa
+Content-Type: text/plain; charset=US-ASCII; name="cpuinfo.txt"
+Content-Disposition: attachment; filename="cpuinfo.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gl59at7j2
 
-You still get mperf statistics (here core 1 is 100% utilized):
-/archteam/trenn/git/latest_cpupowerutils/cpufrequtils/cpupower monitor 
-    |Mperf               || Idle_Stats                
-CPU | C0   | Cx   | Freq || POLL | C1   | C2   | C3   
-   0|  3.71| 96.29|  2833||  0.00|  0.00|  0.02| 96.32
-   1| 100.0| -0.00|  2833||  0.00|  0.00|  0.00|  0.00
-   2|  9.06| 90.94|  1983||  0.00|  7.69|  6.98| 76.45
-   3|  7.43| 92.57|  2039||  0.00|  2.60| 12.62| 77.52
-
-Hm, mperf (C0 vs Cx) implementation also depends on a correct working
-TSC, but shows sane values on this machine. But it can be implemented
-in another way using gettimeofday and not tsc as well.
-
-For above machine, listing available monitors/counters via:
-"cpupower monitor -l" shows:
-
-Monitor "Mperf" (3 states) - Might overflow after 922000000 s
-C0      [T] -> Processor Core not idle
-Cx      [T] -> Processor Core in an idle state
-Freq    [T] -> Average Frequency (including boost) in MHz
-Monitor "Idle_Stats" (3 states) - Might overflow after 4294967295 s
-POLL    [T] -> CPUIDLE CORE POLL IDLE
-C1      [T] -> ACPI FFH INTEL MWAIT 0x0
-C2      [T] -> ACPI FFH INTEL MWAIT 0x10
-C3      [T] -> ACPI FFH INTEL MWAIT 0x30
-
-On a Tylersburg/Nehalem you get an additional one:
-Monitor "Nehalem" (4 states) - Might overflow after 922000000 s
-C3      [C] -> Processor Core C3
-C6      [C] -> Processor Core C6
-PC3     [P] -> Processor Package C3
-PC6     [P] -> Processor Package C6
-
-On a SandyBridge you have yet another monitor:
-Monitor "SandyBridge" (3 states) - Might overflow after 922000000 s
-C7      [C] -> Processor Core C7
-PC2     [P] -> Processor Package C2
-PC7     [P] -> Processor Package C7
-
-If output is too much or you only want to compare specific stats,
-use:
-./cpupower monitor -m "SandyBridge,Mperf"
-and only SandyBridge and Mperf counters are shown in the order you
-pass them.
-
-On an AMD (at least latest fam10h with mperf/boost support) one
-would of course not get the Nehalem or SandyBridge, but
-still the Mperf counters. 
-
-Additionlly on Ontario (fam 14h) or Liano (fam 12h) you get some
-AMD specific sleep state residency HW counters:
-
-Monitor "Ontario" (4 states) - Might overflow after 343 s
-!PC0    [P] -> Package in sleep state (PC1 or deeper)
-PC1     [P] -> Processor Package C1
-PC6     [P] -> Processor Package C6
-NBP1    [P] -> North Bridge P1 boolean counter (returns 0 or 1)
-
-
-Kernel Idle_Stats counter is the only one also working without root
-privileges and is architecture independent (should provide info on quite
-some ARM models and possibly soon on powerpc as well if cpuidle support
-is implemented in the kernel there):
-
-./cpupower monitor
-Available monitor Mperf needs root access
-    |Idle_Stats                 
-CPU | POLL | C1   | C2   | C3   
-   0|  0.00|  0.00|  3.20| 89.86
-   1|  0.00|  0.00|  2.27| 82.62
-   2|  0.00|  0.00| 23.44| 68.78
-   3|  0.00| 15.38|  9.34| 65.31
-
-If you want to monitor specific workload the turbostat feature to
-measure specific commands is available as well:
-
-./cpupower monitor cp xorg-x11-driver-video-7.6-163.1.x86_64.rpm /tmp/
-cp took 0.23406 seconds and exited with status 0
-    |Ontario                    || Mperf              || Idle_Stats         
-CPU | !PC0 | PC1  | PC6  | NBP1 || C0   | Cx   | Freq || POLL | C1   | C2   
-   0| 72.38|  1.47| 19.39|     0|| 21.16| 78.84|   800||  0.00| 90.59|  
-0.00
-   1| 72.38|  1.47| 19.39|     0||  2.91| 97.09|  1184||  0.00| 97.42|  
-0.00
-
-This output reveals quite some kernel bugs:
-- C2 is not entered -> dma_latency set too high by ath9k -> fixed already
-                    -> But microcode still insures deep sleep states are
-                       entered. Using C2 should be more efficient, though.
-                       That can get proofed with some more measures...
-
-- NorthBridge P1 not entered -> Kernel radeon driver missing some PM.
-                             -> fglrx would show 1 here.
-- Frequency of the wrong core is switched up?
-       -> Just realized that, might be related to:
-          http://comments.gmane.org/gmane.linux.kernel.cpufreq/6977
-          Hm, it's not always reproducable, anyway the tool works...
-
-
-What next?
-----------
-
-Happy testing..., if you have a recent machine, you'll like it!
-
-After some testing phase it would be great to get this tool
-merged into the kernel git repo under:
-tools/power/cpupower
-and replace the Intel HW only supporting tools in tools/power/x86.
-
-Thanks,
-
-   Thomas
+cHJvY2Vzc29yICAgICAgIDogMAp2ZW5kb3JfaWQgICAgICAgOiBBdXRoZW50aWNBTUQKY3B1IGZh
+bWlseSAgICAgIDogMTUKbW9kZWwgICAgICAgICAgIDogMzcKbW9kZWwgbmFtZSAgICAgIDogQU1E
+IFByb2Nlc3NvciBNb2RlbCBVbmtub3duCnN0ZXBwaW5nICAgICAgICA6IDEKY3B1IE1IeiAgICAg
+ICAgIDogMjYwMC4wMDAKY2FjaGUgc2l6ZSAgICAgIDogMTAyNCBLQgpmcHUgICAgICAgICAgICAg
+OiB5ZXMKZnB1X2V4Y2VwdGlvbiAgIDogeWVzCmNwdWlkIGxldmVsICAgICA6IDEKd3AgICAgICAg
+ICAgICAgIDogeWVzCmZsYWdzICAgICAgICAgICA6IGZwdSB2bWUgZGUgcHNlIHRzYyBtc3IgcGFl
+IG1jZSBjeDggYXBpYyBzZXAgbXRyciBwZ2UgbWNhIGNtb3YgcGF0IHBzZTM2IGNsZmx1c2ggbW14
+IGZ4c3Igc3NlIHNzZTIgc3lzY2FsbCBueCBtbXhleHQgZnhzcl9vcHQgbG0gM2Rub3dleHQgM2Ru
+b3cgcmVwX2dvb2Qgbm9wbCBwbmkgbGFoZl9sbQpib2dvbWlwcyAgICAgICAgOiA1MjI5LjcyClRM
+QiBzaXplICAgICAgICA6IDEwMjQgNEsgcGFnZXMKY2xmbHVzaCBzaXplICAgIDogNjQKY2FjaGVf
+YWxpZ25tZW50IDogNjQKYWRkcmVzcyBzaXplcyAgIDogNDAgYml0cyBwaHlzaWNhbCwgNDggYml0
+cyB2aXJ0dWFsCnBvd2VyIG1hbmFnZW1lbnQ6IHRzIGZpZCB2aWQgdHRwCgpwcm9jZXNzb3IgICAg
+ICAgOiAxCnZlbmRvcl9pZCAgICAgICA6IEF1dGhlbnRpY0FNRApjcHUgZmFtaWx5ICAgICAgOiAx
+NQptb2RlbCAgICAgICAgICAgOiAzNwptb2RlbCBuYW1lICAgICAgOiBBTUQgUHJvY2Vzc29yIE1v
+ZGVsIFVua25vd24Kc3RlcHBpbmcgICAgICAgIDogMQpjcHUgTUh6ICAgICAgICAgOiAyNjAwLjAw
+MApjYWNoZSBzaXplICAgICAgOiAxMDI0IEtCCmZwdSAgICAgICAgICAgICA6IHllcwpmcHVfZXhj
+ZXB0aW9uICAgOiB5ZXMKY3B1aWQgbGV2ZWwgICAgIDogMQp3cCAgICAgICAgICAgICAgOiB5ZXMK
+ZmxhZ3MgICAgICAgICAgIDogZnB1IHZtZSBkZSBwc2UgdHNjIG1zciBwYWUgbWNlIGN4OCBhcGlj
+IHNlcCBtdHJyIHBnZSBtY2EgY21vdiBwYXQgcHNlMzYgY2xmbHVzaCBtbXggZnhzciBzc2Ugc3Nl
+MiBzeXNjYWxsIG54IG1teGV4dCBmeHNyX29wdCBsbSAzZG5vd2V4dCAzZG5vdyByZXBfZ29vZCBu
+b3BsIHBuaSBsYWhmX2xtCmJvZ29taXBzICAgICAgICA6IDUyMjguMjIKVExCIHNpemUgICAgICAg
+IDogMTAyNCA0SyBwYWdlcwpjbGZsdXNoIHNpemUgICAgOiA2NApjYWNoZV9hbGlnbm1lbnQgOiA2
+NAphZGRyZXNzIHNpemVzICAgOiA0MCBiaXRzIHBoeXNpY2FsLCA0OCBiaXRzIHZpcnR1YWwgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAKcG93ZXIgbWFuYWdlbWVudDogdHMgZmlkIHZpZCB0dHA=
+--0016364ed77031f54e049e36a5aa--
