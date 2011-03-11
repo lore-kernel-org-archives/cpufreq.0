@@ -1,39 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Remove the pm_message_t argument from driver suspend
-Date: Fri, 11 Mar 2011 21:31:47 +0100
-Message-ID: <201103112131.47862.rjw@sisk.pl>
-References: <201103102113.05946.rjw@sisk.pl> <20110310205008.GB7750@redhat.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
+Date: Sat, 12 Mar 2011 00:53:53 +0100
+Message-ID: <201103120053.53565.trenn@suse.de>
+References: <201103111247.00212.trenn@suse.de> <AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20110310205008.GB7750@redhat.com>
+In-Reply-To: <AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: Text/Plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, cpufreq@vger.kernel.org
 
-On Thursday, March 10, 2011, Dave Jones wrote:
-> On Thu, Mar 10, 2011 at 09:13:05PM +0100, Rafael J. Wysocki wrote:
->  > From: Rafael J. Wysocki <rjw@sisk.pl>
->  > 
->  > None of the existing cpufreq drivers uses the second argument of
->  > its .suspend() callback (which isn't useful anyway), so remove it.
->  > 
->  > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->  > ---
->  > 
->  > Hi,
->  > 
->  > This patch is requisite for sysdevs rework discussed here:
->  > https://lkml.org/lkml/2011/3/9/439
->  > Please apply or let me know if I can take it to the suspend tree.
+Hi,
+
+I excluded some people/lists...
+
+On Friday, March 11, 2011 04:56:01 PM Corentin Chary wrote:
+...
+> > The tool should compile and work on as much architectures as
+> > possible.
 > 
-> Looks ok to me.
-> 
-> applied and queued for .39
+> Hi Thomas,
+> Do you think handling really vendor specific "boosts" like EeePC's SHE
+> is in cpupower scope ?
+Not really.
 
-Thanks!
+> Still, it would not solve the issue of setting SHE mode in a standard
+> way, or associating it with a governor.
+I am not familiar with this stuff.
+This is an oem/vendor specific way to modify the front-side-bus 
+throughput on (Intel atom only?) eeepc like machines (acer, asus and 
+others?)?
 
-Rafael
+You could try to experiment with registering your own delayed work queue
+in eeepc-laptopc.c and try to find best tunings and fittings for such 
+requirements.
+If it works out and/or other xy-laptop.c or whatever drivers provide 
+similar functionality it could get moved up into a more generic 
+framework. A separate one next to cpuidle and cpufreq, for example 
+fsb_mod?
+-> then cpupower should get enhanced to show its statistics, provide 
+easy knobs to tune things and provide a manpage what this is all 
+about...
 
+       Thomas
+
+PS: Wouldn't the cpufreq subsystem suffice to register for this
+SHE thing?
+Could it be that SHE and real CPU freq (speedstep) is mutual exclusive?
+Is the only problem that p4_clockmod cannot be loaded then?
+I know it's needed to "unlock" certain eeepcs, but this not typical?
+Are there any statistics how much p4_clockmod saves power on such
+machines?
+
+    Thomas
