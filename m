@@ -1,69 +1,61 @@
-From: Yong Zhang <yong.zhang0@gmail.com>
-Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite
- some features
-Date: Sat, 12 Mar 2011 12:40:10 +0800
-Message-ID: <20110312044010.GB3634@zhy>
+From: Corentin Chary <corentin.chary@gmail.com>
+Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
+Date: Sat, 12 Mar 2011 10:59:10 +0100
+Message-ID: <AANLkTinErtKD_eufvhOL-1OOffYSouf5KLLH2cCMyaT3@mail.gmail.com>
 References: <201103111247.00212.trenn@suse.de>
- <20110312043409.GA3634@zhy>
-Reply-To: Yong Zhang <yong.zhang0@gmail.com>
+	<AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
+	<201103120053.53565.trenn@suse.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
-        h=domainkey-signature:date:from:to:cc:subject:message-id:reply-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        bh=7hUEM91GtoT865Zo2TwPM94MZreAUEMvCT8GzP4lajQ=;
-        b=FHCHMQpHi34pEKIVrXALCbfR4DC6YoCIUrLhuG/rOc2KJwjHLQAgRwFRdp34k+tYsh
-         JW11New/L0mR//o6c3pbRZKxjwR8zOH5qvCmemfdmYRi3Oz4WrU4vxluBnsZW5caHjRP
-         mhzrt6BrXIcQG8XuOr3Hz2vK+9TmELtCLRvXs=
-Content-Disposition: inline
-In-Reply-To: <20110312043409.GA3634@zhy>
-Sender: linux-kernel-owner@vger.kernel.org
+        h=domainkey-signature:mime-version:in-reply-to:references:date
+         :message-id:subject:from:to:cc:content-type;
+        bh=/njf7p+yg+15yAMMFRLr2N3Yqh7Foa0ZEcAozXXIJQU=;
+        b=YdtKc/akH237hY0kA+oM19GwXTTJ1D92qID1RYcYm+ipCazaSPAUIZ2+oXs6lIuw//
+         2se85tPrqKME/xQVvvxnPdATPNkKPAU4bdeBAJ2dyO7dE4XjiLQEv2nv+svcmJ7hA9AR
+         g1zsWXna5yEYrMqfQCNu5Z0F3TUkiQnyyHxVQ=
+In-Reply-To: <201103120053.53565.trenn@suse.de>
+Sender: platform-driver-x86-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Thomas Renninger <trenn@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, power@bughost.org, cpufreq@vger.kernel.org, linux@dominikbrodowski.net, Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>, herrmann.der.user@googlemail.com, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, cpufreq@vger.kernel.org, platform-driver-x86@vger.kernel.org
 
-On Sat, Mar 12, 2011 at 12:34:09PM +0800, Yong Zhang wrote:
-> On Fri, Mar 11, 2011 at 12:46:59PM +0100, Thomas Renninger wrote:
-> > Happy testing..., if you have a recent machine, you'll like it!
-> > 
-> > After some testing phase it would be great to get this tool
-> > merged into the kernel git repo under:
-> > tools/power/cpupower
-> > and replace the Intel HW only supporting tools in tools/power/x86.
-> 
-> I got below output on my laptop:
-> 
->     |Mperf               || Idle_Stats                
-> CPU | C0   | Cx   | Freq || POLL | C1   | C2   | C3   
->    0| 36.00| 64.00|   820||1843411670376227.2|1843411670376692.2|  0.00|  0.00
->    1| 44.69| 55.31|   920||  0.00|  0.00|  0.00|  0.00
-> 
-> Seems below patch fix it:
+>> Hi Thomas,
+>> Do you think handling really vendor specific "boosts" like EeePC's SHE
+>> is in cpupower scope
+> This is an oem/vendor specific way to modify the front-side-bus
+> throughput on (Intel atom only?) eeepc like machines (acer, asus and
+> others?)?
 
-forget the declaration of value :)
+I don't know exactly what it does, but yes it seems to modify the fsb
+(and possibly something else on some models, who know ...), and it's
+only specific to Asus EeePCs.
+But Asus notebooks seems to have a similar "Power4Gear" function, that
+may also overclock/downclock the gpu.
 
----
---- utils/helpers/sysfs-orig.c	2011-03-12 12:32:06.179827929 +0800
-+++ utils/helpers/sysfs.c	2011-03-12 12:35:21.512796546 +0800
-@@ -111,7 +111,7 @@
- 						     unsigned int idlestate,
- 						     enum idlestate_value which)
- {
--	unsigned long value;
-+	unsigned long long value;
- 	unsigned int len;
- 	char linebuf[MAX_LINE_LEN];
- 	char *endp;
-@@ -126,7 +126,7 @@
- 		return 0;
- 	}
- 
--	value = strtoul(linebuf, &endp, 0);
-+	value = strtoull(linebuf, &endp, 0);
- 
- 	if ( endp == linebuf || errno == ERANGE )
- 		return 0;
+> You could try to experiment with registering your own delayed work queue
+> in eeepc-laptopc.c and try to find best tunings and fittings for such
+> requirements.
+> If it works out and/or other xy-laptop.c or whatever drivers provide
+> similar functionality it could get moved up into a more generic
+> framework. A separate one next to cpuidle and cpufreq, for example
+> fsb_mod?
+
+I'll see if other platform drivers have something similar, but I
+believe that at least one of them has a "peformance" mode.
+
+> PS: Wouldn't the cpufreq subsystem suffice to register for this
+> SHE thing?
+> Could it be that SHE and real CPU freq (speedstep) is mutual exclusive?
+> Is the only problem that p4_clockmod cannot be loaded then?
+
+p4_clockmod is only loaded on olds EeePCs. New ones are using
+acpi-cpufreq. And you can only load one cpufreq driver at a time.
+
+
+-- 
+Corentin Chary
+http://xf.iksaif.net
