@@ -1,25 +1,59 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
-Date: Sat, 12 Mar 2011 01:18:45 +0100
-Message-ID: <201103120118.46227.trenn@suse.de>
+From: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite
+ some features
+Date: Sat, 12 Mar 2011 12:34:09 +0800
+Message-ID: <20110312043409.GA3634@zhy>
 References: <201103111247.00212.trenn@suse.de>
+Reply-To: Yong Zhang <yong.zhang0@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:date:from:to:cc:subject:message-id:reply-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        bh=2jV9Z3hn9NPF0Nq8KuYHC4NYQLv6x6vcX7Bavfe8w/g=;
+        b=FTzUK1tYNmA8O7W19W/aJ7WWqI9vO8ISyl8/0qBRPYoniBDZHzpuAQCp9V07UXLwyN
+         yi723e98gbIpOSynSBMA/04Z29efco4hJ+CXzpJ/EeJ1kdk15vlLlafD83dhUMjLQg21
+         9KAHltmw+rhjNOh/vTihvglPo6pI2SVXZTzhM=
+Content-Disposition: inline
 In-Reply-To: <201103111247.00212.trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: linux-kernel@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, power@bughost.org, cpufreq@vger.kernel.org, linux@dominikbrodowski.net, Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>, herrmann.der.user@googlemail.com, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, power@bughost.org, cpufreq@vger.kernel.org, linux@dominikbrodowski.net, Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>, herrmann.der.user@googlemail.com, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-> cpupowerutils is based on the well known cpufrequtils project.
+On Fri, Mar 11, 2011 at 12:46:59PM +0100, Thomas Renninger wrote:
+> Happy testing..., if you have a recent machine, you'll like it!
+> 
+> After some testing phase it would be great to get this tool
+> merged into the kernel git repo under:
+> tools/power/cpupower
+> and replace the Intel HW only supporting tools in tools/power/x86.
 
-Forgot to mention:
-Big thanks to Dominik Brodowski who already gave this some tests!
+I got below output on my laptop:
 
-Outcome (heavily shortened):
-"You can add that you have my Signed-off-by / Acked-by to all these 
-patches"
+    |Mperf               || Idle_Stats                
+CPU | C0   | Cx   | Freq || POLL | C1   | C2   | C3   
+   0| 36.00| 64.00|   820||1843411670376227.2|1843411670376692.2|  0.00|  0.00
+   1| 44.69| 55.31|   920||  0.00|  0.00|  0.00|  0.00
 
-        Thomas
+Seems below patch fix it:
+
+Thanks,
+Yong
+
+---
+--- utils/helpers/sysfs-orig.c	2011-03-12 12:32:06.179827929 +0800
++++ utils/helpers/sysfs.c	2011-03-12 12:24:36.865599924 +0800
+@@ -126,7 +126,7 @@
+ 		return 0;
+ 	}
+ 
+-	value = strtoul(linebuf, &endp, 0);
++	value = strtoull(linebuf, &endp, 0);
+ 
+ 	if ( endp == linebuf || errno == ERANGE )
+ 		return 0;
