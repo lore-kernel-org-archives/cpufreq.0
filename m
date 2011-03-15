@@ -1,61 +1,88 @@
-From: Corentin Chary <corentin.chary@gmail.com>
-Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
-Date: Sat, 12 Mar 2011 10:59:10 +0100
-Message-ID: <AANLkTinErtKD_eufvhOL-1OOffYSouf5KLLH2cCMyaT3@mail.gmail.com>
-References: <201103111247.00212.trenn@suse.de>
-	<AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
-	<201103120053.53565.trenn@suse.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 30712] Slow transitioning AMD ondemand CPU because of wrong
+ sampling_rate
+Date: Tue, 15 Mar 2011 04:59:11 GMT
+Message-ID: <201103150459.p2F4xBsw012905@demeter2.kernel.org>
+References: <bug-30712-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=domainkey-signature:mime-version:in-reply-to:references:date
-         :message-id:subject:from:to:cc:content-type;
-        bh=/njf7p+yg+15yAMMFRLr2N3Yqh7Foa0ZEcAozXXIJQU=;
-        b=YdtKc/akH237hY0kA+oM19GwXTTJ1D92qID1RYcYm+ipCazaSPAUIZ2+oXs6lIuw//
-         2se85tPrqKME/xQVvvxnPdATPNkKPAU4bdeBAJ2dyO7dE4XjiLQEv2nv+svcmJ7hA9AR
-         g1zsWXna5yEYrMqfQCNu5Z0F3TUkiQnyyHxVQ=
-In-Reply-To: <201103120053.53565.trenn@suse.de>
-Sender: platform-driver-x86-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-30712-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, cpufreq@vger.kernel.org, platform-driver-x86@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
->> Hi Thomas,
->> Do you think handling really vendor specific "boosts" like EeePC's SHE
->> is in cpupower scope
-> This is an oem/vendor specific way to modify the front-side-bus
-> throughput on (Intel atom only?) eeepc like machines (acer, asus and
-> others?)?
+https://bugzilla.kernel.org/show_bug.cgi?id=30712
 
-I don't know exactly what it does, but yes it seems to modify the fsb
-(and possibly something else on some models, who know ...), and it's
-only specific to Asus EeePCs.
-But Asus notebooks seems to have a similar "Power4Gear" function, that
-may also overclock/downclock the gpu.
 
-> You could try to experiment with registering your own delayed work queue
-> in eeepc-laptopc.c and try to find best tunings and fittings for such
-> requirements.
-> If it works out and/or other xy-laptop.c or whatever drivers provide
-> similar functionality it could get moved up into a more generic
-> framework. A separate one next to cpuidle and cpufreq, for example
-> fsb_mod?
 
-I'll see if other platform drivers have something similar, but I
-believe that at least one of them has a "peformance" mode.
 
-> PS: Wouldn't the cpufreq subsystem suffice to register for this
-> SHE thing?
-> Could it be that SHE and real CPU freq (speedstep) is mutual exclusive?
-> Is the only problem that p4_clockmod cannot be loaded then?
 
-p4_clockmod is only loaded on olds EeePCs. New ones are using
-acpi-cpufreq. And you can only load one cpufreq driver at a time.
+--- Comment #2 from justincase@yopmail.com  2011-03-15 04:59:11 ---
+(In reply to comment #1)
 
+> Users won't recon whether the process ends in 50 or 70 ms
+
+> And you want to save power, therefore it makes
+> sense to not switch frequency up on this tiny peak.
+
+I don't agree. We don't care if frequency switches up here, it's a drop in the
+ocean. What power saving really is IMHO, is this: 
+ cpufreq stats: 2.20 GHz:2.50%, [...], 1000 MHz:97.34%
+
+> You may want to try to find a "real-world" workload which takes a minute or so
+> and prove a performance loss of >%2, that should be hard. Especially with
+> latest improvements (count IO as load).
+
+On my AMD cpu, the dd command takes more than 120ms to execute, and about 65ms
+with the workaround. Nearly x2. Of course the benchmark is dirty, but I'm sure
+we can find practical issues. What about shell scripts spawning many small IO
+processes one after another? 
+
+So I tested the following command within a shell script: 
+ for i in {000..999} ; do dd if=/dev/zero of=file$i bs=1M count=1 ; done
+
+With the following results (zsh time cmd): 
+ performance: 
+ 0,27s user 4,17s system 43% cpu 10,229 total
+ 0,28s user 4,17s system 41% cpu 10,740 total
+ 0,31s user 4,12s system 41% cpu 10,564 total
+
+ ondemand: 
+ 0,72s user 9,76s system 70% cpu 14,944 total
+ 0,70s user 9,74s system 64% cpu 16,256 total
+ 0,63s user 8,64s system 61% cpu 15,037 total
+
+ ondemand with workaround: 
+ 0,46s user 5,49s system 49% cpu 12,095 total
+ 0,43s user 5,58s system 48% cpu 12,281 total
+ 0,43s user 5,52s system 48% cpu 12,358 total
+
+And on a larger scale (doing the loop 6 times within the script): 
+ performa: 1,87s user 24,97s system 40% cpu 1:06,06 total
+ ondemand: 4,49s user 58,64s system 70% cpu 1:30,02 total
+ workarnd: 2,46s user 32,89s system 48% cpu 1:12,83 total
+
+
+The issue is clearly visible with >>2% overhead. Seems like the gap between
+each process creation is long enough for ondemand to switch freq down, but
+afterward the governor is too slow to be back up again soon enough, resulting
+in an overall performance cost. 
+
+We know we can sample faster by setting sampling rate to min, so finally the
+only question is: what is the real cost of sampling faster and does it outweigh
+the performance benefit? 
+
+I'm not a specialist, so I may be wrong... 
+
+> For theoretical worst case performance losses for your HW you can also use
+> cpufreq-bench from the cpufrequtils package.
+
+Don't have it on Debian (version 007). Will try it if you or someone else think
+it's necessary to complete the results above.
 
 -- 
-Corentin Chary
-http://xf.iksaif.net
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
