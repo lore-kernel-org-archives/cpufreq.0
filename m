@@ -1,182 +1,124 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/6] cpufreq: Use syscore_ops for boot CPU suspend/resume (v2)
-Date: Tue, 22 Mar 2011 00:38:01 +0100
-Message-ID: <201103220038.02116.rjw@sisk.pl>
+Subject: [PATCH 3/6] PCI / Intel IOMMU: Use syscore_ops instead of sysdev class and sysdev
+Date: Tue, 22 Mar 2011 00:36:17 +0100
+Message-ID: <201103220036.17824.rjw@sisk.pl>
 References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl> <201103220031.22729.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <201103220031.22729.rjw@sisk.pl>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: Text/Plain; charset="us-ascii"
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, "H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com, tglx@linutronix.de, Dave Jones <davej@redhat.com>, Alan Stern <stern@rowland.harvard.edu>, Avi Kivity <avi@redhat.com>, David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, cpufreq@vger.kernel.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>, mingo@redhat.com, tglx@linutronix.de, Dave Jones <davej@redhat.com>, Alan Stern <stern@rowland.harvard.edu>, Avi Kivity <avi@redhat.com>, David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, cpufreq@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The cpufreq subsystem uses sysdev suspend and resume for
-executing cpufreq_suspend() and cpufreq_resume(), respectively,
-during system suspend, after interrupts have been switched off on the
-boot CPU, and during system resume, while interrupts are still off on
-the boot CPU.  In both cases the other CPUs are off-line at the
-relevant point (either they have been switched off via CPU hotplug
-during suspend, or they haven't been switched on yet during resume).
-For this reason, although it may seem that cpufreq_suspend() and
-cpufreq_resume() are executed for all CPUs in the system, they are
-only called for the boot CPU in fact, which is quite confusing.
-
-To remove the confusion and to prepare for elimiating sysdev
-suspend and resume operations from the kernel enirely, convernt
-cpufreq to using a struct syscore_ops object for the boot CPU
-suspend and resume and rename the callbacks so that their names
-reflect their purpose.  In addition, put some explanatory remarks
-into their kerneldoc comments.
+The Intel IOMMU subsystem uses a sysdev class and a sysdev for
+executing iommu_suspend() after interrupts have been turned off
+on the boot CPU (during system suspend) and for executing
+iommu_resume() before turning on interrupts on the boot CPU
+(during system resume).  However, since both of these functions
+ignore their arguments, the entire mechanism may be replaced with a
+struct syscore_ops object which is simpler.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/cpufreq/cpufreq.c |   66 ++++++++++++++++++----------------------------
- 1 file changed, 26 insertions(+), 40 deletions(-)
+ drivers/pci/intel-iommu.c |   38 +++++++++-----------------------------
+ 1 file changed, 9 insertions(+), 29 deletions(-)
 
-Index: linux-2.6/drivers/cpufreq/cpufreq.c
+Index: linux-2.6/drivers/pci/intel-iommu.c
 ===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6/drivers/cpufreq/cpufreq.c
-@@ -28,6 +28,7 @@
- #include <linux/cpu.h>
- #include <linux/completion.h>
- #include <linux/mutex.h>
+--- linux-2.6.orig/drivers/pci/intel-iommu.c
++++ linux-2.6/drivers/pci/intel-iommu.c
+@@ -36,7 +36,7 @@
+ #include <linux/iova.h>
+ #include <linux/iommu.h>
+ #include <linux/intel-iommu.h>
+-#include <linux/sysdev.h>
 +#include <linux/syscore_ops.h>
- 
- #include <trace/events/power.h>
- 
-@@ -1340,35 +1341,31 @@ out:
+ #include <linux/tboot.h>
+ #include <linux/dmi.h>
+ #include <asm/cacheflush.h>
+@@ -3135,7 +3135,7 @@ static void iommu_flush_all(void)
+ 	}
  }
- EXPORT_SYMBOL(cpufreq_get);
  
-+static struct sysdev_driver cpufreq_sysdev_driver = {
-+	.add		= cpufreq_add_dev,
-+	.remove		= cpufreq_remove_dev,
-+};
-+
- 
- /**
-- *	cpufreq_suspend - let the low level driver prepare for suspend
-+ * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
-+ *
-+ * This function is only executed for the boot processor.  The other CPUs
-+ * have been put offline by means of CPU hotplug.
-  */
--
--static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
-+static int cpufreq_bp_suspend(void)
+-static int iommu_suspend(struct sys_device *dev, pm_message_t state)
++static int iommu_suspend(void)
  {
- 	int ret = 0;
+ 	struct dmar_drhd_unit *drhd;
+ 	struct intel_iommu *iommu = NULL;
+@@ -3175,7 +3175,7 @@ nomem:
+ 	return -ENOMEM;
+ }
  
--	int cpu = sysdev->id;
-+	int cpu = smp_processor_id();
- 	struct cpufreq_policy *cpu_policy;
+-static int iommu_resume(struct sys_device *dev)
++static void iommu_resume(void)
+ {
+ 	struct dmar_drhd_unit *drhd;
+ 	struct intel_iommu *iommu = NULL;
+@@ -3183,7 +3183,7 @@ static int iommu_resume(struct sys_devic
  
- 	dprintk("suspending cpu %u\n", cpu);
- 
--	if (!cpu_online(cpu))
--		return 0;
--
--	/* we may be lax here as interrupts are off. Nonetheless
--	 * we need to grab the correct cpu policy, as to check
--	 * whether we really run on this CPU.
--	 */
--
-+	/* If there's no policy for the boot CPU, we have nothing to do. */
- 	cpu_policy = cpufreq_cpu_get(cpu);
- 	if (!cpu_policy)
--		return -EINVAL;
--
--	/* only handle each CPU group once */
--	if (unlikely(cpu_policy->cpu != cpu))
--		goto out;
-+		return 0;
- 
- 	if (cpufreq_driver->suspend) {
- 		ret = cpufreq_driver->suspend(cpu_policy);
-@@ -1377,13 +1374,12 @@ static int cpufreq_suspend(struct sys_de
- 					"step on CPU %u\n", cpu_policy->cpu);
+ 	if (init_iommu_hw()) {
+ 		WARN(1, "IOMMU setup failed, DMAR can not resume!\n");
+-		return -EIO;
++		return;
  	}
  
--out:
- 	cpufreq_cpu_put(cpu_policy);
- 	return ret;
+ 	for_each_active_iommu(iommu, drhd) {
+@@ -3204,40 +3204,20 @@ static int iommu_resume(struct sys_devic
+ 
+ 	for_each_active_iommu(iommu, drhd)
+ 		kfree(iommu->iommu_state);
+-
+-	return 0;
  }
  
- /**
-- *	cpufreq_resume -  restore proper CPU frequency handling after resume
-+ * cpufreq_bp_resume - Restore proper frequency handling of the boot CPU.
-  *
-  *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
-  *	2.) schedule call cpufreq_update_policy() ASAP as interrupts are
-@@ -1391,31 +1387,23 @@ out:
-  *	    what we believe it to be. This is a bit later than when it
-  *	    should be, but nonethteless it's better than calling
-  *	    cpufreq_driver->get() here which might re-enable interrupts...
-+ *
-+ * This function is only executed for the boot CPU.  The other CPUs have not
-+ * been turned on yet.
-  */
--static int cpufreq_resume(struct sys_device *sysdev)
-+static void cpufreq_bp_resume(void)
- {
- 	int ret = 0;
- 
--	int cpu = sysdev->id;
-+	int cpu = smp_processor_id();
- 	struct cpufreq_policy *cpu_policy;
- 
- 	dprintk("resuming cpu %u\n", cpu);
- 
--	if (!cpu_online(cpu))
--		return 0;
--
--	/* we may be lax here as interrupts are off. Nonetheless
--	 * we need to grab the correct cpu policy, as to check
--	 * whether we really run on this CPU.
--	 */
--
-+	/* If there's no policy for the boot CPU, we have nothing to do. */
- 	cpu_policy = cpufreq_cpu_get(cpu);
- 	if (!cpu_policy)
--		return -EINVAL;
--
--	/* only handle each CPU group once */
--	if (unlikely(cpu_policy->cpu != cpu))
--		goto fail;
-+		return;
- 
- 	if (cpufreq_driver->resume) {
- 		ret = cpufreq_driver->resume(cpu_policy);
-@@ -1430,14 +1418,11 @@ static int cpufreq_resume(struct sys_dev
- 
- fail:
- 	cpufreq_cpu_put(cpu_policy);
--	return ret;
- }
- 
--static struct sysdev_driver cpufreq_sysdev_driver = {
--	.add		= cpufreq_add_dev,
--	.remove		= cpufreq_remove_dev,
--	.suspend	= cpufreq_suspend,
--	.resume		= cpufreq_resume,
-+static struct syscore_ops cpufreq_syscore_ops = {
-+	.suspend	= cpufreq_bp_suspend,
-+	.resume		= cpufreq_bp_resume,
+-static struct sysdev_class iommu_sysclass = {
+-	.name		= "iommu",
++static struct syscore_ops iommu_syscore_ops = {
+ 	.resume		= iommu_resume,
+ 	.suspend	= iommu_suspend,
  };
  
- 
-@@ -2002,6 +1987,7 @@ static int __init cpufreq_core_init(void
- 	cpufreq_global_kobject = kobject_create_and_add("cpufreq",
- 						&cpu_sysdev_class.kset.kobj);
- 	BUG_ON(!cpufreq_global_kobject);
-+	register_syscore_ops(&cpufreq_syscore_ops);
- 
- 	return 0;
+-static struct sys_device device_iommu = {
+-	.cls	= &iommu_sysclass,
+-};
+-
+-static int __init init_iommu_sysfs(void)
++static void __init init_iommu_pm_ops(void)
+ {
+-	int error;
+-
+-	error = sysdev_class_register(&iommu_sysclass);
+-	if (error)
+-		return error;
+-
+-	error = sysdev_register(&device_iommu);
+-	if (error)
+-		sysdev_class_unregister(&iommu_sysclass);
+-
+-	return error;
++	register_syscore_ops(&iommu_syscore_ops);
  }
-
+ 
+ #else
+-static int __init init_iommu_sysfs(void)
+-{
+-	return 0;
+-}
++static inline int init_iommu_pm_ops(void) { }
+ #endif	/* CONFIG_PM */
+ 
+ /*
+@@ -3320,7 +3300,7 @@ int __init intel_iommu_init(void)
+ #endif
+ 	dma_ops = &intel_dma_ops;
+ 
+-	init_iommu_sysfs();
++	init_iommu_pm_ops();
+ 
+ 	register_iommu(&intel_iommu_ops);
+ 
