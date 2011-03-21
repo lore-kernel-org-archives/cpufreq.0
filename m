@@ -1,134 +1,108 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/6] KVM: Use syscore_ops instead of sysdev class and sysdev
-Date: Tue, 22 Mar 2011 00:37:06 +0100
-Message-ID: <201103220037.06465.rjw@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl> <201103220031.22729.rjw@sisk.pl>
+Subject: [PATCH 0/6] Do not use sysdevs for implementing "core" PM operations on x86
+Date: Tue, 22 Mar 2011 00:31:22 +0100
+Message-ID: <201103220031.22729.rjw@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201103220031.22729.rjw@sisk.pl>
+In-Reply-To: <201103122212.40828.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: Text/Plain; charset="us-ascii"
 To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, "H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com, tglx@linutronix.de, Dave Jones <davej@redhat.com>, Alan Stern <stern@rowland.harvard.edu>, Avi Kivity <avi@redhat.com>, David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org, iommu@lists.linux-foundation.org, cpufreq@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-KVM uses a sysdev class and a sysdev for executing kvm_suspend()
-after interrupts have been turned off on the boot CPU (during system
-suspend) and for executing kvm_resume() before turning on interrupts
-on the boot CPU (during system resume).  However, since both of these
-functions ignore their arguments, the entire mechanism may be
-replaced with a struct syscore_ops object which is simpler.
+On Saturday, March 12, 2011, Rafael J. Wysocki wrote:
+> On Thursday, March 10, 2011, Rafael J. Wysocki wrote:
+> > There are multiple problems with sysdevs, or struct sys_device objects to
+> > be precise, that are so annoying that some people have started to think
+> > of removind them entirely from the kernel.  To me, personally, the most
+> > obvious issue is the way sysdevs are used for defining suspend/resume
+> > callbacks to be executed with one CPU on-line and interrupts disabled.
+> > Greg and Kay may tell you more about the other problems with sysdevs. :-)
+> > 
+> > Some subsystems need to carry out certain operations during suspend after
+> > we've disabled non-boot CPUs and interrupts have been switched off on the
+> > only on-line one.  Currently, the only way to achieve that is to define
+> > sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
+> > Namely, to do that, one has to define a sysdev class providing the callbacks
+> > and a sysdev actually using them, which is excessively complicated.  Moreover,
+> > the sysdev suspend/resume callbacks take arguments that are not really used
+> > by the majority of subsystems defining sysdev suspend/resume callbacks
+> > (or even if they are used, they don't really _need_ to be used, so they
+> > are simply unnecessary).  Of course, if a sysdev is only defined to provide
+> > suspend/resume (and maybe shutdown) callbacks, there's no real reason why
+> > it should show up in sysfs.
+> > 
+> > For this reason, I thought it would be a good idea to provide a simpler
+> > interface for subsystems to define "very late" suspend callbacks and
+> > "very early" resume callbacks (and "very late" shutdown callbacks as well)
+> > without the entire bloat related to sysdevs.  The interface is introduced
+> > by the first of the following patches, while the second patch converts some
+> > sysdev users related to the x86 architecture to using the new interface.
+> > 
+> > I believe that call sysdev users who need to define suspend/resume/shutdown
+> > callbacks may be converted to using the interface provided by the first patch,
+> > which in turn should allow us to convert the remaining sysdev functionality
+> > into "normal" struct device interfaces.  Still, even if that turns out to be
+> > too complicated, the bloat reduction resulting from the second patch kind of
+> > shows that moving at least some sysdev users to a simpler interface (like in
+> > the first patch) is a good idea anyway.
+> > 
+> > This is a proof of concept, so the patches have not been tested.  Please be
+> > extrememly careful, because they touch sensitive code, so to speak.  In the
+> > majority of cases the changes are rather straightforward, but there are some
+> > more interesting cases as well (io_apic.c most importantly).
+> 
+> Since Greg likes the idea and there haven't been any objections so far, here's
+> the official submission.  The patches have been tested on HP nx6325 and
+> Toshiba Portege R500.
+> 
+> Patch [1/8] is regareded as 2.6.38 material, following Greg's advice.  The
+> other patches in the set are regarded as 2.6.39 material.  The last one
+> obviously depends on all of the previous ones.
+> 
+> [1/8] - Introduce struct syscore_ops for registering operations to be run on
+>         one CPU during suspend/resume/shutdown.
+> 
+> [2/8] - Convert sysdev users in arch/x86 to using struct syscore_ops.
+> 
+> [3/8] - Make ACPI use struct syscore_ops for irqrouter_resume().
+> 
+> [4/8] - Make timekeeping use struct syscore_ops for suspend/resume.
+> 
+> [5/8] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
+> 
+> [6/8] - Make KVM use struct syscore_ops for suspend/resume.
+> 
+> [7/8] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
+> 
+> [8/8] - Introduce config switch allowing architectures to skip sysdev
+>         suspend/resume/shutdown code.
+> 
+> If there are no objectsions, I'd like to push these patches through the suspend
+> tree.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- virt/kvm/kvm_main.c |   34 ++++++++--------------------------
- 1 file changed, 8 insertions(+), 26 deletions(-)
+[1/8] has been merged in the meantime and [3/8] has been included into the
+ACPI tree.  if there are no objections, I'm going to push the following
+patches to Linus this week through the suspend-2.6 tree:
 
-Index: linux-2.6/virt/kvm/kvm_main.c
-===================================================================
---- linux-2.6.orig/virt/kvm/kvm_main.c
-+++ linux-2.6/virt/kvm/kvm_main.c
-@@ -30,7 +30,7 @@
- #include <linux/debugfs.h>
- #include <linux/highmem.h>
- #include <linux/file.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/cpu.h>
- #include <linux/sched.h>
- #include <linux/cpumask.h>
-@@ -2447,33 +2447,26 @@ static void kvm_exit_debug(void)
- 	debugfs_remove(kvm_debugfs_dir);
- }
+[1/6] - Convert sysdev users in arch/x86 to using struct syscore_ops.
+
+[2/6] - Make timekeeping use struct syscore_ops for suspend/resume.
  
--static int kvm_suspend(struct sys_device *dev, pm_message_t state)
-+static int kvm_suspend(void)
- {
- 	if (kvm_usage_count)
- 		hardware_disable_nolock(NULL);
- 	return 0;
- }
- 
--static int kvm_resume(struct sys_device *dev)
-+static void kvm_resume(void)
- {
- 	if (kvm_usage_count) {
- 		WARN_ON(raw_spin_is_locked(&kvm_lock));
- 		hardware_enable_nolock(NULL);
- 	}
--	return 0;
- }
- 
--static struct sysdev_class kvm_sysdev_class = {
--	.name = "kvm",
-+static struct syscore_ops kvm_syscore_ops = {
- 	.suspend = kvm_suspend,
- 	.resume = kvm_resume,
- };
- 
--static struct sys_device kvm_sysdev = {
--	.id = 0,
--	.cls = &kvm_sysdev_class,
--};
--
- struct page *bad_page;
- pfn_t bad_pfn;
- 
-@@ -2557,14 +2550,6 @@ int kvm_init(void *opaque, unsigned vcpu
- 		goto out_free_2;
- 	register_reboot_notifier(&kvm_reboot_notifier);
- 
--	r = sysdev_class_register(&kvm_sysdev_class);
--	if (r)
--		goto out_free_3;
--
--	r = sysdev_register(&kvm_sysdev);
--	if (r)
--		goto out_free_4;
--
- 	/* A kmem cache lets us meet the alignment requirements of fx_save. */
- 	if (!vcpu_align)
- 		vcpu_align = __alignof__(struct kvm_vcpu);
-@@ -2572,7 +2557,7 @@ int kvm_init(void *opaque, unsigned vcpu
- 					   0, NULL);
- 	if (!kvm_vcpu_cache) {
- 		r = -ENOMEM;
--		goto out_free_5;
-+		goto out_free_3;
- 	}
- 
- 	r = kvm_async_pf_init();
-@@ -2589,6 +2574,8 @@ int kvm_init(void *opaque, unsigned vcpu
- 		goto out_unreg;
- 	}
- 
-+	register_syscore_ops(&kvm_syscore_ops);
-+
- 	kvm_preempt_ops.sched_in = kvm_sched_in;
- 	kvm_preempt_ops.sched_out = kvm_sched_out;
- 
-@@ -2600,10 +2587,6 @@ out_unreg:
- 	kvm_async_pf_deinit();
- out_free:
- 	kmem_cache_destroy(kvm_vcpu_cache);
--out_free_5:
--	sysdev_unregister(&kvm_sysdev);
--out_free_4:
--	sysdev_class_unregister(&kvm_sysdev_class);
- out_free_3:
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
-@@ -2631,8 +2614,7 @@ void kvm_exit(void)
- 	misc_deregister(&kvm_dev);
- 	kmem_cache_destroy(kvm_vcpu_cache);
- 	kvm_async_pf_deinit();
--	sysdev_unregister(&kvm_sysdev);
--	sysdev_class_unregister(&kvm_sysdev_class);
-+	unregister_syscore_ops(&kvm_syscore_ops);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
- 	on_each_cpu(hardware_disable_nolock, NULL, 1);
+[3/6] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
+
+[4/6] - Make KVM use struct syscore_ops for suspend/resume.
+
+[5/6] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
+
+[6/6] - Introduce config switch allowing architectures to skip sysdev
+        suspend/resume/shutdown code.
+
+Thanks,
+Rafael
 
