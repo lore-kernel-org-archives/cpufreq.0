@@ -1,62 +1,90 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended with quite some features
-Date: Wed, 23 Mar 2011 11:29:09 +0100
-Message-ID: <201103231129.10249.trenn@suse.de>
-References: <201103111247.00212.trenn@suse.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 30712] Slow transitioning AMD ondemand CPU because of wrong
+ sampling_rate
+Date: Thu, 24 Mar 2011 17:30:10 GMT
+Message-ID: <201103241730.p2OHUAW0031767@demeter2.kernel.org>
+References: <bug-30712-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201103111247.00212.trenn@suse.de>
+In-Reply-To: <bug-30712-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Cc: cpufreq@vger.kernel.org, linux@dominikbrodowski.net, Len Brown <lenb@kernel.org>, herrmann.der.user@googlemail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-Hi Linus, hi Len,
-
-it would be great to get this tool pulled into:
-tools/power/cpupower
-
-All that is needed should be to push (old git history should better
-be left out):
-wget http://gitorious.org/cpupowerutils/cpupowerutils/archive-
-tarball/cpupowerutils cpupowerutils.tar.gz
-into tools/power/cpupower
-and add to MAINTAINERS file:
-
-CPU POWER MONITORING SUBSYSTEM
-M:      Dominik Brodowski <linux@dominikbrodowski.net>
-M:      Thomas Renninger <trenn@suse.de>
-S:      Maintained
-F:      tools/power/cpupower
-
-Could this still show up in 2.6.39?
-
-Thanks,
-
-    Thomas
+https://bugzilla.kernel.org/show_bug.cgi?id=30712
 
 
 
-On Friday, March 11, 2011 12:46:59 PM Thomas Renninger wrote:
-> Hi,
-> 
-...
-> What is this tool doing?
-> ------------------------
-> 
-> It provides all features cpufrequtils does.
-> It got enhanced with cpuidle and turbo/boost mode (on X86) statistics.
-> On AMD the exact amount of supported boost states and their frequencies
-> are shown. On Intel only turbo/boost support is shown.
-> 
-> It got enhanced with a generic HW monitor tool (cpupower monitor).
-...
-> 
-> What next?
-> ----------
-> 
-> After some testing phase it would be great to get this tool
-> merged into the kernel git repo under:
-> tools/power/cpupower
+
+
+--- Comment #3 from justincase@yopmail.com  2011-03-24 17:30:10 ---
+> For theoretical worst case performance losses for your HW you can also use
+> cpufreq-bench from the cpufrequtils package.
+
+Did it. 
+
+Using the provided config file (example.cfg, but with high prio): 
+sleep = 50000
+load = 50000
+cpu = 0
+priority = high
+output = /var/log/cpufreq-bench
+sleep_step = 50000
+load_step = 50000
+cycles = 20
+rounds = 40
+verbose = 0
+governor = ondemand
+
+I got the following results: 
+
+#round load sleep performance powersave percentage
+0 50000 50000 51231 72195 70.962
+1 100000 100000 99372 131896 75.341
+2 150000 150000 150344 207348 72.508
+3 200000 200000 201254 252881 79.585
+4 250000 250000 252787 314064 80.489
+5 300000 300000 289421 384662 75.241
+6 350000 350000 349900 444644 78.692
+7 400000 400000 398016 500908 79.459
+8 450000 450000 441566 559675 78.897
+9 500000 500000 475505 596761 79.681
+10 550000 550000 543846 679182 80.074
+11 600000 600000 588735 736504 79.936
+12 650000 650000 649588 805318 80.662
+13 700000 700000 687249 828287 82.972
+14 750000 750000 744053 910069 81.758
+15 800000 800000 784194 949034 82.631
+16 850000 850000 837451 1000410 83.711
+17 900000 900000 895482 1060572 84.434
+18 950000 950000 942109 1120819 84.055
+19 1000000 1000000 988791 1177261 83.991
+20 1050000 1050000 1035069 1219008 84.911
+21 1100000 1100000 1090936 1290393 84.543
+22 1150000 1150000 1116174 1322882 84.374
+23 1200000 1200000 1182898 1384354 85.448
+24 1250000 1250000 1245290 1461707 85.194
+25 1300000 1300000 1279248 1504184 85.046
+26 1350000 1350000 1334856 1568016 85.130
+27 1400000 1400000 1359270 1619033 83.956
+28 1450000 1450000 1427805 1696784 84.148
+29 1500000 1500000 1476888 1743625 84.702
+30 1550000 1550000 1527646 1798479 84.941
+31 1600000 1600000 1571870 1851467 84.899
+32 1650000 1650000 1622833 1900892 85.372
+33 1700000 1700000 1677034 1956607 85.711
+34 1750000 1750000 1723148 2010195 85.720
+35 1800000 1800000 1774814 2064853 85.954
+36 1850000 1850000 1823337 2137830 85.289
+37 1900000 1900000 1873975 2184400 85.789
+38 1950000 1950000 1937433 2296903 84.350
+39 2000000 2000000 1965560 2282347 86.120
+
+Not so good, right? Even in the end with the 2 seconds workload...
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
