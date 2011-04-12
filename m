@@ -1,47 +1,55 @@
-From: Karthigan Srinivasan <karthigan.srinivasan@hp.com>
-Subject: [PATCH] Drivers: cpufreq/cpufreq_stats.c: Fixed brace coding style
- issue
-Date: Fri, 01 Apr 2011 17:34:47 -0500
-Message-ID: <1301697287.15937.5.camel@ks-ubuntu>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: pcc-cpufreq bug [Was: Bug in cpufreq-utils
+ (/sys/devices/system/cpu/cpu*/cpufreq/affected_cpus)?]
+Date: Tue, 12 Apr 2011 22:39:15 +0200
+Message-ID: <20110412203915.GB12827@comet.dominikbrodowski.net>
+References: <4D9DEC01020000A1000059B5@gwsmtp1.uni-regensburg.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4D9DEC01020000A1000059B5@gwsmtp1.uni-regensburg.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: davej@redhat.com, Nagananda Chumbalkar <Nagananda.Chumbalkar@hp.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Ulrich Windl <Ulrich.Windl@rz.uni-regensburg.de>, mjg@redhat.com, nagananda.chumbalkar@hp.com
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-From 0f157586affbd149943440eb26ea2981359d79c1 Mon Sep 17 00:00:00 2001
-From: Karthigan Srinivasan <karthigan.srinivasan@hp.com>
-Date: Fri, 1 Apr 2011 17:20:49 -0500
-Subject: [PATCH] Drivers: cpufreq/cpufreq_stats.c: Fixed brace coding
-style issue
+Hey,
 
-Fixed brace coding style issue.
+On Thu, Apr 07, 2011 at 04:53:21PM +0200, Ulrich Windl wrote:
+> Hello,
+> 
+> I found this for cpufrequtils-004-35.20 on SLES11 SP1 (plus updates) for a HP DL380 G7 server with two 6-core Xeon X5650 CPUs:
+> 
+> ...
+> analyzing CPU 23:
+>   driver: pcc-cpufreq
+>   CPUs which need to switch frequency at the same time: 23
+>   hardware limits: 1.60 GHz - 2.67 GHz
+>   available cpufreq governors: conservative, userspace, powersave, ondemand, performance
+>   current policy: frequency should be within 1.60 GHz and 2.67 GHz.
+>                   The governor "ondemand" may decide which speed to use
+>                   within this range.
+>   current CPU frequency is 1.57 GHz (asserted by call to hardware).
+> 
+> To my understanding "cpu23" in Linux is "package 1 (2nd CPU), core 9 (actually 4/6 or 6/6), ACPI ID 51". As each core is featuring hyper-theading I wonder whether two threads may actually be clocked individually. If not, "cpu11" (package 1 (2nd CPU), core 9 (actually 4/6 or 6/6), ACPI ID 50) should need to switch frequency, too.
+> 
+> # cat /sys/devices/system/cpu/cpu23/cpufreq/affected_cpus
+> 23
 
-Signed-off-by: Karthigan Srinivasan <karthigan.srinivasan@hp.com>
----
- drivers/cpufreq/cpufreq_stats.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+Thanks for reporting this issue. However, cpufrequtils is rather dumb in
+this regard, and just makes use of the values reported by the kernel. And
+the kernel reports that changing the frequency of CPU 23 only affects CPU
+23... Which is obviously wrong.
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c
-b/drivers/cpufreq/cpufreq_stats.c
-index 00d73fc..78bf713 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -324,8 +324,7 @@ static int __cpuinit
-cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block cpufreq_stat_cpu_notifier __refdata =
--{
-+static struct notifier_block cpufreq_stat_cpu_notifier __refdata = {
- 	.notifier_call = cpufreq_stat_cpu_callback,
- };
- 
--- 
-1.7.1
+To the pcc-cpufreq.c driver developers & maintainers: Is there _any_ way to
+properly set
 
+	(struct cpufreq_policy *) -> cpus
+				  -> related_cpus
 
+in this driver?
 
+Best,
+	Dominik
