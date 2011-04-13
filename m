@@ -1,43 +1,34 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 33202] cpufreq-info 008 only reports maximum "current
- frequency", contradicts cpufreq stats and /proc/cpuinfo
-Date: Wed, 13 Apr 2011 10:54:59 GMT
-Message-ID: <201104131054.p3DAsxa4020161@demeter1.kernel.org>
-References: <bug-33202-12968@https.bugzilla.kernel.org/>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: pcc-cpufreq bug [Was: Bug in cpufreq-utils
+	(/sys/devices/system/cpu/cpu*/cpufreq/affected_cpus)?]
+Date: Wed, 13 Apr 2011 12:55:15 +0200
+Message-ID: <20110413105515.GA14864@isilmar-3.linta.de>
+References: <4D9DEC01020000A1000059B5@gwsmtp1.uni-regensburg.de> <20110412203915.GB12827@comet.dominikbrodowski.net> <20110412204811.GA9465@srcf.ucam.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-33202-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <20110412204811.GA9465@srcf.ucam.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Ulrich Windl <Ulrich.Windl@rz.uni-regensburg.de>, nagananda.chumbalkar@hp.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=33202
+On Tue, Apr 12, 2011 at 09:48:11PM +0100, Matthew Garrett wrote:
+> On Tue, Apr 12, 2011 at 10:39:15PM +0200, Dominik Brodowski wrote:
+> 
+> > To the pcc-cpufreq.c driver developers & maintainers: Is there _any_ way to
+> > properly set
+> > 
+> > 	(struct cpufreq_policy *) -> cpus
+> > 				  -> related_cpus
+> > 
+> > in this driver?
+> 
+> The spec says we should be able to do this with the _PSD data. I'll look 
+> into it.
 
+Thanks!
 
-Dominik Brodowski <linux@brodo.de> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |linux@brodo.de
-
-
-
-
---- Comment #1 from Dominik Brodowski <linux@brodo.de>  2011-04-13 10:54:58 ---
-Well, all cpufreq-info does is read out
-
-  /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq
-
-or
-
-  /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-
-and then print the value being reported there. Do the values in those files
-change at all?
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+	Dominik
