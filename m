@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 33202] cpufreq-info 008 only reports maximum "current
  frequency", contradicts cpufreq stats and /proc/cpuinfo
-Date: Wed, 13 Apr 2011 12:57:42 GMT
-Message-ID: <201104131257.p3DCvg4Z017303@demeter2.kernel.org>
+Date: Thu, 14 Apr 2011 15:18:45 GMT
+Message-ID: <201104141518.p3EFIjuQ003656@demeter2.kernel.org>
 References: <bug-33202-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,14 +19,10 @@ https://bugzilla.kernel.org/show_bug.cgi?id=33202
 
 
 
---- Comment #2 from LK <leho@kraav.com>  2011-04-13 12:57:41 ---
-did watch -n 0.1 cat ...
-
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq - does not change
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq - changes frequencies as
-expected
-
-am i simply misunderstanding something here?
+--- Comment #3 from Leho Kraav <leho@kraav.com>  2011-04-14 15:18:44 ---
+after doing parameter changes, cpufreq-info now reports minimum frequencies as
+well. i may be able to produce a diff but it might be unlikely. im guessing
+this one can be closed until or if i get some more info.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
