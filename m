@@ -1,36 +1,49 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 14066] p4_clockmod unusable with ondemand even by manual choice
-Date: Tue, 19 Apr 2011 07:50:46 GMT
-Message-ID: <201104190750.p3J7okqt021557@demeter2.kernel.org>
-References: <bug-14066-12968@https.bugzilla.kernel.org/>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Status of arch/arm in linux-next
+Date: Tue, 19 Apr 2011 18:01:19 +0200
+Message-ID: <201104191801.19348.arnd@arndb.de>
+References: <20110414094447.GA1611@n2100.arm.linux.org.uk> <201104191655.13133.arnd@arndb.de> <BANLkTi=kGxL9N-RNqxmeqs4zeYo0zzfmhQ@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-14066-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <BANLkTi=kGxL9N-RNqxmeqs4zeYo0zzfmhQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: Linus Walleij <linus.walleij@linaro.org>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tony Lindgren <tony@atomide.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=14066
+On Tuesday 19 April 2011, Linus Walleij wrote:
+> I will surely put that into drivers/regulator, Mark already requested that
+> as part of his review.
+> 
+> The problem is that it is dependent on the PRCMU driver which
+> provides the communication mechanism to actually control these
+> regulators.
+> 
+> The PRCMU is the Power Reset and Control Management Unit,
+> it is a register pages where you send commands to a firmware
+> running on its own CPU on the other side, partly using mailboxes.
+> The firmware handles things like voltage and power domains
+> (modeled as regulators), frequency changes (using CPUfreq),
+> idle states (CPUidle and sleep, idling), as well as resetting
+> particular memory blocks AND an I2C channel to the AB8500
+> chip (driven from drivers/ab8500-core.c indeed) and some
+> GPIO configuration.
 
+Ok, thanks for the explanation.
 
-Zhang Rui <rui.zhang@intel.com> changed:
+> Thinking of it, is it OK to put chip CPUfreq drivers into
+> drivers/cpufreq/* instead of into the arch/arm/* platform
+> code as everyone does right now? We could probably
+> fix that and bring down the diffstat considerably.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |REJECTED
-                 CC|                            |rui.zhang@intel.com
-         Resolution|                            |INSUFFICIENT_DATA
+That's something to discuss with Dave Jones and other people
+interested in cpufre. Right now, all cpufreq drivers, including
+those for other architectures are in arch/.
 
+I think it would be good to have the out of the individual
+platforms, in particular in order to get better reviews of
+new cpufreq drivers by people that are interested in them.
 
-
-
---- Comment #3 from Zhang Rui <rui.zhang@intel.com>  2011-04-19 07:50:43 ---
-bug closed as there is no response from the bug reporter.
-please re-open it if the problem still exists in the latest upstream kernel.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+	Arnd
