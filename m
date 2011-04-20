@@ -1,57 +1,58 @@
-From: Arnd Bergmann <arnd@arndb.de>
+From: Linus Walleij <linus.walleij@linaro.org>
 Subject: Re: Status of arch/arm in linux-next
-Date: Tue, 19 Apr 2011 19:12:47 +0200
-Message-ID: <201104191912.48003.arnd@arndb.de>
-References: <20110414094447.GA1611@n2100.arm.linux.org.uk> <201104191801.19348.arnd@arndb.de> <20110419162742.GB24372@redhat.com>
+Date: Wed, 20 Apr 2011 08:36:55 +0200
+Message-ID: <BANLkTikYMFjjO+igBLN+FoXtWC_uroVUPQ@mail.gmail.com>
+References: <20110414094447.GA1611@n2100.arm.linux.org.uk>
+	<201104191655.13133.arnd@arndb.de>
+	<BANLkTi=kGxL9N-RNqxmeqs4zeYo0zzfmhQ@mail.gmail.com>
+	<201104191801.19348.arnd@arndb.de>
+	<20110419162742.GB24372@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        bh=aMlqk15yfljf4CwRTSEiYKb/U/qU1hCIRVvXwc55anc=;
+        b=KlZAmdTTRfchbNeLIQYNnjBdrwSQpEyUKz6wz0Yzo3x4/HVq97RY49sn58jh6jRpgK
+         okhsixhD7Ph+DD+JbyffkxwiUPmagdL9MRg8h1/IM5TCnI5+kJ7CktTAIN3kZJFlcInZ
+         QtEVx7hlhRho+d6kq9Qx7Vjoe5xGG8IHKx6Dc=
 In-Reply-To: <20110419162742.GB24372@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 To: Dave Jones <davej@redhat.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tony Lindgren <tony@atomide.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 
-On Tuesday 19 April 2011 18:27:42 Dave Jones wrote:
-> On Tue, Apr 19, 2011 at 06:01:19PM +0200, Arnd Bergmann wrote:
->  > > Thinking of it, is it OK to put chip CPUfreq drivers into
->  > > drivers/cpufreq/* instead of into the arch/arm/* platform
->  > > code as everyone does right now? We could probably
->  > > fix that and bring down the diffstat considerably.
->  > 
->  > That's something to discuss with Dave Jones and other people
->  > interested in cpufre. Right now, all cpufreq drivers, including
->  > those for other architectures are in arch/.
->  > 
->  > I think it would be good to have the out of the individual
->  > platforms, in particular in order to get better reviews of
->  > new cpufreq drivers by people that are interested in them.
-> 
+2011/4/19 Dave Jones <davej@redhat.com>:
+
 > The platform drivers are by their nature architecture specific,
-> so arch/ seems apropos.  drivers/platform/arm/ maybe ?
-> 
+> so arch/ seems apropos. =A0drivers/platform/arm/ maybe ?
+
+I opted for putting stuff in there, it was not popular, it will probabl=
+y
+just cause overpopulation there instead, like drivers/misc is doing
+right now :-(
+
 > Though, having arm do something different to every other arch seems
 > a bit awkward too. Everyone else has their cpufreq platform driver
-> somewhere under arch/whatever/../cpufreq/..  so changing that
+> somewhere under arch/whatever/../cpufreq/.. =A0so changing that
 > violates the principle of least surprise.
-> 
-> I'm also not convinced that moving them would increase review of changes.
-> 
+>
+> I'm also not convinced that moving them would increase review of chan=
+ges.
+>
 > What problem is this solving again ?
 
-Right now, every subarchitecture in arm implements a number of 
-drivers (irq, clocksource, gpio, pci, iommu, cpufreq, ...).
-These drivers are frequently copies of other existing ones with
-slight modifications or (worse) actually are written independently
-for the same IP blocks. In some cases, they are copies of drivers
-for stuff that is present in other architectures.
+Recent complaints from Linus (the other one) about overpopulation
+bad code reuse and patch collision churn in the arch/arm/* tree.
 
-We are discussing on a number of fronts to turn the source code
-layout from subarchitecture-centric to subsystem-centric, e.g.
-put all gpio drivers into one directory instead of each one
-into the directory for its (sub)architecture, in order to improve
-the abstractions and code reuse we have between the different
-implementations.
+If all cpufreq drivers (including the x86 ones!) were under
+drivers/cpufreq/* it would mean better review and more
+opportunity for consolidation I guess? We could begin the move
+with a few ARM architectures. Do you agree?
 
-	Arnd
+Yours,
+Linus Walleij
