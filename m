@@ -1,40 +1,55 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 0/2] cpupower: Rename from cpupowerutils to cpupower
-Date: Thu, 21 Apr 2011 17:50:24 +0200
-Message-ID: <1303401026-38432-1-git-send-email-trenn@suse.de>
+Subject: cpupower packaging
+Date: Thu, 21 Apr 2011 18:00:55 +0200
+Message-ID: <201104211800.55548.trenn@suse.de>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux@dominikbrodowski.net
-Cc: Thomas Renninger <trenn@suse.de>
+Content-Type: Text/Plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-As the tool sits in tools/power/cpupower, the package should better
-be named cpupower instead of cpupowerutils.
-It's only some unintrusive changes...
+Whoevers interested or like to suggest changes...
 
-For renameing libcpufreq->libcpupower:
-If people rely on libcpufreq, it's easy to provide
-it additionally for compatibility reasons for a while.
-For cpufrequtils getting renamed and hopefully added to
-the kernel soon, there should be a clean cut and things
-should be done properly: provide one library called libcpupower.
+I set up cpupower packages in my home repository,
+you find builds against openSUSE factory/11.4/11.3
+here:
+http://download.opensuse.org/repositories/home:/trenn/
 
-Patches based on Dominik's latest cpupowerutils tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpupowerutils.git
+Suggestions, improvements, comments welcome.
 
-Please consider to apply.
+Thanks,
 
-Thomas Renninger (2):
-  cpupowerutils: Rename: libcpufreq->libcpupower
-  cpupower: Rename package from cpupowerutils to cpupower
+    Thomas
 
- tools/power/cpupower/Makefile       |   38 +++++++++++++++++-----------------
- tools/power/cpupower/bench/Makefile |    2 +-
- 2 files changed, 20 insertions(+), 20 deletions(-)
+cpupower-2.6.39-1.x86_64.rpm:
+/usr/bin/cpupower
+/usr/share/locale/cs/LC_MESSAGES/cpupower.mo
+/usr/share/locale/de/LC_MESSAGES/cpupower.mo
+/usr/share/locale/fr/LC_MESSAGES/cpupower.mo
+/usr/share/locale/it/LC_MESSAGES/cpupower.mo
+/usr/share/locale/pt/LC_MESSAGES/cpupower.mo
+/usr/share/man/man1/cpupower-frequency-info.1.gz
+/usr/share/man/man1/cpupower-frequency-set.1.gz
+/usr/share/man/man1/cpupower-info.1.gz
+/usr/share/man/man1/cpupower-monitor.1.gz
+/usr/share/man/man1/cpupower-set.1.gz
+/usr/share/man/man1/cpupower.1.gz
 
--- 
-1.7.3.4
+cpupower-bench-2.6.39-1.x86_64.rpm:
+/etc/cpufreq-bench.conf
+/usr/bin/cpufreq-bench_plot.sh
+/usr/sbin/cpufreq-bench
+/usr/share/doc/packages/cpupower
+/usr/share/doc/packages/cpupower/README-BENCH
+/usr/share/doc/packages/cpupower/examples
+/usr/share/doc/packages/cpupower/examples/cpufreq-bench_script.sh
 
+cpupower-devel-2.6.39-1.x86_64.rpm:
+/usr/include/cpufreq.h
+/usr/lib64/libcpupower.so
+
+libcpupower0-2.6.39-1.x86_64.rpm:
+/usr/lib64/libcpupower.so.0
+/usr/lib64/libcpupower.so.0.0.0
