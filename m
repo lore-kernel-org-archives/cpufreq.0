@@ -1,47 +1,145 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Status of arch/arm in linux-next
-Date: Fri, 22 Apr 2011 00:17:21 -0700
-Message-ID: <20110422071721.GC841@atomide.com>
-References: <20110414094447.GA1611@n2100.arm.linux.org.uk>
-	<201104191655.13133.arnd@arndb.de>
-	<BANLkTi=kGxL9N-RNqxmeqs4zeYo0zzfmhQ@mail.gmail.com>
-	<201104191801.19348.arnd@arndb.de>
-	<20110419160545.GJ1765@opensource.wolfsonmicro.com>
-	<20110421201455.GA18083@redhat.com>
-	<alpine.LFD.2.00.1104211629300.24613@xanadu.home>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 33742] Unable to raise CPU frequency of notebook after AC
+ adapter disconnect and reconnect
+Date: Fri, 22 Apr 2011 09:17:27 GMT
+Message-ID: <201104220917.p3M9HRsb005158@demeter1.kernel.org>
+References: <bug-33742-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1104211629300.24613@xanadu.home>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Jones <davej@redhat.com>, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-33742-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
 
-* Nicolas Pitre <nicolas.pitre@linaro.org> [110421 13:59]:
-> On Thu, 21 Apr 2011, Dave Jones wrote:
-> 
-> > On Tue, Apr 19, 2011 at 05:05:46PM +0100, Mark Brown wrote:
-> 
-> > This is why I don't believe that moving this code from arch/ to drivers/
-> > will change anything.
-> 
-> That at least would have the property of gathering drivers together 
-> according to their _purpose_, irrespective of their implementation 
-> details.  That's the case for all the other class of drivers already. 
-> Why would cpufreq drivers be different?
+https://bugzilla.kernel.org/show_bug.cgi?id=3D33742
 
-And drivers do have well defined standards, so that automatically prevents
-people sneaking in spaghetti calls to platform specific code ;)
 
-Tony
+Thomas Renninger <trenn@suse.de> changed:
+
+           What    |Removed                     |Added
+-----------------------------------------------------------------------=
+-----
+                 CC|                            |trenn@suse.de
+          Component|cpufreq                     |BIOS
+         AssignedTo|cpufreq@vger.kernel.org     |acpi_bios@kernel-bugs.=
+osdl.
+                   |                            |org
+            Product|Power Management            |ACPI
+
+
+
+
+--- Comment #5 from Thomas Renninger <trenn@suse.de>  2011-04-21 10:13:=
+12 ---
+> and the problems that I am seeing date back from at least version 2.6=
+=2E24, from
+> what I can remember.
+Most likely a BIOS, _PPC issue, yes it is:
+before:
+/sys/devices/system/cpu/cpu0/cpufreq/bios_limit:2001000
+after:
+/sys/devices/system/cpu/cpu0/cpufreq/bios_limit:800000
+
+That means _PPC does not return 0 anymore and BIOS tells the OS to limi=
+t the
+frequency. This is an ACPI problem, cpufreq subsystem bevhaves fine (at=
+ least
+this was always the case with similar bug reports recently).
+-> Re-assign to ACPI component.
+
+> Please attach dmesg output including an AC unplug/replug cycle.
+Best boot with log_buf_len=3D16777216
+before you do the unplug/replug cycle copy this into a file, make it ex=
+ecutable
+and follow instructions:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+#!/bin/bash
+
+echo 0xFFFFFFFF >/sys/module/acpi/parameters/debug_layer
+echo 0xF >/sys/module/acpi/parameters/debug_level
+echo 7 >/sys/module/cpufreq/parameters/debug
+logger "Before unplug"
+echo "It's time to unplug ..."
+sleep 5
+logger "AC got unplugged"
+echo "It's time to re-plug"
+sleep 5
+echo 0x0 >/sys/module/acpi/parameters/debug_layer
+echo 0 >/sys/module/cpufreq/parameters/debug
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+and then attach whole dmesg and also acpidump output.
+
+Hm, before you should check for a BIOS upgrade and whether you find rel=
+ated
+BIOS settings.
+
+--- Comment #6 from Rog=C3=A9rio Brito <rbrito@ime.usp.br>  2011-04-22 =
+09:17:19 ---
+Hi, Rafael, Thomas.
+
+Thank you for your answers. Here comes my follow up.
+
+(In reply to comment #5)
+> That means _PPC does not return 0 anymore and BIOS tells the OS to li=
+mit the
+> frequency. This is an ACPI problem, cpufreq subsystem bevhaves fine (=
+at least
+> this was always the case with similar bug reports recently).
+> -> Re-assign to ACPI component.
+
+OK, sorry for assigning that to the wrong component. It is not always o=
+bvious
+where to file some bugs.
+
+> > Please attach dmesg output including an AC unplug/replug cycle.
+> Best boot with log_buf_len=3D16777216
+> before you do the unplug/replug cycle copy this into a file, make it =
+executable
+> and follow instructions:
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> #!/bin/bash
+>=20
+> echo 0xFFFFFFFF >/sys/module/acpi/parameters/debug_layer
+> echo 0xF >/sys/module/acpi/parameters/debug_level
+> echo 7 >/sys/module/cpufreq/parameters/debug
+> logger "Before unplug"
+> echo "It's time to unplug ..."
+> sleep 5
+> logger "AC got unplugged"
+> echo "It's time to re-plug"
+> sleep 5
+> echo 0x0 >/sys/module/acpi/parameters/debug_layer
+> echo 0 >/sys/module/cpufreq/parameters/debug
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+OK. I did all that. As the logs are very big, I am including them compr=
+essed
+here. Please let me know if that's not what you want.
+
+> Hm, before you should check for a BIOS upgrade and whether you find r=
+elated
+> BIOS settings.
+
+Unfortunately, I first tried to find the most recent BIOS update from t=
+he
+manufacturer (it's dated from 2010, IIRC) and, then, after flashing and
+noticing that it wasn't working, I filed the bug.
+
+I don't quite expect any updated version of the BIOS from MSI. Would th=
+ere be
+any way to circumvent the buggy BIOS? If not in a clean and generic way=
+,
+perhaps passing the kernel any extra option?
+
+
+Thanks,
+
+Rog=C3=A9rio Brito.
+
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
