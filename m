@@ -1,43 +1,57 @@
-From: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
-Subject: [PATCH] cpufreq: Fix _OSC UUID in pcc-cpufreq
-Date: Tue, 26 Apr 2011 17:05:18 +0000 (UTC)
-Message-ID: <20110426170002.2270.66607.sendpatchset@nchumbalkar.americas.hpqcorp.net>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Status of arch/arm in linux-next
+Date: Tue, 26 Apr 2011 14:15:08 -0400
+Message-ID: <20110426181508.GB1908@redhat.com>
+References: <20110414094447.GA1611@n2100.arm.linux.org.uk>
+	<alpine.LFD.2.00.1104211629300.24613@xanadu.home>
+	<201104261605.26791.arnd@arndb.de> <201104261904.45923.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com
-Cc: Naga Chumbalkar <nagananda.chumbalkar@hp.com>, cpufreq@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <201104261904.45923.rjw@sisk.pl>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Tony Lindgren <tony@atomide.com>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-UUID needs to be written out the way it is described in
-Sec 18.5.124 of ACPI 4.0a Specification.
+On Tue, Apr 26, 2011 at 07:04:45PM +0200, Rafael J. Wysocki wrote:
+ > On Tuesday, April 26, 2011, Arnd Bergmann wrote:
+ > > On Thursday 21 April 2011, Nicolas Pitre wrote:
+ > > > > if there's commonality between some of the ARM arch drivers, why can't
+ > > > > there be a arch/arm/cpufreq/ dir for the shared code, and do everything there ?
+ > > > 
+ > > > Because usually there isn't.  "ARM" is just a CPU architecture, not a 
+ > > > system architecture.  Everything around the core is different from one 
+ > > > vendor to the next.  And when commonality exists it is much easier to 
+ > > > deal with if it is close together.
+ > > 
+ > > Exactly. To make matters worse, we are starting to see a number of vendors
+ > > that use multiple CPU architectures with the same I/O devices (e.g. Renesas,
+ > > Freescale, Xilinx, TI, ...). Not sure if any of these use the same cpufreq
+ > > register on more than one architecture, but it's quite likely to happen
+ > > at some point.
+ > 
+ > Indeed.  So in my opinion it makes sense to move code into the drivers
+ > directory, at least the code that's going to be used by multiple platforms
+ > (that need not be a complete driver).
 
-Platform firmware's use of this UUID/_OSC is optional, which is
-why we didn't notice this bug earlier.
+Ok, so my opinion on this has changed a little over the weekend.
+I don't totally hate it now, but I'm still not a huge fan.
+That said, I won't stand in the way if this is what everyone agrees is
+the way forward.
 
-Signed-off-by: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
----
-diff --git a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
-index 755a31e..907c8e6 100644
---- a/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/pcc-cpufreq.c
-@@ -39,7 +39,7 @@
- 
- #include <acpi/processor.h>
- 
--#define PCC_VERSION 	"1.00.00"
-+#define PCC_VERSION	"1.10.00"
- #define POLL_LOOPS 	300
- 
- #define CMD_COMPLETE 	0x1
-@@ -102,7 +102,7 @@ static struct acpi_generic_address doorbell;
- static u64 doorbell_preserve;
- static u64 doorbell_write;
- 
--static u8 OSC_UUID[16] = {0x63, 0x9B, 0x2C, 0x9F, 0x70, 0x91, 0x49, 0x1f,
-+static u8 OSC_UUID[16] = {0x9F, 0x2C, 0x9B, 0x63, 0x91, 0x70, 0x1f, 0x49,
- 			  0xBB, 0x4F, 0xA5, 0x98, 0x2F, 0xA1, 0xB5, 0x46};
- 
- struct pcc_cpu {
+in cpufreq.next I moved the x86 drivers over.  Someone look it over ?
+If that looks like what you all had in mind, start sending me the patches
+for other arches, and I'll get them queued up for .40
+
+	Dave
