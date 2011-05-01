@@ -1,40 +1,49 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
+From: Jamie Lokier <jamie@shareable.org>
 Subject: Re: Status of arch/arm in linux-next
-Date: Fri, 29 Apr 2011 20:05:31 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1104292004410.24613@xanadu.home>
-References: <20110414094447.GA1611@n2100.arm.linux.org.uk> <alpine.LFD.2.00.1104211629300.24613@xanadu.home> <201104261605.26791.arnd@arndb.de> <201104261904.45923.rjw@sisk.pl> <20110426181508.GB1908@redhat.com> <20110429201521.GC12256@redhat.com>
+Date: Mon, 2 May 2011 00:02:13 +0100
+Message-ID: <20110501230213.GG5832@shareable.org>
+References: <20110414094447.GA1611@n2100.arm.linux.org.uk>
+	<20110421201455.GA18083@redhat.com>
+	<alpine.LFD.2.00.1104211629300.24613@xanadu.home>
+	<201104261605.26791.arnd@arndb.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20110429201521.GC12256@redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arnd Bergmann <arnd@arndb.de>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <201104261605.26791.arnd@arndb.de>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Jones <davej@redhat.com>, linux-arm-kernel@lists.infradead.org
 
-On Fri, 29 Apr 2011, Dave Jones wrote:
-
-> On Tue, Apr 26, 2011 at 02:15:08PM -0400, Dave Jones wrote:
+Arnd Bergmann wrote:
+> On Thursday 21 April 2011, Nicolas Pitre wrote:
+> > > if there's commonality between some of the ARM arch drivers, why can't
+> > > there be a arch/arm/cpufreq/ dir for the shared code, and do everything there ?
+> > 
+> > Because usually there isn't.  "ARM" is just a CPU architecture, not a 
+> > system architecture.  Everything around the core is different from one 
+> > vendor to the next.  And when commonality exists it is much easier to 
+> > deal with if it is close together.
 > 
->  >  > Indeed.  So in my opinion it makes sense to move code into the drivers
->  >  > directory, at least the code that's going to be used by multiple platforms
->  >  > (that need not be a complete driver).
->  > 
->  > Ok, so my opinion on this has changed a little over the weekend.
->  > I don't totally hate it now, but I'm still not a huge fan.
->  > That said, I won't stand in the way if this is what everyone agrees is
->  > the way forward.
->  > 
->  > in cpufreq.next I moved the x86 drivers over.  Someone look it over ?
->  > If that looks like what you all had in mind, start sending me the patches
->  > for other arches, and I'll get them queued up for .40
-> 
-> FYI, this is now on the 'move-drivers' branch in cpufreq.git
-> Unless there's a good reason not to, I'm going to start pushing this to Linus
-> next merge window.
+> Exactly. To make matters worse, we are starting to see a number of vendors
+> that use multiple CPU architectures with the same I/O devices (e.g. Renesas,
+> Freescale, Xilinx, TI, ...). Not sure if any of these use the same cpufreq
+> register on more than one architecture, but it's quite likely to happen
+> at some point.
 
-Thanks.  Additional drivers should follow suit.
+Can't comment on in-tree SoCs, but out of tree (they use Linux but
+don't submit anything upstream as far as I can tell), Sigma Designs
+use ARM & MIPS CPU architectures, with the clock/timing registers, irq
+registers and more or less everything else being the same among them.
 
-
-Nicolas
+-- Jamie
