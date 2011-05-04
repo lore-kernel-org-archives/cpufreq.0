@@ -1,95 +1,97 @@
-From: steven finney <Steven.Finney@palm.com>
-Subject: [PATCH] Fix memory leak in cpufreq_stats.c (resubmit)
-Date: Mon, 02 May 2011 11:29:17 -0700
-Message-ID: <1304360957.13439.7.camel@LZ8002UA1030GLM>
+From: Tomas.Linden@Helsinki.FI
+Subject: Re: Intel Core 2 Quad Q8400 reported as Unknown CPU
+Date: Wed, 4 May 2011 14:19:36 +0300 (EEST)
+Message-ID: <alpine.LFD.2.00.1105041413220.2195@tux.hip.helsinki.fi>
+References: <alpine.LFD.2.00.1104291730500.2256@tux.hip.helsinki.fi> <20110429192101.GA5498@redhat.com>
+Reply-To: Tomas.Linden@Helsinki.FI
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-546738350-1304507976=:2195"
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20110429192101.GA5498@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
-Cc: steven.finney@palm.com
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org
 
-Resubmitting this patch as a pure text file.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---------------------------------------
+--8323328-546738350-1304507976=:2195
+Content-Type: TEXT/PLAIN; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-When a CPU is taken offline in an SMP system, cpufreq_remove_dev()
-nulls out the per-cpu policy before cpufreq_stats_free_table() can
-make use of it.  cpufreq_stats_free_table() then skips the
-call to sysfs_remove_group(), leaving about 100 bytes of sysfs-related
-memory unclaimed each time a CPU-removal occurs. Break up
-cpu_stats_free_table into sysfs and table portions, and
-call the sysfs portion early.
+Hello Dave!
 
-Change-Id: I4d2eab13a68ead5943fe89dae6f71862b4fb3dd9
+On Fri, 29 Apr 2011, Dave Jones wrote:
 
-Signed-off-by: Steven Finney <steven.finney@palm.com>
----
- drivers/cpufreq/cpufreq_stats.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
+ > On Fri, Apr 29, 2011 at 05:50:00PM +0300, Tomas.Linden@helsinki.fi wrote:
+ >  > Hello!
+ >  >
+ >  > I upgraded my Intel Core 2 Duo to a Core 2 Quad Q8400 on my Intel DP3=
+5DP motherboard.
+ >  > I send this mail because I found this messages in my dmesg:
+ >  >
+ >  > p4-clockmod: Unknown CPU. Please send an e-mail to <cpufreq@vger.kern=
+el.org>
+ >  > p4-clockmod: Unknown CPU. Please send an e-mail to <cpufreq@vger.kern=
+el.org>
+ >  > p4-clockmod: Unknown CPU. Please send an e-mail to <cpufreq@vger.kern=
+el.org>
+ >  > p4-clockmod: Unknown CPU. Please send an e-mail to <cpufreq@vger.kern=
+el.org>
+ >
+ > ignore it, p4-clockmod is a waste of bits anyway.
+ >
+ >  > cpuinfo and dmesg are at the end of this e-mail. I'm a bit worried be=
+cause
+ >  > I bought the new CPU to have hardware virtualization support (VT-X).
+ >  >   http://ark.intel.com/Product.aspx?id=3D38512&processor=3DQ8400&spec=
+-codes=3DSLGT6
+ >  > but cpuinfo does not list the vtx flag for me. I'm using Fedora 13 an=
+d I
+ >  > tried booting to a F14 USB stick as well and neither shows the vtx fl=
+ag.
+ >
+ >  ...
+ >
+ >  > processor	: 0
+ >  > vendor_id	: GenuineIntel
+ >  > cpu family	: 6
+ >  > model		: 23
+ >  > model name	: 06/17
+ >                   ^^^^^
+ > This is a sign your BIOS has no idea what that CPU is. It should be a ni=
+ce
+ > non-numeric name.
+ >
+ > Which could explain why VTX isn't showing up.  (Possibly also EST too, w=
+hich
+ > would be much better than using p4-clockmod).
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 00d73fc..4f1b8de 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -165,17 +165,27 @@ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
- 	return -1;
- }
- 
-+/* should be called late in the CPU removal sequence so that the stats
-+ * memory is still available in case someone tries to use it.
-+ */
- static void cpufreq_stats_free_table(unsigned int cpu)
- {
- 	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
--	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
--	if (policy && policy->cpu == cpu)
--		sysfs_remove_group(&policy->kobj, &stats_attr_group);
- 	if (stat) {
- 		kfree(stat->time_in_state);
- 		kfree(stat);
- 	}
- 	per_cpu(cpufreq_stats_table, cpu) = NULL;
-+}
-+
-+/* must be called early in the CPU removal sequence (before
-+ * cpufreq_remove_dev) so that policy is still valid.
-+ */
-+static void cpufreq_stats_free_sysfs(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-+	if (policy && policy->cpu == cpu)
-+		sysfs_remove_group(&policy->kobj, &stats_attr_group);
- 	if (policy)
- 		cpufreq_cpu_put(policy);
- }
-@@ -316,6 +326,9 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 	case CPU_ONLINE_FROZEN:
- 		cpufreq_update_policy(cpu);
- 		break;
-+	case CPU_DOWN_PREPARE:
-+		cpufreq_stats_free_sysfs(cpu);
-+		break;
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		cpufreq_stats_free_table(cpu);
-@@ -324,9 +337,11 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 	return NOTIFY_OK;
- }
- 
-+/* priority=1 so this will get called before cpufreq_remove_dev */
- static struct notifier_block cpufreq_stat_cpu_notifier __refdata =
- {
- 	.notifier_call = cpufreq_stat_cpu_callback,
-+	.priority = 1,
- };
- 
- static struct notifier_block notifier_policy_block = {
--- 
-1.7.0.4
+ > Look for a BIOS update.
 
+Thanks for the hint about the BIOS being the cause of the problem! I was
+running the very latest BIOS available for this motheboard, but Intel
+suggested that I restore default BIOS settings and recovery reflash the
+same BIOS version that I already was using to have the correct microcode
+being loaded by the BIOS into the CPU. This solved this problem. Now the
+  "p4-clockmod: Unknown CPU. Please send an e-mail to <cpufreq@vger.kernel.=
+org>"
+messages are gone from my dmesg and /proc/cpuinfo recognizes my CPU as
+  processor       : 0
+  vendor_id       : GenuineIntel
+  cpu family      : 6
+  model           : 23
+  model name      : Intel(R) Core(TM)2 Quad CPU    Q8400  @ 2.66GHz
 
-
-
+Best regards,                          Tomas Lind=E9n
+--------------------------------------------------------------------------
+I           ,                                                            I
+I Tomas Linden                   Helsinki Institute of Physics (HIP)     I
+I Tomas.Linden@Helsinki.FI       P.O. Box 64 (Gustaf H=E4llstr=F6min katu 2=
+) I
+I phone: +358-9-191 505 63       FI-00014 UNIVERSITY OF HELSINKI         I
+I fax:   +358-9-191 505 22       Finland                                 I
+I WWW: http://www.physics.helsinki.fi/~tlinden/eindex.html               I
+--------------------------------------------------------------------------
+--8323328-546738350-1304507976=:2195--
