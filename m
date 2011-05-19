@@ -1,31 +1,56 @@
-From: Matthew Garrett <mjg@redhat.com>
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
 Subject: Re: [PATCH 1/5] acpi-cpufreq: Add support for modern AMD CPUs
-Date: Tue, 17 May 2011 19:17:33 +0100
-Message-ID: <20110517181733.GA26018@srcf.ucam.org>
+Date: Thu, 19 May 2011 09:26:46 +0200
+Message-ID: <20110519072646.GB19481@alberich.amd.com>
 References: <1305651819-25660-1-git-send-email-mjg@redhat.com>
- <20110517173536.GI30053@aftab>
- <20110517174233.GA25111@srcf.ucam.org>
- <20110517181353.GC26422@gere.osrc.amd.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20110517181353.GC26422@gere.osrc.amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1305651819-25660-1-git-send-email-mjg@redhat.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@amd64.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "davej@redhat.com" <davej@redhat.com>, "Langsdorf, Mark" <mark.langsdorf@amd.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, borislav.petkov@amd.com, davej@redhat.com, mark.langsdorf@amd.com, cpufreq@vger.kernel.org
 
-On Tue, May 17, 2011 at 08:13:53PM +0200, Borislav Petkov wrote:
+On Tue, May 17, 2011 at 01:03:35PM -0400, Matthew Garrett wrote:
+> The programming model for P-states on modern AMD CPUs is very similar to
+> that of Intel and VIA. It makes sense to consolidate this support into one
+> driver rather than duplicating functionality between two of them. This
+> patch adds support for AMDs with hardware P-state control to acpi-cpufreq.
 
-> Right, but I don't think that would be different on Intel and
-> static_cpu_has is faster with the alternatives mechanism anyway.
+I think it's a good idea to move the stuff into the more general
+driver.  (And this way powernow-k8 becomes what it is supposed to be
+-- relevant for K8 CPUs only.)  From a first glance most stuff looks
+fine. (but detailed review and testing still outstanding.)
 
-From a neatness perspective it might be reasonable to add it like this 
-and then just fix both up in one go, but the same argument applies to 
-fixing the intel case first and then applying this patchset. So I'm 
-happy enough changing that.
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> ---
+>  arch/x86/include/asm/cpufeature.h          |    1 +
+>  arch/x86/include/asm/msr-index.h           |    2 +
+>  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   43 ++++++++++++++++++++++++----
+>  arch/x86/kernel/cpu/scattered.c            |    1 +
+>  4 files changed, 41 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+> index 91f3e087..fee7089 100644
+> --- a/arch/x86/include/asm/cpufeature.h
+> +++ b/arch/x86/include/asm/cpufeature.h
+> @@ -174,6 +174,7 @@
+>  #define X86_FEATURE_PLN		(7*32+ 5) /* Intel Power Limit Notification */
+>  #define X86_FEATURE_PTS		(7*32+ 6) /* Intel Package Thermal Status */
+>  #define X86_FEATURE_DTS		(7*32+ 7) /* Digital Thermal Sensor */
+> +#define X86_FEATURE_POWERNOW	(7*32+ 8) /* AMD frequency scaling */
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I think it shouldn't be named like that. I'd rather call it
+HW_PSTATE. The more general term POWERNOW is also associated with the
+old FID/VID control method of changing frequencies on AMD CPUs.  Also
+AMD documentation refers to this feature as HwPstate.
+
+
+Regards,
+
+Andreas
+
+
