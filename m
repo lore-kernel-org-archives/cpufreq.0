@@ -1,56 +1,408 @@
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 1/5] acpi-cpufreq: Add support for modern AMD CPUs
-Date: Thu, 19 May 2011 09:26:46 +0200
-Message-ID: <20110519072646.GB19481@alberich.amd.com>
-References: <1305651819-25660-1-git-send-email-mjg@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH] Add cpufreq driver for Momentum Maple boards
+Date: Sat, 21 May 2011 14:28:46 +0400
+Message-ID: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1305651819-25660-1-git-send-email-mjg@redhat.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:from:to:cc:subject:date:message-id:x-mailer;
+        bh=dB2ATeFbTypTUJakcs62M0cYW6X5L4koKpkjkmE+Qwo=;
+        b=tfWC9NWv1Z9E5M2W7jKuAHKkM+ft7cjLjvp+++X6d7COpQQ+AecGWBXlm6YJXXIg8m
+         Bkpju6iVSiT1MDqPRit1ViB62y3ifB1bpM/KGxO/hJOGSPIjPKNpF0IcyceqBArozRvc
+         gzzeQVf2LNLW75BsgcDS+YBffeOgIv3dI+idk=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, borislav.petkov@amd.com, davej@redhat.com, mark.langsdorf@amd.com, cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 
-On Tue, May 17, 2011 at 01:03:35PM -0400, Matthew Garrett wrote:
-> The programming model for P-states on modern AMD CPUs is very similar to
-> that of Intel and VIA. It makes sense to consolidate this support into one
-> driver rather than duplicating functionality between two of them. This
-> patch adds support for AMDs with hardware P-state control to acpi-cpufreq.
+Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
+kit and others). Driver is based on a cpufreq driver for 64-bit powermac
+boxes with all pmac-dependant features removed and simple cleanup
+applied.
 
-I think it's a good idea to move the stuff into the more general
-driver.  (And this way powernow-k8 becomes what it is supposed to be
--- relevant for K8 CPUs only.)  From a first glance most stuff looks
-fine. (but detailed review and testing still outstanding.)
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/powerpc/kernel/misc_64.S          |    4 +-
+ arch/powerpc/platforms/Kconfig         |    8 +
+ arch/powerpc/platforms/maple/Makefile  |    1 +
+ arch/powerpc/platforms/maple/cpufreq.c |  317 ++++++++++++++++++++++++++++++++
+ 4 files changed, 328 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> ---
->  arch/x86/include/asm/cpufeature.h          |    1 +
->  arch/x86/include/asm/msr-index.h           |    2 +
->  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   43 ++++++++++++++++++++++++----
->  arch/x86/kernel/cpu/scattered.c            |    1 +
->  4 files changed, 41 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-> index 91f3e087..fee7089 100644
-> --- a/arch/x86/include/asm/cpufeature.h
-> +++ b/arch/x86/include/asm/cpufeature.h
-> @@ -174,6 +174,7 @@
->  #define X86_FEATURE_PLN		(7*32+ 5) /* Intel Power Limit Notification */
->  #define X86_FEATURE_PTS		(7*32+ 6) /* Intel Package Thermal Status */
->  #define X86_FEATURE_DTS		(7*32+ 7) /* Digital Thermal Sensor */
-> +#define X86_FEATURE_POWERNOW	(7*32+ 8) /* AMD frequency scaling */
-
-I think it shouldn't be named like that. I'd rather call it
-HW_PSTATE. The more general term POWERNOW is also associated with the
-old FID/VID control method of changing frequencies on AMD CPUs.  Also
-AMD documentation refers to this feature as HwPstate.
-
-
-Regards,
-
-Andreas
-
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 206a321..c442aae 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -339,7 +339,7 @@ _GLOBAL(real_205_writeb)
+ #endif /* CONFIG_PPC_PASEMI */
+ 
+ 
+-#ifdef CONFIG_CPU_FREQ_PMAC64
++#if defined(CONFIG_CPU_FREQ_PMAC64) || defined(CONFIG_CPU_FREQ_MAPLE)
+ /*
+  * SCOM access functions for 970 (FX only for now)
+  *
+@@ -408,7 +408,7 @@ _GLOBAL(scom970_write)
+ 	/* restore interrupts */
+ 	mtmsrd	r5,1
+ 	blr
+-#endif /* CONFIG_CPU_FREQ_PMAC64 */
++#endif /* CONFIG_CPU_FREQ_PMAC64 || CONFIG_CPU_FREQ_MAPLE */
+ 
+ 
+ /*
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index f7b0772..4c5eb5b 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -187,6 +187,14 @@ config PPC_PASEMI_CPUFREQ
+ 	  This adds the support for frequency switching on PA Semi
+ 	  PWRficient processors.
+ 
++config CPU_FREQ_MAPLE
++	bool "Support for Maple 970FX Evaluation Board"
++	depends on PPC_MAPLE
++	select CPU_FREQ_TABLE
++	help
++	  This adds support for frequency switching on Maple 970FX
++	  Evaluation Board and compatible boards (IBM JS2x blades).
++
+ endmenu
+ 
+ config PPC601_SYNC_FIX
+diff --git a/arch/powerpc/platforms/maple/Makefile b/arch/powerpc/platforms/maple/Makefile
+index 1be1a99..0b3e3e3 100644
+--- a/arch/powerpc/platforms/maple/Makefile
++++ b/arch/powerpc/platforms/maple/Makefile
+@@ -1 +1,2 @@
+ obj-y	+= setup.o pci.o time.o
++obj-$(CONFIG_CPU_FREQ_MAPLE) += cpufreq.o
+diff --git a/arch/powerpc/platforms/maple/cpufreq.c b/arch/powerpc/platforms/maple/cpufreq.c
+new file mode 100644
+index 0000000..854adfa
+--- /dev/null
++++ b/arch/powerpc/platforms/maple/cpufreq.c
+@@ -0,0 +1,317 @@
++/*
++ *  Copyright (C) 2011 Dmitry Eremin-Solenikov
++ *  Copyright (C) 2002 - 2005 Benjamin Herrenschmidt <benh@kernel.crashing.org>
++ *  and                       Markus Demleitner <msdemlei@cl.uni-heidelberg.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This driver adds basic cpufreq support for SMU & 970FX based G5 Macs,
++ * that is iMac G5 and latest single CPU desktop.
++ */
++
++#undef DEBUG
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/sched.h>
++#include <linux/cpufreq.h>
++#include <linux/init.h>
++#include <linux/completion.h>
++#include <linux/mutex.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/irq.h>
++#include <asm/sections.h>
++#include <asm/cputable.h>
++#include <asm/time.h>
++
++#define DBG(fmt...) pr_debug(fmt)
++
++/* see 970FX user manual */
++
++#define SCOM_PCR 0x0aa001			/* PCR scom addr */
++
++#define PCR_HILO_SELECT		0x80000000U	/* 1 = PCR, 0 = PCRH */
++#define PCR_SPEED_FULL		0x00000000U	/* 1:1 speed value */
++#define PCR_SPEED_HALF		0x00020000U	/* 1:2 speed value */
++#define PCR_SPEED_QUARTER	0x00040000U	/* 1:4 speed value */
++#define PCR_SPEED_MASK		0x000e0000U	/* speed mask */
++#define PCR_SPEED_SHIFT		17
++#define PCR_FREQ_REQ_VALID	0x00010000U	/* freq request valid */
++#define PCR_VOLT_REQ_VALID	0x00008000U	/* volt request valid */
++#define PCR_TARGET_TIME_MASK	0x00006000U	/* target time */
++#define PCR_STATLAT_MASK	0x00001f00U	/* STATLAT value */
++#define PCR_SNOOPLAT_MASK	0x000000f0U	/* SNOOPLAT value */
++#define PCR_SNOOPACC_MASK	0x0000000fU	/* SNOOPACC value */
++
++#define SCOM_PSR 0x408001			/* PSR scom addr */
++/* warning: PSR is a 64 bits register */
++#define PSR_CMD_RECEIVED	0x2000000000000000U   /* command received */
++#define PSR_CMD_COMPLETED	0x1000000000000000U   /* command completed */
++#define PSR_CUR_SPEED_MASK	0x0300000000000000U   /* current speed */
++#define PSR_CUR_SPEED_SHIFT	(56)
++
++/*
++ * The G5 only supports two frequencies (Quarter speed is not supported)
++ */
++#define CPUFREQ_HIGH                  0
++#define CPUFREQ_LOW                   1
++
++static struct cpufreq_frequency_table g5_cpu_freqs[] = {
++	{CPUFREQ_HIGH, 		0},
++	{CPUFREQ_LOW,		0},
++	{0,			CPUFREQ_TABLE_END},
++};
++
++static struct freq_attr* g5_cpu_freqs_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++/* Power mode data is an array of the 32 bits PCR values to use for
++ * the various frequencies, retrieved from the device-tree
++ */
++static int g5_pmode_cur;
++
++static DEFINE_MUTEX(g5_switch_mutex);
++
++static const u32 *g5_pmode_data;
++static int g5_pmode_max;
++
++/*
++ * Fake voltage switching for platforms with missing support
++ */
++
++static void g5_dummy_switch_volt(int speed_mode)
++{
++}
++
++/*
++ * SCOM based frequency switching for 970FX rev3
++ */
++static int g5_scom_switch_freq(int speed_mode)
++{
++	unsigned long flags;
++	int to;
++
++	/* If frequency is going up, first ramp up the voltage */
++	if (speed_mode < g5_pmode_cur)
++		g5_dummy_switch_volt(speed_mode);
++
++	local_irq_save(flags);
++
++	/* Clear PCR high */
++	scom970_write(SCOM_PCR, 0);
++	/* Clear PCR low */
++	scom970_write(SCOM_PCR, PCR_HILO_SELECT | 0);
++	/* Set PCR low */
++	scom970_write(SCOM_PCR, PCR_HILO_SELECT |
++		      g5_pmode_data[speed_mode]);
++
++	/* Wait for completion */
++	for (to = 0; to < 10; to++) {
++		unsigned long psr = scom970_read(SCOM_PSR);
++
++		if ((psr & PSR_CMD_RECEIVED) == 0 &&
++		    (((psr >> PSR_CUR_SPEED_SHIFT) ^
++		      (g5_pmode_data[speed_mode] >> PCR_SPEED_SHIFT)) & 0x3)
++		    == 0)
++			break;
++		if (psr & PSR_CMD_COMPLETED)
++			break;
++		udelay(100);
++	}
++
++	local_irq_restore(flags);
++
++	/* If frequency is going down, last ramp the voltage */
++	if (speed_mode > g5_pmode_cur)
++		g5_dummy_switch_volt(speed_mode);
++
++	g5_pmode_cur = speed_mode;
++	ppc_proc_freq = g5_cpu_freqs[speed_mode].frequency * 1000ul;
++
++	return 0;
++}
++
++static int g5_scom_query_freq(void)
++{
++	unsigned long psr = scom970_read(SCOM_PSR);
++	int i;
++
++	for (i = 0; i <= g5_pmode_max; i++)
++		if ((((psr >> PSR_CUR_SPEED_SHIFT) ^
++		      (g5_pmode_data[i] >> PCR_SPEED_SHIFT)) & 0x3) == 0)
++			break;
++	return i;
++}
++
++/*
++ * Common interface to the cpufreq core
++ */
++
++static int g5_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	return cpufreq_frequency_table_verify(policy, g5_cpu_freqs);
++}
++
++static int g5_cpufreq_target(struct cpufreq_policy *policy,
++	unsigned int target_freq, unsigned int relation)
++{
++	unsigned int newstate = 0;
++	struct cpufreq_freqs freqs;
++	int rc;
++
++	if (cpufreq_frequency_table_target(policy, g5_cpu_freqs,
++			target_freq, relation, &newstate))
++		return -EINVAL;
++
++	if (g5_pmode_cur == newstate)
++		return 0;
++
++	mutex_lock(&g5_switch_mutex);
++
++	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
++	freqs.new = g5_cpu_freqs[newstate].frequency;
++	freqs.cpu = 0;
++
++	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++	rc = g5_scom_switch_freq(newstate);
++	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++
++	mutex_unlock(&g5_switch_mutex);
++
++	return rc;
++}
++
++static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
++{
++	return g5_cpu_freqs[g5_pmode_cur].frequency;
++}
++
++static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	policy->cpuinfo.transition_latency = 12000;
++	policy->cur = g5_cpu_freqs[g5_scom_query_freq()].frequency;
++	/* secondary CPUs are tied to the primary one by the
++	 * cpufreq core if in the secondary policy we tell it that
++	 * it actually must be one policy together with all others. */
++	cpumask_copy(policy->cpus, cpu_online_mask);
++	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
++
++	return cpufreq_frequency_table_cpuinfo(policy,
++		g5_cpu_freqs);
++}
++
++
++static struct cpufreq_driver g5_cpufreq_driver = {
++	.name		= "maple",
++	.owner		= THIS_MODULE,
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.init		= g5_cpufreq_cpu_init,
++	.verify		= g5_cpufreq_verify,
++	.target		= g5_cpufreq_target,
++	.get		= g5_cpufreq_get_speed,
++	.attr		= g5_cpu_freqs_attr,
++};
++
++static int __init g5_cpufreq_init(void)
++{
++	struct device_node *cpus;
++	struct device_node *cpunode;
++	unsigned int psize;
++	unsigned long max_freq;
++	const u32 *valp;
++	u32 pvr_hi;
++	int rc = -ENODEV;
++
++	cpus = of_find_node_by_path("/cpus");
++	if (cpus == NULL) {
++		DBG("No /cpus node !\n");
++		return -ENODEV;
++	}
++
++	/* Get first CPU node */
++	for (cpunode = NULL;
++	     (cpunode = of_get_next_child(cpus, cpunode)) != NULL;) {
++		const u32 *reg = of_get_property(cpunode, "reg", NULL);
++		if (reg == NULL || (*reg) != 0)
++			continue;
++		if (!strcmp(cpunode->type, "cpu"))
++			break;
++	}
++	if (cpunode == NULL) {
++		printk(KERN_ERR "cpufreq: Can't find any CPU 0 node\n");
++		goto bail_cpus;
++	}
++
++	/* Check 970FX for now */
++	/* we actually don't care on which CPU to access PVR */
++	pvr_hi = PVR_VER(mfspr(SPRN_PVR));
++	if (pvr_hi != 0x3c && pvr_hi != 0x44) {
++		printk(KERN_ERR "cpufreq: Unsupported CPU version (%x)\n", pvr_hi);
++		goto bail_noprops;
++	}
++
++	/* Look for the powertune data in the device-tree */
++	g5_pmode_data = of_get_property(cpunode, "power-mode-data",&psize);
++	if (!g5_pmode_data) {
++		DBG("No power-mode-data !\n");
++		goto bail_noprops;
++	}
++	g5_pmode_max = psize / sizeof(u32) - 1;
++
++	/*
++	 * From what I see, clock-frequency is always the maximal frequency.
++	 * The current driver can not slew sysclk yet, so we really only deal
++	 * with powertune steps for now. We also only implement full freq and
++	 * half freq in this version. So far, I haven't yet seen a machine
++	 * supporting anything else.
++	 */
++	valp = of_get_property(cpunode, "clock-frequency", NULL);
++	if (!valp)
++		return -ENODEV;
++	max_freq = (*valp)/1000;
++	g5_cpu_freqs[0].frequency = max_freq;
++	g5_cpu_freqs[1].frequency = max_freq/2;
++
++	/* Force apply current frequency to make sure everything is in
++	 * sync (voltage is right for example). Firmware may leave us with
++	 * a strange setting ...
++	 */
++	g5_dummy_switch_volt(CPUFREQ_HIGH);
++	msleep(10);
++	g5_pmode_cur = -1;
++	g5_scom_switch_freq(g5_scom_query_freq());
++
++	printk(KERN_INFO "Registering G5 CPU frequency driver\n");
++	printk(KERN_INFO "Frequency method: SCOM, Voltage method: none\n");
++	printk(KERN_INFO "Low: %d Mhz, High: %d Mhz, Cur: %d MHz\n",
++		g5_cpu_freqs[1].frequency/1000,
++		g5_cpu_freqs[0].frequency/1000,
++		g5_cpu_freqs[g5_pmode_cur].frequency/1000);
++
++	rc = cpufreq_register_driver(&g5_cpufreq_driver);
++
++	of_node_put(cpunode);
++	of_node_put(cpus);
++
++	return rc;
++
++bail_noprops:
++	of_node_put(cpunode);
++bail_cpus:
++	of_node_put(cpus);
++
++	return rc;
++}
++
++module_init(g5_cpufreq_init);
++
++
++MODULE_LICENSE("GPL");
+-- 
+1.7.4.4
 
