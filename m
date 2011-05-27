@@ -1,96 +1,95 @@
-From: =?ISO-8859-1?Q?Kert=E9sz_Csaba?= <csaba.kertesz@gmail.com>
-Subject: Bug in cpufreq?
-Date: Tue, 24 May 2011 23:41:49 +0300
-Message-ID: <BANLkTimdaYTbSKg_RF75v_W3r0bWNnLCtg@mail.gmail.com>
-References: <BANLkTintiDnTWxfpxUXJq0+rCsg10nW2Lw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Donggeun Kim <dg77.kim@samsung.com>
+Subject: [PATCH] CPUFREQ/S5PV210,EXYNOS4: Move S5PV210 and EXYNOS4 CPUfreq
+ drivers into drivers/cpufreq
+Date: Fri, 27 May 2011 15:07:08 +0900
+Message-ID: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com>
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=domainkey-signature:mime-version:in-reply-to:references:date
-         :message-id:subject:from:to:content-type:content-transfer-encoding;
-        bh=El+3ly9y59GDpkM/bqXYVDcQF8efEYYEWVGKkDzImJ4=;
-        b=IePjy9m/WepRE/RqWxhooqrVSYNfVYHI0My3vtHyzUsRbx+DTxs9MtOia2kBf4t3mT
-         Su0b9/8CmFUq98jJZ9/etmMW/Cpmp+LKy4n/QNE9NaspCppVPPOVCqT2UwvpauJLavWu
-         cEMtHjuu/G2nKD3FYHOYeXIBrOjO1osiIQv+0=
-In-Reply-To: <BANLkTintiDnTWxfpxUXJq0+rCsg10nW2Lw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+To: davej@redhat.com, kgene.kim@samsung.com
+Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-Hi,
+This patch simply moves CPUfreq drivers for S5PV210 and EXYNOS4
+into drivers/cpufreq directoty. The driver codes were not modified.
 
-a bug drives me crazy on my laptop. Sometimes the CPU drops the
-frequency to 800 Mhz, the CPU gets full overload and the machine is
-almost unresponsive. Several processes (daemons, programs) eat the CPU
-at the same time without any sane reason (e.g Amarok, Xorg, kwin,
-pulseaudio, firefox...), if I run the oprofile during these
-conditions, it reports >50 % spend in the kernel. (I will try to run
-oprofile to profile the kernel also tomorrow.)
-No temperature problems, but cpufreq-info shows something unusual, is
-this possible?:
+Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ arch/arm/mach-exynos4/Makefile                     |    1 -
+ arch/arm/mach-s5pv210/Makefile                     |    1 -
+ drivers/cpufreq/Makefile                           |    3 +++
+ .../cpufreq.c => drivers/cpufreq/exynos4.c         |    3 +--
+ .../cpufreq.c => drivers/cpufreq/s5pv210.c         |    3 +--
+ 5 files changed, 5 insertions(+), 6 deletions(-)
+ rename arch/arm/mach-exynos4/cpufreq.c => drivers/cpufreq/exynos4.c (99%)
+ rename arch/arm/mach-s5pv210/cpufreq.c => drivers/cpufreq/s5pv210.c (99%)
 
-cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-=A0driver: acpi-cpufreq
-=A0CPUs which run at the same hardware frequency: 0 1
-=A0CPUs which need to have their frequency coordinated by software: 0
-=A0maximum transition latency: 10.0 us.
-=A0hardware limits: 800 MHz - 2.27 GHz
-=A0available frequency steps: 2.27 GHz, 2.27 GHz, 1.60 GHz, 800 MHz
-=A0available cpufreq governors: conservative, ondemand, userspace,
-powersave, performance
-=A0current policy: frequency should be within 2.27 GHz and 2.27 GHz.
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0The governor "performance" may decid=
-e which speed to use
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0within this range.
-=A0current CPU frequency is 800 MHz (asserted by call to hardware).
-=A0cpufreq stats: 2.27 GHz:18.57%, 2.27 GHz:24.97%, 1.60 GHz:6.82%, 800
-MHz:49.64% =A0(295)
-analyzing CPU 1:
-=A0driver: acpi-cpufreq
-=A0CPUs which run at the same hardware frequency: 0 1
-=A0CPUs which need to have their frequency coordinated by software: 1
-=A0maximum transition latency: 10.0 us.
-=A0hardware limits: 800 MHz - 2.27 GHz
-=A0available frequency steps: 2.27 GHz, 2.27 GHz, 1.60 GHz, 800 MHz
-=A0available cpufreq governors: conservative, ondemand, userspace,
-powersave, performance
-=A0current policy: frequency should be within 2.27 GHz and 2.27 GHz.
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0The governor "performance" may decid=
-e which speed to use
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0within this range.
-=A0current CPU frequency is 800 MHz (asserted by call to hardware).
-=A0cpufreq stats: 2.27 GHz:76.79%, 2.27 GHz:1.63%, 1.60 GHz:2.69%, 800
-MHz:18.89% =A0(25)
+diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
+index 9be104f..7bf1c01 100644
+--- a/arch/arm/mach-exynos4/Makefile
++++ b/arch/arm/mach-exynos4/Makefile
+@@ -15,7 +15,6 @@ obj-				:=
+ obj-$(CONFIG_CPU_EXYNOS4210)	+= cpu.o init.o clock.o irq-combiner.o
+ obj-$(CONFIG_CPU_EXYNOS4210)	+= setup-i2c0.o gpiolib.o irq-eint.o dma.o
+ obj-$(CONFIG_PM)		+= pm.o sleep.o
+-obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+ 
+ obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
+ 
+diff --git a/arch/arm/mach-s5pv210/Makefile b/arch/arm/mach-s5pv210/Makefile
+index 11f1790..435d23e 100644
+--- a/arch/arm/mach-s5pv210/Makefile
++++ b/arch/arm/mach-s5pv210/Makefile
+@@ -15,7 +15,6 @@ obj-				:=
+ obj-$(CONFIG_CPU_S5PV210)	+= cpu.o init.o clock.o dma.o gpiolib.o
+ obj-$(CONFIG_CPU_S5PV210)	+= setup-i2c0.o
+ obj-$(CONFIG_S5PV210_PM)	+= pm.o sleep.o
+-obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+ 
+ # machine support
+ 
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index c7f1a6f..92f2222 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -39,3 +39,6 @@ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+ 
+ ##################################################################################d
+ 
++# ARM CPUfreq drivers
++obj-$(CONFIG_CPU_FREQ_S5PV210)		+= s5pv210.o
++obj-$(CONFIG_CPU_FREQ_EXYNOS4)		+= exynos4.o
+diff --git a/arch/arm/mach-exynos4/cpufreq.c b/drivers/cpufreq/exynos4.c
+similarity index 99%
+rename from arch/arm/mach-exynos4/cpufreq.c
+rename to drivers/cpufreq/exynos4.c
+index a1bd258..54025fc 100644
+--- a/arch/arm/mach-exynos4/cpufreq.c
++++ b/drivers/cpufreq/exynos4.c
+@@ -1,5 +1,4 @@
+-/* linux/arch/arm/mach-exynos4/cpufreq.c
+- *
++/*
+  * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+  *		http://www.samsung.com
+  *
+diff --git a/arch/arm/mach-s5pv210/cpufreq.c b/drivers/cpufreq/s5pv210.c
+similarity index 99%
+rename from arch/arm/mach-s5pv210/cpufreq.c
+rename to drivers/cpufreq/s5pv210.c
+index 22046e2..c482fc8 100644
+--- a/arch/arm/mach-s5pv210/cpufreq.c
++++ b/drivers/cpufreq/s5pv210.c
+@@ -1,5 +1,4 @@
+-/* linux/arch/arm/mach-s5pv210/cpufreq.c
+- *
++/*
+  * Copyright (c) 2010 Samsung Electronics Co., Ltd.
+  *		http://www.samsung.com
+  *
+-- 
+1.7.4.1
 
-My laptop is a Dell Latitude E4300. I run Ubuntu Natty 32 bit with the
-shipped kernel 2.6.38-8-generic-pae. lshw shows:
-
-=A0 =A0 =A0 =A0 =A0description: CPU
-=A0 =A0 =A0 =A0 =A0product: Intel(R) Core(TM)2 Duo CPU =A0 =A0 P9300 =A0=
-@ 2.26GHz
-=A0 =A0 =A0 =A0 =A0vendor: Intel Corp.
-=A0 =A0 =A0 =A0 =A0physical id: 400
-=A0 =A0 =A0 =A0 =A0bus info: cpu@0
-=A0 =A0 =A0 =A0 =A0version: 6.7.6
-=A0 =A0 =A0 =A0 =A0serial: 0001-0676-0000-0000-0000-0000
-=A0 =A0 =A0 =A0 =A0slot: Microprocessor
-=A0 =A0 =A0 =A0 =A0size: 800MHz
-=A0 =A0 =A0 =A0 =A0capacity: 800MHz
-=A0 =A0 =A0 =A0 =A0width: 64 bits
-=A0 =A0 =A0 =A0 =A0clock: 266MHz
-=A0 =A0 =A0 =A0 =A0capabilities: x86-64 fpu fpu_exception wp vme de pse=
- tsc msr
-pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx
-fxsr sse sse2 ss ht tm pbe nx constant_tsc arch_perfmon pebs bts
-aperfmperf pni dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr
-pdcm sse4_1 lahf_lm tpr_shadow vnmi flexpriority cpufreq
-=A0 =A0 =A0 =A0 =A0configuration: cores=3D2 enabledcores=3D2 id=3D0 thr=
-eads=3D2
-
-Thanks,
-=A0 Csaba
