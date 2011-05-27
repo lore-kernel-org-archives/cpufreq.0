@@ -1,10 +1,12 @@
 From: Donggeun Kim <dg77.kim@samsung.com>
-Subject: [PATCH] CPUFREQ/S5PV210,EXYNOS4: Move S5PV210 and EXYNOS4 CPUfreq
- drivers into drivers/cpufreq
-Date: Fri, 27 May 2011 15:07:08 +0900
-Message-ID: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com>
+Subject: [PATCH] CPUFREQ/S5PV210,EXYNOS4: Add Kconfig options for S5PV210 and
+ EXYNOS4 CPUfreq drivers
+Date: Fri, 27 May 2011 17:04:49 +0900
+Message-ID: <1306483489-10432-1-git-send-email-dg77.kim@samsung.com>
+References: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com>
 Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
@@ -12,84 +14,52 @@ Content-Type: text/plain; charset="us-ascii"
 To: davej@redhat.com, kgene.kim@samsung.com
 Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-This patch simply moves CPUfreq drivers for S5PV210 and EXYNOS4
-into drivers/cpufreq directoty. The driver codes were not modified.
+This patch adds CONFIG_CPU_FREQ_S5PV210 and CONFIG_CPU_FREQ_EXYNOS4
+to the machine Kconfig files.
 
 Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/mach-exynos4/Makefile                     |    1 -
- arch/arm/mach-s5pv210/Makefile                     |    1 -
- drivers/cpufreq/Makefile                           |    3 +++
- .../cpufreq.c => drivers/cpufreq/exynos4.c         |    3 +--
- .../cpufreq.c => drivers/cpufreq/s5pv210.c         |    3 +--
- 5 files changed, 5 insertions(+), 6 deletions(-)
- rename arch/arm/mach-exynos4/cpufreq.c => drivers/cpufreq/exynos4.c (99%)
- rename arch/arm/mach-s5pv210/cpufreq.c => drivers/cpufreq/s5pv210.c (99%)
+ arch/arm/mach-exynos4/Kconfig |    7 +++++++
+ arch/arm/mach-s5pv210/Kconfig |    7 +++++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
-index 9be104f..7bf1c01 100644
---- a/arch/arm/mach-exynos4/Makefile
-+++ b/arch/arm/mach-exynos4/Makefile
-@@ -15,7 +15,6 @@ obj-				:=
- obj-$(CONFIG_CPU_EXYNOS4210)	+= cpu.o init.o clock.o irq-combiner.o
- obj-$(CONFIG_CPU_EXYNOS4210)	+= setup-i2c0.o gpiolib.o irq-eint.o dma.o
- obj-$(CONFIG_PM)		+= pm.o sleep.o
--obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
+index e849f67..123e5e2 100644
+--- a/arch/arm/mach-exynos4/Kconfig
++++ b/arch/arm/mach-exynos4/Kconfig
+@@ -91,6 +91,13 @@ config EXYNOS4_SETUP_FIMC
+ 	help
+ 	  Common setup code for the camera interfaces.
  
- obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
- 
-diff --git a/arch/arm/mach-s5pv210/Makefile b/arch/arm/mach-s5pv210/Makefile
-index 11f1790..435d23e 100644
---- a/arch/arm/mach-s5pv210/Makefile
-+++ b/arch/arm/mach-s5pv210/Makefile
-@@ -15,7 +15,6 @@ obj-				:=
- obj-$(CONFIG_CPU_S5PV210)	+= cpu.o init.o clock.o dma.o gpiolib.o
- obj-$(CONFIG_CPU_S5PV210)	+= setup-i2c0.o
- obj-$(CONFIG_S5PV210_PM)	+= pm.o sleep.o
--obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
- 
++config CPU_FREQ_EXYNOS4
++	bool
++	depends on CPU_FREQ && ARCH_EXYNOS4
++	default y
++	help
++	  This enabls the CPUfreq driver for EXYNOS4.
++
  # machine support
  
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index c7f1a6f..92f2222 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -39,3 +39,6 @@ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+ menu "EXYNOS4 Machines"
+diff --git a/arch/arm/mach-s5pv210/Kconfig b/arch/arm/mach-s5pv210/Kconfig
+index 37b5a97..376e824 100644
+--- a/arch/arm/mach-s5pv210/Kconfig
++++ b/arch/arm/mach-s5pv210/Kconfig
+@@ -59,6 +59,13 @@ config S5PV210_SETUP_FIMC
+ 	help
+ 	  Common setup code for the camera interfaces.
  
- ##################################################################################d
++config CPU_FREQ_S5PV210
++	bool
++	depends on CPU_FREQ && CPU_S5PV210
++	default y
++	help
++	  This enabls the CPUfreq driver for S5PV210.
++
+ menu "S5PC110 Machines"
  
-+# ARM CPUfreq drivers
-+obj-$(CONFIG_CPU_FREQ_S5PV210)		+= s5pv210.o
-+obj-$(CONFIG_CPU_FREQ_EXYNOS4)		+= exynos4.o
-diff --git a/arch/arm/mach-exynos4/cpufreq.c b/drivers/cpufreq/exynos4.c
-similarity index 99%
-rename from arch/arm/mach-exynos4/cpufreq.c
-rename to drivers/cpufreq/exynos4.c
-index a1bd258..54025fc 100644
---- a/arch/arm/mach-exynos4/cpufreq.c
-+++ b/drivers/cpufreq/exynos4.c
-@@ -1,5 +1,4 @@
--/* linux/arch/arm/mach-exynos4/cpufreq.c
-- *
-+/*
-  * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
-  *		http://www.samsung.com
-  *
-diff --git a/arch/arm/mach-s5pv210/cpufreq.c b/drivers/cpufreq/s5pv210.c
-similarity index 99%
-rename from arch/arm/mach-s5pv210/cpufreq.c
-rename to drivers/cpufreq/s5pv210.c
-index 22046e2..c482fc8 100644
---- a/arch/arm/mach-s5pv210/cpufreq.c
-+++ b/drivers/cpufreq/s5pv210.c
-@@ -1,5 +1,4 @@
--/* linux/arch/arm/mach-s5pv210/cpufreq.c
-- *
-+/*
-  * Copyright (c) 2010 Samsung Electronics Co., Ltd.
-  *		http://www.samsung.com
-  *
+ config MACH_AQUILA
 -- 
 1.7.4.1
 
