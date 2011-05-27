@@ -1,65 +1,49 @@
-From: Donggeun Kim <dg77.kim@samsung.com>
-Subject: [PATCH] CPUFREQ/S5PV210,EXYNOS4: Add Kconfig options for S5PV210 and
- EXYNOS4 CPUfreq drivers
-Date: Fri, 27 May 2011 17:04:49 +0900
-Message-ID: <1306483489-10432-1-git-send-email-dg77.kim@samsung.com>
-References: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com>
-Content-Transfer-Encoding: 7BIT
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: FW: [PATCH 1/4] pass the cross to bench folder
+Date: Fri, 27 May 2011 11:53:46 +0200
+Message-ID: <201105271153.46959.trenn@suse.de>
+References: <A809BCB44791BE4D97606D7DA1807F411127EF@039-SN1MPN1-002.039d.mgd.msft.net>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com>
+In-Reply-To: <A809BCB44791BE4D97606D7DA1807F411127EF@039-SN1MPN1-002.039d.mgd.msft.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-To: davej@redhat.com, kgene.kim@samsung.com
-Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+Content-Type: Text/Plain; charset="us-ascii"
+To: Huang Hake-B20222 <B20222@freescale.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@vger.kernel.org
 
-This patch adds CONFIG_CPU_FREQ_S5PV210 and CONFIG_CPU_FREQ_EXYNOS4
-to the machine Kconfig files.
+Hi Huang,
 
-Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/mach-exynos4/Kconfig |    7 +++++++
- arch/arm/mach-s5pv210/Kconfig |    7 +++++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+On Wednesday, May 25, 2011 09:01:19 AM Huang Hake-B20222 wrote:
+> Hi,
+> 
+> I see your cpupower project and want to port it to ARM, can I send patch
+> to you, see below mail
+Great.
+Did you google my (private) email address?
 
-diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
-index e849f67..123e5e2 100644
---- a/arch/arm/mach-exynos4/Kconfig
-+++ b/arch/arm/mach-exynos4/Kconfig
-@@ -91,6 +91,13 @@ config EXYNOS4_SETUP_FIMC
- 	help
- 	  Common setup code for the camera interfaces.
- 
-+config CPU_FREQ_EXYNOS4
-+	bool
-+	depends on CPU_FREQ && ARCH_EXYNOS4
-+	default y
-+	help
-+	  This enabls the CPUfreq driver for EXYNOS4.
-+
- # machine support
- 
- menu "EXYNOS4 Machines"
-diff --git a/arch/arm/mach-s5pv210/Kconfig b/arch/arm/mach-s5pv210/Kconfig
-index 37b5a97..376e824 100644
---- a/arch/arm/mach-s5pv210/Kconfig
-+++ b/arch/arm/mach-s5pv210/Kconfig
-@@ -59,6 +59,13 @@ config S5PV210_SETUP_FIMC
- 	help
- 	  Common setup code for the camera interfaces.
- 
-+config CPU_FREQ_S5PV210
-+	bool
-+	depends on CPU_FREQ && CPU_S5PV210
-+	default y
-+	help
-+	  This enabls the CPUfreq driver for S5PV210.
-+
- menu "S5PC110 Machines"
- 
- config MACH_AQUILA
--- 
-1.7.4.1
+Dominik has set up a git repo which is already synced against
+linux-next and the stuff will (hopefully) show up in the mainline
+kernel soon.
+Best is you base patches against this kernel repo:
+http://git.kernel.org/?p=linux/kernel/git/brodo/cpupowerutils.git;a=summary
+The code is located in tools/power/cpupower
+and send it to the cpufreq@vger.kernel.org list with Dominik in CC.
+
+For architecture (ARM/ACPI/...) specific problems you may also
+want add other Linux kernel lists
+(http://vger.kernel.org/vger-lists.html) for broader review.
+Should not be needed for these, just for info.
+
+Please also add:
+cpupower:
+(upper case?) as prefix to the subject on cpupower related patches.
+
+If you add me to CC (I won't be able to comment/review on these patches, 
+though), please use trenn@suse.de.
+
+Thanks,
+
+    Thomas
 
