@@ -1,86 +1,170 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: switching to top frequency too frequent with ondemand governor
- and no_hz
-Date: Wed, 01 Jun 2011 13:34:54 -0400
-Message-ID: <4DE6783E.70508@verisign.com>
-References: <20110601160805.GA1775@x4.trippels.de>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH] CPUFREQ/S5PV210,EXYNOS4: Add Kconfig options for S5PV210
+ and EXYNOS4 CPUfreq drivers
+Date: Wed, 01 Jun 2011 12:48:14 -0700
+Message-ID: <4DE6977E.5080107@samsung.com>
+References: <1306476428-24808-1-git-send-email-dg77.kim@samsung.com> <1306483489-10432-1-git-send-email-dg77.kim@samsung.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20110601160805.GA1775@x4.trippels.de>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:sender:message-id:date:from:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=2NBk9Bim1cyXnqRySytGc7PNvr58AmYh5Y/2PV94iZE=;
+        b=mHMNvF56N5ItxKxlIgywbu8E8SJQ4pYGUPr93FpPKQFox3ekA3imJ5OI0lE71UwA2H
+         K+ilr2vViIZTvzG3Elih0oLpZw8Af1jc30vgTRLInwHIBSQASOOcatUCajLbz0OIJgWv
+         8Thk5laH4bxpIyVEeMcqyRV2e4UCjjdMwlGEM=
+In-Reply-To: <1306483489-10432-1-git-send-email-dg77.kim@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Donggeun Kim <dg77.kim@samsung.com>
+Cc: davej@redhat.com, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Ben Dooks <ben-linux@fluff.org>
 
+On 05/27/11 01:04, Donggeun Kim wrote:
+> This patch adds CONFIG_CPU_FREQ_S5PV210 and CONFIG_CPU_FREQ_EXYNOS4
+> to the machine Kconfig files.
+>
+> Signed-off-by: Donggeun Kim<dg77.kim@samsung.com>
+> Signed-off-by: Kyungmin Park<kyungmin.park@samsung.com>
+> ---
+>   arch/arm/mach-exynos4/Kconfig |    7 +++++++
+>   arch/arm/mach-s5pv210/Kconfig |    7 +++++++
+>   2 files changed, 14 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
+> index e849f67..123e5e2 100644
+> --- a/arch/arm/mach-exynos4/Kconfig
+> +++ b/arch/arm/mach-exynos4/Kconfig
+> @@ -91,6 +91,13 @@ config EXYNOS4_SETUP_FIMC
+>   	help
+>   	  Common setup code for the camera interfaces.
+>
+> +config CPU_FREQ_EXYNOS4
+> +	bool
+> +	depends on CPU_FREQ&&  ARCH_EXYNOS4
+> +	default y
+> +	help
+> +	  This enabls the CPUfreq driver for EXYNOS4.
+> +
+>   # machine support
+>
+>   menu "EXYNOS4 Machines"
+> diff --git a/arch/arm/mach-s5pv210/Kconfig b/arch/arm/mach-s5pv210/Kconfig
+> index 37b5a97..376e824 100644
+> --- a/arch/arm/mach-s5pv210/Kconfig
+> +++ b/arch/arm/mach-s5pv210/Kconfig
+> @@ -59,6 +59,13 @@ config S5PV210_SETUP_FIMC
+>   	help
+>   	  Common setup code for the camera interfaces.
+>
+> +config CPU_FREQ_S5PV210
+> +	bool
+> +	depends on CPU_FREQ&&  CPU_S5PV210
+> +	default y
+> +	help
+> +	  This enabls the CPUfreq driver for S5PV210.
+> +
+>   menu "S5PC110 Machines"
+>
+>   config MACH_AQUILA
 
-A very interesting bit of information.  What do you have set for up_threshold?  You may have to set it higher for CONFIG_NO_HZ than without, based on your symptoms.  Another thing to look at is your sampling_rate.  I'm guessing it differs between CONFIG_NO_HZ being set or not.
+Cc'ed Ben Dooks.
 
-And perhaps you need to set sampling_down_factor a bit lower.  I consider 100 a reasonable default, but a default of "1" was put in initially to make the behavior of the patch that enabled the factor identical with not having the patch.  If you are more concerned with saving power than maximizing throughput, you might consider a much lower value like 5 or 10.
+No. Please don't add this in arch/arm. If required, they should be
+added in drivers/cpufreq/ like x86.
 
-DCN
+As a note, I'm sorting that out which includes all of Samsung cpufreq
+driver.
 
+Dave, could you please see below? If you're ok, will submit remained
+others for Samsung cpufreq drivers.
 
-On 06/01/2011 12:08 PM, Markus Trippelsdorf wrote:
-> There seems to be a major difference in the behavior of the ondemand
-> governor depending on whether CONFIG_NO_HZ is set or not in the kernel
-> .config.
->
-> In the NO_HZ case the ondemand governor spends too much time at the
-> highest frequency and is also very trigger happy.
->
-> I have compared the two cases on my system:
-> powernow-k8: Found 1 AMD Phenom(tm) II X4 955 Processor (4 cpu cores) (version 2.20.00)
-> powernow-k8:    0 : pstate 0 (3200 MHz)
-> powernow-k8:    1 : pstate 1 (2500 MHz)
-> powernow-k8:    2 : pstate 2 (2100 MHz)
-> powernow-k8:    3 : pstate 3 (800 MHz)
->
-> When I run:
-> watch -n.1 'cat /proc/cpuinfo|grep MHz'
-> on an otherwise idle system, I can see that the frequency always stays
-> at 800 MHz in the "CONFIG_NO_HZ not set" case. But it will very
-> frequently switch to 3200 MHz in the CONFIG_NO_HZ=y case under the same
-> conditions.
->
-> This also manifests itself in the cpufreq/stats/time_in_state
-> statistics (again on a mostly idle system):
->
-> First taken with:
-> echo 200 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-> (BTW wouldn't it make sense to use something like this as the default
-> value?)
->
-> cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
->
-> CONFIG_NO_HZ not set: 
-> 3200000 5845
-> 2500000 0
-> 2100000 5
-> 800000 31552
->
-> CONFIG_NO_HZ=y:
-> 3200000 17650
-> 2500000 0
-> 2100000 0
-> 800000 31129
->
->
-> And with the default sampling_down_factor=1
->
-> CONFIG_NO_HZ not set: 
-> 3200000 140
-> 2500000 2
-> 2100000 29
-> 800000 16614
->
-> CONFIG_NO_HZ=y:
-> 3200000 538
-> 2500000 9
-> 2100000 77
-> 800000 16287
->
-> Now my question is, is this expected? And what could be done to make the
-> NO_HZ behavior more like the "CONFIG_NO_HZ not set" behavior.
+Thanks.
 
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
+
+---
+
+ From 137f53472a0ea8ce584adbddfdb6ae645fc5a09c Mon Sep 17 00:00:00 2001
+From: Kukjin Kim <kgene.kim@samsung.com>
+Date: Wed, 1 Jun 2011 12:37:47 -0700
+Subject: [PATCH] cpufreq: Add Samsung cpufreq driver compile in Kconfig.arm
+
+According to discussion of the ARM arch subsystem migration,
+ARM cpufreq drivers move to drivers/cpufreq. So this patch
+adds Kconfig.arm for ARM like x86 and adds Samsung cpufreq
+driver compile in there.
+
+As a note didn't add 'default y' on this to build error during
+each maintainers' merge. If required, it can be added later.
+
+Cc: Dave Jones <davej@redhat.com>
+Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+---
+  drivers/cpufreq/Kconfig     |    5 +++++
+  drivers/cpufreq/Kconfig.arm |   21 +++++++++++++++++++++
+  drivers/cpufreq/Makefile    |    2 ++
+  3 files changed, 28 insertions(+), 0 deletions(-)
+  create mode 100644 drivers/cpufreq/Kconfig.arm
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 9fb8485..e898215 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -184,5 +184,10 @@ depends on X86
+  source "drivers/cpufreq/Kconfig.x86"
+  endmenu
+
++menu "ARM CPU frequency scaling drivers"
++depends on ARM
++source "drivers/cpufreq/Kconfig.arm"
++endmenu
++
+  endif
+  endmenu
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+new file mode 100644
+index 0000000..f2fc3a4
+--- /dev/null
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -0,0 +1,21 @@
++#
++# ARM CPU Frequency scaling drivers
++#
++
++config ARM_S5PV210_CPUFREQ
++	bool "Samsung S5PV210 and S5PC110"
++	depends on CPU_S5PV210
++	---help---
++	  This adds the CPUFreq driver for Samsung S5PV210 and
++	  S5PC110 SoCs.
++
++	  If in doubt, say N.
++
++config ARM_EXYNOS4210_CPUFREQ
++	bool "Samsung EXYNOS4210"
++	depends on CPU_EXYNOS4210
++	---help---
++	  This adds the CPUFreq driver for Samsung EXYNOS4210
++	  SoC (S5PV310 or S5PC210).
++
++	  If in doubt, say N.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index e2fc2d2..864a27c 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -41,3 +41,5 @@ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+
+  # ARM SoC drivers
+  obj-$(CONFIG_UX500_SOC_DB8500)		+= db8500-cpufreq.o
++obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
++obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
+-- 
+1.7.4.4
