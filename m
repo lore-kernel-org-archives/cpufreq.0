@@ -1,47 +1,151 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH 1/5] CPUFREQ/S3C64xx: Move S3C64xx CPUfreq driver into
- drivers/cpufreq
-Date: Wed, 01 Jun 2011 13:30:32 -0700
-Message-ID: <4DE6A168.6090907@samsung.com>
-References: <20110601094313.GA23122@opensource.wolfsonmicro.com>	<1306921493-30911-1-git-send-email-broonie@opensource.wolfsonmicro.com>	<BANLkTinR_WLjsgm5ogt_BbJwPFC0Kc1Dqg@mail.gmail.com>	<20110601095811.GB13591@opensource.wolfsonmicro.com>	<4DE69A66.9090002@samsung.com> <20110601200146.GC12949@opensource.wolfsonmicro.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] Move ARM Samsung cpufreq drivers to drivers/cpufreq/
+Date: Wed,  1 Jun 2011 14:18:22 -0700
+Message-ID: <1306963102-12830-1-git-send-email-kgene.kim@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
-        h=domainkey-signature:sender:message-id:date:from:user-agent
-         :mime-version:to:cc:subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        bh=qBuPCypXKmvzh0imVSjt1inRmM1gr420KzswTGr53yY=;
-        b=m+2F3tgSUtG1XbqVF6DTLju6I0ez/qSWAcUFHPy4DTKvkgl31CmDAAa9w97H2QTbXI
-         HpvR2WWDSJiUYy2jRQRVaGKw3/EGduDmnFIo6UssP+Y3Fgr4PJJHRpdo7coyWoV8TBSO
-         9O/s28kv1RTJXjxf/ZpjpCPqdcv1hCZRKLqw8=
-In-Reply-To: <20110601200146.GC12949@opensource.wolfsonmicro.com>
+        h=domainkey-signature:sender:from:to:cc:subject:date:message-id
+         :x-mailer;
+        bh=x4SDb/kRKWDLdhpJhPulJVhoOaDb/hRO6XLCOeJLFw8=;
+        b=QM+UckBlcrK2KSetGxYBQicOL+KaqSmFmt2ua9xIpxdHQtEyGlXr7K6VrYU0U9rDwb
+         emzjMX2B+epbOjVY8mQKWUxVwjHxqo5pVuSuUBXqCbB2ZXr2kpPXuUw+aJfk/7JvD/ln
+         Pha1ckKvj4OV27dzg/bYQzOLQtYB+/ErJfXZk=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>, Ben Dooks <ben-linux@fluff.org>, linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Dave Jones <davej@redhat.com>
 
-On 06/01/11 13:01, Mark Brown wrote:
-> On Wed, Jun 01, 2011 at 01:00:38PM -0700, Kukjin Kim wrote:
->
->> As I remember, 800Mhz support on S3C6410 is ok and replied about that.
->> Then isn't there any progress in my side?...I'm outside of my office.
->
-> Yes, you replied and said it was OK but it's not appeared in -next yet.
+According to discussion of the ARM arch subsystem migration,
+ARM cpufreq drivers move to drivers/cpufreq. So this patch
+adds Kconfig.arm for ARM like x86 and adds Samsung S5PV210
+and EXYNOS4210 cpufreq driver compile in there.
+As a note, otherw will be moved.
 
-Oops, sorry :(
+Cc: Dave Jones <davej@redhat.com>
+Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+---
+ arch/arm/mach-exynos4/Makefile                     |    1 -
+ arch/arm/mach-s5pv210/Makefile                     |    1 -
+ drivers/cpufreq/Kconfig                            |    5 ++++
+ drivers/cpufreq/Kconfig.arm                        |   23 ++++++++++++++++++++
+ drivers/cpufreq/Makefile                           |    2 +
+ .../cpufreq/exynos4210-cpufreq.c                   |    3 +-
+ .../cpufreq.c => drivers/cpufreq/s5pv210-cpufreq.c |    3 +-
+ 7 files changed, 32 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/cpufreq/Kconfig.arm
+ rename arch/arm/mach-exynos4/cpufreq.c => drivers/cpufreq/exynos4210-cpufreq.c (99%)
+ rename arch/arm/mach-s5pv210/cpufreq.c => drivers/cpufreq/s5pv210-cpufreq.c (99%)
 
-Maybe I missed.
-Ok, will apply in my after checking others.
+diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
+index a9bb94f..0cebfa7 100644
+--- a/arch/arm/mach-exynos4/Makefile
++++ b/arch/arm/mach-exynos4/Makefile
+@@ -15,7 +15,6 @@ obj-				:=
+ obj-$(CONFIG_CPU_EXYNOS4210)	+= cpu.o init.o clock.o irq-combiner.o
+ obj-$(CONFIG_CPU_EXYNOS4210)	+= setup-i2c0.o irq-eint.o dma.o
+ obj-$(CONFIG_PM)		+= pm.o sleep.o
+-obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
+ 
+ obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
+diff --git a/arch/arm/mach-s5pv210/Makefile b/arch/arm/mach-s5pv210/Makefile
+index 50907ac..599a3c0 100644
+--- a/arch/arm/mach-s5pv210/Makefile
++++ b/arch/arm/mach-s5pv210/Makefile
+@@ -15,7 +15,6 @@ obj-				:=
+ obj-$(CONFIG_CPU_S5PV210)	+= cpu.o init.o clock.o dma.o
+ obj-$(CONFIG_CPU_S5PV210)	+= setup-i2c0.o
+ obj-$(CONFIG_S5PV210_PM)	+= pm.o sleep.o
+-obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+ 
+ # machine support
+ 
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 9fb8485..e898215 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -184,5 +184,10 @@ depends on X86
+ source "drivers/cpufreq/Kconfig.x86"
+ endmenu
+ 
++menu "ARM CPU frequency scaling drivers"
++depends on ARM
++source "drivers/cpufreq/Kconfig.arm"
++endmenu
++
+ endif
+ endmenu
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+new file mode 100644
+index 0000000..fafdbb8
+--- /dev/null
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -0,0 +1,23 @@
++#
++# ARM CPU Frequency scaling drivers
++#
++
++config ARM_S5PV210_CPUFREQ
++	bool "Samsung S5PV210 and S5PC110"
++	depends on CPU_S5PV210
++	default y
++	help
++	  This adds the CPUFreq driver for Samsung S5PV210 and
++	  S5PC110 SoCs.
++
++	  If in doubt, say N.
++
++config ARM_EXYNOS4210_CPUFREQ
++	bool "Samsung EXYNOS4210"
++	depends on CPU_EXYNOS4210
++	default y
++	help
++	  This adds the CPUFreq driver for Samsung EXYNOS4210
++	  SoC (S5PV310 or S5PC210).
++
++	  If in doubt, say N.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index e2fc2d2..864a27c 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -41,3 +41,5 @@ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+ 
+ # ARM SoC drivers
+ obj-$(CONFIG_UX500_SOC_DB8500)		+= db8500-cpufreq.o
++obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
++obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
+diff --git a/arch/arm/mach-exynos4/cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
+similarity index 99%
+rename from arch/arm/mach-exynos4/cpufreq.c
+rename to drivers/cpufreq/exynos4210-cpufreq.c
+index a1bd258..54025fc 100644
+--- a/arch/arm/mach-exynos4/cpufreq.c
++++ b/drivers/cpufreq/exynos4210-cpufreq.c
+@@ -1,5 +1,4 @@
+-/* linux/arch/arm/mach-exynos4/cpufreq.c
+- *
++/*
+  * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+  *		http://www.samsung.com
+  *
+diff --git a/arch/arm/mach-s5pv210/cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+similarity index 99%
+rename from arch/arm/mach-s5pv210/cpufreq.c
+rename to drivers/cpufreq/s5pv210-cpufreq.c
+index 22046e2..c482fc8 100644
+--- a/arch/arm/mach-s5pv210/cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -1,5 +1,4 @@
+-/* linux/arch/arm/mach-s5pv210/cpufreq.c
+- *
++/*
+  * Copyright (c) 2010 Samsung Electronics Co., Ltd.
+  *		http://www.samsung.com
+  *
+-- 
+1.7.4.4
 
-Then if any updates, let you know.
-
-Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
