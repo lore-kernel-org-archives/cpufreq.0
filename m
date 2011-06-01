@@ -1,40 +1,125 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/5] CPUFREQ/S3C64xx: Move S3C64xx CPUfreq driver into
- drivers/cpufreq
-Date: Wed, 1 Jun 2011 12:45:10 -0400
-Message-ID: <20110601164510.GA21467@redhat.com>
-References: <20110601094313.GA23122@opensource.wolfsonmicro.com>
- <1306921493-30911-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <BANLkTinR_WLjsgm5ogt_BbJwPFC0Kc1Dqg@mail.gmail.com>
- <20110601095811.GB13591@opensource.wolfsonmicro.com>
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+Subject: Re: switching to top frequency too frequent with ondemand governor
+ and no_hz
+Date: Wed, 1 Jun 2011 20:00:38 +0200
+Message-ID: <20110601180038.GA1780@x4.trippels.de>
+References: <20110601160805.GA1775@x4.trippels.de>
+ <4DE6783E.70508@verisign.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=mail.ud10.udmedia.de; h=
+	date:from:to:cc:subject:message-id:references:mime-version:
+	content-type:in-reply-to; q=dns/txt; s=beta; bh=2Ad4XcWOZyqbUTLW
+	UqSiTEXcTigvLwfPplcRCy04M24=; b=lCs0hweufuBvItiAVRi4xuELR+gxkU84
+	7sYNM0xBGCAJOB6B5fcEcd/tO+WWXWfKsG0PpWbNThWnz2nSl92tUsq/I0ZxuB5r
+	7zoAK7hv89OeDyEnkjQ6gyuGfE8rbhUY9P2xH4YZIZ+50NhHG9IRGqnK+r9NOh2b
+	14dUyU2mNGs=
 Content-Disposition: inline
-In-Reply-To: <20110601095811.GB13591@opensource.wolfsonmicro.com>
+In-Reply-To: <4DE6783E.70508@verisign.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Kyungmin Park <kmpark@infradead.org>, cpufreq@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org
+To: David C Niemi <dniemi@verisign.com>
+Cc: cpufreq@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
 
-On Wed, Jun 01, 2011 at 10:58:11AM +0100, Mark Brown wrote:
- > On Wed, Jun 01, 2011 at 06:55:05PM +0900, Kyungmin Park wrote:
- > 
- > > Instead of samsung tree, it should be handled at cpufreq tree.
- > > CCed the cpufreq maintainer.
- > 
- > Well, it's a something for both really as both trees are updated.  I
- > sent the orginal copy of this patch to both places but both sets of
- > maintainers just ignored it (I've never seen any response from the
- > cpufreq maintainers on this driver ever since I originally submitted
- > it).  
+On 2011.06.01 at 13:34 -0400, David C Niemi wrote:
+> On 06/01/2011 12:08 PM, Markus Trippelsdorf wrote:
+> > There seems to be a major difference in the behavior of the ondemand
+> > governor depending on whether CONFIG_NO_HZ is set or not in the kernel
+> > .config.
+> >
+> > In the NO_HZ case the ondemand governor spends too much time at the
+> > highest frequency and is also very trigger happy.
+> >
+> > I have compared the two cases on my system:
+> > powernow-k8: Found 1 AMD Phenom(tm) II X4 955 Processor (4 cpu cores) (version 2.20.00)
+> > powernow-k8:    0 : pstate 0 (3200 MHz)
+> > powernow-k8:    1 : pstate 1 (2500 MHz)
+> > powernow-k8:    2 : pstate 2 (2100 MHz)
+> > powernow-k8:    3 : pstate 3 (800 MHz)
+> >
+> > When I run:
+> > watch -n.1 'cat /proc/cpuinfo|grep MHz'
+> > on an otherwise idle system, I can see that the frequency always stays
+> > at 800 MHz in the "CONFIG_NO_HZ not set" case. But it will very
+> > frequently switch to 3200 MHz in the CONFIG_NO_HZ=y case under the same
+> > conditions.
+> >
+> > This also manifests itself in the cpufreq/stats/time_in_state
+> > statistics (again on a mostly idle system):
+> >
+> > First taken with:
+> > echo 200 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+> > (BTW wouldn't it make sense to use something like this as the default
+> > value?)
+> >
+> > cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+> >
+> > CONFIG_NO_HZ not set: 
+> > 3200000 5845
+> > 2500000 0
+> > 2100000 5
+> > 800000 31552
+> >
+> > CONFIG_NO_HZ=y:
+> > 3200000 17650
+> > 2500000 0
+> > 2100000 0
+> > 800000 31129
+> >
+> >
+> > And with the default sampling_down_factor=1
+> >
+> > CONFIG_NO_HZ not set: 
+> > 3200000 140
+> > 2500000 2
+> > 2100000 29
+> > 800000 16614
+> >
+> > CONFIG_NO_HZ=y:
+> > 3200000 538
+> > 2500000 9
+> > 2100000 77
+> > 800000 16287
+> >
+> > Now my question is, is this expected? And what could be done to make the
+> > NO_HZ behavior more like the "CONFIG_NO_HZ not set" behavior.
+> 
+> A very interesting bit of information.  What do you have set for
+> up_threshold?  You may have to set it higher for CONFIG_NO_HZ than
+> without, based on your symptoms.  Another thing to look at is your
+> sampling_rate.  I'm guessing it differs between CONFIG_NO_HZ being set
+> or not.
 
-Sorry about that. It's actually in my 'to merge' mailbox, but I've been
-laggy at dealing with it recently.  I'll try and clear the backlog in
-the next day or two.
+I've played with all those parameters, but unfortunately it didn't make
+any difference.
 
-thanks,
+> And perhaps you need to set sampling_down_factor a bit lower.  I
+> consider 100 a reasonable default, but a default of "1" was put in
+> initially to make the behavior of the patch that enabled the factor
+> identical with not having the patch.  If you are more concerned with
+> saving power than maximizing throughput, you might consider a much
+> lower value like 5 or 10.
 
-	Dave
- 
+Yes, I've tried different values and 200 turned out to be the best based
+on my preferences (throughput over power saving). It makes a big
+difference in the compile time of bigger projects, especially during the
+configuration phase.
+
+But I have found the root cause of symptoms described above by
+bisection. It turned out that 2.6.39 is also affected, so I've bisected
+down to 2.6.38. 
+This is the result:
+
+ 5cb2c3bd0c5e0f3ced63f250ec2ad59d7c5c626a is the first bad commit
+ commit 5cb2c3bd0c5e0f3ced63f250ec2ad59d7c5c626a
+ Author: Vincent Guittot <vincent.guittot@linaro.org>
+ Date:   Mon Feb 7 17:14:25 2011 +0100
+
+     [CPUFREQ] calculate delay after dbs_check_cpu
+
+When I revert the above in 3.0-rc1 the CONFIG_NO_HZ=y symptoms vanish.
+
+-- 
+Markus
