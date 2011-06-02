@@ -1,200 +1,146 @@
-From: Kyungmin Park <kmpark@infradead.org>
-Subject: Re: [PATCH] Move ARM Samsung cpufreq drivers to drivers/cpufreq/
-Date: Thu, 2 Jun 2011 09:43:28 +0900
-Message-ID: <BANLkTikWhqOO2dcXpp+f=1i1JWOoaYEY5A@mail.gmail.com>
-References: <1306963102-12830-1-git-send-email-kgene.kim@samsung.com>
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+Subject: Re: switching to top frequency too frequent with ondemand governor
+ and no_hz
+Date: Thu, 2 Jun 2011 13:41:13 +0200
+Message-ID: <20110602114113.GA1771@x4.trippels.de>
+References: <20110601160805.GA1775@x4.trippels.de>
+ <4DE6783E.70508@verisign.com>
+ <20110601180038.GA1780@x4.trippels.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=domainkey-signature:mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        bh=+BLSgeQ1tL6ygWU0lf+T7weSVH0WDkHGVnQ8M/ZIHy4=;
-        b=rzWpc+qNMESgAQpqKUmUzfYu6b0Ew4T0K/lozqShSD1UFe+C5B9HIm1u6M9rqqfulA
-         XAUtnGwQIUDRUvixXou1eNk82FTdBW7IJHgTZizLK70Xip5LrRy1MFVd0TofYOT7TASS
-         njF9kzJt/YNNXrpj+Y4BLTo+DbyTYcUsECN0w=
-In-Reply-To: <1306963102-12830-1-git-send-email-kgene.kim@samsung.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=mail.ud10.udmedia.de; h=
+	date:from:to:cc:subject:message-id:references:mime-version:
+	content-type:in-reply-to; q=dns/txt; s=beta; bh=p8Q6SexDV3Kr6rnp
+	9Y8Y08WR7qbFozHpfdf0UoBfjqg=; b=dRLFAP8fX5pgDAJFeZETcgqWDqdwr1QY
+	mNt0i2JrsasxxEjCncYEoPkjpQLvOIcxi4z9Gpd/7FJa5Da2Pf9+heFgaHMm2OzX
+	4dpj9E2kPWkmxaOXa7ypgwe/KRYMZpxpoNU8f42zTySGDBW6WHMMHf0XelkVGUez
+	kBGveKx4P/0=
+Content-Disposition: inline
+In-Reply-To: <20110601180038.GA1780@x4.trippels.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, =?UTF-8?B?6rmA64+Z6re8?= <dg77.kim@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: David C Niemi <dniemi@verisign.com>
+Cc: cpufreq@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
 
-Hi,
+On 2011.06.01 at 20:00 +0200, Markus Trippelsdorf wrote:
+> On 2011.06.01 at 13:34 -0400, David C Niemi wrote:
+> > On 06/01/2011 12:08 PM, Markus Trippelsdorf wrote:
+> > > There seems to be a major difference in the behavior of the ondemand
+> > > governor depending on whether CONFIG_NO_HZ is set or not in the kernel
+> > > .config.
+> > >
+> > > In the NO_HZ case the ondemand governor spends too much time at the
+> > > highest frequency and is also very trigger happy.
+> > >
+> > > I have compared the two cases on my system:
+> > > powernow-k8: Found 1 AMD Phenom(tm) II X4 955 Processor (4 cpu cores) (version 2.20.00)
+> > > powernow-k8:    0 : pstate 0 (3200 MHz)
+> > > powernow-k8:    1 : pstate 1 (2500 MHz)
+> > > powernow-k8:    2 : pstate 2 (2100 MHz)
+> > > powernow-k8:    3 : pstate 3 (800 MHz)
+> > >
+> > > When I run:
+> > > watch -n.1 'cat /proc/cpuinfo|grep MHz'
+> > > on an otherwise idle system, I can see that the frequency always stays
+> > > at 800 MHz in the "CONFIG_NO_HZ not set" case. But it will very
+> > > frequently switch to 3200 MHz in the CONFIG_NO_HZ=y case under the same
+> > > conditions.
+> > >
+> > > This also manifests itself in the cpufreq/stats/time_in_state
+> > > statistics (again on a mostly idle system):
+> > >
+> > > First taken with:
+> > > echo 200 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+> > > (BTW wouldn't it make sense to use something like this as the default
+> > > value?)
+> > >
+> > > cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+> > >
+> > > CONFIG_NO_HZ not set: 
+> > > 3200000 5845
+> > > 2500000 0
+> > > 2100000 5
+> > > 800000 31552
+> > >
+> > > CONFIG_NO_HZ=y:
+> > > 3200000 17650
+> > > 2500000 0
+> > > 2100000 0
+> > > 800000 31129
+> > >
+> > >
+> > > And with the default sampling_down_factor=1
+> > >
+> > > CONFIG_NO_HZ not set: 
+> > > 3200000 140
+> > > 2500000 2
+> > > 2100000 29
+> > > 800000 16614
+> > >
+> > > CONFIG_NO_HZ=y:
+> > > 3200000 538
+> > > 2500000 9
+> > > 2100000 77
+> > > 800000 16287
+> > >
+> > > Now my question is, is this expected? And what could be done to make the
+> > > NO_HZ behavior more like the "CONFIG_NO_HZ not set" behavior.
+> > 
+> > A very interesting bit of information.  What do you have set for
+> > up_threshold?  You may have to set it higher for CONFIG_NO_HZ than
+> > without, based on your symptoms.  Another thing to look at is your
+> > sampling_rate.  I'm guessing it differs between CONFIG_NO_HZ being set
+> > or not.
+> 
+> I've played with all those parameters, but unfortunately it didn't make
+> any difference.
+> 
+> > And perhaps you need to set sampling_down_factor a bit lower.  I
+> > consider 100 a reasonable default, but a default of "1" was put in
+> > initially to make the behavior of the patch that enabled the factor
+> > identical with not having the patch.  If you are more concerned with
+> > saving power than maximizing throughput, you might consider a much
+> > lower value like 5 or 10.
+> 
+> Yes, I've tried different values and 200 turned out to be the best based
+> on my preferences (throughput over power saving). It makes a big
+> difference in the compile time of bigger projects, especially during the
+> configuration phase.
+> 
+> But I have found the root cause of symptoms described above by
+> bisection. It turned out that 2.6.39 is also affected, so I've bisected
+> down to 2.6.38. 
+> This is the result:
+> 
+>  5cb2c3bd0c5e0f3ced63f250ec2ad59d7c5c626a is the first bad commit
+>  commit 5cb2c3bd0c5e0f3ced63f250ec2ad59d7c5c626a
+>  Author: Vincent Guittot <vincent.guittot@linaro.org>
+>  Date:   Mon Feb 7 17:14:25 2011 +0100
+> 
+>      [CPUFREQ] calculate delay after dbs_check_cpu
+> 
+> When I revert the above in 3.0-rc1 the CONFIG_NO_HZ=y symptoms vanish.
 
-I think you already saw the same patchs[1] at mailing list and even
-worse you commented it[2]
-One different is kconfig handling. and these can be handled easily as y=
-ou did.
+Here are some numbers to back this claim:
 
-Please respect others works.
+cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+(with sampling_down_factor=200)
 
-Thank you,
-Kyungmin Park
+CONFIG_NO_HZ not set:
+3200000 1766
+2500000 0
+2100000 1479
+800000 30787
 
-1. http://www.gossamer-threads.com/lists/linux/kernel/1385739?page=3Dla=
-st
-2. http://www.spinics.net/lists/cpufreq/msg02262.html
+CONFIG_NO_HZ=y:
+3200000 922
+2500000 0
+2100000 2313
+800000 31217
 
-On Thu, Jun 2, 2011 at 6:18 AM, Kukjin Kim <kgene.kim@samsung.com> wrot=
-e:
-> According to discussion of the ARM arch subsystem migration,
-> ARM cpufreq drivers move to drivers/cpufreq. So this patch
-> adds Kconfig.arm for ARM like x86 and adds Samsung S5PV210
-> and EXYNOS4210 cpufreq driver compile in there.
-> As a note, otherw will be moved.
->
-> Cc: Dave Jones <davej@redhat.com>
-> Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
-> ---
-> =A0arch/arm/mach-exynos4/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 | =A0 =A01 -
-> =A0arch/arm/mach-s5pv210/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 | =A0 =A01 -
-> =A0drivers/cpufreq/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0| =A0 =A05 ++++
-> =A0drivers/cpufreq/Kconfig.arm =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0| =A0 23 ++++++++++++++++++++
-> =A0drivers/cpufreq/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 | =A0 =A02 +
-> =A0.../cpufreq/exynos4210-cpufreq.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- | =A0 =A03 +-
-> =A0.../cpufreq.c =3D> drivers/cpufreq/s5pv210-cpufreq.c | =A0 =A03 +-
-> =A07 files changed, 32 insertions(+), 6 deletions(-)
-> =A0create mode 100644 drivers/cpufreq/Kconfig.arm
-> =A0rename arch/arm/mach-exynos4/cpufreq.c =3D> drivers/cpufreq/exynos=
-4210-cpufreq.c (99%)
-> =A0rename arch/arm/mach-s5pv210/cpufreq.c =3D> drivers/cpufreq/s5pv21=
-0-cpufreq.c (99%)
->
-> diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/M=
-akefile
-> index a9bb94f..0cebfa7 100644
-> --- a/arch/arm/mach-exynos4/Makefile
-> +++ b/arch/arm/mach-exynos4/Makefile
-> @@ -15,7 +15,6 @@ obj- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0:=3D
-> =A0obj-$(CONFIG_CPU_EXYNOS4210) =A0 +=3D cpu.o init.o clock.o irq-com=
-biner.o
-> =A0obj-$(CONFIG_CPU_EXYNOS4210) =A0 +=3D setup-i2c0.o irq-eint.o dma.=
-o
-> =A0obj-$(CONFIG_PM) =A0 =A0 =A0 =A0 =A0 =A0 =A0 +=3D pm.o sleep.o
-> -obj-$(CONFIG_CPU_FREQ) =A0 =A0 =A0 =A0 +=3D cpufreq.o
-> =A0obj-$(CONFIG_CPU_IDLE) =A0 =A0 =A0 =A0 +=3D cpuidle.o
->
-> =A0obj-$(CONFIG_SMP) =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D platsmp.o headsm=
-p.o
-> diff --git a/arch/arm/mach-s5pv210/Makefile b/arch/arm/mach-s5pv210/M=
-akefile
-> index 50907ac..599a3c0 100644
-> --- a/arch/arm/mach-s5pv210/Makefile
-> +++ b/arch/arm/mach-s5pv210/Makefile
-> @@ -15,7 +15,6 @@ obj- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0:=3D
-> =A0obj-$(CONFIG_CPU_S5PV210) =A0 =A0 =A0+=3D cpu.o init.o clock.o dma=
-=2Eo
-> =A0obj-$(CONFIG_CPU_S5PV210) =A0 =A0 =A0+=3D setup-i2c0.o
-> =A0obj-$(CONFIG_S5PV210_PM) =A0 =A0 =A0 +=3D pm.o sleep.o
-> -obj-$(CONFIG_CPU_FREQ) =A0 =A0 =A0 =A0 +=3D cpufreq.o
->
-> =A0# machine support
->
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 9fb8485..e898215 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -184,5 +184,10 @@ depends on X86
-> =A0source "drivers/cpufreq/Kconfig.x86"
-> =A0endmenu
->
-> +menu "ARM CPU frequency scaling drivers"
-> +depends on ARM
-> +source "drivers/cpufreq/Kconfig.arm"
-> +endmenu
-> +
-> =A0endif
-> =A0endmenu
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.ar=
-m
-> new file mode 100644
-> index 0000000..fafdbb8
-> --- /dev/null
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -0,0 +1,23 @@
-> +#
-> +# ARM CPU Frequency scaling drivers
-> +#
-> +
-> +config ARM_S5PV210_CPUFREQ
-> + =A0 =A0 =A0 bool "Samsung S5PV210 and S5PC110"
-> + =A0 =A0 =A0 depends on CPU_S5PV210
-> + =A0 =A0 =A0 default y
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 This adds the CPUFreq driver for Samsung S5PV210 an=
-d
-> + =A0 =A0 =A0 =A0 S5PC110 SoCs.
-> +
-> + =A0 =A0 =A0 =A0 If in doubt, say N.
-> +
-> +config ARM_EXYNOS4210_CPUFREQ
-> + =A0 =A0 =A0 bool "Samsung EXYNOS4210"
-> + =A0 =A0 =A0 depends on CPU_EXYNOS4210
-> + =A0 =A0 =A0 default y
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 This adds the CPUFreq driver for Samsung EXYNOS4210
-> + =A0 =A0 =A0 =A0 SoC (S5PV310 or S5PC210).
-> +
-> + =A0 =A0 =A0 =A0 If in doubt, say N.
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index e2fc2d2..864a27c 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -41,3 +41,5 @@ obj-$(CONFIG_X86_CPUFREQ_NFORCE2) =A0 =A0 +=3D cpuf=
-req-nforce2.o
->
-> =A0# ARM SoC drivers
-> =A0obj-$(CONFIG_UX500_SOC_DB8500) =A0 =A0 =A0 =A0 +=3D db8500-cpufreq=
-=2Eo
-> +obj-$(CONFIG_ARM_S5PV210_CPUFREQ) =A0 =A0 =A0+=3D s5pv210-cpufreq.o
-> +obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ) =A0 +=3D exynos4210-cpufreq.o
-> diff --git a/arch/arm/mach-exynos4/cpufreq.c b/drivers/cpufreq/exynos=
-4210-cpufreq.c
-> similarity index 99%
-> rename from arch/arm/mach-exynos4/cpufreq.c
-> rename to drivers/cpufreq/exynos4210-cpufreq.c
-> index a1bd258..54025fc 100644
-> --- a/arch/arm/mach-exynos4/cpufreq.c
-> +++ b/drivers/cpufreq/exynos4210-cpufreq.c
-> @@ -1,5 +1,4 @@
-> -/* linux/arch/arm/mach-exynos4/cpufreq.c
-> - *
-> +/*
-> =A0* Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
-> =A0* =A0 =A0 =A0 =A0 =A0 =A0 http://www.samsung.com
-> =A0*
-> diff --git a/arch/arm/mach-s5pv210/cpufreq.c b/drivers/cpufreq/s5pv21=
-0-cpufreq.c
-> similarity index 99%
-> rename from arch/arm/mach-s5pv210/cpufreq.c
-> rename to drivers/cpufreq/s5pv210-cpufreq.c
-> index 22046e2..c482fc8 100644
-> --- a/arch/arm/mach-s5pv210/cpufreq.c
-> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> @@ -1,5 +1,4 @@
-> -/* linux/arch/arm/mach-s5pv210/cpufreq.c
-> - *
-> +/*
-> =A0* Copyright (c) 2010 Samsung Electronics Co., Ltd.
-> =A0* =A0 =A0 =A0 =A0 =A0 =A0 http://www.samsung.com
-> =A0*
-> --
-> 1.7.4.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsu=
-ng-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+So the behavior in both cases is (roughly) the same again.
+
+-- 
+Markus
