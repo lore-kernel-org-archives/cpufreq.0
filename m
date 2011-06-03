@@ -1,146 +1,31 @@
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-Subject: Re: switching to top frequency too frequent with ondemand governor
- and no_hz
-Date: Thu, 2 Jun 2011 13:41:13 +0200
-Message-ID: <20110602114113.GA1771@x4.trippels.de>
-References: <20110601160805.GA1775@x4.trippels.de>
- <4DE6783E.70508@verisign.com>
- <20110601180038.GA1780@x4.trippels.de>
+From: Star Sweeper <starsweeper@yahoo.com>
+Subject: cpufreq doesn't work with AMD E-350 (Fusion)
+Date: Fri, 3 Jun 2011 03:48:59 -0700 (PDT)
+Message-ID: <423945.47085.qm@web121206.mail.ne1.yahoo.com>
+Reply-To: Star Sweeper <starsweeper@yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=mail.ud10.udmedia.de; h=
-	date:from:to:cc:subject:message-id:references:mime-version:
-	content-type:in-reply-to; q=dns/txt; s=beta; bh=p8Q6SexDV3Kr6rnp
-	9Y8Y08WR7qbFozHpfdf0UoBfjqg=; b=dRLFAP8fX5pgDAJFeZETcgqWDqdwr1QY
-	mNt0i2JrsasxxEjCncYEoPkjpQLvOIcxi4z9Gpd/7FJa5Da2Pf9+heFgaHMm2OzX
-	4dpj9E2kPWkmxaOXa7ypgwe/KRYMZpxpoNU8f42zTySGDBW6WHMMHf0XelkVGUez
-	kBGveKx4P/0=
-Content-Disposition: inline
-In-Reply-To: <20110601180038.GA1780@x4.trippels.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s1024; t=1307098139; bh=8MQxYSCb7pNYQn2FPQ61DAEHZk1kpR5Xf0S2+LUTuNE=; h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding; b=PBcAgAbfmVnEKK7sdV6F1UUyxruGS+R8PJguqOiST7MU+gOUtrzmVNymaGaTyRV1F7xcTsDLb1T4/mPiZP6DP6flp0GBPsUfyqQwyUed/Ycocg65wLjFcRtsoq3LhDO3AzN6IZQHhwuMrp6RR3a6udmFPOaewFU7+LGBXcN0IKM=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David C Niemi <dniemi@verisign.com>
-Cc: cpufreq@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On 2011.06.01 at 20:00 +0200, Markus Trippelsdorf wrote:
-> On 2011.06.01 at 13:34 -0400, David C Niemi wrote:
-> > On 06/01/2011 12:08 PM, Markus Trippelsdorf wrote:
-> > > There seems to be a major difference in the behavior of the ondemand
-> > > governor depending on whether CONFIG_NO_HZ is set or not in the kernel
-> > > .config.
-> > >
-> > > In the NO_HZ case the ondemand governor spends too much time at the
-> > > highest frequency and is also very trigger happy.
-> > >
-> > > I have compared the two cases on my system:
-> > > powernow-k8: Found 1 AMD Phenom(tm) II X4 955 Processor (4 cpu cores) (version 2.20.00)
-> > > powernow-k8:    0 : pstate 0 (3200 MHz)
-> > > powernow-k8:    1 : pstate 1 (2500 MHz)
-> > > powernow-k8:    2 : pstate 2 (2100 MHz)
-> > > powernow-k8:    3 : pstate 3 (800 MHz)
-> > >
-> > > When I run:
-> > > watch -n.1 'cat /proc/cpuinfo|grep MHz'
-> > > on an otherwise idle system, I can see that the frequency always stays
-> > > at 800 MHz in the "CONFIG_NO_HZ not set" case. But it will very
-> > > frequently switch to 3200 MHz in the CONFIG_NO_HZ=y case under the same
-> > > conditions.
-> > >
-> > > This also manifests itself in the cpufreq/stats/time_in_state
-> > > statistics (again on a mostly idle system):
-> > >
-> > > First taken with:
-> > > echo 200 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-> > > (BTW wouldn't it make sense to use something like this as the default
-> > > value?)
-> > >
-> > > cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
-> > >
-> > > CONFIG_NO_HZ not set: 
-> > > 3200000 5845
-> > > 2500000 0
-> > > 2100000 5
-> > > 800000 31552
-> > >
-> > > CONFIG_NO_HZ=y:
-> > > 3200000 17650
-> > > 2500000 0
-> > > 2100000 0
-> > > 800000 31129
-> > >
-> > >
-> > > And with the default sampling_down_factor=1
-> > >
-> > > CONFIG_NO_HZ not set: 
-> > > 3200000 140
-> > > 2500000 2
-> > > 2100000 29
-> > > 800000 16614
-> > >
-> > > CONFIG_NO_HZ=y:
-> > > 3200000 538
-> > > 2500000 9
-> > > 2100000 77
-> > > 800000 16287
-> > >
-> > > Now my question is, is this expected? And what could be done to make the
-> > > NO_HZ behavior more like the "CONFIG_NO_HZ not set" behavior.
-> > 
-> > A very interesting bit of information.  What do you have set for
-> > up_threshold?  You may have to set it higher for CONFIG_NO_HZ than
-> > without, based on your symptoms.  Another thing to look at is your
-> > sampling_rate.  I'm guessing it differs between CONFIG_NO_HZ being set
-> > or not.
-> 
-> I've played with all those parameters, but unfortunately it didn't make
-> any difference.
-> 
-> > And perhaps you need to set sampling_down_factor a bit lower.  I
-> > consider 100 a reasonable default, but a default of "1" was put in
-> > initially to make the behavior of the patch that enabled the factor
-> > identical with not having the patch.  If you are more concerned with
-> > saving power than maximizing throughput, you might consider a much
-> > lower value like 5 or 10.
-> 
-> Yes, I've tried different values and 200 turned out to be the best based
-> on my preferences (throughput over power saving). It makes a big
-> difference in the compile time of bigger projects, especially during the
-> configuration phase.
-> 
-> But I have found the root cause of symptoms described above by
-> bisection. It turned out that 2.6.39 is also affected, so I've bisected
-> down to 2.6.38. 
-> This is the result:
-> 
->  5cb2c3bd0c5e0f3ced63f250ec2ad59d7c5c626a is the first bad commit
->  commit 5cb2c3bd0c5e0f3ced63f250ec2ad59d7c5c626a
->  Author: Vincent Guittot <vincent.guittot@linaro.org>
->  Date:   Mon Feb 7 17:14:25 2011 +0100
-> 
->      [CPUFREQ] calculate delay after dbs_check_cpu
-> 
-> When I revert the above in 3.0-rc1 the CONFIG_NO_HZ=y symptoms vanish.
+I have an ASRock E350M1/USB3, which appears to be unsupported by cpufre=
+q:
 
-Here are some numbers to back this claim:
+/usr/sbin/dmidecode | grep -i processor
+Processor Information
+=A0 =A0 =A0 =A0 Type: Central Processor
+=A0 =A0 =A0 =A0 Version: AMD E-350 Processor=A0
 
-cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
-(with sampling_down_factor=200)
-
-CONFIG_NO_HZ not set:
-3200000 1766
-2500000 0
-2100000 1479
-800000 30787
-
-CONFIG_NO_HZ=y:
-3200000 922
-2500000 0
-2100000 2313
-800000 31217
-
-So the behavior in both cases is (roughly) the same again.
-
--- 
-Markus
+/usr/bin/cpufreq-info=A0
+cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+=A0 no or unknown cpufreq driver is active on this CPU
+=A0 maximum transition latency: 4294.55 ms.
+analyzing CPU 1:
+=A0 no or unknown cpufreq driver is active on this CPU
+=A0 maximum transition latency: 4294.55 ms.
