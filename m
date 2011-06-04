@@ -1,31 +1,50 @@
-From: Star Sweeper <starsweeper@yahoo.com>
-Subject: cpufreq doesn't work with AMD E-350 (Fusion)
-Date: Fri, 3 Jun 2011 03:48:59 -0700 (PDT)
-Message-ID: <423945.47085.qm@web121206.mail.ne1.yahoo.com>
-Reply-To: Star Sweeper <starsweeper@yahoo.com>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] Add cpufreq driver for Momentum Maple boards
+Date: Sat, 4 Jun 2011 13:00:48 +0400
+Message-ID: <BANLkTik6Ln1JGmN7isQ1tWPAf0upzHMvkg@mail.gmail.com>
+References: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
+	<BANLkTikGyV8aG1twBt7Jt_=j-fSBDiGzAg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s1024; t=1307098139; bh=8MQxYSCb7pNYQn2FPQ61DAEHZk1kpR5Xf0S2+LUTuNE=; h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding; b=PBcAgAbfmVnEKK7sdV6F1UUyxruGS+R8PJguqOiST7MU+gOUtrzmVNymaGaTyRV1F7xcTsDLb1T4/mPiZP6DP6flp0GBPsUfyqQwyUed/Ycocg65wLjFcRtsoq3LhDO3AzN6IZQHhwuMrp6RR3a6udmFPOaewFU7+LGBXcN0IKM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:mime-version:in-reply-to:references:date
+         :message-id:subject:from:to:cc:content-type;
+        bh=/ePPIUExDAL2Ju6aELiTh5sRE6C7f1e0TG/JlNmOZk8=;
+        b=lX63vyATnZvMM+M1grAcDU2q6v5sGGcN4jwrVoieAJIgW/ww/KCksYCGpG0yM4NX6Y
+         Z9OtyvqoGC3zIKO/jX7tdZU6knMqqcaub0Bc+e8x6klYYFRQYJILokNRzT4vynsQ6WXY
+         4gFcgvVZ7p2k27XzfndVmc6IUKjDExdta67N8=
+In-Reply-To: <BANLkTikGyV8aG1twBt7Jt_=j-fSBDiGzAg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 
-I have an ASRock E350M1/USB3, which appears to be unsupported by cpufre=
-q:
+On 5/30/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+> Hello,
+>
+> On 5/21/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+>> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
+>> kit and others). Driver is based on a cpufreq driver for 64-bit powermac
+>> boxes with all pmac-dependant features removed and simple cleanup
+>> applied.
+>>
+>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> ---
+>>  arch/powerpc/kernel/misc_64.S          |    4 +-
+>>  arch/powerpc/platforms/Kconfig         |    8 +
+>>  arch/powerpc/platforms/maple/Makefile  |    1 +
+>>  arch/powerpc/platforms/maple/cpufreq.c |  317
+>> ++++++++++++++++++++++++++++++++
+>>  4 files changed, 328 insertions(+), 2 deletions(-)
+>>  create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
+>
+> What about this patch?
 
-/usr/sbin/dmidecode | grep -i processor
-Processor Information
-=A0 =A0 =A0 =A0 Type: Central Processor
-=A0 =A0 =A0 =A0 Version: AMD E-350 Processor=A0
+Pinging again. Any problems/comments/objections to this patch?
 
-/usr/bin/cpufreq-info=A0
-cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-=A0 no or unknown cpufreq driver is active on this CPU
-=A0 maximum transition latency: 4294.55 ms.
-analyzing CPU 1:
-=A0 no or unknown cpufreq driver is active on this CPU
-=A0 maximum transition latency: 4294.55 ms.
+-- 
+With best wishes
+Dmitry
