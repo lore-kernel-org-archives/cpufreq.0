@@ -1,59 +1,66 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] Add cpufreq driver for Momentum Maple boards
-Date: Sat, 4 Jun 2011 14:39:37 +0400
-Message-ID: <BANLkTi=ik-7jtNWfyzfxK-ds4C+TfL7Yhg@mail.gmail.com>
-References: <1305973726-28006-1-git-send-email-dbaryshkov@gmail.com>
-	<BANLkTikGyV8aG1twBt7Jt_=j-fSBDiGzAg@mail.gmail.com>
-	<BANLkTik6Ln1JGmN7isQ1tWPAf0upzHMvkg@mail.gmail.com>
-	<1307183381.23876.27.camel@pasglop>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 36652] New: Ondemand governor is hyperactive
+Date: Sat, 4 Jun 2011 16:50:05 GMT
+Message-ID: <bug-36652-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=domainkey-signature:mime-version:in-reply-to:references:date
-         :message-id:subject:from:to:cc:content-type;
-        bh=TMbNeaaeuGfVcBgQkRPYAUQ7l7sQXZWw7yNvHF6zeMo=;
-        b=HjlXyewlaObuxO/sz328XGH54Xv/d1Nycd3cCCPtNJ2++YTgzMDe2u9TvZrXqU4TOY
-         XRp598kXk14F7mz8jSBWkMkpFCu2XZbGwpIsJQFrp+hRfVQs+YYGoBGCMCRp4LH1cXd1
-         1e1gFTKgI85opIF5g5CsdekY3vguTq1oGlhNI=
-In-Reply-To: <1307183381.23876.27.camel@pasglop>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+To: cpufreq@vger.kernel.org
 
-On 6/4/11, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Sat, 2011-06-04 at 13:00 +0400, Dmitry Eremin-Solenikov wrote:
->> On 5/30/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->> > Hello,
->> >
->> > On 5/21/11, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->> >> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
->> >> kit and others). Driver is based on a cpufreq driver for 64-bit
->> >> powermac
->> >> boxes with all pmac-dependant features removed and simple cleanup
->> >> applied.
->> >>
->> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->> >> ---
->> >>  arch/powerpc/kernel/misc_64.S          |    4 +-
->> >>  arch/powerpc/platforms/Kconfig         |    8 +
->> >>  arch/powerpc/platforms/maple/Makefile  |    1 +
->> >>  arch/powerpc/platforms/maple/cpufreq.c |  317
->> >> ++++++++++++++++++++++++++++++++
->> >>  4 files changed, 328 insertions(+), 2 deletions(-)
->> >>  create mode 100644 arch/powerpc/platforms/maple/cpufreq.c
->> >
->> > What about this patch?
->>
->> Pinging again. Any problems/comments/objections to this patch?
->
-> Well, obviously nobody had time to review it yet....
+https://bugzilla.kernel.org/show_bug.cgi?id=36652
 
-I'm just a bit impatient. It has been already two weeks...
+           Summary: Ondemand governor is hyperactive
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 2.6.39
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: timshel@rocketmail.com
+        Regression: No
+
+
+According to some posts Ondemand governor should be the best even in battery
+mode because the cpu can sleep longer if the tasks get finished sooner.
+
+This is probably true but at the moment it isn't because Ondemand even scales
+up if the cpu doesn't has anything to do.
+This might have something to do that the governor can't anticipate how long or
+how much this task will need so he scales up all the time if the cpu is used
+but this is bad in battery mode.
+
+So either there is a bug in Ondemand governor which should be fixed or if this
+happens purely out of performance reasons there should be an additional mode
+for battery where it only scales up if the cpu can't handle this with the
+lowest task.
+
+I know that there is the conservative governor but it is too slow, for example
+it takes ages to scale down.
+
+With powersave the battery time is increased significantly (at least 1W less)
+and for most tasks the lowest frequency is fine.
+
+I mean in this idle case of the screen shot it doesn't make any sense to scale
+up all the time but even if you play a video there is no need for the highest
+frequency and especially not the turbo mode.
+
+I mean why are there more than two frequencies if only they get used?
+
+I am using openSUSE 11.4 with Kernel 2.6.37. I had the same problem with
+Vanilla 2.6.39.
+My processor is a Core i5 of the first generation.
+
+If you need any additional information let me know.
 
 -- 
-With best wishes
-Dmitry
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
