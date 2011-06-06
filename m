@@ -1,8 +1,8 @@
 From: Markus Trippelsdorf <markus@trippelsdorf.de>
 Subject: Re: switching to top frequency too frequent with ondemand governor
  and no_hz
-Date: Mon, 6 Jun 2011 19:51:04 +0200
-Message-ID: <20110606175104.GA1771@x4.trippels.de>
+Date: Mon, 6 Jun 2011 21:43:21 +0200
+Message-ID: <20110606194321.GA1773@x4.trippels.de>
 References: <20110601160805.GA1775@x4.trippels.de>
  <4DE6783E.70508@verisign.com>
  <20110601180038.GA1780@x4.trippels.de>
@@ -18,10 +18,10 @@ Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=mail.ud10.udmedia.de; h=
 	date:from:to:cc:subject:message-id:references:mime-version:
 	content-type:content-transfer-encoding:in-reply-to; q=dns/txt; s=
-	beta; bh=x5PSxCu1CdLb37AWixVUoQZkWVhylU5zcSfebleQpLM=; b=QMAtuvr
-	0l+jCFIrHO7jSdb7onwMyosE0pKeNKGPxvv0eMNM1mFc5sbEhFgclihkze6bTqXh
-	+Xw+GGZpQk9mCJlu9LnGqGuKZcGwBW0hsk8cmwA0j9LPoqcfwjlng5azuu10jZlN
-	2EhDukI2UQvr+DFg5hV3eIWtLbLju5VidHz8=
+	beta; bh=HJyp5m885GSMYXNm+EdasAALFaPj2ZdXBYxJsFE3tWI=; b=guPegtJ
+	1n8R59hV8ucAAW9E6d5xuuAU4bN1vj2PwN67sHFKeI4kx0Wv3X+kuLrTa4y5nNlh
+	Y/mg3FI9NpcOPAiQBq8yk1JkZrlS5jB+3UFITQtzk5OyCiqAnjRfSEyPp2VzpzDn
+	cnEU8U4pmCxDn3gxeq1R2vyaID5tWo4VogY0=
 Content-Disposition: inline
 In-Reply-To: <BANLkTinWQ1YBWHsCgK_JfHqXwETCy1mxEQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
@@ -176,253 +176,65 @@ ay);
 > is the lowest one which is not the correct behavior of the
 > sampling_down_factor feature.
 > the patch only solves this issue.
->=20
-> >> > and with your patch and also CONFIG_NO_HZ:
-> >> > 3200000 11795
-> >> > 2500000 0
-> >> > 2100000 0
-> >> > 800000 20620
-> >> > 213
-> >> >
-> >> > Which shows the problem very nicely.
-> >> >
-> >>
-> >> My understand is that your idle activity is made of cpu activities
-> >> which are 10ms long and which trigs the increase of the frequency.
-> >
-> > Could it be that the call to dbs_check_cpu(dbs_info) itself is the
-> > reason for these activities?
-> >
-> >> >> One difference with CONFIG_NO_HZ is the real sampling period wh=
-ich can
-> >> >> be greater than the timer configuration because of the deferrab=
-le
-> >> >> mode. The deferrable mode has nearly no effect when CONFIG_NO_H=
-Z is
-> >> >> not set because the tick timer will ensure enough cpu activity =
-to
-> >> >> trigger the governor. When CONFIG_NO_HZ is set, the ondemand go=
-vernor
-> >> >> work is triggered at the beginning of a cpu activity so we have=
- more
-> >> >> chance to have a short cpu load in one period instead of splitt=
-ing it
-> >> >> into 2 differents periods. This behavior is quite useful for
-> >> >> responsiveness but can generates spurious frequency increase if=
- the
-> >> >> sampling rate is too short.
-> >> >
-> >> > Hm, my sampling rate (10000) is already the most minimal rate av=
-ailable.
-> >> >
-> >>
-> >> It's seems that your sampling period is too small and the ondemand
-> >> governor detects your idle activity as an increase of the cpu acti=
-vity
-> >> and as a result, it increases the frequency. Have you tried to
-> >> increase the sampling rate and decrease your sampling_down_factor
-> >> which seems to be also quite high ?
-> >
-> > Please note that these are all default values (with the exception o=
-f
-> > sampling_down_factor). So why should I fiddle with the parameters w=
-hen
-> > everything was working fine before your patch went in? And even if =
-I
-> > increase the sampling rate and decrease the sampling_down_factor, I
-> > cannot replicate the old behavior. So IMHO it's a regression.
-> >
+
 >=20
 > IMHO, the previous results were "good" because of the bug in the
 > sampling_down_factor which was "filtering" some cpu activities after
 > decreasing the frequency.
->=20
-> The best cpufreq statistic should be achieved in idle when the
-> sampling_down_factor is set to 1 because the sampling_down_factor
-> feature has been done to "improve performance by reducing the overhea=
-d
-> of load evaluation and helping the CPU stay at its top speed"
-> (Documentation/cpu-freq/governors.txt).
->=20
-> Could you make some measurements with sampling_down_factor set to 1
-> and sampling_down_factor set to 200 ? The cpufreq statistic starts at
-> system boot but we are interested in idle use case result so we shoul=
-d
-> use the delta between 2 statistics outputs in order to remove boot
-> measurements. Using the following command in idle should be enough #
-> cat /sys/devices/system/cpu/cpu0/cpufreq/stats/* && sleep 60 && cat
-> /sys/devices/system/cpu/cpu0/cpufreq/stats/*
 
-OK.=20
+OK, this explains the issue that I was seeing.
 
-On a totally idle system:=20
+To prove the point here are the "emerge" times of the ncurses library i=
+n
+Gentoo (unpacking, configuration, compiling and installing) for
+different sampling_down_factors.
 
-1) With your patch:=20
+sampling_down_factor    merge time                                     =
+                                                                       =
+      =20
+(with your patch)                                                      =
+                                                                       =
+      =20
+1                       1 minute and 59 seconds.                       =
+                                                                       =
+      =20
+20                      1 minute and 47 seconds.                       =
+                                                                       =
+      =20
+100                     1 minute and 29 seconds.                       =
+                                                                       =
+      =20
+150                     1 minute and 24 seconds.                       =
+                                                                       =
+      =20
+200                     1 minute and 22 seconds.                       =
+                                                                       =
+      =20
+300                     1 minute and 20 seconds.                       =
+                                                                       =
+      =20
+500                     1 minute and 12 seconds.                       =
+                                                                       =
+      =20
+1500                    1 minute and 7 seconds.                        =
+                                                                       =
+      =20
+(with patch reverted)                                                  =
+                                                                       =
+      =20
+1                       2 minutes and 4 seconds.                       =
+                                                                       =
+      =20
+20                      1 minute and 55 seconds.                       =
+                                                                       =
+      =20
+200                     1 minute and 41 seconds.                       =
+                                                                       =
+      =20
 
-* sampling_down_factor=3D200
-cat /sys/devices/system/cpu/cpu0/cpufreq/stats/* && sleep 60 && cat /sy=
-s/devices/system/cpu/cpu0/cpufreq/stats/*
-3200000 507=09
-2500000 0
-2100000 0
-800000 903
-13
-3200000 533
-2500000 0
-2100000 0
-800000 6876
-14
-
-diff:
-3200000 26
-2500000 0
-2100000 0
-800000 5973
-
-* sampling_down_factor=3D1
-3200000 1078
-2500000 3
-2100000 49
-800000 15632
-79
-3200000 1078
-2500000 3
-2100000 49
-800000 21632
-79
-
-diff:
-3200000 0
-2500000 0
-2100000 0
-800000 6000
-
-
-2) Without your patch (reverted):
-
-* sampling_down_factor=3D200
-3200000 106
-2500000 0
-2100000 339
-800000 1260
-15
-3200000 106
-2500000 0
-2100000 339
-800000 7259
-15
-
-diff:
-3200000 0
-2500000 0
-2100000 0
-800000 5999
-
-* sampling_down_factor=3D1
-3200000 134
-2500000 142
-2100000 694
-800000 13006
-30
-3200000 134
-2500000 142
-2100000 694
-800000 19005
-30
-
-diff:
-3200000 0
-2500000 0
-2100000 0
-800000 5999
-
-
-And now the same measurements while running:
-watch -n.1 'cat /proc/cpuinfo|grep MHz'
-in another terminal.
-
-1) With your patch:
-
-* sampling_down_factor=3D200
-3200000 1243
-2500000 4
-2100000 68
-800000 36493
-187
-3200000 1373
-2500000 4
-2100000 68
-800000 42363
-192
-
-diff:
-3200000 130
-2500000 0
-2100000 0
-800000 5870
-
-* sampling_down_factor=3D1
-3200000 1205
-2500000 4
-2100000 67
-800000 27873
-171
-3200000 1209
-2500000 4
-2100000 67
-800000 33869
-179
-
-diff:
-3200000 4
-2500000 0
-2100000 0
-800000 5996
-
-2) Without your patch (reverted):
-
-* sampling_down_factor=3D200
-3200000 240
-2500000 0
-2100000 505
-800000 12842
-41
-3200000 245
-2500000 0
-2100000 505
-800000 18836
-51
-
-diff:
-3200000 5
-2500000 0
-2100000 0
-800000 5994
-
-* sampling_down_factor=3D1
-3200000 230
-2500000 0
-2100000 505
-800000 5497
-31
-3200000 234
-2500000 0
-2100000 505
-800000 11493
-39
-
-diff:
-3200000 4
-2500000 0
-2100000 0
-800000 5996
-
-So, with sampling_down_factor=3D200 and "watch -n.1" running, the CPU
-spends 1300 msec on top speed vs. 50 msec without your patch.
-
-BTW what irritates me is that "watch -n.1 'cat /proc/cpuinfo|grep MHz'"
-shows way more frequency changes than what is reported in cpufreq/stats=
-/.
+As you can see your patch always beats the reverted case. It also shows
+that sampling_down_factor makes a huge difference in compilation
+time.
 
 --=20
 Markus
