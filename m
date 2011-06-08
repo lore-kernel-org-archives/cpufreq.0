@@ -1,31 +1,35 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] S3C6410: Support 800MHz operation in cpufreq
-Date: Wed, 8 Jun 2011 10:02:38 -0400
-Message-ID: <20110608140238.GB7204@redhat.com>
-References: <1307540955-10086-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] cpufreq powernow-k8: Remove firmware warning in zero transition latency case
+Date: Wed, 8 Jun 2011 16:46:35 +0200
+Message-ID: <201106081646.35673.trenn@suse.de>
+References: <201106081007.14264.trenn@suse.de> <20110608135526.GA6420@redhat.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1307540955-10086-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20110608135526.GA6420@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: kgene.kim@samsung.com, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org
 
-On Wed, Jun 08, 2011 at 02:49:15PM +0100, Mark Brown wrote:
- > At least some newer S3C6410 silicon supports operation up to 800MHz rather
- > than just 667MHz. Unfortunately I don't have access to any of documentation
- > of this other than some running systems, add a new cpufreq table entry for
- > this based on the behaviour of those systems.
- > 
- > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
- > ---
- > 
- > Kukjin already indicated on several occasions that he was happy with
- > this change but it never seems to get applied or an actual ack.
- 
-applied, thanks.
+On Wednesday, June 08, 2011 03:55:27 PM Dave Jones wrote:
+> On Wed, Jun 08, 2011 at 10:07:13AM +0200, Thomas Renninger wrote:
+>  > AMD's BKDG documents that a zero transition latency should get passed
+>  > for several recent CPU models.
+>  > -> This isn't a firmware bug.
+> 
+> but the test you're deleting is checking for family < 11h. 
+Eh, right. And in 2.6.32 we had:
+-               if (boot_cpu_data.x86 != 0x11)
+which I now removed and wanted to submit mainline...
 
-	Dave
+> My reading of that comment is that it _was_ a firmware bug on earlier
+> systems.
+
+Not sure whether earlier systems really showed this, but
+the test is correct, you can ignore the patch.
+
+Thanks for pointing that out,
+
+   Thomas
