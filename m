@@ -1,54 +1,50 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] cpufreq powernow-k8: Remove firmware warning in zero transition latency case
-Date: Wed, 8 Jun 2011 10:07:13 +0200
-Message-ID: <201106081007.14264.trenn@suse.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] S3C6410: Support 800MHz operation in cpufreq
+Date: Wed,  8 Jun 2011 14:49:15 +0100
+Message-ID: <1307540955-10086-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: davej@codemonkey.org.uk
-Cc: cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>, kgene.kim@samsung.com
+Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-AMD's BKDG documents that a zero transition latency should get passed for
-several recent CPU models.
--> This isn't a firmware bug.
+At least some newer S3C6410 silicon supports operation up to 800MHz rather
+than just 667MHz. Unfortunately I don't have access to any of documentation
+of this other than some running systems, add a new cpufreq table entry for
+this based on the behaviour of those systems.
 
-I did not dare to really pass the zero latency to the cpufreq core,
-this would need careful checking whether this does not show side effects.
--> Still modify latency to 1 (us) in case BIOS passes zero.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: cpufreq@vger.kernel.org
-CC: davej@codemonkey.org.uk
-
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/cpufreq/powernow-k8.c |   13 ++-----------
- 1 files changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 83479b6..170ad36 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1022,18 +1022,9 @@ static int get_transition_latency(struct powernow_k8_data *data)
- 		if (cur_latency > max_latency)
- 			max_latency = cur_latency;
- 	}
--	if (max_latency == 0) {
--		/*
--		 * Fam 11h and later may return 0 as transition latency. This
--		 * is intended and means "very fast". While cpufreq core and
--		 * governors currently can handle that gracefully, better set it
--		 * to 1 to avoid problems in the future.
--		 */
--		if (boot_cpu_data.x86 < 0x11)
--			printk(KERN_ERR FW_WARN PFX "Invalid zero transition "
--				"latency\n");
-+	if (max_latency == 0)
- 		max_latency = 1;
--	}
-+
- 	/* value in usecs, needs to be in nanoseconds */
- 	return 1000 * max_latency;
- }
+Kukjin already indicated on several occasions that he was happy with
+this change but it never seems to get applied or an actual ack.
+
+ drivers/cpufreq/s3c64xx-cpufreq.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index fc3f180..fc69178 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -31,6 +31,7 @@ static struct s3c64xx_dvfs s3c64xx_dvfs_table[] = {
+ 	[1] = { 1050000, 1150000 },
+ 	[2] = { 1100000, 1150000 },
+ 	[3] = { 1200000, 1350000 },
++	[4] = { 1300000, 1350000 },
+ };
+ 
+ static struct cpufreq_frequency_table s3c64xx_freq_table[] = {
+@@ -43,6 +44,7 @@ static struct cpufreq_frequency_table s3c64xx_freq_table[] = {
+ 	{ 2, 532000 },
+ 	{ 2, 533000 },
+ 	{ 3, 667000 },
++	{ 4, 800000 },
+ 	{ 0, CPUFREQ_TABLE_END },
+ };
+ #endif
+-- 
+1.7.5.3
+
