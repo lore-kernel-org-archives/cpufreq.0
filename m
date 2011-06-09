@@ -1,35 +1,54 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] cpufreq powernow-k8: Remove firmware warning in zero transition latency case
-Date: Wed, 8 Jun 2011 16:46:35 +0200
-Message-ID: <201106081646.35673.trenn@suse.de>
-References: <201106081007.14264.trenn@suse.de> <20110608135526.GA6420@redhat.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH] S3C6410: Support 800MHz operation in cpufreq
+Date: Thu, 09 Jun 2011 11:29:00 -0700
+Message-ID: <4DF110EC.8030209@samsung.com>
+References: <1307540955-10086-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20110608140238.GB7204@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20110608135526.GA6420@redhat.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=domainkey-signature:sender:message-id:date:from:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=l7248a2uL+NWW1mXFTswdIlzfJW2LEvRWKUSRKaWbZU=;
+        b=LY8Fv5NA3+AHp1PWXV4X/A6ZTV3Wj4WOpZqwVlCRziFyD38SZ9o1tm0drJGMPB/e1X
+         UG5a7y4LXiu6WnIfidUB3rTafdZRdIhXUPDVb4k3rl8NFnouTG71RvyGWeULezBE/grp
+         pjo7Ze7fxaqXJ1yVmVxc3sR50meGltYmNHqIQ=
+In-Reply-To: <20110608140238.GB7204@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, June 08, 2011 03:55:27 PM Dave Jones wrote:
-> On Wed, Jun 08, 2011 at 10:07:13AM +0200, Thomas Renninger wrote:
->  > AMD's BKDG documents that a zero transition latency should get passed
->  > for several recent CPU models.
->  > -> This isn't a firmware bug.
-> 
-> but the test you're deleting is checking for family < 11h. 
-Eh, right. And in 2.6.32 we had:
--               if (boot_cpu_data.x86 != 0x11)
-which I now removed and wanted to submit mainline...
+On 06/08/11 07:02, Dave Jones wrote:
+> On Wed, Jun 08, 2011 at 02:49:15PM +0100, Mark Brown wrote:
+>   >  At least some newer S3C6410 silicon supports operation up to 800MHz rather
+>   >  than just 667MHz. Unfortunately I don't have access to any of documentation
+>   >  of this other than some running systems, add a new cpufreq table entry for
+>   >  this based on the behaviour of those systems.
+>   >
+>   >  Signed-off-by: Mark Brown<broonie@opensource.wolfsonmicro.com>
+>   >  ---
+>   >
+>   >  Kukjin already indicated on several occasions that he was happy with
+>   >  this change but it never seems to get applied or an actual ack.
+>
+> applied, thanks.
+>
+> 	Dave
 
-> My reading of that comment is that it _was_ a firmware bug on earlier
-> systems.
+Dave, could you please add my ack on this?
 
-Not sure whether earlier systems really showed this, but
-the test is correct, you can ignore the patch.
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 
-Thanks for pointing that out,
+Mark, sorry for late my ack :)
 
-   Thomas
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
