@@ -1,84 +1,38 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 2/3] powernow-k8: Don't notify of successful transition if we failed (vid case).
-Date: Thu, 16 Jun 2011 15:36:39 -0400
-Message-ID: <1308253000-6289-3-git-send-email-konrad.wilk@oracle.com>
-References: <1308253000-6289-1-git-send-email-konrad.wilk@oracle.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1308253000-6289-1-git-send-email-konrad.wilk@oracle.com>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [PATCH]/[GIT PULL] stable/cpufreq.bugfixes for 3.0 for cpufreq fixes.
+Date: Thu, 16 Jun 2011 15:36:37 -0400
+Message-ID: <1308253000-6289-1-git-send-email-konrad.wilk@oracle.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, x86@kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, bp@alien8.de, Mark.Langsdorf@amd.com, andre.przywara@amd.com
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-Before this patch if we failed the vid transition would still try to
-submit the "new" frequencies to cpufreq.
-That is incorrect - also we could submit a non-existing frequency value
-which would cause cpufreq to crash. The ultimate fix is in cpufreq
-to deal with incorrect values, but this patch improves the error
-recovery in the AMD powernowk8 driver.
+Hey Dave,
 
-The failure that was reported was as follows:
+This is a follow up after the initial posting (http://www.gossamer-threads.com/lists/linux/kernel/1394515).
 
-powernow-k8: Found 1 AMD Athlon(tm) 64 Processor 3700+ (1 cpu cores) (version 2.20.00)
-powernow-k8: fid 0x2 (1000 MHz), vid 0x12
-powernow-k8: fid 0xa (1800 MHz), vid 0xa
-powernow-k8: fid 0xc (2000 MHz), vid 0x8
-powernow-k8: fid 0xe (2200 MHz), vid 0x8
-Marking TSC unstable due to cpufreq changes
-powernow-k8: fid trans failed, fid 0x2, curr 0x0
-BUG: unable to handle kernel paging request at ffff880807e07b78
-IP: [<ffffffff81479163>] cpufreq_stats_update+0x46/0x5b
-...
+The first patch:
+ [PATCH 1/3] [CPUFREQ]: Don't set stat->last_index to -1 if the pol->cur has incorrect value.
 
-And transition fails and data->currfid ends up with 0. Since
-the machine does not support 800Mhz value when the calculation is
-done ('find_khz_freq_from_fid(data->currfid);') it reports the
-new frequency as 800000 which is bogus. This patch fixes
-the issue during target setting.
+is exactly like the first posting, while the second (old) patch was split in two:
 
-The patch however does not fix the issue in 'powernowk8_cpu_init'
-where the pol->cur can also be set with the 800000 value:
+ [PATCH 2/3] [CPUFREQ] powernow-k8: Don't notify of successful transition if we failed (vid case).
 
-          pol->cur = find_khz_freq_from_fid(data->currfid);
-  dprintk("policy current frequency %d kHz\n", pol->cur);
+and the pstate transition code was augmented a bit more:
 
-  /* min/max the cpu is capable of */
-  if (cpufreq_frequency_table_cpuinfo(pol, data->powernow_table)) {
+ [PATCH 3/3] [CPUFREQ] powernow-k8: Don't try to transition if the pstate is incorrect
 
-The fix for that looks to update cpufreq_frequency_table_cpuinfo to
-check pol->cur.... but that would cause an regression in how the
-acpi-cpufreq driver works (it sets cpu->cur after calling
-cpufreq_frequency_table_cpuinfo). Instead the fix will be to let
-cpufreq gracefully handle bogus data (another patch).
+Also Borislav Acked and reviewed the patches.
 
-Acked-by: Borislav Petkov <bp@alien8.de>
-CC: andre.przywara@amd.com
-CC: Mark.Langsdorf@amd.com
-Reported-by: Tobias Diedrich <ranma+xen@tdiedrich.de>
-Tested-by: Tobias Diedrich <ranma+xen@tdiedrich.de>
-[v1: Rebased on v3.0-rc2, reduced patch to deal with vid case]
-Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
----
- drivers/cpufreq/powernow-k8.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Please either:
 
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 83479b6..287c56f 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1079,6 +1079,9 @@ static int transition_frequency_fidvid(struct powernow_k8_data *data,
- 	}
- 
- 	res = transition_fid_vid(data, fid, vid);
-+	if (res)
-+		return res;
-+
- 	freqs.new = find_khz_freq_from_fid(data->currfid);
- 
- 	for_each_cpu(i, data->available_cores) {
--- 
-1.7.4.1
+a). git pull git://git.kernel.org/pub/scm/linux/kernel/git/konrad/xen.git  stable/cpufreq.bugfixes
 
+b) or git am this email thread.
+
+I don't know which way you prefer. The patches have been rebased on top of v3.0-rc3 tag.
+
+Thank you!
