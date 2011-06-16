@@ -1,38 +1,43 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH]/[GIT PULL] stable/cpufreq.bugfixes for 3.0 for cpufreq fixes.
-Date: Thu, 16 Jun 2011 15:36:37 -0400
-Message-ID: <1308253000-6289-1-git-send-email-konrad.wilk@oracle.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 3/3] powernow-k8: Don't try to transition if the pstate is incorrect
+Date: Thu, 16 Jun 2011 15:36:40 -0400
+Message-ID: <1308253000-6289-4-git-send-email-konrad.wilk@oracle.com>
+References: <1308253000-6289-1-git-send-email-konrad.wilk@oracle.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1308253000-6289-1-git-send-email-konrad.wilk@oracle.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, x86@kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, bp@alien8.de, Mark.Langsdorf@amd.com, andre.przywara@amd.com
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-Hey Dave,
+This patch augments the pstate transition code to error out
+(instead of returning 0) when an incorrect pstate is provided.
 
-This is a follow up after the initial posting (http://www.gossamer-threads.com/lists/linux/kernel/1394515).
+Suggested-by: Borislav Petkov <bp@alien8.de>
+CC: andre.przywara@amd.com
+CC: Mark.Langsdorf@amd.com
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+---
+ drivers/cpufreq/powernow-k8.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-The first patch:
- [PATCH 1/3] [CPUFREQ]: Don't set stat->last_index to -1 if the pol->cur has incorrect value.
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 287c56f..bce576d 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -1104,7 +1104,8 @@ static int transition_frequency_pstate(struct powernow_k8_data *data,
+ 	/* get MSR index for hardware pstate transition */
+ 	pstate = index & HW_PSTATE_MASK;
+ 	if (pstate > data->max_hw_pstate)
+-		return 0;
++		return -EINVAL;
++
+ 	freqs.old = find_khz_freq_from_pstate(data->powernow_table,
+ 			data->currpstate);
+ 	freqs.new = find_khz_freq_from_pstate(data->powernow_table, pstate);
+-- 
+1.7.4.1
 
-is exactly like the first posting, while the second (old) patch was split in two:
-
- [PATCH 2/3] [CPUFREQ] powernow-k8: Don't notify of successful transition if we failed (vid case).
-
-and the pstate transition code was augmented a bit more:
-
- [PATCH 3/3] [CPUFREQ] powernow-k8: Don't try to transition if the pstate is incorrect
-
-Also Borislav Acked and reviewed the patches.
-
-Please either:
-
-a). git pull git://git.kernel.org/pub/scm/linux/kernel/git/konrad/xen.git  stable/cpufreq.bugfixes
-
-b) or git am this email thread.
-
-I don't know which way you prefer. The patches have been rebased on top of v3.0-rc3 tag.
-
-Thank you!
