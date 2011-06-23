@@ -1,72 +1,36 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH 2/6] [CPUFREQ] S5PV210: Add arm/int voltage control	support
-Date: Thu, 23 Jun 2011 16:57:36 +0900
-Message-ID: <015f01cc317b$3c18f9f0$b44aedd0$%kim@samsung.com>
-References: <1308730065-24737-1-git-send-email-kgene.kim@samsung.com>
- <1308730065-24737-3-git-send-email-kgene.kim@samsung.com>
- <20110622133838.GI23666@sirena.org.uk>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 16436] ath5k (AR5001) does not work after resume and fails with
+ "ath5k phy0: gain calibration timeout"
+Date: Thu, 23 Jun 2011 18:41:35 GMT
+Message-ID: <201106231841.p5NIfZ9h005601@demeter2.kernel.org>
+References: <bug-16436-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20110622133838.GI23666@sirena.org.uk>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-16436-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
-Cc: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, davej@redhat.com, 'Jonghwan Choi' <jhbird.choi@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-Mark Brown wrote:
-> 
-> On Wed, Jun 22, 2011 at 05:07:41PM +0900, Kukjin Kim wrote:
-> 
-> >  	if (freqs.new > freqs.old) {
-> >  		/* Voltage up: will be implemented */
-> 
-> Presumably this comment is bitrotted?
-> 
-Oops, thanks for your pointing out.
+https://bugzilla.kernel.org/show_bug.cgi?id=16436
 
-> > +		if (!IS_ERR(arm_regulator) &&
-> > +				!IS_ERR(int_regulator)) {
-> 
-> You should not do this.  The regulator API stubs itself out and provides
-> mechanisms for boards to fill out partial regulator configurations, and
-> clearly these supplies must be physically present in the system.
-> 
-Uhm...you're right.
 
-> Plus...
-> 
-> >  static int __init s5pv210_cpufreq_init(void)
-> >  {
-> > +	arm_regulator = regulator_get(NULL, "vddarm");
-> > +	if (IS_ERR(arm_regulator)) {
-> > +		pr_err("failed to get regulator vddarm");
-> > +		return PTR_ERR(arm_regulator);
-> > +	}
-> > +
-> > +	int_regulator = regulator_get(NULL, "vddint");
-> > +	if (IS_ERR(int_regulator)) {
-> > +		pr_err("failed to get regulator vddint");
-> > +		regulator_put(arm_regulator);
-> > +		return PTR_ERR(int_regulator);
-> > +	}
-> 
-> ...the driver won't currently bind if it didn't get the regulators.
-> 
-> Ideally you should also have code which checks to see if the regulators
-> can support all the operating points.  This will ensure that governors
-> don't end up spending time trying to go into states that can't be
-> supported for some reason.  That said this is fairly unusual so may not
-> be worth bothering.
+Thomas Andersen <phomes@gmail.com> changed:
 
-OK, will address comments from you :)
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |phomes@gmail.com
 
-Thanks.
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+
+
+--- Comment #36 from Thomas Andersen <phomes@gmail.com>  2011-06-23 18:41:29 ---
+I'm on 2.6.38.8-32.fc15.x86_64 and I can reproduce it pretty consistently. I
+just need to compile/distcheck a few modules in gnome and it dies. I'm guessing
+either high cpu or high temp does it.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
