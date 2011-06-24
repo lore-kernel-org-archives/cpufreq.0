@@ -1,31 +1,22 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16436] ath5k (AR5001) does not work after resume and fails with
- "ath5k phy0: gain calibration timeout"
-Date: Thu, 23 Jun 2011 18:43:34 GMT
-Message-ID: <201106231843.p5NIhY8G008086@demeter2.kernel.org>
-References: <bug-16436-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: [PATCH V2 0/6] S5PV210: Update
+Date: Fri, 24 Jun 2011 16:04:12 +0900
+Message-ID: <1308899058-24318-1-git-send-email-kgene.kim@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16436-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: davej@redhat.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16436
+Changes since v1:
+- Address comments from Mark Brown (Thanks, Mark)
 
-
-
-
-
---- Comment #37 from Thomas Andersen <phomes@gmail.com>  2011-06-23 18:43:32 ---
-hw:
-ath5k phy0: Atheros AR2425 chip found (MAC: 0xe2, PHY: 0x70)
-
-(sorry - hit send too soon)
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+[PATCH V2 1/6] [CPUFREQ] S5PV210: Add additional symantics for "relation" in cpufreq with pm
+[PATCH V2 2/6] [CPUFREQ] S5PV210: Add arm/int voltage control support
+[PATCH V2 3/6] [CPUFREQ] S5PV210: Add pm_notifier to prevent system unstable
+[PATCH V2 4/6] [CPUFREQ] S5PV210: Lock a mutex while changing the cpu frequency
+[PATCH V2 5/6] [CPUFREQ] S5PV210: Adjust udelay prior to voltage scaling down
+[PATCH V2 6/6] [CPUFREQ] S5PV210: Add reboot notifier to prevent system hang
