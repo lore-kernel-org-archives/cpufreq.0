@@ -1,77 +1,29 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: [PATCH V2 1/6] [CPUFREQ] S5PV210: Add additional symantics for "relation" in cpufreq with pm
-Date: Fri, 24 Jun 2011 16:04:13 +0900
-Message-ID: <1308899058-24318-2-git-send-email-kgene.kim@samsung.com>
-References: <1308899058-24318-1-git-send-email-kgene.kim@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1308899058-24318-1-git-send-email-kgene.kim@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+From: Toralf =?utf-8?q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Subject: is /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice_load gone ?
+Date: Sat, 25 Jun 2011 14:24:51 +0200
+Message-ID: <201106251424.51860.toralf.foerster@gmx.de>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: davej@redhat.com, Huisung Kang <hs1218.kang@samsung.com>, Jonghwan Choi <jhbird.choi@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Content-Type: Text/Plain; charset="iso-8859-1"
+To: cpufreq@vger.kernel.org
 
-From: Huisung Kang <hs1218.kang@samsung.com>
+At my ThinkPad T400 I tried today kernel 3.0-rc4 but now I cannot use t=
+his=20
+command any longer :
+echo 1> /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice_load
 
-Relation has an additional symantics other than standard.
-s5pv310_target funtion have below additional relation.
-- DISABLE_FURTHER_CPUFREQ : disable further access to target
-- ENABLE_FURTHER_CPUFRER : enable access to target
+=46urthermore I miss the files under /sys/devices/system/cpu/cpu{0,1}/c=
+pufreq
 
-Signed-off-by: Huisung Kang <hs1218.kang@samsung.com>
-Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
-Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
----
- drivers/cpufreq/s5pv210-cpufreq.c |   28 ++++++++++++++++++++++++++++
- 1 files changed, 28 insertions(+), 0 deletions(-)
+Do I miss a (new ?) config option - I used the old kernel config and co=
+mpared=20
+it carefully, but maybe ...
 
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index a7cb338..48a4a90 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -30,6 +30,18 @@ static struct cpufreq_freqs freqs;
- #define APLL_VAL_800	((1 << 31) | (100 << 16) | (3 << 8) | 1)
- 
- /*
-+ * relation has an additional symantics other than the standard of cpufreq
-+ * DISALBE_FURTHER_CPUFREQ: disable further access to target
-+ * ENABLE_FURTUER_CPUFREQ: enable access to target
-+ */
-+enum cpufreq_access {
-+	DISABLE_FURTHER_CPUFREQ = 0x10,
-+	ENABLE_FURTHER_CPUFREQ = 0x20,
-+};
-+
-+static bool no_cpufreq_access;
-+
-+/*
-  * DRAM configurations to calculate refresh counter for changing
-  * frequency of memory.
-  */
-@@ -146,6 +158,22 @@ static int s5pv210_target(struct cpufreq_policy *policy,
- 	unsigned int pll_changing = 0;
- 	unsigned int bus_speed_changing = 0;
- 
-+	if (relation & ENABLE_FURTHER_CPUFREQ)
-+		no_cpufreq_access = false;
-+
-+	if (no_cpufreq_access) {
-+#ifdef CONFIG_PM_VERBOSE
-+		pr_err("%s:%d denied access to %s as it is disabled"
-+				"temporarily\n", __FILE__, __LINE__, __func__);
-+#endif
-+		return -EINVAL;
-+	}
-+
-+	if (relation & DISABLE_FURTHER_CPUFREQ)
-+		no_cpufreq_access = true;
-+
-+	relation &= ~(ENABLE_FURTHER_CPUFREQ | DISABLE_FURTHER_CPUFREQ);
-+
- 	freqs.old = s5pv210_getspeed(0);
- 
- 	if (cpufreq_frequency_table_target(policy, s5pv210_freq_table,
--- 
-1.7.1
+
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
