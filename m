@@ -1,15 +1,17 @@
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: [PATCH V4 0/2] Add cpufreq driver for Momentum Maple platform
-Date: Wed, 29 Jun 2011 19:07:54 +0400
-Message-ID: <1309360076-22579-1-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH V4 1/2] ppc: enable scom access functions on Maple
+Date: Wed, 29 Jun 2011 19:07:55 +0400
+Message-ID: <1309360076-22579-2-git-send-email-dbaryshkov@gmail.com>
+References: <1309360076-22579-1-git-send-email-dbaryshkov@gmail.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        bh=Z8bIMcnWEhY3vAeO7WFPAJu3WGGu6fvgb8Y4kZibnCw=;
-        b=gmyDM+cNyTl3NGtHBT9lzmUC7M2AyO0xIYzXYf7xuqY7Y0OlvXzfNfvlaNrB9Oorhb
-         tW31vkHfOhWo83jevbd4zyxoRDTGPy/Ae7fuPKLNVc9toIuAYEyw8d3SIAsxi8iXoleF
-         l3nmzGLnpkNvzM8+1xVmYmPo9po9yb3yGlX0E=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        bh=6cIjZfpSKNhJNcTGrTQOd/Oex5u2IcvPTdiuzInzHSU=;
+        b=ppyCR7qkfrBxutFDIrD5vSbWUgD18ojGdI+Qp79mDcNNqCISjry/VbWvXmwgjRkC3Q
+         Ww9Kub44xfDhnJjZA0yUpf4JL4JO/v+I1lQZg7RgDHh6P64RDQb9vbx7KYb2+edQ9NNI
+         +QDCMfjoY+9yuJejKUrA7f3+lKleB1d+4/dA4=
+In-Reply-To: <1309360076-22579-1-git-send-email-dbaryshkov@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
@@ -18,24 +20,36 @@ Content-Transfer-Encoding: 7bit
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 
-Please merge this patchset, adding a cpufreq driver for Momentum Maple
-platform. Changes since V3:
+Enable functions used to access SCOM if PPC_MAPLE is defined: they are
+used by cpufreq driver to control hardware.
 
-* Add comment regarding power-mode-data
-* Adjusted kernel output a bit
-* Tied the driver to compatible platforms only (as per
-  arch/powerpc/platforms/maple/setup.c)
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ arch/powerpc/kernel/misc_64.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Dmitry Eremin-Solenikov (2):
-      ppc: enable scom access functions on Maple
-      Add cpufreq driver for Momentum Maple boards
-
- arch/powerpc/kernel/misc_64.S   |    4 +-
- drivers/cpufreq/Kconfig         |    5 +
- drivers/cpufreq/Kconfig.powerpc |    7 +
- drivers/cpufreq/Makefile        |    5 +
- drivers/cpufreq/maple-cpufreq.c |  309 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 328 insertions(+), 2 deletions(-)
- create mode 100644 drivers/cpufreq/Kconfig.powerpc
- create mode 100644 drivers/cpufreq/maple-cpufreq.c
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index e89df59..616921e 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -339,7 +339,7 @@ _GLOBAL(real_205_writeb)
+ #endif /* CONFIG_PPC_PASEMI */
+ 
+ 
+-#ifdef CONFIG_CPU_FREQ_PMAC64
++#if defined(CONFIG_CPU_FREQ_PMAC64) || defined(CONFIG_CPU_FREQ_MAPLE)
+ /*
+  * SCOM access functions for 970 (FX only for now)
+  *
+@@ -408,7 +408,7 @@ _GLOBAL(scom970_write)
+ 	/* restore interrupts */
+ 	mtmsrd	r5,1
+ 	blr
+-#endif /* CONFIG_CPU_FREQ_PMAC64 */
++#endif /* CONFIG_CPU_FREQ_PMAC64 || CONFIG_CPU_FREQ_MAPLE */
+ 
+ 
+ /*
+-- 
+1.7.5.4
 
