@@ -1,43 +1,74 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] S3C6410: Add some lower frequencies for 800MHz base clock operation
-Date: Tue, 28 Jun 2011 20:26:49 -0700
-Message-ID: <1309318009-24897-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Add cpufreq driver for Momentum Maple boards
+Date: Wed, 29 Jun 2011 13:28:30 +1000
+Message-ID: <1309318110.32158.520.camel@pasglop>
+References: <1308316207-9075-1-git-send-email-dbaryshkov@gmail.com>
+	 <1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dave Jones <davej@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 
-By extension from the 667MHz based clocks currently supported add 100MHz
-and 200MHz operating points. Due to a lack of documentation these have not
-been confirmed as supported but by extension from the existing frequencies
-they should be OK, and I've given them quite a bit of runtime testing.
+Before I comment on this last one, a quick Q. for Dave: Do you want to
+handle this or should I merge it via powerpc.git ? (It depends on
+another change to the arch code to expose the SCOM functions that it
+uses, and that patch is going to be in my -next branch).
 
-The major risk is synchronization with the non-ARM clocks but as we
-can't currently scale the ARM PLL the risk should be relatively low.
+Now some remaining small nits:
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/cpufreq/s3c64xx-cpufreq.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Fri, 2011-06-17 at 17:10 +0400, Dmitry Eremin-Solenikov wrote:
+> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
+> kit and others). Driver is based on a cpufreq driver for 64-bit powermac
+> boxes with all pmac-dependant features removed and simple cleanup
+> applied.
+> 
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> ---
+>  drivers/cpufreq/Kconfig         |    5 +
+>  drivers/cpufreq/Kconfig.powerpc |    7 +
+>  drivers/cpufreq/Makefile        |    5 +
+>  drivers/cpufreq/maple-cpufreq.c |  314 +++++++++++++++++++++++++++++++++++++++
 
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index e818248..b8d1d20 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -36,7 +36,9 @@ static struct s3c64xx_dvfs s3c64xx_dvfs_table[] = {
- 
- static struct cpufreq_frequency_table s3c64xx_freq_table[] = {
- 	{ 0,  66000 },
-+	{ 0, 100000 },
- 	{ 0, 133000 },
-+	{ 1, 200000 },
- 	{ 1, 222000 },
- 	{ 1, 266000 },
- 	{ 2, 333000 },
--- 
-1.7.5.4
+If we're going to have a Kconfig.powerpc, should we maybe just have a
+powerpc subdirectory instead with the driver in it ?
+
+I'm happy at some later point to try moving some of my other ones there.
+
+ .../...
+
+> +	/* Look for the powertune data in the device-tree */
+> +	maple_pmode_data = of_get_property(cpunode, "power-mode-data", &psize);
+> +	if (!maple_pmode_data) {
+> +		DBG("No power-mode-data !\n");
+> +		goto bail_noprops;
+> +	}
+> +	maple_pmode_max = psize / sizeof(u32) - 1;
+
+Do you get that property in your device-tree ? Or have you modified your
+firmware ? If that requires a modified firmware, you should probably put
+at least a link indicating where to get it somewhere and display a nicer
+error code.
+
+Also this driver is specific to the Maple HW, you don't want it to kick
+in and mess around on ... an Apple G5 for example. So stick somewhere a
+
+	if (!machine_is(maple))
+		return 0;
+
+> +	printk(KERN_INFO "Registering G5 CPU frequency driver\n");
+
+s/G5/Maple
+
+> +	printk(KERN_INFO "Frequency method: SCOM, Voltage method: none\n");
+
+This is useless.
+
+Cheers,
+Ben.
+
 
