@@ -1,61 +1,41 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH] S3C6410: Add some lower frequencies for 800MHz
- base clock operation
-Date: Wed, 29 Jun 2011 23:00:03 +0900
-Message-ID: <004d01cc3664$db997ac0$92cc7040$%kim@samsung.com>
-References: <1309318009-24897-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH V4 0/2] Add cpufreq driver for Momentum Maple platform
+Date: Wed, 29 Jun 2011 19:07:54 +0400
+Message-ID: <1309360076-22579-1-git-send-email-dbaryshkov@gmail.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1309318009-24897-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Content-language: ko
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        bh=Z8bIMcnWEhY3vAeO7WFPAJu3WGGu6fvgb8Y4kZibnCw=;
+        b=gmyDM+cNyTl3NGtHBT9lzmUC7M2AyO0xIYzXYf7xuqY7Y0OlvXzfNfvlaNrB9Oorhb
+         tW31vkHfOhWo83jevbd4zyxoRDTGPy/Ae7fuPKLNVc9toIuAYEyw8d3SIAsxi8iXoleF
+         l3nmzGLnpkNvzM8+1xVmYmPo9po9yb3yGlX0E=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>, 'Dave Jones' <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 
-Mark Brown wrote:
-> 
-> By extension from the 667MHz based clocks currently supported add 100MHz
-> and 200MHz operating points. Due to a lack of documentation these have not
-> been confirmed as supported but by extension from the existing frequencies
-> they should be OK, and I've given them quite a bit of runtime testing.
-> 
-> The major risk is synchronization with the non-ARM clocks but as we
-> can't currently scale the ARM PLL the risk should be relatively low.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Please merge this patchset, adding a cpufreq driver for Momentum Maple
+platform. Changes since V3:
 
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+* Add comment regarding power-mode-data
+* Adjusted kernel output a bit
+* Tied the driver to compatible platforms only (as per
+  arch/powerpc/platforms/maple/setup.c)
 
-Thanks.
+Dmitry Eremin-Solenikov (2):
+      ppc: enable scom access functions on Maple
+      Add cpufreq driver for Momentum Maple boards
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
-
-> ---
->  drivers/cpufreq/s3c64xx-cpufreq.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c
-b/drivers/cpufreq/s3c64xx-cpufreq.c
-> index e818248..b8d1d20 100644
-> --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> @@ -36,7 +36,9 @@ static struct s3c64xx_dvfs s3c64xx_dvfs_table[] = {
-> 
->  static struct cpufreq_frequency_table s3c64xx_freq_table[] = {
->  	{ 0,  66000 },
-> +	{ 0, 100000 },
->  	{ 0, 133000 },
-> +	{ 1, 200000 },
->  	{ 1, 222000 },
->  	{ 1, 266000 },
->  	{ 2, 333000 },
-> --
-> 1.7.5.4
+ arch/powerpc/kernel/misc_64.S   |    4 +-
+ drivers/cpufreq/Kconfig         |    5 +
+ drivers/cpufreq/Kconfig.powerpc |    7 +
+ drivers/cpufreq/Makefile        |    5 +
+ drivers/cpufreq/maple-cpufreq.c |  309 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 328 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/cpufreq/Kconfig.powerpc
+ create mode 100644 drivers/cpufreq/maple-cpufreq.c
 
