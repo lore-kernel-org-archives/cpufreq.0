@@ -1,96 +1,61 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] Add cpufreq driver for Momentum Maple boards
-Date: Wed, 29 Jun 2011 18:54:30 +1000
-Message-ID: <1309337670.14501.69.camel@pasglop>
-References: <1308316207-9075-1-git-send-email-dbaryshkov@gmail.com>
-	 <1308316207-9075-2-git-send-email-dbaryshkov@gmail.com>
-	 <1309318110.32158.520.camel@pasglop>
-	 <BANLkTimJD3U1kRkDKVomGVriykwqLBQasA@mail.gmail.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: [PATCH] S3C6410: Add some lower frequencies for 800MHz
+ base clock operation
+Date: Wed, 29 Jun 2011 23:00:03 +0900
+Message-ID: <004d01cc3664$db997ac0$92cc7040$%kim@samsung.com>
+References: <1309318009-24897-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <BANLkTimJD3U1kRkDKVomGVriykwqLBQasA@mail.gmail.com>
+In-reply-to: <1309318009-24897-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, linuxppc-dev@lists.ozlabs.org, cpufreq@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>, 'Dave Jones' <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, 2011-06-29 at 12:40 +0400, Dmitry Eremin-Solenikov wrote:
-> On 6/29/11, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > Before I comment on this last one, a quick Q. for Dave: Do you want to
-> > handle this or should I merge it via powerpc.git ? (It depends on
-> > another change to the arch code to expose the SCOM functions that it
-> > uses, and that patch is going to be in my -next branch).
-> >
-> > Now some remaining small nits:
-> >
-> > On Fri, 2011-06-17 at 17:10 +0400, Dmitry Eremin-Solenikov wrote:
-> >> Add simple cpufreq driver for Maple-based boards (ppc970fx evaluation
-> >> kit and others). Driver is based on a cpufreq driver for 64-bit powermac
-> >> boxes with all pmac-dependant features removed and simple cleanup
-> >> applied.
-> >>
-> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> >> ---
-> >>  drivers/cpufreq/Kconfig         |    5 +
-> >>  drivers/cpufreq/Kconfig.powerpc |    7 +
-> >>  drivers/cpufreq/Makefile        |    5 +
-> >>  drivers/cpufreq/maple-cpufreq.c |  314
-> >> +++++++++++++++++++++++++++++++++++++++
-> >
-> > If we're going to have a Kconfig.powerpc, should we maybe just have a
-> > powerpc subdirectory instead with the driver in it ?
-> >
-> > I'm happy at some later point to try moving some of my other ones there.
+Mark Brown wrote:
 > 
-> As Dave also isn't sure about subdirs, should I create cpufreq/powerpc
-> directory,
-> or not?
-
-Don't bother, I can do it all at once if/when I chose to move the
-powermac stuff there.
-
-> > Do you get that property in your device-tree ? Or have you modified your
-> > firmware ? If that requires a modified firmware, you should probably put
-> > at least a link indicating where to get it somewhere and display a nicer
-> > error code.
+> By extension from the 667MHz based clocks currently supported add 100MHz
+> and 200MHz operating points. Due to a lack of documentation these have not
+> been confirmed as supported but by extension from the existing frequencies
+> they should be OK, and I've given them quite a bit of runtime testing.
 > 
-> PIBS firmware (used on PPC970FX devkit/original Maple-D board) generates
-> this property, if the board is started with dual CPUs (it can also be started
-> with only one CPU selected). On the other hand SLOF firmware (used
-> on JS2x blade servers) doesn't generate this property. It can be adapted
-> however to generate it.
-
-Ok.
-
-> > Also this driver is specific to the Maple HW, you don't want it to kick
-> > in and mess around on ... an Apple G5 for example. So stick somewhere a
-> >
-> > 	if (!machine_is(maple))
-> > 		return 0;
-> >
-> >> +	printk(KERN_INFO "Registering G5 CPU frequency driver\n");
-> >
-> > s/G5/Maple
+> The major risk is synchronization with the non-ARM clocks but as we
+> can't currently scale the ARM PLL the risk should be relatively low.
 > 
-> Hmmm. I'm actually thinking about doing it the other way: as this driver
-> is mostly c&p of PowerMac G5 driver, as we are moving those from
-> arch/powerpc to drivers/cpufreq, maybe I should merge two drivers (this
-> one with cpufreq_64 from powermac)?
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-If you feel like it :-) The powermac one has quite a bit more plumbing
-for voltage control etc... but it does make sense in the long run.
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 
-Maybe start with getting that maple driver in, and -then- merge ?
+Thanks.
 
-> >> +	printk(KERN_INFO "Frequency method: SCOM, Voltage method: none\n");
-> >
-> > This is useless.
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
+
+> ---
+>  drivers/cpufreq/s3c64xx-cpufreq.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> Leftover from powermac thing.
-
-Cheers,
-Ben.
-
+> diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c
+b/drivers/cpufreq/s3c64xx-cpufreq.c
+> index e818248..b8d1d20 100644
+> --- a/drivers/cpufreq/s3c64xx-cpufreq.c
+> +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+> @@ -36,7 +36,9 @@ static struct s3c64xx_dvfs s3c64xx_dvfs_table[] = {
+> 
+>  static struct cpufreq_frequency_table s3c64xx_freq_table[] = {
+>  	{ 0,  66000 },
+> +	{ 0, 100000 },
+>  	{ 0, 133000 },
+> +	{ 1, 200000 },
+>  	{ 1, 222000 },
+>  	{ 1, 266000 },
+>  	{ 2, 333000 },
+> --
+> 1.7.5.4
 
