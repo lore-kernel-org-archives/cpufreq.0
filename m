@@ -1,64 +1,51 @@
-From: Axel Lin <axel.lin@gmail.com>
-Subject: [PATCH 1/2] cpufreq: exynos4210: make needlessly global symbols
- static
-Date: Fri, 08 Jul 2011 14:20:44 +0800
-Message-ID: <1310106044.27158.0.camel@phoenix>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: [PATCH 4/4] EXYNOS4210: Add Support for DVS Lock
+Date: Fri, 08 Jul 2011 15:22:50 +0900
+Message-ID: <002101cc3d37$7b5d27e0$721777a0$%kim@samsung.com>
+References: <1309853179-19438-1-git-send-email-kgene.kim@samsung.com>
+ <1309853179-19438-5-git-send-email-kgene.kim@samsung.com>
+ <CAH9JG2VMbvfpXu4A_p9Ws0-94t1vGWpWPyZP-HvTP-p4PVgifg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        bh=oSNrMoxQhu0hDaUedfbfarSzIez3tJ0qXduB2aSCzN8=;
-        b=abJ3XmpP1SKRi6CQlUJ/qwryXV9uqw0K0dorePLePIidqvkAe40xwAANa4qwz67Yby
-         s6ZgkkjQz5vHnk7+YdO5OW+V/17BKR3hkBlXoycNnbeKHFkZgB+qmI6x9yJN26l2W4aW
-         QqeK3QRB4ryLC87tJL1pXQMVwFc+P9rhhWwQ4=
+In-reply-to: <CAH9JG2VMbvfpXu4A_p9Ws0-94t1vGWpWPyZP-HvTP-p4PVgifg@mail.gmail.com>
+Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-kernel@vger.kernel.org
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+To: 'Kyungmin Park' <kmpark@infradead.org>
+Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, 'Jongpill Lee' <boyko.lee@samsung.com>, 'SangWook Ju' <sw.ju@samsung.com>, 'Jonghwan Choi' <jhbird.choi@samsung.com>, =?UTF-8?B?J+2VqOuqheyjvCc=?= <myungjoo.ham@samsung.com>
 
-The following symbols are needlessly defined global:
-  exynos4_verify_speed
-  exynos4_getspeed
-  exynos4_set_clkdiv
+Kyungmin Park wrote:
+> 
+> On Tue, Jul 5, 2011 at 5:06 PM, Kukjin Kim <kgene.kim@samsung.com> wrote:
 
-Make them static.
+(snip)
 
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
----
- drivers/cpufreq/exynos4210-cpufreq.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+> >
+> > +static int exynos4_cpufreq_notifier_event(struct notifier_block *this,
+> > +               unsigned long event, void *ptr)
+> > +{
+> > +       switch (event) {
+> > +       case PM_SUSPEND_PREPARE:
+> > +               if (exynos4_cpufreq_lock(DVFS_LOCK_ID_PM, CPU_L0))
+> Really do you want to set L0, 1.2GHz for suspend?
 
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
-index 54025fc..b7c3a84 100644
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ b/drivers/cpufreq/exynos4210-cpufreq.c
-@@ -191,17 +191,17 @@ static unsigned int exynos4_apll_pms_table[CPUFREQ_LEVEL_END] = {
- 	((200 << 16) | (6 << 8) | 4),
- };
- 
--int exynos4_verify_speed(struct cpufreq_policy *policy)
-+static int exynos4_verify_speed(struct cpufreq_policy *policy)
- {
- 	return cpufreq_frequency_table_verify(policy, exynos4_freq_table);
- }
- 
--unsigned int exynos4_getspeed(unsigned int cpu)
-+static unsigned int exynos4_getspeed(unsigned int cpu)
- {
- 	return clk_get_rate(cpu_clk) / 1000;
- }
- 
--void exynos4_set_clkdiv(unsigned int div_index)
-+static void exynos4_set_clkdiv(unsigned int div_index)
- {
- 	unsigned int tmp;
- 
--- 
-1.7.4.1
+(snip)
 
+> > +static int exynos4_cpufreq_reboot_notifier_call(struct notifier_block *this,
+> > +               unsigned long code, void *_cmd)
+> > +{
+> > +       if (exynos4_cpufreq_lock(DVFS_LOCK_ID_PM, CPU_L0))
+> ditto at reboot
 
+Yes, this is needed to work regardless of boot-loader clock configuration.
+
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
 
