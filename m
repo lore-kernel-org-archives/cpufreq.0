@@ -1,51 +1,61 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH 4/4] EXYNOS4210: Add Support for DVS Lock
-Date: Fri, 08 Jul 2011 15:22:50 +0900
-Message-ID: <002101cc3d37$7b5d27e0$721777a0$%kim@samsung.com>
-References: <1309853179-19438-1-git-send-email-kgene.kim@samsung.com>
- <1309853179-19438-5-git-send-email-kgene.kim@samsung.com>
- <CAH9JG2VMbvfpXu4A_p9Ws0-94t1vGWpWPyZP-HvTP-p4PVgifg@mail.gmail.com>
+From: Axel Lin <axel.lin@gmail.com>
+Subject: [PATCH 2/2] cpufreq: s5pv210: make needlessly global symbols static
+Date: Fri, 08 Jul 2011 14:24:36 +0800
+Message-ID: <1310106276.27158.2.camel@phoenix>
+References: <1310106044.27158.0.camel@phoenix>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAH9JG2VMbvfpXu4A_p9Ws0-94t1vGWpWPyZP-HvTP-p4PVgifg@mail.gmail.com>
-Content-language: ko
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        bh=Pg+f29Z3RIp4HkteNrA2/lG/1JwWyr67A1ph+PffcXc=;
+        b=p0atGloWOHxEEWqS0753IE2i0URaABtEZiUHb28V3kIPpnWbnzRwIgC7ndDz62kHU7
+         NcCXbL0VkWnJdB//n1jheK8TaqFyOhOaF7aCXFsUU0X/O3PvMNxjwgofFrYd2fjnS6+w
+         wB/s4ebmdirVhXU23pWe5aGJAyk5lgx/JjgRU=
+In-Reply-To: <1310106044.27158.0.camel@phoenix>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: 'Kyungmin Park' <kmpark@infradead.org>
-Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, 'Jongpill Lee' <boyko.lee@samsung.com>, 'SangWook Ju' <sw.ju@samsung.com>, 'Jonghwan Choi' <jhbird.choi@samsung.com>, =?UTF-8?B?J+2VqOuqheyjvCc=?= <myungjoo.ham@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
 
-Kyungmin Park wrote:
-> 
-> On Tue, Jul 5, 2011 at 5:06 PM, Kukjin Kim <kgene.kim@samsung.com> wrote:
+The following symbols are needlessly defined global:
+  s5pv210_verify_speed
+  s5pv210_getspeed
 
-(snip)
+Make them static.
 
-> >
-> > +static int exynos4_cpufreq_notifier_event(struct notifier_block *this,
-> > +               unsigned long event, void *ptr)
-> > +{
-> > +       switch (event) {
-> > +       case PM_SUSPEND_PREPARE:
-> > +               if (exynos4_cpufreq_lock(DVFS_LOCK_ID_PM, CPU_L0))
-> Really do you want to set L0, 1.2GHz for suspend?
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/cpufreq/s5pv210-cpufreq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-(snip)
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index a7cb338..806408e 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -121,7 +121,7 @@ static void s5pv210_set_refresh(enum s5pv210_dmc_port ch, unsigned long freq)
+ 	__raw_writel(tmp1, reg);
+ }
+ 
+-int s5pv210_verify_speed(struct cpufreq_policy *policy)
++static int s5pv210_verify_speed(struct cpufreq_policy *policy)
+ {
+ 	if (policy->cpu)
+ 		return -EINVAL;
+@@ -129,7 +129,7 @@ int s5pv210_verify_speed(struct cpufreq_policy *policy)
+ 	return cpufreq_frequency_table_verify(policy, s5pv210_freq_table);
+ }
+ 
+-unsigned int s5pv210_getspeed(unsigned int cpu)
++static unsigned int s5pv210_getspeed(unsigned int cpu)
+ {
+ 	if (cpu)
+ 		return 0;
+-- 
+1.7.4.1
 
-> > +static int exynos4_cpufreq_reboot_notifier_call(struct notifier_block *this,
-> > +               unsigned long code, void *_cmd)
-> > +{
-> > +       if (exynos4_cpufreq_lock(DVFS_LOCK_ID_PM, CPU_L0))
-> ditto at reboot
 
-Yes, this is needed to work regardless of boot-loader clock configuration.
-
-Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
 
