@@ -1,120 +1,74 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] acpi-cpufreq: remove unreliable get-frequency functions
-Date: Wed, 13 Jul 2011 21:53:41 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1107131718270.9546@x980>
-References: <alpine.LFD.2.02.1106060144310.6779@x980>
- <20110606071209.GA20080@isilmar-3.linta.de>
- <alpine.LFD.2.02.1106062353030.4784@x980>
- <20110607054226.GA22398@isilmar-3.linta.de>
+From: Rafal Bilski <rafalbilski@interia.pl>
+Subject: [PATCH] e_powersaver: Add sanity checks to code provided by VIA
+Date: Thu, 14 Jul 2011 22:58:42 +0100
+Message-ID: <1310680722-3974-1-git-send-email-rafalbilski@interia.pl>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-reply-to: <20110607054226.GA22398@isilmar-3.linta.de>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, Rafal Bilski <rafalbilski@interia.pl>
 
-On Tue, 7 Jun 2011, Dominik Brodowski wrote:
+Patch from VIA is forcing "e_powersaver" to accept any processor >=A, 
+but code supports only A and D.
+Patch from VIA is forcing "e_powersaver" to support new brand, but code 
+was intended for 2 bits only.
+Looks like model D is using 8 bits for brand. Compensate.
 
-> > Instantaneous frequency can change many times per second.
-> > What benefit is there to reporting someting that changes that fast
-> > to readers of sysfs?
-> 
-> Same as there are reasons for wanting to know the average frequency, there
-> are reasons for wanting to know the exact current frequency.
+Thanks to Axel Lin for pointing it out!
 
-While "exact current frequency" meant something in the old days,
-its value is diminished on a processor that autonomously
-and continuously changes frequency w/o intervention from the OS.
+Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
+---
+ drivers/cpufreq/e_powersaver.c |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
-All turbo-enabled processors from Intel do this -- and
-the trend is that future processors will do more of it.
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index 35a257d..7883ffa 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -179,9 +179,13 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 		break;
+ 	case 13:
+ 		rdmsr(0x1154, lo, hi);
+-		brand = (((lo >> 4) ^ (lo >> 2))) & 0x000000ff;
++		brand = (((lo >> 4) ^ (lo >> 2))) & 0xff;
+ 		printk(KERN_CONT "Model D ");
+ 		break;
++	default:
++		printk(KERN_CONT "unknown processor\n");
++		return -ENODEV;
++		break;
+ 	}
+ 
+ 	switch (brand) {
+@@ -194,14 +198,19 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 	case EPS_BRAND_EDEN:
+ 		printk(KERN_CONT "Eden\n");
+ 		break;
++	case EPS_BRAND_C3:
++		printk(KERN_CONT "C3\n");
++		return -ENODEV;
++		break;
+ 	case EPS_BRAND_C7D:
+ 		printk(KERN_CONT "C7-D\n");
+ 		break;
+-	case EPS_BRAND_C3:
+-		printk(KERN_CONT "C3\n");
++	default:
++		printk(KERN_CONT "unsupported brand\n");
+ 		return -ENODEV;
+ 		break;
+ 	}
++
+ 	/* Enable Enhanced PowerSaver */
+ 	rdmsrl(MSR_IA32_MISC_ENABLE, val);
+ 	if (!(val & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP)) {
+-- 
+1.7.6
 
-Recording the last request in policy->cur is useful.
-Reporting the average in driver->getavg() is useful.
-Reporting the instantaneous in driver->get()?  Not so much.
 
-> E.g. to
-> determine what's going on behind your back again (e.g. so-called "hardware
-> coordination", "thermal throttling" etc.).
-
-This is exactly why ondemand uses driver->getavg()
-and does not use driver->get()!
-
-> > > For silicon which can't be fixed any more
-
-As the silicon isn't broken, it isn't going to be "fixed".
-
-Yes, it is more complicated than the old days when the
-OS not only had to decide on policy, but implmenet it
-by telling the HW exactly what frequency to run at.
-
-> > > using APERF instead may be a
-> > > valid  -- but costly[*] -- solution. For other CPUs, I'd favour keeping
-> > > the current code -- even if Intel CPUs aren't capable to reliably tell
-> > > which frequency they're running at.
-> > 
-> > APERF is expensive how?
-> 
-> As you need to average, you need to spend some time between the first and
-> the second call to read out aperf.
-
-If  __cpufreq_driver_getavg() were not fast, we would not
-have been using it in ondemand over the last 3 years.
-
-> > > Finally:
-> > > 
-> > > > +	policy->cur = data->freq_table[data->acpi_data->state].frequency;
-> > > 
-> > > How do you know what state / frequency the CPU is running here?
-> > 
-> > really the correct fix is for the upper level of cpufreq to
-> > simply no export this value at all, or to export the value
-> > that was last written.  A driver should be free to decline
-> > to supply any current value.
->
-> You didn't answer the question of how it is assured that policy->cur is
-> correctly initialized here.
-
-Acutally, it doesn't matter.
-If that line were replaced with "policy->cur = 1"
-everything would work just fine.  It must be
-initizlized to non-zero for ondemand to probe out;
-and as you point out later, it gets overwritten anyway.
-
-> To the other point you raise: This interface _is_ optional:
-> 
->         /* should be defined, if possible */
->         unsigned int    (*get)  (unsigned int cpu);
-
-Right, cpufreq_driver.get is optional.
-The point of my patch is for acpi-cpufreq to "opt-out".
-
-My point above wasn't about cpufreq_driver.get,
-it was about policy->cur.
-
-The driver should not have to initialize,
-or even know about, policy->cur.
-
-> We knew back when the interface was written that ACPI is problematic here,
-> as it tries to hide valuable information.
-
-This discussion is about how the HW works, not about ACPI.
-
-> The value which was last written
-> is exported, BTW, in scaling_cur_freq . But it is of much less value --
-> _especially_ if some "black box" decides to use a different frequency
-> than what the kernel told it.
-
-The black box is the hardware.  I can't change how the HW works.
-
-I have no problem with exporting policy->cur in scaling_cur_freq.
-
-I do have a problem with 200 lines of code in a 750-line driver
-with has the sole function of exporting the optinoal
-cpuinfo_cur_freq in sysfs, only to get it wrong!
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+----------------------------------------------------------------
+Znajdz samochod idealny dla siebie!
+Szukaj >> http://linkint.pl/f29e2
