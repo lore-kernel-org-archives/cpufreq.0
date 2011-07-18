@@ -1,41 +1,18 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH 4/4] [CPUFREQ] EXYNOS4210: Add Support for DVS Lock
-Date: Mon, 18 Jul 2011 16:08:53 +0900
-Message-ID: <04a101cc4519$912ce800$b386b800$%kim@samsung.com>
-References: <1309853179-19438-1-git-send-email-kgene.kim@samsung.com>
- <1309853179-19438-5-git-send-email-kgene.kim@samsung.com>
- <20110709034812.GG26900@sirena.org.uk>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20110709034812.GG26900@sirena.org.uk>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
+From: Matthew Garrett <mjg@redhat.com>
+Subject: [PATCH v4] Move modern AMD cpufreq support to acpi-cpufreq
+Date: Mon, 18 Jul 2011 12:37:35 -0400
+Message-ID: <1311007062-2050-1-git-send-email-mjg@redhat.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
-Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, 'Jongpill Lee' <boyko.lee@samsung.com>, 'SangWook Ju' <sw.ju@samsung.com>, 'Jonghwan Choi' <jhbird.choi@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: davej@redhat.com, linux-kernel@vger.kernel.org, borislav.petkov@amd.com, mark.langsdorf@amd.com, andreas.herrmann3@amd.com
 
-Mark Brown wrote:
-> 
-> On Tue, Jul 05, 2011 at 05:06:19PM +0900, Kukjin Kim wrote:
-> 
-> > +int exynos4_cpufreq_lock(unsigned int nId,
-> > +			enum cpufreq_level_request cpufreq_level);
-> > +void exynos4_cpufreq_lock_free(unsigned int nId);
-> 
-> This feels like something cpufreq should support to at least some extent
-> in the core, especially the thing with forcing a particular mode on
-> suspend.  Not that I have any particularly bright ideas for how
-> immediately.
+The programming model for cpufreq on current AMD CPUs is almost identical
+to the one used on Intel and VIA hardware. This patchset merges support
+into acpi-cpufreq and removes it from powernow-k8. V4 addresses all the 
+review feedback received so far.
 
-Basically, I agreed, but I also have no idea yet :(
-How about to use this for now then let us think the way?
-
-Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
