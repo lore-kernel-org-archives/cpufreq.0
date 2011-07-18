@@ -1,11 +1,11 @@
 From: Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH v4 2/7] acpi-cpufreq: Add support for modern AMD CPUs
-Date: Mon, 18 Jul 2011 12:37:37 -0400
-Message-ID: <1311007062-2050-3-git-send-email-mjg@redhat.com>
+Subject: [PATCH v4 4/7] ACPI: Add fixups for AMD P-state figures
+Date: Mon, 18 Jul 2011 12:37:39 -0400
+Message-ID: <1311007062-2050-5-git-send-email-mjg@redhat.com>
 References: <1311007062-2050-1-git-send-email-mjg@redhat.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1311007062-2050-1-git-send-email-mjg@redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,131 +13,75 @@ Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 Cc: davej@redhat.com, linux-kernel@vger.kernel.org, borislav.petkov@amd.com, mark.langsdorf@amd.com, andreas.herrmann3@amd.com, Matthew Garrett <mjg@redhat.com>
 
-The programming model for P-states on modern AMD CPUs is very similar to
-that of Intel and VIA. It makes sense to consolidate this support into one
-driver rather than duplicating functionality between two of them. This
-patch adds support for AMDs with hardware P-state control to acpi-cpufreq.
+Some AMD systems may round the frequencies in ACPI tables to 100MHz
+boundaries. We can obtain the real frequencies from MSRs, so add a quirk
+to fix these frequencies up on AMD systems.
 
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
 ---
- drivers/cpufreq/acpi-cpufreq.c |   43 ++++++++++++++++++++++++++++++++++-----
- 1 files changed, 37 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/msr-index.h |    1 +
+ drivers/acpi/processor_perflib.c |   30 ++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 596d5dd..298d451 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -54,10 +54,12 @@ MODULE_LICENSE("GPL");
- enum {
- 	UNDEFINED_CAPABLE = 0,
- 	SYSTEM_INTEL_MSR_CAPABLE,
-+	SYSTEM_AMD_MSR_CAPABLE,
- 	SYSTEM_IO_CAPABLE,
- };
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 1772978..1449569 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -234,6 +234,7 @@
  
- #define INTEL_MSR_RANGE		(0xffff)
-+#define AMD_MSR_RANGE		(0x7)
+ #define MSR_IA32_PERF_STATUS		0x00000198
+ #define MSR_IA32_PERF_CTL		0x00000199
++#define MSR_AMD_PSTATE_DEF_BASE		0xc0010064
+ #define MSR_AMD_PERF_STATUS		0xc0010063
+ #define MSR_AMD_PERF_CTL		0xc0010062
  
- struct acpi_cpufreq_data {
- 	struct acpi_processor_performance *acpi_data;
-@@ -82,6 +84,13 @@ static int check_est_cpu(unsigned int cpuid)
- 	return cpu_has(cpu, X86_FEATURE_EST);
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 85b3237..aed97d7 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -302,6 +302,34 @@ static int acpi_processor_get_performance_control(struct acpi_processor *pr)
+ 	return result;
  }
  
-+static int check_amd_hwpstate_cpu(unsigned int cpuid)
++#ifdef CONFIG_X86
++/*
++ * Some AMDs have 50MHz frequency multiples, but only provide 100MHz rounding
++ * in their ACPI data. Calculate the real values and fix up the _PSS data.
++ */
++static void amd_fixup_frequency(struct acpi_processor_px *px, int i)
 +{
-+	struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
++	u32 hi, lo, fid, did;
++	int index = px->control & 0x00000007;
 +
-+	return cpu_has(cpu, X86_FEATURE_HW_PSTATE);
++	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
++		return;
++
++	if ((boot_cpu_data.x86 == 0x10 && boot_cpu_data.x86_model < 10)
++	    || boot_cpu_data.x86 == 0x11) {
++		rdmsr(MSR_AMD_PSTATE_DEF_BASE + index, lo, hi);
++		fid = lo & 0x3f;
++		did = (lo >> 6) & 7;
++		if (boot_cpu_data.x86 == 0x10)
++			px->core_frequency = (100 * (fid + 0x10)) >> did;
++		else
++			px->core_frequency = (100 * (fid + 8)) >> did;
++	}
 +}
++#else
++static void amd_fixup_frequency(struct acpi_processor_px *px, int i) {};
++#endif
 +
- static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
+ static int acpi_processor_get_performance_states(struct acpi_processor *pr)
  {
- 	struct acpi_processor_performance *perf;
-@@ -101,7 +110,11 @@ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
- 	int i;
- 	struct acpi_processor_performance *perf;
- 
--	msr &= INTEL_MSR_RANGE;
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-+		msr &= AMD_MSR_RANGE;
-+	else
-+		msr &= INTEL_MSR_RANGE;
-+
- 	perf = data->acpi_data;
- 
- 	for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-@@ -115,6 +128,7 @@ static unsigned extract_freq(u32 val, struct acpi_cpufreq_data *data)
- {
- 	switch (data->cpu_feature) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
-+	case SYSTEM_AMD_MSR_CAPABLE:
- 		return extract_msr(val, data);
- 	case SYSTEM_IO_CAPABLE:
- 		return extract_io(val, data);
-@@ -150,6 +164,7 @@ static void do_drv_read(void *_cmd)
- 
- 	switch (cmd->type) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
-+	case SYSTEM_AMD_MSR_CAPABLE:
- 		rdmsr(cmd->addr.msr.reg, cmd->val, h);
- 		break;
- 	case SYSTEM_IO_CAPABLE:
-@@ -174,6 +189,9 @@ static void do_drv_write(void *_cmd)
- 		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
- 		wrmsr(cmd->addr.msr.reg, lo, hi);
- 		break;
-+	case SYSTEM_AMD_MSR_CAPABLE:
-+		wrmsr(cmd->addr.msr.reg, cmd->val, 0);
-+		break;
- 	case SYSTEM_IO_CAPABLE:
- 		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
- 				cmd->val,
-@@ -217,6 +235,10 @@ static u32 get_cur_val(const struct cpumask *mask)
- 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
- 		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
- 		break;
-+	case SYSTEM_AMD_MSR_CAPABLE:
-+		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
-+		cmd.addr.msr.reg = MSR_AMD_PERF_STATUS;
-+		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
- 		perf = per_cpu(acfreq_data, cpumask_first(mask))->acpi_data;
-@@ -326,6 +348,11 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
- 		cmd.val = (u32) perf->states[next_perf_state].control;
- 		break;
-+	case SYSTEM_AMD_MSR_CAPABLE:
-+		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
-+		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
-+		cmd.val = (u32) perf->states[next_perf_state].control;
-+		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
- 		cmd.addr.io.port = perf->control_register.address;
-@@ -580,12 +607,16 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		break;
- 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
- 		pr_debug("HARDWARE addr space\n");
--		if (!check_est_cpu(cpu)) {
--			result = -ENODEV;
--			goto err_unreg;
-+		if (check_est_cpu(cpu)) {
-+			data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
-+			break;
+ 	int result = 0;
+@@ -356,6 +384,8 @@ static int acpi_processor_get_performance_states(struct acpi_processor *pr)
+ 			goto end;
  		}
--		data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
--		break;
-+		if (check_amd_hwpstate_cpu(cpu)) {
-+			data->cpu_feature = SYSTEM_AMD_MSR_CAPABLE;
-+			break;
-+		}
-+		result = -ENODEV;
-+		goto err_unreg;
- 	default:
- 		pr_debug("Unknown addr space %d\n",
- 			(u32) (perf->control_register.space_id));
+ 
++		amd_fixup_frequency(px, i);
++
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+ 				  "State [%d]: core_frequency[%d] power[%d] transition_latency[%d] bus_master_latency[%d] control[0x%x] status[0x%x]\n",
+ 				  i,
 -- 
 1.7.6
-
