@@ -1,60 +1,41 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH, RESEND] acpi-cpufreq: remove unreliable optional
- device.get() code
-Date: Sun, 17 Jul 2011 16:59:18 +0200
-Message-ID: <20110717145918.GA32223@comet.dominikbrodowski.net>
-References: <alpine.LFD.2.02.1106060144310.6779@x980>
- <20110606071209.GA20080@isilmar-3.linta.de>
- <alpine.LFD.2.02.1106062353030.4784@x980>
- <20110607054226.GA22398@isilmar-3.linta.de>
- <alpine.LFD.2.02.1107131718270.9546@x980>
- <alpine.LFD.2.02.1107161846130.11045@x980>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: [PATCH 4/4] [CPUFREQ] EXYNOS4210: Add Support for DVS Lock
+Date: Mon, 18 Jul 2011 16:08:53 +0900
+Message-ID: <04a101cc4519$912ce800$b386b800$%kim@samsung.com>
+References: <1309853179-19438-1-git-send-email-kgene.kim@samsung.com>
+ <1309853179-19438-5-git-send-email-kgene.kim@samsung.com>
+ <20110709034812.GG26900@sirena.org.uk>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1107161846130.11045@x980>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20110709034812.GG26900@sirena.org.uk>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Len Brown <lenb@kernel.org>
-Cc: Dave Jones <davej@redhat.com>, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org
+To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
+Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, 'Jongpill Lee' <boyko.lee@samsung.com>, 'SangWook Ju' <sw.ju@samsung.com>, 'Jonghwan Choi' <jhbird.choi@samsung.com>
 
-On Sat, Jul 16, 2011 at 06:49:34PM -0400, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> Date: Mon, 6 Jun 2011 01:06:57 -0400
+Mark Brown wrote:
 > 
-> cpufreq offers the optional driver.get() entry point
-> for drivers to export instantaneous frequency in
-> /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq.
+> On Tue, Jul 05, 2011 at 05:06:19PM +0900, Kukjin Kim wrote:
 > 
-> 25% of the acpi-cpufreq driver is involved in supporting
-> that optional feature, but on modern processors, it
-> is not reliable.
+> > +int exynos4_cpufreq_lock(unsigned int nId,
+> > +			enum cpufreq_level_request cpufreq_level);
+> > +void exynos4_cpufreq_lock_free(unsigned int nId);
 > 
-> So here we delete this optional feature from acpi-cpufreq.
-> /sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
-> will go away on acpi-cpufreq systems, but note that
-> /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
-> will still be presnet to indicate the most recent request.
-> 
-> (and yes, powertop still works:-)
-> 
-> The most common reason that driver.get() is not reliable
-> is that modern processors autonomously change frequency
-> without OS instruction.  This means that reading
-> PERF_STATUS is possibly in-accurate as soon as the
-> instruction after it is read.
->
-> Average frequency over an interval is more useful
-> than instantaneous frequency on modern hardware.
-> acpi-cpufreq supplies average frequency via
-> the the driver->getavg() entry, which is what
-> the ondemand governor uses.
+> This feels like something cpufreq should support to at least some extent
+> in the core, especially the thing with forcing a particular mode on
+> suspend.  Not that I have any particularly bright ideas for how
+> immediately.
 
-Regarding this patch and the philosophy behind it, I uphold my doubts which
-I specified last time this issue came up (cf.
-http://marc.info/?l=linux-acpi&m=130742534931688&w=2 )
+Basically, I agreed, but I also have no idea yet :(
+How about to use this for now then let us think the way?
 
-Best,
-	Dominik
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
