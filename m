@@ -1,76 +1,32 @@
-From: Donggeun Kim <dg77.kim@samsung.com>
-Subject: [PATCH] cpufreq: exynos4210: Show list of available frequencies
-Date: Tue, 19 Jul 2011 14:41:57 +0900
-Message-ID: <1311054117-11587-1-git-send-email-dg77.kim@samsung.com>
-Content-Transfer-Encoding: 7BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 4/4] [CPUFREQ] EXYNOS4210: Add Support for DVS Lock
+Date: Tue, 19 Jul 2011 16:03:43 +0100
+Message-ID: <20110719150343.GD9652@opensource.wolfsonmicro.com>
+References: <1309853179-19438-1-git-send-email-kgene.kim@samsung.com>
+ <1309853179-19438-5-git-send-email-kgene.kim@samsung.com>
+ <20110709034812.GG26900@sirena.org.uk>
+ <04a101cc4519$912ce800$b386b800$%kim@samsung.com>
+Mime-Version: 1.0
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <04a101cc4519$912ce800$b386b800$%kim@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
-Cc: davej@redhat.com, kgene.kim@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, dg77.kim@samsung.com, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, 'Jongpill Lee' <boyko.lee@samsung.com>, 'SangWook Ju' <sw.ju@samsung.com>, 'Jonghwan Choi' <jhbird.choi@samsung.com>
 
-This patch enables 'scaling_available_frequencies' attribute
-showing list of available frequencies.
+On Mon, Jul 18, 2011 at 04:08:53PM +0900, Kukjin Kim wrote:
 
-Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Signed-off-by: KyungMin Park <kyungmin.park@samsung.com>
----
- drivers/cpufreq/exynos4210-cpufreq.c |   23 ++++++++++++++++++++++-
- 1 files changed, 22 insertions(+), 1 deletions(-)
+> > This feels like something cpufreq should support to at least some extent
+> > in the core, especially the thing with forcing a particular mode on
+> > suspend.  Not that I have any particularly bright ideas for how
+> > immediately.
 
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
-index b7c3a84..6f88757 100644
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ b/drivers/cpufreq/exynos4210-cpufreq.c
-@@ -464,6 +464,8 @@ static int exynos4_cpufreq_resume(struct cpufreq_policy *policy)
- 
- static int exynos4_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
-+	int ret;
-+
- 	policy->cur = policy->min = policy->max = exynos4_getspeed(policy->cpu);
- 
- 	cpufreq_frequency_table_get_attr(exynos4_freq_table, policy->cpu);
-@@ -479,16 +481,35 @@ static int exynos4_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	 */
- 	cpumask_setall(policy->cpus);
- 
--	return cpufreq_frequency_table_cpuinfo(policy, exynos4_freq_table);
-+	ret = cpufreq_frequency_table_cpuinfo(policy, exynos4_freq_table);
-+	if (ret)
-+		return ret;
-+
-+	cpufreq_frequency_table_get_attr(exynos4_freq_table, policy->cpu);
-+
-+	return 0;
- }
- 
-+static int exynos4_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	return 0;
-+}
-+
-+static struct freq_attr *exynos4_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
- static struct cpufreq_driver exynos4_driver = {
- 	.flags		= CPUFREQ_STICKY,
- 	.verify		= exynos4_verify_speed,
- 	.target		= exynos4_target,
- 	.get		= exynos4_getspeed,
- 	.init		= exynos4_cpufreq_cpu_init,
-+	.exit		= exynos4_cpufreq_cpu_exit,
- 	.name		= "exynos4_cpufreq",
-+	.attr		= exynos4_cpufreq_attr,
- #ifdef CONFIG_PM
- 	.suspend	= exynos4_cpufreq_suspend,
- 	.resume		= exynos4_cpufreq_resume,
--- 
-1.7.4.1
+> Basically, I agreed, but I also have no idea yet :(
+> How about to use this for now then let us think the way?
 
+Probably just as well.  For the suspend stuff we should be able to
+implement a generic override the governor callback for use in suspend
+entry easily enough but for other things I'm drawing a blank right now.
