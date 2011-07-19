@@ -1,70 +1,76 @@
-From: Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH v4 7/7] cpufreq: Add boost alias to cpb
-Date: Mon, 18 Jul 2011 12:37:42 -0400
-Message-ID: <1311007062-2050-8-git-send-email-mjg@redhat.com>
-References: <1311007062-2050-1-git-send-email-mjg@redhat.com>
+From: Donggeun Kim <dg77.kim@samsung.com>
+Subject: [PATCH] cpufreq: exynos4210: Show list of available frequencies
+Date: Tue, 19 Jul 2011 14:41:57 +0900
+Message-ID: <1311054117-11587-1-git-send-email-dg77.kim@samsung.com>
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1311007062-2050-1-git-send-email-mjg@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
-Cc: davej@redhat.com, linux-kernel@vger.kernel.org, borislav.petkov@amd.com, mark.langsdorf@amd.com, andreas.herrmann3@amd.com, Matthew Garrett <mjg@redhat.com>
+Cc: davej@redhat.com, kgene.kim@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, dg77.kim@samsung.com, linux-kernel@vger.kernel.org
 
-cpb is AMD's name for the dynamic overclocking present in their chips.
-Intel provide similar functionality, so add "boost" as an alias. In the
-long run we can then transition to using that rather than cpb.
+This patch enables 'scaling_available_frequencies' attribute
+showing list of available frequencies.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: KyungMin Park <kyungmin.park@samsung.com>
 ---
- Documentation/cpu-freq/user-guide.txt |    5 +++++
- drivers/cpufreq/acpi-cpufreq.c        |    8 +++-----
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/cpufreq/exynos4210-cpufreq.c |   23 ++++++++++++++++++++++-
+ 1 files changed, 22 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
-index 04f6b32..a692d3f 100644
---- a/Documentation/cpu-freq/user-guide.txt
-+++ b/Documentation/cpu-freq/user-guide.txt
-@@ -214,6 +214,11 @@ bios_limit :			If the BIOS tells the OS to limit a CPU to
- 				which can be detected through the generic
- 				thermal driver.
+diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
+index b7c3a84..6f88757 100644
+--- a/drivers/cpufreq/exynos4210-cpufreq.c
++++ b/drivers/cpufreq/exynos4210-cpufreq.c
+@@ -464,6 +464,8 @@ static int exynos4_cpufreq_resume(struct cpufreq_policy *policy)
  
-+boost:				Some CPUs support clocking themselves to above
-+				their rated frequency depending on temperature
-+				and power constraints. This file allows this
-+				to be enabled or disabled.
+ static int exynos4_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
++	int ret;
 +
- If you have selected the "userspace" governor which allows you to
- set the CPU operating frequency to a specific value, you can read out
- the current frequency in
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 0a92277..30c66cc 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -172,11 +172,8 @@ static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
- 	return sprintf(buf, "%u\n", cpb_state(cpu));
+ 	policy->cur = policy->min = policy->max = exynos4_getspeed(policy->cpu);
+ 
+ 	cpufreq_frequency_table_get_attr(exynos4_freq_table, policy->cpu);
+@@ -479,16 +481,35 @@ static int exynos4_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	 */
+ 	cpumask_setall(policy->cpus);
+ 
+-	return cpufreq_frequency_table_cpuinfo(policy, exynos4_freq_table);
++	ret = cpufreq_frequency_table_cpuinfo(policy, exynos4_freq_table);
++	if (ret)
++		return ret;
++
++	cpufreq_frequency_table_get_attr(exynos4_freq_table, policy->cpu);
++
++	return 0;
  }
  
--#define define_one_rw(_name) \
--static struct freq_attr _name = \
--	__ATTR(_name, 0644, show_##_name, store_##_name)
--
--define_one_rw(cpb);
-+static struct freq_attr cpb = __ATTR(cpb, 0644, show_cpb, store_cpb);
-+static struct freq_attr boost = __ATTR(boost, 0644, show_cpb, store_cpb);
- 
- static int check_est_cpu(unsigned int cpuid)
- {
-@@ -933,6 +930,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
- static struct freq_attr *acpi_cpufreq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
- 	&cpb,
-+	&boost,
- 	NULL,
- };
- 
++static int exynos4_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	return 0;
++}
++
++static struct freq_attr *exynos4_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
+ static struct cpufreq_driver exynos4_driver = {
+ 	.flags		= CPUFREQ_STICKY,
+ 	.verify		= exynos4_verify_speed,
+ 	.target		= exynos4_target,
+ 	.get		= exynos4_getspeed,
+ 	.init		= exynos4_cpufreq_cpu_init,
++	.exit		= exynos4_cpufreq_cpu_exit,
+ 	.name		= "exynos4_cpufreq",
++	.attr		= exynos4_cpufreq_attr,
+ #ifdef CONFIG_PM
+ 	.suspend	= exynos4_cpufreq_suspend,
+ 	.resume		= exynos4_cpufreq_resume,
 -- 
-1.7.6
+1.7.4.1
 
