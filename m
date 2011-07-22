@@ -1,58 +1,85 @@
-From: =?UTF-8?b?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Subject: [PATCH] e_powersaver: This is C7 driver only
-Date: Thu, 21 Jul 2011 23:52:44 +0100
-Message-ID: <1311288764-1089-1-git-send-email-rafalbilski@interia.pl>
+From: Borislav Petkov <bp@amd64.org>
+Subject: Re: [PATCH v4 3/7] acpi-cpufreq: Add support for disabling dynamic
+ overclocking
+Date: Fri, 22 Jul 2011 16:41:43 +0200
+Message-ID: <20110722144143.GA26010@aftab>
+References: <1311007062-2050-1-git-send-email-mjg@redhat.com>
+ <1311007062-2050-4-git-send-email-mjg@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1311007062-2050-4-git-send-email-mjg@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?b?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Matthew Garrett <mjg@redhat.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "davej@redhat.com" <davej@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Langsdorf, Mark" <mark.langsdorf@amd.com>, "Herrmann3, Andreas" <Andreas.Herrmann3@amd.com>
 
-Enhanced Powersaver has been replaced by Adaptive Powersaver technology=
-=2E Flag
-"est" on VIA/Centaur Nano processors means that processor supports Adap=
-tive
-Powersaver.
+On Mon, Jul 18, 2011 at 12:37:38PM -0400, Matthew Garrett wrote:
+> One feature present in powernow-k8 that isn't present in acpi-cpufreq is
+> support for enabling or disabling AMD's core performance boost technology.
+> This patch adds that support to acpi-cpufreq, but also extends it to allow
+> Intel's dynamic acceleration to be disabled via the same interface. The
+> sysfs entry retains the cpb name for compatibility purposes.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c |  191 ++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 191 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 298d451..0a92277 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -76,6 +76,107 @@ static struct acpi_processor_performance __percpu *acpi_perf_data;
+>  static struct cpufreq_driver acpi_cpufreq_driver;
+>  
+>  static unsigned int acpi_pstate_strict;
+> +static bool cpb_enabled, cpb_supported;
+> +static struct msr __percpu *msrs;
+> +
+> +static bool cpb_state(unsigned int cpu)
+> +{
+> +	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
+> +	u32 lo, hi;
+> +	u64 msr;
+> +
+> +	switch (data->cpu_feature) {
+> +	case SYSTEM_INTEL_MSR_CAPABLE:
+> +		rdmsr_on_cpu(cpu, MSR_IA32_MISC_ENABLE, &lo, &hi);
+> +		msr = lo | ((u64)hi << 32);
+> +		return !(msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE);
+> +	case SYSTEM_AMD_MSR_CAPABLE:
+> +		rdmsr_on_cpu(cpu, MSR_K7_HWCR, &lo, &hi);
+> +		msr = lo | ((u64)hi << 32);
+> +		return !(msr & BIT(25));
+> +	}
+> +	return false;
+> +}
 
-Signed-off-by: Rafa=C5=82 Bilski <rafalbilski@interia.pl>
----
- drivers/cpufreq/e_powersaver.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+You need to handle the case where boosting is not even supported by the
+CPU. For example, a Barcelona CPU does not boost but I get
 
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersa=
-ver.c
-index 7638f5d..28600ae 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -237,10 +237,6 @@ static int eps_cpu_init(struct cpufreq_policy *pol=
-icy)
- 		brand =3D (((lo >> 4) ^ (lo >> 2))) & 0xff;
- 		printk(KERN_CONT "Model D ");
- 		break;
--	default:
--		printk(KERN_CONT "unknown processor\n");
--		return -ENODEV;
--		break;
- 	}
-=20
- 	switch (brand) {
-@@ -437,7 +433,8 @@ static int __init eps_init(void)
- 	/* This driver will work only on Centaur C7 processors with
- 	 * Enhanced SpeedStep/PowerSaver registers */
- 	if (c->x86_vendor !=3D X86_VENDOR_CENTAUR
--	    || c->x86 !=3D 6 || c->x86_model < 10)
-+	    || c->x86 !=3D 6
-+	    || !(c->x86_model =3D=3D 10 || c->x86_model =3D=3D 13))
- 		return -ENODEV;
- 	if (!cpu_has(c, X86_FEATURE_EST))
- 		return -ENODEV;
---=20
-1.7.6
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/boost
+1
 
+This is because this bit in the register is simply reserved and it
+countains some random value (0 in this case).
 
-----------------------------------------------------------------
-Znajdz samochod idealny dla siebie!
-Szukaj >> http://linkint.pl/f29e2
+What you need to do is look at the cpu_enabled variable which is caching
+the current boost state. Besides, you don't want to do a MSR read
+everytime you 'cat' the sysfs entry. See how powernow-k8 does it. I'm
+guessing with Intel it should be similar.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Advanced Micro Devices GmbH
+Einsteinring 24, 85609 Dornach
+GM: Alberto Bozzo
+Reg: Dornach, Landkreis Muenchen
+HRB Nr. 43632 WEEE Registernr: 129 19551
