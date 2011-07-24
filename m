@@ -1,102 +1,49 @@
-From: =?UTF-8?b?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Subject: [PATCH] e_powersaver: Allow user to lower maximum voltage
-Date: Sat, 23 Jul 2011 23:35:28 +0100
-Message-ID: <1311460528-1094-1-git-send-email-rafalbilski@interia.pl>
+From: Andy Lutomirski <luto@MIT.EDU>
+Subject: Re: [PATCH v4 3/7] acpi-cpufreq: Add support for disabling dynamic
+ overclocking
+Date: Sat, 23 Jul 2011 23:06:29 -0400
+Message-ID: <4E2B8C35.7030304@mit.edu>
+References: <1311007062-2050-1-git-send-email-mjg@redhat.com> <1311007062-2050-4-git-send-email-mjg@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1311007062-2050-4-git-send-email-mjg@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="macroman"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?b?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Matthew Garrett <mjg@redhat.com>
+Cc: cpufreq@vger.kernel.org, davej@redhat.com, linux-kernel@vger.kernel.org, borislav.petkov@amd.com, mark.langsdorf@amd.com, andreas.herrmann3@amd.com
 
-Add new module option "set_max_voltage".
-One of the lessons learned from Adaptive Powersaver is that voltage val=
-ues
-returned by processor are for worst case scenario. But required voltage
-is changing with CPU temperature. And even processors produced in the s=
-ame
-batch can have different minimum voltage necessary for stable work at
-specified frequency.
-On Elonex Webbook, once system starts, temperature never drops below
-48 deg. C. Loading module after systems start allows user to lower CPU
-voltage and still have stable system.
-Sadly C7 doesn't allow code to set frequency or voltage from outside li=
-mits.
-If you ask it to set voltage lower then minimum it will ignore you. Tha=
-ts
-why it isn't possible to change minimum voltage for minimum frequency t=
-oo.
-Changing maximum voltage on Elonex Webbook leads to very good results. =
-Looks
-like VIA C7 1.6GHz 1084mV can safetly run at 892mV. This means 83% of
-orginal value. If same percentage applies to power generated it means 1=
-2.5W
-in the place of 15W. Not much, but it is better then nothing.
-Only C7-M makes it possible.
-If voltage is too low by 16mV or more you will experience kernel panic.
-If voltage is too low by 32mV or more you will experience system freeze=
-=2E
+On 07/18/2011 12:37 PM, Matthew Garrett wrote:
+> One feature present in powernow-k8 that isn't present in acpi-cpufreq is
+> support for enabling or disabling AMD's core performance boost technology.
+> This patch adds that support to acpi-cpufreq, but also extends it to allow
+> Intel's dynamic acceleration to be disabled via the same interface. The
+> sysfs entry retains the cpb name for compatibility purposes.
+>
+> Signed-off-by: Matthew Garrett<mjg@redhat.com>
+> ---
+>   drivers/cpufreq/acpi-cpufreq.c |  191 ++++++++++++++++++++++++++++++++++++++++
+>   1 files changed, 191 insertions(+), 0 deletions(-)
+>
 
-Signed-off-by: Rafa=C5=82 Bilski <rafalbilski@interia.pl>
----
- drivers/cpufreq/e_powersaver.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+How is this different from setting 3400000 vs 3401000 as the max freq? 
+(I'm probably missing something about the way that Intel's turbo mode 
+works.)
 
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersa=
-ver.c
-index 8efe31f..eecab5f 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -43,6 +43,7 @@ static struct eps_cpu_data *eps_cpu[NR_CPUS];
- /* Module parameters */
- static int freq_failsafe_off;
- static int voltage_failsafe_off;
-+static int set_max_voltage;
-=20
- #if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MOD=
-ULE
- static int ignore_acpi_limit;
-@@ -345,6 +346,21 @@ static int eps_cpu_init(struct cpufreq_policy *pol=
-icy)
- 	}
- #endif
-=20
-+	/* Allow user to set lower maximum voltage then that reported
-+	 * by processor */
-+	if (brand =3D=3D EPS_BRAND_C7M && set_max_voltage) {
-+		u32 v;
-+
-+		/* Change mV to something hardware can use */
-+		v =3D (set_max_voltage - 700) / 16;
-+		/* Check if voltage is within limits */
-+		if (v >=3D min_voltage && v <=3D max_voltage) {
-+			printk(KERN_INFO "eps: Setting %dmV as maximum.\n",
-+				v * 16 + 700);
-+			max_voltage =3D v;
-+		}
-+	}
-+
- 	/* Calc number of p-states supported */
- 	if (brand =3D=3D EPS_BRAND_C7M)
- 		states =3D max_multiplier - min_multiplier + 1;
-@@ -459,6 +475,8 @@ MODULE_PARM_DESC(voltage_failsafe_off, "Disable cur=
-rent vs max voltage check");
- module_param(ignore_acpi_limit, int, 0644);
- MODULE_PARM_DESC(ignore_acpi_limit, "Don't check ACPI's processor spee=
-d limit");
- #endif
-+module_param(set_max_voltage, int, 0644);
-+MODULE_PARM_DESC(set_max_voltage, "Set maximum CPU voltage (mV) C7-M o=
-nly");
-=20
- MODULE_AUTHOR("Rafal Bilski <rafalbilski@interia.pl>");
- MODULE_DESCRIPTION("Enhanced PowerSaver driver for VIA C7 CPU's.");
---=20
-1.7.6
+> +static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
+> +			 size_t count)
+> +{
+> +	int ret = -EINVAL;
+> +	unsigned long val = 0;
+> +
+> +	ret = strict_strtoul(buf, 10,&val);
+> +	if (!ret&&  (val == 0 || val == 1)&&  cpb_supported)
+> +		cpb_toggle(val);
 
+Shouldn't this set the flag only on policy->cpu (as opposed to all 
+online cpus?)
 
-----------------------------------------------------------------
-Znajdz samochod idealny dla siebie!
-Szukaj >> http://linkint.pl/f29e2
+Also, you're missing a space before &&.
+
+--Andy
