@@ -1,8 +1,8 @@
 From: Andy Lutomirski <luto@MIT.EDU>
 Subject: Re: [PATCH v4 3/7] acpi-cpufreq: Add support for disabling dynamic
  overclocking
-Date: Sat, 23 Jul 2011 23:06:29 -0400
-Message-ID: <4E2B8C35.7030304@mit.edu>
+Date: Sat, 23 Jul 2011 23:15:02 -0400
+Message-ID: <4E2B8E36.6030308@mit.edu>
 References: <1311007062-2050-1-git-send-email-mjg@redhat.com> <1311007062-2050-4-git-send-email-mjg@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -27,23 +27,26 @@ On 07/18/2011 12:37 PM, Matthew Garrett wrote:
 >   1 files changed, 191 insertions(+), 0 deletions(-)
 >
 
-How is this different from setting 3400000 vs 3401000 as the max freq? 
-(I'm probably missing something about the way that Intel's turbo mode 
-works.)
+> +			if (enable)
+> +				reg->q&= ~MSR_IA32_MISC_ENABLE_TURBO_DISABLE;
+> +			else
+> +				reg->q |= MSR_IA32_MISC_ENABLE_TURBO_DISABLE;
+> +		}
 
-> +static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
-> +			 size_t count)
-> +{
-> +	int ret = -EINVAL;
-> +	unsigned long val = 0;
-> +
-> +	ret = strict_strtoul(buf, 10,&val);
-> +	if (!ret&&  (val == 0 || val == 1)&&  cpb_supported)
-> +		cpb_toggle(val);
+I was curious and looked it up.  Intel SDM volume 3, 14.3.2.1 says:
 
-Shouldn't this set the flag only on policy->cpu (as opposed to all 
-online cpus?)
+Opportunistic processor performance operation can be disabled by setting 
+bit 38 of
+IA32_MISC_ENABLE. This mechanism is intended for BIOS only. If
+IA32_MISC_ENABLE[38] is set, CPUID.06H:EAX[1] will return 0.
 
-Also, you're missing a space before &&.
+and the next section says:
+
+System software can temporarily disengage opportunistic processor 
+performance
+operation by setting bit 32 of the IA32_PERF_CTL MSR (0199H), using a read-
+modify-write sequence on the MSR.
+
+Would that be a better way to control boost mode on Intel chips?
 
 --Andy
