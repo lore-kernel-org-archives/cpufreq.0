@@ -1,78 +1,60 @@
-From: Borislav Petkov <bp@amd64.org>
-Subject: Re: [PATCH v4 3/7] acpi-cpufreq: Add support for disabling dynamic
- overclocking
-Date: Sun, 24 Jul 2011 11:36:14 +0200
-Message-ID: <20110724093614.GA9391@aftab>
-References: <1311007062-2050-1-git-send-email-mjg@redhat.com>
- <1311007062-2050-4-git-send-email-mjg@redhat.com>
- <4E2B8E36.6030308@mit.edu>
- <20110724033313.GB25722@srcf.ucam.org>
- <CAObL_7Gis4YaSB+suFXxLmSchmJaEc6Jqv6aY6VvWynuEkRb5A@mail.gmail.com>
- <20110724034937.GA25873@srcf.ucam.org>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20110724034937.GA25873@srcf.ucam.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Matt Turner <mattst88@gmail.com>
+Subject: [PATCH] aperf: fix compilation on x86-32 with -fPIC
+Date: Tue, 26 Jul 2011 19:28:31 -0400
+Message-ID: <1311722911-14562-1-git-send-email-mattst88@gmail.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        bh=fRTakO70wVz4/OCc2Py+i49kRC2socnH9QklsjdJu0w=;
+        b=ghYL5Vs50QRLw7nGeS9YqUgOq6UYlsWx58W9qqsRLfaWnO3zcgrhVTaWgu3MfRivnq
+         ULErCh2tQXwSB1F8w+MDSbOCMMbm/wk2Wy00LdS8G7FZD+cVee/WuqBR0pFqAiE3+d3N
+         QvzMgzqPhrQsWiQ+iIDp4myHp//18ovXOulHI=
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Andrew Lutomirski <luto@mit.edu>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "davej@redhat.com" <davej@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Langsdorf, Mark" <mark.langsdorf@amd.com>, "Herrmann3, Andreas" <Andreas.Herrmann3@amd.com>
+To: Dominik Brodowski <linux@brodo.de>
+Cc: cpufreq@vger.kernel.org, Matt Turner <mattst88@gmail.com>
 
-On Sat, Jul 23, 2011 at 11:49:37PM -0400, Matthew Garrett wrote:
-> > This way may give the benefit of making it work per core instead of
-> > per package.  The manual is rather unclear on this point.
-> 
-> Being able to enter turbo mode typically requires coordination between 
-> the cores in order to ensure that the package remains within limits. The 
-> AMD implementation certainly disables their equivalent entirely if any 
-> core in the package has it disabled. I haven't verified that Intel 
-> behaviour is identical, but it wouldn't surprise me. I can try to check 
-> that.
+ebx is used to store the GOT pointer when compiled with -fPIC, so it's
+not usable by inline assembly.
 
-We actually can do both on family 12h - per core and per package
-disable. Family 10h, revE does only per-package disable. We opted for
-having a single interface for sw and always do per-package disable
-simply because we have no usecases for per-core disable and I agree with
-Matthew - we'll implement it only when it's needed.
+https://bugs.gentoo.org/375967
 
-> > I actually have a use case for this.  I have a system that keeps a
-> > bunch of cores under moderate load.  I have one thread in particular
-> > that needs to be fast, and I'd like to disable boosting on the other
-> > cores to keep more thermal and power headroom available for the one
-> > thread that cares.
-> 
-> Are the other threads sufficiently opportunistic to use extra CPU power 
-> if it's available to them? You'll generally only get turbo if the other 
-> cores are in C6, so even if turbo is disabled on a specific core it'll 
-> probably prevent another core from entering turbo if anything's 
-> executing on it. You'd arguably want it to be able to get into turbo so 
-> it can hit C6 more quickly and let the other thread use the extra 
-> headroom.
+Signed-off-by: Matt Turner <mattst88@gmail.com>
+---
+ utils/cpuid.h |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-Right, so we were looking for per-core disable use cases too while
-discussing this internally. Andy, limiting the other cores to a higher
-P-state (lower freq) and letting the one core boost with a higher
-headroom might actually give you more bang than turning off boost on the
-n-1 cores. This definitely needs some experimenting and measurements
-before you can say for sure. And it all depends on the specific workload
-and boosting algorithm.
-
-There's this cpufreq-aperf tool in cpufrequtils which shows
-you the boosted freq and C-state residency of the cores, or
-<tools/power/x86/turbostat/> in the kernel sources - you might wanna do
-some measurements with those to actually have some hard data for your
-workload ...
-
-HTH.
-
+diff --git a/utils/cpuid.h b/utils/cpuid.h
+index 2bac69a..53da789 100644
+--- a/utils/cpuid.h
++++ b/utils/cpuid.h
+@@ -5,9 +5,21 @@ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
+ 				unsigned int *ecx, unsigned int *edx)
+ {
+ 	/* ecx is often an input as well as an output. */
+-	asm volatile("cpuid"
++	asm volatile(
++#if defined(__i386__) && defined(__PIC__)
++	    "push %%ebx\n"
++	    "cpuid\n"
++	    "movl %%ebx, %1\n"
++	    "pop %%ebx\n"
++#else
++	    "cpuid\n"
++#endif
+ 	    : "=a" (*eax),
++#if defined(__i386__) && defined(__PIC__)
++	      "=r" (*ebx),
++#else
+ 	      "=b" (*ebx),
++#endif
+ 	      "=c" (*ecx),
+ 	      "=d" (*edx)
+ 	    : "0" (*eax), "2" (*ecx));
 -- 
-Regards/Gruss,
-Boris.
+1.7.3.4
 
-Advanced Micro Devices GmbH
-Einsteinring 24, 85609 Dornach
-GM: Alberto Bozzo
-Reg: Dornach, Landkreis Muenchen
-HRB Nr. 43632 WEEE Registernr: 129 19551
