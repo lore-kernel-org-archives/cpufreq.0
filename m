@@ -1,19 +1,19 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 14771] "ondemand" never raises frequency if smaller power
- supply is used (60w vs. 90w) -- Dell E6500
-Date: Sat, 30 Jul 2011 04:56:06 GMT
-Message-ID: <201107300456.p6U4u6GB007859@demeter2.kernel.org>
-References: <bug-14771-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 16072] [HP Pavilion dm1-1110ev] Cpufreq doesn't work at all (
+ Intel Celeron U2300 )
+Date: Sat, 30 Jul 2011 04:56:26 GMT
+Message-ID: <201107300456.p6U4uQJW008347@demeter2.kernel.org>
+References: <bug-16072-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-14771-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-16072-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=14771
+https://bugzilla.kernel.org/show_bug.cgi?id=16072
 
 
 Len Brown <lenb@kernel.org> changed:
