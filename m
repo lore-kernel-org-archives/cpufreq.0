@@ -1,52 +1,49 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 3/3] proc: consider NO_HZ when printing idle and iowait
- times
-Date: Fri, 5 Aug 2011 16:23:50 +0200
-Message-ID: <20110805142349.GE12657@tiehlicka.suse.cz>
-References: <20110802170249.GA23698@tiehlicka.suse.cz>
- <cover.1312544541.git.mhocko@suse.cz>
- <9314d03604802205b02524ebda1e534547042dfa.1312544541.git.mhocko@suse.cz>
+From: Matt Turner <mattst88@gentoo.org>
+Subject: Re: 'cpufreq-set -g performance -r' does not set all CPUs (AMD only?)
+Date: Fri, 5 Aug 2011 18:01:47 -0400
+Message-ID: <CAEdQ38FCJS1aT4Um2qbw-shHFWjg28QfrfXYvdnzFo2YzaAczw@mail.gmail.com>
+References: <CAEdQ38FJ+Gaa3SABCZEHUUybTdJKsJRnK_yU0nppv=5vvd=zMA@mail.gmail.com>
+ <20110731085706.GB19629@comet.dominikbrodowski.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9314d03604802205b02524ebda1e534547042dfa.1312544541.git.mhocko@suse.cz>
+In-Reply-To: <20110731085706.GB19629@comet.dominikbrodowski.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Dave Jones <davej@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, cpufreq@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@vger.kernel.org, Juergen Rose <rose@rz.uni-potsdam.de>
 
-On Thu 04-08-11 17:20:32, Michal Hocko wrote:
-> show_stat handler of the /proc/stat file relies on kstat_cpu(cpu)
-> statistics when priting information about idle and iowait times.
-> This is OK if we are not using tickless kernel (CONFIG_NO_HZ) because
-> counters are updated periodically.
-> With NO_HZ things got more tricky because we are not doing idle/iowait
-> accounting while we are tickless so the value might get outdated.
-> Users of /proc/stat will notice that by unchanged idle/iowait values
-> which is then interpreted as 0% idle/iowait time. From the user space
-> POV this is an unexpected behavior and a change of the interface.
-> 
-> Let's fix this by using get_cpu_{idle,iowait}_time_us which accounts the
-> total idle/iowait time since boot and it doesn't rely on sampling or any
-> other periodic activity. Fall back to the previous behavior if NO_HZ is
-> disabled or not configured.
+On Sun, Jul 31, 2011 at 4:57 AM, Dominik Brodowski
+<linux@dominikbrodowski.net> wrote:
+> Hey,
+>
+> On Sun, Jul 31, 2011 at 12:46:31AM -0400, Matt Turner wrote:
+>> I've got a bug report about cpufreq-set -r not setting all related
+>> CPUs. It appears to be a problem with AMD CPUs only.
+>>
+>> https://bugs.gentoo.org/show_bug.cgi?id=3D376565
+>>
+>> Any ideas what's going on?
+>
+> What's the output of cpufreq-info on these systems? Might it be that =
+the
+> CPUs on this AMD system may be set to different frequencies? "-r" onl=
+y sets
+> the governor on all _related_ CPUs, not on all CPUs found on the syst=
+em.
+>
+> Best,
+> =A0 =A0 =A0 =A0Dominik
 
-I forgot to mention that this might be racy because we are updating
-those per-cpu values without having preemption disabled or any other
-locking which would be necessary as governors iterate over all CPUs.
-Governors do not have to care about that because they are singletons. 
-Introducing locks doesn't look like an option but I was thinking
-about adding __get_cpu_{idle,iowait}_time_us which wouldn't call
-update_ts_timestat and calculate the result instead.
-I can add a patch which does that but I wanted to hear about general
-approach first.
+Hi Dominik,
 
--- 
-Michal Hocko
-SUSE Labs
-SUSE LINUX s.r.o.
-Lihovarska 1060/12
-190 00 Praha 9    
-Czech Republic
+Juergen posted some output in
+https://bugs.gentoo.org/show_bug.cgi?id=3D376565 and I think also sent
+it to you.
+
+It looks to me like either the CPU isn't required to use the same
+frequency for all cores, or it's a kernel bug reporting incorrect
+information to cpufrequtils. What do you think?
+
+Matt
