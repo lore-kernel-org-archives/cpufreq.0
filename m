@@ -1,55 +1,68 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: [PATCH] [TRIVIAL] Fix documentation and comment typo 'no_hz'
-Date: Sat, 06 Aug 2011 14:33:43 +0200
-Message-ID: <1312634023.2021.7.camel@x61.thuisdomein>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: 'cpufreq-set -g performance -r' does not set all CPUs (AMD
+	only?)
+Date: Sat, 6 Aug 2011 16:24:14 +0200
+Message-ID: <20110806142414.GA1440@isilmar-3.linta.de>
+References: <CAEdQ38FJ+Gaa3SABCZEHUUybTdJKsJRnK_yU0nppv=5vvd=zMA@mail.gmail.com> <20110731085706.GB19629@comet.dominikbrodowski.net> <CAEdQ38FCJS1aT4Um2qbw-shHFWjg28QfrfXYvdnzFo2YzaAczw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAEdQ38FCJS1aT4Um2qbw-shHFWjg28QfrfXYvdnzFo2YzaAczw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Jiri Kosina <trivial@kernel.org>, Dave Jones <davej@redhat.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Matt Turner <mattst88@gentoo.org>
+Cc: cpufreq@vger.kernel.org, Juergen Rose <rose@rz.uni-potsdam.de>
 
-Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
----
-0) Untested (which I suppose is acceptable with trivialities like this
-as long as one is honest about it).
+Hey,
 
-1) Also sent to Dave Jones and cpufreq@vger.kernel.org because it's hard
-to say (for me) what was meant by "no_hz" in that comment. But there
-were only two hits for "no_hz" in the kernel tree and lots of hits for
-"nohz" so I guessed "nohz" is the term to be used there too.
+On Fri, Aug 05, 2011 at 06:01:47PM -0400, Matt Turner wrote:
+> On Sun, Jul 31, 2011 at 4:57 AM, Dominik Brodowski
+> <linux@dominikbrodowski.net> wrote:
+> > Hey,
+> >
+> > On Sun, Jul 31, 2011 at 12:46:31AM -0400, Matt Turner wrote:
+> >> I've got a bug report about cpufreq-set -r not setting all related
+> >> CPUs. It appears to be a problem with AMD CPUs only.
+> >>
+> >> https://bugs.gentoo.org/show_bug.cgi?id=3D376565
+> >>
+> >> Any ideas what's going on?
+> >
+> > What's the output of cpufreq-info on these systems? Might it be tha=
+t the
+> > CPUs on this AMD system may be set to different frequencies? "-r" o=
+nly sets
+> > the governor on all _related_ CPUs, not on all CPUs found on the sy=
+stem.
+> >
+> > Best,
+> > =A0 =A0 =A0 =A0Dominik
+>=20
+> Hi Dominik,
+>=20
+> Juergen posted some output in
+> https://bugs.gentoo.org/show_bug.cgi?id=3D376565 and I think also sen=
+t
+> it to you.
+>=20
+> It looks to me like either the CPU isn't required to use the same
+> frequency for all cores, or it's a kernel bug reporting incorrect
+> information to cpufrequtils. What do you think?
 
- Documentation/cpu-freq/governors.txt |    2 +-
- drivers/cpufreq/cpufreq_ondemand.c   |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+cpufreq assumes the former. If
 
-diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
-index e74d0a2..d221781 100644
---- a/Documentation/cpu-freq/governors.txt
-+++ b/Documentation/cpu-freq/governors.txt
-@@ -132,7 +132,7 @@ The sampling rate is limited by the HW transition latency:
- transition_latency * 100
- Or by kernel restrictions:
- If CONFIG_NO_HZ is set, the limit is 10ms fixed.
--If CONFIG_NO_HZ is not set or no_hz=off boot parameter is used, the
-+If CONFIG_NO_HZ is not set or nohz=off boot parameter is used, the
- limits depend on the CONFIG_HZ option:
- HZ=1000: min=20000us  (20ms)
- HZ=250:  min=80000us  (80ms)
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 891360e..629b3ec 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -725,7 +725,7 @@ static int __init cpufreq_gov_dbs_init(void)
- 		dbs_tuners_ins.down_differential =
- 					MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
- 		/*
--		 * In no_hz/micro accounting case we set the minimum frequency
-+		 * In nohz/micro accounting case we set the minimum frequency
- 		 * not depending on HZ, but fixed (very low). The deferred
- 		 * timer might skip some samples if idle/sleeping as needed.
- 		*/
--- 
-1.7.4.4
+/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus and
+/sys/devices/system/cpu/cpu0/cpufreq/related_cpus
+
+do report something else than "0", though, then there's a bug in
+cpufrequtils. If more than one CPU is required to use the same frequenc=
+y,
+it's a kernel bug/regression...
+
+I tend to add an "-a" option to set all CPUs, though (cpupowerutils onl=
+y).
+
+Best,
+	Dominik
