@@ -1,32 +1,35 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] [TRIVIAL] Fix documentation and comment typo 'no_hz'
-Date: Mon, 8 Aug 2011 13:04:41 -0400
-Message-ID: <20110808170441.GA1580@redhat.com>
-References: <1312634023.2021.7.camel@x61.thuisdomein>
- <alpine.LFD.2.02.1108061137151.3197@x980>
- <alpine.LNX.2.00.1108081856110.32288@pobox.suse.cz>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [cpupower] RFC: use man(1) when calling "cpupower help subcommand"
+Date: Wed, 10 Aug 2011 08:53:53 +0200
+Message-ID: <201108100853.54106.trenn@suse.de>
+References: <20110806161143.GA12443@comet.dominikbrodowski.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1108081856110.32288@pobox.suse.cz>
+In-Reply-To: <20110806161143.GA12443@comet.dominikbrodowski.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Len Brown <lenb@kernel.org>, Paul Bolle <pebolle@tiscali.nl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@vger.kernel.org
 
-On Mon, Aug 08, 2011 at 06:56:26PM +0200, Jiri Kosina wrote:
- > On Sat, 6 Aug 2011, Len Brown wrote:
- > 
- > > Acked-by: Len Brown <len.brown@intel.com>
- > 
- > Doesn't seem to have been picked up for -next. Applied now, thanks.
+On Saturday 06 August 2011 18:11:43 Dominik Brodowski wrote:
+> Instead of printing something non-formatted to stdout, call
+> man(1) to show the man page for the proper subcommand.
 
-I've been waiting for -rc1 before pushing out a -next tree for cpufreq
-(as Stephen recommends)
+Nice!
+  
+> -extern void set_help(void);
+> -extern void info_help(void);
+> -extern void freq_set_help(void);
+> -extern void freq_info_help(void);
+> -extern void idle_info_help(void);
+> -extern void monitor_help(void);
+I wonder whether these are still needed then.
+If they can get removed translations, maintenance overhead
+(adjusting 2 places when adding a parameter) and the size of the 
+binaries could get reduced.
 
-I'll do it this afternoon.
+Not tested yet, but I'll give it a try later.
 
-	Dave
-
+   Thomas
