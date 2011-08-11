@@ -1,42 +1,68 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [cpupower] RFC: support "cpupower subcommand [ -c cpulist ]"
-Date: Thu, 11 Aug 2011 23:48:40 +0200
-Message-ID: <201108112348.41335.trenn@suse.de>
-References: <20110806151829.GA8559@comet.dominikbrodowski.net> <201108100900.12243.trenn@suse.de> <20110810112720.GA4649@isilmar-3.linta.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH 4/4] cpupower: Make monitor command -c/--cpu aware
+Date: Fri, 12 Aug 2011 01:11:38 +0200
+Message-ID: <1313104298-45443-4-git-send-email-trenn@suse.de>
+References: <1313104298-45443-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20110810112720.GA4649@isilmar-3.linta.de>
+In-Reply-To: <1313104298-45443-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: trenn@suse.de, cpufreq@vger.kernel.org, linux@dominikbrodowski.net
 
-On Wednesday 10 August 2011 13:27:20 Dominik Brodowski wrote:
-> On Wed, Aug 10, 2011 at 09:00:11AM +0200, Thomas Renninger wrote:
-> > On Saturday 06 August 2011 17:18:29 Dominik Brodowski wrote:
-> > > Currently, one needs to set the cpulist _before_ the subcommand, i.e.
-> > > 
-> > > 	cpupower [ -c cpulist ] subcommand [ARGS]
-> > > 
-> > > However, cpufrequtils used to allow to have "-c CPU" as a parameter to
-> > > cpufreq-set(1) or cpufreq-info(1). Therefore, it may make sense to also
-> > > support
-> > Why exactly would this be an enhancement?
-> > To be able to create an alias easier?
-> 
-> Exactly.
+This allows for example:
+cpupower -c 2-4,6 monitor -m Mperf
+              |Mperf
+PKG |CORE|CPU | C0   | Cx   | Freq
+   0|   8|   4|  2.42| 97.58|  1353
+   0|  16|   2| 14.38| 85.62|  1928
+   0|  24|   6|  1.76| 98.24|  1442
+   1|  16|   3| 15.53| 84.47|  1650
 
-I also tried with "being able to do an alias" without success.
-One idea could be to re-implement -c evaluation in frequency_info.c
-BUT be aware that default switched:
-  - with cpufrequtils cpufreq-info by default showed all cpus
-  - with cpupower all read commands only show cpu 0 by default
+CPUs always get resorted for package, core then cpu id if it could get read out
+(or however you name these topology levels...).
+Still this is a nice way to keep the overview if a test binary is bound to
+a specific CPU or if one wants to show all CPUs inside a package or similar.
 
-  - with cpufrequtils cpufreq-set only sets the first cpu
-  - with cpupower all write commands write to all cpus
-and this is on purpose and should not change.
-So unfortunately an alias won't be possible.
+Still missing: Do not measure not available cores to reduce the overhead
+and achieve better results.
 
-   Thomas
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Dominik Brodowski <linux@dominikbrodowski.net>
+CC: cpufreq@vger.kernel.org
+---
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+index dd8e1ea..6cb8d9e 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+@@ -149,6 +149,10 @@ void print_results(int topology_depth, int cpu)
+ 	unsigned long long result;
+ 	cstate_t s;
+ 
++	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
++	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
++		return;
++
+ 	if (topology_depth > 2)
+ 		printf("%4d|", cpu_top.core_info[cpu].pkg);
+ 	if (topology_depth > 1)
+@@ -389,6 +393,10 @@ int cmd_monitor(int argc, char **argv)
+ 		return EXIT_FAILURE;
+ 	}
+ 
++	/* Default is: monitor all CPUs */
++	if (bitmask_isallclear(cpus_chosen))
++		bitmask_setall(cpus_chosen);
++
+ 	dprint("System has up to %d CPU cores\n", cpu_count);
+ 
+ 	for (num = 0; all_monitors[num]; num++) {
+-- 
+1.7.3.4
+
