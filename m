@@ -1,50 +1,83 @@
-From: Jonathan Nieder <jrnieder@gmail.com>
+From: Dave Jones <davej@redhat.com>
 Subject: Re: [BUG?] Moving drivers to drivers/cpufreq/ causes all to be loaded
-Date: Sat, 13 Aug 2011 14:02:46 -0500
-Message-ID: <20110813190246.GA10412@elie.gateway.2wire.net>
+Date: Sat, 13 Aug 2011 17:11:42 -0400
+Message-ID: <20110813211142.GA1536@redhat.com>
 References: <20110414094447.GA1611@n2100.arm.linux.org.uk>
  <alpine.LFD.2.00.1104211629300.24613@xanadu.home>
  <201104261605.26791.arnd@arndb.de>
  <201104261904.45923.rjw@sisk.pl>
  <20110426181508.GB1908@redhat.com>
  <20110813154638.GA1494@elie.gateway.2wire.net>
+ <20110813190246.GA10412@elie.gateway.2wire.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        bh=5EJ6y7fLq782M5mnBQONdWa2z5IXMEBM+P2XiBMdJPo=;
-        b=q58Pcq60qcL9yCMnMH/xn1kDc5n06VsL0KvMhkuV2m4FIQlQSse23iwWPw8p1Nv3Bp
-         35LdPaXJ0tuB3bUpZOA7AhptwuAlt0opd6dan/bqar5XolmfMQOHEXfsFBFV5LVdJBXv
-         3l9Za6hdAe31JolygdN9RfoQ7jxZ6zBfDXR6E=
 Content-Disposition: inline
-In-Reply-To: <20110813154638.GA1494@elie.gateway.2wire.net>
+In-Reply-To: <20110813190246.GA10412@elie.gateway.2wire.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
+To: Jonathan Nieder <jrnieder@gmail.com>
 Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Nicolas Pitre <nicolas.pitre@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Tony Lindgren <tony@atomide.com>, Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Mattia Dongili <malattia@debian.org>
 
-Jonathan Nieder wrote:
+On Sat, Aug 13, 2011 at 02:02:46PM -0500, Jonathan Nieder wrote:
+ > Jonathan Nieder wrote:
+ > 
+ > >  (1) This is still incredibly fragile.  What *should* cpufrequtils
+ > >      be doing to get the modules it needs?
+ > >
+ > >  (2) Using the 3.0 or later kernel with old userspace gives bad
+ > >      results (e.g., 30% increase in power consumption for one
+ > >      reporter).  That's a regression.
+ > 
+ > The "30% increase" part was an unrelated bug (i915.i915_enable_rc6=1
+ > brings power consumption back to normal), for those who were
+ > wondering. :)
+ > 
+ > Old userspace automatically loading the wrong cpufreq drivers still
+ > does not seem great to me, though I don't have any great ideas about
+ > how to prevent that (a separate drivers/cpufreq-drivers/ directory
+ > does not sound too appealing).  I guess I'd be most interested in how
+ > to fix (1) first.
 
->  (1) This is still incredibly fragile.  What *should* cpufrequtils
->      be doing to get the modules it needs?
->
->  (2) Using the 3.0 or later kernel with old userspace gives bad
->      results (e.g., 30% increase in power consumption for one
->      reporter).  That's a regression.
+If we have to move stuff again, we could do drivers/cpufreq/x86/ etc..
+Even if we do that though, you really want to fix that userspace, because
+you're right that "load everything and see what sticks" is fragile,
+and pure luck that it ever did the right thing.
 
-The "30% increase" part was an unrelated bug (i915.i915_enable_rc6=1
-brings power consumption back to normal), for those who were
-wondering. :)
+What we used to do in Fedora grew more and more complex over time.
+Here's the last incarnation: http://fpaste.org/uvDb/
+As you can see in the start() function, it's pretty hairy, and even
+that doesn't cover every possible case, which is why it allows a user
+override in the $DRIVER variable. Messy.
 
-Old userspace automatically loading the wrong cpufreq drivers still
-does not seem great to me, though I don't have any great ideas about
-how to prevent that (a separate drivers/cpufreq-drivers/ directory
-does not sound too appealing).  I guess I'd be most interested in how
-to fix (1) first.
+Basic thinking is
+- If AMD64, load powernow-k8
+- if that fails to load : try acpi-cpufreq
+- For everything else : acpi-cpufreq
+- If acpi-cpufreq fails : p4-clockmod
 
-Thanks,
-Jonathan
+What we're moving towards for Fedora 16 is to change all the drivers
+to be linked in rather than modular, and rely on link order to do the right thing.
+It sounds like a step backwards in some ways, towards the 'see what sticks'
+approach, but the difference here is the link-order specifying the correct
+order for initialisation. You get none of that with modules.
+
+In an ideal world, we'd auto-load the right module on a hotplug event
+from a cpu, but we're not there yet. I believe Kay is working on that.
+
+Over time, 'the right driver' seems to be converging on acpi-cpufreq.
+There's some patches pending to even move some of the powernow-k8 use-cases
+to use acpi-cpufreq instead. But modern intel should be using that,
+(where modern = almost everything since p4, except those that lack P-states)
+
+
+And then there's the 'which governor' mess.
+I'd really like that to eventually converge so that 'ondemand' is always the
+right answer.  For this to happen, there needs to be no difference between
+an idle machine running powersave, and ondemand or (harder) a busy machine
+running performance.
+(conservative with some work could be just a runtime mode for ondemand).
+
+	Dave
+
