@@ -1,107 +1,60 @@
-From: Matt Turner <mattst88@gmail.com>
-Subject: [PATCH] cpufrequtils: make NLS optional
-Date: Sat, 13 Aug 2011 23:02:20 -0400
-Message-ID: <1313290940-23943-1-git-send-email-mattst88@gmail.com>
+From: Jonathan Nieder <jrnieder@gmail.com>
+Subject: Re: [BUG?] Moving drivers to drivers/cpufreq/ causes all to be loaded
+Date: Sun, 14 Aug 2011 12:01:24 -0500
+Message-ID: <20110814170124.GC12747@elie.gateway.2wire.net>
+References: <20110414094447.GA1611@n2100.arm.linux.org.uk>
+ <alpine.LFD.2.00.1104211629300.24613@xanadu.home>
+ <201104261605.26791.arnd@arndb.de>
+ <201104261904.45923.rjw@sisk.pl>
+ <20110426181508.GB1908@redhat.com>
+ <20110813154638.GA1494@elie.gateway.2wire.net>
+ <20110813190246.GA10412@elie.gateway.2wire.net>
+ <20110813211142.GA1536@redhat.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        bh=Ongx20oCbJLUA4lHIc5/eJ5Ccwbpr0P6neVwpv88R04=;
-        b=hE4+iLbX8DNX4fLI14Ly38xDA4S8ORxrsCNl5Za5CS5Tbh8RyVNrXWN1bdIaEexjqa
-         wtyBOL133IgpU9Vas79XYpZkKbmdZ9tmmuAUzMUOL7T35DdT1D3268Ya3GCmIVKEufOp
-         o8GpmoOWwmncpe6qJfgrOduI4cYDkFEJpnzrc=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=kc65iu031PCnPxrI9b3T4fervH0CI9KfXiXNxbUspEM=;
+        b=CBhmnD1tboxhvLVndUR/KynaK+j9Qi4G+WhOK+EfWMVDyWIXhSCiLM3RRV5yi1QDVG
+         Q0qEzgfuvlL314KqfSWX2fNdKG5hjsQUfrKBIi2mNjdYvvrUVnfTM77sXg8NGe9H337L
+         iIFiUsbAzaXvi6QwZYfv0ZlH5Qzi2/LX3VqNw=
+Content-Disposition: inline
+In-Reply-To: <20110813211142.GA1536@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dominik Brodowski <linux@brodo.de>
-Cc: cpufreq@vger.kernel.org, Sergey Dryabzhinsky <sergey.dryabzhinsky@gmail.com>, Matt Turner <mattst88@gmail.com>
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Mattia Dongili <malattia@debian.org>, Kay Sievers <kay.sievers@vrfy.org>
 
-From: Sergey Dryabzhinsky <sergey.dryabzhinsky@gmail.com>
+(-cc: ARM/etc people; +cc: Kay)
 
-https://bugs.gentoo.org/205576
+Dave Jones wrote:
 
-Signed-off-by: Matt Turner <mattst88@gmail.com>
----
- Makefile     |    1 +
- utils/info.c |   10 +++++++++-
- utils/set.c  |   10 +++++++++-
- 3 files changed, 19 insertions(+), 2 deletions(-)
+> If we have to move stuff again, we could do drivers/cpufreq/x86/ etc..
 
-diff --git a/Makefile b/Makefile
-index ed6bdde..84f265d 100644
---- a/Makefile
-+++ b/Makefile
-@@ -121,6 +121,7 @@ CFLAGS +=	-pipe
- ifeq ($(strip $(NLS)),true)
- 	INSTALL_NLS += install-gmo
- 	COMPILE_NLS += update-gmo
-+	CPPFLAGS += -DNLS
- endif
- 
- ifeq ($(strip $(CPUFRQ_BENCH)),true)
-diff --git a/utils/info.c b/utils/info.c
-index 38d906a..155e604 100644
---- a/utils/info.c
-+++ b/utils/info.c
-@@ -10,7 +10,6 @@
- #include <errno.h>
- #include <stdlib.h>
- #include <string.h>
--#include <libintl.h>
- #include <locale.h>
- 
- #include <getopt.h>
-@@ -18,9 +17,18 @@
- #include "cpufreq.h"
- 
- 
-+#ifdef NLS
-+#include <libintl.h>
- #define _(String) gettext (String)
- #define gettext_noop(String) String
- #define N_(String) gettext_noop (String)
-+#else
-+#define gettext_noop(String) String
-+#define _(String) gettext_noop (String)
-+#define gettext(String) gettext_noop (String)
-+#define N_(String) gettext_noop (String)
-+#define textdomain(String)
-+#endif
- 
- #define LINE_LEN 10
- 
-diff --git a/utils/set.c b/utils/set.c
-index 2ece47e..bfca465 100644
---- a/utils/set.c
-+++ b/utils/set.c
-@@ -12,16 +12,24 @@
- #include <limits.h>
- #include <string.h>
- #include <ctype.h>
--#include <libintl.h>
- #include <locale.h>
- 
- #include <getopt.h>
- 
- #include "cpufreq.h"
- 
-+#ifdef NLS
-+#include <libintl.h>
- #define _(String) gettext(String)
- #define gettext_noop(String) String
- #define N_(String) gettext_noop(String)
-+#else
-+#define gettext_noop(String) String
-+#define _(String) gettext_noop (String)
-+#define gettext(String) gettext_noop (String)
-+#define N_(String) gettext_noop (String)
-+#define textdomain(String)
-+#endif
- 
- #define NORM_FREQ_LEN 32
- 
--- 
-1.7.3.4
+Unfortunately the old script used "find", not "ls", so that wouldn't
+work. :/
 
+> What we used to do in Fedora grew more and more complex over time.
+> Here's the last incarnation: http://fpaste.org/uvDb/
+
+The main difference from Debian seems to be that this script loads the
+module corresponding to the chosen governor, while Debian's init
+script loads all governor modules early (using a heuristic I would
+like to avoid that involves running "find" to list them) and chooses
+the governor to use later.
+
+> In an ideal world, we'd auto-load the right module on a hotplug event
+> from a cpu, but we're not there yet. I believe Kay is working on that.
+
+Yes, that is what I was hoping for.  Are there patches to test?
+
+The comment at
+http://thread.gmane.org/gmane.linux.kernel/796450/focus=796874 also
+looks promising.
+
+Thanks much for the help,
+Jonathan
