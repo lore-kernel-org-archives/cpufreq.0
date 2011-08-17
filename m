@@ -1,22 +1,44 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/3] cputime: clean up cputime_to_usecs and usecs_to_cputime macros
-Date: Wed, 17 Aug 2011 16:02:49 +0200
-Message-ID: <201108171602.49444.arnd@arndb.de>
-References: <20110802170249.GA23698@tiehlicka.suse.cz> <cover.1312544541.git.mhocko@suse.cz> <c6c176ace7eca5fffe568865193a1061d181c77c.1312544541.git.mhocko@suse.cz>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 41292] New: scaling_min_freq reverts to cpuinfo_min_freq after
+ wake up
+Date: Wed, 17 Aug 2011 15:58:48 GMT
+Message-ID: <bug-41292-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <c6c176ace7eca5fffe568865193a1061d181c77c.1312544541.git.mhocko@suse.cz>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Michal Hocko <mhocko@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, cpufreq@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Thursday 04 August 2011, Michal Hocko wrote:
-> get rid of semicolon so that those expressions can be used also
-> somewhere else than just in an assignment.
-> 
-> Signed-off-by: Michal Hocko <mhocko@suse.cz>
+https://bugzilla.kernel.org/show_bug.cgi?id=41292
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+           Summary: scaling_min_freq reverts to cpuinfo_min_freq after
+                    wake up
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 2.6.39
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: bill.longman@gmail.com
+        Regression: No
+
+
+Environment: Core i7 M620; ondemand; acpi-cpufreq; microcode/version == 0xc
+
+Description: When I set scaling_min_freq on all cores, only cpu0 retains its
+value after awaking from suspend-to-ram. All other cores revert to the minimum
+frequency.
+
+Expected behaviour: Cores would retain scaling_min_freq after waking.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
