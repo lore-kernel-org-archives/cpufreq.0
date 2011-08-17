@@ -1,10 +1,12 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 41292] New: scaling_min_freq reverts to cpuinfo_min_freq after
- wake up
-Date: Wed, 17 Aug 2011 15:58:48 GMT
-Message-ID: <bug-41292-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 41292] scaling_min_freq reverts to cpuinfo_min_freq after wake
+ up
+Date: Wed, 17 Aug 2011 16:15:20 GMT
+Message-ID: <201108171615.p7HGFKTg015608@demeter1.kernel.org>
+References: <bug-41292-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-41292-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -13,30 +15,16 @@ To: cpufreq@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=41292
 
-           Summary: scaling_min_freq reverts to cpuinfo_min_freq after
-                    wake up
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 2.6.39
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: bill.longman@gmail.com
-        Regression: No
 
 
-Environment: Core i7 M620; ondemand; acpi-cpufreq; microcode/version == 0xc
 
-Description: When I set scaling_min_freq on all cores, only cpu0 retains its
-value after awaking from suspend-to-ram. All other cores revert to the minimum
-frequency.
 
-Expected behaviour: Cores would retain scaling_min_freq after waking.
+--- Comment #1 from Bill Longman <bill.longman@gmail.com>  2011-08-17 16:15:19 ---
+Created an attachment (id=69062)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=69062)
+dmesg output
+
+Snippet of dmesg at sleep/wake border.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
