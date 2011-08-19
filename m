@@ -1,64 +1,47 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [RFC] cpupowerutils patches for 3.1-rc2
-Date: Fri, 19 Aug 2011 17:20:19 +0200
-Message-ID: <20110819152019.GA25905@comet.dominikbrodowski.net>
+Subject: Re: Fix Makefile typo.
+Date: Fri, 19 Aug 2011 16:50:26 +0200
+Message-ID: <20110819145026.GA22120@comet.dominikbrodowski.net>
+References: <20110816193620.GA3334@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <20110816193620.GA3334@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org
 
-Hey,
+Applied, thanks.
 
-if no issues arise with these patches, I'll push the following patches --
-which are available at
-git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpupowerutils.git and
-were discussed on this list -- upstream in the next days.
-
-Best,
-	Dominik
-
-
-Amerigo Wang (1):
-      cpupower: avoid using symlinks
-
-Dave Jones (1):
-      cpupower: fix Makefile typo
-
-Dominik Brodowski (2):
-      cpupower: make NLS truly optional
-      cpupower: use man(1) when calling "cpupower help subcommand"
-
-Thomas Renninger (4):
-      cpupower: mperf monitor - Use TSC to calculate max frequency if possible
-      cpupower: Do not show an empty Idle_Stats monitor if no idle driver is available
-      cpupower: Better detect offlined CPUs
-      cpupower: Make monitor command -c/--cpu aware
-
- tools/power/cpupower/Makefile                      |    7 +-
- tools/power/cpupower/debug/x86_64/Makefile         |    8 +-
- .../power/cpupower/debug/x86_64/centrino-decode.c  |    1 -
- .../cpupower/debug/x86_64/powernow-k8-decode.c     |    1 -
- tools/power/cpupower/man/cpupower-frequency-info.1 |    6 +-
- tools/power/cpupower/man/cpupower-frequency-set.1  |    8 +-
- tools/power/cpupower/man/cpupower.1                |   14 +-
- tools/power/cpupower/utils/builtin.h               |    7 -
- tools/power/cpupower/utils/cpufreq-info.c          |   42 +-----
- tools/power/cpupower/utils/cpufreq-set.c           |   29 +---
- tools/power/cpupower/utils/cpuidle-info.c          |   24 +---
- tools/power/cpupower/utils/cpupower-info.c         |   20 +--
- tools/power/cpupower/utils/cpupower-set.c          |   25 +---
- tools/power/cpupower/utils/cpupower.c              |   91 ++++++-----
- tools/power/cpupower/utils/helpers/helpers.h       |   12 ++
- tools/power/cpupower/utils/helpers/sysfs.c         |   50 ++++++
- tools/power/cpupower/utils/helpers/sysfs.h         |    2 +
- tools/power/cpupower/utils/helpers/topology.c      |    5 +-
- .../cpupower/utils/idle_monitor/cpuidle_sysfs.c    |    2 +-
- .../cpupower/utils/idle_monitor/cpupower-monitor.c |   66 ++++----
- .../cpupower/utils/idle_monitor/mperf_monitor.c    |  177 ++++++++++++++-----
- 21 files changed, 308 insertions(+), 289 deletions(-)
- delete mode 120000 tools/power/cpupower/debug/x86_64/centrino-decode.c
- delete mode 120000 tools/power/cpupower/debug/x86_64/powernow-k8-decode.c
+On Tue, Aug 16, 2011 at 03:36:21PM -0400, Dave Jones wrote:
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
+> index 94c2cf0..8ae576f 100644
+> --- a/tools/power/cpupower/Makefile
+> +++ b/tools/power/cpupower/Makefile
+> @@ -35,7 +35,7 @@ NLS ?=		true
+>  
+>  # Set the following to 'true' to build/install the
+>  # cpufreq-bench benchmarking tool
+> -CPUFRQ_BENCH ?= true
+> +CPUFREQ_BENCH ?= true
+>  
+>  # Prefix to the directories we're installing to
+>  DESTDIR ?=
+> @@ -139,7 +139,7 @@ ifeq ($(strip $(NLS)),true)
+>  	COMPILE_NLS += create-gmo
+>  endif
+>  
+> -ifeq ($(strip $(CPUFRQ_BENCH)),true)
+> +ifeq ($(strip $(CPUFREQ_BENCH)),true)
+>  	INSTALL_BENCH += install-bench
+>  	COMPILE_BENCH += compile-bench
+>  endif
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
