@@ -1,49 +1,49 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
+From: Santosh <santosh.shilimkar@ti.com>
 Subject: Re: [PATCH] ARM: ux500: send cpufreq notification for all cpus
-Date: Wed, 24 Aug 2011 10:02:18 +0200
-Message-ID: <CAKfTPtDDz9N9tsYaD6WwZh6AYLG+MwhbN_rRxKyQfZAfZk_bMg@mail.gmail.com>
+Date: Wed, 24 Aug 2011 13:56:20 +0530
+Message-ID: <4E54B5AC.60608@ti.com>
 References: <1314168245-2373-1-git-send-email-vincent.guittot@linaro.org>
-	<CACRpkdaONJ+Vdx4JCPfWoqavQahiSgVGv5i=h3+J1kE2V=Q8SA@mail.gmail.com>
-	<CAH9JG2Wd3Lv6670N6Nsg-AWjYGh4uZsabeqinTOGcpQ4nCKnYw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAH9JG2Wd3Lv6670N6Nsg-AWjYGh4uZsabeqinTOGcpQ4nCKnYw@mail.gmail.com>
+In-Reply-To: <1314168245-2373-1-git-send-email-vincent.guittot@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, linaro-dev@lists.linaro.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, patches@linaro.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linus.walleij@linaro.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org
 
-On 24 August 2011 09:56, Kyungmin Park <kmpark@infradead.org> wrote:
-> On Wed, Aug 24, 2011 at 4:42 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
->> On Wed, Aug 24, 2011 at 8:44 AM, Vincent Guittot
->> <vincent.guittot@linaro.org> wrote:
->>
->>> The same clock is used for all cpus so we must notify the frequency change
->>> for each one in order to update the configuration of all twd clockevents.
+On Wednesday 24 August 2011 12:14 PM, Vincent Guittot wrote:
+> The same clock is used for all cpus so we must notify the frequency change
+> for each one in order to update the configuration of all twd clockevents.
 >
-> BTW, does it same as other ARM cpus?. e.g., exynos4 has same codes as this.
+> Signed-off-by: Vincent Guittot<vincent.guittot@linaro.org>
+> ---
+>   drivers/cpufreq/db8500-cpufreq.c |    7 ++++---
+>   1 files changed, 4 insertions(+), 3 deletions(-)
 >
-> How to you think it? Need to modify the same way?
+> diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+> index 0d8dd1c..4cb5785 100644
+> --- a/drivers/cpufreq/db8500-cpufreq.c
+> +++ b/drivers/cpufreq/db8500-cpufreq.c
+> @@ -76,13 +76,13 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
 >
+>   	freqs.old = policy->cur;
+>   	freqs.new = freq_table[idx].frequency;
+> -	freqs.cpu = policy->cpu;
+>
+>   	if (freqs.old == freqs.new)
+>   		return 0;
+>
+>   	/* pre-change notification */
+> -	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> +	for_each_online_cpu(freqs.cpu)
+> +		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
 
-yes, each ARM platform which uses twd timer should check that the
-notification is sent for each cpu.
+Blind notfier on all online CPU's will race. Take a example whete CPU
+is marked online but not yet registered to CPUFREQ. I have seen such a
+race in OMAP and fixed that using the policy->cpus field.
 
-> Thank you,
-> Kyungmin Park
->>>
->>> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
->>
->> Acked-by: Linus Walleij <linus.walleij@linaro.org>
->>
->> Yours,
->> Linus Walleij
->>
->> _______________________________________________
->> linux-arm-kernel mailing list
->> linux-arm-kernel@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->>
->
+Regards
+Santosh
+
