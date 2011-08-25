@@ -1,42 +1,64 @@
-From: Timo <timo@iera.de>
-Subject: Slow CPU
-Date: Wed, 24 Aug 2011 15:25:13 +0200
-Message-ID: <1314192313.2937.2.camel@localhost>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH v2] ARM: ux500: send cpufreq notification for all cpus
+Date: Thu, 25 Aug 2011 08:31:20 +0200
+Message-ID: <1314253880-2438-1-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linus.walleij@linaro.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, patches@linaro.org
 
-Hi,
+The same clock is used for all cpus so we must notify the frequency change
+for each one in order to update the configuration of all twd clockevents.
 
-when I use the battery with my notebook, Im unable to set a cpu
-frequency and the cpu is stuck at 800 Mhz. Using the performance
-governor doesnt change anything. How can I set a higher frequency?
+change since V1:
+* use policy->cpus instead of cpu_online_mask
 
-This is the output
-root@portable:~# LC_ALL=C cpufreq-info 
-cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-  driver: powernow-k8
-  CPUs which run at the same hardware frequency: 0
-  CPUs which need to have their frequency coordinated by software: 0
-  maximum transition latency: 109 us.
-  hardware limits: 800 MHz - 2.00 GHz
-  available frequency steps: 2.00 GHz, 1.80 GHz, 1.60 GHz, 800 MHz
-  available cpufreq governors: userspace, conservative, powersave,
-ondemand, performance
-  current policy: frequency should be within 800 MHz and 800 MHz.
-                  The governor "userspace" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz (asserted by call to hardware).
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+---
+ drivers/cpufreq/db8500-cpufreq.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-
-Thanks a lot,
-
-Timo
-
-
+diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+index 0d8dd1c..b893f9b 100644
+--- a/drivers/cpufreq/db8500-cpufreq.c
++++ b/drivers/cpufreq/db8500-cpufreq.c
+@@ -76,13 +76,13 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+ 
+ 	freqs.old = policy->cur;
+ 	freqs.new = freq_table[idx].frequency;
+-	freqs.cpu = policy->cpu;
+ 
+ 	if (freqs.old == freqs.new)
+ 		return 0;
+ 
+ 	/* pre-change notification */
+-	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++	for_each_cpu(freqs.cpu, policy->cpus)
++		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 
+ 	/* request the PRCM unit for opp change */
+ 	if (prcmu_set_arm_opp(idx2opp[idx])) {
+@@ -91,7 +91,8 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+ 	}
+ 
+ 	/* post change notification */
+-	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++	for_each_cpu(freqs.cpu, policy->cpus)
++		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 
+ 	return 0;
+ }
+-- 
+1.7.4.1
