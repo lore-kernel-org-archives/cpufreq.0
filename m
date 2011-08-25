@@ -1,64 +1,67 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v2] ARM: ux500: send cpufreq notification for all cpus
-Date: Thu, 25 Aug 2011 08:31:20 +0200
-Message-ID: <1314253880-2438-1-git-send-email-vincent.guittot@linaro.org>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: [git pull] cpupowerutils patches for 3.1-rc4
+Date: Thu, 25 Aug 2011 09:26:55 +0200
+Message-ID: <20110825072655.GA13872@comet.dominikbrodowski.net>
 Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linus.walleij@linaro.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, patches@linaro.org
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org
 
-The same clock is used for all cpus so we must notify the frequency change
-for each one in order to update the configuration of all twd clockevents.
+Linus,
 
-change since V1:
-* use policy->cpus instead of cpu_online_mask
+a few cpupower improvements for 3.1-rc4 are available in the git repository
+at:
 
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- drivers/cpufreq/db8500-cpufreq.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpupowerutils.git master
 
-diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
-index 0d8dd1c..b893f9b 100644
---- a/drivers/cpufreq/db8500-cpufreq.c
-+++ b/drivers/cpufreq/db8500-cpufreq.c
-@@ -76,13 +76,13 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
- 
- 	freqs.old = policy->cur;
- 	freqs.new = freq_table[idx].frequency;
--	freqs.cpu = policy->cpu;
- 
- 	if (freqs.old == freqs.new)
- 		return 0;
- 
- 	/* pre-change notification */
--	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+	for_each_cpu(freqs.cpu, policy->cpus)
-+		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 
- 	/* request the PRCM unit for opp change */
- 	if (prcmu_set_arm_opp(idx2opp[idx])) {
-@@ -91,7 +91,8 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
- 	}
- 
- 	/* post change notification */
--	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	for_each_cpu(freqs.cpu, policy->cpus)
-+		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- 
- 	return 0;
- }
--- 
-1.7.4.1
+Please pull from that location. The diffstat and list of changes is below.
+
+Thanks,
+        Dominik
+
+
+Amerigo Wang (1):
+      cpupower: avoid using symlinks
+
+Dave Jones (1):
+      cpupower: fix Makefile typo
+
+Dominik Brodowski (2):
+      cpupower: make NLS truly optional
+      cpupower: use man(1) when calling "cpupower help subcommand"
+
+Thomas Renninger (4):
+      cpupower: mperf monitor - Use TSC to calculate max frequency if possible
+      cpupower: Do not show an empty Idle_Stats monitor if no idle driver is available
+      cpupower: Better detect offlined CPUs
+      cpupower: Make monitor command -c/--cpu aware
+
+ tools/power/cpupower/Makefile                      |    7 +-
+ tools/power/cpupower/debug/x86_64/Makefile         |    8 +-
+ .../power/cpupower/debug/x86_64/centrino-decode.c  |    1 -
+ .../cpupower/debug/x86_64/powernow-k8-decode.c     |    1 -
+ tools/power/cpupower/man/cpupower-frequency-info.1 |    6 +-
+ tools/power/cpupower/man/cpupower-frequency-set.1  |    8 +-
+ tools/power/cpupower/man/cpupower.1                |   14 +-
+ tools/power/cpupower/utils/builtin.h               |    7 -
+ tools/power/cpupower/utils/cpufreq-info.c          |   42 +-----
+ tools/power/cpupower/utils/cpufreq-set.c           |   29 +---
+ tools/power/cpupower/utils/cpuidle-info.c          |   24 +---
+ tools/power/cpupower/utils/cpupower-info.c         |   20 +--
+ tools/power/cpupower/utils/cpupower-set.c          |   25 +---
+ tools/power/cpupower/utils/cpupower.c              |   91 ++++++-----
+ tools/power/cpupower/utils/helpers/helpers.h       |   12 ++
+ tools/power/cpupower/utils/helpers/sysfs.c         |   50 ++++++
+ tools/power/cpupower/utils/helpers/sysfs.h         |    2 +
+ tools/power/cpupower/utils/helpers/topology.c      |    5 +-
+ .../cpupower/utils/idle_monitor/cpuidle_sysfs.c    |    2 +-
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c |   66 ++++----
+ .../cpupower/utils/idle_monitor/mperf_monitor.c    |  177 ++++++++++++++-----
+ 21 files changed, 308 insertions(+), 289 deletions(-)
+ delete mode 120000 tools/power/cpupower/debug/x86_64/centrino-decode.c
+ delete mode 120000 tools/power/cpupower/debug/x86_64/powernow-k8-decode.c
