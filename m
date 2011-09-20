@@ -1,46 +1,30 @@
-From: Maximilian Wagner <stmax@mail.t-com.sk>
-Subject: problem with acer extensa and cpufreq utils
-Date: Tue, 20 Sep 2011 16:02:36 +0200
-Message-ID: <4E789CFC.30009@mail.t-com.sk>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: on-demand governor behavior on synchronous MP!!!
+Date: Tue, 20 Sep 2011 11:32:10 -0400
+Message-ID: <20110920153209.GA1839@redhat.com>
+References: <CAF0TxbrWF+wR68vJqT+KxwgEby+aVv0HKxG4LUsPNH2-WnNRug@mail.gmail.com>
+ <CAF0Txboo4_7egbZPan0cWgQ=XG77x3RscbTjjOw0sN0uen1BJg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAF0Txboo4_7egbZPan0cWgQ=XG77x3RscbTjjOw0sN0uen1BJg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Murali N <nalajala.murali@gmail.com>
+Cc: cpufreq@vger.kernel.org
 
-hi, i have since january 2011AD a similary problem with one notebook of=
-=20
-one friend.
-it is acer extensa 5235 and under ubuntu 10.10 don t want work the cpu=20
-freq utils.
+On Thu, Sep 15, 2011 at 12:20:09PM +0530, Murali N wrote:
+ > Hi All,
+ > I have a MP system where both the cores are running synchronously i.e.
+ > both cores run using the same clock.
+ > I would like to know how the "on-demand" governor takes care of this
+ > scenario? There may be a case where both the cores are running but any
+ > one of the core is under loaded, how this is handled in on-demand
+ > governor?
 
-the program say me, the dynamic scaling of processor frequency are not=20
-supported.
-i have also flashed the bios, but this dosn=B4t help.
+see policy->related_cpus and ->cpus
 
-its the same problem, also now in september 2011AD after loading of all=
-=20
-actually updates of ubuntu.
+	Dave
 
-can you help me? pls if yes, tell me it very simple, i m only linux=20
-beginner.
-
-thank you very much.
-
-maximilian wagner
-
-
-
-Probl=E9m s podtaktov=E1n=EDm procesoru:
-
-# cpufreq-info
-cpufrequtils 006: cpufreq-info (C) Dominik Brodowski 2004-2009
-Report errors and bugs to cpufreq@vger.kernel.org, please.
-analyzing CPU 0:
-   no or unknown cpufreq driver is active on this CPU
-   maximum transition latency: 4294.55 ms.
-analyzing CPU 1:
-   no or unknown cpufreq driver is active on this CPU
-   maximum transition latency: 4294.55 ms.
