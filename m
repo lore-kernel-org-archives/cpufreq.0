@@ -1,35 +1,46 @@
-From: Murali N <nalajala.murali@gmail.com>
-Subject: on-demand governor behavior on synchronous MP!!!
-Date: Thu, 15 Sep 2011 12:20:09 +0530
-Message-ID: <CAF0Txboo4_7egbZPan0cWgQ=XG77x3RscbTjjOw0sN0uen1BJg@mail.gmail.com>
-References: <CAF0TxbrWF+wR68vJqT+KxwgEby+aVv0HKxG4LUsPNH2-WnNRug@mail.gmail.com>
+From: Maximilian Wagner <stmax@mail.t-com.sk>
+Subject: problem with acer extensa and cpufreq utils
+Date: Tue, 20 Sep 2011 16:02:36 +0200
+Message-ID: <4E789CFC.30009@mail.t-com.sk>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        bh=xFx0fw7ZRGrDFfVJiZtYS0TpTOe/x9UqLnwomReJoC0=;
-        b=scAvlM93EjKTOg1TMmMrcEdQLWoFVSYbxxvp7yS0y5iYOo3L6//Pzxovu2z5vhAlFD
-         XkNFCH/fXs/Ng/500F80eqDkRmvSEL62pK+gNVqTdFoB+QczKlRWp3ZBksbNDKz0E/4+
-         Hovbwj6eQQcE77a64uMknqC/BaaryhvlM+K/o=
-In-Reply-To: <CAF0TxbrWF+wR68vJqT+KxwgEby+aVv0HKxG4LUsPNH2-WnNRug@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
 To: cpufreq@vger.kernel.org
 
-Hi All,
-I have a MP system where both the cores are running synchronously i.e.
-both cores run using the same clock.
-I would like to know how the "on-demand" governor takes care of this
-scenario? There may be a case where both the cores are running but any
-one of the core is under loaded, how this is handled in on-demand
-governor?
-Are there any existing solutions on any of the architectures? If NOT
-how do i go for this?
+hi, i have since january 2011AD a similary problem with one notebook of=
+=20
+one friend.
+it is acer extensa 5235 and under ubuntu 10.10 don t want work the cpu=20
+freq utils.
 
---
-Regards,
-Murali N
+the program say me, the dynamic scaling of processor frequency are not=20
+supported.
+i have also flashed the bios, but this dosn=B4t help.
+
+its the same problem, also now in september 2011AD after loading of all=
+=20
+actually updates of ubuntu.
+
+can you help me? pls if yes, tell me it very simple, i m only linux=20
+beginner.
+
+thank you very much.
+
+maximilian wagner
+
+
+
+Probl=E9m s podtaktov=E1n=EDm procesoru:
+
+# cpufreq-info
+cpufrequtils 006: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+   no or unknown cpufreq driver is active on this CPU
+   maximum transition latency: 4294.55 ms.
+analyzing CPU 1:
+   no or unknown cpufreq driver is active on this CPU
+   maximum transition latency: 4294.55 ms.
