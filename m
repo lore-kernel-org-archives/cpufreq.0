@@ -1,11 +1,11 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH 06/10] cpufreq: OMAP: deny initialization if no mpudev
-Date: Thu, 22 Sep 2011 14:07:24 -0700
-Message-ID: <1316725648-26710-7-git-send-email-khilman@ti.com>
+Subject: [PATCH 09/10] cpufreq: OMAP: put clk if cpu_init failed
+Date: Thu, 22 Sep 2011 14:07:27 -0700
+Message-ID: <1316725648-26710-10-git-send-email-khilman@ti.com>
 References: <1316725648-26710-1-git-send-email-khilman@ti.com>
-Return-path: <linux-omap-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1316725648-26710-1-git-send-email-khilman@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,62 +15,59 @@ Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rajendra N
 
 From: Nishanth Menon <nm@ti.com>
 
-if we do not have mpu_dev we normally fail in cpu_init. It is better
-to fail driver registration if the devices are not available.
+Release the mpu_clk in fail paths.
 
+Reported-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: Nishanth Menon <nm@ti.com>
 Signed-off-by: Kevin Hilman <khilman@ti.com>
 ---
- drivers/cpufreq/omap-cpufreq.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/cpufreq/omap-cpufreq.c |   14 +++++++++++---
+ 1 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 07e835d..fe943b3 100644
+index ce82d50..a66c8b5 100644
 --- a/drivers/cpufreq/omap-cpufreq.c
 +++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -49,6 +49,7 @@ static struct lpj_info global_lpj_ref;
- static struct cpufreq_frequency_table *freq_table;
- static struct clk *mpu_clk;
- static char *mpu_clk_name;
-+static struct device *mpu_dev;
- 
- static int omap_verify_speed(struct cpufreq_policy *policy)
- {
-@@ -151,7 +152,6 @@ static int omap_target(struct cpufreq_policy *policy,
- static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
- {
- 	int result = 0;
--	struct device *mpu_dev;
- 
- 	mpu_clk = clk_get(NULL, mpu_clk_name);
+@@ -157,8 +157,10 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
  	if (IS_ERR(mpu_clk))
-@@ -161,12 +161,6 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
- 		return -EINVAL;
+ 		return PTR_ERR(mpu_clk);
+ 
+-	if (policy->cpu >= NR_CPUS)
+-		return -EINVAL;
++	if (policy->cpu >= NR_CPUS) {
++		result = -EINVAL;
++		goto fail_ck;
++	}
  
  	policy->cur = policy->min = policy->max = omap_getspeed(policy->cpu);
--	mpu_dev = omap2_get_mpuss_device();
--
--	if (!mpu_dev) {
--		pr_warning("%s: unable to get the mpu device\n", __func__);
--		return -EINVAL;
--	}
- 	opp_init_cpufreq_table(mpu_dev, &freq_table);
- 
- 	if (freq_table) {
-@@ -238,6 +232,13 @@ static int __init omap_cpufreq_init(void)
- 		pr_err("%s: unsupported Silicon?\n", __func__);
- 		return -EINVAL;
+ 	result = opp_init_cpufreq_table(mpu_dev, &freq_table);
+@@ -166,12 +168,14 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
+ 	if (result) {
+ 		dev_err(mpu_dev, "%s: cpu%d: failed creating freq table[%d]\n",
+ 				__func__, policy->cpu, result);
+-		return result;
++		goto fail_ck;
  	}
+ 
+ 	result = cpufreq_frequency_table_cpuinfo(policy, freq_table);
+ 	if (!result)
+ 		cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
++	else
++		goto fail_ck;
+ 
+ 	policy->min = policy->cpuinfo.min_freq;
+ 	policy->max = policy->cpuinfo.max_freq;
+@@ -193,6 +197,10 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = 300 * 1000;
+ 
+ 	return 0;
 +
-+	mpu_dev = omap2_get_mpuss_device();
-+	if (!mpu_dev) {
-+		pr_warning("%s: unable to get the mpu device\n", __func__);
-+		return -EINVAL;
-+	}
-+
- 	return cpufreq_register_driver(&omap_driver);
++fail_ck:
++	clk_put(mpu_clk);
++	return result;
  }
  
+ static int omap_cpu_exit(struct cpufreq_policy *policy)
 -- 
 1.7.6
 
