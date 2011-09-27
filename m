@@ -1,42 +1,57 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 01/10] cpufreq: OMAP: cleanup for multi-SoC support,move into drivers/cpufreq
-Date: Fri, 23 Sep 2011 07:02:17 -0700
-Message-ID: <87d3erl5li.fsf@ti.com>
-References: <1316725648-26710-1-git-send-email-khilman@ti.com>
-	<1316725648-26710-2-git-send-email-khilman@ti.com>
-	<9bc8649a2e151bec117424b678bb09f8@mail.gmail.com>
+From: Axel Lin <axel.lin@gmail.com>
+Subject: [RFC][PATCH] cpufreq: db8500: remove unneeded for loop iteration
+ over freq_table
+Date: Tue, 27 Sep 2011 15:11:42 +0800
+Message-ID: <1317107502.2327.4.camel@phoenix>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <9bc8649a2e151bec117424b678bb09f8@mail.gmail.com> (Vishwanath
-	Sripathy's message of "Fri, 23 Sep 2011 14:51:51 +0530")
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        bh=v5Dl8eGNsATRAxdAyY/Nwi9S/UxrPDoSQsqs+MNEXC0=;
+        b=qR3ms8RLmEISnoStHE4jcKCJmgBblI6+mNjOMZ46wjrEsqxzeAQzorGIiafYh8zEWI
+         HVkLKAP99ew+ir2h61LcpUbJTbJVdbvFEjH3ERhEuPdVrZzoq9a1WuR90fI1JsOwO0sv
+         8LBBp2DB9MQcvEO7iwiRyxjCg/HNDXQktRRvA=
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Vishwanath Sripathy <vishwanath.bs@ti.com>
-Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-arm-kernel@lists.infradead.org, Rajendra Nayak <rnayak@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org
 
-Vishwanath Sripathy <vishwanath.bs@ti.com> writes:
+Don't know why to do the loop iteration here. It looks unneeded.
 
-[...]
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/cpufreq/db8500-cpufreq.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
->> +#ifdef CONFIG_CPU_FREQ_DEBUG
->> +	pr_info("cpufreq-omap: transition: %u --> %u\n", freqs.old,
->> freqs.new);
->> +#endif
->> +
->> +	ret = clk_set_rate(mpu_clk, freqs.new * 1000);
->
-> Do you plan to post follow up patches to scale voltage along with Clock?
+diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+index d90456a..bdb349a 100644
+--- a/drivers/cpufreq/db8500-cpufreq.c
++++ b/drivers/cpufreq/db8500-cpufreq.c
+@@ -104,7 +104,6 @@ static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
+ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	int res;
+-	int i;
+ 
+ 	BUILD_BUG_ON(ARRAY_SIZE(idx2opp) + 1 != ARRAY_SIZE(freq_table));
+ 
+@@ -127,10 +126,6 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->min = policy->cpuinfo.min_freq;
+ 	policy->max = policy->cpuinfo.max_freq;
+ 	policy->cur = db8500_cpufreq_getspeed(policy->cpu);
+-
+-	for (i = 0; freq_table[i].frequency != policy->cur; i++)
+-		;
+-
+ 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
+ 
+ 	/*
+-- 
+1.7.4.1
 
-Yes.
 
-This series is just a move of existing code + minor cleanups.
 
-The next step is to finalize/merge Tero's regulator driver and use
-that to scale voltage along with frequency here.
-
-Now that the voltage domain cleanups are merged, I hope to have
-regulator series + voltage scaling changes in this driver ready next week.
-
-Kevin
