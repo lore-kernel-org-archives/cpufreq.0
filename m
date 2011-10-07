@@ -1,31 +1,34 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [RFC][PATCH] cpufreq: db8500: remove unneeded for loop iteration
- over freq_table
-Date: Tue, 27 Sep 2011 09:35:46 +0200
-Message-ID: <CACRpkdbhqq3Y85pf+i=ssP2MKVW_ROL5QpFvAy0ffHMbshrSQA@mail.gmail.com>
-References: <1317107502.2327.4.camel@phoenix>
+Subject: Re: [PATCH] cpufreq/db8500: support all frequencies
+Date: Fri, 7 Oct 2011 13:13:07 +0200
+Message-ID: <CACRpkdZyk3-fX1BSpJ2eSo1netKiFeBfzkLQtBRbqeJcQGZMWw@mail.gmail.com>
+References: <1314946330-26014-1-git-send-email-linus.walleij@stericsson.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1317107502.2327.4.camel@phoenix>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1314946330-26014-1-git-send-email-linus.walleij@stericsson.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Axel Lin <axel.lin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, cpufreq@vger.kernel.org, Jonas ABERG <jonas.aberg@stericsson.com>, Samuel Ortiz <sameo@linux.intel.com>
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Tue, Sep 27, 2011 at 9:11 AM, Axel Lin <axel.lin@gmail.com> wrote:
+On Fri, Sep 2, 2011 at 8:52 AM, Linus Walleij
+<linus.walleij@stericsson.com> wrote:
 
-> Don't know why to do the loop iteration here. It looks unneeded.
+> From: Linus Walleij <linus.walleij@linaro.org>
+>
+> This adds support for the 200 MHz frequency mode of the
+> DB8500 SoC, and prints the available frequencies at init
+> time.
+>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-I'm OK with this going in, however I already have another patch
-on the CPUfreq driver pending for review that is more crucial and
-hopefully can go in first?
+Dave have you had a chance to look at this?
 
-It sure looks odd. Jonas has some refactorings done on the
-CPUfreq driver, however they are dependent on the PRCMU update
-that is pending review for the MFD tree to go in first, so there
-is some code stacking up cross-subsystemwise right now.
+I guess I might not be seeing it in next due to kernelorg
+outage...
 
 Yours,
 Linus Walleij
