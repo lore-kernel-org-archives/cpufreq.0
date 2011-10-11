@@ -1,26 +1,77 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: cpupower x86: AMD: Add fam12h HW Package C-state support
-Date: Tue, 11 Oct 2011 15:33:49 +0200
-Message-ID: <1318340031-52368-1-git-send-email-trenn@suse.de>
+Subject: [PATCH 2/2] cpupower: AMD fam14h/Ontario monitor can also be used by fam12h cpus
+Date: Tue, 11 Oct 2011 15:33:51 +0200
+Message-ID: <1318340031-52368-3-git-send-email-trenn@suse.de>
+References: <1318340031-52368-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1318340031-52368-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux@dominikbrodowski.net
-Cc: cpufreq@vger.kernel.org, herrmann.der.user@googlemail.com
+Cc: cpufreq@vger.kernel.org, herrmann.der.user@googlemail.com, Thomas Renninger <trenn@suse.de>
 
-Forgot this one for a while, the manpage already talks about fam12h.
-I adjusted the monitor names to Fam_12h and Fam14h.
-It came out that there are quite some names for fam12h and 14h models
-and that real CPU names should be avoided as monitor names.
+The name of the monitor is updated at runtime to the name of the
+CPU type.
 
-Based on a recent Linus tree master branch.
-Would be great if this can be scheduled for 3.2.
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Andreas Herrmann <herrmann.der.user@googlemail.com>
+CC: linux@dominikbrodowski.net
+CC: cpufreq@vger.kernel.org
+---
+ tools/power/cpupower/man/cpupower-monitor.1        |    2 +-
+ .../cpupower/utils/idle_monitor/amd_fam14h_idle.c  |   16 ++++++++--------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-Thanks,
-
-   Thomas
-
+diff --git a/tools/power/cpupower/man/cpupower-monitor.1 b/tools/power/cpupower/man/cpupower-monitor.1
+index d5cfa26..1141c20 100644
+--- a/tools/power/cpupower/man/cpupower-monitor.1
++++ b/tools/power/cpupower/man/cpupower-monitor.1
+@@ -107,7 +107,7 @@ Deepest package sleep states may in reality show up as machine/platform wide
+ sleep states and can only be entered if all cores are idle. Look up Intel
+ manuals (some are provided in the References section) for further details.
+ 
+-.SS "Ontario" "Liano"
++.SS "Fam_12h" "Fam_14h"
+ AMD laptop and desktop processor (family 12h and 14h) sleep state counters.
+ The registers are accessed via PCI and therefore can still be read out while
+ cores have been offlined.
+diff --git a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
+index 108108d..2116df9 100644
+--- a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
++++ b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
+@@ -281,13 +281,13 @@ struct cpuidle_monitor *amd_fam14h_register(void)
+ 	if (cpupower_cpu_info.vendor != X86_VENDOR_AMD)
+ 		return NULL;
+ 
+-	if (cpupower_cpu_info.family == 0x14) {
+-		if (cpu_count <= 0 || cpu_count > 2) {
+-			fprintf(stderr, "AMD fam14h: Invalid cpu count: %d\n",
+-				cpu_count);
+-			return NULL;
+-		}
+-	} else
++	if (cpupower_cpu_info.family == 0x14)
++		strncpy(amd_fam14h_monitor.name, "Fam_14h",
++			MONITOR_NAME_LEN - 1);
++	else if (cpupower_cpu_info.family == 0x12)
++		strncpy(amd_fam14h_monitor.name, "Fam_12h",
++			MONITOR_NAME_LEN - 1);
++	else
+ 		return NULL;
+ 
+ 	/* We do not alloc for nbp1 machine wide counter */
+@@ -322,7 +322,7 @@ static void amd_fam14h_unregister(void)
+ }
+ 
+ struct cpuidle_monitor amd_fam14h_monitor = {
+-	.name			= "Ontario",
++	.name			= "",
+ 	.hw_states		= amd_fam14h_cstates,
+ 	.hw_states_num		= AMD_FAM14H_STATE_NUM,
+ 	.start			= amd_fam14h_start,
+-- 
+1.7.6.1
 
