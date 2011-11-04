@@ -1,79 +1,72 @@
-From: Lei Yu <y.benben.y@gmail.com>
-Subject: Re: Question: cpufreq_stats is not available in sysfs
-Date: Thu, 3 Nov 2011 20:34:04 -0700
-Message-ID: <CAHqxzWw9Rw_bGN5kDTr5pVhDj+wvTxvTxBayj365w-gb7m7-5g@mail.gmail.com>
-References: <CAHqxzWxXPCkn_qzbOsZ_=ziafjRNUYTPOnVYgnOGa7+E_26Zpg@mail.gmail.com>
-	<CAHqxzWxbpAHBSOwgsvRSb+t7hT18zkC6hrscvBjW_nc=KaLj5w@mail.gmail.com>
+From: Axel Lin <axel.lin@gmail.com>
+Subject: [PATCH] db8500: fix build error due to undeclared i
+ variable
+Date: Fri, 04 Nov 2011 20:04:41 +0800
+Message-ID: <1320408281.28679.1.camel@phoenix>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        bh=mIGTClb/LLqy9Ijm1ZswjqIDgU52+B8AIBb4/Glh1m4=;
-        b=ROVB5z3ddSNXXWyC9ZjGg+YDmjQn8dwCA8N+mEkmfM0snAAdowdYkgJL6RUWb0Gthu
-         fIPJ9R/iqLiqNq+iHGWW7ARZJyPA/aRn3RE5Em+9UM2q7pygtp8Fnan4SJ/C1HpvUWOS
-         xVPU6csJ+6EPI2IHc6C65yqrSXkyFUmncod1o=
-In-Reply-To: <CAHqxzWxbpAHBSOwgsvRSb+t7hT18zkC6hrscvBjW_nc=KaLj5w@mail.gmail.com>
+        h=message-id:subject:from:to:cc:date:content-type:x-mailer
+         :content-transfer-encoding:mime-version;
+        bh=ssIDmQFPi3mcxUoA5pFJ+WZCahPBGGuxFJrJqEf2TE0=;
+        b=JPOaaNTn5HIRD/Vy1I+69DbXm+BzJN1TVKwZWmO9DiHhTQhcbHJ0iYIDk6eFSO69Ox
+         +GtwLfoQdz8FU2o4U00Klb84V4N70GQPPoAuHzkuueiQfeq9c/gSNeuRaV2a0Uln0fXV
+         RRTzS4Cb8xTJUjll50hKzqGqTsFNlsTA1kZys=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
 
-I figured out the problem, please ignore the post, Sorry for the spam.
+The variable i is removed by commit ded8433
+"[CPUFREQ] db8500: remove unneeded for loop iteration over freq_table",
+but current code to print available frequencies still uses the i variable.
+Thus add the i variable back to fix below buld error:
 
-On Thu, Nov 3, 2011 at 12:29 PM, Lei Yu <y.benben.y@gmail.com> wrote:
-> One correction below.
->
-> On Thu, Nov 3, 2011 at 11:55 AM, Lei Yu <y.benben.y@gmail.com> wrote:
->> Hi,
->> =A0 I tried to use cpufreq_stats to do some performance anlaysis but=
- I
->> did not see cpufreq_stats entries under sysfs on my Linux machine. I
->> am wondering if anyone can help me point out what could be the
->> problem.
->> =A0 Here are more detailed info
->> =A0 =A0 =A01). My kernel version is: 3.0.1
->> =A0 =A0 =A02). cpufreq and cpufreq_stats has been built into the ker=
-nel
->> image rather than as a separate, standalone kernel modules.
->> =A0 =A0 =A03). I can see cpufreq related sysfs entries under:
->> /sys/devices/system/cpu/cpufreq and
->> /sys/devices/system/cpu/cpu0/cpufreq.
->> =A0 =A0 =A04). But when I looked under above two directories, I did =
-not
->> see cpufreq_stats related entries.
->> =A0 Also, when I looked at the code of the cpufreq_stats.c, I see th=
-e
->> logics like this:
->> =A0 =A0 =A0--> cpufreq_stats sysfs is only created inside
->> cpufreq_stats_create_table()
->> =A0 =A0 =A0--> cpufreq_stats_create_table() is either invoked inside
->> cpufreq_stat_notifier_policy() or cpufreq_stats_create_table_cpu().
->> =A0 =A0 =A0--> cpufreq_stats_create_table_cpu() is only invoked if a=
- CPU
->> is CPU_DOWN_FAILED or CPU_DOWN_FAILED_FROZEN which will not happen i=
-n
->> my environment.
->> =A0 =A0 =A0--> And, cpufreq_stats_init() will unregister
->> CPUFREQ_POLICY_NOTIFIER if registering of CPUFREQ_TRANSITION_NOTIFIE=
-R
->> is successful.
->> =A0 =A0 =A0So, cpufreq_stats sysfs entries will not exist? I am sure=
- I
->> have mis-read the code somehow.
->
-> Please ignore my explanation of the code above since I missed the ear=
-ly return.
->
->>
->> Really appreciate your help.
->>
->> Lei Yu
->>
->> P.S. I am new to Linux kernel mailing list, if I am not following an=
-y
->> of the style, pls do let me know.
->>
->
+  CC      drivers/cpufreq/db8500-cpufreq.o
+drivers/cpufreq/db8500-cpufreq.c: In function 'db8500_cpufreq_init':
+drivers/cpufreq/db8500-cpufreq.c:123: error: 'i' undeclared (first use in this function)
+drivers/cpufreq/db8500-cpufreq.c:123: error: (Each undeclared identifier is reported only once
+drivers/cpufreq/db8500-cpufreq.c:123: error: for each function it appears in.)
+make[2]: *** [drivers/cpufreq/db8500-cpufreq.o] Error 1
+make[1]: *** [drivers/cpufreq] Error 2
+make: *** [drivers] Error 2
+
+This patch also fixes using uninitialized i variable as array index.
+
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/cpufreq/db8500-cpufreq.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+index edaa987..f500201 100644
+--- a/drivers/cpufreq/db8500-cpufreq.c
++++ b/drivers/cpufreq/db8500-cpufreq.c
+@@ -109,7 +109,7 @@ static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
+ 
+ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+ {
+-	int res;
++	int i, res;
+ 
+ 	BUILD_BUG_ON(ARRAY_SIZE(idx2opp) + 1 != ARRAY_SIZE(freq_table));
+ 
+@@ -120,8 +120,8 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+ 			freq_table[3].frequency = 1000000;
+ 	}
+ 	pr_info("db8500-cpufreq : Available frequencies:\n");
+-	while (freq_table[i].frequency != CPUFREQ_TABLE_END)
+-		pr_info("  %d Mhz\n", freq_table[i++].frequency/1000);
++	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
++		pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
+ 
+ 	/* get policy fields based on the table */
+ 	res = cpufreq_frequency_table_cpuinfo(policy, freq_table);
+-- 
+1.7.5.4
+
+
+
