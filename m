@@ -1,105 +1,47 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: [PATCH 5/5] [CPUFREQ] EXYNOS4210: Add support ASV feature
-Date: Mon, 7 Nov 2011 13:23:11 +0900
-Message-ID: <CAJ0PZbQ2OLKwOtFA_d+u1jrnZ+aF5xT83OzVYv3w4iUuWTZBiA@mail.gmail.com>
-References: <005801cc995c$fee5dd60$fcb19820$%kim@samsung.com>
-	<CAJ0PZbQEHXpRdCkcAwNwtK7AmH=nxG+KjOcw91gwagAvFr_pxA@mail.gmail.com>
-	<02e001cc9b59$d09ff400$71dfdc00$%kim@samsung.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH 00/10] cpufreq: OMAP: move into drivers, cleanups/fixes
+ for v3.2
+Date: Tue, 08 Nov 2011 11:48:44 -0800
+Message-ID: <4EB9879C.9030904@ti.com>
+References: <1316725648-26710-1-git-send-email-khilman@ti.com> <4EB1BDFD.2060403@ti.com> <20111102220813.GA931@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        bh=WH+UT0OswHmtF+bOOUjfvSCingoZu68pqH9c+V89pxM=;
-        b=BKI+B/FcY8WIsgW2GUcU04h5rkThhDl/8WhfeYBtU6zR4Nphpt8FaMu8c8XwtIsINz
-         XtHpGOO0cwwF81T8s5SYSk4ZOAqnhns7TRQKH6+k9Kx5UCQRfj+CCI8bYaSGsxUFUssE
-         MQcOKzEHAXMULnwla3npACvV8LpqiYoIw50G8=
-In-Reply-To: <02e001cc9b59$d09ff400$71dfdc00$%kim@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20111102220813.GA931@redhat.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, davej@redhat.com, Jaecheol Lee <jc.lee@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Dave Jones <davej@redhat.com>
+Cc: Kevin Hilman <khilman@ti.com>, cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rajendra Nayak <rnayak@ti.com>, Nishanth Menon <nm@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, tytso@mit.edu
 
-On Sat, Nov 5, 2011 at 10:25 AM, Kukjin Kim <kgene.kim@samsung.com> wro=
-te:
-> MyungJoo Ham wrote:
->>
->> Hello,
->>
-> Hi,
->
-> I got the comments from Jaecheol Lee but his mail client has some pro=
-blem so
-> I'm sending instead.
->
->> On Wed, Nov 2, 2011 at 9:43 PM, Kukjin Kim <kgene.kim@samsung.com> w=
-rote:
->> []
->> > +static void __init set_volt_table(void)
->> > +{
->> > + =A0 =A0 =A0 unsigned int tmp, i, asv_group =3D 0;
->> > +
->> > + =A0 =A0 =A0 tmp =3D __raw_readl(S5P_INFORM2);
->>
->> As I've mentioned in the ASV patch thread, do we really need to use =
-an
->> INFORM register simply to save the id of supported voltage ranges?
->>
->> Why aren't we using an extern variable here? For example, "extern in=
-t
->> asv_group_id;" and define it at "asv.h" or somewhere else.
->>
->> At reboot, we are going to init ASV driver and will get the ASV valu=
-e
->> again; thus, we don't need to use such a preserving register anyway.
->> At suspend/resume, the value in RAM does not disappear and the IPL
->> does not care this value; thus, it is meaningless to use INFORM2 for
->> this value.
->>
-> ASV feature had been implemented in bootloader hence inform register =
-was
-> used to return the result value to cpufreq driver. If there is no pro=
-blem to
-> use the inform register why don't you keep this manner.
+On 11/02/2011 03:08 PM, Dave Jones wrote:
+> On Wed, Nov 02, 2011 at 03:02:37PM -0700, Kevin Hilman wrote:
+>  > Hi Dave,
+>  > 
+>  > On 09/22/2011 02:07 PM, Kevin Hilman wrote:
+>  > > This series moves the OMAP CPUfreq driver into drivers/cpufreq, add
+>  > > support for SMP devices (OMAP4+) and includes several cleanups and
+>  > > fixes from Nishanth Menon.
+>  > > 
+>  > > This series applies to v3.1-rc6, and is available here:
+>  > > 
+>  > >    git://github.com/khilman/linux-omap-pm.git for_3.2/omap-cpufreq
+>  > > 
+>  > > Kevin
+>  > 
+>  > Any chance of this making it in for v3.2?
+> 
+> My kernel.org account being created is blocking on Ted uploading my
+> signed gpg key.  If you want to ask Linus to pull directly until I get
+> that sorted, feel free.  (Though I understand he has a dislike for github trees)
 
-The concern is that
-1. INFORM2 is a hard-to-read special register, not a reader-friendly
-variable. A variable such as "extern int exynos4_asv_value" is much
-easier for readers.
-2. We are not using such a special-purpose bootloader and we can't
-sure which bootloader is being used often.
-3. Other device drivers will start using this ASV value (such as
-/drivers/devfreq/exynos4210-busfreq.c). Having such machine/bootloader
-specific register addresses in a device driver really doesn't look
-good. Also, we will be able to share the variable name for other SoCs
-depending on how we name it; Exynos4xxx or more.
+OK, due to some other changes in v3.2 (including the module.h stuff) I
+need to refresh this against v3.2-rc1.
 
+I see the cpufreq tree is now back on kernel.org, so I'll send you and
+updated pull request for this series targeted for inclusion in v3.3.
 
-Thank you.
+Thanks,
 
+Kevin
 
-
-Cheers!
-MyungJoo
-
->
-> (snip)
->
-> Thanks.
->
-> Best regards,
-> Kgene.
-> --
-> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-> SW Solution Development Team, Samsung Electronics Co., Ltd.
->
->
-
-
-
---=20
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab, DMC Business, Samsung Electronics
