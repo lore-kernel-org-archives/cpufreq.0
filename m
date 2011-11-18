@@ -1,33 +1,64 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 00/10] cpufreq: OMAP: move into drivers, cleanups/fixes
- for v3.2
-Date: Tue, 8 Nov 2011 14:59:02 -0500
-Message-ID: <20111108195901.GA18300@redhat.com>
-References: <1316725648-26710-1-git-send-email-khilman@ti.com>
- <4EB1BDFD.2060403@ti.com>
- <20111102220813.GA931@redhat.com>
- <4EB9879C.9030904@ti.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: [GIT PULL] cpufreq: OMAP: move to drivers/cpufreq and updates for v3.3
+Date: Fri, 18 Nov 2011 13:20:23 -0800
+Message-ID: <871ut5w2js.fsf@ti.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4EB9879C.9030904@ti.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@ti.com>
-Cc: cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rajendra Nayak <rnayak@ti.com>, Nishanth Menon <nm@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, tytso@mit.edu
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Nov 08, 2011 at 11:48:44AM -0800, Kevin Hilman wrote:
+Hi Dave,
 
- > OK, due to some other changes in v3.2 (including the module.h stuff) I
- > need to refresh this against v3.2-rc1.
- > 
- > I see the cpufreq tree is now back on kernel.org, so I'll send you and
- > updated pull request for this series targeted for inclusion in v3.3.
+Here's the updated pull request after a rebase onto v3.2-rc1 and some
+fixes to address other changes that went into v3.2.
 
-Sharp eyes ;)  I'm still getting the hang of the new setup there,
-but I'm ready to start queuing stuff up again.
+This is targetted for v3.3, so I'd like to get it into your tree and
+into linux-next.
 
-	Dave
- 
+Also, let me know if you want a MAINTAINERS entry for this file, as I'm
+happy to maintain it.
+
+Kevin
+
+
+The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
+
+  Linux 3.2-rc1 (2011-11-07 16:16:02 -0800)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap-pm.git for_3.3/omap-cpufreq
+
+Colin Cross (1):
+      cpufreq: OMAP: notify even with bad boot frequency
+
+Kevin Hilman (1):
+      cpufreq: OMAP: fixup for omap_device changes, include <linux/module.h>
+
+Nishanth Menon (6):
+      cpufreq: OMAP: move clk name decision to init
+      cpufreq: OMAP: deny initialization if no mpudev
+      cpufreq: OMAP: dont support !freq_table
+      cpufreq: OMAP: only supports OPP library
+      cpufreq: OMAP: put clk if cpu_init failed
+      cpufreq: OMAP: fix freq_table leak
+
+Russell King (1):
+      cpufreq: OMAP: Add SMP support for OMAP4+
+
+Santosh Shilimkar (1):
+      cpufreq: OMAP: cleanup for multi-SoC support, move into drivers/cpufreq
+
+Todd Poynor (1):
+      cpufreq: OMAP: Enable all CPUs in shared policy mask
+
+ arch/arm/plat-omap/Makefile    |    1 -
+ arch/arm/plat-omap/cpu-omap.c  |  171 -------------------------
+ drivers/cpufreq/Makefile       |    1 +
+ drivers/cpufreq/omap-cpufreq.c |  274 ++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 275 insertions(+), 172 deletions(-)
+ delete mode 100644 arch/arm/plat-omap/cpu-omap.c
+ create mode 100644 drivers/cpufreq/omap-cpufreq.c
