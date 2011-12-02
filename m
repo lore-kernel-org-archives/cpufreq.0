@@ -1,36 +1,79 @@
-From: "David H. Durgee" <dhdurgee@verizon.net>
-Subject: excessive kworker CPU wakeups
-Date: Fri, 02 Dec 2011 12:20:46 -0500
-Message-ID: <4ED908EE.2070601@verizon.net>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [GIT PULL] cpufreq: OMAP: move to drivers/cpufreq and updates for v3.3
+Date: Fri, 02 Dec 2011 09:45:17 -0800
+Message-ID: <87ty5ij2aa.fsf@ti.com>
+References: <871ut5w2js.fsf@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <871ut5w2js.fsf@ti.com> (Kevin Hilman's message of "Fri, 18 Nov
+	2011 13:20:23 -0800")
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-I recently purchased a Lenovo IdeaPad Z560, model 09143YU, and as I am 
-not a Windows fan I installed Linux Mint 11 Katya x64 to use instead of 
-the supplied W7.  I was encountering a known hang and had to upgrade to 
-a later kernel, so I am now using the 2.6.38-11-generic #50-Ubuntu SMP 
-Mon Sep 12 21:17:25 UTC 2011 x86_64 kernel.
+Dave,
 
-I had my first occasion to use the laptop for an extended period for the 
-first time over the Thanksgiving holiday and I found it needed to be 
-tuned.  I downloaded powertop and used it to discover where my problems 
-were.  After addressing excessive i915 interrupts due to DRI the next 
-most frequent cause of CPU wakeups is a kworker on the system.  A search 
-lead to a post by Tejun, who is cc'd, indicating the need to trace such 
-issues.  Running the trace showed that 1933 of 2748 events were of the form:
+Kevin Hilman <khilman@ti.com> writes:
 
-<idle>-0     [000] 22005.355346: workqueue_queue_work: work 
-struct=ffff8800bb411188 function=do_dbs_timer workqueue=ffff88012b5d2c00 
-req_cpu=0 cpu=0
+> Hi Dave,
+>
+> Here's the updated pull request after a rebase onto v3.2-rc1 and some
+> fixes to address other changes that went into v3.2.
+>
+> This is targetted for v3.3, so I'd like to get it into your tree and
+> into linux-next.
 
-Tejun indicated that this is a workitem used by cpufreq and likely 
-caused by something else hitting the CPU frequently.  So how do I 
-diagnose this further and isolate the cause for correction?
+Are there any problems with this series or pull request?  
 
-Dave
+Kevin
+
+> Also, let me know if you want a MAINTAINERS entry for this file, as I'm
+> happy to maintain it.
+>
+> Kevin
+>
+>
+> The following changes since commit 1ea6b8f48918282bdca0b32a34095504ee65bab5:
+>
+>   Linux 3.2-rc1 (2011-11-07 16:16:02 -0800)
+>
+> are available in the git repository at:
+>   git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap-pm.git for_3.3/omap-cpufreq
+>
+> Colin Cross (1):
+>       cpufreq: OMAP: notify even with bad boot frequency
+>
+> Kevin Hilman (1):
+>       cpufreq: OMAP: fixup for omap_device changes, include <linux/module.h>
+>
+> Nishanth Menon (6):
+>       cpufreq: OMAP: move clk name decision to init
+>       cpufreq: OMAP: deny initialization if no mpudev
+>       cpufreq: OMAP: dont support !freq_table
+>       cpufreq: OMAP: only supports OPP library
+>       cpufreq: OMAP: put clk if cpu_init failed
+>       cpufreq: OMAP: fix freq_table leak
+>
+> Russell King (1):
+>       cpufreq: OMAP: Add SMP support for OMAP4+
+>
+> Santosh Shilimkar (1):
+>       cpufreq: OMAP: cleanup for multi-SoC support, move into drivers/cpufreq
+>
+> Todd Poynor (1):
+>       cpufreq: OMAP: Enable all CPUs in shared policy mask
+>
+>  arch/arm/plat-omap/Makefile    |    1 -
+>  arch/arm/plat-omap/cpu-omap.c  |  171 -------------------------
+>  drivers/cpufreq/Makefile       |    1 +
+>  drivers/cpufreq/omap-cpufreq.c |  274 ++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 275 insertions(+), 172 deletions(-)
+>  delete mode 100644 arch/arm/plat-omap/cpu-omap.c
+>  create mode 100644 drivers/cpufreq/omap-cpufreq.c
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
