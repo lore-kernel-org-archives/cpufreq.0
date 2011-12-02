@@ -1,48 +1,43 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [GIT PULL] cpufreq: OMAP: move to drivers/cpufreq and updates
- for v3.3
-Date: Fri, 2 Dec 2011 14:45:22 -0500
-Message-ID: <20111202194522.GA8652@redhat.com>
-References: <871ut5w2js.fsf@ti.com>
- <87ty5ij2aa.fsf@ti.com>
- <20111202175256.GA27874@redhat.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [GIT PULL] cpufreq: OMAP: move to drivers/cpufreq and updates for v3.3
+Date: Fri, 02 Dec 2011 13:19:23 -0800
+Message-ID: <87liquisdg.fsf@ti.com>
+References: <871ut5w2js.fsf@ti.com> <87ty5ij2aa.fsf@ti.com>
+	<20111202175256.GA27874@redhat.com> <20111202194522.GA8652@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20111202175256.GA27874@redhat.com>
+In-Reply-To: <20111202194522.GA8652@redhat.com> (Dave Jones's message of "Fri,
+	2 Dec 2011 14:45:22 -0500")
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@ti.com>
+To: Dave Jones <davej@redhat.com>
 Cc: cpufreq@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-On Fri, Dec 02, 2011 at 12:52:57PM -0500, Dave Jones wrote:
- > On Fri, Dec 02, 2011 at 09:45:17AM -0800, Kevin Hilman wrote:
- >  > Dave,
- >  > 
- >  > Kevin Hilman <khilman@ti.com> writes:
- >  > 
- >  > > Hi Dave,
- >  > >
- >  > > Here's the updated pull request after a rebase onto v3.2-rc1 and some
- >  > > fixes to address other changes that went into v3.2.
- >  > >
- >  > > This is targetted for v3.3, so I'd like to get it into your tree and
- >  > > into linux-next.
- >  > 
- >  > Are there any problems with this series or pull request?  
- > 
- > Somehow I missed this. I'll get to it this afternoon and push it out.
+Dave Jones <davej@redhat.com> writes:
 
-applied and pushed.
+> On Fri, Dec 02, 2011 at 12:52:57PM -0500, Dave Jones wrote:
+>  > On Fri, Dec 02, 2011 at 09:45:17AM -0800, Kevin Hilman wrote:
+>  >  > Dave,
+>  >  > 
+>  >  > Kevin Hilman <khilman@ti.com> writes:
+>  >  > 
+>  >  > > Hi Dave,
+>  >  > >
+>  >  > > Here's the updated pull request after a rebase onto v3.2-rc1 and some
+>  >  > > fixes to address other changes that went into v3.2.
+>  >  > >
+>  >  > > This is targetted for v3.3, so I'd like to get it into your tree and
+>  >  > > into linux-next.
+>  >  > 
+>  >  > Are there any problems with this series or pull request?  
+>  > 
+>  > Somehow I missed this. I'll get to it this afternoon and push it out.
+>
+> applied and pushed.
+>
 
-So things have seemed kinda quiet lately, which is making me wonder if
-I've somehow lost other mail too.  (There have been a number of small disasters
-with my @redhat mail this last month).
+Thanks!
 
-If anyone has anything else pending that hasn't been applied yet, please resend,
-and I'll get on top of it asap.
-
-	Dave
-
+Kevin
