@@ -1,60 +1,36 @@
-From: Borislav Petkov <bp@amd64.org>
-Subject: [PATCH 1/2] powernow-k8: Fixup missing _PSS objects message
-Date: Wed, 30 Nov 2011 15:49:54 +0100
-Message-ID: <1322664595-23489-1-git-send-email-bp@amd64.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "David H. Durgee" <dhdurgee@verizon.net>
+Subject: excessive kworker CPU wakeups
+Date: Fri, 02 Dec 2011 12:20:46 -0500
+Message-ID: <4ED908EE.2070601@verizon.net>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <borislav.petkov@amd.com>, Thomas Renninger <trenn@suse.de>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
 
-From: Borislav Petkov <borislav.petkov@amd.com>
+I recently purchased a Lenovo IdeaPad Z560, model 09143YU, and as I am 
+not a Windows fan I installed Linux Mint 11 Katya x64 to use instead of 
+the supplied W7.  I was encountering a known hang and had to upgrade to 
+a later kernel, so I am now using the 2.6.38-11-generic #50-Ubuntu SMP 
+Mon Sep 12 21:17:25 UTC 2011 x86_64 kernel.
 
-_PSS objects can also be missing if Cool'N'Quiet is disabled in the
-BIOS. Add that to the FW_BUG message for the user to try before updating
-her BIOS. Fix formatting.
+I had my first occasion to use the laptop for an extended period for the 
+first time over the Thanksgiving holiday and I found it needed to be 
+tuned.  I downloaded powertop and used it to discover where my problems 
+were.  After addressing excessive i915 interrupts due to DRI the next 
+most frequent cause of CPU wakeups is a kworker on the system.  A search 
+lead to a post by Tejun, who is cc'd, indicating the need to trace such 
+issues.  Running the trace showed that 1933 of 2748 events were of the form:
 
-Cc: Thomas Renninger <trenn@suse.de>
-Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- drivers/cpufreq/powernow-k8.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+<idle>-0     [000] 22005.355346: workqueue_queue_work: work 
+struct=ffff8800bb411188 function=do_dbs_timer workqueue=ffff88012b5d2c00 
+req_cpu=0 cpu=0
 
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index bce576d..1c6d879 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1250,12 +1250,15 @@ static void __cpuinit powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
- 	init_on_cpu->rc = 0;
- }
- 
-+static const char missing_pss_msg[] =
-+	KERN_ERR
-+	FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
-+	FW_BUG PFX "First, make sure Cool'N'Quiet is enabled in the BIOS.\n"
-+	FW_BUG PFX "If that doesn't help, try upgrading your BIOS.\n";
-+
- /* per CPU init entry point to the driver */
- static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
- {
--	static const char ACPI_PSS_BIOS_BUG_MSG[] =
--		KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
--		FW_BUG PFX "Try again with latest BIOS.\n";
- 	struct powernow_k8_data *data;
- 	struct init_on_cpu init_on_cpu;
- 	int rc;
-@@ -1283,7 +1286,7 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
- 		 * an UP version, and is deprecated by AMD.
- 		 */
- 		if (num_online_cpus() != 1) {
--			printk_once(ACPI_PSS_BIOS_BUG_MSG);
-+			printk_once(missing_pss_msg);
- 			goto err_out;
- 		}
- 		if (pol->cpu != 0) {
--- 
-1.7.8.rc0
+Tejun indicated that this is a workitem used by cpufreq and likely 
+caused by something else hitting the CPU frequently.  So how do I 
+diagnose this further and isolate the cause for correction?
+
+Dave
