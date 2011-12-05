@@ -1,43 +1,34 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [GIT PULL] cpufreq: OMAP: move to drivers/cpufreq and updates for v3.3
-Date: Fri, 02 Dec 2011 13:19:23 -0800
-Message-ID: <87liquisdg.fsf@ti.com>
-References: <871ut5w2js.fsf@ti.com> <87ty5ij2aa.fsf@ti.com>
-	<20111202175256.GA27874@redhat.com> <20111202194522.GA8652@redhat.com>
+From: chao xie <xiechao.linux@gmail.com>
+Subject: cpufreq governor with SMP support
+Date: Mon, 5 Dec 2011 18:00:18 +0800
+Message-ID: <CAK9wHMTatnwEMKUYjykFzdWJXtoLbBC9fzOfn+gDYS+HMDcbKg@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20111202194522.GA8652@redhat.com> (Dave Jones's message of "Fri,
-	2 Dec 2011 14:45:22 -0500")
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        bh=+P6qRIRnpJZ777qDQUGDTuEyrnXoNfQxYUZN5jvVQUk=;
+        b=mtR4W+DjM5hzC5re1bAeZwOxmw1EDkm9iqK8loNJTE2yuHiiQ0tMjQs3QJ2+jLTSCI
+         rdPBHnHALdjblrEtZLFdloBVKigGfVH5sklx9Me5BqlTiCJtnsXazOaeZHuwFE/G7I3Y
+         XZxwOP3AsoZWSeETIQVe8yT/nDY5Iyr/Qe3/8=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="windows-1252"
+To: cpufreq@vger.kernel.org, davej@redhat.com
 
-Dave Jones <davej@redhat.com> writes:
-
-> On Fri, Dec 02, 2011 at 12:52:57PM -0500, Dave Jones wrote:
->  > On Fri, Dec 02, 2011 at 09:45:17AM -0800, Kevin Hilman wrote:
->  >  > Dave,
->  >  > 
->  >  > Kevin Hilman <khilman@ti.com> writes:
->  >  > 
->  >  > > Hi Dave,
->  >  > >
->  >  > > Here's the updated pull request after a rebase onto v3.2-rc1 and some
->  >  > > fixes to address other changes that went into v3.2.
->  >  > >
->  >  > > This is targetted for v3.3, so I'd like to get it into your tree and
->  >  > > into linux-next.
->  >  > 
->  >  > Are there any problems with this series or pull request?  
->  > 
->  > Somehow I missed this. I'll get to it this afternoon and push it out.
->
-> applied and pushed.
->
-
-Thanks!
-
-Kevin
+Hi
+The CPUFreq ondemand governor will use  deferrable timer for cpu
+workload profiling.
+The deferrable timer will not invoke the core when the core is totally =
+idle.
+So for a SMP system, there are two cores, each one will have its own
+cpufreq_policy and do the profiling and change the frequency of core.
+I find that after system boot up, and I set the governor of the two
+cores to be =93ondemand=94. The profiling in CPU1 will never start beca=
+use
+CPU1 is in idle, and the deferrable timer cpu profiling depends on
+will not wake up core.
+Is that a problem, or I made mistake about how to set up cpufreq in
+the SMP system?
