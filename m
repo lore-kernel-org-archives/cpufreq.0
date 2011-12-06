@@ -1,43 +1,100 @@
-From: "David H. Durgee" <dhdurgee@verizon.net>
-Subject: Request for assistance - excessive kworker CPU wakeups
-Date: Fri, 09 Dec 2011 16:26:19 -0500
-Message-ID: <4EE27CFB.8020301@verizon.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: [PATCH 5/5] [CPUFREQ] EXYNOS: Removed useless headers and codes
+Date: Tue,  6 Dec 2011 19:13:10 +0900
+Message-ID: <1323166390-10980-6-git-send-email-kgene.kim@samsung.com>
+References: <1323166390-10980-1-git-send-email-kgene.kim@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1323166390-10980-1-git-send-email-kgene.kim@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: davej@redhat.com, Jaecheol Lee <jc.lee@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
 
-I recently purchased a Lenovo IdeaPad Z560, model 09143YU, and as I am 
-not a Windows fan I installed Linux Mint 11 Katya x64 to use instead of 
-the supplied W7.  I was encountering a known hang and had to upgrade to 
-a later kernel, so I am now using the 2.6.38-11-generic #50-Ubuntu SMP 
-Mon Sep 12 21:17:25 UTC 2011 x86_64 kernel.
+From: Jaecheol Lee <jc.lee@samsung.com>
 
-I had my first occasion to use the laptop for an extended period for the 
-first time over the Thanksgiving holiday and I found it needed to be 
-tuned.  I downloaded powertop and used it to discover where my problems 
-were.  After addressing excessive i915 interrupts due to DRI the next 
-most frequent cause of CPU wakeups is a kworker on the system.  A search 
-lead to a post by Tejun, indicating the need to trace such issues. 
-Running the trace showed that 1933 of 2748 events were of the form:
+This patch removes no referencing header files and cleaned up
+useless code.
 
-<idle>-0     [000] 22005.355346: workqueue_queue_work: work 
-struct=ffff8800bb411188 function=do_dbs_timer workqueue=ffff88012b5d2c00 
-req_cpu=0 cpu=0
+Signed-off-by: Jaecheol Lee <jc.lee@samsung.com>
+Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c     |    8 +-------
+ drivers/cpufreq/exynos4210-cpufreq.c |   14 +-------------
+ 2 files changed, 2 insertions(+), 20 deletions(-)
 
-Tejun indicated that this is a workitem used by cpufreq and likely 
-caused by something else hitting the CPU frequently.  So how do I 
-diagnose this further and isolate the cause for correction?
-
-If you would like a summary of this, download this spreadsheet:
-
-http://home.comcast.net/%7Eddurgee/Tracelog.ods
-
-If you would like to inspect the trace log itself:
-
-http://home.comcast.net/%7Eddurgee/tracelog.zip
-
-Dave
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 24e4dd4..5467879 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -9,7 +9,6 @@
+  * published by the Free Software Foundation.
+ */
+ 
+-#include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/clk.h>
+@@ -18,15 +17,10 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+ #include <linux/suspend.h>
+-#include <linux/reboot.h>
+ 
+-#include <mach/map.h>
+-#include <mach/regs-clock.h>
+-#include <mach/regs-mem.h>
+ #include <mach/cpufreq.h>
+ 
+-#include <plat/clock.h>
+-#include <plat/pm.h>
++#include <plat/cpu.h>
+ 
+ static struct exynos_dvfs_info *exynos_info;
+ 
+diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
+index 6bc4ada..065da5b 100644
+--- a/drivers/cpufreq/exynos4210-cpufreq.c
++++ b/drivers/cpufreq/exynos4210-cpufreq.c
+@@ -9,25 +9,17 @@
+  * published by the Free Software Foundation.
+ */
+ 
+-#include <linux/types.h>
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/slab.h>
+-#include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+-#include <linux/notifier.h>
+-#include <linux/suspend.h>
+ 
+-#include <mach/map.h>
+ #include <mach/regs-clock.h>
+-#include <mach/regs-mem.h>
+ #include <mach/cpufreq.h>
+ 
+-#include <plat/clock.h>
+-#include <plat/pm.h>
+-
+ #define CPUFREQ_LEVEL_END	L5
+ 
+ static int max_support_idx = L0;
+@@ -38,10 +30,6 @@ static struct clk *moutcore;
+ static struct clk *mout_mpll;
+ static struct clk *mout_apll;
+ 
+-static struct regulator *arm_regulator;
+-
+-static struct cpufreq_freqs freqs;
+-
+ struct cpufreq_clkdiv {
+ 	unsigned int index;
+ 	unsigned int clkdiv;
+-- 
+1.7.1
