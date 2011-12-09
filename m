@@ -1,44 +1,43 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver
-Date: Fri, 9 Dec 2011 10:39:26 -0500
-Message-ID: <20111209153925.GA21045@redhat.com>
-References: <03b301ccb48a$1fc93bb0$5f5bb310$%kim@samsung.com>
+From: "David H. Durgee" <dhdurgee@verizon.net>
+Subject: Request for assistance - excessive kworker CPU wakeups
+Date: Fri, 09 Dec 2011 16:26:19 -0500
+Message-ID: <4EE27CFB.8020301@verizon.net>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <03b301ccb48a$1fc93bb0$5f5bb310$%kim@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, jc.lee@samsung.com
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@vger.kernel.org
 
-On Wed, Dec 07, 2011 at 11:44:21AM +0900, Kukjin Kim wrote:
- > From: Jaecheol Lee <jc.lee@samsung.com>
- > 
- > To support various EXYNOS series SoCs commonly,
- > added exynos common structure.
- > exynos-cpufreq.c => EXYNOS series common cpufreq driver
- > exynos4210-cpufreq.c => EXYNOS4210 support cpufreq driver
- > 
- > Signed-off-by: Jaecheol Lee <jc.lee@samsung.com>
- > Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+I recently purchased a Lenovo IdeaPad Z560, model 09143YU, and as I am 
+not a Windows fan I installed Linux Mint 11 Katya x64 to use instead of 
+the supplied W7.  I was encountering a known hang and had to upgrade to 
+a later kernel, so I am now using the 2.6.38-11-generic #50-Ubuntu SMP 
+Mon Sep 12 21:17:25 UTC 2011 x86_64 kernel.
 
-Please rediff this one and resend. It doesn't apply on top of the other patches..
+I had my first occasion to use the laptop for an extended period for the 
+first time over the Thanksgiving holiday and I found it needed to be 
+tuned.  I downloaded powertop and used it to discover where my problems 
+were.  After addressing excessive i915 interrupts due to DRI the next 
+most frequent cause of CPU wakeups is a kworker on the system.  A search 
+lead to a post by Tejun, indicating the need to trace such issues. 
+Running the trace showed that 1933 of 2748 events were of the form:
 
-Applying: [CPUFREQ] EXYNOS4210: Remove code about bus on cpufreq
-Applying: [CPUFREQ] EXYNOS4210: Update frequency table for cpu divider
-Applying: [CPUFREQ] EXYNOS4210: cpufreq code is changed for stable working
-Applying: [CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver
-error: patch failed: drivers/cpufreq/Makefile:42
-error: drivers/cpufreq/Makefile: patch does not apply
-Patch failed at 0005 [CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver
-When you have resolved this problem run "git am --resolved".
-If you would prefer to skip this patch, instead run "git am --skip".
-To restore the original branch and stop patching run "git am --abort".
+<idle>-0     [000] 22005.355346: workqueue_queue_work: work 
+struct=ffff8800bb411188 function=do_dbs_timer workqueue=ffff88012b5d2c00 
+req_cpu=0 cpu=0
 
-I'll push out what I have applied so far to cpufreq.next
+Tejun indicated that this is a workitem used by cpufreq and likely 
+caused by something else hitting the CPU frequently.  So how do I 
+diagnose this further and isolate the cause for correction?
 
-thanks,
-	Dave
+If you would like a summary of this, download this spreadsheet:
+
+http://home.comcast.net/%7Eddurgee/Tracelog.ods
+
+If you would like to inspect the trace log itself:
+
+http://home.comcast.net/%7Eddurgee/tracelog.zip
+
+Dave
