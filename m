@@ -1,41 +1,40 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [RFC V1 2/4] dts/imx6q: add cpufreq property
-Date: Thu, 15 Dec 2011 12:52:03 -0600
-Message-ID: <4EEA41D3.9010600@calxeda.com>
-References: <1323947798-25251-1-git-send-email-richard.zhao@linaro.org> <1323947798-25251-2-git-send-email-richard.zhao@linaro.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC V1 1/4] cpufreq: add arm soc generic cpufreq driver
+Date: Thu, 15 Dec 2011 20:29:11 +0000
+Message-ID: <20111215202911.GL14542@n2100.arm.linux.org.uk>
+References: <1323947798-25251-1-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1323947798-25251-2-git-send-email-richard.zhao@linaro.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=NQk29dVpqj91Zyv3Q32fqGAgbgAxMajaKR9mzKlrfJ0=;
+	b=qCh+DTS0cno1BekmI0b5wzSD6j1JopqMweRUBZaOMwsE6O6lSBm8G3IpJlJ0o1onbCXCfFJ1cxvUFWfd9Q89y8CQb5Mh3kxuIBsZyQ77yPaLqWuX+Id15YRwUXaFH7yejRd5x26FUImG/4H55PYnp2MX5ngzEA96kO8UJq70HSw=;
+Content-Disposition: inline
+In-Reply-To: <1323947798-25251-1-git-send-email-richard.zhao@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Richard Zhao <richard.zhao@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "davej@redhat.com" <davej@redhat.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "eric.miao@linaro.org" <eric.miao@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, davej@redhat.com, kernel@pengutronix.de, shawn.guo@linaro.org, eric.miao@linaro.org, linaro-dev@lists.linaro.org, patches@linaro.org
 
-On 12/15/2011 05:16 AM, Richard Zhao wrote:
-> Signed-off-by: Richard Zhao<richard.zhao@linaro.org>
-> ---
->   arch/arm/boot/dts/imx6q.dtsi |    2 ++
->   1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-> index 263e8f3..9e9943b 100644
-> --- a/arch/arm/boot/dts/imx6q.dtsi
-> +++ b/arch/arm/boot/dts/imx6q.dtsi
-> @@ -29,6 +29,8 @@
->   			compatible = "arm,cortex-a9";
->   			reg =<0>;
->   			next-level-cache =<&L2>;
-> +			cpu_freqs =<996000000 792000000 396000000 198000000>;
-> +			cpu_volts =<1225000 1100000 950000 850000>;
-+			trans_latency =<3000>;
->   		};
->
->   		cpu@1 {
+On Thu, Dec 15, 2011 at 07:16:35PM +0800, Richard Zhao wrote:
+> +#ifdef CONFIG_SMP
+> +	/* loops_per_jiffy is not updated by the cpufreq core for SMP systems.
+> +	 * So update it for all CPUs.
+> +	 */
+> +	for_each_possible_cpu(cpu)
+> +		per_cpu(cpu_data, cpu).loops_per_jiffy =
+> +		cpufreq_scale(per_cpu(cpu_data, cpu).loops_per_jiffy,
+> +					freqs.old, freqs.new);
 
-The trans_latency value definitely needs to be defined to avoid
-strange behavior in the driver.
+NAK.  If you think this is a good solution, you're very wrong.  If this
+is what's in the core cpufreq code, then it too is very broken.
 
---Mark Langsdorf
-Calxeda, Inc.
+I've seen this exact method result in the loops_per_jiffy being totally
+buggered over time by the constant scaling up and down.  The only way
+to do this _sensibly_ is to record the _initial_ loops_per_jiffy and
+_inital_ frequency, and scale from that.
+
+That way you get consistent results irrespective of the scalings you
+do over time, rather than something which continually deteriorates with
+every frequency change.
