@@ -1,40 +1,68 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC V1 1/4] cpufreq: add arm soc generic cpufreq driver
-Date: Thu, 15 Dec 2011 20:29:11 +0000
-Message-ID: <20111215202911.GL14542@n2100.arm.linux.org.uk>
+From: Richard Zhao <richard.zhao@freescale.com>
+Subject: Re: [RFC V1 2/4] dts/imx6q: add cpufreq property
+Date: Fri, 16 Dec 2011 10:47:31 +0800
+Message-ID: <20111216024730.GS28768@b20223-02.ap.freescale.net>
 References: <1323947798-25251-1-git-send-email-richard.zhao@linaro.org>
+ <1323947798-25251-2-git-send-email-richard.zhao@linaro.org>
+ <20111215115852.GC10522@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
-	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=NQk29dVpqj91Zyv3Q32fqGAgbgAxMajaKR9mzKlrfJ0=;
-	b=qCh+DTS0cno1BekmI0b5wzSD6j1JopqMweRUBZaOMwsE6O6lSBm8G3IpJlJ0o1onbCXCfFJ1cxvUFWfd9Q89y8CQb5Mh3kxuIBsZyQ77yPaLqWuX+Id15YRwUXaFH7yejRd5x26FUImG/4H55PYnp2MX5ngzEA96kO8UJq70HSw=;
 Content-Disposition: inline
-In-Reply-To: <1323947798-25251-1-git-send-email-richard.zhao@linaro.org>
+In-Reply-To: <20111215115852.GC10522@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Zhao <richard.zhao@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, davej@redhat.com, kernel@pengutronix.de, shawn.guo@linaro.org, eric.miao@linaro.org, linaro-dev@lists.linaro.org, patches@linaro.org
+To: Shawn Guo <shawn.guo@freescale.com>
+Cc: Richard Zhao <richard.zhao@linaro.org>, linux@arm.linux.org.uk, patches@linaro.org, devicetree-discuss@lists.ozlabs.org, eric.miao@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, davej@redhat.com, linaro-dev@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Thu, Dec 15, 2011 at 07:16:35PM +0800, Richard Zhao wrote:
-> +#ifdef CONFIG_SMP
-> +	/* loops_per_jiffy is not updated by the cpufreq core for SMP systems.
-> +	 * So update it for all CPUs.
-> +	 */
-> +	for_each_possible_cpu(cpu)
-> +		per_cpu(cpu_data, cpu).loops_per_jiffy =
-> +		cpufreq_scale(per_cpu(cpu_data, cpu).loops_per_jiffy,
-> +					freqs.old, freqs.new);
+On Thu, Dec 15, 2011 at 07:58:54PM +0800, Shawn Guo wrote:
+> Hi Richard,
+> 
+> Whenever we invent some new device tree binding support, we need to
+> Cc devicetree-discuss@lists.ozlabs.org (Cc-ed).
+Thanks for your reminder.
+> 
+> On Thu, Dec 15, 2011 at 07:16:36PM +0800, Richard Zhao wrote:
+> > Signed-off-by: Richard Zhao <richard.zhao@linaro.org>
+> > ---
+> >  arch/arm/boot/dts/imx6q.dtsi |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
+> > index 263e8f3..9e9943b 100644
+> > --- a/arch/arm/boot/dts/imx6q.dtsi
+> > +++ b/arch/arm/boot/dts/imx6q.dtsi
+> > @@ -29,6 +29,8 @@
+> >  			compatible = "arm,cortex-a9";
+> >  			reg = <0>;
+> >  			next-level-cache = <&L2>;
+> > +			cpu_freqs = <996000000 792000000 396000000 198000000>;
+> > +			cpu_volts = <1225000 1100000 950000 850000>;
+> 
+> For dt property name, we use '-' rather than '_'.
+ok.
+> 
+> And I'm not sure this is correct, since these data obviously does not
+> belong to "arm,cortex-a9".
+That's why RFC.
 
-NAK.  If you think this is a good solution, you're very wrong.  If this
-is what's in the core cpufreq code, then it too is very broken.
+Thanks
+Richard
+> 
+> Regards,
+> Shawn
+> 
+> >  		};
+> >  
+> >  		cpu@1 {
+> > -- 
+> > 1.7.5.4
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
 
-I've seen this exact method result in the loops_per_jiffy being totally
-buggered over time by the constant scaling up and down.  The only way
-to do this _sensibly_ is to record the _initial_ loops_per_jiffy and
-_inital_ frequency, and scale from that.
-
-That way you get consistent results irrespective of the scalings you
-do over time, rather than something which continually deteriorates with
-every frequency change.
