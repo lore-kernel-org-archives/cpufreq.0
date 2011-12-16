@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/4] cpupower: Fix number of idle states
-Date: Fri, 16 Dec 2011 15:35:53 +0100
-Message-ID: <1324046154-64824-4-git-send-email-trenn@suse.de>
+Subject: [PATCH 2/4] cpupower: Unify cpupower-frequency-* manpages
+Date: Fri, 16 Dec 2011 15:35:52 +0100
+Message-ID: <1324046154-64824-3-git-send-email-trenn@suse.de>
 References: <1324046154-64824-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1324046154-64824-1-git-send-email-trenn@suse.de>
@@ -11,50 +11,62 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux@dominikbrodowski.net
-Cc: cpufreq@vger.kernel.org, Thomas Renninger <trenn@suse.de>
+Cc: cpufreq@vger.kernel.org, Thomas Renninger <trenn@suse.de>, malattia@linux.it
 
-The number of idle states was wrong.
-The POLL idle state (on X86) was missed out:
-Number of idle states: 4
-Available idle states: C1-NHM C3-NHM C6-NHM
-
-While the POLL is not a real idle state, its
-statistics should still be shown. It's now also
-explained in a detailed manpage.
-This should fix a bug of missing the first idle
-state on other archs.
+cpupower-frequency-* manpages slightly differed from the others.
+  - Use uppercase letters in the title
+  - Show cpupower Manual in the header
+  - Remove Mattia from left down corner of the manpage, he is already
+    listed as author
+  - Remove --help, prints this message -> not needed
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 CC: cpufreq@vger.kernel.org
 CC: linux@dominikbrodowski.net
+CC: malattia@linux.it
 ---
- tools/power/cpupower/utils/cpuidle-info.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ tools/power/cpupower/man/cpupower-frequency-info.1 |    4 +---
+ tools/power/cpupower/man/cpupower-frequency-set.1  |    4 +---
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
-index b028267..e076beb 100644
---- a/tools/power/cpupower/utils/cpuidle-info.c
-+++ b/tools/power/cpupower/utils/cpuidle-info.c
-@@ -43,9 +43,8 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- 	}
- 
- 	printf(_("Number of idle states: %d\n"), idlestates);
--
- 	printf(_("Available idle states:"));
--	for (idlestate = 1; idlestate < idlestates; idlestate++) {
-+	for (idlestate = 0; idlestate < idlestates; idlestate++) {
- 		tmp = sysfs_get_idlestate_name(cpu, idlestate);
- 		if (!tmp)
- 			continue;
-@@ -57,7 +56,7 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- 	if (!verbose)
- 		return;
- 
--	for (idlestate = 1; idlestate < idlestates; idlestate++) {
-+	for (idlestate = 0; idlestate < idlestates; idlestate++) {
- 		tmp = sysfs_get_idlestate_name(cpu, idlestate);
- 		if (!tmp)
- 			continue;
+diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
+index bb60a8d..4a1918e 100644
+--- a/tools/power/cpupower/man/cpupower-frequency-info.1
++++ b/tools/power/cpupower/man/cpupower-frequency-info.1
+@@ -1,4 +1,4 @@
+-.TH "cpupower-frequency-info" "1" "0.1" "Mattia Dongili" ""
++.TH "CPUPOWER\-FREQUENCY\-INFO" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+ .LP 
+ cpupower frequency\-info \- Utility to retrieve cpufreq kernel information
+@@ -50,8 +50,6 @@ Prints out information like provided by the /proc/cpufreq interface in 2.4. and
+ \fB\-m\fR \fB\-\-human\fR
+ human\-readable output for the \-f, \-w, \-s and \-y parameters.
+ .TP  
+-\fB\-h\fR \fB\-\-help\fR
+-Prints out the help screen.
+ .SH "REMARKS"
+ .LP 
+ By default only values of core zero are displayed. How to display settings of
+diff --git a/tools/power/cpupower/man/cpupower-frequency-set.1 b/tools/power/cpupower/man/cpupower-frequency-set.1
+index 685f469..3eacc8d 100644
+--- a/tools/power/cpupower/man/cpupower-frequency-set.1
++++ b/tools/power/cpupower/man/cpupower-frequency-set.1
+@@ -1,4 +1,4 @@
+-.TH "cpupower-freqency-set" "1" "0.1" "Mattia Dongili" ""
++.TH "CPUPOWER\-FREQUENCY\-SET" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+ .LP 
+ cpupower frequency\-set \- A small tool which allows to modify cpufreq settings.
+@@ -26,8 +26,6 @@ specific frequency to be set. Requires userspace governor to be available and lo
+ \fB\-r\fR \fB\-\-related\fR
+ modify all hardware-related CPUs at the same time
+ .TP 
+-\fB\-h\fR \fB\-\-help\fR
+-Prints out the help screen.
+ .SH "REMARKS"
+ .LP 
+ By default values are applied on all cores. How to modify single core
 -- 
 1.7.6.1
 
