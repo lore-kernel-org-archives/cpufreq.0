@@ -1,72 +1,43 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 2/4] cpupower: Unify cpupower-frequency-* manpages
-Date: Fri, 16 Dec 2011 15:35:52 +0100
-Message-ID: <1324046154-64824-3-git-send-email-trenn@suse.de>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH 1/4] cpupower: Add cpupower-idle-info manpage
+Date: Fri, 16 Dec 2011 17:18:37 +0100
+Message-ID: <CAORVsuVrm+dWGgs-taatnUMZsYvYg_tdx1=7ekWp0qM+25DorQ@mail.gmail.com>
 References: <1324046154-64824-1-git-send-email-trenn@suse.de>
+	<1324046154-64824-2-git-send-email-trenn@suse.de>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1324046154-64824-1-git-send-email-trenn@suse.de>
+In-Reply-To: <1324046154-64824-2-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux@dominikbrodowski.net
-Cc: cpufreq@vger.kernel.org, Thomas Renninger <trenn@suse.de>, malattia@linux.it
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux@dominikbrodowski.net, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
 
-cpupower-frequency-* manpages slightly differed from the others.
-  - Use uppercase letters in the title
-  - Show cpupower Manual in the header
-  - Remove Mattia from left down corner of the manpage, he is already
-    listed as author
-  - Remove --help, prints this message -> not needed
+Hi Thomas,
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: cpufreq@vger.kernel.org
-CC: linux@dominikbrodowski.net
-CC: malattia@linux.it
----
- tools/power/cpupower/man/cpupower-frequency-info.1 |    4 +---
- tools/power/cpupower/man/cpupower-frequency-set.1  |    4 +---
- 2 files changed, 2 insertions(+), 6 deletions(-)
+On Fri, Dec 16, 2011 at 3:35 PM, Thomas Renninger <trenn@suse.de> wrote:
+> The last missing manpage for cpupower tools.
+Great!
 
-diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
-index bb60a8d..4a1918e 100644
---- a/tools/power/cpupower/man/cpupower-frequency-info.1
-+++ b/tools/power/cpupower/man/cpupower-frequency-info.1
-@@ -1,4 +1,4 @@
--.TH "cpupower-frequency-info" "1" "0.1" "Mattia Dongili" ""
-+.TH "CPUPOWER\-FREQUENCY\-INFO" "1" "0.1" "" "cpupower Manual"
- .SH "NAME"
- .LP 
- cpupower frequency\-info \- Utility to retrieve cpufreq kernel information
-@@ -50,8 +50,6 @@ Prints out information like provided by the /proc/cpufreq interface in 2.4. and
- \fB\-m\fR \fB\-\-human\fR
- human\-readable output for the \-f, \-w, \-s and \-y parameters.
- .TP  
--\fB\-h\fR \fB\-\-help\fR
--Prints out the help screen.
- .SH "REMARKS"
- .LP 
- By default only values of core zero are displayed. How to display settings of
-diff --git a/tools/power/cpupower/man/cpupower-frequency-set.1 b/tools/power/cpupower/man/cpupower-frequency-set.1
-index 685f469..3eacc8d 100644
---- a/tools/power/cpupower/man/cpupower-frequency-set.1
-+++ b/tools/power/cpupower/man/cpupower-frequency-set.1
-@@ -1,4 +1,4 @@
--.TH "cpupower-freqency-set" "1" "0.1" "Mattia Dongili" ""
-+.TH "CPUPOWER\-FREQUENCY\-SET" "1" "0.1" "" "cpupower Manual"
- .SH "NAME"
- .LP 
- cpupower frequency\-set \- A small tool which allows to modify cpufreq settings.
-@@ -26,8 +26,6 @@ specific frequency to be set. Requires userspace governor to be available and lo
- \fB\-r\fR \fB\-\-related\fR
- modify all hardware-related CPUs at the same time
- .TP 
--\fB\-h\fR \fB\-\-help\fR
--Prints out the help screen.
- .SH "REMARKS"
- .LP 
- By default values are applied on all cores. How to modify single core
--- 
-1.7.6.1
+> More info about other architecture's sleep state specialities would be great.
+I wonder if it is the right place for some arch specific information
+about the sleep states.
 
+I propose to document this in a more generic doc file (e.g.
+Documentation/arm/OMAP/omap_pm) and link it from the manpage.
+
+What do you think?
+
+>
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+> CC: linux-arm-kernel@lists.infradead.org
+> CC: jean.pihet@newoldbits.com
+> CC: linux-omap@vger.kernel.org
+> CC: linux-pm@lists.linux-foundation.org
+> CC: linux-acpi@vger.kernel.org
+> CC: cpufreq@vger.kernel.org
+> CC: linux@dominikbrodowski.net
+
+Regards,
+Jean
