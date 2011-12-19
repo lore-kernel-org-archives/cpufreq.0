@@ -1,59 +1,44 @@
-From: Richard Zhao <richard.zhao@freescale.com>
-Subject: Re: [PATCH V2 1/4] cpufreq: add arm soc generic cpufreq driver
-Date: Mon, 19 Dec 2011 09:03:58 +0800
-Message-ID: <20111219010357.GW28768@b20223-02.ap.freescale.net>
-References: <1324031462-24961-1-git-send-email-richard.zhao@linaro.org>
- <1324031462-24961-2-git-send-email-richard.zhao@linaro.org>
- <20111216105229.GB3230@totoro>
- <4EEBA306.3060309@codeaurora.org>
+From: Richard Zhao <richard.zhao@linaro.org>
+Subject: [PATCH V3 0/7] add a generic cpufreq driver
+Date: Mon, 19 Dec 2011 11:21:36 +0800
+Message-ID: <1324264903-15395-1-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4EEBA306.3060309@codeaurora.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bryan Huntsman <bryanh@codeaurora.org>
-Cc: Jamie Iles <jamie@jamieiles.com>, linux@arm.linux.org.uk, patches@linaro.org, linux-arm-msm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, eric.miao@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, davej@redhat.com, linaro-dev@lists.linaro.org, Richard Zhao <richard.zhao@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Cc: linux@arm.linux.org.uk, davej@redhat.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, rdunlap@xenotime.net, kernel@pengutronix.de, shawn.guo@linaro.org, catalin.marinas@arm.com, eric.miao@linaro.org, mark.langsdorf@calxeda.com, davidb@codeaurora.org, arnd@arndb.de, bryanh@codeaurora.org, jamie@jamieiles.com, marc.zyngier@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org
 
-Hi Bryan,
+The driver support single core and multi core ARM SoCs. For multi core,
+it assume all cores share the same clock and voltage.
 
-On Fri, Dec 16, 2011 at 11:59:02AM -0800, Bryan Huntsman wrote:
-> On 12/16/2011 02:52 AM, Jamie Iles wrote:
-> >
-> >> +static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
-> >> +static unsigned long l_p_j_ref_freq;
-> >> +
-> >> +static struct clk *cpu_clk;
-> > 
-> > This assumes that all CPU's share the same clk and run at the same rate.  
-> > Is that a fair/safe assumption?  I honestly don't know the answer to 
-> > this so it's just a question!!!
-> 
-> On MSM, cpus independently scale both frequency and voltage.  Our clock
-> driver isn't upstream yet.  David Brown has a preliminary version here:
-> 
-> https://www.codeaurora.org/gitweb/quic/kernel/?p=davidb/linux-msm.git;a=shortlog;h=refs/heads/msm-clock-rfc
-> 
-> Once we get our driver upstream, MSM will be an exception and not select
-> ARM_GENERIC_CPUFREQ.  We'll probably have a separate msm-cpufreq.c
-> driver under drivers/cpufreq/.
-Do you have to patch to implement per-cpu udelay? In current code, udelay uses
-global loops_per_jiffy.
+TODO:
+ - Add each core seperate freq/volt support (MSM).
 
-Thanks
-Richard
-> 
-> - Bryan
-> 
-> -- 
-> Sent by an employee of the Qualcomm Innovation Center, Inc.
-> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+Changes in v3:
+ - move adjusting smp loops_per_jiffy to arm common code,
+   and also adjust global loops_per_jiffy.
+ - remove adjusting loops_per_jiffy in imx and omap cpufreq drivers.
+ - check compatible "generic-cpufreq" when module_init
+ - change printk to pr_xxx
+ - add generic-cpufreq DT binding doc
+
+Changes in v2:
+ - add volatage change support
+ - change '_' in property name to '-'
+ - use initial value to calculate loops_per_jiffy
+ - fix reading cpu_volts property bug 
+ - let cpufreq_frequency_table_cpuinfo routines handle cpu_freq_khz_max/min
+ - don't change freq in arm_cpufreq_exit, because every core share the same freq.
+ - use unsigned long describe frequency as much as possible. Because clk use
+   unsigned long, but cpufreq use unsigned int.
+[PATCH V3 1/7] ARM: add cpufreq transiton notifier to adjust
+[PATCH V3 2/7] arm/imx: cpufreq: remove loops_per_jiffy recalculate
+[PATCH V3 3/7] cpufreq: OMAP: remove loops_per_jiffy recalculate for
+[PATCH V3 4/7] cpufreq: add generic cpufreq driver
+[PATCH V3 5/7] dts/imx6q: add cpufreq property
+[PATCH V3 6/7] arm/imx6q: register arm_clk as cpu to clkdev
+[PATCH V3 7/7] arm/imx6q: select ARCH_HAS_CPUFREQ
 
