@@ -1,55 +1,59 @@
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH V2 1/4] cpufreq: add arm soc generic cpufreq driver
-Date: Tue, 20 Dec 2011 14:41:32 +0000
-Message-ID: <20111220144132.GA29727@sirena.org.uk>
-References: <1324031462-24961-1-git-send-email-richard.zhao@linaro.org>
- <1324031462-24961-2-git-send-email-richard.zhao@linaro.org>
+Subject: Re: [PATCH V3 4/7] cpufreq: add generic cpufreq driver
+Date: Tue, 20 Dec 2011 14:59:04 +0000
+Message-ID: <20111220145904.GD29727@sirena.org.uk>
+References: <1324264903-15395-1-git-send-email-richard.zhao@linaro.org>
+ <1324264903-15395-5-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1324031462-24961-2-git-send-email-richard.zhao@linaro.org>
+In-Reply-To: <1324264903-15395-5-git-send-email-richard.zhao@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Richard Zhao <richard.zhao@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, mark.langsdorf@calxeda.com, patches@linaro.org, eric.miao@linaro.org, kernel@pengutronix.de, davej@redhat.com, linaro-dev@lists.linaro.org, shawn.guo@linaro.org
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, arnd@arndb.de, mark.langsdorf@calxeda.com, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, bryanh@codeaurora.org, rob.herring@calxeda.com, grant.likely@secretlab.ca, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, davidb@codeaurora.org, shawn.guo@linaro.org, linaro-dev@lists.linaro.org
 
-On Fri, Dec 16, 2011 at 06:30:59PM +0800, Richard Zhao wrote:
+On Mon, Dec 19, 2011 at 11:21:40AM +0800, Richard Zhao wrote:
+> It support single core and multi-core ARM SoCs. But currently it assume
+> all cores share the same frequency and voltage.
+
+My comments on the previous version of the patch still apply:
+
+ - The voltage ranges being set need to be specified as ranges.
+ - Frequencies that can't be supported due to limitations of the
+   available supplies shouldn't be exposed to users.
+ - The driver needs to handle errors.
+
+> +Required properties in /cpus/cpu@0:
+> +- compatible : "generic-cpufreq"
+> +- cpu-freqs : cpu frequency points it support
+> +- cpu-volts : cpu voltages required by the frequency point at the same index
+> +- trans-latency :  transition_latency
+
+You need to define units for all of these, and for the transition
+latency you need to be clear about what's being measured (it looks like
+the CPU time only, not any voltage ramping).
+
+You also need to define how the core supplies get looked up.
+
+> +	/* Manual states, that PLL stabilizes in two CLK32 periods */
+> +	policy->cpuinfo.transition_latency = trans_latency;
+
+I guess this comment is a cut'n'paste error.
 
 > +
-> +	if (higher && cpu_reg)
-> +		regulator_set_voltage(cpu_reg,
-> +				cpu_volts[index], cpu_volts[index]);
+> +	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
+> +
+> +	if (ret < 0) {
+> +		pr_err("%s: invalid frequency table for cpu %d\n",
+> +		       __func__, policy->cpu);
 
-This is really bad, you're only supporting the configuration of a
-specific voltage which doesn't reflect what hardware does (things will
-be specified as a range of voltages) and will needlessly cause
-interoperability problems between chips and regulators if the regulator
-can't hit the *exact* voltage requested.  There's a good solid reason
-why the regulator API specifies everything in terms of voltage ranges.
+You should define pr_fmt to always include __func__ in the messages
+rather than open coding - ensures consistency and is less noisy in the
+code.
 
-> +	ret = clk_set_rate(cpu_clk, freq);
-> +	if (ret != 0) {
-> +		printk(KERN_DEBUG "cannot set CPU clock rate\n");
-> +		return ret;
-> +	}
+> +	pr_info("Generic CPU frequency driver\n");
 
-This error checking is really random - you're ignoring some errors and
-logging the errors you do detect as debug messages which seems odd.
-Similar issues apply throughough.
-
-> +	if (cpu_volts) {
-> +		cpu_reg = regulator_get(NULL, "cpu");
-> +		if (IS_ERR(cpu_reg)) {
-> +			printk(KERN_WARNING
-> +				"cpufreq: regulator cpu get failed.\n");
-> +			cpu_reg = NULL;
-> +		}
-> +	}
-
-You should log what the error was.  You're also not doing anything to
-check that the voltage ranges required by the frequencies are actually
-supported on this system, the driver should double check this so that
-governors don't sit there trying to set voltages that are impossible on
-a given board.
+This seems noisy...
