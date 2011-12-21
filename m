@@ -1,70 +1,114 @@
 From: Richard Zhao <richard.zhao@freescale.com>
 Subject: Re: [PATCH V3 4/7] cpufreq: add generic cpufreq driver
-Date: Wed, 21 Dec 2011 10:51:23 +0800
-Message-ID: <20111221025123.GG15863@b20223-02.ap.freescale.net>
+Date: Wed, 21 Dec 2011 17:27:40 +0800
+Message-ID: <20111221092739.GI15863@b20223-02.ap.freescale.net>
 References: <1324264903-15395-1-git-send-email-richard.zhao@linaro.org>
  <1324264903-15395-5-git-send-email-richard.zhao@linaro.org>
  <20111220145904.GD29727@sirena.org.uk>
  <20111220232701.GA1698@richard-laptop>
  <20111220234844.GC6551@opensource.wolfsonmicro.com>
  <20111221012046.GE15863@b20223-02.ap.freescale.net>
- <20111221013220.GA15398@opensource.wolfsonmicro.com>
- <20111221022452.GF15863@b20223-02.ap.freescale.net>
- <20111221023336.GE13529@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20111221023336.GE13529@sirena.org.uk>
+In-Reply-To: <20111221012046.GE15863@b20223-02.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Richard Zhao <richard.zhao@linaro.org>, linaro-dev@lists.linaro.org, linux@arm.linux.org.uk, mark.langsdorf@calxeda.com, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, rdunlap@xenotime.net, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, bryanh@codeaurora.org, eric.miao@linaro.org, rob.herring@calxeda.com, kernel@pengutronix.de, davej@redhat.com, jamie@jamieiles.com, davidb@codeaurora.org, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: linux@arm.linux.org.uk, mark.langsdorf@calxeda.com, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, bryanh@codeaurora.org, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, jamie@jamieiles.com, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, davej@redhat.com, linaro-dev@lists.linaro.org, davidb@codeaurora.org, shawn.guo@linaro.org, rob.herring@calxeda.com, Richard Zhao <richard.zhao@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-On Wed, Dec 21, 2011 at 02:33:36AM +0000, Mark Brown wrote:
-> On Wed, Dec 21, 2011 at 10:24:53AM +0800, Richard Zhao wrote:
-> > On Wed, Dec 21, 2011 at 01:32:21AM +0000, Mark Brown wrote:
+On Wed, Dec 21, 2011 at 09:20:46AM +0800, Richard Zhao wrote:
+> Hi Mark,
 > 
-> > > That's not the point - the point is that you may do something like
-> > > specify a defined set of frequencies and just drop the minimum supported
-> > > voltage without altering the maximum supported voltage as the frequency
-> > > gets lower.
-> 
-> > What do you mean by "drop"?
-> 
-> Drop is a synonym for lower in this context.
-> 
-> > cpu-volts = <
-> > 	/* min  max */
-> > 	1100000 1200000 /* 1G HZ */
-> > 	1000000 1200000 /* 800M HZ */
-> > 	900000  1200000 /* 600M HZ */
-> > 	>;
-> > The above sample dts could meet your point?
-> 
-> Yes.
-> 
-> > > While this is important the driver should also be enumerating the
-> > > supported voltages at probe time and eliminating unsupportable settings
-> > > so that governors aren't constantly trying to set things that can never
-> > > be supported.  The s3c64xx cpufreq driver provides an implementation of
-> > > this.
-> 
-> > I'll use regulator_is_supported_voltage pre-check the cpu-volts.
-> > For clock, conditions ((clk_round_rate(cpu-freq)/1000) * 1000 == cpu-freq)
-> > seems too strict. Because cpu clock is SoC dependent, I'll not add the check.
-> 
-> The issue that was there for is that there are multiple runtime
-> detectable variant clocking configurations which couldn't be switched
-> between so the driver needs to select only the rates that can be reached
-> from the current configuration.  I'd imagine that might be an issue
-> elsewhere.
-one case is that, cpu freq is 800M, clock may only reach 799M. I'd rather let
-clock code to decide how to handle 800M request. That's why I said
-the condition check is too strict.
+> On Tue, Dec 20, 2011 at 11:48:45PM +0000, Mark Brown wrote:
+> > On Wed, Dec 21, 2011 at 07:27:03AM +0800, Richard Zhao wrote:
+> > > On Tue, Dec 20, 2011 at 02:59:04PM +0000, Mark Brown wrote:
+> > 
+> > > > My comments on the previous version of the patch still apply:
+> > 
+> > > >  - The voltage ranges being set need to be specified as ranges.
+> > 
+> > > cpu normally need strict voltages. and only proved operating opints
+> > > are allowed to set in dts. If the voltage changes slightly especially
+> > > for high frequency, it's easy to cause unstable.
+> > 
+> > Clearly there will be limits which get more and more restrictive as the
+> > frequencies get higher but there will always be at least some play in
+> > the numbers as one must at a minimum specify tolerance ranges, and at
+> > lower frequencies the ranges specified will typically get compartively
+> > large.
+> hmm, reasonable. I'll add it in dts. Thanks.
+> > 
+> > Note also that not all hardware specifies things in terms of a fixed set
+> > of operating points, sometimes only the minimum voltage specification is
+> > varied with frequency or sometimes you see maximum and minimum stepping
+> > independently.
+> cpus that don't use freq table is out of scope of this driver.
+> > 
+> > Further note that if all hardware really does have as tight a set of
+> > requirements as you suggest then the regulator support in the driver
+> > needs to be non-optional otherwise a board without software regulator
+> > control might drop the frequency without also dropping the voltage.
+> It's ok to only adjuct freq without changes voltage. You can find many
+> arm soc cpufreq drivers don't change voltage.
+> If dts specify voltage but don't have such regulator. I'll assume it
+> always runs on the initial volatage (highest for most cases).
+> > 
+> > > >  - Frequencies that can't be supported due to limitations of the
+> > > >    available supplies shouldn't be exposed to users.
+> > 
+> > > As I said, only proved operation points are allowed.
+> > 
+> > This statement appears to be unrelated to the comment you're replying
+> > to.
+> I meant the exact voltage can always successfull set. Anyway, I'll add
+> regulator_set_voltage return value checking.
+> > 
+> > > > You also need to define how the core supplies get looked up.
+> > 
+> > > It's pure software. platform uses this driver have to define "cpu" consumer.
+> > 
+> > You still need to define this in the binding.
+> You mean regulator DT binding? already in ? I'll check it.
+Mark, cpu node is not a struct device, sys_device instead. I can not find
+regulator via device/dt node. Can I still use the string to get regulator
+after converting to DT?
+
+And regulator binding is not on cpufreq git tree.
 
 Thanks
 Richard
+> > 
+> > > > > +	pr_info("Generic CPU frequency driver\n");
+> > 
+> > > > This seems noisy...
+> > 
+> > > Why? Do you think only errors and warnings can print out?
+> > 
+> > Yes.
+> 
+> Maybe I can remove it. But I'd probably add freq table dump. It's more important.
+> Agree?
+> 
+> I checked pr_fmt. Thanks very much. I'll use below and remove __func_.
+> #define pr_fmt(fmt)             KBUILD_MODNAME ": " fmt
+> 
+> 
+> Thanks
+> Richard
+> > 
+> > _______________________________________________
+> > linux-arm-kernel mailing list
+> > linux-arm-kernel@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> > 
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 > 
 
