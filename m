@@ -1,25 +1,53 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH V3 4/7] cpufreq: add generic cpufreq driver
-Date: Thu, 22 Dec 2011 00:50:51 +0000
-Message-ID: <20111222005048.GA27144@opensource.wolfsonmicro.com>
-References: <1324264903-15395-1-git-send-email-richard.zhao@linaro.org> <20111221012046.GE15863@b20223-02.ap.freescale.net> <20111221092739.GI15863@b20223-02.ap.freescale.net> <201112210943.34310.arnd@arndb.de> <CAPXgP10FCrqdTg++46m4+xxM9tw1ZrKc8wz=JkKjCHJ0hQPtng@mail.gmail.com> <20111221121246.GB15309@opensource.wolfsonmicro.com> <CAPXgP10CGxfEJ4jK2MkKt0-nAWgiawDERyA1N4wHvMCJfE3oDg@mail.gmail.com> <20111221141907.GA1777@richard-laptop>
+From: Richard Zhao <richard.zhao@linaro.org>
+Subject: [PATCH v4 0/7] add a generic cpufreq driver
+Date: Thu, 22 Dec 2011 15:09:06 +0800
+Message-ID: <1324537753-30590-1-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20111221141907.GA1777@richard-laptop>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Zhao <richard.zhao@linaro.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Arnd Bergmann <arnd@arndb.de>, Richard Zhao <richard.zhao@freescale.com>, linux@arm.linux.org.uk, mark.langsdorf@calxeda.com, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, bryanh@codeaurora.org, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, jamie@jamieiles.com, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, davej@redhat.com, linaro-dev@lists.linaro.org, davidb@codeaurora.org, shawn.guo@linaro.org, rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org, Greg KH <greg@kroah.com>
+To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Cc: linux@arm.linux.org.uk, davej@redhat.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, rdunlap@xenotime.net, kernel@pengutronix.de, shawn.guo@linaro.org, catalin.marinas@arm.com, eric.miao@linaro.org, mark.langsdorf@calxeda.com, davidb@codeaurora.org, arnd@arndb.de, bryanh@codeaurora.org, jamie@jamieiles.com, marc.zyngier@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org
 
-On Wed, Dec 21, 2011 at 10:19:11PM +0800, Richard Zhao wrote:
+Thanks Arnd, Mark, Jamie, Rob, for your review.
 
-> Even cpu node is device, I still need to find a way to get it.  I think it's
-> better have another patch to fix the regulator dt binding in cpu node. I'll
-> not include it in this patch series.
+Changes in v4:
+ - add depends on HAVE_CLK && OF && REGULATOR
+ - add set_cpu_freq fail check
+ - regulator_put wehn module exit
+ - add pr_fmt and convert all printk to pr_xxx
+ - use voltage range
+ - comment and doc fix
+ - add cpu_volts value pre-check in module init
+ - add helpfull module parameter max_freq
+ - remove compatible string check on Arnd's comment.
+ - remove generic-cpufreq to clk-reg-cpufreq
 
-I'd expect this to be easy if we can find any device tree data for the
-CPU at all?  It's just another piece of data no different to the clock
-rates or whatever.
+Changes in v3:
+ - move adjusting smp loops_per_jiffy to arm common code,
+   and also adjust global loops_per_jiffy.
+ - remove adjusting loops_per_jiffy in imx and omap cpufreq drivers.
+ - check compatible "generic-cpufreq" when module_init
+ - change printk to pr_xxx
+ - add generic-cpufreq DT binding doc
+
+Changes in v2:
+ - add volatage change support
+ - change '_' in property name to '-'
+ - use initial value to calculate loops_per_jiffy
+ - fix reading cpu_volts property bug 
+ - let cpufreq_frequency_table_cpuinfo routines handle cpu_freq_khz_max/min
+ - don't change freq in arm_cpufreq_exit, because every core share the same freq.
+ - use unsigned long describe frequency as much as possible. Because clk use
+   unsigned long, but cpufreq use unsigned int.
+
+[PATCH v4 1/7] ARM: add cpufreq transiton notifier to adjust
+[PATCH v4 2/7] arm/imx: cpufreq: remove loops_per_jiffy recalculate
+[PATCH v4 3/7] cpufreq: OMAP: remove loops_per_jiffy recalculate for
+[PATCH v4 4/7] cpufreq: add clk-reg cpufreq driver
+[PATCH v4 5/7] dts/imx6q: add cpufreq property
+[PATCH v4 6/7] arm/imx6q: register arm_clk as cpu to clkdev
+[PATCH v4 7/7] arm/imx6q: select ARCH_HAS_CPUFREQ
+
