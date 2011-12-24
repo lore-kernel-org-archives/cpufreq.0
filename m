@@ -1,85 +1,41 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: EXYNOS: Make EXYNOS common cpufreq driver
-Date: Sat, 24 Dec 2011 11:20:08 +0900
-Message-ID: <089201ccc1e2$8edf99d0$ac9ecd70$%kim@samsung.com>
-References: <03b301ccb48a$1fc93bb0$5f5bb310$%kim@samsung.com>
- <20111209153925.GA21045@redhat.com>
+From: Richard Zhao <richard.zhao@linaro.org>
+Subject: Re: [PATCH v4 4/7] cpufreq: add clk-reg cpufreq driver
+Date: Sat, 24 Dec 2011 16:55:42 +0800
+Message-ID: <20111224085539.GA1892@richard-laptop>
+References: <1324537753-30590-1-git-send-email-richard.zhao@linaro.org>
+ <1324537753-30590-5-git-send-email-richard.zhao@linaro.org>
+ <20111223131851.GB13175@sirena.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: 
-Content-language: ko
+Content-Disposition: inline
+In-Reply-To: <20111223131851.GB13175@sirena.org.uk>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: 'Kukjin Kim' <kgene.kim@samsung.com>, 'Dave Jones' <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, jc.lee@samsung.com
+Content-Transfer-Encoding: 7bit
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, davej@redhat.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, rdunlap@xenotime.net, kernel@pengutronix.de, shawn.guo@linaro.org, catalin.marinas@arm.com, eric.miao@linaro.org, mark.langsdorf@calxeda.com, davidb@codeaurora.org, arnd@arndb.de, bryanh@codeaurora.org, jamie@jamieiles.com, marc.zyngier@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org
 
-Kukjin Kim wrote:
+On Fri, Dec 23, 2011 at 01:18:51PM +0000, Mark Brown wrote:
+> On Thu, Dec 22, 2011 at 03:09:10PM +0800, Richard Zhao wrote:
+> > The driver get cpu operation point table from device tree cpu0 node,
+> > and adjusts operating points using clk and regulator APIs.
 > 
-> Dave Jones wrote:
-> >
-> > On Wed, Dec 07, 2011 at 11:44:21AM +0900, Kukjin Kim wrote:
-> >  > From: Jaecheol Lee <jc.lee@samsung.com>
-> >  >
-> >  > To support various EXYNOS series SoCs commonly,
-> >  > added exynos common structure.
-> >  > exynos-cpufreq.c => EXYNOS series common cpufreq driver
-> >  > exynos4210-cpufreq.c => EXYNOS4210 support cpufreq driver
-> >  >
-> >  > Signed-off-by: Jaecheol Lee <jc.lee@samsung.com>
-> >  > Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
-> >
-> > Please rediff this one and resend. It doesn't apply on top of the other
-> > patches..
-> >
-> > Applying: [CPUFREQ] EXYNOS4210: Remove code about bus on cpufreq
-> > Applying: [CPUFREQ] EXYNOS4210: Update frequency table for cpu divider
-> > Applying: [CPUFREQ] EXYNOS4210: cpufreq code is changed for stable
-> working
-> > Applying: [CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver
-> > error: patch failed: drivers/cpufreq/Makefile:42
-> > error: drivers/cpufreq/Makefile: patch does not apply
-> > Patch failed at 0005 [CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver
-> > When you have resolved this problem run "git am --resolved".
-> > If you would prefer to skip this patch, instead run "git am --skip".
-> > To restore the original branch and stop patching run "git am --abort".
-> >
-> > I'll push out what I have applied so far to cpufreq.next
-> >
-> Hi Dave
+> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 > 
-> You can find updated 4th patch at below.
-> I rebased it on your latest cpufreq/next branch.
-> And the 5th patch has no problem to apply.
-> 
-Hi Dave,
-
-I couldn't find 4th and 5th patches in your cpufreq yet.
-If any problem, please let me know.
-
-Merry Christmas!
 Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
-
-> If any problem, please let me know.
+> but one nit:
 > 
-> As a note, since my git send-email has problem, re-submitted them on
-> Sunday.
-> Please kindly ignore that.
+> > +Required properties in /cpus/cpu@0:
+> > +- cpu-freqs : cpu frequency points it support, in unit of Hz.
+> > +- cpu-volts : cpu voltages required by the frequency point at the same index,
+> > +	      in unit of uV.
+> > +- trans-latency :  transition_latency, in unit of ns.
 > 
-> Thanks.
-> 
-> Best regards,
-> Kgene.
-> --
-> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-> SW Solution Development Team, Samsung Electronics Co., Ltd.
+> trans-latency should really say what latency is being measured (the CPU
+> core only or the whole operation).
+dts only descibe hw info. so the transition latency is for hw.
+- trans-latency :  transition latency of HW, in unit of ns.
 
-(snip)
-
+Thanks
+Richard
