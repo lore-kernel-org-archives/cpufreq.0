@@ -1,50 +1,38 @@
-From: Richard Zhao <richard.zhao@linaro.org>
-Subject: Re: [PATCH v4 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Sat, 24 Dec 2011 23:52:29 +0800
-Message-ID: <20111224155227.GC1803@richard-laptop>
-References: <1324537753-30590-1-git-send-email-richard.zhao@linaro.org>
- <1324537753-30590-5-git-send-email-richard.zhao@linaro.org>
- <20111223131851.GB13175@sirena.org.uk>
- <20111224085539.GA1892@richard-laptop>
- <20111224122411.GA13778@sirena.org.uk>
- <20111224132831.GB1803@richard-laptop>
- <20111224134227.GA20908@opensource.wolfsonmicro.com>
+From: "Artem S. Tashkinov" <t.artem@lycos.com>
+Subject: cpufreq userspace governor doesn't work for Intel Core 2 Gen 2 CPUs
+Date: Sun, 25 Dec 2011 18:36:29 +0000 (GMT)
+Message-ID: <388674780.142932.1324838189780.JavaMail.mail@webmail18>
+References: <1982761334.142905.1324837801755.JavaMail.mail@webmail18>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20111224134227.GA20908@opensource.wolfsonmicro.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux@arm.linux.org.uk, arnd@arndb.de, mark.langsdorf@calxeda.com, linaro-dev@lists.linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, patches@linaro.org, bryanh@codeaurora.org, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, rdunlap@xenotime.net, eric.miao@linaro.org, rob.herring@calxeda.com, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, davidb@codeaurora.org, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: davej@redhat.com, cpufreq@vger.kernel.org
 
-On Sat, Dec 24, 2011 at 01:42:29PM +0000, Mark Brown wrote:
-> On Sat, Dec 24, 2011 at 09:28:33PM +0800, Richard Zhao wrote:
-> > On Sat, Dec 24, 2011 at 12:24:11PM +0000, Mark Brown wrote:
-> 
-> >  - trans-latency :  transition latency of cpu freq and related regulator,
-> >    in unit of ns.
-> 
-> > Does it look better?
-> 
-> I think it shouldn't include the regulator part of things.
-> 
-> > If you think regulator thansition latency is board specific, then the board
-> > dts can overrite it.
-> 
-> We should just query this information from the regulator subsystem
-> (there's hooks but currently nothing implements them).  The regulators
-> can define their own bindings if they need to read it from device tree,
-> most of them should be able to do this as a function of knowing about
-> the device.  None of this is specific to cpufreq so cpufreq shouldn't
-> have to define its own support for this.
-I'd like to query the latency by call clk and regulator APIs. but as you said
-both of them have not implemented it yet. I think, for now, we can use the
-property to get the total latency. Once I can get it at runtime, I'll remove
-it. So the definition of trans-latency is just the same as cpufreq transition_latency,
-people get less confused. What do you think?
+Hello,
 
-Thanks
-Richard
+On my Intel Core i5 CPU with acpi-cpufreq module loaded I do this
+
+# echo 2000000 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_setspeed
+
+then
+
+# cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+2000000
+2000000
+2000000
+2000000
+
+so theoretically it should work.
+
+However i7z (http://code.google.com/p/i7z/) shows that CPU frequency is freely floating
+and turbo boost gets enabled as soon as I have any discernible load, in other words 
+userspace CPU frequency driver doesn't work at all and it doesn't really enforce the specified
+CPU frequency.
+
+Best wishes,
+
+Artem
