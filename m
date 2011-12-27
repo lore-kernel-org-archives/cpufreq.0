@@ -1,67 +1,96 @@
-From: Richard Zhao <richard.zhao@freescale.com>
-Subject: Re: [PATCH v4 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Tue, 27 Dec 2011 09:51:10 +0800
-Message-ID: <20111227015109.GJ15863@b20223-02.ap.freescale.net>
-References: <1324537753-30590-5-git-send-email-richard.zhao@linaro.org>
- <20111223131851.GB13175@sirena.org.uk>
- <20111224085539.GA1892@richard-laptop>
- <20111224122411.GA13778@sirena.org.uk>
- <20111224132831.GB1803@richard-laptop>
- <20111224134227.GA20908@opensource.wolfsonmicro.com>
- <20111224155227.GC1803@richard-laptop>
- <20111226111030.GC8722@opensource.wolfsonmicro.com>
- <20111226134449.GA4259@richard-laptop>
- <20111226142234.GH8722@opensource.wolfsonmicro.com>
+From: Richard Zhao <richard.zhao@linaro.org>
+Subject: [PATCH V5 1/7] ARM: add cpufreq transiton notifier to adjust loops_per_jiffy for smp
+Date: Tue, 27 Dec 2011 16:24:16 +0800
+Message-ID: <1324974262-30963-2-git-send-email-richard.zhao@linaro.org>
+References: <1324974262-30963-1-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20111226142234.GH8722@opensource.wolfsonmicro.com>
+In-Reply-To: <1324974262-30963-1-git-send-email-richard.zhao@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Richard Zhao <richard.zhao@linaro.org>, davej@redhat.com, linaro-dev@lists.linaro.org, arnd@arndb.de, mark.langsdorf@calxeda.com, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, rdunlap@xenotime.net, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, bryanh@codeaurora.org, eric.miao@linaro.org, kernel@pengutronix.de, jamie@jamieiles.com, linux@arm.linux.org.uk, davidb@codeaurora.org, shawn.guo@linaro.org, rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Cc: linux@arm.linux.org.uk, davej@redhat.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, rdunlap@xenotime.net, kernel@pengutronix.de, shawn.guo@linaro.org, catalin.marinas@arm.com, eric.miao@linaro.org, mark.langsdorf@calxeda.com, davidb@codeaurora.org, arnd@arndb.de, bryanh@codeaurora.org, jamie@jamieiles.com, marc.zyngier@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org, Richard Zhao <richard.zhao@linaro.org>
 
-On Mon, Dec 26, 2011 at 02:22:34PM +0000, Mark Brown wrote:
-> On Mon, Dec 26, 2011 at 09:44:52PM +0800, Richard Zhao wrote:
-> > On Mon, Dec 26, 2011 at 11:10:30AM +0000, Mark Brown wrote:
-> 
-> Fix your mailer to word wrap properly please.
-If you mean last mail I sent, I didn't see anything wrong. I use
-mutt.
-> 
-> > > The *call* is there in the regulator subsystem, it's just that none of
-> > > the drivers back it up with an actual implementation yet.  Which turns
-> > > out to be a good thing as cpufreq can't currently understand variable
-> > > latencies and the governors don't deal well with non-trivial latencies
-> > > anyway.
-> 
-> > but clk API don't have such calls. and many SoCs only adjust clk
-> > frequencies, using one single voltage.
-> 
-> I've not suggested doing this in the clock API, only for the regulator.
-> For the clocks it's less clear that it's useful as you don't have the
-> bulk operations and it's much rarer to need them.
-> 
-> > > The problem with device tree is that once you've defined a binding
-> > > you're stuck with it, it's very hard to change - witness all the magic
-> > > number based stuff with the interrupt bindings for example
-> 
-> > So what's your suggestion? We can not set transition_latency to set
-> > random number.
-> 
-> As I've repeatedly said I think you should define it to be the latency
-> for the SoC only, not for the regulators.
-Sometimes, regulators are in SoC too. To avoid confusion, I'll use below:
-clk-trans-latency = <61036>;
+If CONFIG_SMP, cpufreq skips loops_per_jiffy update, because different
+arch has different per-cpu loops_per_jiffy definition.
 
-Thanks
-Richard
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+Signed-off-by: Richard Zhao <richard.zhao@linaro.org>
+---
+ arch/arm/kernel/smp.c |   54 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 54 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index ef5640b..ac9cadc 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -25,6 +25,7 @@
+ #include <linux/percpu.h>
+ #include <linux/clockchips.h>
+ #include <linux/completion.h>
++#include <linux/cpufreq.h>
+ 
+ #include <linux/atomic.h>
+ #include <asm/cacheflush.h>
+@@ -631,3 +632,56 @@ int setup_profiling_timer(unsigned int multiplier)
+ {
+ 	return -EINVAL;
+ }
++
++#ifdef CONFIG_CPU_FREQ
++
++static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
++static DEFINE_PER_CPU(unsigned long, l_p_j_ref_freq);
++static unsigned long global_l_p_j_ref;
++static unsigned long global_l_p_j_ref_freq;
++
++static int cpufreq_callback(struct notifier_block *nb,
++					unsigned long val, void *data)
++{
++	struct cpufreq_freqs *freq = data;
++	int cpu = freq->cpu;
++
++	if (freq->flags & CPUFREQ_CONST_LOOPS)
++		return NOTIFY_OK;
++
++	if (!per_cpu(l_p_j_ref, cpu)) {
++		per_cpu(l_p_j_ref, cpu) =
++			per_cpu(cpu_data, cpu).loops_per_jiffy;
++		per_cpu(l_p_j_ref_freq, cpu) = freq->old;
++		if (!global_l_p_j_ref) {
++			global_l_p_j_ref = loops_per_jiffy;
++			global_l_p_j_ref_freq = freq->old;
++		}
++	}
++
++	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
++	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
++	    (val == CPUFREQ_RESUMECHANGE || val == CPUFREQ_SUSPENDCHANGE)) {
++		loops_per_jiffy = cpufreq_scale(global_l_p_j_ref,
++						global_l_p_j_ref_freq,
++						freq->new);
++		per_cpu(cpu_data, cpu).loops_per_jiffy =
++			cpufreq_scale(per_cpu(l_p_j_ref, cpu),
++					per_cpu(l_p_j_ref_freq, cpu),
++					freq->new);
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block cpufreq_notifier = {
++	.notifier_call  = cpufreq_callback,
++};
++
++static int __init register_cpufreq_notifier(void)
++{
++	return cpufreq_register_notifier(&cpufreq_notifier,
++						CPUFREQ_TRANSITION_NOTIFIER);
++}
++core_initcall(register_cpufreq_notifier);
++
++#endif
+-- 
+1.7.5.4
+
 
