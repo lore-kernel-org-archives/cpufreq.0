@@ -1,53 +1,115 @@
-From: Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-Subject: Re: [PATCH v4 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Tue, 27 Dec 2011 10:53:46 +0000
-Message-ID: <20111227105345.GF2870@opensource.wolfsonmicro.com>
-References: <20111223131851.GB13175@sirena.org.uk>
-	<20111224085539.GA1892@richard-laptop>
-	<20111224122411.GA13778@sirena.org.uk>
-	<20111224132831.GB1803@richard-laptop>
-	<20111224134227.GA20908@opensource.wolfsonmicro.com>
-	<20111224155227.GC1803@richard-laptop>
-	<20111226111030.GC8722@opensource.wolfsonmicro.com>
-	<20111226134449.GA4259@richard-laptop>
-	<20111226142234.GH8722@opensource.wolfsonmicro.com>
-	<20111227015109.GJ15863@b20223-02.ap.freescale.net>
+From: Shawn Guo <shawn.guo@freescale.com>
+Subject: Re: [PATCH V5 4/7] cpufreq: add clk-reg cpufreq driver
+Date: Tue, 27 Dec 2011 23:05:41 +0800
+Message-ID: <20111227150539.GA15132@S2101-09.ap.freescale.net>
+References: <1324974262-30963-1-git-send-email-richard.zhao@linaro.org>
+ <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20111227015109.GJ15863-iWYTGMXpHj9ITqJhDdzsOjpauB2SiJktrE5yTffgRl4@public.gmane.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, marc.zyngier-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rdunlap-/UHa2rfvQTnk1uMJSBkQmQ@public.gmane.org, eric.miao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, jamie-wmLquQDDieKakBO8gow8eQ@public.gmane.org, davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: Richard Zhao <richard.zhao@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, rob.herring@calxeda.com, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, linaro-dev@lists.linaro.org
 
-On Tue, Dec 27, 2011 at 09:51:10AM +0800, Richard Zhao wrote:
-> On Mon, Dec 26, 2011 at 02:22:34PM +0000, Mark Brown wrote:
+Hi Richard,
 
-> > Fix your mailer to word wrap properly please.
+On Tue, Dec 27, 2011 at 04:24:19PM +0800, Richard Zhao wrote:
+> The driver get cpu operation point table from device tree cpu0 node,
+> and adjusts operating points using clk and regulator APIs.
+> 
+> It support single core and multi-core ARM SoCs. But currently it assume
+> all cores share the same frequency and voltage.
+> 
+> Signed-off-by: Richard Zhao <richard.zhao@linaro.org>
+> Reviewed-by: Jamie Iles <jamie@jamieiles.com>
+> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  .../devicetree/bindings/cpufreq/clk-reg-cpufreq    |   21 ++
+>  drivers/cpufreq/Kconfig                            |   10 +
+>  drivers/cpufreq/Makefile                           |    2 +
+>  drivers/cpufreq/clk-reg-cpufreq.c                  |  302 ++++++++++++++++++++
+>  4 files changed, 335 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/clk-reg-cpufreq
+>  create mode 100644 drivers/cpufreq/clk-reg-cpufreq.c
+> 
 
-> If you mean last mail I sent, I didn't see anything wrong. I use
-> mutt.
+[...]
 
-It's wrapping at a bit more than 80 columns a lot of the time.
+> +static struct cpufreq_driver clk_reg_cpufreq_driver = {
+> +	.flags = CPUFREQ_STICKY,
+> +	.verify = clk_reg_verify_speed,
+> +	.target = clk_reg_set_target,
+> +	.get = clk_reg_get_speed,
+> +	.init = clk_reg_cpufreq_init,
+> +	.exit = clk_reg_cpufreq_exit,
+> +	.name = "clk-reg",
+> +};
+> +
+> +static u32 max_freq = UINT_MAX / 1000; /* kHz */
+> +module_param(max_freq, uint, 0);
+> +MODULE_PARM_DESC(max_freq, "max cpu frequency in unit of kHz");
+> +
 
-> > > So what's your suggestion? We can not set transition_latency to set
-> > > random number.
+Have you tried to pass this param from kernel cmdline?  What's the
+syntax if we want to pass a 800 MHz max_freq?
 
-> > As I've repeatedly said I think you should define it to be the latency
-> > for the SoC only, not for the regulators.
+And I played this driver on imx6q with pm-qa [1] cpufreq test suit from
+Linaro PMWG.
 
-> Sometimes, regulators are in SoC too. To avoid confusion, I'll use below:
-> clk-trans-latency = <61036>;
+### cpufreq_01:
+### test the cpufreq framework is available for frequency
+### https://wiki.linaro.org/WorkingGroups/PowerManagement/Doc/QA/Scripts#cpufreq_01
+###
+cpufreq_01.0/cpu0: checking 'scaling_available_frequencies' exists...       fail
+cpufreq_01.0/cpu1: checking 'scaling_available_frequencies' exists...       fail
+cpufreq_01.0/cpu2: checking 'scaling_available_frequencies' exists...       fail
+cpufreq_01.0/cpu3: checking 'scaling_available_frequencies' exists...       fail
 
-Makes sense.
+### cpufreq_05:
+### test 'ondemand' and 'conservative' trigger correctly the configuration directory
+### https://wiki.linaro.org/WorkingGroups/PowerManagement/Doc/QA/Scripts#cpufreq_05
+###
+cpufreq_05.0: checking 'ondemand' directory exists...                       pass
+cpufreq_05.1: checking 'conservative' directory exists...                   pass
+cpufreq_05.2: checking 'ondemand' directory is not there...                 pass
+cpufreq_05.3: checking 'conservative' directory is not there...             pass
+cpufreq_05.4: checking 'ondemand' directory exists...                       fail
+cpufreq_05.5: checking 'conservative' directory exists...                   pass
+
+The cpufreq_01 can be easily fixed with the following change.
+
+8<-----
+@@ -146,6 +150,11 @@ static int clk_reg_cpufreq_exit(struct cpufreq_policy *policy)
+        return 0;
+ }
+
++static struct freq_attr *clk_reg_cpufreq_attr[] = {
++       &cpufreq_freq_attr_scaling_available_freqs,
++       NULL,
++};
++
+ static struct cpufreq_driver clk_reg_cpufreq_driver = {
+        .flags = CPUFREQ_STICKY,
+        .verify = clk_reg_verify_speed,
+@@ -153,10 +162,15 @@ static struct cpufreq_driver clk_reg_cpufreq_driver = {
+        .get = clk_reg_get_speed,
+        .init = clk_reg_cpufreq_init,
+        .exit = clk_reg_cpufreq_exit,
++       .attr = clk_reg_cpufreq_attr,
+        .name = "clk-reg",
+ };
+----->8
+
+And I have not looked into the second one deeply, but maybe you
+want to :)
+
+-- 
+Regards,
+Shawn
+
+[1] git://git.linaro.org/people/dlezcano/pm-qa.git
+
