@@ -1,115 +1,274 @@
-From: Shawn Guo <shawn.guo@freescale.com>
-Subject: Re: [PATCH V5 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Tue, 27 Dec 2011 23:05:41 +0800
-Message-ID: <20111227150539.GA15132@S2101-09.ap.freescale.net>
-References: <1324974262-30963-1-git-send-email-richard.zhao@linaro.org>
- <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH]resubmit: add a generic clk based cpufreq driver
+Date: Tue, 27 Dec 2011 14:59:41 -0600
+Message-ID: <4EFA31BD.8020007@calxeda.com>
+References: <4EE8DD58.8030804@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
+In-Reply-To: <4EE8DD58.8030804@calxeda.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: Richard Zhao <richard.zhao@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, rob.herring@calxeda.com, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, linaro-dev@lists.linaro.org
+Content-Type: text/plain; charset="us-ascii"
+To: "davej@redhat.com" <davej@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-Hi Richard,
+From: Jamie Iles <jamie@jamieiles.com>
 
-On Tue, Dec 27, 2011 at 04:24:19PM +0800, Richard Zhao wrote:
-> The driver get cpu operation point table from device tree cpu0 node,
-> and adjusts operating points using clk and regulator APIs.
-> 
-> It support single core and multi-core ARM SoCs. But currently it assume
-> all cores share the same frequency and voltage.
-> 
-> Signed-off-by: Richard Zhao <richard.zhao@linaro.org>
-> Reviewed-by: Jamie Iles <jamie@jamieiles.com>
-> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  .../devicetree/bindings/cpufreq/clk-reg-cpufreq    |   21 ++
->  drivers/cpufreq/Kconfig                            |   10 +
->  drivers/cpufreq/Makefile                           |    2 +
->  drivers/cpufreq/clk-reg-cpufreq.c                  |  302 ++++++++++++++++++++
->  4 files changed, 335 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/clk-reg-cpufreq
->  create mode 100644 drivers/cpufreq/clk-reg-cpufreq.c
-> 
+This patch adds support for a generic clk based cpufreq driver using the
+device tree.  Each cpu node must have a cpu-clock property that defines
+the clock to use to set the CPU frequency and a clock-frequency property
+that defines the maximum speed.
 
-[...]
+Cc: Dave Jones <davej@redhat.com>
+Cc: Signed-off-by: Jamie Iles <jamie@jamieiles.com>
+Tested-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+---
+Resubmitting with Jamie's permission. We at Calxeda would like to use
+this framework for our Highbank SoC and would like to get it upstream.
 
-> +static struct cpufreq_driver clk_reg_cpufreq_driver = {
-> +	.flags = CPUFREQ_STICKY,
-> +	.verify = clk_reg_verify_speed,
-> +	.target = clk_reg_set_target,
-> +	.get = clk_reg_get_speed,
-> +	.init = clk_reg_cpufreq_init,
-> +	.exit = clk_reg_cpufreq_exit,
-> +	.name = "clk-reg",
-> +};
-> +
-> +static u32 max_freq = UINT_MAX / 1000; /* kHz */
-> +module_param(max_freq, uint, 0);
-> +MODULE_PARM_DESC(max_freq, "max cpu frequency in unit of kHz");
-> +
+There are a few potential issues to be resolved here so any feedback
+would be much appreciated.  In particular, Jamie is not sure how best
+to document the bindings as there isn't a compatible property.
+Related to this is the initialisation; at the moment the platform is
+required to call generic_clk_cpufreq_init() as Jamie couldn't think
+of a sensible way to do this automatically without lots of machine
+compatibility tests.
 
-Have you tried to pass this param from kernel cmdline?  What's the
-syntax if we want to pass a 800 MHz max_freq?
+The final one is the transition latency and how to get that from the
+DT.  The most logical place is in the clock node and parse the phandle
+of the clock from the cpu node then read something like a transition-
+latency property, but Jamie is not sure if that's best.
 
-And I played this driver on imx6q with pm-qa [1] cpufreq test suit from
-Linaro PMWG.
+ drivers/cpufreq/Kconfig       |   12 +++
+ drivers/cpufreq/Makefile      |    4 +
+ drivers/cpufreq/clk-cpufreq.c |  157
++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h       |   12 +++
+ 4 files changed, 185 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/cpufreq/clk-cpufreq.c
 
-### cpufreq_01:
-### test the cpufreq framework is available for frequency
-### https://wiki.linaro.org/WorkingGroups/PowerManagement/Doc/QA/Scripts#cpufreq_01
-###
-cpufreq_01.0/cpu0: checking 'scaling_available_frequencies' exists...       fail
-cpufreq_01.0/cpu1: checking 'scaling_available_frequencies' exists...       fail
-cpufreq_01.0/cpu2: checking 'scaling_available_frequencies' exists...       fail
-cpufreq_01.0/cpu3: checking 'scaling_available_frequencies' exists...       fail
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index e24a2a1..70b4d6f 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -194,5 +194,17 @@ depends on PPC32 || PPC64
+ source "drivers/cpufreq/Kconfig.powerpc"
+ endmenu
 
-### cpufreq_05:
-### test 'ondemand' and 'conservative' trigger correctly the configuration directory
-### https://wiki.linaro.org/WorkingGroups/PowerManagement/Doc/QA/Scripts#cpufreq_05
-###
-cpufreq_05.0: checking 'ondemand' directory exists...                       pass
-cpufreq_05.1: checking 'conservative' directory exists...                   pass
-cpufreq_05.2: checking 'ondemand' directory is not there...                 pass
-cpufreq_05.3: checking 'conservative' directory is not there...             pass
-cpufreq_05.4: checking 'ondemand' directory exists...                       fail
-cpufreq_05.5: checking 'conservative' directory exists...                   pass
++menu "Generic CPU frequency scaling drivers"
++
++config GENERIC_CLK_CPUFREQ
++	bool "Generic CLK based CPU frequency scaling driver"
++	depends on HAVE_CLK && OF
++	help
++	  This adds support for a generic CPU frequency scaling driver using the
++	  clk framework.  The driver uses the device tree to obtain the clks for
++	  the CPUs.
++
++endmenu
++
+ endif
+ endmenu
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index a48bc02..4c2914d 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -47,3 +47,7 @@ obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+=
+exynos4210-cpufreq.o
 
-The cpufreq_01 can be easily fixed with the following change.
-
-8<-----
-@@ -146,6 +150,11 @@ static int clk_reg_cpufreq_exit(struct cpufreq_policy *policy)
-        return 0;
- }
-
-+static struct freq_attr *clk_reg_cpufreq_attr[] = {
-+       &cpufreq_freq_attr_scaling_available_freqs,
-+       NULL,
+##################################################################################
+ # PowerPC platform drivers
+ obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
++
++##################################################################################
++# Generic cpufreq drivers
++obj-$(CONFIG_GENERIC_CLK_CPUFREQ)	+= clk-cpufreq.o
+diff --git a/drivers/cpufreq/clk-cpufreq.c b/drivers/cpufreq/clk-cpufreq.c
+new file mode 100644
+index 0000000..0c1fc2a
+--- /dev/null
++++ b/drivers/cpufreq/clk-cpufreq.c
+@@ -0,0 +1,157 @@
++/*
++ * Copyright (c) 2011 picoChip Designs Ltd., Jamie Iles
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This driver uses the clk API to control the frequency of the CPU
+cores.  Each
++ * CPU in the device tree must have a cpu-clock property that defines
+the clk
++ * that controls the CPU frequency and a clock-frequency property (u32)
+that
++ * defines the maximum frequency to scale the core to.
++ */
++#include <linux/clk.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/cpufreq.h>
++#include <linux/of.h>
++#include <linux/of_clk.h>
++#include <linux/percpu.h>
++#include <linux/smp.h>
++
++static DEFINE_PER_CPU(struct clk *, cpu_clk);
++
++static struct device_node *get_this_cpu_node(void)
++{
++	unsigned int cpu_id = smp_processor_id();
++	struct device_node *cpus, *np;
++
++	cpus = of_find_node_by_path("/cpus");
++	if (!cpus)
++		return NULL;
++
++	for_each_child_of_node(cpus, np) {
++		u32 reg;
++
++		if (of_property_read_u32(np, "reg", &reg)) {
++			pr_err("cpu node %u has no reg property\n", cpu_id);
++			continue;
++		}
++
++		if (reg == cpu_id) {
++			of_node_put(cpus);
++			return np;
++		}
++	}
++
++	of_node_put(np);
++	of_node_put(cpus);
++
++	return NULL;
++}
++
++static int clk_cpufreq_init(struct cpufreq_policy *policy)
++{
++	struct device_node *np = get_this_cpu_node();
++	struct clk *clk;
++	u32 max_freq;
++	int err;
++
++	if (of_property_read_u32(np, "clock-frequency", &max_freq)) {
++		pr_err("no clock-frequency property for cpu %u\n",
++		       smp_processor_id());
++		err = -EINVAL;
++		goto out;
++	}
++
++	clk = of_clk_get(np, "cpu");
++	if (IS_ERR(clk)) {
++		err = PTR_ERR(clk);
++		goto out;
++	}
++
++	policy->cpuinfo.max_freq = max_freq / 1000;
++	policy->cpuinfo.min_freq = clk_round_rate(clk, 0) / 1000;
++	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->min = policy->cpuinfo.min_freq;
++	policy->max = policy->cpuinfo.max_freq;
++	policy->cur = clk_get_rate(clk) / 1000;
++
++	__get_cpu_var(cpu_clk) = clk;
++
++	return 0;
++
++out:
++	of_node_put(np);
++	return err;
++}
++
++static int clk_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	struct clk *clk = per_cpu(cpu_clk, policy->cpu);
++
++	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
++				     policy->cpuinfo.max_freq);
++	policy->min = clk_round_rate(clk, policy->min * 1000) / 1000;
++	policy->max = clk_round_rate(clk, policy->max * 1000) / 1000;
++	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
++				     policy->cpuinfo.max_freq);
++
++	return 0;
++}
++
++static int clk_cpufreq_target(struct cpufreq_policy *policy,
++			      unsigned int target, unsigned int relation)
++{
++	struct clk *clk = per_cpu(cpu_clk, policy->cpu);
++	struct cpufreq_freqs freqs;
++	int ret;
++
++	freqs.old = clk_get_rate(clk) / 1000;
++	freqs.new = target;
++	freqs.cpu = policy->cpu;
++
++	if (freqs.new == freqs.old)
++		return 0;
++
++	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++
++	ret = clk_set_rate(clk, target * 1000);
++	if (ret) {
++		pr_err("unable to set cpufreq rate to %u\n", target);
++		freqs.new = freqs.old;
++	} else {
++		freqs.new = clk_get_rate(clk) / 1000;
++	}
++
++	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++
++	return ret;
++}
++
++static unsigned int clk_cpufreq_get(unsigned int cpu)
++{
++	struct clk *clk = per_cpu(cpu_clk, cpu);
++
++	return clk_get_rate(clk) / 1000;
++}
++
++static struct cpufreq_driver clk_cpufreq_driver = {
++	.owner		= THIS_MODULE,
++	.flags		= CPUFREQ_STICKY,
++	.name		= "generic-clk",
++	.init		= clk_cpufreq_init,
++	.verify		= clk_cpufreq_verify,
++	.target		= clk_cpufreq_target,
++	.get		= clk_cpufreq_get,
 +};
 +
- static struct cpufreq_driver clk_reg_cpufreq_driver = {
-        .flags = CPUFREQ_STICKY,
-        .verify = clk_reg_verify_speed,
-@@ -153,10 +162,15 @@ static struct cpufreq_driver clk_reg_cpufreq_driver = {
-        .get = clk_reg_get_speed,
-        .init = clk_reg_cpufreq_init,
-        .exit = clk_reg_cpufreq_exit,
-+       .attr = clk_reg_cpufreq_attr,
-        .name = "clk-reg",
- };
------>8
++int generic_clk_cpufreq_init(void)
++{
++	return cpufreq_register_driver(&clk_cpufreq_driver);
++}
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Generic clk based cpufreq driver");
++MODULE_AUTHOR("Jamie Iles");
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 6216115..dbcca1a 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -404,5 +404,17 @@ void cpufreq_frequency_table_get_attr(struct
+cpufreq_frequency_table *table,
 
-And I have not looked into the second one deeply, but maybe you
-want to :)
+ void cpufreq_frequency_table_put_attr(unsigned int cpu);
 
--- 
-Regards,
-Shawn
++/*********************************************************************
++ *                     COMMON CPUFREQ DRIVERS                        *
++ *********************************************************************/
++
++#ifdef CONFIG_GENERIC_CLK_CPUFREQ
++extern int generic_clk_cpufreq_init(void);
++#else /* CONFIG_GENERIC_CLK_CPUFREQ */
++static inline int generic_clk_cpufreq_init(void)
++{
++	return -ENOSYS;
++}
++#endif /* CONFIG_GENERIC_CLK_CPUFREQ */
 
-[1] git://git.linaro.org/people/dlezcano/pm-qa.git
-
+ #endif /* _LINUX_CPUFREQ_H */
