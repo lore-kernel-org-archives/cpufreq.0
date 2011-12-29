@@ -1,123 +1,32 @@
-From: Richard Zhao <richard.zhao@freescale.com>
+From: Shawn Guo <shawn.guo@freescale.com>
 Subject: Re: [PATCH V5 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Thu, 29 Dec 2011 14:21:03 +0800
-Message-ID: <20111229062102.GA2414@b20223-02.ap.freescale.net>
+Date: Thu, 29 Dec 2011 15:23:17 +0800
+Message-ID: <20111229072316.GB11474@S2100-06.ap.freescale.net>
 References: <1324974262-30963-1-git-send-email-richard.zhao@linaro.org>
  <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
+ <20111229062102.GA2414@b20223-02.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
+In-Reply-To: <20111229062102.GA2414@b20223-02.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Richard Zhao <richard.zhao@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, arnd@arndb.de, mark.langsdorf@calxeda.com, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, bryanh@codeaurora.org, rob.herring@calxeda.com, grant.likely@secretlab.ca, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, davidb@codeaurora.org, shawn.guo@linaro.org, linaro-dev@lists.linaro.org
+To: Richard Zhao <richard.zhao@freescale.com>, davej@redhat.com
+Cc: Richard Zhao <richard.zhao@linaro.org>, linaro-dev@lists.linaro.org, linux@arm.linux.org.uk, mark.langsdorf@calxeda.com, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, rdunlap@xenotime.net, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, bryanh@codeaurora.org, eric.miao@linaro.org, rob.herring@calxeda.com, kernel@pengutronix.de, jamie@jamieiles.com, davidb@codeaurora.org, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
 
-There's still a bug that, after rmmod module, cpu0 still has cpufreq
-sysfs entry.
+Hi Dave,
 
-cpufreq_unregister_driver can not clean up everything.
+On Thu, Dec 29, 2011 at 02:21:03PM +0800, Richard Zhao wrote:
+> There's still a bug that, after rmmod module, cpu0 still has cpufreq
+> sysfs entry.
+> 
+> cpufreq_unregister_driver can not clean up everything.
+> 
+Is this an known issue to cpufreq core?
 
-unfortunately, I don't have much time to debug cpufreq core.
-
-Log:
-root@ubuntu:~# insmod /clk-reg-cpufreq.ko 
-clk_reg_cpufreq: regulator cpu get failed.
-trying to register driver clk-reg
-adding CPU 0
-CPU 1 already managed, adding link
-CPU 2 already managed, adding link
-CPU 3 already managed, adding link
-setting new policy for CPU 0: 198000 - 996000 kHz
-new min and max freqs are 198000 - 996000 kHz
-governor switch
-__cpufreq_governor for CPU 0, event 1
-governor: change or update limits
-__cpufreq_governor for CPU 0, event 3
-target for CPU 0: 792000 kHz, relation 0
-initialization complete
-adding CPU 1
-adding CPU 2
-adding CPU 3
-driver clk-reg up and running
-root@ubuntu:~# 
-root@ubuntu:~# 
-root@ubuntu:~# 
-root@ubuntu:~# rmmod clk-reg-cpufreq
-unregistering driver clk-reg
-unregistering CPU 0
-removing link for cpu 1
-removing link for cpu 2
-removing link for cpu 3
-__cpufreq_governor for CPU 0, event 2
-last reference is dropped
-waiting for dropping of refcount
-wait complete
-adding CPU 1
-Restoring governor userspace for cpu 1
-CPU 0 already managed, adding link
-CPU 2 already managed, adding link
-CPU 3 already managed, adding link
-setting new policy for CPU 1: 198000 - 996000 kHz
-new min and max freqs are 198000 - 996000 kHz
-governor switch
-__cpufreq_governor for CPU 1, event 1
-governor: change or update limits
-__cpufreq_governor for CPU 1, event 3
-target for CPU 1: 792000 kHz, relation 0
-initialization complete
-unregistering CPU 0
-removing link
-unregistering CPU 1
-removing link for cpu 2
-removing link for cpu 3
-__cpufreq_governor for CPU 1, event 2
-last reference is dropped
-waiting for dropping of refcount
-wait complete
-adding CPU 2
-Restoring governor userspace for cpu 2
-CPU 0 already managed, adding link
-CPU 1 already managed, adding link
-CPU 3 already managed, adding link
-setting new policy for CPU 2: 198000 - 996000 kHz
-new min and max freqs are 198000 - 996000 kHz
-governor switch
-__cpufreq_governor for CPU 2, event 1
-governor: change or update limits
-__cpufreq_governor for CPU 2, event 3
-target for CPU 2: 792000 kHz, relation 0
-initialization complete
-unregistering CPU 1
-removing link
-unregistering CPU 2
-removing link for cpu 0
-removing link for cpu 3
-__cpufreq_governor for CPU 2, event 2
-last reference is dropped
-waiting for dropping of refcount
-wait complete
-adding CPU 0
-Restoring governor userspace for cpu 0
-CPU 1 already managed, adding link
-CPU 2 already managed, adding link
-CPU 3 already managed, adding link
-setting new policy for CPU 0: 198000 - 996000 kHz
-new min and max freqs are 198000 - 996000 kHz
-governor switch
-__cpufreq_governor for CPU 0, event 1
-governor: change or update limits
-__cpufreq_governor for CPU 0, event 3
-target for CPU 0: 792000 kHz, relation 0
-initialization complete
-unregistering CPU 2
-removing link
-unregistering CPU 3
-removing link
-
-
-Thanks
-Richard
+-- 
+Regards,
+Shawn
 
