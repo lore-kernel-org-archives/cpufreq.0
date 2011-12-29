@@ -1,45 +1,40 @@
-From: Shawn Guo <shawn.guo@freescale.com>
-Subject: Re: [PATCH V5 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Wed, 28 Dec 2011 21:10:07 +0800
-Message-ID: <20111228131006.GB10735@S2100-06.ap.freescale.net>
-References: <1324974262-30963-5-git-send-email-richard.zhao@linaro.org>
- <20111228031409.GL15863@b20223-02.ap.freescale.net>
- <20111228033128.GM15863@b20223-02.ap.freescale.net>
- <20111228114237.GF24405@opensource.wolfsonmicro.com>
- <20111228120517.GA1691@richard-laptop>
- <20111228121403.GI24405@opensource.wolfsonmicro.com>
- <20111228124054.GB1691@richard-laptop>
- <20111228124739.GK24405@opensource.wolfsonmicro.com>
- <20111228130619.GA10735@S2100-06.ap.freescale.net>
- <20111228125421.GL24405@opensource.wolfsonmicro.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH]resubmit: add a generic clk based cpufreq
+ driver
+Date: Thu, 29 Dec 2011 01:51:10 +0000
+Message-ID: <20111229015110.GA4839@sirena.org.uk>
+References: <4EE8DD58.8030804@calxeda.com>
+ <4EFA31BD.8020007@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20111228125421.GL24405@opensource.wolfsonmicro.com>
+In-Reply-To: <4EFA31BD.8020007@calxeda.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Richard Zhao <richard.zhao@linaro.org>, linaro-dev@lists.linaro.org, mark.langsdorf@calxeda.com, patches@linaro.org, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, bryanh@codeaurora.org, cpufreq@vger.kernel.org, rdunlap@xenotime.net, Richard Zhao <richard.zhao@freescale.com>, eric.miao@linaro.org, kernel@pengutronix.de, davej@redhat.com, linux@arm.linux.org.uk, davidb@codeaurora.org, rob.herring@calxeda.com, linux-arm-kernel@lists.infradead.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "davej@redhat.com" <davej@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Wed, Dec 28, 2011 at 12:54:21PM +0000, Mark Brown wrote:
-> On Wed, Dec 28, 2011 at 09:06:20PM +0800, Shawn Guo wrote:
-> > On Wed, Dec 28, 2011 at 12:47:40PM +0000, Mark Brown wrote:
-> 
-> > > > One word. You mean I have to always depends on REGULATOR config, right?
-> 
-> > > Yes.
-> 
-> > I do not care too much.  But it puts the driver on an interesting
-> > position, that is it can work without a regulator driver backing the
-> > cpu voltage but it has to enable CONFIG_REGULATOR.
-> 
-> Well, the other option is ifdefs in your driver.
-> 
-I'm much more comfortable with this oddness than ifdefs :)
+On Tue, Dec 27, 2011 at 02:59:41PM -0600, Mark Langsdorf wrote:
 
--- 
-Regards,
-Shawn
+> Resubmitting with Jamie's permission. We at Calxeda would like to use
+> this framework for our Highbank SoC and would like to get it upstream.
+> 
+> There are a few potential issues to be resolved here so any feedback
+> would be much appreciated.  In particular, Jamie is not sure how best
+> to document the bindings as there isn't a compatible property.
+> Related to this is the initialisation; at the moment the platform is
+> required to call generic_clk_cpufreq_init() as Jamie couldn't think
+> of a sensible way to do this automatically without lots of machine
+> compatibility tests.
+> 
+> The final one is the transition latency and how to get that from the
+> DT.  The most logical place is in the clock node and parse the phandle
+> of the clock from the cpu node then read something like a transition-
+> latency property, but Jamie is not sure if that's best.
 
+Please take a look at the patch series Richard Zhao has been working on
+enthusiastically, I'm not sure what the relationship is between the two
+(if Richard started from the same place or if he wrote from scratch) but
+it does exactly the same thing.
