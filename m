@@ -1,20 +1,32 @@
-From: Richard Zhao <richard.zhao@freescale.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
 Subject: Re: [RFC] cpufreq: Add S3C2416/S3C2450 cpufreq driver
-Date: Fri, 30 Dec 2011 16:23:21 +0800
-Message-ID: <20111230082319.GC2414@b20223-02.ap.freescale.net>
-References: <201112292058.07448.heiko@sntech.de>
+Date: Fri, 30 Dec 2011 13:00:42 +0100
+Message-ID: <201112301300.43730.heiko@sntech.de>
+References: <201112292058.07448.heiko@sntech.de> <20111230082319.GC2414@b20223-02.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <201112292058.07448.heiko@sntech.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20111230082319.GC2414@b20223-02.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Richard Zhao <richard.zhao@freescale.com>
 Cc: davej@redhat.com, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
 
-would it be possible to use clk-reg-cpufreq driver I sent out?
+Hi Richard,
 
-Thanks
-Richard 
+Am Freitag 30 Dezember 2011, 09:23:21 schrieb Richard Zhao:
+> would it be possible to use clk-reg-cpufreq driver I sent out?
+
+I thought about it when your driver was introduced first. It would be possible 
+if the frequency scaling would only happen on the armdiv.
+
+But as you probably saw in the code the S3C2416 has two clock sources for the 
+armclk (armdiv and hclk) and also special requirements on the switch of those 
+(i.e. when switching to armdiv, force the frequency to be the same as the 
+hclk, to prevent stability issues).
+
+Therefore I don't think these behaviour requirements can be modelled with your 
+clk-reg-cpufreq driver.
+
+Heiko
