@@ -1,61 +1,20 @@
-From: Dron Gus <dron0gus@gmail.com>
+From: Richard Zhao <richard.zhao@freescale.com>
 Subject: Re: [RFC] cpufreq: Add S3C2416/S3C2450 cpufreq driver
-Date: Fri, 30 Dec 2011 10:48:30 +0300
-Message-ID: <CAA11ShBk=HFt6qaZex+VK=DfZtTvrf9bhyLKW0Gk2g_E5D44PA@mail.gmail.com>
+Date: Fri, 30 Dec 2011 16:23:21 +0800
+Message-ID: <20111230082319.GC2414@b20223-02.ap.freescale.net>
 References: <201112292058.07448.heiko@sntech.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        bh=D2etiFrtAn6hxHSrIQz+G80kjKCViM+zs1yjj1cqDK4=;
-        b=di2ghXS9wZnNkjvQqWQjzyXEFc2dPuyNpAy4ttYOrlfzCWt4WUPnIZCc3RuctdoZRS
-         wziW5bB6A0975DB18dId8qUfxzpxZ8LknB1Nw/jM1aoP9endMFdMYhRodjW0bhgZXUDO
-         dsYMUfrSAQ3P91JBWXfQkgGTT/Ep9Rsl8bEbc=
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <201112292058.07448.heiko@sntech.de>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko@sntech.de>
-Cc: davej@redhat.com, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Cc: davej@redhat.com, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
 
-Hi.
+would it be possible to use clk-reg-cpufreq driver I sent out?
 
-On Thu, Dec 29, 2011 at 11:58 PM, Heiko St=FCbner <heiko@sntech.de> wro=
-te:
-=2E..
-> +static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy =
-*policy)
-=2E..
-> + =A0 =A0 =A0 s3c_freq->armdiv =3D clk_get(NULL, "armdiv");
-> + =A0 =A0 =A0 if (IS_ERR(s3c_freq->armdiv)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("cpufreq: Unable to obtain ARMDI=
-V: %ld\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PTR_ERR(s3c_freq->armdiv=
-));
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(s3c_freq->armdiv);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 s3c_freq->hclk =3D clk_get(NULL, "hclk");
-> + =A0 =A0 =A0 if (IS_ERR(s3c_freq->hclk)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_warn("cpufreq: Unable to obtain HCLK=
-: %ld\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PTR_ERR(s3c_freq->hclk))=
-;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 s3c_freq->hclk =3D NULL; /*we can live =
-without hclk */
-> + =A0 =A0 =A0 }
-clk_put allready obtained "armdiv"?
-
-> +
-> + =A0 =A0 =A0 s3c_freq->armclk =3D clk_get(NULL, "armclk");
-> + =A0 =A0 =A0 if (IS_ERR(s3c_freq->armclk)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("cpufreq: Unable to obtain ARMCL=
-K: %ld\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PTR_ERR(s3c_freq->armclk=
-));
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(s3c_freq->armclk);
-> + =A0 =A0 =A0 }
-Same for "hclk" and "armclk"?
+Thanks
+Richard 
