@@ -1,36 +1,61 @@
-From: Richard Zhao <richard.zhao@linaro.org>
-Subject: [PATCH V6 7/7] arm/imx6q: select ARCH_HAS_CPUFREQ
-Date: Fri, 30 Dec 2011 10:56:09 +0800
-Message-ID: <1325213769-11752-8-git-send-email-richard.zhao@linaro.org>
-References: <1325213769-11752-1-git-send-email-richard.zhao@linaro.org>
+From: Dron Gus <dron0gus@gmail.com>
+Subject: Re: [RFC] cpufreq: Add S3C2416/S3C2450 cpufreq driver
+Date: Fri, 30 Dec 2011 10:48:30 +0300
+Message-ID: <CAA11ShBk=HFt6qaZex+VK=DfZtTvrf9bhyLKW0Gk2g_E5D44PA@mail.gmail.com>
+References: <201112292058.07448.heiko@sntech.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1325213769-11752-1-git-send-email-richard.zhao@linaro.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        bh=D2etiFrtAn6hxHSrIQz+G80kjKCViM+zs1yjj1cqDK4=;
+        b=di2ghXS9wZnNkjvQqWQjzyXEFc2dPuyNpAy4ttYOrlfzCWt4WUPnIZCc3RuctdoZRS
+         wziW5bB6A0975DB18dId8qUfxzpxZ8LknB1Nw/jM1aoP9endMFdMYhRodjW0bhgZXUDO
+         dsYMUfrSAQ3P91JBWXfQkgGTT/Ep9Rsl8bEbc=
+In-Reply-To: <201112292058.07448.heiko@sntech.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
-Cc: linux@arm.linux.org.uk, davej@redhat.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, rdunlap@xenotime.net, kernel@pengutronix.de, shawn.guo@linaro.org, catalin.marinas@arm.com, eric.miao@linaro.org, mark.langsdorf@calxeda.com, davidb@codeaurora.org, arnd@arndb.de, bryanh@codeaurora.org, jamie@jamieiles.com, marc.zyngier@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org, Richard Zhao <richard.zhao@linaro.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko@sntech.de>
+Cc: davej@redhat.com, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-Signed-off-by: Richard Zhao <richard.zhao@linaro.org>
----
- arch/arm/mach-imx/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hi.
 
-diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
-index c44aa97..39cf00a 100644
---- a/arch/arm/mach-imx/Kconfig
-+++ b/arch/arm/mach-imx/Kconfig
-@@ -595,6 +595,7 @@ comment "i.MX6 family:"
- 
- config SOC_IMX6Q
- 	bool "i.MX6 Quad support"
-+	select ARCH_HAS_CPUFREQ
- 	select ARM_GIC
- 	select CACHE_L2X0
- 	select CPU_V7
--- 
-1.7.5.4
+On Thu, Dec 29, 2011 at 11:58 PM, Heiko St=FCbner <heiko@sntech.de> wro=
+te:
+=2E..
+> +static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy =
+*policy)
+=2E..
+> + =A0 =A0 =A0 s3c_freq->armdiv =3D clk_get(NULL, "armdiv");
+> + =A0 =A0 =A0 if (IS_ERR(s3c_freq->armdiv)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("cpufreq: Unable to obtain ARMDI=
+V: %ld\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PTR_ERR(s3c_freq->armdiv=
+));
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(s3c_freq->armdiv);
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 s3c_freq->hclk =3D clk_get(NULL, "hclk");
+> + =A0 =A0 =A0 if (IS_ERR(s3c_freq->hclk)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_warn("cpufreq: Unable to obtain HCLK=
+: %ld\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PTR_ERR(s3c_freq->hclk))=
+;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 s3c_freq->hclk =3D NULL; /*we can live =
+without hclk */
+> + =A0 =A0 =A0 }
+clk_put allready obtained "armdiv"?
 
-
+> +
+> + =A0 =A0 =A0 s3c_freq->armclk =3D clk_get(NULL, "armclk");
+> + =A0 =A0 =A0 if (IS_ERR(s3c_freq->armclk)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("cpufreq: Unable to obtain ARMCL=
+K: %ld\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0PTR_ERR(s3c_freq->armclk=
+));
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(s3c_freq->armclk);
+> + =A0 =A0 =A0 }
+Same for "hclk" and "armclk"?
