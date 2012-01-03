@@ -1,67 +1,24 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [RFC] cpufreq: Add S3C2416/S3C2450 cpufreq driver
-Date: Fri, 30 Dec 2011 13:07:42 +0100
-Message-ID: <201112301307.43109.heiko@sntech.de>
-References: <201112292058.07448.heiko@sntech.de> <CAA11ShBk=HFt6qaZex+VK=DfZtTvrf9bhyLKW0Gk2g_E5D44PA@mail.gmail.com>
+From: yunshan <yun-shan@163.com>
+Subject: errors and bugs
+Date: Tue, 03 Jan 2012 12:25:25 +0800
+Message-ID: <4F028335.3080005@163.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAA11ShBk=HFt6qaZex+VK=DfZtTvrf9bhyLKW0Gk2g_E5D44PA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Received:Message-ID:Date:From:User-Agent:
+	MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
+	bh=RWuCJlTrePn8M/otgpAuC/CCxAB2pNhQyKK5O8Cj9Vs=; b=Y4fWWgRE3rQ3h
+	4E9Nh6FnYvAemilhs+HSFxnKb3Bq1uSrM9DvtO8rjXPOSq/PBo0c0razs6GPIVdi
+	oMp8mnb65NWfekIgAaA3yG+DCtOqrknNJEqw0lr3KyJULtgiEamj4+tBJnaE+btS
+	Sicseu2YMtC/UGRKhJO2qewuqdVKJE=
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="iso-8859-1"
-To: Dron Gus <dron0gus@gmail.com>
-Cc: davej@redhat.com, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org
 
-Am Freitag 30 Dezember 2011, 08:48:30 schrieb Dron Gus:
-> Hi.
->=20
-> On Thu, Dec 29, 2011 at 11:58 PM, Heiko St=FCbner <heiko@sntech.de> w=
-rote:
-> ...
->=20
-> > +static int __init s3c2416_cpufreq_driver_init(struct cpufreq_polic=
-y
-> > *policy)
->=20
-> ...
->=20
-> > +       s3c_freq->armdiv =3D clk_get(NULL, "armdiv");
-> > +       if (IS_ERR(s3c_freq->armdiv)) {
-> > +               pr_err("cpufreq: Unable to obtain ARMDIV: %ld\n",
-> > +                      PTR_ERR(s3c_freq->armdiv));
-> > +               return PTR_ERR(s3c_freq->armdiv);
-> > +       }
-> > +
-> > +       s3c_freq->hclk =3D clk_get(NULL, "hclk");
-> > +       if (IS_ERR(s3c_freq->hclk)) {
-> > +               pr_warn("cpufreq: Unable to obtain HCLK: %ld\n",
-> > +                      PTR_ERR(s3c_freq->hclk));
-> > +               s3c_freq->hclk =3D NULL; /*we can live without hclk=
- */
-> > +       }
->=20
-> clk_put allready obtained "armdiv"?
->=20
-> > +
-> > +       s3c_freq->armclk =3D clk_get(NULL, "armclk");
-> > +       if (IS_ERR(s3c_freq->armclk)) {
-> > +               pr_err("cpufreq: Unable to obtain ARMCLK: %ld\n",
-> > +                      PTR_ERR(s3c_freq->armclk));
-> > +               return PTR_ERR(s3c_freq->armclk);
-> > +       }
->=20
-> Same for "hclk" and "armclk"?
-thanks for finding those, it seems probe also needs a lot more love.
+cpufrequtils 007: cpufreq-set (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+invalid or unknown argument
 
-As you were also working on S3C2416 stuff, could you possibly test the =
-driver=20
-and see if it still hangs for you?
 
-After I introduced the switch from hclk to armdiv using a forced armdiv=
-=3Dhclk=20
-frequency the hangs stopped for me and the devices ran hours with varyi=
-ng=20
-workloads without hangs. (also including voltage scaling)
-
-Heiko
