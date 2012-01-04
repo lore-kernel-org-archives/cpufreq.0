@@ -1,58 +1,52 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH v4 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Tue, 3 Jan 2012 20:26:25 +0000
-Message-ID: <20120103202624.GG2843@opensource.wolfsonmicro.com>
-References: <20111224085539.GA1892@richard-laptop>
- <20111224122411.GA13778@sirena.org.uk>
- <20111224132831.GB1803@richard-laptop>
- <20111224134227.GA20908@opensource.wolfsonmicro.com>
- <20111224155227.GC1803@richard-laptop>
- <20111226111030.GC8722@opensource.wolfsonmicro.com>
- <20111226134449.GA4259@richard-laptop>
- <20120103090625.GA2914@n2100.arm.linux.org.uk>
- <CAH8gqwVHc9ROQYZNe6b-cUN0ycWhYj8=vJ0geBXUCYN1+XENQA@mail.gmail.com>
- <20120103134709.GS2914@n2100.arm.linux.org.uk>
+From: Afzal Mohammed <afzal@ti.com>
+Subject: [PATCH 1/2] cpufreq:userspace: fix cpu_cur_freq updation
+Date: Wed, 4 Jan 2012 10:52:31 +0530
+Message-ID: <1325654551-14169-1-git-send-email-afzal@ti.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20120103134709.GS2914@n2100.arm.linux.org.uk>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Richard Zhao <richard.zhao@linaro.org>, arnd@arndb.de, mark.langsdorf@calxeda.com, linaro-dev@lists.linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, patches@linaro.org, bryanh@codeaurora.org, cpufreq@vger.kernel.org, grant.likely@secretlab.ca, rdunlap@xenotime.net, eric.miao@linaro.org, rob.herring@calxeda.com, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, davidb@codeaurora.org, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
+To: davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: nsekhar@ti.com, hvaibhav@ti.com, Afzal Mohammed <afzal@ti.com>
 
-On Tue, Jan 03, 2012 at 01:47:09PM +0000, Russell King - ARM Linux wrote:
-> On Tue, Jan 03, 2012 at 09:25:30PM +0800, Richard Zhao wrote:
+CPU frequency is guranteed to be changed on notifier callback with
+CPUFREQ_POSTCHANGE. Notifier callback with CPUFREQ_PRECHANGE does
+not gurantee a change in frequency; after it, if cpufreq driver is
+unable to change CPU to new frequency. This results in wrong
+information being fed to user (if setting CPU frequency fails)
+upon doing like,
 
-> > In latest v6 version, I get clk transition latency from dt property, and get
-> > regulator transition latency from regulator API.
-> > Could you please help review other arm common changes in v6 version?
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
 
-> You didn't get my point: how do you specify a clock transition latency
-> for a clock with a PLL when the data sheets don't tell you what that is,
-> and they instead give you a bit to poll?
+Hence in userspace governer update cpu_cur_freq only if notifier
+has been called with POSTCHANGE.
 
-I'd rather suspect you'll find there are actually specs for these things
-but they're hidden in the electrical characteristics which don't tend to
-go into the published datasheets (though ).  Not useful if we don't
-actually see them though.
+Signed-off-by: Afzal Mohammed <afzal@ti.com>
+---
+ drivers/cpufreq/cpufreq_userspace.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-> Do you:
+diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
+index f231015..bedac1a 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -47,9 +47,11 @@ userspace_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 	if (!per_cpu(cpu_is_managed, freq->cpu))
+ 		return 0;
+ 
+-	pr_debug("saving cpu_cur_freq of cpu %u to be %u kHz\n",
+-			freq->cpu, freq->new);
+-	per_cpu(cpu_cur_freq, freq->cpu) = freq->new;
++	if (val == CPUFREQ_POSTCHANGE) {
++		pr_debug("saving cpu_cur_freq of cpu %u to be %u kHz\n",
++				freq->cpu, freq->new);
++		per_cpu(cpu_cur_freq, freq->cpu) = freq->new;
++	}
+ 
+ 	return 0;
+ }
+-- 
+1.7.1
 
-> (a) make up some number and hope that it's representative
-> (b) not specify any transition latency
-
-These are the traditional approaches, pioneered by essentially every
-existing cpufreq driver (well, "make up" is a bit harsh - usually the
-numbers are measured, though possibly only on a limited set of systems).
-
-> (c) think about the problem _now_ and define what it means for a clock
->     without a transition latency.
-
-This would be nice, in both the clock and cpufreq code (the cpufreq code
-is pretty limited here in that it assumes an equal transition latency
-for all transitions which isn't the case usually).  You can generally do
-something useful with measurement, probably we can arrange to measure
-the times we're seeing on the actua system or something.
