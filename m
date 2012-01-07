@@ -1,54 +1,99 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH 3/6] cpufreq: Export user_policy min/max
-Date: Sat, 07 Jan 2012 10:47:23 +0200 (EET)
-Message-ID: <20120107.104723.1386766787855536005.apm@brigitte.kvy.fi>
-References: <20120106153320.GF12530@mgross-G62>
-	<20120106.212926.720061341805749024.apm@brigitte.kvy.fi>
-	<20120107035328.GC3119@mgross-G62>
-Reply-To: ananaza@iki.fi
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: [PATCH RE-SEND 2/2] [CPUFREQ] EXYNOS: Removed useless headers and codes
+Date: Sat, 07 Jan 2012 20:18:39 +0900
+Message-ID: <00f701cccd2e$1b019520$5104bf60$%kim@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120107035328.GC3119@mgross-G62>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: 'Dave Jones' <davej@redhat.com>, jc.lee@samsung.com, 'Kukjin Kim' <kgene.kim@samsung.com>
 
-From: mark gross <markgross@thegnar.org>
-> Maybe I'm missing something but cpufreq already has ABI for setting
-> upper and lower bounds for frequencies.
-> 
-> /sys/devices/system/cpu/cpu0/cpufreq/[scaling_min_freq,
-> scaling_max_freq]
-> 
-> --mark
+From: Jaecheol Lee <jc.lee@samsung.com>
 
-Yes, and the patch just adds two read-only files,
-/sys/devices/system/cpu/cpu?/cpufreq/policy_{min,max}_freq:
+This patch removes no referencing header files and cleaned up
+useless code.
 
-+show_one(policy_min_freq, user_policy.min);
-+show_one(policy_max_freq, user_policy.max);
+Signed-off-by: Jaecheol Lee <jc.lee@samsung.com>
+Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c     |    8 +-------
+ drivers/cpufreq/exynos4210-cpufreq.c |   14 +-------------
+ 2 files changed, 2 insertions(+), 20 deletions(-)
 
-to show the user_policy.min/max in addition to the
-policy->min/max. This is related to patch 4 which changes the
-scaling_{min,max}_freq store function to store the received value to
-user_policy instead of the enforced value. Related in turn to the
-restoring of the policy values when PM QoS constraints get lifted. The
-purpose of patch 3 is to allow inspecting the requested min/max in
-addition to the enforced min/max.
-
-	--Antti
-
-Adding cpufreq to cc, previous comments for context:
-
-http://thread.gmane.org/gmane.linux.power-management.general/26532
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 24e4dd4..5467879 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -9,7 +9,6 @@
+  * published by the Free Software Foundation.
+ */
+ 
+-#include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/clk.h>
+@@ -18,15 +17,10 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+ #include <linux/suspend.h>
+-#include <linux/reboot.h>
+ 
+-#include <mach/map.h>
+-#include <mach/regs-clock.h>
+-#include <mach/regs-mem.h>
+ #include <mach/cpufreq.h>
+ 
+-#include <plat/clock.h>
+-#include <plat/pm.h>
++#include <plat/cpu.h>
+ 
+ static struct exynos_dvfs_info *exynos_info;
+ 
+diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
+index 6bc4ada..065da5b 100644
+--- a/drivers/cpufreq/exynos4210-cpufreq.c
++++ b/drivers/cpufreq/exynos4210-cpufreq.c
+@@ -9,25 +9,17 @@
+  * published by the Free Software Foundation.
+ */
+ 
+-#include <linux/types.h>
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/slab.h>
+-#include <linux/regulator/consumer.h>
+ #include <linux/cpufreq.h>
+-#include <linux/notifier.h>
+-#include <linux/suspend.h>
+ 
+-#include <mach/map.h>
+ #include <mach/regs-clock.h>
+-#include <mach/regs-mem.h>
+ #include <mach/cpufreq.h>
+ 
+-#include <plat/clock.h>
+-#include <plat/pm.h>
+-
+ #define CPUFREQ_LEVEL_END	L5
+ 
+ static int max_support_idx = L0;
+@@ -38,10 +30,6 @@ static struct clk *moutcore;
+ static struct clk *mout_mpll;
+ static struct clk *mout_apll;
+ 
+-static struct regulator *arm_regulator;
+-
+-static struct cpufreq_freqs freqs;
+-
+ struct cpufreq_clkdiv {
+ 	unsigned int index;
+ 	unsigned int clkdiv;
+-- 
+1.7.1
