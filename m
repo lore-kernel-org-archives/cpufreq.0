@@ -1,65 +1,54 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 3/3] powernow-k8: Update copyright, maintainer and documentation
- information
-Date: Fri, 06 Jan 2012 10:15:21 -0600
-Message-ID: <4F071E19.60108@calxeda.com>
-References: <20120106145500.GI24451@alberich.amd.com> <20120106145933.GL24451@alberich.amd.com>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: Re: [PATCH 3/6] cpufreq: Export user_policy min/max
+Date: Sat, 07 Jan 2012 10:47:23 +0200 (EET)
+Message-ID: <20120107.104723.1386766787855536005.apm@brigitte.kvy.fi>
+References: <20120106153320.GF12530@mgross-G62>
+	<20120106.212926.720061341805749024.apm@brigitte.kvy.fi>
+	<20120107035328.GC3119@mgross-G62>
+Reply-To: ananaza@iki.fi
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120106145933.GL24451@alberich.amd.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Dave Jones <davej@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20120107035328.GC3119@mgross-G62>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: markgross@thegnar.org
+Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org
 
-On 01/06/2012 08:59 AM, Andreas Herrmann wrote:
+From: mark gross <markgross@thegnar.org>
+> Maybe I'm missing something but cpufreq already has ABI for setting
+> upper and lower bounds for frequencies.
 > 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> ---
->  drivers/cpufreq/powernow-k8.c |   17 ++++++++++-------
->  1 files changed, 10 insertions(+), 7 deletions(-)
+> /sys/devices/system/cpu/cpu0/cpufreq/[scaling_min_freq,
+> scaling_max_freq]
 > 
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index ad683ec..8f9b2ce 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -1,10 +1,11 @@
->  /*
-> - *   (c) 2003-2010 Advanced Micro Devices, Inc.
-> + *   (c) 2003-2012 Advanced Micro Devices, Inc.
->   *  Your use of this code is subject to the terms and conditions of the
->   *  GNU general public license version 2. See "COPYING" or
->   *  http://www.gnu.org/licenses/gpl.html
->   *
-> - *  Support : mark.langsdorf@amd.com
-> + *  Maintainer:
-> + *  Andreas Herrmann <andreas.herrmann3@amd.com>
->   *
->   *  Based on the powernow-k7.c module written by Dave Jones.
->   *  (C) 2003 Dave Jones on behalf of SuSE Labs
-> @@ -16,12 +17,14 @@
->   *  Valuable input gratefully received from Dave Jones, Pavel Machek,
->   *  Dominik Brodowski, Jacob Shin, and others.
->   *  Originally developed by Paul Devriendt.
-> - *  Processor information obtained from Chapter 9 (Power and Thermal Management)
-> - *  of the "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
-> - *  Opteron Processors" available for download from www.amd.com
->   *
-> - *  Tables for specific CPUs can be inferred from
-> - *     http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/30430.pdf
-> + *  Processor information obtained from Chapter 9 (Power and Thermal
-> + *  Management) of the "BIOS and Kernel Developer's Guide (BKDG) for
-> + *  the AMD Athlon 64 and AMD Opteron Processors" and section "2.x
-> + *  Power Management" in BKDGs for newer AMD CPU families.
-> + *
-> + *  Tables for specific CPUs can be inferred from AMD's processor
-> + *  power and thermal data sheets, (e.g. 30417.pdf, 30430.pdf, 43375.pdf)
->   */
->  
->  #include <linux/kernel.h>
+> --mark
 
-Acked-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Yes, and the patch just adds two read-only files,
+/sys/devices/system/cpu/cpu?/cpufreq/policy_{min,max}_freq:
 
-formerly mark.langsdorf@amd.com
++show_one(policy_min_freq, user_policy.min);
++show_one(policy_max_freq, user_policy.max);
+
+to show the user_policy.min/max in addition to the
+policy->min/max. This is related to patch 4 which changes the
+scaling_{min,max}_freq store function to store the received value to
+user_policy instead of the enforced value. Related in turn to the
+restoring of the policy values when PM QoS constraints get lifted. The
+purpose of patch 3 is to allow inspecting the requested min/max in
+addition to the enforced min/max.
+
+	--Antti
+
+Adding cpufreq to cc, previous comments for context:
+
+http://thread.gmane.org/gmane.linux.power-management.general/26532
