@@ -1,40 +1,51 @@
-From: Richard Zhao <richard.zhao@linaro.org>
-Subject: Re: [PATCH V6 0/7] add a generic cpufreq driver
-Date: Mon, 9 Jan 2012 22:52:48 +0800
-Message-ID: <20120109145246.GA2386@richard-laptop>
-References: <1325213769-11752-1-git-send-email-richard.zhao@linaro.org>
- <cc3e6f12-92d8-4467-b3ad-23cbe6440fee@email.android.com>
- <20120106005336.GP2414@b20223-02.ap.freescale.net>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: Re: [PATCH 4/6] cpufreq: Preserve sysfs min/max request
+Date: Wed, 11 Jan 2012 23:56:58 +0200
+Message-ID: <87mx9tdhsl.fsf@amiettinen-lnx.nvidia.com>
+References: <1325844234-478-1-git-send-email-amiettinen@nvidia.com>
+	<1325844234-478-5-git-send-email-amiettinen@nvidia.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20120106005336.GP2414@b20223-02.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux@arm.linux.org.uk
-Cc: linaro-dev@lists.linaro.org, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, rdunlap@xenotime.net, eric.miao@linaro.org, rob.herring@calxeda.com, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: cpufreq@vger.kernel.org
 
-On Fri, Jan 06, 2012 at 08:53:37AM +0800, Richard Zhao wrote:
-> On Thu, Jan 05, 2012 at 06:16:54AM +0800, Richard Zhao wrote:
-> > hi Russell,
-> > 
-> > May I have your ACK, you merge it?
-> Russell, ping
-would you have time to look at this patch series?
-> > 
-> > Thanks
-> > Richard
-> > 
-> > _______________________________________________
-> > linux-arm-kernel mailing list
-> > linux-arm-kernel@lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> > 
-> 
-> 
-> _______________________________________________
-> linaro-dev mailing list
-> linaro-dev@lists.linaro.org
-> http://lists.linaro.org/mailman/listinfo/linaro-dev
+Any comments to this change?
+
+Antti P Miettinen <amiettinen@nvidia.com> writes:
+> Store the value received via sysfs as the user_policy
+> min/max value instead of the currently enforced min/max.
+> This allows restoring the user min/max values when
+> constraints on enforced min/max change.
+>
+> Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e63b29f..65a512b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -389,7 +389,7 @@ static ssize_t store_##file_name					\
+>  		return -EINVAL;						\
+>  									\
+>  	ret = __cpufreq_set_policy(policy, &new_policy);		\
+> -	policy->user_policy.object = policy->object;			\
+> +	policy->user_policy.object = new_policy.object;			\
+>  									\
+>  	return ret ? ret : count;					\
+>  }
+
+	--Antti
