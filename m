@@ -1,8 +1,10 @@
 From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
-Date: Fri, 13 Jan 2012 14:59:11 +0200
-Message-ID: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
+Subject: [PATCH v2 3/8] cpufreq: Export user_policy min/max
+Date: Fri, 13 Jan 2012 14:59:14 +0200
+Message-ID: <1326459559-5436-4-git-send-email-amiettinen@nvidia.com>
+References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
@@ -11,49 +13,44 @@ Content-Transfer-Encoding: 7bit
 To: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org
 Cc: mgross@linux.intel.com
 
-The inspiration for this patch series is the N9 CPU frequency boost
-upon input events:
+Add sysfs nodes for user_policy min and max settings.
 
-http://www.spinics.net/lists/cpufreq/msg00667.html
+Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
+---
+ drivers/cpufreq/cpufreq.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-and the related changes in git://codeaurora.org/kernel/msm.git tree.
-Those patches modify the ondemand cpufreq governor. This patch series
-adds minimum and maximum CPU frequency as PM QoS parameters and
-modifies the cpufreq core to enforce the PM QoS limits. There is also
-an example module for boosting the frequency upon input events.
-
-I've been testing these changes against Ubuntu 3.2 kernel on a Dell
-E6420 with the ACPI cpufreq driver. The patches are against
-linux-next/master, compile tested against it.
-
-V2:
-* split min and max to separate commits
-* handle PM QoS min above max as max
-* handle PM QoS max below min as min
-
-	--Antti
-
-Alex Frid (1):
-  PM QoS: Simplify PM QoS expansion/merge
-
-Antti P Miettinen (7):
-  PM QoS: Add CPU frequency minimum as PM QoS param
-  cpufreq: Export user_policy min/max
-  cpufreq: Preserve sysfs min/max request
-  cpufreq: Enforce PM QoS minimum limit
-  input: CPU frequency booster
-  PM QoS: Add CPU frequency maximum as PM QoS param
-  cpufreq: Enforce PM QoS maximum frequency
-
- drivers/cpufreq/cpufreq.c     |   59 +++++++++++++-
- drivers/input/Kconfig         |    9 ++
- drivers/input/Makefile        |    1 +
- drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_qos.h        |   19 ++++-
- kernel/power/qos.c            |   55 ++++++++++----
- 6 files changed, 295 insertions(+), 22 deletions(-)
- create mode 100644 drivers/input/input-cfboost.c
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 622013f..f115888 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -363,6 +363,8 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
+ show_one(scaling_min_freq, min);
+ show_one(scaling_max_freq, max);
+ show_one(scaling_cur_freq, cur);
++show_one(policy_min_freq, user_policy.min);
++show_one(policy_max_freq, user_policy.max);
+ 
+ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+ 				struct cpufreq_policy *policy);
+@@ -581,6 +583,8 @@ cpufreq_freq_attr_rw(scaling_min_freq);
+ cpufreq_freq_attr_rw(scaling_max_freq);
+ cpufreq_freq_attr_rw(scaling_governor);
+ cpufreq_freq_attr_rw(scaling_setspeed);
++cpufreq_freq_attr_ro(policy_min_freq);
++cpufreq_freq_attr_ro(policy_max_freq);
+ 
+ static struct attribute *default_attrs[] = {
+ 	&cpuinfo_min_freq.attr,
+@@ -594,6 +598,8 @@ static struct attribute *default_attrs[] = {
+ 	&scaling_driver.attr,
+ 	&scaling_available_governors.attr,
+ 	&scaling_setspeed.attr,
++	&policy_min_freq.attr,
++	&policy_max_freq.attr,
+ 	NULL
+ };
+ 
 -- 
 1.7.4.1
 
