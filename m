@@ -1,76 +1,96 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH v2 8/8] cpufreq: Enforce PM QoS maximum frequency
-Date: Fri, 13 Jan 2012 14:59:19 +0200
-Message-ID: <1326459559-5436-9-git-send-email-amiettinen@nvidia.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
+Date: Fri, 13 Jan 2012 07:24:45 -0800
+Message-ID: <20120113152445.GA3005@mgross-G62>
 References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
+Reply-To: markgross@thegnar.org
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        bh=zyhFKdgFTkch+HLozP4jFGLGAIYRrkkXM4XL0J4ZXqI=;
+        b=qqMgrvuNx8nUIpgvKBC28Lntno+QYm6ZHNXVJpU/V0KfZbUAxTmLoRN/U9/zXS4LGT
+         Y3N4n3Q2LJcHQiA98QqFaFY5bzkBzBIKGAC0bEsWKEHkDjdO6NQGRMdzB3k5CQwD/+wC
+         U2L32Rchno9jvb3C9joQ7I1CDgw10H0Nb3YT8=
+Content-Disposition: inline
 In-Reply-To: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org
-Cc: mgross@linux.intel.com
+To: Antti P Miettinen <amiettinen@nvidia.com>
+Cc: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org, mgross@linux.intel.com
 
-Observe PM QoS CPU frequency maximum in addition to
-policy settings.
+just a quick note: ever since I lost my mgross@linux.intel.com email
+I've started using markgross@thegnar.org
 
-Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
----
- drivers/cpufreq/cpufreq.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
+On Fri, Jan 13, 2012 at 02:59:11PM +0200, Antti P Miettinen wrote:
+> The inspiration for this patch series is the N9 CPU frequency boost
+> upon input events:
+> 
+> http://www.spinics.net/lists/cpufreq/msg00667.html
+> 
+> and the related changes in git://codeaurora.org/kernel/msm.git tree.
+> Those patches modify the ondemand cpufreq governor. This patch series
+> adds minimum and maximum CPU frequency as PM QoS parameters and
+> modifies the cpufreq core to enforce the PM QoS limits. There is also
+> an example module for boosting the frequency upon input events.
+> 
+> I've been testing these changes against Ubuntu 3.2 kernel on a Dell
+> E6420 with the ACPI cpufreq driver. The patches are against
+> linux-next/master, compile tested against it.
+I'll test it this weekend as well.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c2c1c62..d233a8b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1638,12 +1638,15 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 	unsigned int pmax = policy->max;
- 	unsigned int qmin = min(pm_qos_request(PM_QOS_CPU_FREQ_MIN),
- 				data->max);
-+	unsigned int qmax = max(pm_qos_request(PM_QOS_CPU_FREQ_MAX),
-+				data->min);
- 
--	pr_debug("setting new policy for CPU %u: %u/%u - %u kHz\n",
--		 policy->cpu, pmin, qmin, pmax);
-+	pr_debug("setting new policy for CPU %u: %u/%u - %u/%u kHz\n",
-+		 policy->cpu, pmin, qmin, pmax, qmax);
- 
- 	/* clamp the new policy to PM QoS limits */
- 	policy->min = max(pmin, qmin);
-+	policy->max = min(pmax, qmax);
- 
- 	memcpy(&policy->cpuinfo, &data->cpuinfo,
- 				sizeof(struct cpufreq_cpuinfo));
-@@ -1920,12 +1923,16 @@ static int cpu_freq_notify(struct notifier_block *b,
- static struct notifier_block min_freq_notifier = {
- 	.notifier_call = cpu_freq_notify,
- };
-+static struct notifier_block max_freq_notifier = {
-+	.notifier_call = cpu_freq_notify,
-+};
- 
- static int cpu_freq_notify(struct notifier_block *b,
- 			   unsigned long l, void *v)
- {
- 	int cpu;
--	pr_debug("PM QoS min %lu\n", l);
-+	pr_debug("PM QoS %s %lu\n",
-+		 b == &min_freq_notifier ? "min" : "max", l);
- 	for_each_online_cpu(cpu) {
- 		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 		if (policy) {
-@@ -1952,6 +1959,9 @@ static int __init cpufreq_core_init(void)
- 	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN,
- 				 &min_freq_notifier);
- 	BUG_ON(rc);
-+	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MAX,
-+				 &max_freq_notifier);
-+	BUG_ON(rc);
- 
- 	return 0;
- }
--- 
-1.7.4.1
+FWIW if this works the way I hope it does then, its a feature we need
+for different reasons than interactivity.  So thanks for working on
+this!
 
+> 
+> V2:
+> * split min and max to separate commits
+> * handle PM QoS min above max as max
+> * handle PM QoS max below min as min
+
+A qos to constrain how slow the cpu goes is ok.
+A qos to constrain how fast it is allowed to go is not a PM_QOS thing.
+
+I'll review the patchset later today.
+
+
+Thanks!
+--mark
+
+> 
+> 	--Antti
+> 
+> Alex Frid (1):
+>   PM QoS: Simplify PM QoS expansion/merge
+> 
+> Antti P Miettinen (7):
+>   PM QoS: Add CPU frequency minimum as PM QoS param
+>   cpufreq: Export user_policy min/max
+>   cpufreq: Preserve sysfs min/max request
+>   cpufreq: Enforce PM QoS minimum limit
+>   input: CPU frequency booster
+>   PM QoS: Add CPU frequency maximum as PM QoS param
+>   cpufreq: Enforce PM QoS maximum frequency
+> 
+>  drivers/cpufreq/cpufreq.c     |   59 +++++++++++++-
+>  drivers/input/Kconfig         |    9 ++
+>  drivers/input/Makefile        |    1 +
+>  drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_qos.h        |   19 ++++-
+>  kernel/power/qos.c            |   55 ++++++++++----
+>  6 files changed, 295 insertions(+), 22 deletions(-)
+>  create mode 100644 drivers/input/input-cfboost.c
+> 
+> -- 
+> 1.7.4.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
