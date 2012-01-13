@@ -1,76 +1,96 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH V6 4/7] cpufreq: add clk-reg cpufreq driver
-Date: Thu, 12 Jan 2012 14:52:20 -0800
-Message-ID: <874nw0sfdn.fsf@ti.com>
-References: <1325213769-11752-1-git-send-email-richard.zhao@linaro.org>
-	<1325213769-11752-5-git-send-email-richard.zhao@linaro.org>
-	<87aa5t25ad.fsf@ti.com>
-	<20120112082300.GF2414@b20223-02.ap.freescale.net>
-Mime-Version: 1.0
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: [PATCH v2 1/8] PM QoS: Simplify PM QoS expansion/merge
+Date: Fri, 13 Jan 2012 14:59:12 +0200
+Message-ID: <1326459559-5436-2-git-send-email-amiettinen@nvidia.com>
+References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120112082300.GF2414@b20223-02.ap.freescale.net> (Richard
-	Zhao's message of "Thu, 12 Jan 2012 16:23:01 +0800")
+In-Reply-To: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Zhao <richard.zhao@freescale.com>
-Cc: linux@arm.linux.org.uk, arnd@arndb.de, patches@linaro.org, marc.zyngier@arm.com, catalin.marinas@arm.com, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, rdunlap@xenotime.net, eric.miao@linaro.org, kernel@pengutronix.de, jamie@jamieiles.com, davej@redhat.com, linaro-dev@lists.linaro.org, rob.herring@calxeda.com, Richard Zhao <richard.zhao@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org
+Cc: mgross@linux.intel.com
 
-Richard Zhao <richard.zhao@freescale.com> writes:
+From: Alex Frid <afrid@nvidia.com>
 
-> On Wed, Jan 11, 2012 at 03:22:34PM -0800, Kevin Hilman wrote:
->> Richard Zhao <richard.zhao@linaro.org> writes:
->> 
->> > The driver get cpu operation point table from device tree cpu0 node,
->> 
->> Since we already have an existing OPP infrastructure in the kernel,
->> seems like  this driver should get OPPs by asking the OPP layer.
->
-> When I created the patch, there's only omap cpufreq driver using
-> OPP. If it depends on OPP, it might prevent users who have not
-> adopted OPP from using the driver.
+- Replace class ID #define with enumeration
+- Loop through PM QoS objects during initialization (rather than
+  initializing them one-by-one)
 
-Then they should probably adopt to OPP, since it was created exactly for
-this purpose.   What this patch creates is an alternate way of adding
-OPPs using the device tree.  
+Signed-off-by: Alex Frid <afrid@nvidia.com>
+Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
+Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
+Reviewed-by: Scott Williams <scwilliams@nvidia.com>
+Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
+---
+ include/linux/pm_qos.h |   14 +++++++++-----
+ kernel/power/qos.c     |   23 ++++++++++-------------
+ 2 files changed, 19 insertions(+), 18 deletions(-)
 
-The point is using a static list of OPPs from boot time simply doesn't
-work.  You need the ability to dynamically add/remove OPPs at runtime to
-adjust for various operating conditons (or HW bugs) as well as for
-thermal considerations.   The OPP layer provides this.
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index e5bbcba..5ac91d8 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -9,12 +9,16 @@
+ #include <linux/miscdevice.h>
+ #include <linux/device.h>
+ 
+-#define PM_QOS_RESERVED 0
+-#define PM_QOS_CPU_DMA_LATENCY 1
+-#define PM_QOS_NETWORK_LATENCY 2
+-#define PM_QOS_NETWORK_THROUGHPUT 3
++enum {
++	PM_QOS_RESERVED = 0,
++	PM_QOS_CPU_DMA_LATENCY,
++	PM_QOS_NETWORK_LATENCY,
++	PM_QOS_NETWORK_THROUGHPUT,
++
++	/* insert new class ID */
++	PM_QOS_NUM_CLASSES,
++};
+ 
+-#define PM_QOS_NUM_CLASSES 4
+ #define PM_QOS_DEFAULT_VALUE -1
+ 
+ #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 995e3bd..d6d6dbd 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ static int __init pm_qos_power_init(void)
+ {
+ 	int ret = 0;
++	int i;
+ 
+-	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
+-	if (ret < 0) {
+-		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
+-		return ret;
+-	}
+-	ret = register_pm_qos_misc(&network_lat_pm_qos);
+-	if (ret < 0) {
+-		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
+-		return ret;
++	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
++
++	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
++		ret = register_pm_qos_misc(pm_qos_array[i]);
++		if (ret < 0) {
++			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
++			       pm_qos_array[i]->name);
++			return ret;
++		}
+ 	}
+-	ret = register_pm_qos_misc(&network_throughput_pm_qos);
+-	if (ret < 0)
+-		printk(KERN_ERR
+-			"pm_qos_param: network_throughput setup failed\n");
+ 
+ 	return ret;
+ }
+-- 
+1.7.4.1
 
-A generic driver should get available OPPs using the OPP layer.
-
-The DT can certainly be used at boot time to create the initial list of
-OPPs, but as the list of available OPPs changes at runtime, the only way
-to track that is to use the OPP layer.
-
-
->> This approach assumes the OPP layer is static at boot time and not
->> changing, however that's not the case in practice.
->> 
->> The OPP layer could be extended to read boot-time OPPs from DT if
->> desired, but since the OPPs are also populated/enabled/disabled
->> dynamicaly on some platforms (e.g. OMAP), I think the any generic
->> CPUfreq driver should use the OPP interface and not DT directly.
->> 
->> > and adjusts operating points using clk and regulator APIs.
->> 
->> For a generic driver, the regulator used should also be configurable.
->> 
->> For example, this driver currently assumes a regulator named "cpu" for
->> all instances.   If you had separate clusters with independent voltage
->> control, you'd likely have a separate regulator for each cluster.
-> The driver, for now, assumes all cpu cores uses the same clk and voltage.
-> It's correct for most arm multi-core SoC.
-
-Sure, but a "generic" driver such as the one proposed is not just for
-ARM, and not just for today's SoCs.  
-flexible enough
-
-> Do you have real case to need different voltage/clk?
-
-Sure, any system with independently scalable CPUs/clusters.
-
-Kevin
