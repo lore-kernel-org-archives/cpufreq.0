@@ -1,642 +1,119 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: [PATCH] cpufreq: Add S3C2416/S3C2450 cpufreq driver
-Date: Sat, 14 Jan 2012 22:09:57 +0100
-Message-ID: <201201142209.58453.heiko@sntech.de>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH v2 1/8] PM QoS: Simplify PM QoS expansion/merge
+Date: Sat, 14 Jan 2012 20:37:02 -0800
+Message-ID: <20120115043701.GA2409@mgross-G62>
+References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
+ <1326459559-5436-2-git-send-email-amiettinen@nvidia.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        bh=QbkML3aYejXPzHKJ2U0ZesRpQTqXUJct8wbjfS24DNA=;
+        b=BpxmdpY0XOZkUVFqSI81AVGy4xALh0vv0i7p+9BopEjtPswn8RgHgKbsrspFE2xQ/f
+         7mvtVlq0MSbyIeqw7caA8+QBUjLDxonMiME9zgsrjuw0ck2gFuh+688S0+/eAItQ4Xgb
+         nuI3bT3ZnEVaBRQqMYyBJct69do/KJ6eYSd/I=
+Content-Disposition: inline
+In-Reply-To: <1326459559-5436-2-git-send-email-amiettinen@nvidia.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dron Gus <dron0gus@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antti P Miettinen <amiettinen@nvidia.com>
+Cc: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org, mgross@linux.intel.com
 
-The S3C2416/S3C2450 SoCs support two sources for the armclk.
 
-The first source is the so called armdiv which divides the msysclk down
-to provide necessary cpu rates. In this mode the core voltage must be
-always at 1.3V. The frequency from the armdiv is not allowed to be
-lower than the hclk frequency.
+looks ok.
+Signed-off-by: markgross <markgross@thegnar.org>
 
-In the second mode the armclk can be sourced directly from the hclk in
-the so called "dynamic voltags scaling" (dvs) mode. Here the armdiv
-isn't used at all. Also in this mode the core voltage may be lowered.
-Existing hardware and tests with it suggest 1.0V as sufficient.
+--mark
 
-When changing the clock source to the armdiv from the hclk, the SoC
-shows stability issues if the new frequency is higher than the current
-hclk frequency. Hence the driver always forces the armdiv to the hclk
-frequency before the source change and lets the cpufreq issue another
-set_target call for higher frequencies.
-
-To mark the hclk frequency as lower as the corresponding armdiv
-frequency it is set 1MHz below the real frequency. This lets the cpufreq
-framework change between 133MHz based on hclk and 133MHz based on armdiv
-at will.
-
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
----
-changes since RFC: reboot-notifier to leave dvs mode on reboot
-and a lot of cleanups
-
- drivers/cpufreq/Kconfig.arm       |   22 ++
- drivers/cpufreq/Makefile          |    1 +
- drivers/cpufreq/s3c2416-cpufreq.c |  542 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 565 insertions(+), 0 deletions(-)
- create mode 100644 drivers/cpufreq/s3c2416-cpufreq.c
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 72a0044..56c1dca 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -2,6 +2,28 @@
- # ARM CPU Frequency scaling drivers
- #
- 
-+config ARM_S3C2416_CPUFREQ
-+	bool "S3C2416 CPU Frequency scaling support"
-+	depends on CPU_S3C2416
-+	help
-+	  This adds the CPUFreq driver for the Samsung S3C2416 and
-+	  S3C2450 SoC. The S3C2416 supports changing the rate of the
-+	  armdiv clock source and also entering a so called dynamic
-+	  voltage scaling mode in which it is possible to reduce the
-+	  core voltage of the cpu.
-+
-+	  If in doubt, say N.
-+
-+config ARM_S3C2416_CPUFREQ_VCORESCALE
-+	bool "Allow voltage scaling for S3C2416 arm core (EXPERIMENTAL)"
-+	depends on ARM_S3C2416_CPUFREQ && REGULATOR && EXPERIMENTAL
-+	help
-+	  Enable CPU voltage scaling when entering the dvs mode.
-+	  It uses information gathered through existing hardware and
-+	  tests but not documented in any datasheet.
-+
-+	  If in doubt, say N.
-+
- config ARM_S3C64XX_CPUFREQ
- 	bool "Samsung S3C64XX"
- 	depends on CPU_S3C6410
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index ce75fcb..98bb3e7 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -40,6 +40,7 @@ obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
- ##################################################################################
- # ARM SoC drivers
- obj-$(CONFIG_UX500_SOC_DB8500)		+= db8500-cpufreq.o
-+obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
- obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
- obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
-diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
-new file mode 100644
-index 0000000..2d13b6b
---- /dev/null
-+++ b/drivers/cpufreq/s3c2416-cpufreq.c
-@@ -0,0 +1,542 @@
-+/*
-+ * S3C2416/2450 CPUfreq Support
-+ *
-+ * Copyright 2011 Heiko Stuebner <heiko@sntech.de>
-+ *
-+ * based on s3c64xx_cpufreq.c
-+ *
-+ * Copyright 2009 Wolfson Microelectronics plc
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/cpufreq.h>
-+#include <linux/clk.h>
-+#include <linux/err.h>
-+#include <linux/regulator/consumer.h>
-+#include <linux/reboot.h>
-+#include <linux/module.h>
-+
-+static DEFINE_MUTEX(cpufreq_lock);
-+
-+struct s3c2416_data {
-+	struct clk *armdiv;
-+	struct clk *armclk;
-+	struct clk *hclk;
-+
-+	unsigned long regulator_latency;
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	struct regulator *vddarm;
-+#endif
-+
-+	struct cpufreq_frequency_table *freq_table;
-+
-+	bool is_dvs;
-+	bool disable_dvs;
-+};
-+
-+static struct s3c2416_data s3c2416_cpufreq;
-+
-+struct s3c2416_dvfs {
-+	unsigned int vddarm_min;
-+	unsigned int vddarm_max;
-+};
-+
-+/* pseudo-frequency for dvs mode */
-+#define FREQ_DVS	132333
-+
-+/* frequency to sleep and reboot in
-+ * it's essential to leave dvs, as some boards do not reconfigure the
-+ * regulator on reboot
-+ */
-+#define FREQ_SLEEP	133333
-+
-+/* Sources for the ARMCLK */
-+#define SOURCE_HCLK	0
-+#define SOURCE_ARMDIV	1
-+
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+/* S3C2416 only supports changing the voltage in the dvs-mode.
-+ * Voltages down to 1.0V seem to work, so we take what the regulator
-+ * can get us.
-+ */
-+static struct s3c2416_dvfs s3c2416_dvfs_table[] = {
-+	[SOURCE_HCLK] = {  950000, 1250000 },
-+	[SOURCE_ARMDIV] = { 1250000, 1350000 },
-+};
-+#endif
-+
-+static struct cpufreq_frequency_table s3c2416_freq_table[] = {
-+	{ SOURCE_HCLK, FREQ_DVS },
-+	{ SOURCE_ARMDIV, 133333 },
-+	{ SOURCE_ARMDIV, 266666 },
-+	{ SOURCE_ARMDIV, 400000 },
-+	{ 0, CPUFREQ_TABLE_END },
-+};
-+
-+static struct cpufreq_frequency_table s3c2450_freq_table[] = {
-+	{ SOURCE_HCLK, FREQ_DVS },
-+	{ SOURCE_ARMDIV, 133333 },
-+	{ SOURCE_ARMDIV, 266666 },
-+	{ SOURCE_ARMDIV, 533333 },
-+	{ 0, CPUFREQ_TABLE_END },
-+};
-+
-+static int s3c2416_cpufreq_verify_speed(struct cpufreq_policy *policy)
-+{
-+	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
-+
-+	if (policy->cpu != 0)
-+		return -EINVAL;
-+
-+	return cpufreq_frequency_table_verify(policy, s3c_freq->freq_table);
-+}
-+
-+static unsigned int s3c2416_cpufreq_get_speed(unsigned int cpu)
-+{
-+	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
-+
-+	if (cpu != 0)
-+		return 0;
-+
-+	/* return our pseudo-frequency when in dvs mode */
-+	if (s3c_freq->is_dvs)
-+		return FREQ_DVS;
-+
-+	return clk_get_rate(s3c_freq->armclk) / 1000;
-+}
-+
-+static int s3c2416_cpufreq_set_armdiv(struct s3c2416_data *s3c_freq,
-+				      unsigned int freq)
-+{
-+	int ret;
-+
-+	if (clk_get_rate(s3c_freq->armdiv) / 1000 != freq) {
-+		ret = clk_set_rate(s3c_freq->armdiv, freq * 1000);
-+		if (ret < 0) {
-+			pr_err("cpufreq: Failed to set armdiv rate %dkHz: %d\n",
-+			       freq, ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int s3c2416_cpufreq_enter_dvs(struct s3c2416_data *s3c_freq, int idx)
-+{
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	struct s3c2416_dvfs *dvfs;
-+#endif
-+	int ret;
-+
-+	if (s3c_freq->is_dvs) {
-+		pr_debug("cpufreq: already in dvs mode, nothing to do\n");
-+		return 0;
-+	}
-+
-+	pr_debug("cpufreq: switching armclk to hclk (%lukHz)\n",
-+		 clk_get_rate(s3c_freq->hclk) / 1000);
-+	ret = clk_set_parent(s3c_freq->armclk, s3c_freq->hclk);
-+	if (ret < 0) {
-+		pr_err("cpufreq: Failed to switch armclk to hclk: %d\n", ret);
-+		return ret;
-+	}
-+
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	/* changing the core voltage is only allowed when in dvs mode */
-+	if (s3c_freq->vddarm) {
-+		dvfs = &s3c2416_dvfs_table[idx];
-+
-+		pr_debug("cpufreq: setting regultor to %d-%d\n",
-+			 dvfs->vddarm_min, dvfs->vddarm_max);
-+		ret = regulator_set_voltage(s3c_freq->vddarm,
-+					    dvfs->vddarm_min,
-+					    dvfs->vddarm_max);
-+
-+		/* when lowering the voltage failed, there is nothing to do */
-+		if (ret != 0)
-+			pr_err("cpufreq: Failed to set VDDARM: %d\n", ret);
-+	}
-+#endif
-+
-+	s3c_freq->is_dvs = 1;
-+
-+	return 0;
-+}
-+
-+static int s3c2416_cpufreq_leave_dvs(struct s3c2416_data *s3c_freq, int idx)
-+{
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	struct s3c2416_dvfs *dvfs;
-+#endif
-+	int ret;
-+
-+	if (!s3c_freq->is_dvs) {
-+		pr_debug("cpufreq: not in dvs mode, so can't leave\n");
-+		return 0;
-+	}
-+
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	if (s3c_freq->vddarm) {
-+		dvfs = &s3c2416_dvfs_table[idx];
-+
-+		pr_debug("cpufreq: setting regultor to %d-%d\n",
-+			 dvfs->vddarm_min, dvfs->vddarm_max);
-+		ret = regulator_set_voltage(s3c_freq->vddarm,
-+					    dvfs->vddarm_min,
-+					    dvfs->vddarm_max);
-+		if (ret != 0) {
-+			pr_err("cpufreq: Failed to set VDDARM: %d\n", ret);
-+			return ret;
-+		}
-+	}
-+#endif
-+
-+	/* force armdiv to hclk frequency for transition from dvs*/
-+	if (clk_get_rate(s3c_freq->armdiv) > clk_get_rate(s3c_freq->hclk)) {
-+		pr_debug("cpufreq: force armdiv to hclk frequency (%lukHz)\n",
-+			 clk_get_rate(s3c_freq->hclk) / 1000);
-+		ret = s3c2416_cpufreq_set_armdiv(s3c_freq,
-+					clk_get_rate(s3c_freq->hclk) / 1000);
-+		if (ret < 0) {
-+			pr_err("cpufreq: Failed to to set the armdiv to %lukHz: %d\n",
-+			       clk_get_rate(s3c_freq->hclk) / 1000, ret);
-+			return ret;
-+		}
-+	}
-+
-+	pr_debug("cpufreq: switching armclk parent to armdiv (%lukHz)\n",
-+			clk_get_rate(s3c_freq->armdiv) / 1000);
-+
-+	ret = clk_set_parent(s3c_freq->armclk, s3c_freq->armdiv);
-+	if (ret < 0) {
-+		pr_err("cpufreq: Failed to switch armclk clock parent to armdiv: %d\n",
-+		       ret);
-+		return ret;
-+	}
-+
-+	s3c_freq->is_dvs = 0;
-+
-+	return 0;
-+}
-+
-+static int s3c2416_cpufreq_set_target(struct cpufreq_policy *policy,
-+				      unsigned int target_freq,
-+				      unsigned int relation)
-+{
-+	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
-+	struct cpufreq_freqs freqs;
-+	int idx, ret, to_dvs = 0;
-+	unsigned int i;
-+
-+	mutex_lock(&cpufreq_lock);
-+
-+	pr_debug("cpufreq: to %dKHz, relation %d\n", target_freq, relation);
-+
-+	ret = cpufreq_frequency_table_target(policy, s3c_freq->freq_table,
-+					     target_freq, relation, &i);
-+	if (ret != 0)
-+		goto out;
-+
-+	idx = s3c_freq->freq_table[i].index;
-+
-+	if (idx == SOURCE_HCLK)
-+		to_dvs = 1;
-+
-+	/* switching to dvs when it's not allowed */
-+	if (to_dvs && s3c_freq->disable_dvs) {
-+		pr_debug("cpufreq: entering dvs mode not allowed\n");
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	freqs.cpu = 0;
-+	freqs.flags = 0;
-+	freqs.old = s3c_freq->is_dvs ? FREQ_DVS
-+				     : clk_get_rate(s3c_freq->armclk) / 1000;
-+
-+	/* When leavin dvs mode, always switch the armdiv to the hclk rate
-+	 * The S3C2416 has stability issues when switching directly to
-+	 * higher frequencies.
-+	 */
-+	freqs.new = (s3c_freq->is_dvs && !to_dvs)
-+				? clk_get_rate(s3c_freq->hclk) / 1000
-+				: s3c_freq->freq_table[i].frequency;
-+
-+	pr_debug("cpufreq: Transition %d-%dkHz\n", freqs.old, freqs.new);
-+
-+	if (!to_dvs && freqs.old == freqs.new)
-+		goto out;
-+
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+	if (to_dvs) {
-+		pr_debug("cpufreq: enter dvs\n");
-+		ret = s3c2416_cpufreq_enter_dvs(s3c_freq, idx);
-+	} else if (s3c_freq->is_dvs) {
-+		pr_debug("cpufreq: leave dvs\n");
-+		ret = s3c2416_cpufreq_leave_dvs(s3c_freq, idx);
-+	} else {
-+		pr_debug("cpufreq: change armdiv to %dkHz\n", freqs.new);
-+		ret = s3c2416_cpufreq_set_armdiv(s3c_freq, freqs.new);
-+	}
-+
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+
-+out:
-+	mutex_unlock(&cpufreq_lock);
-+
-+	return ret;
-+}
-+
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
-+{
-+	int count, v, i, found;
-+	struct cpufreq_frequency_table *freq;
-+	struct s3c2416_dvfs *dvfs;
-+
-+	count = regulator_count_voltages(s3c_freq->vddarm);
-+	if (count < 0) {
-+		pr_err("cpufreq: Unable to check supported voltages\n");
-+		return;
-+	}
-+
-+	freq = s3c_freq->freq_table;
-+	while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
-+		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
-+			continue;
-+
-+		dvfs = &s3c2416_dvfs_table[freq->index];
-+		found = 0;
-+
-+		/* Check only the min-voltage, more is always ok on S3C2416 */
-+		for (i = 0; i < count; i++) {
-+			v = regulator_list_voltage(s3c_freq->vddarm, i);
-+			if (v >= dvfs->vddarm_min)
-+				found = 1;
-+		}
-+
-+		if (!found) {
-+			pr_debug("cpufreq: %dkHz unsupported by regulator\n",
-+				 freq->frequency);
-+			freq->frequency = CPUFREQ_ENTRY_INVALID;
-+		}
-+
-+		freq++;
-+	}
-+
-+	/* Guessed */
-+	s3c_freq->regulator_latency = 1 * 1000 * 1000;
-+}
-+#endif
-+
-+static int s3c2416_cpufreq_reboot_notifier_evt(struct notifier_block *this,
-+					       unsigned long event, void *ptr)
-+{
-+	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
-+	int ret;
-+
-+	mutex_lock(&cpufreq_lock);
-+
-+	/* disable further changes */
-+	s3c_freq->disable_dvs = 1;
-+
-+	mutex_unlock(&cpufreq_lock);
-+
-+	/* some boards don't reconfigure the regulator on reboot, which
-+	 * could lead to undervolting the cpu when the clock is reset.
-+	 * Therefore we always leave the DVS mode on reboot.
-+	 */
-+	if (s3c_freq->is_dvs) {
-+		pr_debug("cpufreq: leave dvs on reboot\n");
-+		ret = cpufreq_driver_target(cpufreq_cpu_get(0), FREQ_SLEEP, 0);
-+		if (ret < 0)
-+			return NOTIFY_BAD;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block s3c2416_cpufreq_reboot_notifier = {
-+	.notifier_call = s3c2416_cpufreq_reboot_notifier_evt,
-+};
-+
-+static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
-+{
-+	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
-+	struct cpufreq_frequency_table *freq;
-+	struct clk *msysclk;
-+	unsigned long rate;
-+	int ret;
-+
-+	if (policy->cpu != 0)
-+		return -EINVAL;
-+
-+	msysclk = clk_get(NULL, "msysclk");
-+	if (IS_ERR(msysclk)) {
-+		ret = PTR_ERR(msysclk);
-+		pr_err("cpufreq: Unable to obtain msysclk: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/*
-+	 * S3C2416 and S3C2450 share the same processor-ID and also provide no
-+	 * other means to distinguish them other than through the rate of
-+	 * msysclk. On S3C2416 msysclk runs at 800MHz and on S3C2450 at 533MHz.
-+	 */
-+	rate = clk_get_rate(msysclk);
-+	if (rate == 800 * 1000 * 1000) {
-+		pr_info("cpufreq: msysclk running at %lukHz, using S3C2416 frequency table\n",
-+			rate / 1000);
-+		s3c_freq->freq_table = s3c2416_freq_table;
-+		policy->cpuinfo.max_freq = 400000;
-+	} else if (rate / 1000 == 533333) {
-+		pr_info("cpufreq: msysclk running at %lukHz, using S3C2450 frequency table\n",
-+			rate / 1000);
-+		s3c_freq->freq_table = s3c2450_freq_table;
-+		policy->cpuinfo.max_freq = 533333;
-+	}
-+
-+	/* not needed anymore */
-+	clk_put(msysclk);
-+
-+	if (s3c_freq->freq_table == NULL) {
-+		pr_err("cpufreq: No frequency information for this CPU, msysclk at %lukHz\n",
-+		       rate / 1000);
-+		return -ENODEV;
-+	}
-+
-+	s3c_freq->is_dvs = 0;
-+
-+	s3c_freq->armdiv = clk_get(NULL, "armdiv");
-+	if (IS_ERR(s3c_freq->armdiv)) {
-+		ret = PTR_ERR(s3c_freq->armdiv);
-+		pr_err("cpufreq: Unable to obtain ARMDIV: %d\n", ret);
-+		return ret;
-+	}
-+
-+	s3c_freq->hclk = clk_get(NULL, "hclk");
-+	if (IS_ERR(s3c_freq->hclk)) {
-+		ret = PTR_ERR(s3c_freq->hclk);
-+		pr_err("cpufreq: Unable to obtain HCLK: %d\n", ret);
-+		goto err_hclk;
-+	}
-+
-+	/* chech hclk rate, we only support the common 133MHz for now
-+	 * hclk could also run at 66MHz, but this not often used
-+	 */
-+	rate = clk_get_rate(s3c_freq->hclk);
-+	if (rate < 133 * 1000 * 1000) {
-+		pr_err("cpufreq: HCLK not at 133MHz\n");
-+		clk_put(s3c_freq->hclk);
-+		ret = -EINVAL;
-+		goto err_armclk;
-+	}
-+
-+	s3c_freq->armclk = clk_get(NULL, "armclk");
-+	if (IS_ERR(s3c_freq->armclk)) {
-+		ret = PTR_ERR(s3c_freq->armclk);
-+		pr_err("cpufreq: Unable to obtain ARMCLK: %d\n", ret);
-+		goto err_armclk;
-+	}
-+
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	s3c_freq->vddarm = regulator_get(NULL, "vddarm");
-+	if (IS_ERR(s3c_freq->vddarm)) {
-+		ret = PTR_ERR(s3c_freq->vddarm);
-+		pr_err("cpufreq: Failed to obtain VDDARM: %d\n", ret);
-+		goto err_vddarm;
-+	}
-+
-+	s3c2416_cpufreq_cfg_regulator(s3c_freq);
-+#else
-+	s3c_freq->regulator_latency = 0;
-+#endif
-+
-+	freq = s3c_freq->freq_table;
-+	while (freq->frequency != CPUFREQ_TABLE_END) {
-+		/* special handling for dvs mode */
-+		if (freq->index == 0) {
-+			if (!s3c_freq->hclk) {
-+				pr_debug("cpufreq: %dkHz unsupported as it would need unavailable dvs mode\n",
-+					 freq->frequency);
-+				freq->frequency = CPUFREQ_ENTRY_INVALID;
-+			} else {
-+				freq++;
-+				continue;
-+			}
-+		}
-+
-+		/* Check for frequencies we can generate */
-+		rate = clk_round_rate(s3c_freq->armdiv,
-+				      freq->frequency * 1000);
-+		rate /= 1000;
-+		if (rate != freq->frequency) {
-+			pr_debug("cpufreq: %dkHz unsupported by clock (clk_round_rate return %lu)\n",
-+				 freq->frequency, rate);
-+			freq->frequency = CPUFREQ_ENTRY_INVALID;
-+		}
-+
-+		freq++;
-+	}
-+
-+	policy->cur = clk_get_rate(s3c_freq->armclk) / 1000;
-+
-+	/* Datasheet says PLL stabalisation time must be at least 300us,
-+	 * so but add some fudge. (reference in LOCKCON0 register description)
-+	 */
-+	policy->cpuinfo.transition_latency = (500 * 1000) +
-+					     s3c_freq->regulator_latency;
-+
-+	ret = cpufreq_frequency_table_cpuinfo(policy, s3c_freq->freq_table);
-+	if (ret)
-+		goto err_freq_table;
-+
-+	cpufreq_frequency_table_get_attr(s3c_freq->freq_table, 0);
-+
-+	register_reboot_notifier(&s3c2416_cpufreq_reboot_notifier);
-+
-+	return 0;
-+
-+err_freq_table:
-+#ifdef CONFIG_ARM_S3C2416_CPUFREQ_VCORESCALE
-+	regulator_put(s3c_freq->vddarm);
-+err_vddarm:
-+#endif
-+	clk_put(s3c_freq->armclk);
-+err_armclk:
-+	clk_put(s3c_freq->hclk);
-+err_hclk:
-+	clk_put(s3c_freq->armdiv);
-+
-+	return ret;
-+}
-+
-+static struct freq_attr *s3c2416_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
-+static struct cpufreq_driver s3c2416_cpufreq_driver = {
-+	.owner		= THIS_MODULE,
-+	.flags          = 0,
-+	.verify		= s3c2416_cpufreq_verify_speed,
-+	.target		= s3c2416_cpufreq_set_target,
-+	.get		= s3c2416_cpufreq_get_speed,
-+	.init		= s3c2416_cpufreq_driver_init,
-+	.name		= "s3c2416",
-+	.attr		= s3c2416_cpufreq_attr,
-+};
-+
-+static int __init s3c2416_cpufreq_init(void)
-+{
-+	return cpufreq_register_driver(&s3c2416_cpufreq_driver);
-+}
-+module_init(s3c2416_cpufreq_init);
--- 
-1.7.2.3
+On Fri, Jan 13, 2012 at 02:59:12PM +0200, Antti P Miettinen wrote:
+> From: Alex Frid <afrid@nvidia.com>
+> 
+> - Replace class ID #define with enumeration
+> - Loop through PM QoS objects during initialization (rather than
+>   initializing them one-by-one)
+> 
+> Signed-off-by: Alex Frid <afrid@nvidia.com>
+> Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
+> Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
+> Reviewed-by: Scott Williams <scwilliams@nvidia.com>
+> Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
+> ---
+>  include/linux/pm_qos.h |   14 +++++++++-----
+>  kernel/power/qos.c     |   23 ++++++++++-------------
+>  2 files changed, 19 insertions(+), 18 deletions(-)
+> 
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index e5bbcba..5ac91d8 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -9,12 +9,16 @@
+>  #include <linux/miscdevice.h>
+>  #include <linux/device.h>
+>  
+> -#define PM_QOS_RESERVED 0
+> -#define PM_QOS_CPU_DMA_LATENCY 1
+> -#define PM_QOS_NETWORK_LATENCY 2
+> -#define PM_QOS_NETWORK_THROUGHPUT 3
+> +enum {
+> +	PM_QOS_RESERVED = 0,
+> +	PM_QOS_CPU_DMA_LATENCY,
+> +	PM_QOS_NETWORK_LATENCY,
+> +	PM_QOS_NETWORK_THROUGHPUT,
+> +
+> +	/* insert new class ID */
+> +	PM_QOS_NUM_CLASSES,
+> +};
+>  
+> -#define PM_QOS_NUM_CLASSES 4
+>  #define PM_QOS_DEFAULT_VALUE -1
+>  
+>  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 995e3bd..d6d6dbd 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+>  static int __init pm_qos_power_init(void)
+>  {
+>  	int ret = 0;
+> +	int i;
+>  
+> -	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
+> -	if (ret < 0) {
+> -		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
+> -		return ret;
+> -	}
+> -	ret = register_pm_qos_misc(&network_lat_pm_qos);
+> -	if (ret < 0) {
+> -		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
+> -		return ret;
+> +	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+> +
+> +	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
+> +		ret = register_pm_qos_misc(pm_qos_array[i]);
+> +		if (ret < 0) {
+> +			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
+> +			       pm_qos_array[i]->name);
+> +			return ret;
+> +		}
+>  	}
+> -	ret = register_pm_qos_misc(&network_throughput_pm_qos);
+> -	if (ret < 0)
+> -		printk(KERN_ERR
+> -			"pm_qos_param: network_throughput setup failed\n");
+>  
+>  	return ret;
+>  }
+> -- 
+> 1.7.4.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
