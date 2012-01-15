@@ -1,9 +1,9 @@
 From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH v2 1/8] PM QoS: Simplify PM QoS expansion/merge
-Date: Sat, 14 Jan 2012 20:37:02 -0800
-Message-ID: <20120115043701.GA2409@mgross-G62>
+Subject: Re: [PATCH v2 2/8] PM QoS: Add CPU frequency minimum as PM QoS param
+Date: Sat, 14 Jan 2012 20:46:06 -0800
+Message-ID: <20120115044606.GB2409@mgross-G62>
 References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
- <1326459559-5436-2-git-send-email-amiettinen@nvidia.com>
+ <1326459559-5436-3-git-send-email-amiettinen@nvidia.com>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -12,12 +12,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         h=sender:date:from:to:cc:subject:message-id:reply-to:references
          :mime-version:content-type:content-disposition:in-reply-to
          :user-agent;
-        bh=QbkML3aYejXPzHKJ2U0ZesRpQTqXUJct8wbjfS24DNA=;
-        b=BpxmdpY0XOZkUVFqSI81AVGy4xALh0vv0i7p+9BopEjtPswn8RgHgKbsrspFE2xQ/f
-         7mvtVlq0MSbyIeqw7caA8+QBUjLDxonMiME9zgsrjuw0ck2gFuh+688S0+/eAItQ4Xgb
-         nuI3bT3ZnEVaBRQqMYyBJct69do/KJ6eYSd/I=
+        bh=6ufeeuRn+c9fVl4saOp3DD/RgD9YSNFU6tHVTCc8HTk=;
+        b=h4qPLMt0JMPfLV1ih4nNUVG7Lm0RD+ubPOyktnnCK9i8Z2J+dD70mvmLmmjp1+mIlZ
+         khIqxhQarW1wIeWDFB7wHXfsIXEighFDZM45LUrFeS15PYJMX+g0ARYxVINavANVScuI
+         xH8Dn5HuMOznDd7qvDOA0RK5fzeTAd3bwgpcY=
 Content-Disposition: inline
-In-Reply-To: <1326459559-5436-2-git-send-email-amiettinen@nvidia.com>
+In-Reply-To: <1326459559-5436-3-git-send-email-amiettinen@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -25,91 +25,88 @@ Content-Transfer-Encoding: 7bit
 To: Antti P Miettinen <amiettinen@nvidia.com>
 Cc: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org, mgross@linux.intel.com
 
+For some reason git am doesn't work with this so I had to use patch by
+hand.
 
-looks ok.
-Signed-off-by: markgross <markgross@thegnar.org>
 
---mark
 
-On Fri, Jan 13, 2012 at 02:59:12PM +0200, Antti P Miettinen wrote:
-> From: Alex Frid <afrid@nvidia.com>
+On Fri, Jan 13, 2012 at 02:59:13PM +0200, Antti P Miettinen wrote:
+> Add minimum CPU frequency as PM QoS parameter.
 > 
-> - Replace class ID #define with enumeration
-> - Loop through PM QoS objects during initialization (rather than
->   initializing them one-by-one)
-> 
-> Signed-off-by: Alex Frid <afrid@nvidia.com>
-> Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
-> Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
-> Reviewed-by: Scott Williams <scwilliams@nvidia.com>
-> Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
+> Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
 > ---
->  include/linux/pm_qos.h |   14 +++++++++-----
->  kernel/power/qos.c     |   23 ++++++++++-------------
->  2 files changed, 19 insertions(+), 18 deletions(-)
+>  include/linux/pm_qos.h |    3 +++
+>  kernel/power/qos.c     |   17 ++++++++++++++++-
+>  2 files changed, 19 insertions(+), 1 deletions(-)
 > 
 > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index e5bbcba..5ac91d8 100644
+> index 5ac91d8..54a0d00 100644
 > --- a/include/linux/pm_qos.h
 > +++ b/include/linux/pm_qos.h
-> @@ -9,12 +9,16 @@
->  #include <linux/miscdevice.h>
->  #include <linux/device.h>
+> @@ -14,8 +14,10 @@ enum {
+>  	PM_QOS_CPU_DMA_LATENCY,
+>  	PM_QOS_NETWORK_LATENCY,
+>  	PM_QOS_NETWORK_THROUGHPUT,
+> +	PM_QOS_CPU_FREQ_MIN,
 >  
-> -#define PM_QOS_RESERVED 0
-> -#define PM_QOS_CPU_DMA_LATENCY 1
-> -#define PM_QOS_NETWORK_LATENCY 2
-> -#define PM_QOS_NETWORK_THROUGHPUT 3
-> +enum {
-> +	PM_QOS_RESERVED = 0,
-> +	PM_QOS_CPU_DMA_LATENCY,
-> +	PM_QOS_NETWORK_LATENCY,
-> +	PM_QOS_NETWORK_THROUGHPUT,
+>  	/* insert new class ID */
 > +
-> +	/* insert new class ID */
-> +	PM_QOS_NUM_CLASSES,
-> +};
+>  	PM_QOS_NUM_CLASSES,
+>  };
 >  
-> -#define PM_QOS_NUM_CLASSES 4
->  #define PM_QOS_DEFAULT_VALUE -1
+> @@ -25,6 +27,7 @@ enum {
+>  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+>  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
+>  #define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
+> +#define PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE	0
+Perhaps "#define PM_QOS_CPU_FREQ_MIN_DEFAULT_KHZ	0" might be
+more descriptive.
+
+Its nice to have the code a bit self documenting and we are missing any
+comments on what units the FREQ are in.  (they are in the same units
+that cpufreq uses.  KHz)
+
+Also we need to update the Documentation/power/pm_qos_interface.txt
+to explain cpu_freq_min's units.
+
+other than this (and the git am issue) this looks good to me.
+
+--mark
 >  
->  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+>  struct pm_qos_request {
+>  	struct plist_node node;
 > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index 995e3bd..d6d6dbd 100644
+> index d6d6dbd..07d761a 100644
 > --- a/kernel/power/qos.c
 > +++ b/kernel/power/qos.c
-> @@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
->  static int __init pm_qos_power_init(void)
->  {
->  	int ret = 0;
-> +	int i;
+> @@ -101,11 +101,26 @@ static struct pm_qos_object network_throughput_pm_qos = {
+>  };
 >  
-> -	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
-> -	if (ret < 0) {
-> -		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
-> -		return ret;
-> -	}
-> -	ret = register_pm_qos_misc(&network_lat_pm_qos);
-> -	if (ret < 0) {
-> -		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
-> -		return ret;
-> +	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+>  
+> +static BLOCKING_NOTIFIER_HEAD(cpu_freq_min_notifier);
+> +static struct pm_qos_constraints cpu_freq_min_constraints = {
+> +	.list = PLIST_HEAD_INIT(cpu_freq_min_constraints.list),
+> +	.target_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
+> +	.default_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
+> +	.type = PM_QOS_MAX,
+> +	.notifiers = &cpu_freq_min_notifier,
+> +};
+> +static struct pm_qos_object cpu_freq_min_pm_qos = {
+> +	.constraints = &cpu_freq_min_constraints,
+> +	.name = "cpu_freq_min",
+> +};
 > +
-> +	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
-> +		ret = register_pm_qos_misc(pm_qos_array[i]);
-> +		if (ret < 0) {
-> +			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
-> +			       pm_qos_array[i]->name);
-> +			return ret;
-> +		}
->  	}
-> -	ret = register_pm_qos_misc(&network_throughput_pm_qos);
-> -	if (ret < 0)
-> -		printk(KERN_ERR
-> -			"pm_qos_param: network_throughput setup failed\n");
+> +
+>  static struct pm_qos_object *pm_qos_array[] = {
+>  	&null_pm_qos,
+>  	&cpu_dma_pm_qos,
+>  	&network_lat_pm_qos,
+> -	&network_throughput_pm_qos
+> +	&network_throughput_pm_qos,
+> +	&cpu_freq_min_pm_qos,
+>  };
 >  
->  	return ret;
->  }
+>  static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
 > -- 
 > 1.7.4.1
 > 
