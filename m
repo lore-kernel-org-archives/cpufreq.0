@@ -1,9 +1,9 @@
 From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH v2 2/8] PM QoS: Add CPU frequency minimum as PM QoS param
-Date: Sat, 14 Jan 2012 20:46:06 -0800
-Message-ID: <20120115044606.GB2409@mgross-G62>
+Subject: Re: [PATCH v2 5/8] cpufreq: Enforce PM QoS minimum limit
+Date: Sat, 14 Jan 2012 20:51:01 -0800
+Message-ID: <20120115045101.GC2409@mgross-G62>
 References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
- <1326459559-5436-3-git-send-email-amiettinen@nvidia.com>
+ <1326459559-5436-6-git-send-email-amiettinen@nvidia.com>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -12,12 +12,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         h=sender:date:from:to:cc:subject:message-id:reply-to:references
          :mime-version:content-type:content-disposition:in-reply-to
          :user-agent;
-        bh=6ufeeuRn+c9fVl4saOp3DD/RgD9YSNFU6tHVTCc8HTk=;
-        b=h4qPLMt0JMPfLV1ih4nNUVG7Lm0RD+ubPOyktnnCK9i8Z2J+dD70mvmLmmjp1+mIlZ
-         khIqxhQarW1wIeWDFB7wHXfsIXEighFDZM45LUrFeS15PYJMX+g0ARYxVINavANVScuI
-         xH8Dn5HuMOznDd7qvDOA0RK5fzeTAd3bwgpcY=
+        bh=iELKUfYvHENlPnBCsHgM5t4GOW4JeYAWVGyC5rf3dl8=;
+        b=NgeIsCa0dvoN1d00JAgjP6JbbDwkcvVkttYqwYMj2xZoLfQIklD8Mu/YxDBEyjUB7f
+         Ve64/nvJNRz9hgB1MbfvYhU3WTlWNnphurfeJws2QJRHE1shMC5wOrNjBK+tsyy9JI7/
+         QGBR4NJLWrm0kTEAG2A7udXyfaf7OfuaDbhLU=
 Content-Disposition: inline
-In-Reply-To: <1326459559-5436-3-git-send-email-amiettinen@nvidia.com>
+In-Reply-To: <1326459559-5436-6-git-send-email-amiettinen@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -25,88 +25,108 @@ Content-Transfer-Encoding: 7bit
 To: Antti P Miettinen <amiettinen@nvidia.com>
 Cc: davej@redhat.com, cpufreq@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, linux-pm@vger.kernel.org, mgross@linux.intel.com
 
-For some reason git am doesn't work with this so I had to use patch by
-hand.
+git am doesn't work with most of your patchset for me.
 
+Tested-by: markgross <markgross@thegnar.org>
+seems to work on my i5 laptop.
 
+Looks good to me.
 
-On Fri, Jan 13, 2012 at 02:59:13PM +0200, Antti P Miettinen wrote:
-> Add minimum CPU frequency as PM QoS parameter.
+--mark
+
+On Fri, Jan 13, 2012 at 02:59:16PM +0200, Antti P Miettinen wrote:
+> Observe PM QoS CPU frequency minimum in addition
+> to policy settings.
 > 
 > Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
 > ---
->  include/linux/pm_qos.h |    3 +++
->  kernel/power/qos.c     |   17 ++++++++++++++++-
->  2 files changed, 19 insertions(+), 1 deletions(-)
+>  drivers/cpufreq/cpufreq.c |   41 +++++++++++++++++++++++++++++++++++++++--
+>  1 files changed, 39 insertions(+), 2 deletions(-)
 > 
-> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index 5ac91d8..54a0d00 100644
-> --- a/include/linux/pm_qos.h
-> +++ b/include/linux/pm_qos.h
-> @@ -14,8 +14,10 @@ enum {
->  	PM_QOS_CPU_DMA_LATENCY,
->  	PM_QOS_NETWORK_LATENCY,
->  	PM_QOS_NETWORK_THROUGHPUT,
-> +	PM_QOS_CPU_FREQ_MIN,
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 127e37a..c2c1c62 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/completion.h>
+>  #include <linux/mutex.h>
+>  #include <linux/syscore_ops.h>
+> +#include <linux/pm_qos.h>
 >  
->  	/* insert new class ID */
+>  #include <trace/events/power.h>
+>  
+> @@ -1633,9 +1634,16 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+>  				struct cpufreq_policy *policy)
+>  {
+>  	int ret = 0;
+> +	unsigned int pmin = policy->min;
+> +	unsigned int pmax = policy->max;
+> +	unsigned int qmin = min(pm_qos_request(PM_QOS_CPU_FREQ_MIN),
+> +				data->max);
+>  
+> -	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
+> -		policy->min, policy->max);
+> +	pr_debug("setting new policy for CPU %u: %u/%u - %u kHz\n",
+> +		 policy->cpu, pmin, qmin, pmax);
 > +
->  	PM_QOS_NUM_CLASSES,
->  };
+> +	/* clamp the new policy to PM QoS limits */
+> +	policy->min = max(pmin, qmin);
 >  
-> @@ -25,6 +27,7 @@ enum {
->  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
->  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
->  #define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
-> +#define PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE	0
-Perhaps "#define PM_QOS_CPU_FREQ_MIN_DEFAULT_KHZ	0" might be
-more descriptive.
-
-Its nice to have the code a bit self documenting and we are missing any
-comments on what units the FREQ are in.  (they are in the same units
-that cpufreq uses.  KHz)
-
-Also we need to update the Documentation/power/pm_qos_interface.txt
-to explain cpu_freq_min's units.
-
-other than this (and the git am issue) this looks good to me.
-
---mark
+>  	memcpy(&policy->cpuinfo, &data->cpuinfo,
+>  				sizeof(struct cpufreq_cpuinfo));
+> @@ -1710,6 +1718,9 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+>  	}
 >  
->  struct pm_qos_request {
->  	struct plist_node node;
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index d6d6dbd..07d761a 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -101,11 +101,26 @@ static struct pm_qos_object network_throughput_pm_qos = {
->  };
+>  error_out:
+> +	/* restore the limits that the policy requested */
+> +	policy->min = pmin;
+> +	policy->max = pmax;
+>  	return ret;
+>  }
 >  
+> @@ -1903,9 +1914,32 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
 >  
-> +static BLOCKING_NOTIFIER_HEAD(cpu_freq_min_notifier);
-> +static struct pm_qos_constraints cpu_freq_min_constraints = {
-> +	.list = PLIST_HEAD_INIT(cpu_freq_min_constraints.list),
-> +	.target_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
-> +	.type = PM_QOS_MAX,
-> +	.notifiers = &cpu_freq_min_notifier,
-> +};
-> +static struct pm_qos_object cpu_freq_min_pm_qos = {
-> +	.constraints = &cpu_freq_min_constraints,
-> +	.name = "cpu_freq_min",
+> +static int cpu_freq_notify(struct notifier_block *b,
+> +			   unsigned long l, void *v);
+> +
+> +static struct notifier_block min_freq_notifier = {
+> +	.notifier_call = cpu_freq_notify,
 > +};
 > +
+> +static int cpu_freq_notify(struct notifier_block *b,
+> +			   unsigned long l, void *v)
+> +{
+> +	int cpu;
+> +	pr_debug("PM QoS min %lu\n", l);
+> +	for_each_online_cpu(cpu) {
+> +		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> +		if (policy) {
+> +			cpufreq_update_policy(policy->cpu);
+> +			cpufreq_cpu_put(policy);
+> +		}
+> +	}
+> +	return NOTIFY_OK;
+> +}
 > +
->  static struct pm_qos_object *pm_qos_array[] = {
->  	&null_pm_qos,
->  	&cpu_dma_pm_qos,
->  	&network_lat_pm_qos,
-> -	&network_throughput_pm_qos
-> +	&network_throughput_pm_qos,
-> +	&cpu_freq_min_pm_qos,
->  };
+>  static int __init cpufreq_core_init(void)
+>  {
+>  	int cpu;
+> +	int rc;
 >  
->  static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+>  	for_each_possible_cpu(cpu) {
+>  		per_cpu(cpufreq_policy_cpu, cpu) = -1;
+> @@ -1915,6 +1949,9 @@ static int __init cpufreq_core_init(void)
+>  	cpufreq_global_kobject = kobject_create_and_add("cpufreq", &cpu_subsys.dev_root->kobj);
+>  	BUG_ON(!cpufreq_global_kobject);
+>  	register_syscore_ops(&cpufreq_syscore_ops);
+> +	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN,
+> +				 &min_freq_notifier);
+> +	BUG_ON(rc);
+>  
+>  	return 0;
+>  }
 > -- 
 > 1.7.4.1
 > 
