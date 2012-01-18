@@ -1,38 +1,68 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 41292] scaling_min_freq reverts to cpuinfo_min_freq after wake
- up
-Date: Wed, 18 Jan 2012 05:34:22 GMT
-Message-ID: <201201180534.q0I5YMwr027583@bugzilla.kernel.org>
-References: <bug-41292-12968@https.bugzilla.kernel.org/>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
+	params
+Date: Wed, 18 Jan 2012 09:52:52 +0200
+Message-ID: <87ipk9qwff.fsf@amiettinen-lnx.nvidia.com>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
+	<201201162238.57556.rjw@sisk.pl>
+	<87r4yyrh2e.fsf@amiettinen-lnx.nvidia.com>
+	<201201172227.59080.rjw@sisk.pl>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-41292-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=41292
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+[..]
+> If I understand you correctly, you want to have an iterface for specifying
+> min and max frequencies from user space.  I can understand that.  At least
+> I can see some use cases for that.
+>
+> Now, the question is if using the PM QoS framework is the right way to do
+> that.
+>
+>> The change to cpufreq core just adds two read-only files to be able to
+>> inspect user_policy.min/max in addition to the currently enforced
+>> policy->min/max. Yes - there has been the possibility of using the sysfs
+>> min for setting a frequency floor but this is problematic when there are
+>> multiple clients. You'd need some kind of arbitration and book keeping
+>> to set/restore the minimum. And PM QoS provides exactly this mechanism.
+>
+> Just as I suspected. :-)
+>
+> OK, so what's your anticipated usage model of this?
 
+We've been experimenting with hooking the frequency boost to e.g. touch
+screen UI events and application launch. I believe there are also some
+specific applications that would want to either set a frequency floor or
+ceiling in some situations.
 
-Zhang Rui <rui.zhang@intel.com> changed:
+>> I think the kernel needs to be extended to handle more PM constraints
+>> and PM QoS is the closest thing I know for this kind of
+>> functionality. However, I'm open to suggestions about alternative
+>> approaches. I think we need e.g. more than just min/max "reduction
+>> operators". Ideas, anyone?
+>
+> I first need to know who those multiple clients are going to be.
+>
+> Thanks,
+> Rafael
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
-                 CC|                            |rui.zhang@intel.com
+For the touch screen UI, the boost could be implemented as a kernel
+module hooked with suitable event filter to the input event
+stream. Another possibility is the UI framework in user space. Some
+specific user space applications would also be clients.
 
-
-
-
---- Comment #2 from Zhang Rui <rui.zhang@intel.com>  2012-01-18 05:34:22 ---
-It's great that the kernel bugzilla is back.
-
-Can you please verify if the problem still exists in the latest upstream
-kernel?
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+	--Antti
