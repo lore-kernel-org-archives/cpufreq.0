@@ -1,35 +1,38 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 29522] Unable to use any kind of frequency scaling
-Date: Wed, 18 Jan 2012 03:15:03 GMT
-Message-ID: <201201180315.q0I3F36Q023076@bugzilla.kernel.org>
-References: <bug-29522-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 33202] cpufreq-info 008 only reports maximum "current
+ frequency", contradicts cpufreq stats and /proc/cpuinfo
+Date: Wed, 18 Jan 2012 03:27:04 GMT
+Message-ID: <201201180327.q0I3R4aD024035@bugzilla.kernel.org>
+References: <bug-33202-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-29522-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-33202-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=29522
+https://bugzilla.kernel.org/show_bug.cgi?id=33202
 
 
 Zhang Rui <rui.zhang@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
+             Status|NEW                         |RESOLVED
                  CC|                            |rui.zhang@intel.com
+         Resolution|                            |WILL_NOT_FIX
 
 
 
 
---- Comment #3 from Zhang Rui <rui.zhang@intel.com>  2012-01-18 03:15:02 ---
-It's great that the kernel bugzilla is back.
+--- Comment #4 from Zhang Rui <rui.zhang@intel.com>  2012-01-18 03:27:03 ---
+(In reply to comment #3)
+> im guessing
+> this one can be closed until or if i get some more info.
 
-Can you please verify if the problem still exists in the latest upstream
-kernel?
+Bug closed.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
