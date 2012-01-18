@@ -1,18 +1,19 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 13489] us2e_cpufreq does not work on Netra t1 200
-Date: Wed, 18 Jan 2012 01:50:13 GMT
-Message-ID: <201201180150.q0I1oDo9018061@bugzilla.kernel.org>
-References: <bug-13489-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 16274] VIA EPIA PX5000EG - Longhaul is currently broken in this
+ configuration
+Date: Wed, 18 Jan 2012 02:13:14 GMT
+Message-ID: <201201180213.q0I2DEuC020061@bugzilla.kernel.org>
+References: <bug-16274-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-13489-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-16274-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=13489
+https://bugzilla.kernel.org/show_bug.cgi?id=16274
 
 
 Zhang Rui <rui.zhang@intel.com> changed:
@@ -25,10 +26,10 @@ Zhang Rui <rui.zhang@intel.com> changed:
 
 
 
---- Comment #4 from Zhang Rui <rui.zhang@intel.com>  2012-01-18 01:50:13 ---
+--- Comment #2 from Zhang Rui <rui.zhang@intel.com>  2012-01-18 02:13:12 ---
 It's great that kernel bugzilla is back.
 
-Jos van der Ende,
+dolphs,
 can you please verify if the problem still exists in the latest upstream
 kernel?
 
