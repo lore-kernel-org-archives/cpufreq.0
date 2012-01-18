@@ -1,45 +1,51 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
-	params
-Date: Wed, 18 Jan 2012 10:15:03 +0200
-Message-ID: <87ehuxqveg.fsf@amiettinen-lnx.nvidia.com>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
-	<201201162238.57556.rjw@sisk.pl> <20120118031319.GB27153@mgross-G62>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH V2 1/4] cpufreq: add arm soc generic cpufreq driver
+Date: Wed, 18 Jan 2012 11:39:50 +0000
+Message-ID: <20120118113949.GA22977@sirena.org.uk>
+References: <1324031462-24961-1-git-send-email-richard.zhao@linaro.org>
+ <1324031462-24961-2-git-send-email-richard.zhao@linaro.org>
 Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1324031462-24961-2-git-send-email-richard.zhao@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: cpufreq@vger.kernel.org
+To: Richard Zhao <richard.zhao@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux@arm.linux.org.uk, mark.langsdorf@calxeda.com, patches@linaro.org, eric.miao@linaro.org, kernel@pengutronix.de, davej@redhat.com, linaro-dev@lists.linaro.org
 
-mark gross <markgross@thegnar.org> writes:
-> I'm not a big fan of the cpufreq seamanly redundant export either.
-> Doesn't the equivalent data get exported under
-> /sys/devices/system/cpu/cpu?/cpufreq/ ?
+On Fri, Dec 16, 2011 at 06:30:59PM +0800, Richard Zhao wrote:
 
-The added sysfs nodes are under /sys/devices/system/cpu/cpu?/cpufreq.
-They do no not duplicate functionality, they are just an
-addition. Currently you can request a new minimum by writing to
-scaling_min_freq and you can view the currently enforced policy->min via
-the same file. Patch 3 adds read-only policy_{min,max}_freq nodes for
-being able to inspect the user_policy.min/max. This is related to patch
-4 which preserves the requested min/max in user_policy instead of
-storing the enforced min/max to user_policy. This is in turn related to
-patch 5. We need to be able to revert back to requested min/max when PM
-QoS constraints get lifted. I think we do not want to overwrite
-user_policy min/max with policy->min/max as those values can be affected
-by temporary constraints.
+> +	if (higher && cpu_reg)
+> +		regulator_set_voltage(cpu_reg,
+> +				cpu_volts[index], cpu_volts[index]);
+> +
+> +	ret = clk_set_rate(cpu_clk, freq);
+> +	if (ret != 0) {
+> +		printk(KERN_DEBUG "cannot set CPU clock rate\n");
+> +		return ret;
+> +	}
+> +
+> +	if (!higher && cpu_reg)
+> +		regulator_set_voltage(cpu_reg,
+> +				cpu_volts[index], cpu_volts[index]);
 
-I would welcome more comments on patches 3 and 4.
+This appears to reintroduce the setting of an exact voltage which I'm
+sure was fixed in previous versions of the patch.
 
-	--Antti
+> +static struct cpufreq_driver arm_cpufreq_driver = {
+> +	.flags = CPUFREQ_STICKY,
+> +	.verify = arm_verify_speed,
+> +	.target = arm_set_target,
+> +	.get = arm_get_speed,
+> +	.init = arm_cpufreq_init,
+> +	.exit = arm_cpufreq_exit,
+> +	.name = "arm",
+> +};
+
+This code doesn't actually look terribly ARM specific...
+
+> +	printk(KERN_INFO "ARM SoC generic CPU frequency driver\n");
+
+Do we need this?
