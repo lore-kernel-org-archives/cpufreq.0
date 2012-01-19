@@ -1,32 +1,28 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16274] VIA EPIA PX5000EG - Longhaul is currently broken in this
- configuration
-Date: Thu, 19 Jan 2012 21:50:43 GMT
-Message-ID: <201201192150.q0JLohYd010975@bugzilla.kernel.org>
-References: <bug-16274-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
+Date: Thu, 19 Jan 2012 23:15:22 +0100
+Message-ID: <201201192315.22590.rjw@sisk.pl>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <20120119164144.GA8757@mgross-G62> <87y5t35v96.fsf@amiettinen-lnx.nvidia.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16274-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <87y5t35v96.fsf@amiettinen-lnx.nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: linux-pm@lists.linux-foundation.org
+Cc: Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16274
+On Thursday, January 19, 2012, Antti P Miettinen wrote:
+> mark gross <markgross@thegnar.org> writes:
+> > Hmm, your right this patch set is global in its request and not
+> > "per-cpu".  I need to think on that.  Making it per-cpu would likely
+> > infer we need to make the qos request per cpu as well.  
+> 
+> I think we need both, global and per cpu.
 
+Well, if we have that per CPU, it will be easy to create a global
+setting: set all of the per-CPU settings to the same values. :-)
 
-
-
-
---- Comment #3 from Rafa&#322; Bilski <rafalbilski@interia.pl>  2012-01-19 21:50:41 ---
-Created an attachment (id=72135)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=72135)
-Proposed patch
-
-Sorry my bad. Sanity checks before "CPU is VIA C3" check.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Thanks,
+Rafael
