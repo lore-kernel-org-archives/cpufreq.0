@@ -1,33 +1,32 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
-	params
-Date: Thu, 19 Jan 2012 21:48:21 +0200
-Message-ID: <87y5t35v96.fsf@amiettinen-lnx.nvidia.com>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
-	<201201162238.57556.rjw@sisk.pl> <20120118031319.GB27153@mgross-G62>
-	<201201190024.27022.rjw@sisk.pl> <20120119164144.GA8757@mgross-G62>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 16274] VIA EPIA PX5000EG - Longhaul is currently broken in this
+ configuration
+Date: Thu, 19 Jan 2012 21:50:43 GMT
+Message-ID: <201201192150.q0JLohYd010975@bugzilla.kernel.org>
+References: <bug-16274-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-16274-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-mark gross <markgross@thegnar.org> writes:
-> Hmm, your right this patch set is global in its request and not
-> "per-cpu".  I need to think on that.  Making it per-cpu would likely
-> infer we need to make the qos request per cpu as well.  
+https://bugzilla.kernel.org/show_bug.cgi?id=16274
 
-I think we need both, global and per cpu.
 
-	--Antti
+
+
+
+--- Comment #3 from Rafa&#322; Bilski <rafalbilski@interia.pl>  2012-01-19 21:50:41 ---
+Created an attachment (id=72135)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=72135)
+Proposed patch
+
+Sorry my bad. Sanity checks before "CPU is VIA C3" check.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
