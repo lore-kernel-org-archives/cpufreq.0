@@ -1,28 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
-Date: Thu, 19 Jan 2012 23:15:22 +0100
-Message-ID: <201201192315.22590.rjw@sisk.pl>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <20120119164144.GA8757@mgross-G62> <87y5t35v96.fsf@amiettinen-lnx.nvidia.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 15331] sound stuttering when loading speedstep-smi
+Date: Thu, 19 Jan 2012 22:29:42 GMT
+Message-ID: <201201192229.q0JMTg0X012065@bugzilla.kernel.org>
+References: <bug-15331-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87y5t35v96.fsf@amiettinen-lnx.nvidia.com>
+In-Reply-To: <bug-15331-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: linux-pm@lists.linux-foundation.org
-Cc: Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Thursday, January 19, 2012, Antti P Miettinen wrote:
-> mark gross <markgross@thegnar.org> writes:
-> > Hmm, your right this patch set is global in its request and not
-> > "per-cpu".  I need to think on that.  Making it per-cpu would likely
-> > infer we need to make the qos request per cpu as well.  
-> 
-> I think we need both, global and per cpu.
+https://bugzilla.kernel.org/show_bug.cgi?id=15331
 
-Well, if we have that per CPU, it will be easy to create a global
-setting: set all of the per-CPU settings to the same values. :-)
 
-Thanks,
-Rafael
+
+
+
+--- Comment #4 from florz@florz.de  2012-01-19 22:29:42 ---
+Reset it to whatever state it managed to survive the last two years in? =:-)
+
+I've got no clue what makes sense as far as bugzilla is concerned, so do
+whatever you think is appropriate.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
