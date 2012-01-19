@@ -1,244 +1,118 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH] input: CPU frequency booster
-Date: Thu, 19 Jan 2012 14:53:35 +0200
-Message-ID: <1326977615-4387-1-git-send-email-amiettinen@nvidia.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
+ params
+Date: Thu, 19 Jan 2012 08:41:44 -0800
+Message-ID: <20120119164144.GA8757@mgross-G62>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
+ <201201162238.57556.rjw@sisk.pl>
+ <20120118031319.GB27153@mgross-G62>
+ <201201190024.27022.rjw@sisk.pl>
+Reply-To: markgross@thegnar.org
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        bh=/NQqaZvrxejh52NRzXHPsAQDh2NQ6f6wCUr66VtMXnY=;
+        b=VWYtoY8a2u7fu2EbtOc8VA57/zJ6Ry8gvYvPxUBY2QfcU/Q02XtwIdZv2qyK5Yxsqr
+         +KbeonH2qJ/nKHn9/UjZEQEkVMaLHFzc3+oXkghvfy51Vlavf+SMWYfDfBeRQzcoKdIC
+         t3Af5jzBjccMIKxmF13O/PdmdQyuFwNbF1UgQ=
+Content-Disposition: inline
+In-Reply-To: <201201190024.27022.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davej@redhat.com, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, khilman@ti.com, j-pihet@ti.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: markgross@thegnar.org, linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org
 
-Inspired by cpufreq ondemand governor changes at
-git://codeaurora.org/kernel/msm.git tree in commits:
+On Thu, Jan 19, 2012 at 12:24:26AM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, January 18, 2012, mark gross wrote:
+> > On Mon, Jan 16, 2012 at 10:38:57PM +0100, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > On Monday, January 16, 2012, Antti P Miettinen wrote:
+> > > > [did not reach linux-pm as I sent to wrong address, sorry for
+> > > > duplicates]
+> > > > 
+> > > > The inspiration for this patch series is the N9 CPU frequency boost
+> > > > upon input events:
+> > > > 
+> > > > http://www.spinics.net/lists/cpufreq/msg00667.html
+> > > > 
+> > > > and the related changes in git://codeaurora.org/kernel/msm.git tree.
+> > > > Those patches modify the ondemand cpufreq governor. This patch series
+> > > > adds minimum and maximum CPU frequency as PM QoS parameters and
+> > > > modifies the cpufreq core to enforce the PM QoS limits.
+> > > 
+> > > If that hasn't been clear enough so far, I'm still not convinced that using
+> > > PM QoS for that is a good idea.
+> > > 
+> > > First off, frequency as a unit of throughput is questionable to say the least,
+> > > because it isn't portable from one system to another.  Moreover, even on a
+> > > given system it isn't particularly clear what the exact correspondence
+> > > between frequency and throughput actually is.
+> > 
+> > You are right.  The notion of throughput of a CPU is really hard to
+> > quantify.  Perhaps not using the term "throughput" would help?
+> 
+> Yes, it would.
+> 
+> > The base issue I see, the Intel platform, is needing is that sometimes
+> > we need to block the lowest P-states that the ondemand governor goes for
+> > because those P-states result in media / graphics workloads dropping
+> > frames.  However; GPU intensive workloads do not stress the CPU so the
+> > ondemand governor goes for the low p-state.
+> > 
+> > I could use some way of constraining the PM-throttling of the
+> > cpu-freq that can be hit from kernel or user mode.  So the graphics
+> > driver can dynamically adjust the constraint request on the cpufreq
+> > subsystem.
+> > 
+> > It is problematic that any driver requesting a given frequency request
+> > is not portable across ISA's or even processor families in the same ISA.
+> > But, maybe such a driver should use a module parameter to work around
+> > this lack of portability?
+> 
+> Well, it seems to me that we're trying to add a backdoor to the (apparently
+> inadequate) governors here.  Arguably, the governors should be able to
+> make the right decisions on the basis of the information they receive
+> through their own interfaces.
 
-    2a6181bc76c6ce46ca0fa8e547be42acd534cf0e
-    1cca8861d8fda4e05f6b0c59c60003345c15454d
-    96a9aeb02bf5b3fbbef47e44460750eb275e9f1b
-    b600449501cf15928440f87eff86b1f32d14214e
-    88a65c7ae04632ffee11f9fc628d7ab017c06b83
+the failings of governors to have the information needed is why pm_qos
+was created in the first place.  It can be seen as a limitation on the
+governor from some perspectives.  But, I like to think of if as updating
+existing governors to account for new use case requirements as hardware
+get bigger power management / performance dynamic ranges.
 
-Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
----
-Depends on "RFC: CPU frequency min as PM QoS param" patchset.
-An example - the input filtering needs some thinking.
 
- drivers/input/Kconfig         |    9 ++
- drivers/input/Makefile        |    1 +
- drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 184 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/input-cfboost.c
+> > > Second, it's not particularly clear what the meaning of the "min" frequency
+> > > is supposed to be in terms of throughput.
+> > 
+> > It should mean "please cpufreq do not put the cpu into a state where its
+> > clock runs slower than min".  I don't think we should talk about it as
+> > throughput because thats not what the cpufreq controls.
+> 
+> Perhaps we need a new cpufreq governor that would take use PM QoS internally
+> to store requests from different sources, but that would work on a per-CPU
+> basis (not globally) and would provide a new interface for user space?
+> 
 
-diff --git a/drivers/input/Kconfig b/drivers/input/Kconfig
-index 001b147..3859f78 100644
---- a/drivers/input/Kconfig
-+++ b/drivers/input/Kconfig
-@@ -161,6 +161,15 @@ config INPUT_APMPOWER
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called apm-power.
- 
-+config INPUT_CFBOOST
-+	tristate "CPU frequency booster"
-+	depends on INPUT && CPU_FREQ
-+	help
-+	  Say Y here if you want to boost frequency upon input events;
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called input-cfboost.
-+
- comment "Input Device Drivers"
- 
- source "drivers/input/keyboard/Kconfig"
-diff --git a/drivers/input/Makefile b/drivers/input/Makefile
-index 0c78949..6cad177 100644
---- a/drivers/input/Makefile
-+++ b/drivers/input/Makefile
-@@ -24,3 +24,4 @@ obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
- obj-$(CONFIG_INPUT_MISC)	+= misc/
- 
- obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
-+obj-$(CONFIG_INPUT_CFBOOST)	+= input-cfboost.o
-diff --git a/drivers/input/input-cfboost.c b/drivers/input/input-cfboost.c
-new file mode 100644
-index 0000000..bef3ec5
---- /dev/null
-+++ b/drivers/input/input-cfboost.c
-@@ -0,0 +1,174 @@
-+/*
-+ * drivers/input/input-cfboost.c
-+ *
-+ * Copyright (C) 2012 NVIDIA Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ */
-+
-+#include <linux/slab.h>
-+#include <linux/jiffies.h>
-+#include <linux/printk.h>
-+#include <linux/workqueue.h>
-+#include <linux/input.h>
-+#include <linux/module.h>
-+#include <linux/pm_qos.h>
-+
-+/* This module listens to input events and sets a temporary frequency
-+ * floor upon input event detection. This is based on changes to
-+ * cpufreq ondemand governor by:
-+ *
-+ * Tero Kristo <tero.kristo@nokia.com>
-+ * Brian Steuer <bsteuer@codeaurora.org>
-+ * David Ng <dave@codeaurora.org>
-+ *
-+ * at git://codeaurora.org/kernel/msm.git tree, commits:
-+ *
-+ * 2a6181bc76c6ce46ca0fa8e547be42acd534cf0e
-+ * 1cca8861d8fda4e05f6b0c59c60003345c15454d
-+ * 96a9aeb02bf5b3fbbef47e44460750eb275e9f1b
-+ * b600449501cf15928440f87eff86b1f32d14214e
-+ * 88a65c7ae04632ffee11f9fc628d7ab017c06b83
-+ */
-+
-+MODULE_AUTHOR("Antti P Miettinen <amiettinen@nvidia.com>");
-+MODULE_DESCRIPTION("Input event CPU frequency booster");
-+MODULE_LICENSE("GPL v2");
-+
-+
-+static struct pm_qos_request qos_req;
-+static struct work_struct boost;
-+static struct delayed_work unboost;
-+static unsigned int boost_freq; /* kHz */
-+module_param(boost_freq, uint, 0644);
-+static unsigned long boost_time = 500; /* ms */
-+module_param(boost_time, ulong, 0644);
-+static struct workqueue_struct *cfb_wq;
-+
-+static void cfb_boost(struct work_struct *w)
-+{
-+	cancel_delayed_work_sync(&unboost);
-+	pm_qos_update_request(&qos_req, boost_freq);
-+	queue_delayed_work(cfb_wq, &unboost, msecs_to_jiffies(boost_time));
-+}
-+
-+static void cfb_unboost(struct work_struct *w)
-+{
-+	pm_qos_update_request(&qos_req, PM_QOS_DEFAULT_VALUE);
-+}
-+
-+static void cfb_input_event(struct input_handle *handle, unsigned int type,
-+			    unsigned int code, int value)
-+{
-+	if (!work_pending(&boost))
-+		queue_work(cfb_wq, &boost);
-+}
-+
-+static int cfb_input_connect(struct input_handler *handler,
-+			     struct input_dev *dev,
-+			     const struct input_device_id *id)
-+{
-+	struct input_handle *handle;
-+	int error;
-+
-+	handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
-+	if (!handle)
-+		return -ENOMEM;
-+
-+	handle->dev = dev;
-+	handle->handler = handler;
-+	handle->name = "icfboost";
-+
-+	error = input_register_handle(handle);
-+	if (error)
-+		goto err2;
-+
-+	error = input_open_device(handle);
-+	if (error)
-+		goto err1;
-+
-+	return 0;
-+err1:
-+	input_unregister_handle(handle);
-+err2:
-+	kfree(handle);
-+	return error;
-+}
-+
-+static void cfb_input_disconnect(struct input_handle *handle)
-+{
-+	input_close_device(handle);
-+	input_unregister_handle(handle);
-+	kfree(handle);
-+}
-+
-+/* XXX make configurable */
-+static const struct input_device_id cfb_ids[] = {
-+	{ /* touch screen */
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT,
-+		.evbit = { BIT_MASK(EV_ABS) },
-+		.keybit = {[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH) },
-+	},
-+	{ /* mouse */
-+		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-+				INPUT_DEVICE_ID_MATCH_KEYBIT,
-+		.evbit = { BIT_MASK(EV_REL) },
-+		.keybit = {[BIT_WORD(BTN_MOUSE)] = BIT_MASK(BTN_MOUSE) },
-+	},
-+	{ },
-+};
-+
-+static struct input_handler cfb_input_handler = {
-+	.event		= cfb_input_event,
-+	.connect	= cfb_input_connect,
-+	.disconnect	= cfb_input_disconnect,
-+	.name		= "icfboost",
-+	.id_table	= cfb_ids,
-+};
-+
-+static int __init cfboost_init(void)
-+{
-+	int ret;
-+
-+	cfb_wq = create_workqueue("icfb-wq");
-+	if (!cfb_wq)
-+		return -ENOMEM;
-+	INIT_WORK(&boost, cfb_boost);
-+	INIT_DELAYED_WORK(&unboost, cfb_unboost);
-+	ret = input_register_handler(&cfb_input_handler);
-+	if (ret) {
-+		destroy_workqueue(cfb_wq);
-+		return ret;
-+	}
-+	pm_qos_add_request(&qos_req, PM_QOS_CPU_FREQ_MIN,
-+			   PM_QOS_DEFAULT_VALUE);
-+	return 0;
-+}
-+
-+static void __exit cfboost_exit(void)
-+{
-+	/* stop input events */
-+	input_unregister_handler(&cfb_input_handler);
-+	/* cancel pending work requests */
-+	cancel_work_sync(&boost);
-+	cancel_delayed_work_sync(&unboost);
-+	/* clean up */
-+	destroy_workqueue(cfb_wq);
-+	pm_qos_remove_request(&qos_req);
-+}
-+
-+module_init(cfboost_init);
-+module_exit(cfboost_exit);
--- 
-1.7.4.1
+I don' think we need a new cpufreq governor, the parts of this patchset
+that I agree with evolve the governor to account for pm-qos requests
+but, globally for all cpu's.
+
+Hmm, your right this patch set is global in its request and not
+"per-cpu".  I need to think on that.  Making it per-cpu would likely
+infer we need to make the qos request per cpu as well.  
+
+Do you think it needs to be per-cpu?  (I'm starting to think "yes" it
+does)
+
+How do we scale the pm_qos ABI to support per/cpu?  (maybe we don't
+export those types of qos classes to the user mode?)
+
+--mark
 
