@@ -1,30 +1,34 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 15331] sound stuttering when loading speedstep-smi
-Date: Thu, 19 Jan 2012 22:29:42 GMT
-Message-ID: <201201192229.q0JMTg0X012065@bugzilla.kernel.org>
-References: <bug-15331-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
+Date: Thu, 19 Jan 2012 23:40:24 +0100
+Message-ID: <201201192340.24503.rjw@sisk.pl>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <201201190024.27022.rjw@sisk.pl> <871uqwqja2.fsf@amiettinen-lnx.nvidia.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-15331-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <871uqwqja2.fsf@amiettinen-lnx.nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="us-ascii"
+To: Antti P Miettinen <amiettinen@nvidia.com>
+Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org, markgross@thegnar.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=15331
+On Thursday, January 19, 2012, Antti P Miettinen wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> [..]
+> > Perhaps we need a new cpufreq governor that would take use PM QoS internally
+> > to store requests from different sources, but that would work on a per-CPU
+> > basis (not globally) and would provide a new interface for user space?
+> >
+> > Rafael
+> 
+> I think it would be nice if the choice of governor could be independent
+> of the constraints. Also, implementing the constraints in the cpufreq
+> core is easier than in governors.
 
+Well, while it might be easier, the _whole_ _point_ of governors is to make
+decisions on the basis of available data.  By introducing an independent
+mechanism for that we're bypassing governors in a sense.
 
-
-
-
---- Comment #4 from florz@florz.de  2012-01-19 22:29:42 ---
-Reset it to whatever state it managed to survive the last two years in? =:-)
-
-I've got no clue what makes sense as far as bugzilla is concerned, so do
-whatever you think is appropriate.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Thanks,
+Rafael
