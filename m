@@ -1,35 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
-Date: Mon, 23 Jan 2012 00:43:46 +0100
-Message-ID: <201201230043.46436.rjw@sisk.pl>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <201201192315.22590.rjw@sisk.pl> <87d3acf2jh.fsf@amiettinen-lnx.nvidia.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 3.3] s3c64xx: Fix mis-cherry pick of VDDINT
+Date: Mon, 23 Jan 2012 10:51:51 +0000
+Message-ID: <1327315911-28467-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87d3acf2jh.fsf@amiettinen-lnx.nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-On Sunday, January 22, 2012, Antti P Miettinen wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > On Thursday, January 19, 2012, Antti P Miettinen wrote:
-> >> I think we need both, global and per cpu.
-> >
-> > Well, if we have that per CPU, it will be easy to create a global
-> > setting: set all of the per-CPU settings to the same values. :-)
-> 
-> That is true. Currently the device specific constraints do not have user
-> space interface. The pm_qos_interface.txt refers to ongoing
-> discussion. Is there a thread I should read?
-> 
-> Seems that the device specific constraints are not yet in use in
-> 3.3-rc1, or am I not looking hard enough?
+We don't have any of the other code for VDDINT, including the variable
+declaration, so don't try to get it as we can't build.
 
-They are in use through generic PM domains (drivers/base/power/domain*.c
-and friends) and ARM/shmobile uses those.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/cpufreq/s3c64xx-cpufreq.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+index a5e72cb..6f9490b 100644
+--- a/drivers/cpufreq/s3c64xx-cpufreq.c
++++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+@@ -217,13 +217,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 	} else {
+ 		s3c64xx_cpufreq_config_regulator();
+ 	}
+-
+-	vddint = regulator_get(NULL, "vddint");
+-	if (IS_ERR(vddint)) {
+-		ret = PTR_ERR(vddint);
+-		pr_err("Failed to obtain VDDINT: %d\n", ret);
+-		vddint = NULL;
+-	}
+ #endif
+ 
+ 	freq = s3c64xx_freq_table;
+-- 
+1.7.7.3
+
