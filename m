@@ -1,54 +1,45 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 42648] New: Frequencies higher than 1.5 GHz is not available
- for A8-3500M
-Date: Tue, 24 Jan 2012 15:15:03 GMT
-Message-ID: <bug-42648-12968@https.bugzilla.kernel.org/>
+From: Tushar Behera <tushar.behera@linaro.org>
+Subject: [PATCH] EXYNOS: Initialize locking_frequency with initial frequency
+Date: Wed, 25 Jan 2012 10:15:13 +0530
+Message-ID: <1327466713-29101-1-git-send-email-tushar.behera@linaro.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: davej@redhat.com, jc.lee@samsung.com, myungjoo.ham@samsung.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=42648
+As per definition, locking_frequency is the initial frequency which is
+set by boot-loader. Hence the value is updated with the initial value
+during boot time init call.
 
-           Summary: Frequencies higher than 1.5 GHz is not available for
-                    A8-3500M
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.2.1
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: runetmember@gmail.com
-        Regression: No
+This code was present in exynos210-cpufreq.c before this consolidation
+patch.
+- a125a17fa61a ([CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver).
 
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
+---
+The patch is based on v3.3-rc1.
 
-Listed pstates:
-[    2.591543] powernow-k8: Found 1 AMD A8-3500M APU with Radeon(tm) HD
-Graphics (4 cpu cores) (version 2.20.00)
-[    2.591570] powernow-k8: Core Performance Boosting: on.
-[    2.591626] powernow-k8:    0 : pstate 0 (1500 MHz)
-[    2.591629] powernow-k8:    1 : pstate 1 (1400 MHz)
-[    2.591631] powernow-k8:    2 : pstate 2 (1200 MHz)
-[    2.591634] powernow-k8:    3 : pstate 3 (1100 MHz)
-[    2.591636] powernow-k8:    4 : pstate 4 (1000 MHz)
-[    2.591639] powernow-k8:    5 : pstate 5 (900 MHz)
-[    2.591641] powernow-k8:    6 : pstate 6 (800 MHz)
+ drivers/cpufreq/exynos-cpufreq.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-http://en.wikipedia.org/wiki/List_of_AMD_A_microprocessors#A8_Series_2
-1.5 GHz is a base frequency, but maximum frequency (Turbo Core) should be 2.4
-GHz, not 1.5 GHz.
-Today tested with 3.3.0rc1 - same problem here.
-Distribution is Kubuntu 11.10 x86_64, laptop is Acer Aspire 7560G.
-
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 5467879..7cfb516 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -210,6 +210,8 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	cpufreq_frequency_table_get_attr(exynos_info->freq_table, policy->cpu);
+ 
++	locking_frequency = exynos_getspeed(0);
++
+ 	/* set the transition latency value */
+ 	policy->cpuinfo.transition_latency = 100000;
+ 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.4.1
+
