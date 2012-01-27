@@ -1,45 +1,55 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Subject: [PATCH] EXYNOS: Initialize locking_frequency with initial frequency
-Date: Wed, 25 Jan 2012 10:15:13 +0530
-Message-ID: <1327466713-29101-1-git-send-email-tushar.behera@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 42671] New: cpufreq userspace governor doesn't work on Intel
+ Core 2 Gen 2 CPUs
+Date: Fri, 27 Jan 2012 19:43:50 GMT
+Message-ID: <bug-42671-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: davej@redhat.com, jc.lee@samsung.com, myungjoo.ham@samsung.com
+To: cpufreq@vger.kernel.org
 
-As per definition, locking_frequency is the initial frequency which is
-set by boot-loader. Hence the value is updated with the initial value
-during boot time init call.
+https://bugzilla.kernel.org/show_bug.cgi?id=42671
 
-This code was present in exynos210-cpufreq.c before this consolidation
-patch.
-- a125a17fa61a ([CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver).
+           Summary: cpufreq userspace governor doesn't work on Intel Core
+                    2 Gen 2 CPUs
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: All known
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: t.artem@mailcity.com
+        Regression: No
 
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
-Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
----
-The patch is based on v3.3-rc1.
 
- drivers/cpufreq/exynos-cpufreq.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On my Intel Core i5 2500 CPU with acpi-cpufreq module loaded I do this
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 5467879..7cfb516 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -210,6 +210,8 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpufreq_frequency_table_get_attr(exynos_info->freq_table, policy->cpu);
- 
-+	locking_frequency = exynos_getspeed(0);
-+
- 	/* set the transition latency value */
- 	policy->cpuinfo.transition_latency = 100000;
- 
+# echo 2000000 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_setspeed
+
+then
+
+# cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq
+2000000
+2000000
+2000000
+2000000
+
+so theoretically it should work.
+
+However i7z (http://code.google.com/p/i7z/) shows that CPU frequency is freely
+floating and turbo boost gets enabled as soon as I have any discernible load,
+in other words userspace CPU frequency driver doesn't work at all and it
+doesn't really enforce the specified CPU frequency.
+
 -- 
-1.7.4.1
-
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
