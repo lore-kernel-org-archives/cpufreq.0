@@ -1,52 +1,49 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH -next] cpufreq: fix gx-suspmod.c build
-Date: Mon, 30 Jan 2012 13:55:18 -0500
-Message-ID: <20120130185518.GA493@redhat.com>
-References: <20120130144102.8d202c7d8eccd503a86b3053@canb.auug.org.au>
- <4F26F242.1060903@xenotime.net>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH] cpufreq: Add S3C2416/S3C2450 cpufreq driver
+Date: Mon, 30 Jan 2012 21:21:41 +0100
+Message-ID: <201201302121.42020.heiko@sntech.de>
+References: <201201142209.58453.heiko@sntech.de>
 Mime-Version: 1.0
-Return-path: <linux-next-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4F26F242.1060903@xenotime.net>
-Sender: linux-next-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <201201142209.58453.heiko@sntech.de>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Hiroshi Miura <miura@da-cha.org>, cpufreq@vger.kernel.org
+Content-Type: Text/Plain; charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dron Gus <dron0gus@gmail.com>
 
-On Mon, Jan 30, 2012 at 11:40:50AM -0800, Randy Dunlap wrote:
- > From: Randy Dunlap <rdunlap@xenotime.net>
- > 
- > Fix build error & warnings:
+Am Samstag 14 Januar 2012, 22:09:57 schrieb Heiko St=FCbner:
+> The S3C2416/S3C2450 SoCs support two sources for the armclk.
+>=20
+> The first source is the so called armdiv which divides the msysclk do=
+wn
+> to provide necessary cpu rates. In this mode the core voltage must be
+> always at 1.3V. The frequency from the armdiv is not allowed to be
+> lower than the hclk frequency.
+>=20
+> In the second mode the armclk can be sourced directly from the hclk i=
+n
+> the so called "dynamic voltags scaling" (dvs) mode. Here the armdiv
+> isn't used at all. Also in this mode the core voltage may be lowered.
+> Existing hardware and tests with it suggest 1.0V as sufficient.
+>=20
+> When changing the clock source to the armdiv from the hclk, the SoC
+> shows stability issues if the new frequency is higher than the curren=
+t
+> hclk frequency. Hence the driver always forces the armdiv to the hclk
+> frequency before the source change and lets the cpufreq issue another
+> set_target call for higher frequencies.
+>=20
+> To mark the hclk frequency as lower as the corresponding armdiv
+> frequency it is set 1MHz below the real frequency. This lets the cpuf=
+req
+> framework change between 133MHz based on hclk and 133MHz based on arm=
+div
+> at will.
+>=20
+> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+ping?
 
-Needs to go through Andi, or Greg, or whoever is carrying those
-cpu device autoload patches now. (I lost track)
-
-	Dave
-
- 
- > drivers/cpufreq/gx-suspmod.c:175:35: error: macro "MODULE_DEVICE_TABLE" requires 2 arguments, but only 1 given
- > drivers/cpufreq/gx-suspmod.c:175:1: warning: data definition has no type or storage class
- > drivers/cpufreq/gx-suspmod.c:175:1: warning: type defaults to 'int' in declaration of 'MODULE_DEVICE_TABLE'
- > 
- > Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
- > Cc: Hiroshi Miura <miura@da-cha.org>
- > Cc:	Dave Jones <davej@redhat.com>
- > Cc:	cpufreq@vger.kernel.org
- > ---
- >  drivers/cpufreq/gx-suspmod.c |    2 +-
- >  1 file changed, 1 insertion(+), 1 deletion(-)
- > 
- > --- linux-next-20120130.orig/drivers/cpufreq/gx-suspmod.c
- > +++ linux-next-20120130/drivers/cpufreq/gx-suspmod.c
- > @@ -172,7 +172,7 @@ static struct pci_device_id gx_chipset_t
- >  	{ PCI_VDEVICE(CYRIX, PCI_DEVICE_ID_CYRIX_5510), },
- >  	{ 0, },
- >  };
- > -MODULE_DEVICE_TABLE(gx_chipset_tbl);
- > +MODULE_DEVICE_TABLE(x86cpu, gx_chipset_tbl);
- >  
- >  static void gx_write_byte(int reg, int value)
- >  {
----end quoted text---
+Thanks
+Heiko
