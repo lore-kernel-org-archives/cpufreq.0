@@ -1,49 +1,43 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH] cpufreq: Add S3C2416/S3C2450 cpufreq driver
-Date: Mon, 30 Jan 2012 21:21:41 +0100
-Message-ID: <201201302121.42020.heiko@sntech.de>
-References: <201201142209.58453.heiko@sntech.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 42671] cpufreq userspace governor doesn't work on Intel Core 2
+ Gen 2 CPUs
+Date: Tue, 31 Jan 2012 02:58:30 GMT
+Message-ID: <201201310258.q0V2wUuj022892@bugzilla.kernel.org>
+References: <bug-42671-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <201201142209.58453.heiko@sntech.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-42671-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="iso-8859-1"
-To: Dave Jones <davej@redhat.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dron Gus <dron0gus@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-Am Samstag 14 Januar 2012, 22:09:57 schrieb Heiko St=FCbner:
-> The S3C2416/S3C2450 SoCs support two sources for the armclk.
->=20
-> The first source is the so called armdiv which divides the msysclk do=
-wn
-> to provide necessary cpu rates. In this mode the core voltage must be
-> always at 1.3V. The frequency from the armdiv is not allowed to be
-> lower than the hclk frequency.
->=20
-> In the second mode the armclk can be sourced directly from the hclk i=
-n
-> the so called "dynamic voltags scaling" (dvs) mode. Here the armdiv
-> isn't used at all. Also in this mode the core voltage may be lowered.
-> Existing hardware and tests with it suggest 1.0V as sufficient.
->=20
-> When changing the clock source to the armdiv from the hclk, the SoC
-> shows stability issues if the new frequency is higher than the curren=
-t
-> hclk frequency. Hence the driver always forces the armdiv to the hclk
-> frequency before the source change and lets the cpufreq issue another
-> set_target call for higher frequencies.
->=20
-> To mark the hclk frequency as lower as the corresponding armdiv
-> frequency it is set 1MHz below the real frequency. This lets the cpuf=
-req
-> framework change between 133MHz based on hclk and 133MHz based on arm=
-div
-> at will.
->=20
-> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-ping?
+https://bugzilla.kernel.org/show_bug.cgi?id=42671
 
-Thanks
-Heiko
+
+Len Brown <lenb@kernel.org> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |NEEDINFO
+                 CC|                            |lenb@kernel.org
+
+
+
+
+--- Comment #1 from Len Brown <lenb@kernel.org>  2012-01-31 02:58:30 ---
+are you sure that you are using the userspace governor?
+few people do, as it is generally obsolted by ondemand.
+
+When ondemand is running, scaling_setspeed does nothing,
+and you can "manually" control what ondemand does by
+setting its maximum and minimum frequencies.
+
+Please show the output from
+grep .  /sys/devices/system/cpu/cpu0/cpufreq/*
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
