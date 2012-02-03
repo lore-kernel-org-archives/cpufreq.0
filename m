@@ -1,71 +1,45 @@
-From: "Alexander Perschbacher" <alexander.perschbacher@rub.de>
-Subject: Re: Bug entdeckt
-Date: 3 Feb 2012 11:31:20 +0100
-Message-ID: <11576422.T8BdOecNyQ@elabi>
-References: <1753471.EGZtfceMdM@elabi> <20120203101612.GB27116@rincewind.brq.redhat.com>
-Reply-To: "Alexander Perschbacher" <alexander.perschbacher@rub.de>
+From: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Subject: Re: [PATCH V6 0/7] add a generic cpufreq driver
+Date: Fri, 3 Feb 2012 16:28:44 +0000
+Message-ID: <20120203162844.GO889@n2100.arm.linux.org.uk>
+References: <1325213769-11752-1-git-send-email-richard.zhao@linaro.org>
+	<cc3e6f12-92d8-4467-b3ad-23cbe6440fee@email.android.com>
+	<20120106005336.GP2414@b20223-02.ap.freescale.net>
+	<20120109145246.GA2386@richard-laptop>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120203101612.GB27116@rincewind.brq.redhat.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=arm.linux.org.uk; s=caramon; 
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date;
+	bh=rhLkPl2qEgdpbhE6C3V0Zp47INzdOmhM/BhrDpX/umA=; 
+	b=UzrsajO5W+BahISKkDsQM1BJjMBM6SeqL2yTDHuKmlzeW22tGKbJc5rqqzWHblR7niqFvLZjn/xblpG4AYm80wAvYosqHS5UjDJ5wWHjd1ZBX7vYSoTJe9vWz1SWlJnDGVbXPPVJ5zzu0x4/NbmeXH1QhhGFIHuFWoocc70TbCw=;
+Content-Disposition: inline
+In-Reply-To: <20120109145246.GA2386@richard-laptop>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Richard Zhao <richard.zhao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, marc.zyngier-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rdunlap-/UHa2rfvQTnk1uMJSBkQmQ@public.gmane.org, eric.miao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, jamie-wmLquQDDieKakBO8gow8eQ@public.gmane.org, rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-i cant english
+On Mon, Jan 09, 2012 at 10:52:48PM +0800, Richard Zhao wrote:
+> On Fri, Jan 06, 2012 at 08:53:37AM +0800, Richard Zhao wrote:
+> > On Thu, Jan 05, 2012 at 06:16:54AM +0800, Richard Zhao wrote:
+> > > hi Russell,
+> > > 
+> > > May I have your ACK, you merge it?
+> > Russell, ping
+> would you have time to look at this patch series?
 
-google!?:=20
+Sorry, kept missing this.  Yes, patch 1 is fine, and _that_ patch alone
+gets:
 
-"Hello! I have discovered the following errors:
-
-There seems to be a display bug: Although
-"cat / sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq"
-800 000 display (that is, within the limits that I did in the
-cpufreqd.conf set), cpufreq-info shows stable at 2.40 GHz.
-Also, "cat / proc / cpuinfo" confirmed to me that the processor
-800MHz running.
-
-Cpufreq-info seems to output wrong data.
-
-My system: Acer Timeline 3830TG, Core i5, driver's
-acpi_cpufreq and my Gentoo Linux.
-
-
-Best regards,"
-
-
-
-Am Freitag, 3. Februar 2012, 11:16:12 schrieb Petr =C5=A0abata:
-> On Fri, Feb 03, 2012 at 10:59:11AM +0100, Alexander=20
-Perschbacher wrote:
-> > Hallo! Ich habe folgenden Fehler entdeckt:
-> >=20
-> > Es scheint einen Anzeige-Bug zu geben: Obwohl
-> > "cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq"
-> > 800000 anzeigt (also innerhalb der Grenzen, die ich in der
-> > cpufreqd.conf setzte), zeigt cpufreq-info best=C3=A4ndig 2,40GHz=20
-an.
-> > Auch "cat /proc/cpuinfo" best=C3=A4tigt mir, dass der Prozessor=20
-mit
-> > 800MHz l=C3=A4uft.
-> >=20
-> > Cpufreq-info scheint hier falsche Daten auszugeben.
-> >=20
-> > Mein System: Acer TimelineX 3830TG, Core i5, Treiber ist
-> > acpi_cpufreq  und mein Linux Gentoo.
-> >=20
-> >=20
-> > Liebe Gr=C3=BC=C3=9Fe,
->=20
-> I suggest you resend your email in English if you expect any=20
-help.
->=20
-> -P
->=20
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe=20
-cpufreq" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-
-info.html
+Acked-by: Russell King <rmk+kernel-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
