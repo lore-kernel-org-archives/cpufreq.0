@@ -1,48 +1,29 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
-	params
-Date: Thu, 02 Feb 2012 08:06:38 +0200
-Message-ID: <87vcnp93bl.fsf@amiettinen-lnx.nvidia.com>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
-	<201201192315.22590.rjw@sisk.pl>
-	<87d3acf2jh.fsf@amiettinen-lnx.nvidia.com>
-	<201201230043.46436.rjw@sisk.pl>
+From: "Alexander Perschbacher" <alexander.perschbacher@rub.de>
+Subject: Bug entdeckt
+Date: 3 Feb 2012 10:59:11 +0100
+Message-ID: <1753471.EGZtfceMdM@elabi>
+Reply-To: alexander.perschbacher@rub.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> On Sunday, January 22, 2012, Antti P Miettinen wrote:
-[..]
->> Seems that the device specific constraints are not yet in use in
->> 3.3-rc1, or am I not looking hard enough?
->
-> They are in use through generic PM domains (drivers/base/power/domain*.c
-> and friends) and ARM/shmobile uses those.
->
-> Thanks,
-> Rafael
+Hallo! Ich habe folgenden Fehler entdeckt:
 
-Sorry for the delay - got pre-empted by other stuff. I took a look at
-the per device constraints. Do I understand it correctly that the idea
-is that there is only one constraint per device? If we want to make
-frequency and latency per CPU I guess we'd need separate constraints
-associated with the CPU device. Or do I misunderstand something?
+Es scheint einen Anzeige-Bug zu geben: Obwohl=20
+"cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq"
+800000 anzeigt (also innerhalb der Grenzen, die ich in der=20
+cpufreqd.conf setzte), zeigt cpufreq-info best=E4ndig 2,40GHz an.=20
+Auch "cat /proc/cpuinfo" best=E4tigt mir, dass der Prozessor mit=20
+800MHz l=E4uft.
 
-Or would global CPU frequency be more in line with global CPU latency
-after all?
+Cpufreq-info scheint hier falsche Daten auszugeben.
 
-	--Antti
+Mein System: Acer TimelineX 3830TG, Core i5, Treiber ist=20
+acpi_cpufreq  und mein Linux Gentoo.
+
+
+Liebe Gr=FC=DFe,
