@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 42671] cpufreq userspace governor doesn't work on Intel Core 2
  Gen 2 CPUs
-Date: Sun, 5 Feb 2012 22:04:34 GMT
-Message-ID: <201202052204.q15M4YJN028111@bugzilla.kernel.org>
+Date: Tue, 7 Feb 2012 09:14:56 GMT
+Message-ID: <201202070914.q179Eu0W000571@bugzilla.kernel.org>
 References: <bug-42671-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,14 +16,11 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=42671
 
 
-Artem S. Tashkinov <t.artem@mailcity.com> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |ASSIGNED
 
 
 
+--- Comment #3 from Artem S. Tashkinov <t.artem@mailcity.com>  2012-02-07 09:14:56 ---
+Is there any other information I can provide to help resolve this bug, Len?
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
