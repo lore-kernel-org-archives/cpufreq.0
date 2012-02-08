@@ -1,107 +1,58 @@
-From: Anton Vorontsov <anton.vorontsov@linaro.org>
-Subject: [PATCH 4/4] ARM: Move leds idle start/stop calls to sched idle
- notifiers
-Date: Wed, 8 Feb 2012 05:44:52 +0400
-Message-ID: <20120208014452.GD459@panacea>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
+Date: Wed, 08 Feb 2012 04:05:55 +0100
+Message-ID: <1328670355.2482.68.camel@laptop>
 References: <20120208013959.GA24535@panacea>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <20120208013959.GA24535@panacea>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Dave Jones <davej@redhat.com>, Russell King <linux@arm.linux.org.uk>
-Cc: Oleg Nesterov <oleg@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Nicolas Pitre <nico@fluxnic.net>, Mike Chan <mike@android.com>, Todd Poynor <toddpoynor@google.com>, cpufreq@vger.kernel.org, kernel-team@android.com, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Anton Vorontsov <anton.vorontsov@linaro.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>, Russell King <linux@arm.linux.org.uk>, Oleg Nesterov <oleg@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Nicolas Pitre <nico@fluxnic.net>, Mike Chan <mike@android.com>, Todd Poynor <toddpoynor@google.com>, cpufreq@vger.kernel.org, kernel-team@android.com, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Arjan Van De Ven <arjan@infradead.org>
 
-From: Todd Poynor <toddpoynor@google.com>
+On Wed, 2012-02-08 at 05:39 +0400, Anton Vorontsov wrote:
+> Hi all,
+> 
+> For some drivers we need to know when scheduler is idling. The most
+> straightforward way is to gracefully hook into the idle loop.
+> 
+> On x86 there are "CPU idle" notifiers in the inner idle loop, but
+> scheduler idle notifiers are different. These notifiers do not run on
+> every invocation/exit from cpuidle, instead they used to notify about
+> scheduler state changes, not HW states.
+> 
+> In other words, CPU idle notifiers work inside while(!need_resched())
+> loop (nested into idle loop), while scheduler idle notifier work
+> outside of the loop.
+> 
+> The first two patches consolidate scheduler idle entry/exit
+> points, and converts architectures to this new API.
+> 
+> The third patch is a new cpufreq governor, the commit message
+> briefly describes it.
 
-Signed-off-by: Todd Poynor <toddpoynor@google.com>
-Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
----
- arch/arm/kernel/leds.c    |   25 ++++++++++++++++++++++++-
- arch/arm/kernel/process.c |    3 ---
- 2 files changed, 24 insertions(+), 4 deletions(-)
+Argh, no.. cpufreq so sucks rocks. Can we please just scrap it and write
+an entirely new infrastructure that is much more connected to the
+scheduler and do away with this stupid need to set P-states from a
+schedulable context.
 
-diff --git a/arch/arm/kernel/leds.c b/arch/arm/kernel/leds.c
-index 1911dae..fbc30d4 100644
---- a/arch/arm/kernel/leds.c
-+++ b/arch/arm/kernel/leds.c
-@@ -9,6 +9,8 @@
-  */
- #include <linux/export.h>
- #include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/notifier.h>
- #include <linux/device.h>
- #include <linux/syscore_ops.h>
- #include <linux/string.h>
-@@ -103,6 +105,25 @@ static struct syscore_ops leds_syscore_ops = {
- 	.resume		= leds_resume,
- };
- 
-+static int leds_idle_notifier(struct notifier_block *nb, unsigned long val,
-+			      void *data)
-+{
-+	switch (val) {
-+	case SCHED_IDLE_START:
-+		leds_event(led_idle_start);
-+		break;
-+	case SCHED_IDLE_END:
-+		leds_event(led_idle_end);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct notifier_block leds_idle_nb = {
-+	.notifier_call = leds_idle_notifier,
-+};
-+
- static int __init leds_init(void)
- {
- 	int ret;
-@@ -111,8 +132,10 @@ static int __init leds_init(void)
- 		ret = device_register(&leds_device);
- 	if (ret == 0)
- 		ret = device_create_file(&leds_device, &dev_attr_event);
--	if (ret == 0)
-+	if (ret == 0) {
- 		register_syscore_ops(&leds_syscore_ops);
-+		sched_idle_notifier_register(&leds_idle_nb);
-+	}
- 	return ret;
- }
- 
-diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-index f2bac2d..f4b53aa 100644
---- a/arch/arm/kernel/process.c
-+++ b/arch/arm/kernel/process.c
-@@ -33,7 +33,6 @@
- #include <linux/cpuidle.h>
- 
- #include <asm/cacheflush.h>
--#include <asm/leds.h>
- #include <asm/processor.h>
- #include <asm/system.h>
- #include <asm/thread_notify.h>
-@@ -207,7 +206,6 @@ void cpu_idle(void)
- 	/* endless idle loop with no priority at all */
- 	while (1) {
- 		sched_idle_enter();
--		leds_event(led_idle_start);
- 		while (!need_resched()) {
- #ifdef CONFIG_HOTPLUG_CPU
- 			if (cpu_is_offline(smp_processor_id()))
-@@ -235,7 +233,6 @@ void cpu_idle(void)
- 				local_irq_enable();
- 			}
- 		}
--		leds_event(led_idle_end);
- 		sched_idle_exit();
- 		preempt_enable_no_resched();
- 		schedule();
--- 
-1.7.7.6
+We can maybe keep cpufreq around for the broken ass hardware that needs
+to schedule in order to change its state, but gah.
+
+We're going to do per-task avg-load tracking soon
+(https://lkml.org/lkml/2012/2/1/763) if you can use that (if not, tell
+why) you can do task based policy and migrate the P-state/freq along
+with tasks.
+
+By keeping per-task avg-runtime and accounting on migration we can
+compute an avg-runtime per cpu, and select a freq based on that to
+either minimize idle time (if that's what your platform wants) or boost
+and run to idle right along with scheduling on wakeup and sleep.
+
+Arjan talked about something like that several times.. and I always
+forgets what policy is best for what chips etc. All I know is that
+cpufreq sucks because its strictly per-cpu and oblivious to task
+movement.
