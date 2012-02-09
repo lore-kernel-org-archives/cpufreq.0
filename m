@@ -1,44 +1,52 @@
-From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH] EXYNOS: Initialize locking_frequency with
- initial frequency
-Date: Thu, 09 Feb 2012 05:35:09 +0000 (GMT)
-Message-ID: <22312902.436411328765708629.JavaMail.weblogic@epml10>
-Reply-To: myungjoo.ham@samsung.com
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
+Date: Thu, 9 Feb 2012 08:51:06 +0100
+Message-ID: <20120209075106.GB18387@elte.hu>
+References: <20120208013959.GA24535@panacea>
+ <1328670355.2482.68.camel@laptop>
+ <20120208202314.GA28290@redhat.com>
+ <1328736834.2903.33.camel@pasglop>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
 Return-path: <cpufreq-owner@vger.kernel.org>
-MIME-version: 1.0
+Content-Disposition: inline
+In-Reply-To: <1328736834.2903.33.camel@pasglop>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Tushar Behera <tushar.behera@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
-Cc: "davej@redhat.com" <davej@redhat.com>, =?euc-kr?Q?=C0=CC=C0=E7=C3=B6?= <jc.lee@samsung.com>
-
-PiBPbiAwMi8wMS8yMDEyIDA0OjM4IFBNLCBUdXNoYXIgQmVoZXJhIHdyb3RlOg0KPiA+IE9uIDAx
-LzI1LzIwMTIgMTA6MTUgQU0sIFR1c2hhciBCZWhlcmEgd3JvdGU6DQo+ID4+IEFzIHBlciBkZWZp
-bml0aW9uLCBsb2NraW5nX2ZyZXF1ZW5jeSBpcyB0aGUgaW5pdGlhbCBmcmVxdWVuY3kgd2hpY2gg
-aXMNCj4gPj4gc2V0IGJ5IGJvb3QtbG9hZGVyLiBIZW5jZSB0aGUgdmFsdWUgaXMgdXBkYXRlZCB3
-aXRoIHRoZSBpbml0aWFsIHZhbHVlDQo+ID4+IGR1cmluZyBib290IHRpbWUgaW5pdCBjYWxsLg0K
-PiA+Pg0KPiA+PiBUaGlzIGNvZGUgd2FzIHByZXNlbnQgaW4gZXh5bm9zMjEwLWNwdWZyZXEuYyBi
-ZWZvcmUgdGhpcyBjb25zb2xpZGF0aW9uDQo+ID4+IHBhdGNoLg0KPiA+PiAtIGExMjVhMTdmYTYx
-YSAoW0NQVUZSRVFdIEVYWU5PUzogTWFrZSBFWFlOT1MgY29tbW9uIGNwdWZyZXEgZHJpdmVyKS4N
-Cj4gPj4NCj4gPj4gU2lnbmVkLW9mZi1ieTogVHVzaGFyIEJlaGVyYSA8dHVzaGFyLmJlaGVyYUBs
-aW5hcm8ub3JnPg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBJbmRlcnBhbCBTaW5naCA8aW5kZXJwYWwu
-c2luZ2hAbGluYXJvLm9yZz4NCg0KQWNrZWQtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
-QHNhbXN1bmcuY29tPg0KDQo+ID4+IC0tLQ0KPiA+PiBUaGUgcGF0Y2ggaXMgYmFzZWQgb24gdjMu
-My1yYzEuDQo+ID4+DQo+ID4+ICBkcml2ZXJzL2NwdWZyZXEvZXh5bm9zLWNwdWZyZXEuYyB8ICAg
-IDIgKysNCj4gPj4gIDEgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9u
-cygtKQ0KPiA+Pg0KPiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2V4eW5vcy1jcHVm
-cmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvZXh5bm9zLWNwdWZyZXEuYw0KPiA+PiBpbmRleCA1NDY3
-ODc5Li43Y2ZiNTE2IDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJzL2NwdWZyZXEvZXh5bm9zLWNw
-dWZyZXEuYw0KPiA+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvZXh5bm9zLWNwdWZyZXEuYw0KPiA+
-PiBAQCAtMjEwLDYgKzIxMCw4IEBAIHN0YXRpYyBpbnQgZXh5bm9zX2NwdWZyZXFfY3B1X2luaXQo
-c3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQo+ID4+ICANCj4gPj4gIAljcHVmcmVxX2Zy
-ZXF1ZW5jeV90YWJsZV9nZXRfYXR0cihleHlub3NfaW5mby0+ZnJlcV90YWJsZSwgcG9saWN5LT5j
-cHUpOw0KPiA+PiAgDQo+ID4+ICsJbG9ja2luZ19mcmVxdWVuY3kgPSBleHlub3NfZ2V0c3BlZWQo
-MCk7DQo+ID4+ICsNCj4gPj4gIAkvKiBzZXQgdGhlIHRyYW5zaXRpb24gbGF0ZW5jeSB2YWx1ZSAq
-Lw0KPiA+PiAgCXBvbGljeS0+Y3B1aW5mby50cmFuc2l0aW9uX2xhdGVuY3kgPSAxMDAwMDA7DQo+
-ID4+ICANCj4gPiANCj4gPiANCj4gDQo+IA0KPiAtLSANCj4gVHVzaGFyIEJlaGVyYQ0KPiANCj4g
-ICAgICAgICAgDQo=
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dave Jones <davej@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Anton Vorontsov <anton.vorontsov@linaro.org>, Russell King <linux@arm.linux.org.uk>, Oleg Nesterov <oleg@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Nicolas Pitre <nico@fluxnic.net>, Mike Chan <mike@android.com>, Todd Poynor <toddpoynor@google.com>, cpufreq@vger.kernel.org, kernel-team@android.com, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Arjan Van De Ven <arjan@infradead.org>
 
 
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Wed, 2012-02-08 at 15:23 -0500, Dave Jones wrote:
+> > I think the biggest mistake we ever made with cpufreq was making it
+> > so configurable. If we redesign it, just say no to plugin governors,
+> > and
+> > yes to a lot fewer sysfs knobs.
+> > 
+> > So, provide mechanism to kill off all the governors, and there's a
+> > migration path from what we have now to something that just works
+> > in a lot more cases, while remaining configurable enough for the
+> > corner-cases.
+> 
+> On the other hand, the need for schedulable contxts may not 
+> necessarily go away.
+
+We will support it, but the *sane* hw solution is where 
+frequency transitions can be done atomically. Most workloads 
+change their characteristics very quickly, and so does their 
+power management profile change.
+
+The user-space driven policy model failed for that reason: it 
+was *way* too slow in reacting) - and slow hardware transitions 
+suck for a similar reason as well.
+
+We accomodate all hardware as well as we can, but we *design* 
+for proper hardware. So Peter is right, this should be done 
+properly.
+
+Thanks,
+
+	Ingo
