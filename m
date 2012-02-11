@@ -1,79 +1,64 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
-Date: Sat, 11 Feb 2012 15:33:25 +0000
-Message-ID: <20120211153324.GC31887@opensource.wolfsonmicro.com>
-References: <20120208013959.GA24535@panacea>
- <1328670355.2482.68.camel@laptop>
- <20120208202314.GA28290@redhat.com>
- <1328736834.2903.33.camel@pasglop>
- <20120209075106.GB18387@elte.hu>
- <4F35DD3E.4020406@codeaurora.org>
- <20120211143951.GA24564@sirena.org.uk>
- <1328971983.11320.5.camel@laptop>
+From: Ben Hutchings <ben@decadent.org.uk>
+Subject: [PATCH 0/5] Clean up x86 CPU auto-loading
+Date: Sat, 11 Feb 2012 22:44:16 +0000
+Message-ID: <1329000256.325.48.camel@deadeye>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FsscpQKzF/jJk6ya"
+Content-Type: multipart/signed; micalg="pgp-sha512";
+	protocol="application/pgp-signature"; boundary="=-hlG/ip2dduj/cPnUc1lM"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1328971983.11320.5.camel@laptop>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Ingo Molnar <mingo@elte.hu>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Todd Poynor <toddpoynor@google.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@fluxnic.net>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, linaro-kernel@lists.linaro.org, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org, Thomas Renninger <trenn@suse.de>, Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
 
 
---FsscpQKzF/jJk6ya
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-hlG/ip2dduj/cPnUc1lM
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Feb 11, 2012 at 03:53:03PM +0100, Peter Zijlstra wrote:
-> On Sat, 2012-02-11 at 14:39 +0000, Mark Brown wrote:
+This series fixes a number of apparent bugs in the recent changes to
+enable auto-loading by x86 CPU ID.
 
-> > For step downs this isn't such a big deal as we don't often care if the
-> > voltage drops immediately but for step ups it's critical as if the
-> > voltage hasn't ramped before the CPU tries to run at the higher
-> > frequency the CPU will brown out.=20
+Ben.
 
-> Why isn't all this done by micro-controllers, software writes a desired
-> state in some machine register (fast), micro-controller sets about
-> making it so in an asynchronous way. If it finds the settings have
-> changed by the time it reached its former goal, goto 1.
+Ben Hutchings (5):
+  x86/cpu: Fix overrun check in arch_print_cpu_modalias()
+  x86/cpu: Clean up modalias feature matching
+  intel_idle: Fix ID for Nehalem-EX Xeon in device ID table
+  intel_idle: Revert change of auto_demotion_flags for Nehalem
+  powernow-k7: Fix CPU family number
 
-*Something* is going to have to wait for all the steps to take
-place, if when frequency scaling you're not particlarly worried about
-waiting for the the actual completion of your frequency change then
-doing it in the CPU isn't that hard - you just post the request off
-elsewhere and let it get on with trying implement whatever the last
-request it saw was (along with all the other constraints it's seeing).
-Modulo non-trivial implementation issues, of couse.
+ arch/x86/kernel/cpu/match.c   |    5 ++---
+ drivers/cpufreq/powernow-k7.c |    2 +-
+ drivers/idle/intel_idle.c     |   12 ++++--------
+ scripts/mod/file2alias.c      |    5 +++--
+ 4 files changed, 10 insertions(+), 14 deletions(-)
 
-> Having to actually wait for this in software is quite ridiculous.
+--=20
+1.7.9
 
-Well, it's also not terribly hard.  There's use cases for having this
-stuff offloaded but if you're not doing that stuff then why deal with
-the complication of designing the hardware?
 
---FsscpQKzF/jJk6ya
+
+--=-hlG/ip2dduj/cPnUc1lM
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAEBAgAGBQJPNoo+AAoJEBus8iNuMP3d/moP/1Q4g4uUqE3lVEbCySa4UgdT
-WdYgyRB91UPrA6Qy3TEjdvj0mD5t4Fz8CJqtrtWi1e9D8IU0O/zyNIvvHy2HKjhH
-o/S7ktq2CxevBJRz5GLt1Ip71E+UUQ8y7sUtdeXSw4kioYN5Hz6ioixKcseoBNzO
-2flvz1gLzpsZXaGVr8pJcDDH2iNFcubD1le56pu50BEmwnbxZZC+qVfYJ8cT4e35
-2MJvleWw+lhjS9lE81l9jKQwCnlFCSJ/ThxKO/x/CAoerNg9g68C/nFAko20x78o
-ZDBxV3Ob+eYRdTep6nOX1BY8AlDxT6+Oge6TA2mxhwnYm/3qw4o0R2D4FPf8RlBs
-KI25j4KiF5dYtiQXsKkEfgrNQEBjI38opX5Cmt6+zh3GlbOdCXZEnf4zIGpZIfrI
-tBQ8tLw5ALH/nfeOAasR/AydSm8HbH6LiXYwoT1U6X5NwWaOV5qTipsUj2ApcoF6
-j3IMCeVdIeHFH48wLYNr16PrWFje+dKvc/yiV9aEZ+BIEWeYIPOTrge2oZldEJlh
-3G8NWPXR63latIPB7BlB7Jbncqva03P1gL6p/jLESfwE6GJ3NjxxNZYtL//Zu/Vm
-vYcDM49Im7P0NZRe6rr7gX/6hEfKou11NNsGZY2tteivGhijtBX7YBOoBDrXCYm9
-8WB74bASjR/+bMBbkwzS
-=rfB0
+iQIVAwUATzbvQOe/yOyVhhEJAQq82hAA1ZDowaciAZ2MLM/WEMRsvGLyP5EhvkDu
+rWSb8UQQ/klTIqjYiJM4M0TVOfro+RqR5zojJJX0ZrjEUg0h8V5sfXctgREvFGWB
+zO2PlJVmBKgVo2uXl9pEXbc5DIo2nqp2+BkNLnVZo8oLbXfjXCCIsHrERGOvZ678
+rqXDAVqxalK3tVHmkKAJak45K7ZslmNkvFCJJgKlSGFUDCbO50v1rM1r1fmoP5cI
+fvjVQW0dN8adxCpedOh6bPLr7oZGf9rug82xBTDqKB3RzV5fA/byrKAzKbymPw3E
+YCw+/BrSt/5Ej6eFuytTLgJdiTJ4LHiQv+89JNxLOjaXgrivaZfbtB3PoExa4dJg
+dppNakwGHVce5SQnffihWy/b0rPlUFWey+vTrQSpTIrgAF/Pyg1VugUWVzg/EVDH
+6OWC2OIVKqT4OrrMjX9jgQ4aeQUmZMOXFHruTHG03xqDyBxolQS4CxwGBmaVMO8D
+U9525bgG27BUmYqKmwXgAq+vqzitcNcGi7NFp/Kfth/LkzXrGdKkqlvfVM8OlLEM
+ZRWN/9rFzxxAxkKsgap+f9bJuAJicyotkSEBZxFXsIhaQUVh+CNjrP1+XDEh7sTw
+TOhJaZJgTN5XA0TGANhL9obweY2LXk92rfUuQ16BlXCVCL+JKil4vaS/qLiy0rw1
+TLW7E4oJqDQ=
+=6Pck
 -----END PGP SIGNATURE-----
 
---FsscpQKzF/jJk6ya--
+--=-hlG/ip2dduj/cPnUc1lM--
