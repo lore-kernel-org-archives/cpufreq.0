@@ -1,83 +1,69 @@
 From: Ben Hutchings <ben@decadent.org.uk>
-Subject: [PATCH] powernow-k8: Use cached power management CPUID information
-Date: Sat, 11 Feb 2012 23:18:09 +0000
-Message-ID: <1329002289.325.68.camel@deadeye>
+Subject: Is e_powersaver safe to auto-load?
+Date: Sat, 11 Feb 2012 23:33:10 +0000
+Message-ID: <1329003190.325.78.camel@deadeye>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg="pgp-sha512";
+	protocol="application/pgp-signature"; boundary="=-a7UKWTMNGxxGlO1S3DEP"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org
+To: Dave Jones <davej@redhat.com>, =?UTF-8?Q?Rafa=C5=82?= Bilski <rafalbilski@interia.pl>
+Cc: cpufreq@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
 
-The common x86 CPU initialisation code reads some of the necessary CPUID
-information into x86_cpu_data::x86_power.  Use that to reduce the code
-size slightly.
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
-Compile-tested only.
+--=-a7UKWTMNGxxGlO1S3DEP
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+The e_powersaver driver comes with a dire warning in Kconfig help:
+
+    VIA C7 Enhanced PowerSaver (DANGEROUS)
+
+    This adds the CPUFreq driver for VIA C7 processors.  However, this driv=
+er
+    does not have any safeguards to prevent operating the CPU out of spec
+    and is thus considered dangerous.  Please use the regular ACPI cpufreq
+    driver, enabled by CONFIG_X86_ACPI_CPUFREQ.
+
+Following the bug report <http://bugs.debian.org/566208>, Debian's
+cpufrequtils init script was changed to stop loading it.  The driver was
+later disabled in Debian kernel configurations.  Rafa=C5=82 appears to have
+made it somewhat safer since then, but the help text has not been
+changed.
+
+Since commit fa8031aefec0cf7ea6c2387c93610d99d9659aa2 ('cpufreq: Add
+support for x86 cpuinfo auto loading v4') the driver will be auto-loaded
+on some systems.  If it is still dangerous then it should surely not be
+auto-loaded.  But if it is now believed to be safe then the help text
+should be updated to say so.
 
 Ben.
 
- drivers/cpufreq/powernow-k8.c |   15 +++------------
- drivers/cpufreq/powernow-k8.h |    2 --
- 2 files changed, 3 insertions(+), 14 deletions(-)
+--=20
+Ben Hutchings
+The two most common things in the universe are hydrogen and stupidity.
 
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index c0e8164..b1403c1 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -532,7 +532,7 @@ MODULE_DEVICE_TABLE(x86cpu, powernow_k8_ids);
- 
- static void check_supported_cpu(void *_rc)
- {
--	u32 eax, ebx, ecx, edx;
-+	u32 eax;
- 	int *rc = _rc;
- 
- 	*rc = -ENODEV;
-@@ -547,23 +547,14 @@ static void check_supported_cpu(void *_rc)
- 			return;
- 		}
- 
--		eax = cpuid_eax(CPUID_GET_MAX_CAPABILITIES);
--		if (eax < CPUID_FREQ_VOLT_CAPABILITIES) {
--			printk(KERN_INFO PFX
--			       "No frequency change capabilities detected\n");
--			return;
--		}
--
--		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
--		if ((edx & P_STATE_TRANSITION_CAPABLE)
-+		if ((boot_cpu_data.x86_power & P_STATE_TRANSITION_CAPABLE)
- 			!= P_STATE_TRANSITION_CAPABLE) {
- 			printk(KERN_INFO PFX
- 				"Power state transitions not supported\n");
- 			return;
- 		}
- 	} else { /* must be a HW Pstate capable processor */
--		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
--		if ((edx & USE_HW_PSTATE) == USE_HW_PSTATE)
-+		if ((boot_cpu_data.x86_power & USE_HW_PSTATE) == USE_HW_PSTATE)
- 			cpu_family = CPU_HW_PSTATE;
- 		else
- 			return;
-diff --git a/drivers/cpufreq/powernow-k8.h b/drivers/cpufreq/powernow-k8.h
-index 3744d26..a81753e 100644
---- a/drivers/cpufreq/powernow-k8.h
-+++ b/drivers/cpufreq/powernow-k8.h
-@@ -62,8 +62,6 @@ struct powernow_k8_data {
- #define CPUID_XMOD_REV_MASK		0x000c0000
- #define CPUID_XFAM_10H			0x00100000	/* family 0x10 */
- #define CPUID_USE_XFAM_XMOD		0x00000f00
--#define CPUID_GET_MAX_CAPABILITIES	0x80000000
--#define CPUID_FREQ_VOLT_CAPABILITIES	0x80000007
- #define P_STATE_TRANSITION_CAPABLE	6
- 
- /* Model Specific Registers for p-state transitions. MSRs are 64-bit. For     */
--- 
-1.7.9
+--=-a7UKWTMNGxxGlO1S3DEP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
+iQIVAwUATzb6tue/yOyVhhEJAQoXqQ//Z9ND/9+ZJ9VB/DqJPyYUJkovnu3M1ZW/
+qETECYUAXKyPGtsAw7WevZGb+KjvwlRPlt18rPnj7b/dv5G7aLDbR8yQBgsnisAL
+Wud7MQcZXlCPD+Y6GOmRM0nl3wFzi+FYk6bCkHqmVhMOZP/OKa7GrJ3HVj2Tju02
+AYxIspX+YnBjDypcDFeXlW2af54ZdYkDW5BSHPaXA6wwk3qqhkvHU6LvS4hfkKq1
+Kya6yBB3h1Gaa17oatZpimxiFGgxoxLIh/lNMrxFouMhS/nyqXzQPrHD8hx6aNZ/
+O8BR8xu189kgiQqBvrvHKMymrrjn66oX8dscB1ruXySbzKBLlWOOwVtMbnul3YGC
+f8CKEPalvviWWrCB+VqzT2+T1y29ZtDIn0TZYVW0onN//SJnSZu//+A7uzwIv4UM
+sVFeqoWWRzCtli4J42uJ2k0+cMMNGhUFf5J/+395cG8OMm/pKYNoRbcHMMLq4Wkv
+KFGVWVmgRpVslLfsE7PhJ8j+09+CMCrwJY6kcpaqCD7xuqslrp0UJGBAh947ube2
+GeMDxqNceuqX15nf/anwqbK9Z1UGqk3H15Di0h6ZezVOuzVSPc3IJHVTwajnBEAC
+6rZ8CMPViTz+6aYwmpYXllv0M+RF6yOzBbwTX6BIFGcFGKZWL4Unvi3bcOeSHNUN
+uYaSaNBVX7A=
+=4rtR
+-----END PGP SIGNATURE-----
+
+--=-a7UKWTMNGxxGlO1S3DEP--
