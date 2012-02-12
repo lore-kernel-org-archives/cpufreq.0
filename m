@@ -1,93 +1,55 @@
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-Subject: Re: Is e_powersaver safe to auto-load?
-Date: Sun, 12 Feb 2012 12:30:54 +0000
-Message-ID: <4F37B0FE.20600@interia.pl>
-References: <1329003190.325.78.camel@deadeye>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
+Date: Mon, 13 Feb 2012 08:33:10 +1100
+Message-ID: <1329082390.3019.17.camel@pasglop>
+References: <20120208013959.GA24535@panacea>
+	 <1328670355.2482.68.camel@laptop> <20120208202314.GA28290@redhat.com>
+	 <1328736834.2903.33.camel@pasglop> <20120209075106.GB18387@elte.hu>
+	 <4F35DD3E.4020406@codeaurora.org>  <20120211143951.GA24564@sirena.org.uk>
+	 <1328971983.11320.5.camel@laptop>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1329003190.325.78.camel@deadeye>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=interia.pl;
-	s=biztos; t=1329049808;
-	bh=YlybxSVzhcqofQmICdxkik9DrGaNVm8FRYzFimQoONk=;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:
-	 Subject:References:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-Interia-Antivirus;
-	b=dOVfyvbvHadZtWKvvsofMzc+CPJa0rN41GU1Dq7xQTgl1zO8jX9x7YPPoeKQl5eT0
-	 AXP0fmhjORGBs9LTxeRY429dXSTKOShm7G2Q8/0IO6zdng18qHZGH/yGsum7YFfsUa
-	 PpQN+bKR5dmSdMiX2QCCnOjNG6IG4a9ccho7RXPA=
+In-Reply-To: <1328971983.11320.5.camel@laptop>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Saravana Kannan <skannan@codeaurora.org>, Ingo Molnar <mingo@elte.hu>, Todd Poynor <toddpoynor@google.com>, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@fluxnic.net>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, linaro-kernel@lists.linaro.org, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>
 
+On Sat, 2012-02-11 at 15:53 +0100, Peter Zijlstra wrote:
+> On Sat, 2012-02-11 at 14:39 +0000, Mark Brown wrote:
+> > 
+> > For step downs this isn't such a big deal as we don't often care if the
+> > voltage drops immediately but for step ups it's critical as if the
+> > voltage hasn't ramped before the CPU tries to run at the higher
+> > frequency the CPU will brown out. 
+> 
+> Why isn't all this done by micro-controllers, software writes a desired
+> state in some machine register (fast), micro-controller sets about
+> making it so in an asynchronous way. If it finds the settings have
+> changed by the time it reached its former goal, goto 1.
+> 
+> Having to actually wait for this in software is quite ridiculous.
 
-> The e_powersaver driver comes with a dire warning in Kconfig help:
->
->      VIA C7 Enhanced PowerSaver (DANGEROUS)
->
->      This adds the CPUFreq driver for VIA C7 processors.  However, th=
-is driver
->      does not have any safeguards to prevent operating the CPU out of=
- spec
->      and is thus considered dangerous.  Please use the regular ACPI c=
-pufreq
->      driver, enabled by CONFIG_X86_ACPI_CPUFREQ.
->
-> Following the bug report<http://bugs.debian.org/566208>, Debian's
-> cpufrequtils init script was changed to stop loading it.  The driver =
-was
-> later disabled in Debian kernel configurations.  Rafa=C5=82 appears t=
-o have
-> made it somewhat safer since then, but the help text has not been
-> changed.
->
-> Since commit fa8031aefec0cf7ea6c2387c93610d99d9659aa2 ('cpufreq: Add
-> support for x86 cpuinfo auto loading v4') the driver will be auto-loa=
-ded
-> on some systems.  If it is still dangerous then it should surely not =
-be
-> auto-loaded.  But if it is now believed to be safe then the help text
-> should be updated to say so.
->
-> Ben.
->
-To best of my knowledge driver is safe. It is/was safe to use it on all=
- C7 and
-Nano processors. Both C7 and Nano don't allow to set frequency or volta=
-ge
-from outside the processor specs. Nano doesn't allow to set voltage out=
-side
-the specs of the given frequency. It will reduce frequency if voltage i=
-s too low.
-But it was unsafe to use it on systems using faster then neccesary proc=
-essor
-running on lower speed. Which means systems using 1GHz CPu running all
-the time on 400MHz due to lack of neccesary heatsink. It should be safe
-now because driver is respecting BIOS frequency limit.
-But to be honest it isn't needed anymore. Only people with C7-A process=
-ors
-may need it because their BIOS doesn't have ACPI P-States tables or the=
-se
-tables are invalid. Some people with C7-D without "paralax " may need i=
-t
-because it allows now to set lower voltage for the maximum frequency
-(most of VIA processors were 1,6GHz reduced to lower frequency and high=
-er
-voltage after quality testing). Otherwise it is to no use as "paralax" =
-processors
-will use values set by driver as a guide because P-states tables are ha=
-rdcoded
-into them. And nobody cares if driver is using hardware or SMI as long =
-it is
-doing it's job.
-So in my opinion this driver should not be autoloaded. Only "acpi p-sta=
-tes"
-driver can be autoloaded and if it fails it should be user responsibili=
-ty to
-modprobe "e_powersaver".
+Not necessarily micro-controllers no. Or rather, it's generally done by
+uC (or system controllers) on desktop or server machines, but not on
+embedded (ie. phones) where arguably that's where it is the most
+important :-)
 
-Sorry for bad english.
-Rafa=C5=82
+Now often (but not always) the trigger to initiate a change is indeed a
+simple register or register-based gpio, so that's fast. But you also
+often have to wait for a transition to be complete before initiating
+another one, or sychronize between voltage and frequency.
+
+For example, if you are ramping up, you need to up the voltage first,
+then wait for it to reach the nominal value & stabilize, then ramp up
+the frequency. It's not that often automated.
+
+Then there's the case where to communicate with those chips, you have to
+go via a bus such as i2c which requires schedulable contexts.
+
+Cheers,
+Ben.
+
 
