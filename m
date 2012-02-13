@@ -1,50 +1,37 @@
-From: Thomas Renninger <trenn@suse.de>
+From: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH 0/5] Clean up x86 CPU auto-loading
-Date: Mon, 13 Feb 2012 00:10:56 +0100
-Message-ID: <201202130010.57492.trenn@suse.de>
-References: <1329000256.325.48.camel@deadeye>
+Date: Sun, 12 Feb 2012 17:26:44 -0800
+Message-ID: <4F3866D4.9060209@zytor.com>
+References: <1329000256.325.48.camel@deadeye> <201202130010.57492.trenn@suse.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1329000256.325.48.camel@deadeye>
+In-Reply-To: <201202130010.57492.trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Ben Hutchings <ben@decadent.org.uk>, gregkh@linuxfoundation.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Thomas Renninger <trenn@suse.de>
+Cc: Ben Hutchings <ben@decadent.org.uk>, gregkh@linuxfoundation.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
 
-On Saturday 11 February 2012 23:44:16 Ben Hutchings wrote:
-> This series fixes a number of apparent bugs in the recent changes to
-> enable auto-loading by x86 CPU ID.
+On 02/12/2012 03:10 PM, Thomas Renninger wrote:
+> On Saturday 11 February 2012 23:44:16 Ben Hutchings wrote:
+>> This series fixes a number of apparent bugs in the recent changes to
+>> enable auto-loading by x86 CPU ID.
+> 
+> These all look correct.
+> I should have spotted the intel_idle modifications myself.
+> Good catch(es).
+> 
+> Greg: I expect these should get queued in your driver-core-next branch?
+> 
 
-These all look correct.
-I should have spotted the intel_idle modifications myself.
-Good catch(es).
+Either that or we can carry them in -tip as x86 patches, since there
+isn't a pending conflict this time.
 
-Greg: I expect these should get queued in your driver-core-next branch?
+	-hpa
 
-Thanks,
 
-    Thomas
-> 
-> Ben.
-> 
-> Ben Hutchings (5):
->   x86/cpu: Fix overrun check in arch_print_cpu_modalias()
->   x86/cpu: Clean up modalias feature matching
->   intel_idle: Fix ID for Nehalem-EX Xeon in device ID table
->   intel_idle: Revert change of auto_demotion_flags for Nehalem
->   powernow-k7: Fix CPU family number
-> 
->  arch/x86/kernel/cpu/match.c   |    5 ++---
->  drivers/cpufreq/powernow-k7.c |    2 +-
->  drivers/idle/intel_idle.c     |   12 ++++--------
->  scripts/mod/file2alias.c      |    5 +++--
->  4 files changed, 10 insertions(+), 14 deletions(-)
-> 
-> -- 
-> 1.7.9
-> 
-> 
-> 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
