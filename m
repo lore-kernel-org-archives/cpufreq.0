@@ -1,63 +1,42 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Subject: Re: [PATCH] [CPUFREQ] EXYNOS: Initialize locking_frequency with initial
- frequency
-Date: Mon, 13 Feb 2012 15:24:56 +0530
-Message-ID: <4F38DDF0.6030609@linaro.org>
-References: <1327466713-29101-1-git-send-email-tushar.behera@linaro.org> <4F291D44.4040502@linaro.org> <4F334ECA.5000507@linaro.org>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] EXYNOS: Initialize locking_frequency with
+ initial frequency
+Date: Mon, 13 Feb 2012 09:35:55 -0500
+Message-ID: <20120213143555.GA1793@redhat.com>
+References: <1327466713-29101-1-git-send-email-tushar.behera@linaro.org>
+ <4F291D44.4040502@linaro.org>
+ <4F334ECA.5000507@linaro.org>
+ <4F38DDF0.6030609@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <4F334ECA.5000507@linaro.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4F38DDF0.6030609@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, davej@redhat.com
-Cc: jc.lee@samsung.com, myungjoo.ham@samsung.com
+Content-Transfer-Encoding: 7bit
+To: Tushar Behera <tushar.behera@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, jc.lee@samsung.com, myungjoo.ham@samsung.com
 
-Hi Dave,
+On Mon, Feb 13, 2012 at 03:24:56PM +0530, Tushar Behera wrote:
 
-On 02/09/2012 10:12 AM, Tushar Behera wrote:
-> Ping
-> 
-> On 02/01/2012 04:38 PM, Tushar Behera wrote:
->> Ping
->>
->> On 01/25/2012 10:15 AM, Tushar Behera wrote:
->>> As per definition, locking_frequency is the initial frequency which is
->>> set by boot-loader. Hence the value is updated with the initial value
->>> during boot time init call.
->>>
->>> This code was present in exynos210-cpufreq.c before this consolidation
->>> patch.
->>> - a125a17fa61a ([CPUFREQ] EXYNOS: Make EXYNOS common cpufreq driver).
->>>
->>> Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
->>> Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
->>> ---
->>> The patch is based on v3.3-rc1.
->>>
->>>  drivers/cpufreq/exynos-cpufreq.c |    2 ++
->>>  1 files changed, 2 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
->>> index 5467879..7cfb516 100644
->>> --- a/drivers/cpufreq/exynos-cpufreq.c
->>> +++ b/drivers/cpufreq/exynos-cpufreq.c
->>> @@ -210,6 +210,8 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>>  
->>>  	cpufreq_frequency_table_get_attr(exynos_info->freq_table, policy->cpu);
->>>  
->>> +	locking_frequency = exynos_getspeed(0);
->>> +
->>>  	/* set the transition latency value */
->>>  	policy->cpuinfo.transition_latency = 100000;
->>>  
->>
->>
-> 
-> 
+ > >>> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+ > >>> index 5467879..7cfb516 100644
+ > >>> --- a/drivers/cpufreq/exynos-cpufreq.c
+ > >>> +++ b/drivers/cpufreq/exynos-cpufreq.c
+ > >>> @@ -210,6 +210,8 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ > >>>  
+ > >>>  	cpufreq_frequency_table_get_attr(exynos_info->freq_table, policy->cpu);
+ > >>>  
+ > >>> +	locking_frequency = exynos_getspeed(0);
+ > >>> +
+ > >>>  	/* set the transition latency value */
+ > >>>  	policy->cpuinfo.transition_latency = 100000;
+ > 
+ > Any concerns with this patch?
 
-Any concerns with this patch?
+it's in my queue for applying to -next. I'll clear everything out today.
 
--- 
-Tushar Behera
+	Dave
+
+ 
