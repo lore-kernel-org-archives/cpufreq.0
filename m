@@ -1,32 +1,31 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/5] Clean up x86 CPU auto-loading
-Date: Mon, 13 Feb 2012 14:55:26 -0800
-Message-ID: <4F3994DE.2040408@zytor.com>
-References: <1329000256.325.48.camel@deadeye> <201202130010.57492.trenn@suse.de> <4F3866D4.9060209@zytor.com> <20120213222607.GA19465@kroah.com>
+From: J Webster <jw.jwebster@gmail.com>
+Subject: Re: speed throttle to 800 cpufreq Ocelot
+Date: Tue, 14 Feb 2012 09:10:34 +0000
+Message-ID: <4F3A250A.5030107@gmail.com>
+References: <CAPKGfw_Ab9p4Kh+EbPRCw+7xC5e=iZj7g3DH+_dvJHvVnxGPmw@mail.gmail.com> <20120213193425.GA2455@redhat.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120213222607.GA19465@kroah.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        bh=EWvWy2gksNfi1pwu5+mOaDnq+ulnN7O8vQc8OrqOea0=;
+        b=af+iAGcsJ8Q+1wxLLiKJLdkMXF/1xUjOxI7NV7+AtSSkE1cZaZ53p1Zzt/3vy64Lrs
+         ztOy1XsjnTxLuWBDJjgZXEVnHR73lJnlQz4OU44gB3gFTXqrz9ctAU9JuQE+Kc3Nv0oA
+         htldkK8WYjgfB7+xrMMwkLt5HiNytRQyr13PI=
+In-Reply-To: <20120213193425.GA2455@redhat.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Thomas Renninger <trenn@suse.de>, Ben Hutchings <ben@decadent.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, Andi Kleen <ak@linux.intel.com>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>
 
-On 02/13/2012 02:26 PM, Greg KH wrote:
-> On Sun, Feb 12, 2012 at 05:26:44PM -0800, H. Peter Anvin wrote:
-> 
-> Ok, if there are no dependancies on the driver-core-next tree, please
-> take this through the x86 trees.
-> 
+ >   driver: p4-clockmod don't use this driver. it's nothing but 
+disappointment and doesn't save you power. I see the inspiron 9300 has a 
+pentium M. Some of these lacked EST iirc, so you're probably completely 
+out of luck, and can't scale clock speed.
 
-My mistake; I thought these changes were upstream already.  So yes,
-please take them.
-
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-
-	-hpa
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+How can I change the driver? This is what Ocelot installed by itself.
+It seems strange that the Pentium would be left out.
+Isn't there a workaround to get the speed up to max?
+Even the indicator-cpufreq does not work.
