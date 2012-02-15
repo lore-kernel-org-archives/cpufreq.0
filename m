@@ -1,17 +1,18 @@
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
-Date: Wed, 15 Feb 2012 14:38:05 +0100
-Message-ID: <1329313085.2293.106.camel@twins>
+Date: Wed, 15 Feb 2012 14:38:04 +0100
+Message-ID: <1329313084.2293.105.camel@twins>
 References: <20120208013959.GA24535@panacea>
  <1328670355.2482.68.camel@laptop> <20120208202314.GA28290@redhat.com>
  <1328736834.2903.33.camel@pasglop> <20120209075106.GB18387@elte.hu>
- <4F35DD3E.4020406@codeaurora.org> <20120211144530.GA497@elte.hu>
- <4F3AEC4E.9000303@codeaurora.org>
+ <4F35DD3E.4020406@codeaurora.org> <20120211143951.GA24564@sirena.org.uk>
+ <1328971983.11320.5.camel@laptop>
+ <20120211153324.GC31887@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <4F3AEC4E.9000303@codeaurora.org>
+In-Reply-To: <20120211153324.GC31887@opensource.wolfsonmicro.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -22,61 +23,27 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: linux-arm-kernel-bounces@lists.infradead.org
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@fluxnic.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, Todd Poynor <toddpoynor@google.com>, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, kernel-team@android.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>, Nicolas Pitre <nico@fluxnic.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>, Todd Poynor <toddpoynor@google.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>
 
-On Tue, 2012-02-14 at 15:20 -0800, Saravana Kannan wrote:
-> On 02/11/2012 06:45 AM, Ingo Molnar wrote:
-> >
-> > * Saravana Kannan<skannan@codeaurora.org>  wrote:
-> >
-> >> When you say accommodate all hardware, does it mean we will
-> >> keep around CPUfreq and allow attempts at improving it? Or we
-> >> will completely move to scheduler based CPU freq scaling, but
-> >> won't try to force atomicity? Say, may be queue up a
-> >> notification to a CPU driver to scale up the frequency as soon
-> >> as it can?
-> >
-> > I don't think we should (or even could) force atomicity - we
-> > adapt to whatever the hardware can do.
+On Sat, 2012-02-11 at 15:33 +0000, Mark Brown wrote:
+> > Having to actually wait for this in software is quite ridiculous.
 > 
-> May be I misread the emails from Peter and you, but it sounded like the 
-> idea being proposed was to directly do a freq change from the scheduler. 
-> That would force the freq change API to be atomic (if it can be 
-> implemented is another issue). That's what I was referring to when I 
-> loosely used the terms "force atomicity".
+> Well, it's also not terribly hard. 
 
-Right, so we all agree cpufreq wants scheduler notifications because
-polling sucks. The result is indeed you get to do cpufreq from atomic
-context, because scheduling from the scheduler is 'interesting'.
+Having to schedule from the scheduler is. Which is exactly the situation
+you'll end up with if you want scheduler driven cpufreq, which I thought
+everybody wanted because polling state sucks.
 
-> > But the design should be directed at systems where frequency
-> > changes can be done in a reasonably fast manner. That is what he
-> > future is - any change we initiate today takes years to reach
-> > actual products/systems.
-> 
-> As long as the new design doesn't treat archs needing schedulable 
-> context to set freq as a second class citizen, I think we would all be 
-> happy.
+>  There's use cases for having this
+> stuff offloaded but if you're not doing that stuff then why deal with
+> the complication of designing the hardware? 
 
-I would really really like to do just that, if only to encourage
-hardware people to just do the thing in hardware. Wanting both ultimate
-power savings and crappy hardware just doesn't work -- and yes I'm
-sticking to PMIC on i2c is shit as is having to manually sync up voltage
-and freq changes.
+Because doing it in software is more expensive?
 
->  Because it's not just a matter of it being old hardware. 
-> Sometimes the decision to let the SW do the voltage scaling also comes 
-> down to HW cost. Considering Linux runs on such a wide set of archs, I 
-> think we shouldn't treat the need for schedulable context for freq 
-> setting as "broken" or "not sane".
+Penny-wise pound-foolish like thing.. you make the software requirements
+more complex, which results in more bugs (more cost in debugging), more
+runtime (for doing the 'software' thing), less power savings.
 
-So you'd rather spend double the money on trying to get software working
-on broken ass hardware?
-
-A lot of these lets save 3 transistors, software can fix it up, hardware
-feat^Wfailures end up in spending more than the savings on making the
-software doing the fixup. I'm sure tglx can share a few stories here.
-
-Now we could probably cludge something, and we might have to, but I'll
-hate you guys for it.
+Esp since all this uC/system-controller stuff is already available and
+validated.
