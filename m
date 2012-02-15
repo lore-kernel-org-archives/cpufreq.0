@@ -1,39 +1,58 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
-Date: Wed, 15 Feb 2012 17:09:07 +0100
-Message-ID: <1329322147.2293.145.camel@twins>
-References: <1328670355.2482.68.camel@laptop>
-	 <20120208202314.GA28290@redhat.com> <1328736834.2903.33.camel@pasglop>
-	 <20120209075106.GB18387@elte.hu> <4F35DD3E.4020406@codeaurora.org>
-	 <20120211144530.GA497@elte.hu> <4F3AEC4E.9000303@codeaurora.org>
-	 <1329313085.2293.106.camel@twins>
-	 <20120215140245.GB27825@n2100.arm.linux.org.uk>
-	 <1329318063.2293.136.camel@twins>
-	 <20120215160028.GD27825@n2100.arm.linux.org.uk>
+From: Kevin Hilman <khilman@ti.com>
+Subject: [PATCH] cpufreq: OMAP driver depends CPUfreq tables
+Date: Wed, 15 Feb 2012 11:21:49 -0800
+Message-ID: <1329333709-29964-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120215160028.GD27825@n2100.arm.linux.org.uk>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Ingo Molnar <mingo@elte.hu>, linaro-kernel@lists.linaro.org, Nicolas Pitre <nico@fluxnic.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, Todd Poynor <toddpoynor@google.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Transfer-Encoding: 7bit
+To: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>
 
-On Wed, 2012-02-15 at 16:00 +0000, Russell King - ARM Linux wrote:
-> 
-> > A third possibility is to self-IPI and take it from there.. assuming
-> > these platforms can actually self-IPI.
-> 
-> Even if there was an IPI (not talking about SMP anyway) I'm not sure
-> what good it would be.  We can (and do) get an IRQ from the LCD
-> controller when its shutdown is complete, but that would have to be
-> somehow propagated back up to the cpufreq code.  And the cpufreq code
-> would have to know that the LCD controller was alive and therefore had
-> to be waited for.  All sounds rather yucky to me. 
+From: Russell King <rmk+kernel@arm.linux.org.uk>
 
-If can self-ipi from the scheduler context (which has IRQs disabled),
-once you get to the ipi handler your scheduler locks are gone and you
-can queue a worklet or wake some kthread to do all the sleeping stuff.
+The OMAP driver depends on CPUfreq table support for creating a table
+of frequencies from the OPP layer.  Ensure that it's build to avoid
+link-time errors.
 
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ drivers/cpufreq/Kconfig.arm |    5 +++++
+ drivers/cpufreq/Makefile    |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index e0664fe..015f026 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -2,6 +2,11 @@
+ # ARM CPU Frequency scaling drivers
+ #
+ 
++config ARM_OMAP2PLUS_CPUFREQ
++	bool
++	depends on ARCH_OMAP2PLUS
++	select CPU_FREQ_TABLE
++
+ config ARM_S3C64XX_CPUFREQ
+ 	bool "Samsung S3C64XX"
+ 	depends on CPU_S3C6410
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index ac000fa..fda94c7 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -44,7 +44,7 @@ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
+ obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
+-obj-$(CONFIG_ARCH_OMAP2PLUS)            += omap-cpufreq.o
++obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
+ 
+ ##################################################################################
+ # PowerPC platform drivers
+-- 
+1.7.9
 
