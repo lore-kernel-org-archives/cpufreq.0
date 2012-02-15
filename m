@@ -1,82 +1,70 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
-Date: Wed, 15 Feb 2012 16:01:03 +0100
-Message-ID: <1329318063.2293.136.camel@twins>
-References: <20120208013959.GA24535@panacea>
-	 <1328670355.2482.68.camel@laptop> <20120208202314.GA28290@redhat.com>
-	 <1328736834.2903.33.camel@pasglop> <20120209075106.GB18387@elte.hu>
-	 <4F35DD3E.4020406@codeaurora.org> <20120211144530.GA497@elte.hu>
-	 <4F3AEC4E.9000303@codeaurora.org> <1329313085.2293.106.camel@twins>
-	 <20120215140245.GB27825@n2100.arm.linux.org.uk>
+Date: Wed, 15 Feb 2012 16:00:28 +0000
+Message-ID: <20120215160028.GD27825@n2100.arm.linux.org.uk>
+References: <1328670355.2482.68.camel@laptop> <20120208202314.GA28290@redhat.com> <1328736834.2903.33.camel@pasglop> <20120209075106.GB18387@elte.hu> <4F35DD3E.4020406@codeaurora.org> <20120211144530.GA497@elte.hu> <4F3AEC4E.9000303@codeaurora.org> <1329313085.2293.106.camel@twins> <20120215140245.GB27825@n2100.arm.linux.org.uk> <1329318063.2293.136.camel@twins>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120215140245.GB27825@n2100.arm.linux.org.uk>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=LD4TeVOb/R/qoc6Smz+K25Gepg2K3EGng6C56P+6mAQ=;
+	b=Ak9EWi/pa9SlZybJtG4DSI+9l8v3aebLBi/1M5lBdSnimQL+8yZIWjp9/Wn/8D0QSWSJDz0gKfxE4kzAm+esolVVYe6/EzKATd/JUCXxmE3UKn/l8KezEflworpALnzc1aHzG5NLs+vuoK7ySxlZ8uetWqvMOw8/8LPKdzekKwQ=;
+Content-Disposition: inline
+In-Reply-To: <1329318063.2293.136.camel@twins>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Saravana Kannan <skannan@codeaurora.org>, Ingo Molnar <mingo@elte.hu>, linaro-kernel@lists.linaro.org, Nicolas Pitre <nico@fluxnic.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, Todd Poynor <toddpoynor@google.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Wed, 2012-02-15 at 14:02 +0000, Russell King - ARM Linux wrote:
-
-> There's a problem with that: SA11x0 platforms (for which cpufreq was
-> _originally_ written for before it spouted all the policy stuff which
-> Linus demanded) need to notify drivers when the CPU frequency changes so
-> that drivers can readjust stuff to keep within the bounds of the hardware.
+On Wed, Feb 15, 2012 at 04:01:03PM +0100, Peter Zijlstra wrote:
+> On Wed, 2012-02-15 at 14:02 +0000, Russell King - ARM Linux wrote:
 > 
-> Unfortunately, there's embedded platforms out there where the CPU core
-> clock is not just the CPU core clock, but also is the memory bus clock,
-> PCMCIA clock, and some peripheral clocks.  All these peripherals need
-> their timing registers rewritten when the CPU core clock changes.
+> > There's a problem with that: SA11x0 platforms (for which cpufreq was
+> > _originally_ written for before it spouted all the policy stuff which
+> > Linus demanded) need to notify drivers when the CPU frequency changes so
+> > that drivers can readjust stuff to keep within the bounds of the hardware.
+> > 
+> > Unfortunately, there's embedded platforms out there where the CPU core
+> > clock is not just the CPU core clock, but also is the memory bus clock,
+> > PCMCIA clock, and some peripheral clocks.  All these peripherals need
+> > their timing registers rewritten when the CPU core clock changes.
+> > 
+> > Even more unfortunately, some of these peripherals can't be adjusted
+> > with the click of your fingers: you have to wait for them to finish
+> > what they're doing.  In the case of a LCD controller, that means the
+> > hardware must finish displaying the current frame before the LCD
+> > controller will shut down and let you change its registers.
+> > 
+> > We _could_ make it atomic, but in return we'd have to spin in the driver
+> > for maybe 20+ ms, during which time the system would not be able to do
+> > anything else, not even those threaded IRQs. 
 > 
-> Even more unfortunately, some of these peripherals can't be adjusted
-> with the click of your fingers: you have to wait for them to finish
-> what they're doing.  In the case of a LCD controller, that means the
-> hardware must finish displaying the current frame before the LCD
-> controller will shut down and let you change its registers.
-> 
-> We _could_ make it atomic, but in return we'd have to spin in the driver
-> for maybe 20+ ms, during which time the system would not be able to do
-> anything else, not even those threaded IRQs. 
+> Thing is, the scheduler doesn't care about completion, all it needs is
+> to be able to kick-start the thing atomically. So you really have to
+> wait for it or can you do an interrupt driven state machine?
 
-Thing is, the scheduler doesn't care about completion, all it needs is
-to be able to kick-start the thing atomically. So you really have to
-wait for it or can you do an interrupt driven state machine?
+Well, in the case I'm most familiar with, the sequence is this:
 
-Anyway, one possibility is to keep cpufreq in its current state and use
-that for this 'interesting' class of hardware -- clearly its current
-state is good enough for it. And transition all sane hardware over to a
-new scheme.
+1. Receive request to change frequency
+2. Shut down LCD controller and wait for it to stop (can take 20ms)
+3. Check new frequency wrt old frequency, reprogram timings for PCMCIA
+   if moving to a faster clock rate
+4. Simultaneously program new frequency and SDRAM clocking
+5. Recheck new frequency wrt old frequency, reprogram things for PCMCIA
+   if moving to a slower clock rate
+6. Reconfigure LCD controller
 
-Another possibility is we'll try and fudge something in the scheduler
-that either wakes a special per-cpu thread or allow enqueueing work and
-make this CONFIG_goo available to these platforms so as not to add to
-fast-path overhead of others.
+Now, the problem is that this sequence is spread across multiple drivers,
+and today is handled by a notifier, which can sleep in the case of the
+LCD controller waiting for the shutdown to complete.
 
-A third possibility is to self-IPI and take it from there.. assuming
-these platforms can actually self-IPI.
+> A third possibility is to self-IPI and take it from there.. assuming
+> these platforms can actually self-IPI.
 
->  That's on top of however
-> long it takes for the CPU core clock PLL to re-lock at the requested
-> frequency.  That might not be too bad if the CPU clock rate changes
-> only occasionally, but if we're talking about doing that more often
-> then I think there's something wrong with the cpufreq policy design.
-
-I guess that all will depend on the hardware.. there'll still be some
-sort of governor in between taking the per-cpu/task load-tracking data
-and scheduler events and using that to compute some volt/freq setting.
-
-From what I've heard there's a number of different classes of hardware
-out there, some like race to idle, some can power gate more than others
-etc.. I'm not particularly bothered by those details, I'm sure there's
-people who are.
-
-All I really want is to consolidate all the various statistics we have
-across cpufreq/cpuidle/sched and provide cpufreq with scheduler
-callbacks because they've been telling me their current polling stuff
-sucks rocks.
-
-Also the current state of affairs is that the cpufreq stuff is trying to
-guess what the scheduler is doing, and people are feeding that back into
-the scheduler. This I need to stop from happening ;-)
+Even if there was an IPI (not talking about SMP anyway) I'm not sure
+what good it would be.  We can (and do) get an IRQ from the LCD
+controller when its shutdown is complete, but that would have to be
+somehow propagated back up to the cpufreq code.  And the cpufreq code
+would have to know that the LCD controller was alive and therefore had
+to be waited for.  All sounds rather yucky to me.
