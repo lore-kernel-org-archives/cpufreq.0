@@ -1,40 +1,36 @@
-From: Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 3/5] drivers/cpufreq/db8500-cpufreq: remove references to cpu_*_map.
-Date: Thu, 16 Feb 2012 14:21:26 +1030
-Message-ID: <1329364286.30342.rusty@rustcorp.com.au>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: [PATCH] EXYNOS4X12: Add support cpufreq for EXYNOS4X12
+Date: Thu, 16 Feb 2012 14:47:54 +0900
+Message-ID: <056001ccec6e$871c2c70$95548550$%kim@samsung.com>
+References: <013201cce7ed$a2ef9f20$e8cedd60$%kim@samsung.com>
+ <4F357E16.4060304@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <4F357E16.4060304@gmail.com>
+Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, cpufreq@vger.kernel.org, davej@redhat.com, jonas.aberg@stericsson.com, martin.persson@stericsson.com, sundar.iyer@stericsson.com
+To: 'Sylwester Nawrocki' <sylvester.nawrocki@gmail.com>, jc.lee@samsung.com
+Cc: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 'Dave Jones' <davej@redhat.com>
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+Sylwester Nawrocki wrote:
+> 
+> Hello,
+> 
+Hi Sylwester,
 
-This has been obsolescent for a while; time for the final push.
+> I have a few comments below, it's mainly coding style nit picks though.
+> 
+Thank you for your comments and as I know, Jaecheol Lee will address
+comments from you.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org
-Cc: Sundar Iyer <sundar.iyer@stericsson.com>
-Cc: Martin Persson <martin.persson@stericsson.com>
-Cc: Jonas Aaberg <jonas.aberg@stericsson.com>
----
- drivers/cpufreq/db8500-cpufreq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks.
 
-diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
---- a/drivers/cpufreq/db8500-cpufreq.c
-+++ b/drivers/cpufreq/db8500-cpufreq.c
-@@ -145,7 +145,7 @@ static int __cpuinit db8500_cpufreq_init
- 	policy->cpuinfo.transition_latency = 20 * 1000; /* in ns */
- 
- 	/* policy sharing between dual CPUs */
--	cpumask_copy(policy->cpus, &cpu_present_map);
-+	cpumask_copy(policy->cpus, cpu_present_mask);
- 
- 	policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
- 
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
 
