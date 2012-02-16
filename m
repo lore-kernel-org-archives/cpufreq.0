@@ -1,58 +1,48 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH] cpufreq: OMAP driver depends CPUfreq tables
-Date: Wed, 15 Feb 2012 11:21:49 -0800
-Message-ID: <1329333709-29964-1-git-send-email-khilman@ti.com>
+Subject: Re: [linux-pm] [PATCH 0/2] RFC: CPU frequency max as PM QoS param
+Date: Wed, 15 Feb 2012 17:06:40 -0800
+Message-ID: <87d39fk2n3.fsf@ti.com>
+References: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com> (Antti
+	P. Miettinen's message of "Thu, 19 Jan 2012 14:35:57 +0200")
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>
+To: Antti P Miettinen <amiettinen@nvidia.com>
+Cc: davej@redhat.com, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, j-pihet@ti.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org
 
-From: Russell King <rmk+kernel@arm.linux.org.uk>
+Hello,
 
-The OMAP driver depends on CPUfreq table support for creating a table
-of frequencies from the OPP layer.  Ensure that it's build to avoid
-link-time errors.
+Antti P Miettinen <amiettinen@nvidia.com> writes:
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
- drivers/cpufreq/Kconfig.arm |    5 +++++
- drivers/cpufreq/Makefile    |    2 +-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+> This is a continuation to "RFC: CPU frequency min as PM QoS param"
+> patchset. This patchset adds CPU frequency maximum as a PM QoS
+> parameter and modifies CPU frequncy core to enforce the limit. CPU
+> frequency ceiling can be used to improve the energy efficiency of
+> workloads that would cause the cpufreq governors to enforce an
+> unnecessarily high operating point. In other words, CPU frequency
+> maximum can act as an energy efficiency level request.
+>
+> Tested on Dell E6420 with the ACPI cpufreq driver against Ubuntu
+> 3.2. Patches are against linux-next, compile tested.
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index e0664fe..015f026 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -2,6 +2,11 @@
- # ARM CPU Frequency scaling drivers
- #
- 
-+config ARM_OMAP2PLUS_CPUFREQ
-+	bool
-+	depends on ARCH_OMAP2PLUS
-+	select CPU_FREQ_TABLE
-+
- config ARM_S3C64XX_CPUFREQ
- 	bool "Samsung S3C64XX"
- 	depends on CPU_S3C6410
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index ac000fa..fda94c7 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -44,7 +44,7 @@ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
- obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
--obj-$(CONFIG_ARCH_OMAP2PLUS)            += omap-cpufreq.o
-+obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
- 
- ##################################################################################
- # PowerPC platform drivers
--- 
-1.7.9
+I know there were some earlier discussions about the usefulness of a max
+frequency QoS parameter, so I wanted to throw in a reason to include max
+as well as min frequency parameters.
 
+IMO, having a max frequency QoS parameter would be very useful from a
+thermal perspective.  
+
+There are some ongoing projects in the PM working group at Linaro that
+are exploring plugins to the thermal framework that implment a "cooling
+device" by capping CPU frequency.  Having a QoS parameter do do this
+would be the logical interface.
+
+I also agree with some earlier requests that these should probably be
+per-CPU instead of global.  That would make it simple to cap frequency
+of one cluster while leaving another alone.
+
+Kevin
