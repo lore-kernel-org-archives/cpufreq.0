@@ -1,81 +1,77 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH v2] cpufreq: Add S3C2416/S3C2450 cpufreq driver
-Date: Thu, 16 Feb 2012 21:08:57 +0900
-Message-ID: <4F3CF1D9.5030109@samsung.com>
-References: <201202161142.32485.heiko@sntech.de>
+Subject: Re: Fix exposure of ARM_EXYNOS4210_CPUFREQ
+Date: Thu, 16 Feb 2012 21:17:30 +0900
+Message-ID: <4F3CF3DA.7000806@samsung.com>
+References: <20120213094940.GA15338@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=gamma;
         h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=wCX3A5/vNeZ2KBXuuHD9f4mqWNlI16lw3R/Ul7QwKfk=;
-        b=VLV1biNVed1nqNO+2MV/RoUMxB4/LEoPeG7Y1gJSvd4I5oo9Rfj7XC4DP9RstZtSZJ
-         pQrzwnfgkwZQgfMy7f4D8aw+x1b03qoaRqRMyPTkvfmniu+ldBwLS1erWciHm1ifdfH/
-         +M85AvBpFY4q/HQ/tki1woGPCW8uUBBk9ddKU=
-In-Reply-To: <201202161142.32485.heiko@sntech.de>
+        bh=CFQaKI5CaN53xLHaKcvmTI3VZniKBCc9gf+HHIYPnVM=;
+        b=Qj4N9A/JQ0+2Mkpn9EP8UzzorZxtu1vwt6T8EduiUvZsWrISOvD9dZUwyB/17x3TuY
+         lcFcJsCLEwBsJlhAM9C6wq5wDGQ7lfvQFfI7YZuw+kUBTSCyrESys5ahEAvJAISSvUSv
+         NVaDMLVFfyocee+4rlH9AggtuwnWOXNV7yN6Y=
+In-Reply-To: <20120213094940.GA15338@n2100.arm.linux.org.uk>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: =?ISO-8859-1?Q?Heiko_St=FCbner?= <heiko@sntech.de>
-Cc: Dave Jones <davej@redhat.com>, Kukjin Kim <kgene.kim@samsung.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Andrey Gusakov <dron0gus@gmail.com>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
 
-On 02/16/12 19:42, Heiko St=FCbner wrote:
-> The S3C2416/S3C2450 SoCs support two sources for the armclk.
+On 02/13/12 18:49, Russell King - ARM Linux wrote:
+> From: Russell King<rmk+kernel@arm.linux.org.uk>
 >
-> The first source is the so called armdiv which divides the msysclk do=
-wn
-> to provide necessary cpu rates. In this mode the core voltage must be
-> always at 1.3V. The frequency from the armdiv is not allowed to be
-> lower than the hclk frequency.
+> exynos4210-cpufreq.c is not buildable on non-exynos builds, so it's
+> pointless allowing this option to be exposed.  Fix this by adding a
+> dependency on ARCH_EXYNOS.
 >
-> In the second mode the armclk can be sourced directly from the hclk i=
-n
-> the so called "dynamic voltags scaling" (dvs) mode. Here the armdiv
-> isn't used at all. Also in this mode the core voltage may be lowered.
-> Existing hardware and tests with it suggest 1.0V as sufficient.
+> drivers/cpufreq/exynos4210-cpufreq.c:20:29: error: mach/regs-clock.h: No such file or directory
+> drivers/cpufreq/exynos4210-cpufreq.c:21:26: error: mach/cpufreq.h: No such file or directory
 >
-> When changing the clock source to the armdiv from the hclk, the SoC
-> shows stability issues if the new frequency is higher than the curren=
-t
-> hclk frequency. Hence the driver always forces the armdiv to the hclk
-> frequency before the source change and lets the cpufreq issue another
-> set_target call for higher frequencies.
->
-> To mark the hclk frequency as lower as the corresponding armdiv
-> frequency it is set 1MHz below the real frequency. This lets the cpuf=
-req
-> framework change between 133MHz based on hclk and 133MHz based on arm=
-div
-> at will.
->
-> Signed-off-by: Heiko Stuebner<heiko@sntech.de>
-> Tested-by: Andrey Gusakov<dron0gus@gmail.com>
+> Signed-off-by: Russell King<rmk+kernel@arm.linux.org.uk>
+> Cc: Dave Jones<davej@redhat.com>
+> Cc: cpufreq@vger.kernel.org
+> Cc: Kukjin Kim<kgene.kim@samsung.com>
 > ---
-> changes since v1: correct the frequencies of the S3C2450 variant
-> changes since RFC: reboot-notifier to leave dvs mode on reboot
-> and a lot of cleanups
+>   drivers/cpufreq/Kconfig.arm |    1 +
+>   1 files changed, 1 insertions(+), 0 deletions(-)
 >
->   drivers/cpufreq/Kconfig.arm       |   22 ++
->   drivers/cpufreq/Makefile          |    1 +
->   drivers/cpufreq/s3c2416-cpufreq.c |  542 ++++++++++++++++++++++++++=
-+++++++++++
->   3 files changed, 565 insertions(+), 0 deletions(-)
->   create mode 100644 drivers/cpufreq/s3c2416-cpufreq.c
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index e0664fe..c8bde43 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -34,6 +34,7 @@ config ARM_EXYNOS_CPUFREQ
 >
-Hi Heiko,
+>   config ARM_EXYNOS4210_CPUFREQ
+>   	bool "Samsung EXYNOS4210"
+> +	depends on ARCH_EXYNOS
+>   	help
+>   	  This adds the CPUFreq driver for Samsung EXYNOS4210
+>   	  SoC (S5PV310 or S5PC210).
+>
 
-As you know, I'm working on move cpufreq drivers of s3c2410, s3c2412 an=
-d=20
-s3c2440 into drivers/cpufreq/.
+Yes, you're right. Should be added it.
+BTW, how about following?
 
-Now I'm not sure some common function can be used for them and this as=20
-well. But I think, if so, would be better to us.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index e0664fe..a5e0487 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -33,7 +33,7 @@ config ARM_EXYNOS_CPUFREQ
+           If in doubt, say N.
 
-So please wait for some time to finish my working. Maybe next week?
+  config ARM_EXYNOS4210_CPUFREQ
+-       bool "Samsung EXYNOS4210"
++       bool
+         help
+           This adds the CPUFreq driver for Samsung EXYNOS4210
+           SoC (S5PV310 or S5PC210).
 
-Then, let me back on this.
+I think, when selecting "ARM_EXYNOS_CPUFREQ", "ARM_EXYNOS4210_CPUFREQ" 
+will be selected on EXYNOS4210 with above changes.
 
 Thanks.
 
