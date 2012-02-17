@@ -1,66 +1,125 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH v2] cpufreq: OMAP driver depends CPUfreq tables
-Date: Thu, 16 Feb 2012 10:30:27 -0800
-Message-ID: <1329417027-3254-1-git-send-email-khilman@ti.com>
-References: <1329333709-29964-1-git-send-email-khilman@ti.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH 0/2] RFC: CPU frequency max as PM QoS param
+Date: Thu, 16 Feb 2012 19:04:53 -0800
+Message-ID: <20120217030453.GA3266@gs62>
+References: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com>
+	<87d39fk2n3.fsf@ti.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1329333709-29964-1-git-send-email-khilman@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=gamma;
+	h=sender:date:from:to:cc:subject:message-id:reply-to:references
+	:mime-version:content-type:content-disposition:in-reply-to
+	:user-agent; bh=ioz1BcZMbQ9D/KiucQMc0hXnPfM9ynfzNUmzeBFWXiQ=;
+	b=JWg963y4pCW5RHq7OiA+TpG6MSCww9MY8i8NHzdqTdDUI3+73cmcarO7bkhzqRAr8a
+	7y7J6RPo49lQ5rC4EnkHfwD2gBqomSzKAGvna9p6BtPt/7Dbqy3xKlP9U4hEa9gGZNwX
+	zPOz6U68ANWRv+bqEy8I9Ckyrdybt6u70k8ig=
+Content-Disposition: inline
+In-Reply-To: <87d39fk2n3.fsf@ti.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>, 
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: len.brown@intel.com, markgross@thegnar.org, cpufreq@vger.kernel.org, Antti P Miettinen <amiettinen@nvidia.com>, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
 
-From: Russell King <rmk+kernel@arm.linux.org.uk>
+On Wed, Feb 15, 2012 at 05:06:40PM -0800, Kevin Hilman wrote:
+> Hello,
+> 
+> Antti P Miettinen <amiettinen@nvidia.com> writes:
+> 
+> > This is a continuation to "RFC: CPU frequency min as PM QoS param"
+> > patchset. This patchset adds CPU frequency maximum as a PM QoS
+> > parameter and modifies CPU frequncy core to enforce the limit. CPU
+> > frequency ceiling can be used to improve the energy efficiency of
+> > workloads that would cause the cpufreq governors to enforce an
+> > unnecessarily high operating point. In other words, CPU frequency
+> > maximum can act as an energy efficiency level request.
+> >
+> > Tested on Dell E6420 with the ACPI cpufreq driver against Ubuntu
+> > 3.2. Patches are against linux-next, compile tested.
+> 
+> I know there were some earlier discussions about the usefulness of a max
+> frequency QoS parameter, so I wanted to throw in a reason to include max
+> as well as min frequency parameters.
+> 
+> IMO, having a max frequency QoS parameter would be very useful from a
+> thermal perspective.  
+> 
+> There are some ongoing projects in the PM working group at Linaro that
+> are exploring plugins to the thermal framework that implment a "cooling
+> device" by capping CPU frequency.  Having a QoS parameter do do this
+> would be the logical interface.
+> 
+> I also agree with some earlier requests that these should probably be
+> per-CPU instead of global.  That would make it simple to cap frequency
+> of one cluster while leaving another alone.
+>
+Hi,
 
-The OMAP driver depends on CPUfreq table support for creating a table
-of frequencies from the OPP layer.  Ensure that it's build to avoid
-link-time errors.
+My problem is that overloading pm_qos with a performance limits is a
+hack that will likely have problems coexisting with the core notion of
+throttling limiting that is pm_qos as thermal limiting enabling expands
+its scope.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-[khilman@ti.com: make user-selectable, but default y]
-Tested-by: Kevin Hilman <khilman@ti.com>
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
-This version changes the new Kconfig option to be user-selectable, but
-keeps the default value to be y whenever ARCH_OMAP2PLUS is enabled.
-I've also tested this one with various Kconfig options.
+Sure limiting performance governors seem to need the same notifications
+and infrastructure as pm_qos but I worry that as its really doing the
+opposite to qos I really don't see the logic of having it in pmqos.
 
- drivers/cpufreq/Kconfig.arm |    5 +++++
- drivers/cpufreq/Makefile    |    2 +-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+Lets consider thermal throttling a bit maybe I can convince you to that
+maybe we need some new mechanism for energy and thermal limiting.  (BTW
+I agree something is needed for this).
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index e0664fe..82f1aa9 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -2,6 +2,11 @@
- # ARM CPU Frequency scaling drivers
- #
- 
-+config ARM_OMAP2PLUS_CPUFREQ
-+	bool "TI OMAP2+"
-+	default ARCH_OMAP2PLUS
-+	select CPU_FREQ_TABLE
-+
- config ARM_S3C64XX_CPUFREQ
- 	bool "Samsung S3C64XX"
- 	depends on CPU_S3C6410
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index ac000fa..fda94c7 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -44,7 +44,7 @@ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
- obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
--obj-$(CONFIG_ARCH_OMAP2PLUS)            += omap-cpufreq.o
-+obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
- 
- ##################################################################################
- # PowerPC platform drivers
--- 
-1.7.9
+For thermals the culprit's are:
+cpu -- cpufreq governor currently not-thermal aware
+Display -- brightness not thermal aware
+GFX -- graphics driver not thermal aware
+battery charging -- somewhat thermal aware but needs more than just bat
+temp to count.
+Flash -- led flash light  not thermal aware.
 
+Other devices may have other heat sources of course.
+
+Wouldn't it be better to have thermal awareness as part of the driver
+model and then have a pm_qos like thing to do out of band signaling of
+devices and user mode when a temperature is hit?
+
+Putting it a qos class for limiting the high end of the performance that
+a governor really doesn't go far enough IMO.  It looks like a hack just
+for cpufreq that already has sysfs interfaces for limiting the top
+frequency.
+
+ok, maybe my argument is not so strong. but as long as its named pm QOS
+and not pm-constraints I don't like the idea of having the max
+parameter in the pm_qos code.  
+
+It feature creeps the infrastructure and violates the spirit of what
+pm_qos was to solve.  i.e. constrain the lower power states not upper
+states.
+
+But, for thermal / energy management I think we need more notification
+of thermal or energy events than what is needed for the pm_qos problem.
+
+For pm_qos its mostly a static problem that is tuned in the lab.  Know
+the workload needs and block too much throttling.  For thermal / energy
+management you isn't any tuning you can do.  You don't apply the
+constraint until it gets too hot.  You don't know if or when you'll get
+too hot.
+
+Note: its more than just temperature that we need to worry about.  Peak
+current is also a related issue (that is much more transient)
+
+Shouldn't we do something more forward looking than hack pm_qos with
+max-freq so that cpufreq can check a redundant parameter to what it
+already has exported through sysfs?
+
+
+--mark
