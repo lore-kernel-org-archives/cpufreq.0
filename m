@@ -1,35 +1,113 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
-Date: Mon, 20 Feb 2012 12:03:49 +0100
-Message-ID: <1329735829.2293.309.camel@twins>
-References: <1328670355.2482.68.camel@laptop>
-	 <20120208202314.GA28290@redhat.com> <1328736834.2903.33.camel@pasglop>
-	 <20120209075106.GB18387@elte.hu> <4F35DD3E.4020406@codeaurora.org>
-	 <20120211144530.GA497@elte.hu> <4F3AEC4E.9000303@codeaurora.org>
-	 <1329313085.2293.106.camel@twins>
-	 <20120215140245.GB27825@n2100.arm.linux.org.uk>
-	 <1329318063.2293.136.camel@twins>
-	 <20120217090022.GA24856@comet.dominikbrodowski.net>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: Fix exposure of ARM_EXYNOS4210_CPUFREQ
+Date: Tue, 21 Feb 2012 19:35:49 +0900
+Message-ID: <00aa01ccf084$93c98a70$bb5c9f50$%kim@samsung.com>
+References: <20120213094940.GA15338@n2100.arm.linux.org.uk>
+ <4F3CF3DA.7000806@samsung.com> <20120216160250.GP13673@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120217090022.GA24856@comet.dominikbrodowski.net>
+In-reply-to: <20120216160250.GP13673@n2100.arm.linux.org.uk>
+Content-language: ko
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Saravana Kannan <skannan@codeaurora.org>, Ingo Molnar <mingo@elte.hu>, linaro-kernel@lists.linaro.org, Nicolas Pitre <nico@fluxnic.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, Todd Poynor <toddpoynor@google.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+To: 'Russell King - ARM Linux' <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org, 'Dave Jones' <davej@redhat.com>, cpufreq@vger.kernel.org
 
-On Fri, 2012-02-17 at 10:00 +0100, Dominik Brodowski wrote:
+Russell King - ARM Linux wrote:
 > 
-> Well, we can actually have both: Adding a new cpufreq governor "scheduler"
-> is easy. The scheduler stores the target frequency (in per-cent or
-> per-mille) in (per-cpu) data available to this governor, and kick a
-> (per-cpu?) thread which then handels the rest -- by existing cpufreq means.
-> The cpufreq part is easy, the sched part less so (I think). 
+> On Thu, Feb 16, 2012 at 09:17:30PM +0900, Kukjin Kim wrote:
+> > On 02/13/12 18:49, Russell King - ARM Linux wrote:
+> >> From: Russell King<rmk+kernel@arm.linux.org.uk>
+> >>
+> >> exynos4210-cpufreq.c is not buildable on non-exynos builds, so it's
+> >> pointless allowing this option to be exposed.  Fix this by adding a
+> >> dependency on ARCH_EXYNOS.
+> >>
+> >> drivers/cpufreq/exynos4210-cpufreq.c:20:29: error: mach/regs-clock.h:
+> No such file or directory
+> >> drivers/cpufreq/exynos4210-cpufreq.c:21:26: error: mach/cpufreq.h: No
+> such file or directory
+> >>
+> >> Signed-off-by: Russell King<rmk+kernel@arm.linux.org.uk>
+> >> Cc: Dave Jones<davej@redhat.com>
+> >> Cc: cpufreq@vger.kernel.org
+> >> Cc: Kukjin Kim<kgene.kim@samsung.com>
+> >> ---
+> >>   drivers/cpufreq/Kconfig.arm |    1 +
+> >>   1 files changed, 1 insertions(+), 0 deletions(-)
+> >>
+> >> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> >> index e0664fe..c8bde43 100644
+> >> --- a/drivers/cpufreq/Kconfig.arm
+> >> +++ b/drivers/cpufreq/Kconfig.arm
+> >> @@ -34,6 +34,7 @@ config ARM_EXYNOS_CPUFREQ
+> >>
+> >>   config ARM_EXYNOS4210_CPUFREQ
+> >>   	bool "Samsung EXYNOS4210"
+> >> +	depends on ARCH_EXYNOS
+> >>   	help
+> >>   	  This adds the CPUFreq driver for Samsung EXYNOS4210
+> >>   	  SoC (S5PV310 or S5PC210).
+> >>
+> >
+> > Yes, you're right. Should be added it.
+> > BTW, how about following?
+> >
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index e0664fe..a5e0487 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -33,7 +33,7 @@ config ARM_EXYNOS_CPUFREQ
+> >           If in doubt, say N.
+> >
+> >  config ARM_EXYNOS4210_CPUFREQ
+> > -       bool "Samsung EXYNOS4210"
+> > +       bool
+> >         help
+> >           This adds the CPUFreq driver for Samsung EXYNOS4210
+> >           SoC (S5PV310 or S5PC210).
+> >
+> > I think, when selecting "ARM_EXYNOS_CPUFREQ", "ARM_EXYNOS4210_CPUFREQ"
+> > will be selected on EXYNOS4210 with above changes.
+> 
+Hi Russell,
 
-You might not have been reading what I wrote, kicking a kthread (or
-doing any other scheduler activity) from within the scheduler is way
-ugly and something I'd really rather avoid if at all possible.
+> I don't think so.  If you select this symbol you'll get a complaint
+> that CPU_FREQ is not selected.
 
-Yes I could do it, but I really really don't want to.
+Hmm..when I selected this symbol, I didn't get any warning about CPU_FREQ,
+because the cpufreq/Kconfig.arm depends on CPU_FREQ. It means, when CPU_FREQ
+is not selected, I can't select anything in cpufreq/Kconfig.arm.
+
+> What's probably much better is:
+> 
+Yes, looks better than mine.
+
+> config ARM_EXYNOS4210_CPUFREQ
+> 	def_bool ARCH_EXYNOS
+
+But, should be...
+	def_bool CPU_EXYNOS4210
+
+Because the ARM_EXYNOS4210_CPUFREQ is only for EXYNOS4210 and the
+ARM_EXYNOS4X12_CPUFREQ will be added, actually submitted for other
+SOC_EXYNOS4212 and SOC_EXYNOS4412.
+
+> 
+> because that ensures that if the CPU_FREQ dependencies change you don't
+> have to update numerous places for that too.
+
+OK, I agree.
+
+So could you  please re-send/re-work this?
+
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
+
