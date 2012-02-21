@@ -1,117 +1,138 @@
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-Subject: Re: [PATCH RFC 0/4] Scheduler idle notifiers and users
-Date: Tue, 21 Feb 2012 19:06:12 +0200
-Message-ID: <3F162BCA-554B-4756-80C6-7044FB224DBC@antoniou-consulting.com>
-References: <20120208013959.GA24535@panacea> <1328670355.2482.68.camel@laptop> <20120208202314.GA28290@redhat.com> <1328736834.2903.33.camel@pasglop> <20120209075106.GB18387@elte.hu> <4F35DD3E.4020406@codeaurora.org> <20120211144530.GA497@elte.hu> <4F3AEC4E.9000303@codeaurora.org> <1329313085.2293.106.camel@twins> <20120215140245.GB27825@n2100.arm.linux.org.uk> <1329318063.2293.136.camel@twins> <69B0D95C-2A80-41A9-97E1-86F5840B84CF@antoniou-consulting.com> <1329828982.2293.405.camel@twins> <84EBD7CD-1085-4B33-BF71-8CE104AE2933@antoniou-consulting.com> <CAP245DXjrRtoJYbyLQ=xUvszmwt=5gus7+=s1UmwKWXcKc05AA@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v1084)
-Content-Transfer-Encoding: 8BIT
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 42807] New: Frequency scaling causes micro-freezes / lags /
+ stutters with AMD Zambezi (Bulldozer) CPU
+Date: Tue, 21 Feb 2012 18:23:21 GMT
+Message-ID: <bug-42807-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAP245DXjrRtoJYbyLQ=xUvszmwt=5gus7+=s1UmwKWXcKc05AA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linaro-kernel@lists.linaro.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nico@fluxnic.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Oleg Nesterov <oleg@redhat.com>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Anton Vorontsov <anton.vorontsov@linaro.org>, Todd Poynor <toddpoynor@google.com>, Saravana Kannan <skannan@codeaurora.org>, Mike Chan <mike@android.com>, Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, kernel-team@android.com, linux-arm-kernel@lists.infradead.org, Arjan Van De Ven <arjan@infradead.org>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-Hi Amit,
+https://bugzilla.kernel.org/show_bug.cgi?id=42807
 
-On Feb 21, 2012, at 4:52 PM, Amit Kucheria wrote:
-
-> On Tue, Feb 21, 2012 at 3:31 PM, Pantelis Antoniou
-> <panto@antoniou-consulting.com> wrote:
->> 
->> On Feb 21, 2012, at 2:56 PM, Peter Zijlstra wrote:
->> 
->>> On Tue, 2012-02-21 at 14:38 +0200, Pantelis Antoniou wrote:
->>>> 
->>>> If we go to all the trouble of integrating cpufreq/cpuidle/sched into scheduler
->>>> callbacks, we should place hooks into the thermal framework/PM as well.
->>>> 
->>>> It will pretty common to have per core temperature readings, on most
->>>> modern SoCs.
->>>> 
->>>> It is quite conceivable to have a case with a multi-core CPU where due
->>>> to load imbalance, one (or more) of the cores is running at full speed
->>>> while the rest are mostly idle. What you want do, for best performance
->>>> and conceivably better power consumption, is not to throttle either
->>>> frequency or lowers voltage to the overloaded CPU but to migrate the
->>>> load to one of the cooler CPUs.
->>>> 
->>>> This affects CPU capacity immediately, i.e. you shouldn't schedule more
->>>> load on a CPU that its too hot, since you'll only end up triggering thermal
->>>> shutdown. The ideal solution would be to round robin
->>>> the load from the hot CPU to the cooler ones, but not so fast that we lose
->>>> due to the migration of state from one CPU to the other.
->>>> 
->>>> In a nutshell, the processing capacity of a core is not static, i.e. it
->>>> might degrade over time due to the increase of temperature caused by the
->>>> previous load.
->>>> 
->>>> What do you think?
->>> 
->>> This is called core-hopping, and yes that's a nice goal, although I
->>> would like to do that after we get the 'simple' bits up and running. I
->>> suspect it'll end up being slightly more complex than we'd like to due
->>> to the fact that the goal conflicts with wanting to aggregate things on
->>> cpu0 due to cpu0 being special for a host of reasons.
->>> 
->>> 
->> 
->> Hi Peter,
->> 
->> Agreed. We need to get there step by step, and I think that per-task load tracking
->> is the first one. We do have other metrics besides load that can influence the
->> scheduler decisions, with the most obvious being power consumption.
->> 
->> BTW, since we're going to the trouble of calculating per-task load with
->> increased accuracy, how about having some thought of translating the load numbers
->> in an absolute format. I.e. with the CPUs now having fluctuating performance
->> (due to cpufreq etc.) one would say that each CPU would have an X bogomips
->> (or some else absolute) capacity per OPP. Perhaps having such a bogomips number
->> calculated per-task would make things easier.
->> 
->> Perhaps the same can be done with power/energy, i.e. have a per-task power
->> consumption figure that we can use for scheduling, according to the available
->> power budget per CPU.
->> 
->> Dunno, it might not be feasible ATM, but having a power-aware scheduler would
->> assume some kind of power measurement, no?
-> 
-> No please. We don't want to document ADC requirements, current probe
-> specs and sampling rates to successfully run the Linux kernel. :)
-> 
-
-No, we certainly don't want to do that :). I only care about some kind
-of absolute value metric, and not something relative to the maximum
-speed of which one of the cores can run. Now if there's some way for
-a user-space app to convert that value into something like a mW measurement
-is somebody else's problem :)
-
-> But from the scheduler mini-summit, there is acceptance that we need
-> to pass *some* knowledge of CPU characteristics to Linux. These need
-> to be distilled down to a few that guide scheduler policy e.g. power
-> cost of using a core. This in turn would influence the scheduler's
-> spread or gather decision (better to consolidate task onto few cores
-> or spread them out at low frequencies). Manufacturing processes and
-> CPU architecture obviously play a role in the differences here.
-> However, I don't expect unit for these parameters to be in mW. :)
-> 
-> /Amit
-
-Yes, that is what we need. 
-
-The problem of a power-aware scheduler, the way I see it is a matter of getting 
-to a point of dynamic equilibrium between acceptable performance and acceptable 
-power-usage.
-
-It seems we will have the per-task cpu load value, so we have a measure of 
-the force pushing to one side, we will need something pushing to the other.
-
-Regards
-
--- Pantelis
- 
+           Summary: Frequency scaling causes micro-freezes / lags /
+                    stutters with AMD Zambezi (Bulldozer) CPU
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.2.0-17
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: mightyiampresence@gmail.com
+        Regression: No
 
 
+Dear Ones,
 
+This is reported downstream Ubuntu, where the usual files are attached. I can
+attach any file here if necessary. Here's the URL:
+https://bugs.launchpad.net/ubuntu/+source/linux-meta/+bug/927918
 
+When frequency scaling is activated (more details below) the system has short
+freezes, short lags, short "time-outs". They vary in length and can be as long
+as about 1 second. Here's a video(1).
+
+I've received help from the fantastic folks at the xorg-driver-ati mailing
+list. Here's the thread(2).
+
+Windows 7 runs smooth, without the stuttering / framedrop problem.
+
+Here's some testing with different governors:
+performance: smoothness goodness
+ondemand: the stuttering as demonstrated in the video
+conservative: stuttering reduced to seemingly about 10% compared to ondemand
+powersave: stuttering increase seemingly to about five times more than with
+ondemand
+
+When using ondemand, raising minimum frequencies results in less stuttering.
+Raising the minimum frequency of all four cores to the second step, 1.7GHz,
+helps a lot and and raising it to 2.5GHz results no stuttering. This is under
+the limited strain of dragging windows around in 1280x1024 in compiz.
+
+It didn't happen when my CPU was an AMD Sempron 140. As soon as I switched to
+the AMD FX-4100 CPU this started.
+
+As per Gigabyte's instructions(3), in order to have support for this CPU, I
+upgraded the BIOS from the "F2" version to the "F3" version before replacing
+the CPU. If it is necessary, I can still put in the old Sempron 140 CPU for
+testing.
+
+More stuff I tried since replacing the CPU: I have played with BIOS settings -
+trying different configurations. I also replaced to a new, more adequate PSU. I
+also tried different RAM sticks and different amounts of them (1, 2 and 4
+sticks).
+
+Thanks and blessings,
+Shahar
+
+Links:
+1. http://bit.ly/xDOZF3 (on Google Docs)
+2. http://lists.x.org/archives/xorg-driver-ati/2012-February/022223.html
+3. http://www.gigabyte.com/support-downloads/cpu-support-popup.aspx?pid=3817
+
+Here is the usual dump from Ubuntu:
+ProblemType: BugDistroRelease: Ubuntu 11.10
+Package: xorg 1:7.6+7ubuntu7.1
+ProcVersionSignature: Ubuntu 3.0.0-15.26-generic 3.0.13
+Uname: Linux 3.0.0-15-generic x86_64
+.tmp.unity.support.test.0:
+
+ApportVersion: 1.23-0ubuntu4
+Architecture: amd64
+CompizPlugins:
+[core,bailer,detection,composite,opengl,decor,mousepoll,vpswitch,regex,animation,snap,expo,move,compiztoolbox,place,grid,imgpng,gnomecompat,wall,ezoom,workarounds,resize,fade,unitymtgrabhandles,scale,session,unityshell]
+CompositorRunning: None
+Date: Mon Feb 6 23:38:39 2012
+DistUpgraded: Log time: 2011-10-16 02:49:10.693391
+DistroCodename: oneiric
+DistroVariant: ubuntu
+EcryptfsInUse: Yes
+ExtraDebuggingInterest: Yes, whatever it takes to get this fixed in Ubuntu
+GraphicsCard:
+ ATI Technologies Inc RS880 [Radeon HD 4250] [1002:9715] (prog-if 00 [VGA
+controller])
+   Subsystem: Giga-byte Technology Device [1458:d000]InstallationMedia: Ubuntu
+10.10 "Maverick Meerkat" - Release amd64 (20101007)
+MachineType: Gigabyte Technology Co., Ltd. GA-880GMA-USB3
+ProcKernelCmdLine: BOOT_IMAGE=/boot/vmlinuz-3.0.0-15-generic
+root=UUID=57641e34-8b71-4e2e-9324-ff40ca1bc82a ro quiet splash
+vt.handoff=7SourcePackage: xorg
+UpgradeStatus: Upgraded to oneiric on 2011-10-16 (113 days ago)
+dmi.bios.date: 10/20/2011
+dmi.bios.vendor: Award Software International, Inc.
+dmi.bios.version: F3
+dmi.board.name: GA-880GMA-USB3
+dmi.board.vendor: Gigabyte Technology Co., Ltd.
+dmi.chassis.type: 3
+dmi.chassis.vendor: Gigabyte Technology Co., Ltd.
+dmi.modalias:
+dmi:bvnAwardSoftwareInternational,Inc.:bvrF3:bd10/20/2011:svnGigabyteTechnologyCo.,Ltd.:pnGA-880GMA-USB3:pvr:rvnGigabyteTechnologyCo.,Ltd.:rnGA-880GMA-USB3:rvr:cvnGigabyteTechnologyCo.,Ltd.:ct3:cvr:
+dmi.product.name: GA-880GMA-USB3
+dmi.sys.vendor: Gigabyte Technology Co., Ltd.
+version.compiz: compiz 1:0.9.6+bzr20110929-0ubuntu6
+version.ia32-libs: ia32-libs 20090808ubuntu26
+version.libdrm2: libdrm2 2.4.26-1ubuntu1
+version.libgl1-mesa-dri: libgl1-mesa-dri 7.11-0ubuntu3
+version.libgl1-mesa-dri-experimental: libgl1-mesa-dri-experimental N/A
+version.libgl1-mesa-glx: libgl1-mesa-glx 7.11-0ubuntu3
+version.xserver-xorg: xserver-xorg 1:7.6+7ubuntu7.1
+version.xserver-xorg-input-evdev: xserver-xorg-input-evdev 1:2.6.0-1ubuntu13
+version.xserver-xorg-video-ati: xserver-xorg-video-ati
+1:6.14.99~git20110811.g93fc084-0ubuntu1
+version.xserver-xorg-video-intel: xserver-xorg-video-intel
+2:2.15.901-1ubuntu2.1
+version.xserver-xorg-video-nouveau: xserver-xorg-video-nouveau
+1:0.0.16+git20110411+8378443-1
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
