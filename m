@@ -1,47 +1,56 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 15295] scaling_max_freq value lost upon suspend
-Date: Sun, 26 Feb 2012 04:22:13 GMT
-Message-ID: <201202260422.q1Q4MDcg002019@bugzilla.kernel.org>
-References: <bug-15295-12968@https.bugzilla.kernel.org/>
+From: "Jan Beulich" <JBeulich@suse.com>
+Subject: Re: [PATCH] processor passthru - upload _Cx and _Pxx data to
+ hypervisor (v5).
+Date: Mon, 27 Feb 2012 08:19:24 +0000
+Message-ID: <4F4B4A9C0200007800074DE4@nat28.tlf.novell.com>
+References: <1330036270-20015-1-git-send-email-konrad.wilk@oracle.com>
+ <4F47733E020000780007497D@nat28.tlf.novell.com>
+ <20120225002136.GB26913@phenom.dumpdata.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-15295-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20120225002136.GB26913@phenom.dumpdata.com>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: ke.yu@intel.com, kevin.tian@intel.com, lenb@kernel.org, xen-devel@lists.xensource.com, davej@redhat.com, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=15295
+>>> On 25.02.12 at 01:21, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> wrote:
+> But cpufreq != cpuidle != cpufreq governor, and they all are run by 
+> different rules.
+> The ondemand cpufreq governor for example runs a timer and calls the 
+> appropiate cpufreq
+> driver. So with these patches I posted we end up with a cpufreq driver in 
+> the kernel
+> and in Xen hypervisor - both of them trying to change Pstates. Not good (to 
+> be fair,
+> if powernow-k8/acpi-cpufreq would try it via WRMSR -  those would up being 
+> trapped and
+> ignored by the hypervisor. I am not sure about the outw though).
 
+I'm not aware of any trapping that would be done on the I/O port here;
+it could be added, though (i.e. the ports removed from the list of
+allowed ports of Dom0 once they become known to the hypervisor).
 
-z_kvn@yahoo.com changed:
+> The pre-RFC version of this posted driver implemented a cpufreq governor that 
+> was
+> nop and for future work was going to make a hypercall to get the true 
+> cpufreq value
+> to report properly in /proc/cpuinfo - but I hadn't figured out a way to make 
+> it be
+> the default one dynamically.
+> 
+> Perhaps having xencommons do 
+> echo "xen" > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+> 
+> And s/processor-passthru/cpufreq-xen/ would do it? That would eliminate the 
+> [performance,
+> ondemand,powersave,etc] cpufreq governors from calling into the cpufreq 
+> drivers to alter P-states.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |z_kvn@yahoo.com
+Except that you want this to be a cpufreq driver, not a governor.
 
+Jan
 
-
-
---- Comment #3 from z_kvn@yahoo.com  2012-02-26 04:22:13 ---
-Hello 
-
-I can confirm this bug persists with below kernal
-
-ThinkPad-X220 3.0.0-16-generic #28-Ubuntu SMP Fri Jan 27 17:44:39 UTC 2012
-x86_64 x86_64 x86_64 GNU/Linux
-
-In my /etc/rc.local I have below script to change scaling_max_freq of four
-cores 
-
-for i in 0 1 2 3; do echo 2400000 >
-/sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq; done
-
-However after suspend, only CPU0 stays 2400000, all other three changed to
-maximum of 2401000
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
