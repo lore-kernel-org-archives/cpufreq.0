@@ -1,46 +1,29 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 3.3] s3c64xx: Fix mis-cherry pick of VDDINT
-Date: Wed, 29 Feb 2012 10:53:55 +0000
-Message-ID: <1330512835-7153-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH 0/2] change lpj in arm smp common code
+Date: Wed, 29 Feb 2012 10:21:19 -0800
+Message-ID: <87sjhtec0w.fsf@ti.com>
+References: <1330499895-12364-1-git-send-email-richard.zhao@linaro.org>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1330499895-12364-1-git-send-email-richard.zhao@linaro.org>
+	(Richard Zhao's message of "Wed, 29 Feb 2012 15:18:13 +0800")
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Richard Zhao <richard.zhao@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux@arm.linux.org.uk, davej@redhat.com, will.deacon@arm.com, catalin.marinas@arm.com, davidb@codeaurora.org, arnd@arndb.de, linux-omap@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org
 
-We don't have any of the other code for VDDINT, including the variable
-declaration, so don't try to get it as we can't build.
+Richard Zhao <richard.zhao@linaro.org> writes:
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
+> The two patches were originally in [PATCH V6 0/7] add a generic cpufreq driver.
+> I seperated them and hope they can go to upstream earlier.
+>
+> Richard Zhao (2):
+>   ARM: add cpufreq transiton notifier to adjust loops_per_jiffy for smp
+>   cpufreq: OMAP: remove loops_per_jiffy recalculate for smp
 
-This patch (which has been sent a couple of times already) is needed to
-fix build breakage in 3.3.
+The first one should go into Russell's patch system.  Once he queues
+that, I can queue the OMAP one for the CPUfreq maintainer.
 
- drivers/cpufreq/s3c64xx-cpufreq.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index a5e72cb..6f9490b 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -217,13 +217,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	} else {
- 		s3c64xx_cpufreq_config_regulator();
- 	}
--
--	vddint = regulator_get(NULL, "vddint");
--	if (IS_ERR(vddint)) {
--		ret = PTR_ERR(vddint);
--		pr_err("Failed to obtain VDDINT: %d\n", ret);
--		vddint = NULL;
--	}
- #endif
- 
- 	freq = s3c64xx_freq_table;
--- 
-1.7.9.1
-
+Kevin
