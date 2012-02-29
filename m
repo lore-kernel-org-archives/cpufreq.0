@@ -1,29 +1,41 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 0/2] change lpj in arm smp common code
-Date: Wed, 29 Feb 2012 10:21:19 -0800
-Message-ID: <87sjhtec0w.fsf@ti.com>
-References: <1330499895-12364-1-git-send-email-richard.zhao@linaro.org>
+From: Dave Jones <davej@redhat.com>
+Subject: cpufreq.next status
+Date: Wed, 29 Feb 2012 14:57:33 -0500
+Message-ID: <20120229195732.GB11311@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1330499895-12364-1-git-send-email-richard.zhao@linaro.org>
-	(Richard Zhao's message of "Wed, 29 Feb 2012 15:18:13 +0800")
+Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Zhao <richard.zhao@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux@arm.linux.org.uk, davej@redhat.com, will.deacon@arm.com, catalin.marinas@arm.com, davidb@codeaurora.org, arnd@arndb.de, linux-omap@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org
+To: cpufreq@vger.kernel.org
 
-Richard Zhao <richard.zhao@linaro.org> writes:
+I just went through my backlog, and applied and pushed out what I had
+queued up. Half of the patches didn't apply.
+So if your patch isn't in what's on cpufreq.next on kernel.org right now,
+it needs rebasing and resending.
 
-> The two patches were originally in [PATCH V6 0/7] add a generic cpufreq driver.
-> I seperated them and hope they can go to upstream earlier.
->
-> Richard Zhao (2):
->   ARM: add cpufreq transiton notifier to adjust loops_per_jiffy for smp
->   cpufreq: OMAP: remove loops_per_jiffy recalculate for smp
+Here are the ones that applied:
+Applying: [CPUFREQ] s3c64xx: Fix mis-cherry pick of VDDINT
+Applying: [CPUFREQ] EXYNOS: Initialize locking_frequency with initial frequency
+Applying: [CPUFREQ] EXYNOS4210: update the name of EXYNOS clock register
+Applying: [CPUFREQ] Fix exposure of ARM_EXYNOS4210_CPUFREQ
+Applying: [CPUFREQ] Add S3C2416/S3C2450 cpufreq driver
+Applying: [CPUFREQ] CPUfreq ondemand: update sampling rate without waiting for next sampling
+Applying: [CPUFREQ] ondemand: handle QoS request on DVFS response latency
 
-The first one should go into Russell's patch system.  Once he queues
-that, I can queue the OMAP one for the CPUfreq maintainer.
+And what didn't..
 
-Kevin
+Subject: Cpufreq shutdown patch (kernel 2.6.35.3)
+Subject: [CPUFREQ] sfi based cpufreq driver for intel soc platforms
+Subject: [CPUFREQ] PM QoS: Add CPU frequency minimum as PM QoS param
+Subject: [CPUFREQ] EXYNOS4X12: Add support cpufreq for EXYNOS4X12
+Subject: [CPUFREQ] powernow-k8: Avoid Pstate MSR accesses on systems supporting CPB
+Subject: [CPUFREQ] powernow-k8: Fix indexing issue
+Subject: [CPUFREQ] s3c64xx: Fix mis-cherry pick of VDDINT
+Subject: [CPUFREQ] OMAP driver depends CPUfreq tables
+
+
+	Dave
+
