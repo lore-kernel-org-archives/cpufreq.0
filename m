@@ -1,76 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH 0/2] RFC: CPU frequency max as PM QoS param
-Date: Sun, 4 Mar 2012 23:46:54 +0100
-Message-ID: <201203042346.54468.rjw@sisk.pl>
-References: <87d39fk2n3.fsf@ti.com> <20120228005630.GA15348@envy17> <87ty2b5mdo.fsf@amiettinen-lnx.nvidia.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: re-adding pcmcia and cpupowerutils trees
+Date: Mon, 5 Mar 2012 10:18:38 +1100
+Message-ID: <20120305101838.0ce778b0ed4f6b73a3d7da85@canb.auug.org.au>
+References: <20120120114016.995d4f1af74eee173bef79d9@canb.auug.org.au>
+	<20120303135457.GA6669@comet.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87ty2b5mdo.fsf@amiettinen-lnx.nvidia.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__5_Mar_2012_10_18_38_+1100_cGv+fwueh=08AWn3"
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20120303135457.GA6669@comet.dominikbrodowski.net>
+Sender: linux-next-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: markgross@thegnar.org, Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, cpufreq List <cpufreq@vger.kernel.org>, j-pihet <j-pihet@ti.com>, davej@redhat.com, pavel@ucw.cz, Linux PM list <linux-pm@vger.kernel.org>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-next@vger.kernel.org, Thomas Renninger <trenn@suse.de>, cpufreq@vger.kernel.org
 
-On Tuesday, February 28, 2012, Antti P Miettinen wrote:
-> Adding people that were part of the thread in the beginning..
-> 
-> mark gross <markgross@thegnar.org> writes:
-> > On Mon, Feb 27, 2012 at 04:04:00PM +0100, Antti Miettinen wrote:
-> >> To the lists too..
-> >> 
-> >> On 02/27/2012 04:49 PM, Kevin Hilman wrote:
-> >> > mark gross <markgross@thegnar.org> writes:
-> >> >
-> >> >  >> Current QoS settings could be thought of as performance constraints
-> >> >  >> too. It's just that they determine minimum performance. Adding
-> >> >  >> constraints for maxium performance is not a big stretch in my mind.
-> >> >  >
-> >> >  > Its not a big stretch to me either. I just think its a bit of a hack
-> >> >  > and there is a bigger more interesting issue getting overlooked.
-> >> >  >
-> >> >  > Lastly why not simply make cpufreq thermal aware and talk directly to
-> >> >  > it if you even need too?
-> >> >
-> >> > In fact, making a thermal framework "cooling device" that talks directly
-> >> > to CPUfreq is already what's being done by the Linaro PMWG folks.
-> >> >
-> >> > The problem is that CPUfreq only controls the CPU frequency.
-> >> >
-> >> > There are other devices that could be scaled back to reduce heat as well
-> >> > (DSP, and especially GPU), so having a more generic per-device
-> >> > constraint interface that can cap the frequency for *any* scalable
-> >> > device is a better framework IMO.
-> >> >
-> >> > It just so happens that pm_qos is already a good per-device constraint
-> >> > framework and can easily modified to cap performance as well as request
-> >> > a minimum performance.
-> >> >
-> >> > Kevin
-> >
-> > ok I'll stop trying to block it.
-> >
-> > I want to re-do the whole works anyway.  If this helps in the mean time
-> > then go for it.
-> 
-> Great :-)
-> 
-> So what do other people think? Could we merge global CPU frequency
-> constraints for now?
+--Signature=_Mon__5_Mar_2012_10_18_38_+1100_cGv+fwueh=08AWn3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Not without an ACK from Dave (the cpufreq maintainer), that's for sure.
+Hi Dominik,
 
-> I agree that more work is needed for e.g. per CPU constraints, user
-> space interface and more complete thermal management. Actually for
-> future I think the constraints could also become more general than just
-> min/max "reduction operators". For e.g. core online status you might
-> want union/intersection of bitmaps. Also, the more complete thermal
-> management is related to load management in general (power budgeting for
-> other reasons than just thermal).
+On Sat, 3 Mar 2012 14:54:58 +0100 Dominik Brodowski <linux@dominikbrodowski=
+.net> wrote:
+>
+> as my kernel.org account has just been re-activated, it would be great if
+> you could re-activate the following trees in your list of trees to fetch =
+for
+> linux-next:
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia.git master
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpupowerutils.git mas=
+ter
 
-Then perhaps let's not merge "temporary" stuff and figure out how to
-implement what we _really_ want.
+I have readded both those.  I had Thomas Renninger and the cpufreq
+mailing list (both cc'd) listed as contacts for the cpupowerutils tree
+previously and have now added you as well.  You are the sole contact for
+the pcmcia tree.  Please let me know of any changes to that.
 
-Thanks,
-Rafael
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__5_Mar_2012_10_18_38_+1100_cGv+fwueh=08AWn3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPU/hOAAoJEECxmPOUX5FEA3gP/R/CUKSljqZ5J8Y0ux4d5DjM
+NynR/lOHAyM0NmZJHbX/WTkiEsfFWWVtjae6cgb58HropQD9Jw+6FQYYpWOalxvu
+n0whu/MVMk5P/zb+ZGSnwKGNwasuOdQ8pqeHnQeI9FvSfXtMMvqN9+fdmTciiToL
+S2acKOuEcuGOsRd+duN8MKrTTxXZ49bbn5sRwXX9sKhpLBmD0IJyXEwgwOT/cpm/
+6IhbXuwXOE0XsvU/H+97r1kkXaYGNWjpbGO+1pKbiDXv28rGeKpobgDLuV79zrz9
+AXZO3KV2CL8hb332PnkTxw1K/yee2cOZxajPV3D40oVpPFa5CW2QGcGNjDeeJUE8
+pCGPOVtRquhKnC4OTlJemqvsTOlNhjNZcSkLj4x8kcYd9/XPeD8dM1ArrDdKCEY3
+lMZIV3JiHLxUvhj/UEpkk+vGLRezt4ILuXTYjWO9xkrWeIk6zfAY/x3YNvz/jus3
+B1wHO3AJ0M2XRTIq1wBMeJ02OIXHZ7EI7SyRROB4T3oRQYxu0l7JfgLjBD66IcRT
+THPhpBBpHA+aGWh7aE5BG8sVogYYWa+hjuu+ZBqfbXRyh/62Q3zDEvbXFVmU/5VR
+5mc9x9daEgXBTofFzq91XdyBaUxkTFWTS4j2E0JJAVy36c3Y93ZzOrU2rbKHae5i
+Z15kpbovwtqgY9EoMl0F
+=IPQO
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__5_Mar_2012_10_18_38_+1100_cGv+fwueh=08AWn3--
