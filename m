@@ -1,45 +1,57 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [linux-pm] [PATCH 0/2] RFC: CPU frequency max as PM QoS param
-Date: Tue, 6 Mar 2012 09:37:29 -0500
-Message-ID: <20120306143729.GB29474@redhat.com>
-References: <87d39fk2n3.fsf@ti.com>
- <20120228005630.GA15348@envy17>
- <87ty2b5mdo.fsf@amiettinen-lnx.nvidia.com>
- <201203042346.54468.rjw@sisk.pl>
- <87399lvrxj.fsf@amiettinen-lnx.nvidia.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 42648] Frequencies higher than 1.5 GHz are not available for
+ AMD A8-3500M
+Date: Tue, 6 Mar 2012 22:11:30 GMT
+Message-ID: <201203062211.q26MBUlo027245@bugzilla.kernel.org>
+References: <bug-42648-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87399lvrxj.fsf@amiettinen-lnx.nvidia.com>
+In-Reply-To: <bug-42648-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, markgross@thegnar.org, Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, cpufreq List <cpufreq@vger.kernel.org>, j-pihet <j-pihet@ti.com>, pavel@ucw.cz, Linux PM list <linux-pm@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-On Tue, Mar 06, 2012 at 02:23:52PM +0200, Antti P Miettinen wrote:
- > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
- > > On Tuesday, February 28, 2012, Antti P Miettinen wrote:
- > [..]
- > >> So what do other people think? Could we merge global CPU frequency
- > >> constraints for now?
- > >
- > > Not without an ACK from Dave (the cpufreq maintainer), that's for sure.
- > 
- > Dave - any comments about these?
- > 
- > http://thread.gmane.org/gmane.linux.kernel.cpufreq/7794
- > http://thread.gmane.org/gmane.linux.kernel.cpufreq/7797
- > http://thread.gmane.org/gmane.linux.kernel.cpufreq/7800
+https://bugzilla.kernel.org/show_bug.cgi?id=42648
 
-I really dislike how this is exposed to userspace.
-How is a user to know whether scaling_max_freq or cpu_freq_max takes priority ?
-Given the confusion we already have from users when the bios_limit enforces limits,
-giving them two knobs to do the same thing seems like a bad idea to me.
 
-I don't see what problem this is solving that you couldn't solve just by
-setting scaling_max_freq.
+Thomas Renninger <trenn@suse.de> changed:
 
-	Dave
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |cpufreq@vger.kernel.org,
+                   |                            |trenn@suse.de
 
+
+
+
+--- Comment #6 from Thomas Renninger <trenn@suse.de>  2012-03-06 22:11:29 ---
+I guess this AMD A8-3500M is a family 12h CPU (/proc/cpuinfo, cpu family ->
+18)?
+If yes (or if it's fam14h, cpu family -> 20), can you give latest cpupower
+monitor tool a try from here:
+git clone git://git.kernel.org/pub/scm/linux/kernel/git/brodo/cpupowerutils.git
+cd tools/power/cpupower
+make    # make sure pciutils-devel or whatever provides pci.h is installed
+./cpupower monitor
+
+Do you get a fam12h or fam14h monitor column?
+If yes, you should be able to obtain additional info from HW which deep sleep
+states were really entered, which core boosts, etc.
+There is one special column: nbp1 (North Bridge P-state 1).
+This one is only entered if graphics also enters power states.
+It's a yes/no flag which always gets reset at measure beginning.
+If you install cpupower, cpupower monitor --help should give you some more
+details, otherwise man -l man/*.1 shows you some additional info.
+When I tried, I realized that the kernel radeon driver prevented the platform
+to enter NBP1 state (even with powersave profile). fglrx worked and NBP1 was
+entered immediately.
+
+-> I add the cpufreq list again. This one sounds interesting for others and
+having this in the cpufreq archives for googling shouldn't be that bad.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug.
