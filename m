@@ -1,62 +1,48 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 42858] thermal throttling doesn't seem to trigger on Thinkpad
- T420s
-Date: Tue, 6 Mar 2012 06:45:31 GMT
-Message-ID: <201203060645.q266jV4o008032@bugzilla.kernel.org>
-References: <bug-42858-12968@https.bugzilla.kernel.org/>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: Re: [linux-pm] [PATCH 0/2] RFC: CPU frequency max as PM QoS param
+Date: Tue, 06 Mar 2012 14:23:52 +0200
+Message-ID: <87399lvrxj.fsf@amiettinen-lnx.nvidia.com>
+References: <87d39fk2n3.fsf@ti.com> <20120228005630.GA15348@envy17>
+	<87ty2b5mdo.fsf@amiettinen-lnx.nvidia.com>
+	<201203042346.54468.rjw@sisk.pl>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-42858-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <201203042346.54468.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 4 Mar 2012 23:46:54 +0100")
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: davej@redhat.com, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: markgross@thegnar.org, Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, cpufreq List <cpufreq@vger.kernel.org>, j-pihet <j-pihet@ti.com>, pavel@ucw.cz, Linux PM list <linux-pm@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=42858
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> On Tuesday, February 28, 2012, Antti P Miettinen wrote:
+[..]
+>> So what do other people think? Could we merge global CPU frequency
+>> constraints for now?
+>
+> Not without an ACK from Dave (the cpufreq maintainer), that's for sure.
 
+Dave - any comments about these?
 
+http://thread.gmane.org/gmane.linux.kernel.cpufreq/7794
+http://thread.gmane.org/gmane.linux.kernel.cpufreq/7797
+http://thread.gmane.org/gmane.linux.kernel.cpufreq/7800
 
+>> I agree that more work is needed for e.g. per CPU constraints, user
+>> space interface and more complete thermal management. Actually for
+>> future I think the constraints could also become more general than just
+>> min/max "reduction operators". For e.g. core online status you might
+>> want union/intersection of bitmaps. Also, the more complete thermal
+>> management is related to load management in general (power budgeting for
+>> other reasons than just thermal).
+>
+> Then perhaps let's not merge "temporary" stuff and figure out how to
+> implement what we _really_ want.
 
+Well, I'd say "partial" instead of "temporary". I think frequency min
+and max are really needed but as discussed, they are hardly a complete
+solution for power management.
 
---- Comment #3 from Pierre Ossman <pierre-bugzilla@ossman.eu>  2012-03-06 06:45:30 ---
-~
-[drzeus@mjolnir]$ uname -a
-Linux mjolnir.ossman.eu 3.2.7-1.fc16.x86_64 #1 SMP Tue Feb 21 01:40:47 UTC 2012
-x86_64 x86_64 x86_64 GNU/Linux
-
-~
-[drzeus@mjolnir]$ grep . /proc/acpi/thermal*/*/
-grep: /proc/acpi/thermal*/*/: No such file or directory
-
-~
-[drzeus@mjolnir]$ grep . /sys/class/thermal/*/*
-/sys/class/thermal/cooling_device0/cur_state:0
-/sys/class/thermal/cooling_device0/max_state:17
-/sys/class/thermal/cooling_device0/type:Processor
-/sys/class/thermal/cooling_device1/cur_state:0
-/sys/class/thermal/cooling_device1/max_state:17
-/sys/class/thermal/cooling_device1/type:Processor
-/sys/class/thermal/cooling_device2/cur_state:0
-/sys/class/thermal/cooling_device2/max_state:17
-/sys/class/thermal/cooling_device2/type:Processor
-/sys/class/thermal/cooling_device3/cur_state:0
-/sys/class/thermal/cooling_device3/max_state:17
-/sys/class/thermal/cooling_device3/type:Processor
-/sys/class/thermal/cooling_device4/cur_state:6
-/sys/class/thermal/cooling_device4/max_state:15
-/sys/class/thermal/cooling_device4/type:LCD
-/sys/class/thermal/thermal_zone0/mode:enabled
-/sys/class/thermal/thermal_zone0/passive:0
-/sys/class/thermal/thermal_zone0/temp:43000
-/sys/class/thermal/thermal_zone0/trip_point_0_temp:97000
-/sys/class/thermal/thermal_zone0/trip_point_0_type:critical
-/sys/class/thermal/thermal_zone0/type:acpitz
-
-
-I'll test without thinkpad_acpi and see what happens.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+	--Antti
