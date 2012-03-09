@@ -1,7 +1,7 @@
 From: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH] cpufreq: ondemand: handle SW coordinated CPUs
-Date: Fri, 9 Mar 2012 17:40:16 +0100
-Message-ID: <1331311216-31831-1-git-send-email-linus.walleij@stericsson.com>
+Subject: [PATCH v2] cpufreq: ondemand: handle SW coordinated CPUs
+Date: Fri, 9 Mar 2012 17:43:34 +0100
+Message-ID: <1331311414-31996-1-git-send-email-linus.walleij@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
@@ -29,11 +29,15 @@ Reviewed-by: Mian Yousaf Kaukab <mian.yousaf.kaukab@stericsson.com>
 Reviewed-by: Jonas Aberg <jonas.aberg@stericsson.com>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
+ChangeLog v1->v2: forgot to include the refactorings for
+ cpu device rewrites, which is the version I actually tested,
+ mea culpa.
+---
  drivers/cpufreq/cpufreq_ondemand.c |  158 +++++++++++++++++++++++++++++++-----
  1 files changed, 136 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index c3e0652..7231ed8 100644
+index c3e0652..f9d72b6 100644
 --- a/drivers/cpufreq/cpufreq_ondemand.c
 +++ b/drivers/cpufreq/cpufreq_ondemand.c
 @@ -79,7 +79,6 @@ struct cpu_dbs_info_s {
@@ -193,7 +197,7 @@ index c3e0652..7231ed8 100644
 +				  unsigned long action, void *hcpu)
 +{
 +	unsigned int cpu = (unsigned long)hcpu;
-+	struct sys_device *sys_dev;
++	struct device *cpu_dev;
 +	struct cpu_dbs_info_s *dbs_info;
 +
 +	if (dbs_sw_coordinated_cpus())
@@ -201,8 +205,8 @@ index c3e0652..7231ed8 100644
 +	else
 +		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
 +
-+	sys_dev = get_cpu_sysdev(cpu);
-+	if (sys_dev) {
++	cpu_dev = get_cpu_device(cpu);
++	if (cpu_dev) {
 +		switch (action) {
 +		case CPU_ONLINE:
 +		case CPU_ONLINE_FROZEN:
