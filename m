@@ -1,303 +1,721 @@
-From: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH v2] cpufreq: ondemand: handle SW coordinated CPUs
-Date: Fri, 9 Mar 2012 17:43:34 +0100
-Message-ID: <1331311414-31996-1-git-send-email-linus.walleij@stericsson.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH] xen/acpi-processor: C and P-state driver that uploads said data to hypervisor.
+Date: Sat, 10 Mar 2012 11:05:00 -0500
+Message-ID: <1331395500-28033-2-git-send-email-konrad.wilk@oracle.com>
+References: <1331395500-28033-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1331395500-28033-1-git-send-email-konrad.wilk@oracle.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
-Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+To: JBeulich@suse.com, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, davej@redhat.com, cpufreq@vger.kernel.org
+Cc: mike.mcclurg@citrix.com, ke.yu@intel.com, kevin.tian@intel.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-From: Rickard Andersson <rickard.andersson@stericsson.com>
+This driver solves three problems:
+ 1). Parse and upload ACPI0007 (or PROCESSOR_TYPE) information to the
+     hypervisor - aka P-states (cpufreq data).
+ 2). Upload the the Cx state information (cpuidle data).
+ 3). Inhibit CPU frequency scaling drivers from loading.
 
-This patch fixes a bug that occured when we had load on
-a secondary CPU and the primary CPU was sleeping. Only
-one sampling timer was spawned and it was spawned as a
-deferred timer on the primary CPU, so when a secondary CPU
-had a change in load this was not detected by the ondemand
-governor.
+The reason for wanting to solve 1) and 2) is such that the Xen hypervis=
+or
+is the only one that knows the CPU usage of different guests and can
+make the proper decision of when to put CPUs and packages in proper sta=
+tes.
+Unfortunately the hypervisor has no support to parse ACPI DSDT tables, =
+hence it
+needs help from the initial domain to provide this information. The rea=
+son
+for 3) is that we do not want the initial domain to change P-states whi=
+le the
+hypervisor is doing it as well - it causes rather some funny cases of P=
+-states
+transitions.
 
-This patch make sure that deferred timers are run on all
-CPUs in the case of software controlled CPUs that run on
-the same frequency.
+=46or this to work, the driver parses the Power Management data and upl=
+oads said
+information to the Xen hypervisor. It also calls acpi_processor_notify_=
+smm()
+to inhibit the other CPU frequency scaling drivers from being loaded.
 
-Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
-Reviewed-by: Mian Yousaf Kaukab <mian.yousaf.kaukab@stericsson.com>
-Reviewed-by: Jonas Aberg <jonas.aberg@stericsson.com>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Everything revolves around the 'struct acpi_processor' structure which
+gets updated during the bootup cycle in different stages. At the startu=
+p, when
+the ACPI parser starts, the C-state information is processed (processor=
+_idle)
+and saved in said structure as 'power' element. Later on, the CPU frequ=
+ency
+scaling driver (powernow-k8 or acpi_cpufreq), would call the the
+acpi_processor_* (processor_perflib functions) to parse P-states inform=
+ation
+and populate in the said structure the 'performance' element.
+
+Since we do not want the CPU frequency scaling drivers from loading
+we have to call the acpi_processor_* functions to parse the P-states an=
+d
+call "acpi_processor_notify_smm" to stop them from loading.
+
+There is also one oddity in this driver which is that under Xen, the
+physical online CPU count can be different from the virtual online CPU =
+count.
+Meaning that the macros 'for_[online|possible]_cpu' would process only
+up to virtual online CPU count. We on the other hand want to process
+the full amount of physical CPUs. For that, the driver checks if the AC=
+PI IDs
+count is different from the APIC ID count - which can happen if the use=
+r
+choose to use dom0_max_vcpu argument. In such a case a backup of the PM
+structure is used and uploaded to the hypervisor.
+
+[v1-v2: Initial RFC implementations that were posted]
+[v3: Changed the name to passthru suggested by Pasi K=C3=A4rkk=C3=A4ine=
+n <pasik@iki.fi>]
+[v4: Added vCPU !=3D pCPU support - aka dom0_max_vcpus support]
+[v5: Cleaned up the driver, fix bug under Athlon XP]
+[v6: Changed the driver to a CPU frequency governor]
+[v7: Made it a semi-cpufreq scaling type driver suggested by Jan Beulic=
+h <jbeulich@suse.com>]
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
-ChangeLog v1->v2: forgot to include the refactorings for
- cpu device rewrites, which is the version I actually tested,
- mea culpa.
----
- drivers/cpufreq/cpufreq_ondemand.c |  158 +++++++++++++++++++++++++++++++-----
- 1 files changed, 136 insertions(+), 22 deletions(-)
+ drivers/xen/Kconfig              |   17 ++
+ drivers/xen/Makefile             |    2 +-
+ drivers/xen/xen-acpi-processor.c |  557 ++++++++++++++++++++++++++++++=
+++++++++
+ 3 files changed, 575 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/xen/xen-acpi-processor.c
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index c3e0652..f9d72b6 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -79,7 +79,6 @@ struct cpu_dbs_info_s {
- 	cputime64_t prev_cpu_wall;
- 	cputime64_t prev_cpu_nice;
- 	struct cpufreq_policy *cur_policy;
--	struct delayed_work work;
- 	struct cpufreq_frequency_table *freq_table;
- 	unsigned int freq_lo;
- 	unsigned int freq_lo_jiffies;
-@@ -95,8 +94,10 @@ struct cpu_dbs_info_s {
- 	struct mutex timer_mutex;
- };
- static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
-+static DEFINE_PER_CPU(struct delayed_work, ondemand_work);
- 
- static unsigned int dbs_enable;	/* number of CPUs using this policy */
-+static ktime_t time_stamp;
- 
- /*
-  * dbs_mutex protects dbs_enable in governor start/stop.
-@@ -393,6 +394,26 @@ static struct attribute_group dbs_attr_group = {
- 
- /************************** sysfs end ************************/
- 
-+static bool dbs_sw_coordinated_cpus(void)
-+{
-+	struct cpu_dbs_info_s *dbs_info;
-+	struct cpufreq_policy *policy;
-+	int i = 0;
-+	int j;
+diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
+index a1ced52..648bcd4 100644
+--- a/drivers/xen/Kconfig
++++ b/drivers/xen/Kconfig
+@@ -178,4 +178,21 @@ config XEN_PRIVCMD
+ 	depends on XEN
+ 	default m
+=20
++config XEN_ACPI_PROCESSOR
++	tristate "Xen ACPI processor"
++	depends on XEN && X86 && ACPI_PROCESSOR
++	default y if (X86_ACPI_CPUFREQ =3D y || X86_POWERNOW_K8 =3D y)
++	default m if (X86_ACPI_CPUFREQ =3D m || X86_POWERNOW_K8 =3D m)
++	help
++          This ACPI processor uploads Power Management information to =
+the Xen hypervisor.
 +
-+	dbs_info = &per_cpu(od_cpu_dbs_info, 0);
-+	policy = dbs_info->cur_policy;
++	  To do that the driver parses the Power Management data and uploads =
+said
++	  information to the Xen hypervisor. Then the Xen hypervisor can sele=
+ct the
++          proper Cx and Pxx states. It also registers itslef as the SM=
+M so that
++          other drivers (such as ACPI cpufreq scaling driver) will not=
+ load.
 +
-+	for_each_cpu(j, policy->cpus) {
-+		i++;
-+	}
++          To compile this driver as a module, choose M here: the
++          module will be called xen_acpi_processor  If you do not know=
+ what to choose,
++          select M here. If the CPUFREQ drivers are built in, select Y=
+ here.
 +
-+	if (i > 1)
-+		return true; /* Dependant CPUs */
-+	else
-+		return false;
-+}
-+
- static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
- {
- 	if (dbs_tuners_ins.powersave_bias)
-@@ -407,7 +428,6 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
- static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
- {
- 	unsigned int max_load_freq;
+ endmenu
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+index aa31337..9adc5be 100644
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -20,7 +20,7 @@ obj-$(CONFIG_SWIOTLB_XEN)		+=3D swiotlb-xen.o
+ obj-$(CONFIG_XEN_DOM0)			+=3D pci.o
+ obj-$(CONFIG_XEN_PCIDEV_BACKEND)	+=3D xen-pciback/
+ obj-$(CONFIG_XEN_PRIVCMD)		+=3D xen-privcmd.o
 -
- 	struct cpufreq_policy *policy;
- 	unsigned int j;
- 
-@@ -542,20 +562,42 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
- 
- static void do_dbs_timer(struct work_struct *work)
- {
--	struct cpu_dbs_info_s *dbs_info =
--		container_of(work, struct cpu_dbs_info_s, work.work);
--	unsigned int cpu = dbs_info->cpu;
--	int sample_type = dbs_info->sample_type;
--
-+	struct cpu_dbs_info_s *dbs_info;
-+	unsigned int cpu = smp_processor_id();
-+	int sample_type;
- 	int delay;
-+	bool sample = true;
++obj-$(CONFIG_XEN_ACPI_PROCESSOR)	+=3D xen-acpi-processor.o
+ xen-evtchn-y				:=3D evtchn.o
+ xen-gntdev-y				:=3D gntdev.o
+ xen-gntalloc-y				:=3D gntalloc.o
+diff --git a/drivers/xen/xen-acpi-processor.c b/drivers/xen/xen-acpi-pr=
+ocessor.c
+new file mode 100644
+index 0000000..8c05fe7
+--- /dev/null
++++ b/drivers/xen/xen-acpi-processor.c
+@@ -0,0 +1,557 @@
++/*
++ * Copyright 2012 by Oracle Inc
++ * Author: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
++ *
++ * This code borrows ideas from https://lkml.org/lkml/2011/11/30/249
++ * so many thanks go to Kevin Tian <kevin.tian@intel.com>
++ * and Yu Ke <ke.yu@intel.com>.
++ *
++ * This program is free software; you can redistribute it and/or modif=
+y it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITH=
+OUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY =
+or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licen=
+se for
++ * more details.
++ *
++ */
 +
-+	/* If SW dependant CPUs, use CPU 0 as leader */
-+	if (dbs_sw_coordinated_cpus()) {
++#include <linux/cpumask.h>
++#include <linux/cpufreq.h>
++#include <linux/freezer.h>
++#include <linux/kernel.h>
++#include <linux/kthread.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <acpi/acpi_bus.h>
++#include <acpi/acpi_drivers.h>
++#include <acpi/processor.h>
 +
-+		ktime_t time_now;
-+		s64 delta_us;
++#include <xen/interface/platform.h>
++#include <asm/xen/hypercall.h>
 +
-+		dbs_info = &per_cpu(od_cpu_dbs_info, 0);
-+		mutex_lock(&dbs_info->timer_mutex);
++#define DRV_NAME "xen-acpi-processor"
 +
-+		time_now = ktime_get();
-+		delta_us = ktime_us_delta(time_now, time_stamp);
- 
--	mutex_lock(&dbs_info->timer_mutex);
-+		/* Do nothing if we recently have sampled */
-+		if (delta_us < (s64)(dbs_tuners_ins.sampling_rate / 2))
-+			sample = false;
-+		else
-+			time_stamp = time_now;
-+	} else {
-+		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-+		mutex_lock(&dbs_info->timer_mutex);
-+	}
++static int no_hypercall;
++MODULE_PARM_DESC(off, "Inhibit the hypercall.");
++module_param_named(off, no_hypercall, int, 0400);
 +
-+	sample_type = dbs_info->sample_type;
- 
- 	/* Common NORMAL_SAMPLE setup */
- 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
- 	if (!dbs_tuners_ins.powersave_bias ||
- 	    sample_type == DBS_NORMAL_SAMPLE) {
--		dbs_check_cpu(dbs_info);
-+		if (sample)
-+			dbs_check_cpu(dbs_info);
- 		if (dbs_info->freq_lo) {
- 			/* Setup timer for SUB_SAMPLE */
- 			dbs_info->sample_type = DBS_SUB_SAMPLE;
-@@ -571,15 +613,17 @@ static void do_dbs_timer(struct work_struct *work)
- 				delay -= jiffies % delay;
- 		}
- 	} else {
--		__cpufreq_driver_target(dbs_info->cur_policy,
--			dbs_info->freq_lo, CPUFREQ_RELATION_H);
-+		if (sample)
-+			__cpufreq_driver_target(dbs_info->cur_policy,
-+						dbs_info->freq_lo,
-+						CPUFREQ_RELATION_H);
- 		delay = dbs_info->freq_lo_jiffies;
- 	}
--	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
-+	schedule_delayed_work_on(cpu, &per_cpu(ondemand_work, cpu), delay);
- 	mutex_unlock(&dbs_info->timer_mutex);
- }
- 
--static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
-+static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info, int cpu)
- {
- 	/* We want all CPUs to do sampling nearly on same jiffy */
- 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
-@@ -588,13 +632,18 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
- 		delay -= jiffies % delay;
- 
- 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
--	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
--	schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work, delay);
-+	cancel_delayed_work_sync(&per_cpu(ondemand_work, cpu));
-+	schedule_delayed_work_on(cpu, &per_cpu(ondemand_work, cpu), delay);
-+}
++/*
++ * Mutex to protect the acpi_ids_done.
++ */
++static DEFINE_MUTEX(acpi_ids_mutex);
++/*
++ * Don't think convert this to cpumask_var_t or use cpumask_bit - as t=
+hose
++ * shrink to nr_cpu_bits (which is dependent on possible_cpu), which c=
+an be
++ * less than what we want to put in.
++ */
++#define NR_ACPI_CPUS	NR_CPUS
++#define MAX_ACPI_BITS	(BITS_TO_LONGS(NR_ACPI_CPUS))
++static unsigned long *acpi_ids_done;
++/*
++ * Again, don't convert to cpumask - as we are reading the raw ACPI CP=
+U ids
++ * which can go beyond what we presently see.
++ */
++static unsigned long *acpi_id_present;
++static unsigned long *acpi_id_cst_present;
 +
-+static inline void dbs_timer_exit(int cpu)
++static int push_cxx_to_hypervisor(struct acpi_processor *_pr)
 +{
-+	cancel_delayed_work_sync(&per_cpu(ondemand_work, cpu));
- }
- 
--static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
-+static void dbs_timer_exit_per_cpu(struct work_struct *dummy)
- {
--	cancel_delayed_work_sync(&dbs_info->work);
-+	dbs_timer_exit(smp_processor_id());
- }
- 
- /*
-@@ -620,6 +669,42 @@ static int should_io_be_busy(void)
- 	return 0;
- }
- 
-+static int __cpuinit cpu_callback(struct notifier_block *nfb,
-+				  unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+	struct device *cpu_dev;
-+	struct cpu_dbs_info_s *dbs_info;
++	struct xen_platform_op op =3D {
++		.cmd			=3D XENPF_set_processor_pminfo,
++		.interface_version	=3D XENPF_INTERFACE_VERSION,
++		.u.set_pminfo.id	=3D _pr->acpi_id,
++		.u.set_pminfo.type	=3D XEN_PM_CX,
++	};
++	struct xen_processor_cx *dst_cx, *dst_cx_states =3D NULL;
++	struct acpi_processor_cx *cx;
++	unsigned int i, ok;
++	int ret =3D 0;
 +
-+	if (dbs_sw_coordinated_cpus())
-+		dbs_info = &per_cpu(od_cpu_dbs_info, 0);
-+	else
-+		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
++	dst_cx_states =3D kcalloc(_pr->power.count,
++				sizeof(struct xen_processor_cx), GFP_KERNEL);
++	if (!dst_cx_states)
++		return -ENOMEM;
 +
-+	cpu_dev = get_cpu_device(cpu);
-+	if (cpu_dev) {
-+		switch (action) {
-+		case CPU_ONLINE:
-+		case CPU_ONLINE_FROZEN:
-+			dbs_timer_init(dbs_info, cpu);
-+			break;
-+		case CPU_DOWN_PREPARE:
-+		case CPU_DOWN_PREPARE_FROZEN:
-+			dbs_timer_exit(cpu);
-+			break;
-+		case CPU_DOWN_FAILED:
-+		case CPU_DOWN_FAILED_FROZEN:
-+			dbs_timer_init(dbs_info, cpu);
-+			break;
++	for (ok =3D 0, i =3D 1; i <=3D _pr->power.count; i++) {
++		cx =3D &_pr->power.states[i];
++		if (!cx->valid)
++			continue;
++
++		dst_cx =3D &(dst_cx_states[ok++]);
++
++		dst_cx->reg.space_id =3D ACPI_ADR_SPACE_SYSTEM_IO;
++		if (cx->entry_method =3D=3D ACPI_CSTATE_SYSTEMIO) {
++			dst_cx->reg.bit_width =3D 8;
++			dst_cx->reg.bit_offset =3D 0;
++			dst_cx->reg.access_size =3D 1;
++		} else {
++			dst_cx->reg.space_id =3D ACPI_ADR_SPACE_FIXED_HARDWARE;
++			if (cx->entry_method =3D=3D ACPI_CSTATE_FFH) {
++				/* NATIVE_CSTATE_BEYOND_HALT */
++				dst_cx->reg.bit_offset =3D 2;
++				dst_cx->reg.bit_width =3D 1; /* VENDOR_INTEL */
++			}
++			dst_cx->reg.access_size =3D 0;
 +		}
++		dst_cx->reg.address =3D cx->address;
++
++		dst_cx->type =3D cx->type;
++		dst_cx->latency =3D cx->latency;
++		dst_cx->power =3D cx->power;
++
++		dst_cx->dpcnt =3D 0;
++		set_xen_guest_handle(dst_cx->dp, NULL);
 +	}
++	if (!ok) {
++		pr_err(DRV_NAME ": No _Cx for ACPI CPU %u\n", _pr->acpi_id);
++		kfree(dst_cx_states);
++		return -EINVAL;
++	}
++	op.u.set_pminfo.power.count =3D ok;
++	op.u.set_pminfo.power.flags.bm_control =3D _pr->flags.bm_control;
++	op.u.set_pminfo.power.flags.bm_check =3D _pr->flags.bm_check;
++	op.u.set_pminfo.power.flags.has_cst =3D _pr->flags.has_cst;
++	op.u.set_pminfo.power.flags.power_setup_done =3D
++		_pr->flags.power_setup_done;
++
++	set_xen_guest_handle(op.u.set_pminfo.power.states, dst_cx_states);
++
++	if (!no_hypercall)
++		ret =3D HYPERVISOR_dom0_op(&op);
++
++	if (!ret) {
++		pr_debug("ACPI CPU%u - C-states uploaded.\n", _pr->acpi_id);
++		for (i =3D 1; i <=3D _pr->power.count; i++) {
++			cx =3D &_pr->power.states[i];
++			if (!cx->valid)
++				continue;
++			pr_debug("     C%d: %s %d uS\n",
++				 cx->type, cx->desc, (u32)cx->latency);
++		}
++	} else
++		pr_err(DRV_NAME "(CX): Hypervisor error (%d) for ACPI CPU%u\n",
++		       ret, _pr->acpi_id);
++
++	kfree(dst_cx_states);
++
++	return ret;
++}
++static struct xen_processor_px *
++xen_copy_pss_data(struct acpi_processor *_pr,
++		  struct xen_processor_performance *dst_perf)
++{
++	struct xen_processor_px *dst_states =3D NULL;
++	unsigned int i;
++
++	BUILD_BUG_ON(sizeof(struct xen_processor_px) !=3D
++		     sizeof(struct acpi_processor_px));
++
++	dst_states =3D kcalloc(_pr->performance->state_count,
++			     sizeof(struct xen_processor_px), GFP_KERNEL);
++	if (!dst_states)
++		return ERR_PTR(-ENOMEM);
++
++	dst_perf->state_count =3D _pr->performance->state_count;
++	for (i =3D 0; i < _pr->performance->state_count; i++) {
++		/* Fortunatly for us, they are both the same size */
++		memcpy(&(dst_states[i]), &(_pr->performance->states[i]),
++		       sizeof(struct acpi_processor_px));
++	}
++	return dst_states;
++}
++static int xen_copy_psd_data(struct acpi_processor *_pr,
++			     struct xen_processor_performance *dst)
++{
++	struct acpi_psd_package *pdomain;
++
++	BUILD_BUG_ON(sizeof(struct xen_psd_package) !=3D
++		     sizeof(struct acpi_psd_package));
++
++	/* This information is enumerated only if acpi_processor_preregister_=
+performance
++	 * has been called.
++	 */
++	dst->shared_type =3D _pr->performance->shared_type;
++
++	pdomain =3D &(_pr->performance->domain_info);
++
++	/* 'acpi_processor_preregister_performance' does not parseif the
++	 * num_processors <=3D 1, but Xen still requires it. Do it manually h=
+ere.
++	 */
++	if (pdomain->num_processors <=3D 1) {
++		if (pdomain->coord_type =3D=3D DOMAIN_COORD_TYPE_SW_ALL)
++			dst->shared_type =3D CPUFREQ_SHARED_TYPE_ALL;
++		else if (pdomain->coord_type =3D=3D DOMAIN_COORD_TYPE_HW_ALL)
++			dst->shared_type =3D CPUFREQ_SHARED_TYPE_HW;
++		else if (pdomain->coord_type =3D=3D DOMAIN_COORD_TYPE_SW_ANY)
++			dst->shared_type =3D CPUFREQ_SHARED_TYPE_ANY;
++
++	}
++	memcpy(&(dst->domain_info), pdomain, sizeof(struct acpi_psd_package))=
+;
++	return 0;
++}
++static int xen_copy_pct_data(struct acpi_pct_register *pct,
++			     struct xen_pct_register *dst_pct)
++{
++	/* It would be nice if you could just do 'memcpy(pct, dst_pct') but
++	 * sadly the Xen structure did not have the proper padding so the
++	 * descriptor field takes two (dst_pct) bytes instead of one (pct).
++	 */
++	dst_pct->descriptor =3D pct->descriptor;
++	dst_pct->length =3D pct->length;
++	dst_pct->space_id =3D pct->space_id;
++	dst_pct->bit_width =3D pct->bit_width;
++	dst_pct->bit_offset =3D pct->bit_offset;
++	dst_pct->reserved =3D pct->reserved;
++	dst_pct->address =3D pct->address;
++	return 0;
++}
++static int push_pxx_to_hypervisor(struct acpi_processor *_pr)
++{
++	int ret =3D 0;
++	struct xen_platform_op op =3D {
++		.cmd			=3D XENPF_set_processor_pminfo,
++		.interface_version	=3D XENPF_INTERFACE_VERSION,
++		.u.set_pminfo.id	=3D _pr->acpi_id,
++		.u.set_pminfo.type	=3D XEN_PM_PX,
++	};
++	struct xen_processor_performance *dst_perf;
++	struct xen_processor_px *dst_states =3D NULL;
++
++	dst_perf =3D &op.u.set_pminfo.perf;
++
++	dst_perf->platform_limit =3D _pr->performance_platform_limit;
++	dst_perf->flags |=3D XEN_PX_PPC;
++	xen_copy_pct_data(&(_pr->performance->control_register),
++			  &dst_perf->control_register);
++	xen_copy_pct_data(&(_pr->performance->status_register),
++			  &dst_perf->status_register);
++	dst_perf->flags |=3D XEN_PX_PCT;
++	dst_states =3D xen_copy_pss_data(_pr, dst_perf);
++	if (!IS_ERR_OR_NULL(dst_states)) {
++		set_xen_guest_handle(dst_perf->states, dst_states);
++		dst_perf->flags |=3D XEN_PX_PSS;
++	}
++	if (!xen_copy_psd_data(_pr, dst_perf))
++		dst_perf->flags |=3D XEN_PX_PSD;
++
++	if (dst_perf->flags !=3D (XEN_PX_PSD | XEN_PX_PSS | XEN_PX_PCT | XEN_=
+PX_PPC)) {
++		pr_warn(DRV_NAME "ACPI CPU%u missing some P-state data (%x), skippin=
+g.\n",
++			_pr->acpi_id, dst_perf->flags);
++		ret =3D -ENODEV;
++		goto err_free;
++	}
++
++	if (!no_hypercall)
++		ret =3D HYPERVISOR_dom0_op(&op);
++
++	if (!ret) {
++		struct acpi_processor_performance *perf;
++		unsigned int i;
++
++		perf =3D _pr->performance;
++		pr_debug("ACPI CPU%u - P-states uploaded.\n", _pr->acpi_id);
++		for (i =3D 0; i < perf->state_count; i++) {
++			pr_debug("     %cP%d: %d MHz, %d mW, %d uS\n",
++			(i =3D=3D perf->state ? '*' : ' '), i,
++			(u32) perf->states[i].core_frequency,
++			(u32) perf->states[i].power,
++			(u32) perf->states[i].transition_latency);
++		}
++	} else if (ret !=3D -EINVAL)
++		/* EINVAL means the ACPI ID is incorrect - meaning the ACPI
++		 * table is referencing a non-existing CPU - which can happen
++		 * with broken ACPI tables. */
++		pr_warn(DRV_NAME "(_PXX): Hypervisor error (%d) for ACPI CPU%u\n",
++		       ret, _pr->acpi_id);
++err_free:
++	if (!IS_ERR_OR_NULL(dst_states))
++		kfree(dst_states);
++
++	return ret;
++}
++static int upload_pm_data(struct acpi_processor *_pr)
++{
++	int err =3D 0;
++
++	mutex_lock(&acpi_ids_mutex);
++	if (__test_and_set_bit(_pr->acpi_id, acpi_ids_done)) {
++		mutex_unlock(&acpi_ids_mutex);
++		return -EBUSY;
++	}
++	if (_pr->flags.power)
++		err =3D push_cxx_to_hypervisor(_pr);
++
++	if (_pr->performance && _pr->performance->states)
++		err |=3D push_pxx_to_hypervisor(_pr);
++
++	mutex_unlock(&acpi_ids_mutex);
++	return err;
++}
++static int xen_cpu_soft_notify(struct notifier_block *nfb,
++			       unsigned long action, void *hcpu)
++{
++	unsigned int cpu =3D (unsigned long)hcpu;
++	struct acpi_processor *_pr =3D per_cpu(processors, cpu);
++
++	/* The acpi_cpu_soft_notify is called before us so it populates
++	 * the structure for us. */
++	if (action =3D=3D CPU_ONLINE && _pr)
++		(void)upload_pm_data(_pr);
++
 +	return NOTIFY_OK;
 +}
 +
-+static struct notifier_block __refdata ondemand_cpu_notifier = {
-+	.notifier_call = cpu_callback,
++static struct notifier_block xen_cpu_notifier =3D {
++	.notifier_call =3D xen_cpu_soft_notify,
++	.priority =3D -1, /* Be the last one */
 +};
 +
- static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 				   unsigned int event)
- {
-@@ -648,9 +733,13 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 			if (dbs_tuners_ins.ignore_nice)
- 				j_dbs_info->prev_cpu_nice =
- 						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-+			mutex_init(&j_dbs_info->timer_mutex);
-+			INIT_DELAYED_WORK_DEFERRABLE(&per_cpu(ondemand_work, j),
-+						     do_dbs_timer);
++/*
++ * The read_acpi_id and check_acpi_ids are there to support the Xen
++ * oddity of virtual CPUs !=3D physical CPUs in the initial domain.
++ * The user can supply 'xen_max_vcpus=3DX' on the Xen hypervisor line
++ * which will band the amount of CPUs the initial domain can see.
++ * In general that is OK, except it plays havoc with any of the
++ * for_each_[present|online]_cpu macros which are banded to the virtua=
+l
++ * CPU amount.
++ */
++static acpi_status __init
++read_acpi_id(acpi_handle handle, u32 lvl, void *context, void **rv)
++{
++	u32 acpi_id;
++	acpi_status status;
++	acpi_object_type acpi_type;
++	unsigned long long tmp;
++	union acpi_object object =3D { 0 };
++	struct acpi_buffer buffer =3D { sizeof(union acpi_object), &object };
++	acpi_io_address pblk =3D 0;
 +
-+			j_dbs_info->rate_mult = 1;
- 		}
- 		this_dbs_info->cpu = cpu;
--		this_dbs_info->rate_mult = 1;
- 		ondemand_powersave_bias_init_cpu(cpu);
- 		/*
- 		 * Start the timerschedule work, when this governor
-@@ -680,21 +769,46 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		}
- 		mutex_unlock(&dbs_mutex);
- 
--		mutex_init(&this_dbs_info->timer_mutex);
--		dbs_timer_init(this_dbs_info);
-+		/* If SW coordinated CPUs then register notifier */
-+		if (dbs_sw_coordinated_cpus()) {
-+			register_hotcpu_notifier(&ondemand_cpu_notifier);
++	status =3D acpi_get_type(handle, &acpi_type);
++	if (ACPI_FAILURE(status))
++		return AE_OK;
 +
-+			for_each_cpu(j, policy->cpus) {
-+				struct cpu_dbs_info_s *j_dbs_info;
++	switch (acpi_type) {
++	case ACPI_TYPE_PROCESSOR:
++		status =3D acpi_evaluate_object(handle, NULL, NULL, &buffer);
++		if (ACPI_FAILURE(status))
++			return AE_OK;
++		acpi_id =3D object.processor.proc_id;
++		pblk =3D object.processor.pblk_address;
++		break;
++	case ACPI_TYPE_DEVICE:
++		status =3D acpi_evaluate_integer(handle, "_UID", NULL, &tmp);
++		if (ACPI_FAILURE(status))
++			return AE_OK;
++		acpi_id =3D tmp;
++		break;
++	default:
++		return AE_OK;
++	}
++	if (acpi_id > NR_ACPI_CPUS) {
++		WARN_ONCE(1, "There are %u ACPI CPUs, but we can only handle %d!\n",
++		     acpi_id, NR_ACPI_CPUS);
++		return AE_OK;
++	}
++	/* OK, There is a ACPI Processor object */
++	__set_bit(acpi_id, acpi_id_present);
 +
-+				j_dbs_info = &per_cpu(od_cpu_dbs_info, 0);
-+				dbs_timer_init(j_dbs_info, j);
-+			}
++	status =3D acpi_evaluate_object(handle, "_CST", NULL, &buffer);
++	if (ACPI_FAILURE(status)) {
++		if (!pblk)
++			return AE_OK;
++	}
++	/* .. and it has a C-state */
++	__set_bit(acpi_id, acpi_id_cst_present);
 +
-+			/* Initiate timer time stamp */
-+			time_stamp = ktime_get();
++	return AE_OK;
++}
++static int __init check_acpi_ids(struct acpi_processor *pr_backup)
++{
++	if (!pr_backup)
++		return -ENODEV;
 +
++	/* All online CPUs have been processed at this stage. Now verify
++	 * whether in fact "online CPUs" =3D=3D physical CPUs.
++	 */
++	acpi_id_present =3D kcalloc(MAX_ACPI_BITS, sizeof(unsigned long), GFP=
+_KERNEL);
++	if (!acpi_id_present)
++		return -ENOMEM;
 +
-+		} else
-+			dbs_timer_init(this_dbs_info, cpu);
- 		break;
- 
- 	case CPUFREQ_GOV_STOP:
--		dbs_timer_exit(this_dbs_info);
++	memset(acpi_id_present, 0, MAX_ACPI_BITS * sizeof(unsigned long));
 +
-+		dbs_timer_exit(cpu);
- 
- 		mutex_lock(&dbs_mutex);
- 		mutex_destroy(&this_dbs_info->timer_mutex);
- 		dbs_enable--;
- 		mutex_unlock(&dbs_mutex);
--		if (!dbs_enable)
-+		if (!dbs_enable) {
- 			sysfs_remove_group(cpufreq_global_kobject,
- 					   &dbs_attr_group);
- 
-+			if (dbs_sw_coordinated_cpus()) {
-+				/*
-+				 * Make sure all pending timers/works are
-+				 * stopped.
-+				 */
-+				schedule_on_each_cpu(dbs_timer_exit_per_cpu);
-+				unregister_hotcpu_notifier(&ondemand_cpu_notifier);
-+			}
++	acpi_id_cst_present =3D kcalloc(MAX_ACPI_BITS, sizeof(unsigned long),=
+ GFP_KERNEL);
++	if (!acpi_id_cst_present) {
++		kfree(acpi_id_present);
++		return -ENOMEM;
++	}
++	memset(acpi_id_cst_present, 0, MAX_ACPI_BITS * sizeof(unsigned long))=
+;
++
++	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT,
++			    ACPI_UINT32_MAX,
++			    read_acpi_id, NULL, NULL, NULL);
++	acpi_get_devices("ACPI0007", read_acpi_id, NULL, NULL);
++
++	if (!bitmap_equal(acpi_id_present, acpi_ids_done, MAX_ACPI_BITS)) {
++		unsigned int i;
++
++		for_each_set_bit(i, acpi_id_present, MAX_ACPI_BITS) {
++			pr_backup->acpi_id =3D i;
++			/* Mask out C-states if there are no _CST */
++			pr_backup->flags.power =3D test_bit(i, acpi_id_cst_present);
++			(void)upload_pm_data(pr_backup);
 +		}
- 		break;
- 
- 	case CPUFREQ_GOV_LIMITS:
--- 
-1.7.8
++	}
++	kfree(acpi_id_present);
++	acpi_id_present =3D NULL;
++	kfree(acpi_id_cst_present);
++	acpi_id_cst_present =3D NULL;
++	return 0;
++}
++static int __init check_prereq(void)
++{
++	struct cpuinfo_x86 *c =3D &cpu_data(0);
++
++	if (!xen_initial_domain())
++		return -ENODEV;
++
++	if (!acpi_gbl_FADT.smi_command)
++		return -ENODEV;
++
++	if (c->x86_vendor =3D=3D X86_VENDOR_INTEL) {
++		if (!cpu_has(c, X86_FEATURE_EST))
++			return -ENODEV;
++
++		return 0;
++	}
++	if (c->x86_vendor =3D=3D X86_VENDOR_AMD) {
++		/* Copied from powernow-k8.h, can't include ../xen-acpi-processor/po=
+wernow
++		 * as we get compile warnings for the static functions.
++		 */
++#define CPUID_FREQ_VOLT_CAPABILITIES    0x80000007
++#define USE_HW_PSTATE                   0x00000080
++		u32 eax, ebx, ecx, edx;
++		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
++		if ((edx & USE_HW_PSTATE) !=3D USE_HW_PSTATE)
++			return -ENODEV;
++		return 0;
++	}
++	return -ENODEV;
++}
++/* acpi_perf_data is a pointer to percpu data. */
++static struct acpi_processor_performance __percpu *acpi_perf_data;
++
++static void free_acpi_perf_data(void)
++{
++	unsigned int i;
++
++	/* Freeing a NULL pointer is OK, and alloc_percpu zeroes. */
++	for_each_possible_cpu(i)
++		free_cpumask_var(per_cpu_ptr(acpi_perf_data, i)
++				 ->shared_cpu_map);
++	free_percpu(acpi_perf_data);
++}
++
++static int __init xen_acpi_processor_init(void)
++{
++	struct acpi_processor *pr_backup =3D NULL;
++	unsigned int i;
++	int rc =3D check_prereq();
++
++	if (rc)
++		return rc;
++
++	acpi_ids_done =3D kcalloc(MAX_ACPI_BITS, sizeof(unsigned long), GFP_K=
+ERNEL);
++	if (!acpi_ids_done)
++		return -ENOMEM;
++
++	memset(acpi_ids_done, 0, MAX_ACPI_BITS * sizeof(unsigned long));
++
++	acpi_perf_data =3D alloc_percpu(struct acpi_processor_performance);
++	if (!acpi_perf_data) {
++		pr_debug(DRV_NAME "Memory allocation error for acpi_perf_data.\n");
++		kfree(acpi_ids_done);
++		return -ENOMEM;
++	}
++	for_each_possible_cpu(i) {
++		if (!zalloc_cpumask_var_node(
++			&per_cpu_ptr(acpi_perf_data, i)->shared_cpu_map,
++			GFP_KERNEL, cpu_to_node(i))) {
++			rc =3D -ENOMEM;
++			goto err_out;
++		}
++	}
++
++	/* Do initialization in ACPI core */
++	rc =3D acpi_processor_preregister_performance(acpi_perf_data);
++	if (WARN_ON(rc))
++		goto err_out;
++
++	for_each_possible_cpu(i) {
++		struct acpi_processor_performance *perf;
++
++		perf =3D per_cpu_ptr(acpi_perf_data, i);
++		rc =3D acpi_processor_register_performance(perf, i);
++		if (WARN_ON(rc))
++			goto err_out;
++	}
++	rc =3D acpi_processor_notify_smm(THIS_MODULE);
++	if (WARN_ON(rc))
++		goto err_unregister;
++
++	for_each_possible_cpu(i) {
++		struct acpi_processor *_pr;
++		_pr =3D per_cpu(processors, i /* APIC ID */);
++		if (!_pr)
++			continue;
++
++		if (!pr_backup) {
++			pr_backup =3D kzalloc(sizeof(struct acpi_processor), GFP_KERNEL);
++			memcpy(pr_backup, _pr, sizeof(struct acpi_processor));
++		}
++		(void)upload_pm_data(_pr);
++	}
++	rc =3D check_acpi_ids(pr_backup);
++	if (rc)
++		goto err_unregister;
++
++	kfree(pr_backup);
++	register_hotcpu_notifier(&xen_cpu_notifier);
++
++	return 0;
++err_unregister:
++	for_each_possible_cpu(i) {
++		struct acpi_processor_performance *perf;
++		perf =3D per_cpu_ptr(acpi_perf_data, i);
++		acpi_processor_unregister_performance(perf, i);
++	}
++err_out:
++	/* Freeing a NULL pointer is OK: alloc_percpu zeroes. */
++	free_acpi_perf_data();
++	kfree(acpi_ids_done);
++	return rc;
++}
++static void __exit xen_acpi_processor_exit(void)
++{
++	int i;
++
++	unregister_hotcpu_notifier(&xen_cpu_notifier);
++	kfree(acpi_ids_done);
++	for_each_possible_cpu(i) {
++		struct acpi_processor_performance *perf;
++		perf =3D per_cpu_ptr(acpi_perf_data, i);
++		acpi_processor_unregister_performance(perf, i);
++	}
++	free_acpi_perf_data();
++}
++
++MODULE_AUTHOR("Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>");
++MODULE_DESCRIPTION("Xen ACPI Processor P-states (and Cx) driver which =
+uploads PM data to Xen hypervisor");
++MODULE_LICENSE("GPL");
++
++/* We want to be loaded before the CPU freq scaling drivers are loaded=
+=2E
++ * They are loaded in late_initcall. */
++device_initcall(xen_acpi_processor_init);
++module_exit(xen_acpi_processor_exit);
+--=20
+1.7.9.48.g85da4d
 
