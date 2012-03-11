@@ -1,33 +1,54 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH]  xen/acpi-processor: C and P-state driver that uploads said data to hypervisor. [v7]
-Date: Sat, 10 Mar 2012 11:04:59 -0500
-Message-ID: <1331395500-28033-1-git-send-email-konrad.wilk@oracle.com>
+From: Rafal Bilski <rafalbilski@interia.pl>
+Subject: [PATCH] [PATCH] Mark Longhaul as broken (again)
+Date: Sun, 11 Mar 2012 09:05:42 +0000
+Message-ID: <1331456742-8305-1-git-send-email-rafalbilski@interia.pl>
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=interia.pl;
+	s=biztos; t=1331456694;
+	bh=jPb7pw3jjv+7cXFG0VNQlX/INTTPvaRc9uhh+1qPO+Y=;
+	h=Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
+	 X-Interia-Antivirus;
+	b=bYrDqKg/Hk3+HonQai/DUaWz6eRcL2Ufl5FAe5sxy/YKPLt1mB2z4E/Bxs1pZeKsa
+	 zfV3IvRHeX2z7Oo11727DS7Vcg7YMpRJ0UXH9Skjz23QhZZBgsBpILwLaCBtqq1DTd
+	 PvnncHF20uDh6qORnHTwUO0O8Jti8PMaEBmSu4I8=
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: JBeulich@suse.com, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, davej@redhat.com, cpufreq@vger.kernel.org
-Cc: mike.mcclurg@citrix.com, ke.yu@intel.com, kevin.tian@intel.com
+To: Dave Jones <davej@redhat.com>
+Cc: cpufreq@vger.kernel.org, Rafal Bilski <rafalbilski@interia.pl>
 
-The problem this patch is trying to solve is to provide ACPI power management
-information to the hypervisor from the initial domain. The hypervisor lacks the
-ACPI DSDT parser so it can't get that data without some help - and the initial
-domain can provide that. One approach (https://lkml.org/lkml/2011/11/30/245)
-augments the ACPI code to call an external PM code - but there were no comments
-about it so I decided to see if another approach could solve it.
+I'm very sorry, but I don't see how bug 4059 could be fixed. In thread
+pointed by one of links user claims that his processor isn't even stable
+at lower frequencies. I don't see how it is possible because most VIA
+systems don't support voltage scaling. Reason I can think of is
+some processors need much more then 1ms to change frequency and are
+still in process of doing so when timer interrupt occurs (1000Hz timer
+and "ondemand" scenario). Another possibility is that some interrupts
+can't be masked even when asked to. And another one is SMI which isn't
+adressed by current source at all.
 
-It also solves the other problem of CPUfreq scaling drivers running in
-the initial domain, changing frequencies without consulting the hypervisor for
-the appropiate load information. This means that both the hypervisor and the
-initial domain might be changing the P-states at the same time.
+Current Longhaul is much different then older one yet limiting it to
+known to work northbridges didn't help. Possibly support depends on
+chipset revision or system setup.
+---
+ drivers/cpufreq/Kconfig.x86 |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This module (xen-acpi-processor)  collects the information the same way that
-the cpufreq drivers would utilize ACPI processor code and save everything in
-the 'struct acpi_processor' and then uploads it to the hypervisor.
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 78ff7ee..4ae0f5c 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -215,7 +215,7 @@ config X86_LONGRUN
+ config X86_LONGHAUL
+ 	tristate "VIA Cyrix III Longhaul"
+ 	select CPU_FREQ_TABLE
+-	depends on X86_32 && ACPI_PROCESSOR
++	depends on X86_32 && ACPI_PROCESSOR && BROKEN
+ 	help
+ 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
+ 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
+-- 
+1.7.9.3
 
-The driver can be either an module or compiled in. If compiled in, it will
-launch itself before the CPUfreq scaling drivers to inhibit them. If as a module
-then further work is needed in the init script to allow this driver to be loaded
-before powernow-k8 or acpi-cpufreq.
