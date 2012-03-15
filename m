@@ -1,33 +1,63 @@
-From: Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: Lost fixes?
-Date: Thu, 15 Mar 2012 11:44:50 +0100
-Message-ID: <20120315104450.GA20705@sortiz-mobl>
-References: <20120315102845.GB16389@n2100.arm.linux.org.uk>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [GIT PULL] cpufreq: OMAP updates for v3.4
+Date: Thu, 15 Mar 2012 07:25:43 -0700
+Message-ID: <87obryc55k.fsf@ti.com>
+References: <87y5rci2na.fsf@ti.com>
+	<CANOLnON91vXWb2L-FXjz3sqq-9j5SaEodtpt_yvFiN33D4Q3Ow@mail.gmail.com>
+	<87wr6ngkrl.fsf@ti.com>
+	<CANOLnON+hHtnjo9samAqvXp_nVJMjQ7CnxMCe7ggO4UwYaz4rw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20120315102845.GB16389@n2100.arm.linux.org.uk>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CANOLnON+hHtnjo9samAqvXp_nVJMjQ7CnxMCe7ggO4UwYaz4rw@mail.gmail.com>
+	(Grazvydas Ignotas's message of "Wed, 14 Mar 2012 19:38:38 +0200")
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, Grant Likely <grant.likely@secretlab.ca>, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, Thomas Gleixner <tglx@linutronix.de>, Tony Lindgren <tony@atomide.com>
+Content-Type: text/plain; charset="utf-8"
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-On Thu, Mar 15, 2012 at 10:28:45AM +0000, Russell King - ARM Linux wrote:
-> These fixes are a collection from other people which resolve various
-> issues found with the new kautobuilder.  They're now a month old, and
-> as far as I can see, have not been merged into Linus' tree.
-> 
-> What's the status of them, and when are they going to be merged?
-For the drivers/mfd/da9052-spi.c part: A patch from Axel Lin has been living
-in my for-next branch for a while now. It's a section mismatch warning fix, so
-not something I consider worth sending to Linus after the merge window is
-closed. So it's queued for the next one.
+Grazvydas Ignotas <notasas@gmail.com> writes:
 
-Cheers,
-Samuel.
+> On Wed, Mar 14, 2012 at 7:22 PM, Kevin Hilman <khilman@ti.com> wrote:
+>> Grazvydas Ignotas <notasas@gmail.com> writes:
+>>
+>> [...]
+>>
+>>>> Russell King (1):
+>>>> =C2=A0 =C2=A0 =C2=A0cpufreq: OMAP driver depends CPUfreq tables
+>>>
+>>> It seems this one got messed up, it says "default ARCH_OMAP2PLUS"
+>>> instead of depends.
+>>
+>> That was intentional. =C2=A0What do you think is messed up about it?
+>>
+>> It's the same as saying:
+>>
+>> =C2=A0 =C2=A0 depends on ARCH_OMAP2PLUS
+>> =C2=A0 =C2=A0 default y
+>
+> Hm, somehow I've never encountered this syntax, but it more looks lik=
+e
+> it means "default y if ARCH_OMAP2PLUS" instead of that.
+>
+> Checked this with menuconfig now:
+>   default ARCH_OMAP2PLUS
+> resolves to:
+>   ARCH_HAS_CPUFREQ [=3Dy] && CPU_FREQ [=3Dy] && ARM [=3Dy]
+>
+> ..which might cause build break when OMAP is not selected, and
+>
+>   depends on ARCH_OMAP2PLUS
+>   default y
+> resolves to:
+>   ARCH_HAS_CPUFREQ [=3Dy] && CPU_FREQ [=3Dy] && ARM [=3Dy] && ARCH_OM=
+AP2PLUS [=3Dy]
+>
+> ..which should be randconfig friendly.
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Yeah, you're right.  Feel free to send a patch using your comments abov=
+e
+to describe that the current form is not randconfig friendly.
+
+Kevin
