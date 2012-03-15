@@ -1,45 +1,148 @@
 From: Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 2/6] CPUFREQ: Fix exposure of ARM_EXYNOS4210_CPUFREQ
-Date: Thu, 15 Mar 2012 10:29:39 +0000
-Message-ID: <E1S87wB-0000Mq-MM@rmk-PC.arm.linux.org.uk>
+Subject: [PATCH 6/6] ARM: OMAP: fix cpufreq build
+Date: Thu, 15 Mar 2012 10:31:00 +0000
+Message-ID: <E1S87xU-0000N8-6u@rmk-PC.arm.linux.org.uk>
 References: <20120315102845.GB16389@n2100.arm.linux.org.uk>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-omap-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
-	h=Date:Sender:Message-Id:Subject:Cc:Cc:From:References:In-Reply-To; bh=EukSGgl0VM3dXjioMl8nRd7GqjteOLoUdgtAGvtWCfA=;
-	b=E5soIMG1gaBGI0R5zZ0t5p//H13lhuSFkTz0ZlBOroLJaGuyvqta8FTUX3H85h/cNcmpEwe569+R0ksB+vJn0dEGtCrI7eDbV8b1htmh0qtwNSAEAAssGFbh/kK2PDQL96nOOeNRaCra5LY4yF8N0dZulMAzvV4bAw6cYcMwaRM=;
+	h=Date:Sender:Message-Id:Subject:Cc:From:References:In-Reply-To; bh=v6jiwlOIG8ymvXhnjAbZlJqluLY1yDtZlj3pb7KNGFk=;
+	b=HHUkaWmwc+l1SirGsNw0G32gixYPwZb9rwN0OuSphfk3urvuGgAFitdB42k2zxuGrDWGWP07CEbbOzJvfff/sfWejlarV2wRCf0TZvVfz7I5AFrIuj7XkMyyw6uMkduri+Num48MxpYyLUFd1laVybSjXO00gjD/+6FpiTrwBVE=;
 In-Reply-To: <20120315102845.GB16389@n2100.arm.linux.org.uk>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: 
-Cc: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>, Dave Jones <davej@redhat.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
 
-exynos4210-cpufreq.c is not buildable on non-exynos builds, so it's
-pointless allowing this option to be exposed.  Fix this by adding a
-dependency on ARCH_EXYNOS.
+OMAPs cpufreq requires the frequency table support, but nothing ensures
+that this is selected.  This can result in configurations which fail to
+build:
 
-drivers/cpufreq/exynos4210-cpufreq.c:20:29: error: mach/regs-clock.h: No such file or directory
-drivers/cpufreq/exynos4210-cpufreq.c:21:26: error: mach/cpufreq.h: No such file or directory
+drivers/built-in.o:(.data+0x5238): undefined reference to `cpufreq_freq_attr_scaling_available_freqs'
+drivers/cpufreq/omap-cpufreq.c:88: undefined reference to `cpufreq_frequency_table_target'
+drivers/cpufreq/omap-cpufreq.c:60: undefined reference to `cpufreq_frequency_table_verify'
+drivers/cpufreq/omap-cpufreq.c:186: undefined reference to `cpufreq_frequency_table_cpuinfo'
+drivers/cpufreq/omap-cpufreq.c:190: undefined reference to `cpufreq_frequency_table_get_attr'
+
+Fix this by introducing a new configuration variable and having that
+select CPU_FREQ_TABLE.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/cpufreq/Kconfig.arm |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/clkt2xxx_virt_prcm_set.c |    2 +-
+ arch/arm/mach-omap2/clock.c                  |    2 +-
+ arch/arm/mach-omap2/clock.h                  |    2 +-
+ arch/arm/plat-omap/clock.c                   |    2 +-
+ arch/arm/plat-omap/include/plat/clock.h      |    4 ++--
+ drivers/cpufreq/Kconfig.arm                  |    5 +++++
+ drivers/cpufreq/Makefile                     |    2 +-
+ 7 files changed, 12 insertions(+), 7 deletions(-)
 
+diff --git a/arch/arm/mach-omap2/clkt2xxx_virt_prcm_set.c b/arch/arm/mach-omap2/clkt2xxx_virt_prcm_set.c
+index 39f9d5a..4705b50 100644
+--- a/arch/arm/mach-omap2/clkt2xxx_virt_prcm_set.c
++++ b/arch/arm/mach-omap2/clkt2xxx_virt_prcm_set.c
+@@ -165,7 +165,7 @@ int omap2_select_table_rate(struct clk *clk, unsigned long rate)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_CPU_FREQ
++#ifdef CONFIG_ARM_OMAP2PLUS_CPUFREQ
+ /*
+  * Walk PRCM rate table and fillout cpufreq freq_table
+  * XXX This should be replaced by an OPP layer in the near future
+diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+index f57ed5b..450feb0 100644
+--- a/arch/arm/mach-omap2/clock.c
++++ b/arch/arm/mach-omap2/clock.c
+@@ -536,7 +536,7 @@ struct clk_functions omap2_clk_functions = {
+ 	.clk_set_rate		= omap2_clk_set_rate,
+ 	.clk_set_parent		= omap2_clk_set_parent,
+ 	.clk_disable_unused	= omap2_clk_disable_unused,
+-#ifdef CONFIG_CPU_FREQ
++#ifdef CONFIG_ARM_OMAP2PLUS_CPUFREQ
+ 	/* These will be removed when the OPP code is integrated */
+ 	.clk_init_cpufreq_table	= omap2_clk_init_cpufreq_table,
+ 	.clk_exit_cpufreq_table	= omap2_clk_exit_cpufreq_table,
+diff --git a/arch/arm/mach-omap2/clock.h b/arch/arm/mach-omap2/clock.h
+index b8c2a68..f331cfc 100644
+--- a/arch/arm/mach-omap2/clock.h
++++ b/arch/arm/mach-omap2/clock.h
+@@ -146,7 +146,7 @@ extern const struct clksel_rate gpt_sys_rates[];
+ extern const struct clksel_rate gfx_l3_rates[];
+ extern const struct clksel_rate dsp_ick_rates[];
+ 
+-#if defined(CONFIG_ARCH_OMAP2) && defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_ARCH_OMAP2) && defined(CONFIG_ARM_OMAP2PLUS_CPUFREQ)
+ extern void omap2_clk_init_cpufreq_table(struct cpufreq_frequency_table **table);
+ extern void omap2_clk_exit_cpufreq_table(struct cpufreq_frequency_table **table);
+ #else
+diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
+index 567e4b5..2e2efb6 100644
+--- a/arch/arm/plat-omap/clock.c
++++ b/arch/arm/plat-omap/clock.c
+@@ -399,7 +399,7 @@ struct clk dummy_ck = {
+ 	.ops	= &clkops_null,
+ };
+ 
+-#ifdef CONFIG_CPU_FREQ
++#ifdef CONFIG_ARM_OMAP2PLUS_CPUFREQ
+ void clk_init_cpufreq_table(struct cpufreq_frequency_table **table)
+ {
+ 	unsigned long flags;
+diff --git a/arch/arm/plat-omap/include/plat/clock.h b/arch/arm/plat-omap/include/plat/clock.h
+index 240a7b9..879ba27 100644
+--- a/arch/arm/plat-omap/include/plat/clock.h
++++ b/arch/arm/plat-omap/include/plat/clock.h
+@@ -283,7 +283,7 @@ struct clk_functions {
+ 	void		(*clk_allow_idle)(struct clk *clk);
+ 	void		(*clk_deny_idle)(struct clk *clk);
+ 	void		(*clk_disable_unused)(struct clk *clk);
+-#ifdef CONFIG_CPU_FREQ
++#ifdef CONFIG_ARM_OMAP2PLUS_CPUFREQ
+ 	void		(*clk_init_cpufreq_table)(struct cpufreq_frequency_table **);
+ 	void		(*clk_exit_cpufreq_table)(struct cpufreq_frequency_table **);
+ #endif
+@@ -301,7 +301,7 @@ extern void recalculate_root_clocks(void);
+ extern unsigned long followparent_recalc(struct clk *clk);
+ extern void clk_enable_init_clocks(void);
+ unsigned long omap_fixed_divisor_recalc(struct clk *clk);
+-#ifdef CONFIG_CPU_FREQ
++#ifdef CONFIG_ARM_OMAP2PLUS_CPUFREQ
+ extern void clk_init_cpufreq_table(struct cpufreq_frequency_table **table);
+ extern void clk_exit_cpufreq_table(struct cpufreq_frequency_table **table);
+ #endif
 diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index e0664fe..c8bde43 100644
+index c8bde43..74e8b55 100644
 --- a/drivers/cpufreq/Kconfig.arm
 +++ b/drivers/cpufreq/Kconfig.arm
-@@ -34,6 +34,7 @@ config ARM_EXYNOS_CPUFREQ
+@@ -2,6 +2,11 @@
+ # ARM CPU Frequency scaling drivers
+ #
  
- config ARM_EXYNOS4210_CPUFREQ
- 	bool "Samsung EXYNOS4210"
-+	depends on ARCH_EXYNOS
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS4210
- 	  SoC (S5PV310 or S5PC210).
++config ARM_OMAP2PLUS_CPUFREQ
++	bool
++	depends on ARCH_OMAP2PLUS
++	select CPU_FREQ_TABLE
++
+ config ARM_S3C64XX_CPUFREQ
+ 	bool "Samsung S3C64XX"
+ 	depends on CPU_S3C6410
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index ac000fa..fda94c7 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -44,7 +44,7 @@ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
+ obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
+-obj-$(CONFIG_ARCH_OMAP2PLUS)            += omap-cpufreq.o
++obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
+ 
+ ##################################################################################
+ # PowerPC platform drivers
 -- 
 1.7.4.4
 
