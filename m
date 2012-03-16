@@ -1,26 +1,25 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: Re: [PATCH 6/6] ARM: OMAP: fix cpufreq build
-Date: Thu, 15 Mar 2012 12:47:43 -0600 (MDT)
-Message-ID: <alpine.DEB.2.00.1203151247220.7108@utopia.booyaka.com>
-References: <20120315102845.GB16389@n2100.arm.linux.org.uk> <E1S87xU-0000N8-6u@rmk-PC.arm.linux.org.uk> <87aa3hdc3o.fsf@ti.com>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: Re: Using out of band messages to change min/max frequencies
+Date: Fri, 16 Mar 2012 20:26:46 +0200
+Message-ID: <878vj0v1uh.fsf@amiettinen-lnx.nvidia.com>
+References: <4F60D71C.6070709@calxeda.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87aa3hdc3o.fsf@ti.com>
+In-Reply-To: <4F60D71C.6070709@calxeda.com> (Mark Langsdorf's message of "Wed,
+	14 Mar 2012 12:36:28 -0500")
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@ti.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, Dave Jones <davej@redhat.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Thu, 15 Mar 2012, Kevin Hilman wrote:
+Mark Langsdorf <mark.langsdorf@calxeda.com> writes:
+> Is there some better way to approach this?
 
-> Initially, this was intended as a cleanup because it was just dead code
-> removal, but since we missed v3.4, maybe we should pull out 
-> "ARM: OMAP: clock: cleanup CPUfreq leftovers" and submit for 3.4-rc.
+PM QoS :-)
 
-If it doesn't go upstream for the 3.4 merge window, I'll submit it for 
-3.4-rc.
+http://thread.gmane.org/gmane.linux.kernel.cpufreq/7794
+http://thread.gmane.org/gmane.linux.kernel.cpufreq/7797
 
-
-- Paul
+	--Antti
