@@ -1,36 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 42858] thermal throttling doesn't seem to trigger on Thinkpad
- T420s
-Date: Mon, 19 Mar 2012 08:54:58 GMT
-Message-ID: <201203190854.q2J8swCe012436@bugzilla.kernel.org>
-References: <bug-42858-12968@https.bugzilla.kernel.org/>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: Using out of band messages to change min/max frequencies
+Date: Tue, 20 Mar 2012 09:32:55 -0500
+Message-ID: <4F689517.8090809@calxeda.com>
+References: <4F60D71C.6070709@calxeda.com> <878vj0v1uh.fsf@amiettinen-lnx.nvidia.com>	<4F63A8FA.2070406@calxeda.com> <87y5qyt1uu.fsf@amiettinen-lnx.nvidia.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-42858-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <87y5qyt1uu.fsf@amiettinen-lnx.nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Antti P Miettinen <amiettinen@nvidia.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=42858
+On 03/18/2012 09:34 AM, Antti P Miettinen wrote:
+> Mark Langsdorf <mark.langsdorf@calxeda.com> writes:
+>> On 03/16/2012 01:26 PM, Antti P Miettinen wrote:
+>>> Mark Langsdorf <mark.langsdorf@calxeda.com> writes:
+>>>> Is there some better way to approach this?
+>>>
+>>> PM QoS :-)
+>>>
+>>> http://thread.gmane.org/gmane.linux.kernel.cpufreq/7794
+>>> http://thread.gmane.org/gmane.linux.kernel.cpufreq/7797
+>>
+>> Thanks, that looks like it could be useful.
+>>
+>> Is there a sample implementation of this in the context of
+>> a cpufreq device driver?
+> 
+> Hmm.. controlling cpufreq core from cpufreq driver? Nope, this input
+> event booster is the only example I have:
+> 
+> http://thread.gmane.org/gmane.linux.kernel.cpufreq/7801
 
+Thanks. It wasn't exactly applicable, but it gave enough
+hints that I got the QoS parts working for my driver.
 
-Zhang Rui <rui.zhang@intel.com> changed:
+--Mark Langsdorf
+Calxeda, Inc.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |rui.zhang@intel.com
-
-
-
-
---- Comment #5 from Zhang Rui <rui.zhang@intel.com>  2012-03-19 08:54:58 ---
-would you please check if this patch helps?
-
-http://marc.info/?l=linux-acpi&m=132854533918079&w=2
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
