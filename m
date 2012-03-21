@@ -1,42 +1,54 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: Using out of band messages to change min/max frequencies
-Date: Tue, 20 Mar 2012 09:32:55 -0500
-Message-ID: <4F689517.8090809@calxeda.com>
-References: <4F60D71C.6070709@calxeda.com> <878vj0v1uh.fsf@amiettinen-lnx.nvidia.com>	<4F63A8FA.2070406@calxeda.com> <87y5qyt1uu.fsf@amiettinen-lnx.nvidia.com>
+From: <Thomas.Bartholomae@lantiq.com>
+Subject: cpufrequtils-0.3.tar.gz
+Date: Wed, 21 Mar 2012 09:34:33 +0000
+Message-ID: <CA11D4D291418148B4814B9F023E3E2E0CDF08@MUCSE501.eu.infineon.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87y5qyt1uu.fsf@amiettinen-lnx.nvidia.com>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@vger.kernel.org
 
-On 03/18/2012 09:34 AM, Antti P Miettinen wrote:
-> Mark Langsdorf <mark.langsdorf@calxeda.com> writes:
->> On 03/16/2012 01:26 PM, Antti P Miettinen wrote:
->>> Mark Langsdorf <mark.langsdorf@calxeda.com> writes:
->>>> Is there some better way to approach this?
->>>
->>> PM QoS :-)
->>>
->>> http://thread.gmane.org/gmane.linux.kernel.cpufreq/7794
->>> http://thread.gmane.org/gmane.linux.kernel.cpufreq/7797
->>
->> Thanks, that looks like it could be useful.
->>
->> Is there a sample implementation of this in the context of
->> a cpufreq device driver?
-> 
-> Hmm.. controlling cpufreq core from cpufreq driver? Nope, this input
-> event booster is the only example I have:
-> 
-> http://thread.gmane.org/gmane.linux.kernel.cpufreq/7801
+Hi,
 
-Thanks. It wasn't exactly applicable, but it gave enough
-hints that I got the QoS parts working for my driver.
+I implement already the linux cpufreq kernel driver onto our embedded l=
+inux system.
+On top of this I wanna install the cpufrequtils in userspace for easy a=
+ccess to the sysfs interface of the cpufreq driver.
+But if try to create a package out of the cpufrequtils-0.3.tar.gz with =
+sysfs support I got a problem that a function from the
+necessary libsysfs is missing (sysfs_write_attribute_value).
 
---Mark Langsdorf
-Calxeda, Inc.
+If I try to patch this I will get a lot of compile issues from the sysf=
+sutils package.
+My sysfsutils version: sysfsutils-2.1.0
+
+My question is, is there a newer version of the cpufrequtils , or patch=
+, available then the one I used which fix this problem.
+
+
+Thomas Bartholom=E4
+e-mail:     thomas.bartholomae@lantiq.com
+VISIT US AT: http://www.lantiq.com
+-----------------------------------------------------------------------=
+-----------------------------------------------------------------------=
+-------------
+Lantiq Deutschland GmbH
+Registered Office: M=FCnchen
+Commercial Register: Amtsgericht M=FCnchen, HRB 180524
+Managing Directors (Gesch=E4ftsf=FChrer):
+Christian Wolff (CEO), Dr. Klaus Gohlke (CFO)
+-----------------------------------------------------------------------=
+-----------------------------------------------------------------------=
+-------------
+Important Note: This e-mail may contain trade secrets or privileged, un=
+disclosed or otherwise confidential information.
+If you have received this e-mail in error, you are hereby notified that=
+ any review, copying or distribution of it is strictly prohibited.
+Please inform us immediately and destroy the original transmittal. Than=
+k you for your cooperation.
+
+
 
