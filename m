@@ -1,62 +1,46 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 05/13] cpupower: Fix number of idle states
-Date: Sun, 25 Mar 2012 20:38:46 +0200
-Message-ID: <1332700734-26435-5-git-send-email-linux@dominikbrodowski.net>
+Subject: [PATCH 07/13] cpupower: Fix linking with --as-needed
+Date: Sun, 25 Mar 2012 20:38:48 +0200
+Message-ID: <1332700734-26435-7-git-send-email-linux@dominikbrodowski.net>
 References: <20120325183807.GA26398@comet.dominikbrodowski.net>
  <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
 To: cpufreq@vger.kernel.org
-Cc: Thomas Renninger <trenn@suse.de>, Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: =?UTF-8?q?Ozan=20=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>, Dominik Brodowski <linux@dominikbrodowski.net>
 
-From: Thomas Renninger <trenn@suse.de>
+=46rom: Ozan =C3=87a=C4=9Flayan <ozan@pardus.org.tr>
 
-The number of idle states was wrong.
-The POLL idle state (on X86) was missed out:
-Number of idle states: 4
-Available idle states: C1-NHM C3-NHM C6-NHM
+=46ix linking order to avoid undefined reference errors when
+using --as-needed linker flag.
 
-While the POLL is not a real idle state, its
-statistics should still be shown. It's now also
-explained in a detailed manpage.
-This should fix a bug of missing the first idle
-state on other archs.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Ozan =C3=87a=C4=9Flayan <ozan@pardus.org.tr>
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 ---
- tools/power/cpupower/utils/cpuidle-info.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ tools/power/cpupower/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
-index b028267..e076beb 100644
---- a/tools/power/cpupower/utils/cpuidle-info.c
-+++ b/tools/power/cpupower/utils/cpuidle-info.c
-@@ -43,9 +43,8 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- 	}
- 
- 	printf(_("Number of idle states: %d\n"), idlestates);
--
- 	printf(_("Available idle states:"));
--	for (idlestate = 1; idlestate < idlestates; idlestate++) {
-+	for (idlestate = 0; idlestate < idlestates; idlestate++) {
- 		tmp = sysfs_get_idlestate_name(cpu, idlestate);
- 		if (!tmp)
- 			continue;
-@@ -57,7 +56,7 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- 	if (!verbose)
- 		return;
- 
--	for (idlestate = 1; idlestate < idlestates; idlestate++) {
-+	for (idlestate = 0; idlestate < idlestates; idlestate++) {
- 		tmp = sysfs_get_idlestate_name(cpu, idlestate);
- 		if (!tmp)
- 			continue;
--- 
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makef=
+ile
+index e8a03ac..f01b3f5 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -193,7 +193,7 @@ $(UTIL_OBJS): $(UTIL_HEADERS)
+=20
+ cpupower: $(UTIL_OBJS) libcpupower.so.$(LIB_MAJ)
+ 	$(ECHO) "  CC      " $@
+-	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) -lcpupower -lrt -lpci -L. -o $@ $=
+(UTIL_OBJS)
++	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower -lrt -lpc=
+i -L. -o $@
+ 	$(QUIET) $(STRIPCMD) $@
+=20
+ po/$(PACKAGE).pot: $(UTIL_SRC)
+--=20
 1.7.5.4
 
