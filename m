@@ -1,279 +1,174 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 10/13] cpupower tool: allow to build in a separate directory
-Date: Sun, 25 Mar 2012 20:38:51 +0200
-Message-ID: <1332700734-26435-10-git-send-email-linux@dominikbrodowski.net>
+Subject: [PATCH 01/13] cpupower: Better interface for accessing AMD pci registers
+Date: Sun, 25 Mar 2012 20:38:42 +0200
+Message-ID: <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
 References: <20120325183807.GA26398@comet.dominikbrodowski.net>
- <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
+In-Reply-To: <20120325183807.GA26398@comet.dominikbrodowski.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
-Cc: Franck Bui-Huu <fbuihuu@gmail.com>, Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Thomas Renninger <trenn@suse.de>, Andreas Herrmann <herrmann.der.user@googlemail.com>, Dominik Brodowski <linux@dominikbrodowski.net>
 
-From: Franck Bui-Huu <fbuihuu@gmail.com>
+From: Thomas Renninger <trenn@suse.de>
 
-This patch allows cpupower tool to generate its output files in a
-seperate directory. This is now possible by passing the 'O=<path>' to
-the command line.
+AMD's BKDG (Bios and Kernel Developers Guide) talks in the CPU spec of their
+CPU families about PCI registers defined by "device" (slot) and func(tion).
 
-This can be usefull for a normal user if the kernel source code is
-located in a read only location.
+Assuming that CPU specific configuration PCI devices are always on domain
+and bus zero a pci_slot_func_init() func which gets the slot and func of
+the desired PCI device passed looks like the most convenient way.
 
-This is patch stole some bits of the perf makefile.
+This also obsoletes the PCI device id maintenance.
 
-[linux@dominikbrodowski.net: fix commit message]
-Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: Andreas Herrmann <herrmann.der.user@googlemail.com>
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 ---
- tools/power/cpupower/Makefile       |   87 ++++++++++++++++++++++------------
- tools/power/cpupower/bench/Makefile |   23 ++++++---
- 2 files changed, 71 insertions(+), 39 deletions(-)
+ tools/power/cpupower/utils/helpers/amd.c           |    4 +--
+ tools/power/cpupower/utils/helpers/helpers.h       |    7 +++-
+ tools/power/cpupower/utils/helpers/pci.c           |   35 +++++++++++++-------
+ .../cpupower/utils/idle_monitor/amd_fam14h_idle.c  |    9 ++---
+ 4 files changed, 32 insertions(+), 23 deletions(-)
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 1952605..a93e06c 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -19,6 +19,16 @@
- # along with this program; if not, write to the Free Software
- # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- #
-+OUTPUT=./
-+ifeq ("$(origin O)", "command line")
-+	OUTPUT := $(O)/
-+endif
+diff --git a/tools/power/cpupower/utils/helpers/amd.c b/tools/power/cpupower/utils/helpers/amd.c
+index 87d5605..6437ef3 100644
+--- a/tools/power/cpupower/utils/helpers/amd.c
++++ b/tools/power/cpupower/utils/helpers/amd.c
+@@ -112,14 +112,12 @@ int decode_pstates(unsigned int cpu, unsigned int cpu_family,
+ int amd_pci_get_num_boost_states(int *active, int *states)
+ {
+ 	struct pci_access *pci_acc;
+-	int vendor_id = 0x1022;
+-	int boost_dev_ids[4] = {0x1204, 0x1604, 0x1704, 0};
+ 	struct pci_dev *device;
+ 	uint8_t val = 0;
+ 
+ 	*active = *states = 0;
+ 
+-	device = pci_acc_init(&pci_acc, vendor_id, boost_dev_ids);
++	device = pci_slot_func_init(&pci_acc, 0x18, 4);
+ 
+ 	if (device == NULL)
+ 		return -ENODEV;
+diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
+index 2747e73..6280daa 100644
+--- a/tools/power/cpupower/utils/helpers/helpers.h
++++ b/tools/power/cpupower/utils/helpers/helpers.h
+@@ -132,8 +132,11 @@ extern unsigned long long msr_intel_get_turbo_ratio(unsigned int cpu);
+ 
+ /* PCI stuff ****************************/
+ extern int amd_pci_get_num_boost_states(int *active, int *states);
+-extern struct pci_dev *pci_acc_init(struct pci_access **pacc, int vendor_id,
+-				    int *dev_ids);
++extern struct pci_dev *pci_acc_init(struct pci_access **pacc, int domain,
++				    int bus, int slot, int func, int vendor,
++				    int dev);
++extern struct pci_dev *pci_slot_func_init(struct pci_access **pacc,
++					      int slot, int func);
+ 
+ /* PCI stuff ****************************/
+ 
+diff --git a/tools/power/cpupower/utils/helpers/pci.c b/tools/power/cpupower/utils/helpers/pci.c
+index cd2eb6f..9690798 100644
+--- a/tools/power/cpupower/utils/helpers/pci.c
++++ b/tools/power/cpupower/utils/helpers/pci.c
+@@ -10,19 +10,24 @@
+  * **pacc : if a valid pci_dev is returned
+  *         *pacc must be passed to pci_acc_cleanup to free it
+  *
+- * vendor_id : the pci vendor id matching the pci device to access
+- * dev_ids :   device ids matching the pci device to access
++ * domain: domain
++ * bus:    bus
++ * slot:   slot
++ * func:   func
++ * vendor: vendor
++ * device: device
++ * Pass -1 for one of the six above to match any
+  *
+  * Returns :
+  * struct pci_dev which can be used with pci_{read,write}_* functions
+  *                to access the PCI config space of matching pci devices
+  */
+-struct pci_dev *pci_acc_init(struct pci_access **pacc, int vendor_id,
+-				    int *dev_ids)
++struct pci_dev *pci_acc_init(struct pci_access **pacc, int domain, int bus,
++			     int slot, int func, int vendor, int dev)
+ {
+-	struct pci_filter filter_nb_link = { -1, -1, -1, -1, vendor_id, 0};
++	struct pci_filter filter_nb_link = { domain, bus, slot, func,
++					     vendor, dev };
+ 	struct pci_dev *device;
+-	unsigned int i;
+ 
+ 	*pacc = pci_alloc();
+ 	if (*pacc == NULL)
+@@ -31,14 +36,20 @@ struct pci_dev *pci_acc_init(struct pci_access **pacc, int vendor_id,
+ 	pci_init(*pacc);
+ 	pci_scan_bus(*pacc);
+ 
+-	for (i = 0; dev_ids[i] != 0; i++) {
+-		filter_nb_link.device = dev_ids[i];
+-		for (device = (*pacc)->devices; device; device = device->next) {
+-			if (pci_filter_match(&filter_nb_link, device))
+-				return device;
+-		}
++	for (device = (*pacc)->devices; device; device = device->next) {
++		if (pci_filter_match(&filter_nb_link, device))
++			return device;
+ 	}
+ 	pci_cleanup(*pacc);
+ 	return NULL;
+ }
 +
-+ifneq ($(OUTPUT),)
-+# check that the output directory actually exists
-+OUTDIR := $(shell cd $(OUTPUT) && /bin/pwd)
-+$(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
-+endif
- 
- # --- CONFIGURATION BEGIN ---
- 
-@@ -87,6 +97,7 @@ AR = $(CROSS)ar
- STRIP = $(CROSS)strip
- RANLIB = $(CROSS)ranlib
- HOSTCC = gcc
-+MKDIR = mkdir
- 
- 
- # Now we set up the build system
-@@ -95,7 +106,7 @@ HOSTCC = gcc
- # set up PWD so that older versions of make will work with our build.
- PWD = $(shell pwd)
- 
--GMO_FILES = ${shell for HLANG in ${LANGUAGES}; do echo po/$$HLANG.gmo; done;}
-+GMO_FILES = ${shell for HLANG in ${LANGUAGES}; do echo $(OUTPUT)po/$$HLANG.gmo; done;}
- 
- export CROSS CC AR STRIP RANLIB CFLAGS LDFLAGS LIB_OBJS
- 
-@@ -122,15 +133,18 @@ UTIL_OBJS =  utils/helpers/amd.o utils/helpers/topology.o utils/helpers/msr.o \
- 	utils/cpupower.o utils/cpufreq-info.o utils/cpufreq-set.o \
- 	utils/cpupower-set.o utils/cpupower-info.o utils/cpuidle-info.o
- 
-+UTIL_SRC := $(UTIL_OBJS:.o=.c)
++/* Typically one wants to get a specific slot(device)/func of the root domain
++   and bus */
++struct pci_dev *pci_slot_func_init(struct pci_access **pacc, int slot,
++				       int func)
++{
++	return pci_acc_init(pacc, 0, 0, slot, func, -1, -1);
++}
 +
-+UTIL_OBJS := $(addprefix $(OUTPUT),$(UTIL_OBJS))
-+
- UTIL_HEADERS = utils/helpers/helpers.h utils/idle_monitor/cpupower-monitor.h \
- 	utils/helpers/bitmask.h \
- 	utils/idle_monitor/idle_monitors.h utils/idle_monitor/idle_monitors.def
+ #endif /* defined(__i386__) || defined(__x86_64__) */
+diff --git a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
+index 202e555..108108d 100644
+--- a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
++++ b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
+@@ -20,8 +20,6 @@
+ #include "idle_monitor/cpupower-monitor.h"
+ #include "helpers/helpers.h"
  
--UTIL_SRC := $(UTIL_OBJS:.o=.c)
+-/******** PCI parts could go into own file and get shared ***************/
 -
- LIB_HEADERS = 	lib/cpufreq.h lib/sysfs.h
- LIB_SRC = 	lib/cpufreq.c lib/sysfs.c
- LIB_OBJS = 	lib/cpufreq.o lib/sysfs.o
-+LIB_OBJS :=	$(addprefix $(OUTPUT),$(LIB_OBJS))
+ #define PCI_NON_PC0_OFFSET	0xb0
+ #define PCI_PC1_OFFSET		0xb4
+ #define PCI_PC6_OFFSET		0xb8
+@@ -82,10 +80,7 @@ static cstate_t amd_fam14h_cstates[AMD_FAM14H_STATE_NUM] = {
+ };
  
- CFLAGS +=	-pipe
+ static struct pci_access *pci_acc;
+-static int pci_vendor_id = 0x1022;
+-static int pci_dev_ids[2] = {0x1716, 0};
+ static struct pci_dev *amd_fam14h_pci_dev;
+-
+ static int nbp1_entered;
  
-@@ -168,79 +182,90 @@ endif
+ struct timespec start_time;
+@@ -303,7 +298,9 @@ struct cpuidle_monitor *amd_fam14h_register(void)
+ 					      sizeof(unsigned long long));
+ 	}
  
- # the actual make rules
+-	amd_fam14h_pci_dev = pci_acc_init(&pci_acc, pci_vendor_id, pci_dev_ids);
++	/* We need PCI device: Slot 18, Func 6, compare with BKDG
++	   for fam 12h/14h */
++	amd_fam14h_pci_dev = pci_slot_func_init(&pci_acc, 0x18, 6);
+ 	if (amd_fam14h_pci_dev == NULL || pci_acc == NULL)
+ 		return NULL;
  
--all: libcpupower cpupower $(COMPILE_NLS) $(COMPILE_BENCH)
-+all: libcpupower $(OUTPUT)cpupower $(COMPILE_NLS) $(COMPILE_BENCH)
- 
--lib/%.o: $(LIB_SRC) $(LIB_HEADERS)
-+$(OUTPUT)lib/%.o: $(LIB_SRC) $(LIB_HEADERS)
- 	$(ECHO) "  CC      " $@
- 	$(QUIET) $(CC) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
- 
--libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
-+$(OUTPUT)libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
- 	$(ECHO) "  LD      " $@
- 	$(QUIET) $(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ \
- 		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
--	@ln -sf $@ libcpupower.so
--	@ln -sf $@ libcpupower.so.$(LIB_MIN)
-+	@ln -sf $(@F) $(OUTPUT)libcpupower.so
-+	@ln -sf $(@F) $(OUTPUT)libcpupower.so.$(LIB_MIN)
- 
--libcpupower: libcpupower.so.$(LIB_MAJ)
-+libcpupower: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
- 
- # Let all .o files depend on its .c file and all headers
- # Might be worth to put this into utils/Makefile at some point of time
- $(UTIL_OBJS): $(UTIL_HEADERS)
- 
--.c.o:
-+$(OUTPUT)%.o: %.c
- 	$(ECHO) "  CC      " $@
- 	$(QUIET) $(CC) $(CFLAGS) -I./lib -I ./utils -o $@ -c $*.c
- 
--cpupower: $(UTIL_OBJS) libcpupower.so.$(LIB_MAJ)
-+$(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_MAJ)
- 	$(ECHO) "  CC      " $@
--	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower -lrt -lpci -L. -o $@
-+	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lcpupower -lrt -lpci -L$(OUTPUT) -o $@
- 	$(QUIET) $(STRIPCMD) $@
- 
--po/$(PACKAGE).pot: $(UTIL_SRC)
-+$(OUTPUT)po/$(PACKAGE).pot: $(UTIL_SRC)
- 	$(ECHO) "  GETTEXT " $@
- 	$(QUIET) xgettext --default-domain=$(PACKAGE) --add-comments \
- 		--keyword=_ --keyword=N_ $(UTIL_SRC) -p $(@D) -o $(@F)
- 
--po/%.gmo: po/%.po
-+$(OUTPUT)po/%.gmo: po/%.po
- 	$(ECHO) "  MSGFMT  " $@
- 	$(QUIET) msgfmt -o $@ po/$*.po
- 
- create-gmo: ${GMO_FILES}
- 
--update-po: po/$(PACKAGE).pot
-+update-po: $(OUTPUT)po/$(PACKAGE).pot
- 	$(ECHO) "  MSGMRG  " $@
- 	$(QUIET) @for HLANG in $(LANGUAGES); do \
- 		echo -n "Updating $$HLANG "; \
--		if msgmerge po/$$HLANG.po po/$(PACKAGE).pot -o \
--		   po/$$HLANG.new.po; then \
--			mv -f po/$$HLANG.new.po po/$$HLANG.po; \
-+		if msgmerge po/$$HLANG.po $< -o \
-+		   $(OUTPUT)po/$$HLANG.new.po; then \
-+			mv -f $(OUTPUT)po/$$HLANG.new.po $(OUTPUT)po/$$HLANG.po; \
- 		else \
- 			echo "msgmerge for $$HLANG failed!"; \
--			rm -f po/$$HLANG.new.po; \
-+			rm -f $(OUTPUT)po/$$HLANG.new.po; \
- 		fi; \
- 	done;
- 
--compile-bench: libcpupower.so.$(LIB_MAJ)
--	@V=$(V) confdir=$(confdir) $(MAKE) -C bench
-+compile-bench: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
-+	@V=$(V) confdir=$(confdir) $(MAKE) -C bench O=$(OUTPUT)
-+
-+# we compile into subdirectories. if the target directory is not the
-+# source directory, they might not exists. So we depend the various
-+# files onto their directories.
-+DIRECTORY_DEPS = $(LIB_OBJS) $(UTIL_OBJS) $(GMO_FILES)
-+$(DIRECTORY_DEPS): | $(sort $(dir $(DIRECTORY_DEPS)))
-+
-+# In the second step, we make a rule to actually create these directories
-+$(sort $(dir $(DIRECTORY_DEPS))):
-+	$(ECHO) "  MKDIR      " $@
-+	$(QUIET) $(MKDIR) -p $@ 2>/dev/null
- 
- clean:
--	-find . \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' \) -type f -print \
-+	-find $(OUTPUT) \( -not -type d \) -and \( -name '*~' -o -name '*.[oas]' \) -type f -print \
- 	 | xargs rm -f
--	-rm -f cpupower
--	-rm -f libcpupower.so*
--	-rm -rf po/*.gmo po/*.pot
--	$(MAKE) -C bench clean
-+	-rm -f $(OUTPUT)cpupower
-+	-rm -f $(OUTPUT)libcpupower.so*
-+	-rm -rf $(OUTPUT)po/*.{gmo,pot}
-+	$(MAKE) -C bench O=$(OUTPUT) clean
- 
- 
- install-lib:
- 	$(INSTALL) -d $(DESTDIR)${libdir}
--	$(CP) libcpupower.so* $(DESTDIR)${libdir}/
-+	$(CP) $(OUTPUT)libcpupower.so* $(DESTDIR)${libdir}/
- 	$(INSTALL) -d $(DESTDIR)${includedir}
- 	$(INSTALL_DATA) lib/cpufreq.h $(DESTDIR)${includedir}/cpufreq.h
- 
- install-tools:
- 	$(INSTALL) -d $(DESTDIR)${bindir}
--	$(INSTALL_PROGRAM) cpupower $(DESTDIR)${bindir}
-+	$(INSTALL_PROGRAM) $(OUTPUT)cpupower $(DESTDIR)${bindir}
- 
- install-man:
- 	$(INSTALL_DATA) -D man/cpupower.1 $(DESTDIR)${mandir}/man1/cpupower.1
-@@ -253,13 +278,13 @@ install-man:
- install-gmo:
- 	$(INSTALL) -d $(DESTDIR)${localedir}
- 	for HLANG in $(LANGUAGES); do \
--		echo '$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo'; \
--		$(INSTALL_DATA) -D po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo; \
-+		echo '$(INSTALL_DATA) -D $(OUTPUT)po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo'; \
-+		$(INSTALL_DATA) -D $(OUTPUT)po/$$HLANG.gmo $(DESTDIR)${localedir}/$$HLANG/LC_MESSAGES/cpupower.mo; \
- 	done;
- 
- install-bench:
- 	@#DESTDIR must be set from outside to survive
--	@sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$(confdir) $(MAKE) -C bench install
-+	@sbindir=$(sbindir) bindir=$(bindir) docdir=$(docdir) confdir=$(confdir) $(MAKE) -C bench O=$(OUTPUT) install
- 
- install: all install-lib install-tools install-man $(INSTALL_NLS) $(INSTALL_BENCH)
- 
-diff --git a/tools/power/cpupower/bench/Makefile b/tools/power/cpupower/bench/Makefile
-index 2b67606..7ec7021 100644
---- a/tools/power/cpupower/bench/Makefile
-+++ b/tools/power/cpupower/bench/Makefile
-@@ -1,29 +1,36 @@
--LIBS = -L../ -lm -lcpupower
-+OUTPUT := ./
-+ifeq ("$(origin O)", "command line")
-+ifneq ($(O),)
-+	OUTPUT := $(O)/
-+endif
-+endif
- 
--OBJS = main.o parse.o system.o benchmark.o
-+LIBS = -L../ -L$(OUTPUT) -lm -lcpupower
-+
-+OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o
- CFLAGS += -D_GNU_SOURCE -I../lib -DDEFAULT_CONFIG_FILE=\"$(confdir)/cpufreq-bench.conf\"
- 
--%.o : %.c
-+$(OUTPUT)%.o : %.c
- 	$(ECHO) "  CC      " $@
- 	$(QUIET) $(CC) -c $(CFLAGS) $< -o $@
- 
--cpufreq-bench: $(OBJS)
-+$(OUTPUT)cpufreq-bench: $(OBJS)
- 	$(ECHO) "  CC      " $@
- 	$(QUIET) $(CC) -o $@ $(CFLAGS) $(OBJS) $(LIBS)
- 
--all: cpufreq-bench
-+all: $(OUTPUT)cpufreq-bench
- 
- install:
- 	mkdir -p $(DESTDIR)/$(sbindir)
- 	mkdir -p $(DESTDIR)/$(bindir)
- 	mkdir -p $(DESTDIR)/$(docdir)
- 	mkdir -p $(DESTDIR)/$(confdir)
--	install -m 755 cpufreq-bench $(DESTDIR)/$(sbindir)/cpufreq-bench
-+	install -m 755 $(OUTPUT)cpufreq-bench $(DESTDIR)/$(sbindir)/cpufreq-bench
- 	install -m 755 cpufreq-bench_plot.sh $(DESTDIR)/$(bindir)/cpufreq-bench_plot.sh
- 	install -m 644 README-BENCH $(DESTDIR)/$(docdir)/README-BENCH
- 	install -m 755 cpufreq-bench_script.sh $(DESTDIR)/$(docdir)/cpufreq-bench_script.sh
- 	install -m 644 example.cfg $(DESTDIR)/$(confdir)/cpufreq-bench.conf
- 
- clean:
--	rm -f *.o
--	rm -f cpufreq-bench
-+	rm -f $(OUTPUT)*.o
-+	rm -f $(OUTPUT)cpufreq-bench
 -- 
 1.7.5.4
 
