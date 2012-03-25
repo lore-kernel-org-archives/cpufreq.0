@@ -1,7 +1,7 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 11/13] cpupower: Fix broken mask values
-Date: Sun, 25 Mar 2012 20:38:52 +0200
-Message-ID: <1332700734-26435-11-git-send-email-linux@dominikbrodowski.net>
+Subject: [PATCH 05/13] cpupower: Fix number of idle states
+Date: Sun, 25 Mar 2012 20:38:46 +0200
+Message-ID: <1332700734-26435-5-git-send-email-linux@dominikbrodowski.net>
 References: <20120325183807.GA26398@comet.dominikbrodowski.net>
  <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,28 +16,47 @@ Cc: Thomas Renninger <trenn@suse.de>, Dominik Brodowski <linux@dominikbrodowski.
 
 From: Thomas Renninger <trenn@suse.de>
 
+The number of idle states was wrong.
+The POLL idle state (on X86) was missed out:
+Number of idle states: 4
+Available idle states: C1-NHM C3-NHM C6-NHM
+
+While the POLL is not a real idle state, its
+statistics should still be shown. It's now also
+explained in a detailed manpage.
+This should fix a bug of missing the first idle
+state on other archs.
+
 Signed-off-by: Thomas Renninger <trenn@suse.de>
-Tested-by: Dave Jones <davej@redhat.com>
 Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
 ---
- tools/power/cpupower/utils/helpers/helpers.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ tools/power/cpupower/utils/cpuidle-info.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
-index 6280daa..2eb584c 100644
---- a/tools/power/cpupower/utils/helpers/helpers.h
-+++ b/tools/power/cpupower/utils/helpers/helpers.h
-@@ -66,8 +66,8 @@ enum cpupower_cpu_vendor {X86_VENDOR_UNKNOWN = 0, X86_VENDOR_INTEL,
- #define CPUPOWER_CAP_AMD_CBP		0x00000004
- #define CPUPOWER_CAP_PERF_BIAS		0x00000008
- #define CPUPOWER_CAP_HAS_TURBO_RATIO	0x00000010
--#define CPUPOWER_CAP_IS_SNB		0x00000011
--#define CPUPOWER_CAP_INTEL_IDA		0x00000012
-+#define CPUPOWER_CAP_IS_SNB		0x00000020
-+#define CPUPOWER_CAP_INTEL_IDA		0x00000040
+diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
+index b028267..e076beb 100644
+--- a/tools/power/cpupower/utils/cpuidle-info.c
++++ b/tools/power/cpupower/utils/cpuidle-info.c
+@@ -43,9 +43,8 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
+ 	}
  
- #define MAX_HW_PSTATES 10
+ 	printf(_("Number of idle states: %d\n"), idlestates);
+-
+ 	printf(_("Available idle states:"));
+-	for (idlestate = 1; idlestate < idlestates; idlestate++) {
++	for (idlestate = 0; idlestate < idlestates; idlestate++) {
+ 		tmp = sysfs_get_idlestate_name(cpu, idlestate);
+ 		if (!tmp)
+ 			continue;
+@@ -57,7 +56,7 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
+ 	if (!verbose)
+ 		return;
  
+-	for (idlestate = 1; idlestate < idlestates; idlestate++) {
++	for (idlestate = 0; idlestate < idlestates; idlestate++) {
+ 		tmp = sysfs_get_idlestate_name(cpu, idlestate);
+ 		if (!tmp)
+ 			continue;
 -- 
 1.7.5.4
 
