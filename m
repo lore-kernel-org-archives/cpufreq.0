@@ -1,84 +1,34 @@
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH 13/13] cpupower tools: add install target to the debug tools' makefiles
-Date: Sun, 25 Mar 2012 20:38:54 +0200
-Message-ID: <1332700734-26435-13-git-send-email-linux@dominikbrodowski.net>
-References: <20120325183807.GA26398@comet.dominikbrodowski.net>
- <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
+Subject: Re: cpufrequtils-0.3.tar.gz
+Date: Sun, 25 Mar 2012 20:52:21 +0200
+Message-ID: <20120325185221.GB26673@comet.dominikbrodowski.net>
+References: <CA11D4D291418148B4814B9F023E3E2E0CDF08@MUCSE501.eu.infineon.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1332700734-26435-1-git-send-email-linux@dominikbrodowski.net>
+Content-Disposition: inline
+In-Reply-To: <CA11D4D291418148B4814B9F023E3E2E0CDF08@MUCSE501.eu.infineon.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: Franck Bui-Huu <fbuihuu@gmail.com>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Thomas.Bartholomae@lantiq.com
+Cc: cpufreq@vger.kernel.org
 
-From: Franck Bui-Huu <fbuihuu@gmail.com>
+Thomas,
 
-Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
----
- tools/power/cpupower/debug/i386/Makefile   |   14 +++++++++++++-
- tools/power/cpupower/debug/x86_64/Makefile |   12 +++++++++++-
- 2 files changed, 24 insertions(+), 2 deletions(-)
+On Wed, Mar 21, 2012 at 09:34:33AM +0000, Thomas.Bartholomae@lantiq.com wrote:
+> I implement already the linux cpufreq kernel driver onto our embedded linux
+> system.
+> On top of this I wanna install the cpufrequtils in userspace for easy
+> access to the sysfs interface of the cpufreq driver.
+> But if try to create a package out of the cpufrequtils-0.3.tar.gz with
+> sysfs support I got a problem that a function from the
+> necessary libsysfs is missing (sysfs_write_attribute_value).
 
-diff --git a/tools/power/cpupower/debug/i386/Makefile b/tools/power/cpupower/debug/i386/Makefile
-index 626478b..3ba158f 100644
---- a/tools/power/cpupower/debug/i386/Makefile
-+++ b/tools/power/cpupower/debug/i386/Makefile
-@@ -3,6 +3,11 @@ ifeq ("$(origin O)", "command line")
- 	OUTPUT := $(O)/
- endif
- 
-+DESTDIR =
-+bindir  = /usr/bin
-+
-+INSTALL = /usr/bin/install
-+
- 
- default: all
- 
-@@ -23,4 +28,11 @@ all: $(OUTPUT)centrino-decode $(OUTPUT)dump_psb $(OUTPUT)intel_gsic $(OUTPUT)pow
- clean:
- 	rm -rf $(OUTPUT){centrino-decode,dump_psb,intel_gsic,powernow-k8-decode}
- 
--.PHONY: all default clean
-+install:
-+	$(INSTALL) -d $(DESTDIR)${bindir}
-+	$(INSTALL) $(OUTPUT)centrino-decode $(DESTDIR)${bindir}
-+	$(INSTALL) $(OUTPUT)powernow-k8-decode $(DESTDIR)${bindir}
-+	$(INSTALL) $(OUTPUT)dump_psb $(DESTDIR)${bindir}
-+	$(INSTALL) $(OUTPUT)intel_gsic $(DESTDIR)${bindir}
-+
-+.PHONY: all default clean install
-diff --git a/tools/power/cpupower/debug/x86_64/Makefile b/tools/power/cpupower/debug/x86_64/Makefile
-index 8e26d67..1c52145 100644
---- a/tools/power/cpupower/debug/x86_64/Makefile
-+++ b/tools/power/cpupower/debug/x86_64/Makefile
-@@ -3,6 +3,11 @@ ifeq ("$(origin O)", "command line")
- 	OUTPUT := $(O)/
- endif
- 
-+DESTDIR =
-+bindir  = /usr/bin
-+
-+INSTALL = /usr/bin/install
-+
- 
- default: all
- 
-@@ -17,4 +22,9 @@ all: $(OUTPUT)centrino-decode $(OUTPUT)powernow-k8-decode
- clean:
- 	rm -rf $(OUTPUT)centrino-decode $(OUTPUT)powernow-k8-decode
- 
--.PHONY: all default clean
-+install:
-+	$(INSTALL) -d $(DESTDIR)${bindir}
-+	$(INSTALL) $(OUTPUT)centrino-decode $(DESTDIR)${bindir}
-+	$(INSTALL) $(OUTPUT)powernow-k8-decode $(DESTDIR)${bindir}
-+
-+.PHONY: all default clean install
--- 
-1.7.5.4
+cpufrequtils-0.3 is long deprecated. Either you can use the most recent
+cpufrequtils release (cpufrequtils-008); the dependancy on libsysfs was
+removed in 2008. Alternatively, you can use the new cpupowerutils included
+in the Linux kernel sources ( tools/power/cpupower/ ).
 
+Best,
+	Dominik
