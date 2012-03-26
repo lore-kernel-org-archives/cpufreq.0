@@ -1,18 +1,35 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: cpufrequtils-0.3.tar.gz
-Date: Sun, 25 Mar 2012 20:52:21 +0200
-Message-ID: <20120325185221.GB26673@comet.dominikbrodowski.net>
+From: "Bartholomae Thomas (LQDE CPE AE SW)" <Thomas.Bartholomae@lantiq.com>
+Subject: RE: cpufrequtils-0.3.tar.gz
+Date: Mon, 26 Mar 2012 08:04:11 +0000
+Message-ID: <644A92022E74034C81F5B232BA81D9EC8577@MUCSE039.lantiq.com>
 References: <CA11D4D291418148B4814B9F023E3E2E0CDF08@MUCSE501.eu.infineon.com>
+ <20120325185221.GB26673@comet.dominikbrodowski.net>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA11D4D291418148B4814B9F023E3E2E0CDF08@MUCSE501.eu.infineon.com>
+In-Reply-To: <20120325185221.GB26673@comet.dominikbrodowski.net>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas.Bartholomae@lantiq.com
+To: Dominik Brodowski <linux@dominikbrodowski.net>, "Bartholomae Thomas (LQDE CPE AE SW)" <Thomas.Bartholomae@lantiq.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+
+Hi Dominik,
+
+many thanks for your answer. Meanwhile I tried already the version 008 and it works fine for me.
+Your answer confirm me that I'm using the correct version.
+The version number confused me bit ;-)
+Cheers Thomas
+
+
+
+-----Original Message-----
+From: Dominik Brodowski [mailto:linux@dominikbrodowski.net] 
+Sent: Sunday, March 25, 2012 8:52 PM
+To: Bartholomae Thomas (LQDE CPE AE SW)
 Cc: cpufreq@vger.kernel.org
+Subject: Re: cpufrequtils-0.3.tar.gz
 
 Thomas,
 
