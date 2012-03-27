@@ -1,196 +1,110 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Subject: [PATCH] EXYNOS: Fix compilation issue introduced during 3.4 merge
-Date: Tue, 27 Mar 2012 11:25:48 +0530
-Message-ID: <1332827748-18825-1-git-send-email-tushar.behera@linaro.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: Fix exposure of ARM_EXYNOS4210_CPUFREQ
+Date: Tue, 27 Mar 2012 08:49:31 +0100
+Message-ID: <20120327074931.GK5611@n2100.arm.linux.org.uk>
+References: <20120213094940.GA15338@n2100.arm.linux.org.uk> <4F3CF3DA.7000806@samsung.com> <20120216160250.GP13673@n2100.arm.linux.org.uk> <00aa01ccf084$93c98a70$bb5c9f50$%kim@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=zvR8IS/Scq+oCDRrGjgTFdIN/qRVL/BIMCQk3XsXgOM=;
+	b=HOA3gnBXYa9J7+tl8maXYTqUGxwJO+qX5Rf3NVK/OlgNJrrqNObIj3yF9i+CbJ3iZ/tBoiaFMltiOH2PjRvOpksOMYELVKzy9aNoNtmkQZsjydGL1yRCkFKunUEEMOsE1LLjqEKS8VRy7/KMODYoVB93KaOWC+cjAxCLzH9qNQ8=;
+Content-Disposition: inline
+In-Reply-To: <00aa01ccf084$93c98a70$bb5c9f50$%kim@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: cpufreq@vger.kernel.org
-Cc: davej@redhat.com, patches@linaro.org, Kukjin Kim <kgene.kim@samsung.com>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, 'Dave Jones' <davej@redhat.com>, cpufreq@vger.kernel.org
 
-Commit a855039ee4b8 ("ARM: EXYNOS: change the prefix S5P_ to EXYNOS4_ f=
-or clock")
-modifies some of the macro definitions which are still used in CPUFREQ =
-driver.
+On Tue, Feb 21, 2012 at 07:35:49PM +0900, Kukjin Kim wrote:
+> Russell King - ARM Linux wrote:
+> > 
+> > On Thu, Feb 16, 2012 at 09:17:30PM +0900, Kukjin Kim wrote:
+> > > On 02/13/12 18:49, Russell King - ARM Linux wrote:
+> > >> From: Russell King<rmk+kernel@arm.linux.org.uk>
+> > >>
+> > >> exynos4210-cpufreq.c is not buildable on non-exynos builds, so it's
+> > >> pointless allowing this option to be exposed.  Fix this by adding a
+> > >> dependency on ARCH_EXYNOS.
+> > >>
+> > >> drivers/cpufreq/exynos4210-cpufreq.c:20:29: error: mach/regs-clock.h:
+> > No such file or directory
+> > >> drivers/cpufreq/exynos4210-cpufreq.c:21:26: error: mach/cpufreq.h: No
+> > such file or directory
+> > >>
+> > >> Signed-off-by: Russell King<rmk+kernel@arm.linux.org.uk>
+> > >> Cc: Dave Jones<davej@redhat.com>
+> > >> Cc: cpufreq@vger.kernel.org
+> > >> Cc: Kukjin Kim<kgene.kim@samsung.com>
+> > >> ---
+> > >>   drivers/cpufreq/Kconfig.arm |    1 +
+> > >>   1 files changed, 1 insertions(+), 0 deletions(-)
+> > >>
+> > >> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > >> index e0664fe..c8bde43 100644
+> > >> --- a/drivers/cpufreq/Kconfig.arm
+> > >> +++ b/drivers/cpufreq/Kconfig.arm
+> > >> @@ -34,6 +34,7 @@ config ARM_EXYNOS_CPUFREQ
+> > >>
+> > >>   config ARM_EXYNOS4210_CPUFREQ
+> > >>   	bool "Samsung EXYNOS4210"
+> > >> +	depends on ARCH_EXYNOS
+> > >>   	help
+> > >>   	  This adds the CPUFreq driver for Samsung EXYNOS4210
+> > >>   	  SoC (S5PV310 or S5PC210).
+> > >>
+> > >
+> > > Yes, you're right. Should be added it.
+> > > BTW, how about following?
+> > >
+> > > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > > index e0664fe..a5e0487 100644
+> > > --- a/drivers/cpufreq/Kconfig.arm
+> > > +++ b/drivers/cpufreq/Kconfig.arm
+> > > @@ -33,7 +33,7 @@ config ARM_EXYNOS_CPUFREQ
+> > >           If in doubt, say N.
+> > >
+> > >  config ARM_EXYNOS4210_CPUFREQ
+> > > -       bool "Samsung EXYNOS4210"
+> > > +       bool
+> > >         help
+> > >           This adds the CPUFreq driver for Samsung EXYNOS4210
+> > >           SoC (S5PV310 or S5PC210).
+> > >
+> > > I think, when selecting "ARM_EXYNOS_CPUFREQ", "ARM_EXYNOS4210_CPUFREQ"
+> > > will be selected on EXYNOS4210 with above changes.
+> > 
+> Hi Russell,
+> 
+> > I don't think so.  If you select this symbol you'll get a complaint
+> > that CPU_FREQ is not selected.
+> 
+> Hmm..when I selected this symbol, I didn't get any warning about CPU_FREQ,
+> because the cpufreq/Kconfig.arm depends on CPU_FREQ. It means, when CPU_FREQ
+> is not selected, I can't select anything in cpufreq/Kconfig.arm.
+> 
+> > What's probably much better is:
+> > 
+> Yes, looks better than mine.
+> 
+> > config ARM_EXYNOS4210_CPUFREQ
+> > 	def_bool ARCH_EXYNOS
+> 
+> But, should be...
+> 	def_bool CPU_EXYNOS4210
+> 
+> Because the ARM_EXYNOS4210_CPUFREQ is only for EXYNOS4210 and the
+> ARM_EXYNOS4X12_CPUFREQ will be added, actually submitted for other
+> SOC_EXYNOS4212 and SOC_EXYNOS4412.
+> 
+> > 
+> > because that ensures that if the CPU_FREQ dependencies change you don't
+> > have to update numerous places for that too.
+> 
+> OK, I agree.
+> 
+> So could you  please re-send/re-work this?
 
-This fixes similar compilation errors in exynos4210-cpufreq.c.
-
-drivers/cpufreq/exynos4210-cpufreq.c: In function =E2=80=98exynos4210_s=
-et_clkdiv=E2=80=99:
-drivers/cpufreq/exynos4210-cpufreq.c:124:2: error: =E2=80=98S5P_CLKDIV_=
-CPU=E2=80=99 undeclared (first use in this function)
-
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
----
-This patch is rebased on v3.3.
-
-This patch would be required when next/soc branch on [1] is merged in
-mainline kernel. The commit ID given above refers to tree [1].
-
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git
-
- drivers/cpufreq/exynos4210-cpufreq.c |   71 +++++++++++++++++---------=
---------
- 1 files changed, 36 insertions(+), 35 deletions(-)
-
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exy=
-nos4210-cpufreq.c
-index 065da5b..95bb5b1 100644
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ b/drivers/cpufreq/exynos4210-cpufreq.c
-@@ -121,25 +121,25 @@ static void exynos4210_set_clkdiv(unsigned int di=
-v_index)
-=20
- 	tmp =3D exynos4210_clkdiv_table[div_index].clkdiv;
-=20
--	__raw_writel(tmp, S5P_CLKDIV_CPU);
-+	__raw_writel(tmp, EXYNOS4_CLKDIV_CPU);
-=20
- 	do {
--		tmp =3D __raw_readl(S5P_CLKDIV_STATCPU);
-+		tmp =3D __raw_readl(EXYNOS4_CLKDIV_STATCPU);
- 	} while (tmp & 0x1111111);
-=20
- 	/* Change Divider - CPU1 */
-=20
--	tmp =3D __raw_readl(S5P_CLKDIV_CPU1);
-+	tmp =3D __raw_readl(EXYNOS4_CLKDIV_CPU1);
-=20
- 	tmp &=3D ~((0x7 << 4) | 0x7);
-=20
- 	tmp |=3D ((clkdiv_cpu1[div_index][0] << 4) |
- 		(clkdiv_cpu1[div_index][1] << 0));
-=20
--	__raw_writel(tmp, S5P_CLKDIV_CPU1);
-+	__raw_writel(tmp, EXYNOS4_CLKDIV_CPU1);
-=20
- 	do {
--		tmp =3D __raw_readl(S5P_CLKDIV_STATCPU1);
-+		tmp =3D __raw_readl(EXYNOS4_CLKDIV_STATCPU1);
- 	} while (tmp & 0x11);
- }
-=20
-@@ -151,32 +151,32 @@ static void exynos4210_set_apll(unsigned int inde=
-x)
- 	clk_set_parent(moutcore, mout_mpll);
-=20
- 	do {
--		tmp =3D (__raw_readl(S5P_CLKMUX_STATCPU)
--			>> S5P_CLKSRC_CPU_MUXCORE_SHIFT);
-+		tmp =3D (__raw_readl(EXYNOS4_CLKMUX_STATCPU)
-+			>> EXYNOS4_CLKSRC_CPU_MUXCORE_SHIFT);
- 		tmp &=3D 0x7;
- 	} while (tmp !=3D 0x2);
-=20
- 	/* 2. Set APLL Lock time */
--	__raw_writel(S5P_APLL_LOCKTIME, S5P_APLL_LOCK);
-+	__raw_writel(EXYNOS4_APLL_LOCKTIME, EXYNOS4_APLL_LOCK);
-=20
- 	/* 3. Change PLL PMS values */
--	tmp =3D __raw_readl(S5P_APLL_CON0);
-+	tmp =3D __raw_readl(EXYNOS4_APLL_CON0);
- 	tmp &=3D ~((0x3ff << 16) | (0x3f << 8) | (0x7 << 0));
- 	tmp |=3D exynos4210_apll_pms_table[index];
--	__raw_writel(tmp, S5P_APLL_CON0);
-+	__raw_writel(tmp, EXYNOS4_APLL_CON0);
-=20
- 	/* 4. wait_lock_time */
- 	do {
--		tmp =3D __raw_readl(S5P_APLL_CON0);
--	} while (!(tmp & (0x1 << S5P_APLLCON0_LOCKED_SHIFT)));
-+		tmp =3D __raw_readl(EXYNOS4_APLL_CON0);
-+	} while (!(tmp & (0x1 << EXYNOS4_APLLCON0_LOCKED_SHIFT)));
-=20
- 	/* 5. MUX_CORE_SEL =3D APLL */
- 	clk_set_parent(moutcore, mout_apll);
-=20
- 	do {
--		tmp =3D __raw_readl(S5P_CLKMUX_STATCPU);
--		tmp &=3D S5P_CLKMUX_STATCPU_MUXCORE_MASK;
--	} while (tmp !=3D (0x1 << S5P_CLKSRC_CPU_MUXCORE_SHIFT));
-+		tmp =3D __raw_readl(EXYNOS4_CLKMUX_STATCPU);
-+		tmp &=3D EXYNOS4_CLKMUX_STATCPU_MUXCORE_MASK;
-+	} while (tmp !=3D (0x1 << EXYNOS4_CLKSRC_CPU_MUXCORE_SHIFT));
- }
-=20
- bool exynos4210_pms_change(unsigned int old_index, unsigned int new_in=
-dex)
-@@ -198,10 +198,10 @@ static void exynos4210_set_frequency(unsigned int=
- old_index,
- 			exynos4210_set_clkdiv(new_index);
-=20
- 			/* 2. Change just s value in apll m,p,s value */
--			tmp =3D __raw_readl(S5P_APLL_CON0);
-+			tmp =3D __raw_readl(EXYNOS4_APLL_CON0);
- 			tmp &=3D ~(0x7 << 0);
- 			tmp |=3D (exynos4210_apll_pms_table[new_index] & 0x7);
--			__raw_writel(tmp, S5P_APLL_CON0);
-+			__raw_writel(tmp, EXYNOS4_APLL_CON0);
- 		} else {
- 			/* Clock Configuration Procedure */
- 			/* 1. Change the system clock divider values */
-@@ -212,10 +212,10 @@ static void exynos4210_set_frequency(unsigned int=
- old_index,
- 	} else if (old_index < new_index) {
- 		if (!exynos4210_pms_change(old_index, new_index)) {
- 			/* 1. Change just s value in apll m,p,s value */
--			tmp =3D __raw_readl(S5P_APLL_CON0);
-+			tmp =3D __raw_readl(EXYNOS4_APLL_CON0);
- 			tmp &=3D ~(0x7 << 0);
- 			tmp |=3D (exynos4210_apll_pms_table[new_index] & 0x7);
--			__raw_writel(tmp, S5P_APLL_CON0);
-+			__raw_writel(tmp, EXYNOS4_APLL_CON0);
-=20
- 			/* 2. Change the system clock divider values */
- 			exynos4210_set_clkdiv(new_index);
-@@ -253,24 +253,25 @@ int exynos4210_cpufreq_init(struct exynos_dvfs_in=
-fo *info)
- 	if (IS_ERR(mout_apll))
- 		goto err_mout_apll;
-=20
--	tmp =3D __raw_readl(S5P_CLKDIV_CPU);
-+	tmp =3D __raw_readl(EXYNOS4_CLKDIV_CPU);
-=20
- 	for (i =3D L0; i <  CPUFREQ_LEVEL_END; i++) {
--		tmp &=3D ~(S5P_CLKDIV_CPU0_CORE_MASK |
--			S5P_CLKDIV_CPU0_COREM0_MASK |
--			S5P_CLKDIV_CPU0_COREM1_MASK |
--			S5P_CLKDIV_CPU0_PERIPH_MASK |
--			S5P_CLKDIV_CPU0_ATB_MASK |
--			S5P_CLKDIV_CPU0_PCLKDBG_MASK |
--			S5P_CLKDIV_CPU0_APLL_MASK);
--
--		tmp |=3D ((clkdiv_cpu0[i][0] << S5P_CLKDIV_CPU0_CORE_SHIFT) |
--			(clkdiv_cpu0[i][1] << S5P_CLKDIV_CPU0_COREM0_SHIFT) |
--			(clkdiv_cpu0[i][2] << S5P_CLKDIV_CPU0_COREM1_SHIFT) |
--			(clkdiv_cpu0[i][3] << S5P_CLKDIV_CPU0_PERIPH_SHIFT) |
--			(clkdiv_cpu0[i][4] << S5P_CLKDIV_CPU0_ATB_SHIFT) |
--			(clkdiv_cpu0[i][5] << S5P_CLKDIV_CPU0_PCLKDBG_SHIFT) |
--			(clkdiv_cpu0[i][6] << S5P_CLKDIV_CPU0_APLL_SHIFT));
-+		tmp &=3D ~(EXYNOS4_CLKDIV_CPU0_CORE_MASK |
-+			EXYNOS4_CLKDIV_CPU0_COREM0_MASK |
-+			EXYNOS4_CLKDIV_CPU0_COREM1_MASK |
-+			EXYNOS4_CLKDIV_CPU0_PERIPH_MASK |
-+			EXYNOS4_CLKDIV_CPU0_ATB_MASK |
-+			EXYNOS4_CLKDIV_CPU0_PCLKDBG_MASK |
-+			EXYNOS4_CLKDIV_CPU0_APLL_MASK);
-+
-+		tmp |=3D
-+		((clkdiv_cpu0[i][0] << EXYNOS4_CLKDIV_CPU0_CORE_SHIFT) |
-+		(clkdiv_cpu0[i][1] << EXYNOS4_CLKDIV_CPU0_COREM0_SHIFT) |
-+		(clkdiv_cpu0[i][2] << EXYNOS4_CLKDIV_CPU0_COREM1_SHIFT) |
-+		(clkdiv_cpu0[i][3] << EXYNOS4_CLKDIV_CPU0_PERIPH_SHIFT) |
-+		(clkdiv_cpu0[i][4] << EXYNOS4_CLKDIV_CPU0_ATB_SHIFT) |
-+		(clkdiv_cpu0[i][5] << EXYNOS4_CLKDIV_CPU0_PCLKDBG_SHIFT) |
-+		(clkdiv_cpu0[i][6] << EXYNOS4_CLKDIV_CPU0_APLL_SHIFT));
-=20
- 		exynos4210_clkdiv_table[i].clkdiv =3D tmp;
- 	}
---=20
-1.7.4.1
-
+As predicted, this is breaking other ARM platforms.  Please fix this
+yourself before your crappy code gets pushed into mainline.  Thanks.
