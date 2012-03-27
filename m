@@ -1,69 +1,50 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 6/6] ARM: OMAP: fix cpufreq build
-Date: Mon, 26 Mar 2012 15:07:22 -0700
-Message-ID: <87ehsfrp7p.fsf@ti.com>
-References: <20120315102845.GB16389@n2100.arm.linux.org.uk>
-	<E1S87xU-0000N8-6u@rmk-PC.arm.linux.org.uk>
-	<20120326083256.GC22608@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
+Subject: [PATCH] cpufreq: OMAP: fix build errors: depends on ARCH_OMAP2PLUS
+Date: Mon, 26 Mar 2012 17:19:28 -0700
+Message-ID: <1332807568-638-1-git-send-email-khilman@ti.com>
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20120326083256.GC22608@n2100.arm.linux.org.uk> (Russell King's
-	message of "Mon, 26 Mar 2012 09:32:56 +0100")
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Arnd Bergmann <arnd@arndb.de>, Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>, cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org, Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Grazvydas Ignotas <notasas@gmail.com>
 
-Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+The OMAP driver needs a 'depends on ARCH_OMAP2PLUS' since it only
+builds for OMAP2+ platforms.
 
-> Kevin,
->
-> I only just found this via the arm-soc tree, while trying to merge the
-> kautobuildv2 build tree.
->
-> You changed my patch and broke it:
->
-> config ARM_OMAP2PLUS_CPUFREQ
->         bool "TI OMAP2+"
->         default ARCH_OMAP2PLUS
->         select CPU_FREQ_TABLE
->
-> So now, OMAP2 CPUFREQ is selectable on ANYTHING but it will only build
-> successfully on OMAP.
+This 'depends on' was in the original patch from Russell King, but was
+erroneously removed by me when making this option user-selectable in
+commit b09db45c (cpufreq: OMAP driver depends CPUfreq tables.)  This
+patch remedies that.
 
-Yes, I screwed it up.
+Apologies to Russell King for breaking his originally working patch.
 
-I wanted it to be selectable, but majorly screwed it up and it is
-certainly not randconfig friendly.
+Also, thanks to Grazvydas Ignotas for reporting the same problem.
 
-This was also pointed out by Grazvydas soon after merging[1], and I was
-expecting a patch from him to remedy that, but I will take care of it
-and submit a patch for v3.4-rc right away.
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Grazvydas Ignotas <notasas@gmail.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+Dave, this applies on top of your current fixes branch, and fixes a 
+problem introduced there by me.  Please merge for v3.4-rc.  Thanks.
+
+ drivers/cpufreq/Kconfig.arm |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 82f1aa9..555a57b 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -4,6 +4,7 @@
  
-> If you're going to change someone elses patch, do them the favour of
-> re-posting it back to them for comment *BEFORE* you commit it and send
-> it upstream, 
-
-I did.  On Feb 16th, I posted my modified version with you and
-linux-arm-kernel Cc'd:
-
-   http://lists.infradead.org/pipermail/linux-arm-kernel/2012-February/085053.html
-
-and then I didn't send the pull request for this for another 3 weeks.
-
-> rather than making it look like they're a total tosser for
-> authoring a patch which fucks up other architecture builds.
-
-/me has cache miss on tosser in American jargon cache
-/me looks up in urban dictionary.
-
-> Many thanks for that.
-
-Many apologies.
-
-Kevin
-
-[1] http://marc.info/?l=linux-omap&m=133174677506294&w=2
+ config ARM_OMAP2PLUS_CPUFREQ
+ 	bool "TI OMAP2+"
++	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
+ 	select CPU_FREQ_TABLE
+ 
+-- 
+1.7.9.2
 
