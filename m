@@ -1,55 +1,27 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH] EXYNOS: bugfix on retrieving old_index from freqs.old
-Date: Wed, 04 Apr 2012 19:23:56 +0900
-Message-ID: <1333535036-24409-1-git-send-email-myungjoo.ham@samsung.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: Fix exposure of ARM_EXYNOS4210_CPUFREQ
+Date: Wed, 4 Apr 2012 15:52:04 +0100
+Message-ID: <20120404145204.GA24211@n2100.arm.linux.org.uk>
+References: <20120213094940.GA15338@n2100.arm.linux.org.uk> <4F3CF3DA.7000806@samsung.com> <20120216160250.GP13673@n2100.arm.linux.org.uk> <00aa01ccf084$93c98a70$bb5c9f50$%kim@samsung.com> <20120327074931.GK5611@n2100.arm.linux.org.uk> <4F73B3E1.4080807@samsung.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=0SqAjJhLM6d2athS6DJsQcc+px08hlOEQkZh7wa8W7s=;
+	b=TZUo4Ok4O9eyHg+qZBN/PVmzH3UtYWnQjnmBTjYpF/ZsDpSpuHe8Fx5bSXdiTMGxrtXWZnmbrg4Mq1dEabLhvOWcHtjbLQG55dZDJErHNFnoA2oPIIgxUTBR/S503+J6E3u76FBIpuKgSFMCnLG2ceeINz6AEnHqZdSIXcojx+M=;
+Content-Disposition: inline
+In-Reply-To: <4F73B3E1.4080807@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: Dave Jones <davej@redhat.com>, Jaecheol Lee <jc.lee@samsung.com>, Tushar Behera <tushar.behera@linaro.org>, kyungmin.park@samsung.com, cw00.choi@samsung.com, myungjoo.ham@gmail.com, linux-kernel@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: 'Dave Jones' <davej@redhat.com>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-The policy might have been changed since last call of target().
-Thus, using cpufreq_frequency_table_target(), which depends on
-policy to find the correspoding index from a frequency, may return
-inconsistent index for freqs.old. Thus, old_index should be
-calculated not based on the current policy.
+On Wed, Mar 28, 2012 at 05:59:13PM -0700, Kukjin Kim wrote:
+> Russell King wrote:
+>> As predicted, this is breaking other ARM platforms.  Please fix this
+>> yourself before your crappy code gets pushed into mainline.  Thanks.
+>>
+> I fixed it.
 
-We have been observing such issue when scaling_min/max_freq were
-updated and sometimes caused system lockups due to incorrectly
-configured voltages.
-
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
----
- drivers/cpufreq/exynos-cpufreq.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index b243a7e..1577522 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -62,8 +62,17 @@ static int exynos_target(struct cpufreq_policy *policy,
- 		goto out;
- 	}
- 
--	if (cpufreq_frequency_table_target(policy, freq_table,
--					   freqs.old, relation, &old_index)) {
-+	/*
-+	 * The policy may have been changed so that we cannot get proper
-+	 * old_index with cpufreq_frequency_table_target(). Thus, ignore
-+	 * policy and get the index from the raw frequency table.
-+	 */
-+	for (old_index = 0;
-+	     freq_table[old_index].frequency != CPUFREQ_TABLE_END;
-+	     old_index++)
-+		if (freq_table[old_index].frequency == freqs.old)
-+			break;
-+	if (freq_table[old_index].frequency == CPUFREQ_TABLE_END) {
- 		ret = -EINVAL;
- 		goto out;
- 	}
--- 
-1.7.4.1
-
+When will we see patches or the fix in mainline?
