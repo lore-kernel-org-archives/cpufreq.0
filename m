@@ -1,51 +1,55 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: ondemand: handle SW coordinated CPUs
-Date: Wed, 4 Apr 2012 01:26:36 +0200
-Message-ID: <CAKnu2MoXp_UvkBAgkvBVYEMfyWC08kP_h=ZYXoVRBZUaOkT4sg@mail.gmail.com>
-References: <1331311414-31996-1-git-send-email-linus.walleij@stericsson.com>
-Mime-Version: 1.0
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] EXYNOS: bugfix on retrieving old_index from freqs.old
+Date: Wed, 04 Apr 2012 19:23:56 +0900
+Message-ID: <1333535036-24409-1-git-send-email-myungjoo.ham@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=bwnTtHG+w+wWuWYP3qVcqb1IIF8UqR/hAKibFT1N1sc=;
-        b=wyzo/5Y4nVFN1BkLBflBY4OX7X5mM/ztw9iGKBS3ebjtqGMbyfjRsH2eV1Ga9/E3gP
-         Aij5p0BrgcHD7BRb3DnOJl/GNxc9G9bFafG0hWYAjfNXJF+rkoCorK38J7Sxk5j7ako0
-         Odt6XY6bDb2mdByRk5e161wlj8JUPU6dydbXwt9XCLojizzKgYc4cTe+vM9BOrrQ+tO2
-         YCErauW+YJ7+IQmxO1kRf3CMww11BBEqGYZ/rKRypjGjMvk7tkm14mBMQjhfkDm3cxi2
-         fppN/JANe8QCGKAIrUcOyN9Y8Cf/Ky4H9VINmXXpg/UApGbxkNBbHpJx/IGk1l6/GE0q
-         d/RA==
-In-Reply-To: <1331311414-31996-1-git-send-email-linus.walleij@stericsson.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
-Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
+To: cpufreq@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>, Jaecheol Lee <jc.lee@samsung.com>, Tushar Behera <tushar.behera@linaro.org>, kyungmin.park@samsung.com, cw00.choi@samsung.com, myungjoo.ham@gmail.com, linux-kernel@vger.kernel.org
 
-2012/3/9 Linus Walleij <linus.walleij@stericsson.com>:
+The policy might have been changed since last call of target().
+Thus, using cpufreq_frequency_table_target(), which depends on
+policy to find the correspoding index from a frequency, may return
+inconsistent index for freqs.old. Thus, old_index should be
+calculated not based on the current policy.
 
-> From: Rickard Andersson <rickard.andersson@stericsson.com>
->
-> This patch fixes a bug that occured when we had load on
-> a secondary CPU and the primary CPU was sleeping. Only
-> one sampling timer was spawned and it was spawned as a
-> deferred timer on the primary CPU, so when a secondary CPU
-> had a change in load this was not detected by the ondemand
-> governor.
->
-> This patch make sure that deferred timers are run on all
-> CPUs in the case of software controlled CPUs that run on
-> the same frequency.
->
-> Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
-> Reviewed-by: Mian Yousaf Kaukab <mian.yousaf.kaukab@stericsson.com>
-> Reviewed-by: Jonas Aberg <jonas.aberg@stericsson.com>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+We have been observing such issue when scaling_min/max_freq were
+updated and sometimes caused system lockups due to incorrectly
+configured voltages.
 
-Ping on this. This is a very real problem to us so we'd like to
-get some feedback on this...
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
-Yours,
-Linus Walleij
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index b243a7e..1577522 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -62,8 +62,17 @@ static int exynos_target(struct cpufreq_policy *policy,
+ 		goto out;
+ 	}
+ 
+-	if (cpufreq_frequency_table_target(policy, freq_table,
+-					   freqs.old, relation, &old_index)) {
++	/*
++	 * The policy may have been changed so that we cannot get proper
++	 * old_index with cpufreq_frequency_table_target(). Thus, ignore
++	 * policy and get the index from the raw frequency table.
++	 */
++	for (old_index = 0;
++	     freq_table[old_index].frequency != CPUFREQ_TABLE_END;
++	     old_index++)
++		if (freq_table[old_index].frequency == freqs.old)
++			break;
++	if (freq_table[old_index].frequency == CPUFREQ_TABLE_END) {
+ 		ret = -EINVAL;
+ 		goto out;
+ 	}
+-- 
+1.7.4.1
+
