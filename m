@@ -1,46 +1,31 @@
-From: "'Dave Jones'" <davej@redhat.com>
-Subject: Re: Fix exposure of ARM_EXYNOS4210_CPUFREQ
-Date: Wed, 4 Apr 2012 13:22:48 -0400
-Message-ID: <20120404172248.GA21113@redhat.com>
-References: <20120213094940.GA15338@n2100.arm.linux.org.uk>
- <4F3CF3DA.7000806@samsung.com>
- <20120216160250.GP13673@n2100.arm.linux.org.uk>
- <00aa01ccf084$93c98a70$bb5c9f50$%kim@samsung.com>
- <20120327074931.GK5611@n2100.arm.linux.org.uk>
- <4F73B3E1.4080807@samsung.com>
- <20120404145204.GA24211@n2100.arm.linux.org.uk>
- <20120404145917.GB1929@redhat.com>
- <4F7C7F68.7090000@samsung.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 43037] cpufreq often stucks in lowest frequency.
+Date: Wed, 4 Apr 2012 18:43:31 GMT
+Message-ID: <201204041843.q34IhVh1015859@bugzilla.kernel.org>
+References: <bug-43037-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4F7C7F68.7090000@samsung.com>
+In-Reply-To: <bug-43037-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
 
-On Wed, Apr 04, 2012 at 10:05:44AM -0700, Kukjin Kim wrote:
- > On 04/04/12 07:59, 'Dave Jones' wrote:
- > > On Wed, Apr 04, 2012 at 03:52:04PM +0100, Russell King - ARM Linux wrote:
- > >   >  On Wed, Mar 28, 2012 at 05:59:13PM -0700, Kukjin Kim wrote:
- > >   >  >  Russell King wrote:
- > >   >  >>  As predicted, this is breaking other ARM platforms.  Please fix this
- > >   >  >>  yourself before your crappy code gets pushed into mainline.  Thanks.
- > >   >  >>
- > >   >  >  I fixed it.
- > >   >
- > >   >  When will we see patches or the fix in mainline?
- > >
- > > Just send it to Linus directly.
- > >
- > 
- > Hi Dave,
- > 
- > OK, so may I send this to Linus with your ack?
+https://bugzilla.kernel.org/show_bug.cgi?id=3D43037
 
-sure.
 
-	Dave
+
+
+
+--- Comment #6 from Ya=C5=9Far Arabac=C4=B1 <yasar11732@gmail.com>  201=
+2-04-04 18:43:31 ---
+Created an attachment (id=3D72817)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=3D72817)
+cpu info while the error is happening
+
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
