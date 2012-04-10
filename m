@@ -1,86 +1,86 @@
-From: Inderpal Singh <inderpal.singh@linaro.org>
-Subject: Re: [PATCH] [CPUFREQ] EXYNOS: bugfix on retrieving old_index from freqs.old
-Date: Tue, 10 Apr 2012 15:35:39 +0530
-Message-ID: <CAG17yqRq5+vQZngEwNjbANjhGPr68Hy8frwRSzRZH31juk=ahA@mail.gmail.com>
-References: <1333535036-24409-1-git-send-email-myungjoo.ham@samsung.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH] EXYNOS: bugfix on retrieving old_index from
+ freqs.old
+Date: Tue, 10 Apr 2012 10:38:31 +0000 (GMT)
+Message-ID: <13404.111131334054311065.JavaMail.weblogic@epv6ml08>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1333535036-24409-1-git-send-email-myungjoo.ham@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: cpufreq@vger.kernel.org, Dave Jones <davej@redhat.com>, Jaecheol Lee <jc.lee@samsung.com>, Tushar Behera <tushar.behera@linaro.org>, kyungmin.park@samsung.com, cw00.choi@samsung.com, myungjoo.ham@gmail.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Inderpal Singh <inderpal.singh@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, =?euc-kr?Q?=C0=CC=C0=E7=C3=B6?= <jc.lee@samsung.com>, Tushar Behera <tushar.behera@linaro.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, =?euc-kr?Q?=C3=D6=C2=F9=BF=EC?= <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi MyungJoo,
+U2VuZGVyIDogSW5kZXJwYWwgU2luZ2g8aW5kZXJwYWwuc2luZ2hAbGluYXJvLm9yZz4gRGF0ZSA6
+IDIwMTItMDQtMTAgMTk6MDUgKEdNVCswOTowMCkNCj4gDQo+IEhpIE15dW5nSm9vLA0KDQpIaSBJ
+bmRlcnBhbCwNCg0KPiANCj4gT24gNCBBcHJpbCAyMDEyIDE1OjUzLCBNeXVuZ0pvbyBIYW0gd3Jv
+dGU6DQo+ID4gVGhlIHBvbGljeSBtaWdodCBoYXZlIGJlZW4gY2hhbmdlZCBzaW5jZSBsYXN0IGNh
+bGwgb2YgdGFyZ2V0KCkuDQo+ID4gVGh1cywgdXNpbmcgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVf
+dGFyZ2V0KCksIHdoaWNoIGRlcGVuZHMgb24NCj4gPiBwb2xpY3kgdG8gZmluZCB0aGUgY29ycmVz
+cG9kaW5nIGluZGV4IGZyb20gYSBmcmVxdWVuY3ksIG1heSByZXR1cm4NCj4gPiBpbmNvbnNpc3Rl
+bnQgaW5kZXggZm9yIGZyZXFzLm9sZC4gVGh1cywgb2xkX2luZGV4IHNob3VsZCBiZQ0KPiA+IGNh
+bGN1bGF0ZWQgbm90IGJhc2VkIG9uIHRoZSBjdXJyZW50IHBvbGljeS4NCj4gPg0KPiA+IFdlIGhh
+dmUgYmVlbiBvYnNlcnZpbmcgc3VjaCBpc3N1ZSB3aGVuIHNjYWxpbmdfbWluL21heF9mcmVxIHdl
+cmUNCj4gPiB1cGRhdGVkIGFuZCBzb21ldGltZXMgY2F1c2VkIHN5c3RlbSBsb2NrdXBzIGR1ZSB0
+byBpbmNvcnJlY3RseQ0KPiA+IGNvbmZpZ3VyZWQgdm9sdGFnZXMuDQo+ID4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9leHlu
+b3MtY3B1ZnJlcS5jIHwgICAxMyArKysrKysrKysrKy0tDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwg
+MTEgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL2NwdWZyZXEvZXh5bm9zLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9leHlub3Mt
+Y3B1ZnJlcS5jDQo+ID4gaW5kZXggYjI0M2E3ZS4uMTU3NzUyMiAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL2NwdWZyZXEvZXh5bm9zLWNwdWZyZXEuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1ZnJl
+cS9leHlub3MtY3B1ZnJlcS5jDQo+ID4gQEAgLTYyLDggKzYyLDE3IEBAIHN0YXRpYyBpbnQgZXh5
+bm9zX3RhcmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwNCj4gPiAgICAgICAgICAg
+ICAgICBnb3RvIG91dDsNCj4gPiAgICAgICAgfQ0KPiA+DQo+ID4gLSAgICAgICBpZiAoY3B1ZnJl
+cV9mcmVxdWVuY3lfdGFibGVfdGFyZ2V0KHBvbGljeSwgZnJlcV90YWJsZSwNCj4gPiAtICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZnJlcXMub2xkLCByZWxhdGlvbiwg
+Jm9sZF9pbmRleCkpIHsNCj4gPiArICAgICAgIC8qDQo+ID4gKyAgICAgICAgKiBUaGUgcG9saWN5
+IG1heSBoYXZlIGJlZW4gY2hhbmdlZCBzbyB0aGF0IHdlIGNhbm5vdCBnZXQgcHJvcGVyDQo+ID4g
+KyAgICAgICAgKiBvbGRfaW5kZXggd2l0aCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV90YXJnZXQo
+KS4gVGh1cywgaWdub3JlDQo+ID4gKyAgICAgICAgKiBwb2xpY3kgYW5kIGdldCB0aGUgaW5kZXgg
+ZnJvbSB0aGUgcmF3IGZyZXF1ZW5jeSB0YWJsZS4NCj4gPiArICAgICAgICAqLw0KPiA+ICsgICAg
+ICAgZm9yIChvbGRfaW5kZXggPSAwOw0KPiA+ICsgICAgICAgICAgICBmcmVxX3RhYmxlW29sZF9p
+bmRleF0uZnJlcXVlbmN5ICE9IENQVUZSRVFfVEFCTEVfRU5EOw0KPiA+ICsgICAgICAgICAgICBv
+bGRfaW5kZXgrKykNCj4gPiArICAgICAgICAgICAgICAgaWYgKGZyZXFfdGFibGVbb2xkX2luZGV4
+XS5mcmVxdWVuY3kgPT0gZnJlcXMub2xkKQ0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGJy
+ZWFrOw0KPiA+ICsgICAgICAgaWYgKGZyZXFfdGFibGVbb2xkX2luZGV4XS5mcmVxdWVuY3kgPT0g
+Q1BVRlJFUV9UQUJMRV9FTkQpIHsNCj4gPiAgICAgICAgICAgICAgICByZXQgPSAtRUlOVkFMOw0K
+PiA+ICAgICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+ICAgICAgICB9DQo+IA0KPiBJIGFsc28g
+aGFkIHRoZSBzYW1lIGlzc3VlIGFuZCBzYW1lIGZpeCB3aGlsZSB0ZXN0aW5nIHBvd2VydG9wIDEu
+OTggYXMNCj4gaXQgY2hhbmdlcyB0aGUgc2NhbGluZ19taW4vbWF4X2ZyZXEuDQo+IA0KPiBUaGUg
+b25seSBjb25jZXJuIEkgaGF2ZSBpcyB3aGVuIHRoaXMgY29kZSBnZXRzIGNhbGxlZCBmb3IgdGhl
+IHZlcnkNCj4gZmlyc3QgdGltZSwgdGhlIGZyZXFzLm9sZCB3aWxsIGJlIHRoZSBmcmVxIHNldCBi
+eSBib290bG9hZGVyLiBOb3cgaWYNCj4gYm9vdGxvYWRlciBzZXRzIGEgZnJlcSB3aGljaCBpcyBu
+b3QgaW4gdGhlIGZyZXFfdGFibGUgKG5vdCBzdXJlIGlmIGl0cw0KPiBwcmFjdGljYWwgYnV0IHRo
+ZW9yZXRpY2FsbHkgaXRzIHBvc3NpYmxlICksIHRoaXMgY29kZSB3aWxsIGVycm9yIG91dC4NCg0K
+SXQgaXMgbm90IHByYWN0aWNhbCAodGhlIHZlbmRvciBzaGlwcyBJUEwpLCBidXQgdGhlb3JldGlj
+YWxseSwgaXQncyBwb3NzaWJsZQ0KaWYgb25lIGhhY2tzIHRoZSBJUEwuDQoNCkhvd2V2ZXIsIGlu
+IHN1Y2ggYSB0aGVvcmV0aWNhbCBzY2VuYXJpbywgY3B1ZnJlcSB3b24ndCB3b3JrIGFueXdheSBl
+dmVuIGlmDQp3ZSBhY2NlcHQgb3V0LW9mLXNwZWNpZmljYXRpb24gZnJlcXMub2xkLg0KDQpJbiB0
+aGUgY2FzZSB5b3UndmUgbWVudGlvbmVkLCB0aGUgYm9vdGxvYWRlciBoYXMgY29uZmlndXJlZCB0
+aGUgY2xvY2sgZGl2aWRlcnMNCmFuZCBzb3VyY2VzIGluY29ycmVjdGx5IChvdXQgb2YgdGhlIGNo
+aXAgdmVuZG9yJ3Mgc3BlY2lmaWNhdGlvbikuIFRoZW4sDQp0aGUgRXh5bm9zIGNwdWZyZXEgaXMg
+bm90IGNvbXBhdGlibGUgd2l0aCBzdWNoIGEgYm9vdGxvYWRlciBhbnl3YXkgZXZlbiBpZg0Kb3V0
+LW9mLXNwZWMgZnJlcXMub2xkIGlzIGFsbG93ZWQuIEl0IGlzIGJlY2F1c2UgRXh5bm9zIGNwdWZy
+ZXEgZHJpdmVyIGFzc3VtZXMNCnRoYXQgdGhlIGRpdmlkZXJzIGFuZCBzb3VyY2VzIGFyZSBjb3Jy
+ZWN0bHkgY29uZmlndXJlZCBwcmV2aW91c2x5OyBpLmUuLCBpdA0KZG9lcyBub3QgcmVzZXQvc2V0
+IGV2ZXJ5IHJlbGF0ZWQgZGl2aWRlciBvciBzb3VyY2Ugd2hlbiB0aGUgZnJlcXVlbmN5IGhhcyBi
+ZWVuDQp1cGRhdGVkLiBUaHVzLCB0aGUgcmVzdWx0aW5nIGZyZXF1ZW5jeSBtYXkgYmUgZGlmZmVy
+ZW50IGZyb20gdGhlIGludGVuZGVkDQpmcmVxdWVuY3kgYW5kIG9mdGVuIHRoZSBzeXN0ZW0gd2ls
+bCBzdWZmZXIgZnJvbSBsb2NrIHVwcy4gV2UndmUgYmVlbiBvYnNlcnZpbmcNCmxvY2sgdXBzIHdo
+ZW4gdGhlIGJvb3Rsb2FkZXIgY29uZmlndXJlcyBzb21lIGRpdmlkZXJzIGRpZmZlcmVudCBmcm9t
+IHdoYXQgdGhlDQprZXJuZWwgZXhwZWN0cyBkdXJpbmcgc3VzcGVuZC10by1yYW0gYW5kIHdha2V1
+cC4NCg0KQ2hlZXJzIQ0KTXl1bmdKb28uDQoNCj4gDQo+IA0KPiA+IC0tDQo+ID4gMS43LjQuMQ0K
+PiA+DQo+ID4gLS0NCj4gPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUg
+bGluZSAidW5zdWJzY3JpYmUgY3B1ZnJlcSIgaW4NCj4gPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2Ug
+dG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZw0KPiA+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQg
+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KPiANCj4gVGhhbmtz
+LA0KPiBJbmRlcg0KPiANCj4gDQo+IA0KPiANCg0KLS0NCg0KTXl1bmdKb28gSGFtICjH1LjtwdYp
+LCBQSEQNCg0KU3lzdGVtIFMvVyBMYWIsIFMvVyBQbGF0Zm9ybSBUZWFtLCBTb2Z0d2FyZSBDZW50
+ZXINClNhbXN1bmcgRWxlY3Ryb25pY3MNCkNlbGw6ICs4Mi0xMC02NzE0LTI4NTgNCg0KDQoNCiAN
+Cg0K
 
-On 4 April 2012 15:53, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> The policy might have been changed since last call of target().
-> Thus, using cpufreq_frequency_table_target(), which depends on
-> policy to find the correspoding index from a frequency, may return
-> inconsistent index for freqs.old. Thus, old_index should be
-> calculated not based on the current policy.
->
-> We have been observing such issue when scaling_min/max_freq were
-> updated and sometimes caused system lockups due to incorrectly
-> configured voltages.
->
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> ---
-> =A0drivers/cpufreq/exynos-cpufreq.c | =A0 13 +++++++++++--
-> =A01 files changed, 11 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exyno=
-s-cpufreq.c
-> index b243a7e..1577522 100644
-> --- a/drivers/cpufreq/exynos-cpufreq.c
-> +++ b/drivers/cpufreq/exynos-cpufreq.c
-> @@ -62,8 +62,17 @@ static int exynos_target(struct cpufreq_policy *po=
-licy,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out;
-> =A0 =A0 =A0 =A0}
->
-> - =A0 =A0 =A0 if (cpufreq_frequency_table_target(policy, freq_table,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0freqs.old, relation, &old_index)) {
-> + =A0 =A0 =A0 /*
-> + =A0 =A0 =A0 =A0* The policy may have been changed so that we cannot=
- get proper
-> + =A0 =A0 =A0 =A0* old_index with cpufreq_frequency_table_target(). T=
-hus, ignore
-> + =A0 =A0 =A0 =A0* policy and get the index from the raw frequency ta=
-ble.
-> + =A0 =A0 =A0 =A0*/
-> + =A0 =A0 =A0 for (old_index =3D 0;
-> + =A0 =A0 =A0 =A0 =A0 =A0freq_table[old_index].frequency !=3D CPUFREQ=
-_TABLE_END;
-> + =A0 =A0 =A0 =A0 =A0 =A0old_index++)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (freq_table[old_index].frequency =3D=
-=3D freqs.old)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
-> + =A0 =A0 =A0 if (freq_table[old_index].frequency =3D=3D CPUFREQ_TABL=
-E_END) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ret =3D -EINVAL;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out;
-> =A0 =A0 =A0 =A0}
 
-I also had the same issue and same fix while testing powertop 1.98 as
-it changes the scaling_min/max_freq.
-
-The only concern I have is when this code gets called for the very
-first time, the freqs.old will be the freq set by bootloader. Now if
-bootloader sets a freq which is not in the freq_table (not sure if its
-practical but theoretically its possible ), this code will error out.
-
-
-> --
-> 1.7.4.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-
-Thanks,
-Inder
