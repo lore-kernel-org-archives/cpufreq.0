@@ -1,31 +1,28 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 43179] VIA Nano hangs on some CPU scaling governors and at some
- freqs
-Date: Sun, 29 Apr 2012 20:54:07 GMT
-Message-ID: <201204292054.q3TKs7FL024310@bugzilla.kernel.org>
-References: <bug-43179-12968@https.bugzilla.kernel.org/>
+From: Dave Jones <davej@redhat.com>
+Subject: CPUFREQ maintainence.
+Date: Mon, 30 Apr 2012 10:06:45 -0400
+Message-ID: <20120430140645.GB12583@redhat.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-43179-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=43179
+This last few releases I've been more of a hindrance than help to getting
+some of the patches merged upstream, so due to my lack of time, I'm considering
+removing myself as maintainer, and having patches routed as such instead...
 
+ARM -> Russell/relevant ARM subtree maintainers
+x86 driver patches -> x86@vger.kernel.org
+(All the other archs currently supported already go through the arch trees mips/sparc etc)
 
-Leland Yue <lelandyue@gmail.com> changed:
+The core doesn't see a huge amount of change these days, I figure patches for
+that can just go to lkml & Linus/Andrew like any other subsystem.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-           Severity|normal                      |high
+comments?
 
-
-
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+	Dave
