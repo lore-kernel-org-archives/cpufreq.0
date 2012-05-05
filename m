@@ -1,28 +1,48 @@
-From: Dave Jones <davej@redhat.com>
-Subject: CPUFREQ maintainence.
-Date: Mon, 30 Apr 2012 10:06:45 -0400
-Message-ID: <20120430140645.GB12583@redhat.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 16436] ath5k (AR5001) does not work after resume and fails with
+ "ath5k phy0: gain calibration timeout"
+Date: Sat, 5 May 2012 10:36:30 GMT
+Message-ID: <201205051036.q45AaUob023382@bugzilla.kernel.org>
+References: <bug-16436-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <bug-16436-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
 
-This last few releases I've been more of a hindrance than help to getting
-some of the patches merged upstream, so due to my lack of time, I'm considering
-removing myself as maintainer, and having patches routed as such instead...
+https://bugzilla.kernel.org/show_bug.cgi?id=16436
 
-ARM -> Russell/relevant ARM subtree maintainers
-x86 driver patches -> x86@vger.kernel.org
-(All the other archs currently supported already go through the arch trees mips/sparc etc)
 
-The core doesn't see a huge amount of change these days, I figure patches for
-that can just go to lkml & Linus/Andrew like any other subsystem.
+zxcasdqwe@mailinator.com changed:
 
-comments?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |zxcasdqwe@mailinator.com
 
-	Dave
+
+
+
+--- Comment #39 from zxcasdqwe@mailinator.com  2012-05-05 10:36:27 ---
+I still have it on a vanilla 32bit SMP 3.3.3 with AR5414 .
+I upgrade kernels very often and I first started noticing the problem with 3.3
+series (3.3.2, to be precise).
+I've had these kernels in 3.2/3.3 series:
+3.2.2
+3.2.3
+3.2.4
+3.2.5
+3.2.6
+3.2.7
+3.2.8
+3.2.9
+3.2.11
+3.3.2
+3.3.3
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
