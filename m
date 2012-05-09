@@ -1,77 +1,46 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: CPUFREQ maintainence.
-Date: Tue, 08 May 2012 09:56:51 -0700
-Message-ID: <877gwmr4q4.fsf@ti.com>
-References: <20120430140645.GB12583@redhat.com>
+From: Yogesh Kumar <ykumar19874@gmail.com>
+Subject: Question on CPU Frequency subsystem
+Date: Wed, 9 May 2012 17:30:08 +0200
+Message-ID: <CACpnD03GRrQ58h9+6zD8hH9hk41FdrfHpgSSGb13mdcNpqxX8w@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120430140645.GB12583@redhat.com> (Dave Jones's message of
-	"Mon, 30 Apr 2012 10:06:45 -0400")
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        bh=zLuJh5rrwJUNIqXLBtoh6KhJtIZwc8sYuS8Be3h/UH8=;
+        b=dO2nuWwNHrs+PuQH0GPBXEydlwkniaQPMzUV3ecVVwK3KiNCdwCPEae5OG8HVnsWQn
+         3BzbYIhnWk6gIGarCM+pM+j70XqLV7AoPD7rhXbVSBKwq3IN3XQ8E0u0Bg7SiqEVYFf/
+         sYFoqyionWg12pS8kM2rUbqsGbWLtNrxAaHbxU3bklr6zkyB0e7coDbKOlEjyYDPu7XS
+         x8cnkPLRX76wlDb9rqRJPYhbu2qcu5VFUTwFPMi+MzhQYDYYklfFuvKO/OhtFdpjrvea
+         PKMoMNNzfmmXGUh8gNn/rj5PaI7z6zmTTA1BT4DomVtupgooZRGoOkrLdJyIHAuEQMIH
+         OPuw==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap <linux-omap@vger.kernel.org>
+To: cpufreq@vger.kernel.org
 
-Dave Jones <davej@redhat.com> writes:
+Hi,
 
-> This last few releases I've been more of a hindrance than help to getting
-> some of the patches merged upstream, so due to my lack of time, I'm considering
-> removing myself as maintainer, and having patches routed as such instead...
+I had a question on CPU Frequency subsystem. As there are multiple
+governors which can be set on different CPU cores. If we have 4 cores
+lying under the one power domain and voltage rail and suppose governor
+setting is:
 
-Thanks Dave for your work in maintaining the core all this time!
+cpu0: performance
+cpu1: on demand
+cpu2: on demand
+cpu3: performance
 
-> ARM -> Russell/relevant ARM subtree maintainers
-> x86 driver patches -> x86@vger.kernel.org
-> (All the other archs currently supported already go through the arch trees mips/sparc etc)
+Since All cores are lying under same power rails, as we set the cpu0
+to performance governor which will set the cpu0 and cpu3 to maximum
+frequency and hence sustainable voltage for that frequency but cpu1
+and cpu2 are using on demand governor, suppose the load is low on cpu1
+and cpu2 cores, therefore on demand governor will try to set the low
+frequency and voltage based on the load. Since cpu0 is at high
+frequency and cpu1 is at low frequency, which part of cpufreq system
+will restrict the voltage to stay high as voltage rail is shared and
+one cpu is running at low frequency and another at high frequency?
 
-I will continue to handle the OMAP driver.
-
-> The core doesn't see a huge amount of change these days, I figure patches for
-> that can just go to lkml & Linus/Andrew like any other subsystem.
->
-> comments?
-
-I suppose we should we create separate MAINTAINERS entries for each of
-the drivers?
-
-If so, here's one to add the OMAP CPUfreq driver to the rest of the OMAP
-PM stuff I maintain.  I Cc'd the linux-omap list in case there are any
-objections to me adding myself.
-
-Kevin
-
-From 307f4150416c34936d7f0011d7f1b2146c13f9a0 Mon Sep 17 00:00:00 2001
-From: Kevin Hilman <khilman@ti.com>
-Date: Tue, 8 May 2012 09:51:22 -0700
-Subject: [PATCH] MAINTAINERS: add OMAP CPUfreq driver to OMAP Power
- Management section
-
-Add the OMAP CPUFreq driver to the list of files in the OMAP Power
-Management section.
-
-I've already been maintaining this driver, this just makes it
-official.
-
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
- MAINTAINERS |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7071633..3f5212b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4788,6 +4788,7 @@ M:	Kevin Hilman <khilman@ti.com>
- L:	linux-omap@vger.kernel.org
- S:	Maintained
- F:	arch/arm/*omap*/*pm*
-+F:	drivers/cpufreq/omap-cpufreq.c
- 
- OMAP POWERDOMAIN/CLOCKDOMAIN SOC ADAPTATION LAYER SUPPORT
- M:	Rajendra Nayak <rnayak@ti.com>
--- 
-1.7.9.2
-
-
+Regards
+Yogesh
