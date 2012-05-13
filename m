@@ -1,18 +1,18 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 15295] scaling_max_freq value lost upon suspend
-Date: Sun, 13 May 2012 14:38:22 +0000 (UTC)
-Message-ID: <20120513143822.43FF811F973@bugzilla.kernel.org>
-References: <bug-15295-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 14084] cpufreq ondemand always 100% on one of the intel cores
+Date: Sun, 13 May 2012 14:38:57 +0000 (UTC)
+Message-ID: <20120513143857.541FA11F973@bugzilla.kernel.org>
+References: <bug-14084-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-15295-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-14084-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=15295
+https://bugzilla.kernel.org/show_bug.cgi?id=14084
 
 
 Alan <alan@lxorguk.ukuu.org.uk> changed:
