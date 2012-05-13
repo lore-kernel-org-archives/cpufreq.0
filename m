@@ -1,19 +1,19 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16436] ath5k (AR5001) does not work after resume and fails with
- "ath5k phy0: gain calibration timeout"
-Date: Sun, 13 May 2012 14:33:46 +0000 (UTC)
-Message-ID: <20120513143346.977EF11FCE8@bugzilla.kernel.org>
-References: <bug-16436-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 16274] VIA EPIA PX5000EG - Longhaul is currently broken in this
+ configuration
+Date: Sun, 13 May 2012 14:34:03 +0000 (UTC)
+Message-ID: <20120513143403.F405111FCE8@bugzilla.kernel.org>
+References: <bug-16274-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16436-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-16274-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16436
+https://bugzilla.kernel.org/show_bug.cgi?id=16274
 
 
 Alan <alan@lxorguk.ukuu.org.uk> changed:
@@ -21,7 +21,7 @@ Alan <alan@lxorguk.ukuu.org.uk> changed:
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
                  CC|                            |alan@lxorguk.ukuu.org.uk
-     Kernel Version|2.6.36                      |3.3.4
+         AssignedTo|cpufreq@vger.kernel.org     |rjw@sisk.pl
 
 
 
