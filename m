@@ -1,18 +1,18 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 36652] Ondemand governor is hyperactive
-Date: Sun, 13 May 2012 14:29:56 +0000 (UTC)
-Message-ID: <20120513142956.4D9A411FCE3@bugzilla.kernel.org>
-References: <bug-36652-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 29522] Unable to use any kind of frequency scaling
+Date: Sun, 13 May 2012 14:32:20 +0000 (UTC)
+Message-ID: <20120513143220.5802111FCE3@bugzilla.kernel.org>
+References: <bug-29522-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-36652-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-29522-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=36652
+https://bugzilla.kernel.org/show_bug.cgi?id=29522
 
 
 Alan <alan@lxorguk.ukuu.org.uk> changed:
