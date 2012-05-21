@@ -1,106 +1,107 @@
-From: Leandro Lucarella <luca@llucax.com.ar>
-Subject: cpufreq not working properly with ondemand governor on Intel(R)
- Core(TM) i5-2467M
-Date: Sun, 20 May 2012 14:38:12 -0300
-Message-ID: <20120520173812.GU4370@llucax.com.ar>
+From: Serge Stroobandt <serge@stroobandt.com>
+Subject: cpufreq regression + link to patch
+Date: Mon, 21 May 2012 10:13:49 +0200
+Message-ID: <4FB9F93D.3030103@stroobandt.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=stroobandt.com; s=default;
+	h=Content-Transfer-Encoding:Content-Type:Subject:To:MIME-Version:From:Date:Message-ID; bh=t25n5zgymQiXiD//3Yp65pxmp8YTIGV/wuXiBNFJpHw=;
+	b=AA80Jct3aDycdqApHU4e9UWHsHJdof4wxa9dNXnAsx/cQLiHczN/TX9pJD6srWqs1O3OxKQ91kGOa3FuxRG7g0ipl27Ff//zkwzP+jbARX7QAOaBUJpiEBcZWRJiJi+0;
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: cpufreq@vger.kernel.org
 
-I just bought a Toshiba Z830 and I'm having a problem with cpufreq. The
-default governor is ondemand and it's not working properly, the
-frequency is stuck at the lowest one, which makes the notebook really
-annoying to use. I've tried the performance governor and it looks like
-the CPU goes to the maximum frequency, but when querying with cpufreq-
-info, I still see the minimum freq, but in the statistics about the
-frequencies used, I see the maximum frequency getting more and more
-percentage of use.
+Hi, this is to report a cpufreq regression in kernel:
+$ uname -r
+3.2.0-2-amd64
 
-Finally I tried the conservative governor, and it really look like it
-behaves like the ondeman should. The frequency is rapidily increased as
-needed and dropped down again when is not needed anymore. This is the
-only governor that seems to be changing the frequency in a way cpufreq-
-info can really see it, as I see the frequency going up and down when
-using that governor. The userspace governor also seems to be working as
-expected though.
+The bug has been reported at least twice and a patch has been proposed:
+http://permalink.gmane.org/gmane.linux.kernel.cpufreq/4190
+http://permalink.gmane.org/gmane.linux.mandrake.bugs/143027
 
-Another strange thing is that among the supported frequencies, I get
-1.60GHz (the maximum frequency supported) listed twice.
-
-Here is an example run of cpufreq-info:
+More information:
+$ sudo cpufreq-info
 cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
 Report errors and bugs to cpufreq@vger.kernel.org, please.
 analyzing CPU 0:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0 1 2 3
-  CPUs which need to have their frequency coordinated by software: 0
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 1.60 GHz:6.40%, 1.60 GHz:0.01%, 1.50 GHz:0.02%, 1.40 GHz:0.02%, 1.30 GHz:0.02%, 1.20 GHz:0.06%, 1.10 GHz:0.03%, 1000 MHz:0.04%, 900 MHz:0.07%, 800 MHz:93.33%  (795)
+   no or unknown cpufreq driver is active on this CPU
+   maximum transition latency: 4294.55 ms.
 analyzing CPU 1:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0 1 2 3
-  CPUs which need to have their frequency coordinated by software: 1
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 1.60 GHz:20.97%, 1.60 GHz:0.02%, 1.50 GHz:0.06%, 1.40 GHz:0.07%, 1.30 GHz:0.10%, 1.20 GHz:0.18%, 1.10 GHz:0.10%, 1000 MHz:0.15%, 900 MHz:0.19%, 800 MHz:78.16%  (424)
-analyzing CPU 2:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0 1 2 3
-  CPUs which need to have their frequency coordinated by software: 2
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 1.60 GHz:20.95%, 1.60 GHz:0.02%, 1.50 GHz:0.11%, 1.40 GHz:0.10%, 1.30 GHz:0.12%, 1.20 GHz:0.32%, 1.10 GHz:0.24%, 1000 MHz:0.25%, 900 MHz:0.38%, 800 MHz:77.51%  (622)
-analyzing CPU 3:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0 1 2 3
-  CPUs which need to have their frequency coordinated by software: 3
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 1.60 GHz
-  available frequency steps: 1.60 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
-  available cpufreq governors: conservative, ondemand, userspace, powersave, performance
-  current policy: frequency should be within 800 MHz and 1.60 GHz.
-                  The governor "conservative" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz.
-  cpufreq stats: 1.60 GHz:20.89%, 1.60 GHz:0.03%, 1.50 GHz:0.09%, 1.40 GHz:0.11%, 1.30 GHz:0.11%, 1.20 GHz:0.19%, 1.10 GHz:0.15%, 1000 MHz:0.13%, 900 MHz:0.14%, 800 MHz:78.15%  (451)
+   no or unknown cpufreq driver is active on this CPU
+   maximum transition latency: 4294.55 ms.
 
-I first reported this issue to Ubuntu but it seems to be a general
-kernel problem. You can find all the details (kernel version, CPU model,
-etc.) in that bug report. Let me know if you need any other information.
-https://bugs.launchpad.net/bugs/987531
+$ sudo modprobe -l |grep cpufreq
+kernel/drivers/cpufreq/cpufreq_stats.ko
+kernel/drivers/cpufreq/cpufreq_powersave.ko
+kernel/drivers/cpufreq/cpufreq_userspace.ko
+kernel/drivers/cpufreq/cpufreq_conservative.ko
+kernel/drivers/cpufreq/powernow-k8.ko
+kernel/drivers/cpufreq/mperf.ko
+kernel/drivers/cpufreq/acpi-cpufreq.ko
+kernel/drivers/cpufreq/pcc-cpufreq.ko
+kernel/drivers/cpufreq/speedstep-lib.ko
+kernel/drivers/cpufreq/speedstep-centrino.ko
+kernel/drivers/cpufreq/p4-clockmod.ko
 
+$ cat /proc/cpuinfo
+processor    : 0
+vendor_id    : GenuineIntel
+cpu family    : 15
+model        : 6
+model name    : Intel(R) Pentium(R) D CPU 3.00GHz
+stepping    : 2
+microcode    : 0xf
+cpu MHz        : 2992.660
+cache size    : 2048 KB
+physical id    : 0
+siblings    : 2
+core id        : 0
+cpu cores    : 2
+apicid        : 0
+initial apicid    : 0
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 6
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
+nx lm constant_tsc pebs bts nopl pni dtes64 monitor ds_cpl vmx cid cx16 
+xtpr pdcm lahf_lm tpr_shadow
+bogomips    : 5985.32
+clflush size    : 64
+cache_alignment    : 128
+address sizes    : 36 bits physical, 48 bits virtual
+power management:
 
-Thanks.
+processor    : 1
+vendor_id    : GenuineIntel
+cpu family    : 15
+model        : 6
+model name    : Intel(R) Pentium(R) D CPU 3.00GHz
+stepping    : 2
+microcode    : 0xf
+cpu MHz        : 2992.660
+cache size    : 2048 KB
+physical id    : 0
+siblings    : 2
+core id        : 1
+cpu cores    : 2
+apicid        : 1
+initial apicid    : 1
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 6
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall 
+nx lm constant_tsc pebs bts nopl pni dtes64 monitor ds_cpl vmx cid cx16 
+xtpr pdcm lahf_lm tpr_shadow
+bogomips    : 5985.83
+clflush size    : 64
+cache_alignment    : 128
+address sizes    : 36 bits physical, 48 bits virtual
+power management:
 
--- 
-Leandro Lucarella (AKA luca)                     http://llucax.com.ar/
-----------------------------------------------------------------------
-GPG Key: 5F5A8D05 (F8CD F9A7 BF00 5431 4145  104C 949E BFB6 5F5A 8D05)
-----------------------------------------------------------------------
-Hey you, with you ear against the wall
-Waiting for someone to call out
-Would you touch me?
+motherboard: GA-8i945PM(-RH)
