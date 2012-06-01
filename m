@@ -1,126 +1,67 @@
-From: "Leandro Scott R.Z. Jacques" <lsrzj@yahoo.com>
-Subject: Problems with scaling with Core i7 2670QM
-Date: Thu, 24 May 2012 06:41:05 -0700 (PDT)
-Message-ID: <1337866865.17692.YahooMailNeo@web140302.mail.bf1.yahoo.com>
-Reply-To: "Leandro Scott R.Z. Jacques" <lsrzj@yahoo.com>
+From: "Selen, Ali Utku" <AliUtku.Selen@sonymobile.com>
+Subject: cpufreq deadlock in show
+Date: Fri, 1 Jun 2012 11:36:34 +0200
+Message-ID: <1459F2CBB1C32E45863B1F1BFA0FDD62CC16581907@SELDMBX04.corpusers.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s1024; t=1337866865; bh=Z0XVA3bIyL9W4/lzmcrrv5zBcP1kNigeoRyehfk15uA=; h=X-YMail-OSG:Received:X-Mailer:Message-ID:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding; b=jqf9WIJZy0gUFAdl8Qn6V6wchH0w5tfWJ0YbZI4YOYRo4+WkV2DJkcCGNYPYL6RzoCLIbjAKvWOdfEeeZoJ05ZmZIIMRDy2wDwX7V8HfctheMeaE1YbOoKugcZVsr82PtEy/1fo1MMB4XjRXu8A6ykJZbL56Inw9qF/4XKcK1yQ=
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+To: "'cpufreq@vger.kernel.org'" <cpufreq@vger.kernel.org>
 
-Hello, I'm using Ubuntu 12.04 and I noticed a strange behaviour when I =
-compile a kernel from sou rce. I tried kernel 3.3.7 and made a make old=
-config of my stock kernel from ubuntu and defaulted all the new options=
-, so I was guarateeing that all th e configs of the stock kernel were b=
-eing imported to the newly compiled and that scaling would work as it s=
-hould. The problem is the scaling frequency reported by cpuinfo_cur_fre=
-q and scaling_cur_freq as shown below, I compar ed those from compiled =
-and stock kernels. What am I missing? Or it's a kind of bug?
+Hi!
 
-/proc/cpuinfo
-processor : 0
-vendor_id : GenuineIntel
-cp u family : 6
-model : 42
-model name : Intel( R) Core(TM) i7-2670QM CPU @ 2.20GHz
-stepping : 7
-microco de : 0C39723
-cpu MHz : 800.000
-cache size=A0 : 6144 KB
-physical id : 0
-siblings : 8
-core id : 0
-cpu cores : 4
-apicid : 0
-init ial apicid : 0
-fpu : yes
-fpu_exception : yes
-=A0cpuid level : 13
-wp : yes
-flags : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov p=
-at pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdt=
-scp lm co nstant_tsc arch_perfmon pebs bts nopl xtopology nonstop_tsc a=
-perfmperf p ni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 x=
-tpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave =
-avx lahf_lm id a arat epb xsaveopt pln pts dts tpr_shadow vnmi flexprio=
-rity ept vpidbogomips : 4390.25
-clflush size : 64
-cache_alignm ent : 64
-address sizes : 36 bits physical, 48 bits virtual
-po wer management:
+I'm getting a deadlock in show in cpufreq.c on a 3.0 series kernel.
 
-WITH COMPILED KERNEL:
-What I detected is this. I have two different readings for the same pro=
- cessor but one comes from cpuinfo_cur_freq and the other one comes fro=
-m=A0 scaling_cur_freq as seen below:
+The way it happens is, I do read  /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq in a loop, and at the same I send a "echo 0 > /sys/devices/system/cpu/cpu1/online". If I get lucky, my read call to scaling_cur_freq doesn't return and I get stack traces like below.
 
-sudo cat scaling_cur_freq; sud o cat cpuinfo_cur_freq
-800000
-1800000
+#0 [<c0701acc>] (__schedule) from [<c0701fc0>]
+#1 [<c0701fc0>] (schedule_timeout) from [<c0701350>]
+#2 [<c0701350>] (wait_for_common) from [<c025da14>]
+#3 [<c025da14>] (sysfs_addrm_finish) from [<c025db28>]
+#4 [<c025db28>] (sysfs_remove_dir) from [<c032247c>]
+#5 [<c032247c>] (kobject_del) from [<c0322594>]
+#6 [<c0322594>] (kobject_release) from [<c03237cc>]
+#7 [<c03237cc>] (kref_put) from [<c0517f78>]
+#8 [<c0517f78>] (cpufreq_cpu_put) from [<c051a638>]
+#9 [<c051a638>] (show) from [<c025c444>]
+#10 [<c025c444>] (sysfs_read_file) from [<c020e400>]
+#11 [<c020e400>] (vfs_read) from [<c020e584>]
+#12 [<c020e584>] (sys_read) from [<c0105e60>]
 
+As far as I understand, this means we've released the kobject inside show() which tries to do a cleanup on sysfs entry itself. This cleanup requires show to return first, leading to a deadlock.
 
-What's the true reading? Why with stock kernel it doesn't=A0 happen the=
- frequencies match!
+In the mean time __cpufreq_remove_dev waits cpufreq_sysfs_release to arrive forever, creating the bigger problem by holding cpu_hotplug.lock and cpu_add_remove_lock.
 
+#0 [<c0701acc>] (__schedule) from [<c0701fc0>]
+#1 [<c0701fc0>] (schedule_timeout) from [<c0701350>]
+#2 [<c0701350>] (wait_for_common) from [<c051a198>]
+#3 [<c051a198>] (__cpufreq_remove_dev) from [<c0700bc8>]
+#4 [<c0700bc8>] (cpufreq_cpu_callback) from [<c0706c04>]
+#5 [<c0706c04>] (notifier_call_chain) from [<c016eac4>]
+#6 [<c016eac4>] (__cpu_notify) from [<c06e6440>]
+#7 [<c06e6440>] (_cpu_down) from [<c06e65f0>]
+#8 [<c06e65f0>] (cpu_down) from [<c06e6e44>]
+#9 [<c06e6e44>] (store_online) from [<c03d0328>]
+#10 [<c03d0328>] (sysdev_store) from [<c025c358>]
+#11 [<c025c358>] (sysfs_write_file) from [<c020e1a8>]
+#12 [<c020e1a8>] (vfs_write) from [<c020e32c>]
+#13 [<c020e32c>] (sys_write) from [<c0105e60>]
 
-cat scaling_driver; cat scaling_governor
-acpi-cpufreq
-ondemand
+cpu_hotplug.lock holds calls to get_online_cpus.
 
-cat time_in_state
-2201000 57624
-2200000 2875
-2 000000 2297
-1900000 631
-1800000 620
-1700000 709
-160 0000 659
-1500000 789
-1400000 793
-1300000 822
-120000 0 801
-1100000 977
-1000000 1142
-900000 705
-800000 84 2189
+#0 [<c0701acc>] (__schedule) from [<c0702a54>]
+#1 [<c0702a54>] (__mutex_lock_slowpath) from [<c0702be4>]
+#2 [<c0702be4>] (mutex_lock) from [<c016eb34>]
+#3 [<c016eb34>] (get_online_cpus) from [<c0166238>]
+#4 [<c0166238>] (sched_setaffinity) from [<c01663c4>]
+#5 [<c01663c4>] (sys_sched_setaffinity) from [<c0105e60>]
 
+The way I see this happens is; __cpufreq_remove_dev() and show() are racing. __cpufreq_remove_dev() already has the semaphore (rw_semaphore) from cpufreq_cpu_callback(), show() gets the policy "cpufreq_cpu_get(policy->cpu)"  (kobject ref count 2) and waits for its turn on semaphore. __cpufreq_remove_dev() ups the semaphore, puts the kobject (kobject ref count 1) and waits for completion from cpufreq_sysfs_release(). show() reads attribute, ups the semaphore and puts kobject (kobject ref count 0). Now kobject needs to be released, ending up as first stack trace I pasted.
 
-WITH STOCK KERNEL:
+Now if my understanding is correct, I am wondering if access to policy object needs to be reference counted in show() (probably store as well)? Can't we access it directly via per_cpu(cpufreq_cpu_data, cpu) inside the semaphore? Afaik policy object isn't released until __cpufreq_remove_dev() passes wait_for_completion and semaphore should provide enough protection? If that's not possible, currently I'm avoiding the situation by keeping a removal flag and instead of waiting for the semaphore, I do a check on both semaphore and flag to see if it safe to continue in show(). It works fine but looks ugly.
 
-With stock kernel, just for comparison, as you can see it's more logica=
-l a nd the readings match, even the one that shows the time_in_state.
-=A0
-
-sudo cat scaling_cur_freq; sudo cat cpuinfo_cur_freq
-800000
-800000
-
-
-cat scaling_driver;=A0 cat scaling_governor
-acpi-cpufreq
-ondemand
-
-
-cat time_in_state
-2201000 22259
-2200000 50
-200000 0 28
-1900000 57
-1800000 42
-1700000 53
-1600000 551500000 112
-1400000 241
-1300000 280
-1200000 355
-=A01100000 296
-1000000 403
-900000 1642
-800000 145615
-=A0
-
-Leandro Scott
-
+Thanks,
+Utku.
