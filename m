@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 43284] CPU stuck at minimum frequency - HP Compaq 6715b
-Date: Fri,  8 Jun 2012 04:49:26 +0000 (UTC)
-Message-ID: <20120608044926.2D8DD11FC41@bugzilla.kernel.org>
+Date: Fri,  8 Jun 2012 04:50:27 +0000 (UTC)
+Message-ID: <20120608045027.2DD1011FC41@bugzilla.kernel.org>
 References: <bug-43284-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,10 +18,10 @@ https://bugzilla.kernel.org/show_bug.cgi?id=43284
 
 
 
---- Comment #3 from Suloev Dmitry <suloevdmitry@gmail.com>  2012-06-08 04:49:25 ---
-Created an attachment (id=73537)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=73537)
-Original linux 3.4.1
+--- Comment #4 from Suloev Dmitry <suloevdmitry@gmail.com>  2012-06-08 04:50:26 ---
+Created an attachment (id=73538)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=73538)
+Linux 3.4.1 with reverting commit 9bcb8118965ab4631a65ee0726e6518f75cda6c5
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
