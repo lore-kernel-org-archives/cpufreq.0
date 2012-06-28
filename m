@@ -1,123 +1,47 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: [PATCH] [CPUFREQ] EXYNOS5250: Add support max 1.7GHz for EXYNOS5250
-Date: Wed, 20 Jun 2012 17:29:47 +0900
-Message-ID: <02d501cd4ebe$d9fbc100$8df34300$%kim@samsung.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: [PATCH] MAINTAINERS: add OMAP CPUfreq driver to OMAP Power Management
+ section
+Date: Thu, 28 Jun 2012 10:20:21 -0700
+Message-ID: <1340904021-25872-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, jc.lee@samsung.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: arm@kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-omap@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-From: Jaecheol Lee <jc.lee@samsung.com>
+Add the OMAP CPUFreq driver to the list of files in the OMAP Power
+Management section.
 
-This patch adds support 1.7GHz max frequency for EXYNOS5250
+I've already been maintaining this driver, this just makes it
+official.
 
-Signed-off-by: Jaecheol Lee <jc.lee@samsung.com>
-Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
 ---
- drivers/cpufreq/exynos5250-cpufreq.c |   55 +++++++++++++++-------------------
- 1 files changed, 24 insertions(+), 31 deletions(-)
+ MAINTAINERS |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/exynos5250-cpufreq.c b/drivers/cpufreq/exynos5250-cpufreq.c
-index a883316..e64c253 100644
---- a/drivers/cpufreq/exynos5250-cpufreq.c
-+++ b/drivers/cpufreq/exynos5250-cpufreq.c
-@@ -65,20 +65,20 @@ static unsigned int clkdiv_cpu0_5250[CPUFREQ_LEVEL_END][8] = {
- 	 * Clock divider value for following
- 	 * { ARM, CPUD, ACP, PERIPH, ATB, PCLK_DBG, APLL, ARM2 }
- 	 */
--	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1700 MHz - N/A */
--	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1600 MHz - N/A */
--	{ 0, 3, 7, 7, 5, 1, 3, 0 },	/* 1500 MHz - N/A */
--	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1400 MHz */
--	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1300 MHz */
--	{ 0, 3, 7, 7, 5, 1, 3, 0 },	/* 1200 MHz */
--	{ 0, 2, 7, 7, 5, 1, 2, 0 },	/* 1100 MHz */
--	{ 0, 2, 7, 7, 4, 1, 2, 0 },	/* 1000 MHz */
--	{ 0, 2, 7, 7, 4, 1, 2, 0 },	/* 900 MHz */
--	{ 0, 2, 7, 7, 3, 1, 1, 0 },	/* 800 MHz */
-+	{ 0, 3, 7, 7, 7, 3, 5, 0 },	/* 1700 MHz */
-+	{ 0, 3, 7, 7, 7, 1, 4, 0 },	/* 1600 MHz */
-+	{ 0, 2, 7, 7, 7, 1, 4, 0 },	/* 1500 MHz */
-+	{ 0, 2, 7, 7, 6, 1, 4, 0 },	/* 1400 MHz */
-+	{ 0, 2, 7, 7, 6, 1, 3, 0 },	/* 1300 MHz */
-+	{ 0, 2, 7, 7, 5, 1, 3, 0 },	/* 1200 MHz */
-+	{ 0, 3, 7, 7, 5, 1, 3, 0 },	/* 1100 MHz */
-+	{ 0, 1, 7, 7, 4, 1, 2, 0 },	/* 1000 MHz */
-+	{ 0, 1, 7, 7, 4, 1, 2, 0 },	/* 900 MHz */
-+	{ 0, 1, 7, 7, 4, 1, 2, 0 },	/* 800 MHz */
- 	{ 0, 1, 7, 7, 3, 1, 1, 0 },	/* 700 MHz */
--	{ 0, 1, 7, 7, 2, 1, 1, 0 },	/* 600 MHz */
-+	{ 0, 1, 7, 7, 3, 1, 1, 0 },	/* 600 MHz */
- 	{ 0, 1, 7, 7, 2, 1, 1, 0 },	/* 500 MHz */
--	{ 0, 1, 7, 7, 1, 1, 1, 0 },	/* 400 MHz */
-+	{ 0, 1, 7, 7, 2, 1, 1, 0 },	/* 400 MHz */
- 	{ 0, 1, 7, 7, 1, 1, 1, 0 },	/* 300 MHz */
- 	{ 0, 1, 7, 7, 1, 1, 1, 0 },	/* 200 MHz */
- };
-@@ -87,9 +87,9 @@ static unsigned int clkdiv_cpu1_5250[CPUFREQ_LEVEL_END][2] = {
- 	/* Clock divider value for following
- 	 * { COPY, HPM }
- 	 */
--	{ 0, 2 },	/* 1700 MHz - N/A */
--	{ 0, 2 },	/* 1600 MHz - N/A */
--	{ 0, 2 },	/* 1500 MHz - N/A */
-+	{ 0, 2 },	/* 1700 MHz */
-+	{ 0, 2 },	/* 1600 MHz */
-+	{ 0, 2 },	/* 1500 MHz */
- 	{ 0, 2 },	/* 1400 MHz */
- 	{ 0, 2 },	/* 1300 MHz */
- 	{ 0, 2 },	/* 1200 MHz */
-@@ -106,10 +106,10 @@ static unsigned int clkdiv_cpu1_5250[CPUFREQ_LEVEL_END][2] = {
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 55f0fda..bee9d2e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4836,6 +4836,7 @@ M:	Kevin Hilman <khilman@ti.com>
+ L:	linux-omap@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/*omap*/*pm*
++F:	drivers/cpufreq/omap-cpufreq.c
  
- static unsigned int exynos5_apll_pms_table[CPUFREQ_LEVEL_END] = {
--	(0),				/* 1700 MHz - N/A */
--	(0),				/* 1600 MHz - N/A */
--	(0),				/* 1500 MHz - N/A */
--	(0),				/* 1400 MHz */
-+	((425 << 16) | (6 << 8) | 0),	/* 1700 MHz */
-+	((200 << 16) | (3 << 8) | 0),	/* 1600 MHz */
-+	((250 << 16) | (4 << 8) | 0),	/* 1500 MHz */
-+	((175 << 16) | (3 << 8) | 0),	/* 1400 MHz */
- 	((325 << 16) | (6 << 8) | 0),	/* 1300 MHz */
- 	((200 << 16) | (4 << 8) | 0),	/* 1200 MHz */
- 	((275 << 16) | (6 << 8) | 0),	/* 1100 MHz */
-@@ -126,9 +126,10 @@ static unsigned int exynos5_apll_pms_table[CPUFREQ_LEVEL_END] = {
- 
- /* ASV group voltage table */
- static const unsigned int asv_voltage_5250[CPUFREQ_LEVEL_END] = {
--	0, 0, 0, 0, 0, 0, 0,	/* 1700 MHz ~ 1100 MHz Not supported */
--	1175000, 1125000, 1075000, 1050000, 1000000,
--	950000, 925000, 925000, 900000
-+	1300000, 1250000, 1225000, 1200000, 1150000,
-+	1125000, 1100000, 1075000, 1050000, 1025000,
-+	1012500, 1000000,  975000,  950000,  937500,
-+	925000
- };
- 
- static void set_clkdiv(unsigned int div_index)
-@@ -248,15 +249,7 @@ static void __init set_volt_table(void)
- {
- 	unsigned int i;
- 
--	exynos5250_freq_table[L0].frequency = CPUFREQ_ENTRY_INVALID;
--	exynos5250_freq_table[L1].frequency = CPUFREQ_ENTRY_INVALID;
--	exynos5250_freq_table[L2].frequency = CPUFREQ_ENTRY_INVALID;
--	exynos5250_freq_table[L3].frequency = CPUFREQ_ENTRY_INVALID;
--	exynos5250_freq_table[L4].frequency = CPUFREQ_ENTRY_INVALID;
--	exynos5250_freq_table[L5].frequency = CPUFREQ_ENTRY_INVALID;
--	exynos5250_freq_table[L6].frequency = CPUFREQ_ENTRY_INVALID;
--
--	max_support_idx = L7;
-+	max_support_idx = L0;
- 
- 	for (i = 0 ; i < CPUFREQ_LEVEL_END ; i++)
- 		exynos5250_volt_table[i] = asv_voltage_5250[i];
+ OMAP POWERDOMAIN/CLOCKDOMAIN SOC ADAPTATION LAYER SUPPORT
+ M:	Rajendra Nayak <rnayak@ti.com>
 -- 
-1.7.1
-
+1.7.9.2
