@@ -1,142 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] [CPUFREQ] EXYNOS5250: Add support max 1.7GHz for EXYNOS5250
-Date: Tue, 17 Jul 2012 20:33:38 +0200
-Message-ID: <201207172033.38308.rjw@sisk.pl>
-References: <02d501cd4ebe$d9fbc100$8df34300$%kim@samsung.com> <144501cd63b0$a91e94c0$fb5bbe40$%kim@samsung.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <144501cd63b0$a91e94c0$fb5bbe40$%kim@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+From: Borislav Petkov <bp@amd64.org>
+Subject: [PATCH] powernow-k8: Fixup missing _PSS objects message
+Date: Wed, 18 Jul 2012 17:07:23 +0200
+Message-ID: <1342624043-29763-1-git-send-email-bp@amd64.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, cpufreq@vger.kernel.org, jc.lee@samsung.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <borislav.petkov@amd.com>
 
-On Tuesday, July 17, 2012, Kukjin Kim wrote:
-> Kukjin Kim wrote:
-> > 
-> > From: Jaecheol Lee <jc.lee@samsung.com>
-> > 
-> > This patch adds support 1.7GHz max frequency for EXYNOS5250
-> > 
-> > Signed-off-by: Jaecheol Lee <jc.lee@samsung.com>
-> > Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
-> > ---
-> >  drivers/cpufreq/exynos5250-cpufreq.c |   55
-> +++++++++++++++---------------
-> > ----
-> >  1 files changed, 24 insertions(+), 31 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/exynos5250-cpufreq.c
-> > b/drivers/cpufreq/exynos5250-cpufreq.c
-> > index a883316..e64c253 100644
-> > --- a/drivers/cpufreq/exynos5250-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos5250-cpufreq.c
-> > @@ -65,20 +65,20 @@ static unsigned int
-> > clkdiv_cpu0_5250[CPUFREQ_LEVEL_END][8] = {
-> >  	 * Clock divider value for following
-> >  	 * { ARM, CPUD, ACP, PERIPH, ATB, PCLK_DBG, APLL, ARM2 }
-> >  	 */
-> > -	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1700 MHz - N/A */
-> > -	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1600 MHz - N/A */
-> > -	{ 0, 3, 7, 7, 5, 1, 3, 0 },	/* 1500 MHz - N/A */
-> > -	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1400 MHz */
-> > -	{ 0, 3, 7, 7, 6, 1, 3, 0 },	/* 1300 MHz */
-> > -	{ 0, 3, 7, 7, 5, 1, 3, 0 },	/* 1200 MHz */
-> > -	{ 0, 2, 7, 7, 5, 1, 2, 0 },	/* 1100 MHz */
-> > -	{ 0, 2, 7, 7, 4, 1, 2, 0 },	/* 1000 MHz */
-> > -	{ 0, 2, 7, 7, 4, 1, 2, 0 },	/* 900 MHz */
-> > -	{ 0, 2, 7, 7, 3, 1, 1, 0 },	/* 800 MHz */
-> > +	{ 0, 3, 7, 7, 7, 3, 5, 0 },	/* 1700 MHz */
-> > +	{ 0, 3, 7, 7, 7, 1, 4, 0 },	/* 1600 MHz */
-> > +	{ 0, 2, 7, 7, 7, 1, 4, 0 },	/* 1500 MHz */
-> > +	{ 0, 2, 7, 7, 6, 1, 4, 0 },	/* 1400 MHz */
-> > +	{ 0, 2, 7, 7, 6, 1, 3, 0 },	/* 1300 MHz */
-> > +	{ 0, 2, 7, 7, 5, 1, 3, 0 },	/* 1200 MHz */
-> > +	{ 0, 3, 7, 7, 5, 1, 3, 0 },	/* 1100 MHz */
-> > +	{ 0, 1, 7, 7, 4, 1, 2, 0 },	/* 1000 MHz */
-> > +	{ 0, 1, 7, 7, 4, 1, 2, 0 },	/* 900 MHz */
-> > +	{ 0, 1, 7, 7, 4, 1, 2, 0 },	/* 800 MHz */
-> >  	{ 0, 1, 7, 7, 3, 1, 1, 0 },	/* 700 MHz */
-> > -	{ 0, 1, 7, 7, 2, 1, 1, 0 },	/* 600 MHz */
-> > +	{ 0, 1, 7, 7, 3, 1, 1, 0 },	/* 600 MHz */
-> >  	{ 0, 1, 7, 7, 2, 1, 1, 0 },	/* 500 MHz */
-> > -	{ 0, 1, 7, 7, 1, 1, 1, 0 },	/* 400 MHz */
-> > +	{ 0, 1, 7, 7, 2, 1, 1, 0 },	/* 400 MHz */
-> >  	{ 0, 1, 7, 7, 1, 1, 1, 0 },	/* 300 MHz */
-> >  	{ 0, 1, 7, 7, 1, 1, 1, 0 },	/* 200 MHz */
-> >  };
-> > @@ -87,9 +87,9 @@ static unsigned int
-> > clkdiv_cpu1_5250[CPUFREQ_LEVEL_END][2] = {
-> >  	/* Clock divider value for following
-> >  	 * { COPY, HPM }
-> >  	 */
-> > -	{ 0, 2 },	/* 1700 MHz - N/A */
-> > -	{ 0, 2 },	/* 1600 MHz - N/A */
-> > -	{ 0, 2 },	/* 1500 MHz - N/A */
-> > +	{ 0, 2 },	/* 1700 MHz */
-> > +	{ 0, 2 },	/* 1600 MHz */
-> > +	{ 0, 2 },	/* 1500 MHz */
-> >  	{ 0, 2 },	/* 1400 MHz */
-> >  	{ 0, 2 },	/* 1300 MHz */
-> >  	{ 0, 2 },	/* 1200 MHz */
-> > @@ -106,10 +106,10 @@ static unsigned int
-> > clkdiv_cpu1_5250[CPUFREQ_LEVEL_END][2] = {
-> >  };
-> > 
-> >  static unsigned int exynos5_apll_pms_table[CPUFREQ_LEVEL_END] = {
-> > -	(0),				/* 1700 MHz - N/A */
-> > -	(0),				/* 1600 MHz - N/A */
-> > -	(0),				/* 1500 MHz - N/A */
-> > -	(0),				/* 1400 MHz */
-> > +	((425 << 16) | (6 << 8) | 0),	/* 1700 MHz */
-> > +	((200 << 16) | (3 << 8) | 0),	/* 1600 MHz */
-> > +	((250 << 16) | (4 << 8) | 0),	/* 1500 MHz */
-> > +	((175 << 16) | (3 << 8) | 0),	/* 1400 MHz */
-> >  	((325 << 16) | (6 << 8) | 0),	/* 1300 MHz */
-> >  	((200 << 16) | (4 << 8) | 0),	/* 1200 MHz */
-> >  	((275 << 16) | (6 << 8) | 0),	/* 1100 MHz */
-> > @@ -126,9 +126,10 @@ static unsigned int
-> > exynos5_apll_pms_table[CPUFREQ_LEVEL_END] = {
-> > 
-> >  /* ASV group voltage table */
-> >  static const unsigned int asv_voltage_5250[CPUFREQ_LEVEL_END] = {
-> > -	0, 0, 0, 0, 0, 0, 0,	/* 1700 MHz ~ 1100 MHz Not supported */
-> > -	1175000, 1125000, 1075000, 1050000, 1000000,
-> > -	950000, 925000, 925000, 900000
-> > +	1300000, 1250000, 1225000, 1200000, 1150000,
-> > +	1125000, 1100000, 1075000, 1050000, 1025000,
-> > +	1012500, 1000000,  975000,  950000,  937500,
-> > +	925000
-> >  };
-> > 
-> >  static void set_clkdiv(unsigned int div_index)
-> > @@ -248,15 +249,7 @@ static void __init set_volt_table(void)
-> >  {
-> >  	unsigned int i;
-> > 
-> > -	exynos5250_freq_table[L0].frequency = CPUFREQ_ENTRY_INVALID;
-> > -	exynos5250_freq_table[L1].frequency = CPUFREQ_ENTRY_INVALID;
-> > -	exynos5250_freq_table[L2].frequency = CPUFREQ_ENTRY_INVALID;
-> > -	exynos5250_freq_table[L3].frequency = CPUFREQ_ENTRY_INVALID;
-> > -	exynos5250_freq_table[L4].frequency = CPUFREQ_ENTRY_INVALID;
-> > -	exynos5250_freq_table[L5].frequency = CPUFREQ_ENTRY_INVALID;
-> > -	exynos5250_freq_table[L6].frequency = CPUFREQ_ENTRY_INVALID;
-> > -
-> > -	max_support_idx = L7;
-> > +	max_support_idx = L0;
-> > 
-> >  	for (i = 0 ; i < CPUFREQ_LEVEL_END ; i++)
-> >  		exynos5250_volt_table[i] = asv_voltage_5250[i];
-> > --
-> > 1.7.1
-> 
-> Hi Rafael,
-> 
-> Any problems or comments on this? I couldn't find this in your tree...
+From: Borislav Petkov <borislav.petkov@amd.com>
 
-No problems and I thought it would be merged through your platform tree.
+_PSS objects can also be missing if Cool'N'Quiet is disabled in the
+BIOS. Add that to the FW_BUG message for the user to try before updating
+her BIOS. Fix formatting while at it.
 
-Thanks,
-Rafael
+Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ drivers/cpufreq/powernow-k8.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index c0e816468e30..33f17c4a1342 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -1265,12 +1265,15 @@ static void __cpuinit powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
+ 	init_on_cpu->rc = 0;
+ }
+ 
++static const char missing_pss_msg[] =
++	KERN_ERR
++	FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
++	FW_BUG PFX "First, make sure Cool'N'Quiet is enabled in the BIOS.\n"
++	FW_BUG PFX "If that doesn't help, try upgrading your BIOS.\n";
++
+ /* per CPU init entry point to the driver */
+ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ {
+-	static const char ACPI_PSS_BIOS_BUG_MSG[] =
+-		KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
+-		FW_BUG PFX "Try again with latest BIOS.\n";
+ 	struct powernow_k8_data *data;
+ 	struct init_on_cpu init_on_cpu;
+ 	int rc;
+@@ -1298,7 +1301,7 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 		 * an UP version, and is deprecated by AMD.
+ 		 */
+ 		if (num_online_cpus() != 1) {
+-			printk_once(ACPI_PSS_BIOS_BUG_MSG);
++			printk_once(missing_pss_msg);
+ 			goto err_out;
+ 		}
+ 		if (pol->cpu != 0) {
+-- 
+1.7.11.rc1
+
