@@ -1,68 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Borislav Petkov <bp@amd64.org>
 Subject: Re: [PATCH] powernow-k8: Fixup missing _PSS objects message
-Date: Wed, 18 Jul 2012 21:50:51 +0200
-Message-ID: <201207182150.51441.rjw@sisk.pl>
+Date: Wed, 18 Jul 2012 23:05:49 +0200
+Message-ID: <20120718210549.GA17504@aftab.osrc.amd.com>
 References: <1342624043-29763-1-git-send-email-bp@amd64.org>
+ <201207182150.51441.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1342624043-29763-1-git-send-email-bp@amd64.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <201207182150.51441.rjw@sisk.pl>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Borislav Petkov <bp@amd64.org>
-Cc: cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <borislav.petkov@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-On Wednesday, July 18, 2012, Borislav Petkov wrote:
-> From: Borislav Petkov <borislav.petkov@amd.com>
+On Wed, Jul 18, 2012 at 09:50:51PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, July 18, 2012, Borislav Petkov wrote:
+> > From: Borislav Petkov <borislav.petkov@amd.com>
+> > 
+> > _PSS objects can also be missing if Cool'N'Quiet is disabled in the
+> > BIOS. Add that to the FW_BUG message for the user to try before updating
+> > her BIOS. Fix formatting while at it.
+> > 
+> > Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 > 
-> _PSS objects can also be missing if Cool'N'Quiet is disabled in the
-> BIOS. Add that to the FW_BUG message for the user to try before updating
-> her BIOS. Fix formatting while at it.
-> 
-> Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> I will take this, but it's kind of too late for v3.6.
 
-I will take this, but it's kind of too late for v3.6.
+Yeah, sure, whenever. I found it buried in my mbox since 3.2ish. And
+since it is not urgent, you don't have to rush it for 3.6 but send it
+upstream whenever you like.
 
-Thanks,
-Rafael
+Thanks.
 
+-- 
+Regards/Gruss,
+Boris.
 
-> ---
->  drivers/cpufreq/powernow-k8.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index c0e816468e30..33f17c4a1342 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -1265,12 +1265,15 @@ static void __cpuinit powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
->  	init_on_cpu->rc = 0;
->  }
->  
-> +static const char missing_pss_msg[] =
-> +	KERN_ERR
-> +	FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
-> +	FW_BUG PFX "First, make sure Cool'N'Quiet is enabled in the BIOS.\n"
-> +	FW_BUG PFX "If that doesn't help, try upgrading your BIOS.\n";
-> +
->  /* per CPU init entry point to the driver */
->  static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
->  {
-> -	static const char ACPI_PSS_BIOS_BUG_MSG[] =
-> -		KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
-> -		FW_BUG PFX "Try again with latest BIOS.\n";
->  	struct powernow_k8_data *data;
->  	struct init_on_cpu init_on_cpu;
->  	int rc;
-> @@ -1298,7 +1301,7 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
->  		 * an UP version, and is deprecated by AMD.
->  		 */
->  		if (num_online_cpus() != 1) {
-> -			printk_once(ACPI_PSS_BIOS_BUG_MSG);
-> +			printk_once(missing_pss_msg);
->  			goto err_out;
->  		}
->  		if (pol->cpu != 0) {
-> 
+Advanced Micro Devices GmbH
+Einsteinring 24, 85609 Dornach
+GM: Alberto Bozzo
+Reg: Dornach, Landkreis Muenchen
+HRB Nr. 43632 WEEE Registernr: 129 19551
