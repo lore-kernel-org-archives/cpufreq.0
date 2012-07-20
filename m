@@ -1,44 +1,31 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Shawn Guo <shawn.guo@linaro.org>
 Subject: Re: [PATCH 0/3] Add a generic cpufreq-cpu0 driver
-Date: Thu, 19 Jul 2012 20:39:39 +0200
-Message-ID: <201207192039.40213.rjw@sisk.pl>
+Date: Fri, 20 Jul 2012 08:29:51 +0800
+Message-ID: <20120720002949.GA31620@S2101-09.ap.freescale.net>
 References: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
+ <201207192039.40213.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <201207192039.40213.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-Hi,
-
-On Thursday, July 19, 2012, Shawn Guo wrote:
-> This is a continuous effort of Richard's work [1].  But that generic
-> cpufreq driver has been rewritten with taking omap-cpufreq.c as the
-> reference to adopt OPP library.
+On Thu, Jul 19, 2012 at 08:39:39PM +0200, Rafael J. Wysocki wrote:
+> It is too late to consider your patches for inclusion into v3.6, so I'm
+> regarding them as RFC at this point.
 > 
-> Same as Richard's patch, the driver has no intention to support the
-> multi-core systems that frequency and voltage can be scaled
-> independently on different CPUs.  Instead, it aims at uniprocessor (UP)
-> and those symmetric multiprocessor (SMP) systems which share clock and
-> voltage across all CPUs.
-> 
-> I have seen patch from Mike changing omap-cpufreq driver to scale
-> regulator from clk notifier.  We can definitely make the same move
-> for cpufreq-cpu0 later when the patch gets accepted.
-> 
-> Regards,
-> Shawn
-> 
-> [1] http://thread.gmane.org/gmane.linux.kernel.cpufreq/7688/focus=7688
+Yes, it's on the review stage, and 3.7 is the target.
 
-It is too late to consider your patches for inclusion into v3.6, so I'm
-regarding them as RFC at this point.
+> Please resubmit after v3.6-rc1 has been released.
+> 
+Will do.
 
-Please resubmit after v3.6-rc1 has been released.
+-- 
+Regards,
+Shawn
 
-Thanks,
-Rafael
