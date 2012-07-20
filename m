@@ -1,68 +1,189 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] cpufreq: Fix sysfs deadlock with concurrent hotplug/frequency
- switch
-Date: Fri, 20 Jul 2012 10:34:04 -0700
-Message-ID: <5009968C.8030303@codeaurora.org>
-References: <1342749433-17676-1-git-send-email-sboyd@codeaurora.org> <201207201205.36635.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Subject: [PATCHv2] cpufreq: Fix sysfs deadlock with concurrent hotplug/frequency switch
+Date: Fri, 20 Jul 2012 11:14:38 -0700
+Message-ID: <1342808078-5317-1-git-send-email-sboyd@codeaurora.org>
+References: <201207201205.36635.rjw@sisk.pl>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <201207201205.36635.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J . Wysocki" <rjw@sisk.pl>
 Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 07/20/12 03:05, Rafael J. Wysocki wrote:
->
-> The following part of your changelog has confused Patchwork.  I guess it
-> will also confuse other tools, so care to describe what to do instead?
+Running one program that continuously hotplugs and replugs a cpu
+concurrently with another program that continuously writes to the
+scaling_setspeed node eventually deadlocks with:
 
-Sure. I thought that might happen but I put a space in front in hopes it
-wouldn't cause troubles.
+=============================================
+[ INFO: possible recursive locking detected ]
+3.4.0 #37 Tainted: G        W
+---------------------------------------------
+filemonkey/122 is trying to acquire lock:
+ (s_active#13){++++.+}, at: [<c01a3d28>] sysfs_remove_dir+0x9c/0xb4
 
->
->>  diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>  index a290771..62af12d 100644
->>  --- a/drivers/cpufreq/cpufreq.c
->>  +++ b/drivers/cpufreq/cpufreq.c
->>  @@ -675,6 +675,7 @@ static ssize_t store(struct kobject *kobj
->>
->>          unlock_policy_rwsem_write(policy->cpu);
->>   fail:
->>  +       msleep(10000);
->>          cpufreq_cpu_put_sysfs(policy);
->>   no_policy:
->>          return ret;
->>
->> and then write scaling_setspeed in one task and offline the cpu
->> in another. The first task will hang and be detected by the hung
->> task detector.
->>
->> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->> ---
->>
->> Before you ask, I've seen the comment above cpufreq_add_dev() about
->> concurrent hotplug/cpufreq.
->>
->>  drivers/cpufreq/cpufreq.c | 35 +++++++++++++++++++++++++++--------
->>  1 file changed, 27 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 7f2f149..a290771 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -138,7 +138,7 @@ void disable_cpufreq(void)
->>  static LIST_HEAD(cpufreq_governor_list);
->>  static DEFINE_MUTEX(cpufreq_governor_mutex);
->>  
->> -struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
->> +static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, int sysfs)
-> I'd prefer the sysfs arg to be a bool.
+but task is already holding lock:
+ (s_active#13){++++.+}, at: [<c01a22f0>] sysfs_write_file+0xe8/0x140
 
-Sure. V2 coming right up.
+other info that might help us debug this:
+ Possible unsafe locking scenario:
 
+       CPU0
+       ----
+  lock(s_active#13);
+  lock(s_active#13);
+
+ *** DEADLOCK ***
+
+ May be due to missing lock nesting notation
+
+2 locks held by filemonkey/122:
+ #0:  (&buffer->mutex){+.+.+.}, at: [<c01a2230>] sysfs_write_file+0x28/0x140
+ #1:  (s_active#13){++++.+}, at: [<c01a22f0>] sysfs_write_file+0xe8/0x140
+
+stack backtrace:
+[<c0014fcc>] (unwind_backtrace+0x0/0x120) from [<c00ca600>] (validate_chain+0x6f8/0x1054)
+[<c00ca600>] (validate_chain+0x6f8/0x1054) from [<c00cb778>] (__lock_acquire+0x81c/0x8d8)
+[<c00cb778>] (__lock_acquire+0x81c/0x8d8) from [<c00cb9c0>] (lock_acquire+0x18c/0x1e8)
+[<c00cb9c0>] (lock_acquire+0x18c/0x1e8) from [<c01a3ba8>] (sysfs_addrm_finish+0xd0/0x180)
+[<c01a3ba8>] (sysfs_addrm_finish+0xd0/0x180) from [<c01a3d28>] (sysfs_remove_dir+0x9c/0xb4)
+[<c01a3d28>] (sysfs_remove_dir+0x9c/0xb4) from [<c02d0e5c>] (kobject_del+0x10/0x38)
+[<c02d0e5c>] (kobject_del+0x10/0x38) from [<c02d0f74>] (kobject_release+0xf0/0x194)
+[<c02d0f74>] (kobject_release+0xf0/0x194) from [<c0565a98>] (cpufreq_cpu_put+0xc/0x24)
+[<c0565a98>] (cpufreq_cpu_put+0xc/0x24) from [<c05683f0>] (store+0x6c/0x74)
+[<c05683f0>] (store+0x6c/0x74) from [<c01a2314>] (sysfs_write_file+0x10c/0x140)
+[<c01a2314>] (sysfs_write_file+0x10c/0x140) from [<c014af44>] (vfs_write+0xb0/0x128)
+[<c014af44>] (vfs_write+0xb0/0x128) from [<c014b06c>] (sys_write+0x3c/0x68)
+[<c014b06c>] (sys_write+0x3c/0x68) from [<c000e0e0>] (ret_fast_syscall+0x0/0x3c)
+
+This is because store() in cpufreq.c indirectly calls
+kobject_get() via cpufreq_cpu_get() and is the last one to call
+kobject_put() via cpufreq_cpu_put(). Sysfs code should not call
+kobject_get() or kobject_put() directly (see the comment around
+sysfs_schedule_callback() for more information).
+
+Fix this deadlock by introducing two new functions:
+
+	struct cpufreq_policy *cpufreq_cpu_get_sysfs(unsigned int cpu)
+	void cpufreq_cpu_put_sysfs(struct cpufreq_policy *data)
+
+which do the same thing as cpufreq_cpu_{get,put}() but don't call
+kobject functions.
+
+To easily trigger this deadlock you can insert an msleep() with a
+reasonably large value right after the fail label at the bottom
+of the store() function in cpufreq.c and then write
+scaling_setspeed in one task and offline the cpu in another. The
+first task will hang and be detected by the hung task detector.
+
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+
+Changes from v1:
+ - switch sysfs arg to bool
+ - remove patch from commit text
+
+ drivers/cpufreq/cpufreq.c | 35 +++++++++++++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 7f2f149..fb8a527 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -138,7 +138,7 @@ void disable_cpufreq(void)
+ static LIST_HEAD(cpufreq_governor_list);
+ static DEFINE_MUTEX(cpufreq_governor_mutex);
+ 
+-struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
++static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+ {
+ 	struct cpufreq_policy *data;
+ 	unsigned long flags;
+@@ -162,7 +162,7 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ 	if (!data)
+ 		goto err_out_put_module;
+ 
+-	if (!kobject_get(&data->kobj))
++	if (!sysfs && !kobject_get(&data->kobj))
+ 		goto err_out_put_module;
+ 
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+@@ -175,16 +175,35 @@ err_out_unlock:
+ err_out:
+ 	return NULL;
+ }
++
++struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
++{
++	return __cpufreq_cpu_get(cpu, false);
++}
+ EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
+ 
++static struct cpufreq_policy *cpufreq_cpu_get_sysfs(unsigned int cpu)
++{
++	return __cpufreq_cpu_get(cpu, true);
++}
+ 
+-void cpufreq_cpu_put(struct cpufreq_policy *data)
++static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+ {
+-	kobject_put(&data->kobj);
++	if (!sysfs)
++		kobject_put(&data->kobj);
+ 	module_put(cpufreq_driver->owner);
+ }
++
++void cpufreq_cpu_put(struct cpufreq_policy *data)
++{
++	__cpufreq_cpu_put(data, false);
++}
+ EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
+ 
++static void cpufreq_cpu_put_sysfs(struct cpufreq_policy *data)
++{
++	__cpufreq_cpu_put(data, true);
++}
+ 
+ /*********************************************************************
+  *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
+@@ -617,7 +636,7 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
+ 	struct cpufreq_policy *policy = to_policy(kobj);
+ 	struct freq_attr *fattr = to_attr(attr);
+ 	ssize_t ret = -EINVAL;
+-	policy = cpufreq_cpu_get(policy->cpu);
++	policy = cpufreq_cpu_get_sysfs(policy->cpu);
+ 	if (!policy)
+ 		goto no_policy;
+ 
+@@ -631,7 +650,7 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
+ 
+ 	unlock_policy_rwsem_read(policy->cpu);
+ fail:
+-	cpufreq_cpu_put(policy);
++	cpufreq_cpu_put_sysfs(policy);
+ no_policy:
+ 	return ret;
+ }
+@@ -642,7 +661,7 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+ 	struct cpufreq_policy *policy = to_policy(kobj);
+ 	struct freq_attr *fattr = to_attr(attr);
+ 	ssize_t ret = -EINVAL;
+-	policy = cpufreq_cpu_get(policy->cpu);
++	policy = cpufreq_cpu_get_sysfs(policy->cpu);
+ 	if (!policy)
+ 		goto no_policy;
+ 
+@@ -656,7 +675,7 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+ 
+ 	unlock_policy_rwsem_write(policy->cpu);
+ fail:
+-	cpufreq_cpu_put(policy);
++	cpufreq_cpu_put_sysfs(policy);
+ no_policy:
+ 	return ret;
+ }
 -- 
 Sent by an employee of the Qualcomm Innovation Center, Inc.
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
