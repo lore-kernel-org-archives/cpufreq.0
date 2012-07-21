@@ -1,46 +1,153 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
-Date: Sat, 21 Jul 2012 14:38:13 +0800
-Message-ID: <20120721063811.GA619@S2101-09.ap.freescale.net>
-References: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
- <1342713281-31114-4-git-send-email-shawn.guo@linaro.org>
- <CAMQu2gw32LogXJJa+K5ZjmCZzBNK3FY2wYwZXU8fsftsVzEO2Q@mail.gmail.com>
- <20120720123317.GA32263@S2101-09.ap.freescale.net>
- <CAJOA=zMQKLTumW7Nx68+yxHC5Yk4QyiL2mf1+TSZfVOAtnXDWA@mail.gmail.com>
- <CAMQu2gy4p+rL-sDAsGCnqSn_2eXwSqf---OS0BSXuDoacjd6_g@mail.gmail.com>
+From: "Ariel Norberto Bellino" <Ariel@bellino.com.ar>
+Subject: Possible bug
+Date: Sat, 21 Jul 2012 04:09:08 -0300
+Message-ID: <WC20120721070908.150028@bellino.com.ar>
+Reply-To: Ariel@bellino.com.ar
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/mixed; boundary="0721-0709-08-PART_BREAK"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMQu2gy4p+rL-sDAsGCnqSn_2eXwSqf---OS0BSXuDoacjd6_g@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Cc: "Turquette, Mike" <mturquette@ti.com>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+To: cpufreq@vger.kernel.org
 
-On Sat, Jul 21, 2012 at 10:34:29AM +0530, Shilimkar, Santosh wrote:
-> On Fri, Jul 20, 2012 at 9:20 PM, Turquette, Mike <mturquette@ti.com> wrote:
-> > How about cpufreq-single-thread.c and CONFIG_CPUFREQ_SINGLE_THREAD?
-> > That makes sense for both UP and SMP.
-> >
-> Indeed. This sounds more appropriate and also reflects what actually happens
-> with a UP or shared clock SMP case.
-> 
-While I agree with this observation, the suggested naming does not
-reflect the rationale of CPU0 though, which is really important for
-driver to work, and is exactly the thing I like about *_CPU0 naming.
+--0721-0709-08-PART_BREAK
+Content-Type: text/plain; charset="us-ascii"
 
-The driver needs the following stuff around CPU0 to be functional.
+Hi.
 
-- Device tree node /cpus/cpu@0
-- clk lookup with dev_id being "cpu0"
-- regulator with id being "cpu0"
+I'm not sure if this is a bug, but I couldn't find any useful information,
+so here I write. Hope it's not a problem.
 
-I think the *_CPU0 naming does a better job on emphasising those in the
-first place.
+cpufreq-info shows this in my laptop:
+hardware limits: 800 MHz - 2.53 GHz
+available frequency steps: *2.53 GHz, 2.53 GHz*, 1.60 GHz, 800 MHz
 
--- 
+As you can see, the maximum frequency is shown twice. I searched for that,
+but only found non-related bug reports in which people notice the
+duplicated frequency. So it is a relatively common issue. But I couldn't
+find a bug report for this, specifically.
+
+I also have a KDE widget that shows the processor frequency. It shows it
+in green when at the lowest possible, in red when at the max frequency,
+and in yellow when at an intermediate state. If I switch to conservative
+governor and put the processor under load, I see the frequency raising
+from 800 MHz (green) to 1.60 GHz (yellow), then 2.53 GHz (yellow again)
+then 2.53 HGz (now red) so it seems to be effectively switching between
+two different 
+states with the same frequency. Although not serious, I think frequent
+switching between the same frequencies may degrade performance.
+
+I recently upgraded my processor from a T5800 to a T9400, and made no
+software change. cpufreq-info didn't show twice the greatest frequency
+with the former processor, this issue started as soon as I replaced it.
+
+Attached: complete output of cpufreq-info, complete hardware info.
+I'm running kubuntu 12.04, kernel 3.2.0-26-generic-pae
+
+
+Thanks for your time (reading, and coding things like cpufreq). I really
+appretiate your work.
+And forgive my english, it's not my native language.
+
 Regards,
-Shawn
+Ariel
+
+--0721-0709-08-PART_BREAK
+Content-Type: application/gzip
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="info.tar.gz"
+
+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
+Z7+z7ef2c/u5/dz2sf0/B5MCNgBqAAA=
+
+--0721-0709-08-PART_BREAK--
+
 
