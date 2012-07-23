@@ -1,92 +1,46 @@
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Subject: Re: [PATCHv2] cpufreq: Fix sysfs deadlock with concurrent
- hotplug/frequency switch
-Date: Sat, 21 Jul 2012 22:27:44 +0530
-Message-ID: <CAMQu2gw33jMMW-U6KmkU4xhjBErEjBEDrMaP1t0kkm8aEgRyrQ@mail.gmail.com>
-References: <1342808078-5317-1-git-send-email-sboyd@codeaurora.org> <201207202151.49537.rjw@sisk.pl>
-Mime-Version: 1.0
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH] conservative: Initialise the cpu field of the this_dbs_info
+Date: Mon, 23 Jul 2012 13:05:20 +0530
+Message-ID: <1343028920-4712-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201207202151.49537.rjw@sisk.pl>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        bh=tbwQBcrnXOl0mRr+SmfOswz4GT5q1PD67ROG/TfbQss=;
+        b=R/3deUceY3IMDHI6lSSkhtlCfh3lweQFHL4z9vMbcxtjLh0LYo96eyGkjyBxxSEYKz
+         ioWJgbG8hWomho+UTTSshcPCIliRoEmwGjjJVYACKd3UxcDNHDw/gyBxLeL2kadLvJJU
+         ro/eptBMEIrq0SJ8dEobEHrncdbBiFJaF/qcSdamUkqZjv7lgAiZ7OcygAgATElD3kEK
+         Kk7FD7tYSfPolSTtvi/4bx9+CyrZH4PC4Nnj9HURv8TMDktnrbw14tuMnQ2nh6vW49WI
+         wphoHqh99rFM92FifVyrP0CAjSrWsP8O1KpWuoCeFdtLdiinJ2RGm6ga7qj/kWeOW3Tq
+         WysA==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, amit.kachhap@linaro.org, linux-kernel@vger.kernel.org
 
-On Sat, Jul 21, 2012 at 1:21 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, July 20, 2012, Stephen Boyd wrote:
->> Running one program that continuously hotplugs and replugs a cpu
->> concurrently with another program that continuously writes to the
->> scaling_setspeed node eventually deadlocks with:
->>
->> =============================================
->> [ INFO: possible recursive locking detected ]
->> 3.4.0 #37 Tainted: G        W
->> ---------------------------------------------
->> filemonkey/122 is trying to acquire lock:
->>  (s_active#13){++++.+}, at: [<c01a3d28>] sysfs_remove_dir+0x9c/0xb4
->>
->> but task is already holding lock:
->>  (s_active#13){++++.+}, at: [<c01a22f0>] sysfs_write_file+0xe8/0x140
->>
->> other info that might help us debug this:
->>  Possible unsafe locking scenario:
->>
->>        CPU0
->>        ----
->>   lock(s_active#13);
->>   lock(s_active#13);
->>
->>  *** DEADLOCK ***
->>
->>  May be due to missing lock nesting notation
->>
->> 2 locks held by filemonkey/122:
->>  #0:  (&buffer->mutex){+.+.+.}, at: [<c01a2230>] sysfs_write_file+0x28/0x140
->>  #1:  (s_active#13){++++.+}, at: [<c01a22f0>] sysfs_write_file+0xe8/0x140
->>
->> stack backtrace:
->> [<c0014fcc>] (unwind_backtrace+0x0/0x120) from [<c00ca600>] (validate_chain+0x6f8/0x1054)
->> [<c00ca600>] (validate_chain+0x6f8/0x1054) from [<c00cb778>] (__lock_acquire+0x81c/0x8d8)
->> [<c00cb778>] (__lock_acquire+0x81c/0x8d8) from [<c00cb9c0>] (lock_acquire+0x18c/0x1e8)
->> [<c00cb9c0>] (lock_acquire+0x18c/0x1e8) from [<c01a3ba8>] (sysfs_addrm_finish+0xd0/0x180)
->> [<c01a3ba8>] (sysfs_addrm_finish+0xd0/0x180) from [<c01a3d28>] (sysfs_remove_dir+0x9c/0xb4)
->> [<c01a3d28>] (sysfs_remove_dir+0x9c/0xb4) from [<c02d0e5c>] (kobject_del+0x10/0x38)
->> [<c02d0e5c>] (kobject_del+0x10/0x38) from [<c02d0f74>] (kobject_release+0xf0/0x194)
->> [<c02d0f74>] (kobject_release+0xf0/0x194) from [<c0565a98>] (cpufreq_cpu_put+0xc/0x24)
->> [<c0565a98>] (cpufreq_cpu_put+0xc/0x24) from [<c05683f0>] (store+0x6c/0x74)
->> [<c05683f0>] (store+0x6c/0x74) from [<c01a2314>] (sysfs_write_file+0x10c/0x140)
->> [<c01a2314>] (sysfs_write_file+0x10c/0x140) from [<c014af44>] (vfs_write+0xb0/0x128)
->> [<c014af44>] (vfs_write+0xb0/0x128) from [<c014b06c>] (sys_write+0x3c/0x68)
->> [<c014b06c>] (sys_write+0x3c/0x68) from [<c000e0e0>] (ret_fast_syscall+0x0/0x3c)
->>
->> This is because store() in cpufreq.c indirectly calls
->> kobject_get() via cpufreq_cpu_get() and is the last one to call
->> kobject_put() via cpufreq_cpu_put(). Sysfs code should not call
->> kobject_get() or kobject_put() directly (see the comment around
->> sysfs_schedule_callback() for more information).
->>
->> Fix this deadlock by introducing two new functions:
->>
->>       struct cpufreq_policy *cpufreq_cpu_get_sysfs(unsigned int cpu)
->>       void cpufreq_cpu_put_sysfs(struct cpufreq_policy *data)
->>
->> which do the same thing as cpufreq_cpu_{get,put}() but don't call
->> kobject functions.
->>
->> To easily trigger this deadlock you can insert an msleep() with a
->> reasonably large value right after the fail label at the bottom
->> of the store() function in cpufreq.c and then write
->> scaling_setspeed in one task and offline the cpu in another. The
->> first task will hang and be detected by the hung task detector.
->>
->> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->
-> Thanks, applied to the pm-cpufreq branch of the linux-pm.git tree, will be
-> pushed for v3.6.
->
-Should this fix go to stable as well ?
+This patch initialises the cpu field of this_dbs_info structure. This
+change is similar to existing ondemand governor.
 
-Regards
-Santosh
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ drivers/cpufreq/cpufreq_conservative.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 235a340..a1563d7 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -504,6 +504,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 				j_dbs_info->prev_cpu_nice =
+ 						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+ 		}
++		this_dbs_info->cpu = cpu;
+ 		this_dbs_info->down_skip = 0;
+ 		this_dbs_info->requested_freq = policy->cur;
+ 
+-- 
+1.7.1
+
