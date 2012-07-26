@@ -1,160 +1,150 @@
 From: Andre Przywara <andre.przywara@amd.com>
-Subject: [PATCH 1/8] acpi-cpufreq: Add support for modern AMD CPUs
-Date: Thu, 26 Jul 2012 14:28:37 +0200
-Message-ID: <1343305724-2809-2-git-send-email-andre.przywara@amd.com>
+Subject: [PATCH 8/8] Documentation: Add documentation for boost control switch
+Date: Thu, 26 Jul 2012 14:28:44 +0200
+Message-ID: <1343305724-2809-9-git-send-email-andre.przywara@amd.com>
 References: <1343305724-2809-1-git-send-email-andre.przywara@amd.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1343305724-2809-1-git-send-email-andre.przywara@amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andre Przywara <andre.przywara@amd.com>
 
-From: Matthew Garrett <mjg@redhat.com>
+The new acpi-cpufreq driver supports a system global control switch
+to disable the frequency boosting feature of some (x86) CPUs.
+Provide documentation about the rationale and the usage.
 
-The programming model for P-states on modern AMD CPUs is very similar to
-that of Intel and VIA. It makes sense to consolidate this support into one
-driver rather than duplicating functionality between two of them. This
-patch adds support for AMDs with hardware P-state control to acpi-cpufreq.
-
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Andre Przywara <andre.przywara@amd.com>
 ---
- arch/x86/include/asm/msr-index.h |    2 +
- drivers/cpufreq/acpi-cpufreq.c   |   43 ++++++++++++++++++++++++++++++++-----
- 2 files changed, 39 insertions(+), 6 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   12 +++
+ Documentation/cpu-freq/boost.txt                   |   94 ++++++++++++++++++++
+ 2 files changed, 106 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/cpu-freq/boost.txt
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 957ec87..1e1f3eb 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -248,6 +248,8 @@
- 
- #define MSR_IA32_PERF_STATUS		0x00000198
- #define MSR_IA32_PERF_CTL		0x00000199
-+#define MSR_AMD_PERF_STATUS		0xc0010063
-+#define MSR_AMD_PERF_CTL		0xc0010062
- 
- #define MSR_IA32_MPERF			0x000000e7
- #define MSR_IA32_APERF			0x000000e8
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 56c6c6b..067a61f 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -54,10 +54,12 @@ MODULE_LICENSE("GPL");
- enum {
- 	UNDEFINED_CAPABLE = 0,
- 	SYSTEM_INTEL_MSR_CAPABLE,
-+	SYSTEM_AMD_MSR_CAPABLE,
- 	SYSTEM_IO_CAPABLE,
- };
- 
- #define INTEL_MSR_RANGE		(0xffff)
-+#define AMD_MSR_RANGE		(0x7)
- 
- struct acpi_cpufreq_data {
- 	struct acpi_processor_performance *acpi_data;
-@@ -82,6 +84,13 @@ static int check_est_cpu(unsigned int cpuid)
- 	return cpu_has(cpu, X86_FEATURE_EST);
- }
- 
-+static int check_amd_hwpstate_cpu(unsigned int cpuid)
-+{
-+	struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index 5dab364..1107a2e 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -176,3 +176,15 @@ Description:	Disable L3 cache indices
+ 		All AMD processors with L3 caches provide this functionality.
+ 		For details, see BKDGs at
+ 		http://developer.amd.com/documentation/guides/Pages/default.aspx
 +
-+	return cpu_has(cpu, X86_FEATURE_HW_PSTATE);
-+}
 +
- static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
- {
- 	struct acpi_processor_performance *perf;
-@@ -101,7 +110,11 @@ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
- 	int i;
- 	struct acpi_processor_performance *perf;
- 
--	msr &= INTEL_MSR_RANGE;
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-+		msr &= AMD_MSR_RANGE;
-+	else
-+		msr &= INTEL_MSR_RANGE;
++What:		/sys/devices/system/cpu/cpufreq/boost
++Date:		August 2012
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:	Processor frequency boosting control
 +
- 	perf = data->acpi_data;
- 
- 	for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-@@ -115,6 +128,7 @@ static unsigned extract_freq(u32 val, struct acpi_cpufreq_data *data)
- {
- 	switch (data->cpu_feature) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
-+	case SYSTEM_AMD_MSR_CAPABLE:
- 		return extract_msr(val, data);
- 	case SYSTEM_IO_CAPABLE:
- 		return extract_io(val, data);
-@@ -150,6 +164,7 @@ static void do_drv_read(void *_cmd)
- 
- 	switch (cmd->type) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
-+	case SYSTEM_AMD_MSR_CAPABLE:
- 		rdmsr(cmd->addr.msr.reg, cmd->val, h);
- 		break;
- 	case SYSTEM_IO_CAPABLE:
-@@ -174,6 +189,9 @@ static void do_drv_write(void *_cmd)
- 		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
- 		wrmsr(cmd->addr.msr.reg, lo, hi);
- 		break;
-+	case SYSTEM_AMD_MSR_CAPABLE:
-+		wrmsr(cmd->addr.msr.reg, cmd->val, 0);
-+		break;
- 	case SYSTEM_IO_CAPABLE:
- 		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
- 				cmd->val,
-@@ -217,6 +235,10 @@ static u32 get_cur_val(const struct cpumask *mask)
- 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
- 		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
- 		break;
-+	case SYSTEM_AMD_MSR_CAPABLE:
-+		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
-+		cmd.addr.msr.reg = MSR_AMD_PERF_STATUS;
-+		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
- 		perf = per_cpu(acfreq_data, cpumask_first(mask))->acpi_data;
-@@ -326,6 +348,11 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
- 		cmd.val = (u32) perf->states[next_perf_state].control;
- 		break;
-+	case SYSTEM_AMD_MSR_CAPABLE:
-+		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
-+		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
-+		cmd.val = (u32) perf->states[next_perf_state].control;
-+		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
- 		cmd.addr.io.port = perf->control_register.address;
-@@ -580,12 +607,16 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		break;
- 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
- 		pr_debug("HARDWARE addr space\n");
--		if (!check_est_cpu(cpu)) {
--			result = -ENODEV;
--			goto err_unreg;
-+		if (check_est_cpu(cpu)) {
-+			data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
-+			break;
- 		}
--		data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
--		break;
-+		if (check_amd_hwpstate_cpu(cpu)) {
-+			data->cpu_feature = SYSTEM_AMD_MSR_CAPABLE;
-+			break;
-+		}
-+		result = -ENODEV;
-+		goto err_unreg;
- 	default:
- 		pr_debug("Unknown addr space %d\n",
- 			(u32) (perf->control_register.space_id));
++		This switch controls the boost setting for the whole system.
++		Boosting allows the CPU and the firmware to run at a frequency
++		beyound it's nominal limit.
++		More details can be found in Documentation/cpu-freq/boost.txt
++
+diff --git a/Documentation/cpu-freq/boost.txt b/Documentation/cpu-freq/boost.txt
+new file mode 100644
+index 0000000..0085494
+--- /dev/null
++++ b/Documentation/cpu-freq/boost.txt
+@@ -0,0 +1,94 @@
++Processor boosting control
++
++	- information for users -
++
++Quick guide for the impatient:
++--------------------
++/sys/devices/system/cpu/cpufreq/boost
++controls the boost setting for the whole system. You can read and write
++that file with either "0" (boosting disabled) or "1" (boosting allowed).
++Reading or writing 1 does not mean that the system is boosting at this
++very moment, but only that the CPU _may_ raise the frequency at it's
++discretion.
++--------------------
++
++Introduction
++-------------
++Some CPUs support a functionality to raise the operating frequency of
++some cores in a multi-core package if certain conditions apply, mostly
++if the whole chip is not fully utilized and below it's intended thermal
++budget. This is done without operating system control by a combination
++of hardware and firmware.
++On Intel CPUs this is called "Turbo Boost", AMD calls it "Turbo-Core",
++in technical documentation "Core performance boost". In Linux we use
++the term "boost" for convenience.
++
++Rationale for disable switch
++----------------------------
++
++Though the idea is to just give better performance without any user
++intervention, sometimes the need arises to disable this functionality.
++Most systems offer a switch in the (BIOS) firmware to disable the
++functionality at all, but a more fine-grained and dynamic control would
++be desirable:
++1. While running benchmarks, reproducible results are important. Since
++   the boosting functionality depends on the load of the whole package,
++   single thread performance can vary. By explicitly disabling the boost
++   functionality at least for the benchmark's run-time the system will run
++   at a fixed frequency and results are reproducible again.
++2. To examine the impact of the boosting functionality it is helpful
++   to do tests with and without boosting.
++3. Boosting means overclocking the processor, though under controlled
++   conditions. By raising the frequency and the voltage the processor
++   will consume more power than without the boosting, which may be
++   undesirable for instance for mobile users. Disabling boosting may
++   save power here, though this depends on the workload.
++
++
++User controlled switch
++----------------------
++
++To allow the user to toggle the boosting functionality, the acpi-cpufreq
++driver exports a sysfs knob to disable it. There is a file:
++/sys/devices/system/cpu/cpufreq/boost
++which can either read "0" (boosting disabled) or "1" (boosting enabled).
++Reading the file is always supported, even if the processor does not
++support boosting. In this case the file will be read-only and always
++reads as "0". Explicitly changing the permissions and writing to that
++file anyway will return EINVAL.
++
++On supported CPUs one can write either a "0" or a "1" into this file.
++This will either disable the boost functionality on all cores in the
++whole system (0) or will allow the hardware to boost at will (1).
++
++Writing a "1" does not explicitly boost the system, but just allows the
++CPU (and the firmware) to boost at their discretion. Some implementations
++take external factors like the chip's temperature into account, so 
++boosting once does not necessarily mean that it will occur every time
++even using the exact same software setup.
++
++
++AMD legacy cpb switch
++---------------------
++The AMD powernow-k8 driver used to support a very similar switch to
++disable or enable the "Core Performance Boost" feature of some AMD CPUs.
++This switch was instantiated in each CPU's cpufreq directory
++(/sys/devices/system/cpu[0-9]*/cpufreq) and was called "cpb".
++Though the per CPU existence hints at a more fine grained control, the
++actual implementation only supported a system-global switch semantics,
++which was simply reflected into each CPU's file. Writing a 0 or 1 into it
++would pull the other CPUs to the same state.
++For compatibility reasons this file and its behavior is still supported
++on AMD CPUs, though it is now protected by a config switch
++(X86_ACPI_CPUFREQ_CPB). On Intel CPUs this file will never be created,
++even with the config option set.
++This functionality is considered legacy and will be removed in some future
++kernel version.
++
++More fine grained boosting control
++----------------------------------
++
++Technically it is possible to switch the boosting functionality at least
++on a per package basis, for some CPUs even per core. Currently the driver
++does not support it, but this may be implemented in the future.
++
 -- 
 1.7.4.4
+
 
