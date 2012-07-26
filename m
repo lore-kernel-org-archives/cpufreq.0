@@ -1,7 +1,7 @@
 From: Andre Przywara <andre.przywara@amd.com>
-Subject: [PATCH 4/8] ACPI: Add fixups for AMD P-state figures
-Date: Thu, 26 Jul 2012 14:28:40 +0200
-Message-ID: <1343305724-2809-5-git-send-email-andre.przywara@amd.com>
+Subject: [PATCH 3/8] cpufreq: Add compatibility hack to powernow-k8
+Date: Thu, 26 Jul 2012 14:28:39 +0200
+Message-ID: <1343305724-2809-4-git-send-email-andre.przywara@amd.com>
 References: <1343305724-2809-1-git-send-email-andre.przywara@amd.com>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,77 +15,36 @@ Cc: Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.co
 
 From: Matthew Garrett <mjg@redhat.com>
 
-Some AMD systems may round the frequencies in ACPI tables to 100MHz
-boundaries. We can obtain the real frequencies from MSRs, so add a quirk
-to fix these frequencies up on AMD systems.
+cpufreq modules are often loaded from init scripts that assume that all
+recent AMD systems will use powernow-k8, so we should ensure that loading
+it triggers a load of acpi-cpufreq if the latter is built as a module.
+This avoids the problem of users ending up without any cpufreq support
+after the transition.
 
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Andre Przywara <andre.przywara@amd.com>
 ---
- arch/x86/include/asm/msr-index.h |    1 +
- drivers/acpi/processor_perflib.c |   30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+), 0 deletions(-)
+ drivers/cpufreq/powernow-k8.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 1e1f3eb..fbee971 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -248,6 +248,7 @@
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index c0e8164..6e35ed2 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -1567,8 +1567,12 @@ static int __cpuinit powernowk8_init(void)
+ 			supported_cpus++;
+ 	}
  
- #define MSR_IA32_PERF_STATUS		0x00000198
- #define MSR_IA32_PERF_CTL		0x00000199
-+#define MSR_AMD_PSTATE_DEF_BASE		0xc0010064
- #define MSR_AMD_PERF_STATUS		0xc0010063
- #define MSR_AMD_PERF_CTL		0xc0010062
- 
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index a093dc1..836bfe0 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -324,6 +324,34 @@ static int acpi_processor_get_performance_control(struct acpi_processor *pr)
- 	return result;
- }
- 
-+#ifdef CONFIG_X86
-+/*
-+ * Some AMDs have 50MHz frequency multiples, but only provide 100MHz rounding
-+ * in their ACPI data. Calculate the real values and fix up the _PSS data.
-+ */
-+static void amd_fixup_frequency(struct acpi_processor_px *px, int i)
-+{
-+	u32 hi, lo, fid, did;
-+	int index = px->control & 0x00000007;
+-	if (supported_cpus != num_online_cpus())
++	if (supported_cpus != num_online_cpus()) {
++		if (static_cpu_has(X86_FEATURE_HW_PSTATE))
++			request_module("acpi_cpufreq");
 +
-+	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
-+		return;
-+
-+	if ((boot_cpu_data.x86 == 0x10 && boot_cpu_data.x86_model < 10)
-+	    || boot_cpu_data.x86 == 0x11) {
-+		rdmsr(MSR_AMD_PSTATE_DEF_BASE + index, lo, hi);
-+		fid = lo & 0x3f;
-+		did = (lo >> 6) & 7;
-+		if (boot_cpu_data.x86 == 0x10)
-+			px->core_frequency = (100 * (fid + 0x10)) >> did;
-+		else
-+			px->core_frequency = (100 * (fid + 8)) >> did;
+ 		return -ENODEV;
 +	}
-+}
-+#else
-+static void amd_fixup_frequency(struct acpi_processor_px *px, int i) {};
-+#endif
-+
- static int acpi_processor_get_performance_states(struct acpi_processor *pr)
- {
- 	int result = 0;
-@@ -379,6 +407,8 @@ static int acpi_processor_get_performance_states(struct acpi_processor *pr)
- 			goto end;
- 		}
  
-+		amd_fixup_frequency(px, i);
-+
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "State [%d]: core_frequency[%d] power[%d] transition_latency[%d] bus_master_latency[%d] control[0x%x] status[0x%x]\n",
- 				  i,
+ 	printk(KERN_INFO PFX "Found %d %s (%d cpu cores) (" VERSION ")\n",
+ 		num_online_nodes(), boot_cpu_data.x86_model_id, supported_cpus);
 -- 
 1.7.4.4
 
