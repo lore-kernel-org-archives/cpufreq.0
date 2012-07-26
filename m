@@ -1,61 +1,105 @@
-From: Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-Subject: Re: [PATCH 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
-Date: Thu, 26 Jul 2012 14:11:21 +0100
-Message-ID: <20120726131121.GB7306@sirena.org.uk>
-References: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
- <1342713281-31114-4-git-send-email-shawn.guo@linaro.org>
+From: Andre Przywara <andre.przywara@amd.com>
+Subject: Re: Disable cpufreq on modern X86 processors
+Date: Thu, 26 Jul 2012 15:39:53 +0200
+Message-ID: <501148A9.8080309@amd.com>
+References: <201207241515.15324.trenn@suse.de> <20120724132208.GB4609@alberich>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1342713281-31114-4-git-send-email-shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20120724132208.GB4609@alberich>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Thomas Renninger <trenn@suse.de>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, cpufreq@vger.kernel.org, arjan@linux.intel.com, Len Brown <lenb@kernel.org>, Borislav Petkov <borislav.petkov@amd.com>, Michael Galbraith <mgalbraith@suse.de>
 
-On Thu, Jul 19, 2012 at 11:54:41PM +0800, Shawn Guo wrote:
+On 07/24/2012 03:22 PM, Andreas Herrmann wrote:
+> CC-ing Andre
+>
+> On Tue, Jul 24, 2012 at 03:15:14PM +0200, Thomas Renninger wrote:
+>> Hi,
+>>
+>> I recently got pointed to performance losses measured
+>> with and without cpufreq enabled when people worked on
+>> scheduler tunables/improvements.
+>>
+>> Depending on whether processes are bound to cores, tunables
+>> inside the cpufreq subsystem, etc. there can be rather big
+>> differences.
+>>
+>> While there have been improvements (for example do not poll
+>> that often if constantly running at highest frequency and
+>> others), dynamic cpufreq adjusting as it currently is
+>> implemented via ondemand/conservative governors always
+>> will cost performance.
+>>
+>> Arjan mentioned quite some time ago, that for modern X86
+>> processors it does not make much sense to control the
+>> frequency of the CPU via OS, because idle states are
+>> much more efficient and should get entered asap.
+>>
+>> Especially on bigger X86 systems with dozens or even hundreds
+>> of cores, cpufreq polling sounds like a bad idea.
+>> Especially if the CPUs do achieve the same or even
+>> better performance/power results via entering C-states quickly.
+>>
+>> I would like to come up with a init_default_governor()
+>> or similar function which choses the performance governor
+>> for such CPUs.
+>> Hm, maybe it could get a driver callback, then this one could
+>> be picked up by acpi-cpufreq (and powernow-k8 if applicable)
+>> and those drivers could choose the right governor for the
+>> platform/cpu.
 
-> +Optional properties:
-> +- transition-latency: Specify the possible maximum transition latency,
-> +  in unit of nanoseconds.
+Actually we are currently also looking into this issue.
+So I'd refrain at least for now from changing the default governor.
+Let's see what Arjan comes up with, I'd also like to see a reworked 
+governor instead of changing the default one.
 
-This should make it clear that the transition latency being documented
-here is just that for the core clock change itself, there may be other
-sources of latency like the regulator ramp time or reprogramming PLLs.
+To answer your questions nevertheless:
 
-> +	if (cpu_reg) {
-> +		opp = opp_find_freq_ceil(cpu_dev, &freq_Hz);
-> +		if (IS_ERR(opp)) {
-> +			pr_err("failed to find OPP for %ld\n", freq_Hz);
-> +			return PTR_ERR(opp);
-> +		}
-> +		volt = opp_get_voltage(opp);
-> +		tol = volt * voltage_tolerance / 100;
-> +		volt_old = regulator_get_voltage(cpu_reg);
+>> Ideally identifying the CPUs where performance governor should get
+>> used is a one liner checking for a cpu flag.
+>> But this might not get that easy? CPU family/model would need
+>> maintenance if there is no cpu flag/feature to test for.
 
-regulator_get_voltage() might be a bit expensive, many regulators will
-query the hardware every time.  Since it's just for diagnostic purposes
-it'd be better to not bother and let people read the historical
-information from the logs.
+ From the AMD side it looks like family >= 0x11 should do the trick. The 
+actual difference is the availability of >C1 per core sleep states. 
+Family 10h and 11h have C1 and C1e, but no real deeper states.
+Let me see if there is some register or bit we can reliably query to 
+check for this instead of relying on fragile f/m/s values.
 
-> +	/* scaling up?  scale voltage before frequency */
-> +	if (cpu_reg && freqs.new > freqs.old) {
-> +		if (regulator_set_voltage(cpu_reg, volt - tol, volt + tol)) {
+On Phenoms I could measure much lower power usage with ondemand (or 
+conservative) governor on idle. This was not true for Bulldozers 
+anymore, so there is some truth in your idea.
 
-This is a totally sane and sensible use case for specifying a voltage
-range, we should move it into the regulator core for other users so you
-can just specify the voltage and the tolerance directly.
+Regards,
+Andre.
 
-It is a little sad here as it means that we loose the ability to do
-frequency only scaling if there's no regulator which is nice.
+>>
+>> Just some ideas..., if it's doable with some lines of code without
+>> the need of maintaining/adding new cpu families, I'd like to have
+>> a better default behavior.
+>>
+>> One main problem I am facing is: Measuring power consumption
+>> in different workloads.
+>>
+>> I can measure the power consumption in idle (deeper sleep
+>> states entered) when CPU frequency is set to lowest and highest
+>> and compare. If both are the same, the CPU is a good candidate
+>> to not do OS controlled CPU frequency scaling.
+>>
+>> What do you think?
+>>
+>> Thanks,
+>>
+>>     Thomas
+>>
+
+
+
+-- 
+Andre Przywara
+AMD-OSRC (Dresden)
+Tel: x29712
+
