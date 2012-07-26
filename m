@@ -1,43 +1,25 @@
-From: "Ariel Norberto Bellino" <Ariel@bellino.com.ar>
-Subject: Re: Possible bug
-Date: Wed, 25 Jul 2012 01:23:15 -0300
-Message-ID: <WC20120725042315.880035@bellino.com.ar>
-References: <WC20120721070908.150028@bellino.com.ar> <201207241401.54084.trenn@suse.de> <20120724120742.GA3293@marx.bitnet>
-Reply-To: Ariel@bellino.com.ar
+From: Andre Przywara <andre.przywara@amd.com>
+Subject: [PATCH 0/8] acpi-cpufreq: Move modern AMD cpufreq support to acpi-cpufreq
+Date: Thu, 26 Jul 2012 14:28:36 +0200
+Message-ID: <1343305724-2809-1-git-send-email-andre.przywara@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120724120742.GA3293@marx.bitnet>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andre Przywara <andre.przywara@amd.com>
 
------Original Message-----
-From: Jukka Ruohonen <jruohonen@iki.fi>
-> On Tue, Jul 24, 2012 at 02:01:53PM +0200, Thomas Renninger wrote:
-> > For some reason some BIOSes export the highest frequency twice (or
-> with
-> > one HZ difference or similar).
-> 
-> I think this is because of the so-called Turbo Boost. I recall at least
-> couple of Intel specifications or white papers in which it was adviced
-> that
-> BIOS vendors should report the "turbo state" as the maximum + 1 MHz.
-> 
-> - Jukka.
+The programming model for cpufreq on current AMD CPUs is almost identical
+to the one used on Intel and VIA hardware. This patchset merges support
+into acpi-cpufreq and removes it from powernow-k8.
 
-I found that, effectively, the speeds are reported with a difference of 1 MHz:
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies 
-2534000 2533000 1600000 800000 
+This patchset is heavily based on Matthew Garrett's V4 from last July.
+The boosting part has been mostly reworked and documentation for it
+has been added. Also there was a need for (yet another) BIOS quirk
+on AMD desktop boards.
 
-But Turbo Boost technology is not present in my new processor:
-http://ark.intel.com/products/35562/Intel-Core2-Duo-Processor-T9400-%286M-Cache-2_53-GHz-1066-MHz-FSB
-
-In fact, as far as I know, no processor supported by this motherboard has it:
-http://www.intel.com/es_la/assets/PDF/datasheet/320122.pdf
-
-BIOS issue? The laptop is a Sony Vaio VGN-SR210J, BIOS R1130Y1 (latest to
-this day).
+Signed-off-by: Andre Przywara <andre.przywara@amd.com>
 
 
