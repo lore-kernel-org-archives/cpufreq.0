@@ -1,41 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] acpi-cpufreq: Move modern AMD cpufreq support to acpi-cpufreq
-Date: Thu, 26 Jul 2012 21:58:25 +0200
-Message-ID: <201207262158.25936.rjw@sisk.pl>
-References: <1343305724-2809-1-git-send-email-andre.przywara@amd.com> <201207261601.23973.trenn@suse.de>
+From: Richard Zhao <richard.zhao@freescale.com>
+Subject: Re: [PATCH 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
+Date: Fri, 27 Jul 2012 10:04:34 +0800
+Message-ID: <20120727020433.GA3347@b20223-02.ap.freescale.net>
+References: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
+ <1342713281-31114-4-git-send-email-shawn.guo@linaro.org>
+ <CAMQu2gw32LogXJJa+K5ZjmCZzBNK3FY2wYwZXU8fsftsVzEO2Q@mail.gmail.com>
+ <20120720123317.GA32263@S2101-09.ap.freescale.net>
+ <CAJOA=zMQKLTumW7Nx68+yxHC5Yk4QyiL2mf1+TSZfVOAtnXDWA@mail.gmail.com>
+ <CAMQu2gy4p+rL-sDAsGCnqSn_2eXwSqf---OS0BSXuDoacjd6_g@mail.gmail.com>
+ <20120721063811.GA619@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201207261601.23973.trenn@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20120721063811.GA619@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Thomas Renninger <trenn@suse.de>
-Cc: Andre Przywara <andre.przywara@amd.com>, cpufreq@vger.kernel.org, Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>, "Turquette, Mike" <mturquette@ti.com>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-On Thursday, July 26, 2012, Thomas Renninger wrote:
-> On Thursday, July 26, 2012 02:28:36 PM Andre Przywara wrote:
-> > The programming model for cpufreq on current AMD CPUs is almost
-> > identical to the one used on Intel and VIA hardware. This patchset
-> > merges support into acpi-cpufreq and removes it from powernow-k8.
->  
-> > This patchset is heavily based on Matthew Garrett's V4 from last July.
-> > The boosting part has been mostly reworked and documentation for it
-> > has been added. Also there was a need for (yet another) BIOS quirk
-> > on AMD desktop boards.
+On Sat, Jul 21, 2012 at 02:38:13PM +0800, Shawn Guo wrote:
+> On Sat, Jul 21, 2012 at 10:34:29AM +0530, Shilimkar, Santosh wrote:
+> > On Fri, Jul 20, 2012 at 9:20 PM, Turquette, Mike <mturquette@ti.com> wrote:
+> > > How about cpufreq-single-thread.c and CONFIG_CPUFREQ_SINGLE_THREAD?
+> > > That makes sense for both UP and SMP.
+> > >
+> > Indeed. This sounds more appropriate and also reflects what actually happens
+> > with a UP or shared clock SMP case.
 > > 
-> > Signed-off-by: Andre Przywara <andre.przywara@amd.com>
+> While I agree with this observation, the suggested naming does not
+> reflect the rationale of CPU0 though, which is really important for
+> driver to work, and is exactly the thing I like about *_CPU0 naming.
 > 
-> I had a look at Matthew's patches and I like the idea.
+> The driver needs the following stuff around CPU0 to be functional.
 > 
-> I didn't review Andre's in detail, but if they are based on
-> Matthew's and I expect they got some testing, I guess it should
-> be fine to push them with the next merge window.
+> - Device tree node /cpus/cpu@0
+> - clk lookup with dev_id being "cpu0"
+> - regulator with id being "cpu0"
+> 
+> I think the *_CPU0 naming does a better job on emphasising those in the
+> first place.
+Are we going to support the case in the future that cores has
+independent freq? If yes, maybe we should have a more common name.
 
-Good, thanks for your opinion, it helps a lot! :-)
+Thanks
+Richard
+> 
+> -- 
+> Regards,
+> Shawn
 
-I'll have a deeper look at the patches in the next couple of days and will
-queue them up for v3.7 if I don't find anything objectionable in them.
-
-Thanks,
-Rafael
