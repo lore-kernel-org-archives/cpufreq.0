@@ -1,73 +1,63 @@
 From: Shawn Guo <shawn.guo@linaro.org>
 Subject: Re: [PATCH 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
-Date: Mon, 30 Jul 2012 14:52:20 +0800
-Message-ID: <20120730065218.GB31509@S2101-09.ap.freescale.net>
+Date: Mon, 30 Jul 2012 16:17:53 +0800
+Message-ID: <20120730081750.GC31509@S2101-09.ap.freescale.net>
 References: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
  <1342713281-31114-4-git-send-email-shawn.guo@linaro.org>
- <20120726131121.GB7306@sirena.org.uk>
+ <20120727063334.GC3347@b20223-02.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20120726131121.GB7306@sirena.org.uk>
+In-Reply-To: <20120727063334.GC3347@b20223-02.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+To: Richard Zhao <richard.zhao@freescale.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-On Thu, Jul 26, 2012 at 02:11:21PM +0100, Mark Brown wrote:
-> On Thu, Jul 19, 2012 at 11:54:41PM +0800, Shawn Guo wrote:
+On Fri, Jul 27, 2012 at 02:33:35PM +0800, Richard Zhao wrote:
+> > +Generic cpufreq driver for CPU0
+> It's going to have generic name if it will become more generic.
 > 
-> > +Optional properties:
-> > +- transition-latency: Specify the possible maximum transition latency,
-> > +  in unit of nanoseconds.
-> 
-> This should make it clear that the transition latency being documented
-> here is just that for the core clock change itself, there may be other
-> sources of latency like the regulator ramp time or reprogramming PLLs.
-> 
-I intended to make it be the total latency from whatever sources that
-should be counted on particular system.  Rather than adding complexity
-for the driver to figure out these latencies from every single source,
-I would expect that people know the possible maximum latency in total
-for their systems and specify it in device tree.
+I'm not in the position to say that it will become even more generic.
 
-> > +	if (cpu_reg) {
-> > +		opp = opp_find_freq_ceil(cpu_dev, &freq_Hz);
-> > +		if (IS_ERR(opp)) {
-> > +			pr_err("failed to find OPP for %ld\n", freq_Hz);
-> > +			return PTR_ERR(opp);
-> > +		}
-> > +		volt = opp_get_voltage(opp);
-> > +		tol = volt * voltage_tolerance / 100;
-> > +		volt_old = regulator_get_voltage(cpu_reg);
-> 
-> regulator_get_voltage() might be a bit expensive, many regulators will
-> query the hardware every time.  Since it's just for diagnostic purposes
-> it'd be better to not bother and let people read the historical
-> information from the logs.
-> 
-Ok, makes sense to me.
+> > +- voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+> Why do we have the same tolerance for all points?
 
-> > +	/* scaling up?  scale voltage before frequency */
-> > +	if (cpu_reg && freqs.new > freqs.old) {
-> > +		if (regulator_set_voltage(cpu_reg, volt - tol, volt + tol)) {
-> 
-> This is a totally sane and sensible use case for specifying a voltage
-> range, we should move it into the regulator core for other users so you
-> can just specify the voltage and the tolerance directly.
-> 
-Are you asking for a change on regulator_set_voltage API?  While I agree
-with your comment, it's not a thing we need to necessarily do in this
-series.  The change on the API requires a touch on all the existing
-users.  I do not think it's nice to carry such a patch in this series.
+Because I haven't seen any case that needs different tolerance for
+different operating points.
 
-> It is a little sad here as it means that we loose the ability to do
-> frequency only scaling if there's no regulator which is nice.
+> I think you can
+> either remove tolerance or add it to opps.
 
-I do not understand it.  The regulator is optional for the driver, and
-we can still scale frequency even if there is no regulator.
+I'm not going to remove it, because I have seen potential cpufreq-cpu0
+candidates, e.g. omap-cpufreq, need it.  It's also improper to encode
+it in operating-points, since OPP library does not have it.
+
+> > +	ret = clk_set_rate(cpu_clk, freqs.new * 1000);
+> Check return value and fall back to previous point if it needs?
+
+Right, the voltage should be reverted back if clk_set_rate fails.
+
+> > +	cpu_dev->of_node = np;
+> hmm.. sys dev can not set of_node when populate it?
+
+Since the sys dev is not populated from device tree, the of_node is
+not set, and we have to do it here on our own.
+
+> And why not do it in module init? 
+
+What's the advantage of doing it in module init over here?
+
+> static u32 max_freq = UINT_MAX / 1000; /* kHz */
+> module_param(max_freq, uint, 0);
+> MODULE_PARM_DESC(max_freq, "max cpu frequency in unit of kHz");
+> 
+> It's for debug. Make sense?
+> 
+It does not look so useful to me, as it never came to me when I was
+debugging the driver.
 
 -- 
 Regards,
