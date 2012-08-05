@@ -1,156 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 8/8] Documentation: Add documentation for boost control switch
-Date: Sun, 5 Aug 2012 23:34:15 +0200
-Message-ID: <201208052334.15253.rjw@sisk.pl>
-References: <1343305724-2809-1-git-send-email-andre.przywara@amd.com> <1343305724-2809-9-git-send-email-andre.przywara@amd.com>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/8] acpi-cpufreq: Move modern AMD cpufreq support to
+ acpi-cpufreq
+Date: Sun, 05 Aug 2012 16:39:14 -0700
+Message-ID: <501F0422.2030308@zytor.com>
+References: <1343305724-2809-1-git-send-email-andre.przywara@amd.com> <201208052320.14712.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1343305724-2809-9-git-send-email-andre.przywara@amd.com>
+In-Reply-To: <201208052320.14712.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Andre Przywara <andre.przywara@amd.com>
-Cc: cpufreq@vger.kernel.org, Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andre Przywara <andre.przywara@amd.com>, cpufreq@vger.kernel.org, Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Borislav Petkov <bp@amd64.org>
 
-On Thursday, July 26, 2012, Andre Przywara wrote:
-> The new acpi-cpufreq driver supports a system global control switch
-> to disable the frequency boosting feature of some (x86) CPUs.
-> Provide documentation about the rationale and the usage.
-> 
-> Signed-off-by: Andre Przywara <andre.przywara@amd.com>
+On 08/05/2012 02:20 PM, Rafael J. Wysocki wrote:
+> On Thursday, July 26, 2012, Andre Przywara wrote:
+>> The programming model for cpufreq on current AMD CPUs is almost identical
+>> to the one used on Intel and VIA hardware. This patchset merges support
+>> into acpi-cpufreq and removes it from powernow-k8.
+>>
+>> This patchset is heavily based on Matthew Garrett's V4 from last July.
+>> The boosting part has been mostly reworked and documentation for it
+>> has been added. Also there was a need for (yet another) BIOS quirk
+>> on AMD desktop boards.
+>>
+>> Signed-off-by: Andre Przywara <andre.przywara@amd.com>
+>
+> Peter, any objection to this series?
+>
 
-That should be folded into the patch adding the feature being documented.
+No.  It might be good for Borislav & Co to look it over, though, if they 
+haven't already.
 
-Thanks,
-Rafael
+	-hpa
 
 
-> ---
->  Documentation/ABI/testing/sysfs-devices-system-cpu |   12 +++
->  Documentation/cpu-freq/boost.txt                   |   94 ++++++++++++++++++++
->  2 files changed, 106 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/cpu-freq/boost.txt
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index 5dab364..1107a2e 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -176,3 +176,15 @@ Description:	Disable L3 cache indices
->  		All AMD processors with L3 caches provide this functionality.
->  		For details, see BKDGs at
->  		http://developer.amd.com/documentation/guides/Pages/default.aspx
-> +
-> +
-> +What:		/sys/devices/system/cpu/cpufreq/boost
-> +Date:		August 2012
-> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> +Description:	Processor frequency boosting control
-> +
-> +		This switch controls the boost setting for the whole system.
-> +		Boosting allows the CPU and the firmware to run at a frequency
-> +		beyound it's nominal limit.
-> +		More details can be found in Documentation/cpu-freq/boost.txt
-> +
-> diff --git a/Documentation/cpu-freq/boost.txt b/Documentation/cpu-freq/boost.txt
-> new file mode 100644
-> index 0000000..0085494
-> --- /dev/null
-> +++ b/Documentation/cpu-freq/boost.txt
-> @@ -0,0 +1,94 @@
-> +Processor boosting control
-> +
-> +	- information for users -
-> +
-> +Quick guide for the impatient:
-> +--------------------
-> +/sys/devices/system/cpu/cpufreq/boost
-> +controls the boost setting for the whole system. You can read and write
-> +that file with either "0" (boosting disabled) or "1" (boosting allowed).
-> +Reading or writing 1 does not mean that the system is boosting at this
-> +very moment, but only that the CPU _may_ raise the frequency at it's
-> +discretion.
-> +--------------------
-> +
-> +Introduction
-> +-------------
-> +Some CPUs support a functionality to raise the operating frequency of
-> +some cores in a multi-core package if certain conditions apply, mostly
-> +if the whole chip is not fully utilized and below it's intended thermal
-> +budget. This is done without operating system control by a combination
-> +of hardware and firmware.
-> +On Intel CPUs this is called "Turbo Boost", AMD calls it "Turbo-Core",
-> +in technical documentation "Core performance boost". In Linux we use
-> +the term "boost" for convenience.
-> +
-> +Rationale for disable switch
-> +----------------------------
-> +
-> +Though the idea is to just give better performance without any user
-> +intervention, sometimes the need arises to disable this functionality.
-> +Most systems offer a switch in the (BIOS) firmware to disable the
-> +functionality at all, but a more fine-grained and dynamic control would
-> +be desirable:
-> +1. While running benchmarks, reproducible results are important. Since
-> +   the boosting functionality depends on the load of the whole package,
-> +   single thread performance can vary. By explicitly disabling the boost
-> +   functionality at least for the benchmark's run-time the system will run
-> +   at a fixed frequency and results are reproducible again.
-> +2. To examine the impact of the boosting functionality it is helpful
-> +   to do tests with and without boosting.
-> +3. Boosting means overclocking the processor, though under controlled
-> +   conditions. By raising the frequency and the voltage the processor
-> +   will consume more power than without the boosting, which may be
-> +   undesirable for instance for mobile users. Disabling boosting may
-> +   save power here, though this depends on the workload.
-> +
-> +
-> +User controlled switch
-> +----------------------
-> +
-> +To allow the user to toggle the boosting functionality, the acpi-cpufreq
-> +driver exports a sysfs knob to disable it. There is a file:
-> +/sys/devices/system/cpu/cpufreq/boost
-> +which can either read "0" (boosting disabled) or "1" (boosting enabled).
-> +Reading the file is always supported, even if the processor does not
-> +support boosting. In this case the file will be read-only and always
-> +reads as "0". Explicitly changing the permissions and writing to that
-> +file anyway will return EINVAL.
-> +
-> +On supported CPUs one can write either a "0" or a "1" into this file.
-> +This will either disable the boost functionality on all cores in the
-> +whole system (0) or will allow the hardware to boost at will (1).
-> +
-> +Writing a "1" does not explicitly boost the system, but just allows the
-> +CPU (and the firmware) to boost at their discretion. Some implementations
-> +take external factors like the chip's temperature into account, so 
-> +boosting once does not necessarily mean that it will occur every time
-> +even using the exact same software setup.
-> +
-> +
-> +AMD legacy cpb switch
-> +---------------------
-> +The AMD powernow-k8 driver used to support a very similar switch to
-> +disable or enable the "Core Performance Boost" feature of some AMD CPUs.
-> +This switch was instantiated in each CPU's cpufreq directory
-> +(/sys/devices/system/cpu[0-9]*/cpufreq) and was called "cpb".
-> +Though the per CPU existence hints at a more fine grained control, the
-> +actual implementation only supported a system-global switch semantics,
-> +which was simply reflected into each CPU's file. Writing a 0 or 1 into it
-> +would pull the other CPUs to the same state.
-> +For compatibility reasons this file and its behavior is still supported
-> +on AMD CPUs, though it is now protected by a config switch
-> +(X86_ACPI_CPUFREQ_CPB). On Intel CPUs this file will never be created,
-> +even with the config option set.
-> +This functionality is considered legacy and will be removed in some future
-> +kernel version.
-> +
-> +More fine grained boosting control
-> +----------------------------------
-> +
-> +Technically it is possible to switch the boosting functionality at least
-> +on a per package basis, for some CPUs even per core. Currently the driver
-> +does not support it, but this may be implemented in the future.
-> +
-> 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
