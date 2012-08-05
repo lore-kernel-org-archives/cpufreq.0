@@ -1,64 +1,51 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 2/6] drivers/cpufreq/pcc-cpufreq.c: fix error return code
-Date: Sun,  5 Aug 2012 11:52:32 +0200
-Message-ID: <1344160356-387-3-git-send-email-Julia.Lawall@lip6.fr>
-References: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
+From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v2 0/4] Add a generic cpufreq-cpu0 driver
+Date: Sun, 5 Aug 2012 23:05:17 +0800
+Message-ID: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: kernel-janitors@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Julia Lawall <julia@diku.dk>
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Shilimkar Santosh <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-From: Julia Lawall <julia@diku.dk>
+Changes since v1:
+* Rebase on v3.6-rc1
+* Add a patch introducing regulator_set_voltage_tol()
+* Address review comments on v1
 
-Convert a 0 error return code to a negative one, as returned elsewhere in the
-function.
+Richard Zhao (1):
+  ARM: add cpufreq transiton notifier to adjust loops_per_jiffy for smp
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+Shawn Guo (3):
+  PM / OPP: Initialize OPP table from device tree
+  regulator: add a new API regulator_set_voltage_tol()
+  cpufreq: Add a generic cpufreq-cpu0 driver
 
-// <smpl>
-@@
-identifier ret;
-expression e,e1,e2,e3,e4,x;
-@@
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   55 ++++
+ Documentation/devicetree/bindings/power/opp.txt    |   25 ++
+ arch/arm/kernel/smp.c                              |   54 ++++
+ drivers/base/power/opp.c                           |   65 +++++
+ drivers/cpufreq/Kconfig                            |   11 +
+ drivers/cpufreq/Makefile                           |    2 +
+ drivers/cpufreq/cpufreq-cpu0.c                     |  271 ++++++++++++++++++++
+ include/linux/opp.h                                |    8 +
+ include/linux/regulator/consumer.h                 |    7 +
+ 9 files changed, 498 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+ create mode 100644 Documentation/devicetree/bindings/power/opp.txt
+ create mode 100644 drivers/cpufreq/cpufreq-cpu0.c
 
-(
-if (\(ret != 0\|ret < 0\) || ...) { ... return ...; }
-|
-ret = 0
-)
-... when != ret = e1
-*x = \(kmalloc\|kzalloc\|kcalloc\|devm_kzalloc\|ioremap\|ioremap_nocache\|devm_ioremap\|devm_ioremap_nocache\)(...);
-... when != x = e2
-    when != ret = e3
-*if (x == NULL || ...)
-{
-  ... when != ret = e4
-*  return ret;
-}
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/cpufreq/pcc-cpufreq.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index cdc02ac..503996a 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -454,6 +454,7 @@ static int __init pcc_cpufreq_probe(void)
- 					mem_resource->address_length);
- 	if (pcch_virt_addr == NULL) {
- 		pr_debug("probe: could not map shared mem region\n");
-+		ret = -ENOMEM;
- 		goto out_free;
- 	}
- 	pcch_hdr = pcch_virt_addr;
-
+-- 
+1.7.5.4
