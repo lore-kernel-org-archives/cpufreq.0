@@ -1,56 +1,64 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
-Date: Tue, 31 Jul 2012 14:40:26 +0100
-Message-ID: <20120731134026.GI4468@opensource.wolfsonmicro.com>
-References: <1342713281-31114-1-git-send-email-shawn.guo@linaro.org>
- <1342713281-31114-4-git-send-email-shawn.guo@linaro.org>
- <20120726131121.GB7306@sirena.org.uk>
- <20120730065218.GB31509@S2101-09.ap.freescale.net>
- <20120730185344.GT4468@opensource.wolfsonmicro.com>
- <20120731042050.GF762@S2101-09.ap.freescale.net>
-Mime-Version: 1.0
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH 2/6] drivers/cpufreq/pcc-cpufreq.c: fix error return code
+Date: Sun,  5 Aug 2012 11:52:32 +0200
+Message-ID: <1344160356-387-3-git-send-email-Julia.Lawall@lip6.fr>
+References: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20120731042050.GF762@S2101-09.ap.freescale.net>
+In-Reply-To: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-janitors@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Julia Lawall <julia@diku.dk>
 
-On Tue, Jul 31, 2012 at 12:20:52PM +0800, Shawn Guo wrote:
-> On Mon, Jul 30, 2012 at 07:53:45PM +0100, Mark Brown wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> > Quite honestly this seems totally unrealistic for the majority of users,
+Convert a 0 error return code to a negative one, as returned elsewhere in the
+function.
 
-> I doubt that.  Searching drivers/cpufreq folder, I can see there are
-> several cpufreq drivers scaling voltage with regulator API, but none
-> of them is calling regulator_set_voltage_time to find voltage latency.
-> That said, all these users are specify transition latency on their own.
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-This is more a sign of poor quality of implementation than anything
-else, and obviously the fact that DT is supposed to be an ABI makes it
-much more important to get things right.
+// <smpl>
+@@
+identifier ret;
+expression e,e1,e2,e3,e4,x;
+@@
 
-There's also a bunch of problems in ondemand, it really doesn't cope
-terribly well if you actually tell it what the latencies are for most
-systems as it becomes absurdly conservative about not ramping.
+(
+if (\(ret != 0\|ret < 0\) || ...) { ... return ...; }
+|
+ret = 0
+)
+... when != ret = e1
+*x = \(kmalloc\|kzalloc\|kcalloc\|devm_kzalloc\|ioremap\|ioremap_nocache\|devm_ioremap\|devm_ioremap_nocache\)(...);
+... when != x = e2
+    when != ret = e3
+*if (x == NULL || ...)
+{
+  ... when != ret = e4
+*  return ret;
+}
+// </smpl>
 
-> > especially given the very poor documentation for this stuff which SoC
-> > vendors typically provide.  It's a reasonable amount of work to go back
-> > and figure this stuff out (especially given that it should be varying
-> > depending on the transition in question), and it's going to give us a
-> > bunch of magic numbers in people's bindings.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-> There will be only one magic number, and it can easily become "magic"
-> with some comments put there.
+---
+ drivers/cpufreq/pcc-cpufreq.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-This doesn't sound like a recipie for success..
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index cdc02ac..503996a 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -454,6 +454,7 @@ static int __init pcc_cpufreq_probe(void)
+ 					mem_resource->address_length);
+ 	if (pcch_virt_addr == NULL) {
+ 		pr_debug("probe: could not map shared mem region\n");
++		ret = -ENOMEM;
+ 		goto out_free;
+ 	}
+ 	pcch_hdr = pcch_virt_addr;
 
-> > No, add a new API.
-
-> Is the following patch what you are ordering here?
-
-Yes.  I'd go with _tol rather than _tolerance probably but something
-like that, yes.
