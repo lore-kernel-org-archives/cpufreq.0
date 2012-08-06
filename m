@@ -1,42 +1,171 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/8] acpi-cpufreq: Move modern AMD cpufreq support to
- acpi-cpufreq
-Date: Sun, 05 Aug 2012 16:39:14 -0700
-Message-ID: <501F0422.2030308@zytor.com>
-References: <1343305724-2809-1-git-send-email-andre.przywara@amd.com> <201208052320.14712.rjw@sisk.pl>
+From: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 2/4] PM / OPP: Initialize OPP table from device tree
+Date: Sun, 05 Aug 2012 21:50:32 -0500
+Message-ID: <501F30F8.1040105@gmail.com>
+References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org>
+ <1344179121-17738-3-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201208052320.14712.rjw@sisk.pl>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andre Przywara <andre.przywara@amd.com>, cpufreq@vger.kernel.org, Matthew Garrett <mjg@redhat.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Borislav Petkov <bp@amd64.org>
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
+ h=message-id:date:from:user-agent:mime-version:to:cc:subject
+ :references:in-reply-to:content-type:content-transfer-encoding;
+ bh=1hzxmrTF8xrU9lkq6LiaUJ0okTcngHO6AaeQT2kXrco=;
+ b=ALcqlBgjtVoYp3AtaSZKkqXhnemVx/iYDIR+XLd5D16K8lX8sACWPfPMhbVqNZkmuR
+ BflPcInwcVGsWw8xKZpwWzckoAiVHrxbesdYJevjRk66wZP1TOQfnLUJNX17FU+/NYTI
+ UwZWk6N5DroPdpT0lJnkjXHKInhDWFMtu9Ooe2uhHjDkFkQFFbzI5fBAZV8ZCkEtTDI8
+ FajAv3cT0++nNedEpuXws4vmxsrO0DOmju6ZkmVf1GKjytjUn7xOiMA+OsX2oOr+6iBk
+ mH4tAUEAZbyorfPD/elkGC1vkQzhyvL4XQ4rkAEUP20dFJxr3C6xm/QETLkkoAiAwaxz
+ LWVg==
+In-Reply-To: <1344179121-17738-3-git-send-email-shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Shilimkar Santosh <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-On 08/05/2012 02:20 PM, Rafael J. Wysocki wrote:
-> On Thursday, July 26, 2012, Andre Przywara wrote:
->> The programming model for cpufreq on current AMD CPUs is almost identical
->> to the one used on Intel and VIA hardware. This patchset merges support
->> into acpi-cpufreq and removes it from powernow-k8.
->>
->> This patchset is heavily based on Matthew Garrett's V4 from last July.
->> The boosting part has been mostly reworked and documentation for it
->> has been added. Also there was a need for (yet another) BIOS quirk
->> on AMD desktop boards.
->>
->> Signed-off-by: Andre Przywara <andre.przywara@amd.com>
->
-> Peter, any objection to this series?
->
+On 08/05/2012 10:05 AM, Shawn Guo wrote:
+> With a lot of devices booting from device tree nowadays, it requires
+> that OPP table can be initialized from device tree.  The patch adds
+> a helper function of_init_opp_table together with a binding doc for
+> that purpose.
+> 
+> Signed-off-by: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  Documentation/devicetree/bindings/power/opp.txt |   25 +++++++++
+>  drivers/base/power/opp.c                        |   65 +++++++++++++++++++++++
+>  include/linux/opp.h                             |    8 +++
+>  3 files changed, 98 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/opp.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+> new file mode 100644
+> index 0000000..2238520
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/opp.txt
+> @@ -0,0 +1,25 @@
+> +* Generic OPP Interface
+> +
+> +SoCs have a standard set of tuples consisting of frequency and
+> +voltage pairs that the device will support per voltage domain. These
+> +are called Operating Performance Points or OPPs.
+> +
+> +Properties:
+> +- operating-points: An array of 3-tuples items, and each item consists
 
-No.  It might be good for Borislav & Co to look it over, though, if they 
-haven't already.
+3 tuples?
 
-	-hpa
+> +  of frequency and voltage like <freq-kHz vol-uV>.
+> +	freq: clock frequency in kHz
+> +	vol: voltage in microvolt
 
+Although maybe 3 fields would be good for a flags field? I'm concerned
+it's a pretty generic name and not very future proof. What about
+transition times? Not sure how you would represent that as it probably
+depends on which points you are changing between rather than a property
+of the opp.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+I'm not saying we have to address that now, but just have some path in
+the future.
 
+> +
+> +Examples:
+> +
+> +cpu@0 {
+> +	compatible = "arm,cortex-a9";
+> +	reg = <0>;
+> +	next-level-cache = <&L2>;
+> +	operating-points = <
+> +		/* kHz    uV */
+> +		792000  1100000
+> +		396000  950000
+> +		198000  850000
+> +	>;
+> +};
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index ac993ea..1bf1be8 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/rculist.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/opp.h>
+> +#include <linux/of.h>
+>  
+>  /*
+>   * Internal data structure organization with the OPP layer library is as
+> @@ -674,3 +675,67 @@ struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+>  
+>  	return &dev_opp->head;
+>  }
+> +
+> +#ifdef CONFIG_OF
+> +/**
+> + * of_init_opp_table() - Initialize opp table from device tree
+> + * @dev:	device pointer used to lookup device OPPs.
+> + *
+> + * Register the initial OPP table with the OPP library for given device.
+> + */
+> +int of_init_opp_table(struct device *dev)
+> +{
+> +	struct device_node *np = dev->of_node;
+> +	const char *propname = "operating-points";
+> +	const struct property *pp;
+> +	u32 *opp;
+> +	int ret, i, nr;
+> +
+> +	pp = of_find_property(np, propname, NULL);
+> +	if (!pp) {
+> +		dev_err(dev, "%s: Unable to find property", __func__);
+> +		return -ENODEV;
+> +	}
+> +
+> +	opp = kzalloc(pp->length, GFP_KERNEL);
+> +	if (!opp) {
+> +		dev_err(dev, "%s: Unable to allocate array\n", __func__);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	nr = pp->length / sizeof(u32);
+> +	ret = of_property_read_u32_array(np, propname, opp, nr);
+> +	if (ret) {
+> +		dev_err(dev, "%s: Unable to read OPPs\n", __func__);
+> +		goto out;
+> +	}
+> +
+> +	if (nr % 2) {
+> +		dev_err(dev, "%s: Invalid OPP list\n", __func__);
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+> +
+> +	nr /= 2;
+> +	for (i = 0; i < nr; i++) {
+> +		/*
+> +		 * Each OPP is a set of tuples consisting of frequency and
+> +		 * voltage like <freq-kHz vol-uV>.
+> +		 */
+> +		u32 *val = opp + i * 2;
+> +
+> +		val[0] *= 1000;
+> +		ret = opp_add(dev, val[0], val[1]);
+> +		if (ret) {
+> +			dev_warn(dev, "%s: Failed to add OPP %d: %d\n",
+> +				 __func__, val[0], ret);
+> +			continue;
+> +		}
+> +	}
+
+I think this whole function can be written more concisely. Just iterate
+over the property and avoid the intermediate array allocation.
+
+Rob
