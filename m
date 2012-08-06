@@ -1,74 +1,79 @@
-From: Rob Herring <robherring2@gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
 Subject: Re: [PATCH v2 2/4] PM / OPP: Initialize OPP table from device tree
-Date: Sun, 05 Aug 2012 23:43:04 -0500
-Message-ID: <501F4B58.4020308@gmail.com>
-References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org> <1344179121-17738-3-git-send-email-shawn.guo@linaro.org> <501F30F8.1040105@gmail.com> <20120806031916.GC22302@S2101-09.ap.freescale.net>
+Date: Mon, 6 Aug 2012 13:23:02 +0800
+Message-ID: <20120806052300.GD22302@S2101-09.ap.freescale.net>
+References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org>
+ <1344179121-17738-3-git-send-email-shawn.guo@linaro.org>
+ <501F30F8.1040105@gmail.com>
+ <20120806031916.GC22302@S2101-09.ap.freescale.net>
+ <501F4B58.4020308@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=Mbg8ijtCm/oHdsnDiFjVbMHzqdF/YKm+nO0EYf1PWXo=;
-        b=gzF9EWJAoLV1I+lSqRP2vVVsmXAmlKqWUDA38E8Ovww39+Z5t0fCLA+cqPztzWOVFH
-         WUvo0pYiTEMq/dp9Jqwl5sXcem1s+MapXOEwzBD8sTrNikR+S1MSJSz+21q1YviDMb/Q
-         kono5qoTgaSLThvhOl0EipTrH0rpJBTAB6d5xAEBVAHarRTXMBAWupEDCRI1xOBFE+fO
-         ylRWiB+9F9mLg7jwtOqmpXSySicOxD6ZqGYVLawqEiM4nM9qdkU+v8jmO7Z6FFHgrrzX
-         3TjFu52oywlOzTUhWkQMiFg+B6by7ZbluRrkb6yW/U/6dCT/uo45QTHx2PHQdbDFFbDw
-         L6fw==
-In-Reply-To: <20120806031916.GC22302@S2101-09.ap.freescale.net>
+Content-Disposition: inline
+In-Reply-To: <501F4B58.4020308@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robherring2@gmail.com>
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, linux-arm-kernel@lists.infradead.org
 
-On 08/05/2012 10:19 PM, Shawn Guo wrote:
-> On Sun, Aug 05, 2012 at 09:50:32PM -0500, Rob Herring wrote:
->>> +Properties:
->>> +- operating-points: An array of 3-tuples items, and each item consists
->>
->> 3 tuples?
->>
-> It's the case of v1, and I forgot updating it.  Thanks for spotting it.
+On Sun, Aug 05, 2012 at 11:43:04PM -0500, Rob Herring wrote:
+> On 08/05/2012 10:19 PM, Shawn Guo wrote:
+> > On Sun, Aug 05, 2012 at 09:50:32PM -0500, Rob Herring wrote:
+> >> I think this whole function can be written more concisely. Just iterate
+> >> over the property and avoid the intermediate array allocation.
+> >>
+> > I'm not sure about that, since directly iterating over the property
+> > means we have to take care of all these sanity checks done in API
+> > of_property_read_u32_array().
+> > 
 > 
->>> +  of frequency and voltage like <freq-kHz vol-uV>.
->>> +	freq: clock frequency in kHz
->>> +	vol: voltage in microvolt
->>
->> Although maybe 3 fields would be good for a flags field? I'm concerned
->> it's a pretty generic name and not very future proof. What about
->> transition times? Not sure how you would represent that as it probably
->> depends on which points you are changing between rather than a property
->> of the opp.
->>
-> This is a binding for OPP, which does not define transition times.
+> This won't work?:
 > 
-> As for cpufreq, we only need to represent a possible maximum transition
-> latency.  The driver will ask regulator subsystem for voltage latency,
-> while the clock latency is defined in DT. 
-> 
->> I think this whole function can be written more concisely. Just iterate
->> over the property and avoid the intermediate array allocation.
->>
-> I'm not sure about that, since directly iterating over the property
-> means we have to take care of all these sanity checks done in API
-> of_property_read_u32_array().
-> 
+It should work.  But I rewrote the function like below after I find
+the sanity check is simple enough to take care of it on our own.
 
-This won't work?:
+The code does look more concise and still easy to read.
 
-of_property_for_each_u32(...) {
-	if (i & 0x1) {
-		volt = val;
-		ret = opp_add(dev, freq, volt);
-		if (ret)
-			...
-	} else
-		freq = val * 1000;
+Regards,
+Shawn
 
-	i++;
+int of_init_opp_table(struct device *dev)
+{
+        const struct property *prop;
+        const __be32 *val;
+        int nr;
+
+        prop = of_find_property(dev->of_node, "operating-points", NULL);
+        if (!prop)
+                return -ENODEV;
+        if (!prop->value)
+                return -ENODATA;
+
+        /*
+         * Each OPP is a set of tuples consisting of frequency and
+         * voltage like <freq-kHz vol-uV>.
+         */
+        nr = prop->length / sizeof(u32);
+        if (nr % 2) {
+                dev_err(dev, "%s: Invalid OPP list\n", __func__);
+                return -EINVAL;
+        }
+
+        val = prop->value;
+        while (nr) {
+                unsigned long freq = be32_to_cpup(val++) * 1000;
+                unsigned long volt = be32_to_cpup(val++);
+
+                if (opp_add(dev, freq, volt)) {
+                        dev_warn(dev, "%s: Failed to add OPP %ld\n",
+                                 __func__, freq);
+                        continue;
+                }
+                nr -= 2;
+        }
+
+        return 0;
 }
 
-Rob
