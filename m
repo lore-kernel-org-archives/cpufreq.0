@@ -1,53 +1,74 @@
-From: Shawn Guo <shawn.guo@linaro.org>
+From: Rob Herring <robherring2@gmail.com>
 Subject: Re: [PATCH v2 2/4] PM / OPP: Initialize OPP table from device tree
-Date: Mon, 6 Aug 2012 11:19:19 +0800
-Message-ID: <20120806031916.GC22302@S2101-09.ap.freescale.net>
-References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org>
- <1344179121-17738-3-git-send-email-shawn.guo@linaro.org>
- <501F30F8.1040105@gmail.com>
+Date: Sun, 05 Aug 2012 23:43:04 -0500
+Message-ID: <501F4B58.4020308@gmail.com>
+References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org> <1344179121-17738-3-git-send-email-shawn.guo@linaro.org> <501F30F8.1040105@gmail.com> <20120806031916.GC22302@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <501F30F8.1040105@gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=Mbg8ijtCm/oHdsnDiFjVbMHzqdF/YKm+nO0EYf1PWXo=;
+        b=gzF9EWJAoLV1I+lSqRP2vVVsmXAmlKqWUDA38E8Ovww39+Z5t0fCLA+cqPztzWOVFH
+         WUvo0pYiTEMq/dp9Jqwl5sXcem1s+MapXOEwzBD8sTrNikR+S1MSJSz+21q1YviDMb/Q
+         kono5qoTgaSLThvhOl0EipTrH0rpJBTAB6d5xAEBVAHarRTXMBAWupEDCRI1xOBFE+fO
+         ylRWiB+9F9mLg7jwtOqmpXSySicOxD6ZqGYVLawqEiM4nM9qdkU+v8jmO7Z6FFHgrrzX
+         3TjFu52oywlOzTUhWkQMiFg+B6by7ZbluRrkb6yW/U/6dCT/uo45QTHx2PHQdbDFFbDw
+         L6fw==
+In-Reply-To: <20120806031916.GC22302@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robherring2@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Shawn Guo <shawn.guo@linaro.org>
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, linux-arm-kernel@lists.infradead.org
 
-On Sun, Aug 05, 2012 at 09:50:32PM -0500, Rob Herring wrote:
-> > +Properties:
-> > +- operating-points: An array of 3-tuples items, and each item consists
+On 08/05/2012 10:19 PM, Shawn Guo wrote:
+> On Sun, Aug 05, 2012 at 09:50:32PM -0500, Rob Herring wrote:
+>>> +Properties:
+>>> +- operating-points: An array of 3-tuples items, and each item consists
+>>
+>> 3 tuples?
+>>
+> It's the case of v1, and I forgot updating it.  Thanks for spotting it.
 > 
-> 3 tuples?
+>>> +  of frequency and voltage like <freq-kHz vol-uV>.
+>>> +	freq: clock frequency in kHz
+>>> +	vol: voltage in microvolt
+>>
+>> Although maybe 3 fields would be good for a flags field? I'm concerned
+>> it's a pretty generic name and not very future proof. What about
+>> transition times? Not sure how you would represent that as it probably
+>> depends on which points you are changing between rather than a property
+>> of the opp.
+>>
+> This is a binding for OPP, which does not define transition times.
 > 
-It's the case of v1, and I forgot updating it.  Thanks for spotting it.
-
-> > +  of frequency and voltage like <freq-kHz vol-uV>.
-> > +	freq: clock frequency in kHz
-> > +	vol: voltage in microvolt
+> As for cpufreq, we only need to represent a possible maximum transition
+> latency.  The driver will ask regulator subsystem for voltage latency,
+> while the clock latency is defined in DT. 
 > 
-> Although maybe 3 fields would be good for a flags field? I'm concerned
-> it's a pretty generic name and not very future proof. What about
-> transition times? Not sure how you would represent that as it probably
-> depends on which points you are changing between rather than a property
-> of the opp.
+>> I think this whole function can be written more concisely. Just iterate
+>> over the property and avoid the intermediate array allocation.
+>>
+> I'm not sure about that, since directly iterating over the property
+> means we have to take care of all these sanity checks done in API
+> of_property_read_u32_array().
 > 
-This is a binding for OPP, which does not define transition times.
 
-As for cpufreq, we only need to represent a possible maximum transition
-latency.  The driver will ask regulator subsystem for voltage latency,
-while the clock latency is defined in DT. 
+This won't work?:
 
-> I think this whole function can be written more concisely. Just iterate
-> over the property and avoid the intermediate array allocation.
-> 
-I'm not sure about that, since directly iterating over the property
-means we have to take care of all these sanity checks done in API
-of_property_read_u32_array().
+of_property_for_each_u32(...) {
+	if (i & 0x1) {
+		volt = val;
+		ret = opp_add(dev, freq, volt);
+		if (ret)
+			...
+	} else
+		freq = val * 1000;
 
--- 
-Regards,
-Shawn
+	i++;
+}
 
+Rob
