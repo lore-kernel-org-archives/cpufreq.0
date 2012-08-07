@@ -1,37 +1,46 @@
-From: Mathieu Roy <yeupou@gnu.org>
-Subject: cpufreq --hwfreq / --freq and overclocking
-Date: Tue, 7 Aug 2012 13:09:27 +0200
-Message-ID: <201208071309.27662@bender.stalag13.ici>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RESEND PATCH] conservative: Initialise the cpu field during governor start
+Date: Wed, 8 Aug 2012 00:22:03 +0200
+Message-ID: <201208080022.03731.rjw@sisk.pl>
+References: <201207232055.26506.rjw@sisk.pl> <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: Text/Plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: cpufreq@vger.kernel.org, amit.kachhap@linaro.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 
-Hello,
+On Tuesday, July 24, 2012, Amit Daniel Kachhap wrote:
+> This change initialises the cpu id field of cs_cpu_dbs_info structure in
+> conservative governor and keep this consistent with other governors.
+> Similar initialisation is present in ondemand governor.
+> 
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Is there any way to get the actual real hardware CPU frequency in the case of an overclocked CPU?
+Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
 
-Running at max, I get 
-  # cpufreq-info --hwfreq
-3000000
-  # cpufreq-info --freq
-3000000
+Thanks,
+Rafael
 
-However, dmidecode shows, according to BIOS settings:
-	Version: AMD Athlon(tm) II X4 640 Processor
-	External Clock: 230 MHz
-	Max Speed: 3700 MHz
-	Current Speed: 3450 MHz
 
-Which frequency value is the correct one? I assume cpufreq does not override the BIOS overclocking settings (external clock at 230 instead of 200, hence the CPU at 3450 instead of 3000), so is there any way for cpufreq to adjust and report correct values?
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 235a340..a1563d7 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -504,6 +504,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  				j_dbs_info->prev_cpu_nice =
+>  						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+>  		}
+> +		this_dbs_info->cpu = cpu;
+>  		this_dbs_info->down_skip = 0;
+>  		this_dbs_info->requested_freq = policy->cur;
+>  
+> 
 
-(PS : I googled a bit around and found nothing conclusive)
-(PPS : Please add me in Cc:)
-
-Regards,
-
--- 
-Mathieu Roy
