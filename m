@@ -1,46 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RESEND PATCH] conservative: Initialise the cpu field during governor start
-Date: Wed, 8 Aug 2012 00:22:03 +0200
-Message-ID: <201208080022.03731.rjw@sisk.pl>
-References: <201207232055.26506.rjw@sisk.pl> <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH v2 3/4] regulator: add a new API
+ regulator_set_voltage_tol()
+Date: Wed, 8 Aug 2012 14:35:40 +0100
+Message-ID: <20120808133540.GB16861@opensource.wolfsonmicro.com>
+References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org>
+ <1344179121-17738-4-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1344179121-17738-4-git-send-email-shawn.guo@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: cpufreq@vger.kernel.org, amit.kachhap@linaro.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-On Tuesday, July 24, 2012, Amit Daniel Kachhap wrote:
-> This change initialises the cpu id field of cs_cpu_dbs_info structure in
-> conservative governor and keep this consistent with other governors.
-> Similar initialisation is present in ondemand governor.
-> 
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+On Sun, Aug 05, 2012 at 11:05:20PM +0800, Shawn Guo wrote:
+> There are some use cases where a voltage range could be reasonably
+> specified by a target voltage and tolerance.  Add a new API
+> regulator_set_voltage_tol() wrapping regulator_set_voltage() call
+> to ease the users.
 
-Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 235a340..a1563d7 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -504,6 +504,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  				j_dbs_info->prev_cpu_nice =
->  						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->  		}
-> +		this_dbs_info->cpu = cpu;
->  		this_dbs_info->down_skip = 0;
->  		this_dbs_info->requested_freq = policy->cur;
->  
-> 
-
+Applied, thanks!  It's on a separate branch so can easily be either
+applied somewhere else or merged into another tree if required for
+dependencies, just let me know.
