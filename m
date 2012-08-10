@@ -1,35 +1,50 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH v2 3/4] regulator: add a new API
- regulator_set_voltage_tol()
-Date: Thu, 9 Aug 2012 11:53:50 +0100
-Message-ID: <20120809105349.GL24328@opensource.wolfsonmicro.com>
-References: <1344179121-17738-1-git-send-email-shawn.guo@linaro.org>
- <1344179121-17738-4-git-send-email-shawn.guo@linaro.org>
- <20120808133540.GB16861@opensource.wolfsonmicro.com>
- <20120808143004.GB14718@S2101-09.ap.freescale.net>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH v3 0/3] Add a generic cpufreq-cpu0 driver
+Date: Fri, 10 Aug 2012 13:37:22 +0800
+Message-ID: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20120808143004.GB14718@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 
-On Wed, Aug 08, 2012 at 10:30:07PM +0800, Shawn Guo wrote:
-> On Wed, Aug 08, 2012 at 02:35:40PM +0100, Mark Brown wrote:
+Patch "cpufreq: Add a generic cpufreq-cpu0 driver" has a dependency
+on following branch.
 
-> > Applied, thanks!  It's on a separate branch so can easily be either
-> > applied somewhere else or merged into another tree if required for
-> > dependencies, just let me know.
+ git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git topic/tol
 
-> I intended to have the whole series go via cpufreq tree with your ack
-> on this patch.  But I could also ask Rafael to merge your branch to
-> resolve the dependency.
+Changes since v2:
+* Drop patch "regulator: add a new API regulator_set_voltage_tol()",
+  which has been applied on regulator tree as above.
+* Rewrite function of_init_opp_table to make it concise.
+  
+Regards,
+Shawn
 
-I anticipate wanting the new API in other trees too (I have one likely
-use in mind) so having it only in the cpufreq tree would be inconvenient.
-The whole reason to have this in the regulator API is that it's
-something that's useful outside your cpufreq code!
+Richard Zhao (1):
+  ARM: add cpufreq transiton notifier to adjust loops_per_jiffy for smp
+
+Shawn Guo (2):
+  PM / OPP: Initialize OPP table from device tree
+  cpufreq: Add a generic cpufreq-cpu0 driver
+
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   55 ++++
+ Documentation/devicetree/bindings/power/opp.txt    |   25 ++
+ arch/arm/kernel/smp.c                              |   54 ++++
+ drivers/base/power/opp.c                           |   47 ++++
+ drivers/cpufreq/Kconfig                            |   11 +
+ drivers/cpufreq/Makefile                           |    2 +
+ drivers/cpufreq/cpufreq-cpu0.c                     |  271 ++++++++++++++++++++
+ include/linux/opp.h                                |    8 +
+ 8 files changed, 473 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+ create mode 100644 Documentation/devicetree/bindings/power/opp.txt
+ create mode 100644 drivers/cpufreq/cpufreq-cpu0.c
+
+-- 
+1.7.5.4
+
+
