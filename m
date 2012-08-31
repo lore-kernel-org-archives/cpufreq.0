@@ -1,32 +1,92 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 16436] ath5k (AR5001) does not work after resume and fails with
- "ath5k phy0: gain calibration timeout"
-Date: Wed, 29 Aug 2012 17:26:29 +0000 (UTC)
-Message-ID: <20120829172629.9DF0F11FC6E@bugzilla.kernel.org>
-References: <bug-16436-12968@https.bugzilla.kernel.org/>
+From: AnilKumar Ch <anilkumar@ti.com>
+Subject: [PATCH 2/2] arm/dts: AM33XX: Add device tree OPP table
+Date: Fri, 31 Aug 2012 15:07:20 +0530
+Message-ID: <1346405840-31058-3-git-send-email-anilkumar@ti.com>
+References: <1346405840-31058-1-git-send-email-anilkumar@ti.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-16436-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <1346405840-31058-1-git-send-email-anilkumar@ti.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org, grant.likely@secretlab.ca, AnilKumar Ch <anilkumar@ti.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=16436
+Add DT OPP table for AM33XX family of devices. This data is
+decoded by OF with of_init_opp_table() helper function.
 
+Also adds cpu0 supply name to the corresponding dts files.
+cpu0-supply name is used by cpufreq-cpu0 driver to get the
+regulator pointer for voltage modifications.
 
-Alan <alan@lxorguk.ukuu.org.uk> changed:
+Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+---
+ arch/arm/boot/dts/am335x-bone.dts |    6 ++++++
+ arch/arm/boot/dts/am335x-evm.dts  |    6 ++++++
+ arch/arm/boot/dts/am33xx.dtsi     |   15 +++++++++++++++
+ 3 files changed, 27 insertions(+)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |ASSIGNED
-     Kernel Version|3.3.4                       |3.4
-
-
-
-
+diff --git a/arch/arm/boot/dts/am335x-bone.dts b/arch/arm/boot/dts/am335x-bone.dts
+index ce486fc..2767b5f 100644
+--- a/arch/arm/boot/dts/am335x-bone.dts
++++ b/arch/arm/boot/dts/am335x-bone.dts
+@@ -13,6 +13,12 @@
+ 	model = "TI AM335x BeagleBone";
+ 	compatible = "ti,am335x-bone", "ti,am33xx";
+ 
++	cpus {
++		cpu@0 {
++			cpu0-supply = <&dcdc2_reg>;
++		};
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 		reg = <0x80000000 0x10000000>; /* 256 MB */
+diff --git a/arch/arm/boot/dts/am335x-evm.dts b/arch/arm/boot/dts/am335x-evm.dts
+index baa3276..54d972c 100644
+--- a/arch/arm/boot/dts/am335x-evm.dts
++++ b/arch/arm/boot/dts/am335x-evm.dts
+@@ -13,6 +13,12 @@
+ 	model = "TI AM335x EVM";
+ 	compatible = "ti,am335x-evm", "ti,am33xx";
+ 
++	cpus {
++		cpu@0 {
++			cpu0-supply = <&vdd1_reg>;
++		};
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 		reg = <0x80000000 0x10000000>; /* 256 MB */
+diff --git a/arch/arm/boot/dts/am33xx.dtsi b/arch/arm/boot/dts/am33xx.dtsi
+index ab744d6..2043b53 100644
+--- a/arch/arm/boot/dts/am33xx.dtsi
++++ b/arch/arm/boot/dts/am33xx.dtsi
+@@ -25,6 +25,21 @@
+ 	cpus {
+ 		cpu@0 {
+ 			compatible = "arm,cortex-a8";
++
++			/*
++			 * To consider voltage drop between PMIC and SoC,
++			 * tolerance value is reduced to 2% from 4% and
++			 * voltage value is increased as a precaution.
++			 */
++			operating-points = <
++				/* kHz    uV */
++				720000  1285000
++				600000  1225000
++				500000  1125000
++				275000  1125000
++			>;
++			voltage-tolerance = <2>; /* 2 percentage */
++			clock-latency = <300000>; /* From omap-cpufreq driver */
+ 		};
+ 	};
+ 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.9.5
+
