@@ -1,39 +1,50 @@
-From: AnilKumar Ch <anilkumar@ti.com>
-Subject: [PATCH 1/2] ARM: OMAP2+: AM33XX: Add clock entries to omap_clk data
-Date: Fri, 31 Aug 2012 15:07:19 +0530
-Message-ID: <1346405840-31058-2-git-send-email-anilkumar@ti.com>
-References: <1346405840-31058-1-git-send-email-anilkumar@ti.com>
+From: Michal Pecio <mpecio@nvidia.com>
+Subject: [PATCH] cpufreq: ondemand: update frequency when limits are relaxed
+Date: Fri, 31 Aug 2012 11:09:47 -0700
+Message-ID: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380AF6B7BF@HQMAIL04.nvidia.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1346405840-31058-1-git-send-email-anilkumar@ti.com>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree-discuss@lists.ozlabs.org, grant.likely@secretlab.ca, AnilKumar Ch <anilkumar@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Add AM335x cpu0 clock entry to the corresponding clock data
-file. This is useful in getting the correct mpu clock pointer
-to change the cpu frequency in cpufreq driver.
+From: Michal Pecio <mpecio@nvidia.com>
 
-Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+Reevaluate CPU load and update frequency immediately whenever limits 
+are changed. Currently ondemand doesn't do so when limits are relaxed,
+wasting power on CPUs with relatively low sampling rate.
+Also, update the prev_cpu_* variables on frequency transitions. Their
+old values aren't valid anymore because the governor assumes constant
+frequency during entire sampling period.
+
+Signed-off-by: Michal Pecio <mpecio@nvidia.com>
 ---
- arch/arm/mach-omap2/clock33xx_data.c |    1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/mach-omap2/clock33xx_data.c b/arch/arm/mach-omap2/clock33xx_data.c
-index 23251fa..7afefe8 100644
---- a/arch/arm/mach-omap2/clock33xx_data.c
-+++ b/arch/arm/mach-omap2/clock33xx_data.c
-@@ -1013,6 +1013,7 @@ static struct omap_clk am33xx_clks[] = {
- 	CLK(NULL,	"dpll_core_m5_ck",	&dpll_core_m5_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_core_m6_ck",	&dpll_core_m6_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_mpu_ck",		&dpll_mpu_ck,	CK_AM33XX),
-+	CLK("cpu0",	NULL,			&dpll_mpu_ck,		CK_AM33XX),
- 	CLK(NULL,	"dpll_mpu_m2_ck",	&dpll_mpu_m2_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_ddr_ck",		&dpll_ddr_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_ddr_m2_ck",	&dpll_ddr_m2_ck,	CK_AM33XX),
--- 
-1.7.9.5
-
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 1aaf7af..8cee63e 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -754,12 +754,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 
+ 	case CPUFREQ_GOV_LIMITS:
+ 		mutex_lock(&this_dbs_info->timer_mutex);
+-		if (policy->max < this_dbs_info->cur_policy->cur)
+-			__cpufreq_driver_target(this_dbs_info->cur_policy,
+-				policy->max, CPUFREQ_RELATION_H);
+-		else if (policy->min > this_dbs_info->cur_policy->cur)
+-			__cpufreq_driver_target(this_dbs_info->cur_policy,
+-				policy->min, CPUFREQ_RELATION_L);
++		dbs_check_cpu(this_dbs_info);
+ 		mutex_unlock(&this_dbs_info->timer_mutex);
+ 		break;
+ 	}
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
