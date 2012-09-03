@@ -1,64 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 0/3] Add a generic cpufreq-cpu0 driver
-Date: Sat, 1 Sep 2012 07:53:26 +0200
-Message-ID: <201209010753.27095.rjw@sisk.pl>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <20120831064236.GB3271@r65073-Latitude-D630>
+From: Andre Przywara <andre.przywara@amd.com>
+Subject: Re: cpufreq --hwfreq / --freq and overclocking
+Date: Mon, 3 Sep 2012 13:39:21 +0200
+Message-ID: <504496E9.7070109@amd.com>
+References: <201208071309.27662@bender.stalag13.ici>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20120831064236.GB3271@r65073-Latitude-D630>
+In-Reply-To: <201208071309.27662@bender.stalag13.ici>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Rob Herring <rob.herring@calxeda.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Mathieu Roy <yeupou@gnu.org>
+Cc: cpufreq@vger.kernel.org
 
-On Friday, August 31, 2012, Shawn Guo wrote:
-> Ping, Rafael.
+On 08/07/2012 01:09 PM, Mathieu Roy wrote:
+> Hello,
+>
+> Is there any way to get the actual real hardware CPU frequency in the case of an overclocked CPU?
+>
+> Running at max, I get
+>    # cpufreq-info --hwfreq
+> 3000000
+>    # cpufreq-info --freq
+> 3000000
 
-Yeah, sorry for the delay.
+Both command lines eventually query the frequency from an ACPI table. 
+This table will be filled at boot time by the BIOS.
+Now it depends on how you overclock your system. If you use the BIOS, it 
+_could_ adapt the ACPI table and enter the actual values here, but 
+obviously it does not do this.
+If you do this outside of the BIOS, ACPI is usually not altered, so you 
+are out of luck then.
 
-I'll get to it when I get back from LinuxCon/Plumbers Conf. (early next week).
+> However, dmidecode shows, according to BIOS settings:
+> 	Version: AMD Athlon(tm) II X4 640 Processor
+> 	External Clock: 230 MHz
+> 	Max Speed: 3700 MHz
+> 	Current Speed: 3450 MHz
 
-Thanks,
-Rafael
+So this gives a hint that the BIOS knows about the overclocked system. I 
+guess that it just does not report this into the _PSS object, probably 
+because the official recommendation in the AMD manuals is to use 200 MHz 
+as the base frequency.
+
+> Which frequency value is the correct one? I assume cpufreq does not
+> override the BIOS overclocking settings (external clock at 230 instead
+> of 200, hence the CPU at 3450 instead of 3000), so is there any way for
+> cpufreq to adjust and report correct values?
+
+cpufreq just reports the _PSS ACPI content and does not alter or 
+override any settings. I guess it is out of scope for the rather generic 
+cpufreq subsystem to query any actual overclocked system bus frequencies 
+and report those values instead.
+
+However you could use more hardware dedicated tools to read the data 
+directly from the system and compute the actual frequencies. As I am not 
+an overclocker, I don't know of any Linux tools who do this, but maybe 
+someone from the list does.
+
+Regards,
+Andre.
 
 
-> On Fri, Aug 10, 2012 at 01:37:22PM +0800, Shawn Guo wrote:
-> > Patch "cpufreq: Add a generic cpufreq-cpu0 driver" has a dependency
-> > on following branch.
-> > 
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git topic/tol
-> > 
-> > Changes since v2:
-> > * Drop patch "regulator: add a new API regulator_set_voltage_tol()",
-> >   which has been applied on regulator tree as above.
-> > * Rewrite function of_init_opp_table to make it concise.
-> >   
-> > Regards,
-> > Shawn
-> > 
-> > Richard Zhao (1):
-> >   ARM: add cpufreq transiton notifier to adjust loops_per_jiffy for smp
-> > 
-> > Shawn Guo (2):
-> >   PM / OPP: Initialize OPP table from device tree
-> >   cpufreq: Add a generic cpufreq-cpu0 driver
-> > 
-> >  .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |   55 ++++
-> >  Documentation/devicetree/bindings/power/opp.txt    |   25 ++
-> >  arch/arm/kernel/smp.c                              |   54 ++++
-> >  drivers/base/power/opp.c                           |   47 ++++
-> >  drivers/cpufreq/Kconfig                            |   11 +
-> >  drivers/cpufreq/Makefile                           |    2 +
-> >  drivers/cpufreq/cpufreq-cpu0.c                     |  271 ++++++++++++++++++++
-> >  include/linux/opp.h                                |    8 +
-> >  8 files changed, 473 insertions(+), 0 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> >  create mode 100644 Documentation/devicetree/bindings/power/opp.txt
-> >  create mode 100644 drivers/cpufreq/cpufreq-cpu0.c
-> > 
-> 
-> 
-> 
+-- 
+Andre Przywara
+AMD-Operating System Research Center (OSRC), Dresden, Germany
 
