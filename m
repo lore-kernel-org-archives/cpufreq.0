@@ -1,37 +1,37 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 2/3] PM / OPP: Initialize OPP table from device tree
-Date: Wed, 5 Sep 2012 01:27:19 +0200
-Message-ID: <201209050127.19919.rjw@sisk.pl>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <20120817005210.GD24242@S2101-09.ap.freescale.net> <502DA401.7040408@gmail.com>
+Subject: Re: [PATCH] powernow-k8: Fixup missing _PSS objects message
+Date: Wed, 5 Sep 2012 01:27:56 +0200
+Message-ID: <201209050127.56583.rjw@sisk.pl>
+References: <1342624043-29763-1-git-send-email-bp@amd64.org> <201207182150.51441.rjw@sisk.pl> <20120718210549.GA17504@aftab.osrc.amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <502DA401.7040408@gmail.com>
+In-Reply-To: <20120718210549.GA17504@aftab.osrc.amd.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: Text/Plain; charset="us-ascii"
-To: Rob Herring <robherring2@gmail.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
+To: Borislav Petkov <bp@amd64.org>
+Cc: cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, August 17, 2012, Rob Herring wrote:
-> On 08/16/2012 07:52 PM, Shawn Guo wrote:
-> > On Thu, Aug 16, 2012 at 11:05:54PM +0200, Rafael J. Wysocki wrote:
-> >> On Friday, August 10, 2012, Shawn Guo wrote:
-> >>> With a lot of devices booting from device tree nowadays, it requires
-> >>> that OPP table can be initialized from device tree.  The patch adds
-> >>> a helper function of_init_opp_table together with a binding doc for
-> >>> that purpose.
-> >>>
-> >>> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> >>
-> >> I need an ACK from whoever maintains the DT bindings for that.
-> >>
-> > Rob, please?
+On Wednesday, July 18, 2012, Borislav Petkov wrote:
+> On Wed, Jul 18, 2012 at 09:50:51PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, July 18, 2012, Borislav Petkov wrote:
+> > > From: Borislav Petkov <borislav.petkov@amd.com>
+> > > 
+> > > _PSS objects can also be missing if Cool'N'Quiet is disabled in the
+> > > BIOS. Add that to the FW_BUG message for the user to try before updating
+> > > her BIOS. Fix formatting while at it.
+> > > 
+> > > Acked-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> > > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> > 
+> > I will take this, but it's kind of too late for v3.6.
 > 
-> Acked-by: Rob Herring <rob.herring@calxeda.com>
+> Yeah, sure, whenever. I found it buried in my mbox since 3.2ish. And
+> since it is not urgent, you don't have to rush it for 3.6 but send it
+> upstream whenever you like.
 
 Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
 
 Thanks,
 Rafael
-
