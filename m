@@ -1,43 +1,59 @@
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH v3 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
-Date: Wed, 5 Sep 2012 10:32:07 +0530
-Message-ID: <CAMQu2gwjqhi2EJ_3yk+0k9gRWDaGu4yG+V7E4BJ2G3Ki7uGk6g@mail.gmail.com>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org>
- <1344577046-14847-4-git-send-email-shawn.guo@linaro.org> <201209050118.39045.rjw@sisk.pl>
- <20120905011219.GN2362@S2101-09.ap.freescale.net>
+Date: Wed, 5 Sep 2012 15:38:12 +0200
+Message-ID: <201209051538.12916.rjw@sisk.pl>
+References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <201209050118.39045.rjw@sisk.pl> <20120905011219.GN2362@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <20120905011219.GN2362@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset="us-ascii"
 To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Rob Herring <rob.herring@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Rob Herring <rob.herring@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-Shawn,
-
-On Wed, Sep 5, 2012 at 6:42 AM, Shawn Guo <shawn.guo@linaro.org> wrote:
+On Wednesday, September 05, 2012, Shawn Guo wrote:
 > On Wed, Sep 05, 2012 at 01:18:38AM +0200, Rafael J. Wysocki wrote:
->> On Friday, August 10, 2012, Shawn Guo wrote:
->> > It adds a generic cpufreq driver for CPU0 frequency management based on
->> > clk, regulator, OPP and device tree support.  It can support both
->> > uniprocessor (UP) and those symmetric multiprocessor (SMP) systems which
->> > share clock and voltage across all CPUs.
->> >
->> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
->>
->> I seem to recall that this has been discussed with several people and
->> undergone some changes as a result of comments.  Would it be possible
->> to get some ACKs from the people involved?
->>
->
+> > On Friday, August 10, 2012, Shawn Guo wrote:
+> > > It adds a generic cpufreq driver for CPU0 frequency management based on
+> > > clk, regulator, OPP and device tree support.  It can support both
+> > > uniprocessor (UP) and those symmetric multiprocessor (SMP) systems which
+> > > share clock and voltage across all CPUs.
+> > > 
+> > > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> > 
+> > I seem to recall that this has been discussed with several people and
+> > undergone some changes as a result of comments.  Would it be possible
+> > to get some ACKs from the people involved?
+> > 
+> 
 > Mark, Santosh,
->
+> 
 > Reviewed-by, please?
->
-As commented already, the name of file was bit odd to me
-otherwise, patch itself is fine by me.
+> 
+> AnilKumar,
+> 
+> Tested-by, please?
+> 
+> <snip>
+> 
+> > > --- /dev/null
+> > > +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> > > @@ -0,0 +1,271 @@
+> > > +/*
+> > > + * Copyright (C) 2012 Freescale Semiconductor, Inc.
+> > > + *
+> > > + * Reuse some codes from drivers/cpufreq/omap-cpufreq.c
+> > 
+> > What do you mean by "reuse" here?
+> > 
+> cpu0_set_target() function is almost a copy of omap_target() from
+> drivers/cpufreq/omap-cpufreq.c.  I should probably just say so?
 
-FWIW ,
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Well, what about actually avoiding the code duplication?  That is,
+can you make OMAP be a user of your new core function and drop the
+OMAP-specific one, perhaps?
+
+Rafael
+
