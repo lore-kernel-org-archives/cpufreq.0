@@ -1,60 +1,27 @@
-From: Andre Przywara <andre.przywara@amd.com>
-Subject: Re: [PATCH 0/8 v2] acpi-cpufreq: Move modern AMD cpufreq support
- to acpi-cpufreq
-Date: Wed, 5 Sep 2012 17:05:37 +0200
-Message-ID: <50476A41.30908@amd.com>
-References: <1346747289-8421-1-git-send-email-andre.przywara@amd.com> <201209051546.22590.rjw@sisk.pl> <201209051625.41769.trenn@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v3 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
+Date: Wed, 5 Sep 2012 22:18:50 +0200
+Message-ID: <201209052218.50634.rjw@sisk.pl>
+References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <201209051538.12916.rjw@sisk.pl> <20120905135937.GA2362@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201209051625.41769.trenn@suse.de>
+In-Reply-To: <20120905135937.GA2362@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garret <mjg@redhat.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Andreas Herrmann <andreas.herrmann3@amd.com>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Rob Herring <rob.herring@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-On 09/05/2012 04:25 PM, Thomas Renninger wrote:
-> On Wednesday, September 05, 2012 03:46:22 PM Rafael J. Wysocki wrote:
->> On Tuesday, September 04, 2012, Andre Przywara wrote:
->>> Hi,
->>>
->>
->> I have applied the whole series to the linux-next branch of the linux-pm.git
+On Wednesday, September 05, 2012, Shawn Guo wrote:
+> On Wed, Sep 05, 2012 at 03:38:12PM +0200, Rafael J. Wysocki wrote:
+> > Well, what about actually avoiding the code duplication?  That is,
+> > can you make OMAP be a user of your new core function and drop the
+> > OMAP-specific one, perhaps?
+> > 
+> I would expect that the driver will replace the omap-cpufreq driver
+> completely at some point, where omap becomes a DT only platform.
 
-Thanks!
+That's fine, but why do we need two almost identical functions to start with?
 
->> tree, but I'm quite unsure about [7/8].  Is it really necessary?  I mean, since
->> we want users to switch to a different driver anyway, which already has a knob
->> providing the functionality in question, what's the point really?
->
-> Afaik this was mostly for compiler people or other developers doing
-> benchmarks to be able to avoid fluctating numbers caused by turbo/boost
-> mode.
->
-> I don't know whether it's used by any userspace tool.
-
-Well, at least we use it here in quite some scripts, both for testing 
-and for benchmarking.
-As this has been in for 2.5 year by now, I'd like to keep it for one or 
-two more major releases and then remove it.
-
-> If, it would certainly
-> be an AMD specific tool for developers. If you (AMD) know a userspace tool
-> out there it may make sense to keep it the one or other kernel round,
-> otherwise I guess it can simply be deleted.
->
-> I will add the functionality (to enable/disable turbo/boost mode)
-> to cpupower userspace tool as soon as this is in.
-> Shouldn't be much more than a -t option and a
-> one liner to read out or set another cpufreq sysfs file.
-
-Thanks, that would be nice.
-
-Regards,
-Andre.
-
--- 
-Andre Przywara
-AMD-Operating System Research Center (OSRC), Dresden, Germany
-
+Rafael
