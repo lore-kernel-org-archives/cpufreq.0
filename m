@@ -1,46 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8 v2] acpi-cpufreq: Move modern AMD cpufreq support to acpi-cpufreq
-Date: Wed, 5 Sep 2012 15:46:22 +0200
-Message-ID: <201209051546.22590.rjw@sisk.pl>
-References: <1346747289-8421-1-git-send-email-andre.przywara@amd.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v3 3/3] cpufreq: Add a generic cpufreq-cpu0 driver
+Date: Wed, 5 Sep 2012 21:59:40 +0800
+Message-ID: <20120905135937.GA2362@S2101-09.ap.freescale.net>
+References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org>
+ <201209050118.39045.rjw@sisk.pl>
+ <20120905011219.GN2362@S2101-09.ap.freescale.net>
+ <201209051538.12916.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1346747289-8421-1-git-send-email-andre.przywara@amd.com>
+Content-Disposition: inline
+In-Reply-To: <201209051538.12916.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Andre Przywara <andre.przywara@amd.com>
-Cc: Thomas Renninger <trenn@suse.de>, Matthew Garret <mjg@redhat.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Andreas Herrmann <andreas.herrmann3@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Shilimkar Santosh <santosh.shilimkar@ti.com>, Richard Zhao <richard.zhao@freescale.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mike Turquette <mturquette@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Rob Herring <rob.herring@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-On Tuesday, September 04, 2012, Andre Przywara wrote:
-> Hi,
+On Wed, Sep 05, 2012 at 03:38:12PM +0200, Rafael J. Wysocki wrote:
+> Well, what about actually avoiding the code duplication?  That is,
+> can you make OMAP be a user of your new core function and drop the
+> OMAP-specific one, perhaps?
 > 
-> now the second, revised version of the patch set. I now tested loading
-> both drivers after each other in several combinations, after two bug
-> fixes this now works as expected.
-> I added a patch to move messages from powernow-k8 after the initialization
-> phase, so it remains silent if driver loading fails.
-> 
-> I also rearranged the patches so that the powernow-k8 feature removal patch is
-> now the last one and is somewhat optional. I still prefer to have it in,
-> but it can be dropped if needed. Then powernow-k8 will still support modern
-> AMD CPUs, but will emit a warning message.
-> 
-> Regards,
-> Andre
-> 
-> Changes from v1:
-> * added hints to Kconfig about CPU support
-> * merge documentation from separate patch into the feature patch
-> * add deprecation warning
-> * prefix acpi-cpufreq warning messages with module name
-> * bugfix: avoid boost init it driver registration failed
-> * bugfix: fix module redirect request call (was not reached before)
+I would expect that the driver will replace the omap-cpufreq driver
+completely at some point, where omap becomes a DT only platform.
 
-I have applied the whole series to the linux-next branch of the linux-pm.git
-tree, but I'm quite unsure about [7/8].  Is it really necessary?  I mean, since
-we want users to switch to a different driver anyway, which already has a knob
-providing the functionality in question, what's the point really?
-
-Rafael
+-- 
+Regards,
+Shawn
