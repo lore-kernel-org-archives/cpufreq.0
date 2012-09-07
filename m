@@ -1,28 +1,82 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: OMAP: remove redundant loops_per_jiffy code
-Date: Fri, 7 Sep 2012 08:33:59 +0800
-Message-ID: <20120907003356.GC26709@S2101-09.ap.freescale.net>
-References: <1346915424-25868-1-git-send-email-shawn.guo@linaro.org>
- <CAMQu2gwcBNNAPs12GqZb6rteW3AzcAxQEv51YJb+rPjuCv-QEg@mail.gmail.com>
- <20120906073859.GC2362@S2101-09.ap.freescale.net>
- <87a9x3ja3j.fsf@deeprootsystems.com>
-Mime-Version: 1.0
+Subject: [PATCH] cpufreq: OMAP: remove loops_per_jiffy recalculate for smp
+Date: Fri,  7 Sep 2012 09:23:42 +0800
+Message-ID: <1346981022-28011-1-git-send-email-shawn.guo@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87a9x3ja3j.fsf@deeprootsystems.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Santosh Shilimkar <santosh.shilimkar@ti.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Richard Zhao <richard.zhao@freescale.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On Thu, Sep 06, 2012 at 11:10:40AM -0700, Kevin Hilman wrote:
-> Can someone update and repost the patch from Richard with the
-> acks/tested-bys collected?
-> 
-I can.
+From: Richard Zhao <richard.zhao@freescale.com>
 
+With ARM smp common code recalculating loops_per_jiffy in a cpufreq
+transiton notifier call, the loops_per_jiffy recalculate in omap-cpufreq
+driver becomes redundant.  Remove it.
+
+Signed-off-by: Richard Zhao <richard.zhao@freescale.com>
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+---
+ drivers/cpufreq/omap-cpufreq.c |   35 -----------------------------------
+ 1 files changed, 0 insertions(+), 35 deletions(-)
+
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index 17fa04d..83a78ad 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -40,16 +40,6 @@
+ /* OPP tolerance in percentage */
+ #define	OPP_TOLERANCE	4
+ 
+-#ifdef CONFIG_SMP
+-struct lpj_info {
+-	unsigned long	ref;
+-	unsigned int	freq;
+-};
+-
+-static DEFINE_PER_CPU(struct lpj_info, lpj_ref);
+-static struct lpj_info global_lpj_ref;
+-#endif
+-
+ static struct cpufreq_frequency_table *freq_table;
+ static atomic_t freq_table_users = ATOMIC_INIT(0);
+ static struct clk *mpu_clk;
+@@ -161,31 +151,6 @@ static int omap_target(struct cpufreq_policy *policy,
+ 	}
+ 
+ 	freqs.new = omap_getspeed(policy->cpu);
+-#ifdef CONFIG_SMP
+-	/*
+-	 * Note that loops_per_jiffy is not updated on SMP systems in
+-	 * cpufreq driver. So, update the per-CPU loops_per_jiffy value
+-	 * on frequency transition. We need to update all dependent CPUs.
+-	 */
+-	for_each_cpu(i, policy->cpus) {
+-		struct lpj_info *lpj = &per_cpu(lpj_ref, i);
+-		if (!lpj->freq) {
+-			lpj->ref = per_cpu(cpu_data, i).loops_per_jiffy;
+-			lpj->freq = freqs.old;
+-		}
+-
+-		per_cpu(cpu_data, i).loops_per_jiffy =
+-			cpufreq_scale(lpj->ref, lpj->freq, freqs.new);
+-	}
+-
+-	/* And don't forget to adjust the global one */
+-	if (!global_lpj_ref.freq) {
+-		global_lpj_ref.ref = loops_per_jiffy;
+-		global_lpj_ref.freq = freqs.old;
+-	}
+-	loops_per_jiffy = cpufreq_scale(global_lpj_ref.ref, global_lpj_ref.freq,
+-					freqs.new);
+-#endif
+ 
+ done:
+ 	/* notifiers */
 -- 
-Regards,
-Shawn
+1.7.5.4
+
