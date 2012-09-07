@@ -1,39 +1,43 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] cpufreq: ondemand: update frequency when limits are relaxed
-Date: Fri, 7 Sep 2012 10:13:56 +0200
-Message-ID: <201209071013.56871.trenn@suse.de>
-References: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380AF6B7BF@HQMAIL04.nvidia.com> <201209062340.33610.rjw@sisk.pl>
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [PATCH v3 1/3] ARM: add cpufreq transiton notifier to adjust
+ loops_per_jiffy for smp
+Date: Fri, 07 Sep 2012 10:55:00 -0600
+Message-ID: <504A26E4.4070600@wwwdotorg.org>
+References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <1344577046-14847-2-git-send-email-shawn.guo@linaro.org> <5049252D.9000802@wwwdotorg.org> <20120907025847.GI26709@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201209062340.33610.rjw@sisk.pl>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20120907025847.GI26709-rvtDTF3kK1ictlrPMvKcciBecyulp+rMXqFh9Ls21Oc@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Michal Pecio <mpecio@nvidia.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shilimkar Santosh <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Richard Zhao <richard.zhao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On Thursday, September 06, 2012 11:40:33 PM Rafael J. Wysocki wrote:
-> On Friday, August 31, 2012, Michal Pecio wrote:
-> > From: Michal Pecio <mpecio@nvidia.com>
-> > 
-> > Reevaluate CPU load and update frequency immediately whenever limits 
-> > are changed. Currently ondemand doesn't do so when limits are relaxed,
-> > wasting power on CPUs with relatively low sampling rate.
-> > Also, update the prev_cpu_* variables on frequency transitions. Their
-> > old values aren't valid anymore because the governor assumes constant
-> > frequency during entire sampling period.
-> > 
-> > Signed-off-by: Michal Pecio <mpecio@nvidia.com>
+On 09/06/2012 08:58 PM, Shawn Guo wrote:
+> On Thu, Sep 06, 2012 at 04:35:25PM -0600, Stephen Warren wrote:
+>> I believe this patch is causing issues initializing PCI-Express on Tegra.
+>>
+>> In next-20120906, I cold-booted 10 times. 3 times, PCIe initialized OK,
+>> and 7 times, the driver timed out in arch/arm/mach-tegra/pcie.c function
+>> tegra_pcie_check_link(). With this patch reverted, another 10 cold boot
+>> attempts all succeeded just fine. Similarly, the regression appeared in
+>> next-20120905, and I isolated it to arch/arm/kernel/, and this is the
+>> only patch in that directory between next-20120904 and next-20120905.
+>>
+>> Do you have any idea what the problem might be?
+>>
+>> Looking at the timestamps in dmesg in the failing case, the driver is
+>> waiting the expected (per pcie.c driver code) 1.2 seconds before giving
+>> up on the port, although I suppose if the kernel's idea of real-time is
+>> off, then the dmesg log timestamps might be off too.
 > 
-> Well, this makes sense to me.
-> 
-> Thomas, what do you think?
-Looks fine to me as well.
-But the same should be done in the conservative driver as well then.
-Could you  send another, separate patch doing the same in 
-cpufreq_conservative.c.
+> Just for identifying the problem, can you test the following change to
+> see if it fixes the failure.
 
-Thanks,
+Yes, that does solve the problem (well, with s/late_init/late_initcall/).
 
-   Thomas
+As you imply, that change wouldn't help if cpu-tegra.c was built as a
+module. So, is this something you can work around in your patch?
+
+Thanks for the quick response.
