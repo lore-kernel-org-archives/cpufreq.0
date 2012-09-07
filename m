@@ -1,43 +1,94 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v3 1/3] ARM: add cpufreq transiton notifier to adjust
- loops_per_jiffy for smp
-Date: Fri, 07 Sep 2012 10:55:00 -0600
-Message-ID: <504A26E4.4070600@wwwdotorg.org>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <1344577046-14847-2-git-send-email-shawn.guo@linaro.org> <5049252D.9000802@wwwdotorg.org> <20120907025847.GI26709@S2101-09.ap.freescale.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: OMAP: remove loops_per_jiffy recalculate for smp
+Date: Fri, 7 Sep 2012 21:15:08 +0200
+Message-ID: <201209072115.08252.rjw@sisk.pl>
+References: <1346981022-28011-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20120907025847.GI26709-rvtDTF3kK1ictlrPMvKcciBecyulp+rMXqFh9Ls21Oc@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1346981022-28011-1-git-send-email-shawn.guo@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shilimkar Santosh <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Richard Zhao <richard.zhao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Shawn Guo <shawn.guo@linaro.org>, Kevin Hilman <khilman@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Richard Zhao <richard.zhao@freescale.com>
 
-On 09/06/2012 08:58 PM, Shawn Guo wrote:
-> On Thu, Sep 06, 2012 at 04:35:25PM -0600, Stephen Warren wrote:
->> I believe this patch is causing issues initializing PCI-Express on Tegra.
->>
->> In next-20120906, I cold-booted 10 times. 3 times, PCIe initialized OK,
->> and 7 times, the driver timed out in arch/arm/mach-tegra/pcie.c function
->> tegra_pcie_check_link(). With this patch reverted, another 10 cold boot
->> attempts all succeeded just fine. Similarly, the regression appeared in
->> next-20120905, and I isolated it to arch/arm/kernel/, and this is the
->> only patch in that directory between next-20120904 and next-20120905.
->>
->> Do you have any idea what the problem might be?
->>
->> Looking at the timestamps in dmesg in the failing case, the driver is
->> waiting the expected (per pcie.c driver code) 1.2 seconds before giving
->> up on the port, although I suppose if the kernel's idea of real-time is
->> off, then the dmesg log timestamps might be off too.
+On Friday, September 07, 2012, Shawn Guo wrote:
+> From: Richard Zhao <richard.zhao@freescale.com>
 > 
-> Just for identifying the problem, can you test the following change to
-> see if it fixes the failure.
+> With ARM smp common code recalculating loops_per_jiffy in a cpufreq
+> transiton notifier call, the loops_per_jiffy recalculate in omap-cpufreq
+> driver becomes redundant.  Remove it.
+> 
+> Signed-off-by: Richard Zhao <richard.zhao@freescale.com>
+> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
 
-Yes, that does solve the problem (well, with s/late_init/late_initcall/).
+I suppose that Kevin is going to handle this, right?
 
-As you imply, that change wouldn't help if cpu-tegra.c was built as a
-module. So, is this something you can work around in your patch?
+Kevin, if you want me to pull new material for v3.7, it's about time to get
+it ready.
 
-Thanks for the quick response.
+Thanks,
+Rafael
+
+
+> ---
+>  drivers/cpufreq/omap-cpufreq.c |   35 -----------------------------------
+>  1 files changed, 0 insertions(+), 35 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+> index 17fa04d..83a78ad 100644
+> --- a/drivers/cpufreq/omap-cpufreq.c
+> +++ b/drivers/cpufreq/omap-cpufreq.c
+> @@ -40,16 +40,6 @@
+>  /* OPP tolerance in percentage */
+>  #define	OPP_TOLERANCE	4
+>  
+> -#ifdef CONFIG_SMP
+> -struct lpj_info {
+> -	unsigned long	ref;
+> -	unsigned int	freq;
+> -};
+> -
+> -static DEFINE_PER_CPU(struct lpj_info, lpj_ref);
+> -static struct lpj_info global_lpj_ref;
+> -#endif
+> -
+>  static struct cpufreq_frequency_table *freq_table;
+>  static atomic_t freq_table_users = ATOMIC_INIT(0);
+>  static struct clk *mpu_clk;
+> @@ -161,31 +151,6 @@ static int omap_target(struct cpufreq_policy *policy,
+>  	}
+>  
+>  	freqs.new = omap_getspeed(policy->cpu);
+> -#ifdef CONFIG_SMP
+> -	/*
+> -	 * Note that loops_per_jiffy is not updated on SMP systems in
+> -	 * cpufreq driver. So, update the per-CPU loops_per_jiffy value
+> -	 * on frequency transition. We need to update all dependent CPUs.
+> -	 */
+> -	for_each_cpu(i, policy->cpus) {
+> -		struct lpj_info *lpj = &per_cpu(lpj_ref, i);
+> -		if (!lpj->freq) {
+> -			lpj->ref = per_cpu(cpu_data, i).loops_per_jiffy;
+> -			lpj->freq = freqs.old;
+> -		}
+> -
+> -		per_cpu(cpu_data, i).loops_per_jiffy =
+> -			cpufreq_scale(lpj->ref, lpj->freq, freqs.new);
+> -	}
+> -
+> -	/* And don't forget to adjust the global one */
+> -	if (!global_lpj_ref.freq) {
+> -		global_lpj_ref.ref = loops_per_jiffy;
+> -		global_lpj_ref.freq = freqs.old;
+> -	}
+> -	loops_per_jiffy = cpufreq_scale(global_lpj_ref.ref, global_lpj_ref.freq,
+> -					freqs.new);
+> -#endif
+>  
+>  done:
+>  	/* notifiers */
+> 
+
