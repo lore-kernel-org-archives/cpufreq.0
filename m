@@ -1,72 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: ondemand: update frequency when limits are relaxed
-Date: Sat, 8 Sep 2012 22:30:49 +0200
-Message-ID: <201209082230.49760.rjw@sisk.pl>
-References: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380AF6B7BF@HQMAIL04.nvidia.com> <201209072258.43899.rjw@sisk.pl>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v3 1/3] ARM: add cpufreq transiton notifier to adjust
+ loops_per_jiffy for smp
+Date: Mon, 10 Sep 2012 09:17:45 +0800
+Message-ID: <20120910011741.GP26709@S2101-09.ap.freescale.net>
+References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org>
+ <1344577046-14847-2-git-send-email-shawn.guo@linaro.org>
+ <5049252D.9000802@wwwdotorg.org>
+ <20120907025847.GI26709@S2101-09.ap.freescale.net>
+ <504A26E4.4070600@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201209072258.43899.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <504A26E4.4070600@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Michal Pecio <mpecio@nvidia.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Mike Turquette <mturquette@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, Shilimkar Santosh <santosh.shilimkar@ti.com>, Rob Herring <rob.herring@calxeda.com>, Richard Zhao <richard.zhao@freescale.com>, Richard Zhao <richard.zhao@linaro.org>, linux-arm-kernel@lists.infradead.org, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On Friday, September 07, 2012, Rafael J. Wysocki wrote:
-> On Friday, August 31, 2012, Michal Pecio wrote:
-> > From: Michal Pecio <mpecio@nvidia.com>
-> > 
-> > Reevaluate CPU load and update frequency immediately whenever limits 
-> > are changed. Currently ondemand doesn't do so when limits are relaxed,
-> > wasting power on CPUs with relatively low sampling rate.
-> > Also, update the prev_cpu_* variables on frequency transitions. Their
-> > old values aren't valid anymore because the governor assumes constant
-> > frequency during entire sampling period.
-> > 
-> > Signed-off-by: Michal Pecio <mpecio@nvidia.com>
+On Fri, Sep 07, 2012 at 10:55:00AM -0600, Stephen Warren wrote:
+> Yes, that does solve the problem (well, with s/late_init/late_initcall/).
 > 
-> Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
+> As you imply, that change wouldn't help if cpu-tegra.c was built as a
+> module.
 
-Turns out to cause problems to happen, so reverting.
+I doubt that.  Have you confirmed it with testing?  When you install
+module cpu-tegra, the pcie initialization has been done, right?
 
-Thanks,
-Rafael
-
-
-> > ---
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> > index 1aaf7af..8cee63e 100644
-> > --- a/drivers/cpufreq/cpufreq_ondemand.c
-> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> > @@ -754,12 +754,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> >  
-> >  	case CPUFREQ_GOV_LIMITS:
-> >  		mutex_lock(&this_dbs_info->timer_mutex);
-> > -		if (policy->max < this_dbs_info->cur_policy->cur)
-> > -			__cpufreq_driver_target(this_dbs_info->cur_policy,
-> > -				policy->max, CPUFREQ_RELATION_H);
-> > -		else if (policy->min > this_dbs_info->cur_policy->cur)
-> > -			__cpufreq_driver_target(this_dbs_info->cur_policy,
-> > -				policy->min, CPUFREQ_RELATION_L);
-> > +		dbs_check_cpu(this_dbs_info);
-> >  		mutex_unlock(&this_dbs_info->timer_mutex);
-> >  		break;
-> >  	}
-> > -----------------------------------------------------------------------------------
-> > This email message is for the sole use of the intended recipient(s) and may contain
-> > confidential information.  Any unauthorized review, use, disclosure or distribution
-> > is prohibited.  If you are not the intended recipient, please contact the sender by
-> > reply email and destroy all copies of the original message.
-> > -----------------------------------------------------------------------------------
-> > 
-> > 
+> So, is this something you can work around in your patch?
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+Before we head to a solution, we need to identify the cause.
 
+One thing I note is there is no loops_per_jiffy updating in cpu-tegra
+driver.  But if I understand correctly, the driver is running on
+MP system.  It should update loops_per_jiffy when cpu frequency
+changes, right?  I'm worrying about that the timeout in tegra pcie
+driver just happens to work with a wrong loops_per_jiffy, but becomes
+broken when loops_per_jiffy gets correct.
+
+-- 
+Regards,
+Shawn
