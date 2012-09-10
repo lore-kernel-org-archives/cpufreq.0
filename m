@@ -1,46 +1,96 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v3 1/3] ARM: add cpufreq transiton notifier to adjust
- loops_per_jiffy for smp
-Date: Mon, 10 Sep 2012 11:17:50 -0600
-Message-ID: <504E20BE.8050107@wwwdotorg.org>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <1344577046-14847-2-git-send-email-shawn.guo@linaro.org> <5049252D.9000802@wwwdotorg.org> <20120907025847.GI26709@S2101-09.ap.freescale.net> <504A26E4.4070600@wwwdotorg.org> <20120910011741.GP26709@S2101-09.ap.freescale.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: add helper function cpufreq_set_target()
+Date: Mon, 10 Sep 2012 22:22:44 +0200
+Message-ID: <201209102222.45165.rjw@sisk.pl>
+References: <1346981599-28081-1-git-send-email-shawn.guo@linaro.org>
+ <201209072131.56593.rjw@sisk.pl>
+ <20120910031341.GS26709@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20120910011741.GP26709-rvtDTF3kK1ictlrPMvKcciBecyulp+rMXqFh9Ls21Oc@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shilimkar Santosh <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Richard Zhao <richard.zhao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20120910031341.GS26709@S2101-09.ap.freescale.net>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Kevin Hilman <khilman@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 09/09/2012 07:17 PM, Shawn Guo wrote:
-> On Fri, Sep 07, 2012 at 10:55:00AM -0600, Stephen Warren wrote:
->> Yes, that does solve the problem (well, with s/late_init/late_initcall/).
->>
->> As you imply, that change wouldn't help if cpu-tegra.c was built as a
->> module.
+On Monday, September 10, 2012, Shawn Guo wrote:
+> On Fri, Sep 07, 2012 at 09:31:56PM +0200, Rafael J. Wysocki wrote:
+> > > +	struct cpufreq_target_data data;
+> > > +
+> > > +	data.dev = cpu_dev;
+> > > +	data.clk = cpu_clk;
+> > > +	data.reg = cpu_reg;
+> > > +	data.tol = voltage_tolerance;
+> > > +	data.freq_table = freq_table;
+> > > +	data.policy = policy;
+> > > +	data.target_freq = target_freq;
+> > > +	data.relation = relation;
+> > 
+> > I'm not sure what you need the new data structure for.  Both
+> > cpu0_set_target() and omap_target() have the same set of arguments, so it
+> > seems pointless to copy those values back and forth.
+> > 
+> But the first 4 arguments are driver specific.  They are existing
+> in cpufreq-cpu0 and omap-cpufreq drivers as global variables.  I
+> haven't thought of a good way to consolidate all these differences.
+
+Hmm.  Who's going to use the cpufreq-cpu0 driver, then?  Is OMAP going to be
+the only user?
+
+> > > +
+> > > +	return cpufreq_set_target(&data);
+> > 
+> > What about calling that function cpufreq_common_set_target()?
+> > 
+> All driver specific .set_target functions are named with a driver
+> specific prefix, so this shorter name seems explicit to tell the
+> "common", IMO.  But if you insist, I can change.
+
+Well, it's not exactly common, so to speak.  It only is shared between
+the cpu0 and OMAP drivers, so I'm not sure (see below).
+
+> > >  }
+> > >  
+> > >  static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+> > > diff --git a/drivers/cpufreq/cpufreq.h b/drivers/cpufreq/cpufreq.h
+> > > new file mode 100644
+> > > index 0000000..ae380b3
+> > > --- /dev/null
+> > > +++ b/drivers/cpufreq/cpufreq.h
+> > 
+> > I don't think this header is really necessary.
+> > 
+> Put the stuff into include/linux/cpufreq.h?  But these stuff do not
+> necessarily need to be that public.
 > 
-> I doubt that.  Have you confirmed it with testing?  When you install
-> module cpu-tegra, the pcie initialization has been done, right?
+> <snip>
+> 
+> > > +int cpufreq_set_target(struct cpufreq_target_data *d)
+> > 
+> > Why don't you use the original arguments of cpu0_set_target() here?
+> > 
+> As explained above, cpu_dev, cpu_clk, cpu_reg and voltage_tolerance
+> are used in the function as global variables in cpufreq-cpu0 driver.
+> 
+> And that's the primary reason why I think making this common set_target
+> thing is somehow a churn.
 
-Never mind, the code can't be built as a module anyway.
+OK
 
-Aside from that, I misinterpreted your test patch, and thought that it
-was moving the Tegra cpufreq driver initialization earlier, but it's
-actually moving it later, and in fact by chance after PCIe
-initialization, which explains why it solves the issue.
+I'm concerned about the copy-pasting, but if that copy-pasting is going to
+go away when you move OMAP to the new driver, then I agree that adding more
+complexity just to avoid it is probably not a good idea.
 
-I think the root of the problem is that cpufreq is lowering the CPU
-frequency, yet the patch which converted Tegra to the common clock
-framework removed the code that actually changes the CPU clock rate. So,
-cpufreq thinks the CPU is running at e.g. 216MHz, but it's actually
-still running at 1.0GHz, and hence re-calculating the delay loops breaks
-things, since delays aren't as long as the system thinks they are. The
-variability is due to whether lowering the CPU frequency just happens to
-occur before or after the PCIe controller is initialized.
+What's the planned time frame for the OMAP conversion?
 
-Prashant, are you able to fix the clock driver deficiency within the
-next 2-3 days or so (so I can include the fix in the pull requests I
-send for 3.7, which need to be sent before the end of the week)? Or, do
-we need to disable cpufreq for Tegra because of this?
+Rafael
