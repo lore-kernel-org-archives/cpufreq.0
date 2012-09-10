@@ -1,43 +1,74 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3 1/3] ARM: add cpufreq transiton notifier to adjust
- loops_per_jiffy for smp
-Date: Mon, 10 Sep 2012 09:17:45 +0800
-Message-ID: <20120910011741.GP26709@S2101-09.ap.freescale.net>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org>
- <1344577046-14847-2-git-send-email-shawn.guo@linaro.org>
- <5049252D.9000802@wwwdotorg.org>
- <20120907025847.GI26709@S2101-09.ap.freescale.net>
- <504A26E4.4070600@wwwdotorg.org>
+Subject: Re: [PATCH] cpufreq: add helper function cpufreq_set_target()
+Date: Mon, 10 Sep 2012 11:13:43 +0800
+Message-ID: <20120910031341.GS26709@S2101-09.ap.freescale.net>
+References: <1346981599-28081-1-git-send-email-shawn.guo@linaro.org>
+ <201209072131.56593.rjw@sisk.pl>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <504A26E4.4070600@wwwdotorg.org>
+In-Reply-To: <201209072131.56593.rjw@sisk.pl>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Nishanth Menon <nm@ti.com>, Mike Turquette <mturquette@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, cpufreq@vger.kernel.org, Shilimkar Santosh <santosh.shilimkar@ti.com>, Rob Herring <rob.herring@calxeda.com>, Richard Zhao <richard.zhao@freescale.com>, Richard Zhao <richard.zhao@linaro.org>, linux-arm-kernel@lists.infradead.org, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, Kevin Hilman <khilman@ti.com>
 
-On Fri, Sep 07, 2012 at 10:55:00AM -0600, Stephen Warren wrote:
-> Yes, that does solve the problem (well, with s/late_init/late_initcall/).
+On Fri, Sep 07, 2012 at 09:31:56PM +0200, Rafael J. Wysocki wrote:
+> > +	struct cpufreq_target_data data;
+> > +
+> > +	data.dev = cpu_dev;
+> > +	data.clk = cpu_clk;
+> > +	data.reg = cpu_reg;
+> > +	data.tol = voltage_tolerance;
+> > +	data.freq_table = freq_table;
+> > +	data.policy = policy;
+> > +	data.target_freq = target_freq;
+> > +	data.relation = relation;
 > 
-> As you imply, that change wouldn't help if cpu-tegra.c was built as a
-> module.
-
-I doubt that.  Have you confirmed it with testing?  When you install
-module cpu-tegra, the pcie initialization has been done, right?
-
-> So, is this something you can work around in your patch?
+> I'm not sure what you need the new data structure for.  Both
+> cpu0_set_target() and omap_target() have the same set of arguments, so it
+> seems pointless to copy those values back and forth.
 > 
-Before we head to a solution, we need to identify the cause.
+But the first 4 arguments are driver specific.  They are existing
+in cpufreq-cpu0 and omap-cpufreq drivers as global variables.  I
+haven't thought of a good way to consolidate all these differences.
 
-One thing I note is there is no loops_per_jiffy updating in cpu-tegra
-driver.  But if I understand correctly, the driver is running on
-MP system.  It should update loops_per_jiffy when cpu frequency
-changes, right?  I'm worrying about that the timeout in tegra pcie
-driver just happens to work with a wrong loops_per_jiffy, but becomes
-broken when loops_per_jiffy gets correct.
+> > +
+> > +	return cpufreq_set_target(&data);
+> 
+> What about calling that function cpufreq_common_set_target()?
+> 
+All driver specific .set_target functions are named with a driver
+specific prefix, so this shorter name seems explicit to tell the
+"common", IMO.  But if you insist, I can change.
+
+> >  }
+> >  
+> >  static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+> > diff --git a/drivers/cpufreq/cpufreq.h b/drivers/cpufreq/cpufreq.h
+> > new file mode 100644
+> > index 0000000..ae380b3
+> > --- /dev/null
+> > +++ b/drivers/cpufreq/cpufreq.h
+> 
+> I don't think this header is really necessary.
+> 
+Put the stuff into include/linux/cpufreq.h?  But these stuff do not
+necessarily need to be that public.
+
+<snip>
+
+> > +int cpufreq_set_target(struct cpufreq_target_data *d)
+> 
+> Why don't you use the original arguments of cpu0_set_target() here?
+> 
+As explained above, cpu_dev, cpu_clk, cpu_reg and voltage_tolerance
+are used in the function as global variables in cpufreq-cpu0 driver.
+
+And that's the primary reason why I think making this common set_target
+thing is somehow a churn.
 
 -- 
 Regards,
