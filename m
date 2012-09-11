@@ -1,54 +1,45 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v3 1/3] ARM: add cpufreq transiton notifier to adjust
- loops_per_jiffy for smp
-Date: Tue, 11 Sep 2012 09:16:56 -0600
-Message-ID: <504F55E8.3000803@wwwdotorg.org>
-References: <1344577046-14847-1-git-send-email-shawn.guo@linaro.org> <1344577046-14847-2-git-send-email-shawn.guo@linaro.org> <5049252D.9000802@wwwdotorg.org> <20120907025847.GI26709@S2101-09.ap.freescale.net> <504A26E4.4070600@wwwdotorg.org> <20120910011741.GP26709@S2101-09.ap.freescale.net> <504E20BE.8050107@wwwdotorg.org> <504F2789.1070006@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: add helper function cpufreq_set_target()
+Date: Tue, 11 Sep 2012 22:35:38 +0200
+Message-ID: <201209112235.38246.rjw@sisk.pl>
+References: <1346981599-28081-1-git-send-email-shawn.guo@linaro.org> <201209102222.45165.rjw@sisk.pl> <20120911013405.GB13721@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <504F2789.1070006-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20120911013405.GB13721@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Shilimkar Santosh <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Richard Zhao <richard.zhao-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Richard Zhao <richard.zhao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, Kevin Hilman <khilman@ti.com>
 
-On 09/11/2012 05:59 AM, Prashant Gaikwad wrote:
-> On Monday 10 September 2012 10:47 PM, Stephen Warren wrote:
->> On 09/09/2012 07:17 PM, Shawn Guo wrote:
->>> On Fri, Sep 07, 2012 at 10:55:00AM -0600, Stephen Warren wrote:
->>>> Yes, that does solve the problem (well, with
->>>> s/late_init/late_initcall/).
->>>>
->>>> As you imply, that change wouldn't help if cpu-tegra.c was built as a
->>>> module.
->>> I doubt that.  Have you confirmed it with testing?  When you install
->>> module cpu-tegra, the pcie initialization has been done, right?
->> Never mind, the code can't be built as a module anyway.
->>
->> Aside from that, I misinterpreted your test patch, and thought that it
->> was moving the Tegra cpufreq driver initialization earlier, but it's
->> actually moving it later, and in fact by chance after PCIe
->> initialization, which explains why it solves the issue.
->>
->> I think the root of the problem is that cpufreq is lowering the CPU
->> frequency, yet the patch which converted Tegra to the common clock
->> framework removed the code that actually changes the CPU clock rate. So,
->> cpufreq thinks the CPU is running at e.g. 216MHz, but it's actually
->> still running at 1.0GHz, and hence re-calculating the delay loops breaks
->> things, since delays aren't as long as the system thinks they are. The
->> variability is due to whether lowering the CPU frequency just happens to
->> occur before or after the PCIe controller is initialized.
->>
->> Prashant, are you able to fix the clock driver deficiency within the
->> next 2-3 days or so (so I can include the fix in the pull requests I
->> send for 3.7, which need to be sent before the end of the week)? Or, do
->> we need to disable cpufreq for Tegra because of this?
-> 
-> Your fix looks good to me except the concern I have mentioned in reply
-> to that patch.
+On Tuesday, September 11, 2012, Shawn Guo wrote:
+> On Mon, Sep 10, 2012 at 10:22:44PM +0200, Rafael J. Wysocki wrote:
+> > Hmm.  Who's going to use the cpufreq-cpu0 driver, then?  Is OMAP going to be
+> > the only user?
+> > 
+> Any platform that supports device tree (DT) will be able to use the
+> driver.  Right now, I have seen imx6q, AM35xx and highbank start using
+> the driver.
 
-Well, the cpufreq driver will need explicit knowledge of
-Tega20-vs-Tegra30 anyway, due to e.g. differing CPU clock names,
-probable different latencies, etc.
+OK, that would be sufficient.
+
+> > I'm concerned about the copy-pasting, but if that copy-pasting is going to
+> > go away when you move OMAP to the new driver, then I agree that adding more
+> > complexity just to avoid it is probably not a good idea.
+> > 
+> > What's the planned time frame for the OMAP conversion?
+> > 
+> That depends on when OMAP gets fully converted to DT.  OMAP is in the
+> middle of the DT transition right now.  There are in-tree users of
+> omap-cpufreq driver that does not support DT (board files).  Before
+> the DT conversion is fully done (all those non-DT board files gets
+> removed), the omap-cpufreq driver still needs to be for a while.
+
+I see.
+
+Well, then I'll push the driver to Linus for v3.7 as is and we'll see who
+and when starts to use it.
+
+Thanks,
+Rafael
