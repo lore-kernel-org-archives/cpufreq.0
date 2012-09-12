@@ -1,50 +1,109 @@
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] CPUFreq: OMAP: remove unnecessary plat/ includes
-Date: Wed, 12 Sep 2012 20:34:46 +0530
-Message-ID: <CAMQu2gwpD6qOEV7sPg9zfMf1Zedq29OJeZ4MwEqUduZh8fJzhQ@mail.gmail.com>
-References: <alpine.DEB.2.00.1209120030420.9444@utopia.booyaka.com>
- <CAMQu2gz4mcxqq=EFJzseXcgS_XxzDWGTP1sC5-FbkbxszUiwcw@mail.gmail.com> <87bohbxs16.fsf@deeprootsystems.com>
+From: Benoit Cousson <b-cousson@ti.com>
+Subject: Re: [PATCH 2/2] arm/dts: AM33XX: Add device tree OPP table
+Date: Wed, 12 Sep 2012 19:21:55 +0200
+Message-ID: <5050C4B3.9040107@ti.com>
+References: <1346405840-31058-1-git-send-email-anilkumar@ti.com> <1346405840-31058-3-git-send-email-anilkumar@ti.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87bohbxs16.fsf@deeprootsystems.com>
+In-Reply-To: <1346405840-31058-3-git-send-email-anilkumar@ti.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: AnilKumar Ch <anilkumar@ti.com>, paul Walmsley <paul@pwsan.com>
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, Sep 12, 2012 at 7:27 PM, Kevin Hilman
-<khilman@deeprootsystems.com> wrote:
-> "Shilimkar, Santosh" <santosh.shilimkar@ti.com> writes:
->
->> On Wed, Sep 12, 2012 at 6:02 AM, Paul Walmsley <paul@pwsan.com> wrote:
->>>
->>> Remove some unnecessary plat/ includes that are interfering with multi-subarch
->>> ARM kernels.
->>>
->>> Signed-off-by: Paul Walmsley <paul@pwsan.com>
->>> Cc: Kevin Hilman <khilman@ti.com>
->>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
->>> Acked-by: Kevin Hilman <khilman@ti.com>
->>> ---
->>>
->>> Still awaiting some final testing here.  Rafael, was wondering if you
->>> would be willing to ack this so we can merge it via the OMAP tree?
->>> Otherwise the patch can be split into an OMAP part and a CPUFreq part that
->>> can go in across two merge windows.
->>>
->> Hmm.
->> I did similar change[1] a while back. Kevin didn't like idea though
->> that point of time.
->
-> I was wrong.
->
-> At the time, we were thinking about how to get rid of clkdev nodes
-> instead of add more.  Now, we need to clean up these drivers and this is
-> the only way to do it, so I retract my objection.
->
-Thanks for clarifying.
++ Paul
 
-For patch itself,
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Hi Anil,
+
+On 08/31/2012 11:37 AM, AnilKumar Ch wrote:
+> Add DT OPP table for AM33XX family of devices. This data is
+> decoded by OF with of_init_opp_table() helper function.
+> 
+> Also adds cpu0 supply name to the corresponding dts files.
+> cpu0-supply name is used by cpufreq-cpu0 driver to get the
+> regulator pointer for voltage modifications.
+> 
+> Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
+
+I've just applied your patch in my for_3.7/dts_part2 branch.
+
+I changed the subject to use "ARM: dts: " prefix seems it seems to be
+the convention nowadays.
+
+I can apply as the well the clock patch if Paul acks it, but it can go
+through Paul as well since there is no strong dependency between them AFAIK.
+
+Thanks,
+Benoit
+
+
+> ---
+>  arch/arm/boot/dts/am335x-bone.dts |    6 ++++++
+>  arch/arm/boot/dts/am335x-evm.dts  |    6 ++++++
+>  arch/arm/boot/dts/am33xx.dtsi     |   15 +++++++++++++++
+>  3 files changed, 27 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/am335x-bone.dts b/arch/arm/boot/dts/am335x-bone.dts
+> index ce486fc..2767b5f 100644
+> --- a/arch/arm/boot/dts/am335x-bone.dts
+> +++ b/arch/arm/boot/dts/am335x-bone.dts
+> @@ -13,6 +13,12 @@
+>  	model = "TI AM335x BeagleBone";
+>  	compatible = "ti,am335x-bone", "ti,am33xx";
+>  
+> +	cpus {
+> +		cpu@0 {
+> +			cpu0-supply = <&dcdc2_reg>;
+> +		};
+> +	};
+> +
+>  	memory {
+>  		device_type = "memory";
+>  		reg = <0x80000000 0x10000000>; /* 256 MB */
+> diff --git a/arch/arm/boot/dts/am335x-evm.dts b/arch/arm/boot/dts/am335x-evm.dts
+> index baa3276..54d972c 100644
+> --- a/arch/arm/boot/dts/am335x-evm.dts
+> +++ b/arch/arm/boot/dts/am335x-evm.dts
+> @@ -13,6 +13,12 @@
+>  	model = "TI AM335x EVM";
+>  	compatible = "ti,am335x-evm", "ti,am33xx";
+>  
+> +	cpus {
+> +		cpu@0 {
+> +			cpu0-supply = <&vdd1_reg>;
+> +		};
+> +	};
+> +
+>  	memory {
+>  		device_type = "memory";
+>  		reg = <0x80000000 0x10000000>; /* 256 MB */
+> diff --git a/arch/arm/boot/dts/am33xx.dtsi b/arch/arm/boot/dts/am33xx.dtsi
+> index ab744d6..2043b53 100644
+> --- a/arch/arm/boot/dts/am33xx.dtsi
+> +++ b/arch/arm/boot/dts/am33xx.dtsi
+> @@ -25,6 +25,21 @@
+>  	cpus {
+>  		cpu@0 {
+>  			compatible = "arm,cortex-a8";
+> +
+> +			/*
+> +			 * To consider voltage drop between PMIC and SoC,
+> +			 * tolerance value is reduced to 2% from 4% and
+> +			 * voltage value is increased as a precaution.
+> +			 */
+> +			operating-points = <
+> +				/* kHz    uV */
+> +				720000  1285000
+> +				600000  1225000
+> +				500000  1125000
+> +				275000  1125000
+> +			>;
+> +			voltage-tolerance = <2>; /* 2 percentage */
+> +			clock-latency = <300000>; /* From omap-cpufreq driver */
+>  		};
+>  	};
+>  
+> 
+
