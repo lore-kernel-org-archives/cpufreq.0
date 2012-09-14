@@ -1,53 +1,49 @@
-From: "AnilKumar, Chimata" <anilkumar@ti.com>
-Subject: RE: [PATCH 2/2] arm/dts: AM33XX: Add device tree OPP table
-Date: Thu, 13 Sep 2012 06:23:38 +0000
-Message-ID: <331ABD5ECB02734CA317220B2BBEABC13EA2DF8C@DBDE01.ent.ti.com>
-References: <1346405840-31058-1-git-send-email-anilkumar@ti.com>
- <1346405840-31058-3-git-send-email-anilkumar@ti.com>
- <5050C4B3.9040107@ti.com>
+From: Michal Pecio <mpecio@nvidia.com>
+Subject: [PATCHv2 1/2] cpufreq: ondemand: update frequency when limits are
+ relaxed
+Date: Thu, 13 Sep 2012 21:04:54 -0700
+Message-ID: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380C50F192@HQMAIL04.nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5050C4B3.9040107@ti.com>
 Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: "Cousson, Benoit" <b-cousson@ti.com>, paul Walmsley <paul@pwsan.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.de>
 
-On Wed, Sep 12, 2012 at 22:51:55, Cousson, Benoit wrote:
-> + Paul
-> 
-> Hi Anil,
-> 
-> On 08/31/2012 11:37 AM, AnilKumar Ch wrote:
-> > Add DT OPP table for AM33XX family of devices. This data is
-> > decoded by OF with of_init_opp_table() helper function.
-> > 
-> > Also adds cpu0 supply name to the corresponding dts files.
-> > cpu0-supply name is used by cpufreq-cpu0 driver to get the
-> > regulator pointer for voltage modifications.
-> > 
-> > Signed-off-by: AnilKumar Ch <anilkumar@ti.com>
-> 
-> I've just applied your patch in my for_3.7/dts_part2 branch.
+From: Michal Pecio <mpecio@nvidia.com>
 
-Thanks Benoit,
+Reevaluate CPU load and update frequency immediately whenever limits
+are changed. Currently ondemand doesn't do that when limits are
+relaxed, wasting power on systems with relatively low sampling rate.
 
-> 
-> I changed the subject to use "ARM: dts: " prefix seems it seems to be
-> the convention nowadays.
+Signed-off-by: Michal Pecio <mpecio@nvidia.com>
+---
 
-I will take care from next time onwards.
+Basically the same as before, but this time frequency is pushed
+back into limits (if needed) before calling dbs_check_cpu.
 
-> 
-> I can apply as the well the clock patch if Paul acks it, but it can go
-> through Paul as well since there is no strong dependency between them AFAIK.
 
-Paul,
+ drivers/cpufreq/cpufreq_ondemand.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Can you ACK "clock data entry" patch?
-
-Thanks
-AnilKumar
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 1aaf7af..4616706 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -760,6 +760,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		else if (policy->min > this_dbs_info->cur_policy->cur)
+ 			__cpufreq_driver_target(this_dbs_info->cur_policy,
+ 				policy->min, CPUFREQ_RELATION_L);
++		dbs_check_cpu(this_dbs_info);
+ 		mutex_unlock(&this_dbs_info->timer_mutex);
+ 		break;
+ 	}
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
