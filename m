@@ -1,8 +1,8 @@
 From: Michal Pecio <mpecio@nvidia.com>
-Subject: [PATCHv2 1/2] cpufreq: ondemand: update frequency when limits are
- relaxed
-Date: Thu, 13 Sep 2012 21:04:54 -0700
-Message-ID: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380C50F192@HQMAIL04.nvidia.com>
+Subject: [PATCHv2 2/2] cpufreq: conservative: update frequency when limits
+ are relaxed
+Date: Thu, 13 Sep 2012 21:06:39 -0700
+Message-ID: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380C50F194@HQMAIL04.nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
@@ -16,31 +16,26 @@ Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.o
 From: Michal Pecio <mpecio@nvidia.com>
 
 Reevaluate CPU load and update frequency immediately whenever limits
-are changed. Currently ondemand doesn't do that when limits are
+are changed. Currently conservative doesn't do that when limits are
 relaxed, wasting power on systems with relatively low sampling rate.
 
 Signed-off-by: Michal Pecio <mpecio@nvidia.com>
 ---
-
-Basically the same as before, but this time frequency is pushed
-back into limits (if needed) before calling dbs_check_cpu.
-
-
- drivers/cpufreq/cpufreq_ondemand.c |    1 +
+ drivers/cpufreq/cpufreq_conservative.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 1aaf7af..4616706 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -760,6 +760,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		else if (policy->min > this_dbs_info->cur_policy->cur)
- 			__cpufreq_driver_target(this_dbs_info->cur_policy,
- 				policy->min, CPUFREQ_RELATION_L);
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 235a340..f1c6cbe 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -583,6 +583,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 			__cpufreq_driver_target(
+ 					this_dbs_info->cur_policy,
+ 					policy->min, CPUFREQ_RELATION_L);
 +		dbs_check_cpu(this_dbs_info);
  		mutex_unlock(&this_dbs_info->timer_mutex);
+ 
  		break;
- 	}
 -----------------------------------------------------------------------------------
 This email message is for the sole use of the intended recipient(s) and may contain
 confidential information.  Any unauthorized review, use, disclosure or distribution
