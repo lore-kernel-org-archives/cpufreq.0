@@ -1,145 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] CPUFreq: OMAP: remove unnecessary plat/ includes
-Date: Fri, 14 Sep 2012 21:03:49 +0200
-Message-ID: <201209142103.49421.rjw@sisk.pl>
-References: <alpine.DEB.2.00.1209120030420.9444@utopia.booyaka.com>
+Subject: Re: [PATCHv2 1/2] cpufreq: ondemand: update frequency when limits are relaxed
+Date: Fri, 14 Sep 2012 21:29:26 +0200
+Message-ID: <201209142129.26740.rjw@sisk.pl>
+References: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380C50F192@HQMAIL04.nvidia.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.00.1209120030420.9444@utopia.booyaka.com>
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380C50F192@HQMAIL04.nvidia.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: Text/Plain; charset="us-ascii"
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Michal Pecio <mpecio@nvidia.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.de>
 
-On Wednesday, September 12, 2012, Paul Walmsley wrote:
+On Friday, September 14, 2012, Michal Pecio wrote:
+> From: Michal Pecio <mpecio@nvidia.com>
 > 
-> Remove some unnecessary plat/ includes that are interfering with multi-subarch
-> ARM kernels.
+> Reevaluate CPU load and update frequency immediately whenever limits
+> are changed. Currently ondemand doesn't do that when limits are
+> relaxed, wasting power on systems with relatively low sampling rate.
 > 
-> Signed-off-by: Paul Walmsley <paul@pwsan.com>
-> Cc: Kevin Hilman <khilman@ti.com>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Kevin Hilman <khilman@ti.com>
+> Signed-off-by: Michal Pecio <mpecio@nvidia.com>
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
+
+Thanks,
+Rafael
+
 
 > ---
 > 
-> Still awaiting some final testing here.  Rafael, was wondering if you 
-> would be willing to ack this so we can merge it via the OMAP tree?   
-> Otherwise the patch can be split into an OMAP part and a CPUFreq part that 
-> can go in across two merge windows.
+> Basically the same as before, but this time frequency is pushed
+> back into limits (if needed) before calling dbs_check_cpu.
 > 
->  arch/arm/mach-omap2/clock2420_data.c |    1 +
->  arch/arm/mach-omap2/clock2430_data.c |    1 +
->  arch/arm/mach-omap2/clock3xxx_data.c |    1 +
->  arch/arm/mach-omap2/clock44xx_data.c |    1 +
->  drivers/cpufreq/omap-cpufreq.c       |   19 +------------------
->  5 files changed, 5 insertions(+), 18 deletions(-)
 > 
-> diff --git a/arch/arm/mach-omap2/clock2420_data.c b/arch/arm/mach-omap2/clock2420_data.c
-> index ea8e883..de1b9a4 100644
-> --- a/arch/arm/mach-omap2/clock2420_data.c
-> +++ b/arch/arm/mach-omap2/clock2420_data.c
-> @@ -1897,6 +1897,7 @@ static struct omap_clk omap2420_clks[] = {
->  	CLK(NULL,	"pka_ick",	&pka_ick,	CK_242X),
->  	CLK(NULL,	"usb_fck",	&usb_fck,	CK_242X),
->  	CLK("musb-hdrc",	"fck",	&osc_ck,	CK_242X),
-> +	CLK(NULL,	"cpufreq_ck",	&virt_prcm_set,	CK_242X),
->  };
->  
->  /*
-> diff --git a/arch/arm/mach-omap2/clock2430_data.c b/arch/arm/mach-omap2/clock2430_data.c
-> index cacabb0..d3ecdf7 100644
-> --- a/arch/arm/mach-omap2/clock2430_data.c
-> +++ b/arch/arm/mach-omap2/clock2430_data.c
-> @@ -1993,6 +1993,7 @@ static struct omap_clk omap2430_clks[] = {
->  	CLK(NULL,	"timer_32k_ck",  &func_32k_ck,   CK_243X),
->  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_243X),
->  	CLK(NULL,	"timer_ext_ck",	&alt_ck,	CK_243X),
-> +	CLK(NULL,	"cpufreq_ck",	&virt_prcm_set,	CK_243X),
->  };
->  
->  /*
-> diff --git a/arch/arm/mach-omap2/clock3xxx_data.c b/arch/arm/mach-omap2/clock3xxx_data.c
-> index 83bed9a..ea4690c 100644
-> --- a/arch/arm/mach-omap2/clock3xxx_data.c
-> +++ b/arch/arm/mach-omap2/clock3xxx_data.c
-> @@ -3466,6 +3466,7 @@ static struct omap_clk omap3xxx_clks[] = {
->  	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
->  	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
->  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
-> +	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
->  };
->  
->  
-> diff --git a/arch/arm/mach-omap2/clock44xx_data.c b/arch/arm/mach-omap2/clock44xx_data.c
-> index d7f55e4..9b31767 100644
-> --- a/arch/arm/mach-omap2/clock44xx_data.c
-> +++ b/arch/arm/mach-omap2/clock44xx_data.c
-> @@ -3325,6 +3325,7 @@ static struct omap_clk omap44xx_clks[] = {
->  	CLK("omap_timer.6",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
->  	CLK("omap_timer.7",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
->  	CLK("omap_timer.8",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
-> +	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
->  };
->  
->  int __init omap4xxx_clk_init(void)
-> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-> index b47034e..2737d08 100644
-> --- a/drivers/cpufreq/omap-cpufreq.c
-> +++ b/drivers/cpufreq/omap-cpufreq.c
-> @@ -30,13 +30,9 @@
->  #include <asm/smp_plat.h>
->  #include <asm/cpu.h>
->  
-> -#include <plat/clock.h>
-> -#include <plat/omap-pm.h>
->  #include <plat/common.h>
->  #include <plat/omap_device.h>
->  
-> -#include <mach/hardware.h>
-> -
->  /* OPP tolerance in percentage */
->  #define	OPP_TOLERANCE	4
->  
-> @@ -53,7 +49,6 @@ static struct lpj_info global_lpj_ref;
->  static struct cpufreq_frequency_table *freq_table;
->  static atomic_t freq_table_users = ATOMIC_INIT(0);
->  static struct clk *mpu_clk;
-> -static char *mpu_clk_name;
->  static struct device *mpu_dev;
->  static struct regulator *mpu_reg;
->  
-> @@ -207,7 +202,7 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
->  {
->  	int result = 0;
->  
-> -	mpu_clk = clk_get(NULL, mpu_clk_name);
-> +	mpu_clk = clk_get(NULL, "cpufreq_ck");
->  	if (IS_ERR(mpu_clk))
->  		return PTR_ERR(mpu_clk);
->  
-> @@ -288,18 +283,6 @@ static struct cpufreq_driver omap_driver = {
->  
->  static int __init omap_cpufreq_init(void)
->  {
-> -	if (cpu_is_omap24xx())
-> -		mpu_clk_name = "virt_prcm_set";
-> -	else if (cpu_is_omap34xx())
-> -		mpu_clk_name = "dpll1_ck";
-> -	else if (cpu_is_omap44xx())
-> -		mpu_clk_name = "dpll_mpu_ck";
-> -
-> -	if (!mpu_clk_name) {
-> -		pr_err("%s: unsupported Silicon?\n", __func__);
-> -		return -EINVAL;
-> -	}
-> -
->  	mpu_dev = omap_device_get_by_hwmod_name("mpu");
->  	if (!mpu_dev) {
->  		pr_warning("%s: unable to get the mpu device\n", __func__);
+>  drivers/cpufreq/cpufreq_ondemand.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 1aaf7af..4616706 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -760,6 +760,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  		else if (policy->min > this_dbs_info->cur_policy->cur)
+>  			__cpufreq_driver_target(this_dbs_info->cur_policy,
+>  				policy->min, CPUFREQ_RELATION_L);
+> +		dbs_check_cpu(this_dbs_info);
+>  		mutex_unlock(&this_dbs_info->timer_mutex);
+>  		break;
+>  	}
+> -----------------------------------------------------------------------------------
+> This email message is for the sole use of the intended recipient(s) and may contain
+> confidential information.  Any unauthorized review, use, disclosure or distribution
+> is prohibited.  If you are not the intended recipient, please contact the sender by
+> reply email and destroy all copies of the original message.
+> -----------------------------------------------------------------------------------
+> 
 > 
 
