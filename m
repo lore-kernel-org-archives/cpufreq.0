@@ -1,52 +1,54 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] cpufreq: OMAP: remove loops_per_jiffy recalculate for smp
-Date: Fri, 14 Sep 2012 07:21:51 -0700
-Message-ID: <87sjak8z28.fsf@deeprootsystems.com>
-References: <1346981022-28011-1-git-send-email-shawn.guo@linaro.org>
-	<201209072115.08252.rjw@sisk.pl>
+Date: Fri, 14 Sep 2012 21:01:09 +0200
+Message-ID: <201209142101.10082.rjw@sisk.pl>
+References: <1346981022-28011-1-git-send-email-shawn.guo@linaro.org> <201209072115.08252.rjw@sisk.pl> <87sjak8z28.fsf@deeprootsystems.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201209072115.08252.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri, 7 Sep 2012 21:15:08 +0200")
+In-Reply-To: <87sjak8z28.fsf@deeprootsystems.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Kevin Hilman <khilman@deeprootsystems.com>
 Cc: Shawn Guo <shawn.guo@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Richard Zhao <richard.zhao@freescale.com>
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Friday, September 14, 2012, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > On Friday, September 07, 2012, Shawn Guo wrote:
+> >> From: Richard Zhao <richard.zhao@freescale.com>
+> >> 
+> >> With ARM smp common code recalculating loops_per_jiffy in a cpufreq
+> >> transiton notifier call, the loops_per_jiffy recalculate in omap-cpufreq
+> >> driver becomes redundant.  Remove it.
+> >> 
+> >> Signed-off-by: Richard Zhao <richard.zhao@freescale.com>
+> >> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> >> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> >
+> > I suppose that Kevin is going to handle this, right?
+> 
+> Normally, yes, but I'm a bit behind, still catching up from some time
+> off.
+> 
+> > Kevin, if you want me to pull new material for v3.7, it's about time to get
+> > it ready.
+> 
+> Rafael, feel free to add this one to your pm-cpufreq branch with
+> 
+> Acked-by: Kevin Hilman <khilman@ti.com>
 
-> On Friday, September 07, 2012, Shawn Guo wrote:
->> From: Richard Zhao <richard.zhao@freescale.com>
->> 
->> With ARM smp common code recalculating loops_per_jiffy in a cpufreq
->> transiton notifier call, the loops_per_jiffy recalculate in omap-cpufreq
->> driver becomes redundant.  Remove it.
->> 
->> Signed-off-by: Richard Zhao <richard.zhao@freescale.com>
->> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
->
-> I suppose that Kevin is going to handle this, right?
+I'll take it, thanks!
 
-Normally, yes, but I'm a bit behind, still catching up from some time
-off.
+> Also, we have one other OMAP CPUfreq change that needs to go via the
+> OMAP tree with some corresponding clock changes:
+> 
+>   http://marc.info/?l=linux-omap&m=134740995111966&w=2
+> 
+> Can you ack that one?
 
-> Kevin, if you want me to pull new material for v3.7, it's about time to get
-> it ready.
-
-Rafael, feel free to add this one to your pm-cpufreq branch with
-
-Acked-by: Kevin Hilman <khilman@ti.com>
-
-Also, we have one other OMAP CPUfreq change that needs to go via the
-OMAP tree with some corresponding clock changes:
-
-  http://marc.info/?l=linux-omap&m=134740995111966&w=2
-
-Can you ack that one?
+Sure, please consider as ACKed by me in case I can't find the original message.
 
 Thanks,
-
-Kevin
+Rafael
