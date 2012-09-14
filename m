@@ -1,44 +1,52 @@
-From: Michal Pecio <mpecio@nvidia.com>
-Subject: [PATCHv2 2/2] cpufreq: conservative: update frequency when limits
- are relaxed
-Date: Thu, 13 Sep 2012 21:06:39 -0700
-Message-ID: <F22FC3EF73EF0942A7CD99A3AC5E4E1F380C50F194@HQMAIL04.nvidia.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] cpufreq: OMAP: remove loops_per_jiffy recalculate for smp
+Date: Fri, 14 Sep 2012 07:21:51 -0700
+Message-ID: <87sjak8z28.fsf@deeprootsystems.com>
+References: <1346981022-28011-1-git-send-email-shawn.guo@linaro.org>
+	<201209072115.08252.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Language: en-US
+In-Reply-To: <201209072115.08252.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri, 7 Sep 2012 21:15:08 +0200")
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.de>
+Cc: Shawn Guo <shawn.guo@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Richard Zhao <richard.zhao@freescale.com>
 
-From: Michal Pecio <mpecio@nvidia.com>
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Reevaluate CPU load and update frequency immediately whenever limits
-are changed. Currently conservative doesn't do that when limits are
-relaxed, wasting power on systems with relatively low sampling rate.
+> On Friday, September 07, 2012, Shawn Guo wrote:
+>> From: Richard Zhao <richard.zhao@freescale.com>
+>> 
+>> With ARM smp common code recalculating loops_per_jiffy in a cpufreq
+>> transiton notifier call, the loops_per_jiffy recalculate in omap-cpufreq
+>> driver becomes redundant.  Remove it.
+>> 
+>> Signed-off-by: Richard Zhao <richard.zhao@freescale.com>
+>> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+>
+> I suppose that Kevin is going to handle this, right?
 
-Signed-off-by: Michal Pecio <mpecio@nvidia.com>
----
- drivers/cpufreq/cpufreq_conservative.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Normally, yes, but I'm a bit behind, still catching up from some time
+off.
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 235a340..f1c6cbe 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -583,6 +583,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 			__cpufreq_driver_target(
- 					this_dbs_info->cur_policy,
- 					policy->min, CPUFREQ_RELATION_L);
-+		dbs_check_cpu(this_dbs_info);
- 		mutex_unlock(&this_dbs_info->timer_mutex);
- 
- 		break;
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+> Kevin, if you want me to pull new material for v3.7, it's about time to get
+> it ready.
+
+Rafael, feel free to add this one to your pm-cpufreq branch with
+
+Acked-by: Kevin Hilman <khilman@ti.com>
+
+Also, we have one other OMAP CPUfreq change that needs to go via the
+OMAP tree with some corresponding clock changes:
+
+  http://marc.info/?l=linux-omap&m=134740995111966&w=2
+
+Can you ack that one?
+
+Thanks,
+
+Kevin
