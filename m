@@ -1,19 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3.6-rc6] cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to another CPU
-Date: Mon, 17 Sep 2012 22:38:20 +0200
-Message-ID: <201209172238.21087.rjw@sisk.pl>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 3.6-rc6] cpufreq/powernow-k8: workqueue user shouldn't
+ migrate the kworker to another CPU
+Date: Mon, 17 Sep 2012 22:36:54 +0200
+Message-ID: <20120917203654.GA6541@liondog.tnic>
 References: <20120917201721.GJ18677@google.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1347914216; bh=DVPtUCT/ndKVAaabP2CWqeJX1/+EYBAoeqlsrmhWAQE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=XJK58WzrW5wcIF6abteWvYzLFgC5T1y95vfumm
+	hae515+9xDZf2ct83+T1kGqtX+C/wESL6/hzFkN+m/PVKy2UCWQacpUYw40n2C14aMl
+	JpFSwtcWsTyWPQCV8hSW/MyAUHVgEpxnLvGYNR63LBxY4PSlCFn8h+WiWEn+6iOWz0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1347914215; bh=DVPtUCT/ndKVAaabP2CWqeJX1/+EYBAoeqlsrmhWAQE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=uDjhiPc/ZtD91i4TgfK8OWAtTlCiGhdS3Wr2/k
+	1H/63uml63NwD+OzWtVa3AJmizqcSeExrVND8GMEpefNYZjXLOJo8HsJjwqqeFJ+dOE
+	ansgVCLQ8COhRsUq7sihxNPScNi8O4oAMzPOqBxXXvKaKDp7fgtXAvy8PTk8f1G6JA=
+Content-Disposition: inline
 In-Reply-To: <20120917201721.GJ18677@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: Tejun Heo <tj@kernel.org>, Thomas Renninger <trenn@suse.de>, Andre Przywara <andre.przywara@amd.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tejun Heo <tj@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>
 
-On Monday, September 17, 2012, Tejun Heo wrote:
+On Mon, Sep 17, 2012 at 01:17:21PM -0700, Tejun Heo wrote:
 > powernowk8_target() runs off a per-cpu work item and if the
 > cpufreq_policy->cpu is different from the current one, it migrates the
 > kworker to the target CPU by manipulating current->cpus_allowed.  The
@@ -49,165 +63,20 @@ On Monday, September 17, 2012, Tejun Heo wrote:
 > this can go through the next -rc1 and then -stable.  Linus, Rafael,
 > what do you guys think?
 
-Well, I don't see much reason to wait with this, although I'd like some
-more people to check it.
+Wouldn't it be much simpler to carve out the piece after
+set_cpus_allowed_ptr(), put it in a sub-function called
+__powernowk8_target() and call it with smp_call_function_single instead
+of defining another work item?
 
-Andre, Thomas, can you please have a look at it?
-
-Rafael
-
+Would the workqueue code handle that or are there any other issues?
 
 >  drivers/cpufreq/powernow-k8.c |   89 +++++++++++++++++++++++++-----------------
 >  1 file changed, 53 insertions(+), 36 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index c0e8164..53db9de 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -35,7 +35,6 @@
->  #include <linux/slab.h>
->  #include <linux/string.h>
->  #include <linux/cpumask.h>
-> -#include <linux/sched.h>	/* for current / set_cpus_allowed() */
->  #include <linux/io.h>
->  #include <linux/delay.h>
->  
-> @@ -1139,46 +1138,43 @@ static int transition_frequency_pstate(struct powernow_k8_data *data,
->  	return res;
->  }
->  
-> -/* Driver entry point to switch to the target frequency */
-> -static int powernowk8_target(struct cpufreq_policy *pol,
-> -		unsigned targfreq, unsigned relation)
-> +struct powernowk8_target_work {
-> +	struct work_struct		work;
-> +	struct cpufreq_policy		*pol;
-> +	unsigned			targfreq;
-> +	unsigned			relation;
-> +	int				ret;
-> +};
-> +
-> +static void powernowk8_target_on_cpu(struct work_struct *work)
->  {
-> -	cpumask_var_t oldmask;
-> +	struct powernowk8_target_work *tw =
-> +		container_of(work, struct powernowk8_target_work, work);
-> +	struct cpufreq_policy *pol = tw->pol;
->  	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
->  	u32 checkfid;
->  	u32 checkvid;
->  	unsigned int newstate;
-> -	int ret = -EIO;
->  
-> +	tw->ret = -EINVAL;
->  	if (!data)
-> -		return -EINVAL;
-> +		return;
-> +
-> +	tw->ret = -EIO;
->  
->  	checkfid = data->currfid;
->  	checkvid = data->currvid;
->  
-> -	/* only run on specific CPU from here on. */
-> -	/* This is poor form: use a workqueue or smp_call_function_single */
-> -	if (!alloc_cpumask_var(&oldmask, GFP_KERNEL))
-> -		return -ENOMEM;
-> -
-> -	cpumask_copy(oldmask, tsk_cpus_allowed(current));
-> -	set_cpus_allowed_ptr(current, cpumask_of(pol->cpu));
-> -
-> -	if (smp_processor_id() != pol->cpu) {
-> -		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
-> -		goto err_out;
-> -	}
-> -
->  	if (pending_bit_stuck()) {
->  		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
-> -		goto err_out;
-> +		return;
->  	}
->  
->  	pr_debug("targ: cpu %d, %d kHz, min %d, max %d, relation %d\n",
-> -		pol->cpu, targfreq, pol->min, pol->max, relation);
-> +		pol->cpu, tw->targfreq, pol->min, pol->max, tw->relation);
->  
->  	if (query_current_values_with_pending_wait(data))
-> -		goto err_out;
-> +		return;
->  
->  	if (cpu_family != CPU_HW_PSTATE) {
->  		pr_debug("targ: curr fid 0x%x, vid 0x%x\n",
-> @@ -1195,23 +1191,23 @@ static int powernowk8_target(struct cpufreq_policy *pol,
->  	}
->  
->  	if (cpufreq_frequency_table_target(pol, data->powernow_table,
-> -				targfreq, relation, &newstate))
-> -		goto err_out;
-> +				tw->targfreq, tw->relation, &newstate))
-> +		return;
->  
->  	mutex_lock(&fidvid_mutex);
->  
->  	powernow_k8_acpi_pst_values(data, newstate);
->  
->  	if (cpu_family == CPU_HW_PSTATE)
-> -		ret = transition_frequency_pstate(data,
-> -			data->powernow_table[newstate].index);
-> +		tw->ret = transition_frequency_pstate(data,
-> +				data->powernow_table[newstate].index);
->  	else
-> -		ret = transition_frequency_fidvid(data, newstate);
-> -	if (ret) {
-> +		tw->ret = transition_frequency_fidvid(data, newstate);
-> +	if (tw->ret) {
->  		printk(KERN_ERR PFX "transition frequency failed\n");
-> -		ret = 1;
-> +		tw->ret = 1;
->  		mutex_unlock(&fidvid_mutex);
-> -		goto err_out;
-> +		return;
->  	}
->  	mutex_unlock(&fidvid_mutex);
->  
-> @@ -1220,12 +1216,33 @@ static int powernowk8_target(struct cpufreq_policy *pol,
->  				data->powernow_table[newstate].index);
->  	else
->  		pol->cur = find_khz_freq_from_fid(data->currfid);
-> -	ret = 0;
->  
-> -err_out:
-> -	set_cpus_allowed_ptr(current, oldmask);
-> -	free_cpumask_var(oldmask);
-> -	return ret;
-> +	tw->ret = 0;
-> +}
-> +
-> +/* Driver entry point to switch to the target frequency */
-> +static int powernowk8_target(struct cpufreq_policy *pol,
-> +		unsigned targfreq, unsigned relation)
-> +{
-> +	struct powernowk8_target_work tw;
-> +
-> +	/*
-> +	 * Must run on @pol->cpu.  Bounce to workqueue if necessary.
-> +	 * cpufreq core is responsible for ensuring the cpu stays online.
-> +	 */
-> +	INIT_WORK_ONSTACK(&tw.work, powernowk8_target_on_cpu);
-> +	tw.pol = pol;
-> +	tw.targfreq = targfreq;
-> +	tw.relation = relation;
-> +
-> +	if (smp_processor_id() == pol->cpu) {
-> +		powernowk8_target_on_cpu(&tw.work);
-> +	} else {
-> +		schedule_work_on(pol->cpu, &tw.work);
-> +		flush_work(&tw.work);
-> +	}
-> +
-> +	return tw.ret;
->  }
->  
->  /* Driver entry point to verify the policy and range of frequencies */
-> 
-> 
+
+If it can, the diffstat should look much slimmer.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
