@@ -1,58 +1,53 @@
-From: Andre Przywara <andre.przywara@amd.com>
-Subject: Re: [PATCH 2/8 v2] acpi-cpufreq: Add quirk to disable _PSD usage
- on all AMD CPUs
-Date: Mon, 17 Sep 2012 09:41:20 +0200
-Message-ID: <5056D420.80808@amd.com>
-References: <1346747289-8421-1-git-send-email-andre.przywara@amd.com> <1346747289-8421-3-git-send-email-andre.przywara@amd.com> <CACJDEmrOoZ_azqTrtfoGC-O=H0V=AHy8VExoFYYPhbUUx+7UAg@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 2/8 v2] acpi-cpufreq: Add quirk to disable _PSD usage on all AMD CPUs
+Date: Mon, 17 Sep 2012 13:40:23 +0200
+Message-ID: <201209171340.23801.trenn@suse.de>
+References: <1346747289-8421-1-git-send-email-andre.przywara@amd.com> <CACJDEmrOoZ_azqTrtfoGC-O=H0V=AHy8VExoFYYPhbUUx+7UAg@mail.gmail.com> <5056D420.80808@amd.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CACJDEmrOoZ_azqTrtfoGC-O=H0V=AHy8VExoFYYPhbUUx+7UAg@mail.gmail.com>
+In-Reply-To: <5056D420.80808@amd.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Konrad Rzeszutek Wilk <konrad@kernel.org>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Thomas Renninger <trenn@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matthew Garret <mjg@redhat.com>
+Content-Type: Text/Plain; charset="us-ascii"
+To: Andre Przywara <andre.przywara@amd.com>
+Cc: Konrad Rzeszutek Wilk <konrad@kernel.org>, Andreas Herrmann <andreas.herrmann3@amd.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matthew Garret <mjg@redhat.com>
 
-On 09/15/2012 01:20 PM, Konrad Rzeszutek Wilk wrote:
->
-> On Sep 4, 2012 4:26 AM, "Andre Przywara" <andre.przywara@amd.com
-> <mailto:andre.przywara@amd.com>> wrote:
->  >
->  > To workaround some Windows specific behavior, the ACPI _PSD table
->  > on AMD desktop boards advertises all cores as dependent, meaning
->  > that they all can only use the same P-state. acpi-cpufreq strictly
->  > obeys this description, instantiating one CPU only and symlinking
->  > the others. But the hardware can have distinct frequencies for each
->  > core and powernow-k8 did it that way.
->  > So, in order to use the hardware to its full potential and keep the
->  > original powernow-k8 behavior, lets override the _PSD table setting
->  > on AMD hardware.
->
-> Can you tell on which motherboards this different freq on cores can be
-> exposed?
+On Monday, September 17, 2012 09:41:20 AM Andre Przywara wrote:
+> On 09/15/2012 01:20 PM, Konrad Rzeszutek Wilk wrote:
+> >
+...
+> This was to overcome some nasty interaction between the Windows 
+> scheduler and their version of the ondemand governor.
+Whoever is/was responsible for this, can you explain him/her that
+this was a bad idea and why.
 
-Actually I think the motherboard is not the limiting factor here.
-Per-core P-states are possible on AMD Family 10h and greater CPUs, so 
-Phenoms/Barcelona and beyond. You may need an AM2+/AM3 board, though. 
-Fam10h CPUs run in some older AM2-only boards, but the power-management 
-capabilities may be limited here. This definitely applies to the voltage 
-(single power plane only), but the older BIOS on these boards may limit 
-the frequency switching also.
+Is this part of a BKDG?
+Can you point to a public spec and the exact wording of the
+"Windows scheduler workaround" BIOS vendors shall do?
 
-The actual reason for this patch is the (Fam10h) BKDG [1] recommendation 
-in chapter 2.4.2.13.4 _PSD (P-State Dependency). There advertising only 
-one possible P-state per package is recommended - for desktop CPUs 
-(which are supposed to run Windows ;-)
-This was to overcome some nasty interaction between the Windows 
-scheduler and their version of the ondemand governor.
+> +               pr_info_once(PFX "overriding BIOS provided _PSD data\n");
+The message shows up on nearly every platform wether a _PSD
+function exists or not. This is wrong.
 
-Regards,
-Andre.
+If it's _PSD info that should get ignored/overwritten, this should
+be done where _PSD is obtained:
+processor_perflib.c
 
-[1] http://support.amd.com/us/Processor_TechDocs/31116.pdf
+Are you sure that it will never make sense for AMD to make use of
+_PSD tables?
+If yes, then always ignoring might be an option.
 
--- 
-Andre Przywara
-AMD-Operating System Research Center (OSRC), Dresden, Germany
+If not, this might need a more specific check, e.g.:
+   - Latest Windows version support called via OSI interface?
+        Latest Windowses should/may not need this anymore?
+   - Check for Desktop CPUs that are affected by the bad spec?
 
+Hm, as powernow-k8 never made use of _PSD, ignoring it for
+now sounds like a good thing to do. Still the ignoring should get
+moved to processor_perflib.c, best with a pointer or at least
+a comment that _PSD can be dangerous on AMD platforms. At some
+day _PSD may make sense for AMD platforms as well?
+
+
+    Thomas
