@@ -1,47 +1,114 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 3.6-rc6] cpufreq/powernow-k8: workqueue user shouldn't
- migrate the kworker to another CPU
-Date: Tue, 18 Sep 2012 13:27:50 -0700
-Message-ID: <CA+55aFwt9Wd9cwk3B4U0+B+EyBJm8oG0r0ADQvEa0D4HmrMWQQ@mail.gmail.com>
-References: <20120917201721.GJ18677@google.com> <20120918201231.GF8474@google.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 3.6-rc6 1/2] workqueue: reimplement work_on_cpu() using
+ system_wq
+Date: Tue, 18 Sep 2012 13:49:34 -0700
+Message-ID: <20120918204934.GG8474@google.com>
+References: <20120917201721.GJ18677@google.com>
+ <20120918201231.GF8474@google.com>
+ <CA+55aFwt9Wd9cwk3B4U0+B+EyBJm8oG0r0ADQvEa0D4HmrMWQQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type;
-        bh=BrX5uZZx24sSu+HNQ9OWPTuj3zI5hb7Q2LG2j+EJLjE=;
-        b=ODYwSN5oC5Q6JttEOejNME3jMfPchS9opZf/EHOuJA/G4EtWwdpNFQ+hMZXwrWf87D
-         o+in2kuGEqtWfVLvP8NdtnpW43NM5wt0AMTTzvJs2ml19LpwK0e0oy9c1XnUC40XVUhB
-         LMalb3aooAGMrqFA86SBVY3a8RKWVTQMyQjvX9awZJ2zdz6Md+xkBkyJgHKvbcG3RajN
-         WKSeO5NUxsOOo/CJGvDKr8fRCzF+GZ5ufXdSNXHov2uyft9ESMvnORpt72Uky/Sh4pAE
-         v5NuZj2HRoGsFfsdUiuP3F5iBgS5y8ZP5vGp5GVB9huvztkrWnOtX+GbcCw/deeDumCH
-         MqLQ==
-In-Reply-To: <20120918201231.GF8474@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=+clq7F/LqyTip5L4njFFsAFZ1ioB5dyR6HvTM8RTxBQ=;
+        b=jJqzF4TP2a8mTSQ+Xo570I1DWdsM5f2N1qG9YcMr4NuW52URT/8c7Xl5J1nsMZiAFE
+         NDB9epdYYtKZp/TajMeCX16dwPFWMNfj8fHxP7TdB6EgbqD/i6wBTkbk1bNrX7T6GqkD
+         XT5UsKPckj6IsZjFsPqCxj9J0yM/IDCLpKbemxPa8XXKgM1b1uL/G5MSx3WhOSkr2s14
+         phVe9SBhvKReN8QztMNgsCINK64v2VhXUYONZcpdYurgGPwDzODMmIQ/fObYezM5zb76
+         xiRbFsfSCAnuDWHYyP77NsoI0wIgGUJib0YjH2adzJiHsBAp0QzvRYPeT6+wU93r00P6
+         PhSg==
+Content-Disposition: inline
+In-Reply-To: <CA+55aFwt9Wd9cwk3B4U0+B+EyBJm8oG0r0ADQvEa0D4HmrMWQQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>, Jiri Kosina <jkosina@suse.cz>, Bjorn Helgaas <bhelgaas@google.com>, Len Brown <lenb@kernel.org>
 
-On Tue, Sep 18, 2012 at 1:12 PM, Tejun Heo <tj@kernel.org> wrote:
-> So, with work_on_cpu() reimplementation just posted[1], we can do the
-> following instead.  Functionally it's about the same but less ugly.
-> Ugly as it may be, I think the previous open coded version is better
-> suited as a fix and for -stable.  Thoughts?
+The existing work_on_cpu() implementation is hugely inefficient.  It
+creates a new kthread, execute that single function and then let the
+kthread die on each invocation.
 
-I have to say, since the work_on_cpu() reimplementation seems to
-seriously simplify the code, and removes more lines than it adds, and
-makes this patch smaller than your original patch, I would personally
-prefer this approach instead anyway.
+Now that system_wq can handle concurrent executions, there's no
+advantage of doing this.  Reimplement work_on_cpu() using system_wq
+which makes it simpler and way more efficient.
 
-It's what we want long-range, isn't it? And it's smaller and simpler.
-Sure, it might be a *conceptually* bigger change, but since it's both
-prettier and *practically* smaller, I do like it more. Even at this
-stage of -rc (and even for backporting to -stable).
+stable: While this isn't a fix in itself, it's needed to fix a
+        workqueue related bug in cpufreq/powernow-k8.  AFAICS, this
+        shouldn't break other existing users.
 
-Can we get some quick testing of this two-patch series from the people
-who saw the original K8 cpufreq issue? Duncan?
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: stable@vger.kernel.org
+---
+So, here are the two patches which can be applied to 3.6-rc6.  I'll
+post a combined patch to the bugzilla so that Duncan can test it.
 
-           Linus
+The only worrying thing is that this might affect the existing
+work_on_cpu() users in some crazy subtle way.  I can't see how it
+would break anything but it's when I think like that when something
+bites me.  That said, pci-driver is probably the most common use case
+and it seems to work fine here.
+
+Thanks.
+
+ kernel/workqueue.c |   27 +++++++++------------------
+ 1 file changed, 9 insertions(+), 18 deletions(-)
+
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -3576,18 +3576,17 @@ static int __devinit workqueue_cpu_down_
+ #ifdef CONFIG_SMP
+ 
+ struct work_for_cpu {
+-	struct completion completion;
++	struct work_struct work;
+ 	long (*fn)(void *);
+ 	void *arg;
+ 	long ret;
+ };
+ 
+-static int do_work_for_cpu(void *_wfc)
++static void work_for_cpu_fn(struct work_struct *work)
+ {
+-	struct work_for_cpu *wfc = _wfc;
++	struct work_for_cpu *wfc = container_of(work, struct work_for_cpu, work);
++
+ 	wfc->ret = wfc->fn(wfc->arg);
+-	complete(&wfc->completion);
+-	return 0;
+ }
+ 
+ /**
+@@ -3602,19 +3601,11 @@ static int do_work_for_cpu(void *_wfc)
+  */
+ long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
+ {
+-	struct task_struct *sub_thread;
+-	struct work_for_cpu wfc = {
+-		.completion = COMPLETION_INITIALIZER_ONSTACK(wfc.completion),
+-		.fn = fn,
+-		.arg = arg,
+-	};
+-
+-	sub_thread = kthread_create(do_work_for_cpu, &wfc, "work_for_cpu");
+-	if (IS_ERR(sub_thread))
+-		return PTR_ERR(sub_thread);
+-	kthread_bind(sub_thread, cpu);
+-	wake_up_process(sub_thread);
+-	wait_for_completion(&wfc.completion);
++	struct work_for_cpu wfc = { .fn = fn, .arg = arg };
++
++	INIT_WORK_ONSTACK(&wfc.work, work_for_cpu_fn);
++	schedule_work_on(cpu, &wfc.work);
++	flush_work(&wfc.work);
+ 	return wfc.ret;
+ }
+ EXPORT_SYMBOL_GPL(work_on_cpu);
