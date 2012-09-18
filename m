@@ -1,26 +1,27 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 3.6-rc6 1/2] workqueue: reimplement work_on_cpu() using
- system_wq
-Date: Tue, 18 Sep 2012 13:49:34 -0700
-Message-ID: <20120918204934.GG8474@google.com>
+Subject: [PATCH 3.6-rc6 2/2] cpufreq/powernow-k8: workqueue user shouldn't
+ migrate the kworker to another CPU
+Date: Tue, 18 Sep 2012 13:51:24 -0700
+Message-ID: <20120918205124.GH8474@google.com>
 References: <20120917201721.GJ18677@google.com>
  <20120918201231.GF8474@google.com>
  <CA+55aFwt9Wd9cwk3B4U0+B+EyBJm8oG0r0ADQvEa0D4HmrMWQQ@mail.gmail.com>
+ <20120918204934.GG8474@google.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=sender:date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        bh=+clq7F/LqyTip5L4njFFsAFZ1ioB5dyR6HvTM8RTxBQ=;
-        b=jJqzF4TP2a8mTSQ+Xo570I1DWdsM5f2N1qG9YcMr4NuW52URT/8c7Xl5J1nsMZiAFE
-         NDB9epdYYtKZp/TajMeCX16dwPFWMNfj8fHxP7TdB6EgbqD/i6wBTkbk1bNrX7T6GqkD
-         XT5UsKPckj6IsZjFsPqCxj9J0yM/IDCLpKbemxPa8XXKgM1b1uL/G5MSx3WhOSkr2s14
-         phVe9SBhvKReN8QztMNgsCINK64v2VhXUYONZcpdYurgGPwDzODMmIQ/fObYezM5zb76
-         xiRbFsfSCAnuDWHYyP77NsoI0wIgGUJib0YjH2adzJiHsBAp0QzvRYPeT6+wU93r00P6
-         PhSg==
+        bh=+cb7adEhIeQoshBTUX09s5lvE2IssWx1S2HuNivXcGk=;
+        b=DpPoXcr1slnvEdUMo2VbD1Mw/3j96IgQLAND0z8YgYO4/6yC41tWhjEXCD07RWwKSL
+         HKCulyMTPOdEnajmmSCJR9eijgPnqYD0HA+NmhddTpOXwXi1mw451eQbMuJLa5NI75Al
+         qgJmLnWEGAVmPkeEQRBTaYS3DxFLEkyXVcNQT21Bgijo0QH4pmOpL9QJgl0fl2uuL03g
+         gxERtYeV+U+QqAGzg4lYTHETA6l3oN6wHP9FzQo2na3YScLdjnorMivz8Ky0WZZOy8/e
+         GG7FICiQWMHtR9k4AgI9rVvw1bUuJIvwGteIY037Hj+5lwmo+F2czpu4lkRRhv9oGILK
+         2Hvg==
 Content-Disposition: inline
-In-Reply-To: <CA+55aFwt9Wd9cwk3B4U0+B+EyBJm8oG0r0ADQvEa0D4HmrMWQQ@mail.gmail.com>
+In-Reply-To: <20120918204934.GG8474@google.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -28,87 +29,160 @@ Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>, Jiri Kosina <jkosina@suse.cz>, Bjorn Helgaas <bhelgaas@google.com>, Len Brown <lenb@kernel.org>
 
-The existing work_on_cpu() implementation is hugely inefficient.  It
-creates a new kthread, execute that single function and then let the
-kthread die on each invocation.
+powernowk8_target() runs off a per-cpu work item and if the
+cpufreq_policy->cpu is different from the current one, it migrates the
+kworker to the target CPU by manipulating current->cpus_allowed.  The
+function migrates the kworker back to the original CPU but this is
+still broken.  Workqueue concurrency management requires the kworkers
+to stay on the same CPU and powernowk8_target() ends up triggerring
+BUG_ON(rq != this_rq()) in try_to_wake_up_local() if it contends on
+fidvid_mutex and sleeps.
 
-Now that system_wq can handle concurrent executions, there's no
-advantage of doing this.  Reimplement work_on_cpu() using system_wq
-which makes it simpler and way more efficient.
+It is unclear why this bug is being reported now.  Duncan says it
+appeared to be a regression of 3.6-rc1 and couldn't reproduce it on
+3.5.  Bisection seemed to point to 63d95a91 "workqueue: use @pool
+instead of @gcwq or @cpu where applicable" which is an non-functional
+change.  Given that the reproduce case sometimes took upto days to
+trigger, it's easy to be misled while bisecting.  Maybe something made
+contention on fidvid_mutex more likely?  I don't know.
 
-stable: While this isn't a fix in itself, it's needed to fix a
-        workqueue related bug in cpufreq/powernow-k8.  AFAICS, this
-        shouldn't break other existing users.
+This patch fixes the bug by using work_on_cpu() instead if @pol->cpu
+isn't the same as the current one.  The code assumes that
+cpufreq_policy->cpu is kept online by the caller, which Rafael tells
+me is the case.
+
+stable: This needs the patch "workqueue: reimplement work_on_cpu()
+        using system_wq"; otherwise, the behavior could be horrible.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jiri Kosina <jkosina@suse.cz>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Len Brown <lenb@kernel.org>
+Reported-by: Duncan <1i5t5.duncan@cox.net>
 Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
 Cc: stable@vger.kernel.org
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=47301
 ---
-So, here are the two patches which can be applied to 3.6-rc6.  I'll
-post a combined patch to the bugzilla so that Duncan can test it.
+ drivers/cpufreq/powernow-k8.c |   63 ++++++++++++++++++++++--------------------
+ 1 file changed, 34 insertions(+), 29 deletions(-)
 
-The only worrying thing is that this might affect the existing
-work_on_cpu() users in some crazy subtle way.  I can't see how it
-would break anything but it's when I think like that when something
-bites me.  That said, pci-driver is probably the most common use case
-and it seems to work fine here.
-
-Thanks.
-
- kernel/workqueue.c |   27 +++++++++------------------
- 1 file changed, 9 insertions(+), 18 deletions(-)
-
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -3576,18 +3576,17 @@ static int __devinit workqueue_cpu_down_
- #ifdef CONFIG_SMP
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -35,7 +35,6 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/cpumask.h>
+-#include <linux/sched.h>	/* for current / set_cpus_allowed() */
+ #include <linux/io.h>
+ #include <linux/delay.h>
  
- struct work_for_cpu {
--	struct completion completion;
-+	struct work_struct work;
- 	long (*fn)(void *);
- 	void *arg;
- 	long ret;
- };
- 
--static int do_work_for_cpu(void *_wfc)
-+static void work_for_cpu_fn(struct work_struct *work)
- {
--	struct work_for_cpu *wfc = _wfc;
-+	struct work_for_cpu *wfc = container_of(work, struct work_for_cpu, work);
-+
- 	wfc->ret = wfc->fn(wfc->arg);
--	complete(&wfc->completion);
--	return 0;
+@@ -1139,16 +1138,23 @@ static int transition_frequency_pstate(s
+ 	return res;
  }
  
- /**
-@@ -3602,19 +3601,11 @@ static int do_work_for_cpu(void *_wfc)
-  */
- long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
+-/* Driver entry point to switch to the target frequency */
+-static int powernowk8_target(struct cpufreq_policy *pol,
+-		unsigned targfreq, unsigned relation)
++struct powernowk8_target_arg {
++	struct cpufreq_policy		*pol;
++	unsigned			targfreq;
++	unsigned			relation;
++};
++
++static long powernowk8_target_fn(void *arg)
  {
--	struct task_struct *sub_thread;
--	struct work_for_cpu wfc = {
--		.completion = COMPLETION_INITIALIZER_ONSTACK(wfc.completion),
--		.fn = fn,
--		.arg = arg,
--	};
+-	cpumask_var_t oldmask;
++	struct powernowk8_target_arg *pta = arg;
++	struct cpufreq_policy *pol = pta->pol;
++	unsigned targfreq = pta->targfreq;
++	unsigned relation = pta->relation;
+ 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+ 	u32 checkfid;
+ 	u32 checkvid;
+ 	unsigned int newstate;
+-	int ret = -EIO;
++	int ret;
+ 
+ 	if (!data)
+ 		return -EINVAL;
+@@ -1156,29 +1162,16 @@ static int powernowk8_target(struct cpuf
+ 	checkfid = data->currfid;
+ 	checkvid = data->currvid;
+ 
+-	/* only run on specific CPU from here on. */
+-	/* This is poor form: use a workqueue or smp_call_function_single */
+-	if (!alloc_cpumask_var(&oldmask, GFP_KERNEL))
+-		return -ENOMEM;
 -
--	sub_thread = kthread_create(do_work_for_cpu, &wfc, "work_for_cpu");
--	if (IS_ERR(sub_thread))
--		return PTR_ERR(sub_thread);
--	kthread_bind(sub_thread, cpu);
--	wake_up_process(sub_thread);
--	wait_for_completion(&wfc.completion);
-+	struct work_for_cpu wfc = { .fn = fn, .arg = arg };
+-	cpumask_copy(oldmask, tsk_cpus_allowed(current));
+-	set_cpus_allowed_ptr(current, cpumask_of(pol->cpu));
+-
+-	if (smp_processor_id() != pol->cpu) {
+-		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
+-		goto err_out;
+-	}
+-
+ 	if (pending_bit_stuck()) {
+ 		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
+-		goto err_out;
++		return -EIO;
+ 	}
+ 
+ 	pr_debug("targ: cpu %d, %d kHz, min %d, max %d, relation %d\n",
+ 		pol->cpu, targfreq, pol->min, pol->max, relation);
+ 
+ 	if (query_current_values_with_pending_wait(data))
+-		goto err_out;
++		return -EIO;
+ 
+ 	if (cpu_family != CPU_HW_PSTATE) {
+ 		pr_debug("targ: curr fid 0x%x, vid 0x%x\n",
+@@ -1196,7 +1189,7 @@ static int powernowk8_target(struct cpuf
+ 
+ 	if (cpufreq_frequency_table_target(pol, data->powernow_table,
+ 				targfreq, relation, &newstate))
+-		goto err_out;
++		return -EIO;
+ 
+ 	mutex_lock(&fidvid_mutex);
+ 
+@@ -1209,9 +1202,8 @@ static int powernowk8_target(struct cpuf
+ 		ret = transition_frequency_fidvid(data, newstate);
+ 	if (ret) {
+ 		printk(KERN_ERR PFX "transition frequency failed\n");
+-		ret = 1;
+ 		mutex_unlock(&fidvid_mutex);
+-		goto err_out;
++		return 1;
+ 	}
+ 	mutex_unlock(&fidvid_mutex);
+ 
+@@ -1220,12 +1212,25 @@ static int powernowk8_target(struct cpuf
+ 				data->powernow_table[newstate].index);
+ 	else
+ 		pol->cur = find_khz_freq_from_fid(data->currfid);
+-	ret = 0;
+ 
+-err_out:
+-	set_cpus_allowed_ptr(current, oldmask);
+-	free_cpumask_var(oldmask);
+-	return ret;
++	return 0;
++}
 +
-+	INIT_WORK_ONSTACK(&wfc.work, work_for_cpu_fn);
-+	schedule_work_on(cpu, &wfc.work);
-+	flush_work(&wfc.work);
- 	return wfc.ret;
++/* Driver entry point to switch to the target frequency */
++static int powernowk8_target(struct cpufreq_policy *pol,
++		unsigned targfreq, unsigned relation)
++{
++	struct powernowk8_target_arg pta = { .pol = pol, .targfreq = targfreq,
++					     .relation = relation };
++
++	/*
++	 * Must run on @pol->cpu.  cpufreq core is responsible for ensuring
++	 * that we're bound to the current CPU and pol->cpu stays online.
++	 */
++	if (smp_processor_id() == pol->cpu)
++		return powernowk8_target_fn(&pta);
++	else
++		return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
  }
- EXPORT_SYMBOL_GPL(work_on_cpu);
+ 
+ /* Driver entry point to verify the policy and range of frequencies */
