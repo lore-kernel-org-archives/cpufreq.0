@@ -1,188 +1,33 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 3.6-rc6 2/2] cpufreq/powernow-k8: workqueue user shouldn't
- migrate the kworker to another CPU
-Date: Tue, 18 Sep 2012 13:51:24 -0700
-Message-ID: <20120918205124.GH8474@google.com>
-References: <20120917201721.GJ18677@google.com>
- <20120918201231.GF8474@google.com>
- <CA+55aFwt9Wd9cwk3B4U0+B+EyBJm8oG0r0ADQvEa0D4HmrMWQQ@mail.gmail.com>
- <20120918204934.GG8474@google.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] cpufreq: OMAP: Check IS_ERR() instead of NULL for omap_device_get_by_hwmod_name
+Date: Wed, 19 Sep 2012 09:51:35 -0700
+Message-ID: <877grqj6qw.fsf@deeprootsystems.com>
+References: <1347932747.6562.3.camel@phoenix> <201209182052.57414.rjw@sisk.pl>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        bh=+cb7adEhIeQoshBTUX09s5lvE2IssWx1S2HuNivXcGk=;
-        b=DpPoXcr1slnvEdUMo2VbD1Mw/3j96IgQLAND0z8YgYO4/6yC41tWhjEXCD07RWwKSL
-         HKCulyMTPOdEnajmmSCJR9eijgPnqYD0HA+NmhddTpOXwXi1mw451eQbMuJLa5NI75Al
-         qgJmLnWEGAVmPkeEQRBTaYS3DxFLEkyXVcNQT21Bgijo0QH4pmOpL9QJgl0fl2uuL03g
-         gxERtYeV+U+QqAGzg4lYTHETA6l3oN6wHP9FzQo2na3YScLdjnorMivz8Ky0WZZOy8/e
-         GG7FICiQWMHtR9k4AgI9rVvw1bUuJIvwGteIY037Hj+5lwmo+F2czpu4lkRRhv9oGILK
-         2Hvg==
-Content-Disposition: inline
-In-Reply-To: <20120918204934.GG8474@google.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201209182052.57414.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Tue, 18 Sep 2012 20:52:57 +0200")
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>, Jiri Kosina <jkosina@suse.cz>, Bjorn Helgaas <bhelgaas@google.com>, Len Brown <lenb@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Axel Lin <axel.lin@gmail.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-powernowk8_target() runs off a per-cpu work item and if the
-cpufreq_policy->cpu is different from the current one, it migrates the
-kworker to the target CPU by manipulating current->cpus_allowed.  The
-function migrates the kworker back to the original CPU but this is
-still broken.  Workqueue concurrency management requires the kworkers
-to stay on the same CPU and powernowk8_target() ends up triggerring
-BUG_ON(rq != this_rq()) in try_to_wake_up_local() if it contends on
-fidvid_mutex and sleeps.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-It is unclear why this bug is being reported now.  Duncan says it
-appeared to be a regression of 3.6-rc1 and couldn't reproduce it on
-3.5.  Bisection seemed to point to 63d95a91 "workqueue: use @pool
-instead of @gcwq or @cpu where applicable" which is an non-functional
-change.  Given that the reproduce case sometimes took upto days to
-trigger, it's easy to be misled while bisecting.  Maybe something made
-contention on fidvid_mutex more likely?  I don't know.
+> On Tuesday, September 18, 2012, Axel Lin wrote:
+>> omap_device_get_by_hwmod_name() returns ERR_PTR on error.
+>> 
+>> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+>
+> Kevin, should I take this?
 
-This patch fixes the bug by using work_on_cpu() instead if @pol->cpu
-isn't the same as the current one.  The code assumes that
-cpufreq_policy->cpu is kept online by the caller, which Rafael tells
-me is the case.
+Yes, please.
 
-stable: This needs the patch "workqueue: reimplement work_on_cpu()
-        using system_wq"; otherwise, the behavior could be horrible.
+Acked-by: Kevin Hilman <khilman@ti.com>
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Duncan <1i5t5.duncan@cox.net>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: stable@vger.kernel.org
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=47301
----
- drivers/cpufreq/powernow-k8.c |   63 ++++++++++++++++++++++--------------------
- 1 file changed, 34 insertions(+), 29 deletions(-)
+Thanks,
 
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -35,7 +35,6 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/cpumask.h>
--#include <linux/sched.h>	/* for current / set_cpus_allowed() */
- #include <linux/io.h>
- #include <linux/delay.h>
- 
-@@ -1139,16 +1138,23 @@ static int transition_frequency_pstate(s
- 	return res;
- }
- 
--/* Driver entry point to switch to the target frequency */
--static int powernowk8_target(struct cpufreq_policy *pol,
--		unsigned targfreq, unsigned relation)
-+struct powernowk8_target_arg {
-+	struct cpufreq_policy		*pol;
-+	unsigned			targfreq;
-+	unsigned			relation;
-+};
-+
-+static long powernowk8_target_fn(void *arg)
- {
--	cpumask_var_t oldmask;
-+	struct powernowk8_target_arg *pta = arg;
-+	struct cpufreq_policy *pol = pta->pol;
-+	unsigned targfreq = pta->targfreq;
-+	unsigned relation = pta->relation;
- 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
- 	u32 checkfid;
- 	u32 checkvid;
- 	unsigned int newstate;
--	int ret = -EIO;
-+	int ret;
- 
- 	if (!data)
- 		return -EINVAL;
-@@ -1156,29 +1162,16 @@ static int powernowk8_target(struct cpuf
- 	checkfid = data->currfid;
- 	checkvid = data->currvid;
- 
--	/* only run on specific CPU from here on. */
--	/* This is poor form: use a workqueue or smp_call_function_single */
--	if (!alloc_cpumask_var(&oldmask, GFP_KERNEL))
--		return -ENOMEM;
--
--	cpumask_copy(oldmask, tsk_cpus_allowed(current));
--	set_cpus_allowed_ptr(current, cpumask_of(pol->cpu));
--
--	if (smp_processor_id() != pol->cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
--		goto err_out;
--	}
--
- 	if (pending_bit_stuck()) {
- 		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
--		goto err_out;
-+		return -EIO;
- 	}
- 
- 	pr_debug("targ: cpu %d, %d kHz, min %d, max %d, relation %d\n",
- 		pol->cpu, targfreq, pol->min, pol->max, relation);
- 
- 	if (query_current_values_with_pending_wait(data))
--		goto err_out;
-+		return -EIO;
- 
- 	if (cpu_family != CPU_HW_PSTATE) {
- 		pr_debug("targ: curr fid 0x%x, vid 0x%x\n",
-@@ -1196,7 +1189,7 @@ static int powernowk8_target(struct cpuf
- 
- 	if (cpufreq_frequency_table_target(pol, data->powernow_table,
- 				targfreq, relation, &newstate))
--		goto err_out;
-+		return -EIO;
- 
- 	mutex_lock(&fidvid_mutex);
- 
-@@ -1209,9 +1202,8 @@ static int powernowk8_target(struct cpuf
- 		ret = transition_frequency_fidvid(data, newstate);
- 	if (ret) {
- 		printk(KERN_ERR PFX "transition frequency failed\n");
--		ret = 1;
- 		mutex_unlock(&fidvid_mutex);
--		goto err_out;
-+		return 1;
- 	}
- 	mutex_unlock(&fidvid_mutex);
- 
-@@ -1220,12 +1212,25 @@ static int powernowk8_target(struct cpuf
- 				data->powernow_table[newstate].index);
- 	else
- 		pol->cur = find_khz_freq_from_fid(data->currfid);
--	ret = 0;
- 
--err_out:
--	set_cpus_allowed_ptr(current, oldmask);
--	free_cpumask_var(oldmask);
--	return ret;
-+	return 0;
-+}
-+
-+/* Driver entry point to switch to the target frequency */
-+static int powernowk8_target(struct cpufreq_policy *pol,
-+		unsigned targfreq, unsigned relation)
-+{
-+	struct powernowk8_target_arg pta = { .pol = pol, .targfreq = targfreq,
-+					     .relation = relation };
-+
-+	/*
-+	 * Must run on @pol->cpu.  cpufreq core is responsible for ensuring
-+	 * that we're bound to the current CPU and pol->cpu stays online.
-+	 */
-+	if (smp_processor_id() == pol->cpu)
-+		return powernowk8_target_fn(&pta);
-+	else
-+		return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
- }
- 
- /* Driver entry point to verify the policy and range of frequencies */
+Kevin
+
