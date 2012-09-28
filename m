@@ -1,78 +1,75 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 3.6-rc6] cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to another CPU
-Date: Sun, 23 Sep 2012 03:53:48 +0200
-Message-ID: <201209230353.49737.trenn@suse.de>
-References: <20120917201721.GJ18677@google.com> <201209172238.21087.rjw@sisk.pl>
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Subject: [PATCH 3/4] cpufreq: db8500: Register as a platform driver
+Date: Fri, 28 Sep 2012 16:16:53 +0200
+Message-ID: <1348841814-13645-4-git-send-email-ulf.hansson@stericsson.com>
+References: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <201209172238.21087.rjw@sisk.pl>
+In-Reply-To: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Tejun Heo <tj@kernel.org>, Andre Przywara <andre.przywara@amd.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Duncan <1i5t5.duncan@cox.net>, Andreas Herrmann <andreas.herrmann3@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi,
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-better late than never..
+To fetch the mfd child device we register the cpufreq driver
+as a platform driver.
 
-On Monday 17 September 2012 22:38:20 Rafael J. Wysocki wrote:
-> On Monday, September 17, 2012, Tejun Heo wrote:
-> > powernowk8_target() runs off a per-cpu work item and if the
-> > cpufreq_policy->cpu is different from the current one, it migrates the
-> > kworker to the target CPU by manipulating current->cpus_allowed.  The
-> > function migrates the kworker back to the original CPU but this is
-> > still broken.  Workqueue concurrency management requires the kworkers
-> > to stay on the same CPU and powernowk8_target() ends up triggerring
-> > BUG_ON(rq != this_rq()) in try_to_wake_up_local() if it contends on
-> > fidvid_mutex and sleeps.
-> > 
-> > It is unclear why this bug is being reported now.  Duncan says it
-> > appeared to be a regression of 3.6-rc1 and couldn't reproduce it on
-> > 3.5.  Bisection seemed to point to 63d95a91 "workqueue: use @pool
-> > instead of @gcwq or @cpu where applicable" which is an non-functional
-> > change.  Given that the reproduce case sometimes took upto days to
-> > trigger, it's easy to be misled while bisecting.  Maybe something made
-> > contention on fidvid_mutex more likely?  I don't know.
-> > 
-> > This patch fixes the bug by punting to another per-cpu work item on
-> > the target CPU if it isn't the same as the current one.  The code
-> > assumes that cpufreq_policy->cpu is kept online by the caller, which
-> > Rafael tells me is the case.
-> > 
-> > Signed-off-by: Tejun Heo <tj@kernel.org>
-> > Reported-by: Duncan <1i5t5.duncan@cox.net>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > Cc: stable@kernel.org
-> > Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=47301
-> > ---
-> > 
-> > While it's very late in the merge cycle, the fix is limited in scope
-> > and fairly safe, so it wouldn't be too crazy to merge but then again
-> > this can go through the next -rc1 and then -stable.  Linus, Rafael,
-> > what do you guys think?
-> 
-> Well, I don't see much reason to wait with this, although I'd like some
-> more people to check it.
-> 
-> Andre, Thomas, can you please have a look at it?
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/cpufreq/db8500-cpufreq.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-The cpufreq changes are not really (functional) changes.
-I cannot judge the risk of the real change:
+diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+index 74b830b..7d61a6c 100644
+--- a/drivers/cpufreq/db8500-cpufreq.c
++++ b/drivers/cpufreq/db8500-cpufreq.c
+@@ -8,10 +8,12 @@
+  * Author: Jonas Aaberg <jonas.aberg@stericsson.com>
+  *
+  */
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/cpufreq.h>
+ #include <linux/delay.h>
+ #include <linux/slab.h>
++#include <linux/platform_device.h>
+ #include <linux/mfd/dbx500-prcmu.h>
+ #include <mach/id.h>
+ 
+@@ -159,12 +161,28 @@ static struct cpufreq_driver db8500_cpufreq_driver = {
+ 	.attr   = db8500_cpufreq_attr,
+ };
+ 
++static int db8500_cpufreq_probe(struct platform_device *pdev)
++{
++	return cpufreq_register_driver(&db8500_cpufreq_driver);
++}
++
++static struct platform_driver db8500_cpufreq_plat_driver = {
++	.driver = {
++		.name = "cpufreq-u8500",
++		.owner = THIS_MODULE,
++	},
++	.probe = db8500_cpufreq_probe,
++};
++
+ static int __init db8500_cpufreq_register(void)
+ {
+ 	if (!cpu_is_u8500_family())
+ 		return -ENODEV;
+ 
+ 	pr_info("cpufreq for DB8500 started\n");
+-	return cpufreq_register_driver(&db8500_cpufreq_driver);
++	return platform_driver_register(&db8500_cpufreq_plat_driver);
+ }
+ device_initcall(db8500_cpufreq_register);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("cpufreq driver for DB8500");
+-- 
+1.7.10
 
-> > +	INIT_WORK_ONSTACK(&tw.work, powernowk8_target_on_cpu);
-instead of using set_cpus_allowed_ptr.
-
-Changing scheduler behavior of powernow-k8 
-sounds rather intrusive for rc6, but I would fully trust
-Tejun's advise on this.
-
-I wonder whether more drivers are affected similarly, grepping for:
-set_cpus_allowed_ptr
-shows quite some hits.
-
-My 2 cents...,
-
-   Thomas
