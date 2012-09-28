@@ -1,11 +1,9 @@
 From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 3/4] cpufreq: db8500: Register as a platform driver
-Date: Fri, 28 Sep 2012 16:16:53 +0200
-Message-ID: <1348841814-13645-4-git-send-email-ulf.hansson@stericsson.com>
-References: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com>
+Subject: [PATCH 0/4] cpufreq: db8500: Use platform data to provide cpufreq table
+Date: Fri, 28 Sep 2012 16:16:50 +0200
+Message-ID: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -15,61 +13,25 @@ Cc: Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, 
 
 From: Ulf Hansson <ulf.hansson@linaro.org>
 
-To fetch the mfd child device we register the cpufreq driver
-as a platform driver.
+Since the cpufreq table is dependant on the prmcu fw, it make sense to
+keep the table there. Moreover since the cpufreq is already a mfd child
+device added by the prcmu this make even more logic.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/cpufreq/db8500-cpufreq.c |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+The next step after these patches will be to implement an "arm_clk" to be
+used from cpufreq to update the opp instead of using the prcmu opp API directly.
+This will then remove the last hard dependency to the prcmu API from cpufreq.
 
-diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
-index 74b830b..7d61a6c 100644
---- a/drivers/cpufreq/db8500-cpufreq.c
-+++ b/drivers/cpufreq/db8500-cpufreq.c
-@@ -8,10 +8,12 @@
-  * Author: Jonas Aaberg <jonas.aberg@stericsson.com>
-  *
-  */
-+#include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/platform_device.h>
- #include <linux/mfd/dbx500-prcmu.h>
- #include <mach/id.h>
- 
-@@ -159,12 +161,28 @@ static struct cpufreq_driver db8500_cpufreq_driver = {
- 	.attr   = db8500_cpufreq_attr,
- };
- 
-+static int db8500_cpufreq_probe(struct platform_device *pdev)
-+{
-+	return cpufreq_register_driver(&db8500_cpufreq_driver);
-+}
-+
-+static struct platform_driver db8500_cpufreq_plat_driver = {
-+	.driver = {
-+		.name = "cpufreq-u8500",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = db8500_cpufreq_probe,
-+};
-+
- static int __init db8500_cpufreq_register(void)
- {
- 	if (!cpu_is_u8500_family())
- 		return -ENODEV;
- 
- 	pr_info("cpufreq for DB8500 started\n");
--	return cpufreq_register_driver(&db8500_cpufreq_driver);
-+	return platform_driver_register(&db8500_cpufreq_plat_driver);
- }
- device_initcall(db8500_cpufreq_register);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("cpufreq driver for DB8500");
+Ulf Hansson (4):
+  ARM: ux500: Remove cpufreq platform device
+  mfd: db8500: Provide cpufreq table as platform data
+  cpufreq: db8500: Register as a platform driver
+  cpufreq: db8500: Fetch cpufreq table from platform data
+
+ arch/arm/mach-ux500/cpu-db8500.c |    6 ---
+ drivers/cpufreq/db8500-cpufreq.c |   87 +++++++++++++++++++-------------------
+ drivers/mfd/db8500-prcmu.c       |   22 ++++++++++
+ 3 files changed, 66 insertions(+), 49 deletions(-)
+
 -- 
 1.7.10
 
