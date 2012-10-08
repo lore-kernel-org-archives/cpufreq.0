@@ -1,78 +1,56 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 48341] New: BUG: using smp_processor_id in preemptible
- powernow_k8
-Date: Thu,  4 Oct 2012 12:38:45 +0000 (UTC)
-Message-ID: <bug-48341-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/4] cpufreq: db8500: Use platform data to provide cpufreq table
+Date: Mon, 08 Oct 2012 09:55:55 +0200
+Message-ID: <22882034.rFTeZimQOF@vostro.rjw.lan>
+References: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com> <CACRpkdb-SWkysKGQrJBL1hJLucQ=aN59Sfxe6rxrvtR0HsOJ_g@mail.gmail.com> <CAPDyKFqqS4D4ZNDp3tFqE5t5iYOKCcaQYvyFsfGQa5U8bzWWag@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFqqS4D4ZNDp3tFqE5t5iYOKCcaQYvyFsfGQa5U8bzWWag@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=48341
+On Wednesday 03 of October 2012 12:12:05 Ulf Hansson wrote:
+> On 2 October 2012 13:45, Linus Walleij <linus.walleij@linaro.org> wrote:
+> > On Fri, Sep 28, 2012 at 4:16 PM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+> >
+> >> From: Ulf Hansson <ulf.hansson@linaro.org>
+> >>
+> >> Since the cpufreq table is dependant on the prmcu fw, it make sense to
+> >> keep the table there. Moreover since the cpufreq is already a mfd child
+> >> device added by the prcmu this make even more logic.
+> >
+> > Better there than elsewhere.
+> >
+> >> The next step after these patches will be to implement an "arm_clk" to be
+> >> used from cpufreq to update the opp instead of using the prcmu opp API directly.
+> >> This will then remove the last hard dependency to the prcmu API from cpufreq.
+> >
+> > Sounds like a plan.
+> >
+> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> >
+> > Is this going to be merged through the cpufreq tree or the MFD tree?
+> 
+> Good question! Actually I would prefer to go through Mike Turquette
+> clock tree, if he feel it is OK of course.
+> My idea is then get the Ack from Rafael for cpufreq patches and from
+> Samuel for the mfd patches.
+> 
+> The reason for doing this in a quite complicated manner is that my
+> soon upcoming clock and mfd patches will functionality wise depend on
+> these patches, and don't want to be sitting around and waiting for a
+> new rc before being able to push the next series.
 
-           Summary: BUG: using smp_processor_id in preemptible powernow_k8
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.6.0-rc7 (drm-core-next)
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: lists@andyfurniss.entadsl.com
-        Regression: Yes
+The cpufreq patches look good to me, please feel free to tag them as ACKed by me.
 
+Thanks,
+Rafael
 
-Created an attachment (id=82111)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=82111)
-dmesg 
-
-Since upgrading kernel(drm-core-next) from 
-
-3.6.0-rc2-57331-g269b62d to
-
-3.6.0-rc7-59005-g2216c9e
-
-I am getting these with cpufreq
-
-BUG: using smp_processor_id() in preemptible [00000000] code: modprobe/222
-caller is powernowk8_target+0x17/0x50 [powernow_k8]
-Pid: 222, comm: modprobe Not tainted 3.6.0-rc7-59005-g2216c9e #1
-Call Trace:
- [<c0626ced>] debug_smp_processor_id+0xcd/0xd0
- [<f82dda10>] ? powernowk8_target_fn+0x9b0/0x9b0 [powernow_k8]
- [<f82dda27>] powernowk8_target+0x17/0x50 [powernow_k8]
- [<c0748393>] __cpufreq_driver_target+0x63/0xa0
- [<c04587d6>] ? srcu_notifier_chain_register+0x36/0x60
- [<c074aafd>] cpufreq_governor_userspace+0x16d/0x2d0
- [<c0812eed>] ? notifier_call_chain+0x2d/0x60
- [<c07484c5>] __cpufreq_governor+0x55/0xd0
- [<c07486f9>] __cpufreq_set_policy+0x179/0x240
- [<c0565163>] ? sysfs_add_file+0x13/0x20
- [<c0749dfe>] cpufreq_add_dev+0x66e/0x7b0
- [<c0810372>] ? _raw_spin_unlock_irqrestore+0x12/0x30
- [<c074a640>] ? cpufreq_update_policy+0x100/0x100
- [<c06aa44d>] subsys_interface_register+0x7d/0xb0
- [<f82dc640>] ? write_new_fid+0x140/0x140 [powernow_k8]
- [<c07494cc>] cpufreq_register_driver+0x9c/0x1d0
- [<f82de64d>] powernowk8_init+0x16d/0x1cd [powernow_k8]
- [<f82de4e0>] ? powernowk8_cpu_init+0x8e0/0x8e0 [powernow_k8]
- [<c04011f3>] do_one_initcall+0x103/0x150
- [<c04588da>] ? blocking_notifier_call_chain+0x1a/0x20
- [<c048a577>] sys_init_module+0xc7/0x10a0
- [<c062f000>] ? ddebug_dyndbg_param_cb+0x70/0x70
- [<c0815d93>] sysenter_do_call+0x12/0x22
-
-
-dmesg attached.
 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
