@@ -1,56 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] cpufreq: db8500: Use platform data to provide cpufreq table
-Date: Mon, 08 Oct 2012 09:55:55 +0200
-Message-ID: <22882034.rFTeZimQOF@vostro.rjw.lan>
-References: <1348841814-13645-1-git-send-email-ulf.hansson@stericsson.com> <CACRpkdb-SWkysKGQrJBL1hJLucQ=aN59Sfxe6rxrvtR0HsOJ_g@mail.gmail.com> <CAPDyKFqqS4D4ZNDp3tFqE5t5iYOKCcaQYvyFsfGQa5U8bzWWag@mail.gmail.com>
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: [Query]: CPUFREQ: Affected and related cpus in cpufreq
+Date: Mon, 8 Oct 2012 19:28:46 +0530
+Message-ID: <CAOh2x=mJUkRxwwTRh89-Xpm1WwB9ciDOXVohqoTu6B5k6meHdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqqS4D4ZNDp3tFqE5t5iYOKCcaQYvyFsfGQa5U8bzWWag@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type;
+        bh=cGjM8JDZbyIXKkIDr49KEZgAFtBFpx6bt24eTWsqtF8=;
+        b=Yg4QyZIDgAY3yDulZ/oFjAbv06ys96q/jmRV2wML9jMUE4wZXqt2CxeYFX9s02VH9J
+         8CQzuTOKdjp23TUy6lhdq+W9wn7F9JgPQ7c0h+mKoWaF7hNc4qdpIG//FAQ1IXmGpxdK
+         NTi+gKCAhaVO0RT/AaLfY2RCgnvqBss7u1z7ngPr3eMusUDTH9MK45D/Y3VEv22aOoIQ
+         0KgdxAmdRF8zjjwdweY9gDUqcn5/PtRRWySTJx+i7fe/Em0JtxpOsqAtxNGyUDrDjX4m
+         /4eRBlblV/nQ5JR8Q7fQ6M3ktwJTl6+WGD3IqhIPDPiYkJGQdGo+zwsE0xREyyiHp0Sk
+         G+Dg==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, spear-devel <spear-devel@list.st.com>, Sudeep.KarkadaNagesha@arm.com
 
-On Wednesday 03 of October 2012 12:12:05 Ulf Hansson wrote:
-> On 2 October 2012 13:45, Linus Walleij <linus.walleij@linaro.org> wrote:
-> > On Fri, Sep 28, 2012 at 4:16 PM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
-> >
-> >> From: Ulf Hansson <ulf.hansson@linaro.org>
-> >>
-> >> Since the cpufreq table is dependant on the prmcu fw, it make sense to
-> >> keep the table there. Moreover since the cpufreq is already a mfd child
-> >> device added by the prcmu this make even more logic.
-> >
-> > Better there than elsewhere.
-> >
-> >> The next step after these patches will be to implement an "arm_clk" to be
-> >> used from cpufreq to update the opp instead of using the prcmu opp API directly.
-> >> This will then remove the last hard dependency to the prcmu API from cpufreq.
-> >
-> > Sounds like a plan.
-> >
-> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> >
-> > Is this going to be merged through the cpufreq tree or the MFD tree?
-> 
-> Good question! Actually I would prefer to go through Mike Turquette
-> clock tree, if he feel it is OK of course.
-> My idea is then get the Ack from Rafael for cpufreq patches and from
-> Samuel for the mfd patches.
-> 
-> The reason for doing this in a quite complicated manner is that my
-> soon upcoming clock and mfd patches will functionality wise depend on
-> these patches, and don't want to be sitting around and waiting for a
-> new rc before being able to push the next series.
+Hi All,
 
-The cpufreq patches look good to me, please feel free to tag them as ACKed by me.
+Sorry for  asking one of the most basic question of cpufreq :(
 
-Thanks,
-Rafael
+I couldn't get the difference between affected (policy->cpus) and
+related cpus (policy->related_cpus) in cpufreq...
 
+As per Documentation/code:
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+affected_cpus(policy->cpus):
+- List of CPUs that require software coordination of frequency.
+- Processors part of affected_cpus share policy struct
+- Policy limits the frequencies that the processor can work with.
+
+related_cpus(policy->related_cpus):
+- List of CPUs that need some sort of frequency coordination, whether
+  software or hardware.
+- Processors part of related_cpus share governer.
+- Governer sets the rules, about when to change limits specified by policy.
+
+Correct?
+
+So, now comes the real question:
+- In which scenario's should we populate affected and related cpus?
+- Should related cpus will always be a superset of affected cpus?
+
+--
+Viresh
