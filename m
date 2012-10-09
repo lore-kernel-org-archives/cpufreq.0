@@ -1,82 +1,44 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/8] cpupower tools: Fix minor warnings
-Date: Tue,  9 Oct 2012 15:21:02 +0200
-Message-ID: <1349788867-65962-4-git-send-email-trenn@suse.de>
-References: <1349788867-65962-1-git-send-email-trenn@suse.de>
+Subject: [PATCH 0/8] cpupower enhancements for 3.7
+Date: Tue,  9 Oct 2012 15:20:59 +0200
+Message-ID: <1349788867-65962-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1349788867-65962-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
-Cc: Palmer Cox <p@lmercox.com>, linux@dominikbrodowski.net, rjw@sisk.pl, Thomas Renninger <trenn@suse.de>
+Cc: Thomas Renninger <trenn@suse.de>, linux@dominikbrodowski.net, rjw@sisk.pl
 
-From: Palmer Cox <p@lmercox.com>
+Hope it's not too late already...
 
-Fix minor warnings reported with GCC 4.6:
-* The sysfs_write_file function is unused - remove it.
-* The pr_mon_len in the print_header function is unsed - remove it.
+Palmer Cox (6):
+  cpupower tools: Remove brace expansion from clean target
+  cpupower tools: Update .gitignore for files created in the debug
+    directories
+  cpupower tools: Fix minor warnings
+  cpupower tools: Fix issues with sysfs_topology_read_file
+  cpupower tools: Fix malloc of cpu_info structure
+  cpupower tools: Fix warning and a bug with the cpu package count
 
-Signed-off-by: Palmer Cox <p@lmercox.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
----
- tools/power/cpupower/utils/helpers/sysfs.c         |   19 -------------------
- .../cpupower/utils/idle_monitor/cpupower-monitor.c |    3 +--
- 2 files changed, 1 insertions(+), 21 deletions(-)
+Thomas Renninger (2):
+  cpupower: Provide -c param for cpupower monitor to schedule process
+    on all cores
+  patch cpupower_ivy_bridge_support.patch
 
-diff --git a/tools/power/cpupower/utils/helpers/sysfs.c b/tools/power/cpupower/utils/helpers/sysfs.c
-index 96e28c1..38ab916 100644
---- a/tools/power/cpupower/utils/helpers/sysfs.c
-+++ b/tools/power/cpupower/utils/helpers/sysfs.c
-@@ -37,25 +37,6 @@ unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
- 	return (unsigned int) numread;
- }
- 
--static unsigned int sysfs_write_file(const char *path,
--				     const char *value, size_t len)
--{
--	int fd;
--	ssize_t numwrite;
--
--	fd = open(path, O_WRONLY);
--	if (fd == -1)
--		return 0;
--
--	numwrite = write(fd, value, len);
--	if (numwrite < 1) {
--		close(fd);
--		return 0;
--	}
--	close(fd);
--	return (unsigned int) numwrite;
--}
--
- /*
-  * Detect whether a CPU is online
-  *
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-index 0d6571e..7a657f3 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-@@ -84,7 +84,7 @@ int fill_string_with_spaces(char *s, int n)
- void print_header(int topology_depth)
- {
- 	int unsigned mon;
--	int state, need_len, pr_mon_len;
-+	int state, need_len;
- 	cstate_t s;
- 	char buf[128] = "";
- 	int percent_width = 4;
-@@ -93,7 +93,6 @@ void print_header(int topology_depth)
- 	printf("%s|", buf);
- 
- 	for (mon = 0; mon < avail_monitors; mon++) {
--		pr_mon_len = 0;
- 		need_len = monitors[mon]->hw_states_num * (percent_width + 3)
- 			- 1;
- 		if (mon != 0) {
+ tools/power/cpupower/.gitignore                    |    7 +++
+ tools/power/cpupower/Makefile                      |    3 +-
+ tools/power/cpupower/debug/i386/Makefile           |    5 ++-
+ tools/power/cpupower/man/cpupower-monitor.1        |   15 +++++-
+ tools/power/cpupower/utils/helpers/helpers.h       |   18 ++++---
+ tools/power/cpupower/utils/helpers/sysfs.c         |   19 -------
+ tools/power/cpupower/utils/helpers/topology.c      |   53 +++++++++++---------
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c |   21 +++++++-
+ .../cpupower/utils/idle_monitor/cpupower-monitor.h |   17 ++++++
+ tools/power/cpupower/utils/idle_monitor/snb_idle.c |   10 +++-
+ 10 files changed, 108 insertions(+), 60 deletions(-)
+
 -- 
 1.7.6.1
 
