@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 1/8] cpupower tools: Remove brace expansion from clean target
-Date: Tue,  9 Oct 2012 15:21:00 +0200
-Message-ID: <1349788867-65962-2-git-send-email-trenn@suse.de>
+Subject: [PATCH 3/8] cpupower tools: Fix minor warnings
+Date: Tue,  9 Oct 2012 15:21:02 +0200
+Message-ID: <1349788867-65962-4-git-send-email-trenn@suse.de>
 References: <1349788867-65962-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1349788867-65962-1-git-send-email-trenn@suse.de>
@@ -15,48 +15,68 @@ Cc: Palmer Cox <p@lmercox.com>, linux@dominikbrodowski.net, rjw@sisk.pl, Thomas 
 
 From: Palmer Cox <p@lmercox.com>
 
-The clean targets from the cpupower tools' Makefiles use brace expansion to
-remove some generated files. However, the default shells on many systems do
-not support this feature resulting in some generated files not being removed
-by clean.
+Fix minor warnings reported with GCC 4.6:
+* The sysfs_write_file function is unused - remove it.
+* The pr_mon_len in the print_header function is unsed - remove it.
 
 Signed-off-by: Palmer Cox <p@lmercox.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- tools/power/cpupower/Makefile            |    3 ++-
- tools/power/cpupower/debug/i386/Makefile |    5 ++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ tools/power/cpupower/utils/helpers/sysfs.c         |   19 -------------------
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c |    3 +--
+ 2 files changed, 1 insertions(+), 21 deletions(-)
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index a93e06c..44b7a06 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -253,7 +253,8 @@ clean:
- 	 | xargs rm -f
- 	-rm -f $(OUTPUT)cpupower
- 	-rm -f $(OUTPUT)libcpupower.so*
--	-rm -rf $(OUTPUT)po/*.{gmo,pot}
-+	-rm -rf $(OUTPUT)po/*.gmo
-+	-rm -rf $(OUTPUT)po/*.pot
- 	$(MAKE) -C bench O=$(OUTPUT) clean
+diff --git a/tools/power/cpupower/utils/helpers/sysfs.c b/tools/power/cpupower/utils/helpers/sysfs.c
+index 96e28c1..38ab916 100644
+--- a/tools/power/cpupower/utils/helpers/sysfs.c
++++ b/tools/power/cpupower/utils/helpers/sysfs.c
+@@ -37,25 +37,6 @@ unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
+ 	return (unsigned int) numread;
+ }
  
+-static unsigned int sysfs_write_file(const char *path,
+-				     const char *value, size_t len)
+-{
+-	int fd;
+-	ssize_t numwrite;
+-
+-	fd = open(path, O_WRONLY);
+-	if (fd == -1)
+-		return 0;
+-
+-	numwrite = write(fd, value, len);
+-	if (numwrite < 1) {
+-		close(fd);
+-		return 0;
+-	}
+-	close(fd);
+-	return (unsigned int) numwrite;
+-}
+-
+ /*
+  * Detect whether a CPU is online
+  *
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+index 0d6571e..7a657f3 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+@@ -84,7 +84,7 @@ int fill_string_with_spaces(char *s, int n)
+ void print_header(int topology_depth)
+ {
+ 	int unsigned mon;
+-	int state, need_len, pr_mon_len;
++	int state, need_len;
+ 	cstate_t s;
+ 	char buf[128] = "";
+ 	int percent_width = 4;
+@@ -93,7 +93,6 @@ void print_header(int topology_depth)
+ 	printf("%s|", buf);
  
-diff --git a/tools/power/cpupower/debug/i386/Makefile b/tools/power/cpupower/debug/i386/Makefile
-index 3ba158f..c05cc0a 100644
---- a/tools/power/cpupower/debug/i386/Makefile
-+++ b/tools/power/cpupower/debug/i386/Makefile
-@@ -26,7 +26,10 @@ $(OUTPUT)powernow-k8-decode: powernow-k8-decode.c
- all: $(OUTPUT)centrino-decode $(OUTPUT)dump_psb $(OUTPUT)intel_gsic $(OUTPUT)powernow-k8-decode
- 
- clean:
--	rm -rf $(OUTPUT){centrino-decode,dump_psb,intel_gsic,powernow-k8-decode}
-+	rm -rf $(OUTPUT)centrino-decode
-+	rm -rf $(OUTPUT)dump_psb
-+	rm -rf $(OUTPUT)intel_gsic
-+	rm -rf $(OUTPUT)powernow-k8-decode
- 
- install:
- 	$(INSTALL) -d $(DESTDIR)${bindir}
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+-		pr_mon_len = 0;
+ 		need_len = monitors[mon]->hw_states_num * (percent_width + 3)
+ 			- 1;
+ 		if (mon != 0) {
 -- 
 1.7.6.1
 
