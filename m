@@ -1,52 +1,40 @@
-From: viresh kumar <viresh.kumar@linaro.org>
-Subject: [Query]: CPUFREQ: Affected and related cpus in cpufreq
-Date: Mon, 8 Oct 2012 19:28:46 +0530
-Message-ID: <CAOh2x=mJUkRxwwTRh89-Xpm1WwB9ciDOXVohqoTu6B5k6meHdw@mail.gmail.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type;
-        bh=cGjM8JDZbyIXKkIDr49KEZgAFtBFpx6bt24eTWsqtF8=;
-        b=Yg4QyZIDgAY3yDulZ/oFjAbv06ys96q/jmRV2wML9jMUE4wZXqt2CxeYFX9s02VH9J
-         8CQzuTOKdjp23TUy6lhdq+W9wn7F9JgPQ7c0h+mKoWaF7hNc4qdpIG//FAQ1IXmGpxdK
-         NTi+gKCAhaVO0RT/AaLfY2RCgnvqBss7u1z7ngPr3eMusUDTH9MK45D/Y3VEv22aOoIQ
-         0KgdxAmdRF8zjjwdweY9gDUqcn5/PtRRWySTJx+i7fe/Em0JtxpOsqAtxNGyUDrDjX4m
-         /4eRBlblV/nQ5JR8Q7fQ6M3ktwJTl6+WGD3IqhIPDPiYkJGQdGo+zwsE0xREyyiHp0Sk
-         G+Dg==
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: core: Fix typo in comment describing show_bios_limit()
+Date: Tue,  9 Oct 2012 12:32:48 +0530
+Message-ID: <718816abb84888e786c8bc478104668440b77324.1349766028.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, spear-devel <spear-devel@list.st.com>, Sudeep.KarkadaNagesha@arm.com
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi All,
+show_bios_limit is mistakenly written as show_scaling_driver in a comment
+describing purpose of show_bios_limit() routine.
 
-Sorry for  asking one of the most basic question of cpufreq :(
+Fix it.
 
-I couldn't get the difference between affected (policy->cpus) and
-related cpus (policy->related_cpus) in cpufreq...
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-As per Documentation/code:
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index fb8a527..021973b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -581,7 +581,7 @@ static ssize_t show_scaling_setspeed(struct cpufreq_pol=
+icy *policy, char *buf)
+ }
+=20
+ /**
+- * show_scaling_driver - show the current cpufreq HW/BIOS limitation
++ * show_bios_limit - show the current cpufreq HW/BIOS limitation
+  */
+ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ {
+--=20
+1.7.12.rc2.18.g61b472e
 
-affected_cpus(policy->cpus):
-- List of CPUs that require software coordination of frequency.
-- Processors part of affected_cpus share policy struct
-- Policy limits the frequencies that the processor can work with.
-
-related_cpus(policy->related_cpus):
-- List of CPUs that need some sort of frequency coordination, whether
-  software or hardware.
-- Processors part of related_cpus share governer.
-- Governer sets the rules, about when to change limits specified by policy.
-
-Correct?
-
-So, now comes the real question:
-- In which scenario's should we populate affected and related cpus?
-- Should related cpus will always be a superset of affected cpus?
-
---
-Viresh
