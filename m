@@ -1,9 +1,11 @@
 From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Wed, 10 Oct 2012 13:42:21 +0200
-Message-ID: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+Subject: [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
+Date: Wed, 10 Oct 2012 13:42:26 +0200
+Message-ID: <1349869349-8070-6-git-send-email-ulf.hansson@stericsson.com>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -13,49 +15,172 @@ Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.wall
 
 From: Ulf Hansson <ulf.hansson@linaro.org>
 
-This collection of patches fixup smp_twd clk so clk notifiers can use it
-properly.
+ARMSS clk directly maps it's frequency towards the cpufreq table.
+To be able to update the ARMSS clk rate, a new set_rate function for
+the ARMSS clk is added, which also will trigger a corresponding ARM
+OPP request. Additionally an ARMSS clk round_rate function is added
+to fetch valid cpufreq frequencies.
 
-An armss clk is added which is used from cpufreq driver to update frequency
-instead of using the prcmu_set|get_arm_opp API. The smp_twd clk is converted
-to a fixed_factor clk with armss clk as parent and with a fixed divider of two.
-Therfore it will be updated when armss clk is updated and thus corresponding
-notifications will be triggered.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/mfd/db8500-prcmu.c |   78 +++++++++++++++++++++++++++++++-------------
+ 1 file changed, 56 insertions(+), 22 deletions(-)
 
-I would prefer if these patches could be merged through Mike Turquette's clk
-tree, if he think it seems feasible of course. For the mfd and cpufreq patches
-I hope Samuel Ortiz and Rafael J. Wysocki if fine by acking patches. If there
-are other preferred way of dealing with this I am happy to change setup.
-
-Do note that, the four below patches have already been sent and most of them
-have already been acked/reviewed but not merged. I have included them in this
-series to provide full overview for reviewers.
-
-ARM: ux500: Remove cpufreq platform device
-mfd: db8500: Provide cpufreq table as platform data
-cpufreq: db8500: Register as a platform driver
-cpufreq: db8500: Fetch cpufreq table from platform data
-
-Patches are based on Linus Torvalds tree with latest commit as of okt 10.
-
-Ulf Hansson (8):
-  ARM: ux500: Remove cpufreq platform device
-  mfd: db8500: Provide cpufreq table as platform data
-  cpufreq: db8500: Register as a platform driver
-  cpufreq: db8500: Fetch cpufreq table from platform data
-  mfd: db8500: Connect ARMSS clk to ARM OPP
-  clk: ux500: Support for prcmu_scalable_rate clock
-  clk: ux500: Add armss clk and fixup smp_twd clk for u8500
-  cpufreq: db8500: Use armss clk to update frequency
-
- arch/arm/mach-ux500/cpu-db8500.c |    6 ---
- drivers/clk/ux500/clk-prcmu.c    |   17 +++++++
- drivers/clk/ux500/clk.h          |    6 +++
- drivers/clk/ux500/u8500_clk.c    |   14 +++---
- drivers/cpufreq/db8500-cpufreq.c |  101 +++++++++++++++++++++-----------------
- drivers/mfd/db8500-prcmu.c       |   82 ++++++++++++++++++++++++++-----
- 6 files changed, 155 insertions(+), 71 deletions(-)
-
+diff --git a/drivers/mfd/db8500-prcmu.c b/drivers/mfd/db8500-prcmu.c
+index 53c24c4..e91a6e6 100644
+--- a/drivers/mfd/db8500-prcmu.c
++++ b/drivers/mfd/db8500-prcmu.c
+@@ -421,9 +421,6 @@ static struct {
+ 
+ static atomic_t ac_wake_req_state = ATOMIC_INIT(0);
+ 
+-/* Functions definition */
+-static void compute_armss_rate(void);
+-
+ /* Spinlocks */
+ static DEFINE_SPINLOCK(prcmu_lock);
+ static DEFINE_SPINLOCK(clkout_lock);
+@@ -1020,7 +1017,6 @@ int db8500_prcmu_set_arm_opp(u8 opp)
+ 		(mb1_transfer.ack.arm_opp != opp))
+ 		r = -EIO;
+ 
+-	compute_armss_rate();
+ 	mutex_unlock(&mb1_transfer.lock);
+ 
+ 	return r;
+@@ -1670,13 +1666,8 @@ static unsigned long clock_rate(u8 clock)
+ 	else
+ 		return 0;
+ }
+-static unsigned long latest_armss_rate;
+-static unsigned long armss_rate(void)
+-{
+-	return latest_armss_rate;
+-}
+ 
+-static void compute_armss_rate(void)
++static unsigned long armss_rate(void)
+ {
+ 	u32 r;
+ 	unsigned long rate;
+@@ -1701,7 +1692,7 @@ static void compute_armss_rate(void)
+ 		rate = pll_rate(PRCM_PLLARM_FREQ, ROOT_CLOCK_RATE, PLL_DIV);
+ 	}
+ 
+-	latest_armss_rate = rate;
++	return rate;
+ }
+ 
+ static unsigned long dsiclk_rate(u8 n)
+@@ -1821,6 +1812,35 @@ static long round_clock_rate(u8 clock, unsigned long rate)
+ 	return rounded_rate;
+ }
+ 
++/* CPU FREQ table, may be changed due to if MAX_OPP is supported. */
++static struct cpufreq_frequency_table db8500_cpufreq_table[] = {
++	{ .frequency = 200000, .index = ARM_EXTCLK,},
++	{ .frequency = 400000, .index = ARM_50_OPP,},
++	{ .frequency = 800000, .index = ARM_100_OPP,},
++	{ .frequency = CPUFREQ_TABLE_END,}, /* To be used for MAX_OPP. */
++	{ .frequency = CPUFREQ_TABLE_END,},
++};
++
++static long round_armss_rate(unsigned long rate)
++{
++	long freq = 0;
++	int i = 0;
++
++	/* cpufreq table frequencies is in KHz. */
++	rate = rate / 1000;
++
++	/* Find the corresponding arm opp from the cpufreq table. */
++	while (db8500_cpufreq_table[i].frequency != CPUFREQ_TABLE_END) {
++		freq = db8500_cpufreq_table[i].frequency;
++		if (freq == rate)
++			break;
++		i++;
++	}
++
++	/* Return the last valid value, even if a match was not found. */
++	return freq * 1000;
++}
++
+ #define MIN_PLL_VCO_RATE 600000000ULL
+ #define MAX_PLL_VCO_RATE 1680640000ULL
+ 
+@@ -1892,6 +1912,8 @@ long prcmu_round_clock_rate(u8 clock, unsigned long rate)
+ {
+ 	if (clock < PRCMU_NUM_REG_CLOCKS)
+ 		return round_clock_rate(clock, rate);
++	else if (clock == PRCMU_ARMSS)
++		return round_armss_rate(rate);
+ 	else if (clock == PRCMU_PLLDSI)
+ 		return round_plldsi_rate(rate);
+ 	else if ((clock == PRCMU_DSI0CLK) || (clock == PRCMU_DSI1CLK))
+@@ -1951,6 +1973,27 @@ static void set_clock_rate(u8 clock, unsigned long rate)
+ 	spin_unlock_irqrestore(&clk_mgt_lock, flags);
+ }
+ 
++static int set_armss_rate(unsigned long rate)
++{
++	int i = 0;
++
++	/* cpufreq table frequencies is in KHz. */
++	rate = rate / 1000;
++
++	/* Find the corresponding arm opp from the cpufreq table. */
++	while (db8500_cpufreq_table[i].frequency != CPUFREQ_TABLE_END) {
++		if (db8500_cpufreq_table[i].frequency == rate)
++			break;
++		i++;
++	}
++
++	if (db8500_cpufreq_table[i].frequency != rate)
++		return -EINVAL;
++
++	/* Set the new arm opp. */
++	return db8500_prcmu_set_arm_opp(db8500_cpufreq_table[i].index);
++}
++
+ static int set_plldsi_rate(unsigned long rate)
+ {
+ 	unsigned long src_rate;
+@@ -2031,6 +2074,8 @@ int prcmu_set_clock_rate(u8 clock, unsigned long rate)
+ {
+ 	if (clock < PRCMU_NUM_REG_CLOCKS)
+ 		set_clock_rate(clock, rate);
++	else if (clock == PRCMU_ARMSS)
++		return set_armss_rate(rate);
+ 	else if (clock == PRCMU_PLLDSI)
+ 		return set_plldsi_rate(rate);
+ 	else if ((clock == PRCMU_DSI0CLK) || (clock == PRCMU_DSI1CLK))
+@@ -2755,8 +2800,6 @@ void __init db8500_prcmu_early_init(void)
+ 	init_completion(&mb5_transfer.work);
+ 
+ 	INIT_WORK(&mb0_transfer.mask_work, prcmu_mask_work);
+-
+-	compute_armss_rate();
+ }
+ 
+ static void __init init_prcm_registers(void)
+@@ -3003,15 +3046,6 @@ static struct regulator_init_data db8500_regulators[DB8500_NUM_REGULATORS] = {
+ 	},
+ };
+ 
+-/* CPU FREQ table, may be changed due to if MAX_OPP is supported. */
+-static struct cpufreq_frequency_table db8500_cpufreq_table[] = {
+-	{ .frequency = 200000, .index = ARM_EXTCLK,},
+-	{ .frequency = 400000, .index = ARM_50_OPP,},
+-	{ .frequency = 800000, .index = ARM_100_OPP,},
+-	{ .frequency = CPUFREQ_TABLE_END,}, /* To be used for MAX_OPP. */
+-	{ .frequency = CPUFREQ_TABLE_END,},
+-};
+-
+ static struct resource ab8500_resources[] = {
+ 	[0] = {
+ 		.start	= IRQ_DB8500_AB8500,
 -- 
 1.7.10
 
