@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 7/8] clk: ux500: Add armss clk and fixup smp_twd clk for u8500
-Date: Wed, 10 Oct 2012 13:42:28 +0200
-Message-ID: <1349869349-8070-8-git-send-email-ulf.hansson@stericsson.com>
+Subject: [PATCH 6/8] clk: ux500: Support for prcmu_scalable_rate clock
+Date: Wed, 10 Oct 2012 13:42:27 +0200
+Message-ID: <1349869349-8070-7-git-send-email-ulf.hansson@stericsson.com>
 References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,45 +15,66 @@ Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.wall
 
 From: Ulf Hansson <ulf.hansson@linaro.org>
 
-The new armss clk is a prcmu_scalable_rate clk which represents
-the ARMSS clk. This then makes it possible to convert the smp_twd
-clk to a fixed factor clock type, using a fixed divider of 2 and
-with the armss clk as parent.
+The prcmu_scalable_rate clock can change rate but is not gateable.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/clk/ux500/u8500_clk.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/clk/ux500/clk-prcmu.c |   17 +++++++++++++++++
+ drivers/clk/ux500/clk.h       |    6 ++++++
+ 2 files changed, 23 insertions(+)
 
-diff --git a/drivers/clk/ux500/u8500_clk.c b/drivers/clk/ux500/u8500_clk.c
-index ca4a25e..b1bd1c46 100644
---- a/drivers/clk/ux500/u8500_clk.c
-+++ b/drivers/clk/ux500/u8500_clk.c
-@@ -205,16 +205,18 @@ void u8500_clk_init(void)
- 	clk_register_clkdev(clk, "dsilp2", "dsilink.2");
- 	clk_register_clkdev(clk, "dsilp2", "mcde");
+diff --git a/drivers/clk/ux500/clk-prcmu.c b/drivers/clk/ux500/clk-prcmu.c
+index 930cdfe..2e5ef7a 100644
+--- a/drivers/clk/ux500/clk-prcmu.c
++++ b/drivers/clk/ux500/clk-prcmu.c
+@@ -153,6 +153,13 @@ static struct clk_ops clk_prcmu_gate_ops = {
+ 	.recalc_rate = clk_prcmu_recalc_rate,
+ };
  
--	clk = clk_reg_prcmu_rate("smp_twd", NULL, PRCMU_ARMSS,
--				CLK_IS_ROOT|CLK_GET_RATE_NOCACHE|
--				CLK_IGNORE_UNUSED);
-+	clk = clk_reg_prcmu_scalable_rate("armss", NULL,
-+				PRCMU_ARMSS, 0, CLK_IS_ROOT|CLK_IGNORE_UNUSED);
-+	clk_register_clkdev(clk, "armss", NULL);
++static struct clk_ops clk_prcmu_scalable_rate_ops = {
++	.is_enabled = clk_prcmu_is_enabled,
++	.recalc_rate = clk_prcmu_recalc_rate,
++	.round_rate = clk_prcmu_round_rate,
++	.set_rate = clk_prcmu_set_rate,
++};
 +
-+	clk = clk_register_fixed_factor(NULL, "smp_twd", "armss",
-+				CLK_IGNORE_UNUSED, 1, 2);
- 	clk_register_clkdev(clk, NULL, "smp_twd");
+ static struct clk_ops clk_prcmu_rate_ops = {
+ 	.is_enabled = clk_prcmu_is_enabled,
+ 	.recalc_rate = clk_prcmu_recalc_rate,
+@@ -233,6 +240,16 @@ struct clk *clk_reg_prcmu_gate(const char *name,
+ 			&clk_prcmu_gate_ops);
+ }
  
- 	/*
- 	 * FIXME: Add special handled PRCMU clocks here:
--	 * 1. clk_arm, use PRCMU_ARMCLK.
--	 * 2. clkout0yuv, use PRCMU as parent + need regulator + pinctrl.
--	 * 3. ab9540_clkout1yuv, see clkout0yuv
-+	 * 1. clkout0yuv, use PRCMU as parent + need regulator + pinctrl.
-+	 * 2. ab9540_clkout1yuv, see clkout0yuv
- 	 */
++struct clk *clk_reg_prcmu_scalable_rate(const char *name,
++					const char *parent_name,
++					u8 cg_sel,
++					unsigned long rate,
++					unsigned long flags)
++{
++	return clk_reg_prcmu(name, parent_name, cg_sel, rate, flags,
++			&clk_prcmu_scalable_rate_ops);
++}
++
+ struct clk *clk_reg_prcmu_rate(const char *name,
+ 			       const char *parent_name,
+ 			       u8 cg_sel,
+diff --git a/drivers/clk/ux500/clk.h b/drivers/clk/ux500/clk.h
+index 836d7d1..a9e2961 100644
+--- a/drivers/clk/ux500/clk.h
++++ b/drivers/clk/ux500/clk.h
+@@ -35,6 +35,12 @@ struct clk *clk_reg_prcmu_gate(const char *name,
+ 			       u8 cg_sel,
+ 			       unsigned long flags);
  
- 	/* PRCC P-clocks */
++struct clk *clk_reg_prcmu_scalable_rate(const char *name,
++					const char *parent_name,
++					u8 cg_sel,
++					unsigned long rate,
++					unsigned long flags);
++
+ struct clk *clk_reg_prcmu_rate(const char *name,
+ 			       const char *parent_name,
+ 			       u8 cg_sel,
 -- 
 1.7.10
 
