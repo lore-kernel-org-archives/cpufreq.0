@@ -1,69 +1,113 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [Query]: CPUFREQ: Affected and related cpus in cpufreq
-Date: Wed, 10 Oct 2012 13:01:26 +0100
-Message-ID: <50756396.9040705@arm.com>
-References: <CAOh2x=mJUkRxwwTRh89-Xpm1WwB9ciDOXVohqoTu6B5k6meHdw@mail.gmail.com>
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [PATCH] cpufreq, powernow-k8: Fix usage of smp_processor_id() in
+ preemptible code
+Date: Wed, 10 Oct 2012 14:48:39 +0200
+Message-ID: <20121010124839.GA22448@alberich>
+References: <20121009193844.GC7724@alberich>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <CAOh2x=mJUkRxwwTRh89-Xpm1WwB9ciDOXVohqoTu6B5k6meHdw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: viresh kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>, spear-devel <spear-devel-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20121009193844.GC7724@alberich>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="euc-kr"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Tejun Heo <tj@kernel.org>, stable@vger.kernel.org
 
-Hi Viresh,
+Rafael,
 
-On 08/10/12 14:58, viresh kumar wrote:
-> Hi All,
->
-> Sorry for  asking one of the most basic question of cpufreq :(
->
-> I couldn't get the difference between affected (policy->cpus) and
-> related cpus (policy->related_cpus) in cpufreq...
->
-> As per Documentation/code:
->
-> affected_cpus(policy->cpus):
-> - List of CPUs that require software coordination of frequency.
-> - Processors part of affected_cpus share policy struct
-> - Policy limits the frequencies that the processor can work with.
->
-> related_cpus(policy->related_cpus):
-> - List of CPUs that need some sort of frequency coordination, whether
->    software or hardware.
-> - Processors part of related_cpus share governer.
-Which document states this ?
+Please ignore my patch. It was insufficiently tested -- sorry for this.
+(powernowk8_target_fn might sleep).
 
-As per my understanding and if you see in cpufreq.c, related_cpus are
-used only when adding back the hotplugged cpu to get the governor.
-Elsewhere affected_cpus is used.
+Have to take a closer look how to avoid below issue.
 
-Ideally it would be good if above statements is true.
-E.g. In SMP with 4 CPUs(with same OPPs), if 0-1 and 2-3 need h/w 
-co-ordination, then:
-related_cpus: 0-1 and 2-3
-affected_cpus: case#1: 0-1 and 2-3 if we want to have different policies
-	       case#2: 0-3 if we want to have same policy on all CPUS
-I believe this is not possible in current code.
 
-> - Governer sets the rules, about when to change limits specified by policy.
->
-> Correct?
->
-> So, now comes the real question:
-> - In which scenario's should we populate affected and related cpus?
-> - Should related cpus will always be a superset of affected cpus?
->
-> --
-> Viresh
->
+Regards,
+Andreas
+
+
+On Tue, Oct 09, 2012 at 09:38:44PM +0200, Andreas Herrmann wrote:
+>=20
+> Commit 6889125b8b4e09c5e53e6ecab3433bed1ce198c9
+> (cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to=
+ another CPU)
+> causes powernow-k8 to trigger a preempt warning, e.g.:
+>=20
+>   BUG: using smp_processor_id() in preemptible [00000000] code: cpufr=
+eq/3776
+>   caller is powernowk8_target+0x20/0x49
+>   Pid: 3776, comm: cpufreq Not tainted 3.6.0 #9
+>   Call Trace:
+>    [<ffffffff8125b447>] debug_smp_processor_id+0xc7/0xe0
+>    [<ffffffff814877e7>] powernowk8_target+0x20/0x49
+>    [<ffffffff81482b02>] __cpufreq_driver_target+0x82/0x8a
+>    [<ffffffff81484fc6>] cpufreq_governor_performance+0x4e/0x54
+>    [<ffffffff81482c50>] __cpufreq_governor+0x8c/0xc9
+>    [<ffffffff81482e6f>] __cpufreq_set_policy+0x1a9/0x21e
+>    [<ffffffff814839af>] store_scaling_governor+0x16f/0x19b
+>    [<ffffffff81484f16>] ? cpufreq_update_policy+0x124/0x124
+>    [<ffffffff8162b4a5>] ? _raw_spin_unlock_irqrestore+0x2c/0x49
+>    [<ffffffff81483640>] store+0x60/0x88
+>    [<ffffffff811708c0>] sysfs_write_file+0xf4/0x130
+>    [<ffffffff8111243b>] vfs_write+0xb5/0x151
+>    [<ffffffff811126e0>] sys_write+0x4a/0x71
+>    [<ffffffff816319a9>] system_call_fastpath+0x16/0x1b
+>=20
+> Fix this by using get_cpu/put_cpu in powernowk8_target().
+>=20
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  drivers/cpufreq/powernow-k8.c | 19 +++++++++++--------
+>  1 file changed, 11 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow=
+-k8.c
+> index 1a40935..3d1df2a 100644
+> --- a/drivers/cpufreq/powernow-k8.c
+> +++ b/drivers/cpufreq/powernow-k8.c
+> @@ -1220,17 +1220,20 @@ static long powernowk8_target_fn(void *arg)
+>  static int powernowk8_target(struct cpufreq_policy *pol,
+>  		unsigned targfreq, unsigned relation)
+>  {
+> +	int this_cpu, ret;
+>  	struct powernowk8_target_arg pta =3D { .pol =3D pol, .targfreq =3D =
+targfreq,
+>  					     .relation =3D relation };
+> =20
+> -	/*
+> -	 * Must run on @pol->cpu.  cpufreq core is responsible for ensuring
+> -	 * that we're bound to the current CPU and pol->cpu stays online.
+> -	 */
+> -	if (smp_processor_id() =3D=3D pol->cpu)
+> -		return powernowk8_target_fn(&pta);
+> -	else
+> -		return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
+> +	this_cpu =3D get_cpu();
+> +	if (this_cpu =3D=3D pol->cpu) {
+> +		ret =3D powernowk8_target_fn(&pta);
+> +		put_cpu();
+> +	} else {
+> +		put_cpu();
+> +		ret =3D work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
+> +	}
+> +
+> +	return ret;
+>  }
+> =20
+>  /* Driver entry point to verify the policy and range of frequencies =
+*/
+> --=20
+> 1.7.12
+>=20
+
+--=20
+Operating | Advanced Micro Devices GmbH
+  System  | Einsteinring 24, 85609 Dornach/Aschheim, Germany
+ Research | Gesch=C3=A4ftsf=C3=BChrer: Alberto Bozzo
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis M=C3=BCnchen
+  (OSRC)  | Registergericht M=C3=BCnchen, HRB Nr. 43632, WEEE-Reg-Nr: D=
+E 12919551
+
