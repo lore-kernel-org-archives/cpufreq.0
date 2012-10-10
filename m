@@ -1,149 +1,69 @@
-From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 4/8] cpufreq: db8500: Fetch cpufreq table from platform data
-Date: Wed, 10 Oct 2012 13:42:25 +0200
-Message-ID: <1349869349-8070-5-git-send-email-ulf.hansson@stericsson.com>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [Query]: CPUFREQ: Affected and related cpus in cpufreq
+Date: Wed, 10 Oct 2012 13:01:26 +0100
+Message-ID: <50756396.9040705@arm.com>
+References: <CAOh2x=mJUkRxwwTRh89-Xpm1WwB9ciDOXVohqoTu6B5k6meHdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <CAOh2x=mJUkRxwwTRh89-Xpm1WwB9ciDOXVohqoTu6B5k6meHdw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonas Aberg <jonas.aberg@stericsson.com>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Lee Jones <lee.jones@linaro.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: viresh kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>, spear-devel <spear-devel-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
+Hi Viresh,
 
-By fetching the table as platform data we do not need the internally
-hardcoded cpufreq table anymore.
+On 08/10/12 14:58, viresh kumar wrote:
+> Hi All,
+>
+> Sorry for  asking one of the most basic question of cpufreq :(
+>
+> I couldn't get the difference between affected (policy->cpus) and
+> related cpus (policy->related_cpus) in cpufreq...
+>
+> As per Documentation/code:
+>
+> affected_cpus(policy->cpus):
+> - List of CPUs that require software coordination of frequency.
+> - Processors part of affected_cpus share policy struct
+> - Policy limits the frequencies that the processor can work with.
+>
+> related_cpus(policy->related_cpus):
+> - List of CPUs that need some sort of frequency coordination, whether
+>    software or hardware.
+> - Processors part of related_cpus share governer.
+Which document states this ?
 
-Moreover the corresponding arm_opp idx2opp table, used for mapping
-frequency to correct opp bits is also removed. This due to that the
-opp bits is put directly in the index field of the cpufreq table.
+As per my understanding and if you see in cpufreq.c, related_cpus are
+used only when adding back the hotplugged cpu to get the governor.
+Elsewhere affected_cpus is used.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Acked-by: Jonas Aaberg <jonas.aberg@stericsson.com>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/cpufreq/db8500-cpufreq.c |   67 ++++++++++++++------------------------
- 1 file changed, 25 insertions(+), 42 deletions(-)
+Ideally it would be good if above statements is true.
+E.g. In SMP with 4 CPUs(with same OPPs), if 0-1 and 2-3 need h/w 
+co-ordination, then:
+related_cpus: 0-1 and 2-3
+affected_cpus: case#1: 0-1 and 2-3 if we want to have different policies
+	       case#2: 0-3 if we want to have same policy on all CPUS
+I believe this is not possible in current code.
 
-diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
-index 7d61a6c..dea9a49 100644
---- a/drivers/cpufreq/db8500-cpufreq.c
-+++ b/drivers/cpufreq/db8500-cpufreq.c
-@@ -17,36 +17,7 @@
- #include <linux/mfd/dbx500-prcmu.h>
- #include <mach/id.h>
- 
--static struct cpufreq_frequency_table freq_table[] = {
--	[0] = {
--		.index = 0,
--		.frequency = 200000,
--	},
--	[1] = {
--		.index = 1,
--		.frequency = 400000,
--	},
--	[2] = {
--		.index = 2,
--		.frequency = 800000,
--	},
--	[3] = {
--		/* Used for MAX_OPP, if available */
--		.index = 3,
--		.frequency = CPUFREQ_TABLE_END,
--	},
--	[4] = {
--		.index = 4,
--		.frequency = CPUFREQ_TABLE_END,
--	},
--};
--
--static enum arm_opp idx2opp[] = {
--	ARM_EXTCLK,
--	ARM_50_OPP,
--	ARM_100_OPP,
--	ARM_MAX_OPP
--};
-+static struct cpufreq_frequency_table *freq_table;
- 
- static struct freq_attr *db8500_cpufreq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
-@@ -88,7 +59,7 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
- 
- 	/* request the PRCM unit for opp change */
--	if (prcmu_set_arm_opp(idx2opp[idx])) {
-+	if (prcmu_set_arm_opp(freq_table[idx].index)) {
- 		pr_err("db8500-cpufreq:  Failed to set OPP level\n");
- 		return -EINVAL;
- 	}
-@@ -102,25 +73,30 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
- 
- static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
- {
--	int i;
-+	int i = 0;
- 	/* request the prcm to get the current ARM opp */
--	for (i = 0; prcmu_get_arm_opp() != idx2opp[i]; i++)
--		;
--	return freq_table[i].frequency;
-+	int opp = prcmu_get_arm_opp();
-+
-+	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
-+		if (opp == freq_table[i].index)
-+			return freq_table[i].frequency;
-+		i++;
-+	}
-+
-+	/* We could not find a corresponding opp frequency. */
-+	return 0;
- }
- 
- static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
- {
--	int i, res;
--
--	BUILD_BUG_ON(ARRAY_SIZE(idx2opp) + 1 != ARRAY_SIZE(freq_table));
--
--	if (prcmu_has_arm_maxopp())
--		freq_table[3].frequency = 1000000;
-+	int i = 0;
-+	int res;
- 
- 	pr_info("db8500-cpufreq : Available frequencies:\n");
--	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-+	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
- 		pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
-+		i++;
-+	}
- 
- 	/* get policy fields based on the table */
- 	res = cpufreq_frequency_table_cpuinfo(policy, freq_table);
-@@ -163,6 +139,13 @@ static struct cpufreq_driver db8500_cpufreq_driver = {
- 
- static int db8500_cpufreq_probe(struct platform_device *pdev)
- {
-+	freq_table = dev_get_platdata(&pdev->dev);
-+
-+	if (!freq_table) {
-+		pr_err("db8500-cpufreq: Failed to fetch cpufreq table\n");
-+		return -ENODEV;
-+	}
-+
- 	return cpufreq_register_driver(&db8500_cpufreq_driver);
- }
- 
--- 
-1.7.10
+> - Governer sets the rules, about when to change limits specified by policy.
+>
+> Correct?
+>
+> So, now comes the real question:
+> - In which scenario's should we populate affected and related cpus?
+> - Should related cpus will always be a superset of affected cpus?
+>
+> --
+> Viresh
+>
