@@ -1,92 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq:core: Fix printing of governor and driver name
-Date: Wed, 10 Oct 2012 10:12:11 +0530
-Message-ID: <51be8f865e4c80f91ac8e41e54cbd5905382ddb7.1349844049.git.viresh.kumar@linaro.org>
-Content-Transfer-Encoding: quoted-printable
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Subject: [PATCH 3/8] cpufreq: db8500: Register as a platform driver
+Date: Wed, 10 Oct 2012 13:42:24 +0200
+Message-ID: <1349869349-8070-4-git-send-email-ulf.hansson@stericsson.com>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, Sudeep.KarkadaNagesha@arm.com, Robin.Randhawa@arm.com, Arvind.Chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Arrays for governer and driver name are of size CPUFREQ_NAME_LEN or 16.
-i.e. 15 bytes for name and 1 for trailing '\0'.
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-When cpufreq driver print these names (for sysfs), it includes '\n' or ' ' =
-in
-the fmt string and still passes length as CPUFREQ_NAME_LEN. If the driver o=
-r
-governor names are using all 15 fields allocated to them, then the trailing=
- '\n'
-or ' ' will never be printed. And so commands like:
+To fetch the mfd child device we register the cpufreq driver
+as a platform driver.
 
-root@linaro-developer# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_dri=
-ver
-
-will print something like:
-
-cpufreq_foodrvroot@linaro-developer#
-
-Fix this by increasing print length by one character.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Jonas Aaberg <jonas.aberg@stericsson.com>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/cpufreq/cpufreq.c | 6 +++---
- include/linux/cpufreq.h   | 2 ++
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/cpufreq/db8500-cpufreq.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 021973b..db6e337 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -445,7 +445,7 @@ static ssize_t show_scaling_governor(struct cpufreq_pol=
-icy *policy, char *buf)
- =09else if (policy->policy =3D=3D CPUFREQ_POLICY_PERFORMANCE)
- =09=09return sprintf(buf, "performance\n");
- =09else if (policy->governor)
--=09=09return scnprintf(buf, CPUFREQ_NAME_LEN, "%s\n",
-+=09=09return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n",
- =09=09=09=09policy->governor->name);
- =09return -EINVAL;
- }
-@@ -491,7 +491,7 @@ static ssize_t store_scaling_governor(struct cpufreq_po=
-licy *policy,
+diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+index 74b830b..7d61a6c 100644
+--- a/drivers/cpufreq/db8500-cpufreq.c
++++ b/drivers/cpufreq/db8500-cpufreq.c
+@@ -8,10 +8,12 @@
+  * Author: Jonas Aaberg <jonas.aberg@stericsson.com>
+  *
   */
- static ssize_t show_scaling_driver(struct cpufreq_policy *policy, char *bu=
-f)
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/cpufreq.h>
+ #include <linux/delay.h>
+ #include <linux/slab.h>
++#include <linux/platform_device.h>
+ #include <linux/mfd/dbx500-prcmu.h>
+ #include <mach/id.h>
+ 
+@@ -159,12 +161,28 @@ static struct cpufreq_driver db8500_cpufreq_driver = {
+ 	.attr   = db8500_cpufreq_attr,
+ };
+ 
++static int db8500_cpufreq_probe(struct platform_device *pdev)
++{
++	return cpufreq_register_driver(&db8500_cpufreq_driver);
++}
++
++static struct platform_driver db8500_cpufreq_plat_driver = {
++	.driver = {
++		.name = "cpufreq-u8500",
++		.owner = THIS_MODULE,
++	},
++	.probe = db8500_cpufreq_probe,
++};
++
+ static int __init db8500_cpufreq_register(void)
  {
--=09return scnprintf(buf, CPUFREQ_NAME_LEN, "%s\n", cpufreq_driver->name);
-+=09return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", cpufreq_driver->name);
+ 	if (!cpu_is_u8500_family())
+ 		return -ENODEV;
+ 
+ 	pr_info("cpufreq for DB8500 started\n");
+-	return cpufreq_register_driver(&db8500_cpufreq_driver);
++	return platform_driver_register(&db8500_cpufreq_plat_driver);
  }
-=20
- /**
-@@ -512,7 +512,7 @@ static ssize_t show_scaling_available_governors(struct =
-cpufreq_policy *policy,
- =09=09if (i >=3D (ssize_t) ((PAGE_SIZE / sizeof(char))
- =09=09    - (CPUFREQ_NAME_LEN + 2)))
- =09=09=09goto out;
--=09=09i +=3D scnprintf(&buf[i], CPUFREQ_NAME_LEN, "%s ", t->name);
-+=09=09i +=3D scnprintf(&buf[i], CPUFREQ_NAME_PLEN, "%s ", t->name);
- =09}
- out:
- =09i +=3D sprintf(&buf[i], "\n");
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index b60f6ba..fc4b785 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -22,6 +22,8 @@
- #include <asm/div64.h>
-=20
- #define CPUFREQ_NAME_LEN 16
-+/* Print length for names. Extra 1 space for accomodating '\n' in prints *=
-/
-+#define CPUFREQ_NAME_PLEN (CPUFREQ_NAME_LEN + 1)
-=20
-=20
- /*********************************************************************
---=20
-1.7.12.rc2.18.g61b472e
-
+ device_initcall(db8500_cpufreq_register);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("cpufreq driver for DB8500");
+-- 
+1.7.10
 
