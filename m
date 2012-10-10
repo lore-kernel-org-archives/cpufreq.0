@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 6/8] clk: ux500: Support for prcmu_scalable_rate clock
-Date: Wed, 10 Oct 2012 13:42:27 +0200
-Message-ID: <1349869349-8070-7-git-send-email-ulf.hansson@stericsson.com>
+Subject: [PATCH 8/8] cpufreq: db8500: Use armss clk to update frequency
+Date: Wed, 10 Oct 2012 13:42:29 +0200
+Message-ID: <1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
 References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,66 +15,87 @@ Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.wall
 
 From: Ulf Hansson <ulf.hansson@linaro.org>
 
-The prcmu_scalable_rate clock can change rate but is not gateable.
+Using the armss clk to update the frequency makes the driver no more
+directly dependant on the prmcu API.
 
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/clk/ux500/clk-prcmu.c |   17 +++++++++++++++++
- drivers/clk/ux500/clk.h       |    6 ++++++
- 2 files changed, 23 insertions(+)
+ drivers/cpufreq/db8500-cpufreq.c |   24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/clk/ux500/clk-prcmu.c b/drivers/clk/ux500/clk-prcmu.c
-index 930cdfe..2e5ef7a 100644
---- a/drivers/clk/ux500/clk-prcmu.c
-+++ b/drivers/clk/ux500/clk-prcmu.c
-@@ -153,6 +153,13 @@ static struct clk_ops clk_prcmu_gate_ops = {
- 	.recalc_rate = clk_prcmu_recalc_rate,
- };
+diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+index dea9a49..4f154bc 100644
+--- a/drivers/cpufreq/db8500-cpufreq.c
++++ b/drivers/cpufreq/db8500-cpufreq.c
+@@ -14,10 +14,11 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/platform_device.h>
+-#include <linux/mfd/dbx500-prcmu.h>
++#include <linux/clk.h>
+ #include <mach/id.h>
  
-+static struct clk_ops clk_prcmu_scalable_rate_ops = {
-+	.is_enabled = clk_prcmu_is_enabled,
-+	.recalc_rate = clk_prcmu_recalc_rate,
-+	.round_rate = clk_prcmu_round_rate,
-+	.set_rate = clk_prcmu_set_rate,
-+};
-+
- static struct clk_ops clk_prcmu_rate_ops = {
- 	.is_enabled = clk_prcmu_is_enabled,
- 	.recalc_rate = clk_prcmu_recalc_rate,
-@@ -233,6 +240,16 @@ struct clk *clk_reg_prcmu_gate(const char *name,
- 			&clk_prcmu_gate_ops);
+ static struct cpufreq_frequency_table *freq_table;
++static struct clk *armss_clk;
+ 
+ static struct freq_attr *db8500_cpufreq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+@@ -58,9 +59,9 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+ 	for_each_cpu(freqs.cpu, policy->cpus)
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 
+-	/* request the PRCM unit for opp change */
+-	if (prcmu_set_arm_opp(freq_table[idx].index)) {
+-		pr_err("db8500-cpufreq:  Failed to set OPP level\n");
++	/* update armss clk frequency */
++	if (clk_set_rate(armss_clk, freq_table[idx].frequency * 1000)) {
++		pr_err("db8500-cpufreq: Failed to update armss clk\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -74,16 +75,16 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+ static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
+ {
+ 	int i = 0;
+-	/* request the prcm to get the current ARM opp */
+-	int opp = prcmu_get_arm_opp();
++	unsigned long freq = clk_get_rate(armss_clk) / 1000;
+ 
+ 	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+-		if (opp == freq_table[i].index)
++		if (freq <= freq_table[i].frequency)
+ 			return freq_table[i].frequency;
+ 		i++;
+ 	}
+ 
+-	/* We could not find a corresponding opp frequency. */
++	/* We could not find a corresponding frequency. */
++	pr_err("db8500-cpufreq: Failed to find cpufreq speed\n");
+ 	return 0;
  }
  
-+struct clk *clk_reg_prcmu_scalable_rate(const char *name,
-+					const char *parent_name,
-+					u8 cg_sel,
-+					unsigned long rate,
-+					unsigned long flags)
-+{
-+	return clk_reg_prcmu(name, parent_name, cg_sel, rate, flags,
-+			&clk_prcmu_scalable_rate_ops);
-+}
-+
- struct clk *clk_reg_prcmu_rate(const char *name,
- 			       const char *parent_name,
- 			       u8 cg_sel,
-diff --git a/drivers/clk/ux500/clk.h b/drivers/clk/ux500/clk.h
-index 836d7d1..a9e2961 100644
---- a/drivers/clk/ux500/clk.h
-+++ b/drivers/clk/ux500/clk.h
-@@ -35,6 +35,12 @@ struct clk *clk_reg_prcmu_gate(const char *name,
- 			       u8 cg_sel,
- 			       unsigned long flags);
+@@ -92,6 +93,12 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+ 	int i = 0;
+ 	int res;
  
-+struct clk *clk_reg_prcmu_scalable_rate(const char *name,
-+					const char *parent_name,
-+					u8 cg_sel,
-+					unsigned long rate,
-+					unsigned long flags);
++	armss_clk = clk_get(NULL, "armss");
++	if (IS_ERR(armss_clk)) {
++		pr_err("db8500-cpufreq : Failed to get armss clk\n");
++		return PTR_ERR(armss_clk);
++	}
 +
- struct clk *clk_reg_prcmu_rate(const char *name,
- 			       const char *parent_name,
- 			       u8 cg_sel,
+ 	pr_info("db8500-cpufreq : Available frequencies:\n");
+ 	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+ 		pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
+@@ -104,6 +111,7 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+ 		cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+ 	else {
+ 		pr_err("db8500-cpufreq : Failed to read policy table\n");
++		clk_put(armss_clk);
+ 		return res;
+ 	}
+ 
 -- 
 1.7.10
 
