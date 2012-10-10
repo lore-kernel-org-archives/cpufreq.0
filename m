@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
-Date: Wed, 10 Oct 2012 13:42:23 +0200
-Message-ID: <1349869349-8070-3-git-send-email-ulf.hansson@stericsson.com>
+Subject: [PATCH 7/8] clk: ux500: Add armss clk and fixup smp_twd clk for u8500
+Date: Wed, 10 Oct 2012 13:42:28 +0200
+Message-ID: <1349869349-8070-8-git-send-email-ulf.hansson@stericsson.com>
 References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,79 +15,45 @@ Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.wall
 
 From: Ulf Hansson <ulf.hansson@linaro.org>
 
-The cpufreq table needs dynamically update due to what the PRCMU
-firmware is supporting. The table is then provided through to the
-mfd child device as platform data.
+The new armss clk is a prcmu_scalable_rate clk which represents
+the ARMSS clk. This then makes it possible to convert the smp_twd
+clk to a fixed factor clock type, using a fixed divider of 2 and
+with the armss clk as parent.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Acked-by: Jonas Aaberg <jonas.aberg@stericsson.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
 ---
- drivers/mfd/db8500-prcmu.c |   22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ drivers/clk/ux500/u8500_clk.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/mfd/db8500-prcmu.c b/drivers/mfd/db8500-prcmu.c
-index 00b8b0f..53c24c4 100644
---- a/drivers/mfd/db8500-prcmu.c
-+++ b/drivers/mfd/db8500-prcmu.c
-@@ -31,6 +31,7 @@
- #include <linux/mfd/abx500/ab8500.h>
- #include <linux/regulator/db8500-prcmu.h>
- #include <linux/regulator/machine.h>
-+#include <linux/cpufreq.h>
- #include <asm/hardware/gic.h>
- #include <mach/hardware.h>
- #include <mach/irqs.h>
-@@ -3002,6 +3003,15 @@ static struct regulator_init_data db8500_regulators[DB8500_NUM_REGULATORS] = {
- 	},
- };
+diff --git a/drivers/clk/ux500/u8500_clk.c b/drivers/clk/ux500/u8500_clk.c
+index ca4a25e..b1bd1c46 100644
+--- a/drivers/clk/ux500/u8500_clk.c
++++ b/drivers/clk/ux500/u8500_clk.c
+@@ -205,16 +205,18 @@ void u8500_clk_init(void)
+ 	clk_register_clkdev(clk, "dsilp2", "dsilink.2");
+ 	clk_register_clkdev(clk, "dsilp2", "mcde");
  
-+/* CPU FREQ table, may be changed due to if MAX_OPP is supported. */
-+static struct cpufreq_frequency_table db8500_cpufreq_table[] = {
-+	{ .frequency = 200000, .index = ARM_EXTCLK,},
-+	{ .frequency = 400000, .index = ARM_50_OPP,},
-+	{ .frequency = 800000, .index = ARM_100_OPP,},
-+	{ .frequency = CPUFREQ_TABLE_END,}, /* To be used for MAX_OPP. */
-+	{ .frequency = CPUFREQ_TABLE_END,},
-+};
+-	clk = clk_reg_prcmu_rate("smp_twd", NULL, PRCMU_ARMSS,
+-				CLK_IS_ROOT|CLK_GET_RATE_NOCACHE|
+-				CLK_IGNORE_UNUSED);
++	clk = clk_reg_prcmu_scalable_rate("armss", NULL,
++				PRCMU_ARMSS, 0, CLK_IS_ROOT|CLK_IGNORE_UNUSED);
++	clk_register_clkdev(clk, "armss", NULL);
 +
- static struct resource ab8500_resources[] = {
- 	[0] = {
- 		.start	= IRQ_DB8500_AB8500,
-@@ -3020,6 +3030,8 @@ static struct mfd_cell db8500_prcmu_devs[] = {
- 	{
- 		.name = "cpufreq-u8500",
- 		.of_compatible = "stericsson,cpufreq-u8500",
-+		.platform_data = &db8500_cpufreq_table,
-+		.pdata_size = sizeof(db8500_cpufreq_table),
- 	},
- 	{
- 		.name = "ab8500-core",
-@@ -3030,6 +3042,14 @@ static struct mfd_cell db8500_prcmu_devs[] = {
- 	},
- };
++	clk = clk_register_fixed_factor(NULL, "smp_twd", "armss",
++				CLK_IGNORE_UNUSED, 1, 2);
+ 	clk_register_clkdev(clk, NULL, "smp_twd");
  
-+static void db8500_prcmu_update_cpufreq(void)
-+{
-+	if (prcmu_has_arm_maxopp()) {
-+		db8500_cpufreq_table[3].frequency = 1000000;
-+		db8500_cpufreq_table[3].index = ARM_MAX_OPP;
-+	}
-+}
-+
- /**
-  * prcmu_fw_init - arch init call for the Linux PRCMU fw init logic
-  *
-@@ -3074,6 +3094,8 @@ static int __devinit db8500_prcmu_probe(struct platform_device *pdev)
- 	if (cpu_is_u8500v20_or_later())
- 		prcmu_config_esram0_deep_sleep(ESRAM0_DEEP_SLEEP_STATE_RET);
+ 	/*
+ 	 * FIXME: Add special handled PRCMU clocks here:
+-	 * 1. clk_arm, use PRCMU_ARMCLK.
+-	 * 2. clkout0yuv, use PRCMU as parent + need regulator + pinctrl.
+-	 * 3. ab9540_clkout1yuv, see clkout0yuv
++	 * 1. clkout0yuv, use PRCMU as parent + need regulator + pinctrl.
++	 * 2. ab9540_clkout1yuv, see clkout0yuv
+ 	 */
  
-+	db8500_prcmu_update_cpufreq();
-+
- 	err = mfd_add_devices(&pdev->dev, 0, db8500_prcmu_devs,
- 			      ARRAY_SIZE(db8500_prcmu_devs), NULL, 0, NULL);
- 	if (err) {
+ 	/* PRCC P-clocks */
 -- 
 1.7.10
 
