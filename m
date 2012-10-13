@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 48721] acpi_cpufreq can't change CPU clock anymore
-Date: Sat, 13 Oct 2012 02:08:21 +0000 (UTC)
-Message-ID: <20121013020821.EAAAC11FA35@bugzilla.kernel.org>
+Date: Sat, 13 Oct 2012 02:29:44 +0000 (UTC)
+Message-ID: <20121013022944.B5E3111FC39@bugzilla.kernel.org>
 References: <bug-48721-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,14 +15,13 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=48721
 
 
-Maurizio Avogadro <mavoga@gmail.com> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-     Kernel Version|3.6.1                       |3.6.0+
 
 
 
+--- Comment #2 from Maurizio Avogadro <mavoga@gmail.com>  2012-10-13 02:29:44 ---
+Created an attachment (id=83151)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=83151)
+3.6.1 kernel config
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
