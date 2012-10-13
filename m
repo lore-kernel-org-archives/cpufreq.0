@@ -1,75 +1,73 @@
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: [PATCH] cpufreq, powernow-k8: Remove usage of smp_processor_id() in
- preemptible code
-Date: Fri, 12 Oct 2012 17:18:41 +0200
-Message-ID: <20121012151841.GA4571@alberich>
-References: <20121009193844.GC7724@alberich>
- <20121010124839.GA22448@alberich>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 48721] New: acpi_cpufreq can't change CPU clock anymore
+Date: Sat, 13 Oct 2012 01:56:34 +0000 (UTC)
+Message-ID: <bug-48721-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20121010124839.GA22448@alberich>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Tejun Heo <tj@kernel.org>, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
+
+https://bugzilla.kernel.org/show_bug.cgi?id=3D48721
+
+           Summary: acpi_cpufreq can't change CPU clock anymore
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.6.1
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: mavoga@gmail.com
+        Regression: Yes
 
 
-Commit 6889125b8b4e09c5e53e6ecab3433bed1ce198c9
-(cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to another CPU)
-causes powernow-k8 to trigger a preempt warning, e.g.:
+Created an attachment (id=3D83121)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=3D83121)
+3.5.5 kernel: output of 'grep -r . /sys/devices/system/cpu/ 2>/dev/null=
+'
 
-  BUG: using smp_processor_id() in preemptible [00000000] code: cpufreq/3776
-  caller is powernowk8_target+0x20/0x49
-  Pid: 3776, comm: cpufreq Not tainted 3.6.0 #9
-  Call Trace:
-   [<ffffffff8125b447>] debug_smp_processor_id+0xc7/0xe0
-   [<ffffffff814877e7>] powernowk8_target+0x20/0x49
-   [<ffffffff81482b02>] __cpufreq_driver_target+0x82/0x8a
-   [<ffffffff81484fc6>] cpufreq_governor_performance+0x4e/0x54
-   [<ffffffff81482c50>] __cpufreq_governor+0x8c/0xc9
-   [<ffffffff81482e6f>] __cpufreq_set_policy+0x1a9/0x21e
-   [<ffffffff814839af>] store_scaling_governor+0x16f/0x19b
-   [<ffffffff81484f16>] ? cpufreq_update_policy+0x124/0x124
-   [<ffffffff8162b4a5>] ? _raw_spin_unlock_irqrestore+0x2c/0x49
-   [<ffffffff81483640>] store+0x60/0x88
-   [<ffffffff811708c0>] sysfs_write_file+0xf4/0x130
-   [<ffffffff8111243b>] vfs_write+0xb5/0x151
-   [<ffffffff811126e0>] sys_write+0x4a/0x71
-   [<ffffffff816319a9>] system_call_fastpath+0x16/0x1b
+On my laptop (a Clevo W150HRM with an i7 2720QM CPU) I'm currently runn=
+ing
+Debian wheezy/sid with latest aptosid (3.6-1.slh.3) amd64 kernel: after
+switching from 3.5.5 to 3.6 kernel I noticed the idle temperatures sudd=
+enly
+increased by ~10=C2=B0C with no apparent activity on the system.
 
-Fix this by by always using work_on_cpu().
+The temperature increase, together with sysfs scaling_cur_freq and
+cpuinfo_cur_freq values seem to support my suspect of a cpufreq bug: th=
+e
+ondemand governor doesn't seem able to modulate the CPU clock anymore. =
+While
+the scaling_cur_freq value varies depending on system load just as expe=
+cted,
+the cpuinfo_cur_freq value remains stuck at (or over because of turbo b=
+oost)
+the maximum CPU frequency, just like the performance governor was set.
 
-Cc: Tejun Heo <tj@kernel.org>
-Cc: stable@vger.kernel.org
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- drivers/cpufreq/powernow-k8.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+I could get the same frequency readings with cpufreq-info, turbostat an=
+d i7z:
+the CPU frequency never decreases under 2.2GHz.
 
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 129e80b..c16a3a5 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1052,14 +1052,7 @@ static int powernowk8_target(struct cpufreq_policy *pol,
- 	struct powernowk8_target_arg pta = { .pol = pol, .targfreq = targfreq,
- 					     .relation = relation };
- 
--	/*
--	 * Must run on @pol->cpu.  cpufreq core is responsible for ensuring
--	 * that we're bound to the current CPU and pol->cpu stays online.
--	 */
--	if (smp_processor_id() == pol->cpu)
--		return powernowk8_target_fn(&pta);
--	else
--		return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
-+	return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
- }
- 
- /* Driver entry point to verify the policy and range of frequencies */
--- 
-1.7.12
+=46urthermore, no cpufreq-set setting seems able to lower the idle freq=
+uency in
+any way, even by changing governor, and a test 3.6.1 vanilla kernel I c=
+ompiled
+for testing purposes showed the same behavior.
 
+As soon as I reboot to a 3.5.5 kernel cpuinfo_cur_freq begin to follow
+scaling_cur_freq just as expected, and the idle temps decrease back by =
+over
+10=C2=B0C.
 
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
