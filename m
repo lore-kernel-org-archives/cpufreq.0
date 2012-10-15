@@ -1,210 +1,77 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH] cpufreq: timer: Move tick-sched specific code outside of
- cpufreq governors
-Date: Mon, 15 Oct 2012 10:35:34 +0200
-Message-ID: <20121015083533.GB29356@dhcp22.suse.cz>
-References: <10f0412be71dec50a3e57732c1f2aa5b94fe1df8.1350288504.git.viresh.kumar@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH] cpufreq, powernow-k8: Remove usage of smp_processor_id()
+ in preemptible code
+Date: Mon, 15 Oct 2012 10:40:11 +0200
+Message-ID: <20121015084011.GA5000@liondog.tnic>
+References: <20121009193844.GC7724@alberich>
+ <20121012151841.GA4571@alberich>
+ <27008283.MeT6T60WP8@vostro.rjw.lan>
+ <1395148.DypXQr3MdC@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1350290412; bh=nCMcZRDFaSAIvnqBcPzJkFaSsj0Q+/Nt8G9IcXLXKws=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:In-Reply-To; b=SvOrnBS+6WZt
+	xfnV9X5bxQpHUZ2Ex90y4pyEobeiPSajLuA07wZih+8ocjrfStq53KaI2hj5yJoQAer
+	X68HWPOWJAcF2lPXlvXHXZGi1xz/no1z2hrk8BvIacbnhS2hb64x5pFMq/HfLx5sEo3
+	zKnHY/PLB0pJGnSS/PF7gEexo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1350290412; bh=nCMcZRDFaSAIvnqBcPzJkFaSsj0Q+/Nt8G9IcXLXKws=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:In-Reply-To; b=SvOrnBS+6WZt
+	xfnV9X5bxQpHUZ2Ex90y4pyEobeiPSajLuA07wZih+8ocjrfStq53KaI2hj5yJoQAer
+	X68HWPOWJAcF2lPXlvXHXZGi1xz/no1z2hrk8BvIacbnhS2hb64x5pFMq/HfLx5sEo3
+	zKnHY/PLB0pJGnSS/PF7gEexo=
 Content-Disposition: inline
-In-Reply-To: <10f0412be71dec50a3e57732c1f2aa5b94fe1df8.1350288504.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1395148.DypXQr3MdC@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, tglx@linutronix.de, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, Robin.Randhawa@arm.com
+Content-Type: text/plain; charset="windows-1252"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@vger.kernel.org
 
-On Mon 15-10-12 13:41:20, Viresh Kumar wrote:
-> Multiple cpufreq governers have defined similar get_cpu_idle_time_***()
-> routines. These routines must be moved to some common place, so that all
-> governors can use them.
-> 
-> So moving them to tick-sched.c, which seems to be a better place for keeping
-> these routines.
+On Mon, Oct 15, 2012 at 07:50:13AM +0200, Rafael J. Wysocki wrote:
+> Well, please don't tag patches for -stable, because -stable doesn't
+> take _patches_.
 
-I do agree that this code duplication should be removed but tick-sched.c
-is not a right place IMO. Who, apart from governors, should use those
-"common" functions?
-Having a generic get_cpu_idle_time, which in fact includes iowait time
-as well is definitely not good. It is confusing and it doesn't match
-get_cpu_idle_time_us.
-I would suggest moving the common functionality into drivers/cpufreq/
-(e.g. cpufreq_common.c).
+Really, I didn't know that?! :-)
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 34 ---------------------------------
->  drivers/cpufreq/cpufreq_ondemand.c     | 34 ---------------------------------
->  include/linux/tick.h                   |  3 +++
->  kernel/time/tick-sched.c               | 35 ++++++++++++++++++++++++++++++++++
->  4 files changed, 38 insertions(+), 68 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index a152af7..181abad 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -95,40 +95,6 @@ static struct dbs_tuners {
->  	.freq_step = 5,
->  };
->  
-> -static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
-> -{
-> -	u64 idle_time;
-> -	u64 cur_wall_time;
-> -	u64 busy_time;
-> -
-> -	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-> -
-> -	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-> -
-> -	idle_time = cur_wall_time - busy_time;
-> -	if (wall)
-> -		*wall = jiffies_to_usecs(cur_wall_time);
-> -
-> -	return jiffies_to_usecs(idle_time);
-> -}
-> -
-> -static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-> -{
-> -	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-> -
-> -	if (idle_time == -1ULL)
-> -		return get_cpu_idle_time_jiffy(cpu, wall);
-> -	else
-> -		idle_time += get_cpu_iowait_time_us(cpu, wall);
-> -
-> -	return idle_time;
-> -}
-> -
->  /* keep track of frequency transitions */
->  static int
->  dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 396322f..d7f774b 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -119,40 +119,6 @@ static struct dbs_tuners {
->  	.powersave_bias = 0,
->  };
->  
-> -static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
-> -{
-> -	u64 idle_time;
-> -	u64 cur_wall_time;
-> -	u64 busy_time;
-> -
-> -	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-> -
-> -	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-> -	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-> -
-> -	idle_time = cur_wall_time - busy_time;
-> -	if (wall)
-> -		*wall = jiffies_to_usecs(cur_wall_time);
-> -
-> -	return jiffies_to_usecs(idle_time);
-> -}
-> -
-> -static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-> -{
-> -	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-> -
-> -	if (idle_time == -1ULL)
-> -		return get_cpu_idle_time_jiffy(cpu, wall);
-> -	else
-> -		idle_time += get_cpu_iowait_time_us(cpu, wall);
-> -
-> -	return idle_time;
-> -}
-> -
->  static inline cputime64_t get_cpu_iowait_time(unsigned int cpu, cputime64_t *wall)
->  {
->  	u64 iowait_time = get_cpu_iowait_time_us(cpu, wall);
-> diff --git a/include/linux/tick.h b/include/linux/tick.h
-> index f37fceb..79ca824 100644
-> --- a/include/linux/tick.h
-> +++ b/include/linux/tick.h
-> @@ -6,6 +6,7 @@
->  #ifndef _LINUX_TICK_H
->  #define _LINUX_TICK_H
->  
-> +#include <asm/cputime.h>
->  #include <linux/clockchips.h>
->  #include <linux/irqflags.h>
->  
-> @@ -142,4 +143,6 @@ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
->  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
->  # endif /* !NO_HZ */
->  
-> +cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall);
-> +
->  #endif
-> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> index a402608..b458402 100644
-> --- a/kernel/time/tick-sched.c
-> +++ b/kernel/time/tick-sched.c
-> @@ -271,6 +271,41 @@ u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time)
->  }
->  EXPORT_SYMBOL_GPL(get_cpu_iowait_time_us);
->  
-> +static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
-> +{
-> +	u64 idle_time;
-> +	u64 cur_wall_time;
-> +	u64 busy_time;
-> +
-> +	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-> +
-> +	busy_time = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
-> +	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-> +	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
-> +	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-> +	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-> +	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-> +
-> +	idle_time = cur_wall_time - busy_time;
-> +	if (wall)
-> +		*wall = jiffies_to_usecs(cur_wall_time);
-> +
-> +	return jiffies_to_usecs(idle_time);
-> +}
-> +
-> +cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-> +{
-> +	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-> +
-> +	if (idle_time == -1ULL)
-> +		return get_cpu_idle_time_jiffy(cpu, wall);
-> +	else
-> +		idle_time += get_cpu_iowait_time_us(cpu, wall);
-> +
-> +	return idle_time;
-> +}
-> +EXPORT_SYMBOL_GPL(get_cpu_idle_time);
-> +
->  static ktime_t tick_nohz_stop_sched_tick(struct tick_sched *ts,
->  					 ktime_t now, int cpu)
->  {
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> It takes commits from the Linus' tree and backports them and that's
+> maintainer's job to tag them for -stable, not yours.
 
--- 
-Michal Hocko
-SUSE Labs
+You're not serious, right? This is not the case in at least 50% of the
+cases.
+
+And this is OK because maintainers don't always know whether the patch
+should be tagged for stable. So yes, people should add the stable tag
+and yes, committers still have a veto over it.
+
+And yes, Andreas and I *know* how stable patches get applied, thank you
+very much.
+
+[ =E2=80=A6 ]
+
+> Yes, they do, but that means it doesn't make sense to send them stuff
+> before it's been merged, right?
+
+Ok, I get it, you don't want people to send patches to stable@vger
+*before* they've hit mainline.
+
+Nothing in <Documentation/stable_kernel_rules.txt> states that
+stable@vger shouldn't get CCed on submissions unless the patch is
+upstream and besides, stable@vger gets CCed in a lot of discussions
+anyway so there's other traffic just the same.
+
+Bottomline: If you think people shouldn't spam stable@vger, then tough
+luck - I don't think you can stop people from accidentally/due to the
+automated nature of the process, CC stable. Even if it said so in the
+above doc file.
+
+As a result, stable maintainers simply rely on scripts which verify the
+patch is actually upstream before applying it to stable.
+
+--=20
+Regards/Gruss,
+    Boris.
