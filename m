@@ -1,73 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq, powernow-k8: Remove usage of smp_processor_id() in preemptible code
-Date: Mon, 15 Oct 2012 19:56:33 +0200
-Message-ID: <2671294.5qjGox1KcF@vostro.rjw.lan>
-References: <20121009193844.GC7724@alberich> <1395148.DypXQr3MdC@vostro.rjw.lan> <20121015084011.GA5000@liondog.tnic>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq:core: Fix printing of governor and driver name
+Date: Tue, 16 Oct 2012 09:09:15 +0530
+Message-ID: <CAKohpomJcN3aLefUOhJ+28PkqhjzKU9Qjk43xMTxhvvBNf8G+Q@mail.gmail.com>
+References: <51be8f865e4c80f91ac8e41e54cbd5905382ddb7.1349844049.git.viresh.kumar@linaro.org>
+	<5507518.Gae5ZRnSWO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20121015084011.GA5000@liondog.tnic>
+In-Reply-To: <5507518.Gae5ZRnSWO@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: Borislav Petkov <bp@alien8.de>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, Sudeep.KarkadaNagesha@arm.com, Robin.Randhawa@arm.com, Arvind.Chauhan@arm.com
 
-On Monday 15 of October 2012 10:40:11 Borislav Petkov wrote:
-> On Mon, Oct 15, 2012 at 07:50:13AM +0200, Rafael J. Wysocki wrote:
-> > Well, please don't tag patches for -stable, because -stable doesn't
-> > take _patches_.
->=20
-> Really, I didn't know that?! :-)
->=20
-> > It takes commits from the Linus' tree and backports them and that's
-> > maintainer's job to tag them for -stable, not yours.
->=20
-> You're not serious, right? This is not the case in at least 50% of th=
-e
-> cases.
->=20
-> And this is OK because maintainers don't always know whether the patc=
-h
-> should be tagged for stable. So yes, people should add the stable tag
-> and yes, committers still have a veto over it.
->=20
-> And yes, Andreas and I *know* how stable patches get applied, thank y=
-ou
-> very much.
+On 15 October 2012 23:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday 10 of October 2012 10:12:11 Viresh Kumar wrote:
+>> Arrays for governer and driver name are of size CPUFREQ_NAME_LEN or 16.
+>> i.e. 15 bytes for name and 1 for trailing '\0'.
+>>
+>> When cpufreq driver print these names (for sysfs), it includes '\n' or ' ' in
+>> the fmt string and still passes length as CPUFREQ_NAME_LEN. If the driver or
+>> governor names are using all 15 fields allocated to them, then the trailing '\n'
+>> or ' ' will never be printed. And so commands like:
+>>
+>> root@linaro-developer# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
+>>
+>> will print something like:
+>>
+>> cpufreq_foodrvroot@linaro-developer#
+>>
+>> Fix this by increasing print length by one character.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Thanks for the patch, I'll queue it up for v3.8.
 
-I didn't say you didn't know that.
+Hi Rafael,
 
-> [ =E2=80=A6 ]
->=20
-> > Yes, they do, but that means it doesn't make sense to send them stu=
-ff
-> > before it's been merged, right?
->=20
-> Ok, I get it, you don't want people to send patches to stable@vger
-> *before* they've hit mainline.
->=20
-> Nothing in <Documentation/stable_kernel_rules.txt> states that
-> stable@vger shouldn't get CCed on submissions unless the patch is
-> upstream and besides, stable@vger gets CCed in a lot of discussions
-> anyway so there's other traffic just the same.
->=20
-> Bottomline: If you think people shouldn't spam stable@vger, then toug=
-h
-> luck - I don't think you can stop people from accidentally/due to the
-> automated nature of the process, CC stable. Even if it said so in the
-> above doc file.
->=20
-> As a result, stable maintainers simply rely on scripts which verify t=
-he
-> patch is actually upstream before applying it to stable.
+Thanks for accepting the patch.
+I thought both of my patches would go in 3.7-rc2 as they are bug
+fixes. Isn't that correct?
 
-Well, perhaps I shouldn't care too, then. :-)
-
-Thanks,
-Rafael
-
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+viresh
