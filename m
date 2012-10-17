@@ -1,53 +1,99 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq:core: Fix printing of governor and driver name
-Date: Tue, 16 Oct 2012 18:20:48 +0200
-Message-ID: <1873742.zv8KVPIaZX@vostro.rjw.lan>
-References: <51be8f865e4c80f91ac8e41e54cbd5905382ddb7.1349844049.git.viresh.kumar@linaro.org> <5507518.Gae5ZRnSWO@vostro.rjw.lan> <CAKohpomJcN3aLefUOhJ+28PkqhjzKU9Qjk43xMTxhvvBNf8G+Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomJcN3aLefUOhJ+28PkqhjzKU9Qjk43xMTxhvvBNf8G+Q@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: Improve debug prints
+Date: Wed, 17 Oct 2012 10:50:23 +0530
+Message-ID: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, Sudeep.KarkadaNagesha@arm.com, Robin.Randhawa@arm.com, Arvind.Chauhan@arm.com
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tuesday 16 of October 2012 09:09:15 Viresh Kumar wrote:
-> On 15 October 2012 23:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday 10 of October 2012 10:12:11 Viresh Kumar wrote:
-> >> Arrays for governer and driver name are of size CPUFREQ_NAME_LEN or 16.
-> >> i.e. 15 bytes for name and 1 for trailing '\0'.
-> >>
-> >> When cpufreq driver print these names (for sysfs), it includes '\n' or ' ' in
-> >> the fmt string and still passes length as CPUFREQ_NAME_LEN. If the driver or
-> >> governor names are using all 15 fields allocated to them, then the trailing '\n'
-> >> or ' ' will never be printed. And so commands like:
-> >>
-> >> root@linaro-developer# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-> >>
-> >> will print something like:
-> >>
-> >> cpufreq_foodrvroot@linaro-developer#
-> >>
-> >> Fix this by increasing print length by one character.
-> >>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > Thanks for the patch, I'll queue it up for v3.8.
-> 
-> Hi Rafael,
-> 
-> Thanks for accepting the patch.
-> I thought both of my patches would go in 3.7-rc2 as they are bug
-> fixes. Isn't that correct?
+With debug options on, it is difficult to locate cpufreq core's debug print=
+s.
+Fix this by prefixing debug prints with:
 
-They don't fix serious bugs, though, so they don't look like urgent.
+"cpufreq: "
 
-Thanks,
-Rafael
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c             | 2 ++
+ drivers/cpufreq/cpufreq_performance.c | 2 ++
+ drivers/cpufreq/cpufreq_powersave.c   | 2 ++
+ drivers/cpufreq/cpufreq_userspace.c   | 2 ++
+ drivers/cpufreq/freq_table.c          | 2 ++
+ 5 files changed, 10 insertions(+)
 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index db6e337..bcbc99d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -15,6 +15,8 @@
+  *
+  */
+=20
++#define pr_fmt(fmt) "cpufreq: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufre=
+q_performance.c
+index f13a8a9..67e3232 100644
+--- a/drivers/cpufreq/cpufreq_performance.c
++++ b/drivers/cpufreq/cpufreq_performance.c
+@@ -10,6 +10,8 @@
+  *
+  */
+=20
++#define pr_fmt(fmt) "cpufreq: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/cpufreq.h>
+diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_=
+powersave.c
+index 4c2eb51..eb974b6 100644
+--- a/drivers/cpufreq/cpufreq_powersave.c
++++ b/drivers/cpufreq/cpufreq_powersave.c
+@@ -10,6 +10,8 @@
+  *
+  */
+=20
++#define pr_fmt(fmt) "cpufreq: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/cpufreq.h>
+diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_=
+userspace.c
+index bedac1a..6d7ccdb 100644
+--- a/drivers/cpufreq/cpufreq_userspace.c
++++ b/drivers/cpufreq/cpufreq_userspace.c
+@@ -11,6 +11,8 @@
+  *
+  */
+=20
++#define pr_fmt(fmt) "cpufreq: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/smp.h>
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index 90431cb..246949c 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -9,6 +9,8 @@
+  *
+  */
+=20
++#define pr_fmt(fmt) "cpufreq: " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--=20
+1.7.12.rc2.18.g61b472e
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
