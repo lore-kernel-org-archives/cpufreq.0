@@ -1,99 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] cpufreq: Improve debug prints
-Date: Wed, 17 Oct 2012 10:50:23 +0530
-Message-ID: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar@linaro.org>
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 2/2] cpufreq: Debugging options for the cpufreq subsystem
+Date: Wed, 17 Oct 2012 10:50:24 +0530
+Message-ID: <bf2567a3c3b6f35c606ea8d71722048eefb0c45a.1350451100.git.viresh.kumar@linaro.org>
+References: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: rjw-KKrjLPT3xs0@public.gmane.org
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org
 
-With debug options on, it is difficult to locate cpufreq core's debug print=
-s.
-Fix this by prefixing debug prints with:
+This adds Kconfig options for DEBUG and VERBOSE_DEBUG to the cpufreq subsystem,
+This is pretty useful for developers who want to debug cpufreq subsystem and
+don't want to editing the Makefile manually each time they want to debug.
 
-"cpufreq: "
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/cpufreq/cpufreq.c             | 2 ++
- drivers/cpufreq/cpufreq_performance.c | 2 ++
- drivers/cpufreq/cpufreq_powersave.c   | 2 ++
- drivers/cpufreq/cpufreq_userspace.c   | 2 ++
- drivers/cpufreq/freq_table.c          | 2 ++
- 5 files changed, 10 insertions(+)
+ drivers/cpufreq/Kconfig  | 14 ++++++++++++++
+ drivers/cpufreq/Makefile |  4 ++++
+ 2 files changed, 18 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index db6e337..bcbc99d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -15,6 +15,8 @@
-  *
-  */
-=20
-+#define pr_fmt(fmt) "cpufreq: " fmt
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index e24a2a1..b9ee95c 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -17,6 +17,20 @@ config CPU_FREQ
+ 
+ if CPU_FREQ
+ 
++config CPUFREQ_DEBUG
++        bool "cpufreq debugging"
++        help
++	  This is an option for use by developers; most people should say N
++	  here. This enables cpufreq core and debugging.
 +
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufre=
-q_performance.c
-index f13a8a9..67e3232 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -10,6 +10,8 @@
-  *
-  */
-=20
-+#define pr_fmt(fmt) "cpufreq: " fmt
++config CPUFREQ_VDEBUG
++        bool "cpufreq verbose debugging"
++        depends on CPUFREQ_DEBUG != n
++        help
++	  This is an option for use by developers; most people should say N
++	  here.  This enables deeper (more verbose) debugging of the cpufreq
++	  core and drivers.
 +
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/cpufreq.h>
-diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_=
-powersave.c
-index 4c2eb51..eb974b6 100644
---- a/drivers/cpufreq/cpufreq_powersave.c
-+++ b/drivers/cpufreq/cpufreq_powersave.c
-@@ -10,6 +10,8 @@
-  *
-  */
-=20
-+#define pr_fmt(fmt) "cpufreq: " fmt
+ config CPU_FREQ_TABLE
+ 	tristate
+ 
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index fe4cd26..df4cfc8 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -1,3 +1,7 @@
++# CPUfreq core & drivers debugging
++ccflags-$(CONFIG_CPUFREQ_DEBUG)		:= -DDEBUG
++ccflags-$(CONFIG_CPUFREQ_VDEBUG)	+= -DVERBOSE_DEBUG
 +
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/cpufreq.h>
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_=
-userspace.c
-index bedac1a..6d7ccdb 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -11,6 +11,8 @@
-  *
-  */
-=20
-+#define pr_fmt(fmt) "cpufreq: " fmt
-+
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/smp.h>
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 90431cb..246949c 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -9,6 +9,8 @@
-  *
-  */
-=20
-+#define pr_fmt(fmt) "cpufreq: " fmt
-+
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
---=20
+ # CPUfreq core
+ obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o
+ # CPUfreq stats
+-- 
 1.7.12.rc2.18.g61b472e
-
