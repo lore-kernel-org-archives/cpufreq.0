@@ -1,54 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
-Date: Mon, 22 Oct 2012 14:16:43 +0530
-Message-ID: <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com>
-References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
-	<98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
+From: Andreas Schwab <schwab@linux-m68k.org>
+Subject: [PATCH] cpufreq: fix jiffies/cputime mixup in conservative/ondemand
+ governors
+Date: Mon, 22 Oct 2012 15:35:29 +0200
+Message-ID: <m21ugq1vfi.fsf@igel.home>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Initially ondemand governor was written and then using its code conservative
-> governor is written. It used a lot of code from ondemand governor, but copy of
-> code was created instead of using the same routines from both governors. Which
-> increased code redundancy, which is difficult to manage.
->
-> This patch is an attempt to move common part of both the governors to
-> cpufreq_governor.c file to come over above mentioned issues.
->
-> This shouldn't change anything from functionality point of view.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->
-> Hi Rafael,
->
-> This patch is *NOT TESTED*... (only compiled)
-> Out of office now, so can't test it on board.
->
-> Floated it, so that i can get some early comments if possible.
+The function get_cpu_idle_time_jiffy in both the conservative and
+ondemand governors use jiffies_to_usecs to convert a cputime value to
+usecs which gives the wrong value on architectures where cputime and
+jiffies use different units.  Only matters if NO_HZ is disabled, since
+otherwise get_cpu_idle_time_us should already return a valid value, and
+get_cpu_idle_time_jiffy isn't actually called.
 
-Didn't crashed :)
-Tested both ondemand and conservative governors and they are working
-fine.
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 4 ++--
+ drivers/cpufreq/cpufreq_ondemand.c     | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
->  drivers/cpufreq/Makefile               |   4 +-
->  drivers/cpufreq/cpufreq_conservative.c | 558 +++++++------------------
->  drivers/cpufreq/cpufreq_governor.c     | 314 ++++++++++++++
->  drivers/cpufreq/cpufreq_governor.h     | 177 ++++++++
->  drivers/cpufreq/cpufreq_ondemand.c     | 728 ++++++++++-----------------------
->  include/linux/cpufreq.h                |   2 +-
->  6 files changed, 864 insertions(+), 919 deletions(-)
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index a152af7..96af7d5 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -112,9 +112,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+ 
+ 	idle_time = cur_wall_time - busy_time;
+ 	if (wall)
+-		*wall = jiffies_to_usecs(cur_wall_time);
++		*wall = cputime_to_usecs(cur_wall_time);
+ 
+-	return jiffies_to_usecs(idle_time);
++	return cputime_to_usecs(idle_time);
+ }
+ 
+ static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 396322f..6c19a66 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -136,9 +136,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+ 
+ 	idle_time = cur_wall_time - busy_time;
+ 	if (wall)
+-		*wall = jiffies_to_usecs(cur_wall_time);
++		*wall = cputime_to_usecs(cur_wall_time);
+ 
+-	return jiffies_to_usecs(idle_time);
++	return cputime_to_usecs(idle_time);
+ }
+ 
+ static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+-- 
+1.8.0
 
-diffstat might not look awesome, but considering two new files with
-file headers, #includes, etc added.. this looks reasonable :)
 
---
-viresh
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
