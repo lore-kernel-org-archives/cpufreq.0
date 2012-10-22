@@ -1,98 +1,54 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 49231] New: Single CPU bound process results in non-optimal
- turbo boost configuration
-Date: Sun, 21 Oct 2012 23:56:46 +0000 (UTC)
-Message-ID: <bug-49231-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
+Date: Mon, 22 Oct 2012 14:16:43 +0530
+Message-ID: <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
+	<98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=49231
+On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Initially ondemand governor was written and then using its code conservative
+> governor is written. It used a lot of code from ondemand governor, but copy of
+> code was created instead of using the same routines from both governors. Which
+> increased code redundancy, which is difficult to manage.
+>
+> This patch is an attempt to move common part of both the governors to
+> cpufreq_governor.c file to come over above mentioned issues.
+>
+> This shouldn't change anything from functionality point of view.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>
+> Hi Rafael,
+>
+> This patch is *NOT TESTED*... (only compiled)
+> Out of office now, so can't test it on board.
+>
+> Floated it, so that i can get some early comments if possible.
 
-           Summary: Single CPU bound process results in non-optimal turbo
-                    boost configuration
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.4.4+
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: ras243-korg@yahoo.com
-        Regression: No
+Didn't crashed :)
+Tested both ondemand and conservative governors and they are working
+fine.
 
+>  drivers/cpufreq/Makefile               |   4 +-
+>  drivers/cpufreq/cpufreq_conservative.c | 558 +++++++------------------
+>  drivers/cpufreq/cpufreq_governor.c     | 314 ++++++++++++++
+>  drivers/cpufreq/cpufreq_governor.h     | 177 ++++++++
+>  drivers/cpufreq/cpufreq_ondemand.c     | 728 ++++++++++-----------------------
+>  include/linux/cpufreq.h                |   2 +-
+>  6 files changed, 864 insertions(+), 919 deletions(-)
 
-Created an attachment (id=84251)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=84251)
-3.4.13 config file
+diffstat might not look awesome, but considering two new files with
+file headers, #includes, etc added.. this looks reasonable :)
 
-Firstly I hope I've classified this issue correctly as it's a bit difficult to
-nail down exactly what's at fault.  
-
-I have a new i7-3930k CPU on an Intel DX79SR motherboard which doesn't appear
-to be handling the turbo boost function correctly under Linux.  This is a 6
-core CPU which is nominally 3.2GHz but can boost itself to somewhere between
-3.5GHz and 3.8GHz.  With 6 processes running it'll run at 3.5GHz which is fine.
- The problem is that when only a single process is active it'll still only run
-at 3.5GHz despite being able to go to 3.8GHz.  The problem appears to be that a
-single job is pulling all the cores out of C7 state and into at least C1 state
-and once there, they're all are considered active and hence the fully utilised
-CPU is unable to go beyond 3.5GHz.
-
-I am unsure if the problem is with the scheduler, ACPI, or something in my
-configuration.  I can confirm that a 3.4.4 kernel configuration which works
-correctly on a Xeon X5660 doesn't work correctly with the i7-3930k.  I've tried
-various kernels between 3.4.4 and 3.6.2 but all result in the same behaviour. 
-With gritted teeth I installed Windows 7 and it does appear to work correctly
-there so I don't believe it's anything to do with BIOS settings.
-
-Idle turbostat results:
-core CPU   %c0   GHz  TSC   %c1    %c3    %c6    %c7   %pc2   %pc3   %pc6  
-%pc7
-
-           2.73 1.20 3.20   7.06   0.00   0.02  90.19  20.20   0.00  68.20 
-0.00
-   0   0   2.68 1.20 3.20   6.92   0.00   0.00  90.40  20.20   0.00  68.20 
-0.00
-   1   1   2.75 1.20 3.20   6.92   0.00   0.00  90.33  20.20   0.00  68.20 
-0.00
-   2   2   2.78 1.20 3.20   6.99   0.00   0.00  90.23  20.20   0.00  68.20 
-0.00
-   3   3   2.71 1.20 3.20   7.10   0.00   0.00  90.19  20.20   0.00  68.20 
-0.00
-   4   4   2.71 1.20 3.20   7.14   0.00   0.07  90.07  20.20   0.00  68.20 
-0.00
-   5   5   2.76 1.20 3.20   7.27   0.00   0.07  89.90  20.20   0.00  68.20 
-0.00
-
-Single job turbostat results:
-core CPU   %c0   GHz  TSC   %c1    %c3    %c6    %c7   %pc2   %pc3   %pc6  
-%pc7
-
-          18.46 3.50 3.20  81.54   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-   0   0   2.02 3.50 3.20  97.98   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-   1   1   2.19 3.50 3.20  97.81   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-   2   2   2.20 3.50 3.20  97.80   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-   3   3   2.17 3.50 3.20  97.83   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-   4   4 100.00 3.50 3.20   0.00   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-   5   5   2.18 3.50 3.20  97.82   0.00   0.00   0.00   0.00   0.00   0.00 
-0.00
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+--
+viresh
