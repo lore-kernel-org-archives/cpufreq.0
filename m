@@ -1,67 +1,42 @@
-From: Andreas Schwab <schwab@linux-m68k.org>
-Subject: [PATCH] cpufreq: fix jiffies/cputime mixup in conservative/ondemand
- governors
-Date: Mon, 22 Oct 2012 15:35:29 +0200
-Message-ID: <m21ugq1vfi.fsf@igel.home>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 49231] Single CPU bound process results in non-optimal turbo
+ boost configuration
+Date: Mon, 22 Oct 2012 13:44:45 +0000 (UTC)
+Message-ID: <20121022134445.0B63111FAE0@bugzilla.kernel.org>
+References: <bug-49231-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-49231-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
 
-The function get_cpu_idle_time_jiffy in both the conservative and
-ondemand governors use jiffies_to_usecs to convert a cputime value to
-usecs which gives the wrong value on architectures where cputime and
-jiffies use different units.  Only matters if NO_HZ is disabled, since
-otherwise get_cpu_idle_time_us should already return a valid value, and
-get_cpu_idle_time_jiffy isn't actually called.
+https://bugzilla.kernel.org/show_bug.cgi?id=49231
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- drivers/cpufreq/cpufreq_conservative.c | 4 ++--
- drivers/cpufreq/cpufreq_ondemand.c     | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index a152af7..96af7d5 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -112,9 +112,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 
- 	idle_time = cur_wall_time - busy_time;
- 	if (wall)
--		*wall = jiffies_to_usecs(cur_wall_time);
-+		*wall = cputime_to_usecs(cur_wall_time);
- 
--	return jiffies_to_usecs(idle_time);
-+	return cputime_to_usecs(idle_time);
- }
- 
- static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 396322f..6c19a66 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -136,9 +136,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 
- 	idle_time = cur_wall_time - busy_time;
- 	if (wall)
--		*wall = jiffies_to_usecs(cur_wall_time);
-+		*wall = cputime_to_usecs(cur_wall_time);
- 
--	return jiffies_to_usecs(idle_time);
-+	return cputime_to_usecs(idle_time);
- }
- 
- static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
--- 
-1.8.0
+Thomas Renninger <trenn@suse.de> changed:
 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |NEEDINFO
+                 CC|                            |trenn@suse.de
+
+
+
+
+--- Comment #1 from Thomas Renninger <trenn@suse.de>  2012-10-22 13:44:44 ---
+Can you use "cpupower monitor"
+(tools/power/cpupower)
+instead of turbostat.
+Then you will also see what idle states the kernel requested.
+Does this single job (or something else) produce interrupts frequently (maybe
+powertop helps in this respect)?
+This would explain why C1 and no deeper sleep states are entered.
+If properly configured, "cpupower top" should invoke the powertop tool.
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
