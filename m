@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 49231] Single CPU bound process results in non-optimal turbo
  boost configuration
-Date: Mon, 22 Oct 2012 23:02:24 +0000 (UTC)
-Message-ID: <20121022230224.B889911FAE1@bugzilla.kernel.org>
+Date: Tue, 23 Oct 2012 02:09:34 +0000 (UTC)
+Message-ID: <20121023020934.6930911FA69@bugzilla.kernel.org>
 References: <bug-49231-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,17 +16,21 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=49231
 
 
+Len Brown <lenb@kernel.org> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |lenb@kernel.org
 
 
 
---- Comment #3 from Roger Scott <ras243-korg@yahoo.com>  2012-10-22 23:02:24 ---
-Hi Thomas,
 
-Thanks for the ideas.  I'll do some more testing when I get home this evening
-(Timezone=UTC+10).  The problem was showing up with jobs which were possibly
-hammering the interrupts so I used the simplest test I could think of which was
-a never-ending-do-nothing-for-loop written in C.  Unfortunately (or fortunately
-depending on your perspective) this resulted in the same behaviour.
+--- Comment #4 from Len Brown <lenb@kernel.org>  2012-10-23 02:09:34 ---
+Even the "idle" case doesn't look right -- it is 2.73% busy.
+try using top and find out what is running.
+
+core CPU   %c0   GHz  TSC   %c1    %c3    %c6    %c7   %pc2   %pc3   %pc6
+           2.73 1.20 3.20   7.06   0.00   0.02  90.19  20.20   0.00  68.20
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
