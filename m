@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Subject: Re: [PATCH 1/2] cpufreq: Improve debug prints
-Date: Thu, 25 Oct 2012 00:00:03 +0200
-Message-ID: <1952796.OHncReY41t@vostro.rjw.lan>
-References: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar@linaro.org>
-	<1350455212.3072.27.camel@joe-AO722>
-	<CAKohpo=fgz98F+1SBG9TgO0EsPd_XLznJ0Z__0ehsgm14EZK7A@mail.gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: return early from __cpufreq_driver_getavg()
+Date: Thu, 25 Oct 2012 00:02:17 +0200
+Message-ID: <112621141.CGPLIkkgz1@vostro.rjw.lan>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
+	<2737823.2JYE7UmLRN@vostro.rjw.lan>
+	<CAKohponGwhC_zmk1Whq56vmZMvjcxXKiSpdvMk4ZU8z0Wa2TBw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <CAKohpo=fgz98F+1SBG9TgO0EsPd_XLznJ0Z__0ehsgm14EZK7A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+In-Reply-To: <CAKohponGwhC_zmk1Whq56vmZMvjcxXKiSpdvMk4ZU8z0Wa2TBw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
 	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
@@ -21,27 +21,27 @@ List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
 Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
 Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
 To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-On Wednesday 17 of October 2012 12:03:31 Viresh Kumar wrote:
-> On 17 October 2012 11:56, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org> wrote:
-> > Oh good, but please use a space between KBUILD_MODNAME
-> > and the quoted ": ".
+On Saturday 20 of October 2012 10:12:07 Viresh Kumar wrote:
+> On Oct 20, 2012 3:37 AM, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org> wrote:
+> >
+> > On Saturday 20 of October 2012 01:42:05 Viresh Kumar wrote:
+> > > There is no need to do cpufreq_get_cpu() and cpufreq_put_cpu() for
+> drivers that
+> > > don't support getavg() routine.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >
+> > The patch doesn't seem to follow the changelog or the other way around.
 > 
-> Anything technical behind it or just for code formatting? As output is
-> same in both cases :)
+> Sorry if my log isn't clear enough.
+> But i could still see it matching the code :)
 > 
-> ------------------------8<----------------------8<-------------------
-> 
-> From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Date: Wed, 17 Oct 2012 10:38:31 +0530
-> Subject: [PATCH] cpufreq: Improve debug prints
-> 
-> With debug options on, it is difficult to locate cpufreq core's debug prints.
-> Fix this by prefixing debug prints with KBUILD_MODNAME.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> I have moved the check for drivers capabilities at the top
+> of routine, so that there is no need to call mentioned routines.
 
+OK
 
 Applied to linux-pm.git/linux-next as v3.8 material.
 
@@ -49,83 +49,6 @@ Thanks,
 Rafael
 
 
-> ---
->  drivers/cpufreq/cpufreq.c             | 2 ++
->  drivers/cpufreq/cpufreq_performance.c | 2 ++
->  drivers/cpufreq/cpufreq_powersave.c   | 2 ++
->  drivers/cpufreq/cpufreq_userspace.c   | 2 ++
->  drivers/cpufreq/freq_table.c          | 2 ++
->  5 files changed, 10 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index db6e337..85df538 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -15,6 +15,8 @@
->   *
->   */
-> 
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/init.h>
-> diff --git a/drivers/cpufreq/cpufreq_performance.c
-> b/drivers/cpufreq/cpufreq_performance.c
-> index f13a8a9..ceee068 100644
-> --- a/drivers/cpufreq/cpufreq_performance.c
-> +++ b/drivers/cpufreq/cpufreq_performance.c
-> @@ -10,6 +10,8 @@
->   *
->   */
-> 
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/cpufreq.h>
-> diff --git a/drivers/cpufreq/cpufreq_powersave.c
-> b/drivers/cpufreq/cpufreq_powersave.c
-> index 4c2eb51..2d948a1 100644
-> --- a/drivers/cpufreq/cpufreq_powersave.c
-> +++ b/drivers/cpufreq/cpufreq_powersave.c
-> @@ -10,6 +10,8 @@
->   *
->   */
-> 
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/cpufreq.h>
-> diff --git a/drivers/cpufreq/cpufreq_userspace.c
-> b/drivers/cpufreq/cpufreq_userspace.c
-> index bedac1a..c8c3d29 100644
-> --- a/drivers/cpufreq/cpufreq_userspace.c
-> +++ b/drivers/cpufreq/cpufreq_userspace.c
-> @@ -11,6 +11,8 @@
->   *
->   */
-> 
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/smp.h>
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index 90431cb..49cda25 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -9,6 +9,8 @@
->   *
->   */
-> 
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/init.h>
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
