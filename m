@@ -1,44 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 49231] Single CPU bound process results in non-optimal turbo
- boost configuration
-Date: Wed, 24 Oct 2012 11:44:03 +0000 (UTC)
-Message-ID: <20121024114403.D4AD611FAE0@bugzilla.kernel.org>
-References: <bug-49231-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
+Date: Wed, 24 Oct 2012 21:43:46 +0200
+Message-ID: <1597360.JT7plJlUsZ@vostro.rjw.lan>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org> <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com> <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-49231-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=49231
+On Wednesday 24 of October 2012 11:37:13 Viresh Kumar wrote:
+> On 22 October 2012 14:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> Initially ondemand governor was written and then using its code conservative
+> >> governor is written. It used a lot of code from ondemand governor, but copy of
+> >> code was created instead of using the same routines from both governors. Which
+> >> increased code redundancy, which is difficult to manage.
+> >>
+> >> This patch is an attempt to move common part of both the governors to
+> >> cpufreq_governor.c file to come over above mentioned issues.
+> >>
+> >> This shouldn't change anything from functionality point of view.
+> >>
+> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> For everybody else, this patch is already pushed by Rafael in his linux-next
+> branch.
 
+Well, not yet, although I'm going to do that.
 
-Thomas Renninger <trenn@suse.de> changed:
+Thanks,
+Rafael
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |RESOLVED
-         Resolution|                            |INVALID
-
-
-
-
---- Comment #7 from Thomas Renninger <trenn@suse.de>  2012-10-24 11:44:03 ---
-> So I thought I'd try running with the NO_HZ setting and interestingly
-> the idle cores now stay in C7
-Ok, tickless timer configuration is a must for this processor to enter deepest
-sleep states and thus enter boosting mode.
-How/when processors enter deep sleep states (even if requested by the kernel)
-is very HW specific. So that the CPUs behave differently (one enters deeper
-sleep states without NO_HZ, the other does not (probably not very efficiently))
-may be interesting, but it looks like it works as designed.
-Hm, not sure whether to close this invalid or documented -> going for invalid
-as nothing seems to be wrong.
 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
