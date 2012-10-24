@@ -1,40 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: Fix sparse warning by making local function static
-Date: Wed, 24 Oct 2012 13:15:59 +0530
-Message-ID: <40307880d764946d63459958d4b40c2f5bc4d6a0.1351064553.git.viresh.kumar@linaro.org>
-References: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
-In-Reply-To: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
-References: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 49231] Single CPU bound process results in non-optimal turbo
+ boost configuration
+Date: Wed, 24 Oct 2012 11:44:03 +0000 (UTC)
+Message-ID: <20121024114403.D4AD611FAE0@bugzilla.kernel.org>
+References: <bug-49231-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-49231-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com, fengguang.wu@intel.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: cpufreq@vger.kernel.org
 
-cpufreq_disabled() is a local function, so should be marked static.
+https://bugzilla.kernel.org/show_bug.cgi?id=49231
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f552d5f..261ef65 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -129,7 +129,7 @@ static int __init init_cpufreq_transition_notifier_list(void)
- pure_initcall(init_cpufreq_transition_notifier_list);
- 
- static int off __read_mostly;
--int cpufreq_disabled(void)
-+static int cpufreq_disabled(void)
- {
- 	return off;
- }
+Thomas Renninger <trenn@suse.de> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEEDINFO                    |RESOLVED
+         Resolution|                            |INVALID
+
+
+
+
+--- Comment #7 from Thomas Renninger <trenn@suse.de>  2012-10-24 11:44:03 ---
+> So I thought I'd try running with the NO_HZ setting and interestingly
+> the idle cores now stay in C7
+Ok, tickless timer configuration is a must for this processor to enter deepest
+sleep states and thus enter boosting mode.
+How/when processors enter deep sleep states (even if requested by the kernel)
+is very HW specific. So that the CPUs behave differently (one enters deeper
+sleep states without NO_HZ, the other does not (probably not very efficiently))
+may be interesting, but it looks like it works as designed.
+Hm, not sure whether to close this invalid or documented -> going for invalid
+as nothing seems to be wrong.
+
 -- 
-1.7.12.rc2.18.g61b472e
-
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
