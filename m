@@ -1,81 +1,130 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq, powernow-k8: Remove usage of smp_processor_id() in preemptible code
-Date: Wed, 24 Oct 2012 23:57:11 +0200
-Message-ID: <4061311.WJSyxPuklg@vostro.rjw.lan>
-References: <20121009193844.GC7724@alberich> <20121010124839.GA22448@alberich> <20121012151841.GA4571@alberich>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH 1/2] cpufreq: Improve debug prints
+Date: Thu, 25 Oct 2012 00:00:03 +0200
+Message-ID: <1952796.OHncReY41t@vostro.rjw.lan>
+References: <3b38cb8ab136e5af3a70fceb7d77ad9fc889eb3f.1350451100.git.viresh.kumar@linaro.org>
+	<1350455212.3072.27.camel@joe-AO722>
+	<CAKohpo=fgz98F+1SBG9TgO0EsPd_XLznJ0Z__0ehsgm14EZK7A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121012151841.GA4571@alberich>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Tejun Heo <tj@kernel.org>, stable@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <CAKohpo=fgz98F+1SBG9TgO0EsPd_XLznJ0Z__0ehsgm14EZK7A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
 
-On Friday 12 of October 2012 17:18:41 Andreas Herrmann wrote:
+On Wednesday 17 of October 2012 12:03:31 Viresh Kumar wrote:
+> On 17 October 2012 11:56, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org> wrote:
+> > Oh good, but please use a space between KBUILD_MODNAME
+> > and the quoted ": ".
 > 
-> Commit 6889125b8b4e09c5e53e6ecab3433bed1ce198c9
-> (cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to another CPU)
-> causes powernow-k8 to trigger a preempt warning, e.g.:
+> Anything technical behind it or just for code formatting? As output is
+> same in both cases :)
 > 
->   BUG: using smp_processor_id() in preemptible [00000000] code: cpufreq/3776
->   caller is powernowk8_target+0x20/0x49
->   Pid: 3776, comm: cpufreq Not tainted 3.6.0 #9
->   Call Trace:
->    [<ffffffff8125b447>] debug_smp_processor_id+0xc7/0xe0
->    [<ffffffff814877e7>] powernowk8_target+0x20/0x49
->    [<ffffffff81482b02>] __cpufreq_driver_target+0x82/0x8a
->    [<ffffffff81484fc6>] cpufreq_governor_performance+0x4e/0x54
->    [<ffffffff81482c50>] __cpufreq_governor+0x8c/0xc9
->    [<ffffffff81482e6f>] __cpufreq_set_policy+0x1a9/0x21e
->    [<ffffffff814839af>] store_scaling_governor+0x16f/0x19b
->    [<ffffffff81484f16>] ? cpufreq_update_policy+0x124/0x124
->    [<ffffffff8162b4a5>] ? _raw_spin_unlock_irqrestore+0x2c/0x49
->    [<ffffffff81483640>] store+0x60/0x88
->    [<ffffffff811708c0>] sysfs_write_file+0xf4/0x130
->    [<ffffffff8111243b>] vfs_write+0xb5/0x151
->    [<ffffffff811126e0>] sys_write+0x4a/0x71
->    [<ffffffff816319a9>] system_call_fastpath+0x16/0x1b
+> ------------------------8<----------------------8<-------------------
 > 
-> Fix this by by always using work_on_cpu().
+> From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Date: Wed, 17 Oct 2012 10:38:31 +0530
+> Subject: [PATCH] cpufreq: Improve debug prints
 > 
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> With debug options on, it is difficult to locate cpufreq core's debug prints.
+> Fix this by prefixing debug prints with KBUILD_MODNAME.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Applied to linux-pm.git/linux-next as v3.7 material, will be included in the
-next linux-pm push.
+
+Applied to linux-pm.git/linux-next as v3.8 material.
 
 Thanks,
 Rafael
 
 
-
 > ---
->  drivers/cpufreq/powernow-k8.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
+>  drivers/cpufreq/cpufreq.c             | 2 ++
+>  drivers/cpufreq/cpufreq_performance.c | 2 ++
+>  drivers/cpufreq/cpufreq_powersave.c   | 2 ++
+>  drivers/cpufreq/cpufreq_userspace.c   | 2 ++
+>  drivers/cpufreq/freq_table.c          | 2 ++
+>  5 files changed, 10 insertions(+)
 > 
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index 129e80b..c16a3a5 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -1052,14 +1052,7 @@ static int powernowk8_target(struct cpufreq_policy *pol,
->  	struct powernowk8_target_arg pta = { .pol = pol, .targfreq = targfreq,
->  					     .relation = relation };
->  
-> -	/*
-> -	 * Must run on @pol->cpu.  cpufreq core is responsible for ensuring
-> -	 * that we're bound to the current CPU and pol->cpu stays online.
-> -	 */
-> -	if (smp_processor_id() == pol->cpu)
-> -		return powernowk8_target_fn(&pta);
-> -	else
-> -		return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
-> +	return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
->  }
->  
->  /* Driver entry point to verify the policy and range of frequencies */
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index db6e337..85df538 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -15,6 +15,8 @@
+>   *
+>   */
+> 
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+> diff --git a/drivers/cpufreq/cpufreq_performance.c
+> b/drivers/cpufreq/cpufreq_performance.c
+> index f13a8a9..ceee068 100644
+> --- a/drivers/cpufreq/cpufreq_performance.c
+> +++ b/drivers/cpufreq/cpufreq_performance.c
+> @@ -10,6 +10,8 @@
+>   *
+>   */
+> 
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/cpufreq.h>
+> diff --git a/drivers/cpufreq/cpufreq_powersave.c
+> b/drivers/cpufreq/cpufreq_powersave.c
+> index 4c2eb51..2d948a1 100644
+> --- a/drivers/cpufreq/cpufreq_powersave.c
+> +++ b/drivers/cpufreq/cpufreq_powersave.c
+> @@ -10,6 +10,8 @@
+>   *
+>   */
+> 
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/cpufreq.h>
+> diff --git a/drivers/cpufreq/cpufreq_userspace.c
+> b/drivers/cpufreq/cpufreq_userspace.c
+> index bedac1a..c8c3d29 100644
+> --- a/drivers/cpufreq/cpufreq_userspace.c
+> +++ b/drivers/cpufreq/cpufreq_userspace.c
+> @@ -11,6 +11,8 @@
+>   *
+>   */
+> 
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/smp.h>
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index 90431cb..49cda25 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -9,6 +9,8 @@
+>   *
+>   */
+> 
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/init.h>
 > 
 -- 
 I speak only for myself.
