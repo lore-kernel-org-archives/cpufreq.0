@@ -1,77 +1,81 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: fix jiffies/cputime mixup in conservative/ondemand governors
-Date: Wed, 24 Oct 2012 23:16:49 +0200
-Message-ID: <1448859.RJLWEdIAIe@vostro.rjw.lan>
-References: <m21ugq1vfi.fsf@igel.home>
+Subject: Re: [PATCH] cpufreq, powernow-k8: Remove usage of smp_processor_id() in preemptible code
+Date: Wed, 24 Oct 2012 23:57:11 +0200
+Message-ID: <4061311.WJSyxPuklg@vostro.rjw.lan>
+References: <20121009193844.GC7724@alberich> <20121010124839.GA22448@alberich> <20121012151841.GA4571@alberich>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <m21ugq1vfi.fsf@igel.home>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20121012151841.GA4571@alberich>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Tejun Heo <tj@kernel.org>, stable@vger.kernel.org
 
-On Monday 22 of October 2012 15:35:29 Andreas Schwab wrote:
-> The function get_cpu_idle_time_jiffy in both the conservative and
-> ondemand governors use jiffies_to_usecs to convert a cputime value to
-> usecs which gives the wrong value on architectures where cputime and
-> jiffies use different units.  Only matters if NO_HZ is disabled, since
-> otherwise get_cpu_idle_time_us should already return a valid value, and
-> get_cpu_idle_time_jiffy isn't actually called.
+On Friday 12 of October 2012 17:18:41 Andreas Herrmann wrote:
 > 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> Commit 6889125b8b4e09c5e53e6ecab3433bed1ce198c9
+> (cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to another CPU)
+> causes powernow-k8 to trigger a preempt warning, e.g.:
+> 
+>   BUG: using smp_processor_id() in preemptible [00000000] code: cpufreq/3776
+>   caller is powernowk8_target+0x20/0x49
+>   Pid: 3776, comm: cpufreq Not tainted 3.6.0 #9
+>   Call Trace:
+>    [<ffffffff8125b447>] debug_smp_processor_id+0xc7/0xe0
+>    [<ffffffff814877e7>] powernowk8_target+0x20/0x49
+>    [<ffffffff81482b02>] __cpufreq_driver_target+0x82/0x8a
+>    [<ffffffff81484fc6>] cpufreq_governor_performance+0x4e/0x54
+>    [<ffffffff81482c50>] __cpufreq_governor+0x8c/0xc9
+>    [<ffffffff81482e6f>] __cpufreq_set_policy+0x1a9/0x21e
+>    [<ffffffff814839af>] store_scaling_governor+0x16f/0x19b
+>    [<ffffffff81484f16>] ? cpufreq_update_policy+0x124/0x124
+>    [<ffffffff8162b4a5>] ? _raw_spin_unlock_irqrestore+0x2c/0x49
+>    [<ffffffff81483640>] store+0x60/0x88
+>    [<ffffffff811708c0>] sysfs_write_file+0xf4/0x130
+>    [<ffffffff8111243b>] vfs_write+0xb5/0x151
+>    [<ffffffff811126e0>] sys_write+0x4a/0x71
+>    [<ffffffff816319a9>] system_call_fastpath+0x16/0x1b
+> 
+> Fix this by by always using work_on_cpu().
+> 
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-I have rebased your patch on top of some other changes in linux-pm.git/linux-next.
-
-Please have a look at
-
-http://git.kernel.org/?p=linux/kernel/git/rafael/linux-pm.git;a=shortlog;h=refs/heads/linux-next
-
-and let me know if that's what you meant.
+Applied to linux-pm.git/linux-next as v3.7 material, will be included in the
+next linux-pm push.
 
 Thanks,
 Rafael
 
 
+
 > ---
->  drivers/cpufreq/cpufreq_conservative.c | 4 ++--
->  drivers/cpufreq/cpufreq_ondemand.c     | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+>  drivers/cpufreq/powernow-k8.c | 9 +--------
+>  1 file changed, 1 insertion(+), 8 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index a152af7..96af7d5 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -112,9 +112,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+> index 129e80b..c16a3a5 100644
+> --- a/drivers/cpufreq/powernow-k8.c
+> +++ b/drivers/cpufreq/powernow-k8.c
+> @@ -1052,14 +1052,7 @@ static int powernowk8_target(struct cpufreq_policy *pol,
+>  	struct powernowk8_target_arg pta = { .pol = pol, .targfreq = targfreq,
+>  					     .relation = relation };
 >  
->  	idle_time = cur_wall_time - busy_time;
->  	if (wall)
-> -		*wall = jiffies_to_usecs(cur_wall_time);
-> +		*wall = cputime_to_usecs(cur_wall_time);
->  
-> -	return jiffies_to_usecs(idle_time);
-> +	return cputime_to_usecs(idle_time);
+> -	/*
+> -	 * Must run on @pol->cpu.  cpufreq core is responsible for ensuring
+> -	 * that we're bound to the current CPU and pol->cpu stays online.
+> -	 */
+> -	if (smp_processor_id() == pol->cpu)
+> -		return powernowk8_target_fn(&pta);
+> -	else
+> -		return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
+> +	return work_on_cpu(pol->cpu, powernowk8_target_fn, &pta);
 >  }
 >  
->  static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 396322f..6c19a66 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -136,9 +136,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
->  
->  	idle_time = cur_wall_time - busy_time;
->  	if (wall)
-> -		*wall = jiffies_to_usecs(cur_wall_time);
-> +		*wall = cputime_to_usecs(cur_wall_time);
->  
-> -	return jiffies_to_usecs(idle_time);
-> +	return cputime_to_usecs(idle_time);
->  }
->  
->  static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+>  /* Driver entry point to verify the policy and range of frequencies */
 > 
 -- 
 I speak only for myself.
