@@ -1,56 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH RESEND] cpufreq: Make sure target freq is within limits
-Date: Fri, 26 Oct 2012 18:05:21 +0530
-Message-ID: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Mike Turquette <mturquette@ti.com>
+Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
+Date: Fri, 26 Oct 2012 11:03:49 -0700
+Message-ID: <20121026180349.3141.76336@nucleus>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+ <20121011134458.GB15428@gmail.com>
+ <CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
+ <20121011151947.GD15428@gmail.com>
+ <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
+ <CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-__cpufreq_driver_target() must not pass target frequency beyond the limits of
-current policy.
+Quoting Linus Walleij (2012-10-26 01:57:49)
+> On Fri, Oct 26, 2012 at 10:19 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> 
+> > Samuel, a kind reminder on this, trying to collect acks to be able to
+> > advise Mike to take this series through his clk tree. There are two
+> > mfd patches.
+> > [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
+> > [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
+> 
+> Two weeks of slack for review is good enough, involved
+> subsystem maintainers have been Cc:ed.
+> 
+> Mike T, can you just apply the patches please.
+> 
 
-Today most of cpufreq platform drivers are doing this check in their target
-routines. Why not move it to __cpufreq_driver_target().
+Would be better to get ACKs but enough time has passed.  I'll take these
+into clk-next (which will get built while I fly to Copenhagen for LCE).
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
+Expect to see a new clk-next on Monday.
 
-Resend doesn't contain any change, but fixed commit log
+Regards,
+Mike
 
- drivers/cpufreq/cpufreq.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 28dc134..2f5ac2d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
- {
- 	int retval = -EINVAL;
-+	unsigned int old_target_freq = target_freq;
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
- 
--	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
--		target_freq, relation);
-+	/* Make sure that target_freq is within supported range */
-+	if (target_freq > policy->max)
-+		target_freq = policy->max;
-+	if (target_freq < policy->min)
-+		target_freq = policy->min;
-+
-+	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
-+			policy->cpu, target_freq, relation, old_target_freq);
- 
- 	if (target_freq == policy->cur)
- 		return 0;
--- 
-1.7.12.rc2.18.g61b472e
+> Yours,
+> Linus Walleij
