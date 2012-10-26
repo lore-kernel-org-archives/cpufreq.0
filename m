@@ -1,11 +1,16 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [RFC] cpufreq: Make sure target freq is within limits
-Date: Thu, 25 Oct 2012 12:03:34 +0530
-Message-ID: <f0099171c1c4f3048d0f29b7deb42144f26ac5d5.1351146515.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH 1/2] cpufreq: Fix sparse warnings by updating cputime64_t
+	to u64
+Date: Fri, 26 Oct 2012 02:10:31 +0200
+Message-ID: <19880294.YnAYKpG7dr@vostro.rjw.lan>
+References: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
+	<1829614.cr6YHfW4bW@vostro.rjw.lan>
+	<CAKohpo=Sw6eUP6Xk3=a=rk6WMJQta=T7ReBPM+7e9E5PsvMJgg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <CAKohpo=Sw6eUP6Xk3=a=rk6WMJQta=T7ReBPM+7e9E5PsvMJgg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
 	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
@@ -16,50 +21,32 @@ List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
 	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
 Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
 Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: rjw-KKrjLPT3xs0@public.gmane.org
-Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org
 
-Hi Rafael,
+On Thursday, October 25, 2012 09:00:22 AM Viresh Kumar wrote:
+> On 25 October 2012 02:44, Rafael J. Wysocki <rjw-KKrjLPT3xs0@public.gmane.org> wrote:
+> > On Wednesday 24 of October 2012 13:15:58 Viresh Kumar wrote:
+> >> There were few sparse warnings due to mismatch of type on function arguments.
+> >> Two types were used u64 and cputime64_t. Both are actually u64, so use u64 only.
+> >>
+> >> Reported-by: Fengguang Wu <fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> >> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >
+> > This series appears to be based on your "cpufreq: governors: remove
+> > redundant code" patch that hasn't been applied yet.
+> >
+> > Please rebase it on top of linux-pm/linux-next or on top of v3.7-rc2,
+> > whichever is more convenient, and resend.
+> 
+> Please apply it after applying the latest cpufreq: governors patch i have sent.
 
-__cpufreq_driver_target() must not pass target frequency beyond the limits of
-current policy.
+Done.
 
-Today most of cpufreq platform drivers are doing this check in their target
-routines. Why not move it to __cpufreq_driver_target().
+Thanks,
+Rafael
 
-I wanted to get your opinion on this before making changes in all driver files.
-That's why this is an RFC.
 
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/cpufreq/cpufreq.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f552d5f..59264f1 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
- {
- 	int retval = -EINVAL;
-+	unsigned int old_target_freq = target_freq;
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
- 
--	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
--		target_freq, relation);
-+	/* Make sure that target_freq is within supported range */
-+	if (target_freq > policy->max)
-+		target_freq = policy->max;
-+	if (target_freq < policy->min)
-+		target_freq = policy->min;
-+
-+	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
-+			policy->cpu, target_freq, relation, old_target_freq);
- 	if (cpu_online(policy->cpu) && cpufreq_driver->target)
- 		retval = cpufreq_driver->target(policy, target_freq, relation);
- 
 -- 
-1.7.12.rc2.18.g61b472e
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
