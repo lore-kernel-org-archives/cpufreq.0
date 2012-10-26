@@ -1,34 +1,109 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
-Date: Fri, 26 Oct 2012 08:58:47 +0530
-Message-ID: <CAKohpon_GLyFOfBBtBmjxJpx1pUze4gKd4Xh7rT=gs25U_sLjw@mail.gmail.com>
-References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
-	<3245066.cWfgP9Ikey@vostro.rjw.lan>
-	<CAKohpo=Nv6DfXqyv=v-1Eo=pvx25qyrQ2qs+pGqJvbJu2bwWaw@mail.gmail.com>
-	<1707056.POnhGSP0pg@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 8/8] cpufreq: db8500: Use armss clk to update frequency
+Date: Fri, 26 Oct 2012 10:10:40 +0200
+Message-ID: <CAPDyKFp8OVn1kXzQB_PVxb4PBYCdvE7QGzCiqN+Zmm9LsX3HDg@mail.gmail.com>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+	<1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1707056.POnhGSP0pg@vostro.rjw.lan>
+In-Reply-To: <1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
+Cc: linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 26 October 2012 05:43, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On 10 October 2012 13:42, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Using the armss clk to update the frequency makes the driver no more
+> directly dependant on the prmcu API.
+>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/cpufreq/db8500-cpufreq.c |   24 ++++++++++++++++--------
+>  1 file changed, 16 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+> index dea9a49..4f154bc 100644
+> --- a/drivers/cpufreq/db8500-cpufreq.c
+> +++ b/drivers/cpufreq/db8500-cpufreq.c
+> @@ -14,10 +14,11 @@
+>  #include <linux/delay.h>
+>  #include <linux/slab.h>
+>  #include <linux/platform_device.h>
+> -#include <linux/mfd/dbx500-prcmu.h>
+> +#include <linux/clk.h>
+>  #include <mach/id.h>
+>
+>  static struct cpufreq_frequency_table *freq_table;
+> +static struct clk *armss_clk;
+>
+>  static struct freq_attr *db8500_cpufreq_attr[] = {
+>         &cpufreq_freq_attr_scaling_available_freqs,
+> @@ -58,9 +59,9 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+>         for_each_cpu(freqs.cpu, policy->cpus)
+>                 cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+>
+> -       /* request the PRCM unit for opp change */
+> -       if (prcmu_set_arm_opp(freq_table[idx].index)) {
+> -               pr_err("db8500-cpufreq:  Failed to set OPP level\n");
+> +       /* update armss clk frequency */
+> +       if (clk_set_rate(armss_clk, freq_table[idx].frequency * 1000)) {
+> +               pr_err("db8500-cpufreq: Failed to update armss clk\n");
+>                 return -EINVAL;
+>         }
+>
+> @@ -74,16 +75,16 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+>  static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
+>  {
+>         int i = 0;
+> -       /* request the prcm to get the current ARM opp */
+> -       int opp = prcmu_get_arm_opp();
+> +       unsigned long freq = clk_get_rate(armss_clk) / 1000;
+>
+>         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+> -               if (opp == freq_table[i].index)
+> +               if (freq <= freq_table[i].frequency)
+>                         return freq_table[i].frequency;
+>                 i++;
+>         }
+>
+> -       /* We could not find a corresponding opp frequency. */
+> +       /* We could not find a corresponding frequency. */
+> +       pr_err("db8500-cpufreq: Failed to find cpufreq speed\n");
+>         return 0;
+>  }
+>
+> @@ -92,6 +93,12 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+>         int i = 0;
+>         int res;
+>
+> +       armss_clk = clk_get(NULL, "armss");
+> +       if (IS_ERR(armss_clk)) {
+> +               pr_err("db8500-cpufreq : Failed to get armss clk\n");
+> +               return PTR_ERR(armss_clk);
+> +       }
+> +
+>         pr_info("db8500-cpufreq : Available frequencies:\n");
+>         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+>                 pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
+> @@ -104,6 +111,7 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+>                 cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+>         else {
+>                 pr_err("db8500-cpufreq : Failed to read policy table\n");
+> +               clk_put(armss_clk);
+>                 return res;
+>         }
+>
+> --
+> 1.7.10
+>
 
-> I have applied this patch only because of the fixes on top of it.  It broke
-> kernel compliation due to some missing EXPORT_SYMBOL_GPLs in cpufreq_governor.c,
-> so I woulnd't have applied it otherwise.
+Just a kind reminder on this Rafael; trying to collect acks, do you
+think we can advise Mike to merge this though his clk tree?
 
-Hi Rafael,
-
-So sorry for this. I am really feeling bad for that. I should have
-tried compiling
-them as modules too. I had that in mind while coding it, but forgot it later.
-
-Thanks for making changes on my behalf.
-
---
-viresh
+Kind regards
+Ulf Hansson
