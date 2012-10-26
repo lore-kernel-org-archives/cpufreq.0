@@ -1,51 +1,116 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Avoid calling cpufreq driver's target() routine if target_freq == policy->cur
-Date: Fri, 26 Oct 2012 13:17:12 +0200
-Message-ID: <5056958.0bPciFrxt5@vostro.rjw.lan>
-References: <1d7b6e421a335255da956804b43ce3517538409c.1351244153.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 8/8] cpufreq: db8500: Use armss clk to update frequency
+Date: Fri, 26 Oct 2012 13:20:38 +0200
+Message-ID: <2835962.VLrrN08061@vostro.rjw.lan>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com> <1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com> <CAPDyKFp8OVn1kXzQB_PVxb4PBYCdvE7QGzCiqN+Zmm9LsX3HDg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1d7b6e421a335255da956804b43ce3517538409c.1351244153.git.viresh.kumar@linaro.org>
+In-Reply-To: <CAPDyKFp8OVn1kXzQB_PVxb4PBYCdvE7QGzCiqN+Zmm9LsX3HDg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Friday, October 26, 2012 03:06:26 PM Viresh Kumar wrote:
-> Avoid calling cpufreq driver's target() routine if new frequency is same as
-> policies current frequency.
+On Friday, October 26, 2012 10:10:40 AM Ulf Hansson wrote:
+> On 10 October 2012 13:42, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+> > From: Ulf Hansson <ulf.hansson@linaro.org>
+> >
+> > Using the armss clk to update the frequency makes the driver no more
+> > directly dependant on the prmcu API.
+> >
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >  drivers/cpufreq/db8500-cpufreq.c |   24 ++++++++++++++++--------
+> >  1 file changed, 16 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+> > index dea9a49..4f154bc 100644
+> > --- a/drivers/cpufreq/db8500-cpufreq.c
+> > +++ b/drivers/cpufreq/db8500-cpufreq.c
+> > @@ -14,10 +14,11 @@
+> >  #include <linux/delay.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/platform_device.h>
+> > -#include <linux/mfd/dbx500-prcmu.h>
+> > +#include <linux/clk.h>
+> >  #include <mach/id.h>
+> >
+> >  static struct cpufreq_frequency_table *freq_table;
+> > +static struct clk *armss_clk;
+> >
+> >  static struct freq_attr *db8500_cpufreq_attr[] = {
+> >         &cpufreq_freq_attr_scaling_available_freqs,
+> > @@ -58,9 +59,9 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+> >         for_each_cpu(freqs.cpu, policy->cpus)
+> >                 cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> >
+> > -       /* request the PRCM unit for opp change */
+> > -       if (prcmu_set_arm_opp(freq_table[idx].index)) {
+> > -               pr_err("db8500-cpufreq:  Failed to set OPP level\n");
+> > +       /* update armss clk frequency */
+> > +       if (clk_set_rate(armss_clk, freq_table[idx].frequency * 1000)) {
+> > +               pr_err("db8500-cpufreq: Failed to update armss clk\n");
+> >                 return -EINVAL;
+> >         }
+> >
+> > @@ -74,16 +75,16 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+> >  static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
+> >  {
+> >         int i = 0;
+> > -       /* request the prcm to get the current ARM opp */
+> > -       int opp = prcmu_get_arm_opp();
+> > +       unsigned long freq = clk_get_rate(armss_clk) / 1000;
+> >
+> >         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+> > -               if (opp == freq_table[i].index)
+> > +               if (freq <= freq_table[i].frequency)
+> >                         return freq_table[i].frequency;
+> >                 i++;
+> >         }
+> >
+> > -       /* We could not find a corresponding opp frequency. */
+> > +       /* We could not find a corresponding frequency. */
+> > +       pr_err("db8500-cpufreq: Failed to find cpufreq speed\n");
+> >         return 0;
+> >  }
+> >
+> > @@ -92,6 +93,12 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+> >         int i = 0;
+> >         int res;
+> >
+> > +       armss_clk = clk_get(NULL, "armss");
+> > +       if (IS_ERR(armss_clk)) {
+> > +               pr_err("db8500-cpufreq : Failed to get armss clk\n");
+> > +               return PTR_ERR(armss_clk);
+> > +       }
+> > +
+> >         pr_info("db8500-cpufreq : Available frequencies:\n");
+> >         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+> >                 pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
+> > @@ -104,6 +111,7 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+> >                 cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+> >         else {
+> >                 pr_err("db8500-cpufreq : Failed to read policy table\n");
+> > +               clk_put(armss_clk);
+> >                 return res;
+> >         }
+> >
+> > --
+> > 1.7.10
+> >
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Just a kind reminder on this Rafael; trying to collect acks, do you
+> think we can advise Mike to merge this though his clk tree?
 
-Looks reasonable.
+Yes, please.
 
-Any objection from anyone?
-
+Thanks,
 Rafael
 
 
-> ---
->  drivers/cpufreq/cpufreq.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 261ef65..28dc134 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1476,6 +1476,10 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->  
->  	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
->  		target_freq, relation);
-> +
-> +	if (target_freq == policy->cur)
-> +		return 0;
-> +
->  	if (cpu_online(policy->cpu) && cpufreq_driver->target)
->  		retval = cpufreq_driver->target(policy, target_freq, relation);
->  
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
