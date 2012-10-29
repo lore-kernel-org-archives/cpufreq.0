@@ -1,25 +1,24 @@
 From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-Subject: [PATCH 2/4] x86, microcode_amd: Change email addresses, MAINTAINERS
- entry
-Date: Mon, 29 Oct 2012 18:51:38 +0100
-Message-ID: <20121029175138.GC5024@tweety>
+Subject: [PATCH 3/4] cpufreq, powernow-k8: Change email address
+Date: Mon, 29 Oct 2012 18:52:21 +0100
+Message-ID: <20121029175221.GD5024@tweety>
 References: <20121029174924.GA5024@tweety>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        bh=id0LS0AvJwRz86vFRsAOH8JVdPLvtXHNpEz7DAApNa8=;
-        b=ecJ6FaWCKMcmY6RJZMc9syTty+mnwwxRqFvCst/kdBF1MVD/gDJVCM0bjp/1asVvqv
-         MSfysaGo36mjFi6XqlmXyM7X3IDKlWTklqUKPQUlI/kRo3KxWnsTI/HfS0R/Uiajwmic
-         ZNTPc1AZ4jIM3KCTwZ4s5ftGzpIRYoa6oI+ErEWiO7P6nweH+war88lo7AJtaewvg5KJ
-         JEQhC6ZzhbKsCqLJVWwYFanf970AgwtAW+mghBkjs6jyyg4b1DIsZb0U7KXUbXwaTOsh
-         09s7oF1pZZJpG2R+28s7Q5JqyJVzbyNtoLuF3SdX2Bc5bClUbyVh+CwA5hKR5rHRNtYx
-         DyVQ==
+        bh=fv/JO/5aHF7r8dI68DHrTAradpDPXBovpiTtxSRayTs=;
+        b=YXNv/OIU5T7gadyGv0PYl6EtUKwht+qYQSJcibXcJgJulo4H3u4jvWSN9byRmaSGh6
+         NsuPP5lidSc+7O1SC9YJJRcv0OA6yQeECn2onKseoUwyXXV/X2s82TiJgBqTEaRnOO0z
+         tM5jrobL599pgzDh+df1Aem5exfLkRJ5GNFLj991DxEoe3Da1ey8+UU34jLF+1dv/MKf
+         LzB4O9hDSV9EFiyFr5U2UjMZzEJGOIOZDJzY/LfRgkglshnz2gizO2fmk3HQ6MchMyym
+         S7q6cav5SnIumvWW8+zgxzPa+hNjd81WCtv7E39vdjgVCp6PtuUChKnIRHCQWpHa8ZMP
+         xmGA==
 Content-Disposition: inline
 In-Reply-To: <20121029174924.GA5024@tweety>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,41 +28,22 @@ Cc: lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
 Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
 ---
- MAINTAINERS                     |    4 ++--
- arch/x86/kernel/microcode_amd.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpufreq/powernow-k8.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a4e8136..5a66583 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -534,9 +534,9 @@ F:	drivers/iommu/amd_iommu*.[ch]
- F:	include/linux/amd-iommu.h
- 
- AMD MICROCODE UPDATE SUPPORT
--M:	Andreas Herrmann <andreas.herrmann3@amd.com>
-+M:	Andreas Herrmann <herrmann.der.user@googlemail.com>
- L:	amd64-microcode@amd64.org
--S:	Supported
-+S:	Maintained
- F:	arch/x86/kernel/microcode_amd.c
- 
- AMS (Apple Motion Sensor) DRIVER
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 7720ff5..b3e67ba 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -8,8 +8,8 @@
-  *  Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index c16a3a5..e3ebb4f 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -5,7 +5,7 @@
+  *  http://www.gnu.org/licenses/gpl.html
   *
-  *  Maintainers:
+  *  Maintainer:
 - *  Andreas Herrmann <andreas.herrmann3@amd.com>
-- *  Borislav Petkov <borislav.petkov@amd.com>
 + *  Andreas Herrmann <herrmann.der.user@googlemail.com>
-+ *  Borislav Petkov <bp@alien8.de>
   *
-  *  This driver allows to upgrade microcode on F10h AMD
-  *  CPUs and later.
+  *  Based on the powernow-k7.c module written by Dave Jones.
+  *  (C) 2003 Dave Jones on behalf of SuSE Labs
 -- 
 1.7.9.5
 
