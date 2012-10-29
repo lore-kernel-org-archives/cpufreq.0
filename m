@@ -1,68 +1,34 @@
-From: Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Sun, 28 Oct 2012 23:59:18 +0100
-Message-ID: <20121028225918.GC5411@sortiz-mobl>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
- <20121011134458.GB15428@gmail.com>
- <CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
- <20121011151947.GD15428@gmail.com>
- <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+Subject: [PATCH 0/4] MAINTAINERS et al: Change email addresses for misc stuff
+Date: Mon, 29 Oct 2012 18:49:24 +0100
+Message-ID: <20121029174924.GA5024@tweety>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        bh=0255a7b2TJJZfRYH1xFWERXhEyla0NZGHYNIHPrJ4Qk=;
+        b=yaTdiwE9EbzgZ20qzZhATpHCql7YtEhahmb+32F4k7PBLDuY7xMXP6oNghIN29duKz
+         wV60CN5Icp5HbhNkLA6CSX1HjpeX+1pITl9oOAPMewLxjjf0L7USzbwu9kKsfiu+VZaO
+         QetJthrspCAb0k90fV8/8uLW2SGtG595SNfMsUjC0jT6Tc2NrssRhi1wbtprLDsG9nzT
+         yl29gnC2QFQvkSW17y65p5UKJSvEI/5cX1cUtQw2pWeJLKtrTF5QSvYTtK/ZVtKOxtEc
+         0SU1Vme9/m688x8a3f/LB7xSsCcR6UmOv/A8Ex3f5dyEOdgaP7sLXHicR8qKHT+Smd+/
+         R0Nw==
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>
+Cc: lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Stephane Eranian <eranian@google.com>, Robert Richter <rric@kernel.org>, Borislav Petkov <bp@alien8.de>, =?iso-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
 
-Hi Ulf,
+Hi,
 
-On Fri, Oct 26, 2012 at 10:19:24AM +0200, Ulf Hansson wrote:
-> On 11 October 2012 17:19, Lee Jones <lee.jones@linaro.org> wrote:
-> > On Thu, 11 Oct 2012, Linus Walleij wrote:
-> >
-> >> On Thu, Oct 11, 2012 at 3:44 PM, Lee Jones <lee.jones@linaro.org> =
-wrote:
-> >>
-> >> >> Patches are based on Linus Torvalds tree with latest commit as =
-of okt 10.
-> >> >
-> >> > Hmm... I get:
-> >> >
-> >> > Applying: clk: ux500: Support for prcmu_scalable_rate clock
-> >> > error: drivers/clk/ux500/clk-prcmu.c: does not exist in index
-> >> > error: drivers/clk/ux500/clk.h: does not exist in index
-> >> > Patch failed at 0001 clk: ux500: Support for prcmu_scalable_rate=
- clock
-> >> >
-> >> > So when did drivers/clk/ux500/* arrive?
-> >>
-> >> Exactly here, 10 days ago on Torvalds' master branch:
-> >
-> > Ah I see. Basing patches on commits half way through the merge
-> > window. Good move! ;)
-> >
-> > --
-> > Lee Jones
-> > Linaro ST-Ericsson Landing Team Lead
-> > Linaro.org =E2=94=82 Open source software for ARM SoCs
-> > Follow Linaro: Facebook | Twitter | Blog
->=20
-> Samuel, a kind reminder on this, trying to collect acks to be able to
-> advise Mike to take this series through his clk tree. There are two
-> mfd patches.
-> [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
-> [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
-Sorry for the delay:
+following patches are required to change Robert's, Boris' and my email
+addresses as we won't have access to AMD email soon.
 
-Acked-by: Samuel Ortiz <sameo@linux.intel.com>
 
-Cheers,
-Samuel.
+Regards,
+Andreas
 
---=20
-Intel Open Source Technology Centre
-http://oss.intel.com/
