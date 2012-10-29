@@ -1,25 +1,25 @@
 From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-Subject: [PATCH 1/4] hwmon, fam15h_power: Change email address, MAINTAINERS
+Subject: [PATCH 2/4] x86, microcode_amd: Change email addresses, MAINTAINERS
  entry
-Date: Mon, 29 Oct 2012 18:50:47 +0100
-Message-ID: <20121029175047.GB5024@tweety>
+Date: Mon, 29 Oct 2012 18:51:38 +0100
+Message-ID: <20121029175138.GC5024@tweety>
 References: <20121029174924.GA5024@tweety>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        bh=QP8fTRswJiuCvawcO5rGAfBK8/kMmEvNr08gwx7Hw/g=;
-        b=w7NRSDoeadrcijXxlbo32k5GpkNYKTjB38AGAywQV9LdR2Sfa7HmxIZEL3PvG7st2+
-         atiN/f7OYUGOProWh9Rg57i5Xcx8QcAds0T+gds5xFwe2u8iMUtLBX+71jP0EeDWpvhT
-         zklZMHUHsI4gzSoqfE1k6d6Fn49PgtMn48TNKaN0gzX0KbQ06xKkGRlX3c25vFL5Js0j
-         Zm5a3NtmmAW4MKG3mQRNiokheDNC6r2skOwdHhfUG9PYdhiTrB8k0Odt7uf0hmwOWAQo
-         OusXFIdwv4mMHLjvFsIWTF2dqmvzbHilCcrw1iGbjiN4gJxok3AGYHiJD9ALE+PLW35g
-         DEsw==
+        bh=id0LS0AvJwRz86vFRsAOH8JVdPLvtXHNpEz7DAApNa8=;
+        b=ecJ6FaWCKMcmY6RJZMc9syTty+mnwwxRqFvCst/kdBF1MVD/gDJVCM0bjp/1asVvqv
+         MSfysaGo36mjFi6XqlmXyM7X3IDKlWTklqUKPQUlI/kRo3KxWnsTI/HfS0R/Uiajwmic
+         ZNTPc1AZ4jIM3KCTwZ4s5ftGzpIRYoa6oI+ErEWiO7P6nweH+war88lo7AJtaewvg5KJ
+         JEQhC6ZzhbKsCqLJVWwYFanf970AgwtAW+mghBkjs6jyyg4b1DIsZb0U7KXUbXwaTOsh
+         09s7oF1pZZJpG2R+28s7Q5JqyJVzbyNtoLuF3SdX2Bc5bClUbyVh+CwA5hKR5rHRNtYx
+         DyVQ==
 Content-Disposition: inline
 In-Reply-To: <20121029174924.GA5024@tweety>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,59 +29,41 @@ Cc: lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
 Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
 ---
- Documentation/hwmon/fam15h_power |    2 +-
- MAINTAINERS                      |    2 +-
- drivers/hwmon/fam15h_power.c     |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ MAINTAINERS                     |    4 ++--
+ arch/x86/kernel/microcode_amd.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/hwmon/fam15h_power b/Documentation/hwmon/fam15h_power
-index a92918e..8065481 100644
---- a/Documentation/hwmon/fam15h_power
-+++ b/Documentation/hwmon/fam15h_power
-@@ -10,7 +10,7 @@ Supported chips:
-   BIOS and Kernel Developer's Guide (BKDG) For AMD Family 15h Processors
-     (not yet published)
- 
--Author: Andreas Herrmann <andreas.herrmann3@amd.com>
-+Author: Andreas Herrmann <herrmann.der.user@googlemail.com>
- 
- Description
- -----------
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 1fa9074..a4e8136 100644
+index a4e8136..5a66583 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -503,7 +503,7 @@ F:	include/linux/altera_uart.h
- F:	include/linux/altera_jtaguart.h
+@@ -534,9 +534,9 @@ F:	drivers/iommu/amd_iommu*.[ch]
+ F:	include/linux/amd-iommu.h
  
- AMD FAM15H PROCESSOR POWER MONITORING DRIVER
+ AMD MICROCODE UPDATE SUPPORT
 -M:	Andreas Herrmann <andreas.herrmann3@amd.com>
 +M:	Andreas Herrmann <herrmann.der.user@googlemail.com>
- L:	lm-sensors@lm-sensors.org
- S:	Maintained
- F:	Documentation/hwmon/fam15h_power
-diff --git a/drivers/hwmon/fam15h_power.c b/drivers/hwmon/fam15h_power.c
-index 68ad7d2..4f41104 100644
---- a/drivers/hwmon/fam15h_power.c
-+++ b/drivers/hwmon/fam15h_power.c
-@@ -2,7 +2,7 @@
-  * fam15h_power.c - AMD Family 15h processor power monitoring
-  *
-  * Copyright (c) 2011 Advanced Micro Devices, Inc.
-- * Author: Andreas Herrmann <andreas.herrmann3@amd.com>
-+ * Author: Andreas Herrmann <herrmann.der.user@googlemail.com>
-  *
-  *
-  * This driver is free software; you can redistribute it and/or
-@@ -28,7 +28,7 @@
- #include <asm/processor.h>
+ L:	amd64-microcode@amd64.org
+-S:	Supported
++S:	Maintained
+ F:	arch/x86/kernel/microcode_amd.c
  
- MODULE_DESCRIPTION("AMD Family 15h CPU processor power monitor");
--MODULE_AUTHOR("Andreas Herrmann <andreas.herrmann3@amd.com>");
-+MODULE_AUTHOR("Andreas Herrmann <herrmann.der.user@googlemail.com>");
- MODULE_LICENSE("GPL");
- 
- /* D18F3 */
+ AMS (Apple Motion Sensor) DRIVER
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 7720ff5..b3e67ba 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -8,8 +8,8 @@
+  *  Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+  *
+  *  Maintainers:
+- *  Andreas Herrmann <andreas.herrmann3@amd.com>
+- *  Borislav Petkov <borislav.petkov@amd.com>
++ *  Andreas Herrmann <herrmann.der.user@googlemail.com>
++ *  Borislav Petkov <bp@alien8.de>
+  *
+  *  This driver allows to upgrade microcode on F10h AMD
+  *  CPUs and later.
 -- 
 1.7.9.5
 
