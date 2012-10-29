@@ -1,34 +1,87 @@
 From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-Subject: [PATCH 0/4] MAINTAINERS et al: Change email addresses for misc stuff
-Date: Mon, 29 Oct 2012 18:49:24 +0100
-Message-ID: <20121029174924.GA5024@tweety>
+Subject: [PATCH 1/4] hwmon, fam15h_power: Change email address, MAINTAINERS
+ entry
+Date: Mon, 29 Oct 2012 18:50:47 +0100
+Message-ID: <20121029175047.GB5024@tweety>
+References: <20121029174924.GA5024@tweety>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        bh=0255a7b2TJJZfRYH1xFWERXhEyla0NZGHYNIHPrJ4Qk=;
-        b=yaTdiwE9EbzgZ20qzZhATpHCql7YtEhahmb+32F4k7PBLDuY7xMXP6oNghIN29duKz
-         wV60CN5Icp5HbhNkLA6CSX1HjpeX+1pITl9oOAPMewLxjjf0L7USzbwu9kKsfiu+VZaO
-         QetJthrspCAb0k90fV8/8uLW2SGtG595SNfMsUjC0jT6Tc2NrssRhi1wbtprLDsG9nzT
-         yl29gnC2QFQvkSW17y65p5UKJSvEI/5cX1cUtQw2pWeJLKtrTF5QSvYTtK/ZVtKOxtEc
-         0SU1Vme9/m688x8a3f/LB7xSsCcR6UmOv/A8Ex3f5dyEOdgaP7sLXHicR8qKHT+Smd+/
-         R0Nw==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=QP8fTRswJiuCvawcO5rGAfBK8/kMmEvNr08gwx7Hw/g=;
+        b=w7NRSDoeadrcijXxlbo32k5GpkNYKTjB38AGAywQV9LdR2Sfa7HmxIZEL3PvG7st2+
+         atiN/f7OYUGOProWh9Rg57i5Xcx8QcAds0T+gds5xFwe2u8iMUtLBX+71jP0EeDWpvhT
+         zklZMHUHsI4gzSoqfE1k6d6Fn49PgtMn48TNKaN0gzX0KbQ06xKkGRlX3c25vFL5Js0j
+         Zm5a3NtmmAW4MKG3mQRNiokheDNC6r2skOwdHhfUG9PYdhiTrB8k0Odt7uf0hmwOWAQo
+         OusXFIdwv4mMHLjvFsIWTF2dqmvzbHilCcrw1iGbjiN4gJxok3AGYHiJD9ALE+PLW35g
+         DEsw==
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20121029174924.GA5024@tweety>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>
 Cc: lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Stephane Eranian <eranian@google.com>, Robert Richter <rric@kernel.org>, Borislav Petkov <bp@alien8.de>, =?iso-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
 
-Hi,
 
-following patches are required to change Robert's, Boris' and my email
-addresses as we won't have access to AMD email soon.
+Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
+---
+ Documentation/hwmon/fam15h_power |    2 +-
+ MAINTAINERS                      |    2 +-
+ drivers/hwmon/fam15h_power.c     |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-
-Regards,
-Andreas
+diff --git a/Documentation/hwmon/fam15h_power b/Documentation/hwmon/fam15h_power
+index a92918e..8065481 100644
+--- a/Documentation/hwmon/fam15h_power
++++ b/Documentation/hwmon/fam15h_power
+@@ -10,7 +10,7 @@ Supported chips:
+   BIOS and Kernel Developer's Guide (BKDG) For AMD Family 15h Processors
+     (not yet published)
+ 
+-Author: Andreas Herrmann <andreas.herrmann3@amd.com>
++Author: Andreas Herrmann <herrmann.der.user@googlemail.com>
+ 
+ Description
+ -----------
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1fa9074..a4e8136 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -503,7 +503,7 @@ F:	include/linux/altera_uart.h
+ F:	include/linux/altera_jtaguart.h
+ 
+ AMD FAM15H PROCESSOR POWER MONITORING DRIVER
+-M:	Andreas Herrmann <andreas.herrmann3@amd.com>
++M:	Andreas Herrmann <herrmann.der.user@googlemail.com>
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
+ F:	Documentation/hwmon/fam15h_power
+diff --git a/drivers/hwmon/fam15h_power.c b/drivers/hwmon/fam15h_power.c
+index 68ad7d2..4f41104 100644
+--- a/drivers/hwmon/fam15h_power.c
++++ b/drivers/hwmon/fam15h_power.c
+@@ -2,7 +2,7 @@
+  * fam15h_power.c - AMD Family 15h processor power monitoring
+  *
+  * Copyright (c) 2011 Advanced Micro Devices, Inc.
+- * Author: Andreas Herrmann <andreas.herrmann3@amd.com>
++ * Author: Andreas Herrmann <herrmann.der.user@googlemail.com>
+  *
+  *
+  * This driver is free software; you can redistribute it and/or
+@@ -28,7 +28,7 @@
+ #include <asm/processor.h>
+ 
+ MODULE_DESCRIPTION("AMD Family 15h CPU processor power monitor");
+-MODULE_AUTHOR("Andreas Herrmann <andreas.herrmann3@amd.com>");
++MODULE_AUTHOR("Andreas Herrmann <herrmann.der.user@googlemail.com>");
+ MODULE_LICENSE("GPL");
+ 
+ /* D18F3 */
+-- 
+1.7.9.5
 
