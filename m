@@ -1,44 +1,26 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 3/4] cpufreq, powernow-k8: Change email address
-Date: Tue, 30 Oct 2012 00:31:00 +0100
-Message-ID: <20121029233100.GE8393@liondog.tnic>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 1/4] hwmon, fam15h_power: Change email address,
+ MAINTAINERS entry
+Date: Mon, 29 Oct 2012 17:49:46 -0700
+Message-ID: <20121030004920.GA19374@roeck-us.net>
 References: <20121029174924.GA5024@tweety>
- <20121029175221.GD5024@tweety>
- <2663527.sPyzc5AXi8@vostro.rjw.lan>
+ <20121029175047.GB5024@tweety>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1351553461; bh=N5mp57PYnkUyXWLNbXMmhpe0SbPXmhrSj1R13cTqz2c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=bbIEIIMNdnRQOVbfL3wnQo3WcsKxofEiAP40j9
-	XqRyYJane4zrLOHYH+O24evX8lxQHOehO/BZKm3MINRA0RuaP8M4HjGLKFA/AINwld1
-	8jlZmyLfPFrPOVXcmX+xzlFs2VEPqCDxN/2Ri1vfj2oRwIjPHG9Tb6d6aMm7w+nxpI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1351553461; bh=N5mp57PYnkUyXWLNbXMmhpe0SbPXmhrSj1R13cTqz2c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=bbIEIIMNdnRQOVbfL3wnQo3WcsKxofEiAP40j9
-	XqRyYJane4zrLOHYH+O24evX8lxQHOehO/BZKm3MINRA0RuaP8M4HjGLKFA/AINwld1
-	8jlZmyLfPFrPOVXcmX+xzlFs2VEPqCDxN/2Ri1vfj2oRwIjPHG9Tb6d6aMm7w+nxpI=
 Content-Disposition: inline
-In-Reply-To: <2663527.sPyzc5AXi8@vostro.rjw.lan>
+In-Reply-To: <20121029175047.GB5024@tweety>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andreas Herrmann <herrmann.der.user@googlemail.com>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Stephane Eranian <eranian@google.com>, Robert Richter <rric@kernel.org>, =?utf-8?B?SsO2cmcgUsO2ZGVs?= <joro@8bytes.org>
+To: Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <khali@linux-fr.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Robert Richter <rric@kernel.org>, Borislav Petkov <bp@alien8.de>, =?iso-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
 
-On Tue, Oct 30, 2012 at 12:33:15AM +0100, Rafael J. Wysocki wrote:
-> On Monday, October 29, 2012 06:52:21 PM Andreas Herrmann wrote:
-> > 
-> > Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
+On Mon, Oct 29, 2012 at 06:50:47PM +0100, Andreas Herrmann wrote:
 > 
-> Am I supposed to take this one?
+> Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
 
-Yes please.
+Applied.
 
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
+Thanks,
+Guenter
