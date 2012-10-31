@@ -1,48 +1,56 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: [PATCH] cpufreq: remove the unnecessary initialization of a local
- variable
-Date: Wed, 31 Oct 2012 14:49:13 +0900
-Message-ID: <000901cdb72b$74a6af10$5df40d30$%han@samsung.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 3/6] cpufreq: tolerate inexact values when collecting stats
+Date: Wed, 31 Oct 2012 07:03:45 -0500
+Message-ID: <1351685025-26698-4-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1351685025-26698-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1351685025-26698-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, cpufreq@vger.kernel.org
 
-This patch removes unnecessary initializer for the 'ret' variable.
+Allow frequency values to vary by +/-5000 Hz when collecting stats.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: cpufreq@vger.kernel.org
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+
 ---
- drivers/cpufreq/cpufreq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq_stats.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 261ef65..4e9fcc5 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -404,7 +404,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- static ssize_t store_##file_name					\
- (struct cpufreq_policy *policy, const char *buf, size_t count)		\
- {									\
--	unsigned int ret = -EINVAL;					\
-+	unsigned int ret;						\
- 	struct cpufreq_policy new_policy;				\
- 									\
- 	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
-@@ -459,7 +459,7 @@ static ssize_t show_scaling_governor(struct cpufreq_policy *policy, char *buf)
- static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
- 					const char *buf, size_t count)
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 3998316..4e2ea7e 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -158,9 +158,11 @@ static struct attribute_group stats_attr_group = {
+ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
  {
--	unsigned int ret = -EINVAL;
-+	unsigned int ret;
- 	char	str_governor[16];
- 	struct cpufreq_policy new_policy;
+ 	int index;
+-	for (index = 0; index < stat->max_state; index++)
+-		if (stat->freq_table[index] == freq)
++	for (index = 0; index < stat->max_state; index++) {
++		if ((stat->freq_table[index] < (freq + 5000)) &&
++		    (stat->freq_table[index] > (freq - 5000)))
+ 			return index;
++	}
+ 	return -1;
+ }
  
+@@ -251,6 +253,8 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	spin_lock(&cpufreq_stats_lock);
+ 	stat->last_time = get_jiffies_64();
+ 	stat->last_index = freq_table_get_index(stat, policy->cur);
++	if (stat->last_index > stat->max_state)
++		stat->last_index = stat->max_state - 1;
+ 	spin_unlock(&cpufreq_stats_lock);
+ 	cpufreq_cpu_put(data);
+ 	return 0;
 -- 
-1.7.1
-
+1.7.11.7
 
