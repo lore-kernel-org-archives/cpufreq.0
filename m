@@ -1,51 +1,75 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 3/4] cpufreq, powernow-k8: Change email address
-Date: Wed, 31 Oct 2012 00:40:43 +0100
-Message-ID: <20121030234042.GC14055@liondog.tnic>
-References: <20121029174924.GA5024@tweety>
- <2663527.sPyzc5AXi8@vostro.rjw.lan>
- <20121029233100.GE8393@liondog.tnic>
- <2384721.S5BJ6UP5pX@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH RESEND] cpufreq: Make sure target freq is within limits
+Date: Wed, 31 Oct 2012 01:44:18 +0100
+Message-ID: <5507910.WhiOUESWao@vostro.rjw.lan>
+References: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1351640444; bh=d6XGG2ondz8LJiumSzzzZeP3p8ETqlBRJqdlVDWYZs0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=diIzf3tEdsoF8pjTNnWNJtDhilieNS6ijrKDNB
-	J1y2K8qFrF7cSq9RcJhRxZ5ZfAj9C0nJT2CRccKfHtGjpyNnGJtEzyDOQIpb2WHgEfL
-	xa4BS/X2vMVAMNbx7e+rrYGUXP5UgDVMR4BD+fqNE1SBOROb+LfxzPLF3Z9sAn5zQI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1351640443; bh=d6XGG2ondz8LJiumSzzzZeP3p8ETqlBRJqdlVDWYZs0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=l5v1KhrFB5HmbfJv5EDiLrqmD0esCpJ54Zweii
-	jYw9CmSnkauJhHNhZv2vm1AKv8iel+vA53yavpYH3pYqe4SLytQJ0TsyNO+Yh55Jfov
-	KHX2vxlht3JS5zaFmTkyHHylOOpQelY3lIo5wXQoqrUlwCtAseDZwXnj9UunJ/5jKs=
-Content-Disposition: inline
-In-Reply-To: <2384721.S5BJ6UP5pX@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andreas Herrmann <herrmann.der.user@googlemail.com>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Stephane Eranian <eranian@google.com>, Robert Richter <rric@kernel.org>, =?utf-8?B?SsO2cmcgUsO2ZGVs?= <joro@8bytes.org>
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-On Wed, Oct 31, 2012 at 12:42:01AM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, October 30, 2012 12:31:00 AM Borislav Petkov wrote:
-> > On Tue, Oct 30, 2012 at 12:33:15AM +0100, Rafael J. Wysocki wrote:
-> > > On Monday, October 29, 2012 06:52:21 PM Andreas Herrmann wrote:
-> > > > 
-> > > > Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
-> > > 
-> > > Am I supposed to take this one?
-> > 
-> > Yes please.
+On Friday, October 26, 2012 06:05:21 PM Viresh Kumar wrote:
+> __cpufreq_driver_target() must not pass target frequency beyond the limits of
+> current policy.
 > 
-> OK, I'm going to push it for v3.7.
+> Today most of cpufreq platform drivers are doing this check in their target
+> routines. Why not move it to __cpufreq_driver_target().
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+> Hi Rafael,
+> 
+> Resend doesn't contain any change, but fixed commit log
 
-Sure thing.
+Applied to the linux-next branch of linux-pm.git as v3.8 material.
 
-Thanks.
+Thanks,
+Rafael
 
+
+>  drivers/cpufreq/cpufreq.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 28dc134..2f5ac2d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  			    unsigned int relation)
+>  {
+>  	int retval = -EINVAL;
+> +	unsigned int old_target_freq = target_freq;
+>  
+>  	if (cpufreq_disabled())
+>  		return -ENODEV;
+>  
+> -	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
+> -		target_freq, relation);
+> +	/* Make sure that target_freq is within supported range */
+> +	if (target_freq > policy->max)
+> +		target_freq = policy->max;
+> +	if (target_freq < policy->min)
+> +		target_freq = policy->min;
+> +
+> +	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
+> +			policy->cpu, target_freq, relation, old_target_freq);
+>  
+>  	if (target_freq == policy->cur)
+>  		return 0;
+> 
 -- 
-Regards/Gruss,
-    Boris.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
