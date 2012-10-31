@@ -1,56 +1,39 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 3/6] cpufreq: tolerate inexact values when collecting stats
-Date: Wed, 31 Oct 2012 07:03:45 -0500
-Message-ID: <1351685025-26698-4-git-send-email-mark.langsdorf@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1351685025-26698-1-git-send-email-mark.langsdorf@calxeda.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 48341] BUG: using smp_processor_id in preemptible powernow_k8
+Date: Wed, 31 Oct 2012 22:19:47 +0000 (UTC)
+Message-ID: <20121031221948.01C1C11FB82@bugzilla.kernel.org>
+References: <bug-48341-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1351685025-26698-1-git-send-email-mark.langsdorf@calxeda.com>
+In-Reply-To: <bug-48341-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-Allow frequency values to vary by +/-5000 Hz when collecting stats.
+https://bugzilla.kernel.org/show_bug.cgi?id=48341
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: cpufreq@vger.kernel.org
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
 
----
- drivers/cpufreq/cpufreq_stats.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Hedi Berriche <hedi@sgi.com> changed:
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 3998316..4e2ea7e 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -158,9 +158,11 @@ static struct attribute_group stats_attr_group = {
- static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
- {
- 	int index;
--	for (index = 0; index < stat->max_state; index++)
--		if (stat->freq_table[index] == freq)
-+	for (index = 0; index < stat->max_state; index++) {
-+		if ((stat->freq_table[index] < (freq + 5000)) &&
-+		    (stat->freq_table[index] > (freq - 5000)))
- 			return index;
-+	}
- 	return -1;
- }
- 
-@@ -251,6 +253,8 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
- 	spin_lock(&cpufreq_stats_lock);
- 	stat->last_time = get_jiffies_64();
- 	stat->last_index = freq_table_get_index(stat, policy->cur);
-+	if (stat->last_index > stat->max_state)
-+		stat->last_index = stat->max_state - 1;
- 	spin_unlock(&cpufreq_stats_lock);
- 	cpufreq_cpu_put(data);
- 	return 0;
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |hedi@sgi.com
+
+
+
+
+--- Comment #2 from Hedi Berriche <hedi@sgi.com>  2012-10-31 22:19:47 ---
+Actually this should be solved by the following commit:
+
+  e4df1cb: cpufreq / powernow-k8: Remove usage of smp_processor_id() in
+preemptible code
+
+Cheers,
+Hedi.
+
 -- 
-1.7.11.7
-
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
