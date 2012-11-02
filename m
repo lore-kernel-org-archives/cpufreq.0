@@ -1,32 +1,55 @@
-From: Chao Xie <xiechao.mail@gmail.com>
-Subject: cpufreq exclusive with cpu hotplug
-Date: Fri, 2 Nov 2012 10:56:07 +0800
-Message-ID: <CADApbejeLyEo6+JWcZVpgxavqRpnB_8ZNi=Nweki=DiUJVrWHA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: remove the unnecessary initialization of a local variable
+Date: Fri, 02 Nov 2012 13:54:05 +0100
+Message-ID: <1423078.2ZMUiF84t8@vostro.rjw.lan>
+References: <000901cdb72b$74a6af10$5df40d30$%han@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        bh=qlGoczQWgeh/tfUIwPLFglrzP44jQwpRkTsO0Duj3yI=;
-        b=rucqhjMiX+sDDVqGI3P+RO3AE2lXdG0NohNi9fxvYPXWpjhvJKpo/vkiLyo9ZsLGJX
-         ycO5AE72SOq8Ob8FZKz+eCL3c3Uf2ygHYAffb1OpzU3N121BEAofoYc8dsKnVqA1rozm
-         O95tJEZmJ/E85mkp7e27/DJ1gdFHihxGmNOOAi4j97h62U19tJufrt1OlhxhqxcCrfy9
-         PN5sXYpw28QV8a3jd0WjZhiCdCIabWcpW1bcN0H/+pfqepGtfzEumr2MU5XsGtzxGG8j
-         cTCLIWnxB73Hc76hoUjLWuJNb/b27bh8ah/jv9iQ5oO3mVjZclcflVFoWDmrERo6pyW0
-         icDg==
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <000901cdb72b$74a6af10$5df40d30$%han@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi
-As I understand that when cpufreq work with cpu hotplug together, it
-depends on policy_lock to make sure that cpufreq will not work with
-cpu hotplug together. They can be ordered.
-The userspace governor use __cpufreq_driver_target not
-cpufreq_driver_target when change the cpu frequency. It means that it
-will not grap the policy_lock, so when change the cpu frequency, the
-cpu hotplug will happen.
-So what I need to do if I want to make cpu hotplug not happens at same
-time when I change the cpu frequency?
+On Wednesday, October 31, 2012 02:49:13 PM Jingoo Han wrote:
+> This patch removes unnecessary initializer for the 'ret' variable.
+
+Applied to the linux-next branch of the linux-pm.git tree as v3.8 material.
+
+Thanks,
+Rafael
+
+
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 261ef65..4e9fcc5 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -404,7 +404,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+>  static ssize_t store_##file_name					\
+>  (struct cpufreq_policy *policy, const char *buf, size_t count)		\
+>  {									\
+> -	unsigned int ret = -EINVAL;					\
+> +	unsigned int ret;						\
+>  	struct cpufreq_policy new_policy;				\
+>  									\
+>  	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
+> @@ -459,7 +459,7 @@ static ssize_t show_scaling_governor(struct cpufreq_policy *policy, char *buf)
+>  static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
+>  					const char *buf, size_t count)
+>  {
+> -	unsigned int ret = -EINVAL;
+> +	unsigned int ret;
+>  	char	str_governor[16];
+>  	struct cpufreq_policy new_policy;
+>  
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
