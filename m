@@ -1,103 +1,49 @@
 From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 1/6 v2] arm: use devicetree to get smp_twd clock
-Date: Fri,  2 Nov 2012 13:51:44 -0500
-Message-ID: <1351882309-733-2-git-send-email-mark.langsdorf@calxeda.com>
+Subject: [PATCH 2/6 v2] clk, highbank: remove non-bypass reset mode
+Date: Fri,  2 Nov 2012 13:51:45 -0500
+Message-ID: <1351882309-733-3-git-send-email-mark.langsdorf@calxeda.com>
 References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
  <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
-Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Russell King <linux@arm.linux.org.uk>, Rob Herring <rob.herring@calxeda.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, cpufreq@vger.kernel.org
+Cc: cpufreq@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, Rob Herring <rob.herring@calxeda.com>, mturquette@linaro.org
 
-From: Rob Herring <rob.herring@calxeda.com>
+The highbank clock will glitch if the clock rate is reset without
+relocking the PLL. Remove the option to attempt reseting without
+relocking.
 
+Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
 Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org
+Cc: mturquette@linaro.org
 
-Changes from v1
-	None.
+Changes from v2:
+	Removed erroneous reformating.
+
 ---
- arch/arm/kernel/smp_twd.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ drivers/clk/clk-highbank.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
-index b22d700..600fbcc 100644
---- a/arch/arm/kernel/smp_twd.c
-+++ b/arch/arm/kernel/smp_twd.c
-@@ -237,12 +237,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
- 	return IRQ_NONE;
- }
- 
--static struct clk *twd_get_clock(void)
-+static struct clk *twd_get_clock(struct device_node *np)
- {
--	struct clk *clk;
-+	struct clk *clk = NULL;
- 	int err;
- 
--	clk = clk_get_sys("smp_twd", NULL);
-+	if (np)
-+		clk = of_clk_get(np, 0);
-+	if (!clk)
-+		clk = clk_get_sys("smp_twd", NULL);
- 	if (IS_ERR(clk)) {
- 		pr_err("smp_twd: clock not found: %d\n", (int)PTR_ERR(clk));
- 		return clk;
-@@ -263,6 +266,7 @@ static struct clk *twd_get_clock(void)
- 		return ERR_PTR(err);
+diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
+index 52fecad..3a0b723 100644
+--- a/drivers/clk/clk-highbank.c
++++ b/drivers/clk/clk-highbank.c
+@@ -182,8 +182,10 @@ static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
+ 		reg |= HB_PLL_EXT_ENA;
+ 		reg &= ~HB_PLL_EXT_BYPASS;
+ 	} else {
++		writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+ 		reg &= ~HB_PLL_DIVQ_MASK;
+ 		reg |= divq << HB_PLL_DIVQ_SHIFT;
++		writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
  	}
+ 	writel(reg, hbclk->reg);
  
-+	twd_timer_rate = clk_get_rate(clk);
- 	return clk;
- }
- 
-@@ -273,12 +277,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
- {
- 	struct clock_event_device **this_cpu_clk;
- 
--	if (!twd_clk)
--		twd_clk = twd_get_clock();
--
--	if (!IS_ERR_OR_NULL(twd_clk))
--		twd_timer_rate = clk_get_rate(twd_clk);
--	else
-+	if (IS_ERR_OR_NULL(twd_clk))
- 		twd_calibrate_rate();
- 
- 	__raw_writel(0, twd_base + TWD_TIMER_CONTROL);
-@@ -349,6 +348,10 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
- 	if (!twd_base)
- 		return -ENOMEM;
- 
-+	twd_clk = twd_get_clock(NULL);
-+
-+	twd_clk = twd_get_clock(NULL);
-+
- 	return twd_local_timer_common_register();
- }
- 
-@@ -383,6 +386,8 @@ void __init twd_local_timer_of_register(void)
- 		goto out;
- 	}
- 
-+	twd_clk = twd_get_clock(np);
-+
- 	err = twd_local_timer_common_register();
- 
- out:
 -- 
 1.7.11.7
+
