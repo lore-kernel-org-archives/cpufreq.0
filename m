@@ -1,56 +1,44 @@
-From: Michal Zatloukal <myxal.mxl@gmail.com>
-Subject: Re: Fwd: Nice processes prevent frequency increases - possible
- scheduler regression (known good in 2.6.35)
-Date: Sat, 3 Nov 2012 16:40:57 +0100
-Message-ID: <CAKKZj2D-jCkAbEKPX75OFYWrdSYxwh6fFBFy9UBDxy_XHHX3Gg@mail.gmail.com>
-References: <CAKKZj2Do+ViFbdmeA9y4qZ4Dd_CrW_wmVWc0_CB4BAAwO6SfJg@mail.gmail.com>
- <CAKKZj2Av0TN9MbYk=-2ZB_jxDnUCWfrN5tJNZ7azgSHyOrMzvg@mail.gmail.com>
- <1351942405.16850.23.camel@maggy.simpson.net> <1351943332.16850.25.camel@maggy.simpson.net>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/6 v2] arm: use devicetree to get smp_twd clock
+Date: Sun, 4 Nov 2012 10:08:22 +0000
+Message-ID: <20121104100822.GY21164@n2100.arm.linux.org.uk>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com> <1351882309-733-2-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type;
-        bh=gWmnRA1p3otbULUvaPOceCh5uASwFd1R0AsaPufo0QM=;
-        b=g/VWh7oI15gDLuma20+OjLf2lILiTa5YsRKhHX6fje6mVy7N7AMF2aEGuid7x0NGzU
-         hWqB+fPnvDHeY69WIiiKOwIqG2ZWvf66Mqr3kDeCYDmxHvxWvdExTvs1kvJoUCbT6r0G
-         OKVzjfqtFpDTuH17a5NzhWwgnU1TiZMA0hmHu20fGvaKw9wgtPRVlKXVxX891E9Djfpf
-         FVrSekjHW/ZjFPW066noPxWqaqfoBV7uUOYyPSJNPBmY4JO5R86r4PF2ExcCDjdublXd
-         bblWGNFjxe84SxnLLELpt9dsebfgbbVyxiKtG7K05Roz1DpVL/OkrAZuGph9y5QzZPY1
-         nlEg==
-In-Reply-To: <1351943332.16850.25.camel@maggy.simpson.net>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=vPTRloaQvsFlaZbFK1im79JM+AOV60+WNTFA4UkaAAk=;
+	b=FEzUHLsar8HtgmwNoLZhP1U0/t3dQmttcFTJYkYHUJoNqyCc0kf08c+IZGr31y8LC5w+4nd6u4+fF4ytnn3+I/B+ip1KPsCie+baOkh5oNYIViAH62UoYfikrM0TiEHLRJ3ftNIi2PahaMy2nZ1NrEoaWcW6y99mi9CGLBlTaYc=;
+Content-Disposition: inline
+In-Reply-To: <1351882309-733-2-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>, linux-arm-kernel@lists.infradead.org
 
-On Sat, Nov 3, 2012 at 12:48 PM, Mike Galbraith <efault@gmx.de> wrote:
-> On Sat, 2012-11-03 at 04:33 -0700, Mike Galbraith wrote:
->> On Fri, 2012-11-02 at 21:09 +0100, Michal Zatloukal wrote:
->>
->> > On the new kernel, the nice processes are never starved - even when
->> > starting a tab-laden chromium session, the processes for BOINC keep
->> > about 20% CPU each (that is normalized to all CPUs, ie 40% nice load
->> > on each core). The problem is, the governor now seems to consider the
->> > non-nice task unable to saturate the CPU, and the cores' frequencies
->> > are hovering between 1.0 and 1.8 GHz. The scheduler keeps scheduling
->> > the nice tasks, and the non-nice tasks are progressing much slower,
->> > caused by the lower CPU speed as well as less processing time
->> > allocated to them. HD video stutters often, and Chromium takes at
->> > least 2-3 times longer to fully load.
->>
->> Your nice 19 tasks receiving 'too much' CPU when there are other
->> runnable tasks around sounds like you have SCHED_AUTOGROUP enabled.
->
-> (forgot to mention: if that's the case, you can add noautogroup to your
-> kernel command line to turn it off if distro turned it on in .config)
->
+On Fri, Nov 02, 2012 at 01:51:44PM -0500, Mark Langsdorf wrote:
+> -static struct clk *twd_get_clock(void)
+> +static struct clk *twd_get_clock(struct device_node *np)
+>  {
+> -	struct clk *clk;
+> +	struct clk *clk = NULL;
+>  	int err;
+>  
+> -	clk = clk_get_sys("smp_twd", NULL);
+> +	if (np)
+> +		clk = of_clk_get(np, 0);
+> +	if (!clk)
 
-Thanks, Ubuntu's kernel is indeed configured with that option enabled,
-and passing "noautogroup" at grub restores the previous behaviour. I'm
-back to happy days again :) BTW, isn't this the "magic 200-line patch"
-I was reading about ~2 years ago?
+What does a NULL return from of_clk_get() mean?  Where is this defined?
 
-MZ
+> @@ -349,6 +348,10 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
+>  	if (!twd_base)
+>  		return -ENOMEM;
+>  
+> +	twd_clk = twd_get_clock(NULL);
+> +
+> +	twd_clk = twd_get_clock(NULL);
+> +
+
+Why twice?
