@@ -1,69 +1,53 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 2/6 v4] clk, highbank: Prevent glitches in non-bypass
- reset mode
-Date: Mon, 12 Nov 2012 15:35:30 -0600
-Message-ID: <50A16BA2.2050304@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-3-git-send-email-mark.langsdorf@calxeda.com> <20121112212412.20034.37835@nucleus>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting
+ stats
+Date: Tue, 13 Nov 2012 17:24:49 +0100
+Message-ID: <20121113162449.GE9327@x1.osrc.amd.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1352313166-28980-4-git-send-email-mark.langsdorf@calxeda.com>
+ <20121111163821.GA21635@x1.osrc.amd.com>
+ <50A12565.4070701@calxeda.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121112212412.20034.37835@nucleus>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1352823873; bh=rTHuQUGOsPnnAvFVdZbwbAebaAXGbv/xeugYGg3OHEU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=JesVRV/L5l+14JIcysVmm0ZmfYNSpq/3gjz9P6
+	946zu57GhZyFdiC6kQV/8PsQhnG5gMEDuQinsGDotwKfmnL3d6blPbdbE3hAasWZBWw
+	tzkyA1TbebHMnWvMOwPdWd/BAx8AX86ZKVWeK8Ju60K0Q7DFxmGkxf9xLFn4X8jT1Y=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1352823872; bh=rTHuQUGOsPnnAvFVdZbwbAebaAXGbv/xeugYGg3OHEU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=o75zrgi0N2VFavBwd13cyvh9OnE7MSxmJ4OQ2d
+	4DNK7k4uNkSeA/HMxNmYQheMcNc5+89JGYTqbQL/mZ+CyaOl1ICvLpAJENu6mIHIayp
+	eourA5G4tIqF8nNoHrrkpJ7t3N0RQalmnFjOEnC6vH5EfjMTKRRl/TQQ1QHs4qWcCY=
+Content-Disposition: inline
+In-Reply-To: <50A12565.4070701@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mike Turquette <mturquette@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>
+Content-Transfer-Encoding: 7bit
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
 
-On 11/12/2012 03:24 PM, Mike Turquette wrote:
-> Quoting Mark Langsdorf (2012-11-07 10:32:42)
->> The highbank clock will glitch with the current code if the
->> clock rate is reset without relocking the PLL. Program the PLL
->> correctly to preven glitches.
->>
->> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
->> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
->> Cc: mturquette@linaro.org
-> 
-> Hi Mark,
-> 
-> Looks fine to me.
-> 
-> I seem to be missing the rest of this series in my mail.  Did you want
-> me to take only this patch (2/6) into clk-next or were you only looking
-> for my ACK?
+On Mon, Nov 12, 2012 at 10:35:49AM -0600, Mark Langsdorf wrote:
+> The function is buried pretty deep in the cpufreq_stat code. It didn't
+> seem appropriate to make it a function pointer as part of struct
+> cpufreq_driver.
 
-The entire series enables highbank cpufreq. Would you normally take this
-patch through cpufreq-next with an ACK or directly through clk-next?
+Right, what's cpufreq-speak for
 
---Mark Langsdorf
-Calxeda, Inc.
+	if (Calxeda)
+		shift by 10
 
->> ---
->> Changes from v3
->>         Changelog text and patch name now correspond to the actual patch
->>         was clk, highbank: remove non-bypass reset mode
->> Changes from v2
->>         None
->> Changes from v1:
->>         Removed erroneous reformating.
->>
->>  drivers/clk/clk-highbank.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
->> index 52fecad..3a0b723 100644
->> --- a/drivers/clk/clk-highbank.c
->> +++ b/drivers/clk/clk-highbank.c
->> @@ -182,8 +182,10 @@ static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
->>                 reg |= HB_PLL_EXT_ENA;
->>                 reg &= ~HB_PLL_EXT_BYPASS;
->>         } else {
->> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
->>                 reg &= ~HB_PLL_DIVQ_MASK;
->>                 reg |= divq << HB_PLL_DIVQ_SHIFT;
->> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
->>         }
->>         writel(reg, hbclk->reg);
->>  
->> -- 
->> 1.7.11.7
+?
+
+Better yet, add a flag or a bitfield called "minimize_jitter" or similar
+and set it only on your hardware...
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
