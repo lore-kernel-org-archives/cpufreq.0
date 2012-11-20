@@ -1,44 +1,47 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand
- governor set - i7-2630QM
-Date: Tue, 20 Nov 2012 02:56:40 +0000 (UTC)
-Message-ID: <20121120025640.977F911FB4C@bugzilla.kernel.org>
-References: <bug-50721-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-50721-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Tushar Behera <tushar.behera@linaro.org>
+Subject: [PATCH] [CPUFREQ] EXYNOS: Use static for functions used in only this file
+Date: Tue, 20 Nov 2012 11:29:14 +0530
+Message-ID: <1353391154-32524-1-git-send-email-tushar.behera@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: rjw@sisk.pl, patches@linaro.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=50721
+Fixes following sparse error.
+drivers/cpufreq/exynos-cpufreq.c:34:5: warning: symbol
+'exynos_verify_speed' was not declared. Should it be static?
+drivers/cpufreq/exynos-cpufreq.c:40:14: warning: symbol
+'exynos_getspeed' was not declared. Should it be static?
 
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Len Brown <lenb@kernel.org> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
-                 CC|                            |lenb@kernel.org
-            Summary|CPU freqs stay stuck at max |CPU freqs stay stuck at max
-                   |after reboot with on-demand |after reboot with on-demand
-                   |governor set                |governor set - i7-2630QM
-
-
-
-
---- Comment #2 from Len Brown <lenb@kernel.org>  2012-11-20 02:56:40 ---
-please show the output from turbostat
-when this problem is happening.
-you can find turbostat in the kernel source tree under
-tools/power/x86/turbostat
-
-also, please verify with top that nothing is running
-when the system is idle.
-
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index af2d81e..eb057bf 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -31,13 +31,13 @@ static unsigned int locking_frequency;
+ static bool frequency_locked;
+ static DEFINE_MUTEX(cpufreq_lock);
+ 
+-int exynos_verify_speed(struct cpufreq_policy *policy)
++static int exynos_verify_speed(struct cpufreq_policy *policy)
+ {
+ 	return cpufreq_frequency_table_verify(policy,
+ 					      exynos_info->freq_table);
+ }
+ 
+-unsigned int exynos_getspeed(unsigned int cpu)
++static unsigned int exynos_getspeed(unsigned int cpu)
+ {
+ 	return clk_get_rate(exynos_info->cpu_clk) / 1000;
+ }
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.4.1
+
