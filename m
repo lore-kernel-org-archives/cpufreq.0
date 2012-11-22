@@ -1,57 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] EXYNOS: Use static for functions used in only this file
-Date: Thu, 22 Nov 2012 00:42:13 +0100
-Message-ID: <3447567.TrmCKhveOD@vostro.rjw.lan>
-References: <1353391154-32524-1-git-send-email-tushar.behera@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: ondemand: handle SW coordinated CPUs
+Date: Thu, 22 Nov 2012 22:27:10 +0100
+Message-ID: <7225350.Xenu33kWOn@vostro.rjw.lan>
+References: <1353413176-21723-1-git-send-email-fabio.baltieri@linaro.org> <1708590.LLn32jdgxe@vostro.rjw.lan> <20121122170237.GA16948@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1353391154-32524-1-git-send-email-tushar.behera@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20121122170237.GA16948@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Tushar Behera <tushar.behera@linaro.org>
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, patches@linaro.org
+To: Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
 
-On Tuesday, November 20, 2012 11:29:14 AM Tushar Behera wrote:
-> Fixes following sparse error.
-> drivers/cpufreq/exynos-cpufreq.c:34:5: warning: symbol
-> 'exynos_verify_speed' was not declared. Should it be static?
-> drivers/cpufreq/exynos-cpufreq.c:40:14: warning: symbol
-> 'exynos_getspeed' was not declared. Should it be static?
+On Thursday, November 22, 2012 06:02:37 PM Fabio Baltieri wrote:
+> Hello Rafael,
+> 
+> thanks for the review!  I only have one concern before sending a v4:
+> 
+> On Thu, Nov 22, 2012 at 01:10:15AM +0100, Rafael J. Wysocki wrote:
+> > > @@ -627,32 +659,41 @@ static void do_dbs_timer(struct work_struct *work)
+> > >  				delay -= jiffies % delay;
+> > >  		}
+> > >  	} else {
+> > > -		__cpufreq_driver_target(dbs_info->cur_policy,
+> > > -			dbs_info->freq_lo, CPUFREQ_RELATION_H);
+> > > +		if (sample)
+> > > +			__cpufreq_driver_target(dbs_info->cur_policy,
+> > > +						dbs_info->freq_lo,
+> > > +						CPUFREQ_RELATION_H);
+> > >  		delay = dbs_info->freq_lo_jiffies;
+> > >  	}
+> > > -	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
+> > > +	schedule_delayed_work_on(smp_processor_id(), dw, delay);
+> > 
+> > We're not supposed to be using smp_processor_id() any more.
+> > get_cpu()/put_cpu() should be used instead.
+> 
+> That's going to add preemption protection, do I need that?  The function
+> is called from a kworker with the affinity set on a specific CPU, so it
+> should not migrate to a different one during execution.
 
-Applied to linux-pm.git/linux-next as v3.8 material.
+Yes, you're right, in that case it should be OK.
+
+> I agree with you for all the other comments.
+
+Cool. :-)
 
 Thanks,
 Rafael
 
 
-> Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
-> ---
->  drivers/cpufreq/exynos-cpufreq.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-> index af2d81e..eb057bf 100644
-> --- a/drivers/cpufreq/exynos-cpufreq.c
-> +++ b/drivers/cpufreq/exynos-cpufreq.c
-> @@ -31,13 +31,13 @@ static unsigned int locking_frequency;
->  static bool frequency_locked;
->  static DEFINE_MUTEX(cpufreq_lock);
->  
-> -int exynos_verify_speed(struct cpufreq_policy *policy)
-> +static int exynos_verify_speed(struct cpufreq_policy *policy)
->  {
->  	return cpufreq_frequency_table_verify(policy,
->  					      exynos_info->freq_table);
->  }
->  
-> -unsigned int exynos_getspeed(unsigned int cpu)
-> +static unsigned int exynos_getspeed(unsigned int cpu)
->  {
->  	return clk_get_rate(exynos_info->cpu_clk) / 1000;
->  }
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
