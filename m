@@ -1,51 +1,31 @@
 From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: [PATCH v4 2/2] cpufreq: ondemand: use all CPUs in update_sampling_rate
-Date: Fri, 23 Nov 2012 10:31:57 +0100
-Message-ID: <1353663117-10074-2-git-send-email-fabio.baltieri@linaro.org>
+Subject: Re: [PATCH v4 1/2] cpufreq: ondemand: handle SW coordinated CPUs
+Date: Fri, 23 Nov 2012 13:42:21 +0100
+Message-ID: <20121123124221.GA7378@balto.lan>
 References: <1353663117-10074-1-git-send-email-fabio.baltieri@linaro.org>
+Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <1353663117-10074-1-git-send-email-fabio.baltieri@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
 
-Modify update_sampling_rate() to check, and eventually immediately
-schedule, all CPU's do_dbs_timer delayed work.
+Hi Rafael,
 
-This is required in case of software coordinated CPUs, as we now have a
-separate delayed work for each CPU.
+On Fri, Nov 23, 2012 at 10:31:56AM +0100, Fabio Baltieri wrote:
+>  drivers/cpufreq/cpufreq_ondemand.c | 152 ++++++++++++++++++++++++++++++++-----
+>  1 file changed, 132 insertions(+), 20 deletions(-)
 
-Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
----
- drivers/cpufreq/cpufreq_ondemand.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I just noticed that the whole ondemand driver was refactored in your
+linux-pm.git/linux-next branch so my patch does not apply.  I'm
+preparing a rebased version of the set, so feel free to skip this one.
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 849788b..14339f6 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -286,7 +286,7 @@ static void update_sampling_rate(unsigned int new_rate)
- 		policy = cpufreq_cpu_get(cpu);
- 		if (!policy)
- 			continue;
--		dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
-+		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
- 		cpufreq_cpu_put(policy);
- 
- 		mutex_lock(&dbs_info->timer_mutex);
-@@ -306,7 +306,7 @@ static void update_sampling_rate(unsigned int new_rate)
- 			cancel_delayed_work_sync(&dbs_info->work);
- 			mutex_lock(&dbs_info->timer_mutex);
- 
--			schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work,
-+			schedule_delayed_work_on(cpu, &dbs_info->work,
- 						 usecs_to_jiffies(new_rate));
- 
- 		}
+Thanks,
+Fabio
+
 -- 
-1.7.12.1
-
+Fabio Baltieri
