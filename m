@@ -1,80 +1,40 @@
-From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: [PATCH] cpufreq: ondemand: update sampling rate only on right CPUs
-Date: Mon, 26 Nov 2012 19:10:12 +0100
-Message-ID: <1353953412-20667-1-git-send-email-fabio.baltieri@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 8/8] patch cpupower_ivy_bridge_support.patch
+Date: Mon, 26 Nov 2012 21:49:20 +0100
+Message-ID: <2861427.bmEteVGXpd@vostro.rjw.lan>
+References: <1349788867-65962-1-git-send-email-trenn@suse.de> <3559687.YhYd0sZzjh@vostro.rjw.lan> <201211261646.16882.trenn@suse.de>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <201211261646.16882.trenn@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: Thomas Renninger <trenn@suse.de>, cpufreq@vger.kernel.org, linux@dominikbrodowski.net
 
-Fix cpufreq_gov_ondemand to skip CPU where another governor is used.
+On Monday, November 26, 2012 04:46:16 PM Thomas Renninger wrote:
+> On Saturday, November 24, 2012 10:49:52 AM Rafael J. Wysocki wrote:
+> > Please add (1) a useful subject, (2) a changelog and (3) a sign-off tag.
+> Sure, sorry about that.
+> But be careful, this one is wrong:
+> 
+> > > +	case 0x2D: /* SNB Xeon */
+> > > +	case 0x3A: /* IVB */
+> > > +	case 0x3D: /* IVB Xeon */
+> It's family 0x3E
+> a copy and paste bug that has been taken over from
+> turbostat, there it already got adjusted from 0x3D to 0x3E.
+> 
+> I resend the whole series today or tomorrow.
 
-The bug present itself as NULL pointer access on the mutex_lock() call,
-an can be reproduced on an SMP machine by setting the default governor
-to anything other than ondemand, setting a single CPU's governor to
-ondemand, then changing the sample rate by writing on:
+OK
 
-> /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+Should I drop the current one for now?
 
-Backtrace:
+Rafael
 
-Nov 26 17:36:54 balto kernel: [  839.585241] BUG: unable to handle kernel NULL pointer dereference at           (null)
-Nov 26 17:36:54 balto kernel: [  839.585311] IP: [<ffffffff8174e082>] __mutex_lock_slowpath+0xb2/0x170
-[snip]
-Nov 26 17:36:54 balto kernel: [  839.587005] Call Trace:
-Nov 26 17:36:54 balto kernel: [  839.587030]  [<ffffffff8174da82>] mutex_lock+0x22/0x40
-Nov 26 17:36:54 balto kernel: [  839.587067]  [<ffffffff81610b8f>] store_sampling_rate+0xbf/0x150
-Nov 26 17:36:54 balto kernel: [  839.587110]  [<ffffffff81031e9c>] ?  __do_page_fault+0x1cc/0x4c0
-Nov 26 17:36:54 balto kernel: [  839.587153]  [<ffffffff813309bf>] kobj_attr_store+0xf/0x20
-Nov 26 17:36:54 balto kernel: [  839.587192]  [<ffffffff811bb62d>] sysfs_write_file+0xcd/0x140
-Nov 26 17:36:54 balto kernel: [  839.587234]  [<ffffffff8114c12c>] vfs_write+0xac/0x180
-Nov 26 17:36:54 balto kernel: [  839.587271]  [<ffffffff8114c472>] sys_write+0x52/0xa0
-Nov 26 17:36:54 balto kernel: [  839.587306]  [<ffffffff810321ce>] ?  do_page_fault+0xe/0x10
-Nov 26 17:36:54 balto kernel: [  839.587345]  [<ffffffff81751202>] system_call_fastpath+0x16/0x1b
 
-Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
----
-
-Hi Rafael,
-
-this is based on a clean linux-pm linux-next branch (i.e. not with my other
-patch-set applied), so expect a context conflict if both are applied.
-
-Thanks,
-Fabio
-
- drivers/cpufreq/cpufreq_ondemand.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index cca3e9f..7731f7c 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -40,6 +40,10 @@
- static struct dbs_data od_dbs_data;
- static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
- 
-+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+static struct cpufreq_governor cpufreq_gov_ondemand;
-+#endif
-+
- static struct od_dbs_tuners od_tuners = {
- 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
- 	.sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
-@@ -279,6 +283,10 @@ static void update_sampling_rate(unsigned int new_rate)
- 		policy = cpufreq_cpu_get(cpu);
- 		if (!policy)
- 			continue;
-+		if (policy->governor != &cpufreq_gov_ondemand) {
-+			cpufreq_cpu_put(policy);
-+			continue;
-+		}
- 		dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
- 		cpufreq_cpu_put(policy);
- 
 -- 
-1.7.12.1
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
