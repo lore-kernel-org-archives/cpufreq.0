@@ -1,55 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting stats
-Date: Mon, 26 Nov 2012 16:25:01 +0100
-Message-ID: <2830056.M1sSqgI0LP@vostro.rjw.lan>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <3756540.1nyvqzWibd@vostro.rjw.lan> <50B3754A.50804@calxeda.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 8/8] patch cpupower_ivy_bridge_support.patch
+Date: Mon, 26 Nov 2012 16:46:16 +0100
+Message-ID: <201211261646.16882.trenn@suse.de>
+References: <1349788867-65962-1-git-send-email-trenn@suse.de> <1349788867-65962-9-git-send-email-trenn@suse.de> <3559687.YhYd0sZzjh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <50B3754A.50804@calxeda.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <3559687.YhYd0sZzjh@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-pm@vger.kernel.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, Borislav Petkov <bp@alien8.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
+Content-Type: Text/Plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux@dominikbrodowski.net
 
-On Monday, November 26, 2012 07:57:30 AM Mark Langsdorf wrote:
-> On 11/24/2012 04:05 AM, Rafael J. Wysocki wrote:
-> > On Saturday, November 17, 2012 03:50:48 PM Borislav Petkov wrote:
-> >> On Tue, Nov 13, 2012 at 02:13:38PM -0500, Mark Langsdorf wrote:
-> >>> Although cpufreq_driver has a flag field, no part of cpufreq_driver
-> >>> is directly passed to the cpufreq_stat code. Only cpufreq_policy
-> >>> is. It's cleaner to do passes of the while loop than to copy the
-> >>> cpufreq_driver.flag field into cpufreq_policy and then store it again
-> >>> in cpufreq_stats.
-> >>
-> >> That maybe so but this newly added loop which is only Calxeda-relevant
-> >> is called in cpufreq_stat_notifier_trans, which is the frequency change
-> >> notifier call, AFAICT.
-> 
-> Drivers only go through the loop if they can't find an exact frequency.
-> So every driver that isn't Calxeda shouldn't see the issue.
-> 
-> >> So you probably need to find a slick way of detecting calxeda hw
-> >> somewhere along the init path of cpufreq_stats_init and set a
-> >> hw-specific flag instead of adding that cost to each driver.
-> > 
-> > Mark, I suppose you'd like me to take this series for v3.8, but the above
-> > comment from Boris has to be addressed for that.
-> 
-> I think I'd rather drop this particular patch and not have cpufreq_stat
-> support for Highbank. Redesigning it to meet Boris' requirements is
-> going to take more time than I currently have available.
-> 
-> Would it be acceptable to drop this patch and fix the issues with
-> patches 4 and 6 to get the series in?
+On Saturday, November 24, 2012 10:49:52 AM Rafael J. Wysocki wrote:
+> Please add (1) a useful subject, (2) a changelog and (3) a sign-off tag.
+Sure, sorry about that.
+But be careful, this one is wrong:
 
-Yes, it would, but please resubmit ASAP.
+> > +	case 0x2D: /* SNB Xeon */
+> > +	case 0x3A: /* IVB */
+> > +	case 0x3D: /* IVB Xeon */
+It's family 0x3E
+a copy and paste bug that has been taken over from
+turbostat, there it already got adjusted from 0x3D to 0x3E.
+
+I resend the whole series today or tomorrow.
 
 Thanks,
-Rafael
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+  Thomas
