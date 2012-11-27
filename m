@@ -1,97 +1,22 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] fixup! cpufreq: SPEAr: Add CPUFreq driver
-Date: Tue, 27 Nov 2012 18:01:39 +0530
-Message-ID: <2d845c8e19392c2b82a243e6e878ae4e5e771c2f.1353785862.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 0/6 v5] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Tue, 27 Nov 2012 09:04:28 -0600
+Message-ID: <1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: spear-devel@list.st.com, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
+This patch series adds cpufreq support for the Calxeda
+ECX-1000 (highbank) SoCs. The driver is based on the 
+cpufreq-cpu0 driver. Because of the unique way that 
+highbank uses the EnergyCore Management Engine to manage
+voltages, it was not possible to use the cpufreq-cpu0 driver.
 
-To make review easier and faster, i am sending incremental patch for SPEAr
-cpufreq driver. This patch was earlier discussed here:
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2012-November/135088.html
-
- .../devicetree/bindings/cpufreq/cpufreq-spear.txt  | 33 +++++++++++++++-------
- drivers/cpufreq/spear-cpufreq.c                    |  4 +--
- 2 files changed, 25 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-spear.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-spear.txt
-index 4cf2819..f3d44984 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-spear.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-spear.txt
-@@ -6,7 +6,6 @@ It supports both uniprocessor (UP) and symmetric multiprocessor (SMP) systems
- which share clock across all CPUs.
- 
- Required properties:
--- compatible: "st,cpufreq-spear"
- - cpufreq_tbl: Table of frequencies CPU could be transitioned into, in the
-   increasing order.
- 
-@@ -14,16 +13,30 @@ Optional properties:
- - clock-latency: Specify the possible maximum transition latency for clock, in
-   unit of nanoseconds.
- 
-+Both required and optional properties listed above must be defined under node
-+/cpus/cpu@0.
-+
- Examples:
- --------
-+cpus {
-+
-+	<...>
-+
-+	cpu@0 {
-+		compatible = "arm,cortex-a9";
-+		reg = <0>;
-+
-+		<...>
-+
-+		cpufreq_tbl = < 166000
-+				200000
-+				250000
-+				300000
-+				400000
-+				500000
-+				600000 >;
-+	};
-+
-+	<...>
- 
--cpufreq {
--	compatible = "st,cpufreq-spear";
--	cpufreq_tbl = < 166000
--			200000
--			250000
--			300000
--			400000
--			500000
--			600000 >;
- };
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index a7fe880..4575cfe 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -224,9 +224,9 @@ static int spear_cpufreq_driver_init(void)
- 	const __be32 *val;
- 	int cnt, i, ret;
- 
--	np = of_find_compatible_node(NULL, NULL, "st,cpufreq-spear");
-+	np = of_find_node_by_path("/cpus/cpu@0");
- 	if (!np) {
--		pr_err("No cpufreq node found");
-+		pr_err("No cpu node found");
- 		return -ENODEV;
- 	}
- 
--- 
-1.7.12.rc2.18.g61b472e
+--Mark Langsdorf
 
