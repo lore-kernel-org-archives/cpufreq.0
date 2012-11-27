@@ -1,38 +1,22 @@
 From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 4/6 v5] arm highbank: add support for pl320 IPC
-Date: Tue, 27 Nov 2012 13:53:37 -0600
-Message-ID: <50B51A41.8030006@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com> <1354028674-23685-5-git-send-email-mark.langsdorf@calxeda.com> <20121127171250.3984e990@skate>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20121127171250.3984e990@skate>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [PATCH 0/6 v6] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Tue, 27 Nov 2012 14:04:26 -0600
+Message-ID: <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Omar Ramirez Luna <omar.luna@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Rob Herring <rob.herring@calxeda.com>
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 11/27/2012 10:12 AM, Thomas Petazzoni wrote:
-> Dear Mark Langsdorf,
-> 
-> On Tue, 27 Nov 2012 09:04:32 -0600, Mark Langsdorf wrote:
-> 
->> +int ipc_transmit(u32 *data);
-> 
-> ipc_transmit() looks to me like a way to generic name to be exposed to
-> the entire kernel.
-
-Good point. Changed to pl320_ipc_transmit()
-
->> +extern int pl320_ipc_register_notifier(struct notifier_block *nb);
->> +extern int pl320_ipc_unregister_notifier(struct notifier_block *nb);
-> 
-> Why some "extern" here? You don't have these for the other functions in
-> this header file.
-
-Nice catch. Fixed to export them in cpufreq.
+This patch series adds cpufreq support for the Calxeda
+ECX-1000 (highbank) SoCs. The driver is based on the 
+cpufreq-cpu0 driver. Because of the unique way that 
+highbank uses the EnergyCore Management Engine to manage
+voltages, it was not possible to use the cpufreq-cpu0 driver.
 
 --Mark Langsdorf
-Calxeda, Inc.
 
