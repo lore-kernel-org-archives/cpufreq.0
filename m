@@ -1,44 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: SPEAr: Add CPUFreq driver
-Date: Tue, 27 Nov 2012 13:06:41 +0100
-Message-ID: <1473585.8JiRFugyHE@vostro.rjw.lan>
-References: <7ec0e3f4b81b70f3def4257e6b9781efd4c7a3d2.1353785862.git.viresh.kumar@linaro.org> <1728458.5AqJNfNVgK@vostro.rjw.lan> <CAKohpo=XirzP5Dj5kZq8Ou7D-W8CjfT8m=_vpjim4oH9jXfdQQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 4/8] cpupower tools: Fix issues with sysfs_topology_read_file
+Date: Tue, 27 Nov 2012 13:17:45 +0100
+Message-ID: <1354018669-63680-5-git-send-email-trenn@suse.de>
+References: <1354018669-63680-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=XirzP5Dj5kZq8Ou7D-W8CjfT8m=_vpjim4oH9jXfdQQ@mail.gmail.com>
+In-Reply-To: <1354018669-63680-1-git-send-email-trenn@suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, Shiraz HASHIM <shiraz.hashim@st.com>, Deepak SIKRI <deepak.sikri@st.com>, devicetree-discuss@lists.ozlabs.org, spear-devel@list.st.com, cpufreq@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: Palmer Cox <p@lmercox.com>, cpufreq@vger.kernel.org, Thomas Renninger <trenn@suse.de>
 
-On Tuesday, November 27, 2012 05:05:47 PM Viresh Kumar wrote:
-> On 27 November 2012 17:08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, November 27, 2012 09:28:01 AM Viresh Kumar wrote:
-> >> On 27 November 2012 09:31, Shawn Guo <shawn.guo@linaro.org> wrote:
-> >> > On Sun, Nov 25, 2012 at 01:09:28AM +0530, Viresh Kumar wrote:
-> >> >> +cpufreq {
-> >> >> +     compatible = "st,cpufreq-spear";
-> >> >
-> >> > I do not think we need a "cpufreq" node, as we already have node for
-> >> > cpu to contain these.
-> >>
-> >> Hmm.. Yes, can be done.
-> >
-> > OK, so changes are going to be made to the driver, right?
-> >
-> > I'll drop it then and please resubmit when ready (and tested) after the changes.
-> 
-> Yes, for now this would be the only change i have. I can resend it right now,
-> if you can still pick it for 3.8.
+From: Palmer Cox <p@lmercox.com>
 
-Yes, I think I can take it for v3.8 if you resubmit shortly.
+Fix a variety of issues with sysfs_topology_read_file:
+* The return value of sysfs_topology_read_file function was not properly
+  being checked for failure.
+* The function was reading int valued sysfs variables and then returning
+  their value. So, even if a function was trying to check the return value
+  of this function, a caller would not be able to tell an failure code apart
+  from reading a negative value. This also conflicted with the comment on the
+  function which said that a return value of 0 indicated success.
+* The function was parsing int valued sysfs values with strtoul instead of
+  strtol.
+* The function was non-static even though it was only used in the
+  file it was declared in.
 
-Thanks,
-Rafael
+Signed-off-by: Palmer Cox <p@lmercox.com>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+---
+ tools/power/cpupower/utils/helpers/topology.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-
+diff --git a/tools/power/cpupower/utils/helpers/topology.c b/tools/power/cpupower/utils/helpers/topology.c
+index 4eae2c4..216f3e3 100644
+--- a/tools/power/cpupower/utils/helpers/topology.c
++++ b/tools/power/cpupower/utils/helpers/topology.c
+@@ -20,9 +20,8 @@
+ #include <helpers/sysfs.h>
+ 
+ /* returns -1 on failure, 0 on success */
+-int sysfs_topology_read_file(unsigned int cpu, const char *fname)
++static int sysfs_topology_read_file(unsigned int cpu, const char *fname, int *result)
+ {
+-	unsigned long value;
+ 	char linebuf[MAX_LINE_LEN];
+ 	char *endp;
+ 	char path[SYSFS_PATH_MAX];
+@@ -31,10 +30,10 @@ int sysfs_topology_read_file(unsigned int cpu, const char *fname)
+ 			 cpu, fname);
+ 	if (sysfs_read_file(path, linebuf, MAX_LINE_LEN) == 0)
+ 		return -1;
+-	value = strtoul(linebuf, &endp, 0);
++	*result = strtol(linebuf, &endp, 0);
+ 	if (endp == linebuf || errno == ERANGE)
+ 		return -1;
+-	return value;
++	return 0;
+ }
+ 
+ struct cpuid_core_info {
+@@ -82,13 +81,19 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
+ 	for (cpu = 0; cpu < cpus; cpu++) {
+ 		cpu_top->core_info[cpu].cpu = cpu;
+ 		cpu_top->core_info[cpu].is_online = sysfs_is_cpu_online(cpu);
+-		cpu_top->core_info[cpu].pkg =
+-			sysfs_topology_read_file(cpu, "physical_package_id");
++		if(sysfs_topology_read_file(
++			cpu,
++			"physical_package_id",
++			&(cpu_top->core_info[cpu].pkg)) < 0)
++			return -1;
+ 		if ((int)cpu_top->core_info[cpu].pkg != -1 &&
+ 		    cpu_top->core_info[cpu].pkg > cpu_top->pkgs)
+ 			cpu_top->pkgs = cpu_top->core_info[cpu].pkg;
+-		cpu_top->core_info[cpu].core =
+-			sysfs_topology_read_file(cpu, "core_id");
++		if(sysfs_topology_read_file(
++			cpu,
++			"core_id",
++			&(cpu_top->core_info[cpu].core)) < 0)
++			return -1;
+ 	}
+ 	cpu_top->pkgs++;
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.6.1
+
