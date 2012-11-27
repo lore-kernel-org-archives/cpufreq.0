@@ -1,7 +1,7 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 6/8] cpupower tools: Fix warning and a bug with the cpu package count
-Date: Tue, 27 Nov 2012 13:17:47 +0100
-Message-ID: <1354018669-63680-7-git-send-email-trenn@suse.de>
+Subject: [PATCH 1/8] cpupower tools: Remove brace expansion from clean target
+Date: Tue, 27 Nov 2012 13:17:42 +0100
+Message-ID: <1354018669-63680-2-git-send-email-trenn@suse.de>
 References: <1354018669-63680-1-git-send-email-trenn@suse.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <1354018669-63680-1-git-send-email-trenn@suse.de>
@@ -15,68 +15,48 @@ Cc: Palmer Cox <p@lmercox.com>, cpufreq@vger.kernel.org, Thomas Renninger <trenn
 
 From: Palmer Cox <p@lmercox.com>
 
-The pkgs member of cpupower_topology is being used as the number of
-cpu packages. As the comment in get_cpu_topology notes, the package ids
-are not guaranteed to be contiguous. So, simply setting pkgs to the value
-of the highest physical_package_id doesn't actually provide a count of
-the number of cpu packages. Instead, calculate pkgs by setting it to
-the number of distinct physical_packge_id values which is pretty easy
-to do after the core_info structs are sorted. Calculating pkgs this
-way also has the nice benefit of getting rid of a sign comparison warning
-that GCC 4.6 was reporting.
+The clean targets from the cpupower tools' Makefiles use brace expansion to
+remove some generated files. However, the default shells on many systems do
+not support this feature resulting in some generated files not being removed
+by clean.
 
 Signed-off-by: Palmer Cox <p@lmercox.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- tools/power/cpupower/utils/helpers/topology.c |   18 +++++++++++++-----
- 1 files changed, 13 insertions(+), 5 deletions(-)
+ tools/power/cpupower/Makefile            |    3 ++-
+ tools/power/cpupower/debug/i386/Makefile |    5 ++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/helpers/topology.c b/tools/power/cpupower/utils/helpers/topology.c
-index 4e2b583..c13120a 100644
---- a/tools/power/cpupower/utils/helpers/topology.c
-+++ b/tools/power/cpupower/utils/helpers/topology.c
-@@ -64,7 +64,7 @@ static int __compare(const void *t1, const void *t2)
-  */
- int get_cpu_topology(struct cpupower_topology *cpu_top)
- {
--	int cpu, cpus = sysconf(_SC_NPROCESSORS_CONF);
-+	int cpu, last_pkg, cpus = sysconf(_SC_NPROCESSORS_CONF);
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
+index a93e06c..44b7a06 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -253,7 +253,8 @@ clean:
+ 	 | xargs rm -f
+ 	-rm -f $(OUTPUT)cpupower
+ 	-rm -f $(OUTPUT)libcpupower.so*
+-	-rm -rf $(OUTPUT)po/*.{gmo,pot}
++	-rm -rf $(OUTPUT)po/*.gmo
++	-rm -rf $(OUTPUT)po/*.pot
+ 	$(MAKE) -C bench O=$(OUTPUT) clean
  
- 	cpu_top->core_info = malloc(sizeof(struct cpuid_core_info) * cpus);
- 	if (cpu_top->core_info == NULL)
-@@ -78,20 +78,28 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 			"physical_package_id",
- 			&(cpu_top->core_info[cpu].pkg)) < 0)
- 			return -1;
--		if ((int)cpu_top->core_info[cpu].pkg != -1 &&
--		    cpu_top->core_info[cpu].pkg > cpu_top->pkgs)
--			cpu_top->pkgs = cpu_top->core_info[cpu].pkg;
- 		if(sysfs_topology_read_file(
- 			cpu,
- 			"core_id",
- 			&(cpu_top->core_info[cpu].core)) < 0)
- 			return -1;
- 	}
--	cpu_top->pkgs++;
  
- 	qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
- 	      __compare);
+diff --git a/tools/power/cpupower/debug/i386/Makefile b/tools/power/cpupower/debug/i386/Makefile
+index 3ba158f..c05cc0a 100644
+--- a/tools/power/cpupower/debug/i386/Makefile
++++ b/tools/power/cpupower/debug/i386/Makefile
+@@ -26,7 +26,10 @@ $(OUTPUT)powernow-k8-decode: powernow-k8-decode.c
+ all: $(OUTPUT)centrino-decode $(OUTPUT)dump_psb $(OUTPUT)intel_gsic $(OUTPUT)powernow-k8-decode
  
-+	/* Count the number of distinct pkgs values. This works
-+	   because the primary sort of the core_info struct was just
-+	   done by pkg value. */
-+	last_pkg = cpu_top->core_info[0].pkg;
-+	for(cpu = 1; cpu < cpus; cpu++) {
-+		if(cpu_top->core_info[cpu].pkg != last_pkg) {
-+			last_pkg = cpu_top->core_info[cpu].pkg;
-+			cpu_top->pkgs++;
-+		}
-+	}
-+	cpu_top->pkgs++;
-+
- 	/* Intel's cores count is not consecutively numbered, there may
- 	 * be a core_id of 3, but none of 2. Assume there always is 0
- 	 * Get amount of cores by counting duplicates in a package
+ clean:
+-	rm -rf $(OUTPUT){centrino-decode,dump_psb,intel_gsic,powernow-k8-decode}
++	rm -rf $(OUTPUT)centrino-decode
++	rm -rf $(OUTPUT)dump_psb
++	rm -rf $(OUTPUT)intel_gsic
++	rm -rf $(OUTPUT)powernow-k8-decode
+ 
+ install:
+ 	$(INSTALL) -d $(DESTDIR)${bindir}
 -- 
 1.7.6.1
 
