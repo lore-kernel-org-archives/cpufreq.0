@@ -1,38 +1,65 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 4/6 v5] arm highbank: add support for pl320 IPC
-Date: Tue, 27 Nov 2012 17:12:50 +0100
-Message-ID: <20121127171250.3984e990@skate>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH 2/6 v5] clk, highbank: Prevent glitches in non-bypass
+ reset mode
+Date: Tue, 27 Nov 2012 10:15:52 -0800
+Message-ID: <CAPtuhTjjTTfXRAf6BAuG0L_NQubcYwCCi6WCBYR9ddtG-koMHw@mail.gmail.com>
 References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
-	<1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com>
-	<1354028674-23685-5-git-send-email-mark.langsdorf@calxeda.com>
+ <1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com> <1354028674-23685-3-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1354028674-23685-5-git-send-email-mark.langsdorf@calxeda.com>
+In-Reply-To: <1354028674-23685-3-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Omar Ramirez Luna <omar.luna@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Rob Herring <rob.herring@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
 
-Dear Mark Langsdorf,
+On Tue, Nov 27, 2012 at 7:04 AM, Mark Langsdorf
+<mark.langsdorf@calxeda.com> wrote:
+>
+> The highbank clock will glitch with the current code if the
+> clock rate is reset without relocking the PLL. Program the PLL
+> correctly to prevent glitches.
+>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Cc: mturquette@linaro.org
 
-On Tue, 27 Nov 2012 09:04:32 -0600, Mark Langsdorf wrote:
+Acked-by: Mike Turquette <mturquette@linaro.org>
 
-> +int ipc_transmit(u32 *data);
+Regards,
+Mike
 
-ipc_transmit() looks to me like a way to generic name to be exposed to
-the entire kernel.
-
-> +extern int pl320_ipc_register_notifier(struct notifier_block *nb);
-> +extern int pl320_ipc_unregister_notifier(struct notifier_block *nb);
-
-Why some "extern" here? You don't have these for the other functions in
-this header file.
-
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+> ---
+> Changes from v4
+>         None.
+> Changes from v3
+>         Changelog text and patch name now correspond to the actual patch.
+>         was clk, highbank: remove non-bypass reset mode.
+> Changes from v2
+>         None.
+> Changes from v1:
+>         Removed erroneous reformating.
+>
+>  drivers/clk/clk-highbank.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
+> index 52fecad..3a0b723 100644
+> --- a/drivers/clk/clk-highbank.c
+> +++ b/drivers/clk/clk-highbank.c
+> @@ -182,8 +182,10 @@ static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
+>                 reg |= HB_PLL_EXT_ENA;
+>                 reg &= ~HB_PLL_EXT_BYPASS;
+>         } else {
+> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>                 reg &= ~HB_PLL_DIVQ_MASK;
+>                 reg |= divq << HB_PLL_DIVQ_SHIFT;
+> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>         }
+>         writel(reg, hbclk->reg);
+>
+> --
+> 1.7.11.7
+>
