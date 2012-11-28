@@ -1,52 +1,49 @@
-From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
-Date: Wed, 28 Nov 2012 10:32:42 +0800
-Message-ID: <20121128023240.GA28170@S2100-06.ap.freescale.net>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com>
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Subject: [PATCH 5/5] cpufreq: dbx500: Update file header
+Date: Wed, 28 Nov 2012 11:27:44 +0100
+Message-ID: <1354098464-6665-6-git-send-email-ulf.hansson@stericsson.com>
+References: <1354098464-6665-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1354098464-6665-1-git-send-email-ulf.hansson@stericsson.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1354046672-7392-7-git-send-email-mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Mark Langsdorf <mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tue, Nov 27, 2012 at 02:04:32PM -0600, Mark Langsdorf wrote:
-> Highbank processors depend on the external ECME to perform voltage
-> management based on a requested frequency. Communication between the
-> A9 cores and the ECME happens over the pl320 IPC channel.
+From: Lee Jones <lee.jones@linaro.org>
 
-...
+Real simple patch to extend the ST-Ericsson copyright date and
+remove unnecessary extra commented lines.
 
-> +static int hb_voltage_change(unsigned int freq)
-> +{
-> +	int i;
-> +	u32 msg[7];
-> +
-> +	msg[0] = HB_CPUFREQ_CHANGE_NOTE;
-> +	msg[1] = freq / 1000;
-> +	for (i = 2; i < 7; i++)
-> +		msg[i] = 0;
-> +
-> +	return pl320_ipc_transmit(msg);
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/cpufreq/dbx500-cpufreq.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Is it possible to have this handled inside clk_set_rate() call of cpu
-clock?
+diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
+index d4cb782..047fc4f 100644
+--- a/drivers/cpufreq/dbx500-cpufreq.c
++++ b/drivers/cpufreq/dbx500-cpufreq.c
+@@ -1,13 +1,13 @@
+ /*
+  * Copyright (C) STMicroelectronics 2009
+- * Copyright (C) ST-Ericsson SA 2010
++ * Copyright (C) ST-Ericsson SA 2010-2012
+  *
+  * License Terms: GNU General Public License v2
+  * Author: Sundar Iyer <sundar.iyer@stericsson.com>
+  * Author: Martin Persson <martin.persson@stericsson.com>
+  * Author: Jonas Aaberg <jonas.aberg@stericsson.com>
+- *
+  */
++
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/cpufreq.h>
+-- 
+1.7.10
 
-Shawn
-
-> +}
