@@ -1,52 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Longhaul: Disable driver by default
-Date: Wed, 28 Nov 2012 00:44:54 +0100
-Message-ID: <1451067.pE2ohDYtjy@vostro.rjw.lan>
-References: <1354054435-2459-1-git-send-email-rafalbilski@interia.pl> <1997813.IluQxocScm@vostro.rjw.lan> <50B54ED9.3090704@interia.pl>
+From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
+Date: Wed, 28 Nov 2012 10:32:42 +0800
+Message-ID: <20121128023240.GA28170@S2100-06.ap.freescale.net>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <50B54ED9.3090704@interia.pl>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Dave Jones <davej@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1354046672-7392-7-git-send-email-mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Mark Langsdorf <mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Tuesday, November 27, 2012 11:38:01 PM Rafa=C5=82 Bilski wrote:
->=20
-> > On Tuesday, November 27, 2012 10:13:55 PM Rafal Bilski wrote:
-> >> This is only solution I can think of. User decides if he wants thi=
-s
-> >> driver on his machine. I don't have enough knowledge and time to f=
-ind
-> >> the reason why same code works on some machines and doesn't on oth=
-ers
-> >> which use same, or very similar,  chipset and processor.
-> > I always have problems with patches like this one, because they are=
- pretty much
-> > guaranteed to make someone complain.
-> >
-> > Is there any way to blacklist the affected machine you have?
-> >
-> > Rafael
-> No. Also problem seems to be larger than one machine. Also weirder.
-> One user claims his processor can't run below some frequency even
-> if it should be perfectly capable of doing so. System in question
-> freezes straight away. In past on good system I could change
-> frequency at least a couple of times without any protection. Just by
-> a chance. I tried to investigate "weird CPU 0 not listed by the BIOS"
-> message, but I have nothing. Also I seem to have far less time for
-> anything than in the past.
+On Tue, Nov 27, 2012 at 02:04:32PM -0600, Mark Langsdorf wrote:
+> Highbank processors depend on the external ECME to perform voltage
+> management based on a requested frequency. Communication between the
+> A9 cores and the ECME happens over the pl320 IPC channel.
 
-OK, I'll take the patch, then, but I won't include it in my first v3.8 =
-pull
-request.
+...
 
-Thanks,
-Rafael
+> +static int hb_voltage_change(unsigned int freq)
+> +{
+> +	int i;
+> +	u32 msg[7];
+> +
+> +	msg[0] = HB_CPUFREQ_CHANGE_NOTE;
+> +	msg[1] = freq / 1000;
+> +	for (i = 2; i < 7; i++)
+> +		msg[i] = 0;
+> +
+> +	return pl320_ipc_transmit(msg);
 
+Is it possible to have this handled inside clk_set_rate() call of cpu
+clock?
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Shawn
+
+> +}
