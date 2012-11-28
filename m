@@ -1,46 +1,55 @@
-From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH 2/5] mfd: db8500: Update cpufreq device name
-Date: Wed, 28 Nov 2012 11:27:41 +0100
-Message-ID: <1354098464-6665-3-git-send-email-ulf.hansson@stericsson.com>
-References: <1354098464-6665-1-git-send-email-ulf.hansson@stericsson.com>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
+Date: Wed, 28 Nov 2012 11:51:20 +0100
+Message-ID: <20121128105120.GB22300@balto.lan>
+References: <1353947996-26723-1-git-send-email-fabio.baltieri@linaro.org>
+ <1353947996-26723-2-git-send-email-fabio.baltieri@linaro.org>
+ <1723557.AFJjisZlEm@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1354098464-6665-1-git-send-email-ulf.hansson@stericsson.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1723557.AFJjisZlEm@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
 
-From: Lee Jones <lee.jones@linaro.org>
+Hello Rafael,
 
-Since the cpufreq driver for ux500 has been renamed from
-cpufreq-db8500 to cpufreq-dbx500, we need to change the
-device name here as well.
+On Tue, Nov 27, 2012 at 11:05:52PM +0100, Rafael J. Wysocki wrote:
+> >  static inline void dbs_timer_init(struct dbs_data *dbs_data,
+> > -		struct cpu_dbs_common_info *cdbs, unsigned int sampling_rate)
+> > +				  struct cpu_dbs_common_info *cdbs,
+> > +				  unsigned int sampling_rate,
+> > +				  int cpu)
+> >  {
+> >  	int delay = delay_for_sampling_rate(sampling_rate);
+> > +	struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
+> > +	struct od_cpu_dbs_info_s *od_dbs_info;
+> > +
+> > +	cancel_delayed_work_sync(&cdbs_local->work);
+> > +
+> > +	if (dbs_data->governor == GOV_ONDEMAND) {
+> > +		od_dbs_info = dbs_data->get_cpu_dbs_info_s(cpu);
+> > +		od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
+> > +	}
+> 
+> The patch looks good in general except for the special case above.
+> 
+> Why exactly is it necessary?
 
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
----
- drivers/mfd/db8500-prcmu.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Now that you point it out... it's not!  It was part of ondemand init and
+moved in cpufreq_governor_dbs, I forgot to take it out the way.
 
-diff --git a/drivers/mfd/db8500-prcmu.c b/drivers/mfd/db8500-prcmu.c
-index a1b295f..2900132 100644
---- a/drivers/mfd/db8500-prcmu.c
-+++ b/drivers/mfd/db8500-prcmu.c
-@@ -3072,8 +3072,8 @@ static struct mfd_cell db8500_prcmu_devs[] = {
- 		.pdata_size = sizeof(db8500_regulators),
- 	},
- 	{
--		.name = "cpufreq-u8500",
--		.of_compatible = "stericsson,cpufreq-u8500",
-+		.name = "cpufreq-ux500",
-+		.of_compatible = "stericsson,cpufreq-ux500",
- 		.platform_data = &db8500_cpufreq_table,
- 		.pdata_size = sizeof(db8500_cpufreq_table),
- 	},
+Also, I think that cancel_delayed_work_sync can be removed too.
+
+Should I send an updated version as soon as I get an ack for the other
+patches in the series or do you want me to wait until 3.8-rc1?
+
+Thanks,
+Fabio
+
 -- 
-1.7.10
-
+Fabio Baltieri
