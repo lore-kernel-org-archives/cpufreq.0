@@ -1,60 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
-Date: Wed, 28 Nov 2012 13:49:52 +0100
-Message-ID: <2440132.24rRKQ8HXi@vostro.rjw.lan>
-References: <1353947996-26723-1-git-send-email-fabio.baltieri@linaro.org> <1723557.AFJjisZlEm@vostro.rjw.lan> <20121128105120.GB22300@balto.lan>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
+Date: Wed, 28 Nov 2012 07:16:12 -0600
+Message-ID: <50B60E9C.9000405@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com> <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com> <20121128023240.GA28170@S2100-06.ap.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20121128105120.GB22300@balto.lan>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20121128023240.GA28170@S2100-06.ap.freescale.net>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
-On Wednesday, November 28, 2012 11:51:20 AM Fabio Baltieri wrote:
-> Hello Rafael,
-
-Hi,
-
-> On Tue, Nov 27, 2012 at 11:05:52PM +0100, Rafael J. Wysocki wrote:
-> > >  static inline void dbs_timer_init(struct dbs_data *dbs_data,
-> > > -		struct cpu_dbs_common_info *cdbs, unsigned int sampling_rate)
-> > > +				  struct cpu_dbs_common_info *cdbs,
-> > > +				  unsigned int sampling_rate,
-> > > +				  int cpu)
-> > >  {
-> > >  	int delay = delay_for_sampling_rate(sampling_rate);
-> > > +	struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
-> > > +	struct od_cpu_dbs_info_s *od_dbs_info;
-> > > +
-> > > +	cancel_delayed_work_sync(&cdbs_local->work);
-> > > +
-> > > +	if (dbs_data->governor == GOV_ONDEMAND) {
-> > > +		od_dbs_info = dbs_data->get_cpu_dbs_info_s(cpu);
-> > > +		od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
-> > > +	}
-> > 
-> > The patch looks good in general except for the special case above.
-> > 
-> > Why exactly is it necessary?
+On 11/27/2012 08:32 PM, Shawn Guo wrote:
+> On Tue, Nov 27, 2012 at 02:04:32PM -0600, Mark Langsdorf wrote:
+>> Highbank processors depend on the external ECME to perform voltage
+>> management based on a requested frequency. Communication between the
+>> A9 cores and the ECME happens over the pl320 IPC channel.
 > 
-> Now that you point it out... it's not!  It was part of ondemand init and
-> moved in cpufreq_governor_dbs, I forgot to take it out the way.
+> ...
 > 
-> Also, I think that cancel_delayed_work_sync can be removed too.
+>> +static int hb_voltage_change(unsigned int freq)
+>> +{
+>> +	int i;
+>> +	u32 msg[7];
+>> +
+>> +	msg[0] = HB_CPUFREQ_CHANGE_NOTE;
+>> +	msg[1] = freq / 1000;
+>> +	for (i = 2; i < 7; i++)
+>> +		msg[i] = 0;
+>> +
+>> +	return pl320_ipc_transmit(msg);
 > 
-> Should I send an updated version as soon as I get an ack for the other
-> patches in the series or do you want me to wait until 3.8-rc1?
+> Is it possible to have this handled inside clk_set_rate() call of cpu
+> clock?
 
-Well, if it's not very urgent, I'd prefer it to wait a bit longer,
-get some more testing and so on.
+Standard practice is to have cpufreq_set_target() handle voltage
+transitions and leave clk_set_rate() handle the frequency changes. I'd
+have to move most of the logic of hb_set_target() into
+clk_highbank.c:clk_pll_set_rate() and then add extra logic for when
+cpufreq is not enabled/loaded. I don't think the clk maintainers would
+take that patch, either.
 
-Thanks,
-Rafael
+So no.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--Mark Langsdorf
+Calxeda, Inc.
