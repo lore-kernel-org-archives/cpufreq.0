@@ -1,40 +1,37 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand
- governor set - i7-2630QM
-Date: Tue,  4 Dec 2012 01:01:43 +0000 (UTC)
-Message-ID: <20121204010143.EEE5411F9DF@bugzilla.kernel.org>
-References: <bug-50721-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-50721-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: [PATCH 0/2] clocksource: nomadik-mtu: support timer-based delay
+Date: Tue,  4 Dec 2012 11:10:43 +0100
+Message-ID: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: John Stultz <johnstul@us.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=50721
+Hi all,
+
+this implements timer-based delay support for nomadik and ux500
+platforms, using the MTU as time source, and marks the u8500 cpufreq
+driver as CPUFREQ_CONST_LOOPS accordingly.
+
+The patches are based on Arnd's arm-soc/ux500/mtu-clk branch, as that
+contains latest MTU driver developments, including a driver move/rename,
+but I can rebase if necessary.
+
+Thanks,
+Fabio
 
 
+Fabio Baltieri (2):
+  clocksource: nomadik-mtu: support timer-based delay
+  cpufreq: db8500: set CPUFREQ_CONST_LOOPS
 
-
-
---- Comment #8 from rocko <rockorequin@hotmail.com>  2012-12-04 01:01:43 ---
-Created an attachment (id=88361)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=88361)
-turbostat after boot showing too-high GHz readings
-
-This is still a problem in 3.7-rc8.
-
-I ran turbostat (log attached) just after reboot, before the governor tried to
-drop the frequency down to lowest (in fact the governor dropped to ondemand
-just before the last reading in the log). Here turbostat also reports frequency
-readings are also over my CPU's max of 2.0GHz (up to 2.6 GHz in some cases).
-Does that mean that turbostat is also providing unreliable information? The
-cores are definitely running at a higher frequency, because the fan goes on
-high and the power usage is right up.
+ drivers/clocksource/nomadik-mtu.c | 11 +++++++++++
+ drivers/cpufreq/db8500-cpufreq.c  |  2 +-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.12.1
