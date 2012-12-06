@@ -1,41 +1,54 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: David C Niemi <dniemi@verisign.com>
 Subject: Re: [PATCH RFC 0/1] cpufreq/x86: Add P-state driver for sandy bridge.
-Date: Thu, 06 Dec 2012 08:49:23 -0800
-Message-ID: <50C0CC93.6020709@linux.intel.com>
-References: <1354734091-29870-1-git-send-email-dirk.brandewie@gmail.com> <50BFAE5A.1010809@verisign.com> <50C0C950.2070007@gmail.com>
+Date: Thu, 06 Dec 2012 12:30:54 -0500
+Message-ID: <50C0D64E.8050005@verisign.com>
+References: <1354734091-29870-1-git-send-email-dirk.brandewie@gmail.com> <50BFAE5A.1010809@verisign.com> <50BFB627.5080106@linux.intel.com> <50BFBF34.3090608@verisign.com> <50BFC28C.9060004@linux.intel.com> <50C0B34D.5020406@verisign.com> <50C0C761.8000501@linux.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <50C0C950.2070007@gmail.com>
+In-Reply-To: <50C0C761.8000501@linux.intel.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: David C Niemi <dniemi@verisign.com>, cpufreq@vger.kernel.org, rjw@sisk.pl, deneen.t.dock@intel.com
+Content-Type: text/plain; charset="us-ascii"
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: dirk.brandewie@gmail.com, cpufreq@vger.kernel.org, rjw@sisk.pl, deneen.t.dock@intel.com
 
-On 12/6/2012 8:35 AM, Dirk Brandewie wrote:
-
+On 12/06/12 11:27, Arjan van de Ven wrote:
+> ...
+>> The exposed configuration interface might be as simple as choosing one of several discrete settings:
+>> - max single-threaded performance
+>> - max multi-threaded performance
 >
->  > would be nice if the new driver can be compatible with the existing
->  > governor by exposing an ability to set and report current frequencies.
->  > But if this is impractical or pointless for Sandy Bridge, so be it.
 >
-> I agree that reporting the current frequency is important to some
-> utilities.
+> these are identical on todays silicon btw; or rather, this is not a P state choice item, but a task scheduler policy item.
 
+Here's where there is a difference in power management: if you want to maximize single-thread performance, you're willing to enable power-expensive boost modes on behalf of a thread.  You don't want to do that for multithreaded performance because your thermal envelope may not let you boost them all at once.  Or at least that is what I was thinking.
 
-this is a problem btw, for two reasons
-1) the answer you get from the sysfs file is only valid for a very very short time (10 msec at most)
-2) the answer you get from the sysfs file is a lie... so it's not really valid for even 0.01 msec.
+Also some people will be all about I/O throughput, and others will care more about latency than anything else, and percentages for those people may be wildly different than for general computation.  So we can't guarantee any particular percentage outside some well-defined benchmarks.  But we could try to lump them all together as best we can and have a couple of knobs on the side like the current "io_is_busy", perhaps.
+>> - "server" setting -- save power but only in ways that do not affect performance
+>
+> this is a fiction btw... if there was a way to reduce power and not affect performance, that's your "max performance" setting.
+> anything else will sacrifice SOME performance from max...
+I know people who don't pay for electricity or cooling and think max performance == run every thread at maximum possible speed all the time, even if it is idle.  But boost modes mean "maximum possible speed" is a fluid concept.
+...
+>
+> and defining a common policy interface I'm quite fine with (not quite in the way you defined it, but ok...)
+> But that's not going to lead to a common implementation as a "governor" ;-(
+>
+> My idea for a policy "dial" is mostly
+>
+> * Uncompromised performance
+> * Balanced - biased towards performance     (say, defined to be lowest power at most a 2 1/2% perf hit)
+> * Balanced                                  (say, at most a 5% perf hit)
+> * Balanced - biased towards lower power     (sat, at most a 10% perf hit)
+> * Uncompromised lowest power
+>
+> we can argue about the exact %ages, but the idea is to give at least some reasonably definition that people can understand,
+> but that also can be measured
+I am quite happy with your definitions above.  It is the same in spirit as what I was trying for, just better stated.
 
-Even today, the frequency that is reported is largely fictional, and typically not
-the frequency of what the core/cpu is actually running it.
-10 years ago we could report something reasonable.
-Hardware just doesn't work that way anymore nowadays...
-We can report what you ran at (past tense), that is something Intel and AMD hardware exposes.
-(and if you run powertop, it'll report this as well)
-But to know what you are currently running at? No chance in hell ;-(
+I expect the performance degradation percentages are going to vary a lot depending on what techniques are available in the hardware. If we want to generalize this to encompass older hardware too (which I think is a good idea), I could see percentages being, say, <3% <10% <20% to give more room to work with, and nicer newer hardware being able to do better as your percentages indicate.
 
+On reporting frequency: would it be practical to report some sort of medium-term average frequency, or if that is not available, to just report the max freq that the hardware thread is currently eligible to use?
 
-
-
+DCN
