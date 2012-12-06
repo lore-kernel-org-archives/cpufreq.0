@@ -1,96 +1,28 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 6/6 v8] cpufreq, highbank: add support for highbank cpufreq
-Date: Wed, 05 Dec 2012 16:09:44 -0600
-Message-ID: <50BFC628.606@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com> <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 6/6 v8] cpufreq, highbank: add support for highbank
+ cpufreq
+Date: Thu, 6 Dec 2012 17:37:28 +0800
+Message-ID: <20121206093726.GB27003@S2100-06.ap.freescale.net>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mike Turquette <mturquette@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mturquette@linaro.org
 
-On 12/05/2012 12:49 PM, Mike Turquette wrote:
-> On Wed, Dec 5, 2012 at 8:48 AM, Mark Langsdorf
-> <mark.langsdorf@calxeda.com> wrote:
->> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
->> new file mode 100644
->> index 0000000..1f28fa6
->> --- /dev/null
->> +++ b/drivers/cpufreq/highbank-cpufreq.c
->> @@ -0,0 +1,102 @@
+On Wed, Dec 05, 2012 at 10:48:41AM -0600, Mark Langsdorf wrote:
+> Highbank processors depend on the external ECME to perform voltage
+> management based on a requested frequency. Communication between the
+> A9 cores and the ECME happens over the pl320 IPC channel.
 > 
-> Looks pretty good to me.  Some tedious nitpicks and discussion below.
-> <snip>
-> 
->> +static int hb_voltage_change(unsigned int freq)
->> +{
->> +       int i;
->> +       u32 msg[7];
->> +
->> +       msg[0] = HB_CPUFREQ_CHANGE_NOTE;
->> +       msg[1] = freq / 1000000;
->> +       for (i = 2; i < 7; i++)
->> +               msg[i] = 0;
->> +
->> +       return pl320_ipc_transmit(msg);
->> +}
->> +
->> +static int hb_cpufreq_clk_notify(struct notifier_block *nb,
->> +                               unsigned long action, void *hclk)
->> +{
->> +       struct clk_notifier_data *clk_data = hclk;
->> +       int i = 0;
->> +
->> +       if (action == PRE_RATE_CHANGE) {
->> +               if (clk_data->new_rate > clk_data->old_rate)
->> +                       while (hb_voltage_change(clk_data->new_rate))
->> +                               if (i++ > 15)
-> 
-> There are a few magic numbers here.  How about something like:
-> 
-> #define HB_VOLT_CHANGE_MAX_TRIES 15
-> 
-> Maybe do the same for the i2c message length?
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> Cc: shawn.guo@linaro.org
 
-Fixed.
-
->> +                                       return NOTIFY_STOP;
-> 
-> How about NOTIFY_BAD?  It more clearly signals that an error has occurred.
-
-> Same as above.  It is true that the clock framework does nothing with
-> post-rate change notifier aborts but that might change in the future.
-
-Changed and added.
-
->> +       }
->> +
->> +       return NOTIFY_DONE;
->> +}
->> +
->> +static struct notifier_block hb_cpufreq_clk_nb = {
->> +       .notifier_call = hb_cpufreq_clk_notify,
->> +};
->> +
-> 
-> Do you have any plans to convert your voltage change routine over to
-> the regulator framework?  Likewise do you plan to use the OPP library
-> in the future?  I can understand if you do not do that since your
-> regulator/dvfs programming model makes things very simple for you.
-
-I looked at treating the ECME as a voltage regulator, but it was a very
-bad fit. The ECME has a certain amount of intelligence built into it and
-corporate plans are to treat voltage control as a black box.
-
-The current solution is actually nicely generic from my perspective. The
-clk notifiers guarantee we can make the voltage changes at the right
-time regardless of the underlying cpufreq driver implementation. I don't
-think we need more until we get into cpufreq QoS issues, and even then
-I'd want to stick with something like the current structure.
-
---Mark Langsdorf
-Calxeda, Inc.
+Reviewed-by: Shawn Guo <shawn.guo@linaro.org>
