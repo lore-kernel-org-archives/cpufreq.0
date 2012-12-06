@@ -1,72 +1,113 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 Subject: Re: [PATCH RFC 0/1] cpufreq/x86: Add P-state driver for sandy bridge.
-Date: Thu, 06 Dec 2012 08:27:13 -0800
-Message-ID: <50C0C761.8000501@linux.intel.com>
-References: <1354734091-29870-1-git-send-email-dirk.brandewie@gmail.com> <50BFAE5A.1010809@verisign.com> <50BFB627.5080106@linux.intel.com> <50BFBF34.3090608@verisign.com> <50BFC28C.9060004@linux.intel.com> <50C0B34D.5020406@verisign.com>
+Date: Thu, 06 Dec 2012 08:35:28 -0800
+Message-ID: <50C0C950.2070007@gmail.com>
+References: <1354734091-29870-1-git-send-email-dirk.brandewie@gmail.com> <50BFAE5A.1010809@verisign.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <50C0B34D.5020406@verisign.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=ZMvqg/kqgLUJklgMSM/qHpv3mM7Yy9tcd8nkAcjGR5U=;
+        b=thO5+YUB0VEzygPD5a02qtpc9FsjEqk+DJCBiFLvhO7Rr2OhEAQVHp1wb9CfDn2+nr
+         9nfpeqPhZnNdnt2Snt9WN4iiM8IOqZTs1csygQXdTv8svot8JuA0xRWUlw0qf4NmFPgB
+         FXd3geFWwuM0hgOCcEcJ8UmuBz8rf0+kiujsGhwb8Ue7PozIsalSus7GazKuYHhDWtCe
+         AVgJ5lW4NwNhMXmOCNNrixsVyh5Km0NYLycNC8kJvwGoFu/MFq0nFLaXXNAbLfcDXknw
+         wNthUyP7i3e/QNWMeVvYBy9exrnIDfSeEcLzlZDR+98tcLg0WGiFjHTWHeppu+L2AqMk
+         9piQ==
+In-Reply-To: <50BFAE5A.1010809@verisign.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: David C Niemi <dniemi@verisign.com>
-Cc: dirk.brandewie@gmail.com, cpufreq@vger.kernel.org, rjw@sisk.pl, deneen.t.dock@intel.com
+Cc: dirk.brandewie@gmail.com, cpufreq@vger.kernel.org, rjw@sisk.pl, deneen.t.dock@intel.com, arjan@linux.intel.com
 
-On 12/6/2012 7:01 AM, David C Niemi wrote:
->
-> My point is that performance vs. power is not just a linear continuum of preferences.  How idle and full speed are handled are of particular importance in many applications.
->
-> I think we both agree the existing governors are obsolete and do things the wrong way.  But we attach different meanings to "policy" and may have different ideas of what should be.
->
-> I think of policy as very high level and totally compatible with a variety of very different hardware implementations.  The minimum a true high-level policy "governor" would need to do is this:
-> a) determine what the hardware's capabilities are (init)
-> b) provide a configuration interface analogous to what we have now but much higher-level and less frequency-centric
-> c) assess system load on an ongoing basis.
-> d) control the power management driver based on the user preferences and the system load pattern.
->
-> The lines between governor and driver could be drawn in various places, but the point of having some sort of governor is to not have to reimplement the whole stack for every driver.
+On 12/05/2012 12:28 PM, David C Niemi wrote:
+ >
+ > Dirk,
+ >
+ > I applaud the work you are doing.
 
-the sad part is that this is where reality has caught up with the nice theory.
-hardware keeps innovating/changing around power behavior... very very fundamentally.
-When we started CPUFREQ (yes I was there ;-) ) we had the assumption that a clean split between hardware and governor
-was possible. Even back then, Linus balked at that and made us change it at least somewhat.... the Transmeta
-CPUs at the time showed enough differences already to break. We made, at the time, the minimal changes possible.
-But really the whole idea does not work out.
+Thanks :-)
 
->
-> The exposed configuration interface might be as simple as choosing one of several discrete settings:
-> - max single-threaded performance
-> - max multi-threaded performance
+ > In general I believe it is important to
+ > separate policy (governor and its settings) from the driver,
+ > particularly so as different end-users have very different goals for
+ > power management.
 
-these are identical on todays silicon btw; or rather, this is not a P state choice item, but a task scheduler policy item.
+I agree as a general rule separating mechanism from policy is the
+correct thing to do.  As Arajan pointed out in his replies the
+"correct" policy decisions are processor architecture /
+micro-architecture dependent.
 
-> - "server" setting -- save power but only in ways that do not affect performance
+For example in Sandybridge and later processors the requested
+frequency during idle has no affect on power consumption the processor
+will go to a minimum power state while the core is idle.  So it is
+unless to worry about setting the idle frequency and adds a fair
+amount of processing and complexity for no benefit in power or
+performance.
 
-this is a fiction btw... if there was a way to reduce power and not affect performance, that's your "max performance" setting.
-anything else will sacrifice SOME performance from max...
+An generic governor has no hope of getting this type of decision right
+to take advantage of the power features of the processor whether is an
+IA processor or some other architecture.
 
-> - "default" -- a good general-purpose middle of the road setting that performs pretty well and also saves power
+ > Not everyone is trying to maximize performance per
+ > watt per se (in fact probably rather few end users are doing so
+ > literally).  In server applications, for example, the first priority
+ > is typically maximum performance when under heavy load, and the second
+ > priority is minimum power consumption at idle.  There may not ever be
+ > a benefit for choosing one of the middle clock states.
 
-... so you end up at this one.
+I disagree the server/data center user cares deeply about performance
+per watt.  The are selling performance and watts are a cost.  Power
+consumption and required cooling are big issues for the data center.
 
-> - "on battery" setting -- provide good interactive responsiveness but aggressively save power, potentially making long-running tasks take longer
+The data center does not want to leave a lot of performance on the
+table so they do not need to under provision a servers to satisfy
+their SLAs.
 
-battery has nothing to do with power preference. Just ask any data center operator.
+I believe that server spend most of their time somewhere between idle
+and max performance where selecting an appropriate intermediate
+operating frequency will have significant benefit.
 
-> The above is what I think of as policy.  There is nothing hardware-specific about these.
- > These say nothing directly about what frequency to run or whether to use P-States.
+The laptop/mobile user cares about performance/watt as well, maybe not
+explicitly but they want their shiny new device to show the
+performance they paid for with the greatest battery life possible.
 
-and defining a common policy interface I'm quite fine with (not quite in the way you defined it, but ok...)
-But that's not going to lead to a common implementation as a "governor" ;-(
+The desktop user is likely the most immune to thinking/caring about
+performance/watt since most users don't care about (or have a way
+measure) the power consumption of the system.
 
-My idea for a policy "dial" is mostly
 
-* Uncompromised performance
-* Balanced - biased towards performance     (say, defined to be lowest power at most a 2 1/2% perf hit)
-* Balanced                                  (say, at most a 5% perf hit)
-* Balanced - biased towards lower power     (sat, at most a 10% perf hit)
-* Uncompromised lowest power
+ > would be nice if the new driver can be compatible with the existing
+ > governor by exposing an ability to set and report current frequencies.
+ > But if this is impractical or pointless for Sandy Bridge, so be it.
 
-we can argue about the exact %ages, but the idea is to give at least some reasonably definition that people can understand,
-but that also can be measured
+I agree that reporting the current frequency is important to some
+utilities.  To make this work with the current cpufreq subsystem will
+take some amount of refactoring of cpufreq.  I did not take on this
+work yet and was hoping to to get some advice from the list on the
+correct way to do this.
+
+ > So outside of a research kernel, I don't think having a "cpufreq/snb"
+ > directory is a good place to expose tuning parameters,
+
+I agree most of the tunables should NOT be exposed to the user. The
+place for the tunables was chosen to make obvious to people that
+snb had replaced ondemand.
+
+ > In the long run both integrators and
+ > maintainers of Linux distributions are going to insist on a generic
+ > interface that can work across the vast majority of modern hardware,
+ > rather than cater to a special case that only works on one or CPU
+ > families, even if those families are particularly important ones.
+
+How this driver gets integrated in to a system is still an open
+question. I can think of more than a few "reasonable" ways to
+integrate this into a system.  Before I launched into creating a
+solution I wanted feedback/guidance from the list.
+
+--Dirk
+
