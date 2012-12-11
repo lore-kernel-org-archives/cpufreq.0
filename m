@@ -1,7 +1,7 @@
-From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [RESEND PATCH 3/5] cpufreq: dbx500: Move clk_get to probe
-Date: Mon, 10 Dec 2012 16:25:40 +0100
-Message-ID: <1355153142-9534-4-git-send-email-ulf.hansson@stericsson.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some parts
+Date: Tue, 11 Dec 2012 10:15:51 +0100
+Message-ID: <CACRpkdYE+WcOqbB0whqW+bKVOXmdAmF0rCFacsYkREu=gPGXew@mail.gmail.com>
 References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
@@ -10,82 +10,22 @@ Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Ulf Hansson <ulf.hansson@stericsson.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
+On Mon, Dec 10, 2012 at 4:25 PM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
 
-The armss clock shall only be fetched at probe thus move this here.
-Same thing goes for the printing of the available frequencies.
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> This patchset starts by renaming the db8500 cpufreq driver to a more generic
+> name. There are new variants which rely on it too, so instead we give it a
+> family name of dbx500.
+>
+> On top of that a fixup patch for initialization of the driver and some minor
+> cleanup patches are included as well.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Jonas Aaberg <jonas.aberg@stericsson.com>
----
- drivers/cpufreq/dbx500-cpufreq.c |   29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
+For all patches.
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index 0a411b5..d974a8e 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -90,28 +90,14 @@ static unsigned int dbx500_cpufreq_getspeed(unsigned int cpu)
- 
- static int __cpuinit dbx500_cpufreq_init(struct cpufreq_policy *policy)
- {
--	int i = 0;
- 	int res;
- 
--	armss_clk = clk_get(NULL, "armss");
--	if (IS_ERR(armss_clk)) {
--		pr_err("dbx500-cpufreq : Failed to get armss clk\n");
--		return PTR_ERR(armss_clk);
--	}
--
--	pr_info("dbx500-cpufreq : Available frequencies:\n");
--	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
--		pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
--		i++;
--	}
--
- 	/* get policy fields based on the table */
- 	res = cpufreq_frequency_table_cpuinfo(policy, freq_table);
- 	if (!res)
- 		cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
- 	else {
- 		pr_err("dbx500-cpufreq : Failed to read policy table\n");
--		clk_put(armss_clk);
- 		return res;
- 	}
- 
-@@ -147,13 +133,26 @@ static struct cpufreq_driver dbx500_cpufreq_driver = {
- 
- static int dbx500_cpufreq_probe(struct platform_device *pdev)
- {
--	freq_table = dev_get_platdata(&pdev->dev);
-+	int i = 0;
- 
-+	freq_table = dev_get_platdata(&pdev->dev);
- 	if (!freq_table) {
- 		pr_err("dbx500-cpufreq: Failed to fetch cpufreq table\n");
- 		return -ENODEV;
- 	}
- 
-+	armss_clk = clk_get(&pdev->dev, "armss");
-+	if (IS_ERR(armss_clk)) {
-+		pr_err("dbx500-cpufreq : Failed to get armss clk\n");
-+		return PTR_ERR(armss_clk);
-+	}
-+
-+	pr_info("dbx500-cpufreq : Available frequencies:\n");
-+	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
-+		pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
-+		i++;
-+	}
-+
- 	return cpufreq_register_driver(&dbx500_cpufreq_driver);
- }
- 
--- 
-1.7.10
-
+Yours,
+Linus Walleij
