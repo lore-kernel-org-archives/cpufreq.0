@@ -1,35 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] cpufreq: Manage only online cpus
-Date: Sun, 16 Dec 2012 19:07:55 +0530
-Message-ID: <CAKohpomfEHGrCdbZ-EakRN4=qF8epd5seX5TWRcErQj9BEFpNA@mail.gmail.com>
-References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-	<4137114.myBUIQvsg3@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 51741]
+ New:=?UTF-8?Q?=20powernow=2Dk8=20calls=20for=20acpi=2Dcpufreq=20but=20doesn=E2=80=99t=20warn=20if=20it=E2=80=99s=20not=20available?=
+Date: Sun, 16 Dec 2012 16:03:47 +0000 (UTC)
+Message-ID: <bug-51741-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <4137114.myBUIQvsg3@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
 
-On 16 December 2012 18:34, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, December 16, 2012 11:20:08 AM Viresh Kumar wrote:
->> cpufreq core doesn't manage offline cpus and if driver->init() has returned
->> mask including offline cpus, it may result in unwanted behavior by cpufreq core
->> or governors.
->>
->> We need to get only online cpus in this mask. There are two places to fix this
->> mask, cpufreq core and cpufreq driver. It makes sense to do this at common place
->> and hence is done in core.
->
-> Well, this series makes sense to me, but I'd like to hear what the other people
-> think.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D51741
 
-That sounds great :)
+           Summary: powernow-k8 calls for acpi-cpufreq but doesn=E2=80=99=
+t warn if
+                    it=E2=80=99s not available
+           Product: Power Management
+           Version: 2.5
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: linuxuser330250@gmx.net
+        Regression: No
 
-Some more information for others about how i reached to these issues
-is present here:
 
-https://lkml.org/lkml/2012/12/10/44
+On my system, I used to have powernow-k8 compiled into the kernel, but =
+not
+acpi-cpufreq. I run Gentoo Linux.
+
+With sys-kernel/gentoo-sources-3.6.8, I got the following relevent dmes=
+g
+output:
+powernow-k8: Found 1 AMD Phenom(tm) II X6 1090T Processor (6 cpu cores)
+(version 2.20.00)
+powernow-k8: Core Performance Boosting: on.
+powernow-k8:    0 : pstate 0 (3200 MHz)
+powernow-k8:    1 : pstate 1 (2400 MHz)
+powernow-k8:    2 : pstate 2 (1600 MHz)
+powernow-k8:    3 : pstate 3 (800 MHz)
+
+Now, with sys-kernel/gentoo-sources-3.7.0, dmesg showed the following:
+powernow-k8: this CPU is not supported anymore, using acpi-cpufreq inst=
+ead.
+
+This lead me into thinking that acpi-cpufreq was used when it actually =
+wasn=E2=80=99t,
+because it was missing in my kernel (since I don=E2=80=99t know all con=
+fig options by
+heart: I had to check for that).
+
+I found that the fans were a bit noisier than normal, so I looked in
+/proc/cpuinfo, which showed all 6 cores were at 3.2 GHz.
+
+I then recompiled the kernel with acpi-cpufreq compiled in and removed
+powernow-k8. Now /proc/cpuinfo shows 800 MHz on all or most of the core=
+s when
+the system is mostly idle.
+
+Apparently, acpi-cpufreq doesn=E2=80=99t show any output at all, except=
+:
+acpi-cpufreq: overriding BIOS provided _PSD data
+
+My suggestion would be to make powernow-k8 check for the availability o=
+f
+acpi-cpufreq and print out a warning should it not be available.
+And I also suggest a short =E2=80=9Cacpi-cpufreq is used for frequency =
+scaling=E2=80=9D so one
+can see that it was loaded alright.
+
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
