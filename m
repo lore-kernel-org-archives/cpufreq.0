@@ -1,16 +1,16 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some
- parts
-Date: Fri, 21 Dec 2012 11:18:28 -0600
-Message-ID: <CAPtuhTgJysTATpAjG5fJv_RUgL-60fwpDYcoF2KUQ8U7+W=Yjg@mail.gmail.com>
-References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
- <CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
- <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH 0/2] clocksource: nomadik-mtu: support timer-based delay
+Date: Wed, 19 Dec 2012 08:18:14 -0800
+Message-ID: <CALAqxLUY+EF1jpVou2g-G00kLxYBTpbBQitHVQuoRepNKXPEpg@mail.gmail.com>
+References: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
+ <20121217113611.GA31470@balto.lan>
+ <CACRpkdYRJvFEUvB++fKgVWEXZrTQ7aob0MPMwW4TBs_VRNuzsA@mail.gmail.com>
+ <50CF6B77.3000000@linaro.org>
+ <CACRpkdZe4eJ_0ND1gTPFKbXVSXaiCTeLW-m4YjZ87ZoDTiFxhA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0794967325464724918=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
+In-Reply-To: <CACRpkdZe4eJ_0ND1gTPFKbXVSXaiCTeLW-m4YjZ87ZoDTiFxhA@mail.gmail.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -21,61 +21,66 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: linux-arm-kernel-bounces@lists.infradead.org
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Philippe Begnic <philippe.begnic@st.com>, Vincent Guittot <vincent.guittot@linaro.org>, Jonas Aberg <jonas.aberg@stericsson.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lee Jones <lee.jones@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 
-On Thu, Dec 13, 2012 at 3:20 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 12 December 2012 21:56, Mike Turquette <mturquette@linaro.org> wrote:
->> On Mon, Dec 10, 2012 at 7:25 AM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
->>> From: Ulf Hansson <ulf.hansson@linaro.org>
->>>
->>> This patchset starts by renaming the db8500 cpufreq driver to a more generic
->>> name. There are new variants which rely on it too, so instead we give it a
->>> family name of dbx500.
->>>
->>> On top of that a fixup patch for initialization of the driver and some minor
->>> cleanup patches are included as well.
->>>
->>> These patches can be material for 3.8.
->>>
->>> Since some patches for the db8500 cpufreq driver has recently been merged
->>> through Mike Turquette's clk tree, I decided to base these patches on top
->>> of the clk-next branch. So I hope Mike is fine by merging these patches
->>> through his tree.
->>>
->>> So I will try to collect ACKs from Rafael for the cpufreq patches. The
->>> mfd patch has already been ACKED by Samuel.
->>>
->>
->> Ulf,
->>
->> Just FYI clk-next has been pulled by Linus for 3.8.  I can still take
->> this branch once Rafael ACKs the CPUfreq bits if you want, but I think
->> you have more options now that clk-next is merged in.  It's up to you.
+--===============0794967325464724918==
+Content-Type: multipart/alternative; boundary=14dae9cfce941d16cd04d136f601
+
+--14dae9cfce941d16cd04d136f601
+Content-Type: text/plain; charset=ISO-8859-1
+
+On Dec 19, 2012 7:34 AM, "Linus Walleij" <linus.walleij@linaro.org> wrote:
 >
-> I think the easiest way forward (at least for me :-) ) would be if we
-> could send them as for 3.8 rcs. Is that possible for you Mike?
+> On Mon, Dec 17, 2012 at 7:59 PM, John Stultz <john.stultz@linaro.org>
+wrote:
+> > On 12/17/2012 10:38 AM, Linus Walleij wrote:
+> >> If no clocksource maintainer steps up in a week then notify me and
+> >> I'll simply stick these into the ux500 tree.
+> >
+> > Yea, I'd actually prefer these go through the arch tree where they can
+get
+> > testing.
 >
+> OK, can I have your ACK?
 
-Hi Ulf,
+Acked-by: John Stultz <john.stultz@linaro.org>
 
-I did not want to leave you hanging on this point.  I decided at the
-last minute to not bring a development platform or a nice laptop on my
-vacation so I will not be sending any more pull requests to Linus for
-3.8-rc unless some patches come in which are just obvious fixes.  Even
-then I will wait until I return in January to properly test any fixes
-before I send the request out.
+thanks
+-john
 
-Sorry that these patches did not make it in for 3.8 but I will queue
-them up into clk-next in January.
+--14dae9cfce941d16cd04d136f601
+Content-Type: text/html; charset=ISO-8859-1
 
-Thanks,
-Mike
+<p dir="ltr"><br>
+On Dec 19, 2012 7:34 AM, &quot;Linus Walleij&quot; &lt;<a href="mailto:linus.walleij@linaro.org">linus.walleij@linaro.org</a>&gt; wrote:<br>
+&gt;<br>
+&gt; On Mon, Dec 17, 2012 at 7:59 PM, John Stultz &lt;<a href="mailto:john.stultz@linaro.org">john.stultz@linaro.org</a>&gt; wrote:<br>
+&gt; &gt; On 12/17/2012 10:38 AM, Linus Walleij wrote:<br>
+&gt; &gt;&gt; If no clocksource maintainer steps up in a week then notify me and<br>
+&gt; &gt;&gt; I&#39;ll simply stick these into the ux500 tree.<br>
+&gt; &gt;<br>
+&gt; &gt; Yea, I&#39;d actually prefer these go through the arch tree where they can get<br>
+&gt; &gt; testing.<br>
+&gt;<br>
+&gt; OK, can I have your ACK?</p>
+<p dir="ltr">Acked-by: John Stultz &lt;<a href="mailto:john.stultz@linaro.org">john.stultz@linaro.org</a>&gt;</p>
+<p dir="ltr">thanks<br>
+-john</p>
 
->>
->> Regards,
->> Mike
->
-> Thanks!
->
-> Ulf Hansson
+--14dae9cfce941d16cd04d136f601--
+
+
+--===============0794967325464724918==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============0794967325464724918==--
+
