@@ -1,33 +1,46 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand
- governor set - i7-2630QM
-Date: Sun, 23 Dec 2012 14:47:58 +0000 (UTC)
-Message-ID: <20121223144758.221E611FA61@bugzilla.kernel.org>
-References: <bug-50721-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH] cpufreq: exynos: Add the missing cpufreq_cpu_put function
+Date: Wed, 26 Dec 2012 13:35:34 -0800
+Message-ID: <1356557734-15640-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-50721-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer;
+        bh=0IRjljSb4Qorub/KImjpTu6TBa0eq5JlFRuaT0RlL94=;
+        b=ME2A1ny/B4wQsC9f45pX6X+oftpLwWIiTCX0dLyYAohuCp1eHPYeh/thVMakl91gik
+         5Fe58+sw4UfkADgXqo52nlrsGXIzkUPB7l8FRPFmVmaNEvv8yQ9xxuZV1ikXn6Z4wLFH
+         JJvhZiP8mgRNagDxN2A4YJyJoZ4AReFv8ahXkmAWYz2y2joY5oBvqFvG6BCfS03DMq4L
+         zVeENCNltMy5/671+0HngV6ZZds3F0fWm1bTyUBuz6xx/3ENYXUS4FcXMq5KaNmYwLrN
+         TILT08R6yJBWBZ6Kx0M/p3/FXfPt32UIykjbGOx0hAVz7Os6VYYPWzTQEYel5f6GLyXR
+         FeNw==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=50721
+This patch adds the missing cpufreq_cpu_put function needed for
+returning the cpufreq policy instance.
 
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-
-
-
---- Comment #9 from rocko <rockorequin@hotmail.com>  2012-12-23 14:47:57 ---
-I've just encountered this again in kernel 3.7.1.
-
-turbostat indicates the cores are running over their max 2.0GHz frequency (it
-says core 1 in particular is running at up to 2.4GHz).
-
-Is there anything I can try that might help to debug this?
-
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 7012ea8..a2b7adc 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -208,6 +208,7 @@ static int exynos_cpufreq_pm_notifier(struct notifier_block *notifier,
+ 	}
+ out:
+ 	mutex_unlock(&cpufreq_lock);
++	cpufreq_cpu_put(policy);
+ 
+ 	return NOTIFY_OK;
+ }
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.5.4
+
