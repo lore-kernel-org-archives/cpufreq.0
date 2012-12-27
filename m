@@ -1,46 +1,49 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH] cpufreq: exynos: Add the missing cpufreq_cpu_put function
-Date: Wed, 26 Dec 2012 13:35:34 -0800
-Message-ID: <1356557734-15640-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer;
-        bh=0IRjljSb4Qorub/KImjpTu6TBa0eq5JlFRuaT0RlL94=;
-        b=ME2A1ny/B4wQsC9f45pX6X+oftpLwWIiTCX0dLyYAohuCp1eHPYeh/thVMakl91gik
-         5Fe58+sw4UfkADgXqo52nlrsGXIzkUPB7l8FRPFmVmaNEvv8yQ9xxuZV1ikXn6Z4wLFH
-         JJvhZiP8mgRNagDxN2A4YJyJoZ4AReFv8ahXkmAWYz2y2joY5oBvqFvG6BCfS03DMq4L
-         zVeENCNltMy5/671+0HngV6ZZds3F0fWm1bTyUBuz6xx/3ENYXUS4FcXMq5KaNmYwLrN
-         TILT08R6yJBWBZ6Kx0M/p3/FXfPt32UIykjbGOx0hAVz7Os6VYYPWzTQEYel5f6GLyXR
-         FeNw==
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Prashant Gaikwad <pgaikwad@nvidia.com>
+Subject: Re: [PATCH 1/6 v9] arm: use devicetree to get smp_twd clock
+Date: Thu, 27 Dec 2012 10:41:50 +0530
+Message-ID: <50DBD896.8040706@nvidia.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354833773-22845-1-git-send-email-mark.langsdorf@calxeda.com> <1354833773-22845-2-git-send-email-mark.langsdorf@calxeda.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1354833773-22845-2-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <rob.herring@calxeda.com>
 
-This patch adds the missing cpufreq_cpu_put function needed for
-returning the cpufreq policy instance.
+On Friday 07 December 2012 04:12 AM, Mark Langsdorf wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
+>
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> ---
+> Changes from v4, v5, v6, v7, v8
+>          None.
+> Changes from v3
+>          No longer setting *clk to NULL in twd_get_clock().
+> Changes from v2
+>          Turned the check for the node pointer into an if-then-else statement.
+>          Removed the second, redundant clk_get_rate.
+> Changes from v1
+>          None.
+>
+>   arch/arm/kernel/smp_twd.c | 19 +++++++++++--------
+>   1 file changed, 11 insertions(+), 8 deletions(-)
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
- drivers/cpufreq/exynos-cpufreq.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hi Mark,
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 7012ea8..a2b7adc 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -208,6 +208,7 @@ static int exynos_cpufreq_pm_notifier(struct notifier_block *notifier,
- 	}
- out:
- 	mutex_unlock(&cpufreq_lock);
-+	cpufreq_cpu_put(policy);
- 
- 	return NOTIFY_OK;
- }
--- 
-1.7.5.4
+What is the status of this patch?
 
+Regards,
+PrashantG
+
+> diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
+> index b22d700..af46b80 100644
+> --- a/arch/arm/kernel/smp_twd.c
+> +++ b/arch/arm/kernel/smp_twd.c
+> @@ -237,12 +237,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
+>   	return IRQ_NONE;
+>   }
+>
