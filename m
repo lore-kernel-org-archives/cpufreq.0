@@ -1,49 +1,31 @@
-From: Prashant Gaikwad <pgaikwad@nvidia.com>
-Subject: Re: [PATCH 1/6 v9] arm: use devicetree to get smp_twd clock
-Date: Thu, 27 Dec 2012 10:41:50 +0530
-Message-ID: <50DBD896.8040706@nvidia.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354833773-22845-1-git-send-email-mark.langsdorf@calxeda.com> <1354833773-22845-2-git-send-email-mark.langsdorf@calxeda.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/6 v8] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Thu, 27 Dec 2012 14:12:58 +0100
+Message-ID: <2705062.NIaFfcLb3a@vostro.rjw.lan>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1354833773-22845-2-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <rob.herring@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Friday 07 December 2012 04:12 AM, Mark Langsdorf wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
->
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> ---
-> Changes from v4, v5, v6, v7, v8
->          None.
-> Changes from v3
->          No longer setting *clk to NULL in twd_get_clock().
-> Changes from v2
->          Turned the check for the node pointer into an if-then-else statement.
->          Removed the second, redundant clk_get_rate.
-> Changes from v1
->          None.
->
->   arch/arm/kernel/smp_twd.c | 19 +++++++++++--------
->   1 file changed, 11 insertions(+), 8 deletions(-)
+On Wednesday, December 05, 2012 10:48:35 AM Mark Langsdorf wrote:
+> This patch series adds cpufreq support for the Calxeda
+> ECX-1000 (highbank) SoCs. The EnergyCore Management Engine (ECME) on
+> the ECX-1000 manages the voltage for the part and communications with
+> Linux through a pl320 mailbox. clk notifications are used to control
+> when to send messages to the ECME.
 
-Hi Mark,
+If you want me to handle this, can you please resend the whole patchset (with
+all of the comments addressed, if possible)?
 
-What is the status of this patch?
+Rafael
 
-Regards,
-PrashantG
 
-> diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
-> index b22d700..af46b80 100644
-> --- a/arch/arm/kernel/smp_twd.c
-> +++ b/arch/arm/kernel/smp_twd.c
-> @@ -237,12 +237,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
->   	return IRQ_NONE;
->   }
->
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
