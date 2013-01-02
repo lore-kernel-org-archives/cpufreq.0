@@ -1,68 +1,49 @@
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH] Fix problem with cpufreq_pndemand or cpufreq_conservative
-Date: Fri, 28 Dec 2012 18:53:20 -0600
-Message-ID: <50DE3F00.70800@lwfinger.net>
-References: <50DE1A74.4040607@lwfinger.net> <3226192.H2BxHSuKio@vostro.rjw.lan> <50DE2F32.1010207@lwfinger.net> <20121229003341.GA30982@balto.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] Fix problem with cpufreq_ondemand or cpufreq_conservative
+Date: Wed, 2 Jan 2013 09:26:29 +0530
+Message-ID: <CAOh2x==ER3j7P1U+VQEtv00LWWa8JJHu=22--+gTUPFdhiC_cQ@mail.gmail.com>
+References: <50DE378D.4090008@lwfinger.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=x-received:sender:message-id:date:from:user-agent:mime-version:to
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        bh=Rq5Y3Jhe5bxUwi0LFwU32TpUOcnfU3eJAVnZHpYzUiQ=;
-        b=xRYk5AYWaftPdXaWcve9z92G3MpvgSTdc0a/BhGfyXzqAFkcZz+mlGPQWNdn00a15b
-         vvscHhIOeKfp8HQ4KgnA9sC52sZwVSB/slEcfJiwGj8QC99FzkNKGrdgvA0gwcTAwkZ0
-         kMHS3Sd0hFREwlGaSqWtkPNHtFjrRJGp+YPJPg0W/+GM4bIoeQKlzsuk5lWR69f/quBv
-         Lml0UA12p+OFANdcWENlktrVV5Y6RNVc9PHh/4uvpjOrHM44m4fwIScq2Lvg4vRAK6SK
-         ru1x4uiqJt75OHZCH/djidgy3zGR+c2aE5pSukxhmC49EVsLQbv6bkRFpjZ8JW5hIFYq
-         wVrg==
-In-Reply-To: <20121229003341.GA30982@balto.lan>
-Sender: linux-pm-owner@vger.kernel.org
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=igdv/0p2VLgU22M484cNAupgO7xunRrjBWmrh8Tjtxs=;
+        b=WmHadm8BDZFj/uTI1iIC0UzAku67QQKw7upVQX1m4Zivt/sJYIkLDbVoARS87NR0He
+         ti4ceJo7K5jCQsVo/ize1Sv4cb+Lf/Fh24AUpT1La1ShW5HsOmoNfz0XhP+StnS3KpcU
+         dZJ2V0hPShPUavpOhBJ1JzOkJpcW+zlWn58rJCLK+ZQvJbGqBvzpBPxXrYuHyYyCuP1i
+         dboiU2id0vy3mz/ZXltM3tnAJ1/R91d3bwZo9uKcIH7Y+sFiejnm85HOJbDerx+aGObI
+         u9ywv7N/sDRWeo6UEEvRrq9N+F0nE8Z/NHKszOkHCJNkgTn20MTqKMizmFkB6Air0pYd
+         zvKQ==
+In-Reply-To: <50DE378D.4090008@lwfinger.net>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Fabio Baltieri <fabio.baltieri@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, viresh kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 12/28/2012 06:33 PM, Fabio Baltieri wrote:
-> On Fri, Dec 28, 2012 at 05:45:54PM -0600, Larry Finger wrote:
->>> I wonder if that's avoidable?  The intention is not to create an additional
->>> module, clearly.
->>
->> It appears not to be possible. I don't know enough about to kmake to
->> understand why it is forcing a new module. Perhaps some expert knows
->> what Kconfig or Makefile magic will prevent that.
->
-> kbuild is building an additional module just because the makefile is
-> adding the new objects in the obj-m list directly, as in:
->
-> obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)     += cpufreq_ondemand.o cpufreq_governor.o
-> obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE) += cpufreq_conservative.o cpufreq_governor.o
->
-> To build just two modules the Makefile would have to be modified [1]
-> into something into something like:
->
-> obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)     += cpufreq_ondemand_mod.o
-> cpufreq_ondemand_mod-y                  := cpufreq_ondemand.o cpufreq_governor.o
-> obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE) += cpufreq_conservative_mod.o
-> cpufreq_conservative_mod-y              := cpufreq_conservative.o cpufreq_governor.o
->
-> so that only two .o are added to obj-m, but that's not correct either as
-> you end up with cpufreq_governor symbols exported twice.
->
-> I think the only way would be to force cpufreq_governor as builtin with
-> an automatic Kconfig option.
->
-> Fabio
->
-> 1. http://lxr.linux.no/#linux+v3.7.1/Documentation/kbuild/makefiles.txt#L191
+I know, V4 is already accepted, but i had an small comment with one
+of your earlier change, which doesn't exist anymore :)
 
-Fabio,
+On Sat, Dec 29, 2012 at 5:51 AM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> Index: wireless-testing-new/drivers/cpufreq/cpufreq_governor.c
 
-Thanks for the explanation. Now I think I know how to do it.
+How are you creating these patches? wireless-testing-new (linux directory names)
+aren't supposed to be present here.
 
-V3 follows.
+> ===================================================================
+> --- wireless-testing-new.orig/drivers/cpufreq/cpufreq_governor.c
+> +++ wireless-testing-new/drivers/cpufreq/cpufreq_governor.c
+> @@ -316,3 +316,8 @@ second_time:
+>         return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_governor_dbs);
+> +
+> +MODULE_AUTHOR("Alexander Clouter <alex@digriz.org.uk>");
 
-Larry
+You shouldn't be adding yourself as author here :)
 
-
+MODULE_AUTHOR("Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>");
+MODULE_AUTHOR("Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>");
