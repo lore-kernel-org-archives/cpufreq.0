@@ -1,41 +1,40 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand
- governor set - i7-2630QM
-Date: Tue,  8 Jan 2013 03:01:37 +0000 (UTC)
-Message-ID: <20130108030138.0DAC311FE9A@bugzilla.kernel.org>
-References: <bug-50721-12968@https.bugzilla.kernel.org/>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH 0/3] Add imx6q-cpufreq driver support
+Date: Tue, 8 Jan 2013 14:54:00 +0800
+Message-ID: <1357628043-19256-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-50721-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=50721
+The generic cpufreq-cpu0 driver works well for imx6q before.  But it
+does not work for 1 GHz and 1.2 GHz operating points the series adds
+here.  We ended up with having to add an imx6q specific cpufreq driver
+to handle those special frequency and voltage scaling requirements for
+the new operating points.
 
+I expect patches #1 and #2 go via cpufreq tree and the #3 through
+arm-soc tree.
 
+Shawn Guo (3):
+  PM / OPP: Export more symbols for module usage
+  cpufreq: add imx6q-cpufreq driver
+  ARM: imx: enable imx6q-cpufreq support
 
-
-
---- Comment #10 from Len Brown <lenb@kernel.org>  2013-01-08 03:01:37 ---
-turbostat -v will tell you the max turbo for this processor.
-Yes, it is normal to run above the TSC frequency --
-indeed, that is exactly what turbo-mode is for...
-
-can you force the processors to go slower by writing to sysfs?
-
-eg. as root
-cd /sys/devices/system/cpu/cpu0/cpufreq
-
-cat scaling_max_freq
-cat scaling_min_freq > scaling_max_freq
-cat scaling_max_freq
-
-and see if you can get that cpu to slow down, as shown by turbostat.
+ arch/arm/boot/dts/imx6q.dtsi    |   19 ++-
+ arch/arm/mach-imx/mach-imx6q.c  |   64 ++++++++
+ drivers/base/power/opp.c        |    2 +
+ drivers/cpufreq/Kconfig.arm     |    9 ++
+ drivers/cpufreq/Makefile        |    1 +
+ drivers/cpufreq/imx6q-cpufreq.c |  325 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 414 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.9.5
+
+
