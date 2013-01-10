@@ -1,173 +1,91 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Simplify __cpufreq_remove_dev()
-Date: Thu, 10 Jan 2013 14:49:10 +0530
-Message-ID: <CAKohpo=1drznitjyZ=JbUgh_vn10D-BhgahPWPobCtmW1uxwiQ@mail.gmail.com>
-References: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org>
+From: "Bedia, Vaibhav" <vaibhav.bedia@ti.com>
+Subject: RE: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
+Date: Thu, 10 Jan 2013 10:50:25 +0000
+Message-ID: <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
+References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
+ <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org>
+In-Reply-To: <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Shawn Guo <shawn.guo@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>
 
-On 9 January 2013 16:50, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> +static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+Hi,
+
+On Thu, Jan 10, 2013 at 14:04:23, Shawn Guo wrote:
+> Update operating-points per hardware document and add support for
+> 1 GHz and 1.2 GHz frequencies.
+> 
+> 400 MHz, 800 MHz and 1 GHz should be supported by all i.MX6Q chips,
+> while 1.2 GHz support needs to know from OTP fuse bit.
+> 
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
+>  arch/arm/boot/dts/imx6q.dtsi   |   19 ++++++++----
+>  arch/arm/mach-imx/mach-imx6q.c |   65 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 78 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
+> index d6265ca..17c5618 100644
+> --- a/arch/arm/boot/dts/imx6q.dtsi
+> +++ b/arch/arm/boot/dts/imx6q.dtsi
+> @@ -38,12 +38,18 @@
+>  			next-level-cache = <&L2>;
+>  			operating-points = <
+>  				/* kHz    uV */
+> -				792000  1100000
+> +				996000  1250000
+> +				792000  1150000
+>  				396000  950000
+> -				198000  850000
+>  			>;
+
+[...]
+
+>  
+> +#define OCOTP_CFG3			0x440
+> +#define OCOTP_CFG3_SPEED_SHIFT		16
+> +#define OCOTP_CFG3_SPEED_1P2GHZ		0x3
+> +
+> +static void __init imx6q_opp_check_1p2ghz(struct device *cpu_dev)
 > +{
+> +	struct device_node *np;
+> +	void __iomem *base;
+> +	u32 val;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
+> +	if (!np) {
+> +		pr_warn("failed to find ocotp node\n");
+> +		return;
+> +	}
+> +
+> +	base = of_iomap(np, 0);
+> +	if (!base) {
+> +		pr_warn("failed to map ocotp\n");
+> +		goto put_node;
+> +	}
+> +
+> +	val = readl_relaxed(base + OCOTP_CFG3);
+> +	val >>= OCOTP_CFG3_SPEED_SHIFT;
+> +	if ((val & 0x3) == OCOTP_CFG3_SPEED_1P2GHZ)
+> +		if (opp_add(cpu_dev, 1200000000, 1275000))
+> +			pr_warn("failed to add 1.2 GHz operating point\n");
+> +
 
-> +       cpufreq_frequency_table_update_policy_cpu(old_cpu, cpu);
-> +       cpufreq_stats_update_policy_cpu(old_cpu, cpu);
+I just happened to be thinking about the problem of enabling additional OPPs based on
+some Si rev info for TI's AM335x. 
 
-This looked a bit ugly to me, as there may be other users too who want
-to get this notification and so have below patch for this: pushed in my repo.
+The other approach could be to register additional OPPs and mark then as disabled to begin with.
+A platform specific hook could then be used to selectively enable the OPPs for based on the Si rev
+info.
 
-Tested on TC2. I have tested my patches well now and the activity is over from
-my end now, unless somebody finds something objectionable :)
+If this approach was already discussed sorry for the noise.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e3f7c7b..8a0b65e0 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -990,9 +990,9 @@ module_out:
+Regards,
+Vaibhav 
 
- static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
- {
--	unsigned int old_cpu = policy->cpu;
- 	int j;
-
-+	policy->last_cpu = policy->cpu;
- 	policy->cpu = cpu;
-
- 	for_each_cpu(j, policy->cpus) {
-@@ -1001,8 +1001,9 @@ static void update_policy_cpu(struct
-cpufreq_policy *policy, unsigned int cpu)
- 		per_cpu(cpufreq_policy_cpu, j) = cpu;
- 	}
-
--	cpufreq_frequency_table_update_policy_cpu(old_cpu, cpu);
--	cpufreq_stats_update_policy_cpu(old_cpu, cpu);
-+	cpufreq_frequency_table_update_policy_cpu(policy);
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+			CPUFREQ_UPDATE_POLICY_CPU, policy);
- }
-
- /**
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index b0df77a..2665f0a 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -267,17 +267,17 @@ error_get_fail:
- 	return ret;
- }
-
--void cpufreq_stats_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu)
-+static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
- {
--	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, old_cpu);
--
--	pr_debug("Updating stats_table for new_cpu %u from old_cpu %u\n",
--			new_cpu, old_cpu);
--	per_cpu(cpufreq_stats_table, new_cpu) = per_cpu(cpufreq_stats_table,
--			old_cpu);
--	per_cpu(cpufreq_stats_table, old_cpu) = NULL;
--	stat->cpu = new_cpu;
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table,
-+			policy->last_cpu);
-+
-+	pr_debug("Updating stats_table for new_cpu %u from last_cpu %u\n",
-+			policy->cpu, policy->last_cpu);
-+	per_cpu(cpufreq_stats_table, policy->cpu) = per_cpu(cpufreq_stats_table,
-+			policy->last_cpu);
-+	per_cpu(cpufreq_stats_table, policy->last_cpu) = NULL;
-+	stat->cpu = policy->cpu;
- }
-
- static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
-@@ -287,6 +287,12 @@ static int cpufreq_stat_notifier_policy(struct
-notifier_block *nb,
- 	struct cpufreq_policy *policy = data;
- 	struct cpufreq_frequency_table *table;
- 	unsigned int cpu = policy->cpu;
-+
-+	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
-+		cpufreq_stats_update_policy_cpu(policy);
-+		return 0;
-+	}
-+
- 	if (val != CPUFREQ_NOTIFY)
- 		return 0;
- 	table = cpufreq_frequency_get_table(cpu);
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 2c3b07b..281e3b4 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -225,14 +225,13 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu)
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
-
--void cpufreq_frequency_table_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu)
-+void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy)
- {
--	pr_debug("Updating show_table for new_cpu %u from old_cpu %u\n",
--			new_cpu, old_cpu);
--	per_cpu(cpufreq_show_table, new_cpu) = per_cpu(cpufreq_show_table,
--			old_cpu);
--	per_cpu(cpufreq_show_table, old_cpu) = NULL;
-+	pr_debug("Updating show_table for new_cpu %u from last_cpu %u\n",
-+			policy->cpu, policy->last_cpu);
-+	per_cpu(cpufreq_show_table, policy->cpu) = per_cpu(cpufreq_show_table,
-+			policy->last_cpu);
-+	per_cpu(cpufreq_show_table, policy->last_cpu) = NULL;
- }
-
- struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index af50dbd..7a3192a 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -90,7 +90,9 @@ struct cpufreq_policy {
- 	cpumask_var_t		related_cpus; /* CPUs with any coordination */
- 	unsigned int		shared_type; /* ANY or ALL affected CPUs
- 						should set cpufreq */
--	unsigned int		cpu;    /* cpu nr of registered CPU */
-+	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
-+	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
-+					   * this policy */
- 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
-
- 	unsigned int		min;    /* in kHz */
-@@ -109,10 +111,11 @@ struct cpufreq_policy {
- 	struct completion	kobj_unregister;
- };
-
--#define CPUFREQ_ADJUST		(0)
--#define CPUFREQ_INCOMPATIBLE	(1)
--#define CPUFREQ_NOTIFY		(2)
--#define CPUFREQ_START		(3)
-+#define CPUFREQ_ADJUST			(0)
-+#define CPUFREQ_INCOMPATIBLE		(1)
-+#define CPUFREQ_NOTIFY			(2)
-+#define CPUFREQ_START			(3)
-+#define CPUFREQ_UPDATE_POLICY_CPU	(4)
-
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
-@@ -405,12 +408,8 @@ extern struct freq_attr
-cpufreq_freq_attr_scaling_available_freqs;
-
- void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- 				      unsigned int cpu);
--void cpufreq_frequency_table_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu);
-+void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
-
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
-
--void cpufreq_stats_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu);
--
