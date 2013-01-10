@@ -1,72 +1,107 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
-Date: Thu, 10 Jan 2013 22:41:25 +0800
-Message-ID: <20130110144121.GC8680@S2101-09.ap.freescale.net>
-References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
- <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
- <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
- <20130110110742.GI2265@S2101-09.ap.freescale.net>
- <B5906170F1614E41A8A28DE3B8D121433ECDFC9B@DBDE01.ent.ti.com>
- <20130110132053.GA9139@S2101-09.ap.freescale.net>
- <B5906170F1614E41A8A28DE3B8D121433ECDFE3B@DBDE01.ent.ti.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/4 v10] arm: use devicetree to get smp_twd clock
+Date: Thu, 10 Jan 2013 23:34:42 +0000
+Message-ID: <20130110233442.GA30875@n2100.arm.linux.org.uk>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1357317346-1120-1-git-send-email-mark.langsdorf@calxeda.com> <1357317346-1120-2-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=eFdKjBhe25+HDczhoSdJraAStCNZg55OQcLJ9GDS/bY=;
+	b=GmMzvAc7kkKbrkP700VwTYxBM8Z2c47nL6V5l6gj6UtggqwzS8MhbQkrLZ+SbH6hDWE6p04u83Vwmp5/ofZVdeWZIOuQnRpD37doXQG86Vbrru/q508ZkaUzSDutVF7Ty+E0tGRuqXisl/d//lP/er1gKGnzsCllJGrmv+xT04w=;
 Content-Disposition: inline
-In-Reply-To: <B5906170F1614E41A8A28DE3B8D121433ECDFE3B@DBDE01.ent.ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1357317346-1120-2-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Bedia, Vaibhav" <vaibhav.bedia@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
 
-On Thu, Jan 10, 2013 at 02:02:53PM +0000, Bedia, Vaibhav wrote:
-> On Thu, Jan 10, 2013 at 18:50:55, Shawn Guo wrote:
-> > On Thu, Jan 10, 2013 at 01:02:30PM +0000, Bedia, Vaibhav wrote:
-> > > In the current approach the OPP data is split across DT and kernel code. If you take the
-> > > other approach all OPP entries can reside in DT and for someone just looking at that file
-> > > there's no confusion about what the kernel could potentially support. Whether a particular
-> > > an OPP should be supported is best decided at runtime.
-> > > 
-> > Listing the OPP that some Si rev can not support in DT is also
-> > a confusion to people who is just looking at DTS.  To me, the approach
-> > is not really doing anything better on this aspect.
-> > 
-> 
-> I still think putting the OPP data in a single place is better.
-> 
-Okay, I agree with you on that and plan to commit the following changes.
-But no, still no platform hook.
+Mark,
 
-Shawn
+Rafael just asked me to look at this patch, though I guess these comments
+should be directed to Rob who was the original patch author.
 
-diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-index 17c5618..231a32c 100644
---- a/arch/arm/boot/dts/imx6q.dtsi
-+++ b/arch/arm/boot/dts/imx6q.dtsi
-@@ -38,6 +38,7 @@
-                        next-level-cache = <&L2>;
-                        operating-points = <
-                                /* kHz    uV */
-+                               1200000 1275000
-                                996000  1250000
-                                792000  1150000
-                                396000  950000
-diff --git a/arch/arm/mach-imx/mach-imx6q.c b/arch/arm/mach-imx/mach-imx6q.c
-index 16f9a13..2f974f5 100644
---- a/arch/arm/mach-imx/mach-imx6q.c
-+++ b/arch/arm/mach-imx/mach-imx6q.c
-@@ -235,9 +235,9 @@ static void __init imx6q_opp_check_1p2ghz(struct device *cpu_dev)
+On Fri, Jan 04, 2013 at 10:35:43AM -0600, Mark Langsdorf wrote:
+> diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
+> index 49f335d..dad2d81 100644
+> --- a/arch/arm/kernel/smp_twd.c
+> +++ b/arch/arm/kernel/smp_twd.c
+> @@ -239,12 +239,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
+>  	return IRQ_NONE;
+>  }
+>  
+> -static struct clk *twd_get_clock(void)
+> +static struct clk *twd_get_clock(struct device_node *np)
+>  {
+>  	struct clk *clk;
+>  	int err;
+>  
+> -	clk = clk_get_sys("smp_twd", NULL);
+> +	if (np)
+> +		clk = of_clk_get(np, 0);
+> +	else
+> +		clk = clk_get_sys("smp_twd", NULL);
+>  	if (IS_ERR(clk)) {
+>  		pr_err("smp_twd: clock not found: %d\n", (int)PTR_ERR(clk));
+>  		return clk;
+> @@ -257,6 +260,7 @@ static struct clk *twd_get_clock(void)
+>  		return ERR_PTR(err);
+>  	}
+>  
+> +	twd_timer_rate = clk_get_rate(clk);
 
-        val = readl_relaxed(base + OCOTP_CFG3);
-        val >>= OCOTP_CFG3_SPEED_SHIFT;
--       if ((val & 0x3) == OCOTP_CFG3_SPEED_1P2GHZ)
--               if (opp_add(cpu_dev, 1200000000, 1275000))
--                       pr_warn("failed to add 1.2 GHz operating point\n");
-+       if ((val & 0x3) != OCOTP_CFG3_SPEED_1P2GHZ)
-+               if (opp_disable(cpu_dev, 1200000000))
-+                       pr_warn("failed to disable 1.2 GHz OPP\n");
+Hmm, so this overrides the later clk_get_rate() in twd_timer_setup(), making
+the later one redundant.  However...
 
- put_node:
-        of_node_put(np);
+>  	return clk;
+>  }
+>  
+> @@ -285,7 +289,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
+>  	 * during the runtime of the system.
+>  	 */
+>  	if (!common_setup_called) {
+> -		twd_clk = twd_get_clock();
+> +		twd_clk = twd_get_clock(NULL);
+>  
+>  		/*
+>  		 * We use IS_ERR_OR_NULL() here, because if the clock stubs
+> @@ -373,6 +377,8 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
+>  	if (!twd_base)
+>  		return -ENOMEM;
+>  
+> +	twd_clk = twd_get_clock(NULL);
+> +
+>  	return twd_local_timer_common_register();
 
+Ok, so this sets up twd_clk, and also twd_timer_rate, but
+twd_local_timer_common_register() just ends up registering the set of
+function pointers with the local timer code.  Some point later, the
+->setup function is called, and that will happen with common_setup_called
+false.  The result will be another call to twd_get_clock().
+
+>  }
+>  
+> @@ -405,6 +411,8 @@ void __init twd_local_timer_of_register(void)
+>  		goto out;
+>  	}
+>  
+> +	twd_clk = twd_get_clock(np);
+> +
+>  	err = twd_local_timer_common_register();
+
+And a similar thing happens here.  Except... the twd_clk gets overwritten
+by the call to twd_get_clock(NULL) from twd_timer_setup().
+
+I wonder if it would be much better to move twd_get_clock() out of
+twd_timer_setup() entirely, moving it into twd_local_timer_common_register().
+twd_local_timer_common_register() would have to take the dev node.
+Also, leave the setting of twd_timer_rate in twd_timer_setup().
+
+An alternative strategy would be to move the initialization of the
+timer rate also into twd_local_timer_common_register(), detect the
+NULL or error clock, and run the calibration from there (I don't think
+we can move the calibration).  If that's chosen, then "common_setup_called"
+should probably be renamed to "twd_calibration_done".
+
+What do you think?
