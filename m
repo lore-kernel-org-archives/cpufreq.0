@@ -1,57 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] cpufreq: Manage only online cpus
-Date: Fri, 11 Jan 2013 23:43:52 +0100
-Message-ID: <104464435.bDq83Yqfys@vostro.rjw.lan>
-References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: SPEAr: Fix sparse warning for cpufreq driver
+Date: Sat, 12 Jan 2013 10:42:09 +0530
+Message-ID: <6d76f8457b4eb42bcbab8e0221f90168a8fbc328.1357967480.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rafael.j.wysocki@intel.com, linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Sunday, December 16, 2012 11:20:08 AM Viresh Kumar wrote:
-> cpufreq core doesn't manage offline cpus and if driver->init() has returned
-> mask including offline cpus, it may result in unwanted behavior by cpufreq core
-> or governors.
-> 
-> We need to get only online cpus in this mask. There are two places to fix this
-> mask, cpufreq core and cpufreq driver. It makes sense to do this at common place
-> and hence is done in core.
+This patch fixes following sparse warning:
 
-Applied to the linux-next branch of the linux-pm.git tree as v3.9 material.
+drivers/cpufreq/spear-cpufreq.c:33:5: warning: symbol 'spear_cpufreq_verify' was
+not declared. Should it be static?
 
-Thanks,
-Rafael
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/spear-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 1f93dbd..de99517 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -970,6 +970,13 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->  		pr_debug("initialization failed\n");
->  		goto err_unlock_policy;
->  	}
-> +
-> +	/*
-> +	 * affected cpus must always be the one, which are online. We aren't
-> +	 * managing offline cpus here.
-> +	 */
-> +	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-> +
->  	policy->user_policy.min = policy->min;
->  	policy->user_policy.max = policy->max;
->  
-> 
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 4575cfe..8ff26af 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -30,7 +30,7 @@ static struct {
+ 	u32 cnt;
+ } spear_cpufreq;
+ 
+-int spear_cpufreq_verify(struct cpufreq_policy *policy)
++static int spear_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+ 	return cpufreq_frequency_table_verify(policy, spear_cpufreq.freq_tbl);
+ }
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
