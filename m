@@ -1,105 +1,60 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] cpufreq: handle cpufreq being disabled for all exported function.
-Date: Wed, 16 Jan 2013 12:42:47 -0800
-Message-ID: <1358368967-16294-1-git-send-email-dirk.brandewie@gmail.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:from:to:cc:subject:date:message-id:x-mailer;
-        bh=d1rIbEBQ0Iosb2d1hnVMcxNrzZvIJaJcNMn0jfGy2vQ=;
-        b=yKrIkhYPG1DvkyzeiKpIKFvg9PkAq0pFmRCxT3YQ3zECjnCLxVXpbun6yXsqXe7fcz
-         /bf7gXs3xLpZYqdBN8GKTEClkSE4VKUpxSJH3DrJR1RpBS76jxFfuMN2RIgIE1Cj6QF0
-         6hwVInwLnYEbfmUE+rBOI9e1CoNTlnTsJOXjE3dQgyM+L2UJ9PuV3crXMfVqe5EuUyXL
-         ifF0VXzFD7B6VM/3CjRKalGJl9xhe3PX3/FllCK3ft6qUpIxw2o5YXgVuwg0Dmdus0kn
-         DPI2DFIELEadXVcL6sj4QqIH1hlfek8LVjbZqMiV7nkwV5IIolsjxAmtgRNW6JN+VPEV
-         DD3Q==
-Sender: cpufreq-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
+Date: Wed, 16 Jan 2013 23:33:21 +0100
+Message-ID: <1448223.sdUJnNSRz4@vostro.rjw.lan>
+References: <20130115224755.085aa6b7@bluemoon> <20130116131725.4e590c34@bluemoon> <CAG-2HqWBVf=RWXExeFgxYdPTzPfQYZnt-3ZKzULTwdP9+-5mVQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAG-2HqWBVf=RWXExeFgxYdPTzPfQYZnt-3ZKzULTwdP9+-5mVQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: rjw@sisk.pl, Dirk Brandewie <dirk.brandewie@gmail.com>
+To: Tom Gundersen <teg@jklm.no>, Andre Przywara <andre.przywara@amd.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Leonid Isaev <lisaev@umail.iu.edu>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, Borislav Petkov <bp@alien8.de>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+On Wednesday, January 16, 2013 09:37:58 PM Tom Gundersen wrote:
+> [dropped arch-general, added kernel folks]
+> 
+> On Wed, Jan 16, 2013 at 8:17 PM, Leonid Isaev <lisaev@umail.iu.edu> wrote:
+> > On Wed, 16 Jan 2013 11:10:19 +0100
+> > Tom Gundersen <teg@jklm.no> wrote:
+> >
+> >> On Wed, Jan 16, 2013 at 5:47 AM, Leonid Isaev <lisaev@umail.iu.edu> wrote:
+> >> >         I just installed linux 3.7.2 from [testing] on an AMD system and
+> >> > noticed that powernow-k8 is not loaded.
+> >>
+> >> Probably due to this:
+> >> <http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e1f0b8e9b04a262834ed1>.
+> 
+> [...]
+> 
+> >> Hm, I thought acpi_cpufreq should have been loaded instead, no idea
+> >> why that does not happen for you. Could you try loading it manually?
+> >
+> > Neither acpi_cpufreq nor powernow_k8 is loaded automatically which of course
+> > leads to failure of all custom units configuring ondemand governor via
+> > sysfs. Manually modprob'ing acpi_cpufreq does work and indeed properly scales
+> > down the frequancy, but is accompanied by an info-level kernel message
+> > "acpi-cpufreq: overriding BIOS provided _PSD data".
+> >
+> > So, if the cpufreq driver works OK for other AMD users, I'll happily blame
+> > asus...
+> 
+> Matthew, Andre, Rafael,
+> 
+> Is what Leonid experinces above expected behavior or is this a bug? He
+> is using stock Arch kernel, which is almost vanilla 3.7.3 (see [0] for
+> the applied patches, nothing looks relevant).
 
-When disable_cpufreq() is called some exported functions are still
-being used that do not have a check for cpufreq being disabled.
+Well, I was afraid that something like this would happen after the recent AMD
+cpufreq changes.
 
-Add a disabled check into cpufreq_cpu_get() to return NULL if
-cpufreq is disabled this covers most of the exported functions. For
-the exported functions that do not call cpufreq_cpu_get() add an
-explicit check.
+Andre, do we have a clear way to address these problems?
 
-Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
----
- drivers/cpufreq/cpufreq.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+Rafael
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1f93dbd..b7663f7 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -180,6 +180,9 @@ err_out:
- 
- struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
- {
-+	if (cpufreq_disabled())
-+		return NULL;
-+
- 	return __cpufreq_cpu_get(cpu, false);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
-@@ -198,6 +201,9 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
- 
- void cpufreq_cpu_put(struct cpufreq_policy *data)
- {
-+	if (cpufreq_disabled())
-+		return;
-+
- 	__cpufreq_cpu_put(data, false);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
-@@ -264,6 +270,9 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- 
- 	BUG_ON(irqs_disabled());
- 
-+	if (cpufreq_disabled())
-+		return;
-+
- 	freqs->flags = cpufreq_driver->flags;
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
-@@ -1408,6 +1417,9 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
- {
- 	int ret;
- 
-+	if (cpufreq_disabled())
-+		return -EINVAL;
-+
- 	WARN_ON(!init_cpufreq_transition_notifier_list_called);
- 
- 	switch (list) {
-@@ -1442,6 +1454,9 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list)
- {
- 	int ret;
- 
-+	if (cpufreq_disabled())
-+		return -EINVAL;
-+
- 	switch (list) {
- 	case CPUFREQ_TRANSITION_NOTIFIER:
- 		ret = srcu_notifier_chain_unregister(
-@@ -1522,6 +1537,9 @@ int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
- {
- 	int ret = 0;
- 
-+	if (cpufreq_disabled())
-+		return ret;
-+
- 	if (!(cpu_online(cpu) && cpufreq_driver->getavg))
- 		return 0;
- 
+
 -- 
-1.7.7.6
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
