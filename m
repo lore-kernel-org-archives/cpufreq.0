@@ -1,62 +1,54 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: add imx6q-cpufreq driver
-Date: Tue, 15 Jan 2013 22:53:57 +0800
-Message-ID: <20130115145356.GD6574@S2101-09.ap.freescale.net>
-References: <1358175733-13475-1-git-send-email-shawn.guo@linaro.org>
- <1358175733-13475-2-git-send-email-shawn.guo@linaro.org>
- <50F427A7.7000203@boundarydevices.com>
+From: Tom Gundersen <teg@jklm.no>
+Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
+Date: Wed, 16 Jan 2013 21:37:58 +0100
+Message-ID: <CAG-2HqWBVf=RWXExeFgxYdPTzPfQYZnt-3ZKzULTwdP9+-5mVQ@mail.gmail.com>
+References: <20130115224755.085aa6b7@bluemoon> <CAG-2HqWPOYKVCj-Z=z_1e=mE6b6z9hMYFJzHf2GYAmTwQovN0A@mail.gmail.com>
+ <20130116131725.4e590c34@bluemoon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <50F427A7.7000203@boundarydevices.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130116131725.4e590c34@bluemoon>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Eric Nelson <eric.nelson@boundarydevices.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg@redhat.com>, Andre Przywara <andre.przywara@amd.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Leonid Isaev <lisaev@umail.iu.edu>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Hi Eric,
+[dropped arch-general, added kernel folks]
 
-On Mon, Jan 14, 2013 at 08:43:35AM -0700, Eric Nelson wrote:
-> >+	/* scaling up?  scale voltage before frequency */
-> >+	if (freqs.new > freqs.old) {
-> >+		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-> >+		if (ret) {
-> >+			dev_err(cpu_dev, "failed to scale voltage up: %d\n", ret);
-> >+			return ret;
-> >+		}
-> >+
-> >+		/*
-> >+		 * Need to increase vddpu and vddsoc for safety
-> >+		 * if we are about to run at 1.2 GHz.
-> >+		 */
-> >+		if (freqs.new == FREQ_1P2_GHZ / 1000) {
-> >+			regulator_set_voltage_tol(pu_reg,
-> >+					PU_SOC_VOLTAGE_HIGH, 0);
-> >+			regulator_set_voltage_tol(soc_reg,
-> >+					PU_SOC_VOLTAGE_HIGH, 0);
-> >+		}
-> 
-> I believe you need a delay here to let the LDOs ramp before changing
-> the CPU frequency.
-> 
-> According to the i.MX6Q reference manual, with the factory default
-> step times in PMU_MISC2 and the maximum voltage swing is
-> 	1.25V (1.2GHz) - 0.95V (400MHz) == 0.325V
-> 
-> or 13 steps at 25mV.
-> 
-> The default step time is 0.000021333s (512 clocks at 24MHz), so
-> the worst case delay needed is ~280uS.
-> 
-> This could also be done in the regulator driver, but that may
-> require multiple delays if multiple rails are changed.
-> 
-I initially thought that regulator driver should take care of it.  But
-now I agree with you that we can do it here for the least latency.
+On Wed, Jan 16, 2013 at 8:17 PM, Leonid Isaev <lisaev@umail.iu.edu> wrote:
+> On Wed, 16 Jan 2013 11:10:19 +0100
+> Tom Gundersen <teg@jklm.no> wrote:
+>
+>> On Wed, Jan 16, 2013 at 5:47 AM, Leonid Isaev <lisaev@umail.iu.edu> wrote:
+>> >         I just installed linux 3.7.2 from [testing] on an AMD system and
+>> > noticed that powernow-k8 is not loaded.
+>>
+>> Probably due to this:
+>> <http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e1f0b8e9b04a262834ed1>.
 
-Will roll it into v4.  Thanks.
+[...]
 
-Shawn
+>> Hm, I thought acpi_cpufreq should have been loaded instead, no idea
+>> why that does not happen for you. Could you try loading it manually?
+>
+> Neither acpi_cpufreq nor powernow_k8 is loaded automatically which of course
+> leads to failure of all custom units configuring ondemand governor via
+> sysfs. Manually modprob'ing acpi_cpufreq does work and indeed properly scales
+> down the frequancy, but is accompanied by an info-level kernel message
+> "acpi-cpufreq: overriding BIOS provided _PSD data".
+>
+> So, if the cpufreq driver works OK for other AMD users, I'll happily blame
+> asus...
 
+Matthew, Andre, Rafael,
+
+Is what Leonid experinces above expected behavior or is this a bug? He
+is using stock Arch kernel, which is almost vanilla 3.7.3 (see [0] for
+the applied patches, nothing looks relevant).
+
+Cheers,
+
+Tom
+
+[0]: <https://projects.archlinux.org/svntogit/packages.git/tree/trunk?h=packages/linux>
