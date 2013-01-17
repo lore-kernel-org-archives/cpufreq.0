@@ -1,34 +1,29 @@
-From: Elliot Wolk <elliot.wolk@gmail.com>
-Subject: Re: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand governor set - i7-2630QM
-Date: Thu, 17 Jan 2013 21:24:38 +0000 (UTC)
-Message-ID: <loom.20130117T221016-208@post.gmane.org>
-References: <bug-50721-12968@https.bugzilla.kernel.org/> <20130114013037.4480F11FB6C@bugzilla.kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] powernow-k8: Add a kconfig dependency on acpi-cpufreq
+Date: Thu, 17 Jan 2013 23:10:56 +0100
+Message-ID: <3845649.nP3d3cdOBJ@vostro.rjw.lan>
+References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com> <7359167.GTsCEtNASI@vostro.rjw.lan> <20130117141758.GA3386@pd.tnic>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130117141758.GA3386@pd.tnic>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
 
-i also experience this exactly, with i7-2720QM.
-my cores get 'stuck' on 2.2ghz
-sometimes, the max w/out turbo.
-{kernel 3.7.0, lenovo w520}
+On Thursday, January 17, 2013 03:17:58 PM Borislav Petkov wrote:
+> On Thu, Jan 17, 2013 at 01:53:55PM +0100, Rafael J. Wysocki wrote:
+> > Do we need that in -stable?
+> 
+> Yes, please.
 
-cpu usage hovers around 6% and load is .62.
-the cores spend nearly all their time in C7 state,
-according to turbostat.
+3.7+ I suppose?
 
-changing the governor does not fix this.
-using userspace or ondemand and setting
-the min/max can convince to use turbo {2201000, goes to 3.1ghz},
-but not change the minimum.
-performance makes it use turbo {goes to 3.1ghz},
-and powersave does nothing {keeps it at 2.2ghz}.
+Rafael
 
-note that suspending to ram and waking up,
-occasionally shakes it loose, and freq drops to 0.8ghz.
-so when it gets stuck, as a workaround, i just pm-suspend,
-wait 20s, and repeat, until turbostat shows it has dropped.
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
