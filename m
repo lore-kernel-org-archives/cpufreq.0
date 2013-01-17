@@ -1,69 +1,70 @@
 From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to
- fall back to acpi-cpufreq and it is unavailable.
-Date: Thu, 17 Jan 2013 12:54:37 +0100
-Message-ID: <20130117115436.GA3853@pd.tnic>
+Subject: [PATCH] powernow-k8: Add a kconfig dependency on acpi-cpufreq
+Date: Thu, 17 Jan 2013 12:58:44 +0100
+Message-ID: <20130117115844.GB3853@pd.tnic>
 References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
  <20130111144940.GB21882@liondog.tnic>
  <20130111165054.GD10751@liondog.tnic>
  <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
+ <20130117115436.GA3853@pd.tnic>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358423678; bh=UG22KHccmTN372OJnsHhX+z3Vfjf/EkTTAcqr8rVEUI=;
+	t=1358423926; bh=jUAAXU941NMZnPJM1b1emrzIOgol8/JUkpL9CGPVvSM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=iP7N7f0JPbvXQGGpAwi/K/AzqNBH7GHwvxmm2l
-	26J0VkAXozhvHFe9OJj66LxiLct6FHDNBXVzslscbG5dz+Xl9Tk9yTIQy/rHH+hRiFg
-	0/ljWcm+EGOGXbRcrhdLj6m60QGLLX8ocsDGoZDkvSEsOXA5OptmjEGLA8Ha4vIbHU=
+	 Content-Type:In-Reply-To; b=BB+VIEC2uXtjIaY/5kZJ1Yv6qTA11cSxAhFVmL
+	rxkfH3ZMUW3o5+E+cRoJUIDYcCSM6RJ2E96Msg5QbBXQEzAmlkV/UHGm1YreoUMEtBe
+	v4I1yEC8IyPJFS+SGWT+8/F0YY8C/Vu9rtv+HF0IC4cwDxMayh26swo9euyyf8aDn8=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358423678; bh=UG22KHccmTN372OJnsHhX+z3Vfjf/EkTTAcqr8rVEUI=;
+	t=1358423925; bh=jUAAXU941NMZnPJM1b1emrzIOgol8/JUkpL9CGPVvSM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=iP7N7f0JPbvXQGGpAwi/K/AzqNBH7GHwvxmm2l
-	26J0VkAXozhvHFe9OJj66LxiLct6FHDNBXVzslscbG5dz+Xl9Tk9yTIQy/rHH+hRiFg
-	0/ljWcm+EGOGXbRcrhdLj6m60QGLLX8ocsDGoZDkvSEsOXA5OptmjEGLA8Ha4vIbHU=
+	 Content-Type:In-Reply-To; b=UAbMlCKsIk415uXTu1Q19v/DIss0vVLEqiNtNl
+	INMIHp+SUNxEtj2ZZp4GQyRH16eXe2wBf+DQyQcN6iA9FzjLn/T0uKdNkHsGBshDDww
+	780D+b5zSHExTBK50kHD4sbKtuzrrG0bPUa6JGKxNbQTIhJneBDfDwMdeSipcBsZmM=
 Content-Disposition: inline
-In-Reply-To: <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
+In-Reply-To: <20130117115436.GA3853@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, "rjw@sisk.pl" <rjw@sisk.pl>
-Cc: Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
+To: "rjw@sisk.pl" <rjw@sisk.pl>
+Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
 
-On Fri, Jan 11, 2013 at 07:03:35PM +0000, Gopalakrishnan, Aravind wrote:
-> So, I had tried out the case when acpi-cpufreq was compiled into the
-> kernel and looked at the return values from request_module(); it
-> returns a positive value (255) both when acpi-cpufreq was compiled-in
-> and when not compiled-in. (Please do let me know if I am missing
-> something here...) (This was the case Andreas had mentioned in the bug
-> report too)
->
-> It was due to this that I had decided to just check the CONFIG option
-> and print out a warning to the user.
+From: Borislav Petkov <bp@suse.de>
+Date: Thu, 17 Jan 2013 12:44:20 +0100
+Subject: [PATCH] powernow-k8: Add a kconfig dependency on acpi-cpufreq
 
-Well, when both are built-in, I get -2 from request_module which is most
-probably the retval of modprobe with a missing module (I delved deep
-into the do_execve bowels but didn't go deep enough).
+Andreas reports in https://bugzilla.kernel.org/show_bug.cgi?id=51741
+that with his Gentoo config, acpi-cpufreq wasn't enabled and powernow-k8
+couldn't handoff properly to acpi-cpufreq leading to running without
+P-state support (i.e., cores are constantly in P0).
 
-So, handoff to acpi-cpufreq still has some issues. When both are
-built-in, the module_init functions turn into normal initcalls and
-in that case, they're executed in link order and it can happen that
-powernowk8_init() runs before acpi_cpufreq_init().
+To alleaviate that, we need to make powernow-k8 depend on acpi-cpufreq
+so that acpi-cpufreq is always present.
 
-In that case, we get -2 (-ENOENT, see above) and even though there's an
-error, acpi-cpufreq gets loaded so the error is bogus:
+Cc: Andre Przywara <andre@andrep.de>
+Reported-by: Andreas <linuxuser330250@gmx.net>
+Signed-off-by: Borislav Petkov <bp@suse.de>
+---
+ drivers/cpufreq/Kconfig.x86 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[    2.225413] powernow-k8: This CPU is now supported by acpi-cpufreq, loading it.
-[    2.227266] powernow-k8: Error(-2) loading acpi-cpufreq, make sure you have it enabled, else you won't have any Pstates support on this CPU!
-[    2.227868] acpi-cpufreq: overriding BIOS provided _PSD data
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 934854ae5eb4..7227cd734042 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -106,7 +106,7 @@ config X86_POWERNOW_K7_ACPI
+ config X86_POWERNOW_K8
+ 	tristate "AMD Opteron/Athlon64 PowerNow!"
+ 	select CPU_FREQ_TABLE
+-	depends on ACPI && ACPI_PROCESSOR
++	depends on ACPI && ACPI_PROCESSOR && X86_ACPI_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for K8/early Opteron/Athlon64 processors.
+ 	  Support for K10 and newer processors is now in acpi-cpufreq.
+-- 
+1.8.1.rc3
 
-I still need to think hard about this case and how to fix it.
-
-In the meantime, here's fix for Andreas' issue (as a reply to this
-message). Rafael, the patch is trivial, you might want to send it now
-and for stable.
-
-Thanks.
 
 -- 
 Regards/Gruss,
