@@ -1,72 +1,39 @@
-From: =?ISO-8859-1?Q?Andr=E9?= Przywara <andre@andrep.de>
-Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
-Date: Fri, 18 Jan 2013 13:32:33 +0100
-Message-ID: <20130118133233.4521ddb6@hydra>
-References: <20130115224755.085aa6b7@bluemoon>
-	<20130116131725.4e590c34@bluemoon>
-	<CAG-2HqWBVf=RWXExeFgxYdPTzPfQYZnt-3ZKzULTwdP9+-5mVQ@mail.gmail.com>
-	<1448223.sdUJnNSRz4@vostro.rjw.lan>
-	<20130116231728.GA10204@x1.alien8.de>
-	<20130116181600.4c48ee3b@bluemoon>
-	<20130117094648.GD30700@pd.tnic>
-	<20130117194044.7a18a29d@bluemoon>
-	<20130118113717.GA6808@pd.tnic>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20130118113717.GA6808@pd.tnic>
-Sender: linux-acpi-owner@vger.kernel.org
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: [PATCH 0/3] Kirkwoode cpufreq driver
+Date: Fri, 18 Jan 2013 15:20:43 +0100
+Message-ID: <1358518846-16251-1-git-send-email-andrew@lunn.ch>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Borislav Petkov <bp@alien8.de>
-Cc: Leonid Isaev <lisaev@umail.iu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tom Gundersen <teg@jklm.no>, Matthew Garrett <matthew.garrett@nebula.com>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, Andrew Lunn <andrew@lunn.ch>
 
-On Fri, 18 Jan 2013 12:37:17 +0100
-Borislav Petkov <bp@alien8.de> wrote:
+This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
 
-(updating Matthew's email as per MAINTAINERS)
+The changes to kirkwood_defconfig enable it and set the default
+governor to ondemand.
 
-> On Thu, Jan 17, 2013 at 07:40:44PM -0600, Leonid Isaev wrote:
-> > Arrh, modprobe still does not exit cleanly with this...
-> 
-> As I said already above:
-> 
-> >> That's correct - we say ENODEV on your CPU which supports hardware
-> >> P-states and hand off to acpi-cpufreq which has that functionality
-> >> now.
-> 
-> It is supposed to work that way: we return an error from the
-> powernow-k8 init function so that it doesn't load but hand off to
-> acpi-cpufreq so that it gets loaded instead.
-> 
-> > > But, we also have the CPU autoprobing deal:
-> > > 
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=644e9cbbe3fc032cc92d0936057e166a994dc246
-> > > 
-> > > so, *actually*, powernow-k8 should be loaded by default. I dunno,
-> > > maybe upgrade udev on your distro?
-> > 
-> > Udev 196 and 197 + linux <= 3.6.11 yield correct CPU autoprobing.
-> > However, udev 197 + linux 3.7.2 do not. I haven't tested udev 196
-> > with 3.7.2 though, but it does not look like a udev issue.
-> 
-> Hmm, I'll bet this has something to do with the fact that HW_PSTATE is
-> in another CPUID function on AMD than on Intel and udev doesn't see
-> that bit to load acpi-cpufreq automatically.
+Andrew Lunn (3):
+  cpufreq: kirkwood: Add a cpufreq driver for Marvell Kirkwood SoCs
+  arm: kirkwood: Instantiate cpufreq driver
+  arm: kirkwood: Enable cpufreq and ondemand on kirkwood_defconfig
 
-But the acpi-cpufreq does not export it's dependency on some CPUID
-flags, since it is an _ACPI_ module. Shouldn't the load be triggered
-while parsing the ACPI tree instead?
+ arch/arm/Kconfig                                  |    1 +
+ arch/arm/configs/kirkwood_defconfig               |    3 +
+ arch/arm/mach-kirkwood/board-dt.c                 |    3 +-
+ arch/arm/mach-kirkwood/common.c                   |   23 ++
+ arch/arm/mach-kirkwood/common.h                   |    2 +
+ arch/arm/mach-kirkwood/include/mach/bridge-regs.h |    2 +
+ drivers/clk/mvebu/clk-gating-ctrl.c               |    1 +
+ drivers/cpufreq/Kconfig.arm                       |    6 +
+ drivers/cpufreq/Makefile                          |    1 +
+ drivers/cpufreq/kirkwood-cpufreq.c                |  273 +++++++++++++++++++++
+ 10 files changed, 314 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/cpufreq/kirkwood-cpufreq.c
 
-$ /sbin/modinfo drivers/cpufreq/acpi-cpufreq.ko | grep alias
-alias:          acpi
+-- 
+1.7.10.4
 
-$ /sbin/modinfo drivers/cpufreq/powernow-k8.ko | grep alias
-alias:          x86cpu:vendor:0002:family:000F:model:*:feature:*
-
-How does ArchLinux loads acpi-cpufreq on Intel CPUs? It should now be
-the same mechanism on AMD. Or does it have acpi-cpufreq somehow
-hard-coded in the scripts for GenuineIntel?
-
-Regards,
-Andre.
