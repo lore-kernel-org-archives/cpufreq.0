@@ -1,53 +1,59 @@
 From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to
- fall back to acpi-cpufreq and it is unavailable.
-Date: Fri, 18 Jan 2013 18:07:55 +0100
-Message-ID: <20130118170755.GB4062@pd.tnic>
-References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
- <20130111144940.GB21882@liondog.tnic>
- <20130111165054.GD10751@liondog.tnic>
- <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
- <20130117115436.GA3853@pd.tnic>
- <20130118162347.GA31499@srcf.ucam.org>
+Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
+Date: Fri, 18 Jan 2013 18:10:51 +0100
+Message-ID: <20130118171051.GC4062@pd.tnic>
+References: <1448223.sdUJnNSRz4@vostro.rjw.lan>
+ <20130116231728.GA10204@x1.alien8.de>
+ <20130116181600.4c48ee3b@bluemoon>
+ <20130117094648.GD30700@pd.tnic>
+ <20130117194044.7a18a29d@bluemoon>
+ <20130118113717.GA6808@pd.tnic>
+ <20130118133233.4521ddb6@hydra>
+ <E99CBA9F97C3D149AA6B19ED2E277C9B0193997E@BY2PRD0510MB365.namprd05.prod.outlook.com>
+ <20130118152633.GA4062@pd.tnic>
+ <E99CBA9F97C3D149AA6B19ED2E277C9B019399B6@BY2PRD0510MB365.namprd05.prod.outlook.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358528880; bh=Jme8oP6Z7pKxTGnNIuuXGfnmdeGJngTOLiRfe3qPSF4=;
+	t=1358529056; bh=q848bq++lmEQD9xu6q+yjgSycAgC1dwwCF+ssYgBuRs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=UKWLu4u9v3lOCkHQMfGUPIETbrs+Hv/7lkVY3l
-	eeaHz0e0dC5ozUJ6+2lq/SIcJrXQkS7AQ+ZtQBmJ7ORTJRySbE6jkwe9OXMtugnrw5w
-	5qlCvXjOt14dvdOal3tgGGBTvjGQ0BlqYlOgNLvjFC3h8WQuIR9bDpV68M/coEn/Yw=
+	 Content-Type:In-Reply-To; b=B73fPbQe/2gztWQS4tVZTGu5lrnf/N0vssft1x
+	aEikTGk7gIsO6Y8kQVoAdubCubcbHGrkkcnEFv7YPHGuMCnVd+FGL7hTZ5BvOcGPTGT
+	knB49IFpsYjs29ZnfgjkHHZDS+xmWkKroFsrcB9/bPLHP1V4k0jTy+hNk99/kjuR34=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358528879; bh=Jme8oP6Z7pKxTGnNIuuXGfnmdeGJngTOLiRfe3qPSF4=;
+	t=1358529056; bh=q848bq++lmEQD9xu6q+yjgSycAgC1dwwCF+ssYgBuRs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=fEQt3w4EH4/eBxxXyugAG4YEMTDHUXUP7w4/dn
-	zWXovwIqyFOTnxoBW9p+x6XMdqKlUOCGjPCdfUp90eadVswbcs96z3AF3BkwxSuaE5w
-	oXiZI+gK8C6cWcI4P9n9SINOiIdL6EHTCqRKyfl/hLXarjon1PtnmmZVRkzsqEvyhA=
+	 Content-Type:In-Reply-To; b=B73fPbQe/2gztWQS4tVZTGu5lrnf/N0vssft1x
+	aEikTGk7gIsO6Y8kQVoAdubCubcbHGrkkcnEFv7YPHGuMCnVd+FGL7hTZ5BvOcGPTGT
+	knB49IFpsYjs29ZnfgjkHHZDS+xmWkKroFsrcB9/bPLHP1V4k0jTy+hNk99/kjuR34=
 Content-Disposition: inline
-In-Reply-To: <20130118162347.GA31499@srcf.ucam.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <E99CBA9F97C3D149AA6B19ED2E277C9B019399B6@BY2PRD0510MB365.namprd05.prod.outlook.com>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, "rjw@sisk.pl" <rjw@sisk.pl>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
+To: Matthew Garrett <matthew.garrett@nebula.com>
+Cc: =?utf-8?B?QW5kcsOp?= Przywara <andre@andrep.de>, Leonid Isaev <lisaev@umail.iu.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tom Gundersen <teg@jklm.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-On Fri, Jan 18, 2013 at 04:23:47PM +0000, Matthew Garrett wrote:
-> On Thu, Jan 17, 2013 at 12:54:37PM +0100, Borislav Petkov wrote:
+On Fri, Jan 18, 2013 at 03:32:45PM +0000, Matthew Garrett wrote:
+> On Fri, 2013-01-18 at 16:26 +0100, Borislav Petkov wrote:
+> > Yep, that should be one way to fix it.
+> > 
+> > One other fix IMHO would be if udev is looking at CPUID bits, to teach
+> > it to check the proper P-States feature bits on Intel and AMD:
 > 
-> > So, handoff to acpi-cpufreq still has some issues. When both are
-> > built-in, the module_init functions turn into normal initcalls and
-> > in that case, they're executed in link order and it can happen that
-> > powernowk8_init() runs before acpi_cpufreq_init().
-> 
-> Just flip the link order? It's only the way it is because in the past we 
-> wanted to try hardware-specific drivers before more generic ones, and I 
-> don't think that's a concern in this case now.
+> I think it makes more sense to use the existing CPU modaliases than to
+> special-case it in udev.
 
-Yeah, I heard that the acpi-idle and intel-idle drivers do that and also
-heard that it was a hack. It doesn't look too ugly IMHO:
+Well, actually, those CPUID bits are there for exactly that reason: to
+query them and enable software features. And this is one of the reasons
+CPUID is a ring 3 instruction: so that even userspace can use it.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=2671717265ae6e720a9ba5f13fbec3a718983b65
+So, in a perfect world, udev should simply run CPUID, check the
+respective bits, and, if they're set, load the respective driver. That
+is, if it doesn't do it already.
+
+No need for additional code glue in the kernel or anywhere else.
 
 -- 
 Regards/Gruss,
