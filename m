@@ -1,65 +1,81 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [linux-pm] [PATCH] cpufreq: exynos: Show list of available
- frequencies
-Date: Thu, 17 Jan 2013 20:35:17 -0800
-Message-ID: <00e301cdf535$38f933a0$aaeb9ae0$@samsung.com>
-References: <1357642258-32421-1-git-send-email-inderpal.singh@linaro.org>
- <CADGdYn6=fztS_Z9UeQiRyfE3FTAq+XfuPSrY=fT7LOgU498QXQ@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
+Date: Fri, 18 Jan 2013 12:37:17 +0100
+Message-ID: <20130118113717.GA6808@pd.tnic>
+References: <20130115224755.085aa6b7@bluemoon>
+ <20130116131725.4e590c34@bluemoon>
+ <CAG-2HqWBVf=RWXExeFgxYdPTzPfQYZnt-3ZKzULTwdP9+-5mVQ@mail.gmail.com>
+ <1448223.sdUJnNSRz4@vostro.rjw.lan>
+ <20130116231728.GA10204@x1.alien8.de>
+ <20130116181600.4c48ee3b@bluemoon>
+ <20130117094648.GD30700@pd.tnic>
+ <20130117194044.7a18a29d@bluemoon>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CADGdYn6=fztS_Z9UeQiRyfE3FTAq+XfuPSrY=fT7LOgU498QXQ@mail.gmail.com>
-Content-language: en-us
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1358509042; bh=ECEFkE8cUTJjs+z7pTx1kFJDN4aIBrLYugm6eP98/X0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=MGtIqYHpZhequmiW34dlr0iIycnYklIBrHaAv6
+	XktPzh9Nqj9wwGINow0PgdVw5BFnlsNrtSwbJWkbahA8kyjfE9AkhV9SA2+sLlCx9AH
+	sHY/ypFDIZbT8elWkdcxyCebyd+CPKgsPGDm2kkw6l6gQc0reRMVlrgF/X27KwjYAw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1358509042; bh=ECEFkE8cUTJjs+z7pTx1kFJDN4aIBrLYugm6eP98/X0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=MGtIqYHpZhequmiW34dlr0iIycnYklIBrHaAv6
+	XktPzh9Nqj9wwGINow0PgdVw5BFnlsNrtSwbJWkbahA8kyjfE9AkhV9SA2+sLlCx9AH
+	sHY/ypFDIZbT8elWkdcxyCebyd+CPKgsPGDm2kkw6l6gQc0reRMVlrgF/X27KwjYAw=
+Content-Disposition: inline
+In-Reply-To: <20130117194044.7a18a29d@bluemoon>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: 'amit kachhap' <amit.kachhap@gmail.com>, 'Inderpal Singh' <inderpal.singh@linaro.org>
-Cc: linux-pm@lists.linux-foundation.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Leonid Isaev <lisaev@umail.iu.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tom Gundersen <teg@jklm.no>, =?utf-8?B?QW5kcsOp?= Przywara <andre@andrep.de>, Matthew Garrett <mjg@redhat.com>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
 
-amit kachhap wrote:
+On Thu, Jan 17, 2013 at 07:40:44PM -0600, Leonid Isaev wrote:
+> Arrh, modprobe still does not exit cleanly with this...
+
+As I said already above:
+
+>> That's correct - we say ENODEV on your CPU which supports hardware
+>> P-states and hand off to acpi-cpufreq which has that functionality
+>> now.
+
+It is supposed to work that way: we return an error from the powernow-k8
+init function so that it doesn't load but hand off to acpi-cpufreq so
+that it gets loaded instead.
+
+> > But, we also have the CPU autoprobing deal:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=644e9cbbe3fc032cc92d0936057e166a994dc246
+> > 
+> > so, *actually*, powernow-k8 should be loaded by default. I dunno, maybe
+> > upgrade udev on your distro?
 > 
-> On Tue, Jan 8, 2013 at 2:50 AM, Inderpal Singh
-> <inderpal.singh@linaro.org> wrote:
-> > Add freq_attr attribute to show list of available frequencies.
-> >
-> > Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
-> > Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> > Signed-off-by: KyungMin Park <kyungmin.park@samsung.com>
-> > Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
-> > ---
-> >  drivers/cpufreq/exynos-cpufreq.c |   13 +++++++++++++
-> >  1 file changed, 13 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-
-> cpufreq.c
-> > index 7012ea8..bc1e833 100644
-> > --- a/drivers/cpufreq/exynos-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos-cpufreq.c
-> > @@ -244,13 +244,26 @@ static int exynos_cpufreq_cpu_init(struct
-> cpufreq_policy *policy)
-> >         return cpufreq_frequency_table_cpuinfo(policy, exynos_info-
-> >freq_table);
-> >  }
-> >
-> > +static int exynos_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> > +{
-> > +       cpufreq_frequency_table_put_attr(policy->cpu);
-> > +       return 0;
-> > +}
-> > +
-> > +static struct freq_attr *exynos_cpufreq_attr[] = {
-> > +       &cpufreq_freq_attr_scaling_available_freqs,
-> > +       NULL,
-> > +};
-> > +
-> 
-> This change looks fine. I guess this was posted before also but could
-> not go mainline.
-> Reviewed-by: Amit Daniel Kachhap<amit.daniel@samsung.com>
-> 
-Looks OK to me, applied.
+> Udev 196 and 197 + linux <= 3.6.11 yield correct CPU autoprobing. However,
+> udev 197 + linux 3.7.2 do not. I haven't tested udev 196 with 3.7.2 though,
+> but it does not look like a udev issue.
+
+Hmm, I'll bet this has something to do with the fact that HW_PSTATE is
+in another CPUID function on AMD than on Intel and udev doesn't see that
+bit to load acpi-cpufreq automatically.
+
+Before I go and install archlinux here, where can I get the udev sources
+which are in your archlinux installation to stare at them a little? :)
+Especially the cpu autoprobing part which supposedly uses the cpuid
+kernel driver.
+
+> I don't know if it matters, but I also have AMD microcode "0x10000c8",
+> albeit it didn't cause problems with 3.6.11...
+
+Nah, microcode doesn't have anything to do with it.
 
 Thanks.
 
-- Kukjin
+-- 
+Regards/Gruss,
+    Boris.
 
+Sent from a fat crate under my desk. Formatting is fine.
+--
