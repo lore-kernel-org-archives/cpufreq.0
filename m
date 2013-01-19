@@ -1,64 +1,71 @@
 From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to
- fall back to acpi-cpufreq and it is unavailable.
-Date: Fri, 18 Jan 2013 20:58:06 +0100
-Message-ID: <20130118195806.GA3252@pd.tnic>
-References: <20130111144940.GB21882@liondog.tnic>
- <20130111165054.GD10751@liondog.tnic>
- <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
- <20130117115436.GA3853@pd.tnic>
- <20130118162347.GA31499@srcf.ucam.org>
- <20130118170755.GB4062@pd.tnic>
- <20130118190021.GD4062@pd.tnic>
- <20130118190659.GB16757@srcf.ucam.org>
- <20130118193656.GE4062@pd.tnic>
- <20130118193834.GA17734@srcf.ucam.org>
+Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
+Date: Sat, 19 Jan 2013 13:08:14 +0100
+Message-ID: <20130119120814.GA4026@pd.tnic>
+References: <20130116131725.4e590c34@bluemoon>
+ <CAG-2HqWBVf=RWXExeFgxYdPTzPfQYZnt-3ZKzULTwdP9+-5mVQ@mail.gmail.com>
+ <1448223.sdUJnNSRz4@vostro.rjw.lan>
+ <20130116231728.GA10204@x1.alien8.de>
+ <20130116181600.4c48ee3b@bluemoon>
+ <20130117094648.GD30700@pd.tnic>
+ <20130117194044.7a18a29d@bluemoon>
+ <20130118113717.GA6808@pd.tnic>
+ <20130118133233.4521ddb6@hydra>
+ <E99CBA9F97C3D149AA6B19ED2E277C9B0193997E@BY2PRD0510MB365.namprd05.prod.outlook.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358539091; bh=66PgLW/Yh9Cjw90LbOq2BDonTaKZ15ZBqAfVGEtmWXA=;
+	t=1358597300; bh=MG0Co3tpxSPrMJS7Soz7lz0BLDI772IuidWJUPGh+ME=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=n03bQQn0QZ+0G57ddj+lLSIRuN9uhMpB2JKfyv
-	iItZUUba1Er7us4wJVrSvhPh4eCIgJ1JDR2eCNFrEvCz4i+kr/5aIJdzZ9FP57lvhOt
-	W2rZ/i7RUGMr6K7C5bZla3LPICx+7qcx81jQ0rMDDYtNngDHNaj1k7Ogl5I5lVr/YM=
+	 Content-Type:In-Reply-To; b=f7YGEgN3qT/YzWURTqgitDyEu91NWKwIJFxnav
+	rB7JQF1pWK6mLPjARFLYUTp1ocBK2LQaWZFq0sh6HJoTOMbOwQJg5fmbxMjKA6bu6RO
+	bgWHPZ1B+nYBNg9HY1wEDTpidLWJPaWjmIT/XyP5zEb5ZDRgRGNmfn5lWHxAz8yqn4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358539091; bh=66PgLW/Yh9Cjw90LbOq2BDonTaKZ15ZBqAfVGEtmWXA=;
+	t=1358597300; bh=MG0Co3tpxSPrMJS7Soz7lz0BLDI772IuidWJUPGh+ME=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=n03bQQn0QZ+0G57ddj+lLSIRuN9uhMpB2JKfyv
-	iItZUUba1Er7us4wJVrSvhPh4eCIgJ1JDR2eCNFrEvCz4i+kr/5aIJdzZ9FP57lvhOt
-	W2rZ/i7RUGMr6K7C5bZla3LPICx+7qcx81jQ0rMDDYtNngDHNaj1k7Ogl5I5lVr/YM=
+	 Content-Type:In-Reply-To; b=f7YGEgN3qT/YzWURTqgitDyEu91NWKwIJFxnav
+	rB7JQF1pWK6mLPjARFLYUTp1ocBK2LQaWZFq0sh6HJoTOMbOwQJg5fmbxMjKA6bu6RO
+	bgWHPZ1B+nYBNg9HY1wEDTpidLWJPaWjmIT/XyP5zEb5ZDRgRGNmfn5lWHxAz8yqn4=
 Content-Disposition: inline
-In-Reply-To: <20130118193834.GA17734@srcf.ucam.org>
-Sender: cpufreq-owner@vger.kernel.org
+In-Reply-To: <E99CBA9F97C3D149AA6B19ED2E277C9B0193997E@BY2PRD0510MB365.namprd05.prod.outlook.com>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, "rjw@sisk.pl" <rjw@sisk.pl>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
+To: Matthew Garrett <matthew.garrett@nebula.com>, Leonid Isaev <lisaev@umail.iu.edu>
+Cc: =?utf-8?B?QW5kcsOp?= Przywara <andre@andrep.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tom Gundersen <teg@jklm.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-On Fri, Jan 18, 2013 at 07:38:34PM +0000, Matthew Garrett wrote:
-> On Fri, Jan 18, 2013 at 08:36:56PM +0100, Borislav Petkov wrote:
+On Fri, Jan 18, 2013 at 03:17:04PM +0000, Matthew Garrett wrote:
+> Can you try this (entirely untested) patch?
 > 
-> > Ok, how much can we rely on ACPI to have this ACPI_ADR_SPACE_SYSTEM_IO
-> > properly set on K8? Because the thing is, we want to use acpi-cpufreq on
-> > F10h onwards and leave powernow-k8 to K8s.
-> 
-> SYSTEM_IO only supports single processors and was superceded in ACPI 
-> 2.0. Are there any single-core F10h?
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c
+> b/drivers/cpufreq/acpi-cpufreq.c
+> index 0d048f6..7b0d49d 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -1030,4 +1030,11 @@ MODULE_PARM_DESC(acpi_pstate_strict,
+>  late_initcall(acpi_cpufreq_init);
+>  module_exit(acpi_cpufreq_exit);
+>  
+> +static const struct x86_cpu_id acpi_cpufreq_ids[] = {
+> +	X86_FEATURE_MATCH(X86_FEATURE_ACPI),
+> +	X86_FEATURE_MATCH(X86_FEATURE_HW_PSTATE),
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
+> +
+>  MODULE_ALIAS("acpi");
 
-Hmm, maybe some downcored creations, who knows? But actually, that
-doesn't matter: we want to exit early from acpi-cpufreq loading on K8
-only so the check should simply be:
+Leonid, can you try Matthew's patch?
 
-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-	    boot_cpu_data.x86 == 0xf) {
-		pr_debug(...)
-		...
-	}
+This is adding the additional cpufreatures aliases:
 
-Yeah, I think that should work. I'll add your patch to the others and
-make a patchset to give it a run. If it looks good, we'll queue it for
-3.9 so that it can see more testing.
+alias:          x86cpu:vendor:*:family:*:model:*:feature:*00E8*
+alias:          x86cpu:vendor:*:family:*:model:*:feature:*0016*
+
+and since powernow-k8 used to load on 3.6-stable, it probably happened
+because the 0xe8 feature and since 3.7 moved it to acpi-cpufreq, this
+patch should actually fix it.
 
 Thanks.
 
@@ -68,3 +75,4 @@ Regards/Gruss,
 
 Sent from a fat crate under my desk. Formatting is fine.
 --
+
