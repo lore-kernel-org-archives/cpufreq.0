@@ -1,72 +1,96 @@
 From: Borislav Petkov <bp@alien8.de>
-Subject: [PATCH 0/6] acpi-cpufreq and powernow-k8 fixes
-Date: Sun, 20 Jan 2013 11:24:24 +0100
-Message-ID: <1358677470-17394-1-git-send-email-bp@alien8.de>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Subject: more cpufreq funsies
+Date: Sun, 20 Jan 2013 11:56:13 +0100
+Message-ID: <20130120105613.GA16519@pd.tnic>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358677478; bh=1WFyvf0vj7kPyxjz11Lkm0fPYHNDwzQ2bPf0tdD5d2g=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=WBEZ4xNsj7HjdR8837/HJv6COpk
-	l7maJnRZccr0zUygx0EAyyOG3vPl9ay5GxuGs6OIx8lZJOYPZcgPOUa1GBywSoCDbT2
-	8wzuPRwrptF0CFWwdJQ94Q7n2PAl+d0oHHeBH2W+B8PlWednxvx9sAt2TGWec0yA2QS
-	+H3F3U2hBM=
+	t=1358679369; bh=3wcuAHG70zD6X7vAv9a9XZGOUflhtN+FI7iugW1PldU=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=j
+	kJaHiLf0NwLmr5hsKI97wtHH57YjR9fYPeuis7R0M96lfvOOhvhRuCY0qJLx6Bncell
+	QwQ4rUtQbWp7hRUEst21l4uJCH0RPhn/fnos1vhOdlRRMamCbJfX0MtwvE0iucC2g+p
+	oSe/yVTmeuodwvKgmDDbj8ZrrCd/hUsLXAcg=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358677477; bh=1WFyvf0vj7kPyxjz11Lkm0fPYHNDwzQ2bPf0tdD5d2g=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=K7kRpBrJMpTfdJpOK5fSnM4yVhe
-	2/epqZNDiD3F+YmUlLRKGyENSwPf0+eflPUVf5qY8iuKRg18uHE0oPx0yFdkCNjyWR+
-	8nEJprGhO8trZAgTtUCsp3/7ldsLVRTOFci7v8U4JELiKbaCQEIiSXBFgyItRyvi7bu
-	LzDCkJn6oM=
-Sender: linux-acpi-owner@vger.kernel.org
+	t=1358679368; bh=3wcuAHG70zD6X7vAv9a9XZGOUflhtN+FI7iugW1PldU=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=b
+	iLxlCDw+msFZ6zrC3HaJ72R7/JFto/kFUSVN+Gkp5e0DO/VDiJ5ZvLbsVba+ccCU5zP
+	/yLLTgLBfzhBlsHpS0U97+W0ln9rQCtHLxZsucy5GCjHYY8fEhqjmna/iPyfLVlmV37
+	rmyXnkj9GedgT477S1d9msgDNQ1wZqcPAsCE=
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?UTF-8?q?Andr=C3=A9=20Przywara?= <andre@andrep.de>, Leonid Isaev <lisaev@umail.iu.edu>, Tom Gundersen <teg@jklm.no>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>
+Cc: Andre Przywara <andre@andrep.de>, cpufreq@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
 
-From: Borislav Petkov <bp@suse.de>
+Hi,
 
-Hi all,
+anyone seen this already? I've got this this morning when resuming
+and this is -rc4+ (+ tip/master) but without any other cpufreq and
+powernow-k8 patches.
 
-here are a couple of patches fixing acpi-cpufreq and powernow-k8 loading
-sequence and handoff.
+It says below "[last unloaded: acpi_cpufreq]" because I played with
+loading and unloading powernow-k8 and acpi-cpufreq yesterday but ...
 
-Patch 0001 should be in Rafael's tree already but I'm adding it here for
-the sake of completeness. Basically, we want to address all possible
-cases of powernow-k8 and acpi-cpufreq:
+Oh, ok, I think I know how it happens: just did a quick test:
 
-(M: module, Y: built-in)
+$ rmmod acpi-cpufreq
+$ modprobe powernow-k8
 
-powernow-k8		acpi-cpufreq
-M			M		- powernow-k8 requests acpi-cpufreq
-M			Y		- powernow-k8 sees already loaded acpi-cpufreq
-Y			M		- impossible after patch 0001
-Y			Y		- patches 2,3 fix that
+<suspend-to-disk... resume>
 
-Anyway, please take a look and let me know.
+and get the below dmesg. Oh well, I need to go stare at this when I get
+a chance.
 
-Thanks.
-
-
-
-
-Borislav Petkov (5):
-  powernow-k8: Add a kconfig dependency on acpi-cpufreq
-  cpufreq: Make acpi-cpufreq link first
-  cpufreq: Add a get_current_driver helper
-  powernow-k8: Cleanup module request
-  powernow-k8: Cleanup init function
-
-Matthew Garrett (1):
-  acpi-cpufreq: Do not load on K8
-
- drivers/cpufreq/Kconfig.x86    |  2 +-
- drivers/cpufreq/Makefile       |  5 +++--
- drivers/cpufreq/acpi-cpufreq.c |  6 ++++++
- drivers/cpufreq/cpufreq.c      | 14 +++++++++++++
- drivers/cpufreq/powernow-k8.c  | 46 ++++++++++++++++++++++++++++++------------
- include/linux/cpufreq.h        |  1 +
- 6 files changed, 58 insertions(+), 16 deletions(-)
+[48790.833251] powernow-k8: this CPU is not supported anymore, using acpi-cpufreq instead.
+[48790.840895] acpi-cpufreq: overriding BIOS provided _PSD data
+[48802.496276] PM: Syncing filesystems ... done.
+[48802.502348] Freezing user space processes ... (elapsed 0.01 seconds) done.
+[48802.518896] PM: Preallocating image memory... done (allocated 469105 pages)
+[48803.006148] PM: Allocated 1876420 kbytes in 0.48 seconds (3909.20 MB/s)
+[48803.006757] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+[48803.023243] serial 00:0a: disabled
+[48803.023949] serial 00:0a: System wakeup disabled by ACPI
+[48803.024636] i8042 kbd 00:09: System wakeup enabled by ACPI
+[48803.251740] PM: freeze of devices complete after 229.936 msecs
+[48803.253655] PM: late freeze of devices complete after 1.888 msecs
+[48803.259418] PM: noirq freeze of devices complete after 5.740 msecs
+[48803.259440] Disabling non-boot CPUs ...
+[48803.259567] ------------[ cut here ]------------
+[48803.259589] WARNING: at fs/sysfs/group.c:142 sysfs_remove_group+0x102/0x110()
+[48803.259611] Hardware name: To be filled by O.E.M.
+[48803.259627] sysfs group ffffffffa003e9c0 not found for kobject 'cpufreq'
+[48803.259648] Modules linked in: acpi_cpufreq tun fuse mperf cpufreq_powersave cpufreq_userspace cpufreq_stats cpufreq_conservative ipv6 kvm_amd kvm aesni_intel aes_x86_64 ablk_helper cryptd xts lrw gf128mul microcode radeon edac_core k10temp ohci_hcd ehci_pci fam15h_power ehci_hcd drm_kms_helper r8169 ttm cfbfillrect xhci_hcd cfbimgblt cfbcopyarea [last unloaded: acpi_cpufreq]
+[48803.259841] Pid: 17699, comm: hib.sh Tainted: G        W    3.8.0-rc4+ #2
+[48803.259862] Call Trace:
+[48803.259878]  [<ffffffff811ad900>] ? sysfs_remove_group+0x40/0x110
+[48803.259905]  [<ffffffff8103ae9f>] warn_slowpath_common+0x7f/0xc0
+[48803.259934]  [<ffffffff8103af96>] warn_slowpath_fmt+0x46/0x50
+[48803.259958]  [<ffffffff811abd54>] ? sysfs_get_dirent+0x54/0x80
+[48803.259983]  [<ffffffff811ad9c2>] sysfs_remove_group+0x102/0x110
+[48803.260010]  [<ffffffffa003e7d9>] cpufreq_stats_free_sysfs+0x36/0x49 [cpufreq_stats]
+[48803.260041]  [<ffffffffa003e826>] cpufreq_stat_cpu_callback+0x3a/0x4a [cpufreq_stats]
+[48803.260069]  [<ffffffff8106c26d>] notifier_call_chain+0x5d/0x110
+[48803.260093]  [<ffffffff8106c32e>] __raw_notifier_call_chain+0xe/0x10
+[48803.260116]  [<ffffffff8103ea70>] __cpu_notify+0x20/0x40
+[48803.260138]  [<ffffffff81552dbd>] _cpu_down+0x7d/0x2e0
+[48803.260159]  [<ffffffff815602b9>] ? printk+0x4d/0x4f
+[48803.260180]  [<ffffffff8103ee5d>] disable_nonboot_cpus+0x7d/0x110
+[48803.260204]  [<ffffffff810867e3>] hibernation_snapshot+0x1e3/0x310
+[48803.260227]  [<ffffffff81086fe7>] hibernate+0x127/0x1a0
+[48803.260248]  [<ffffffff81084d54>] state_store+0xe4/0xf0
+[48803.260270]  [<ffffffff81290cef>] kobj_attr_store+0xf/0x20
+[48803.260292]  [<ffffffff811aa4a0>] sysfs_write_file+0xe0/0x150
+[48803.260316]  [<ffffffff8113978b>] vfs_write+0xab/0x170
+[48803.260338]  [<ffffffff81139ab5>] sys_write+0x55/0xa0
+[48803.260360]  [<ffffffff8156af06>] system_call_fastpath+0x1a/0x1f
+[48803.260399] ---[ end trace 56117296a40723c9 ]---
+[48803.266125] smpboot: CPU 1 is now offline
 
 -- 
-1.8.1.rc3
+Regards/Gruss,
+    Boris.
 
+Sent from a fat crate under my desk. Formatting is fine.
+--
