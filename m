@@ -1,61 +1,97 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
-Date: Mon, 21 Jan 2013 11:54:55 +0100
-Message-ID: <20130121105455.GA4823@pd.tnic>
-References: <1448223.sdUJnNSRz4@vostro.rjw.lan>
- <20130116231728.GA10204@x1.alien8.de>
- <20130116181600.4c48ee3b@bluemoon>
- <20130117094648.GD30700@pd.tnic>
- <20130117194044.7a18a29d@bluemoon>
- <20130118113717.GA6808@pd.tnic>
- <20130118133233.4521ddb6@hydra>
- <E99CBA9F97C3D149AA6B19ED2E277C9B0193997E@BY2PRD0510MB365.namprd05.prod.outlook.com>
- <20130119120814.GA4026@pd.tnic>
- <20130120231432.67351ee6@bluemoon>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: exynos: Initialise return variable
+Date: Mon, 21 Jan 2013 17:23:25 +0530
+Message-ID: <CAK9yfHy=bQCtGURb5mE2cu8wiX6YELiD0UX1HzikS=fUoCRmyw@mail.gmail.com>
+References: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
+	<CAGZ6kuM3t1P1PweJrjXk3eWWkhx1qX8rCkgsyHbPBsXqO7LvcQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358765517; bh=djb8FpefFHu20akGmz1EOk5P/WM2E9Abs3hYqZVOgEM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=VE12ukaWfXlCkpwTnI7LzBL2PFrsreFrST/H/Q
-	Iq4RTM/Y0dxVo85+QlqyOa8pcHDAPU0+Ti+cJwN/OYN+hvvTZFSfI2rBKV2Yr2A9ld0
-	NP+FFJG+DAIRLNyEUdAr+QEH6zSShjo0cfi8lPu+3LTfTJmA3M/ChjFg8dNCKkjn60=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1358765517; bh=djb8FpefFHu20akGmz1EOk5P/WM2E9Abs3hYqZVOgEM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=VE12ukaWfXlCkpwTnI7LzBL2PFrsreFrST/H/Q
-	Iq4RTM/Y0dxVo85+QlqyOa8pcHDAPU0+Ti+cJwN/OYN+hvvTZFSfI2rBKV2Yr2A9ld0
-	NP+FFJG+DAIRLNyEUdAr+QEH6zSShjo0cfi8lPu+3LTfTJmA3M/ChjFg8dNCKkjn60=
-Content-Disposition: inline
-In-Reply-To: <20130120231432.67351ee6@bluemoon>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAGZ6kuM3t1P1PweJrjXk3eWWkhx1qX8rCkgsyHbPBsXqO7LvcQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Leonid Isaev <lisaev@umail.iu.edu>
-Cc: Matthew Garrett <matthew.garrett@nebula.com>, =?utf-8?B?QW5kcsOp?= Przywara <andre@andrep.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tom Gundersen <teg@jklm.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="euc-kr"
+To: jonghwan Choi <jhbird.choi@gmail.com>
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, jhbird.choi@samsung.com, rjw@sisk.pl, patches@linaro.org
 
-On Sun, Jan 20, 2013 at 11:14:32PM -0600, Leonid Isaev wrote:
-> Matthew and Borislav, thanks a lot for the patch and explanation!
+Hi,
+On 21 January 2013 17:15, jonghwan Choi <jhbird.choi@gmail.com> wrote:
+> Hi.
+> I already send a patch to fix it.
+> But i set the 0 as a initial value.
+> Because i thought that
+> =A1=B0
+> if (frequeny_locked)
+>      goto out; =A1=B0
+> is not a error case.
+> How about your opinion?
+
+I thought it was an error condition and hence assigned -EINVAL.
+If it is not then 0 should be good enough as it represents success for
+that function.
+
 >
-> I applied the above patch on top of linux 3.7.3 -- it does generate
-> the aliases and fixes the autoprobing issue, at least on my AMD
-> machine. Should we expect it in 3.7.4 or 3.8? Otherwise, I'll forward
-> it to archlinux devel ML to be possibly included in current -stable
-> kernel. Also, Borislav, this patch is not in your patch series, is it?
+> 2013. 1. 21. =BF=C0=C8=C4 7:38=BF=A1 "Sachin Kamat" <sachin.kamat@lin=
+aro.org>=B4=D4=C0=CC =C0=DB=BC=BA:
+>>
+>> 'ret' is undefined when the function returns from the first
+>> error condition. Without this patch we get the following warning:
+>>
+>> drivers/cpufreq/exynos-cpufreq.c: In function =A1=AEexynos_target=A1=
+=AF:
+>> drivers/cpufreq/exynos-cpufreq.c:182:2: warning:
+>> =A1=AEret=A1=AF may be used uninitialized in this function [-Wuninit=
+ialized]
+>>
+>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+>> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
+>> ---
+>>  drivers/cpufreq/exynos-cpufreq.c |    6 ++----
+>>  1 files changed, 2 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/exynos-cpufreq.c
+>> b/drivers/cpufreq/exynos-cpufreq.c
+>> index 218b3ce..38c6158 100644
+>> --- a/drivers/cpufreq/exynos-cpufreq.c
+>> +++ b/drivers/cpufreq/exynos-cpufreq.c
+>> @@ -159,7 +159,7 @@ static int exynos_target(struct cpufreq_policy
+>> *policy,
+>>  {
+>>         struct cpufreq_frequency_table *freq_table =3D
+>> exynos_info->freq_table;
+>>         unsigned int index;
+>> -       int ret;
+>> +       int ret =3D -EINVAL;
+>>
+>>         mutex_lock(&cpufreq_lock);
+>>
+>> @@ -167,10 +167,8 @@ static int exynos_target(struct cpufreq_policy
+>> *policy,
+>>                 goto out;
+>>
+>>         if (cpufreq_frequency_table_target(policy, freq_table,
+>> -                                          target_freq, relation, &i=
+ndex))
+>> {
+>> -               ret =3D -EINVAL;
+>> +                                          target_freq, relation, &i=
+ndex))
+>>                 goto out;
+>> -       }
+>>
+>>         freqs.new =3D freq_table[index].frequency;
+>>
+>> --
+>> 1.7.4.1
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe cpufreq" i=
+n
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Yeah, it's not.
 
-Matthew, care to write a proper commit message with your SOB and
-Leonid's Tested-by pls?
 
-Then Rafael could take it for 3.8 and tag it for 3.7-stable, methinks.
-
-Leonid, thanks for testing.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+--=20
+With warm regards,
+Sachin
