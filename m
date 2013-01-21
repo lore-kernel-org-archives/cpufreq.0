@@ -1,46 +1,61 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 2/2] cpufreq: exynos: Fix unsigned variable being checked for negative value
-Date: Mon, 21 Jan 2013 15:59:54 +0530
-Message-ID: <1358764194-22753-2-git-send-email-sachin.kamat@linaro.org>
-References: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [arch-general] powernow-k8 fails to load with linux 3.7.2
+Date: Mon, 21 Jan 2013 11:54:55 +0100
+Message-ID: <20130121105455.GA4823@pd.tnic>
+References: <1448223.sdUJnNSRz4@vostro.rjw.lan>
+ <20130116231728.GA10204@x1.alien8.de>
+ <20130116181600.4c48ee3b@bluemoon>
+ <20130117094648.GD30700@pd.tnic>
+ <20130117194044.7a18a29d@bluemoon>
+ <20130118113717.GA6808@pd.tnic>
+ <20130118133233.4521ddb6@hydra>
+ <E99CBA9F97C3D149AA6B19ED2E277C9B0193997E@BY2PRD0510MB365.namprd05.prod.outlook.com>
+ <20130119120814.GA4026@pd.tnic>
+ <20130120231432.67351ee6@bluemoon>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1358765517; bh=djb8FpefFHu20akGmz1EOk5P/WM2E9Abs3hYqZVOgEM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=VE12ukaWfXlCkpwTnI7LzBL2PFrsreFrST/H/Q
+	Iq4RTM/Y0dxVo85+QlqyOa8pcHDAPU0+Ti+cJwN/OYN+hvvTZFSfI2rBKV2Yr2A9ld0
+	NP+FFJG+DAIRLNyEUdAr+QEH6zSShjo0cfi8lPu+3LTfTJmA3M/ChjFg8dNCKkjn60=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1358765517; bh=djb8FpefFHu20akGmz1EOk5P/WM2E9Abs3hYqZVOgEM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=VE12ukaWfXlCkpwTnI7LzBL2PFrsreFrST/H/Q
+	Iq4RTM/Y0dxVo85+QlqyOa8pcHDAPU0+Ti+cJwN/OYN+hvvTZFSfI2rBKV2Yr2A9ld0
+	NP+FFJG+DAIRLNyEUdAr+QEH6zSShjo0cfi8lPu+3LTfTJmA3M/ChjFg8dNCKkjn60=
+Content-Disposition: inline
+In-Reply-To: <20130120231432.67351ee6@bluemoon>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: rjw@sisk.pl, jhbird.choi@samsung.com, sachin.kamat@linaro.org, patches@linaro.org
+To: Leonid Isaev <lisaev@umail.iu.edu>
+Cc: Matthew Garrett <matthew.garrett@nebula.com>, =?utf-8?B?QW5kcsOp?= Przywara <andre@andrep.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tom Gundersen <teg@jklm.no>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-exynos_cpufreq_scale function returns signed value which was
-assigned to an unsigned variable and checked for negative value which
-is always false. Hence make it signed.
+On Sun, Jan 20, 2013 at 11:14:32PM -0600, Leonid Isaev wrote:
+> Matthew and Borislav, thanks a lot for the patch and explanation!
+>
+> I applied the above patch on top of linux 3.7.3 -- it does generate
+> the aliases and fixes the autoprobing issue, at least on my AMD
+> machine. Should we expect it in 3.7.4 or 3.8? Otherwise, I'll forward
+> it to archlinux devel ML to be possibly included in current -stable
+> kernel. Also, Borislav, this patch is not in your patch series, is it?
 
-Fixes the following smatch warnings:
-drivers/cpufreq/exynos-cpufreq.c:83 exynos_cpufreq_scale() warn:
-unsigned 'old_index' is never less than zero.
-drivers/cpufreq/exynos-cpufreq.c:89 exynos_cpufreq_scale() warn:
-unsigned 'index' is never less than zero.
+Yeah, it's not.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/cpufreq/exynos-cpufreq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Matthew, care to write a proper commit message with your SOB and
+Leonid's Tested-by pls?
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 38c6158..4a71491 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -65,7 +65,7 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(0);
- 	unsigned int arm_volt, safe_arm_volt = 0;
- 	unsigned int mpll_freq_khz = exynos_info->mpll_freq_khz;
--	unsigned int index, old_index;
-+	int index, old_index;
- 	int ret = 0;
- 
- 	freqs.old = policy->cur;
+Then Rafael could take it for 3.8 and tag it for 3.7-stable, methinks.
+
+Leonid, thanks for testing.
+
 -- 
-1.7.4.1
+Regards/Gruss,
+    Boris.
 
+Sent from a fat crate under my desk. Formatting is fine.
+--
