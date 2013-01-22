@@ -1,65 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH] Add module aliases for acpi-cpufreq
-Date: Tue, 22 Jan 2013 22:57:05 +0100
-Message-ID: <3231405.HBLxbMEfo4@vostro.rjw.lan>
-References: <1358872944-7676-1-git-send-email-matthew.garrett@nebula.com> <20130122173835.GB6431@pd.tnic>
+Date: Tue, 22 Jan 2013 23:05:01 +0100
+Message-ID: <20130122220501.GA18942@pd.tnic>
+References: <1358872944-7676-1-git-send-email-matthew.garrett@nebula.com>
+ <20130122173835.GB6431@pd.tnic>
+ <3231405.HBLxbMEfo4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130122173835.GB6431@pd.tnic>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1358892126; bh=whAe0ObaVrEtamFs3AiHLwZ3sat7z4XkWVO6Sg/yN1o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=YlAsnd4QN9XA2xHM0SVWX8EWV9E38TZBvLamR6
+	vdkAGY8zEuTYUpqhCkdRNltDv+Mk/EXWch7lX99oFzaDj8qG85xxLkcFVi0dKTDF4Hp
+	pDnR3E9bx77BeSNBxBII83OnS8s3oMijt4Wz+3QizisHN8YQRS+et/WJGJQiEpWaZc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1358892126; bh=whAe0ObaVrEtamFs3AiHLwZ3sat7z4XkWVO6Sg/yN1o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=YlAsnd4QN9XA2xHM0SVWX8EWV9E38TZBvLamR6
+	vdkAGY8zEuTYUpqhCkdRNltDv+Mk/EXWch7lX99oFzaDj8qG85xxLkcFVi0dKTDF4Hp
+	pDnR3E9bx77BeSNBxBII83OnS8s3oMijt4Wz+3QizisHN8YQRS+et/WJGJQiEpWaZc=
+Content-Disposition: inline
+In-Reply-To: <3231405.HBLxbMEfo4@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Borislav Petkov <bp@alien8.de>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Matthew Garrett <matthew.garrett@nebula.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Leonid Isaev <lisaev@umail.iu.edu>
 
-On Tuesday, January 22, 2013 06:38:36 PM Borislav Petkov wrote:
-> On Tue, Jan 22, 2013 at 11:42:24AM -0500, Matthew Garrett wrote:
-> > The acpi core will call request_module("acpi-cpufreq") on subsystem init,
-> > but this will fail if the module isn't available at that stage of boot.
-> > Add some module aliases to ensure that udev can load the module on Intel
-> > and AMD systems with the appropriate feature bits - I /think/ that this
-> > will also work on VIA systems, but haven't verified that.
-> > 
-> > Signed-off-by: Matthew Garrett <matthew.garrett@nebula.com>
-> 
-> Let's add some more tags:
-> 
-> Link: http://lkml.kernel.org/r/1448223.sdUJnNSRz4@vostro.rjw.lan
-> Tested-by: Leonid Isaev <lisaev@umail.iu.edu>
-> Acked-by: Borislav Petkov <bp@suse.de>
-> 
-> Rafael, this is all yours. :-)
+On Tue, Jan 22, 2013 at 10:57:05PM +0100, Rafael J. Wysocki wrote:
+> Do I think correctly that it should go into 3.7.y too?
 
-Thanks!
+Looks like I missed the most important tag. Good thinking, yes, tag it
+for 3.7-stable too pls.
 
-Do I think correctly that it should go into 3.7.y too?
+Thanks.
 
-Rafael
-
-
-> > ---
-> >  drivers/cpufreq/acpi-cpufreq.c | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> > index 0d048f6..7b0d49d 100644
-> > --- a/drivers/cpufreq/acpi-cpufreq.c
-> > +++ b/drivers/cpufreq/acpi-cpufreq.c
-> > @@ -1030,4 +1030,11 @@ MODULE_PARM_DESC(acpi_pstate_strict,
-> >  late_initcall(acpi_cpufreq_init);
-> >  module_exit(acpi_cpufreq_exit);
-> >  
-> > +static const struct x86_cpu_id acpi_cpufreq_ids[] = {
-> > +	X86_FEATURE_MATCH(X86_FEATURE_ACPI),
-> > +	X86_FEATURE_MATCH(X86_FEATURE_HW_PSTATE),
-> > +	{}
-> > +};
-> > +MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
-> > +
-> >  MODULE_ALIAS("acpi");
-> 
-> 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
