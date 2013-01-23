@@ -1,37 +1,32 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: New governor?
-Date: Wed, 23 Jan 2013 13:07:12 -0600
-Message-ID: <20130123190711.GA8394@jshin-Toonie>
+From: David C Niemi <dniemi@verisign.com>
+Subject: Re: New governor?
+Date: Wed, 23 Jan 2013 15:42:45 -0500
+Message-ID: <51004B45.70209@verisign.com>
+References: <20130123190711.GA8394@jshin-Toonie> <2365004.JupvNoxXgf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <2365004.JupvNoxXgf@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: 
+Cc: Jacob Shin <jacob.shin@amd.com>, cpufreq@vger.kernel.org
 
-Rafael, cpufreq list,
+On 01/23/13 14:15, Rafael J. Wysocki wrote:
+> On Wednesday, January 23, 2013 01:07:12 PM Jacob Shin wrote:
+>> Rafael, cpufreq list,
+>>
+>> I was wondering ..
+>>
+>> - Is hardware architecture specific governor acceptable in upstream?
+>>   i.e. drivers/cpufreq/cpufreq_amd_governor.c
+> It generally is, although the details of implementation matter too.
+>
+> Thanks,
+> Rafael
+>
+>
+Intel has also been talking about hardware-specific driver/governor bundles.  For now, I'd say go ahead, try to make it backwards compatible if that makes sense, and regard it as experimental.  In the long run we will need to generalize what it is doing so we can once again have a higher-level, hardware-independent configuration API over the hardware-specific governors.  Linux Distributions aren't going to want to use hardware-specific APIs to configure a machine, so they will likely ignore your (and Intel's) governor until there is a generic interface.
 
-I was wondering ..
-
-- Is hardware architecture specific governor acceptable in upstream?
-  i.e. drivers/cpufreq/cpufreq_amd_governor.c
-
-If not ..
-
-- Is it acceptable to patch ondemand and/or conservative governors to
-  call into some hardware achitecture specific function that affects
-  the governors's freqency change decisions? (of course it would only
-  be avaiable on certain hardware and only kicks in if user wants it
-  to)
-
-Basically, we have some AMD specific processor registers that tell us
-information that could help in making frequency change decisions for
-better power savings, and I was wondering what the proper way to go
-about implementing something like this would be.
-
-Thanks!
-
--Jacob
-
+DCN
