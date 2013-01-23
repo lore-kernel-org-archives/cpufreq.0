@@ -1,32 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: New governor?
-Date: Wed, 23 Jan 2013 20:15:18 +0100
-Message-ID: <2365004.JupvNoxXgf@vostro.rjw.lan>
-References: <20130123190711.GA8394@jshin-Toonie>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: New governor?
+Date: Wed, 23 Jan 2013 13:07:12 -0600
+Message-ID: <20130123190711.GA8394@jshin-Toonie>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130123190711.GA8394@jshin-Toonie>
+Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
 
-On Wednesday, January 23, 2013 01:07:12 PM Jacob Shin wrote:
-> Rafael, cpufreq list,
-> 
-> I was wondering ..
-> 
-> - Is hardware architecture specific governor acceptable in upstream?
->   i.e. drivers/cpufreq/cpufreq_amd_governor.c
+Rafael, cpufreq list,
 
-It generally is, although the details of implementation matter too.
+I was wondering ..
 
-Thanks,
-Rafael
+- Is hardware architecture specific governor acceptable in upstream?
+  i.e. drivers/cpufreq/cpufreq_amd_governor.c
 
+If not ..
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+- Is it acceptable to patch ondemand and/or conservative governors to
+  call into some hardware achitecture specific function that affects
+  the governors's freqency change decisions? (of course it would only
+  be avaiable on certain hardware and only kicks in if user wants it
+  to)
+
+Basically, we have some AMD specific processor registers that tell us
+information that could help in making frequency change decisions for
+better power savings, and I was wondering what the proper way to go
+about implementing something like this would be.
+
+Thanks!
+
+-Jacob
+
