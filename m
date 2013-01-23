@@ -1,41 +1,77 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: exynos: Initialise return variable
-Date: Wed, 23 Jan 2013 08:57:06 +0530
-Message-ID: <CAK9yfHxUnW5QV15dKnOGbLBuZWt6PV48=HN=2FpqMrBsV0Tisw@mail.gmail.com>
-References: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
-	<2641184.NcZpVXpRem@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 52941] New: CPU recognition bug for AMD
+Date: Wed, 23 Jan 2013 12:59:02 +0000 (UTC)
+Message-ID: <bug-52941-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2641184.NcZpVXpRem@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="windows-1252"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, jhbird.choi@samsung.com, Kukjin Kim <kgene.kim@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+To: cpufreq@vger.kernel.org
 
-+cc Kukjin
+https://bugzilla.kernel.org/show_bug.cgi?id=3D52941
 
-On 22 January 2013 19:29, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, January 21, 2013 03:59:53 PM Sachin Kamat wrote:
->> 'ret' is undefined when the function returns from the first
->> error condition. Without this patch we get the following warning:
->>
->> drivers/cpufreq/exynos-cpufreq.c: In function =91exynos_target=92:
->> drivers/cpufreq/exynos-cpufreq.c:182:2: warning:
->> =91ret=92 may be used uninitialized in this function [-Wuninitialize=
-d]
->
-> I'd prefer these two patches to go through the Exynos tree.
+           Summary: CPU recognition bug for AMD
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.7.4-1-ARCH
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: sognametal@gmail.com
+        Regression: No
 
-OK. I will post them to the Samsung list.
 
->
-> Thanks,
-> Rafael
->
->
+Hi.
+
+Since the 3.7.3 kernel, the cpu recognition bug [AMD Phenom II X4 965 B=
+lack
+Edition @ 3.4 GHz].
+
+-> /etc/conf.d/cpupower :
+governor=3D'ondemand'
+min_freq=3D"0.80GHz"
+max_freq=3D"3.39GHz"
+
+-> cpupower frequency-info
+analyse du CPU 0 :
+  pas de pilotes cpufreq reconnu pour ce CPU
+  boost state support:
+    Supported: no
+    Active: no
+
+My cpu is no longer recognized and freq stay stuck at max.
+
+But, after a few minutes (more than 20) or a few hours my cpu is again
+recognized...
+-> cpupower frequency-info
+analyse du CPU 0 :
+  pilote : acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 4.0 us.
+  limitation mat=C3=A9rielle : 800 MHz - 3.40 GHz
+  plage de fr=C3=A9quence : 3.40 GHz, 2.70 GHz, 2.20 GHz, 800 MHz
+  r=C3=A9gulateurs disponibles : ondemand, performance
+  tactique actuelle : la fr=C3=A9quence doit =C3=AAtre comprise entre 8=
+00 MHz et 3.40
+GHz.
+                  Le r=C3=A9gulateur "ondemand" est libre de choisir la=
+ vitesse
+                  dans cette plage de fr=C3=A9quences.
+  la fr=C3=A9quence actuelle de ce CPU est 3.40 GHz.
+  boost state support:
+    Supported: no
+    Active: no
 
 --=20
-With warm regards,
-Sachin
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
