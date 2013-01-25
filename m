@@ -1,47 +1,98 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug
- 51741]=?UTF-8?Q?=20powernow=2Dk8=20calls=20for=20acpi=2Dcpufreq=20but=20doesn=E2=80=99t=20warn=20if=20it=E2=80=99s=20not=20available?=
-Date: Thu, 24 Jan 2013 22:18:27 +0000 (UTC)
-Message-ID: <20130124221827.E834E11FC70@bugzilla.kernel.org>
-References: <bug-51741-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 53051] New: Conservative governor get's sometimes stuck at
+ highest frequency
+Date: Fri, 25 Jan 2013 19:12:28 +0000 (UTC)
+Message-ID: <bug-53051-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-51741-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=51741
+https://bugzilla.kernel.org/show_bug.cgi?id=3D53051
+
+           Summary: Conservative governor get's sometimes stuck at high=
+est
+                    frequency
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.6.11
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: cem.aydin@gmx.ch
+        Regression: No
 
 
-Andreas <linuxuser330250@gmx.net> changed:
+Created an attachment (id=3D91801)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=3D91801)
+Zipped files as described in description.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|                            |PATCH_ALREADY_AVAILABLE
+About once a week, when booting daily, the CPU (all cores) get's stuck =
+at
+highest frequency.
 
+Unfortunately, I can't tell exactly when this appeared but it was about=
+ during
+the time, when I switched to systemd and cpufrequtils got replaced cpup=
+ower,
+about half a year ago.
 
+The kernel modules are loaded properly and the start scripts are execut=
+ed. I
+can not find any difference, when this occurs or when it doesn't. Exept=
+ that
+the frequency is stucked at highest level of course. When this occurs I=
+ wasn't
+able to set the frequency manually (by the userspace governor). Reloadi=
+ng the
+conservative module or reexuting the (systemd) start script did not hav=
+e any
+effect. The only thing I can do to resolve the issue is reboot.
 
+I use an up to date Arch Linux with the regular kernel and systemd.
 
---- Comment #1 from Andreas <linuxuser330250@gmx.net>  2013-01-24 22:18:27 ---
-This should be fixed now.
+Additional Infos:
+proc/cpuinfo reports the wrong frequency (lowest). I think this is ment=
+ioned in
+another bug. However cpupower -c all frequency-info (executed as root) =
+reports
+the correct highest frequency. I can clearly see that this is the true
+frequency because the temperatures reported by sensors are almost 10=C2=
+=B0C higher
+than under normal circumstances. I don't have any process that could ca=
+use the
+governor to raise the frequencies. CPU usage is below 1% and load is be=
+tween
+0.0 and 0.05.
 
-The patch titled
+Hardware:
+A HP Pavilion dv6 CORE i5
 
-    powernow-k8: Add a kconfig dependency on acpi-cpufreq
+Attachments:
+- cpupower (/usr/lib/systemd/scripts/cpupower, the start up scripts use=
+d by
+systemd to set the frequencies)
+- cpupower.conf (/etc/conf.d/cpupower)
+- cpupower-service.txt (output from systemctl status cpupower.service)
+- cpupower.txt (output from cpupower -c all frequency-info)
+- journal.txt (output from journalctl -b | grep cpufreq)
+- lsmod.txt (output from lsmod |grep cpufreq)
+- proc_cpuinfo.txt (output from cat /proc/cpuinfo (wrong frequencies))
 
-was added to the 3.7-stable tree.
+Please let me know if you need additional info.
 
-The filename of the patch is:
-     powernow-k8-add-a-kconfig-dependency-on-acpi-cpufreq.patch
-and it can be found in the queue-3.7 subdirectory.
+Regards
 
-Since 3.7.4 is already out, I assume it will be part of 3.7.5 and later.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
 ------- You are receiving this mail because: -------
 You are the assignee for the bug.
