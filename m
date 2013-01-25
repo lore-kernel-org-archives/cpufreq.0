@@ -1,98 +1,26 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 53051] New: Conservative governor get's sometimes stuck at
- highest frequency
-Date: Fri, 25 Jan 2013 19:12:28 +0000 (UTC)
-Message-ID: <bug-53051-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 0/4 v11] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Fri, 25 Jan 2013 13:46:41 -0600
+Message-ID: <1359143205-20279-1-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D53051
+This patch series adds cpufreq support for the Calxeda
+ECX-1000 (highbank) SoCs. The EnergyCore Management Engine (ECME) on
+the ECX-1000 manages the voltage for the part and communications with
+Linux through a pl320 mailbox. clk notifications are used to control
+when to send messages to the ECME.
 
-           Summary: Conservative governor get's sometimes stuck at high=
-est
-                    frequency
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.6.11
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: cem.aydin@gmx.ch
-        Regression: No
+Previous versions of this patch set include two other patches. One has
+been dropped as unworkable and the other turned out to be unnecessary.
 
+--Mark Langsdorf
+Calxeda, Inc.
 
-Created an attachment (id=3D91801)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=3D91801)
-Zipped files as described in description.
-
-About once a week, when booting daily, the CPU (all cores) get's stuck =
-at
-highest frequency.
-
-Unfortunately, I can't tell exactly when this appeared but it was about=
- during
-the time, when I switched to systemd and cpufrequtils got replaced cpup=
-ower,
-about half a year ago.
-
-The kernel modules are loaded properly and the start scripts are execut=
-ed. I
-can not find any difference, when this occurs or when it doesn't. Exept=
- that
-the frequency is stucked at highest level of course. When this occurs I=
- wasn't
-able to set the frequency manually (by the userspace governor). Reloadi=
-ng the
-conservative module or reexuting the (systemd) start script did not hav=
-e any
-effect. The only thing I can do to resolve the issue is reboot.
-
-I use an up to date Arch Linux with the regular kernel and systemd.
-
-Additional Infos:
-proc/cpuinfo reports the wrong frequency (lowest). I think this is ment=
-ioned in
-another bug. However cpupower -c all frequency-info (executed as root) =
-reports
-the correct highest frequency. I can clearly see that this is the true
-frequency because the temperatures reported by sensors are almost 10=C2=
-=B0C higher
-than under normal circumstances. I don't have any process that could ca=
-use the
-governor to raise the frequencies. CPU usage is below 1% and load is be=
-tween
-0.0 and 0.05.
-
-Hardware:
-A HP Pavilion dv6 CORE i5
-
-Attachments:
-- cpupower (/usr/lib/systemd/scripts/cpupower, the start up scripts use=
-d by
-systemd to set the frequencies)
-- cpupower.conf (/etc/conf.d/cpupower)
-- cpupower-service.txt (output from systemctl status cpupower.service)
-- cpupower.txt (output from cpupower -c all frequency-info)
-- journal.txt (output from journalctl -b | grep cpufreq)
-- lsmod.txt (output from lsmod |grep cpufreq)
-- proc_cpuinfo.txt (output from cat /proc/cpuinfo (wrong frequencies))
-
-Please let me know if you need additional info.
-
-Regards
-
---=20
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
-l
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
