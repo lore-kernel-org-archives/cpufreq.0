@@ -1,44 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/4 v11] arm: use device tree to get smp_twd clock
-Date: Fri, 25 Jan 2013 23:15:39 +0100
-Message-ID: <2022065.fFzVbP4vta@vostro.rjw.lan>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <3041510.xugDHtFsGr@vostro.rjw.lan> <20130125214000.GA23505@n2100.arm.linux.org.uk>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug
+ 51741]=?UTF-8?Q?=20powernow=2Dk8=20calls=20for=20acpi=2Dcpufreq=20but=20doesn=E2=80=99t=20warn=20if=20it=E2=80=99s=20not=20available?=
+Date: Sat, 26 Jan 2013 10:50:08 +0000 (UTC)
+Message-ID: <20130126105008.A134411FC76@bugzilla.kernel.org>
+References: <bug-51741-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130125214000.GA23505@n2100.arm.linux.org.uk>
+In-Reply-To: <bug-51741-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Friday, January 25, 2013 09:40:00 PM Russell King - ARM Linux wrote:
-> On Fri, Jan 25, 2013 at 10:03:05PM +0100, Rafael J. Wysocki wrote:
-> > On Friday, January 25, 2013 01:46:42 PM Mark Langsdorf wrote:
-> > > From: Rob Herring <rob.herring@calxeda.com>
-> > > 
-> > > Move clk setup to twd_local_timer_common_register and rely on
-> > > twd_timer_rate being 0 to force calibration if there is no clock.
-> > > Remove common_setup_called as it is no longer needed.
-> > > 
-> > > Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> > > Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> > 
-> > Russell, is this fine with you?
-> 
-> Looks fine to me, though I had to check twd_calibrate_rate() to make
-> sure it wouldn't run if the twd_timer_rate was non-zero.
-> 
-> If you want an acked-by:
-> 
-> Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+https://bugzilla.kernel.org/show_bug.cgi?id=51741
 
-I will, thanks a lot!
 
-Rafael
+Florian Mickler <florian@mickler.org> changed:
 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |florian@mickler.org
+
+
+
+
+--- Comment #2 from Florian Mickler <florian@mickler.org>  2013-01-26 10:50:08 ---
+A patch referencing this bug report has been merged in Linux v3.8-rc5:
+
+commit 631e8ac18fd59722e7ceb15fceeef3f368c250f9
+Author: Borislav Petkov <bp@suse.de>
+Date:   Fri Jan 18 00:19:37 2013 +0100
+
+    powernow-k8: Add a kconfig dependency on acpi-cpufreq
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
