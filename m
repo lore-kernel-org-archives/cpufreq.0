@@ -1,40 +1,41 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug
- 51741]=?UTF-8?Q?=20powernow=2Dk8=20calls=20for=20acpi=2Dcpufreq=20but=20doesn=E2=80=99t=20warn=20if=20it=E2=80=99s=20not=20available?=
-Date: Sat, 26 Jan 2013 10:50:08 +0000 (UTC)
-Message-ID: <20130126105008.A134411FC76@bugzilla.kernel.org>
-References: <bug-51741-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 48341] BUG: using smp_processor_id in preemptible powernow_k8
+Date: Sat, 26 Jan 2013 12:00:54 +0000 (UTC)
+Message-ID: <20130126120054.50DF911FE9C@bugzilla.kernel.org>
+References: <bug-48341-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-51741-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-48341-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=51741
+https://bugzilla.kernel.org/show_bug.cgi?id=3D48341
 
 
-Florian Mickler <florian@mickler.org> changed:
+=C3=81lvaro Castillo <netsys@fedoraproject.org> changed:
 
            What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |florian@mickler.org
+-----------------------------------------------------------------------=
+-----
+                 CC|                            |netsys@fedoraproject.o=
+rg
 
 
 
 
---- Comment #2 from Florian Mickler <florian@mickler.org>  2013-01-26 10:50:08 ---
-A patch referencing this bug report has been merged in Linux v3.8-rc5:
+--- Comment #3 from =C3=81lvaro Castillo <netsys@fedoraproject.org>  20=
+13-01-26 12:00:53 ---
+Does not work on A6-4440M
+powernow-k8: this CPU is not supported anymore, using acpi-cpufreq inst=
+ead.
 
-commit 631e8ac18fd59722e7ceb15fceeef3f368c250f9
-Author: Borislav Petkov <bp@suse.de>
-Date:   Fri Jan 18 00:19:37 2013 +0100
+3.7.2-204.fc18.x86_64
 
-    powernow-k8: Add a kconfig dependency on acpi-cpufreq
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+--=20
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=3Demai=
+l
 ------- You are receiving this mail because: -------
 You are the assignee for the bug.
