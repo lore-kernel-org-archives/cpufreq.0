@@ -1,40 +1,70 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH v3 3/3] arm: kirkwood: Enable cpufreq and ondemand on kirkwood_defconfig
-Date: Sun, 27 Jan 2013 11:07:24 +0100
-Message-ID: <1359281244-31455-4-git-send-email-andrew@lunn.ch>
-References: <1359281244-31455-1-git-send-email-andrew@lunn.ch>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/3] cpufreq: kirkwood: Add a cpufreq driver for
+ Marvell Kirkwood SoCs
+Date: Sun, 27 Jan 2013 20:13:07 +0530
+Message-ID: <CAKohpo=zrUUv-mtnUBDtJeWAHB00_Se0aGv7X-ZW95i=7DkQpg@mail.gmail.com>
+References: <1359215039-2848-1-git-send-email-andrew@lunn.ch>
+	<1359215039-2848-2-git-send-email-andrew@lunn.ch>
+	<CAKohpok1w2RB1ncyNTcd04XTNFfnq_S98YEcxNjpWGWMVA7TaQ@mail.gmail.com>
+	<20130127085926.GH29973@lunn.ch>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359281244-31455-1-git-send-email-andrew@lunn.ch>
+In-Reply-To: <20130127085926.GH29973@lunn.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, jacmet@sunsite.dk, viresh.kumar@linaro.org, Andrew Lunn <andrew@lunn.ch>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, jacmet@sunsite.dk
 
-Now that we have a cpufreq driver for kirkwood, enable it in
-kirkwood_defconfig and set the default governer to ondemand.
+On 27 January 2013 14:29, Andrew Lunn <andrew@lunn.ch> wrote:
+> On Sun, Jan 27, 2013 at 09:21:42AM +0530, Viresh Kumar wrote:
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
- arch/arm/configs/kirkwood_defconfig |    3 +++
- 1 file changed, 3 insertions(+)
+>> > +       kirkwood_cpufreq_set_cpu_state(index);
+>>
+>> This routine does have error cases, like: wrong value of "state"
+>> variable, so returning int from it might make sense. Though i believe
+>> state can't be anything else then STATE_CPU_FREQ or STATE_DDR_FREQ.
+>> In which case, switch must be modified?
+>
+> As you say, state cannot be anything else that the two expected
+> values. I've just been taught that switch statements should always
+> have a default clause. I also thought that a BUG() is too strong, no
+> need to kill the machine. It is better to spam the kernel log so it
+> gets noticed. I can swap to a WARN_ON(1). I don't really think this is
+> an error that needs to be reported back to the framework. Its an
+> implementation problem, not a runtime problem. So i would prefer to
+> keep to void.
 
-diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
-index 93f3794..6ecb7de 100644
---- a/arch/arm/configs/kirkwood_defconfig
-+++ b/arch/arm/configs/kirkwood_defconfig
-@@ -55,6 +55,9 @@ CONFIG_AEABI=y
- # CONFIG_OABI_COMPAT is not set
- CONFIG_ZBOOT_ROM_TEXT=0x0
- CONFIG_ZBOOT_ROM_BSS=0x0
-+CONFIG_CPU_FREQ=y
-+CONFIG_CPU_FREQ_STAT_DETAILS=y
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
- CONFIG_CPU_IDLE=y
- CONFIG_NET=y
- CONFIG_PACKET=y
--- 
-1.7.10.4
+Hmm. What i meant to say was, you just need an if,else instead of switch
+and you really don't have to take care of anything else than these two values.
+As that can't happen. Even the WARN_ON(). Its useless. Just believe on
+what is returned from cpufreq_frequency_table_target(). You really don't
+need to validate index returned from it, but only the return value (which
+you are already doing)
 
+>> > +static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+>> > +{
+>> > +       cpufreq_frequency_table_put_attr(policy->cpu);
+>> > +       return 0;
+>> > +}
+>>
+>> Hmm.. Exit is normally called in two cases. Either cpufreq driver is
+>> unregistered
+>> or cpu is removed. In that case i am not sure if this routine makes sense? As
+>> we have a uniprocessor SoC here.
+>
+> The current Kconfig entry does not allow it to be compiled as a
+> module. But the code does allow for it. With the current trend of
+> making the ARM kernel multiplatform, its likely that cpufreq drivers
+> will become modular so that only the appropriate driver gets loaded in
+> a multiplatform kernel. The question then becomes, is it O.K. not
+> being able to unload the module?
+
+You got me wrong. What i wanted to say is, even if you have it as module
+and "rmmod" it, then also calling this routine wouldn't make any difference.
+
+Then i went into the code to see the effect. So, this will set freq_table for
+a cpu as NULL which will be returned by calling cpufreq_frequency_get_table().
+And i now feel we must have this routine because once cpufreq driver isn't
+there for a cpu, we must not return any table for it. :)
