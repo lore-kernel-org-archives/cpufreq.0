@@ -1,115 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Andrew Lunn <andrew@lunn.ch>
 Subject: Re: [PATCH v2 1/3] cpufreq: kirkwood: Add a cpufreq driver for
  Marvell Kirkwood SoCs
-Date: Sun, 27 Jan 2013 09:21:42 +0530
-Message-ID: <CAKohpok1w2RB1ncyNTcd04XTNFfnq_S98YEcxNjpWGWMVA7TaQ@mail.gmail.com>
+Date: Sun, 27 Jan 2013 09:59:26 +0100
+Message-ID: <20130127085926.GH29973@lunn.ch>
 References: <1359215039-2848-1-git-send-email-andrew@lunn.ch>
-	<1359215039-2848-2-git-send-email-andrew@lunn.ch>
+ <1359215039-2848-2-git-send-email-andrew@lunn.ch>
+ <CAKohpok1w2RB1ncyNTcd04XTNFfnq_S98YEcxNjpWGWMVA7TaQ@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359215039-2848-2-git-send-email-andrew@lunn.ch>
+Content-Disposition: inline
+In-Reply-To: <CAKohpok1w2RB1ncyNTcd04XTNFfnq_S98YEcxNjpWGWMVA7TaQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, jacmet@sunsite.dk
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, jacmet@sunsite.dk
 
-Hi Andrew,
+On Sun, Jan 27, 2013 at 09:21:42AM +0530, Viresh Kumar wrote:
+> Hi Andrew,
+> 
+> Few more comments from my side :(
 
-Few more comments from my side :(
+No problems...
 
-On 26 January 2013 21:13, Andrew Lunn <andrew@lunn.ch> wrote:
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/clk.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/io.h>
-> +#include <asm/proc-fns.h>
-> +
-> +#define CPU_SW_INT_BLK BIT(28)
-> +
-> +
-> +#include <linux/clk-private.h>
+> 
+> On 26 January 2013 21:13, Andrew Lunn <andrew@lunn.ch> wrote:
+> > diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/clk.h>
+> > +#include <linux/cpufreq.h>
+> > +#include <linux/of.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/io.h>
+> > +#include <asm/proc-fns.h>
+> > +
+> > +#define CPU_SW_INT_BLK BIT(28)
+> > +
+> > +
+> > +#include <linux/clk-private.h>
+> 
+> Any specific reason for keeping it together with other #includes?
 
-Any specific reason for keeping it together with other #includes?
+Ah, yes, there is a good reason. I added this in for debugging
+purposes. I needed to look inside the clk cookie, which required this
+include file. But because it was for debug only, to be removed later,
+i kept it separate, easier to find and remove. I just forgot to remove
+it :-(
 
-> +static void kirkwood_cpufreq_set_cpu_state(unsigned int index)
-> +{
-> +
+> > +       if (freqs.old != freqs.new) {
+> > +               local_irq_disable();
+> > +
+> > +               /* Disable interrupts to the CPU */
+> > +               reg = readl_relaxed(priv.base);
+> > +               reg |= CPU_SW_INT_BLK;
+> > +               writel(reg, priv.base);
+> > +static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
+> > +                           unsigned int target_freq,
+> > +                           unsigned int relation)
+> > +{
+> > +       unsigned int index = 0;
+> > +
+> > +       if (cpufreq_frequency_table_target(policy, kirkwood_freq_table,
+> > +                               target_freq, relation, &index))
+> > +               return -EINVAL;
+> > +
+> > +       kirkwood_cpufreq_set_cpu_state(index);
+> 
+> This routine does have error cases, like: wrong value of "state"
+> variable, so returning int from it might make sense. Though i believe
+> state can't be anything else then STATE_CPU_FREQ or STATE_DDR_FREQ.
+> In which case, switch must be modified?
 
-Can remove extra blank line.
+As you say, state cannot be anything else that the two expected
+values. I've just been taught that switch statements should always
+have a default clause. I also thought that a BUG() is too strong, no
+need to kill the machine. It is better to spam the kernel log so it
+gets noticed. I can swap to a WARN_ON(1). I don't really think this is
+an error that needs to be reported back to the framework. Its an
+implementation problem, not a runtime problem. So i would prefer to
+keep to void.
 
-> +       if (freqs.old != freqs.new) {
-> +               local_irq_disable();
-> +
-> +               /* Disable interrupts to the CPU */
-> +               reg = readl_relaxed(priv.base);
-> +               reg |= CPU_SW_INT_BLK;
-> +               writel(reg, priv.base);
+> > +static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+> > +{
+> > +       cpufreq_frequency_table_put_attr(policy->cpu);
+> > +       return 0;
+> > +}
+> 
+> Hmm.. Exit is normally called in two cases. Either cpufreq driver is
+> unregistered
+> or cpu is removed. In that case i am not sure if this routine makes sense? As
+> we have a uniprocessor SoC here.
 
-Any specific reason for calling writel() instead of writel_relaxed()?
-relaxed one would take less time and would be much more efficient.
+The current Kconfig entry does not allow it to be compiled as a
+module. But the code does allow for it. With the current trend of
+making the ARM kernel multiplatform, its likely that cpufreq drivers
+will become modular so that only the appropriate driver gets loaded in
+a multiplatform kernel. The question then becomes, is it O.K. not
+being able to unload the module?
 
-same for all other writel's too.
-
-> +};
-> +
-> +static int kirkwood_cpufreq_verify(struct cpufreq_policy *policy)
-> +{
-> +       return cpufreq_frequency_table_verify(policy, &kirkwood_freq_table[0]);
-
-return cpufreq_frequency_table_verify(policy, kirkwood_freq_table); ??
-
-> +}
-> +
-> +static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
-> +                           unsigned int target_freq,
-> +                           unsigned int relation)
-> +{
-> +       unsigned int index = 0;
-> +
-> +       if (cpufreq_frequency_table_target(policy, kirkwood_freq_table,
-> +                               target_freq, relation, &index))
-> +               return -EINVAL;
-> +
-> +       kirkwood_cpufreq_set_cpu_state(index);
-
-This routine does have error cases, like: wrong value of "state"
-variable, so returning int from it might make sense. Though i believe
-state can't be anything else then STATE_CPU_FREQ or STATE_DDR_FREQ.
-In which case, switch must be modified?
-
-> +       return 0;
-> +}
-> +
-> +/*
-> + *     Module init and exit code
-> + */
-
-Can be converted to a single line comment if you want. :)
-
-> +static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> +{
-> +       cpufreq_frequency_table_put_attr(policy->cpu);
-> +       return 0;
-> +}
-
-Hmm.. Exit is normally called in two cases. Either cpufreq driver is
-unregistered
-or cpu is removed. In that case i am not sure if this routine makes sense? As
-we have a uniprocessor SoC here.
-
-@Rafael?
-
-> +static struct freq_attr *kirkwood_cpufreq_attr[] = {
-> +       &cpufreq_freq_attr_scaling_available_freqs,
-> +       NULL,
-> +};
-> +
-> +
-
-Can remove extra blank line.
+      Andrew
