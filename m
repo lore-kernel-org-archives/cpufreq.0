@@ -1,85 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/6] cpufreq: Add a get_current_driver helper
-Date: Mon, 28 Jan 2013 15:22:13 +0530
-Message-ID: <CAKohpo=F5R7oG_xEopChLMqGo6umH0zqnknv_NJKA_TKDaSgjw@mail.gmail.com>
-References: <1358677470-17394-1-git-send-email-bp@alien8.de>
-	<1358677470-17394-5-git-send-email-bp@alien8.de>
-	<CAOh2x==qf057z2vmADd6+thaXXVxEh1GZO-sKHRDyosqTfMdng@mail.gmail.com>
-	<20130128094957.GA6109@pd.tnic>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] drivers: cpufreq: exynos: update related_cpus mask to fix hotplug dump
+Date: Mon, 28 Jan 2013 13:26:31 +0100
+Message-ID: <5258369.So5tj1UHcd@vostro.rjw.lan>
+References: <1359000647-8366-1-git-send-email-inderpal.singh@linaro.org> <CAOh2x==_n7d+FUyAA6nWuHHLK0TA7smBYXd2M=72HDQef3NG4w@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130128094957.GA6109@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x==_n7d+FUyAA6nWuHHLK0TA7smBYXd2M=72HDQef3NG4w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, =?ISO-8859-1?Q?Andr=E9_Przywara?= <andre@andrep.de>, Leonid Isaev <lisaev@umail.iu.edu>, Tom Gundersen <teg@jklm.no>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Inderpal Singh <inderpal.singh@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, patches@linaro.org
 
-On 28 January 2013 15:19, Borislav Petkov <bp@alien8.de> wrote:
-> Which one would you suggest: CPUFREQ DRIVER INTERFACE?
+On Monday, January 28, 2013 09:45:02 AM Viresh Kumar wrote:
+> On Thu, Jan 24, 2013 at 9:40 AM, Inderpal Singh
+> <inderpal.singh@linaro.org> wrote:
+> > commit "7e6087e595d3...cpufreq: Simplify cpufreq_add_dev()" started using
+> > related_cpus mask to check if the current cpu is already managed.
+> >
+> > With above commit hotplug in exynos gives following dump.
+> >
+> > / $ echo 1 > /sys/devices/system/cpu/cpu1/online
+> > CPU1: Booted secondary processor
+> > ------------[ cut here ]------------
+> > WARNING: at fs/sysfs/dir.c:536 sysfs_add_one+0x88/0xbc()
+> > sysfs: cannot create duplicate filename '/devices/system/cpu/cpu0/cpufreq'
+> > Modules linked in:
+> > [<c0014560>] (unwind_backtrace+0x0/0xf8) from [<c0020214>] (warn_slowpath_common+0x4c/0x64)
+> > [<c0020214>] (warn_slowpath_common+0x4c/0x64) from [<c00202c0>] (warn_slowpath_fmt+0x30/0x40)
+> > [<c00202c0>] (warn_slowpath_fmt+0x30/0x40) from [<c00fb548>] (sysfs_add_one+0x88/0xbc)
+> > [<c00fb548>] (sysfs_add_one+0x88/0xbc) from [<c00fc184>] (sysfs_do_create_link+0x110/0x208)
+> > [<c00fc184>] (sysfs_do_create_link+0x110/0x208) from [<c019a868>] (cpufreq_add_dev_interface+0x218/0x2b0)
+> > [<c019a868>] (cpufreq_add_dev_interface+0x218/0x2b0) from [<c019ac0c>] (cpufreq_add_dev+0x30c/0x448)
+> > [<c019ac0c>] (cpufreq_add_dev+0x30c/0x448) from [<c01bdb84>] (cpufreq_cpu_callback+0x94/0x9c)
+> > [<c01bdb84>] (cpufreq_cpu_callback+0x94/0x9c) from [<c0040fac>] (notifier_call_chain+0x44/0x84)
+> > [<c0040fac>] (notifier_call_chain+0x44/0x84) from [<c0023484>] (__cpu_notify+0x28/0x44)
+> > [<c0023484>] (__cpu_notify+0x28/0x44) from [<c01bc320>] (_cpu_up+0x104/0x154)
+> > [<c01bc320>] (_cpu_up+0x104/0x154) from [<c01bc3d4>] (cpu_up+0x64/0x84)
+> > [<c01bc3d4>] (cpu_up+0x64/0x84) from [<c01bafc8>] (store_online+0x50/0x78)
+> > [<c01bafc8>] (store_online+0x50/0x78) from [<c016850c>] (dev_attr_store+0x18/0x24)
+> > [<c016850c>] (dev_attr_store+0x18/0x24) from [<c00fa12c>] (sysfs_write_file+0x168/0x198)
+> > [<c00fa12c>] (sysfs_write_file+0x168/0x198) from [<c00a7424>] (vfs_write+0x9c/0x140)
+> > [<c00a7424>] (vfs_write+0x9c/0x140) from [<c00a76b0>] (sys_write+0x3c/0x70)
+> > [<c00a76b0>] (sys_write+0x3c/0x70) from [<c000e2c0>] (ret_fast_syscall+0x0/0x30)
+> > ---[ end trace 3d002b0ded69f43b ]---
+> >
+> > This patch fixes it by updating the related_cpus mask.
+> >
+> > Tested on Rafael's linux-next.
+> >
+> > Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
+> > ---
+> >  drivers/cpufreq/exynos-cpufreq.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+> > index 7012ea8..8ba4cdb 100644
+> > --- a/drivers/cpufreq/exynos-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos-cpufreq.c
+> > @@ -238,6 +238,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> >                 cpumask_copy(policy->cpus, cpu_online_mask);
+> >         } else {
+> >                 policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+> > +               cpumask_setall(policy->related_cpus);
+> >                 cpumask_setall(policy->cpus);
+> 
+> This is required for all SMP systems.
 
-Yes.
+Grumble.
 
-> Btw, this function type splitting looks kinda silly to me. In that same
-> section there are two which clearly don't belong there:
->
-> struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
-> void   cpufreq_cpu_put(struct cpufreq_policy *data);
->
-> since they don't have anything to do with freq_table. And since they
-> return cpufreq_policy, they should be maybe called:
->
-> cpufreq_get_cpu_policy
-> cpufreq_put_cpu_policy
->
-> or something more expressive, pertaining to what they actually do. But
-> they actually get/put the module (inc/dec the module's refcount) *and*
-> return the cpufreq_policy... whatever, I don't care that much so see
-> below.
+So here's a deal: I'll drop "cpufreq: Simplify cpufreq_add_dev()" for now and
+you'll generate a new patch that won't cause the WARN_ON() to trigger.  OK?
 
-Agree.
+Rafael
 
-> --
-> From 830eb9ebc715d329229772d11332c50dfd1d9330 Mon Sep 17 00:00:00 2001
-> From: Borislav Petkov <bp@suse.de>
-> Date: Mon, 28 Jan 2013 10:38:33 +0100
-> Subject: [PATCH] cpufreq: Sort function prototypes properly
->
-> Move function prototypes to a place where they logically fit better.
->
-> Signed-off-by: Borislav Petkov <bp@suse.de>
-> ---
->  include/linux/cpufreq.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index a018da2d2a7c..f33ace57adb6 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -308,6 +308,9 @@ __ATTR(_name, 0444, show_##_name, NULL)
->  static struct global_attr _name =              \
->  __ATTR(_name, 0644, show_##_name, store_##_name)
->
-> +struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
-> +void   cpufreq_cpu_put(struct cpufreq_policy *data);
-> +const char *cpufreq_get_current_driver(void);
->
->  /*********************************************************************
->   *                        CPUFREQ 2.6. INTERFACE                     *
-> @@ -397,8 +400,6 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
->
->  /* the following 3 funtions are for cpufreq core use only */
->  struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
-> -struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
-> -void   cpufreq_cpu_put(struct cpufreq_policy *data);
->
->  /* the following are really really optional */
->  extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
-> @@ -407,5 +408,4 @@ void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
->                                       unsigned int cpu);
->
->  void cpufreq_frequency_table_put_attr(unsigned int cpu);
-> -extern const char *cpufreq_get_current_driver(void);
->  #endif /* _LINUX_CPUFREQ_H */
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
