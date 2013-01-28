@@ -1,44 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Shawn Guo <shawn.guo@linaro.org>
 Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 12:50:44 +0530
-Message-ID: <CAKohponYt7RPh=4u22LJhjBWeDbw0MScpYCAyj5fiZqDKjsdvQ@mail.gmail.com>
+Date: Mon, 28 Jan 2013 16:32:01 +0800
+Message-ID: <20130128083159.GD31689@S2101-09.ap.freescale.net>
 References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
-	<CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
-	<20130128070206.GB31689@S2101-09.ap.freescale.net>
+ <7196597.b9sJl95POM@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130128070206.GB31689@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <7196597.b9sJl95POM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Shawn Guo <shawn.guo@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Andrew Lunn <andrew@lunn.ch>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-On 28 January 2013 12:32, Shawn Guo <shawn.guo@linaro.org> wrote:
-> On Mon, Jan 28, 2013 at 09:42:29AM +0530, Viresh Kumar wrote:
->> >         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
->> >         platform_device_register_full(&devinfo);
->>
->> Something similar was being discussed with Andrew (cc'd) on his patch
->> for kikwood cpufreq driver.
->>
->> We shouldn't encourage addition of above as we are moving towards DT.
->
-> Moving towards DT does not really mean that we should never register
-> platform_device from platform code.  DT is designed to present physical
-> devices, while what I'm adding here is somewhat a virtual one.  I'm
-> just using the platform_device/platform_driver mechanism to instantiate
-> the driver on particular platform.
->
->> So, i would except an compatible array too in your patch and then driver
->> can be probed based on compatible string being present in cpu node.
->
-> I believe device tree maintainer already stated that we should not
-> have node/compatible for cpuidle/cpufreq such stuff in DT merely for
-> asking DT core to create platform_device for them.
+On Sat, Jan 26, 2013 at 11:21:27PM +0100, Rafael J. Wysocki wrote:
+> On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
+> > As multiplatform build is being adopted by more and more ARM platforms,
+> > initcall function should be used very carefully.  For example, when
+> > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
+> > will be called on all the platforms to initialize cpufreq-cpu0 driver.
+> > 
+> > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
+> > driver to have it instantiated as a platform_driver.  Then it will only
+> > run on platforms that create the platform_device "cpufreq-cpu0".
+> > 
+> > Along with the change, it also changes cpu_dev to be &pdev->dev,
+> > so that managed functions can start working, and module build gets
+> > supported too.
+> > 
+> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> > ---
+> > Rafael,
+> > 
+> > The patch depends patch "power: export opp cpufreq functions".
+> > https://patchwork.kernel.org/patch/1847261/
+> 
+> That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
+> 
+When commit 80126ce (PM / OPP: Export symbols for module usage.)
+already exported a few symbols with EXPORT_SYMBOL()?
 
-I see. I am really not sure if the alternative of DT node (i.e. platform_device)
-is good enough.
+> Care to add a fixed version to the patch set along with the $subject one?
+> 
+> > AnilKumar,
+> > 
+> > Unfortunately, the change will require some platform level adoption
+> > to have cpufreq-cpu0 driver continue working for am33xx.  But it should
+> > be as simple as something like below.
+> > 
+> > 	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+> > 	platform_device_register_full(&devinfo);
+> 
+> That should be included in your patch, then.
+> 
+Fair enough.  Will do.
 
-@Arnd: What do you say?
+Shawn
+
