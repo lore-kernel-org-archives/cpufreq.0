@@ -1,63 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 0/3] Kirkwoode cpufreq driver
-Date: Sun, 27 Jan 2013 23:39 +0100
-Message-ID: <4295673.nKKrtgdar0@vostro.rjw.lan>
-References: <1359215039-2848-1-git-send-email-andrew@lunn.ch> <3759655.fLV8aUUe7v@vostro.rjw.lan> <20130126230459.GU1758@titan.lakedaemon.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: kirkwood: Add a cpufreq driver for
+ Marvell Kirkwood SoCs
+Date: Mon, 28 Jan 2013 08:49:28 +0530
+Message-ID: <CAKohponsQFe+-EWb+tBjHdC11vsAMY3Dq-7FO9+YrNG0CMhM1Q@mail.gmail.com>
+References: <1359281244-31455-1-git-send-email-andrew@lunn.ch>
+	<1359281244-31455-2-git-send-email-andrew@lunn.ch>
+	<CAKohpomWM41MhRjdhFixy-ELXc6QjE0BhCAHfTzovOD0CBPoOQ@mail.gmail.com>
+	<20130127154212.GJ29973@lunn.ch>
+	<CAKohpomQJfsWBY5o3ep4r86fYYQ39JnMPswjoe8YFT37ekM20w@mail.gmail.com>
+	<20130127162523.GK29973@lunn.ch>
+	<CAKohponWS73JtB3Vwk5bR=+UcT2tfrKsAmHCJEW9DqobkuYgmQ@mail.gmail.com>
+	<20130127171717.GL29973@lunn.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130126230459.GU1758@titan.lakedaemon.net>
+In-Reply-To: <20130127171717.GL29973@lunn.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux ARM <linux-arm-kernel@lists.infradead.org>, jacmet@sunsite.dk, cpufreq@vger.kernel.org, viresh.kumar@linaro.org
+Content-Transfer-Encoding: 7bit
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, jacmet@sunsite.dk
 
-On Saturday, January 26, 2013 06:04:59 PM Jason Cooper wrote:
-> On Sat, Jan 26, 2013 at 10:52:42PM +0100, Rafael J. Wysocki wrote:
-> > On Saturday, January 26, 2013 04:43:56 PM Andrew Lunn wrote:
-> > > This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
-> > > 
-> > > The changes to kirkwood_defconfig enable it and set the default
-> > > governor to ondemand.
-> > > 
-> > > Changes since v1:
-> > > 
-> > > tabify Kconfig.arm entry
-> > > Sort order of include files
-> > > Remove some unnecassary include files
-> > > Reformat multiline comment to be coding style conform.
-> > > 
-> > > Andrew Lunn (3):
-> > >   cpufreq: kirkwood: Add a cpufreq driver for Marvell Kirkwood SoCs
-> > >   arm: kirkwood: Instantiate cpufreq driver
-> > >   arm: kirkwood: Enable cpufreq and ondemand on kirkwood_defconfig
-> > 
-> > If you want me to take this, it'll need some ACKs from the clk people
-> > and arm-soc maintainers at least.
-> 
-> In the past, we've sent the driver changes (patch #1) through the
-> appropriate driver maintainer's tree, and the subsequent patches (2 & 3)
-> through arm-soc with a listed dependency on the driver maintainer's
-> tree/branch.  We've found that causes the fewest conflicts/headaches
-> that way.
-> 
-> If you're Ok with that, just let me know which tree and branch you pull
-> it in to.
+On 27 January 2013 22:47, Andrew Lunn <andrew@lunn.ch> wrote:
+> I expect Debian, Fedora etc will strongly disagree with you
+> there. They want one kernel that will run on as many products they
+> support as possible. Kirkwood is mostly used in NAS boxes and is
+> supported by all these distributions.
+>
+> Now for a SoC used in a deeply embedded system, using a custom
+> distribution, buildroot, etc, multiplatform is probably not
+> wanted. But the products i've seen using Kirkwood don't fit this use
+> case.
 
-Yes, that would be fine by me.  In the future, though, please say in the
-comment part of the changelog (i.e. between the sign-off tag and the actual
-patch) who's the target maintainer of the patch.
+Accepted. I was wrong with my comment here :)
 
-When patch [1/3] is ready, it will be applied to the pm-cpufreq branch of the
-linux-pm.git tree (that branch doesn't contain any new material at the
-moment, because I'm having issues with one of the candidate commits and
-I'm debugging them).
+>> So, even this kind of delay is really not a big issue. On the other
+>> hand with platform driver too, we will hit lot of other code and
+>> would consume some extra memory for keeping its structures
+>
+> Kirkwood has many platform drivers, all this code is already pulled
+> in, lots of structures already exist. The incremental costs of another
+> platform device is minimal.
 
-Thanks,
-Rafael
+Its about delay executing other code too for platform device.
 
+Other than that, there is one more issue with this style. It against DT
+philosophy. :(
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+We really shouldn't add any devices from arch/arm/mach-* for any new
+drivers. And when we have DT support in driver, then it doesn't make
+any sense. So, you really need to pass this from cpu node in DT.
+
+--
+viresh
