@@ -1,61 +1,47 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 16:32:01 +0800
-Message-ID: <20130128083159.GD31689@S2101-09.ap.freescale.net>
-References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
- <7196597.b9sJl95POM@vostro.rjw.lan>
+Subject: Re: [PATCH 4/4] cpufreq, highbank: add support for highbank cpufreq
+Date: Mon, 28 Jan 2013 16:37:18 +0800
+Message-ID: <20130128083716.GE31689@S2101-09.ap.freescale.net>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1359143205-20279-5-git-send-email-mark.langsdorf@calxeda.com>
+ <20130126143950.GA7079@S2101-09.ap.freescale.net>
+ <1523559.2KevGvelzH@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <7196597.b9sJl95POM@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1523559.2KevGvelzH@vostro.rjw.lan>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-pm@vger.kernel.org
 
-On Sat, Jan 26, 2013 at 11:21:27PM +0100, Rafael J. Wysocki wrote:
-> On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
-> > As multiplatform build is being adopted by more and more ARM platforms,
-> > initcall function should be used very carefully.  For example, when
-> > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
-> > will be called on all the platforms to initialize cpufreq-cpu0 driver.
-> > 
-> > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
-> > driver to have it instantiated as a platform_driver.  Then it will only
-> > run on platforms that create the platform_device "cpufreq-cpu0".
-> > 
-> > Along with the change, it also changes cpu_dev to be &pdev->dev,
-> > so that managed functions can start working, and module build gets
-> > supported too.
-> > 
-> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> > ---
-> > Rafael,
-> > 
-> > The patch depends patch "power: export opp cpufreq functions".
-> > https://patchwork.kernel.org/patch/1847261/
-> 
-> That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
-> 
-When commit 80126ce (PM / OPP: Export symbols for module usage.)
-already exported a few symbols with EXPORT_SYMBOL()?
+Rafael,
 
-> Care to add a fixed version to the patch set along with the $subject one?
+On Sat, Jan 26, 2013 at 11:24:12PM +0100, Rafael J. Wysocki wrote:
+> > As we are moving to multiplatform build, this init function will run
+> > on all other platforms built together with highbank.  We should
+> > probably eliminate that effect.
 > 
-> > AnilKumar,
-> > 
-> > Unfortunately, the change will require some platform level adoption
-> > to have cpufreq-cpu0 driver continue working for am33xx.  But it should
-> > be as simple as something like below.
-> > 
-> > 	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-> > 	platform_device_register_full(&devinfo);
+> That change can be made on top of the Mark's patches I think, right?
 > 
-> That should be included in your patch, then.
+Yes.
+
+> If so, I'd prefer it that way.  The Mark's patches have been in a limbo for
+> too long already and that issue doesn't seem to be serious enough to block
+> them any longer.
 > 
-Fair enough.  Will do.
+Ok, I will take care of the changes needed on highbank.  Do you have
+a branch with Mark's series and the EXPORT_SYMBOL() one applied,
+so that I can start my patch from there.
 
 Shawn
-
