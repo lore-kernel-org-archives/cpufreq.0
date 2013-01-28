@@ -1,37 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] drivers: cpufreq: exynos: update related_cpus mask to fix hotplug dump
-Date: Mon, 28 Jan 2013 14:14:52 +0100
-Message-ID: <7822336.I5LaeuXXgz@vostro.rjw.lan>
-References: <1359000647-8366-1-git-send-email-inderpal.singh@linaro.org> <5258369.So5tj1UHcd@vostro.rjw.lan> <CAKohpokHXWh9ZCUK7jV3WHm2WMszO9e9UAmb1Wy0DdqeCWHNqA@mail.gmail.com>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH 3/4 v11] arm highbank: add support for pl320 IPC
+Date: Mon, 28 Jan 2013 07:44:13 -0600
+Message-ID: <510680AD.2070908@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1359143205-20279-1-git-send-email-mark.langsdorf@calxeda.com> <1359143205-20279-4-git-send-email-mark.langsdorf@calxeda.com> <1457500.uzVh9cxXhS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokHXWh9ZCUK7jV3WHm2WMszO9e9UAmb1Wy0DdqeCWHNqA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1457500.uzVh9cxXhS@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Inderpal Singh <inderpal.singh@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, patches@linaro.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <rob.herring@calxeda.com>, Omar Ramirez Luna <omar.luna@linaro.org>, Arnd Bergmann <arnd@arndb.de>
 
-On Monday, January 28, 2013 06:29:35 PM Viresh Kumar wrote:
-> On 28 January 2013 17:56, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > So here's a deal: I'll drop "cpufreq: Simplify cpufreq_add_dev()" for now and
-> > you'll generate a new patch that won't cause the WARN_ON() to trigger.  OK?
+On 01/28/2013 06:49 AM, Rafael J. Wysocki wrote:
+
+>> +int pl320_ipc_register_notifier(struct notifier_block *nb)
+>> +{
+>> +	return atomic_notifier_chain_register(&ipc_notifier, nb);
+>> +}
+>> +EXPORT_SYMBOL(pl320_ipc_register_notifier);
+>> +
+>> +int pl320_ipc_unregister_notifier(struct notifier_block *nb)
+>> +{
+>> +	return atomic_notifier_chain_unregister(&ipc_notifier, nb);
+>> +}
+>> +EXPORT_SYMBOL(pl320_ipc_unregister_notifier);
 > 
-> :(
+> I need all of your symbols to be exported with EXPORT_SYMBOL_GPL().
 > 
-> Or what about set all cpus from policy->cpus into related_cpus in our core code?
-> So, if platform sets any additional cpus, they would be retained?
+> Is it OK to make that change when applying the patch or do you want to send
+> a new one?
 
-Well, that might work.
+I probably should resend so I can include the drivers level Kconfig and
+Makefile.
 
-Please do whatever you think is the most appropriate and doesn't introcude any
-regressions.
+I'll get that out this morning.
 
-Thanks,
-Rafael
+--Mark Langsdorf
+Calxeda, Inc.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
