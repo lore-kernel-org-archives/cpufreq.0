@@ -1,40 +1,41 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3 1/3] cpufreq: kirkwood: Add a cpufreq driver for
- Marvell Kirkwood SoCs
-Date: Mon, 28 Jan 2013 14:41:40 +0800
-Message-ID: <20130128064137.GA20238@S2101-09.ap.freescale.net>
-References: <1359281244-31455-1-git-send-email-andrew@lunn.ch>
- <1359281244-31455-2-git-send-email-andrew@lunn.ch>
- <20130127171111.GG23505@n2100.arm.linux.org.uk>
- <20130127172358.GM29973@lunn.ch>
+Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
+Date: Mon, 28 Jan 2013 15:02:08 +0800
+Message-ID: <20130128070206.GB31689@S2101-09.ap.freescale.net>
+References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
+ <CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20130127172358.GM29973@lunn.ch>
+In-Reply-To: <CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, rjw@sisk.pl, jacmet@sunsite.dk, linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Andrew Lunn <andrew@lunn.ch>
 
-On Sun, Jan 27, 2013 at 06:23:58PM +0100, Andrew Lunn wrote:
-> > > +	clkspec.np = np;
-> > > +	clkspec.args_count = 1;
-> > > +	clkspec.args[0] = 1;
-> > > +
-> > > +	priv.cpu_clk = of_clk_get_from_provider(&clkspec);
-> > 
-> > Oh, yet another way to get clocks...
+On Mon, Jan 28, 2013 at 09:42:29AM +0530, Viresh Kumar wrote:
+> >         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+> >         platform_device_register_full(&devinfo);
 > 
-> Yep. I didn't like it, but could not find a better way.  It has been
-> argued that cpufreq drivers should not have nodes in DT. So the normal
-> of_clk_get() does not work. Since the clocks themselves are
-> instantiated from DT, there are no clkdev alias, so plain clk_get()
-> also does not work.
+> Something similar was being discussed with Andrew (cc'd) on his patch
+> for kikwood cpufreq driver.
 > 
-But you should have a cpu node in DT, and it will be perfectly fine to
-have cpu node consume that core_clk.
+> We shouldn't encourage addition of above as we are moving towards DT.
+
+Moving towards DT does not really mean that we should never register
+platform_device from platform code.  DT is designed to present physical
+devices, while what I'm adding here is somewhat a virtual one.  I'm
+just using the platform_device/platform_driver mechanism to instantiate
+the driver on particular platform.
+
+> So, i would except an compatible array too in your patch and then driver
+> can be probed based on compatible string being present in cpu node.
+
+I believe device tree maintainer already stated that we should not
+have node/compatible for cpuidle/cpufreq such stuff in DT merely for
+asking DT core to create platform_device for them.
 
 Shawn
 
