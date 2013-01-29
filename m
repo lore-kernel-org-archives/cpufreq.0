@@ -1,26 +1,28 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 49231] Single CPU bound process results in non-optimal turbo
- boost configuration
-Date: Mon, 28 Jan 2013 23:57:39 +0000 (UTC)
-Message-ID: <20130128235739.20C7111FF1B@bugzilla.kernel.org>
-References: <bug-49231-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 49881] Missing NULL check of return value of cpufreq_cpu_get()
+ in function cpufreq_add_dev_symlink()
+Date: Tue, 29 Jan 2013 01:35:43 +0000 (UTC)
+Message-ID: <20130129013543.7FAAA11FE9A@bugzilla.kernel.org>
+References: <bug-49881-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-49231-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-49881-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=49231
+https://bugzilla.kernel.org/show_bug.cgi?id=49881
 
 
-Len Brown <lenb@kernel.org> changed:
+Rafael J. Wysocki <rjw@sisk.pl> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
+             Status|NEW                         |RESOLVED
+                 CC|                            |rjw@sisk.pl
+         Resolution|                            |OBSOLETE
 
 
 
