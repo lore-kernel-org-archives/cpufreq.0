@@ -1,35 +1,54 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v4] cpufreq: add imx6q-cpufreq driver
-Date: Tue, 29 Jan 2013 10:56:54 +0800
-Message-ID: <20130129025652.GB11546@S2101-09.ap.freescale.net>
-References: <1359214303-3319-1-git-send-email-shawn.guo@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 42924] /proc/cpuinfo reports wrong frequency (compared to
+ cpufreq-info)
+Date: Tue, 29 Jan 2013 03:48:21 +0000 (UTC)
+Message-ID: <20130129034821.B308611FE9A@bugzilla.kernel.org>
+References: <bug-42924-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1359214303-3319-1-git-send-email-shawn.guo@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-42924-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Eric Nelson <eric.nelson@boundarydevices.com>
+To: cpufreq@vger.kernel.org
 
-On Sat, Jan 26, 2013 at 11:31:43PM +0800, Shawn Guo wrote:
-> Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
-> hardware specific frequency and voltage scaling requirements.
-> 
-> The driver supports module build and is instantiated by the platform
-> device/driver mechanism, so that it will not be instantiated on other
-> platforms, as IMX is built with multiplatform support.
-> 
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+https://bugzilla.kernel.org/show_bug.cgi?id=42924
 
-Rafael,
 
-I think the patch needs to go via cpufreq tree, as it has dependency
-on Nishanth's "PM / OPP : export symbol consolidation" series.
+Len Brown <lenb@kernel.org> changed:
 
-Shawn
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+          Component|Config-Processors           |cpufreq
+         Resolution|                            |DOCUMENTED
+         AssignedTo|lenb@kernel.org             |cpufreq@vger.kernel.org
+            Product|ACPI                        |Power Management
 
+
+
+
+--- Comment #2 from Len Brown <lenb@kernel.org>  2013-01-29 03:48:21 ---
+turbostat tells the truth about what the HW is doing.
+So in this case, all 4 threads (2 cores) are running at 3.3 GHz.
+
+cpufreq is showing you 2.8 b/c that is what the OS requested.
+It doesn't know that turbo HW can deliver 3.3 when it requests 2.801.
+
+Also, on multi-core systems, the voltage is raised to support
+the highest frequency request and all the cores run at that frequency.
+Here 3 cpus asked for 2.8 and cpu0 asked for 800.  But cpu0 will run
+at the same speed of the others even though it last requested less.
+
+This is a longstanding problem with /proc/cpuinfo --
+it is showing a cached request value, not an actual value.
+The values in cpufreq are only slightly better...
+
+Some day we may fix this, but probably only after
+some major surgery (or wholesale replacement) of cpufreq.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
