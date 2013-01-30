@@ -1,40 +1,152 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 3/4] cpufreq: conservative: call dbs_check_cpu only
- when necessary
-Date: Wed, 30 Jan 2013 21:23:22 +0530
-Message-ID: <CAKohpompi7mzd+XmrUzJ4T=apzpmUcryHaBfQWUoO5G3+4y=_Q@mail.gmail.com>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
+Date: Wed, 30 Jan 2013 17:23:12 +0100
+Message-ID: <20130130162225.GB30559@balto.lan>
 References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
-	<1359550803-18577-4-git-send-email-fabio.baltieri@linaro.org>
+ <1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
+ <CAKohponwQFFtC3MKh72Z0bqYksV_P6D07VivQUYjai1qPB_J9g@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1359550803-18577-4-git-send-email-fabio.baltieri@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohponwQFFtC3MKh72Z0bqYksV_P6D07VivQUYjai1qPB_J9g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
 
-On 30 January 2013 18:30, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> Modify conservative timer to not resample CPU utilization if recently
-> sampled from another SW coordinated core.
->
-> Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+Hi Viresh,
 
-We are again doing the same mistake which i fixed with:
+On Wed, Jan 30, 2013 at 08:32:38PM +0530, Viresh Kumar wrote:
+> Hi Fabio,
+> 
+> I know Rafael has asked you to send only the incremental patch, but i
+> am interested in reviewing whole series again, as i haven't reviewed
+> earlier stuff :)
 
-commit 4471a34f9a1f2da220272e823bdb8e8fa83a7661
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Fri Oct 26 00:47:42 2012 +0200
+Sure, take your chance.
 
-    cpufreq: governors: remove redundant code
+[internal note]
+> I believe you are required to send patches to patches@linaro.org too :)
 
-    Initially ondemand governor was written and then using its code conservative
-    governor is written. It used a lot of code from ondemand governor,
-but copy of
-    code was created instead of using the same routines from both
-governors. Which
-    increased code redundancy, which is difficult to manage.
+I already have patches@linaro.org in BCC, all my patches are there.
+[/internal note]
 
-    This patch is an attempt to move common part of both the governors to
-    cpufreq_governor.c file to come over above mentioned issues.
+> On 30 January 2013 18:30, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
+> > From: Rickard Andersson <rickard.andersson@stericsson.com>
+> >
+> > This patch fixes a bug that occurred when we had load on a secondary CPU
+> > and the primary CPU was sleeping. Only one sampling timer was spawned
+> > and it was spawned as a deferred timer on the primary CPU, so when a
+> > secondary CPU had a change in load this was not detected by the cpufreq
+> > governor (both ondemand and conservative).
+> >
+> > This patch make sure that deferred timers are run on all CPUs in the
+> > case of software controlled CPUs that run on the same frequency.
+> 
+> Its really a good point. I wondered earlier why does interactive governor
+> has per-cpu timer. BTW, you can check how interactive governor is handling
+> this requirement. That might improve these drivers too.
+> 
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> > +bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs)
+> > +{
+> > +       struct cpufreq_policy *policy = cdbs->cur_policy;
+> > +
+> > +       return cpumask_weight(policy->cpus) > 1;
+> > +}
+> > +EXPORT_SYMBOL_GPL(dbs_sw_coordinated_cpus);
+> 
+> I believe this routine should be rather present in cpufreq core code,
+> as their might
+> be other users of it. Its really not related to dbs or governors.
+> 
+> My ideas about the name of routine then:
+> - policy_is_shared()
+> - or something better you have :)
+
+So you are suggesting to rethink this function to be related to policy
+rather than dbs... this may as well become an inline in cpufreq.h, as:
+
+static inline bool policy_is_shared(struct cpufreq_policy *policy)
+{
+        return cpumask_weight(policy->cpus) > 1;
+}
+
+I'm not sure about the name through, I like mentioning sw coordination in it
+because that's the comment in the declaration:
+
+        cpumask_var_t           cpus;   /* CPUs requiring sw coordination */
+        cpumask_var_t           related_cpus; /* CPUs with any coordination */
+
+And those two are already confusing as a starting point.
+
+Anyway, this sounds fine to me.  If you think this is useful I can send
+a patch, or feel free to include it in your patches if you plan to do
+further cleanup work on this code.
+
+/me tries to also keep that ->cpu field in mind.
+
+> > @@ -217,6 +227,10 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+> >                         if (ignore_nice)
+> >                                 j_cdbs->prev_cpu_nice =
+> >                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+> > +
+> > +                       mutex_init(&j_cdbs->timer_mutex);
+> > +                       INIT_DEFERRABLE_WORK(&j_cdbs->work,
+> > +                                            dbs_data->gov_dbs_timer);
+> 
+> That doesn't look the right place for doing it. With this change we
+> will initialize
+> mutex and work for all cpus whenever cpufreq_governor_dbs(GOV_START) is
+> called. We really want to do it just before second_time: label, which will do
+> it only when this is called for the very first time or cpu.
+> 
+> That's what i thought initially :)
+> 
+> Then i looked at my own work and realized something else :).. Now, because
+> we stop/start governors on every cpu movement, this routine is called only once.
+> 
+> What you can do:
+> - Create a single for_each_cpu() in GOV_START path
+> - Get rid of dbs_data->enable routine as we don't need to store the
+> number of calls
+>   for GOV_START.
+> 
+> >                 }
+> >
+> >                 /*
+> > @@ -275,15 +289,16 @@ second_time:
+> >                 }
+> >                 mutex_unlock(&dbs_data->mutex);
+> >
+> > -               mutex_init(&cpu_cdbs->timer_mutex);
+> > -               dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate);
+> > +               for_each_cpu(j, policy->cpus)
+> > +                       dbs_timer_init(dbs_data, j, *sampling_rate);
+> 
+> Keep this too in the same for_each_cpu() loop and hence get to older
+> param types of dbs_timer_init(), i.e. don't pass cpu as we already have
+> j_cdbs in our loop.
+
+Ok, I can try to implement this if you help testing the patch on your bL
+system. :-)
+
+Fabio
+
+> >                 break;
+> >
+> >         case CPUFREQ_GOV_STOP:
+> >                 if (dbs_data->governor == GOV_CONSERVATIVE)
+> >                         cs_dbs_info->enable = 0;
+> >
+> > -               dbs_timer_exit(cpu_cdbs);
+> > +               for_each_cpu(j, policy->cpus)
+> > +                       dbs_timer_exit(dbs_data, j);
+> >
+> >                 mutex_lock(&dbs_data->mutex);
+> >                 mutex_destroy(&cpu_cdbs->timer_mutex);
+
+-- 
+Fabio Baltieri
