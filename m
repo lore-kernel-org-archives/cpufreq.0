@@ -1,40 +1,34 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: cpufreq: cpufreq_driver_lock is quite hot on 512p systems
-Date: Wed, 30 Jan 2013 12:07:32 -0600
-Message-ID: <20130130180731.GA9449@gulag1.americas.sgi.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 52941] CPU recognition bug for AMD
+Date: Wed, 30 Jan 2013 18:34:23 +0000 (UTC)
+Message-ID: <20130130183423.A930D11FF01@bugzilla.kernel.org>
+References: <bug-52941-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <bug-52941-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: cpufreq@vger.kernel.org
+
+https://bugzilla.kernel.org/show_bug.cgi?id=52941
 
 
-I am noticing the cpufreq_driver_lock is quite hot.
-Currently on an idle 512 system perf shows me most of the system time is 
-spent on this lock.
+Sogn <sognametal@gmail.com> changed:
 
--  84.18%  [kernel]                 [k] _raw_spin_lock_irqsave
-   - _raw_spin_lock_irqsave
-      - 99.97% __cpufreq_cpu_get
-           cpufreq_cpu_get
-           __cpufreq_driver_getavg
-           dbs_check_cpu
-           od_dbs_timer
-           process_one_work
-           worker_thread
-           kthread
-           ret_from_fork
- 
-The data this lock protects is used in a read mostly situation.
-While exprimenting I found turning the lock to a rwlock fixed the problem.
-It seems like this might be amenable to using the RCU.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|                            |PATCH_ALREADY_AVAILABLE
 
-Any other ideas on how to properly resolve the issue?
 
-Thanks,
-Nate
 
+
+--- Comment #1 from Sogn <sognametal@gmail.com>  2013-01-30 18:34:23 ---
+Fixed with last kernel upgrade (3.7.5).
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
