@@ -1,55 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] mailbox: prevent pl320-ipc code from breaking none-AMBA systems
-Date: Wed, 30 Jan 2013 00:11:53 +0100
-Message-ID: <27770386.tfMWkOKqd2@vostro.rjw.lan>
-References: <1359477413-27881-1-git-send-email-mark.langsdorf@calxeda.com> <1807311.dyJeq56cRL@vostro.rjw.lan> <21672683C5A3814BB4DB938EBE482DE435D976610A@IAD2MBX09.mex02.mlsrvr.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] cpufreq: Simplify cpufreq_add_dev()
+Date: Wed, 30 Jan 2013 07:41:44 +0530
+Message-ID: <CAKohpo=wTEXDH+hHanRP4CjxPKVJs-oZSLA6_04XzpMLvOEdmA@mail.gmail.com>
+References: <c7c9f237a91821661bfc0735e390358124953695.1359469932.git.viresh.kumar@linaro.org>
+	<1714110.knKZFeZSOf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <21672683C5A3814BB4DB938EBE482DE435D976610A@IAD2MBX09.mex02.mlsrvr.com>
+In-Reply-To: <1714110.knKZFeZSOf@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: inderpal.singh@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Tuesday, January 29, 2013 05:13:09 PM Mark Langsdorf wrote:
-> > From: Rafael J. Wysocki [rjw@sisk.pl]
-> > On Tuesday, January 29, 2013 10:36:53 AM Mark Langsdorf wrote:
-> > > The pl320-ipc code depends on ARM AMBA, and should have the dependency
-> > > in its Kconfig.
-> > 
-> > May I fold this into "ARM / highbank: add support for pl320 IPC"?
-> 
-> Yes. I didn't want to regenerate the patch series =)
+On 30 January 2013 03:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Please don't add my sign-offs in advance.  Yes, I have signed off a *previous*
+> version of that patch, but that doesn't apply to *this* version automatically.
+>
+> While you can do such things with Acked-by or Reviewed-by tags (that's not very
+> polite, but people usually don't mind), sign-off is a bit different, because
+> it is a *certificate* that this particular patch (and not some previous version
+> of it) has gone through my hands.
+>
+> I'm going to apply this, but please be more careful in the future.
 
-Done.
+Its not that i have added it, but forgot to remove it. :(
+I picked the patch from linux-next/master and forgot to remove your SOB.
 
-Thanks,
-Rafael
-
-
-> > Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> > ---
-> >  drivers/mailbox/Kconfig | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
-> > index 9489554..9545c9f 100644
-> > --- a/drivers/mailbox/Kconfig
-> > +++ b/drivers/mailbox/Kconfig
-> > @@ -8,6 +8,7 @@ menuconfig MAILBOX
-> >  if MAILBOX
-> >  config PL320_MBOX
-> >       bool "ARM PL320 Mailbox"
-> > +     depends on ARM_AMBA
-> >       help
-> >         An implementation of the ARM PL320 Interprocessor Communication
-> >         Mailbox (IPCM), tailored for the Calxeda Highbank. It is used to
-> >
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+viresh
