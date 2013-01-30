@@ -1,111 +1,163 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 20:32:38 +0530
-Message-ID: <CAKohponwQFFtC3MKh72Z0bqYksV_P6D07VivQUYjai1qPB_J9g@mail.gmail.com>
+Subject: Re: [PATCH v7 2/4] cpufreq: ondemand: call dbs_check_cpu only when necessary
+Date: Wed, 30 Jan 2013 21:21:41 +0530
+Message-ID: <CAKohpok0iDffNM31W2r97Wtq4DR+TdPwYWTAdJH7AyLqHm0UPA@mail.gmail.com>
 References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
-	<1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
+	<1359550803-18577-3-git-send-email-fabio.baltieri@linaro.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1359550803-18577-3-git-send-email-fabio.baltieri@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
-
-Hi Fabio,
-
-I know Rafael has asked you to send only the incremental patch, but i
-am interested in reviewing whole series again, as i haven't reviewed
-earlier stuff :)
-
-I believe you are required to send patches to patches@linaro.org too :)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
 
 On 30 January 2013 18:30, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> From: Rickard Andersson <rickard.andersson@stericsson.com>
+> Modify ondemand timer to not resample CPU utilization if recently
+> sampled from another SW coordinated core.
 >
-> This patch fixes a bug that occurred when we had load on a secondary CPU
-> and the primary CPU was sleeping. Only one sampling timer was spawned
-> and it was spawned as a deferred timer on the primary CPU, so when a
-> secondary CPU had a change in load this was not detected by the cpufreq
-> governor (both ondemand and conservative).
+> Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+
+I might be wrong but i have some real concerns over this patch.
+
+This is what i believe is your idea:
+- because a cpu can sleep, create timer per cpu
+- then check load again only when no other cpu in policy->cpus has
+  checked load within sampling time interval.
+
+Correct?
+
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |  3 ++
+>  drivers/cpufreq/cpufreq_governor.h |  1 +
+>  drivers/cpufreq/cpufreq_ondemand.c | 58 +++++++++++++++++++++++++++++++-------
+>  3 files changed, 52 insertions(+), 10 deletions(-)
 >
-> This patch make sure that deferred timers are run on all CPUs in the
-> case of software controlled CPUs that run on the same frequency.
-
-Its really a good point. I wondered earlier why does interactive governor
-has per-cpu timer. BTW, you can check how interactive governor is handling
-this requirement. That might improve these drivers too.
-
 > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> +bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs)
-> +{
-> +       struct cpufreq_policy *policy = cdbs->cur_policy;
-> +
-> +       return cpumask_weight(policy->cpus) > 1;
-> +}
-> +EXPORT_SYMBOL_GPL(dbs_sw_coordinated_cpus);
-
-I believe this routine should be rather present in cpufreq core code,
-as their might
-be other users of it. Its really not related to dbs or governors.
-
-My ideas about the name of routine then:
-- policy_is_shared()
-- or something better you have :)
-
-> @@ -217,6 +227,10 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
->                         if (ignore_nice)
->                                 j_cdbs->prev_cpu_nice =
->                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-> +
-> +                       mutex_init(&j_cdbs->timer_mutex);
-> +                       INIT_DEFERRABLE_WORK(&j_cdbs->work,
-> +                                            dbs_data->gov_dbs_timer);
-
-That doesn't look the right place for doing it. With this change we
-will initialize
-mutex and work for all cpus whenever cpufreq_governor_dbs(GOV_START) is
-called. We really want to do it just before second_time: label, which will do
-it only when this is called for the very first time or cpu.
-
-That's what i thought initially :)
-
-Then i looked at my own work and realized something else :).. Now, because
-we stop/start governors on every cpu movement, this routine is called only once.
-
-What you can do:
-- Create a single for_each_cpu() in GOV_START path
-- Get rid of dbs_data->enable routine as we don't need to store the
-number of calls
-  for GOV_START.
-
->                 }
->
->                 /*
-> @@ -275,15 +289,16 @@ second_time:
+> index 8393d6e..46f96a4 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -289,6 +289,9 @@ second_time:
 >                 }
 >                 mutex_unlock(&dbs_data->mutex);
 >
-> -               mutex_init(&cpu_cdbs->timer_mutex);
-> -               dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate);
-> +               for_each_cpu(j, policy->cpus)
-> +                       dbs_timer_init(dbs_data, j, *sampling_rate);
+> +               /* Initiate timer time stamp */
+> +               cpu_cdbs->time_stamp = ktime_get();
 
-Keep this too in the same for_each_cpu() loop and hence get to older
-param types of dbs_timer_init(), i.e. don't pass cpu as we already have
-j_cdbs in our loop.
+We have updated time_stamp only for policy->cpu's cdbs.
 
+>                 for_each_cpu(j, policy->cpus)
+>                         dbs_timer_init(dbs_data, j, *sampling_rate);
 >                 break;
+
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 93bb56d..13ceb3c 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -216,23 +216,23 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>         }
+>  }
 >
->         case CPUFREQ_GOV_STOP:
->                 if (dbs_data->governor == GOV_CONSERVATIVE)
->                         cs_dbs_info->enable = 0;
+> -static void od_dbs_timer(struct work_struct *work)
+> +static void od_timer_update(struct od_cpu_dbs_info_s *dbs_info, bool sample,
+> +                           struct delayed_work *dw)
+>  {
+> -       struct od_cpu_dbs_info_s *dbs_info =
+> -               container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
+>         unsigned int cpu = dbs_info->cdbs.cpu;
+>         int delay, sample_type = dbs_info->sample_type;
 >
-> -               dbs_timer_exit(cpu_cdbs);
-> +               for_each_cpu(j, policy->cpus)
-> +                       dbs_timer_exit(dbs_data, j);
+> -       mutex_lock(&dbs_info->cdbs.timer_mutex);
+> -
+>         /* Common NORMAL_SAMPLE setup */
+>         dbs_info->sample_type = OD_NORMAL_SAMPLE;
+>         if (sample_type == OD_SUB_SAMPLE) {
+>                 delay = dbs_info->freq_lo_jiffies;
+> -               __cpufreq_driver_target(dbs_info->cdbs.cur_policy,
+> -                       dbs_info->freq_lo, CPUFREQ_RELATION_H);
+> +               if (sample)
+> +                       __cpufreq_driver_target(dbs_info->cdbs.cur_policy,
+> +                                               dbs_info->freq_lo,
+> +                                               CPUFREQ_RELATION_H);
+>         } else {
+> -               dbs_check_cpu(&od_dbs_data, cpu);
+> +               if (sample)
+> +                       dbs_check_cpu(&od_dbs_data, cpu);
+>                 if (dbs_info->freq_lo) {
+>                         /* Setup timer for SUB_SAMPLE */
+>                         dbs_info->sample_type = OD_SUB_SAMPLE;
+> @@ -243,11 +243,49 @@ static void od_dbs_timer(struct work_struct *work)
+>                 }
+>         }
 >
->                 mutex_lock(&dbs_data->mutex);
->                 mutex_destroy(&cpu_cdbs->timer_mutex);
+> -       schedule_delayed_work_on(smp_processor_id(), &dbs_info->cdbs.work,
+> -                       delay);
+> +       schedule_delayed_work_on(smp_processor_id(), dw, delay);
+> +}
+
+All good until now.
+
+> +
+> +static void od_timer_coordinated(struct od_cpu_dbs_info_s *dbs_info_local,
+> +                                struct delayed_work *dw)
+> +{
+> +       struct od_cpu_dbs_info_s *dbs_info;
+> +       ktime_t time_now;
+> +       s64 delta_us;
+> +       bool sample = true;
+> +
+
+--start--
+
+> +       /* use leader CPU's dbs_info */
+> +       dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info_local->cdbs.cpu);
+> +       mutex_lock(&dbs_info->cdbs.timer_mutex);
+> +
+> +       time_now = ktime_get();
+> +       delta_us = ktime_us_delta(time_now, dbs_info->cdbs.time_stamp);
+> +
+> +       /* Do nothing if we recently have sampled */
+> +       if (delta_us < (s64)(od_tuners.sampling_rate / 2))
+> +               sample = false;
+> +       else
+> +               dbs_info->cdbs.time_stamp = time_now;
+> +
+
+--end--
+
+Instead of two routines (this and the one below), we can have one and can
+put the above code in the if (coordinated cpus case). That will save some
+redundant code.
+
+Another issue that i see is: Current routine will be called from timer handler
+of every cpu and so above calculations will happen for every cpu. Here, you
+are taking the diff of last timestamp of cpu "x" with cpu "x" current timestamp,
+but what you should have really done is the diff b/w current timestamp with
+the timestamp of last change on any cpu in policy->cpus.
+
+Over that, timestamp for all cpu's isn't initialized early in the code
+at GOV_START.
+
+Am i correct?
+
+> +       od_timer_update(dbs_info, sample, dw);
+>         mutex_unlock(&dbs_info->cdbs.timer_mutex);
+>  }
+>
+> +static void od_dbs_timer(struct work_struct *work)
+> +{
+> +       struct delayed_work *dw = to_delayed_work(work);
+> +       struct od_cpu_dbs_info_s *dbs_info =
+> +               container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
+> +
+> +       if (dbs_sw_coordinated_cpus(&dbs_info->cdbs)) {
+> +               od_timer_coordinated(dbs_info, dw);
+> +       } else {
+> +               mutex_lock(&dbs_info->cdbs.timer_mutex);
+> +               od_timer_update(dbs_info, true, dw);
+> +               mutex_unlock(&dbs_info->cdbs.timer_mutex);
+> +       }
+> +}
+> +
