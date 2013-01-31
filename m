@@ -1,50 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 22:44 +0100
-Message-ID: <1691889.6OP5HVPKVS@vostro.rjw.lan>
-References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org> <CAKohpoms9AK+j+Au53cwbLn=ds0AsJn+ApUMgMxe2dVhC7McVw@mail.gmail.com> <20130130165739.GA21329@balto.lan>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130130165739.GA21329@balto.lan>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Update Documentation for cpus and related_cpus
+Date: Thu, 31 Jan 2013 07:33:53 +0530
+Message-ID: <5bacee23a68ff51390df30ac58c93edd244222f8.1359597694.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, fabio.baltieri@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Wednesday, January 30, 2013 05:57:39 PM Fabio Baltieri wrote:
-> On Wed, Jan 30, 2013 at 10:21:03PM +0530, Viresh Kumar wrote:
-> > > I'm not sure about the name through, I like mentioning sw coordination in it
-> > > because that's the comment in the declaration:
-> > >
-> > >         cpumask_var_t           cpus;   /* CPUs requiring sw coordination */
-> > >         cpumask_var_t           related_cpus; /* CPUs with any coordination */
-> > >
-> > > And those two are already confusing as a starting point.
-> > 
-> > I will fix these comments with a patch of mine.
-> 
-> Great!
-> 
-> > 
-> > > Anyway, this sounds fine to me.  If you think this is useful I can send
-> > > a patch, or feel free to include it in your patches if you plan to do
-> > > further cleanup work on this code.
-> > >
-> > > /me tries to also keep that ->cpu field in mind.
-> > 
-> > You can make it part of your patchsets v8.
-> 
-> I'm not sending a v8 as Rafael already asked for incremental, but I'll
-> send a patch with that soon.
+Documentation related to cpus and related_cpus is confusing and not very clear.
+Over that CPUFreq core has seen much changes recently. Lets update documentation
+and comments for cpus and related_cpus.
 
-Yes, please.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/cpu-freq/cpu-drivers.txt | 6 ++++++
+ Documentation/cpu-freq/user-guide.txt  | 8 ++++----
+ include/linux/cpufreq.h                | 6 ++++--
+ 3 files changed, 14 insertions(+), 6 deletions(-)
 
-Thanks,
-Rafael
-
-
+diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+index c436096..72f70b1 100644
+--- a/Documentation/cpu-freq/cpu-drivers.txt
++++ b/Documentation/cpu-freq/cpu-drivers.txt
+@@ -111,6 +111,12 @@ policy->governor		must contain the "default policy" for
+ For setting some of these values, the frequency table helpers might be
+ helpful. See the section 2 for more information on them.
+ 
++SMP systems normally have same clock source for a group of cpus. For these the
++.init() would be called only once for the first online cpu. Here the .init()
++routine must initialize policy->cpus with mask of all possible cpus (Online +
++Offline) that share the clock. Then the core would copy this mask onto
++policy->related_cpus and will reset policy->cpus to carry only online cpus.
++
+ 
+ 1.3 verify
+ ------------
+diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
+index 04f6b32..ff2f283 100644
+--- a/Documentation/cpu-freq/user-guide.txt
++++ b/Documentation/cpu-freq/user-guide.txt
+@@ -190,11 +190,11 @@ scaling_max_freq		show the current "policy limits" (in
+ 				first set scaling_max_freq, then
+ 				scaling_min_freq.
+ 
+-affected_cpus :			List of CPUs that require software coordination
+-				of frequency.
++affected_cpus :			List of Online CPUs that require software
++				coordination of frequency.
+ 
+-related_cpus :			List of CPUs that need some sort of frequency
+-				coordination, whether software or hardware.
++related_cpus :			List of Online + Offline CPUs that need software
++				coordination of frequency.
+ 
+ scaling_driver :		Hardware driver for cpufreq.
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index b60f6ba..04d2e84 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -86,8 +86,10 @@ struct cpufreq_real_policy {
+ };
+ 
+ struct cpufreq_policy {
+-	cpumask_var_t		cpus;	/* CPUs requiring sw coordination */
+-	cpumask_var_t		related_cpus; /* CPUs with any coordination */
++	/* CPUs sharing clock, require sw coordination */
++	cpumask_var_t		cpus;	/* Online CPUs only */
++	cpumask_var_t		related_cpus; /* Online + Offline CPUs */
++
+ 	unsigned int		shared_type; /* ANY or ALL affected CPUs
+ 						should set cpufreq */
+ 	unsigned int		cpu;    /* cpu nr of registered CPU */
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
