@@ -1,69 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: governors: implement generic policy_is_shared
-Date: Thu, 31 Jan 2013 14:28:56 +0530
-Message-ID: <CAOh2x==1ru3bddHnJOge=1rbpc6xwzKV5F5isJhAgwX_R=2TCw@mail.gmail.com>
-References: <1359620064-14751-1-git-send-email-fabio.baltieri@linaro.org>
-	<CAKohponV-PPO8sqF=rzONLzPi7q-YFOPbrQgoBcNt_NjTJO6WQ@mail.gmail.com>
-	<20130131085555.GB30667@balto.lan>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH v7 2/4] cpufreq: ondemand: call dbs_check_cpu only when
+ necessary
+Date: Thu, 31 Jan 2013 10:06:11 +0100
+Message-ID: <20130131090611.GC30667@balto.lan>
+References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
+ <1359550803-18577-3-git-send-email-fabio.baltieri@linaro.org>
+ <CAKohpok0iDffNM31W2r97Wtq4DR+TdPwYWTAdJH7AyLqHm0UPA@mail.gmail.com>
+ <20130130164614.GC30559@balto.lan>
+ <CAKohponMezzus0tRW+CdC7wLq1U1pRio5q=g6F845x7iveFCAA@mail.gmail.com>
+ <20130131083825.GA30667@balto.lan>
+ <CAKohpokR7-P9BarUwW++Exh8RyHUYFHO4V80+zHqcA-zwCOurg@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=d9708Ec+xZ2llRQTeD80QoRefIE/txDQ3Wj3eawVrmU=;
-        b=vbtK8K6AtWMmwM3X6NijTlQz+vG+b8aDD+Xv/meEF4qqANtCQi0E/QD716pvqlxSws
-         Svy4p4h1fQEdxrPXO4Q/bvdeQ4BrjGbaysYyYeTrX3DSr8Iqr18OdpoBmzRho6yD2yIe
-         2SHHCGPeaQ0FkEQ4rU5zCP5HvNzsJU2wcmhaGoSD6e6DWe7KbKp22Qskyrmx7Qmj8Vlt
-         XYG3t63SAV7bj3RC4LpPMcoidp/18b/4ct7DDnPL1AQPmOC/7G+clCRRrBuXsXxzmIZk
-         krHEyLw9+ZgZvdP0kSu1gWFsxYgyu5XQtM96bX4tlA1MluohMGd8M6dpV8/oxh5kJz8h
-         YQFA==
-In-Reply-To: <20130131085555.GB30667@balto.lan>
+Content-Disposition: inline
+In-Reply-To: <CAKohpokR7-P9BarUwW++Exh8RyHUYFHO4V80+zHqcA-zwCOurg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
 
-On Thu, Jan 31, 2013 at 2:25 PM, Fabio Baltieri
-<fabio.baltieri@linaro.org> wrote:
-> On Thu, Jan 31, 2013 at 02:01:27PM +0530, Viresh Kumar wrote:
->> On 31 January 2013 13:44, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
->> > Implement a generic helper function policy_is_shared() to replace the
->> > current dbs_sw_coordinated_cpus() at cpufreq level, so that it can be
->> > used by code other than cpufreq governors.
->> >
->> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
->> > ---
->> >  drivers/cpufreq/cpufreq_conservative.c | 2 +-
->> >  drivers/cpufreq/cpufreq_governor.c     | 8 --------
->> >  drivers/cpufreq/cpufreq_governor.h     | 1 -
->> >  drivers/cpufreq/cpufreq_ondemand.c     | 2 +-
->> >  include/linux/cpufreq.h                | 5 +++++
->>
->> Great,
->>
->> But, you missed few places:
->>
->> drivers/cpufreq/acpi-cpufreq.c:        if (bios_with_sw_any_bug &&
->> cpumask_weight(policy->cpus) == 1) {
->> drivers/cpufreq/cpufreq_stats.c:       if (policy &&
->> (cpumask_weight(policy->cpus) == 1)) {
->
-> This doesn't look like the same thing to me!  Isn't this check here just
-> to trigger during init (exit) on the first (last) cpu?  How would you
-> replace it?
+On Thu, Jan 31, 2013 at 02:12:29PM +0530, Viresh Kumar wrote:
+> On 31 January 2013 14:09, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
+> > Ok, now I see the problem: cdbs->cpu is initialized only on the leader
+> > cpu and this is working by coincidence on my system, while
+> > cdbs->time_stamp is initialized only on the leader cpu, and that should
+> > be correct even when cpu hotplugging as that's reinitialized every time.
+> >
+> > That's a fix so I'll send a patch just to set ->cpu into the
+> > for_each_cpu cycle.
+> 
+> That's not enough. You need to set ->cpu to j and not policy->cpu as we
+> discussed it earlier (params to timer init and exit.).
+> 
+> And so, we need to get policy->cpu somehow and get its timestamp.
 
-I don't think i am wrong, but i can be :)
+Current code uses ->cpu to track policy->cpu and get the timestamp, I
+can modify it to point to the current cpu and use it in timer_init *and*
+add a new field just to track leader_cpu but I don't see the benefits.
+Am I missing something?
 
-So, i would replace these as:
-drivers/cpufreq/acpi-cpufreq.c:        if (bios_with_sw_any_bug &&
-cpumask_weight(policy->cpus) == 1) {
-AS
-drivers/cpufreq/acpi-cpufreq.c:        if (bios_with_sw_any_bug &&
-!policy_is_shared(policy)) {
+Fabio
 
-similarly for the other one too. The whole point is about checking if policy
-is managing just one cpu or multiple cpus.
+-- 
+Fabio Baltieri
