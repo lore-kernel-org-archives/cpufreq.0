@@ -1,26 +1,30 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Andrew Lunn <andrew@lunn.ch>
 Subject: Re: [PATCH 43 0/3] Kirkwoode cpufreq driver
-Date: Fri, 1 Feb 2013 20:04:27 +0530
-Message-ID: <CAKohpokjN8kx9Tan=wG4d0tdicWpb6DLN7o+rbX5f9oppJK7bA@mail.gmail.com>
+Date: Fri, 1 Feb 2013 15:37:52 +0100
+Message-ID: <20130201143752.GQ17242@lunn.ch>
 References: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
+ <CAKohpokjN8kx9Tan=wG4d0tdicWpb6DLN7o+rbX5f9oppJK7bA@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
+Content-Disposition: inline
+In-Reply-To: <CAKohpokjN8kx9Tan=wG4d0tdicWpb6DLN7o+rbX5f9oppJK7bA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
 
-On 1 February 2013 20:01, Andrew Lunn <andrew@lunn.ch> wrote:
-> This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
->
-> The changes to kirkwood_defconfig enable it and set the default
-> governor to ondemand.
+On Fri, Feb 01, 2013 at 08:04:27PM +0530, Viresh Kumar wrote:
+> On 1 February 2013 20:01, Andrew Lunn <andrew@lunn.ch> wrote:
+> > This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
+> >
+> > The changes to kirkwood_defconfig enable it and set the default
+> > governor to ondemand.
+> 
+> Wow! [PATCH 43 0/3] :)
+> It looks you are adding v4 manually to every patch? 
 
-Wow! [PATCH 43 0/3] :)
-It looks you are adding v4 manually to every patch? If yes, you need to
-use following:
+No, I just edited the cover note. For the others i used --subject=...
 
-git format-patch A..B --cover-letter --subject-prefix="PATCH V4"
+    Andrew
