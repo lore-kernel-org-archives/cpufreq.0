@@ -1,38 +1,122 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: governors: clean timer init and exit code
-Date: Fri, 1 Feb 2013 09:24:27 +0530
-Message-ID: <CAKohpomcu4pZf8pwxCkW5RcGWbeEN3NTCpYWyzPGaUt6noB80w@mail.gmail.com>
-References: <1359554017-28620-1-git-send-email-fabio.baltieri@linaro.org>
-	<CAKohpomTNkEOrnyQWKJ8siajg67-fpe4EnYxiipgmN8STMSwAQ@mail.gmail.com>
-	<20130131110613.GD30667@balto.lan>
-	<1560132.gKXbKl82oR@vostro.rjw.lan>
-Mime-Version: 1.0
+Subject: [PATCH] cpufreq: governors: Reset tunables only for cpufreq_unregister_governor()
+Date: Fri,  1 Feb 2013 11:12:58 +0530
+Message-ID: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1560132.gKXbKl82oR@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Fabio Baltieri <fabio.baltieri@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, fabio.baltieri@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 31 January 2013 18:36, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, January 31, 2013 12:06:13 PM Fabio Baltieri wrote:
->> On Thu, Jan 31, 2013 at 04:23:06PM +0530, Viresh Kumar wrote:
+Currently, whenever governor->governor() is called for CPUFRREQ_GOV_START e=
+vent
+we reset few tunables of governor. Which isn't correct, as this routine is
+called for every cpu hot-[un]plugging event. We should actually be resettin=
+g
+these only when the governor module is removed and re-installed.
 
->> > As discussed over IRC, you will fix following in few days:
->> > - Code redundancy within governors
->> > - Removing second_time: label and cdbs->enable field
->> > - Fixing params to timer init and exit to make them more efficient.
->>
->> That's the plan, I'd leave it up to Rafael to decide if further cleanup
->> patches should be included in 3.9 merge window or skip to the following
->> one... I understand that we are starting to be late on the -rc and I
->> also prefer to focus on fixup.
->
-> The deadline for 3.9 merge window patches is about 2 days before 3.8-rc7
-> (assuming that there will be -rc7) and by that time they need to be in
-> linux-next.  Whatever doesn't make it will have to go after 3.9-rc1 or be
-> postponed until the 3.10 merge window.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c          |  4 ++++
+ drivers/cpufreq/cpufreq_governor.c | 24 ++++++++++++++++--------
+ include/linux/cpufreq.h            |  1 +
+ 3 files changed, 21 insertions(+), 8 deletions(-)
 
-For everybody else, i have patched above in a different patchset.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8d521422..9656420 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1561,6 +1561,9 @@ static int __cpufreq_governor(struct cpufreq_policy *=
+policy,
+ =09=09=09=09=09=09policy->cpu, event);
+ =09ret =3D policy->governor->governor(policy, event);
+=20
++=09if (!policy->governor->initialized && (event =3D=3D CPUFREQ_GOV_START))
++=09=09policy->governor->initialized =3D 1;
++
+ =09/* we keep one module reference alive for
+ =09=09=09each CPU governed by this CPU */
+ =09if ((event !=3D CPUFREQ_GOV_START) || ret)
+@@ -1584,6 +1587,7 @@ int cpufreq_register_governor(struct cpufreq_governor=
+ *governor)
+=20
+ =09mutex_lock(&cpufreq_governor_mutex);
+=20
++=09governor->initialized =3D 0;
+ =09err =3D -EBUSY;
+ =09if (__find_governor(governor->name) =3D=3D NULL) {
+ =09=09err =3D 0;
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_g=
+overnor.c
+index 7aaa9b1..79795c4 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -254,11 +254,6 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+ =09=09=09return rc;
+ =09=09}
+=20
+-=09=09/* policy latency is in nS. Convert it to uS first */
+-=09=09latency =3D policy->cpuinfo.transition_latency / 1000;
+-=09=09if (latency =3D=3D 0)
+-=09=09=09latency =3D 1;
+-
+ =09=09/*
+ =09=09 * conservative does not implement micro like ondemand
+ =09=09 * governor, thus we are bound to jiffes/HZ
+@@ -270,20 +265,33 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+ =09=09=09cpufreq_register_notifier(cs_ops->notifier_block,
+ =09=09=09=09=09CPUFREQ_TRANSITION_NOTIFIER);
+=20
+-=09=09=09dbs_data->min_sampling_rate =3D MIN_SAMPLING_RATE_RATIO *
+-=09=09=09=09jiffies_to_usecs(10);
++=09=09=09if (!policy->governor->initialized)
++=09=09=09=09dbs_data->min_sampling_rate =3D
++=09=09=09=09=09MIN_SAMPLING_RATE_RATIO *
++=09=09=09=09=09jiffies_to_usecs(10);
+ =09=09} else {
+ =09=09=09od_dbs_info->rate_mult =3D 1;
+ =09=09=09od_dbs_info->sample_type =3D OD_NORMAL_SAMPLE;
+ =09=09=09od_ops->powersave_bias_init_cpu(cpu);
+-=09=09=09od_tuners->io_is_busy =3D od_ops->io_busy();
++
++=09=09=09if (!policy->governor->initialized)
++=09=09=09=09od_tuners->io_is_busy =3D od_ops->io_busy();
+ =09=09}
+=20
++=09=09if (policy->governor->initialized)
++=09=09=09goto unlock;
++
++=09=09/* policy latency is in nS. Convert it to uS first */
++=09=09latency =3D policy->cpuinfo.transition_latency / 1000;
++=09=09if (latency =3D=3D 0)
++=09=09=09latency =3D 1;
++
+ =09=09/* Bring kernel and HW constraints together */
+ =09=09dbs_data->min_sampling_rate =3D max(dbs_data->min_sampling_rate,
+ =09=09=09=09MIN_LATENCY_MULTIPLIER * latency);
+ =09=09*sampling_rate =3D max(dbs_data->min_sampling_rate, latency *
+ =09=09=09=09LATENCY_MULTIPLIER);
++unlock:
+ =09=09mutex_unlock(&dbs_data->mutex);
+=20
+ =09=09/* Initiate timer time stamp */
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index feb360c..6bf3f2d 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -183,6 +183,7 @@ static inline unsigned long cpufreq_scale(unsigned long=
+ old, u_int div, u_int mu
+=20
+ struct cpufreq_governor {
+ =09char=09name[CPUFREQ_NAME_LEN];
++=09int=09initialized;
+ =09int=09(*governor)=09(struct cpufreq_policy *policy,
+ =09=09=09=09 unsigned int event);
+ =09ssize_t=09(*show_setspeed)=09(struct cpufreq_policy *policy,
+--=20
+1.7.12.rc2.18.g61b472e
+
+
