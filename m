@@ -1,20 +1,20 @@
 From: dirk.brandewie@gmail.com
 Subject: [PATCH 4/6] cpufreq_stats: Do not track policies without associated governors.
-Date: Fri,  1 Feb 2013 10:45:40 -0800
-Message-ID: <1359744343-18690-7-git-send-email-dirk.brandewie@gmail.com>
+Date: Fri,  1 Feb 2013 10:45:41 -0800
+Message-ID: <1359744343-18690-8-git-send-email-dirk.brandewie@gmail.com>
 References: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=ycyo8IiBemP4C1QFGJpTF3q8jVeVTbXM/HnbIqTcMyk=;
-        b=xwxtrhSVQBpTzE/K3eusx5kqblsYP3VHricZBJK9T17r9PD94fIJ5FSsOfPJsMvLqE
-         k6su0pXC4uTMXBcnlJiChq3qekgxBvoU4C9GJHSpHwHP4Y00NqM/pB+bzKACVkCoANz6
-         0YYiPEclH/gLaeDFa7bNyXPHVNICpxvlZW4DQn15u3quk+70F2H4nWyicX4Lvb+XdBoI
-         GLIxl1E31hzMr2kBstVDYU5/LrNH9w7M1OhmnwPsdyu4f5GOSQYqebcY+kOdk1tu1aJ/
-         uzfKStz2ib3PgRCQmko9kGNcO6DtW6+c+oTFC2pFt5fLUAglfpNYjShlJryKDZR592wW
-         yPfw==
+        bh=WRGSgSg+/27OoxkU+bDuyd39whbS/146bg51+pSUJEw=;
+        b=JL8NmULoy87s4gEjhMKLSyiPySnf0T2p7scMfFTps+2u1j7kib3xzs8A8AjTwhyFtd
+         vlI1csZ8R3PA0BgMsH4MTZ10by3ha5Fjtr6kj6U/RpdLx0WwCMsgEAgX2nlxW4KnGttw
+         CBS6Pmcn10w7uNXGN497L34sCb/meMxgyMwn2fEKXSOZwxjgYxRjwSxTKvfxyVXcEzNF
+         MrWfPwAGp8DVjPZGWg7NGNWRZRoIMQs9n2MXvsqHZRxmDf6a+rop6zaIJcP16r0WEQmi
+         N0yTi5C5WJN/6qYtSHKZYfxBSUjSTT8nRoq+v8RIWz0AmsgUXmInc1lgeBEhXJJX5ZwB
+         +NWg==
 In-Reply-To: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -22,9 +22,9 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
 Scaling drivers that implement internal governors do not have governor
 sturctures associated with them.  Do not create/remove statisitcs
