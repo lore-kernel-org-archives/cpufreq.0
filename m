@@ -1,22 +1,22 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 4/6] cpufreq_stats: Do not track policies without associated governors.
-Date: Fri,  1 Feb 2013 10:45:41 -0800
-Message-ID: <1359744343-18690-8-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 3/6] cpufreq: Do not track governor name for scaling drivers with internal governors.
+Date: Fri,  1 Feb 2013 10:45:39 -0800
+Message-ID: <1359744343-18690-6-git-send-email-dirk.brandewie@gmail.com>
 References: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=WRGSgSg+/27OoxkU+bDuyd39whbS/146bg51+pSUJEw=;
-        b=JL8NmULoy87s4gEjhMKLSyiPySnf0T2p7scMfFTps+2u1j7kib3xzs8A8AjTwhyFtd
-         vlI1csZ8R3PA0BgMsH4MTZ10by3ha5Fjtr6kj6U/RpdLx0WwCMsgEAgX2nlxW4KnGttw
-         CBS6Pmcn10w7uNXGN497L34sCb/meMxgyMwn2fEKXSOZwxjgYxRjwSxTKvfxyVXcEzNF
-         MrWfPwAGp8DVjPZGWg7NGNWRZRoIMQs9n2MXvsqHZRxmDf6a+rop6zaIJcP16r0WEQmi
-         N0yTi5C5WJN/6qYtSHKZYfxBSUjSTT8nRoq+v8RIWz0AmsgUXmInc1lgeBEhXJJX5ZwB
-         +NWg==
+        bh=V/xDQ+tYPytmz9I+f5DLZ9C/ns0J3Ru1JRRedU57SH8=;
+        b=wP+1e1yHBknGqq31yj6HP3GsgT+LDc4mmvoJm6okGWQd0Py6U9QgAul65H2Vauu48P
+         bjjlI0nHijUuSByV9ow54ANJ2bZYwty5Prf2gN3lB7fa2wvnFrr/5mDlbOAXc85GI28C
+         d28wByoyhsRdrqGTvsGr/PfLBVgTfOsUBwKjMXGmoQ4Kw7ipLWVjDa210CSYvyv/iB2Y
+         UIUOFUqkbppHKHSP78hqsqk8s3dd0sXZ39XBg9s4KQb4DDSwC6QTTY+deT5uLBN8RtBY
+         hM2zVEwljVToP+EPmJZzoF/UAzDz0f2BoRn3nzLcmwN8lryf/QdiM7OCouRrxdnjqu2F
+         RCiw==
 In-Reply-To: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,35 +27,82 @@ Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
 Scaling drivers that implement internal governors do not have governor
-sturctures associated with them.  Do not create/remove statisitcs
-entries for polices that do not have governors associated with them.
+structures assocaited with them.  Only track the name of the governor
+associated with the CPU if the driver does not implement
+cpufreq_driver.setpolicy()
 
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/cpufreq_stats.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/cpufreq/cpufreq.c |   35 +++++++++++++++++++++--------------
+ 1 files changed, 21 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 9d7732b..8a1daf4 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -183,7 +183,7 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- static void cpufreq_stats_free_sysfs(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
--	if (policy && policy->cpu == cpu)
-+	if (policy && policy->cpu == cpu && policy->governor)
- 		sysfs_remove_group(&policy->kobj, &stats_attr_group);
- 	if (policy)
- 		cpufreq_cpu_put(policy);
-@@ -271,6 +271,8 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
- 	unsigned int cpu = policy->cpu;
- 	if (val != CPUFREQ_NOTIFY)
- 		return 0;
-+	if (!policy->governor)
-+		return 0;
- 	table = cpufreq_frequency_get_table(cpu);
- 	if (!table)
- 		return 0;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 493cd50..a4fd51e 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -717,11 +717,13 @@ static int cpufreq_add_dev_policy(unsigned int cpu,
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	struct cpufreq_governor *gov;
+ 
+-	gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
+-	if (gov) {
+-		policy->governor = gov;
+-		pr_debug("Restoring governor %s for cpu %d\n",
+-		       policy->governor->name, cpu);
++	if (!cpufreq_driver->setpolicy) {
++		gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
++		if (gov) {
++			policy->governor = gov;
++			pr_debug("Restoring governor %s for cpu %d\n",
++				policy->governor->name, cpu);
++		}
+ 	}
+ #endif
+ 
+@@ -1072,8 +1074,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ #ifdef CONFIG_SMP
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-	strncpy(per_cpu(cpufreq_cpu_governor, cpu), data->governor->name,
+-			CPUFREQ_NAME_LEN);
++	if (!cpufreq_driver->setpolicy)
++		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
++			data->governor->name, CPUFREQ_NAME_LEN);
+ #endif
+ 
+ 	/* if we have other CPUs still registered, we need to unlink them,
+@@ -1097,8 +1100,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 				continue;
+ 			pr_debug("removing link for cpu %u\n", j);
+ #ifdef CONFIG_HOTPLUG_CPU
+-			strncpy(per_cpu(cpufreq_cpu_governor, j),
+-				data->governor->name, CPUFREQ_NAME_LEN);
++			if (!cpufreq_driver->setpolicy)
++				strncpy(per_cpu(cpufreq_cpu_governor, j),
++					data->governor->name, CPUFREQ_NAME_LEN);
+ #endif
+ 			cpu_dev = get_cpu_device(j);
+ 			kobj = &cpu_dev->kobj;
+@@ -1628,11 +1632,14 @@ void cpufreq_unregister_governor(struct cpufreq_governor *governor)
+ 		return;
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-	for_each_present_cpu(cpu) {
+-		if (cpu_online(cpu))
+-			continue;
+-		if (!strcmp(per_cpu(cpufreq_cpu_governor, cpu), governor->name))
+-			strcpy(per_cpu(cpufreq_cpu_governor, cpu), "\0");
++	if (!cpufreq_driver->setpolicy)
++		for_each_present_cpu(cpu) {
++			if (cpu_online(cpu))
++				continue;
++			if (!strcmp(per_cpu(cpufreq_cpu_governor, cpu),
++					governor->name))
++				strcpy(per_cpu(cpufreq_cpu_governor, cpu),
++					"\0");
+ 	}
+ #endif
+ 
 -- 
 1.7.7.6
+
