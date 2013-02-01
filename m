@@ -1,86 +1,60 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 0/6] Add P state driver for Intel Core Processors
-Date: Fri,  1 Feb 2013 10:45:34 -0800
-Message-ID: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 1/6] cpufreq: Retrieve current frequency from scaling drivers with internal governors
+Date: Fri,  1 Feb 2013 10:45:35 -0800
+Message-ID: <1359744343-18690-2-git-send-email-dirk.brandewie@gmail.com>
+References: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=x-received:from:to:cc:subject:date:message-id:x-mailer;
-        bh=Gc519fv+tQ5YNHVcBZQIrZTj5KrRsdhmz+DxXCFA82U=;
-        b=exACVX5DMQeYW2pVMztdaUdJhaJEjkO3jhKn0FGBcvUmIwWEDERIZYPtrV4FGM4yn1
-         TkexxeXN7QH0wU3MOYi29hiwa2Iksr+yQsUJT9yWw20V4qUyfm1fSrUkqFESeu4EtZsm
-         7az+8B5S3z0HtpUAgJ6eD6lW8g2aIX1OzPggAl3s6X/wckEqnAbtERb12qs+sAfsKLIM
-         PbDCUY4TqdIAP88WQXjrZLRhbbl//SDol3e6707mShYr+/12prTzuX+is/bwTGfLElGR
-         /f2rR18UHfJn6EyQZOvNnZbY/a7Y7j3KdmFY7mvNpt4ltv7/1GlkGKNibo0QPuER7JFx
-         bGvA==
+        h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        bh=XmBVLhZjuGSYrxzyMYNQYxnbu5FNPydzRJOTr8PdW7k=;
+        b=b7WGIEomMchbH24vvYTjXhh6qdteR1Jdz1bv6kUn/1C61RMtyvgZcv3AdjFvc+Pan9
+         4BW/gipaQRMIWjdUiA8ZQ1vrKBE23j7czQj49LH3/rcwosh5DyHmZhZvOdjjSahIphPj
+         hAAVC0ilBA1fIWG17RTBYrnl9hJvFXI77Los29BQKWP0q50l1RtIL1jFCRWZ6/Nk2pLO
+         oWBRXWz5NXvcJa9lFHAmfOCJCg+4+5mvLMoD1ZbYLsulf8zeaQAZoEkvkQGF0d5qOhBM
+         hSzwXQ9+OUgLAHoXBstE3kZM9HxRVFdvKdYIzvXNSd3YHnwJMluGcx2gsuIXx0Vw4sUV
+         USiw==
+In-Reply-To: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-This driver implements a scaling driver with an internal governor for
-Intel Core processors.  The driver follows the same model as the
-Transmeta scaling driver (longrun.c) and implements the setpolicy()
-instead of target().  Scaling drivers that implement setpolicy() are
-assmuned to implement internal governors by the cpufreq core. All the
-logic for selecting the current P state is contained within the driver
-no external governor is used by the cpufreq core.
+Scaling drivers that implement the cpufreq_driver.setpolicy() versus
+the cpufreq_driver.target() interface do not set policy->cur.
 
-At the moment only Intel SandyBridge processors are supported. As
-testing on SandyBridge+ processors is completed support will be added
-to the driver.
+Normally policy->cur is set during the call to cpufreq_driver.target()
+when the frequnecy request is made by the governor.
 
-New sysfs files for controlling P state selection have been added to
-/sys/devices/system/cpu/intel_pstate/
-      max_perf_pct: limits the maximum P state that will be requested by
-      the driver stated as a percentage of the avail performance.
-    
-      min_perf_pct: limits the minimum P state that will be  requested by
-      the driver stated as a percentage of the avail performance.
-    
-      no_turbo: limits the driver to selecting P states below the turbo
-      frequency range.
+If the scaling driver implements cpufreq_driver.setpolicy() and
+cpufreq_driver.get() interfaces use cpufreq_driver.get() to retrieve
+the current frequency.
 
-The units for these for these files are purposely abstract and stated
-in terms of available performance and not frequency.  In idea that
-frequency can be set to a single frequency is a fiction for Intel Core
-processors. Even if the scaling driver selects a single P state the
-actual frequency the processor will run at is selected by the
-processor itself.
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Based on v3.8-rc5.
-Patches 1-5:
-     Fix issues related to scaling drivers that implement the
-     setpolicy() interface instead of target() when CONFIG_SMP and
-     CONFIG_HOTPLUG_CPU are set.
-
-Patch 6:
-     The driver and associated config glue.
-
-Dirk Brandewie (6):
-  cpufreq: Retrieve current frequency from scaling drivers with
-    internal governors
-  cpufreq: Only query drivers that implement cpufreq_driver.target()
-  cpufreq: Do not track governor name for scaling drivers with internal
-    governors.
-  cpufreq_stats: Do not track policies without associated governors.
-  cpufreq: balance out cpufreq_cpu_{get,put} for scaling drivers using
-    setpolicy
-  cpufreq/x86: Add P-state driver for sandy bridge.
-
- drivers/cpufreq/Kconfig.x86     |   18 +
- drivers/cpufreq/Makefile        |    1 +
- drivers/cpufreq/cpufreq.c       |   43 ++-
- drivers/cpufreq/cpufreq_stats.c |    4 +-
- drivers/cpufreq/intel_pstate.c  |  830 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 880 insertions(+), 16 deletions(-)
- create mode 100644 drivers/cpufreq/intel_pstate.c
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 1f93dbd..1c037f0 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1219,6 +1219,9 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ 	unsigned int ret_freq = 0;
+ 
++	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
++		return cpufreq_driver->get(cpu);
++
+ 	if (policy) {
+ 		ret_freq = policy->cur;
+ 		cpufreq_cpu_put(policy);
 -- 
 1.7.7.6
 
