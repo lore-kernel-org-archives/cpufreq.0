@@ -1,60 +1,51 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 1/6] cpufreq: Retrieve current frequency from scaling drivers with internal governors
-Date: Fri,  1 Feb 2013 10:49:05 -0800
-Message-ID: <1359744545-18825-1-git-send-email-dirk.brandewie@gmail.com>
-References: <359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpufreq: governors: Remove code redundancy between governors
+Date: Fri, 01 Feb 2013 23:32:30 +0100
+Message-ID: <41218306.bQmZmWoL7T@vostro.rjw.lan>
+References: <09a94ff044ff6a6f7a5d953c3b1f3102c1dc50cf.1359653181.git.viresh.kumar@linaro.org> <CAKohpomdOzuXXGAr2r0LFULhr5AYLHWyhDON+9AKjMv9L6zkAg@mail.gmail.com> <CAKohponEPOO3vH3Kn8UChXEaNP36gDaDh-ym4Z9ZjcHbs418cQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        bh=NY518aWZ1hNZGoKvXS5dR+jMLQ97ZldLw3cqjCNMKCc=;
-        b=eO2iGZLhznbLk0LHUoo/RkvmVo41BAOXKhYz15qtiCm9fPpEuUkg6VWVq65l6eG188
-         5RPOX9mGFJdayiVcGeOG4LzJy2ZlMNwdHKXrH7ImMxwewE9yNpdyQnMjX8o2zSIlWyfB
-         26MRcGtS0OSTVEruT4ZGY3Q+hSdWgOMD8AXBBzSMvs9uBE32/IgyE2QClG8wLwbalxxB
-         jIJHKsYHziOwnCshnnf7/mR4EowoyB7Cjlm7v9V3VdT0NxJXMdTJe2RofovL3oq2CHPj
-         umVX5WagYh4qAu/77HFeTaz48nggjQPq1pLzK2V11OwvnIRCUWjIHJvz/yix6xRBRdXN
-         EutA==
-In-Reply-To: <359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
+In-Reply-To: <CAKohponEPOO3vH3Kn8UChXEaNP36gDaDh-ym4Z9ZjcHbs418cQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Fabio Baltieri <fabio.baltieri@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+On Friday, February 01, 2013 08:08:42 AM Viresh Kumar wrote:
+> On 1 February 2013 08:01, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Really!! I see bleeding edge as df0e3f4 and i don't see the $(subject) patch
+> > in it :)
+> 
+> Well it might have been dropped by Rafael due to build error,
 
-Scaling drivers that implement the cpufreq_driver.setpolicy() versus
-the cpufreq_driver.target() interface do not set policy->cur.
+Precisely.
 
-Normally policy->cur is set during the call to cpufreq_driver.target()
-when the frequnecy request is made by the governor.
+> which would be fixed by:
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c
+> b/drivers/cpufreq/cpufreq_governor.c
+> index dc99472..7aaa9b1 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -194,6 +194,7 @@ bool need_load_eval(struct cpu_dbs_common_info *cdbs,
+> 
+>         return true;
+>  }
+> +EXPORT_SYMBOL_GPL(need_load_eval);
+> 
+>  int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>                 struct cpufreq_policy *policy, unsigned int event)
+> 
+> 
+> Original patch attached with this change.
 
-If the scaling driver implements cpufreq_driver.setpolicy() and
-cpufreq_driver.get() interfaces use cpufreq_driver.get() to retrieve
-the current frequency.
+OK, thanks!
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/cpufreq.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Rafael
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1f93dbd..1c037f0 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1219,6 +1219,9 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 	unsigned int ret_freq = 0;
- 
-+	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
-+		return cpufreq_driver->get(cpu);
-+
- 	if (policy) {
- 		ret_freq = policy->cur;
- 		cpufreq_cpu_put(policy);
+
 -- 
-1.7.7.6
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
