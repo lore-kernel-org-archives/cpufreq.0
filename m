@@ -1,106 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: governors: Reset tunables only for cpufreq_unregister_governor()
-Date: Fri, 1 Feb 2013 11:14:03 +0530
-Message-ID: <CAKohpon8=u2vxNFG0dBJbfpEiu_6kfEQUJyjecw1TxuL6O8WvQ@mail.gmail.com>
-References: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=f46d04478a8924dbed04d4a33b4d
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [PATCH 1/3] cpufreq: TEGRA: Set policy->cpus from driver->init()
+Date: Fri,  1 Feb 2013 12:10:00 +0530
+Message-ID: <1bf82454ab1f16b13212548d7c9605067c8b7a0d.1359700705.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, fabio.baltieri@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
 
---f46d04478a8924dbed04d4a33b4d
-Content-Type: text/plain; charset=ISO-8859-1
+For multicore SoC's, with cores sharing clock line, we are required to set
+policy->cpus and policy->related_cpus with mask of cpus.
 
-On 1 February 2013 11:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Currently, whenever governor->governor() is called for CPUFRREQ_GOV_START event
-> we reset few tunables of governor. Which isn't correct, as this routine is
-> called for every cpu hot-[un]plugging event. We should actually be resetting
-> these only when the governor module is removed and re-installed.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+With following patch, we need to set policy->cpus with mask of all possible=
+ cpus
+and policy->related_cpus would be filled automatically by the cpufreq core.
 
-ARM Mails are broken, please apply attached patch.
+commit 4948b355e90080cd5ec1e91189f65a01e4186ef2
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Tue Jan 29 14:39:08 2013 +0000
 
---f46d04478a8924dbed04d4a33b4d
-Content-Type: application/octet-stream; 
-	name="0001-cpufreq-governors-Reset-tunables-only-for-cpufreq_un.patch"
-Content-Disposition: attachment; 
-	filename="0001-cpufreq-governors-Reset-tunables-only-for-cpufreq_un.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hcmwqtp60
+    cpufreq: Simplify cpufreq_add_dev()
 
-RnJvbSBkOWRlOTQ1OTc1YWQyMDY0NjkzMjc1MzM1YjQwMjJjOGVmZDAxM2UzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZDlkZTk0NTk3NWFkMjA2NDY5MzI3NTMzNWI0MDIy
-YzhlZmQwMTNlMy4xMzU5Njk3MzE1LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogRnJpLCAxIEZlYiAy
-MDEzIDEwOjM2OjIzICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogZ292ZXJub3JzOiBS
-ZXNldCB0dW5hYmxlcyBvbmx5IGZvcgogY3B1ZnJlcV91bnJlZ2lzdGVyX2dvdmVybm9yKCkKCkN1
-cnJlbnRseSwgd2hlbmV2ZXIgZ292ZXJub3ItPmdvdmVybm9yKCkgaXMgY2FsbGVkIGZvciBDUFVG
-UlJFUV9HT1ZfU1RBUlQgZXZlbnQKd2UgcmVzZXQgZmV3IHR1bmFibGVzIG9mIGdvdmVybm9yLiBX
-aGljaCBpc24ndCBjb3JyZWN0LCBhcyB0aGlzIHJvdXRpbmUgaXMKY2FsbGVkIGZvciBldmVyeSBj
-cHUgaG90LVt1bl1wbHVnZ2luZyBldmVudC4gV2Ugc2hvdWxkIGFjdHVhbGx5IGJlIHJlc2V0dGlu
-Zwp0aGVzZSBvbmx5IHdoZW4gdGhlIGdvdmVybm9yIG1vZHVsZSBpcyByZW1vdmVkIGFuZCByZS1p
-bnN0YWxsZWQuCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
-cm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgICAgICAgICAgfCAgNCArKysr
-CiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5jIHwgMjQgKysrKysrKysrKysrKysr
-Ky0tLS0tLS0tCiBpbmNsdWRlL2xpbnV4L2NwdWZyZXEuaCAgICAgICAgICAgIHwgIDEgKwogMyBm
-aWxlcyBjaGFuZ2VkLCAyMSBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5j
-CmluZGV4IDhkNTIxNDIyLi45NjU2NDIwIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1
-ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTE1NjEsNiArMTU2MSw5
-IEBAIHN0YXRpYyBpbnQgX19jcHVmcmVxX2dvdmVybm9yKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAq
-cG9saWN5LAogCQkJCQkJcG9saWN5LT5jcHUsIGV2ZW50KTsKIAlyZXQgPSBwb2xpY3ktPmdvdmVy
-bm9yLT5nb3Zlcm5vcihwb2xpY3ksIGV2ZW50KTsKIAorCWlmICghcG9saWN5LT5nb3Zlcm5vci0+
-aW5pdGlhbGl6ZWQgJiYgKGV2ZW50ID09IENQVUZSRVFfR09WX1NUQVJUKSkKKwkJcG9saWN5LT5n
-b3Zlcm5vci0+aW5pdGlhbGl6ZWQgPSAxOworCiAJLyogd2Uga2VlcCBvbmUgbW9kdWxlIHJlZmVy
-ZW5jZSBhbGl2ZSBmb3IKIAkJCWVhY2ggQ1BVIGdvdmVybmVkIGJ5IHRoaXMgQ1BVICovCiAJaWYg
-KChldmVudCAhPSBDUFVGUkVRX0dPVl9TVEFSVCkgfHwgcmV0KQpAQCAtMTU4NCw2ICsxNTg3LDcg
-QEAgaW50IGNwdWZyZXFfcmVnaXN0ZXJfZ292ZXJub3Ioc3RydWN0IGNwdWZyZXFfZ292ZXJub3Ig
-KmdvdmVybm9yKQogCiAJbXV0ZXhfbG9jaygmY3B1ZnJlcV9nb3Zlcm5vcl9tdXRleCk7CiAKKwln
-b3Zlcm5vci0+aW5pdGlhbGl6ZWQgPSAwOwogCWVyciA9IC1FQlVTWTsKIAlpZiAoX19maW5kX2dv
-dmVybm9yKGdvdmVybm9yLT5uYW1lKSA9PSBOVUxMKSB7CiAJCWVyciA9IDA7CmRpZmYgLS1naXQg
-YS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5jIGIvZHJpdmVycy9jcHVmcmVxL2Nw
-dWZyZXFfZ292ZXJub3IuYwppbmRleCA3YWFhOWIxLi43OTc5NWM0IDEwMDY0NAotLS0gYS9kcml2
-ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVm
-cmVxX2dvdmVybm9yLmMKQEAgLTI1NCwxMSArMjU0LDYgQEAgaW50IGNwdWZyZXFfZ292ZXJub3Jf
-ZGJzKHN0cnVjdCBkYnNfZGF0YSAqZGJzX2RhdGEsCiAJCQlyZXR1cm4gcmM7CiAJCX0KIAotCQkv
-KiBwb2xpY3kgbGF0ZW5jeSBpcyBpbiBuUy4gQ29udmVydCBpdCB0byB1UyBmaXJzdCAqLwotCQls
-YXRlbmN5ID0gcG9saWN5LT5jcHVpbmZvLnRyYW5zaXRpb25fbGF0ZW5jeSAvIDEwMDA7Ci0JCWlm
-IChsYXRlbmN5ID09IDApCi0JCQlsYXRlbmN5ID0gMTsKLQogCQkvKgogCQkgKiBjb25zZXJ2YXRp
-dmUgZG9lcyBub3QgaW1wbGVtZW50IG1pY3JvIGxpa2Ugb25kZW1hbmQKIAkJICogZ292ZXJub3Is
-IHRodXMgd2UgYXJlIGJvdW5kIHRvIGppZmZlcy9IWgpAQCAtMjcwLDIwICsyNjUsMzMgQEAgaW50
-IGNwdWZyZXFfZ292ZXJub3JfZGJzKHN0cnVjdCBkYnNfZGF0YSAqZGJzX2RhdGEsCiAJCQljcHVm
-cmVxX3JlZ2lzdGVyX25vdGlmaWVyKGNzX29wcy0+bm90aWZpZXJfYmxvY2ssCiAJCQkJCUNQVUZS
-RVFfVFJBTlNJVElPTl9OT1RJRklFUik7CiAKLQkJCWRic19kYXRhLT5taW5fc2FtcGxpbmdfcmF0
-ZSA9IE1JTl9TQU1QTElOR19SQVRFX1JBVElPICoKLQkJCQlqaWZmaWVzX3RvX3VzZWNzKDEwKTsK
-KwkJCWlmICghcG9saWN5LT5nb3Zlcm5vci0+aW5pdGlhbGl6ZWQpCisJCQkJZGJzX2RhdGEtPm1p
-bl9zYW1wbGluZ19yYXRlID0KKwkJCQkJTUlOX1NBTVBMSU5HX1JBVEVfUkFUSU8gKgorCQkJCQlq
-aWZmaWVzX3RvX3VzZWNzKDEwKTsKIAkJfSBlbHNlIHsKIAkJCW9kX2Ric19pbmZvLT5yYXRlX211
-bHQgPSAxOwogCQkJb2RfZGJzX2luZm8tPnNhbXBsZV90eXBlID0gT0RfTk9STUFMX1NBTVBMRTsK
-IAkJCW9kX29wcy0+cG93ZXJzYXZlX2JpYXNfaW5pdF9jcHUoY3B1KTsKLQkJCW9kX3R1bmVycy0+
-aW9faXNfYnVzeSA9IG9kX29wcy0+aW9fYnVzeSgpOworCisJCQlpZiAoIXBvbGljeS0+Z292ZXJu
-b3ItPmluaXRpYWxpemVkKQorCQkJCW9kX3R1bmVycy0+aW9faXNfYnVzeSA9IG9kX29wcy0+aW9f
-YnVzeSgpOwogCQl9CiAKKwkJaWYgKHBvbGljeS0+Z292ZXJub3ItPmluaXRpYWxpemVkKQorCQkJ
-Z290byB1bmxvY2s7CisKKwkJLyogcG9saWN5IGxhdGVuY3kgaXMgaW4gblMuIENvbnZlcnQgaXQg
-dG8gdVMgZmlyc3QgKi8KKwkJbGF0ZW5jeSA9IHBvbGljeS0+Y3B1aW5mby50cmFuc2l0aW9uX2xh
-dGVuY3kgLyAxMDAwOworCQlpZiAobGF0ZW5jeSA9PSAwKQorCQkJbGF0ZW5jeSA9IDE7CisKIAkJ
-LyogQnJpbmcga2VybmVsIGFuZCBIVyBjb25zdHJhaW50cyB0b2dldGhlciAqLwogCQlkYnNfZGF0
-YS0+bWluX3NhbXBsaW5nX3JhdGUgPSBtYXgoZGJzX2RhdGEtPm1pbl9zYW1wbGluZ19yYXRlLAog
-CQkJCU1JTl9MQVRFTkNZX01VTFRJUExJRVIgKiBsYXRlbmN5KTsKIAkJKnNhbXBsaW5nX3JhdGUg
-PSBtYXgoZGJzX2RhdGEtPm1pbl9zYW1wbGluZ19yYXRlLCBsYXRlbmN5ICoKIAkJCQlMQVRFTkNZ
-X01VTFRJUExJRVIpOwordW5sb2NrOgogCQltdXRleF91bmxvY2soJmRic19kYXRhLT5tdXRleCk7
-CiAKIAkJLyogSW5pdGlhdGUgdGltZXIgdGltZSBzdGFtcCAqLwpkaWZmIC0tZ2l0IGEvaW5jbHVk
-ZS9saW51eC9jcHVmcmVxLmggYi9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAppbmRleCBmZWIzNjBj
-Li42YmYzZjJkIDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAorKysgYi9pbmNs
-dWRlL2xpbnV4L2NwdWZyZXEuaApAQCAtMTgzLDYgKzE4Myw3IEBAIHN0YXRpYyBpbmxpbmUgdW5z
-aWduZWQgbG9uZyBjcHVmcmVxX3NjYWxlKHVuc2lnbmVkIGxvbmcgb2xkLCB1X2ludCBkaXYsIHVf
-aW50IG11CiAKIHN0cnVjdCBjcHVmcmVxX2dvdmVybm9yIHsKIAljaGFyCW5hbWVbQ1BVRlJFUV9O
-QU1FX0xFTl07CisJaW50CWluaXRpYWxpemVkOwogCWludAkoKmdvdmVybm9yKQkoc3RydWN0IGNw
-dWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJCQkJIHVuc2lnbmVkIGludCBldmVudCk7CiAJc3NpemVf
-dAkoKnNob3dfc2V0c3BlZWQpCShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKLS0gCjEu
-Ny4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---f46d04478a8924dbed04d4a33b4d--
+Current Tegra driver fills only ->related_cpus and not ->cpus, which looks =
+to be
+incorrect. Lets fix it.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Warren <swarren@nvidia.com>
+---
+ arch/arm/mach-tegra/cpu-tegra.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-tegra/cpu-tegra.c b/arch/arm/mach-tegra/cpu-tegr=
+a.c
+index a74d3c7..e7ddcb2 100644
+--- a/arch/arm/mach-tegra/cpu-tegra.c
++++ b/arch/arm/mach-tegra/cpu-tegra.c
+@@ -244,7 +244,7 @@ static int tegra_cpu_init(struct cpufreq_policy *policy=
+)
+ =09policy->cpuinfo.transition_latency =3D 300 * 1000;
+=20
+ =09policy->shared_type =3D CPUFREQ_SHARED_TYPE_ALL;
+-=09cpumask_copy(policy->related_cpus, cpu_possible_mask);
++=09cpumask_copy(policy->cpus, cpu_possible_mask);
+=20
+ =09if (policy->cpu =3D=3D 0)
+ =09=09register_pm_notifier(&tegra_cpu_pm_notifier);
+--=20
+1.7.12.rc2.18.g61b472e
+
+
