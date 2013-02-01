@@ -1,61 +1,26 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH 43 0/3] Kirkwoode cpufreq driver
-Date: Fri,  1 Feb 2013 15:31:32 +0100
-Message-ID: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 43 0/3] Kirkwoode cpufreq driver
+Date: Fri, 1 Feb 2013 20:04:27 +0530
+Message-ID: <CAKohpokjN8kx9Tan=wG4d0tdicWpb6DLN7o+rbX5f9oppJK7bA@mail.gmail.com>
+References: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
+Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl
-Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org, viresh.kumar@linaro.org, Andrew Lunn <andrew@lunn.ch>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
 
-This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
+On 1 February 2013 20:01, Andrew Lunn <andrew@lunn.ch> wrote:
+> This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
+>
+> The changes to kirkwood_defconfig enable it and set the default
+> governor to ondemand.
 
-The changes to kirkwood_defconfig enable it and set the default
-governor to ondemand.
+Wow! [PATCH 43 0/3] :)
+It looks you are adding v4 manually to every patch? If yes, you need to
+use following:
 
-Changes since v3:
-
-Check return value of of_find_compatible_node()
-Return -EADDRNOTAVAIL when devm_request_and_ioremap() fails.
-Remove default: clause.
-Made .name consistent.
-
-Changes since v2:
-
-Remove unneeded #include file left over from debugging.
-WARN_ON(1) instead of dev_err() for unexpected state
-Various blank lines removed.
-Reformat comment.
-writel -> writel_relaxed
-
-Changes since v1:
-
-tabify Kconfig.arm entry
-Sort order of include files
-Remove some unnecassary include files
-Reformat multiline comment to be coding style conform.
-
-Andrew Lunn (3):
-  cpufreq: kirkwood: Add a cpufreq driver for Marvell Kirkwood SoCs
-  arm: kirkwood: Instantiate cpufreq driver
-  arm: kirkwood: Enable cpufreq and ondemand on kirkwood_defconfig
-
- arch/arm/Kconfig                                  |    1 +
- arch/arm/configs/kirkwood_defconfig               |    3 +
- arch/arm/mach-kirkwood/board-dt.c                 |    3 +-
- arch/arm/mach-kirkwood/common.c                   |   23 ++
- arch/arm/mach-kirkwood/common.h                   |    2 +
- arch/arm/mach-kirkwood/include/mach/bridge-regs.h |    2 +
- drivers/clk/mvebu/clk-gating-ctrl.c               |    1 +
- drivers/cpufreq/Kconfig.arm                       |    6 +
- drivers/cpufreq/Makefile                          |    1 +
- drivers/cpufreq/kirkwood-cpufreq.c                |  264 +++++++++++++++++++++
- 10 files changed, 305 insertions(+), 1 deletion(-)
- create mode 100644 drivers/cpufreq/kirkwood-cpufreq.c
-
--- 
-1.7.10.4
-
+git format-patch A..B --cover-letter --subject-prefix="PATCH V4"
