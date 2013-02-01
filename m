@@ -1,30 +1,26 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 43 0/3] Kirkwoode cpufreq driver
-Date: Fri, 1 Feb 2013 15:37:52 +0100
-Message-ID: <20130201143752.GQ17242@lunn.ch>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 1/3] cpufreq: kirkwood: Add a cpufreq driver for
+ Marvell Kirkwood SoCs
+Date: Fri, 1 Feb 2013 21:10:41 +0530
+Message-ID: <CAKohponBrABri_8haNZXZY51caLnswAkGdzEyhb0UMCiDpJzVw@mail.gmail.com>
 References: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
- <CAKohpokjN8kx9Tan=wG4d0tdicWpb6DLN7o+rbX5f9oppJK7bA@mail.gmail.com>
+	<1359729096-15371-2-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpokjN8kx9Tan=wG4d0tdicWpb6DLN7o+rbX5f9oppJK7bA@mail.gmail.com>
+In-Reply-To: <1359729096-15371-2-git-send-email-andrew@lunn.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
 
-On Fri, Feb 01, 2013 at 08:04:27PM +0530, Viresh Kumar wrote:
-> On 1 February 2013 20:01, Andrew Lunn <andrew@lunn.ch> wrote:
-> > This patchset adds a cpufreq driver for Marvell Kirkwood SoCs.
-> >
-> > The changes to kirkwood_defconfig enable it and set the default
-> > governor to ondemand.
-> 
-> Wow! [PATCH 43 0/3] :)
-> It looks you are adding v4 manually to every patch? 
+On 1 February 2013 20:01, Andrew Lunn <andrew@lunn.ch> wrote:
+> The Marvell Kirkwood SoCs have simple cpufreq support in hardware. The
+> CPU can either use the a high speed cpu clock, or the slower DDR
+> clock. Add a driver to swap between these two clock sources.
+>
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Acked-by: Jason Cooper <jason@lakedaemon.net>
 
-No, I just edited the cover note. For the others i used --subject=...
-
-    Andrew
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
