@@ -1,24 +1,24 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/6] cpufreq: Do not track governor name for scaling
- drivers with internal governors.
-Date: Sat, 2 Feb 2013 08:55:52 +0530
-Message-ID: <CAOh2x=mSFkTCU1WywdJAyuX4+Z_8EWzFt0z-f8nOfdi1A-wY2Q@mail.gmail.com>
+Subject: Re: [PATCH 4/6] cpufreq_stats: Do not track policies without
+ associated governors.
+Date: Sat, 2 Feb 2013 11:08:33 +0530
+Message-ID: <CAOh2x=k0=wqYqDwnoUNn0wAmh8f0FSPtaFgFSK49hkmyrAganQ@mail.gmail.com>
 References: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
-	<1359744343-18690-5-git-send-email-dirk.brandewie@gmail.com>
+	<1359744343-18690-7-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=+Xbw/GRWyuYl5pQOWbc6aSL/pmRiglM4gBjis5Q23mQ=;
-        b=Fdd+8Rr0ZnuFmQbJSDNo7rb9Ph6F5g6a3jvYgseKV/6wDVYOCeRyNXcIgz+DcfZggF
-         l116worEENYnHsrwpBInacznPxoRqJGBG/zFyCoiS+S2vq35Ty/otn+OuvOxYjzvB9kh
-         QnNIRx97ajnVzbXxIldpRGiGnd84F7lP5+FGB+ihCidlokflX4B/vIR4qTBokJq8oQtw
-         ax94jJxwZeU3NcWz61sC73oLaq6NPAb4uC3zUehiFSdOvJ92R+N1CtkwGGPxsBTGVrpH
-         c4Td9og96pebDSnd8ndg3okM/d7+s02DqOfDWEQQiqQ0oMQAdgn3UvL2rqbZkIqyB3kI
-         kAWQ==
-In-Reply-To: <1359744343-18690-5-git-send-email-dirk.brandewie@gmail.com>
+        bh=Q3Kr6nLhDARVIfSi3oL3FEnWBbrORqpxeB3WMGCNT8I=;
+        b=nXdWJUijX24H7JHEy6Nk72iBQ9z0TPlCK6U2FZBPirEgha6tnmKRFTjbMhCqcqfzVG
+         RmVHHaoWmA0MDT4iGNYQn+npRBOCQNDUFeKzoL44VTsH66/kNM0+CPIdTHQLbxWBGl+9
+         INGZhrOaHG1fljKE2jV2amNxb0PaDaqCl2Z6JA4l5oNV4hjp8IZB90QOuiBaEVOnHqnw
+         lSjBwvpJH1IrxCtLcFn830By0XHSyrrfo0dsDx0rgU9V01BzqgBZbPGrBpUMjoQIB1dj
+         GfKI1V1mH8SYhFkThv2gK3Mw/xbQ02VdZ39IxJ4P/AD15fLcuzJPeDqLkjOMIAlUADrS
+         iQRQ==
+In-Reply-To: <1359744343-18690-7-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -30,13 +30,47 @@ On Sat, Feb 2, 2013 at 12:15 AM,  <dirk.brandewie@gmail.com> wrote:
 > From: Dirk Brandewie <dirk.brandewie@gmail.com>
 >
 > Scaling drivers that implement internal governors do not have governor
-> structures assocaited with them.  Only track the name of the governor
-> associated with the CPU if the driver does not implement
-> cpufreq_driver.setpolicy()
+> sturctures associated with them.  Do not create/remove statisitcs
+> entries for polices that do not have governors associated with them.
 >
 > Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Is this rebased on latest stuff? i.e. rafael/bleeding_edge ?
+It is not based of latest work.
 
---
-viresh
+Why don't we want stats to be updated for these? What does stats have
+to do with governor?
+
+> ---
+>  drivers/cpufreq/cpufreq_stats.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 9d7732b..8a1daf4 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -183,7 +183,7 @@ static void cpufreq_stats_free_table(unsigned int cpu)
+>  static void cpufreq_stats_free_sysfs(unsigned int cpu)
+>  {
+>         struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> -       if (policy && policy->cpu == cpu)
+> +       if (policy && policy->cpu == cpu && policy->governor)
+>                 sysfs_remove_group(&policy->kobj, &stats_attr_group);
+>         if (policy)
+>                 cpufreq_cpu_put(policy);
+> @@ -271,6 +271,8 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+>         unsigned int cpu = policy->cpu;
+>         if (val != CPUFREQ_NOTIFY)
+>                 return 0;
+> +       if (!policy->governor)
+> +               return 0;
+>         table = cpufreq_frequency_get_table(cpu);
+>         if (!table)
+>                 return 0;
+> --
+> 1.7.7.6
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
