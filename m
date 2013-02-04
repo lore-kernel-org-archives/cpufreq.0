@@ -1,380 +1,412 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v4 1/3] cpufreq: kirkwood: Add a cpufreq driver for
- Marvell Kirkwood SoCs
-Date: Sun, 3 Feb 2013 22:14:20 +0800
-Message-ID: <20130203141417.GC24081@S2101-09.ap.freescale.net>
-References: <1359729096-15371-1-git-send-email-andrew@lunn.ch>
- <1359729096-15371-2-git-send-email-andrew@lunn.ch>
+Subject: [PATCH v5] cpufreq: add imx6q-cpufreq driver
+Date: Mon, 4 Feb 2013 10:51:42 +0800
+Message-ID: <1359946302-25953-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1359729096-15371-2-git-send-email-andrew@lunn.ch>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 
-On Fri, Feb 01, 2013 at 03:31:33PM +0100, Andrew Lunn wrote:
-> The Marvell Kirkwood SoCs have simple cpufreq support in hardware. The
-> CPU can either use the a high speed cpu clock, or the slower DDR
-> clock. Add a driver to swap between these two clock sources.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Acked-by: Jason Cooper <jason@lakedaemon.net>
-> ---
-> 
-> To be commited by: Rafael J. Wysocki
-> 
->  drivers/clk/mvebu/clk-gating-ctrl.c |    1 +
->  drivers/cpufreq/Kconfig.arm         |    6 +
->  drivers/cpufreq/Makefile            |    1 +
->  drivers/cpufreq/kirkwood-cpufreq.c  |  277 +++++++++++++++++++++++++++++++++++
->  4 files changed, 285 insertions(+)
->  create mode 100644 drivers/cpufreq/kirkwood-cpufreq.c
-> 
-> diff --git a/drivers/clk/mvebu/clk-gating-ctrl.c b/drivers/clk/mvebu/clk-gating-ctrl.c
-> index 8fa5408..ebf141d 100644
-> --- a/drivers/clk/mvebu/clk-gating-ctrl.c
-> +++ b/drivers/clk/mvebu/clk-gating-ctrl.c
-> @@ -193,6 +193,7 @@ static const struct mvebu_soc_descr __initconst kirkwood_gating_descr[] = {
->  	{ "runit", NULL, 7 },
->  	{ "xor0", NULL, 8 },
->  	{ "audio", NULL, 9 },
-> +	{ "powersave", "cpuclk", 11 },
->  	{ "sata0", NULL, 14 },
->  	{ "sata1", NULL, 15 },
->  	{ "xor1", NULL, 16 },
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index a0b3661..80c8229 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -77,6 +77,12 @@ config ARM_EXYNOS5250_CPUFREQ
->  	  This adds the CPUFreq driver for Samsung EXYNOS5250
->  	  SoC.
->  
-> +config ARM_KIRKWOOD_CPUFREQ
-> +	def_bool ARCH_KIRKWOOD && OF
-> +	help
-> +	  This adds the CPUFreq driver for Marvell Kirkwood
-> +	  SoCs.
-> +
->  config ARM_SPEAR_CPUFREQ
->  	bool "SPEAr CPUFreq support"
->  	depends on PLAT_SPEAR
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index fadc4d4..39a0ffe 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -50,6 +50,7 @@ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)	+= exynos4x12-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
-> +obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
->  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->  
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> new file mode 100644
-> index 0000000..8923689
-> --- /dev/null
-> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
-> @@ -0,0 +1,277 @@
-> +/*
-> + *	kirkwood_freq.c: cpufreq driver for the Marvell kirkwood
-> + *
-> + *	Copyright (C) 2013 Andrew Lunn <andrew@lunn.ch>
-> + *
-> + *	This program is free software; you can redistribute it and/or
-> + *	modify it under the terms of the GNU General Public License
-> + *	as published by the Free Software Foundation; either version
-> + *	2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/clk.h>
-> +#include <linux/clk-provider.h>
+Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
+hardware specific frequency and voltage scaling requirements.
 
-Why do you need this header?
+The driver supports module build and is instantiated by the platform
+device/driver mechanism, so that it will not be instantiated on other
+platforms, as IMX is built with multiplatform support.
 
-> +#include <linux/cpufreq.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/io.h>
-> +#include <asm/proc-fns.h>
-> +
-> +#define CPU_SW_INT_BLK BIT(28)
-> +
-> +static struct priv
-> +{
-> +	struct clk *cpu_clk;
-> +	struct clk *ddr_clk;
-> +	struct clk *powersave_clk;
-> +	struct device *dev;
-> +	void __iomem *base;
-> +} priv;
-> +
-> +#define STATE_CPU_FREQ 0x01
-> +#define STATE_DDR_FREQ 0x02
-> +
-> +/*
-> + * Kirkwood can swap the clock to the CPU between two clocks:
-> + *
-> + * - cpu clk
-> + * - ddr clk
-> + *
-> + * The frequencies are set at runtime before registering this *
-> + * table.
-> + */
-> +static struct cpufreq_frequency_table kirkwood_freq_table[] = {
-> +	{STATE_CPU_FREQ,	0}, /* CPU uses cpuclk */
-> +	{STATE_DDR_FREQ,	0}, /* CPU uses ddrclk */
-> +	{0,			CPUFREQ_TABLE_END},
-> +};
-> +
-> +static unsigned int kirkwood_cpufreq_get_cpu_frequency(unsigned int cpu)
-> +{
-> +	if (__clk_is_enabled(priv.powersave_clk))
-> +		return kirkwood_freq_table[1].frequency;
-> +	return kirkwood_freq_table[0].frequency;
-> +}
-> +
-> +static void kirkwood_cpufreq_set_cpu_state(unsigned int index)
-> +{
-> +	struct cpufreq_freqs freqs;
-> +	unsigned int state = kirkwood_freq_table[index].index;
-> +	unsigned long reg;
-> +
-> +	freqs.old = kirkwood_cpufreq_get_cpu_frequency(0);
-> +	freqs.new = kirkwood_freq_table[index].frequency;
-> +	freqs.cpu = 0; /* Kirkwood is UP */
-> +
-> +	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-> +
-> +	dev_dbg(priv.dev, "Attempting to set frequency to %i KHz\n",
-> +		kirkwood_freq_table[index].frequency);
-> +	dev_dbg(priv.dev, "old frequency was %i KHz\n",
-> +		kirkwood_cpufreq_get_cpu_frequency(0));
-> +
-> +	if (freqs.old != freqs.new) {
-> +		local_irq_disable();
-> +
-> +		/* Disable interrupts to the CPU */
-> +		reg = readl_relaxed(priv.base);
-> +		reg |= CPU_SW_INT_BLK;
-> +		writel_relaxed(reg, priv.base);
-> +
-> +		switch (state) {
-> +		case STATE_CPU_FREQ:
-> +			clk_disable(priv.powersave_clk);
-> +			break;
-> +		case STATE_DDR_FREQ:
-> +			clk_enable(priv.powersave_clk);
-> +			break;
-> +		}
-> +
-> +		/* Wait-for-Interrupt, while the hardware changes frequency */
-> +		cpu_do_idle();
-> +
-> +		/* Enable interrupts to the CPU */
-> +		reg = readl_relaxed(priv.base);
-> +		reg &= ~CPU_SW_INT_BLK;
-> +		writel_relaxed(reg, priv.base);
-> +
-> +		local_irq_enable();
-> +	}
-> +	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> +};
-> +
-> +static int kirkwood_cpufreq_verify(struct cpufreq_policy *policy)
-> +{
-> +	return cpufreq_frequency_table_verify(policy, kirkwood_freq_table);
-> +}
-> +
-> +static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
-> +			    unsigned int target_freq,
-> +			    unsigned int relation)
-> +{
-> +	unsigned int index = 0;
-> +
-> +	if (cpufreq_frequency_table_target(policy, kirkwood_freq_table,
-> +				target_freq, relation, &index))
-> +		return -EINVAL;
-> +
-> +	kirkwood_cpufreq_set_cpu_state(index);
-> +
-> +	return 0;
-> +}
-> +
-> +/* Module init and exit code */
-> +static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +	int result;
-> +
-> +	/* cpuinfo and default policy values */
-> +	policy->cpuinfo.transition_latency = 5000; /* 5uS */
-> +	policy->cur = kirkwood_cpufreq_get_cpu_frequency(0);
-> +
-> +	result = cpufreq_frequency_table_cpuinfo(policy, kirkwood_freq_table);
-> +	if (result)
-> +		return result;
-> +
-> +	cpufreq_frequency_table_get_attr(kirkwood_freq_table, policy->cpu);
-> +
-> +	return 0;
-> +}
-> +
-> +static int kirkwood_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> +{
-> +	cpufreq_frequency_table_put_attr(policy->cpu);
-> +	return 0;
-> +}
-> +
-> +static struct freq_attr *kirkwood_cpufreq_attr[] = {
-> +	&cpufreq_freq_attr_scaling_available_freqs,
-> +	NULL,
-> +};
-> +
-> +static struct cpufreq_driver kirkwood_cpufreq_driver = {
-> +	.get	= kirkwood_cpufreq_get_cpu_frequency,
-> +	.verify	= kirkwood_cpufreq_verify,
-> +	.target	= kirkwood_cpufreq_target,
-> +	.init	= kirkwood_cpufreq_cpu_init,
-> +	.exit	= kirkwood_cpufreq_cpu_exit,
-> +	.name	= "kirkwood-cpufreq",
-> +	.owner	= THIS_MODULE,
-> +	.attr	= kirkwood_cpufreq_attr,
-> +};
-> +
-> +static int kirkwood_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *np_core = of_find_compatible_node(
-> +		NULL, NULL, "marvell,kirkwood-core-clock");
-> +	struct device_node *np_gating = of_find_compatible_node(
-> +		NULL, NULL, "marvell,kirkwood-gating-clock");
-> +	struct of_phandle_args clkspec;
-> +	struct resource *res;
-> +	int err;
-> +
-> +	if (!np_core || !np_gating) {
-> +		if (np_core)
-> +			of_node_put(np_core);
-> +		if (np_gating)
-> +			of_node_put(np_gating);
-> +		return -ENODEV;
-> +	}
-> +	
-> +	priv.dev = &pdev->dev;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "Cannot get memory resource\n");
-> +		return -ENODEV;
-> +	}
-> +	priv.base = devm_request_and_ioremap(&pdev->dev, res);
-> +	if (!priv.base) {
-> +		dev_err(&pdev->dev, "Cannot ioremap\n");
-> +		return -EADDRNOTAVAIL;
-> +	}
-> +
-> +	clkspec.np = np_core;
-> +	clkspec.args_count = 1;
-> +	clkspec.args[0] = 1;
-> +
-> +	priv.cpu_clk = of_clk_get_from_provider(&clkspec);
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Changes since v4:
+ * Use regulator API to handle voltage latency
 
-Again, clk client is not really supposed to call this.  Having a node
-in device tree consuming all the clocks you need and attaching the
-node to pdev->dev.of_node will have devm_clk_get just work for you.
-The node could reasonably be /cpus/cpu@0.
+Rafael,
+
+I generated the patch against your bleeding-edge branch, so it should
+be applied cleanly.
 
 Shawn
 
-> +	if (IS_ERR(priv.cpu_clk)) {
-> +		dev_err(priv.dev, "Unable to get cpuclk");
-> +		return PTR_ERR(priv.cpu_clk);
-> +	}
-> +
-> +	clk_prepare_enable(priv.cpu_clk);
-> +	kirkwood_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
-> +
-> +	clkspec.args[0] = 3;
-> +	priv.ddr_clk = of_clk_get_from_provider(&clkspec);
-> +	if (IS_ERR(priv.ddr_clk)) {
-> +		dev_err(priv.dev, "Unable to get ddrclk");
-> +		err = PTR_ERR(priv.ddr_clk);
-> +		goto out_cpu;
-> +	}
-> +
-> +	clk_prepare_enable(priv.ddr_clk);
-> +	kirkwood_freq_table[1].frequency = clk_get_rate(priv.ddr_clk) / 1000;
-> +
-> +	clkspec.np = np_gating;
-> +	clkspec.args[0] = 11;
-> +	priv.powersave_clk = of_clk_get_from_provider(&clkspec);
-> +	if (IS_ERR(priv.powersave_clk)) {
-> +		dev_err(priv.dev, "Unable to get powersave");
-> +		err = PTR_ERR(priv.powersave_clk);
-> +		goto out_ddr;
-> +	}
-> +	clk_prepare(priv.powersave_clk);
-> +
-> +	of_node_put(np_core);
-> +	np_core = NULL;
-> +	of_node_put(np_gating);
-> +	np_gating = NULL;
-> +
-> +	err = cpufreq_register_driver(&kirkwood_cpufreq_driver);
-> +	if (!err)
-> +		return 0;
-> +
-> +	dev_err(priv.dev, "Failed to register cpufreq driver");
-> +
-> +	clk_disable_unprepare(priv.powersave_clk);
-> +out_ddr:
-> +	clk_disable_unprepare(priv.ddr_clk);
-> +out_cpu:
-> +	clk_disable_unprepare(priv.cpu_clk);
-> +	of_node_put(np_core);
-> +	of_node_put(np_gating);
-> +
-> +	return err;
-> +}
-> +
-> +static int kirkwood_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	cpufreq_unregister_driver(&kirkwood_cpufreq_driver);
-> +
-> +	clk_disable_unprepare(priv.powersave_clk);
-> +	clk_disable_unprepare(priv.ddr_clk);
-> +	clk_disable_unprepare(priv.cpu_clk);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver kirkwood_cpufreq_platform_driver = {
-> +	.probe = kirkwood_cpufreq_probe,
-> +	.remove = kirkwood_cpufreq_remove,
-> +	.driver = {
-> +		.name = "kirkwood-cpufreq",
-> +		.owner = THIS_MODULE,
-> +	},
-> +};
-> +
-> +module_platform_driver(kirkwood_cpufreq_platform_driver);
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_AUTHOR("Andrew Lunn <andrew@lunn.ch");
-> +MODULE_DESCRIPTION("cpufreq driver for Marvell's kirkwood CPU");
-> +MODULE_ALIAS("platform:kirkwood-cpufreq");
-> -- 
-> 1.7.10.4
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+ drivers/cpufreq/Kconfig.arm     |    9 ++
+ drivers/cpufreq/Makefile        |    1 +
+ drivers/cpufreq/imx6q-cpufreq.c |  331 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 341 insertions(+)
+ create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ffe55b8..c65226c 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
+ 	  This adds the CPUFreq driver for Samsung EXYNOS5250
+ 	  SoC.
+ 
++config ARM_IMX6Q_CPUFREQ
++	tristate "Freescale i.MX6Q cpufreq support"
++	depends on SOC_IMX6Q
++	depends on REGULATOR_ANATOP
++	help
++	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
++
++	  If in doubt, say N.
++
+ config ARM_SPEAR_CPUFREQ
+ 	bool "SPEAr CPUFreq support"
+ 	depends on PLAT_SPEAR
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index e2a5da7..93610b2 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -54,6 +54,7 @@ obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
++obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ 
+ ##################################################################################
+ # PowerPC platform drivers
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+new file mode 100644
+index 0000000..f73b245
+--- /dev/null
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -0,0 +1,331 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/clk.h>
++#include <linux/cpufreq.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/opp.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
++
++#define PU_SOC_VOLTAGE_NORMAL	1250000
++#define PU_SOC_VOLTAGE_HIGH	1275000
++#define FREQ_1P2_GHZ		1200000000
++
++static struct regulator *arm_reg;
++static struct regulator *pu_reg;
++static struct regulator *soc_reg;
++
++static struct clk *arm_clk;
++static struct clk *pll1_sys_clk;
++static struct clk *pll1_sw_clk;
++static struct clk *step_clk;
++static struct clk *pll2_pfd2_396m_clk;
++
++static struct device *cpu_dev;
++static struct cpufreq_frequency_table *freq_table;
++static unsigned int transition_latency;
++
++static int imx6q_verify_speed(struct cpufreq_policy *policy)
++{
++	return cpufreq_frequency_table_verify(policy, freq_table);
++}
++
++static unsigned int imx6q_get_speed(unsigned int cpu)
++{
++	return clk_get_rate(arm_clk) / 1000;
++}
++
++static int imx6q_set_target(struct cpufreq_policy *policy,
++			    unsigned int target_freq, unsigned int relation)
++{
++	struct cpufreq_freqs freqs;
++	struct opp *opp;
++	unsigned long freq_hz, volt, volt_old;
++	unsigned int index, cpu;
++	int ret;
++
++	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
++					     relation, &index);
++	if (ret) {
++		dev_err(cpu_dev, "failed to match target frequency %d: %d\n",
++			target_freq, ret);
++		return ret;
++	}
++
++	freqs.new = freq_table[index].frequency;
++	freq_hz = freqs.new * 1000;
++	freqs.old = clk_get_rate(arm_clk) / 1000;
++
++	if (freqs.old == freqs.new)
++		return 0;
++
++	for_each_online_cpu(cpu) {
++		freqs.cpu = cpu;
++		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++	}
++
++	rcu_read_lock();
++	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
++	if (IS_ERR(opp)) {
++		rcu_read_unlock();
++		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
++		return PTR_ERR(opp);
++	}
++
++	volt = opp_get_voltage(opp);
++	rcu_read_unlock();
++	volt_old = regulator_get_voltage(arm_reg);
++
++	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
++		freqs.old / 1000, volt_old / 1000,
++		freqs.new / 1000, volt / 1000);
++
++	/* scaling up?  scale voltage before frequency */
++	if (freqs.new > freqs.old) {
++		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
++		if (ret) {
++			dev_err(cpu_dev,
++				"failed to scale vddarm up: %d\n", ret);
++			return ret;
++		}
++
++		/*
++		 * Need to increase vddpu and vddsoc for safety
++		 * if we are about to run at 1.2 GHz.
++		 */
++		if (freqs.new == FREQ_1P2_GHZ / 1000) {
++			regulator_set_voltage_tol(pu_reg,
++					PU_SOC_VOLTAGE_HIGH, 0);
++			regulator_set_voltage_tol(soc_reg,
++					PU_SOC_VOLTAGE_HIGH, 0);
++		}
++	}
++
++	/*
++	 * The setpoints are selected per PLL/PDF frequencies, so we need to
++	 * reprogram PLL for frequency scaling.  The procedure of reprogramming
++	 * PLL1 is as below.
++	 *
++	 *  - Enable pll2_pfd2_396m_clk and reparent pll1_sw_clk to it
++	 *  - Disable pll1_sys_clk and reprogram it
++	 *  - Enable pll1_sys_clk and reparent pll1_sw_clk back to it
++	 *  - Disable pll2_pfd2_396m_clk
++	 */
++	clk_prepare_enable(pll2_pfd2_396m_clk);
++	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
++	clk_set_parent(pll1_sw_clk, step_clk);
++	clk_prepare_enable(pll1_sys_clk);
++	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
++		clk_disable_unprepare(pll1_sys_clk);
++		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
++		clk_prepare_enable(pll1_sys_clk);
++		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
++		clk_disable_unprepare(pll2_pfd2_396m_clk);
++	} else {
++		/*
++		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
++		 * to provide the frequency.
++		 */
++		clk_disable_unprepare(pll1_sys_clk);
++	}
++
++	/* Ensure the arm clock divider is what we expect */
++	ret = clk_set_rate(arm_clk, freqs.new * 1000);
++	if (ret) {
++		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
++		regulator_set_voltage_tol(arm_reg, volt_old, 0);
++		return ret;
++	}
++
++	/* scaling down?  scale voltage after frequency */
++	if (freqs.new < freqs.old) {
++		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
++		if (ret)
++			dev_warn(cpu_dev,
++				 "failed to scale vddarm down: %d\n", ret);
++
++		if (freqs.old == FREQ_1P2_GHZ / 1000) {
++			regulator_set_voltage_tol(pu_reg,
++					PU_SOC_VOLTAGE_NORMAL, 0);
++			regulator_set_voltage_tol(soc_reg,
++					PU_SOC_VOLTAGE_NORMAL, 0);
++		}
++	}
++
++	for_each_online_cpu(cpu) {
++		freqs.cpu = cpu;
++		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++	}
++
++	return 0;
++}
++
++static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
++{
++	int ret;
++
++	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
++	if (ret) {
++		dev_err(cpu_dev, "invalid frequency table: %d\n", ret);
++		return ret;
++	}
++
++	policy->cpuinfo.transition_latency = transition_latency;
++	policy->cur = clk_get_rate(arm_clk) / 1000;
++	cpumask_setall(policy->cpus);
++	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
++
++	return 0;
++}
++
++static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	return 0;
++}
++
++static struct freq_attr *imx6q_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++static struct cpufreq_driver imx6q_cpufreq_driver = {
++	.verify = imx6q_verify_speed,
++	.target = imx6q_set_target,
++	.get = imx6q_get_speed,
++	.init = imx6q_cpufreq_init,
++	.exit = imx6q_cpufreq_exit,
++	.name = "imx6q-cpufreq",
++	.attr = imx6q_cpufreq_attr,
++};
++
++static int imx6q_cpufreq_probe(struct platform_device *pdev)
++{
++	struct device_node *np;
++	struct opp *opp;
++	unsigned long min_volt, max_volt;
++	int num, ret;
++
++	cpu_dev = &pdev->dev;
++
++	np = of_find_node_by_path("/cpus/cpu@0");
++	if (!np) {
++		dev_err(cpu_dev, "failed to find cpu0 node\n");
++		return -ENOENT;
++	}
++
++	cpu_dev->of_node = np;
++
++	arm_clk = devm_clk_get(cpu_dev, "arm");
++	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
++	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
++	step_clk = devm_clk_get(cpu_dev, "step");
++	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
++	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
++	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
++		dev_err(cpu_dev, "failed to get clocks\n");
++		ret = -ENOENT;
++		goto put_node;
++	}
++
++	arm_reg = devm_regulator_get(cpu_dev, "arm");
++	pu_reg = devm_regulator_get(cpu_dev, "pu");
++	soc_reg = devm_regulator_get(cpu_dev, "soc");
++	if (!arm_reg || !pu_reg || !soc_reg) {
++		dev_err(cpu_dev, "failed to get regulators\n");
++		ret = -ENOENT;
++		goto put_node;
++	}
++
++	/* We expect an OPP table supplied by platform */
++	num = opp_get_opp_count(cpu_dev);
++	if (num < 0) {
++		ret = num;
++		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
++		goto put_node;
++	}
++
++	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
++	if (ret) {
++		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
++		goto put_node;
++	}
++
++	if (of_property_read_u32(np, "clock-latency", &transition_latency))
++		transition_latency = CPUFREQ_ETERNAL;
++
++	/*
++	 * OPP is maintained in order of increasing frequency, and
++	 * freq_table initialised from OPP is therefore sorted in the
++	 * same order.
++	 */
++	rcu_read_lock();
++	opp = opp_find_freq_exact(cpu_dev,
++				  freq_table[0].frequency * 1000, true);
++	min_volt = opp_get_voltage(opp);
++	opp = opp_find_freq_exact(cpu_dev,
++				  freq_table[--num].frequency * 1000, true);
++	max_volt = opp_get_voltage(opp);
++	rcu_read_unlock();
++	ret = regulator_set_voltage_time(arm_reg, min_volt, max_volt);
++	if (ret > 0)
++		transition_latency += ret * 1000;
++
++	/* Count vddpu and vddsoc latency in for 1.2 GHz support */
++	if (freq_table[num].frequency == FREQ_1P2_GHZ / 1000) {
++		ret = regulator_set_voltage_time(pu_reg, PU_SOC_VOLTAGE_NORMAL,
++						 PU_SOC_VOLTAGE_HIGH);
++		if (ret > 0)
++			transition_latency += ret * 1000;
++		ret = regulator_set_voltage_time(soc_reg, PU_SOC_VOLTAGE_NORMAL,
++						 PU_SOC_VOLTAGE_HIGH);
++		if (ret > 0)
++			transition_latency += ret * 1000;
++	}
++
++	ret = cpufreq_register_driver(&imx6q_cpufreq_driver);
++	if (ret) {
++		dev_err(cpu_dev, "failed register driver: %d\n", ret);
++		goto free_freq_table;
++	}
++
++	of_node_put(np);
++	return 0;
++
++free_freq_table:
++	opp_free_cpufreq_table(cpu_dev, &freq_table);
++put_node:
++	of_node_put(np);
++	return ret;
++}
++
++static int imx6q_cpufreq_remove(struct platform_device *pdev)
++{
++	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
++	opp_free_cpufreq_table(cpu_dev, &freq_table);
++
++	return 0;
++}
++
++static struct platform_driver imx6q_cpufreq_platdrv = {
++	.driver = {
++		.name	= "imx6q-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= imx6q_cpufreq_probe,
++	.remove		= imx6q_cpufreq_remove,
++};
++module_platform_driver(imx6q_cpufreq_platdrv);
++
++MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
++MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
+
 
