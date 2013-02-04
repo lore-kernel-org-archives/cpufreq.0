@@ -1,95 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Mon, 4 Feb 2013 19:51:33 +0530
-Message-ID: <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
-References: <cover.1359976493.git.viresh.kumar@linaro.org>
-	<5808458.pvV2iHpBWm@vostro.rjw.lan>
-	<CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
-	<20130204123221.GA22340@pd.tnic>
-	<CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
-	<20130204130403.GD13909@pd.tnic>
-	<CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
-	<20130204133648.GE13909@pd.tnic>
-	<CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
-	<20130204140908.GC15452@pd.tnic>
+Date: Mon, 4 Feb 2013 16:05:11 +0100
+Message-ID: <20130204150511.GF13909@pd.tnic>
+References: <5808458.pvV2iHpBWm@vostro.rjw.lan>
+ <CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
+ <20130204123221.GA22340@pd.tnic>
+ <CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
+ <20130204130403.GD13909@pd.tnic>
+ <CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
+ <20130204133648.GE13909@pd.tnic>
+ <CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
+ <20130204140908.GC15452@pd.tnic>
+ <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130204140908.GC15452@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1359990320; bh=EZCrp+EV1K3YoCj++YGEVuVpvdZKXkAqL0ZxQkTYwt8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=XJQlE4uNhHgdrJYZpfKIv8U74hdcz7y5qMNKnu
+	dc5T3INvo5vL74X1Yy/VO+l/IbtySKcoS2PxCciWdHw1sHrhzMYs2KAy1rc1Mv7i6N4
+	TrwliQBVq/Onf7VGPCutVYuqWFKQmI9UDMsfCvG2uSbAdJpuZN/v1VFseeU58IeqVQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1359990320; bh=EZCrp+EV1K3YoCj++YGEVuVpvdZKXkAqL0ZxQkTYwt8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=XJQlE4uNhHgdrJYZpfKIv8U74hdcz7y5qMNKnu
+	dc5T3INvo5vL74X1Yy/VO+l/IbtySKcoS2PxCciWdHw1sHrhzMYs2KAy1rc1Mv7i6N4
+	TrwliQBVq/Onf7VGPCutVYuqWFKQmI9UDMsfCvG2uSbAdJpuZN/v1VFseeU58IeqVQ=
+Content-Disposition: inline
+In-Reply-To: <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-On 4 February 2013 19:39, Borislav Petkov <bp@alien8.de> wrote:
-> On Mon, Feb 04, 2013 at 07:28:16PM +0530, Viresh Kumar wrote:
->> All files which are directly present in cpu/cpu*/cpufreq/ folder. I am
->> not talking about governor tunables but policy tunables. Things like
->> scaling_[min]max_freq are policy tunables.
->
-> No, on x86 those are the P-states frequencies. They're defined by the
-> hardware.
+On Mon, Feb 04, 2013 at 07:51:33PM +0530, Viresh Kumar wrote:
+> We correlate things with cpus rather than policies and so the current
+> directory structure of cpu/cpu*/cpufreq/*** is the best suited ones.
 
-A question we need to answer: What is "policy"?
+Ok, show me the details of that layout. How is that going to look?
 
-For me, "policy" is the hardware policy for a group of cpus, defined by the
-hardware. We call them P-states. But these are strictly per policy (i.e. per
-cpu group sharing clock line).
+One thing I've come to realize with the current interface is that if
+you want to change stuff, you need to iterate over all cpus instead of
+writing to a system-wide node.
 
-So, if we have two packages with two cpus each, we will have two copies
-of these P-states and every other file/directory in cpu/cpu*/cpufreq.
-One common copy would be shared between cpu/cpu[0-1]/cpufreq
-directory and other one between cpu/cpu[2-3]/cpufreq.
+And, in this case, if you can and need to change the policy per
+clock-domain, I wouldn't make it needlessly too-granulary per-cpu.
 
->> Policies don't have a name associated with them and so
->> cpu/cpufreq/policies doesn't make any sense. Rather one policy is
->> related to multiple cpus and its tunables are linked in all the cpus
->> that belong to it, like scaling_[min]max_freq.
->
-> Then do the following:
->
-> cpu/cpufreq/policies/
-> |-> policy0
->     |-> min_freq
->     |-> max_freq
->     |-> affected_cpus
->     ...
+That's why I'm advocating the cpu/cpufreq/ path.
 
-We correlate things with cpus rather than policies and so the current directory
-structure of cpu/cpu*/cpufreq/*** is the best suited ones.
+> Yes, and that's why cpu/cpu*/cpufreq/ondemand/*** suits the best, with
+> exactly the same logic that went for P-states or cpufreq-stats.
 
-> or whatever needs to be a flexible interface for multi-policy cpufreq
-> support.
+See above.
 
-The multi policy part is already well implemented, we are talking about governor
-per policy here.
+> Hmm.. confused..
+> Consider two systems:
+> - A dual core system, with cores sharing clocks.
+> - A dual cluster system (dual core per cluster), with separate clocks
+> per cluster.
+> 
+> Where will you keep governor directories for both of these configurations?
 
-> Remember: once you do those, they're more or less cast in stone so take
-> your time and do the design right, do not hurry those.
+Easy: as said above, make the policy granularity per clock-domain. On
+systems which have only one set of P-states - like it is the case with
+the overwhelming majority of systems running linux now - nothing should
+change.
 
-Yes, and that's why cpu/cpu*/cpufreq/ondemand/*** suits the best, with exactly
-the same logic that went for P-states or cpufreq-stats.
+> We need to select only one... cpu/cpufreq doesn't suit the second case
+> at all as we need to use ondemand governor for both the clusters but
+> with separate tunables. And so a single cpu/cpufreq/ondemand directory
+> wouldn't solve the issue.
 
->> But then we will get governors tunables in cpu/cpu*/cpufreq/ instead
->> of cpu/cpufreq/ . Will that not break userspace for other systems?
->
-> What's wrong with having both? The cpu/cpufreq/ governor will set the
-> system-wide governor and the cpu/cpu*/cpufreq/ will add the different
-> policies.
+Think of it this way: what is the highest granularity you need per
+clock-domain? If you want to control the policy per clock-domain, then
+cpu/cpufreq/ is what you want. If you want finer-grained control -
+and you need to think hard of what use cases are sensible for that
+finer-grained solution - then you're better off with cpu/cpu*/ layout.
 
-Hmm.. confused..
-Consider two systems:
-- A dual core system, with cores sharing clocks.
-- A dual cluster system (dual core per cluster), with separate clocks
-per cluster.
+In both cases though, having clear examples of why you've come up with
+the layout you're advocating would help reviewers a lot. If you simply
+come and say we need this because there might be systems out there who
+could use it, then that probably is not going to get you that far.
 
-Where will you keep governor directories for both of these configurations?
+HTH.
 
-We need to select only one... cpu/cpufreq doesn't suit the second case at all
-as we need to use ondemand governor for both the clusters but with separate
-tunables. And so a single cpu/cpufreq/ondemand directory wouldn't solve the
-issue.
+-- 
+Regards/Gruss,
+    Boris.
 
+Sent from a fat crate under my desk. Formatting is fine.
 --
-viresh
