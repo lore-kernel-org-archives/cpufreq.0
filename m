@@ -1,22 +1,22 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 2/7] cpufreq: Retrieve current frequency from scaling drivers with internal governors
-Date: Tue,  5 Feb 2013 10:24:01 -0800
-Message-ID: <1360088646-19104-3-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 5/7] cpufreq: balance out cpufreq_cpu_{get,put} for scaling drivers using setpolicy
+Date: Tue,  5 Feb 2013 10:24:04 -0800
+Message-ID: <1360088646-19104-6-git-send-email-dirk.brandewie@gmail.com>
 References: <1360088646-19104-1-git-send-email-dirk.brandewie@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=iFLmLeFsQgh99i4z/aXCWFyh53uvNxR+6Ba36d64xTs=;
-        b=07WQwc7xLwBbfyBfqeRllb19emOl4jeZzT1mGAkAIxHWcCav/HxNgx6YlsDxaQoxkj
-         ENHuo+2arS4FjLsHtr5IdYMtsfxayhg0eoDsuI4UihmvV9q2GYMBvR2pVMlRFI03R/rP
-         0afDXAfSOCg9ZakssCDP3iyVHYgUG1rS9XfyqS+NCX4gioww22pNonrrz0clNVHC2BvI
-         YCw3hyleGnjnqtaYFzOl+QCsm7Jii/8cevpS7GK6nRO/V8Ejk8oR2Y5PGYVatOSany6Y
-         Pmxq8sLf0Sepxbsq5g49/d95peSqdQC1nY+x/tBW4+n1wDACo5Bclv5Oi8LjXj6jappA
-         vTMQ==
+        bh=hPTBsghSMXx0uYFl35cojh3xWBJQpk0fB95wfBED/cE=;
+        b=k9ehK+AM9eij/BLWpwMojkn2pu2qzXRDj+s2wQ3gI3DmA+FpJbISjB6Jk1f+fs45fU
+         Y8zyEGvxrORf3rBP0HzhFxWw232uckTLulrG96VbOFHyGrQZ/SJgbYsJE0BLTrownG4P
+         MsaQxKxVKHChpkvwQ3Zosa6P+N0Z/otJWvoEtkCF5Po4ODmBn8lTA8s35O4hwgyCbw0+
+         o82gR5HHAqZ4Mn/TP6ki1jCyB1FS/rk40mCouyCBrNvCU16vpNUzXzpkEbTKuxj/eKys
+         DZFBnXGqbB3fS/ywVJAXNqR9/by5vb67ddY7gL1/ZFBHDkg/f1NhoPBZ8JsUZzUbegUm
+         5wAA==
 In-Reply-To: <1360088646-19104-1-git-send-email-dirk.brandewie@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,22 +26,6 @@ Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@
 
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Scaling drivers that implement the cpufreq_driver.setpolicy() versus
-the cpufreq_driver.target() interface do not set policy->cur.
-
-Normally policy->cur is set during the call to cpufreq_driver.target()
-when the frequnecy request is made by the governor.
-
-If the scaling driver implements cpufreq_driver.setpolicy() and
-cpufreq_driver.get() interfaces use cpufreq_driver.get() to retrieve
-the current frequency.
-
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Date: 2013-02-04 18:44:40 -0800
-
-cpufreq: balance out cpufreq_cpu_{get,put} for scaling drivers using setpolicy
-
 There is an additional reference added to the driver in
 cpufreq_add_dev()  that is removed in__cpufreq_governor() if the
 driver implements target().  Remove the last reference when the
@@ -49,26 +33,23 @@ driver implements setpolicy()
 
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ drivers/cpufreq/cpufreq.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2817c3c..96bc302 100644
+index 622e282..d17477b 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1181,6 +1181,13 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 	unsigned int ret_freq = 0;
+@@ -1049,6 +1049,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 	if (cpufreq_driver->target)
+ 		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
  
-+	if (cpufreq_driver && cpufreq_driver->setpolicy &&
-+		cpufreq_driver->get) {
-+		ret_freq = cpufreq_driver->get(cpu);
-+		cpufreq_cpu_put(policy);
-+		return ret_freq;
-+	}
++	if (cpufreq_driver->setpolicy)
++		cpufreq_cpu_put(data);
 +
- 	if (policy) {
- 		ret_freq = policy->cur;
- 		cpufreq_cpu_put(policy);
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	if (!cpufreq_driver->setpolicy)
+ 		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
 -- 
 1.7.7.6
+
