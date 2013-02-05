@@ -1,64 +1,61 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH 1/7] cpufreq: Don't remove sysfs link for policy->cpu
-Date: Tue,  5 Feb 2013 10:24:00 -0800
-Message-ID: <1360088646-19104-2-git-send-email-dirk.brandewie@gmail.com>
-References: <1360088646-19104-1-git-send-email-dirk.brandewie@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        bh=6wa43JBwna8dkah1W+Zv6MkA5Yh/+x+n9qJdPu0n9eU=;
-        b=yI/gko+rW5Ne6g/GWV/ixQK/CTVLoKKfkRhdmTY5jdEgvhFSXY31ThU/R0XVtyR/LZ
-         Z5HfrUF4FNaEQci+YmwlSjqobuk/+79wDSpN0krcbdxD7qdvhn/pLxLVx1RGuwTFS/9f
-         tAuts8iNbcwiRCOn/RoiVl8pUhgnqxPNKCly77cT5MlQEh+1ueIb9OGNqxDdt3mjj5ip
-         XySfo84Licxm8+G9umNw3WQrBLwMg8mwC7FOV9oAEkPY87+f9MNkZXf7iv3EcDeI6b8w
-         KAHJ34nQPnCURiDt1fNH/rQbcmE0OzG+Y/R59d9LU7w9E05xY1qYAK5Y24PRQLXa6cgC
-         DEQg==
-In-Reply-To: <1360088646-19104-1-git-send-email-dirk.brandewie@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+Subject: RE: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Tue, 5 Feb 2013 18:38:07 +0000
+Message-ID: <80D6EFE2711DED4189C7C8F0430BFEA86D23DFF1B1@BUNGLE.Emea.Arm.com>
+References: <cover.1359976493.git.viresh.kumar@linaro.org>
+ <5808458.pvV2iHpBWm@vostro.rjw.lan>
+ <CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
+ <20130204123221.GA22340@pd.tnic>
+ <CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
+ <20130204130403.GD13909@pd.tnic>
+ <CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
+ <20130204133648.GE13909@pd.tnic>
+ <CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw@mail.gmail.com>
+ <80D6EFE2711DED4189C7C8F0430BFEA86D23D6A80E@BUNGLE.Emea.Arm.com>
+ <20130205113950.GG4827@pd.tnic>
+Mime-Version: 1.0
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20130205113950.GG4827@pd.tnic>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+To: Borislav Petkov <bp@alien8.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, Robin Randhawa <Robin.Randhawa@ARM.com>, Steve Bannister <Steve.Bannister@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
+Pg0KPiBPbiBUdWUsIEZlYiAwNSwgMjAxMyBhdCAxMToyOTowNEFNICswMDAwLCBDaGFybGVzIEdh
+cmNpYS1Ub2JpbiB3cm90ZToNCj4gPiBBY3R1YWxseSBzaG9vdGluZyBteXNlbGYgaW4gdGhlIGZv
+b3QgaGVyZSwgS3JhaXQgaXMgbm90IHN1Y2ggYSBncmVhdA0KPiA+IGV4YW1wbGUgYmVjYXVzZSBh
+bHRob3VnaCB5b3UgY2FuIHVzZSBkaWZmZXJlbmNlIGJldHdlZW4gZnJlcXVlbmNpZXMNCj4gPiB5
+b3UgYXJlIGxlc3MgbGlrZWx5IHRvIHVzZSBkaWZmZXJlbnQgdHVuYWJsZXMgKG5vdCBpbmNvbmNl
+aXZhYmxlDQo+ID4gYnV0IHVubGlrZWx5KS4gVGhlIGJlc3QgZXhhbXBsZXMgc3lzdGVtcyBhcmUg
+bXVsdGkgY2x1c3RlciBhbmQNCj4gPiBoZXJldGVyb2dlbmVvdXMgc3lzdGVtcywgbGlrZSB0aGUg
+cmVjZW50bHkgYW5ub3VuY2VkIFNhbXN1bmcgRXh5bm9zIDUNCj4gPiBvY3RhIGh0dHA6Ly9lbi53
+aWtpcGVkaWEub3JnL3dpa2kvRXh5bm9zXyhzeXN0ZW1fb25fY2hpcCkuIFdlIHdpbGwgc2VlDQo+
+ID4gbW9yZSBzeXN0ZW1zIGxpa2UgdGhpcyBhcHBlYXJpbmcsIHNwb3J0aW5nIGxvdyBwb3dlciBj
+b3JlcyBjb21iaW5lZA0KPiA+IHdpdGggaGlnaCBwZXJmb3JtYW5jZSBvbmVzLCBhbGwgcnVubmlu
+ZyBhdCB0aGUgc2FtZSB0aW1lLiBJIGFwcHJlY2lhdGUNCj4gPiB0aGlzIGlzIGFsbCB2ZXJ5IG5l
+dywgYnV0IG1vcmUgd2lsbCBjb21lLCBhbmQgdGhlIHJlcXVpcmVtZW50IHRvIGhhdmUNCj4gPiBk
+aWZmZXJlbnQgdHVuYWJsZXMgcGVyIGNsdXN0ZXIgaXMgdmVyeSByZWFsLiBJbiBBUk0gb24gb3Vy
+IG93biBtdWx0aQ0KPiA+IGNsdXN0ZXIgdGVzdCBjaGlwLCB1c2luZyBhbiBleHBlcmltZW50YWwg
+dmVyc2lvbiBvZiB0aGlzIGFwcHJvYWNoLCB3ZQ0KPiA+IGhhdmUgc2VlbiBnb29kIGltcHJvdmVt
+ZW50cyBpbiBwb3dlciBjb25zdW1wdGlvbiB3aXRob3V0IGNvbXByb21pc2luZw0KPiA+IHBlcmZv
+cm1hbmNlLg0KPg0KPiBPaywgdGhhbmtzIGZvciBnaXZpbmcgdGhpcyBpbnNpZ2h0LCB0aGlzIGlz
+IHVzZWZ1bC4NCj4NCj4gUXVlc3Rpb246IGRvIHlvdSBuZWVkIHRoZSBncmFudWxhcml0eSBvZiB0
+aGF0IGNvbnRyb2wgdG8gYmUgcGVyIGNwdQ0KPiAod2l0aCB0aGF0IEkgbWVhbiB3aGF0IGxpbnV4
+IHVuZGVyc3RhbmRzIHVuZGVyICJjcHUsIiBpLmUuIGxvZ2ljYWwgb3INCj4gcGh5c2ljYWwgY29y
+ZSkgb3IgZG9lcyBvbmUgZ292ZXJub3Igc3VmZmljZSBwZXIgYSBzZXQgb2YgY29yZXMsIG9yIGFz
+DQo+IHlvdSBjYWxsIGl0LCBhIGNsdXN0ZXI/DQo+DQoNCkxhdGVyLiBXaGF0ZXZlciB5b3UnZCBs
+aWtlIHRvIGNhbGwgaXQsIGJ1dCBlc3NlbnRpYWxseSBhIHNldCBvZiBjcHVzLCBhcyBsaW51eCB1
+bmRlcnN0YW5kcyB0aGVtLCB0aGF0IGFyZSBsb2dpY2FsbHkgcmVsYXRlZCBieSB0aGUgZmFjdCB0
+aGF0IHlvdSdkIGxpa2UgdG8gYmUgYWJsZSB0byB1c2UgdGhlIHNhbWUgdHVuaW5nIHBvbGljeSBh
+bmQgc2FtZSBnb3Zlcm5vciBhY3Jvc3MgYWxsIG9mIHRoZW0uDQoNCkNoZWVycw0KDQpDaGFybGVz
+DQoNCihhcG9sb2dpZXMgYWdhaW4gZm9yIGFubm95aW5nIGFkZGVuZHVtcyB0byBmb2xsb3cpDQoN
+Cg0KLS0gSU1QT1JUQU5UIE5PVElDRTogVGhlIGNvbnRlbnRzIG9mIHRoaXMgZW1haWwgYW5kIGFu
+eSBhdHRhY2htZW50cyBhcmUgY29uZmlkZW50aWFsIGFuZCBtYXkgYWxzbyBiZSBwcml2aWxlZ2Vk
+LiBJZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQgcmVjaXBpZW50LCBwbGVhc2Ugbm90aWZ5IHRo
+ZSBzZW5kZXIgaW1tZWRpYXRlbHkgYW5kIGRvIG5vdCBkaXNjbG9zZSB0aGUgY29udGVudHMgdG8g
+YW55IG90aGVyIHBlcnNvbiwgdXNlIGl0IGZvciBhbnkgcHVycG9zZSwgb3Igc3RvcmUgb3IgY29w
+eSB0aGUgaW5mb3JtYXRpb24gaW4gYW55IG1lZGl1bS4gIFRoYW5rIHlvdS4NCg==
 
-"cpufreq" directory in policy->cpu is never created using sysfs_create_link(),
-but using kobject_init_and_add(). And so we shouldn't call sysfs_remove_link()
-for policy->cpu(). sysfs stuff for policy->cpu is automatically removed when we
-call kobject_put() for dying policy.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Dirk Brandewie <dirk.brandewie@gmail.com>
----
- drivers/cpufreq/cpufreq.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9656420..2817c3c 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1058,7 +1058,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 	cpus = cpumask_weight(data->cpus);
- 	cpumask_clear_cpu(cpu, data->cpus);
- 
--	if (unlikely((cpu == data->cpu) && (cpus > 1))) {
-+	if (cpu != data->cpu) {
-+		sysfs_remove_link(&dev->kobj, "cpufreq");
-+	} else if (cpus > 1) {
- 		/* first sibling now owns the new sysfs dir */
- 		cpu_dev = get_cpu_device(cpumask_first(data->cpus));
- 		sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
-@@ -1083,7 +1085,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
- 	cpufreq_cpu_put(data);
- 	unlock_policy_rwsem_write(cpu);
--	sysfs_remove_link(&dev->kobj, "cpufreq");
- 
- 	/* If cpu is last user of policy, free policy */
- 	if (cpus == 1) {
--- 
-1.7.7.6
