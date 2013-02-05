@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: BUG in bleeding edge c560f3d
-Date: Tue, 05 Feb 2013 03:43:20 +0100
-Message-ID: <2585398.78DPBR35EF@vostro.rjw.lan>
+Date: Tue, 05 Feb 2013 03:47:47 +0100
+Message-ID: <3437549.QBBqFrgfpG@vostro.rjw.lan>
 References: <511033EA.7090604@gmail.com> <3463348.tWNCISaOfi@vostro.rjw.lan> <51104CC7.8030800@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <51104CC7.8030800@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
 Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
 On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
@@ -40,7 +40,7 @@ On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
 > Rebased a couple of hours ago testing now.  ATM it looks like it is related to
 > cpufreq_stats handling of the sysfs files
 
-This looks like a problem with commit b8eed8a.  Viresh?
+Can you reproduce it without your patches?
 
 Rafael
 
