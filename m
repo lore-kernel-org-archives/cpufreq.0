@@ -1,39 +1,117 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
-Date: Tue, 5 Feb 2013 15:28:30 +0530
-Message-ID: <CAOh2x=mWc9rBX3O_1NSr23TAWFtRA6BNW3TZ8FhZOMdH_0dmzQ@mail.gmail.com>
-References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com>
-	<2765418.Ft0GYkgNgL@vostro.rjw.lan>
-	<CAOh2x=n+ASeLpGHexxDvPGrN6ia+bLnNUNCb-covGDoABVk_wQ@mail.gmail.com>
-	<3480441.gCEh0J5edK@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: BUG in bleeding edge c560f3d
+Date: Tue, 05 Feb 2013 11:08:08 +0100
+Message-ID: <1708503.DiTTyRLM9i@vostro.rjw.lan>
+References: <511033EA.7090604@gmail.com> <CAKohpo=-A+VTxsrMQk5SthHZLywrO-E3EHQnSs3_jG593cJzUw@mail.gmail.com> <CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=FTDjWAkuYxuMpEFkK1lTcXjcS2jDOBE8ApTpJf499t8=;
-        b=YWBgm7/Y2nnpPz9bvmXRSxSF/X2v5hWZJTkATFxx4qoqWhhxfS7JiIGEteAE/TzZkC
-         OpP77oW7VD+KUOApDhc98583yeBZTik+Vi4TfhyKu8v4bTB8PYFb4rIQ1ox4SyV/RjOA
-         LfOvNd9M+ihHMNwm4bCv25wOh4QRLqm32UNnem2zzoGeWTEyEzW1mBn4wqMa6Wml/CVQ
-         ho+YOPX20nxpZwBUcN2KgeSykCthIIsGxqclKymkWv73tqLbev97NsixHKXq8RASPdHb
-         YLjylWjlytmPg2fOrfpBhOZkl7dkYUlGydU14BrcspJncgi7bEKcw1GpLm5LcONIJPYH
-         wIkA==
-In-Reply-To: <3480441.gCEh0J5edK@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, linaro-dev@lists.linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Feb 5, 2013 at 3:33 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> I actually don't agree with that, becuase the Nathan's apprach shows the
-> reasoning that leads to the RCU introduction quite clearly.  So if you
-> don't have technical problems with the patchset, I'm going to take it as is.
+On Tuesday, February 05, 2013 12:38:44 PM Viresh Kumar wrote:
+> On 5 February 2013 11:15, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 5 February 2013 08:13, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
+> >
+> >>> Rebased a couple of hours ago testing now.  ATM it looks like it is related to
+> >>> cpufreq_stats handling of the sysfs files
+> >>
+> >> This looks like a problem with commit b8eed8a.  Viresh?
+> >
+> > I had some direct chat with Dirk to understand his problem. He has got lots
+> > of minor changes, which by themselves looks incorrect, for ex:
+> > - He is required to cpufreq_frequency_table_put_attr() from his drivers
+> >   init() code to make it NULL... But it should already have been NULL as per
+> >   my understanding. I really want him to test his driver without any additional
+> >   target/set_policy() patches he has.. to see if linux-next works for
+> > him or not.
+> >
+> > He will do this testing tomorrow and will let us know of any issues he faces.
+> >
+> > We have already tested linux-next and these patches on ARM TC2 and STE
+> > u8500 (by Fabio), with reboots and lots of hotplugging.
+> >
+> > Though i am still going to review my own patches once more to see if there is
+> > scope for improvement.
+> 
+> The system on which Dirk is testing his patches has following configuration:
+> 1 Package, 4 cpus, 8 virtual cores...
+> 
+> Though they share their clock line in some way, it is handled by the
+> cpufreq driver
+> only and for the outside world (cpufreq core), it looks as there are 8
+> independent cpus,
+> and so 8 policy structures.
+> 
+> I tried to reproduce the issue at my end by removing extra cpus from
+> my clusters and
+> just keeping one per cluster alive from DT.
+> 
+> And i *wasn't* able to reproduce the problem. Though i was able to
+> find a small bug/issue
+> in the current code for which i have following patch (attached too):
 
-Great!!
+Thanks for working on this!
 
-Okay.. I don't have any technical problems with it, i reviewed most of it
-carefully. The only pending thing is rebase on linux-next, after that i can
-give my ack for it.
+> @Dirk: Please give this one a try. Atleast on my system with various
+> configurations, i
+> couldn't see any different this patch has made, but is more logical to me.
+
+It looks good, I'm going to take it.
+
+Thanks,
+Rafael
+
+
+> commit 9bdd6d47403e696d05953870019e791806f8d6bf
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Tue Feb 5 12:28:18 2013 +0530
+> 
+>     cpufreq: Don't remove sysfs link for policy->cpu
+> 
+>     "cpufreq" directory in policy->cpu is never created using
+> sysfs_create_link(),
+>     but using kobject_init_and_add(). And so we shouldn't call
+> sysfs_remove_link()
+>     for policy->cpu(). sysfs stuff for policy->cpu is automatically
+> removed when we
+>     call kobject_put() for dying policy.
+> 
+>     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 7aacfbf..9567451 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1047,7 +1047,9 @@ static int __cpufreq_remove_dev(struct device
+> *dev, struct subsys_interface *sif
+>         cpus = cpumask_weight(data->cpus);
+>         cpumask_clear_cpu(cpu, data->cpus);
+> 
+> -       if (unlikely((cpu == data->cpu) && (cpus > 1))) {
+> +       if (cpu != data->cpu) {
+> +               sysfs_remove_link(&dev->kobj, "cpufreq");
+> +       } else if (cpus > 1) {
+>                 /* first sibling now owns the new sysfs dir */
+>                 cpu_dev = get_cpu_device(cpumask_first(data->cpus));
+>                 sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+> @@ -1072,7 +1074,6 @@ static int __cpufreq_remove_dev(struct device
+> *dev, struct subsys_interface *sif
+>         pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+>         cpufreq_cpu_put(data);
+>         unlock_policy_rwsem_write(cpu);
+> -       sysfs_remove_link(&dev->kobj, "cpufreq");
+> 
+>         /* If cpu is last user of policy, free policy */
+>         if (cpus == 1) {
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
