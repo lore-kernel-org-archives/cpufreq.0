@@ -1,44 +1,30 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: BUG in bleeding edge c560f3d
-Date: Tue, 5 Feb 2013 11:15:19 +0530
-Message-ID: <CAKohpo=-A+VTxsrMQk5SthHZLywrO-E3EHQnSs3_jG593cJzUw@mail.gmail.com>
-References: <511033EA.7090604@gmail.com>
-	<3463348.tWNCISaOfi@vostro.rjw.lan>
-	<51104CC7.8030800@gmail.com>
-	<2585398.78DPBR35EF@vostro.rjw.lan>
+Subject: Re: [PATCH 5/6] cpufreq: balance out cpufreq_cpu_{get,put} for
+ scaling drivers using setpolicy
+Date: Tue, 5 Feb 2013 12:33:58 +0530
+Message-ID: <CAKohpokWOEDS9BeKgH8NapdBDxhxg0f0CMYHsLvACg4woTvmew@mail.gmail.com>
+References: <1359744343-18690-1-git-send-email-dirk.brandewie@gmail.com>
+	<1359744343-18690-9-git-send-email-dirk.brandewie@gmail.com>
+	<CAOh2x=mU8+mJmr=BXjSLaz7Yxg--t2mPpsc_=Xry2ArNroB8Aw@mail.gmail.com>
+	<510FFD2C.90902@gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2585398.78DPBR35EF@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <510FFD2C.90902@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-On 5 February 2013 08:13, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
-
->> Rebased a couple of hours ago testing now.  ATM it looks like it is related to
->> cpufreq_stats handling of the sysfs files
+On 4 February 2013 23:55, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> Hi Viresh,
 >
-> This looks like a problem with commit b8eed8a.  Viresh?
+> I have rebased onto bleeding-edge when I reboot the system I get a kernel
+> panic.
+> Any idea what I could have done that would have broken the restructured
+> cpufreq_{add/remove}_dev.
 
-I had some direct chat with Dirk to understand his problem. He has got lots
-of minor changes, which by themselves looks incorrect, for ex:
-- He is required to cpufreq_frequency_table_put_attr() from his drivers
-  init() code to make it NULL... But it should already have been NULL as per
-  my understanding. I really want him to test his driver without any additional
-  target/set_policy() patches he has.. to see if linux-next works for
-him or not.
-
-He will do this testing tomorrow and will let us know of any issues he faces.
-
-We have already tested linux-next and these patches on ARM TC2 and STE
-u8500 (by Fabio), with reboots and lots of hotplugging.
-
-Though i am still going to review my own patches once more to see if there is
-scope for improvement.
-
---
-viresh
+Dirk, there are two mail chains for similar issue. Lets discuss these
+issues in the
+other thread: "BUG in bleeding edge c560f3d".
