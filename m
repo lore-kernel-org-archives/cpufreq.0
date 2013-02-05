@@ -1,45 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 16:13:23 +0530
-Message-ID: <CAKohpo=_Qq-_Aqy7nZD+f28-B7DY8ioQ5fe8bYKTe64A0RXeGw@mail.gmail.com>
-References: <20130204133648.GE13909@pd.tnic>
-	<CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
-	<20130204140908.GC15452@pd.tnic>
-	<CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
-	<20130204150511.GF13909@pd.tnic>
-	<CAKohpokt0xtsj1eQDMw6JgvQVp4rgFyU-vUrtuuF+0jjOVNHRQ@mail.gmail.com>
-	<20130204165057.GH13909@pd.tnic>
-	<CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
-	<20130205091532.GA4827@pd.tnic>
-	<CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
-	<20130205102721.GB4827@pd.tnic>
+Date: Tue, 5 Feb 2013 12:04:07 +0100
+Message-ID: <20130205110407.GC4827@pd.tnic>
+References: <20130204140908.GC15452@pd.tnic>
+ <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
+ <20130204150511.GF13909@pd.tnic>
+ <CAKohpokt0xtsj1eQDMw6JgvQVp4rgFyU-vUrtuuF+0jjOVNHRQ@mail.gmail.com>
+ <20130204165057.GH13909@pd.tnic>
+ <CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
+ <20130205091532.GA4827@pd.tnic>
+ <CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
+ <20130205102721.GB4827@pd.tnic>
+ <CAKohpo=_Qq-_Aqy7nZD+f28-B7DY8ioQ5fe8bYKTe64A0RXeGw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130205102721.GB4827@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1360062249; bh=OvDwpOHtUv7yeHmgde/oAosa63O+9gz26DHSoPSD5NE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=S3cBMjQYhbvql9pTlQyhQzBZlTo2DV16TqP5Ya
+	Oq55wBpuG0fUv3h1PxeP2efe2V6yzAfRDxFGiMwZuElek2+818AdyH+k2AAdaf0wjlE
+	TBwinOKh3ccFJj8NVlleeFmzvb6nOnGT43+06Sxit4lzEqERYAvh2dZEB8g7TGmWeM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1360062248; bh=OvDwpOHtUv7yeHmgde/oAosa63O+9gz26DHSoPSD5NE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=V5uMOeinqjyLmSAzazhc7e3O6D4V/Lxn1ZH402
+	0fTARWj7ifw+ftchfIuCXsXz2ef7UknOqkf37wN3G/SrfTgVrvABiuLD7ZUktyjfB3E
+	E9wtcd8GSMFYpHKnkbaOnEEor8ScUsispmL+HE2ilTuXH82Nxtqro5xLduu6FqE/Bs=
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=_Qq-_Aqy7nZD+f28-B7DY8ioQ5fe8bYKTe64A0RXeGw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-On 5 February 2013 15:57, Borislav Petkov <bp@alien8.de> wrote:
-> Are you kidding me? You're simply not reading what I'm saying to you:
-> "... should be optional and selectable in Kconfig so that systems which
-> don't need that, don't have to see or use it." Because on those systems
-> it doesn't apply.
+On Tue, Feb 05, 2013 at 04:13:23PM +0530, Viresh Kumar wrote:
+> There isn't lot of code that we have to keep inside the macro you
+> suggest. Its just an if else (with single line block), which would
+> give the parent kobject. Nothing else.
 >
-> How about we add an x86-specific extension which is a big wad of code
-> and is needlessly run on ARM just because it is easier?
+> I didn't wanted to create a macro for just that. For me an if/else is
+> not that big code.
 
-There isn't lot of code that we have to keep inside the macro you suggest.
-Its just an if else (with single line block), which would give the parent
-kobject. Nothing else.
+Yeah, I imagine for you it isn't, no.
 
-I didn't wanted to create a macro for just that. For me an if/else is not that
-big code.
+> Anyway, if nobody else comes on my side i can create that macro for you.
+> But, personally i would prefer code without such macros.
 
-Anyway, if nobody else comes on my side i can create that macro for you.
-But, personally i would prefer code without such macros.
+Here's an even cleaner way:
 
+platform_driver:
+init(struct cpufreq_policy *policy)
+{
+	...
+
+	add_additional_sysfs_entries(policy);
+
+	...
+}
+
+...
+
+static void add_additional_sysfs_entries(struct cpufreq_policy *policy)
+{
+#ifdef CONFIG_CPUFREQ_MULTIPLE_POLICIES
+	create-folder-in-cpu/cpu*/cpufreq;
+	...
+#endif
+}
+
+and the platform driver will have in its Kconfig section:
+
+config CPUFREQ_PLATFORM_DRIVER_X
+	...
+	select CPUFREQ_MULTIPLE_POLICIES
+
+
+You don't need the policy->have_multiple_policies member even.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
 --
-viresh
