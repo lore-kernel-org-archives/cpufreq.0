@@ -1,35 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 19:25:44 +0530
-Message-ID: <CAKohpomdH_s4xMtUo8-hSBEYqRVTEo5eCUG=vH4K5WckUi2KiQ@mail.gmail.com>
-References: <20130205091532.GA4827@pd.tnic>
-	<CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
-	<20130205102721.GB4827@pd.tnic>
-	<CAKohpo=_Qq-_Aqy7nZD+f28-B7DY8ioQ5fe8bYKTe64A0RXeGw@mail.gmail.com>
-	<20130205110407.GC4827@pd.tnic>
-	<CAKohponiiVO_P2EDDTUHeoo7j3FG-ELtP8oLwfdEQ3HkgOS77g@mail.gmail.com>
-	<20130205111918.GD4827@pd.tnic>
-	<CAKohpomUsDr0YJmOxjymcAAJnfOxKfzxGL4iHuif1qCAvy0OYA@mail.gmail.com>
-	<20130205113242.GF4827@pd.tnic>
-	<CAKohpo=ABkc3ku=YrS7=Df_65s3OPg+eAa80gCEkiK4dNc+x4g@mail.gmail.com>
-	<20130205132241.GH4827@pd.tnic>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: RE: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Tue, 5 Feb 2013 14:58:35 +0000
+Message-ID: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
+References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com>
+ <3480441.gCEh0J5edK@vostro.rjw.lan>
+ <CAOh2x=mWc9rBX3O_1NSr23TAWFtRA6BNW3TZ8FhZOMdH_0dmzQ@mail.gmail.com>,<1535355.NvOsIhbBYp@vostro.rjw.lan>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130205132241.GH4827@pd.tnic>
+In-Reply-To: <1535355.NvOsIhbBYp@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>
 
-On 5 February 2013 18:52, Borislav Petkov <bp@alien8.de> wrote:
-> On Tue, Feb 05, 2013 at 05:54:57PM +0530, Viresh Kumar wrote:q
->> This indication isn't enough. On a single image solution, we need to
->> identify the system which needs support for multiple policies and i
->> still feel we need that variable type indication :)
+Ok, I'll rebase and retest from linux-next then.
+
+
+________________________________________
+From: Rafael J. Wysocki [rjw@sisk.pl]
+Sent: Tuesday, February 05, 2013 4:13 AM
+To: Viresh Kumar
+Cc: Nathan Zimmer; linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org; cpufreq@vger.kernel.org; Shawn Guo; linaro-dev@lists.linaro.org
+Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+
+On Tuesday, February 05, 2013 03:28:30 PM Viresh Kumar wrote:
+> On Tue, Feb 5, 2013 at 3:33 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > I actually don't agree with that, becuase the Nathan's apprach shows the
+> > reasoning that leads to the RCU introduction quite clearly.  So if you
+> > don't have technical problems with the patchset, I'm going to take it as is.
 >
-> If the image is going to run also on systems which support only a
-> single policy, then I guess you can make it a bool, stuff it in struct
-> cpufreq_policy and ifdef around it.
+> Great!!
+>
+> Okay.. I don't have any technical problems with it, i reviewed most of it
+> carefully. The only pending thing is rebase on linux-next, after that i can
+> give my ack for it.
 
-That's what i proposed initially.
+Yes, it would be great if it were rebased and retested.
+
+Thanks,
+Rafael
+
+
+--
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
