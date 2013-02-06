@@ -1,51 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
-Date: Wed, 06 Feb 2013 14:00:30 +0100
-Message-ID: <4413377.ZEeF7Y7rnE@vostro.rjw.lan>
-References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <CAKohpo=3qnhtVOniYWPJQLSkAnhMkYj8_yvHR+QE46Pzdi=WhA@mail.gmail.com> <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 5/7] cpufreq: balance out cpufreq_cpu_{get,put} for scaling
+ drivers using setpolicy
+Date: Wed, 06 Feb 2013 08:11:03 -0800
+Message-ID: <51128097.9000801@gmail.com>
+References: <1360088646-19104-1-git-send-email-dirk.brandewie@gmail.com> <1360088646-19104-6-git-send-email-dirk.brandewie@gmail.com> <CAOh2x=kJPFyhkG3y_q=a5ciG1HRAn-JkoVYy9OZ9POA+-isbCQ@mail.gmail.com> <5111BB2E.2090505@gmail.com> <CAKohpokoG16S8uft0nSFSoejipS8X=zhhg6goJs4mBSt3tAwxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=LfAhOy/+roX6ZiDHH/mvhjMbWEvyYAMlR+IuZVrGwlo=;
+        b=L6Snpt179tnjIGC6yD7+idWp8Rpxvft887oCw0PIwTzR5CAlUmCLEP0AhXJhWHPAn4
+         O+/aHnPut8q43dWa1XnRnrQS9cqeBikF8w83dWMW10q+T5cZfYTyKQSyhKihRzLjErsv
+         oEdkC/M1+tXc0QxckQer8/R7eTNAjG2tH3CcBFQ/PzbM3MSsGN5hXR9cgSQ74/LzxaWH
+         SlSrD2332lj/hg6bJWOZiyFZhJHX510YF5xpAp2Wk7VaSqzkZjIaA3Dr/icPG+vf3C3z
+         LaPyR4XvJcsl9gpmwwZOWVE+4fVkJW0o0oFVBu8OY99M0tSAVfNX+bwV7wlLF5itL+me
+         BGMg==
+In-Reply-To: <CAKohpokoG16S8uft0nSFSoejipS8X=zhhg6goJs4mBSt3tAwxw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Wednesday, February 06, 2013 02:21:11 PM Viresh Kumar wrote:
-> On 6 February 2013 08:22, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 6 February 2013 07:34, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> >> In general rwlocks are discourged so we are moving it to use the rcu instead.
-> >>
-> >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> >> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> >> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> >> ---
-> >>  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
-> >>  1 file changed, 96 insertions(+), 77 deletions(-)
-> >
-> > bleeding-edge got updated again and this patch would have conflicts :)
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Rafael,
-> 
-> I have applied them over bleeding-edge after resolving few conflicts.
-> Please pick them up from:
-> 
-> Branch: for-rafael
-> Repo: git://git.linaro.org/people/vireshk/linux.git
-> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-rafael
+On 02/05/2013 06:45 PM, Viresh Kumar wrote:
+> On 6 February 2013 07:38, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+>> On 02/05/2013 05:58 PM, Viresh Kumar wrote:
+>>>
+>>> On Tue, Feb 5, 2013 at 11:54 PM,  <dirk.brandewie@gmail.com> wrote:
+>>>>
+>>>> From: Dirk Brandewie <dirk.brandewie@gmail.com>
+>>>>
+>>>> There is an additional reference added to the driver in
+>>>> cpufreq_add_dev()  that is removed in__cpufreq_governor() if the
+>>>>
+>>>> driver implements target().  Remove the last reference when the
+>>>> driver implements setpolicy()
+>>>>
+>>>> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+>>>>
+>>>> ---
+>>>>    drivers/cpufreq/cpufreq.c |    3 +++
+>>>>    1 files changed, 3 insertions(+), 0 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>>> index 622e282..d17477b 100644
+>>>> --- a/drivers/cpufreq/cpufreq.c
+>>>> +++ b/drivers/cpufreq/cpufreq.c
+>>>> @@ -1049,6 +1049,9 @@ static int __cpufreq_remove_dev(struct device *dev,
+>>>> struct subsys_interface *sif
+>>>>
+>>>>           if (cpufreq_driver->target)
+>>>>                   __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+>>>>
+>>>> +       if (cpufreq_driver->setpolicy)
+>>>> +               cpufreq_cpu_put(data);
+>>>
+>>>
+>>> I don't understand this patch at all.. I grepped both cpufreq_cpu_get() &
+>>> put()
+>>> in bleeding-edge and found everything to be correct.
+>>>
+>>> Can you please point me to the exact line numbers ?
+>>>
+>>
+>> Line 878 in cpufreq_add_dev()
+>
+> Following is line 878:
+>
+> 	for_each_online_cpu(sibling) {
+> 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
+> 		if (cp && cpumask_test_cpu(cpu, cp->related_cpus))
+> 			return cpufreq_add_policy_cpu(cpu, sibling, dev);
+> 	}
+>
+> How is this related to your patch?
+>
+our files are clearly out of sync :-)  The code in cpufreq_add_dev() is
+#ifdef CONFIG_SMP
+	/* check whether a different CPU already registered this
+	 * CPU because it is in the same boat. */
+	policy = cpufreq_cpu_get(cpu);
+	if (unlikely(policy)) {
+		cpufreq_cpu_put(policy);
+		return 0;
+	}
 
-That's really helpful, thanks a lot!
+The reference added by this cpufreq_cpu_get() is finally dropped in 
+__cpufreq_remove_dev() with the call to __cpufreq_governor()
 
-Both applied to bleeding-edge.
+	if (driver->target)
+		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
 
-Thanks,
-Rafael
+Without this change I hang at:
+		pr_debug("waiting for dropping of refcount\n");
+		wait_for_completion(cmp);
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--Dirk
