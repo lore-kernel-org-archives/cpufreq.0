@@ -1,24 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
-Date: Tue, 05 Feb 2013 23:00:44 +0100
-Message-ID: <4042917.3aPiiW9y2F@vostro.rjw.lan>
-References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com> <1535355.NvOsIhbBYp@vostro.rjw.lan> <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/3] cpufreq: kirkwood: Add a cpufreq driver for
+ Marvell Kirkwood SoCs
+Date: Wed, 6 Feb 2013 07:01:57 +0530
+Message-ID: <CAKohpo=FM9mwm80oQY3swRT+ar3D7SeGf3rgSeGSQF1gPcHndQ@mail.gmail.com>
+References: <1360094115-14999-1-git-send-email-andrew@lunn.ch>
+	<1360094115-14999-2-git-send-email-andrew@lunn.ch>
+	<1592206.QUWhA9cOzT@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1592206.QUWhA9cOzT@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Shawn Guo <shawn.guo@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
 
-On Tuesday, February 05, 2013 02:58:35 PM Nathan Zimmer wrote:
-> Ok, I'll rebase and retest from linux-next then.
+On 6 February 2013 03:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, February 05, 2013 08:55:13 PM Andrew Lunn wrote:
+>> The Marvell Kirkwood SoCs have simple cpufreq support in hardware. The
+>> CPU can either use the a high speed cpu clock, or the slower DDR
+>> clock. Add a driver to swap between these two clock sources.
+>>
+>> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+>> Acked-by: Jason Cooper <jason@lakedaemon.net>
+>
+> This has been ACKed by Viresh already IIRC, right?
 
-Thanks!
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Yes.
