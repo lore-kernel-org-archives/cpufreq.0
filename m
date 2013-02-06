@@ -1,7 +1,7 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 2/5] cpufreq: Only call cpufreq_out_of_sync() for driver that implement cpufreq_driver.target()
-Date: Wed,  6 Feb 2013 09:02:09 -0800
-Message-ID: <1360170133-5066-3-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 2/5] cpufreq: Only call cpufreq_out_of_sync() with drivers that implement cpufreq_driver.target()
+Date: Wed,  6 Feb 2013 09:02:10 -0800
+Message-ID: <1360170133-5066-4-git-send-email-dirk.brandewie@gmail.com>
 References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
@@ -9,12 +9,12 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
         bh=DtJUvhp2fBh+8gm/8z66NSlsBcbNyh13WDYAW4PsqH4=;
-        b=Mb1NSkKAtI5FJsYjuZyXJ57kqiY97YUa9WLBZSDyZps9gy2aNYXAUm70SmZrWAq0Wa
-         CJMArjzYv3a3BZWIxnunlABePErFMpLTL7vszQWyIhCpc3EHk7WJjLuELgANB6FfxJaT
-         waKiOsUVSyWhgzBFvtEtX7pE5T7V1XldWvIn95CvOuFAviCQX+nmpQbv0dGImzEqoM0q
-         sc1wxnYLcdfvQdS7pIXaElX1vYXqpmj6/7q38npEkYYSzof24ugaMmyeX/z0fDFZU7Q4
-         znOLLzKOQU4pHa7gLFtrC9BgP3q4do0pcGanD3v/R4x1Y0mej/2P+K4115zR0YzJEwMa
-         sBKw==
+        b=n7ccq9nB5eMdwTeic+gffS94WjRnxjgjt1k8rtRdFPtC6GwoC6sW43TYb3JNxpSqWz
+         lz9oyHKXctfteru8Zq0Aqqwo2D1muAOhxF8cCT42XDdR2yJo+OhGRhOf5NH47E0oVbY3
+         tzszTByTcENpo16s2h0nNBvf4nsR4SjAdwsBHieY2X1ASnYc5OJhqkp7vuK7qUDw9wxl
+         Xm3ZHQQNMYbMb+IdsYKeMRstbYdDw3twr3vYFaK3pafZkwGPLERIKpLGm1S4/PWcYyKr
+         UqF3I5yb8yrghaJnfZX07nr3bumYsUzOI+J/ElPovH0jJYbj0Xl4+tsFf2udiNnYtMFX
+         kqGA==
 In-Reply-To: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
