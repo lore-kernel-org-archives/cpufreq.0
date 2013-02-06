@@ -1,24 +1,24 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/7] cpufreq: Do not track governor name for scaling
- drivers with internal governors.
-Date: Wed, 6 Feb 2013 07:20:32 +0530
-Message-ID: <CAOh2x==4Zi=-bLh3SBxjp0xpc6P3WV3wcctLnV3kQUhjuGhPqw@mail.gmail.com>
+Subject: Re: [PATCH 5/7] cpufreq: balance out cpufreq_cpu_{get,put} for
+ scaling drivers using setpolicy
+Date: Wed, 6 Feb 2013 07:28:26 +0530
+Message-ID: <CAOh2x=kJPFyhkG3y_q=a5ciG1HRAn-JkoVYy9OZ9POA+-isbCQ@mail.gmail.com>
 References: <1360088646-19104-1-git-send-email-dirk.brandewie@gmail.com>
-	<1360088646-19104-5-git-send-email-dirk.brandewie@gmail.com>
+	<1360088646-19104-6-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=6JA9P0g4j4Zn7PRfQXBnHQ+JFcdOgruK1U4qPFF8F8k=;
-        b=a6B6EN2FSDp1Zregc/Bw+uwfrmiONzLB1/FANJHacuQF0a1XVPvBKE4Viv4Qj3QBV+
-         abiUQWnq7yvn7ekCfi5VmTfer+T+TsYuufh6Y5cm/Rsa65aNkJ1j2L/+KTXpx64kBvbE
-         MoVvIigSw8Sx3P2OQEs9zQQaoz6JMvSAFTppumUGcjjvnzGGCeLl4OLy4gXea4PbN0b3
-         Hsadz52EKNddJ0mk7pZAjxHCYC1mKckftMfzk+L8tkOy2ECagYuB8qkbQnrJHlcjeipF
-         XGct8qh/x3ZgDJVO5mEYikc0fPOzmk6IBiPQeUtX+7qxE/iw5Shhawmu+bbUZKHzSsnD
-         VHPg==
-In-Reply-To: <1360088646-19104-5-git-send-email-dirk.brandewie@gmail.com>
+        bh=kXfsJtth57/3EsCRDfEguOBJso+lnGRg9w7iG9B1XPc=;
+        b=JlBYvCSMqrJ68NgWpLe1tbbV2kcZAICPnmi85z3LHEpuybimcPlNpbzA/c5kWJxHHg
+         Ggx8Bjuvov8qsDE1NGo6B9jr1EhUAcQ4Kgfk4Qsd0lWGNBmOargyuMiRyaAoS6wDryNJ
+         aowNJ1VIoR/5f7pU/MCTaWuwZ0OoHrJt9smo8jvrBBvvQXPwpp09yC2jg/qjCrsWqS15
+         twO7ql6IarsoQ8ZUnkIoUxlIVuGvgDfoDW3a5YE+F1+HMvz/ao75wuKx/0Uq3dzbpGj6
+         03qQiWjZW/gndN6lh3JrPz+akU6dJdSDQlCOo9BbKQ2p6PhyWV2VB1brWE3LhTSfLsKX
+         ZMkg==
+In-Reply-To: <1360088646-19104-6-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
@@ -29,28 +29,28 @@ Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Dirk Brandewie <dirk.
 On Tue, Feb 5, 2013 at 11:54 PM,  <dirk.brandewie@gmail.com> wrote:
 > From: Dirk Brandewie <dirk.brandewie@gmail.com>
 >
-> Scaling drivers that implement internal governors do not have governor
-> structures assocaited with them.  Only track the name of the governor
-> associated with the CPU if the driver does not implement
-> cpufreq_driver.setpolicy()
+> There is an additional reference added to the driver in
+> cpufreq_add_dev()  that is removed in__cpufreq_governor() if the
+> driver implements target().  Remove the last reference when the
+> driver implements setpolicy()
 >
 > Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 > ---
->  drivers/cpufreq/cpufreq.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+>  drivers/cpufreq/cpufreq.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index d8daa4b..622e282 100644
+> index 622e282..d17477b 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1050,7 +1050,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+> @@ -1049,6 +1049,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>         if (cpufreq_driver->target)
 >                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
 >
->  #ifdef CONFIG_HOTPLUG_CPU
-> -       strncpy(per_cpu(cpufreq_cpu_governor, cpu), data->governor->name,
-> +       if (!cpufreq_driver->setpolicy)
-> +               strncpy(per_cpu(cpufreq_cpu_governor, cpu),
-> +                       data->governor->name,
->                         CPUFREQ_NAME_LEN);
+> +       if (cpufreq_driver->setpolicy)
+> +               cpufreq_cpu_put(data);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I don't understand this patch at all.. I grepped both cpufreq_cpu_get() & put()
+in bleeding-edge and found everything to be correct.
+
+Can you please point me to the exact line numbers ?
