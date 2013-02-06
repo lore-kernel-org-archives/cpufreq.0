@@ -1,20 +1,20 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 4/5] cpufreq_stats: do not remove sysfs files if frequency table is not present
-Date: Wed,  6 Feb 2013 09:02:12 -0800
-Message-ID: <1360170133-5066-6-git-send-email-dirk.brandewie@gmail.com>
+Subject: [PATCH 1/5] cpufreq: Retrieve current frequency from scaling drivers with internal governors
+Date: Wed,  6 Feb 2013 09:02:08 -0800
+Message-ID: <1360170133-5066-2-git-send-email-dirk.brandewie@gmail.com>
 References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=48SGUF9xZQtL1lhAkTTKU/GShqqrHK+28hHM3kG0FD8=;
-        b=zsOpm27hvJ4vMvybS1SVJbXrPfxMfzt194SrIkYimObgEW5eTOAsy8dYUpFs6XzPTd
-         BbeJD/46YdPKos2hZC4zG7TBa49b+0DGVcLydcULky1Co0cRfG+YBoyTIkd2uXMQ0N+i
-         uBXEhSLiRxoa2LNq4P3Q6iKuucqiOHRHzVMKOEToy7HH4pURelmqbxkfvdMNF3TcQLko
-         LpeFwhBPFdTjcLIUq05hPRGUrAOs45/Fn2DroYj7qDjO0zkXCWhBh2b7BRy8R33rC3kX
-         Esx0DvK7RKRkQgkRWtVp5QbDJu1M5vIa4Ac2H7lfhCYkcQHRl/vn3e/B4K6BJWB4WTnN
-         CAVA==
+        bh=4fDkupKqV0paVb/rbvgO1mwpofIQKBE9FuMhvkHWwI4=;
+        b=wCGqTgkfgd4OkPoNuLSJ5uYLxVbQyFB58uQ+F+mGvmwlDCHbYsPnvp5RsrDYO9yQCn
+         bXkPTvm09l68gTYIf7JoeObVSkr8b/rnW2GDdH6qro6FIV45DHr6EoddnlNXEqasP8pb
+         9hlrjmkiMQrwK+1V3GQsjRFrSDLtZAhBglFtAU+0fRjLx8P2Iof5ZdB/tq12IDXTYFYz
+         hAKHHPywvSzF7+qZwcLopE9yMe3g1IPumLWKZMmzRJAZRYTfjnIyhC8AADo7p6G4fEZG
+         tTFfv8MaDez/wVWc7H0qptYLictD6Cyyw3eD4OvTI0cARHunupBMdj97haF+wicl3EXM
+         eFHw==
 In-Reply-To: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -26,31 +26,41 @@ Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
 
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-The sysfs files for cpufreq_stats are created in cpufreq_stats_create_table()
-called from cpufreq_stat_notifier_policy() when a policy is added to
-the cpu. cpufreq_stats_create_table() will not be called if the
-scaling driver does not export a frequency table to cpufreq.  Use the
-same fence on tear down.
+Scaling drivers that implement the cpufreq_driver.setpolicy() versus
+the cpufreq_driver.target() interface do not set policy->cur.
+
+Normally policy->cur is set during the call to cpufreq_driver.target()
+when the frequnecy request is made by the governor.
+
+If the scaling driver implements cpufreq_driver.setpolicy() and
+cpufreq_driver.get() interfaces use cpufreq_driver.get() to retrieve
+the current frequency.
 
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_stats.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/cpufreq/cpufreq.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index a2dee4c..2fd779e 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -179,6 +179,10 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- static void cpufreq_stats_free_sysfs(unsigned int cpu)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index ccc598a..bb45f93 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1177,9 +1177,14 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
+  */
+ unsigned int cpufreq_quick_get(unsigned int cpu)
  {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+-	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++	struct cpufreq_policy *policy;
+ 	unsigned int ret_freq = 0;
+ 
++	if (cpufreq_driver && cpufreq_driver->setpolicy &&
++			cpufreq_driver->get)
++			return cpufreq_driver->get(cpu);
 +
-+	if (!cpufreq_frequency_get_table(cpu))
-+		return;
-+
- 	if (policy && !policy_is_shared(policy)) {
- 		pr_debug("%s: Free sysfs stat\n", __func__);
- 		sysfs_remove_group(&policy->kobj, &stats_attr_group);
++	policy = cpufreq_cpu_get(cpu);
+ 	if (policy) {
+ 		ret_freq = policy->cur;
+ 		cpufreq_cpu_put(policy);
 -- 
 1.7.7.6
