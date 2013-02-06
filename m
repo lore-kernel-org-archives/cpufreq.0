@@ -1,43 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ondemand: Replace down_differential tuner with adj_up_threshold
-Date: Wed, 6 Feb 2013 11:05:45 +0530
-Message-ID: <CAOh2x=ksAibntsfGm51r+JiQOAhHYYmHF1o=_H97fSKqGcq_mQ@mail.gmail.com>
-References: <511173DF.8060308@semaphore.gr>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH v5 1/3] cpufreq: kirkwood: Add a cpufreq driver for
+ Marvell Kirkwood SoCs
+Date: Wed, 6 Feb 2013 07:20:55 +0100
+Message-ID: <20130206062055.GD20212@lunn.ch>
+References: <1360094115-14999-1-git-send-email-andrew@lunn.ch>
+ <1360094115-14999-2-git-send-email-andrew@lunn.ch>
+ <20130206034427.GE16787@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=Nm85yAJOSRzgfGXdEPqQLaWJ49E2oZItpJDbI6tWdUc=;
-        b=aCTBXJpXDxaOUY2ckQtZqy2+7vQjHif16HuFstSwGFhlfxUmRCAAdALC9LQw5wFZuG
-         FC+QyW13PCF48k6bjDXYYTAc2KmxUAgRrSIwLyXSHzlM6xeq2njkYKGaf/nKxhDGveuQ
-         kQHvgrunblg7g/ndnVADIfwUvzkB+FvUv1a14Apk4KnQrQQsDljJP90Q+6ktoldNdAuz
-         dQru+ANfc+mw3SZd2Q7+gO0IAcLWeE3OsMDbsUdQf35ER/VDJxrJMt930Mjy6ddSmlRr
-         k78Ye6vT8D5stykbPKDYmJig6N2wOYC6ZYPh7xWWXZztr8XqJF+ml3pGBVIICKb67eCr
-         XePg==
-In-Reply-To: <511173DF.8060308@semaphore.gr>
+Content-Disposition: inline
+In-Reply-To: <20130206034427.GE16787@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Feb 6, 2013 at 2:34 AM, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> In order to avoid the calculation of up_threshold - down_differential
-> every time that the frequency must be decreased, we replace the
-> down_differential tuner with the adj_up_threshold which keeps the
-> difference across multiple checks.
->
-> Update the adj_up_threshold only when the up_theshold is also updated.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_governor.h |  2 +-
->  drivers/cpufreq/cpufreq_ondemand.c | 16 ++++++++++------
->  2 files changed, 11 insertions(+), 7 deletions(-)
+On Wed, Feb 06, 2013 at 11:44:31AM +0800, Shawn Guo wrote:
+> On Tue, Feb 05, 2013 at 08:55:13PM +0100, Andrew Lunn wrote:
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/clk.h>
+> > +#include <linux/clk-provider.h>
+> 
+> Again, why do you need this header?  It's supposed to only be included
+> by clock drivers who provide clocks.
 
-Makes sense.
+I already answered this a few times....
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+http://permalink.gmane.org/gmane.linux.kernel.cpufreq/9008
+http://permalink.gmane.org/gmane.linux.kernel.cpufreq/9011
+
+> > +static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+> > +{
+> > +	struct device_node *np;
+> > +	struct resource *res;
+> > +	int err;
+> > +
+> > +	priv.dev = &pdev->dev;
+> > +
+> > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +	if (!res) {
+> > +		dev_err(&pdev->dev, "Cannot get memory resource\n");
+> > +		return -ENODEV;
+> > +	}
+> > +	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+> > +	if (!priv.base) {
+> > +		dev_err(&pdev->dev, "Cannot ioremap\n");
+> > +		return -EADDRNOTAVAIL;
+> > +	}
+> > +
+> > +	np = of_find_node_by_path("/cpus/cpu@0");
+> > +	if (!np)
+> > +		return -ENODEV;
+> 
+> 	pdev->dev.of_node = np;
+> 
+> > +
+> > +	priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
+> 
+> Then, devm_clk_get(pdev->dev, "cpu_clk") should just work for you.
+> You are really hating to use devm_clk_get()?
+
+What i don't like is it gives the idea the driver is using its own DT
+node. Its not, the driver does not have a node in the tree, it is
+using some other node from within the tree. What assumptions are made
+about pdev->dev.of_node? e.g. of_find_device_by_node() would now
+return this driver if somebody was to lookup the cpu@0 node. You could
+imaging in the future a thermal driver using this node, a voltage
+scaling driver, etc.
+
+What other uses are there of dev.of_node and do they make sense when
+it points to some random node in the tree?
+
+   Andrew
