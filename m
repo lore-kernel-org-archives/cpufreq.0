@@ -1,30 +1,33 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 1/3] cpufreq: kirkwood: Add a cpufreq driver for
- Marvell Kirkwood SoCs
-Date: Wed, 6 Feb 2013 07:01:57 +0530
-Message-ID: <CAKohpo=FM9mwm80oQY3swRT+ar3D7SeGf3rgSeGSQF1gPcHndQ@mail.gmail.com>
-References: <1360094115-14999-1-git-send-email-andrew@lunn.ch>
-	<1360094115-14999-2-git-send-email-andrew@lunn.ch>
-	<1592206.QUWhA9cOzT@vostro.rjw.lan>
+Subject: Re: BUG in bleeding edge c560f3d
+Date: Wed, 6 Feb 2013 07:04:08 +0530
+Message-ID: <CAKohpo=oo+vJLqsQMK9-4=V5Or94hSdNo3aZPQbY-bdvni2K6w@mail.gmail.com>
+References: <511033EA.7090604@gmail.com>
+	<3463348.tWNCISaOfi@vostro.rjw.lan>
+	<51104CC7.8030800@gmail.com>
+	<2585398.78DPBR35EF@vostro.rjw.lan>
+	<CAKohpo=-A+VTxsrMQk5SthHZLywrO-E3EHQnSs3_jG593cJzUw@mail.gmail.com>
+	<CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
+	<5111532F.1060606@gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1592206.QUWhA9cOzT@vostro.rjw.lan>
+In-Reply-To: <5111532F.1060606@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, cpufreq@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 6 February 2013 03:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, February 05, 2013 08:55:13 PM Andrew Lunn wrote:
->> The Marvell Kirkwood SoCs have simple cpufreq support in hardware. The
->> CPU can either use the a high speed cpu clock, or the slower DDR
->> clock. Add a driver to swap between these two clock sources.
+On 6 February 2013 00:15, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> On 02/04/2013 11:08 PM, Viresh Kumar wrote:
 >>
->> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
->> Acked-by: Jason Cooper <jason@lakedaemon.net>
+>> @Dirk: Please give this one a try. Atleast on my system with various
+>> configurations, i
+>> couldn't see any different this patch has made, but is more logical to me.
+>>
 >
-> This has been ACKed by Viresh already IIRC, right?
+> Tested works fine with and without my driver present.
 
-Yes.
+Wow!! I was shooting in the dark without knowing where the right target is
+and luckily i found the target :)
