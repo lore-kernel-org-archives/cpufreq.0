@@ -1,31 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the
- cpufreq_driver_lock to use the rcu
-Date: Wed, 6 Feb 2013 08:22:57 +0530
-Message-ID: <CAKohpo=3qnhtVOniYWPJQLSkAnhMkYj8_yvHR+QE46Pzdi=WhA@mail.gmail.com>
-References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
-	<1360116290-23849-1-git-send-email-nzimmer@sgi.com>
-	<1360116290-23849-3-git-send-email-nzimmer@sgi.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v5 1/3] cpufreq: kirkwood: Add a cpufreq driver for
+ Marvell Kirkwood SoCs
+Date: Wed, 6 Feb 2013 11:44:31 +0800
+Message-ID: <20130206034427.GE16787@S2101-09.ap.freescale.net>
+References: <1360094115-14999-1-git-send-email-andrew@lunn.ch>
+ <1360094115-14999-2-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1360116290-23849-3-git-send-email-nzimmer@sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1360094115-14999-2-git-send-email-andrew@lunn.ch>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, rjw@sisk.pl, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 6 February 2013 07:34, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> In general rwlocks are discourged so we are moving it to use the rcu instead.
->
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
->  1 file changed, 96 insertions(+), 77 deletions(-)
+On Tue, Feb 05, 2013 at 08:55:13PM +0100, Andrew Lunn wrote:
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/clk.h>
+> +#include <linux/clk-provider.h>
 
-bleeding-edge got updated again and this patch would have conflicts :)
+Again, why do you need this header?  It's supposed to only be included
+by clock drivers who provide clocks.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> +#include <linux/cpufreq.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/io.h>
+> +#include <asm/proc-fns.h>
+
+...
+
+> +static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *np;
+> +	struct resource *res;
+> +	int err;
+> +
+> +	priv.dev = &pdev->dev;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "Cannot get memory resource\n");
+> +		return -ENODEV;
+> +	}
+> +	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+> +	if (!priv.base) {
+> +		dev_err(&pdev->dev, "Cannot ioremap\n");
+> +		return -EADDRNOTAVAIL;
+> +	}
+> +
+> +	np = of_find_node_by_path("/cpus/cpu@0");
+> +	if (!np)
+> +		return -ENODEV;
+
+	pdev->dev.of_node = np;
+
+> +
+> +	priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
+
+Then, devm_clk_get(pdev->dev, "cpu_clk") should just work for you.
+You are really hating to use devm_clk_get()?
+
+Shawn
+
+> +	if (IS_ERR(priv.cpu_clk)) {
+> +		dev_err(priv.dev, "Unable to get cpuclk");
+> +		return PTR_ERR(priv.cpu_clk);
+> +	}
+
