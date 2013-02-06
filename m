@@ -1,45 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the
- cpufreq_driver_lock to use the rcu
-Date: Wed, 6 Feb 2013 14:21:11 +0530
-Message-ID: <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
-References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
-	<1360116290-23849-1-git-send-email-nzimmer@sgi.com>
-	<1360116290-23849-3-git-send-email-nzimmer@sgi.com>
-	<CAKohpo=3qnhtVOniYWPJQLSkAnhMkYj8_yvHR+QE46Pzdi=WhA@mail.gmail.com>
+Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Wed, 6 Feb 2013 15:28:34 +0530
+Message-ID: <CAKohpokFCAqdoeBoMJ3Jzh05x8wUg4kfo+XirxUjw=2_4_0wJA@mail.gmail.com>
+References: <cover.1359976493.git.viresh.kumar@linaro.org>
+	<CAKohpomK1jZMy=mQJFysbdeXZAuzWJ3gcStA+imYHouGfmcgLw@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=3qnhtVOniYWPJQLSkAnhMkYj8_yvHR+QE46Pzdi=WhA@mail.gmail.com>
+In-Reply-To: <CAKohpomK1jZMy=mQJFysbdeXZAuzWJ3gcStA+imYHouGfmcgLw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+To: rjw@sisk.pl, Borislav Petkov <bp@alien8.de>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-On 6 February 2013 08:22, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 6 February 2013 07:34, Nathan Zimmer <nzimmer@sgi.com> wrote:
->> In general rwlocks are discourged so we are moving it to use the rcu instead.
->>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
->> ---
->>  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
->>  1 file changed, 96 insertions(+), 77 deletions(-)
+On 5 February 2013 21:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> commit 15b5548c9ccfb8088270f7574710d9d67edfe33b
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Tue Feb 5 21:29:05 2013 +0530
 >
-> bleeding-edge got updated again and this patch would have conflicts :)
+>     cpufreq: Make governors directory sysfs location based on
+> have_multiple_policies
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>     Until now directory for governors tunables was getting created in
+>     cpu/cpufreq/<gov-name>. With the introduction of following patch:
+>     "cpufreq: governor: Implement per policy instances of governors"
+>
+>     this directory would be created in
+> cpu/cpu<num>/cpufreq/<gov-name>. This might
+>     break userspace of existing platforms. Lets do this change only
+> for platforms
+>     which need support for multiple policies and thus above mentioned patch.
+>
+>     From now on, such platforms would be require to do following from
+> their init()
+>     routines:
+>
+>         policy->have_multiple_policies = true;
+>
+>     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |  2 +-
+>  include/linux/cpufreq.h            | 14 ++++++++++++++
+>  2 files changed, 15 insertions(+), 1 deletion(-)
 
-Rafael,
+Hi Rafael,
 
-I have applied them over bleeding-edge after resolving few conflicts.
-Please pick them up from:
+Because this patch was quite big (317 insertions(+), 238 deletions(-)), i was
+planning a detailed self review to capture any mistakes and luckily i found
+one for above patch :)
 
-Branch: for-rafael
-Repo: git://git.linaro.org/people/vireshk/linux.git
-http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-rafael
+diff --git a/drivers/cpufreq/cpufreq_governor.c
+b/drivers/cpufreq/cpufreq_governor.c
+index 41ee86f..fe037c0 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -342,7 +342,8 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+                mutex_lock(&dbs_data->mutex);
+                mutex_destroy(&cpu_cdbs->timer_mutex);
 
-I have got my other cpufreq work too in that repo:
+-               sysfs_remove_group(&policy->kobj, dbs_data->cdata->attr_group);
++               sysfs_remove_group(get_governor_parent_kobj(policy),
++                               dbs_data->cdata->attr_group);
+                if (dbs_data->cdata->governor == GOV_CONSERVATIVE)
+                        cpufreq_unregister_notifier(cs_ops->notifier_block,
+                                        CPUFREQ_TRANSITION_NOTIFIER);
+
+I have pushed the complete patchset here:
+
 http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-updates
