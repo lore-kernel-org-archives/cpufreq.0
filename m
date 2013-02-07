@@ -1,57 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/5] cpufreq: Only call cpufreq_out_of_sync() with drivers
- that implement cpufreq_driver.target()
-Date: Thu, 7 Feb 2013 16:03:16 +0530
-Message-ID: <CAOh2x=mjWxSM+WzReHgbnjHmft7yiP6OOf5p-kwpqh2Ykp_O0A@mail.gmail.com>
+Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
+Date: Thu, 7 Feb 2013 16:12:42 +0530
+Message-ID: <CAOh2x==-u_AuyG34t0cg6BURsj3rU4rwSgZaSbX4ULU7ztdxMg@mail.gmail.com>
 References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
-	<1360170133-5066-4-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=Z4jqRqwb1o/XCLMInSzsQERfamqA13OGBcwONWv+I58=;
-        b=rY9FCHLlC46bP7pt4l4wMFXgabHVJRRKCmvTS2WjFECPbwW8GrIdy9I2mvkAjgvmqz
-         Lu+iNy/gUWWIndVMwEB7XFrfmKcK1xCHIuqA2le6TBa5Av5lTaBs/DZ54qkLXearmr7k
-         CqR5jOWhOfrZhhZCtJ7uxSk+wjz10M8tW8bvAYbVyQPM4MA1aIqUOf5W5/OkNE9JemPz
-         BORUBvYuWysXFdFvyffBjGIrvTmOUaj/FkC3Dw+A/AwKx4igh0nJ6vZCZ451pZfv8mIs
-         JvtREN24o4Ku7W4cKWtYTurtDY578pYo3TId/qyDVXLwFvO86Cnx/xjQtCUOWhxPp9Zg
-         mZcA==
-In-Reply-To: <1360170133-5066-4-git-send-email-dirk.brandewie@gmail.com>
+        bh=YRyBbMB78BRcpOmP3MNXA1LvKHLH9FhYhDh3lx4vpTU=;
+        b=JDy/DMoBziosB/tMeOwINfy10X9guCoMW5OeWBGnaK4qtOl8AbsOipDXQTPyfHGi7d
+         RAW/V7vd1wtl4yE+c+ki/n27Z/JeFQ3QAeewm1f4VEdD8fh4qGPq2YVSl9Is3uhCHbPq
+         lIWwWbgdgD2syvxO/7vQMNE6UTXJRETYXM7CwMnE2M1OKjYwbUpwlKaY5Nma91ySNLC2
+         5sV6wVkhJDTjOPN3w/T+KoaVkejFnQIl3zhDV8Q9vAmkEBmcCdiYFmwSR6li6dvi0Bee
+         50sOPGlHn5XMNljZpN66efDlmr34wHB80WaDWFiaHPwKwhRxiKDR3208DiSeKFKZw9+Z
+         iBkg==
+In-Reply-To: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dirk.brandewie@gmail.com
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+To: dirk.brandewie@gmail.com, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>
 
 On Wed, Feb 6, 2013 at 10:32 PM,  <dirk.brandewie@gmail.com> wrote:
 > From: Dirk Brandewie <dirk.brandewie@gmail.com>
 >
-> Scaling drivers that implement cpufreq_driver.setpolicy() have
-> internal governors that do not signal changes via
-> cpufreq_notify_transition() so the frequncy in the policy will almost
-> certainly be different than the current frequncy.  Only call
-> cpufreq_out_of_sync() when the underlying driver implements
-> cpufreq_driver.target()
->
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index bb45f93..0ba0344 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1798,7 +1798,7 @@ int cpufreq_update_policy(unsigned int cpu)
->                         pr_debug("Driver did not initialize current freq");
->                         data->cur = policy.cur;
->                 } else {
-> -                       if (data->cur != policy.cur)
-> +                       if (data->cur != policy.cur && driver->target)
->                                 cpufreq_out_of_sync(cpu, data->cur,
->                                                                 policy.cur);
+> This driver implements a scaling driver with an internal governor for
+> Intel Core processors.  The driver follows the same model as the
+> Transmeta scaling driver (longrun.c) and implements the setpolicy()
+> instead of target().  Scaling drivers that implement setpolicy() are
+> assmuned to implement internal governors by the cpufreq core. All the
+> logic for selecting the current P state is contained within the driver
+> no external governor is used by the cpufreq core.
 
-Looks much better now :)
+Hi Dirk,
+
+All look good now :)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+@Rafael: I wasn't sure if these would apply over my patches without any
+conflicts and so i applied them in my repo. Added my Acked-by's and fixed
+a minor thing in one of the patches (as mentioned in the other mail).
+
+You can pick these from: dirk-patches
+
+http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/dirk-patches
