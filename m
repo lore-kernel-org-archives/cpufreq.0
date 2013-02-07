@@ -1,34 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
-Date: Thu, 07 Feb 2013 23:43:49 +0100
-Message-ID: <1586399.WMgjCjj8uN@vostro.rjw.lan>
-References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com> <CAOh2x==-u_AuyG34t0cg6BURsj3rU4rwSgZaSbX4ULU7ztdxMg@mail.gmail.com> <CAOh2x=mJY+NcTMFNDVTWU92EDXBU_ixNeEur6-tj-XOTy46gRQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
+Date: Fri, 08 Feb 2013 00:07:37 +0100
+Message-ID: <1947746.IyFppZQEx8@vostro.rjw.lan>
+References: <cover.1360232293.git.viresh.kumar@linaro.org> <2158181.aoVXdpLJe2@vostro.rjw.lan> <CAKohponLrVG+ubf5Ok+7AvoWKRF16YLqUEWAU6hH7-H_R=r0Ow@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=mJY+NcTMFNDVTWU92EDXBU_ixNeEur6-tj-XOTy46gRQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohponLrVG+ubf5Ok+7AvoWKRF16YLqUEWAU6hH7-H_R=r0Ow@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: dirk.brandewie@gmail.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, dirk.brandewie@gmail.com
 
-On Thursday, February 07, 2013 07:32:26 PM Viresh Kumar wrote:
-> On Thu, Feb 7, 2013 at 4:12 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > @Rafael: I wasn't sure if these would apply over my patches without any
-> > conflicts and so i applied them in my repo. Added my Acked-by's and fixed
-> > a minor thing in one of the patches (as mentioned in the other mail).
+On Thursday, February 07, 2013 06:52:20 PM Viresh Kumar wrote:
+> On 7 February 2013 18:35, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > I think they all make sense, so applied to linux-next.
 > >
-> > You can pick these from: dirk-patches
-> >
-> > http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/dirk-patches
+> > I would prefer not to make any more changes to cpufreq before v3.9 from now on,
+> > except for fixes and maybe the Drik's patchset that I kind of scheduled for
 > 
-> Hi Rafael,
-> 
-> I have got few sparse fixes for these patches. Updated the branch,
-> please pick it up again.
+> Dirk :)
 
-I haven't picked it up yet, so thanks a lot for that work!
+Yes, sorry Dirk.
+
+> > merging into bleeding-edge later today.
+> 
+> I probably have few more for you. Some sparse warnings to be fixed for
+> Dirks work and an dangling exynos patch which is waiting for your reply :)
+
+Which Exynos patch?
+
+BTW, there still are locking problems in linux-next.  Why do we need
+to take cpufreq_driver_lock() around driver->init() in cpufreq_add_dev(),
+in particular?
 
 Rafael
 
