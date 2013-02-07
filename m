@@ -1,40 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
-Date: Thu, 7 Feb 2013 19:32:26 +0530
-Message-ID: <CAOh2x=mJY+NcTMFNDVTWU92EDXBU_ixNeEur6-tj-XOTy46gRQ@mail.gmail.com>
-References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
-	<CAOh2x==-u_AuyG34t0cg6BURsj3rU4rwSgZaSbX4ULU7ztdxMg@mail.gmail.com>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 3/3] dts: Add cpufreq controller node for Exynos5440 SoC
+Date: Thu, 7 Feb 2013 10:33:07 -0800
+Message-ID: <CADGdYn44okjQHQo-W9Y-pFFHzO9-3HL-ZB36aVvfzMRp098ZtA@mail.gmail.com>
+References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
+	<1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
+	<CAG17yqTSxjoTDcGg+6rt+gnDyJBO7j3MBP_g5B=vYZqa1qaD+g@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=jV0bOnaaxXXK2DrlopBOdFdXm/I7K+/QM1ZTdaf6FfE=;
-        b=bitGaZHfhGB001sfR/6SzA0SzmCgRpDmZAWHBTdVj1gcWa9cSyEiQZzbpb0ZDnHE1M
-         jFuJQizJHGrordr2/SP2UqMCIeKiEWwyqjfgWCmUOHzqq+XeNTPzLV2luh7IjX8BMAn/
-         hIEgFKE9UtkX007P70pZM8nX3iLpDWsstbfly76vx/FS5+7nblMtfOq0tDZmmU/DnMnE
-         a9Z9vjQ6FYl3kmTmo6XNXo9vClBKo0h6rG2rfIbzg6lx271/XFOQGXNiMpQiVqEo0f91
-         84VvpHIXcWMWTVQPsutqN3+BXtE1UE69mccGu7IJcDmy35u0K/m/eQCVSUJs9gsww4TH
-         RyDg==
-In-Reply-To: <CAOh2x==-u_AuyG34t0cg6BURsj3rU4rwSgZaSbX4ULU7ztdxMg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+        h=mime-version:x-received:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        bh=ddMYjU7smxaOpc6DQqAgGtNLohhcpOzCk9y/lVDwDkU=;
+        b=1AHKMiYHW4dGjdBSp4MHiYzxxz7ryWQErTrZOmjyapBjfIan52xG/ofHFNTgQuQNmG
+         Eq/s3N9fuR5XCi7BXCbFqzs8MK55y5p6bN6A0MWiHZ0DAeIqe8Vz2tncieTo69iI41ei
+         LS6xW7GBn4uVZmeI2UHsEHyHFnEiOpqI8KUeNozmMisaus7kw3tpW2AQI8a85Za02QNp
+         +wbu1KM3H6MJ5XXHM8N/VqJ1mgfS1wYmHwS2ZRCAUpST5H7p+x7eg7OZPOGJ2uotGh7L
+         fCBLhM5Cu67574KDlx4955BiVI9R7Q0tKieCo78yfu6cLpg22nLuWdI+1Or9wgVV0J6J
+         DG5g==
+In-Reply-To: <CAG17yqTSxjoTDcGg+6rt+gnDyJBO7j3MBP_g5B=vYZqa1qaD+g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dirk.brandewie@gmail.com, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>
+To: Inderpal Singh <inderpal.singh@linaro.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
 
-On Thu, Feb 7, 2013 at 4:12 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> @Rafael: I wasn't sure if these would apply over my patches without any
-> conflicts and so i applied them in my repo. Added my Acked-by's and fixed
-> a minor thing in one of the patches (as mentioned in the other mail).
+On Wed, Feb 6, 2013 at 8:49 PM, Inderpal Singh
+<inderpal.singh@linaro.org> wrote:
+> On 7 February 2013 01:09, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+>> Add cpufreq controller device node for Exynos5440 SoC for passing
+>> parameters like controller base address, interrupt and cpufreq
+>> table.
+>>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>  arch/arm/boot/dts/exynos5440.dtsi |    9 +++++++++
+>>  1 file changed, 9 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+>> index 024269d..b20b517 100644
+>> --- a/arch/arm/boot/dts/exynos5440.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5440.dtsi
+>> @@ -63,6 +63,15 @@
+>>
+>>         };
+>>
+>> +       cpufreq@160000 {
+>> +               compatible = "samsung,exynos5440-cpufreq";
+>> +               reg = <0x160000 0x1000>;
+>> +               interrupts = <0 57 0>;
+>> +               cpufreq_tbl = < 1200000 1025000
+>> +                               1000000 975000
+>> +                               800000  925000 >;
+>> +       };
+>> +
 >
-> You can pick these from: dirk-patches
+> I think cpufreq_tbl should be part of the cpu node as it's the
+> property of the cpu.
+> Please refer cpufreq-cpu0 and spear-cpufreq.
+
+http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/15364.
+In this thread same discussion followed. I am not sure what is the
+correct way but looks like Kukjin concluded this with a timer node
+separate from the CPU code.
+
+Thanks,
+Amit Daniel
 >
-> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/dirk-patches
-
-Hi Rafael,
-
-I have got few sparse fixes for these patches. Updated the branch,
-please pick it up again.
+>>         serial@B0000 {
+>>                 compatible = "samsung,exynos4210-uart";
+>>                 reg = <0xB0000 0x1000>;
+>> --
+>> 1.7.10.4
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
