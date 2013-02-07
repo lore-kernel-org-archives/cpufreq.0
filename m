@@ -1,35 +1,57 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [BUG] cpufreq: sleeping function called from invalid context at kernel/workqueue.c:2811
-Date: Thu, 7 Feb 2013 16:00:17 +0530
-Message-ID: <CAOh2x=kVQ0JOgY7-1UTiz4nwSHkngQ74A0pF8TPDgqaciZnR5g@mail.gmail.com>
-References: <20130206202513.GA5626@thinkpad.lan>
+Subject: Re: [PATCH 2/5] cpufreq: Only call cpufreq_out_of_sync() with drivers
+ that implement cpufreq_driver.target()
+Date: Thu, 7 Feb 2013 16:03:16 +0530
+Message-ID: <CAOh2x=mjWxSM+WzReHgbnjHmft7yiP6OOf5p-kwpqh2Ykp_O0A@mail.gmail.com>
+References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com>
+	<1360170133-5066-4-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=BmIacpDkm2i1GWho2AFU/kEK3WF1W3FAWj8l6orlCq8=;
-        b=fejZk799sH2Dz2t8VO5zXcduWxzTh1NHozZ/VBcXGEtNfH4B8SV/WqkyJ4iew114Ap
-         dzwPKtLNCQURiGj9VBhhrU7o2jIMq6bMWhAtap0K3vFUrB2UMLXYLFNM3+zrguQdzkKw
-         xxunQp6pUF8yesYXy8iiag1qdrfCyslsD9b7jew0A7pk+riT5fEsT0MZBmdjrCihvfH1
-         84o/NJ+4mCMZJh8KkrdIhVDKdWexviibDM05fidy88OqS76MZpWXhbuW8YGytAOpmRUl
-         MB6D7nZONJDw7Le06RdUHBK8O/JIpnuVDH2FF7a1+ELxv0iGfJotqS+nmAUOAqjMTAzX
-         iJxg==
-In-Reply-To: <20130206202513.GA5626@thinkpad.lan>
+        bh=Z4jqRqwb1o/XCLMInSzsQERfamqA13OGBcwONWv+I58=;
+        b=rY9FCHLlC46bP7pt4l4wMFXgabHVJRRKCmvTS2WjFECPbwW8GrIdy9I2mvkAjgvmqz
+         Lu+iNy/gUWWIndVMwEB7XFrfmKcK1xCHIuqA2le6TBa5Av5lTaBs/DZ54qkLXearmr7k
+         CqR5jOWhOfrZhhZCtJ7uxSk+wjz10M8tW8bvAYbVyQPM4MA1aIqUOf5W5/OkNE9JemPz
+         BORUBvYuWysXFdFvyffBjGIrvTmOUaj/FkC3Dw+A/AwKx4igh0nJ6vZCZ451pZfv8mIs
+         JvtREN24o4Ku7W4cKWtYTurtDY578pYo3TId/qyDVXLwFvO86Cnx/xjQtCUOWhxPp9Zg
+         mZcA==
+In-Reply-To: <1360170133-5066-4-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Artem Savkov <artem.savkov@gmail.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: dirk.brandewie@gmail.com
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-On Thu, Feb 7, 2013 at 1:55 AM, Artem Savkov <artem.savkov@gmail.com> wrote:
-> I get the following BUG on suspend using systemd-sleep(this doesn't
-> happen with pm-suspend). This seems to be introduced by some of the
-> Viresh's patches.
+On Wed, Feb 6, 2013 at 10:32 PM,  <dirk.brandewie@gmail.com> wrote:
+> From: Dirk Brandewie <dirk.brandewie@gmail.com>
+>
+> Scaling drivers that implement cpufreq_driver.setpolicy() have
+> internal governors that do not signal changes via
+> cpufreq_notify_transition() so the frequncy in the policy will almost
+> certainly be different than the current frequncy.  Only call
+> cpufreq_out_of_sync() when the underlying driver implements
+> cpufreq_driver.target()
+>
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index bb45f93..0ba0344 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1798,7 +1798,7 @@ int cpufreq_update_policy(unsigned int cpu)
+>                         pr_debug("Driver did not initialize current freq");
+>                         data->cur = policy.cur;
+>                 } else {
+> -                       if (data->cur != policy.cur)
+> +                       if (data->cur != policy.cur && driver->target)
+>                                 cpufreq_out_of_sync(cpu, data->cur,
+>                                                                 policy.cur);
 
-Hi Artem,
-
-I have sent another patchset (and you are in --to), please test your platform
-with these and tell us the results.
+Looks much better now :)
