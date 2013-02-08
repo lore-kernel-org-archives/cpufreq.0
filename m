@@ -1,62 +1,110 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Fri, 8 Feb 2013 08:22:54 +0530
-Message-ID: <CAKohponxYknVgZQpubaCQ0d4fw_TJzxqavY0ssjR8Kyu988Y7g@mail.gmail.com>
-References: <cover.1360232293.git.viresh.kumar@linaro.org>
-	<20130207193944.GA4016@thinkpad.lan>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 2/3] cpufreq: exynos: Adding cpufreq driver for exynos5440
+Date: Thu, 7 Feb 2013 19:26:53 -0800
+Message-ID: <CADGdYn7FHa0Gnntpjs-K6T421=F0rZEhjyg-mkcsb_YDA6SZWQ@mail.gmail.com>
+References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
+	<1360179562-19950-2-git-send-email-amit.daniel@samsung.com>
+	<CAOh2x=kYM8n8XipvQ0-3H5f=B2TwAeFSa0DP=hy+SWQvPXJh6Q@mail.gmail.com>
+	<CADGdYn7+U1fvFdHkAikoH9P-owF0ZKk6ZSgrPfY+16S3vO=S3A@mail.gmail.com>
+	<CAKohpon1J+7ZQu+Nevz_KBXpVa2Kus--DxR3cOhb97o-scB0fw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130207193944.GA4016@thinkpad.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        bh=5jgDA0HjdQOzDl18H39EyVRvrvIgoudPAGh1y0MgJuI=;
+        b=mQ+d7MXWBf1l/rf068XMgJgrPZM7B+QQsYIlBhBuBWbkYCAVAA+iw19GoRH5WkBU54
+         Fq+0UmToaZgtho2ezcCEExRGalnNpBBgxpmGFk4RI7wzHPGd0hXpUS0CPS3qTikO/nmm
+         3RU09oXWXiNCCVuUs0Ib6cH640lAMF32o3ML8RgNo0TuWF8CJEhPYBY/cgioZUM8DPND
+         WJ9Zj8ZZXMAm79VDPek9k1bdnC+dIvZr3qBGEkzzUeeD/LJlveaaGTcssVDcdiK/W/wZ
+         SX2fDTF4H1Ty0m2xWHOa0ZmDgqAygDYAGVZHGawjoqZHOOlHfajHZhXSGKvKrLeABDfp
+         x6Bw==
+In-Reply-To: <CAKohpon1J+7ZQu+Nevz_KBXpVa2Kus--DxR3cOhb97o-scB0fw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Artem Savkov <artem.savkov@gmail.com>
-Cc: rjw@sisk.pl, valdis.kletnieks@vt.edu, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>
 
-On 8 February 2013 01:09, Artem Savkov <artem.savkov@gmail.com> wrote:
-> Tested out linux-pm.git/linux-next with this patches pulled. It seems
-> that my systemd-sleep issue is fixed, however there is a new 'sleeping
-> in invalid context' bug during boot:
+On Thu, Feb 7, 2013 at 6:42 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 8 February 2013 00:38, amit kachhap <amit.kachhap@gmail.com> wrote:
+>> Hi Viresh,
+>>
+>> Thanks for the detailed review. Will try to handle them in the next version,
 >
-> [   12.736484] BUG: sleeping function called from invalid context at mm/slub.c:925
-> [   12.739727] in_atomic(): 1, irqs_disabled(): 1, pid: 1799, name: systemd-modules
-> [   12.742961] 2 locks held by systemd-modules/1799:
-> [   12.746153]  #0:  (subsys mutex#3){......}, at: [<c13f4056>] subsys_interface_register+0x36/0xb0
-> [   12.749499]  #1:  (cpufreq_driver_lock){......}, at: [<c14ba53b>] cpufreq_add_dev+0x22b/0x3d0
-> [   12.752865] Pid: 1799, comm: systemd-modules Not tainted 3.8.0-rc6+ #1
-> [   12.756175] Call Trace:
-> [   12.759538]  [<c1068150>] __might_sleep+0xe0/0x100
-> [   12.762156]  [<c112a481>] kmem_cache_alloc_trace+0xb1/0x150
-> [   12.765432]  [<f804e653>] ? acpi_cpufreq_cpu_init+0x73/0x5c0 [acpi_cpufreq]
-> [   12.768780]  [<f804e653>] acpi_cpufreq_cpu_init+0x73/0x5c0 [acpi_cpufreq]
-> [   12.772161]  [<c14ba53b>] ? cpufreq_add_dev+0x22b/0x3d0
-> [   12.775549]  [<c1695af7>] ? _raw_spin_lock_irqsave+0x77/0x90
-> [   12.778932]  [<c14ba53b>] ? cpufreq_add_dev+0x22b/0x3d0
-> [   12.782307]  [<c14ba548>] cpufreq_add_dev+0x238/0x3d0
+> np. I haven't seen reply to few questions, you missed them or accept them.
 
-Can you please try out this:
+Many of your comments were apt so I agreed to most of them :)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 819aa33..a77d0bc 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -919,17 +919,14 @@ static int cpufreq_add_dev(struct device *dev,
-struct subsys_interface *sif)
-        init_completion(&policy->kobj_unregister);
-        INIT_WORK(&policy->update, handle_update);
+>
+> General tip: Leave a blank line before and after your comment, it makes it more
+> readable. :)
+>
+>> On Thu, Feb 7, 2013 at 3:17 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On Thu, Feb 7, 2013 at 1:09 AM, Amit Daniel Kachhap
+>>>> +Required properties:
+>>>> +- interrupts: Interrupt to know the completion of cpu frequency change.
+>>>> +- cpufreq_tbl: Table of frequencies and voltage CPU could be transitioned into,
+>>>
+>>> This has to be "operating-points" as in cpufreq-cpu0 driver.
+>> Yes I will check if opp table is beneficial. In my case it is just one
+>> time parsing of cpufreq table and those values(freq, volt) are not
+>> used later so did not use opp libraries.
+>
+> Its one time parsing for everybody, nobody do it twice :)
 
--       spin_lock_irqsave(&cpufreq_driver_lock, flags);
-        /* call driver. From then on the cpufreq must be able
-         * to accept all calls to ->verify and ->setpolicy for this CPU
-         */
-        ret = driver->init(policy);
-        if (ret) {
-                pr_debug("initialization failed\n");
--               spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-                goto err_set_policy_cpu;
-        }
--       spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+By every time I mean like using the opp table and getting voltage from
+there and then doing set_voltage. For me if I use opp table it is just
+once during initializations so i didn't use it.
 
-        /* related cpus should atleast have policy->cpus */
-        cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+>
+>>>> +       for (old_index = 0;
+>>>> +               freq_table[old_index].frequency != CPUFREQ_TABLE_END;
+>>>> +               old_index++)
+>>>> +               if (freq_table[old_index].frequency == freqs.old)
+>>>> +                       break;
+>>>> +
+>>>> +       if (freq_table[old_index].frequency == CPUFREQ_TABLE_END) {
+>>>
+>>> How can this be true?
+>> This is error scenario
+>
+> We have given cpufreq core a valid table and it has to set frequency from
+> this table only. How can cpu have any other freq here ? And you have done
+> something similar in your init() too, where you check if cpu has freq from the
+> table or not.
+
+Yes agreed this is repetition.
+
+>
+>>>> +       dvfs_info = kzalloc(sizeof(struct exynos_dvfs_data), GFP_KERNEL);
+>>>
+>>> sizeof(*dvfs_info) ?? why don't make it static too, as you have other
+>>> stuff too.. ?
+>>> The better option for single image solution to allocate everything
+>>> dynamically, so that
+>>> unused drivers don't occupy any space.
+>
+> ?
+>
+>>>> +       if ((len == 0) || (len / 2 > CPUFREQ_LEVEL_END)) {
+>>>
+>>> I really didn't like this limit you have put at the number of dvfs
+>>> points. Better
+>>> would be to use:
+>
+>>>> +       dvfs_info->dvfs_init = true;
+>>>
+>>> why do you need this ?
+>> This is added to synchronize the interrupts.
+>
+> How? You are setting it once in init() and not touching it afterwards. :)
+
+Yes but during init also if interrupts starts arriving before complete
+initialization so to protect that case it is there. I suppose there
+are other ways. Will check them
+
+Thanks,
+Amit Daniel
