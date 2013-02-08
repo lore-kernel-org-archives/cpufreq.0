@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 48341] BUG: using smp_processor_id in preemptible powernow_k8
-Date: Fri,  8 Feb 2013 17:41:01 +0000 (UTC)
-Message-ID: <20130208174101.095E211FF04@bugzilla.kernel.org>
+Date: Fri,  8 Feb 2013 17:41:12 +0000 (UTC)
+Message-ID: <20130208174112.3509A11FF04@bugzilla.kernel.org>
 References: <bug-48341-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,9 +19,7 @@ Len Brown <lenb@kernel.org> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|RESOLVED                    |REOPENED
-                 CC|                            |lenb@kernel.org
-         Resolution|CODE_FIX                    |
+             Status|REOPENED                    |NEEDINFO
 
 
 
