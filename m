@@ -1,45 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] cpufreq: sleeping function called from invalid context at kernel/workqueue.c:2811
-Date: Fri, 08 Feb 2013 14:23:54 +0100
-Message-ID: <2280013.XqXuhp58Wi@vostro.rjw.lan>
-References: <20130206202513.GA5626@thinkpad.lan> <1873989.qC1mdEKIl9@vostro.rjw.lan> <CAKohpokvXoBEHqb+axzMJhB3K02bZEzPGF1RO6pyJwsC2Y-8cQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
+Date: Fri, 8 Feb 2013 20:06:52 +0530
+Message-ID: <CAKohpokp4YrxKHibewdt+3-WF7P2Fa_bvRidHpjd9SpsT6bPpw@mail.gmail.com>
+References: <cover.1360232293.git.viresh.kumar@linaro.org>
+	<2896238.eRV3G7kyl2@vostro.rjw.lan>
+	<CAKohpomrLAQiP58+OVBrm3jb8rd5DK3z+7_kyB_MsKM7UyyWRw@mail.gmail.com>
+	<2130803.VQA31hf2jE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokvXoBEHqb+axzMJhB3K02bZEzPGF1RO6pyJwsC2Y-8cQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2130803.VQA31hf2jE@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Artem Savkov <artem.savkov@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-On Friday, February 08, 2013 11:24:39 AM Viresh Kumar wrote:
-> On 7 February 2013 06:11, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Subject: cpufreq: Move sysfs_remove_link() from under a spinlock
-> >
-> > Commit 73bf0fc "cpufreq: Don't remove sysfs link for policy->cpu"
-> > attempted to fix a bug in __cpufreq_remove_dev() by avoiding to
-> > remove the link to the "cpufreq" directory for policy->cpu, but it
-> > rearranged the code in such a way that sysfs_remove_link() ended up
-> > under a spinlock, which caused complaints about sleeping in atomic
-> > context to be emitted into the kernel log during system suspend.
-> >
-> > To fix this, revert commit 73bf0fc partially and move the
-> > sysfs_remove_link() in question to a separate block executed for
-> > cpus > 1 outside of the spinlock.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> BTW, i have dropped this patch completely as i got another lock fixing
-> patch :)
+On 8 February 2013 18:02, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> So as I said, please rework the fixes on top of linux-pm.git/pm-cpufreq.
 
-Sure, I suppose you can get a better fix. :-)
+I already did. Please check for-rafael branch
 
-Thanks,
-Rafael
+> Moreover, I'd very much prefer it if you fixed the problems introduced by
+> b8eed8a "cpufreq: Simplify __cpufreq_remove_dev()" separately and *then* any
+> other locking problems you're seeing in the code, although people are not
+> reporting them.
+>
+> You seem to have a clear picture of how the code should work now, so that
+> won't be a big trouble I guess.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+For me all problems are fixed in the current code. :)
