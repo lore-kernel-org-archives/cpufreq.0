@@ -1,26 +1,27 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 52941] CPU recognition bug for AMD
-Date: Fri,  8 Feb 2013 17:30:28 +0000 (UTC)
-Message-ID: <20130208173028.BAEF511FB5B@bugzilla.kernel.org>
-References: <bug-52941-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 48341] BUG: using smp_processor_id in preemptible powernow_k8
+Date: Fri,  8 Feb 2013 17:41:01 +0000 (UTC)
+Message-ID: <20130208174101.095E211FF04@bugzilla.kernel.org>
+References: <bug-48341-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-52941-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-48341-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=52941
+https://bugzilla.kernel.org/show_bug.cgi?id=48341
 
 
 Len Brown <lenb@kernel.org> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
+             Status|RESOLVED                    |REOPENED
                  CC|                            |lenb@kernel.org
+         Resolution|CODE_FIX                    |
 
 
 
