@@ -1,32 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug
- 51741]=?UTF-8?Q?=20powernow=2Dk8=20calls=20for=20acpi=2Dcpufreq=20but=20doesn=E2=80=99t=20warn=20if=20it=E2=80=99s=20not=20available?=
-Date: Fri,  8 Feb 2013 18:32:43 +0000 (UTC)
-Message-ID: <20130208183243.BDCA611FE9A@bugzilla.kernel.org>
-References: <bug-51741-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
+Date: Fri, 08 Feb 2013 21:02:37 +0100
+Message-ID: <1653071.l2kN4Hy2U6@vostro.rjw.lan>
+References: <cover.1360232293.git.viresh.kumar@linaro.org> <2130803.VQA31hf2jE@vostro.rjw.lan> <CAKohpokp4YrxKHibewdt+3-WF7P2Fa_bvRidHpjd9SpsT6bPpw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-51741-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <CAKohpokp4YrxKHibewdt+3-WF7P2Fa_bvRidHpjd9SpsT6bPpw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=51741
+On Friday, February 08, 2013 08:06:52 PM Viresh Kumar wrote:
+> On 8 February 2013 18:02, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > So as I said, please rework the fixes on top of linux-pm.git/pm-cpufreq.
+> 
+> I already did. Please check for-rafael branch
 
+Cool.  This is the one I'm supposed to apply, then?
 
-Len Brown <lenb@kernel.org> changed:
+> > Moreover, I'd very much prefer it if you fixed the problems introduced by
+> > b8eed8a "cpufreq: Simplify __cpufreq_remove_dev()" separately and *then* any
+> > other locking problems you're seeing in the code, although people are not
+> > reporting them.
+> >
+> > You seem to have a clear picture of how the code should work now, so that
+> > won't be a big trouble I guess.
+> 
+> For me all problems are fixed in the current code. :)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
-                 CC|                            |lenb@kernel.org
+Sounds great. :-)
 
-
+Thanks,
+Rafael
 
 
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
