@@ -1,112 +1,56 @@
-From: Artem Savkov <artem.savkov@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Fri, 8 Feb 2013 10:27:36 +0400
-Message-ID: <20130208062736.GA5563@thinkpad.lan>
-References: <cover.1360232293.git.viresh.kumar@linaro.org>
- <2158181.aoVXdpLJe2@vostro.rjw.lan>
- <CAKohponLrVG+ubf5Ok+7AvoWKRF16YLqUEWAU6hH7-H_R=r0Ow@mail.gmail.com>
- <1947746.IyFppZQEx8@vostro.rjw.lan>
- <CAKohpony25Ct94QyCOEmoNVS6Xc5O8=0Cnc6NxLxTP5Y-E1XJg@mail.gmail.com>
+Date: Fri, 08 Feb 2013 13:32:39 +0100
+Message-ID: <2130803.VQA31hf2jE@vostro.rjw.lan>
+References: <cover.1360232293.git.viresh.kumar@linaro.org> <2896238.eRV3G7kyl2@vostro.rjw.lan> <CAKohpomrLAQiP58+OVBrm3jb8rd5DK3z+7_kyB_MsKM7UyyWRw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:date:from:to:cc:subject:message-id:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        bh=WjJkuJ10ShESGxuFhmdtL2XzgPL72/qEJ1fcgqSToEc=;
-        b=iS6vE7kjQf96rFs41YVZPMYpsYSL3pbiKAkgbaeKxwkVMrA4uEz2/QAEiI10o3kGVl
-         O8gXb9S0H29GR03lhlGR064ig/0Le38sSgKDcPVAInrSUjnjT0Vjd+AtJdu7J/sha5Yk
-         sNjKzrsWgtpPan7oTmLnktLmieruMPzGUxiEBOmLzx6ynTMc0FZmfnklGsV0c2qq4i8A
-         oJ96abIGifJvdNKETP7LF+QjRYpw8XQzbHJEgqetM7ihDnHecG9LQdI0OlurycQ6ueP9
-         wvM+E6WiCCvOde6QYQGiE9/YrsmSfTZ/ci/lCdvH70ZShf47KEeM20jjv48GGpopQDI+
-         hDMg==
-Content-Disposition: inline
-In-Reply-To: <CAKohpony25Ct94QyCOEmoNVS6Xc5O8=0Cnc6NxLxTP5Y-E1XJg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomrLAQiP58+OVBrm3jb8rd5DK3z+7_kyB_MsKM7UyyWRw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, valdis.kletnieks@vt.edu, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, dirk.brandewie@gmail.com
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-On Fri, Feb 08, 2013 at 10:39:13AM +0530, Viresh Kumar wrote:
-> On 8 February 2013 04:37, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > BTW, there still are locking problems in linux-next.  Why do we need
-> > to take cpufreq_driver_lock() around driver->init() in cpufreq_add_dev(),
-> > in particular?
-> I thought a bit more and realized there is no such limitation on
-> cpufreq_driver->ops about calling routines which can sleep. And thus
-> we shoudln't
-> have locks around any of these. I have got a patch for it, that i
-> would fold-back into
-> the original patch that introduced locking fixes (attached too for testing):
-Tested this patch on top of linux-pm.git/bleeding-edge
-Now everything seems to be alright.
+On Friday, February 08, 2013 08:20:55 AM Viresh Kumar wrote:
+> On 8 February 2013 05:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > I should have done that before, sorry about it.
+> >
+> > Can you please rework this series on top of linux-pm.git/pm-cpufreq and
+> > try to avoid introducing new issues this time?
+> 
+> Even i want to do that, but when i fetch your repo i don't see all applied
+> patches in this branch.
 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Fri, 8 Feb 2013 10:35:31 +0530
-> Subject: [PATCH] cpufreq: Remove unnecessary locking
-> 
-> I have placed some locks intentionally around calls to driver->ops (init/exit),
-> which look to be wrong as these calls can call routines that potentially sleep.
-> 
-> Lets remove these locks.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 7 -------
->  1 file changed, 7 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 5d8a422..04aab05 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -795,10 +795,8 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
-> 
->  	if (ret) {
->  		pr_debug("setting policy failed\n");
-> -		spin_lock_irqsave(&cpufreq_driver_lock, flags);
->  		if (driver->exit)
->  			driver->exit(policy);
-> -		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
->  	}
->  	return ret;
-> 
-> @@ -920,17 +918,14 @@ static int cpufreq_add_dev(struct device *dev,
-> struct subsys_interface *sif)
->  	init_completion(&policy->kobj_unregister);
->  	INIT_WORK(&policy->update, handle_update);
-> 
-> -	spin_lock_irqsave(&cpufreq_driver_lock, flags);
->  	/* call driver. From then on the cpufreq must be able
->  	 * to accept all calls to ->verify and ->setpolicy for this CPU
->  	 */
->  	ret = driver->init(policy);
->  	if (ret) {
->  		pr_debug("initialization failed\n");
-> -		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
->  		goto err_set_policy_cpu;
->  	}
-> -	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
->  	/* related cpus should atleast have policy->cpus */
->  	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
-> @@ -1100,10 +1095,8 @@ static int __cpufreq_remove_dev(struct device
-> *dev, struct subsys_interface *sif
->  		wait_for_completion(cmp);
->  		pr_debug("wait complete\n");
-> 
-> -		spin_lock_irqsave(&cpufreq_driver_lock, flags);
->  		if (driver->exit)
->  			driver->exit(data);
-> -		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
->  		free_cpumask_var(data->related_cpus);
->  		free_cpumask_var(data->cpus);
+The top-most commit in that branch is
 
-Tested-by: Artem Savkov <artem.savkov@gmail.com>
+commit 73bf0fc2b03d1f4fdada0ec430dc20bfb089cfd5
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Tue Feb 5 22:21:14 2013 +0100
+
+    cpufreq: Don't remove sysfs link for policy->cpu
+
+because that's when the locking problems were first reported and I stopped
+putting new commits into that branch.  And since the locking problems were
+introduced by b8eed8a "cpufreq: Simplify __cpufreq_remove_dev()" I want them
+to be fixed on top of pm-cpufreq rather than on top of more new stuff that
+very well may introduce *more* problems.
+
+So as I said, please rework the fixes on top of linux-pm.git/pm-cpufreq.
+
+Moreover, I'd very much prefer it if you fixed the problems introduced by
+b8eed8a "cpufreq: Simplify __cpufreq_remove_dev()" separately and *then* any
+other locking problems you're seeing in the code, although people are not
+reporting them.
+
+You seem to have a clear picture of how the code should work now, so that
+won't be a big trouble I guess.
+
+Thanks,
+Rafael
+
 
 -- 
-Kind regards,
-Artem
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
