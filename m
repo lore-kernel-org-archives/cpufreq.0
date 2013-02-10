@@ -1,57 +1,105 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Sat, 09 Feb 2013 12:44:23 +0100
-Message-ID: <4156001.9630YezyCK@vostro.rjw.lan>
-References: <cover.1360232293.git.viresh.kumar@linaro.org> <51159391.2020002@gmail.com> <CAKohpomSSKRmhmmYk5dn4d84yk9qSs0U-9S=W=CT0yjjzJJ3=g@mail.gmail.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH 4/4] cpufreq: governor: Implement per policy instances
+ of governors
+Date: Sun, 10 Feb 2013 22:14:15 +0100
+Message-ID: <51180DA7.8040203@gmail.com>
+References: <cover.1359976493.git.viresh.kumar@linaro.org> <b16436f3b3eba648500a287d552efbbf48bcc9bb.1359976493.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomSSKRmhmmYk5dn4d84yk9qSs0U-9S=W=CT0yjjzJJ3=g@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=35JqrWd6dG2qg63dCCth3AW0k7kwEj2z+geIRNwdwo8=;
+        b=JnlqIPiq+I5Tjx5/oWAsyktUx/tb/bYS40ft+fsgeb+FE+aj+qZem4aqYQUcgdU2KV
+         DJ8b9uMZUuXIyo6nQ6J4WbrK4+//u8PjuZ9cvR2Iudpcjiwfys6VrHhArTznfRqdYwOa
+         qdpp5IATJWtdtFdIaWJuq0MO8yRRBVhcMvAx2t7vQyGVyQpeZxf9zoJSQlxGaVqIdcBL
+         0Mzlg93tToiEIqzEAS408g+1kY50jjztIXKySLf+Wz833OaC9eAdNv3phqNIbXIe8A9S
+         BN+Cz9BdHYjtji6A52mhUug25COSOrinN0hgG5b/wo+/1TUPqtsv/dm7vk8a916+3ZnI
+         7KLg==
+In-Reply-To: <b16436f3b3eba648500a287d552efbbf48bcc9bb.1359976493.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Nathan Zimmer <nzimmer@sgi.com>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-On Saturday, February 09, 2013 07:40:26 AM Viresh Kumar wrote:
-> On 9 February 2013 05:38, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
-> > On 02/08/2013 03:56 PM, Rafael J. Wysocki wrote:
-> >>
-> >> On Friday, February 08, 2013 09:02:37 PM Rafael J. Wysocki wrote:
-> >>>
-> >>> On Friday, February 08, 2013 08:06:52 PM Viresh Kumar wrote:
-> >>>>
-> >>>> On 8 February 2013 18:02, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>>>>
-> >>>>> So as I said, please rework the fixes on top of
-> >>>>> linux-pm.git/pm-cpufreq.
-> >>>>
-> >>>>
-> >>>> I already did. Please check for-rafael branch
-> >>>
-> >>>
-> >>> Cool.  This is the one I'm supposed to apply, then?
-> >>
-> >>
-> >> OK, applied to bleeding-edge.  Hopefully it will be build-tested over the
-> >> weekend and I can move it to linux-next.
-> >>
-> >> I dropped the rwlock/RCU patches from Nathan, though, because I had some
-> >> doubts about the correctness of the RCU one and the rwlock one alone would
-> >> conflict with your further changes.
+Hi,
+
+On 02/04/2013 12:38 PM, Viresh Kumar wrote:
+> Currently, there can't be multiple instances of single governor_type. If we have
+> a multi-package system, where we have multiple instances of struct policy (per
+> package), we can't have multiple instances of same governor. i.e. We can't have
+> multiple instances of ondemand governor for multiple packages.
 > 
-> As soon as i read Rafael's mail, i realized Dirk's patch might be broken
-> and immediately i saw your mail :)
+> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+> governor-name/. Which again reflects that there can be only one instance of a
+> governor_type in the system.
 > 
-> @Rafael: Sorry for not reviewing Nathan's patch well. I didn't knew much about
-> RCU then. I am going through its lwn articles now ;)
+> This is a bottleneck for multicluster system, where we want different packages
+> to use same governor type, but with different tunables.
+> 
+> This patch uses the infrastructure provided by earlier patch and implements
+> init/exit routines for ondemand and conservative governors.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c              |   4 -
+>  drivers/cpufreq/cpufreq_conservative.c | 142 +++++++++++++----------
+>  drivers/cpufreq/cpufreq_governor.c     | 138 +++++++++++++---------
+>  drivers/cpufreq/cpufreq_governor.h     |  42 ++++---
+>  drivers/cpufreq/cpufreq_ondemand.c     | 205 +++++++++++++++++++--------------
+>  include/linux/cpufreq.h                |  19 +--
+>  6 files changed, 314 insertions(+), 236 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 1ae78d4..7aacfbf 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1551,9 +1551,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  						policy->cpu, event);
+>  	ret = policy->governor->governor(policy, event);
+>  
+> -	if (!policy->governor->initialized && (event == CPUFREQ_GOV_START))
+> -		policy->governor->initialized = 1;
+> -
+>  	/* we keep one module reference alive for
+>  			each CPU governed by this CPU */
+>  	if ((event != CPUFREQ_GOV_START) || ret)
+> @@ -1577,7 +1574,6 @@ int cpufreq_register_governor(struct cpufreq_governor *governor)
+>  
+>  	mutex_lock(&cpufreq_governor_mutex);
+>  
+> -	governor->initialized = 0;
+>  	err = -EBUSY;
+>  	if (__find_governor(governor->name) == NULL) {
+>  		err = 0;
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+[...]
+> +static int cs_init(struct dbs_data *dbs_data)
+> +{
+> +	struct cs_dbs_tuners *tuners;
+> +
+> +	tuners = kzalloc(sizeof(struct cs_dbs_tuners), GFP_KERNEL);
+> +	if (!tuners) {
+> +		pr_err("%s: kzalloc failed\n", __func__);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	tuners->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
+> +	tuners->down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD;
+> +	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
+> +	tuners->ignore_nice = 0;
+> +	tuners->freq_step = 5;
+> +
+> +	dbs_data->tuners = tuners;
 
-No biggie, I overlooked that myself first time.
+dbs_data->tuners is never freed, which means there is a memory leak
+across CPUFREQ_GOV_POLICY_INIT and CPUFREQ_GOV_POLICY_EXIT events.
 
-Thanks,
-Rafael
+The same goes for the ondemand governor.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Francesco
