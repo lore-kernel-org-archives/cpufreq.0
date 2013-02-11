@@ -1,108 +1,147 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: dereference cpufreq_driver after check
-Date: Mon, 11 Feb 2013 17:29:54 +0200
-Message-ID: <1360596594.14581.19.camel@smile>
-References: <1360593460-1575-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <CAKohpom30wqCnxdf-Bp1NvaD1ZyOiNqrupvdxg2xnwcviyM8XA@mail.gmail.com>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: RE: [PATCH v2 linux-next 2/2] cpufreq: Convert the
+ cpufreq_driver_lock to use the rcu
+Date: Mon, 11 Feb 2013 17:13:30 +0000
+Message-ID: <74F10842A85F514CA8D8C487E74474BB2D30DC9E@P-EXMB1-DC21.corp.sgi.com>
+References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
+ <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
+ <1360116290-23849-3-git-send-email-nzimmer@sgi.com>,<16615226.2vj4EkkIZJ@vostro.rjw.lan>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom30wqCnxdf-Bp1NvaD1ZyOiNqrupvdxg2xnwcviyM8XA@mail.gmail.com>
+In-Reply-To: <16615226.2vj4EkkIZJ@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Nathan Zimmer <nzimmer@sgi.com>, Fengguang Wu <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Mon, 2013-02-11 at 20:43 +0530, Viresh Kumar wrote: 
-> On 11 February 2013 20:07, Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > Commit e1ee7c86 ("cpufreq: Convert the cpufreq_driver_lock to use RCU")
-> > introduces an RCU storage for cpufreq_driver. On Intel Medfield board we are
-> > getting a warning during kernel boot.
-> >
-> > [    6.074511] ===============================
-> > [    6.078634] [ INFO: suspicious RCU usage. ]
-> > [    6.082930] 3.8.0-rc6-next-20130208-00036-g83eb4b6-dirty #1058 Not tainted
-> > [    6.089748] -------------------------------
-> > [    6.093926] drivers/cpufreq/cpufreq.c:1766 suspicious rcu_dereference_check() usage!
-> > [    6.101651]
-> > [    6.101651] other info that might help us debug this:
-> > [    6.101651]
-> > [    6.109659]
-> > [    6.109659] rcu_scheduler_active = 1, debug_locks = 0
-> > [    6.116215] no locks held by swapper/0/1.
-> > [    6.120167]
-> > [    6.120167] stack backtrace:
-> > [    6.124516] Pid: 1, comm: swapper/0 Not tainted 3.8.0-rc6-next-20130208-00036-g83eb4b6-dirty #1058
-> > [    6.133470] Call Trace:
-> > [    6.135917]  [<c1067669>] lockdep_rcu_suspicious+0xd4/0xdd
-> > [    6.141390]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.146604]  [<c1344879>] cpufreq_update_policy+0x71/0x1d7
-> > [    6.152081]  [<c1069d2f>] ? __lock_acquire+0xca4/0xcd4
-> > [    6.157210]  [<c1067ef0>] ? mark_lock+0x1f/0x209
-> > [    6.161820]  [<c1068137>] ? mark_held_locks+0x5d/0x7d
-> > [    6.166862]  [<c150c209>] ? __mutex_lock_common+0x2e0/0x344
-> > [    6.172425]  [<c106825c>] ? trace_hardirqs_on_caller+0x105/0x195
-> > [    6.178425]  [<c150c3ae>] ? __mutex_unlock_slowpath+0xe6/0x100
-> > [    6.184250]  [<c106825c>] ? trace_hardirqs_on_caller+0x105/0x195
-> > [    6.190248]  [<c10682f7>] ? trace_hardirqs_on+0xb/0xd
-> > [    6.195291]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.200506]  [<c150c3d0>] ? mutex_unlock+0x8/0xa
-> > [    6.205114]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.210331]  [<c181d68a>] cpufreq_stats_init+0x48/0xbd
-> > [    6.215461]  [<c181d68a>] ? cpufreq_stats_init+0x48/0xbd
-> > [    6.220763]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.225981]  [<c1001085>] do_one_initcall+0x6c/0x10b
-> > [    6.230938]  [<c17faa52>] ? kernel_init_freeable+0xf3/0x18e
-> > [    6.236501]  [<c17faa68>] kernel_init_freeable+0x109/0x18e
-> > [    6.241978]  [<c14fa2b4>] kernel_init+0x8/0xb4
-> > [    6.246412]  [<c150e937>] ret_from_kernel_thread+0x1b/0x28
-> > [    6.251889]  [<c14fa2ac>] ? rest_init+0x108/0x108
-> >
-> > The patch moves dereferencing part after policy check.
-> >
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > ---
-> >  drivers/cpufreq/cpufreq.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 79511ab..7d84b205 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1763,13 +1763,15 @@ int cpufreq_update_policy(unsigned int cpu)
-> >         struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
-> >         struct cpufreq_policy policy;
-> >         int ret;
-> > -       struct cpufreq_driver *driver = rcu_dereference(cpufreq_driver);
-> > +       struct cpufreq_driver *driver;
-> >
-> >         if (!data) {
-> >                 ret = -ENODEV;
-> >                 goto no_policy;
-> >         }
-> >
-> > +       driver = rcu_dereference(cpufreq_driver);
-> > +
-> 
-> Hi Andy,
-> 
-> I don't quite understand why this warning came at the first place and how it
-> got fixed :(
+There are some spots that I need to give a much deeper review, cpufreq_register_driver for example.
 
-I didn't do deep investigation, I think the cpufreq policy is not
-defined for Intel Medfield on that stage during boot. However, it sounds
-strange, and probably David Woodhouse or someone who knows this area
-better could explain that.
-
-> Another thing, rcu patch is already dropped by Rafael for 3.9 and isn't there in
-> linux-next.
-
-Just rebased against recent linux-next. Indeed, there is no such thingy
-anymore.
+But I believe 
+> @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+>  {
+>       if (!sysfs)
+>               kobject_put(&data->kobj);
+> -     module_put(cpufreq_driver->owner);
+> +     module_put(rcu_dereference(cpufreq_driver)->owner);
+>  }
+would be ok.  In the documentation whatisRCU.txt they give a very similar example.
 
 
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+
+________________________________________
+From: Rafael J. Wysocki [rjw@sisk.pl]
+Sent: Thursday, February 07, 2013 5:29 PM
+To: Nathan Zimmer
+Cc: viresh.kumar@linaro.org; linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org; cpufreq@vger.kernel.org
+Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
+
+On Tuesday, February 05, 2013 08:04:50 PM Nathan Zimmer wrote:
+> In general rwlocks are discourged so we are moving it to use the rcu instead.
+>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
+>  1 file changed, 96 insertions(+), 77 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index ef25244..a04ceb9 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -39,13 +39,13 @@
+>   * level driver of CPUFreq support, and its spinlock. This lock
+>   * also protects the cpufreq_cpu_data array.
+>   */
+> -static struct cpufreq_driver *cpufreq_driver;
+> +static struct cpufreq_driver __rcu *cpufreq_driver;
+>  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  /* This one keeps track of the previously set governor of a removed CPU */
+>  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+> -static DEFINE_RWLOCK(cpufreq_driver_lock);
+> +static DEFINE_SPINLOCK(cpufreq_driver_lock);
+>
+>  /*
+>   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
+> @@ -143,21 +143,20 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
+>  static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+>  {
+>       struct cpufreq_policy *data;
+> -     unsigned long flags;
+> +     struct cpufreq_driver *driver;
+>
+>       if (cpu >= nr_cpu_ids)
+>               goto err_out;
+>
+>       /* get the cpufreq driver */
+> -     read_lock_irqsave(&cpufreq_driver_lock, flags);
+> -
+> -     if (!cpufreq_driver)
+> +     rcu_read_lock();
+> +     driver = rcu_dereference(cpufreq_driver);
+> +     if (!driver)
+>               goto err_out_unlock;
+>
+> -     if (!try_module_get(cpufreq_driver->owner))
+> +     if (!try_module_get(driver->owner))
+>               goto err_out_unlock;
+>
+> -
+>       /* get the CPU */
+>       data = per_cpu(cpufreq_cpu_data, cpu);
+>
+> @@ -167,13 +166,13 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+>       if (!sysfs && !kobject_get(&data->kobj))
+>               goto err_out_put_module;
+>
+> -     read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +     rcu_read_unlock();
+>       return data;
+>
+>  err_out_put_module:
+> -     module_put(cpufreq_driver->owner);
+> +     module_put(driver->owner);
+>  err_out_unlock:
+> -     read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +     rcu_read_unlock();
+>  err_out:
+>       return NULL;
+>  }
+> @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+>  {
+>       if (!sysfs)
+>               kobject_put(&data->kobj);
+> -     module_put(cpufreq_driver->owner);
+> +     module_put(rcu_dereference(cpufreq_driver)->owner);
+>  }
+>
+>  void cpufreq_cpu_put(struct cpufreq_policy *data)
+> @@ -267,13 +266,16 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+>  void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
+>  {
+>       struct cpufreq_policy *policy;
+> +     struct cpufreq_driver *driver;
+>
+>       BUG_ON(irqs_disabled());
+>
+>       if (cpufreq_disabled())
+>               return;
+>
+> -     freqs->flags = cpufreq_driver->flags;
+> +     driver = rcu_dereference(cpufreq_driver);
+
+Pardon me for not asking that question earlier, but what sense does it make
+to use rcu_dereference() outside of an rcu_read_lock()/rcu_read_unlock()
+scope?  Here and in the other places?
+
+Rafael
+
+
+--
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
