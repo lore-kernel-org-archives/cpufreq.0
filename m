@@ -1,77 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
-Date: Wed, 13 Feb 2013 14:20:35 +0100
-Message-ID: <1651157.ApO0q9O4LF@vostro.rjw.lan>
-References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <1953281.cgEiiBGo0f@vostro.rjw.lan> <20130212155954.GP2666@linux.vnet.ibm.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
+Date: Wed, 13 Feb 2013 08:38:04 -0800
+Message-ID: <511BC16C.7040807@gmail.com>
+References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com> <20130212214949.GA1003@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130212155954.GP2666@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:message-id:date:from:user-agent:mime-version:to:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=W4gfkFpAdb0DIPVQguyyhQHvrFVEDBB5zeB68e5dDZY=;
+        b=gTfSSEcQOhMHu24oBYvJhC2fUy7jL2OjMpCwiFton32cQP7I9bgvrCoBkNg0TMJ5YC
+         v2bSKS5mca1RPPgrTbUxhV8gGQsfwScZe78wYDqjyDu8Tc4cLm/iKU/Dsf/bpm6St+35
+         zLKPIa0No7PmibrsWCq/kyIr+jsXTQkIt+bSJPSqoL1ReKjC8LcC69MyKgEDm3wcEYdu
+         rocxbfb0cWkGwiELcofgINutWklFKCHCpgfkA9kmZFOpB6m+Q5IZxmUi0iwWTMThFUAq
+         040FO7DshxAOy/mlbVSMMGPBWdqEYR5s8wNzQDcz1xHLXQ7sGRkja5v0LL0O3cnKfiKj
+         zdxQ==
+In-Reply-To: <20130212214949.GA1003@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: paulmck@linux.vnet.ibm.com
-Cc: Nathan Zimmer <nzimmer@sgi.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Tuesday, February 12, 2013 07:59:54 AM Paul E. McKenney wrote:
-> On Mon, Feb 11, 2013 at 08:36:17PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, February 11, 2013 05:13:30 PM Nathan Zimmer wrote:
-> > > There are some spots that I need to give a much deeper review, cpufreq_register_driver for example.
-> > > 
-> > > But I believe 
-> > > > @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
-> > > >  {
-> > > >       if (!sysfs)
-> > > >               kobject_put(&data->kobj);
-> > > > -     module_put(cpufreq_driver->owner);
-> > > > +     module_put(rcu_dereference(cpufreq_driver)->owner);
-> > > >  }
-> > > would be ok.  In the documentation whatisRCU.txt they give a very similar example.
-> > 
-> > Well, the very same document states the following:
-> > 
-> >         Note that the value returned by rcu_dereference() is valid
-> >         only within the enclosing RCU read-side critical section.
-> 
-> Ah, there is a code sample in that document showing a bug.  I added
-> comments to the code sample making it clear even to someone skimming
-> the document that the code is buggy.
-> 
-> 							Thanx, Paul
-> ------------------------------------------------------------------------
-> 
-> rcu: Make bugginess of code sample more evident
-> 
-> One of the code samples in whatisRCU.txt shows a bug, but someone scanning
-> the document quickly might mistake it for a valid use of RCU.  Add some
-> screaming comments to help keep speed-readers on track.
-> 
-> Reported-by: Nathan Zimmer <nzimmer@sgi.com>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Hi Dave,
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 02/12/2013 01:49 PM, Dave Jones wrote:
+> On Wed, Feb 06, 2013 at 09:02:07AM -0800, dirk.brandewie@gmail.com wrote:
+>
+> Won't you also need to patch drivers/cpufreq/acpi-cpufreq.c to not load
+> on the processors that you want this driver to run on ?
+>
+> 	Dave
+>
 
-> diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
-> index 0cc7820..10df0b8 100644
-> --- a/Documentation/RCU/whatisRCU.txt
-> +++ b/Documentation/RCU/whatisRCU.txt
-> @@ -265,9 +265,9 @@ rcu_dereference()
->  		rcu_read_lock();
->  		p = rcu_dereference(head.next);
->  		rcu_read_unlock();
-> -		x = p->address;
-> +		x = p->address;	/* BUG!!! */
->  		rcu_read_lock();
-> -		y = p->data;
-> +		y = p->data;	/* BUG!!! */
->  		rcu_read_unlock();
->  
->  	Holding a reference from one RCU read-side critical section
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+For the case where both are built-in the load order works my driver uses
+device_initcall() and acpi_cpufreq uses late_initcall().
+
+For the case where both are a module (which I was sure I tested) you are right
+I will have to do something.
+
+For now I propose to make my driver built-in only while I sort out the right
+solution for the module build.  Does this seem reasonable to everyone?
+
+--Dirk
