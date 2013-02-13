@@ -1,21 +1,22 @@
 From: dirk.brandewie@gmail.com
 Subject: [PATCH] cpufreq/intel_pstate: Change to disallow module build
-Date: Wed, 13 Feb 2013 12:14:41 -0800
-Message-ID: <1360786482-881-1-git-send-email-dirk.brandewie@gmail.com>
+Date: Wed, 13 Feb 2013 12:14:42 -0800
+Message-ID: <1360786482-881-2-git-send-email-dirk.brandewie@gmail.com>
 References: <20130212214949.GA1003@redhat.com>
+ <1360786482-881-1-git-send-email-dirk.brandewie@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=Tiqz1NXJ19VJ1sPao6lBlTWrf6B3FK51cKigmrkdwpI=;
-        b=aBKWbt+MftHFsNFFr1jGbgt6FnV4ULZHVbS5diE5iko6vHYVf27lcHKIkigN8jT9zC
-         eKHop0q2dKzBN4bYtFogENfHCsZQvFqLlrA5sX8oQH7enetYc1Fs/ZlAPTtKrU8tXi+f
-         sl0fejnadRYWt9CA9aWu0O59BabJbYrEdYfj5howB6i7clu9BIw4XuA1rVj/YmPwnFin
-         Rtp8suaIMu2DT1NvkhwCIm4inEzKV7HKWpwRt+WdH0vZ/M3aVi+C9Jgx+kYSlQIM3baJ
-         ZNd2fqrO1T//CIsx/JbAXT1BOjOi5p2BD9fZws0IcMt6LJJW7D1GsF+Lpdz0Owf9G9xf
-         /drw==
-In-Reply-To: <20130212214949.GA1003@redhat.com>
+        bh=u6q8drDj7wgDgPvX33BNeRXKBQEPotNK/9sCsOflPbA=;
+        b=DqNlFQVjI5U1aSaMpmxXZkvV84ABQTvZG/o6pr9zrLasMihLYuzx2OxnwwDofB/eHL
+         fg75d4r+vYzLFG9KxiZmUCDBqNhwW4k0WDqZI6+lr8JOUpA318m0mH1ucXnceCZb6IzX
+         WgJqU+HLSVezV2OLN/2xtVSEc+ShRPphnDltNDbJbvkQ7jP9FYfyyo6S0d1bq7XakqHp
+         7H9feWPmWvst353O4SEFoDbmZVdoQ3UO0yYF1PA828zbNgJJZqYI0BIUaBMxCPKj8wVS
+         +RpjBN8GIuLy9rB8H9mrUo+zF9ZQU8SvhlG2vNxSl+uSYPxz+07336EUUxkU9MnLLwPS
+         4Exg==
+In-Reply-To: <1360786482-881-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
@@ -39,9 +40,6 @@ first option to become the scaling driver.
 
 Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 ---
-
-based on linux-pm/linux-next fe9e0a66
-
  drivers/cpufreq/Kconfig.x86 |    7 +------
  1 files changed, 1 insertions(+), 6 deletions(-)
 
