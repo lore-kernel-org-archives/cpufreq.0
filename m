@@ -1,46 +1,74 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
-Date: Wed, 13 Feb 2013 08:38:04 -0800
-Message-ID: <511BC16C.7040807@gmail.com>
-References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com> <20130212214949.GA1003@redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: dirk.brandewie@gmail.com
+Subject: [PATCH] cpufreq/intel_pstate: Change to disallow module build
+Date: Wed, 13 Feb 2013 12:14:41 -0800
+Message-ID: <1360786482-881-1-git-send-email-dirk.brandewie@gmail.com>
+References: <20130212214949.GA1003@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=x-received:message-id:date:from:user-agent:mime-version:to:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=W4gfkFpAdb0DIPVQguyyhQHvrFVEDBB5zeB68e5dDZY=;
-        b=gTfSSEcQOhMHu24oBYvJhC2fUy7jL2OjMpCwiFton32cQP7I9bgvrCoBkNg0TMJ5YC
-         v2bSKS5mca1RPPgrTbUxhV8gGQsfwScZe78wYDqjyDu8Tc4cLm/iKU/Dsf/bpm6St+35
-         zLKPIa0No7PmibrsWCq/kyIr+jsXTQkIt+bSJPSqoL1ReKjC8LcC69MyKgEDm3wcEYdu
-         rocxbfb0cWkGwiELcofgINutWklFKCHCpgfkA9kmZFOpB6m+Q5IZxmUi0iwWTMThFUAq
-         040FO7DshxAOy/mlbVSMMGPBWdqEYR5s8wNzQDcz1xHLXQ7sGRkja5v0LL0O3cnKfiKj
-         zdxQ==
+        h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        bh=Tiqz1NXJ19VJ1sPao6lBlTWrf6B3FK51cKigmrkdwpI=;
+        b=aBKWbt+MftHFsNFFr1jGbgt6FnV4ULZHVbS5diE5iko6vHYVf27lcHKIkigN8jT9zC
+         eKHop0q2dKzBN4bYtFogENfHCsZQvFqLlrA5sX8oQH7enetYc1Fs/ZlAPTtKrU8tXi+f
+         sl0fejnadRYWt9CA9aWu0O59BabJbYrEdYfj5howB6i7clu9BIw4XuA1rVj/YmPwnFin
+         Rtp8suaIMu2DT1NvkhwCIm4inEzKV7HKWpwRt+WdH0vZ/M3aVi+C9Jgx+kYSlQIM3baJ
+         ZNd2fqrO1T//CIsx/JbAXT1BOjOi5p2BD9fZws0IcMt6LJJW7D1GsF+Lpdz0Owf9G9xf
+         /drw==
 In-Reply-To: <20130212214949.GA1003@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: davej@redhat.com, rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Hi Dave,
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-On 02/12/2013 01:49 PM, Dave Jones wrote:
-> On Wed, Feb 06, 2013 at 09:02:07AM -0800, dirk.brandewie@gmail.com wrote:
->
-> Won't you also need to patch drivers/cpufreq/acpi-cpufreq.c to not load
-> on the processors that you want this driver to run on ?
->
-> 	Dave
->
+Load order is important in order for intel_pstate to take over as the
+default scaling driver from acpi-cpufreq.
 
-For the case where both are built-in the load order works my driver uses
-device_initcall() and acpi_cpufreq uses late_initcall().
+If both are built-in acpi-cpufreq uses late_initcall() and
+intel_pstate uses device_initcall() so it will be able to register as
+the scaling before acpi-cpufreq for the processors supported by
+intel_pstate.
 
-For the case where both are a module (which I was sure I tested) you are right
-I will have to do something.
+If acpi-cpufreq is built as a module then intel_pstate still gets
+first option to become the scaling driver.
 
-For now I propose to make my driver built-in only while I sort out the right
-solution for the module build.  Does this seem reasonable to everyone?
+Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+---
 
---Dirk
+based on linux-pm/linux-next fe9e0a66
+
+ drivers/cpufreq/Kconfig.x86 |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 6aa7053..98e5abb 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -3,7 +3,7 @@
+ #
+ 
+ config X86_INTEL_PSTATE
+-       tristate "Intel P state control"
++       bool "Intel P state control"
+        depends on X86
+        help
+           This driver provides a P state for Intel core processors.
+@@ -13,11 +13,6 @@ config X86_INTEL_PSTATE
+ 	  When this driver is enabled it will become the perferred
+           scaling driver for Sandy bridge processors.
+ 
+-	  Note: This driver should be built with the same settings as
+-	  the other scaling drivers configured into the system
+-	  (module/built-in) in order for the driver to register itself
+-	  as the scaling driver on the system.
+-
+ 	  If in doubt, say N.
+ 
+ config X86_PCC_CPUFREQ
+-- 
+1.7.7.6
