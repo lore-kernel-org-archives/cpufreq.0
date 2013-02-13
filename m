@@ -1,82 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL - cpufreq] Samsung eyxnos cpufreq for v3.9
-Date: Wed, 13 Feb 2013 14:06:16 +0100
-Message-ID: <2230843.2E9olW3VvP@vostro.rjw.lan>
-References: <1dde01ce0989$11d93460$358b9d20$@samsung.com>
+Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
+Date: Wed, 13 Feb 2013 14:20:35 +0100
+Message-ID: <1651157.ApO0q9O4LF@vostro.rjw.lan>
+References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <1953281.cgEiiBGo0f@vostro.rjw.lan> <20130212155954.GP2666@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1dde01ce0989$11d93460$358b9d20$@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20130212155954.GP2666@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: paulmck@linux.vnet.ibm.com
+Cc: Nathan Zimmer <nzimmer@sgi.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Tuesday, February 12, 2013 05:25:53 PM Kukjin Kim wrote:
-> Hi Rafael,
+On Tuesday, February 12, 2013 07:59:54 AM Paul E. McKenney wrote:
+> On Mon, Feb 11, 2013 at 08:36:17PM +0100, Rafael J. Wysocki wrote:
+> > On Monday, February 11, 2013 05:13:30 PM Nathan Zimmer wrote:
+> > > There are some spots that I need to give a much deeper review, cpufreq_register_driver for example.
+> > > 
+> > > But I believe 
+> > > > @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+> > > >  {
+> > > >       if (!sysfs)
+> > > >               kobject_put(&data->kobj);
+> > > > -     module_put(cpufreq_driver->owner);
+> > > > +     module_put(rcu_dereference(cpufreq_driver)->owner);
+> > > >  }
+> > > would be ok.  In the documentation whatisRCU.txt they give a very similar example.
+> > 
+> > Well, the very same document states the following:
+> > 
+> >         Note that the value returned by rcu_dereference() is valid
+> >         only within the enclosing RCU read-side critical section.
 > 
-> Here is changes for Samsung exynos cpufreq for v3.9.
+> Ah, there is a code sample in that document showing a bug.  I added
+> comments to the code sample making it clear even to someone skimming
+> the document that the code is buggy.
 > 
-> Almost of them are changing exynos stuff in drivers/cpufreq, so should be
-> fine for cpufreq tree.
+> 							Thanx, Paul
+> ------------------------------------------------------------------------
 > 
-> Please pull from:
-> git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
-> next/cpufreq-exynos
+> rcu: Make bugginess of code sample more evident
 > 
-> If any problems, please kindly let me know.
+> One of the code samples in whatisRCU.txt shows a bug, but someone scanning
+> the document quickly might mistake it for a valid use of RCU.  Add some
+> screaming comments to help keep speed-readers on track.
 > 
-> Thanks.
-> 
-> - Kukjin
-> 
-> The following changes since commit a49f0d1ea3ec94fc7cf33a7c36a16343b74bd565:
-> 
->   Linux 3.8-rc1 (2012-12-21 17:19:00 -0800)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
-> next/cpufreq-exynos
-> 
-> for you to fetch changes up to c098ea74b268969bde5aaf1689b61d236abf82f5:
+> Reported-by: Nathan Zimmer <nzimmer@sgi.com>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Pulled into bleeding-edge, will move to linux-next after build testing.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks,
-Rafael
-
-
->   cpufreq: exynos: Fix hang in pm handler due to frequency mismatch
-> (2013-02-04 21:01:22 -0800)
+> diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
+> index 0cc7820..10df0b8 100644
+> --- a/Documentation/RCU/whatisRCU.txt
+> +++ b/Documentation/RCU/whatisRCU.txt
+> @@ -265,9 +265,9 @@ rcu_dereference()
+>  		rcu_read_lock();
+>  		p = rcu_dereference(head.next);
+>  		rcu_read_unlock();
+> -		x = p->address;
+> +		x = p->address;	/* BUG!!! */
+>  		rcu_read_lock();
+> -		y = p->data;
+> +		y = p->data;	/* BUG!!! */
+>  		rcu_read_unlock();
+>  
+>  	Holding a reference from one RCU read-side critical section
 > 
-> ----------------------------------------------------------------
-> Inderpal Singh (1):
->       cpufreq: exynos: Show list of available frequencies
-> 
-> Jonghwan Choi (7):
->       cpufreq: exynos: Remove unused variable & IS_ERR
->       cpufreq: exynos: Check old & new frequency early
->       cpufreq: exynos: Use APLL_FREQ macro for cpu divider value
->       cpufreq: exynos: Split exynos_target function into two functions
->       cpufreq: exynos: Add missing static
->       cpufreq: exynos: Get booting freq value in exynos_cpufreq_init
->       cpufreq: exynos: Fix hang in pm handler due to frequency mismatch
-> 
-> Sachin Kamat (2):
->       cpufreq: exynos: Fix unsigned variable being checked for negative
-> value
->       cpufreq: exynos: Initialize return variable
-> 
->  arch/arm/mach-exynos/include/mach/cpufreq.h |   19 +-
->  drivers/cpufreq/exynos-cpufreq.c            |  174 +++++++-----
->  drivers/cpufreq/exynos4210-cpufreq.c        |  152 ++---------
->  drivers/cpufreq/exynos4x12-cpufreq.c        |  388
-> ++++-----------------------
->  drivers/cpufreq/exynos5250-cpufreq.c        |  178 +++---------
->  5 files changed, 248 insertions(+), 663 deletions(-)
-> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
