@@ -1,7 +1,7 @@
 From: Dirk Brandewie <dirk.brandewie@gmail.com>
 Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
-Date: Thu, 14 Feb 2013 07:23:44 -0800
-Message-ID: <511D0180.2080809@gmail.com>
+Date: Thu, 14 Feb 2013 07:34:56 -0800
+Message-ID: <511D0420.8080608@gmail.com>
 References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com> <511BC16C.7040807@gmail.com> <CAOh2x=nwHbbngQm1PE7SfOLbHs3oMMb74zHXD9721OJzWo1+Tg@mail.gmail.com> <1540905.Sh9giL2bZe@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -12,18 +12,18 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
          :subject:references:in-reply-to:content-type
          :content-transfer-encoding;
         bh=gn8RU+2sdE8ZKkYuaF8kgxgB5thvS2rFUuptPDzHZfo=;
-        b=cP9UbYiOj7tx9o5oE7Dzw+vIZtRW/Oj5l6b0jjqVBZnZEbCVexZgDL2Cy/OIEUSeyR
-         F52rAKN42/DWi5AqOtZdcMgX64xb/uNMvUIUGM3I4zPJkYyJIAu8tdGTbQcl3JPqmW8K
-         IqQbekGkh5E3AZLPWROdNxIYCourBkZxgbLeterSlU6oxy5HkeKRYbk6UEhRo3RR5o8v
-         E90xb87f4fYVcF7pmJp6V3O33i4ssEHn00Y+FnqovqA6Y/lsjCPkg0KysjbFId5yVgBe
-         fW+o7a3aY3n8L8/kFa70W2h4e0vWfx3vkBpkmkx8arFRAr0GxZSQeMhb7BD5wjNRYQtK
-         c47g==
+        b=gyI031eNDiJ4R0SL2qrVdNbe9Dp5KfZWPNnmtHeAeyFJbtp6eKVlGHGBqeaHe9rYv8
+         Aj2Y5fe/wQ9RGGsG8B8hCrx0DKkLKark8vL7YiDMQBO5P7fcLAtafB8M0WXs3aZF+cKQ
+         v2U8ffCvWiFKRfHt6Y8KDPdL/ac83RiSxO3NK4wQ26NIy8sgjdNE5kss7U8Hcj4PGw5t
+         m1UhZj/cQuzOATDG8bTUT0ifrIa2rJAZfp96KoL12ZNHHnCvgoCxmAOhg/bEL1tG5Xlc
+         kyy7meJ6EVIrris9ZW7sKyUwnQ/0vvDPofDqR6gRU8pxMr5D8EJ2s2lIepeQqN+YY8Aj
+         9+mw==
 In-Reply-To: <1540905.Sh9giL2bZe@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: dirk.brandewie@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
 On 02/14/2013 04:21 AM, Rafael J. Wysocki wrote:
 > On Thursday, February 14, 2013 09:38:21 AM Viresh Kumar wrote:
