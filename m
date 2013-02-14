@@ -1,65 +1,44 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH 0/5] Add P state driver for Intel Core Processors
-Date: Thu, 14 Feb 2013 07:34:56 -0800
-Message-ID: <511D0420.8080608@gmail.com>
-References: <1360170133-5066-1-git-send-email-dirk.brandewie@gmail.com> <511BC16C.7040807@gmail.com> <CAOh2x=nwHbbngQm1PE7SfOLbHs3oMMb74zHXD9721OJzWo1+Tg@mail.gmail.com> <1540905.Sh9giL2bZe@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Change to disallow module build
+Date: Thu, 14 Feb 2013 21:40:43 +0530
+Message-ID: <CAOh2x=mhtFsEJx57GTASAq+p4Ri-fvTmnkxZJzgifJ=3yTawXw@mail.gmail.com>
+References: <20130212214949.GA1003@redhat.com>
+	<1360786482-881-1-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        bh=gn8RU+2sdE8ZKkYuaF8kgxgB5thvS2rFUuptPDzHZfo=;
-        b=gyI031eNDiJ4R0SL2qrVdNbe9Dp5KfZWPNnmtHeAeyFJbtp6eKVlGHGBqeaHe9rYv8
-         Aj2Y5fe/wQ9RGGsG8B8hCrx0DKkLKark8vL7YiDMQBO5P7fcLAtafB8M0WXs3aZF+cKQ
-         v2U8ffCvWiFKRfHt6Y8KDPdL/ac83RiSxO3NK4wQ26NIy8sgjdNE5kss7U8Hcj4PGw5t
-         m1UhZj/cQuzOATDG8bTUT0ifrIa2rJAZfp96KoL12ZNHHnCvgoCxmAOhg/bEL1tG5Xlc
-         kyy7meJ6EVIrris9ZW7sKyUwnQ/0vvDPofDqR6gRU8pxMr5D8EJ2s2lIepeQqN+YY8Aj
-         9+mw==
-In-Reply-To: <1540905.Sh9giL2bZe@vostro.rjw.lan>
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=XvpbehkYEZJTo1loA/Q1ogYz3l1gNy5KDAA74nNsenI=;
+        b=qwj9QGD5Jkc/iGwWtM2/8VrA19HD5MTjua8cz4aAJtfzKH749EO+AiUFJTTk1UB4oL
+         KUqgG+MUVM98qa6QNyK9h6zG2eNqoDYyZXPLxx4mI8thpTkck+lwMgQXUAQEsNqA1PxQ
+         vKYlcyQghuXlRxbAspNFU+zC/TcIlZXaxl2xNcfn27ozUktlxvOkzOH4HuCY+aY1h0sZ
+         KAPCM1HrxIy/Rd6KMLS6pVNgh49NZwpoy6BUaQIs6ntiiQZgAkL5CrYBW+rB3HFFlOr9
+         xvweeY28WDuMQ42Wocv94hUy53ErIEdLZmECkS/fnokdNAg9gXbD0JI5cpO32aR337Oo
+         X/ww==
+In-Reply-To: <1360786482-881-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: dirk.brandewie@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dirk.brandewie@gmail.com
+Cc: davej@redhat.com, rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-On 02/14/2013 04:21 AM, Rafael J. Wysocki wrote:
-> On Thursday, February 14, 2013 09:38:21 AM Viresh Kumar wrote:
->> On Wed, Feb 13, 2013 at 10:08 PM, Dirk Brandewie
->> <dirk.brandewie@gmail.com> wrote:
->>> For the case where both are built-in the load order works my driver uses
->>> device_initcall() and acpi_cpufreq uses late_initcall().
->>>
->>> For the case where both are a module (which I was sure I tested) you are
->>> right
->>> I will have to do something.
->>>
->>> For now I propose to make my driver built-in only while I sort out the right
->>> solution for the module build.  Does this seem reasonable to everyone?
->>
->> Of-course i am missing something here. Why would anybody want to insert
->> acpi-cpufreq module when the system supports the pstate driver.
->>
->> In case they are mutually exclusive, then we can have something like
->> depends on !ACPI-DRIVER in the kconfig option of pstate driver.
+On Thu, Feb 14, 2013 at 1:44 AM,  <dirk.brandewie@gmail.com> wrote:
+> From: Dirk Brandewie <dirk.brandewie@gmail.com>
 >
-> Yes.  Or the other way around (i.e. make acpi_cpufreq depend on
-> !X86_INTEL_PSTATE).
+> Load order is important in order for intel_pstate to take over as the
+> default scaling driver from acpi-cpufreq.
 >
-
-The issue is that acpi-cpufreq still needs to be available for Intel processors 
-before SandyBridge and for other x86 compatible processors we can't make
-intel_pstate and acpi-cpufreq mutually exclusive.
-
-Having intel_pstate built-in solves the issue without the need to patch
-acpi-cpufreq.  I believe that most distros build the scaling drivers in
-so the distro/user will make the explicit decision to use intel_pstate.
-
-
-> Thanks,
-> Rafael
+> If both are built-in acpi-cpufreq uses late_initcall() and
+> intel_pstate uses device_initcall() so it will be able to register as
+> the scaling before acpi-cpufreq for the processors supported by
+> intel_pstate.
 >
+> If acpi-cpufreq is built as a module then intel_pstate still gets
+> first option to become the scaling driver.
 >
+> Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
