@@ -1,8 +1,8 @@
-From: Yinghai Lu <yinghai@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq/intel_pstate: Add kernel command line option
  disable intel_pstate.
-Date: Thu, 14 Feb 2013 14:56:23 -0800
-Message-ID: <CAE9FiQWSoXafuzkpegZ_DV9GA23YtTVgXMjzkqqpQWEDOXqJaA@mail.gmail.com>
+Date: Fri, 15 Feb 2013 09:53:24 +0530
+Message-ID: <CAOh2x=mH0k8ZB0Qq+q=2bxwHcMUVmj-cy-=N4dBf=6Q2xd6nMw@mail.gmail.com>
 References: <6075901.uWCJMxDDFf@vostro.rjw.lan>
 	<1360867132-13004-1-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
@@ -11,13 +11,13 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=Msuj2CzrPWokcuFu9molrjsnl9HoqewyKl6XrtY05hA=;
-        b=ch0UqVpNAlankTeptxp1LKQOsz/wdCinU5jqCDXs4ngdBGqCPOXlX1RE0b7Ar3bAZo
-         MpUojxeKiVlfmpvBQp60NPlOpUOEAdjoB0V6hCIy31yUZW70I64SxfP5kxyR+bjArHxn
-         1lvzkhm/G8Cd6hHs4iIKgXUp/rAXIlpafStZ3wALjM6RPFlN3X8+N8K3195K+fvIfh8a
-         V5xhJbuzXlM1mgR5OM4M16sAjpkSnkGg9yuSQ+Oi59rSTaamGsoOWhe4WRUQ0lwFzgBK
-         /aiSGYqWGyYVuxE1Z3qKBcywpF/fPsvZmOldRDvlRPJ1t9iHXbdgw+DoCYYy1ZE3XEyy
-         NsaA==
+        bh=FA9WVZ8VCHqZBF6n7S+8YH+yjhgtgaKZ+kK+hxFo//o=;
+        b=SSkv7lSIAVE3HpnSJCwwJamcxRc0KpcycraDB5jpsZ07Eb9KGv0OhrSkmCufLFyDyP
+         0q7V+K6iQXqd0poj0p6/k5E1P4LbVwmaxIqyqpCYeiIf5/SERwN4xwYw7UAo6SYVpskk
+         5hhnb8syGnLVifz5gafYA6PbV8tbT0ClRl6zDDaGpxWeXw7BR2ouwI9T8jFh0riwc9T5
+         i4HyXKmYTqsZyYGlQaPwgw9W+xfVGfiDKYv5+U5fXMrqfXtM8uHRelsnNjlHMTrv216z
+         Kb75CMoCAt2xXr9gnCU/9C5ovet9NgHNLMF3gdriK3hUR0sUbNi0VrU6yLSMG4qAjVUY
+         av9w==
 In-Reply-To: <1360867132-13004-1-git-send-email-dirk.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -26,11 +26,16 @@ Content-Transfer-Encoding: 7bit
 To: dirk.brandewie@gmail.com
 Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On Thu, Feb 14, 2013 at 10:38 AM,  <dirk.brandewie@gmail.com> wrote:
+On Fri, Feb 15, 2013 at 12:08 AM,  <dirk.brandewie@gmail.com> wrote:
 > From: Dirk Brandewie <dirk.brandewie@gmail.com>
 >
 > When intel_pstate is configured into the kernel it will become the
 > perferred scaling driver for processors that is supports.  Allow the
+
+s/perferred/preferred
+
+s/is/it
+
 > user to override this by adding:
 >    intel_pstate=disable
 > on the kernel command line.
@@ -66,14 +71,6 @@ On Thu, Feb 14, 2013 at 10:38 AM,  <dirk.brandewie@gmail.com> wrote:
 >  module_exit(intel_pstate_exit);
 >
 > +static int no_load;
-
-Looks like you can use __initdata with it.
-
-Thanks
-
-Yinghai
-
-
 > +
 >  static int __init intel_pstate_init(void)
 >  {
@@ -91,6 +88,11 @@ Yinghai
 >  device_initcall(intel_pstate_init);
 >
 > +static int __init intel_pstate_setup(char *str)
+
+Parameter to this is really not required. By default intel_pstate
+driver is enabled, so just past disable_intel_pstate from command line
+without any args.
+
 > +{
 > +       if (!str)
 > +               return -EINVAL;
@@ -100,15 +102,3 @@ Yinghai
 > +       return 0;
 > +}
 > +early_param("intel_pstate", intel_pstate_setup);
-> +
->  MODULE_AUTHOR("Dirk Brandewie <dirk.j.brandewie@intel.com>");
->  MODULE_DESCRIPTION("'intel_pstate' - P state driver Intel Core processors");
->  MODULE_LICENSE("GPL");
-> --
-> 1.7.7.6
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
