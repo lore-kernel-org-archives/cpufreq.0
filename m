@@ -1,99 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 2/2] cpufreq: Convert the cpufreq_driver_lock to use
- the rcu
-Date: Thu, 21 Feb 2013 11:20:26 +0530
-Message-ID: <CAKohponMWRPspZF=tPN6MXoxkcjw7CK_sLnSdsKe+EDoiADvGA@mail.gmail.com>
-References: <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
-	<1361404583-5557-1-git-send-email-nzimmer@sgi.com>
-	<1361404583-5557-3-git-send-email-nzimmer@sgi.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 53051] Conservative governor get's sometimes stuck at highest
+ frequency
+Date: Thu, 21 Feb 2013 07:28:53 +0000 (UTC)
+Message-ID: <20130221072853.DF63A11FF41@bugzilla.kernel.org>
+References: <bug-53051-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1361404583-5557-3-git-send-email-nzimmer@sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-53051-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On 21 February 2013 05:26, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> In general rwlocks are discourged so we are moving it to use the rcu instead.
-> This does require a bit of care since the cpufreq_driver_lock protects both
-> the cpufreq_driver and the cpufreq_cpu_data array.
-> Also since many of the function pointers on cpufreq_driver may sleep when
-> called we have to grab them under the rcu_read_lock but call them after
-> rcu_read_unlock();
-
-Even i have started reading rcu documentation now :)
-
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 312 +++++++++++++++++++++++++++++++++-------------
->  1 file changed, 224 insertions(+), 88 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-
-> @@ -255,20 +258,21 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
->  void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
->  {
->         struct cpufreq_policy *policy;
-> -       unsigned long flags;
-> +       u8 flags;
-
-I think you can get rid of flags.
-
->         BUG_ON(irqs_disabled());
->
->         if (cpufreq_disabled())
->                 return;
->
-> -       freqs->flags = cpufreq_driver->flags;
->         pr_debug("notification %u of frequency transition to %u kHz\n",
->                 state, freqs->new);
->
-> -       read_lock_irqsave(&cpufreq_driver_lock, flags);
-> +       rcu_read_lock();
-> +       flags = rcu_dereference(cpufreq_driver)->flags;
-
-use freq->flags here ...
-
->         policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
-> -       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       rcu_read_unlock();
-> +       freqs->flags = flags;
->
->         switch (state) {
->
-> @@ -277,7 +281,7 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
->                  * which is not equal to what the cpufreq core thinks is
->                  * "old frequency".
->                  */
-> -               if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-> +               if (!(flags & CPUFREQ_CONST_LOOPS)) {
-
-and here.
-
->                         if ((policy) && (policy->cpu == freqs->cpu) &&
->                             (policy->cur) && (policy->cur != freqs->old)) {
->                                 pr_debug("Warning: CPU frequency is"
+https://bugzilla.kernel.org/show_bug.cgi?id=53051
 
 
-> @@ -742,35 +773,39 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+Aaron Lu <aaron.lu@intel.com> changed:
 
-> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +       spin_lock_irqsave(&cpufreq_driver_lock, flags);
->         for_each_cpu(j, policy->cpus) {
->                 per_cpu(cpufreq_cpu_data, j) = policy;
->                 per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
->         }
-> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       synchronize_rcu();
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |aaron.lu@intel.com
+         AssignedTo|cpufreq@vger.kernel.org     |aaron.lu@intel.com
 
-I don't think (but i can be wrong too :) ), that we need a synchronize_rcu()
-here. We need it only at places where we have updated the cpufreq_driver
-pointer.
 
-As we aren't doing any rcu specific read/update for cpufreq_cpu_data.
+
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
