@@ -1,208 +1,132 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: [PATCH v3 1/2] cpufreq: Convert the cpufreq_driver_lock to a rwlock
-Date: Wed, 20 Feb 2013 17:56:22 -0600
-Message-ID: <1361404583-5557-2-git-send-email-nzimmer@sgi.com>
-References: <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
- <1361404583-5557-1-git-send-email-nzimmer@sgi.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1361404583-5557-1-git-send-email-nzimmer@sgi.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH linux-next] cpufreq: ondemand: Calculate gradient of CPU
+ load to early increase frequency
+Date: Thu, 21 Feb 2013 10:29:16 +0530
+Message-ID: <CAOh2x=mD4DbEH245xsceS1wyhmrRPpB2LeJ9Mh+WGHUA+bZprA@mail.gmail.com>
+References: <51253715.7080600@semaphore.gr>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=9Rvj2IqV/Tcz3b5EuJxnjjMNgSVXXx/KTQ8MY/jAf/o=;
+        b=h8t65wcTcqQFbnySIYUc2PHrCp1+WRbu6wiLegpRUKcQQEBRpW3m3aDiFxQEyinQ/4
+         +gq4xStSD0yNCNTZrPIc7MvbTNuNwWO+Wg/pwacnmsKfL57n/6wyZqvwg/4ZzkEYMc3k
+         JJx4VUdUzHyITxQIBERzaKwy98Bq6WsIVPZz6cmtSCxUr3l9y2P2BhDBBU0blG8RM56g
+         zGkPgM7r/rI7AJT1GpS2zDrPlb9QyokfoYS/zkqF5LV9HuVIh3PQt02ucmT5+DJG3k4N
+         lPhG+KW9qoDSQcWM7dJT/bJxiQHFlFhziraQeBQ+J1fMFcOG4uhhcDytAYvE7jcpLn+x
+         RM8A==
+In-Reply-To: <51253715.7080600@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: viresh.kumar@linaro.org, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nathan Zimmer <nzimmer@sgi.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This eliminates the contention I am seeing in __cpufreq_cpu_get.
-It also nicely stages the lock to be replaced by the rcu.
+Hi Stratos,
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
----
- drivers/cpufreq/cpufreq.c | 52 +++++++++++++++++++++++------------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
+On Thu, Feb 21, 2013 at 2:20 AM, Stratos Karafotis
+<stratosk@semaphore.gr> wrote:
+> Instead of checking only the absolute value of CPU load_freq to increase
+> frequency, we detect forthcoming CPU load rise and increase frequency
+> earlier.
+>
+> Every sampling rate, we calculate the gradient of load_freq.
+> If it is too steep we assume that the load most probably will
+> go over up_threshold in next iteration(s). We reduce up_threshold
+> by early_differential to achieve frequency increase in the current
+> iteration.
+>
+> A new tuner early_demand is introduced to enable this functionality
+> (disabled by default). Also we use new tuners to control early demand:
+>
+>         - early_differential: controls the final up_threshold
+>         - grad_up_threshold: over this gradient of load we will decrease
+>                 up_threshold by early_differential.
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b02824d..c5996fe 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -45,7 +45,7 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- /* This one keeps track of the previously set governor of a removed CPU */
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
--static DEFINE_SPINLOCK(cpufreq_driver_lock);
-+static DEFINE_RWLOCK(cpufreq_driver_lock);
- 
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-@@ -137,7 +137,7 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
- 		goto err_out;
- 
- 	/* get the cpufreq driver */
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	if (!cpufreq_driver)
- 		goto err_out_unlock;
-@@ -155,13 +155,13 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
- 	if (!sysfs && !kobject_get(&data->kobj))
- 		goto err_out_put_module;
- 
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	return data;
- 
- err_out_put_module:
- 	module_put(cpufreq_driver->owner);
- err_out_unlock:
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- err_out:
- 	return NULL;
- }
-@@ -266,9 +266,9 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 	policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	switch (state) {
- 
-@@ -765,12 +765,12 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 			goto err_out_kobj_put;
- 	}
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus) {
- 		per_cpu(cpufreq_cpu_data, j) = policy;
- 		per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
- 	}
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	ret = cpufreq_add_dev_symlink(cpu, policy);
- 	if (ret)
-@@ -813,12 +813,12 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 
- 	lock_policy_rwsem_write(sibling);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	cpumask_set_cpu(cpu, policy->cpus);
- 	per_cpu(cpufreq_policy_cpu, cpu) = policy->cpu;
- 	per_cpu(cpufreq_cpu_data, cpu) = policy;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	unlock_policy_rwsem_write(sibling);
- 
-@@ -871,15 +871,15 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 	/* Check if this cpu was hot-unplugged earlier and has siblings */
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_online_cpu(sibling) {
- 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
- 		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 			return cpufreq_add_policy_cpu(cpu, sibling, dev);
- 		}
- 	}
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- #endif
- #endif
- 
-@@ -952,10 +952,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	return 0;
- 
- err_out_unregister:
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	kobject_put(&policy->kobj);
- 	wait_for_completion(&policy->kobj_unregister);
-@@ -1008,12 +1008,12 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 
- 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	data = per_cpu(cpufreq_cpu_data, cpu);
- 	per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	if (!data) {
- 		pr_debug("%s: No cpu_data found\n", __func__);
-@@ -1047,9 +1047,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 			WARN_ON(lock_policy_rwsem_write(cpu));
- 			cpumask_set_cpu(cpu, data->cpus);
- 
--			spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+			write_lock_irqsave(&cpufreq_driver_lock, flags);
- 			per_cpu(cpufreq_cpu_data, cpu) = data;
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 			unlock_policy_rwsem_write(cpu);
- 
-@@ -1848,13 +1848,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	if (driver_data->setpolicy)
- 		driver_data->flags |= CPUFREQ_CONST_LOOPS;
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	if (cpufreq_driver) {
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 		return -EBUSY;
- 	}
- 	cpufreq_driver = driver_data;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	ret = subsys_interface_register(&cpufreq_interface);
- 	if (ret)
-@@ -1886,9 +1886,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- err_if_unreg:
- 	subsys_interface_unregister(&cpufreq_interface);
- err_null_driver:
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_register_driver);
-@@ -1914,9 +1914,9 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 	subsys_interface_unregister(&cpufreq_interface);
- 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	return 0;
- }
--- 
-1.8.1.2
+Sorry for this but i already have a patchset which has changed these files
+to some extent. Can you please rebase over them? Actually my patchset
+is already accepted, its just that rafael didn't wanted to have them for 3.9.
+
+http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-for-3.10
+
+Back to your patch:
+
+Following is what i understood about this patch:
+- The only case where this code will come into picture is when load is
+below up_threshold.
+- And we see a steep rise in the load from previous request..
+
+i.e. (with the default values)
+
+UP_THRESHOLD                           (80)
+GRAD_UP_THESHOLD                  (50)
+EARLY_DIFFERENTIAL                 (45)
+
+If the load was 10 previously and it went to 80 > load >= 60, we will
+make up_threshold as 80-45 = 35. Which is lower than grad_up_threshold :)
+
+Isn't it strange?
+
+So, probably you just don't need this tunable: early_differential.
+Rather just increase the frequency without doing this calculation:
+
+if (load_freq > od_tuners.up_threshold * policy->cur) {
+
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index f3eb26c..458806f 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -30,6 +30,8 @@
+>  #define DEF_FREQUENCY_DOWN_DIFFERENTIAL                (10)
+>  #define DEF_FREQUENCY_UP_THRESHOLD             (80)
+>  #define DEF_SAMPLING_DOWN_FACTOR               (1)
+> +#define DEF_GRAD_UP_THESHOLD                   (50)
+
+s/THESHOLD/THRESHOLD
+
+> @@ -170,11 +175,29 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>  {
+>         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+>         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+> +       unsigned int up_threshold = od_tuners.up_threshold;
+> +       unsigned int grad;
+>
+>         dbs_info->freq_lo = 0;
+>
+> +       /*
+> +        * Calculate the gradient of load_freq. If it is too steep we assume
+> +        * that the load will go over up_threshold in next iteration(s). We
+> +        * reduce up_threshold by early_differential to achieve frequency
+> +        * increase earlier
+> +        */
+> +       if (od_tuners.early_demand) {
+> +               if (load_freq > dbs_info->prev_load_freq) {
+
+&& (load_freq < od_tuners.up_threshold * policy->cur) ??
+
+> +                       grad = load_freq - dbs_info->prev_load_freq;
+> +
+> +                       if (grad > od_tuners.grad_up_threshold * policy->cur)
+> +                               up_threshold -= od_tuners.early_differential;
+> +               }
+> +               dbs_info->prev_load_freq = load_freq;
+> +       }
+> +
+>         /* Check for frequency increase */
+> -       if (load_freq > od_tuners.up_threshold * policy->cur) {
+> +       if (load_freq > up_threshold * policy->cur) {
+>                 /* If switching to max speed, apply sampling_down_factor */
+>                 if (policy->cur < policy->max)
+>                         dbs_info->rate_mult =
+> @@ -438,12 +461,26 @@ static ssize_t store_powersave_bias(struct kobject *a, struct attribute *b,
+>         return count;
+>  }
+
+> +show_one(od, early_demand, early_demand);
+
+What about making other two tunables rw?
