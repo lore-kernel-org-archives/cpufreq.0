@@ -1,8 +1,10 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH/RFC 0/4] CPUFreq for kzm9g
-Date: Fri, 22 Feb 2013 18:17:50 +0100
-Message-ID: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
+Subject: [PATCH/RFC 3/4] ARM: shmobile: sh73a0: run sh73a0_clock_init() only once
+Date: Fri, 22 Feb 2013 18:17:53 +0100
+Message-ID: <1361553474-27022-4-git-send-email-g.liakhovetski@gmx.de>
+References: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
 Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
 Sender: linux-sh-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
@@ -11,30 +13,32 @@ Content-Transfer-Encoding: 7bit
 To: linux-sh@vger.kernel.org
 Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-The first of these patches is a bug-fix, whereas the latter three patches 
-are experimental and might want to be discussed. This patch set is based 
-on an earlier Simon's topic/all+next branch snapshot. Attempts to use 
-todays checkout failed - I couldn't even boot. Obviously, I'm also using 
-my AS3711 patches and a number of other (not directly related) patches, 
-that I'll be posting separately.
+sh73a0_clock_init() is called from sh73a0_earlytimer_init() and
+sh73a0_add_standard_devices_dt(), take care to only run it once.
 
-Guennadi Liakhovetski (4):
-  ARM: shmobile: sh73a0: fix Z and ZG clock hierarchy
-  ARM: shmobile: sh73a0: add support for adjusting CPU frequency
-  ARM: shmobile: sh73a0: run sh73a0_clock_init() only once
-  ARM: shmobile: kzm9g-reference: add CPUFreq support
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
- arch/arm/boot/dts/sh73a0-kzm9g-reference.dts |   19 ++-
- arch/arm/mach-shmobile/Kconfig               |    2 +
- arch/arm/mach-shmobile/clock-sh73a0.c        |  224 +++++++++++++++++++++++++-
- 3 files changed, 236 insertions(+), 9 deletions(-)
+This patch shouldn't be needed, sh73a0_clock_init() shouldn't be called 
+twice. It's here only as an illustration, how I actually was testing.
 
+ arch/arm/mach-shmobile/clock-sh73a0.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
+index 3170482..f9a015d 100644
+--- a/arch/arm/mach-shmobile/clock-sh73a0.c
++++ b/arch/arm/mach-shmobile/clock-sh73a0.c
+@@ -809,6 +809,9 @@ void __init sh73a0_clock_init(void)
+ {
+ 	int k, ret = 0;
+ 
++	if (main_clk.parent)
++		return;
++
+ 	/* Set SDHI clocks to a known state */
+ 	__raw_writel(0x108, SD0CKCR);
+ 	__raw_writel(0x108, SD1CKCR);
 -- 
 1.7.2.5
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
