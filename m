@@ -1,27 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/4] cpufreq: Add per policy governor-init/exit infrastructure
-Date: Fri, 22 Feb 2013 07:49:59 +0530
-Message-ID: <CAKohpo=tkzFgxpUHaVBH+U8ZQ+vyYFT1c4zrDp8NhRzEPxnouw@mail.gmail.com>
-References: <cover.1360568193.git.viresh.kumar@linaro.org>
-	<3793606.bilcxohA80@vostro.rjw.lan>
-	<CAKohpom8HiBEXE54BL72s-nWaeXzSRTrp7=MQKrJcon17T9tXQ@mail.gmail.com>
-	<6210802.HjCYHcMl5j@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V2 3/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+Date: Fri, 22 Feb 2013 03:29:53 +0100
+Message-ID: <3793635.ht6rIgi6nV@vostro.rjw.lan>
+References: <cover.1360568193.git.viresh.kumar@linaro.org> <2852709.b79tkCt2uQ@vostro.rjw.lan> <CAKohpompwGaJziPcrwqH2pUgpiOPa1is_z0506+hO06FXQ8MFA@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <6210802.HjCYHcMl5j@vostro.rjw.lan>
+In-Reply-To: <CAKohpompwGaJziPcrwqH2pUgpiOPa1is_z0506+hO06FXQ8MFA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com, Borislav Petkov <bp@alien8.de>
 
-On 22 February 2013 07:51, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, February 22, 2013 07:38:12 AM Viresh Kumar wrote:
->> No. These are used atleast for ondemand & conservative.
->
-> They will be after the next patch, you mean? :-)
+On Friday, February 22, 2013 07:44:23 AM Viresh Kumar wrote:
+> On 22 February 2013 05:23, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday, February 11, 2013 01:20:02 PM Viresh Kumar wrote:
+> 
+> >> +config CPU_FREQ_HAVE_MULTIPLE_POLICIES
+> >> +     bool
+> >> +
+> >
+> > So I suppose some architectures will select this, right?
+> 
+> Yes. And they have to enable have_multiple_policies too from their
+> drivers init code.
+> 
+> > What architecture they are?
+> 
+> Atleast all big.LITTLE SoCs. Or any other SoC that has multiple policy
+> structs alive at any time.
+> 
+> 
+> > I'm not really sure I like this. ->
+> 
+> >>  static inline struct kobject *
+> >>  get_governor_parent_kobj(struct cpufreq_policy *policy)
+> >>  {
+> >> +#ifdef CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES
+> >>       if (policy->have_multiple_policies)
+> >>               return &policy->kobj;
+> >>       else
+> >> +#endif
+> >>               return cpufreq_global_kobject;
+> >
+> > -> I wonder why don't you arrange things so that policy->kobj is always
+> > returned, but it points to cpufreq_global_kobject in case there's only one
+> > (i.e. make policy->kobj a pointer)?
+> 
+> policy->kobj is a struct instance rather than a pointer and it is widely used
+> within cpufreq.c.
 
-> Well, it appeared so from the next patch ...
+Yeah, policy attributes.  Never mind.
 
-Yes :)
+> If you don't like this one then we can add another entry
+> into struct policy like: gov_sysfs_parent.
+
+I don't know.  This is going to look kind of ugly this way or another I think.
+
+Maybe I'll figure out something ...
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
