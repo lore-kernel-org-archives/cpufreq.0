@@ -1,50 +1,52 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH -next] imx6q-cpufreq: fix return value check in
- imx6q_cpufreq_probe()
-Date: Fri, 22 Feb 2013 20:53:31 +0800
-Message-ID: <20130222125329.GA18065@S2101-09.ap.freescale.net>
-References: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 54221] New: ondemand cpufeq governor do not notice Node Manager
+ power limit change
+Date: Fri, 22 Feb 2013 12:53:41 +0000 (UTC)
+Message-ID: <bug-54221-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: rjw@sisk.pl, yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Fri, Feb 22, 2013 at 12:39:30PM +0800, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> 
-> In case of error, the function devm_regulator_get() returns
-> ERR_PTR() and never returns NULL. The NULL test in the return
-> value check should be replaced with IS_ERR().
-> 
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+https://bugzilla.kernel.org/show_bug.cgi?id=54221
 
-Thanks for the fixing.
+           Summary: ondemand cpufeq governor do not notice Node Manager
+                    power limit change
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.0.13
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: przemyslaw.witka@intel.com
+        Regression: No
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index d6b6ef3..54e336d 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -245,7 +245,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	arm_reg = devm_regulator_get(cpu_dev, "arm");
->  	pu_reg = devm_regulator_get(cpu_dev, "pu");
->  	soc_reg = devm_regulator_get(cpu_dev, "soc");
-> -	if (!arm_reg || !pu_reg || !soc_reg) {
-> +	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
->  		dev_err(cpu_dev, "failed to get regulators\n");
->  		ret = -ENOENT;
->  		goto put_node;
-> 
-> 
+When ondemand governor is active, CPU is not run at high cpu frequency.
 
+Steps to reproduce:
+
+1. Activate ondemand governor
+2. Run 100% on CPU (check that CPU runs at the highest frequency)
+3. Set Node Manager power limit (policy in CPU domain) to some quite low value
+(cpu should run at low freq)
+4. Remove Node Manager power limit
+
+Expected result:
+CPU should run again at the highest frequency
+
+Actual result:
+CPU runs at low frequency
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
