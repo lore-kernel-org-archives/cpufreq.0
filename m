@@ -1,41 +1,51 @@
-From: =?UTF-8?q?Emilio=20L=C3=B3pez?= <emilio@elopez.com.ar>
-Subject: [PATCH] cpufreq: highbank: do not initialize array with a loop
-Date: Sun, 24 Feb 2013 14:01:17 -0300
-Message-ID: <1361725277-5125-1-git-send-email-emilio@elopez.com.ar>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH/RFC 0/4] CPUFreq for kzm9g
+Date: Mon, 25 Feb 2013 10:43:54 +0900
+Message-ID: <20130225014354.GG17964@verge.net.au>
+References: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Content-Type: text/plain; charset="iso-8859-1"
-To: rjw@sisk.pl, shawn.guo@linaro.org, mark.langsdorf@calxeda.com
-Cc: =?UTF-8?q?Emilio=20L=C3=B3pez?= <emilio@elopez.com.ar>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
 
-QXMgdW5pbml0aWFsaXplZCBhcnJheSBtZW1iZXJzIHdpbGwgYmUgaW5pdGlhbGl6ZWQgdG8gemVy
-bywgd2UgY2FuCmF2b2lkIHVzaW5nIGEgZm9yIGxvb3AgYnkgc2V0dGluZyBhIHZhbHVlIHRvIGl0
-LgoKU2lnbmVkLW9mZi1ieTogRW1pbGlvIEzDs3BleiA8ZW1pbGlvQGVsb3Blei5jb20uYXI+Ci0t
-LQpOb3RlIHRoYXQgSSBkb24ndCBvd24gYW55IGRldmljZSB1c2luZyB0aGlzIGRyaXZlciwgaXQg
-aGFzIG9ubHkgYmVlbiBjb21waWxlCnRlc3RlZCwgYnV0IGl0IHNob3VsZG4ndCBjYXVzZSBhbnkg
-aXNzdWVzLgoKIGRyaXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMgfCA2ICstLS0tLQog
-MSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCA1IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEv
-aGlnaGJhbmstY3B1ZnJlcS5jCmluZGV4IDY2ZTNhNzEuLjMwZDRhZTEgMTAwNjQ0Ci0tLSBhL2Ry
-aXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2hp
-Z2hiYW5rLWNwdWZyZXEuYwpAQCAtMjgsMTMgKzI4LDkgQEAKIAogc3RhdGljIGludCBoYl92b2x0
-YWdlX2NoYW5nZSh1bnNpZ25lZCBpbnQgZnJlcSkKIHsKLQlpbnQgaTsKLQl1MzIgbXNnW0hCX0NQ
-VUZSRVFfSVBDX0xFTl07CisJdTMyIG1zZ1tIQl9DUFVGUkVRX0lQQ19MRU5dID0ge0hCX0NQVUZS
-RVFfQ0hBTkdFX05PVEV9OwogCi0JbXNnWzBdID0gSEJfQ1BVRlJFUV9DSEFOR0VfTk9URTsKIAlt
-c2dbMV0gPSBmcmVxIC8gMTAwMDAwMDsKLQlmb3IgKGkgPSAyOyBpIDwgSEJfQ1BVRlJFUV9JUENf
-TEVOOyBpKyspCi0JCW1zZ1tpXSA9IDA7CiAKIAlyZXR1cm4gcGwzMjBfaXBjX3RyYW5zbWl0KG1z
-Zyk7CiB9Ci0tIAoxLjguMi5yYzAKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2Vy
-bmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1h
-bi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Fri, Feb 22, 2013 at 06:17:50PM +0100, Guennadi Liakhovetski wrote:
+> The first of these patches is a bug-fix, whereas the latter three patches
+> are experimental and might want to be discussed. This patch set is based
+> on an earlier Simon's topic/all+next branch snapshot.
+
+Could you let me know the commit id of the working branch?
+
+> Attempts to use
+> todays checkout failed - I couldn't even boot.
+
+Thanks, I thought that I had tested that but clearly I was mistaken.
+
+The problem appears to be caused by "ARM: shmobile: kzm9g: Populate
+platform devices from device tree" which is present in topic/pinmux.
+
+I will remove that branch from topic/all+next until the problem is resolved.
+I have also removed the topic/eth_sh and topic/intc-of branches from
+topic/all+next as they depend on topic/pinmux.
+
+> Obviously, I'm also using 
+> my AS3711 patches and a number of other (not directly related) patches, 
+> that I'll be posting separately.
+
+It is not obvious to me why you are using other patches.
+
+> Guennadi Liakhovetski (4):
+>   ARM: shmobile: sh73a0: fix Z and ZG clock hierarchy
+>   ARM: shmobile: sh73a0: add support for adjusting CPU frequency
+>   ARM: shmobile: sh73a0: run sh73a0_clock_init() only once
+>   ARM: shmobile: kzm9g-reference: add CPUFreq support
+> 
+>  arch/arm/boot/dts/sh73a0-kzm9g-reference.dts |   19 ++-
+>  arch/arm/mach-shmobile/Kconfig               |    2 +
+>  arch/arm/mach-shmobile/clock-sh73a0.c        |  224 +++++++++++++++++++++++++-
+>  3 files changed, 236 insertions(+), 9 deletions(-)
