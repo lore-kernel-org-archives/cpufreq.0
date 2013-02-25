@@ -1,55 +1,54 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH] cpufreq: fix sign check of an unsigned variable in cpufreq-cpu0
-Date: Mon, 25 Feb 2013 10:42:45 -0800
-Message-ID: <20130225184245.14870.87335@quantum>
-References: <Pine.LNX.4.64.1302251227140.3030@axis700.grange>
- <CAOh2x=n-G0BwhjH+VXgy=+nbsaH0+5FqWHhDoyU=xWp-EH9Zdg@mail.gmail.com>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: Re: [PATCH v4 2/2] cpufreq: Convert the cpufreq_driver_lock to use
+ the rcu
+Date: Mon, 25 Feb 2013 14:07:31 -0600
+Message-ID: <512BC483.8010101@sgi.com>
+References: <51265E0F.6090209@sgi.com> <1361550275-5716-1-git-send-email-nzimmer@sgi.com> <1361550275-5716-3-git-send-email-nzimmer@sgi.com> <CAKohpom9q93cVD61qeht2WXgA=no64dwXowtMHS0wCy0k6qxXw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=n-G0BwhjH+VXgy=+nbsaH0+5FqWHhDoyU=xWp-EH9Zdg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom9q93cVD61qeht2WXgA=no64dwXowtMHS0wCy0k6qxXw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Quoting Viresh Kumar (2013-02-25 04:09:47)
-> On Mon, Feb 25, 2013 at 5:02 PM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> > A "< 0" test for an unsigned variable is meaningless, change the variable
-> > to signed.
-> >
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > ---
-> >
-> > stable?
-> >
-> >  drivers/cpufreq/cpufreq-cpu0.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> > index 52bf36d..e7bad3c 100644
-> > --- a/drivers/cpufreq/cpufreq-cpu0.c
-> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> > @@ -44,7 +44,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
-> >  {
-> >         struct cpufreq_freqs freqs;
-> >         struct opp *opp;
-> > -       unsigned long freq_Hz, volt = 0, volt_old = 0, tol = 0;
-> > +       unsigned long volt = 0, volt_old = 0, tol = 0;
-> > +       long freq_Hz;
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> The disease is spread across a bigger region though.
-> 
-> @Mike: clk_round_rate returns long and __clk_round_rate returns unsigned long
-> and clk_ops->round_rate returns long again.. Don't you see something
-> strange here?
+On 02/22/2013 09:39 PM, Viresh Kumar wrote:
+> Hi Nathan,
+>
+> Sorry for pointing out this so late but i still feel we are missing something
+> really important.
+>
+> On 22 February 2013 21:54, Nathan Zimmer <nzimmer@sgi.com> wrote:
+>
+>> -       read_lock_irqsave(&cpufreq_driver_lock, flags);
+>> +       rcu_read_lock();
+>> +       freqs->flags = rcu_dereference(cpufreq_driver)->flags;
+>>          policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
+>> -       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>> +       rcu_read_unlock();
+>> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
+>> +       spin_lock_irqsave(&cpufreq_driver_lock, flags);
+>>          for_each_cpu(j, policy->cpus) {
+>>                  per_cpu(cpufreq_cpu_data, j) = policy;
+>>                  per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
+>>          }
+>> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>> +       spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> Look at how we are protecting cpufreq_cpu_data here. rcu_read_[un]lock()
+> only marks the start/end of critical section. How are we sure here that
+> cpufreq_cpu_data is not read simultaneously when we are updating it?
+>
+> rcu lock/unlock only works for cpufreq_driver pointer only and not for
+> this data. We still need the same locking for for cpufreq_cpu_data.
+>
+> What do you say?
 
-Yes, this is in my todo list.  I have a branch with some relevant
-changes but I haven't posted it yet.
+That would include putting the lock around the  __cpufreq_cpu_get.
+But I do think your right.
 
-Regards,
-Mike
+Perhaps a better way at this point is to have one lock for 
+cpufreq_cpu_data, and a second with the rcu to protect cpufreq_driver.
+
+
