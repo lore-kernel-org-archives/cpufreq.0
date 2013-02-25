@@ -1,58 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: fix sign check of an unsigned variable in cpufreq-cpu0
-Date: Mon, 25 Feb 2013 17:39:47 +0530
-Message-ID: <CAOh2x=n-G0BwhjH+VXgy=+nbsaH0+5FqWHhDoyU=xWp-EH9Zdg@mail.gmail.com>
-References: <Pine.LNX.4.64.1302251227140.3030@axis700.grange>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH v2] cpufreq: highbank: do not initialize array with a loop
+Date: Mon, 25 Feb 2013 07:53:47 -0600
+Message-ID: <512B6CEB.1030203@calxeda.com>
+References: <1361725277-5125-1-git-send-email-emilio@elopez.com.ar>
+ <1361790465-21760-1-git-send-email-emilio@elopez.com.ar>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=XVqtPU98T6hL+2Afe2hky7mdY07UXjp4NTp3ASkQjyY=;
-        b=IuRzyzBujy9yOfhYDufKjlNA77tS1AMDnm3WDMR+uZ2CI/y89tlSguPHhdXcISvAy3
-         DngB/gPqmK209fHg9Puk6yX8CzMASWfGqsldG0zEH9clIRPi4C0H0KRbTo7nKln1BMZd
-         fqW+PhQ2LD2s/xZUIFeGV/wHsYr6zJpAmbA7YOC7d/LkyPCn2xemfUa9GMkveaiJ85Wj
-         9EVJUhmWDQ6mNCPVLyyp1dHFgjjCzmgae9N5ZFSjPUcjMqyeSEP4Y2GxT6HG9Ej6sTmT
-         KzgYRh3N/a8TTV0S+Cwt6xX2kUT8yWu8cSErfQOrU+wjGhqaXdzhkG9aeIK/WipGgP7o
-         BNjw==
-In-Reply-To: <Pine.LNX.4.64.1302251227140.3030@axis700.grange>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Mike Turquette <mturquette@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1361790465-21760-1-git-send-email-emilio@elopez.com.ar>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?UTF-8?B?RW1pbGlvIEzDs3Bleg==?= <emilio@elopez.com.ar>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Mon, Feb 25, 2013 at 5:02 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> A "< 0" test for an unsigned variable is meaningless, change the variable
-> to signed.
->
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> ---
->
-> stable?
->
->  drivers/cpufreq/cpufreq-cpu0.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 52bf36d..e7bad3c 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -44,7 +44,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
->  {
->         struct cpufreq_freqs freqs;
->         struct opp *opp;
-> -       unsigned long freq_Hz, volt = 0, volt_old = 0, tol = 0;
-> +       unsigned long volt = 0, volt_old = 0, tol = 0;
-> +       long freq_Hz;
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-The disease is spread across a bigger region though.
-
-@Mike: clk_round_rate returns long and __clk_round_rate returns unsigned long
-and clk_ops->round_rate returns long again.. Don't you see something
-strange here?
+T24gMDIvMjUvMjAxMyAwNTowNyBBTSwgRW1pbGlvIEzDs3BleiB3cm90ZToKPiBBcyB1bmluaXRp
+YWxpemVkIGFycmF5IG1lbWJlcnMgd2lsbCBiZSBpbml0aWFsaXplZCB0byB6ZXJvLCB3ZSBjYW4K
+PiBhdm9pZCB1c2luZyBhIGZvciBsb29wIGJ5IHNldHRpbmcgYSB2YWx1ZSB0byBpdC4KPiAKPiBT
+aWduZWQtb2ZmLWJ5OiBFbWlsaW8gTMOzcGV6IDxlbWlsaW9AZWxvcGV6LmNvbS5hcj4KPiAtLS0K
+PiAKPiBOb3RlIHRoYXQgSSBkb24ndCBvd24gYW55IGRldmljZSB1c2luZyB0aGlzIGRyaXZlciwg
+aXQgaGFzIG9ubHkgYmVlbiBjb21waWxlCj4gdGVzdGVkLCBidXQgaXQgc2hvdWxkbid0IGNhdXNl
+IGFueSBpc3N1ZXMuCj4gCj4gQ2hhbmdlcyB2MSAtPiB2MjoKPiAgICogTW92ZSBmcmVxIC8gMTAw
+MDAwMCB0byB0aGUgYXJyYXkgZGVmaW5pdGlvbiBhcyBzdWdnZXN0ZWQgYnkgVmlyZXNoIEt1bWFy
+Cj4gCj4gIGRyaXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMgfCA4ICstLS0tLS0tCj4g
+IDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwgNyBkZWxldGlvbnMoLSkKPiAKPiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2hpZ2hiYW5rLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1
+ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMKPiBpbmRleCA2NmUzYTcxLi5iNjFiNWEzIDEwMDY0NAo+
+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMKPiArKysgYi9kcml2ZXJz
+L2NwdWZyZXEvaGlnaGJhbmstY3B1ZnJlcS5jCj4gQEAgLTI4LDEzICsyOCw3IEBACj4gIAo+ICBz
+dGF0aWMgaW50IGhiX3ZvbHRhZ2VfY2hhbmdlKHVuc2lnbmVkIGludCBmcmVxKQo+ICB7Cj4gLQlp
+bnQgaTsKPiAtCXUzMiBtc2dbSEJfQ1BVRlJFUV9JUENfTEVOXTsKPiAtCj4gLQltc2dbMF0gPSBI
+Ql9DUFVGUkVRX0NIQU5HRV9OT1RFOwo+IC0JbXNnWzFdID0gZnJlcSAvIDEwMDAwMDA7Cj4gLQlm
+b3IgKGkgPSAyOyBpIDwgSEJfQ1BVRlJFUV9JUENfTEVOOyBpKyspCj4gLQkJbXNnW2ldID0gMDsK
+PiArCXUzMiBtc2dbSEJfQ1BVRlJFUV9JUENfTEVOXSA9IHtIQl9DUFVGUkVRX0NIQU5HRV9OT1RF
+LCBmcmVxIC8gMTAwMDAwMH07Cj4gIAo+ICAJcmV0dXJuIHBsMzIwX2lwY190cmFuc21pdChtc2cp
+Owo+ICB9Cj4gClRoYW5rcyBmb3IgdGhlIGltcHJvdmVtZW50LgoKQWNrZWQtQnk6IE1hcmsgTGFu
+Z3Nkb3JmIDxtYXJrLmxhbmdzZG9yZkBjYWx4ZWRhLmNvbT4KCi0tTWFyayBMYW5nc2RvcmYKQ2Fs
+eGVkYSwgSW5jLgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
+bmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8v
+bGludXgtYXJtLWtlcm5lbAo=
