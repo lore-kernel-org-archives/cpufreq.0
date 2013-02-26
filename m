@@ -1,54 +1,51 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: Re: [PATCH v4 2/2] cpufreq: Convert the cpufreq_driver_lock to use
- the rcu
-Date: Mon, 25 Feb 2013 14:07:31 -0600
-Message-ID: <512BC483.8010101@sgi.com>
-References: <51265E0F.6090209@sgi.com> <1361550275-5716-1-git-send-email-nzimmer@sgi.com> <1361550275-5716-3-git-send-email-nzimmer@sgi.com> <CAKohpom9q93cVD61qeht2WXgA=no64dwXowtMHS0wCy0k6qxXw@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/4] ARM: shmobile: sh73a0: fix Z and ZG clock hierarchy
+Date: Tue, 26 Feb 2013 13:29:46 +0900
+Message-ID: <20130226042946.GB26820@verge.net.au>
+References: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
+ <1361553474-27022-2-git-send-email-g.liakhovetski@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom9q93cVD61qeht2WXgA=no64dwXowtMHS0wCy0k6qxXw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1361553474-27022-2-git-send-email-g.liakhovetski@gmx.de>
+Sender: linux-sh-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
 
-On 02/22/2013 09:39 PM, Viresh Kumar wrote:
-> Hi Nathan,
->
-> Sorry for pointing out this so late but i still feel we are missing something
-> really important.
->
-> On 22 February 2013 21:54, Nathan Zimmer <nzimmer@sgi.com> wrote:
->
->> -       read_lock_irqsave(&cpufreq_driver_lock, flags);
->> +       rcu_read_lock();
->> +       freqs->flags = rcu_dereference(cpufreq_driver)->flags;
->>          policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
->> -       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->> +       rcu_read_unlock();
->> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
->> +       spin_lock_irqsave(&cpufreq_driver_lock, flags);
->>          for_each_cpu(j, policy->cpus) {
->>                  per_cpu(cpufreq_cpu_data, j) = policy;
->>                  per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
->>          }
->> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->> +       spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> Look at how we are protecting cpufreq_cpu_data here. rcu_read_[un]lock()
-> only marks the start/end of critical section. How are we sure here that
-> cpufreq_cpu_data is not read simultaneously when we are updating it?
->
-> rcu lock/unlock only works for cpufreq_driver pointer only and not for
-> this data. We still need the same locking for for cpufreq_cpu_data.
->
-> What do you say?
+On Fri, Feb 22, 2013 at 06:17:51PM +0100, Guennadi Liakhovetski wrote:
+> Z and ZG clocks on sh73a0 have pll0 as their parent, not pll1.
 
-That would include putting the lock around the  __cpufreq_cpu_get.
-But I do think your right.
+Thanks I have applied this to the soc5 branch and thus queued it up for v3.10.
+Please let me know if you would prefer me to push it as a fix for v3.9.
+And in that vein, if you regard it as -stable material.
 
-Perhaps a better way at this point is to have one lock for 
-cpufreq_cpu_data, and a second with the rcu to protect cpufreq_driver.
-
-
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> ---
+>  arch/arm/mach-shmobile/clock-sh73a0.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
+> index 5fa106b..71843dd 100644
+> --- a/arch/arm/mach-shmobile/clock-sh73a0.c
+> +++ b/arch/arm/mach-shmobile/clock-sh73a0.c
+> @@ -265,12 +265,12 @@ enum { DIV4_I, DIV4_ZG, DIV4_M3, DIV4_B, DIV4_M1, DIV4_M2,
+>  
+>  static struct clk div4_clks[DIV4_NR] = {
+>  	[DIV4_I] = DIV4(FRQCRA, 20, 0xdff, CLK_ENABLE_ON_INIT),
+> -	[DIV4_ZG] = DIV4(FRQCRA, 16, 0xd7f, CLK_ENABLE_ON_INIT),
+> +	[DIV4_ZG] = SH_CLK_DIV4(&pll0_clk, FRQCRA, 16, 0xd7f, CLK_ENABLE_ON_INIT),
+>  	[DIV4_M3] = DIV4(FRQCRA, 12, 0x1dff, CLK_ENABLE_ON_INIT),
+>  	[DIV4_B] = DIV4(FRQCRA, 8, 0xdff, CLK_ENABLE_ON_INIT),
+>  	[DIV4_M1] = DIV4(FRQCRA, 4, 0x1dff, 0),
+>  	[DIV4_M2] = DIV4(FRQCRA, 0, 0x1dff, 0),
+> -	[DIV4_Z] = DIV4(FRQCRB, 24, 0x97f, 0),
+> +	[DIV4_Z] = SH_CLK_DIV4(&pll0_clk, FRQCRB, 24, 0x97f, 0),
+>  	[DIV4_ZTR] = DIV4(FRQCRB, 20, 0xdff, 0),
+>  	[DIV4_ZT] = DIV4(FRQCRB, 16, 0xdff, 0),
+>  	[DIV4_ZX] = DIV4(FRQCRB, 12, 0xdff, 0),
+> -- 
+> 1.7.2.5
+> 
