@@ -1,57 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [RFC] cpufreq: governor: Set MIN_LATENCY_MULTIPLIER to 20
-Date: Tue, 26 Feb 2013 15:13:32 +0530
-Message-ID: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org>
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [RFC] cpufreq: governor: Set MIN_LATENCY_MULTIPLIER to 20
+Date: Tue, 26 Feb 2013 11:44:19 +0100
+Message-ID: <1993068.XZh8f6yGqe@skinner.arch.suse.de>
+References: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: rjw@sisk.pl, trenn@suse.de
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 
-Currently MIN_LATENCY_MULTIPLIER is set defined as 100 and so on a system w=
-ith
-transition latency of 1 ms, the minimum sampling time comes to be around 10=
-0 ms.
-That is quite big if you want to get better performance for your system.
+On Tuesday, February 26, 2013 03:13:32 PM Viresh Kumar wrote:
+> Currently MIN_LATENCY_MULTIPLIER is set defined as 100 and so on a system
+> with transition latency of 1 ms, the minimum sampling time comes to be
+> around 100 ms. That is quite big if you want to get better performance for
+> your system.
+> 
+> Redefine MIN_LATENCY_MULTIPLIER to 20 so that we can support 20ms sampling
+> rate for such platforms.
 
-Redefine MIN_LATENCY_MULTIPLIER to 20 so that we can support 20ms sampling =
-rate
-for such platforms.
+Redefining MIN_LATENCY_MULTIPLIER shouldn't hurt that much, but this looks
+like a workaround.
+It only modifies the minimal sampling rate that userspace can set.
+You would still need to set something from userspace to get the perfect 
+sampling rate for this platform.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
+I wonder where the cpufreq driver does get the 1ms latency from?
+Is this value valid?
+The driver should return the correct latency, then there is no need for
+workarounds like this.
 
-Hi Guys,
-
-I really don't know how this figure (100) came initially, but we really nee=
-d to
-have 20ms support for my platform: ARM TC2.
-
-Pushed here:
-
-http://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dshortlog;h=3D=
-refs/heads/cpufreq-fixes
-
- drivers/cpufreq/cpufreq_governor.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_g=
-overnor.h
-index d2ac911..adb8e30 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -34,7 +34,7 @@
-  */
- #define MIN_SAMPLING_RATE_RATIO=09=09=09(2)
- #define LATENCY_MULTIPLIER=09=09=09(1000)
--#define MIN_LATENCY_MULTIPLIER=09=09=09(100)
-+#define MIN_LATENCY_MULTIPLIER=09=09=09(20)
- #define TRANSITION_LATENCY_LIMIT=09=09(10 * 1000 * 1000)
-=20
- /* Ondemand Sampling types */
---=20
-1.7.12.rc2.18.g61b472e
-
+      Thomas
