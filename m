@@ -1,50 +1,49 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH/RFC v2 0/2] CPUFreq for kzm9g
-Date: Tue, 26 Feb 2013 21:08:14 +0900
-Message-ID: <CANqRtoSpu3V5KC-POq7+y0NpRx6yNfdZFfgaxa7Lv1gU1rO53Q@mail.gmail.com>
-References: <Pine.LNX.4.64.1302251644010.3030@axis700.grange>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/4] ARM: shmobile: sh73a0: fix Z and ZG clock hierarchy
+Date: Tue, 26 Feb 2013 21:15:27 +0900
+Message-ID: <20130226121527.GC17704@verge.net.au>
+References: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
+ <1361553474-27022-2-git-send-email-g.liakhovetski@gmx.de>
+ <20130226042946.GB26820@verge.net.au>
+ <CANqRtoRjs=OxsoUQrcL6nJG-o1RpxefO3BrjBj_A2GV8HNW=qQ@mail.gmail.com>
+ <20130226054319.GA25356@verge.net.au>
+ <Pine.LNX.4.64.1302260707480.15531@axis700.grange>
 Mime-Version: 1.0
 Return-path: <linux-sh-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type;
-        bh=vQv2ytB8k6YL6/GedTc8t/hEYReNj9sb8ckkQwWaDaI=;
-        b=kiN0/iEq8CS9z/EDxYZaymjDooeBD78YIARCROb+KQ0msk1riCYcOLZF/aAACl/MvY
-         oZpN5IHxU4ea50En6CDh80fgtFSZVp7lQQUBm7z2nazpHjUTN7PSOtm552fyS1oet14h
-         WySUFMM1EKZ3JITNTxAPl2cqdsZThjEUZZ3AFl0HZTlUgArTgr+cUIiQIakk5zRvPQNw
-         B7+Mndkh4Z+d4YH1xIIncg45Sb1iJseCo6Apivb+yAhr03n5R3KJYSpQ9opsw7m4ddcf
-         bxq90/g+HzouxhuKiL4fLtJB8KwcM2PPSILntxHrCRPhtBD4IWGvCl3Eb3VDFvc/nymv
-         vuqQ==
-In-Reply-To: <Pine.LNX.4.64.1302251644010.3030@axis700.grange>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1302260707480.15531@axis700.grange>
 Sender: linux-sh-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-sh@vger.kernel.org, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
 
-On Tue, Feb 26, 2013 at 2:16 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> In v2 of this patch-set I dropped patches 1 and 3, because #1 is a bug-fix
-> and can go in separately, #3 is more of a debugging help, than a real
-> patch for mainlining. Of the remaining 2 patches the main difference to v1
-> is the omission of the PLL0 manipulation. More is explained in respective
-> patches.
->
-> Guennadi Liakhovetski (2):
->   ARM: shmobile: sh73a0: add support for adjusting CPU frequency
->   ARM: shmobile: kzm9g-reference: add CPUFreq support
+On Tue, Feb 26, 2013 at 07:09:00AM +0100, Guennadi Liakhovetski wrote:
+> Hi Simon
+> 
+> On Tue, 26 Feb 2013, Simon Horman wrote:
+> 
+> > On Tue, Feb 26, 2013 at 02:36:24PM +0900, Magnus Damm wrote:
+> > > On Tue, Feb 26, 2013 at 1:29 PM, Simon Horman <horms@verge.net.au> wrote:
+> > > > On Fri, Feb 22, 2013 at 06:17:51PM +0100, Guennadi Liakhovetski wrote:
+> > > >> Z and ZG clocks on sh73a0 have pll0 as their parent, not pll1.
+> > > >
+> > > > Thanks I have applied this to the soc5 branch and thus queued it up for v3.10.
+> > > > Please let me know if you would prefer me to push it as a fix for v3.9.
+> > > > And in that vein, if you regard it as -stable material.
+> > > 
+> > > Thanks.
+> > > 
+> > > Perhaps other people disagree, but I recommend not being so trigger
+> > > happy with -stable unless it will potentially give us some upside.
+> > > AFAIK there is no in-tree consumer of this clock anyway, so involving
+> > > -stable without further testing seems like a lot of hassle with no
+> > > real benefit.
+> > 
+> > If there is no in-tree consumer then it is not v3.9 or -stable material.
+> 
+> Just to confirm, that I'm not aware of any current consumers of these 
+> clocks, so, no rush with stable.
 
-Hi Guennadi,
-
-Thanks for your work on this. In general I am quite happy about this series.
-
-One rather significant question is however this: Would it be possible
-for you to check if the TWD is operating as expected when you scale
-the CPU Frequency? I suspect it is not, so please cook up a v3 of this
-series that also includes updates for timers.
-
-Cheers,
-
-/ magnus
+Thanks. I'll leave it queued up for 3.10.
