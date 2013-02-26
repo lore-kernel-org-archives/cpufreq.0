@@ -1,50 +1,57 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/4] ARM: shmobile: sh73a0: fix Z and ZG clock hierarchy
-Date: Tue, 26 Feb 2013 07:09:00 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.1302260707480.15531@axis700.grange>
-References: <1361553474-27022-1-git-send-email-g.liakhovetski@gmx.de>
- <1361553474-27022-2-git-send-email-g.liakhovetski@gmx.de>
- <20130226042946.GB26820@verge.net.au> <CANqRtoRjs=OxsoUQrcL6nJG-o1RpxefO3BrjBj_A2GV8HNW=qQ@mail.gmail.com>
- <20130226054319.GA25356@verge.net.au>
-Mime-Version: 1.0
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20130226054319.GA25356@verge.net.au>
-Sender: linux-sh-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [RFC] cpufreq: governor: Set MIN_LATENCY_MULTIPLIER to 20
+Date: Tue, 26 Feb 2013 15:13:32 +0530
+Message-ID: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Simon Horman <horms@verge.net.au>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+To: rjw@sisk.pl, trenn@suse.de
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Simon
+Currently MIN_LATENCY_MULTIPLIER is set defined as 100 and so on a system w=
+ith
+transition latency of 1 ms, the minimum sampling time comes to be around 10=
+0 ms.
+That is quite big if you want to get better performance for your system.
 
-On Tue, 26 Feb 2013, Simon Horman wrote:
+Redefine MIN_LATENCY_MULTIPLIER to 20 so that we can support 20ms sampling =
+rate
+for such platforms.
 
-> On Tue, Feb 26, 2013 at 02:36:24PM +0900, Magnus Damm wrote:
-> > On Tue, Feb 26, 2013 at 1:29 PM, Simon Horman <horms@verge.net.au> wrote:
-> > > On Fri, Feb 22, 2013 at 06:17:51PM +0100, Guennadi Liakhovetski wrote:
-> > >> Z and ZG clocks on sh73a0 have pll0 as their parent, not pll1.
-> > >
-> > > Thanks I have applied this to the soc5 branch and thus queued it up for v3.10.
-> > > Please let me know if you would prefer me to push it as a fix for v3.9.
-> > > And in that vein, if you regard it as -stable material.
-> > 
-> > Thanks.
-> > 
-> > Perhaps other people disagree, but I recommend not being so trigger
-> > happy with -stable unless it will potentially give us some upside.
-> > AFAIK there is no in-tree consumer of this clock anyway, so involving
-> > -stable without further testing seems like a lot of hassle with no
-> > real benefit.
-> 
-> If there is no in-tree consumer then it is not v3.9 or -stable material.
-
-Just to confirm, that I'm not aware of any current consumers of these 
-clocks, so, no rush with stable.
-
-Thanks
-Guennadi
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+
+Hi Guys,
+
+I really don't know how this figure (100) came initially, but we really nee=
+d to
+have 20ms support for my platform: ARM TC2.
+
+Pushed here:
+
+http://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dshortlog;h=3D=
+refs/heads/cpufreq-fixes
+
+ drivers/cpufreq/cpufreq_governor.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_g=
+overnor.h
+index d2ac911..adb8e30 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -34,7 +34,7 @@
+  */
+ #define MIN_SAMPLING_RATE_RATIO=09=09=09(2)
+ #define LATENCY_MULTIPLIER=09=09=09(1000)
+-#define MIN_LATENCY_MULTIPLIER=09=09=09(100)
++#define MIN_LATENCY_MULTIPLIER=09=09=09(20)
+ #define TRANSITION_LATENCY_LIMIT=09=09(10 * 1000 * 1000)
+=20
+ /* Ondemand Sampling types */
+--=20
+1.7.12.rc2.18.g61b472e
+
