@@ -1,62 +1,44 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [RFC] cpufreq: governor: Set MIN_LATENCY_MULTIPLIER to 20
-Date: Tue, 26 Feb 2013 13:24:57 +0100
-Message-ID: <1457024.oessUW7SMx@skinner.arch.suse.de>
-References: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org> <1993068.XZh8f6yGqe@skinner.arch.suse.de> <CAKohpomt+7YtD5s+XJ5-boCu_atCB0kHhuifWOGVwy7DqnBLPA@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 54541] New: Cpu frequency don't work in conky with kernel
+ 3.9.0.0.rc0.git8
+Date: Wed, 27 Feb 2013 07:32:47 +0000 (UTC)
+Message-ID: <bug-54541-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomt+7YtD5s+XJ5-boCu_atCB0kHhuifWOGVwy7DqnBLPA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Tuesday, February 26, 2013 04:20:07 PM Viresh Kumar wrote:
-> On 26 February 2013 16:14, Thomas Renninger <trenn@suse.de> wrote:
-> > Redefining MIN_LATENCY_MULTIPLIER shouldn't hurt that much, but this looks
-> > like a workaround.
-> > It only modifies the minimal sampling rate that userspace can set.
-> 
-> Yes.
-> 
-> > You would still need to set something from userspace to get the perfect
-> > sampling rate for this platform.
-> 
-> Yes. We still need to fix sampling rate from userspace.
-> 
-> > I wonder where the cpufreq driver does get the 1ms latency from?
-> > Is this value valid?
-> > The driver should return the correct latency, then there is no need for
-> > workarounds like this.
-> 
-> I am talking about ARM Vexpress TC2 (Test Chip) big LITTLE SoC here. Its
-> not a production type SoC and freq change is a bit slow here. Its really
-> around 1 ms :)
-> 
-> But the real systems may not have this big of latency.
-> 
-> Anyway, how do you come to 100 value in your initial patch. What motivated
-> you to fix it there?
-Iirc there were two things:
-   - max latency does not make any sense at all and it got reverted
-   - min latency makes some sense -> prevent a system to get unresponsive
-     due to too small sampling rate forced by userspace.
-     I reduced the min_sampling rate calculation to better be able to test
-     best sampling rate values by trying them out.
+https://bugzilla.kernel.org/show_bug.cgi?id=54541
 
-But I agree, that it should not harm to lower the MIN_LATENCY_MULTIPLIER.
-In fact it doesn't change anything as long as userspace does not override
-the sample factor and the system should still not stall (this is what the 
-min_sampling_rate tries to prevent).
+           Summary: Cpu frequency don't work in conky with kernel
+                    3.9.0.0.rc0.git8
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.9.0.0.rc0.git8
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: chepioq@gmail.com
+        Regression: No
 
-So from what you describe above:
-This patch makes sense, especially to test and debug some early HW where
-latency values might be big (or bogus). Then the developer can still enforce
-lower polling rates, but they can still not be that low that userspace is able 
-to stall the system.
 
-No objections from my side if this patch helps you to get further.
+I use fedora, and test fedora 19 rawhide.
+I use conky, and see with him cpu frequencies.
 
-   Thomas
+With kernel 3.8, that work fine, I can see my cpu frequencies, 800Mhz to 2300
+Mhz, but with kernel 3.9.0.0, that don't work, I just can see 782 Mhz, with no
+change.
+I don't if it's a kernel bug or a fedora bug.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
