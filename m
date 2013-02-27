@@ -1,155 +1,60 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 54541] Cpu frequency don't work in conky with kernel
- 3.9.0.0.rc0.git8
-Date: Wed, 27 Feb 2013 07:41:37 +0000 (UTC)
-Message-ID: <20130227074137.E0C0A11FB5A@bugzilla.kernel.org>
-References: <bug-54541-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-54541-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/3] workqueue: define mod_scheduled_delayed_work[_on]() helpers
+Date: Wed, 27 Feb 2013 16:59:10 +0530
+Message-ID: <5249868a014d716eb38cc90e04ed0f6051e65fc3.1361964515.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, rickard.andersson@stericsson.com, fabio.baltieri@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=54541
+The only difference between schedule_delayed_work[_on]() and
+queue_delayed_work[_on]() is the workqueue, work is scheduled on. We may ne=
+ed to
+modify the delay for works queued with schedule_delayed_work[_on]() calls a=
+nd
+thus adding these helpers.
+
+First users of these new helpers is cpufreq governors which need to modify =
+the
+delay for its works.
+
+Cc: Tejun Heo <tj@kernel.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ include/linux/workqueue.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 2b58905..864c2b3 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -412,6 +412,7 @@ extern bool schedule_delayed_work_on(int cpu, struct de=
+layed_work *work,
+ extern bool schedule_delayed_work(struct delayed_work *work,
+ =09=09=09=09  unsigned long delay);
+ extern int schedule_on_each_cpu(work_func_t func);
++
+ extern int keventd_up(void);
+=20
+ int execute_in_process_context(work_func_t fn, struct execute_work *);
+@@ -465,6 +466,11 @@ static inline long work_on_cpu(unsigned int cpu, long =
+(*fn)(void *), void *arg)
+ long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg);
+ #endif /* CONFIG_SMP */
+=20
++#define mod_scheduled_delayed_work_on(cpu, dwork, delay)=09\
++=09mod_delayed_work_on(cpu, system_wq, dwork, delay)
++#define mod_scheduled_delayed_work(dwork, delay)=09=09\
++=09mod_delayed_work(system_wq, dwork, delay)
++
+ #ifdef CONFIG_FREEZER
+ extern void freeze_workqueues_begin(void);
+ extern bool freeze_workqueues_busy(void);
+--=20
+1.7.12.rc2.18.g61b472e
 
 
-
-
-
---- Comment #1 from chepioq <chepioq@gmail.com>  2013-02-27 07:41:37 ---
-For info a cat /proc/cpuinfo return same result : 
-
-[dominique@host ~]$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 42
-model name      : Intel(R) Core(TM) i3-2350M CPU @ 2.30GHz
-stepping        : 7
-microcode       : 0x28
-cpu MHz         : 782.000
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 4
-core id         : 0
-cpu cores       : 2
-apicid          : 0
-initial apicid  : 0
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 13
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16
-xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm
-arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
-bogomips        : 4589.61
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 42
-model name      : Intel(R) Core(TM) i3-2350M CPU @ 2.30GHz
-stepping        : 7
-microcode       : 0x28
-cpu MHz         : 782.000
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 4
-core id         : 1
-cpu cores       : 2
-apicid          : 2
-initial apicid  : 2
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 13
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16
-xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm
-arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
-bogomips        : 4589.61
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
-processor       : 2
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 42
-model name      : Intel(R) Core(TM) i3-2350M CPU @ 2.30GHz
-stepping        : 7
-microcode       : 0x28
-cpu MHz         : 782.000
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 4
-core id         : 0
-cpu cores       : 2
-apicid          : 1
-initial apicid  : 1
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 13
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16
-xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm
-arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
-bogomips        : 4589.61
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
-processor       : 3
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 42
-model name      : Intel(R) Core(TM) i3-2350M CPU @ 2.30GHz
-stepping        : 7
-microcode       : 0x28
-cpu MHz         : 782.000
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 4
-core id         : 1
-cpu cores       : 2
-apicid          : 3
-initial apicid  : 3
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 13
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16
-xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer xsave avx lahf_lm
-arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
-bogomips        : 4589.61
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
-[dominique@host ~]$
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
