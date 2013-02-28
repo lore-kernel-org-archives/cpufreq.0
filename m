@@ -1,75 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH linux-next] cpufreq: governors: Calculate iowait time only
- when necessary
-Date: Thu, 28 Feb 2013 12:28:11 +0530
-Message-ID: <CAOh2x==vxM+qoebcUGNca50oeszwnqSfSzVPSEOyS6GKENudeg@mail.gmail.com>
-References: <512E45E9.5020801@semaphore.gr>
-Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=UFGEciLdkinVYlm7vtSIX4FqMXCiJIMiRp9qgPphgzM=;
-        b=Fj+QDlrtf0imwHphvq+SrP32c/p5mPDXg9Th/Kv8cCV65BdZH92xWqPr/kQR0wJ6Oe
-         9lEVth1v+3ahvZSIq2aVosAXjY8CLhTKpSuzAUo0qRiCngFhRCZ295pOHCQtL2ptNgUX
-         bwJGS1ZydyUv0QQS05kedROobWvcYy6UR4HqSC/h8ckC7WnCzQNqamPcgSG8KLnwssd9
-         igGLV3b7YVE9d9Q92ciKPRTBdoXU5kj6NQE0wpxdQd6e65jKitavDTEr8jZRLCGhYhLp
-         5HodQ7wIduYZJqlmiHVPsSm3NLJNZ0FhY1kcl0KcjdJ5Czb5ENJkWEXqAZj4efJQFIv1
-         ptdQ==
-In-Reply-To: <512E45E9.5020801@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH v3 1/3] ARM: shmobile: sh73a0: wait for completion when kicking the clock
+Date: Thu, 28 Feb 2013 13:21:58 +0100
+Message-ID: <1362054120-8600-2-git-send-email-g.liakhovetski@gmx.de>
+References: <1362054120-8600-1-git-send-email-g.liakhovetski@gmx.de>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1362054120-8600-1-git-send-email-g.liakhovetski@gmx.de>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-sh@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-On Wed, Feb 27, 2013 at 11:14 PM, Stratos Karafotis
-<stratosk@semaphore.gr> wrote:
-> Currently we always calculate the CPU iowait time and add it to idle time.
-> If we are in ondemand and we use io_is_busy, we re-calculate iowait time
-> and we subtract it from idle time.
->
-> With this patch iowait time is calculated only when necessary avoiding
-> the double call to get_cpu_iowait_time_us. We use a parameter in
-> function get_cpu_idle_time to distinguish when the iowait time will be
-> added to idle time or not, without the need of keeping the prev_io_wait.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |  2 +-
->  drivers/cpufreq/cpufreq_governor.c     | 46 +++++++++++++---------------------
->  drivers/cpufreq/cpufreq_governor.h     |  3 +--
->  drivers/cpufreq/cpufreq_ondemand.c     | 11 +++++++-
->  4 files changed, 29 insertions(+), 33 deletions(-)
+To reconfigure clocks, controlled by FRQCRA and FRQCRB, a kick bit has to
+be set and to make sure the setting has taken effect, it has to be read
+back repeatedly until it is cleared by the hardware. This patch adds the
+waiting part, that was missing until now.
 
-I have really spent some 10-15 minutes reviewing this patch as initially it
-looked to me like something is missing here and calculations are going wrong.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
-But it was fine :)
+As noted in patch 0/3, this patch affects existing systems, but AFAICS 
+only theoretically - so far nobody is changing clock rates of any of the 
+FRQCRA and FRQCRB clocks. Still, please, handle with care.
 
+ arch/arm/mach-shmobile/clock-sh73a0.c |   23 +++++++++++++++++------
+ 1 files changed, 17 insertions(+), 6 deletions(-)
 
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index f3eb26c..46be2c4 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -339,11 +339,20 @@ static ssize_t store_io_is_busy(struct kobject *a, struct attribute *b,
->  {
+diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
+index 71843dd..34b5c5a 100644
+--- a/arch/arm/mach-shmobile/clock-sh73a0.c
++++ b/arch/arm/mach-shmobile/clock-sh73a0.c
+@@ -21,6 +21,7 @@
+ #include <linux/io.h>
+ #include <linux/sh_clk.h>
+ #include <linux/clkdev.h>
++#include <asm/processor.h>
+ #include <mach/common.h>
+ 
+ #define FRQCRA		IOMEM(0xe6150000)
+@@ -234,14 +235,24 @@ static struct clk *main_clks[] = {
+ 	&sh73a0_extalr_clk,
+ };
+ 
+-static void div4_kick(struct clk *clk)
++static int frqcr_kick(void)
+ {
+-	unsigned long value;
++	int i;
++
++	/* set KICK bit in FRQCRB to update hardware setting, check success */
++	__raw_writel(__raw_readl(FRQCRB) | (1 << 31), FRQCRB);
++	for (i = 1000; i; i--)
++		if (__raw_readl(FRQCRB) & (1 << 31))
++			cpu_relax();
++		else
++			return i;
++
++	return -ETIMEDOUT;
++}
+ 
+-	/* set KICK bit in FRQCRB to update hardware setting */
+-	value = __raw_readl(FRQCRB);
+-	value |= (1 << 31);
+-	__raw_writel(value, FRQCRB);
++static void div4_kick(struct clk *clk)
++{
++	frqcr_kick();
+ }
+ 
+ static int divisors[] = { 2, 3, 4, 6, 8, 12, 16, 18,
+-- 
+1.7.2.5
 
-> +       /* we need to re-evaluate prev_cpu_idle */
-> +       for_each_online_cpu(j) {
-> +               struct od_cpu_dbs_info_s *dbs_info;
-> +               dbs_info = &per_cpu(od_cpu_dbs_info, j);
-
-Probably squash above two lines and give a blank line after it.
-
-> +               dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-> +                       &dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
-> +       }
->         return count;
->  }
-
-And after that add my:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
