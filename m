@@ -1,207 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 linux-next] cpufreq: governors: Calculate iowait time
- only when necessary
-Date: Fri, 1 Mar 2013 09:18:08 +0530
-Message-ID: <CAKohponkj++4AkW__i7vWykURkAkgiHGLMX973KWMjQw9sTQYg@mail.gmail.com>
-References: <512E45E9.5020801@semaphore.gr>
-	<CAOh2x==vxM+qoebcUGNca50oeszwnqSfSzVPSEOyS6GKENudeg@mail.gmail.com>
-	<512F8C7C.2020101@semaphore.gr>
+From: Josh Boyer <jwboyer@redhat.com>
+Subject: Divide error in intel_pstate_set_policy
+Date: Fri, 1 Mar 2013 09:13:05 -0500
+Message-ID: <20130301141305.GD31649@hansolo.jdub.homelinux.org>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <512F8C7C.2020101@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 28 February 2013 22:27, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Currently we always calculate the CPU iowait time and add it to idle time.
-> If we are in ondemand and we use io_is_busy, we re-calculate iowait time
-> and we subtract it from idle time.
->
-> With this patch iowait time is calculated only when necessary avoiding
-> the double call to get_cpu_iowait_time_us. We use a parameter in
-> function get_cpu_idle_time to distinguish when the iowait time will be
-> added to idle time or not, without the need of keeping the prev_io_wait.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |  2 +-
->  drivers/cpufreq/cpufreq_governor.c     | 46 +++++++++++++---------------------
->  drivers/cpufreq/cpufreq_governor.h     |  3 +--
->  drivers/cpufreq/cpufreq_ondemand.c     | 11 +++++++-
->  4 files changed, 29 insertions(+), 33 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 4fd0006..dfe652c 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -242,7 +242,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
->                 struct cs_cpu_dbs_info_s *dbs_info;
->                 dbs_info = &per_cpu(cs_cpu_dbs_info, j);
->                 dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-> -                                               &dbs_info->cdbs.prev_cpu_wall);
-> +                                       &dbs_info->cdbs.prev_cpu_wall, 0);
->                 if (cs_tuners.ignore_nice)
->                         dbs_info->cdbs.prev_cpu_nice =
->                                 kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 5a76086..a322bda 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -50,13 +50,13 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
->         return cputime_to_usecs(idle_time);
->  }
->
-> -u64 get_cpu_idle_time(unsigned int cpu, u64 *wall)
-> +u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
->  {
->         u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
->
->         if (idle_time == -1ULL)
->                 return get_cpu_idle_time_jiffy(cpu, wall);
-> -       else
-> +       else if (!io_busy)
->                 idle_time += get_cpu_iowait_time_us(cpu, wall);
->
->         return idle_time;
-> @@ -83,13 +83,22 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->         /* Get Absolute Load (in terms of freq for ondemand gov) */
->         for_each_cpu(j, policy->cpus) {
->                 struct cpu_dbs_common_info *j_cdbs;
-> -               u64 cur_wall_time, cur_idle_time, cur_iowait_time;
-> -               unsigned int idle_time, wall_time, iowait_time;
-> +               u64 cur_wall_time, cur_idle_time;
-> +               unsigned int idle_time, wall_time;
->                 unsigned int load;
-> +               int io_busy = 0;
->
->                 j_cdbs = dbs_data->get_cpu_cdbs(j);
->
-> -               cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
-> +               /*
-> +                * For the purpose of ondemand, waiting for disk IO is
-> +                * an indication that you're performance critical, and
-> +                * not that the system is actually idle. So do not add
-> +                * the iowait time to the cpu idle time.
-> +                */
-> +               if (dbs_data->governor == GOV_ONDEMAND)
-> +                       io_busy = od_tuners->io_is_busy;
-> +               cur_idle_time = get_cpu_idle_time(j, &cur_wall_time, io_busy);
->
->                 wall_time = (unsigned int)
->                         (cur_wall_time - j_cdbs->prev_cpu_wall);
-> @@ -117,29 +126,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->                         idle_time += jiffies_to_usecs(cur_nice_jiffies);
->                 }
->
-> -               if (dbs_data->governor == GOV_ONDEMAND) {
-> -                       struct od_cpu_dbs_info_s *od_j_dbs_info =
-> -                               dbs_data->get_cpu_dbs_info_s(cpu);
-> -
-> -                       cur_iowait_time = get_cpu_iowait_time_us(j,
-> -                                       &cur_wall_time);
-> -                       if (cur_iowait_time == -1ULL)
-> -                               cur_iowait_time = 0;
-> -
-> -                       iowait_time = (unsigned int) (cur_iowait_time -
-> -                                       od_j_dbs_info->prev_cpu_iowait);
-> -                       od_j_dbs_info->prev_cpu_iowait = cur_iowait_time;
-> -
-> -                       /*
-> -                        * For the purpose of ondemand, waiting for disk IO is
-> -                        * an indication that you're performance critical, and
-> -                        * not that the system is actually idle. So subtract the
-> -                        * iowait time from the cpu idle time.
-> -                        */
-> -                       if (od_tuners->io_is_busy && idle_time >= iowait_time)
-> -                               idle_time -= iowait_time;
-> -               }
-> -
->                 if (unlikely(!wall_time || wall_time < idle_time))
->                         continue;
->
-> @@ -207,6 +193,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
->         struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->         struct cpu_dbs_common_info *cpu_cdbs;
->         unsigned int *sampling_rate, latency, ignore_nice, j, cpu = policy->cpu;
-> +       int io_busy = 0;
->         int rc;
->
->         cpu_cdbs = dbs_data->get_cpu_cdbs(cpu);
-> @@ -221,6 +208,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
->                 sampling_rate = &od_tuners->sampling_rate;
->                 ignore_nice = od_tuners->ignore_nice;
->                 od_ops = dbs_data->gov_ops;
-> +               io_busy = od_tuners->io_is_busy;
->         }
->
->         switch (event) {
-> @@ -237,7 +225,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
->                         j_cdbs->cpu = j;
->                         j_cdbs->cur_policy = policy;
->                         j_cdbs->prev_cpu_idle = get_cpu_idle_time(j,
-> -                                       &j_cdbs->prev_cpu_wall);
-> +                                              &j_cdbs->prev_cpu_wall, io_busy);
->                         if (ignore_nice)
->                                 j_cdbs->prev_cpu_nice =
->                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index d2ac911..534dfae 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -87,7 +87,6 @@ struct cpu_dbs_common_info {
->
->  struct od_cpu_dbs_info_s {
->         struct cpu_dbs_common_info cdbs;
-> -       u64 prev_cpu_iowait;
->         struct cpufreq_frequency_table *freq_table;
->         unsigned int freq_lo;
->         unsigned int freq_lo_jiffies;
-> @@ -169,7 +168,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
->         return delay;
->  }
->
-> -u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
-> +u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
->  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
->  bool need_load_eval(struct cpu_dbs_common_info *cdbs,
->                 unsigned int sampling_rate);
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index f3eb26c..74dd3ae 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -339,11 +339,20 @@ static ssize_t store_io_is_busy(struct kobject *a, struct attribute *b,
->  {
->         unsigned int input;
->         int ret;
-> +       unsigned int j;
->
->         ret = sscanf(buf, "%u", &input);
->         if (ret != 1)
->                 return -EINVAL;
->         od_tuners.io_is_busy = !!input;
-> +
-> +       /* we need to re-evaluate prev_cpu_idle */
-> +       for_each_online_cpu(j) {
-> +               struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
-> +                                                                       j);
-> +               dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-> +                       &dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
-> +       }
->         return count;
->  }
->
-> @@ -411,7 +420,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
->                 struct od_cpu_dbs_info_s *dbs_info;
->                 dbs_info = &per_cpu(od_cpu_dbs_info, j);
->                 dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-> -                                               &dbs_info->cdbs.prev_cpu_wall);
-> +                       &dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
->                 if (od_tuners.ignore_nice)
->                         dbs_info->cdbs.prev_cpu_nice =
->                                 kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+Hi,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.,org>
+We've had a report[1] that the intel_pstate driver will panic on boot
+under certain virtual machine environments.  Thus far it seems VMWare
+and Hyper-V both see this.  While this may be because of something those
+VMs are doing, the driver probably shouldn't cause a panic if it's
+getting some iffy data.
+
+Oops below. This was with Linus' tree as of Linux v3.8-9456-g309667e.
+
+josh
+
+[1] https://bugzilla.redhat.com/show_bug.cgi?id=916833
+
+[    5.740065] Intel P-state driver initializing.
+[    5.741503] Intel pstate controlling: cpu 0
+[    5.742983] divide error: 0000 [#1] SMP 
+[    5.744284] Modules linked in:
+[    5.745225] CPU 0 
+[    5.745612] Pid: 1, comm: swapper/0 Not tainted 3.9.0-0.rc0.git11.1.fc19.x86_64 #1 VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform
+[    5.750186] RIP: 0010:[<ffffffff8158562d>]  [<ffffffff8158562d>] intel_pstate_set_policy+0x6d/0x130
+[    5.752686] RSP: 0018:ffff880033535bb0  EFLAGS: 00010246
+[    5.754478] RAX: 0000000000000000 RBX: ffff880033535c10 RCX: 0000000000000000
+[    5.757091] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+[    5.759356] RBP: ffff880033535bc0 R08: a3d70a3d70a3d70b R09: 0000000000000064
+[    5.761265] R10: 0000000000000000 R11: 0000000000000064 R12: ffff88002ace2760
+[    5.763102] R13: 0000000000000000 R14: 0000000000000040 R15: 0000000000000040
+[    5.765004] FS:  0000000000000000(0000) GS:ffff880036600000(0000) knlGS:0000000000000000
+[    5.767496] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[    5.769486] CR2: 0000000000000000 CR3: 0000000001c0c000 CR4: 00000000000407f0
+[    5.771679] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[    5.773942] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[    5.775722] Process swapper/0 (pid: 1, threadinfo ffff880033534000, task ffff880033538000)
+[    5.778419] Stack:
+[    5.779495]  0000000000000000 ffff880033535c10 ffff880033535bf0 ffffffff8157d773
+[    5.781799]  ffff88002ace2808 ffff88002ace2760 0000000000000000 0000000000000040
+[    5.784320]  ffff880033535d88 ffffffff8157dd74 ffff880000000000 0000000000000282
+[    5.786624] Call Trace:
+[    5.787644]  [<ffffffff8157d773>] __cpufreq_set_policy+0x103/0x280
+[    5.789789]  [<ffffffff8157dd74>] cpufreq_add_dev_interface+0x294/0x350
+[    5.791991]  [<ffffffff8157daa0>] ? cpufreq_update_policy+0x1b0/0x1b0
+[    5.793740]  [<ffffffff8157ec4f>] cpufreq_add_dev+0x4af/0x5e0
+[    5.795496]  [<ffffffff8146ed49>] subsys_interface_register+0xa9/0xf0
+[    5.797269]  [<ffffffff8157c63f>] cpufreq_register_driver+0x9f/0x200
+[    5.799054]  [<ffffffff81f5ea0c>] ? intel_pstate_setup+0x2f/0x2f
+[    5.800932]  [<ffffffff81f5ea9c>] intel_pstate_init+0x90/0x143
+[    5.802796]  [<ffffffff8100210a>] do_one_initcall+0x10a/0x160
+[    5.804657]  [<ffffffff81f1f09c>] kernel_init_freeable+0x17c/0x202
+[    5.806830]  [<ffffffff81f1e88b>] ? do_early_param+0x88/0x88
+[    5.808404]  [<ffffffff816fb6f0>] ? rest_init+0x150/0x150
+[    5.809862]  [<ffffffff816fb6fe>] kernel_init+0xe/0x190
+[    5.811507]  [<ffffffff8172502c>] ret_from_fork+0x7c/0xb0
+[    5.813352]  [<ffffffff816fb6f0>] ? rest_init+0x150/0x150
+[    5.814812] Code: 41 ba 64 00 00 00 8b 7b 1c 31 d2 41 b9 64 00 00 00 49 b8 0b d7 a3 70 3d 0a d7 a3 41 bb 64 00 00 00 41 0f af c2 45 31 d2 44 89 d1 <f7> f7 85 c0 41 0
+f 48 c2 48 63 f0 83 fe 64 49 0f 4f f1 89 35 b3
