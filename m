@@ -1,90 +1,207 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v3 1/3] ARM: shmobile: sh73a0: wait for completion when
- kicking the clock
-Date: Fri, 1 Mar 2013 11:52:25 +0900
-Message-ID: <20130301025222.GA32306@verge.net.au>
-References: <1362054120-8600-1-git-send-email-g.liakhovetski@gmx.de>
- <1362054120-8600-2-git-send-email-g.liakhovetski@gmx.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 linux-next] cpufreq: governors: Calculate iowait time
+ only when necessary
+Date: Fri, 1 Mar 2013 09:18:08 +0530
+Message-ID: <CAKohponkj++4AkW__i7vWykURkAkgiHGLMX973KWMjQw9sTQYg@mail.gmail.com>
+References: <512E45E9.5020801@semaphore.gr>
+	<CAOh2x==vxM+qoebcUGNca50oeszwnqSfSzVPSEOyS6GKENudeg@mail.gmail.com>
+	<512F8C7C.2020101@semaphore.gr>
 Mime-Version: 1.0
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1362054120-8600-2-git-send-email-g.liakhovetski@gmx.de>
-Sender: linux-sh-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <512F8C7C.2020101@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2013 at 01:21:58PM +0100, Guennadi Liakhovetski wrote:
-> To reconfigure clocks, controlled by FRQCRA and FRQCRB, a kick bit has to
-> be set and to make sure the setting has taken effect, it has to be read
-> back repeatedly until it is cleared by the hardware. This patch adds the
-> waiting part, that was missing until now.
-> 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-
-This patch seems to be ready to be applied.
-
-Magnus, could I get a review from you?
-
+On 28 February 2013 22:27, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> Currently we always calculate the CPU iowait time and add it to idle time.
+> If we are in ondemand and we use io_is_busy, we re-calculate iowait time
+> and we subtract it from idle time.
+>
+> With this patch iowait time is calculated only when necessary avoiding
+> the double call to get_cpu_iowait_time_us. We use a parameter in
+> function get_cpu_idle_time to distinguish when the iowait time will be
+> added to idle time or not, without the need of keeping the prev_io_wait.
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 > ---
-> 
-> As noted in patch 0/3, this patch affects existing systems, but AFAICS 
-> only theoretically - so far nobody is changing clock rates of any of the 
-> FRQCRA and FRQCRB clocks. Still, please, handle with care.
-> 
->  arch/arm/mach-shmobile/clock-sh73a0.c |   23 +++++++++++++++++------
->  1 files changed, 17 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
-> index 71843dd..34b5c5a 100644
-> --- a/arch/arm/mach-shmobile/clock-sh73a0.c
-> +++ b/arch/arm/mach-shmobile/clock-sh73a0.c
-> @@ -21,6 +21,7 @@
->  #include <linux/io.h>
->  #include <linux/sh_clk.h>
->  #include <linux/clkdev.h>
-> +#include <asm/processor.h>
->  #include <mach/common.h>
->  
->  #define FRQCRA		IOMEM(0xe6150000)
-> @@ -234,14 +235,24 @@ static struct clk *main_clks[] = {
->  	&sh73a0_extalr_clk,
->  };
->  
-> -static void div4_kick(struct clk *clk)
-> +static int frqcr_kick(void)
->  {
-> -	unsigned long value;
-> +	int i;
-> +
-> +	/* set KICK bit in FRQCRB to update hardware setting, check success */
-> +	__raw_writel(__raw_readl(FRQCRB) | (1 << 31), FRQCRB);
-> +	for (i = 1000; i; i--)
-> +		if (__raw_readl(FRQCRB) & (1 << 31))
-> +			cpu_relax();
-> +		else
-> +			return i;
-> +
-> +	return -ETIMEDOUT;
-> +}
->  
-> -	/* set KICK bit in FRQCRB to update hardware setting */
-> -	value = __raw_readl(FRQCRB);
-> -	value |= (1 << 31);
-> -	__raw_writel(value, FRQCRB);
-> +static void div4_kick(struct clk *clk)
-> +{
-> +	frqcr_kick();
+>  drivers/cpufreq/cpufreq_conservative.c |  2 +-
+>  drivers/cpufreq/cpufreq_governor.c     | 46 +++++++++++++---------------------
+>  drivers/cpufreq/cpufreq_governor.h     |  3 +--
+>  drivers/cpufreq/cpufreq_ondemand.c     | 11 +++++++-
+>  4 files changed, 29 insertions(+), 33 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 4fd0006..dfe652c 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -242,7 +242,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+>                 struct cs_cpu_dbs_info_s *dbs_info;
+>                 dbs_info = &per_cpu(cs_cpu_dbs_info, j);
+>                 dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
+> -                                               &dbs_info->cdbs.prev_cpu_wall);
+> +                                       &dbs_info->cdbs.prev_cpu_wall, 0);
+>                 if (cs_tuners.ignore_nice)
+>                         dbs_info->cdbs.prev_cpu_nice =
+>                                 kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 5a76086..a322bda 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -50,13 +50,13 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+>         return cputime_to_usecs(idle_time);
 >  }
->  
->  static int divisors[] = { 2, 3, 4, 6, 8, 12, 16, 18,
-> -- 
-> 1.7.2.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>
+> -u64 get_cpu_idle_time(unsigned int cpu, u64 *wall)
+> +u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
+>  {
+>         u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
+>
+>         if (idle_time == -1ULL)
+>                 return get_cpu_idle_time_jiffy(cpu, wall);
+> -       else
+> +       else if (!io_busy)
+>                 idle_time += get_cpu_iowait_time_us(cpu, wall);
+>
+>         return idle_time;
+> @@ -83,13 +83,22 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>         /* Get Absolute Load (in terms of freq for ondemand gov) */
+>         for_each_cpu(j, policy->cpus) {
+>                 struct cpu_dbs_common_info *j_cdbs;
+> -               u64 cur_wall_time, cur_idle_time, cur_iowait_time;
+> -               unsigned int idle_time, wall_time, iowait_time;
+> +               u64 cur_wall_time, cur_idle_time;
+> +               unsigned int idle_time, wall_time;
+>                 unsigned int load;
+> +               int io_busy = 0;
+>
+>                 j_cdbs = dbs_data->get_cpu_cdbs(j);
+>
+> -               cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
+> +               /*
+> +                * For the purpose of ondemand, waiting for disk IO is
+> +                * an indication that you're performance critical, and
+> +                * not that the system is actually idle. So do not add
+> +                * the iowait time to the cpu idle time.
+> +                */
+> +               if (dbs_data->governor == GOV_ONDEMAND)
+> +                       io_busy = od_tuners->io_is_busy;
+> +               cur_idle_time = get_cpu_idle_time(j, &cur_wall_time, io_busy);
+>
+>                 wall_time = (unsigned int)
+>                         (cur_wall_time - j_cdbs->prev_cpu_wall);
+> @@ -117,29 +126,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>                         idle_time += jiffies_to_usecs(cur_nice_jiffies);
+>                 }
+>
+> -               if (dbs_data->governor == GOV_ONDEMAND) {
+> -                       struct od_cpu_dbs_info_s *od_j_dbs_info =
+> -                               dbs_data->get_cpu_dbs_info_s(cpu);
+> -
+> -                       cur_iowait_time = get_cpu_iowait_time_us(j,
+> -                                       &cur_wall_time);
+> -                       if (cur_iowait_time == -1ULL)
+> -                               cur_iowait_time = 0;
+> -
+> -                       iowait_time = (unsigned int) (cur_iowait_time -
+> -                                       od_j_dbs_info->prev_cpu_iowait);
+> -                       od_j_dbs_info->prev_cpu_iowait = cur_iowait_time;
+> -
+> -                       /*
+> -                        * For the purpose of ondemand, waiting for disk IO is
+> -                        * an indication that you're performance critical, and
+> -                        * not that the system is actually idle. So subtract the
+> -                        * iowait time from the cpu idle time.
+> -                        */
+> -                       if (od_tuners->io_is_busy && idle_time >= iowait_time)
+> -                               idle_time -= iowait_time;
+> -               }
+> -
+>                 if (unlikely(!wall_time || wall_time < idle_time))
+>                         continue;
+>
+> @@ -207,6 +193,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>         struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+>         struct cpu_dbs_common_info *cpu_cdbs;
+>         unsigned int *sampling_rate, latency, ignore_nice, j, cpu = policy->cpu;
+> +       int io_busy = 0;
+>         int rc;
+>
+>         cpu_cdbs = dbs_data->get_cpu_cdbs(cpu);
+> @@ -221,6 +208,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>                 sampling_rate = &od_tuners->sampling_rate;
+>                 ignore_nice = od_tuners->ignore_nice;
+>                 od_ops = dbs_data->gov_ops;
+> +               io_busy = od_tuners->io_is_busy;
+>         }
+>
+>         switch (event) {
+> @@ -237,7 +225,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>                         j_cdbs->cpu = j;
+>                         j_cdbs->cur_policy = policy;
+>                         j_cdbs->prev_cpu_idle = get_cpu_idle_time(j,
+> -                                       &j_cdbs->prev_cpu_wall);
+> +                                              &j_cdbs->prev_cpu_wall, io_busy);
+>                         if (ignore_nice)
+>                                 j_cdbs->prev_cpu_nice =
+>                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index d2ac911..534dfae 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -87,7 +87,6 @@ struct cpu_dbs_common_info {
+>
+>  struct od_cpu_dbs_info_s {
+>         struct cpu_dbs_common_info cdbs;
+> -       u64 prev_cpu_iowait;
+>         struct cpufreq_frequency_table *freq_table;
+>         unsigned int freq_lo;
+>         unsigned int freq_lo_jiffies;
+> @@ -169,7 +168,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
+>         return delay;
+>  }
+>
+> -u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
+> +u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
+>  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+>  bool need_load_eval(struct cpu_dbs_common_info *cdbs,
+>                 unsigned int sampling_rate);
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index f3eb26c..74dd3ae 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -339,11 +339,20 @@ static ssize_t store_io_is_busy(struct kobject *a, struct attribute *b,
+>  {
+>         unsigned int input;
+>         int ret;
+> +       unsigned int j;
+>
+>         ret = sscanf(buf, "%u", &input);
+>         if (ret != 1)
+>                 return -EINVAL;
+>         od_tuners.io_is_busy = !!input;
+> +
+> +       /* we need to re-evaluate prev_cpu_idle */
+> +       for_each_online_cpu(j) {
+> +               struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
+> +                                                                       j);
+> +               dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
+> +                       &dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
+> +       }
+>         return count;
+>  }
+>
+> @@ -411,7 +420,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
+>                 struct od_cpu_dbs_info_s *dbs_info;
+>                 dbs_info = &per_cpu(od_cpu_dbs_info, j);
+>                 dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
+> -                                               &dbs_info->cdbs.prev_cpu_wall);
+> +                       &dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
+>                 if (od_tuners.ignore_nice)
+>                         dbs_info->cdbs.prev_cpu_nice =
+>                                 kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.,org>
