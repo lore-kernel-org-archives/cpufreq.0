@@ -1,69 +1,55 @@
-From: Josh Boyer <jwboyer@redhat.com>
-Subject: Divide error in intel_pstate_set_policy
-Date: Fri, 1 Mar 2013 09:13:05 -0500
-Message-ID: <20130301141305.GD31649@hansolo.jdub.homelinux.org>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH/RFC v2 0/2] CPUFreq for kzm9g
+Date: Fri, 1 Mar 2013 22:11:41 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.1303011649260.18776@axis700.grange>
+References: <Pine.LNX.4.64.1302251644010.3030@axis700.grange>
+ <CANqRtoSpu3V5KC-POq7+y0NpRx6yNfdZFfgaxa7Lv1gU1rO53Q@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CANqRtoSpu3V5KC-POq7+y0NpRx6yNfdZFfgaxa7Lv1gU1rO53Q@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dirk Brandewie <dirk.j.brandewie@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-sh@vger.kernel.org, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
 
-Hi,
+On Tue, 26 Feb 2013, Magnus Damm wrote:
 
-We've had a report[1] that the intel_pstate driver will panic on boot
-under certain virtual machine environments.  Thus far it seems VMWare
-and Hyper-V both see this.  While this may be because of something those
-VMs are doing, the driver probably shouldn't cause a panic if it's
-getting some iffy data.
+> On Tue, Feb 26, 2013 at 2:16 AM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+> > In v2 of this patch-set I dropped patches 1 and 3, because #1 is a bug-fix
+> > and can go in separately, #3 is more of a debugging help, than a real
+> > patch for mainlining. Of the remaining 2 patches the main difference to v1
+> > is the omission of the PLL0 manipulation. More is explained in respective
+> > patches.
+> >
+> > Guennadi Liakhovetski (2):
+> >   ARM: shmobile: sh73a0: add support for adjusting CPU frequency
+> >   ARM: shmobile: kzm9g-reference: add CPUFreq support
+> 
+> Hi Guennadi,
+> 
+> Thanks for your work on this. In general I am quite happy about this series.
+> 
+> One rather significant question is however this: Would it be possible
+> for you to check if the TWD is operating as expected when you scale
+> the CPU Frequency? I suspect it is not, so please cook up a v3 of this
+> series that also includes updates for timers.
 
-Oops below. This was with Linus' tree as of Linux v3.8-9456-g309667e.
+At last I managed to get twd running with a recent (of 27.02) all+next 
+snapshot on kzm9g with DT (reference) and actually I'm not really sure the 
+problem is there. At least definitely not as bad as I saw it last time. To 
+remind, the problem I observed was, that at lower CPU speeds a simple 
+shell script, consisting of 20 20-second sleep calls was gaining multiple 
+seconds, was taking more like 405 seconds, than 400. Now I only see it 
+going to 401 seconds. This is still not good, but I need a more precise 
+comparison to actually decide, whether this problem only appears at lower 
+CPU speeds or it is always there. I'll look further into it next week.
 
-josh
-
-[1] https://bugzilla.redhat.com/show_bug.cgi?id=916833
-
-[    5.740065] Intel P-state driver initializing.
-[    5.741503] Intel pstate controlling: cpu 0
-[    5.742983] divide error: 0000 [#1] SMP 
-[    5.744284] Modules linked in:
-[    5.745225] CPU 0 
-[    5.745612] Pid: 1, comm: swapper/0 Not tainted 3.9.0-0.rc0.git11.1.fc19.x86_64 #1 VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform
-[    5.750186] RIP: 0010:[<ffffffff8158562d>]  [<ffffffff8158562d>] intel_pstate_set_policy+0x6d/0x130
-[    5.752686] RSP: 0018:ffff880033535bb0  EFLAGS: 00010246
-[    5.754478] RAX: 0000000000000000 RBX: ffff880033535c10 RCX: 0000000000000000
-[    5.757091] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-[    5.759356] RBP: ffff880033535bc0 R08: a3d70a3d70a3d70b R09: 0000000000000064
-[    5.761265] R10: 0000000000000000 R11: 0000000000000064 R12: ffff88002ace2760
-[    5.763102] R13: 0000000000000000 R14: 0000000000000040 R15: 0000000000000040
-[    5.765004] FS:  0000000000000000(0000) GS:ffff880036600000(0000) knlGS:0000000000000000
-[    5.767496] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[    5.769486] CR2: 0000000000000000 CR3: 0000000001c0c000 CR4: 00000000000407f0
-[    5.771679] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[    5.773942] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[    5.775722] Process swapper/0 (pid: 1, threadinfo ffff880033534000, task ffff880033538000)
-[    5.778419] Stack:
-[    5.779495]  0000000000000000 ffff880033535c10 ffff880033535bf0 ffffffff8157d773
-[    5.781799]  ffff88002ace2808 ffff88002ace2760 0000000000000000 0000000000000040
-[    5.784320]  ffff880033535d88 ffffffff8157dd74 ffff880000000000 0000000000000282
-[    5.786624] Call Trace:
-[    5.787644]  [<ffffffff8157d773>] __cpufreq_set_policy+0x103/0x280
-[    5.789789]  [<ffffffff8157dd74>] cpufreq_add_dev_interface+0x294/0x350
-[    5.791991]  [<ffffffff8157daa0>] ? cpufreq_update_policy+0x1b0/0x1b0
-[    5.793740]  [<ffffffff8157ec4f>] cpufreq_add_dev+0x4af/0x5e0
-[    5.795496]  [<ffffffff8146ed49>] subsys_interface_register+0xa9/0xf0
-[    5.797269]  [<ffffffff8157c63f>] cpufreq_register_driver+0x9f/0x200
-[    5.799054]  [<ffffffff81f5ea0c>] ? intel_pstate_setup+0x2f/0x2f
-[    5.800932]  [<ffffffff81f5ea9c>] intel_pstate_init+0x90/0x143
-[    5.802796]  [<ffffffff8100210a>] do_one_initcall+0x10a/0x160
-[    5.804657]  [<ffffffff81f1f09c>] kernel_init_freeable+0x17c/0x202
-[    5.806830]  [<ffffffff81f1e88b>] ? do_early_param+0x88/0x88
-[    5.808404]  [<ffffffff816fb6f0>] ? rest_init+0x150/0x150
-[    5.809862]  [<ffffffff816fb6fe>] kernel_init+0xe/0x190
-[    5.811507]  [<ffffffff8172502c>] ret_from_fork+0x7c/0xb0
-[    5.813352]  [<ffffffff816fb6f0>] ? rest_init+0x150/0x150
-[    5.814812] Code: 41 ba 64 00 00 00 8b 7b 1c 31 d2 41 b9 64 00 00 00 49 b8 0b d7 a3 70 3d 0a d7 a3 41 bb 64 00 00 00 41 0f af c2 45 31 d2 44 89 d1 <f7> f7 85 c0 41 0
-f 48 c2 48 63 f0 83 fe 64 49 0f 4f f1 89 35 b3
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
