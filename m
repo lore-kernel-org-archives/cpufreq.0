@@ -1,206 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/2] cpufreq: governors: Avoid unnecessary per cpu timer interrupts
-Date: Mon,  4 Mar 2013 15:47:24 +0800
-Message-ID: <15bb56be43dd72924b734ea66775bb50bfe42fa5.1362382746.git.viresh.kumar@linaro.org>
-References: <cover.1362382746.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <cover.1362382746.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1362382746.git.viresh.kumar@linaro.org>
-References: <cover.1362382746.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 54761] New: Variable cpu frequency causes to loose performance
+Date: Mon,  4 Mar 2013 14:01:36 +0000 (UTC)
+Message-ID: <bug-54761-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, rickard.andersson@stericsson.com, fabio.baltieri@linaro.org, tj@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: cpufreq@vger.kernel.org
 
-Following patch has introduced per cpu timers or works for ondemand and
-conservative governors.
+https://bugzilla.kernel.org/show_bug.cgi?id=54761
 
-	commit 2abfa876f1117b0ab45f191fb1f82c41b1cbc8fe
-	Author: Rickard Andersson <rickard.andersson@stericsson.com>
-	Date:   Thu Dec 27 14:55:38 2012 +0000
+           Summary: Variable cpu frequency causes to loose performance
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: Ubuntu 3.8.0-9.18-generic 3.8.1
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: sworddragon2@aol.com
+        Regression: No
 
-	    cpufreq: handle SW coordinated CPUs
 
-This causes additional unnecessary interrupts on all cpus when the load is
-recently evaluated by any other cpu. i.e. When load is recently evaluated by cpu
-x, we don't really need any other cpu to evaluate this load again for the next
-sampling_rate time.
+Created an attachment (id=94381)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=94381)
+Example application
 
-Some sort of code is present to avoid that but we are still getting timer
-interrupts for all cpus. A good way of avoiding this would be to modify delays
-for all cpus (policy->cpus) whenever any cpu has evaluated load.
+In my sytsme is an AMD Phenom II X6 1045T with 6 cores and a scaling frequency
+of "2700000 2000000 1400000 800000". I have noticed if a process is using ~the
+half of cpu time of a core I'm getting heavy performance impacts if I'm using
+the ondemand governor. Switching to the performance governor solves this
+problem.
 
-This patch does this change and some related code cleanup.
+I have written a testcase in C which demonstrates this problem (compiled with
+"gcc -o governor governor.c -lpthread"). The application creates 20 threads
+(change NUM_THREADS in the code if needed) - every of them uses only a little
+of cpu time. All threads will be executed on the same core. Here are the
+differences between both governors:
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_conservative.c |  8 ++++---
- drivers/cpufreq/cpufreq_governor.c     | 39 ++++++++++++++++++++++++----------
- drivers/cpufreq/cpufreq_governor.h     |  2 ++
- drivers/cpufreq/cpufreq_ondemand.c     | 12 ++++++-----
- 4 files changed, 42 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index d86577f..77b60a7 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -107,7 +107,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 
- static void cs_dbs_timer(struct work_struct *work)
- {
--	struct delayed_work *dw = to_delayed_work(work);
- 	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
- 			struct cs_cpu_dbs_info_s, cdbs.work.work);
- 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
-@@ -116,12 +115,15 @@ static void cs_dbs_timer(struct work_struct *work)
- 	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	int delay = delay_for_sampling_rate(cs_tuners->sampling_rate);
-+	bool modify_all = true;
- 
- 	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
--	if (need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
-+	if (!need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
-+		modify_all = false;
-+	else
- 		dbs_check_cpu(dbs_data, cpu);
- 
--	schedule_delayed_work_on(smp_processor_id(), dw, delay);
-+	gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, modify_all);
- 	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
- }
- 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 7722505..f592f71 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -162,20 +162,38 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- }
- EXPORT_SYMBOL_GPL(dbs_check_cpu);
- 
--static inline void dbs_timer_init(struct dbs_data *dbs_data, int cpu,
--				  unsigned int sampling_rate)
-+static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
-+		unsigned int delay)
- {
--	int delay = delay_for_sampling_rate(sampling_rate);
- 	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
- 
--	schedule_delayed_work_on(cpu, &cdbs->work, delay);
-+	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
- }
- 
--static inline void dbs_timer_exit(struct dbs_data *dbs_data, int cpu)
-+void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-+		unsigned int delay, bool all_cpus)
- {
--	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-+	int i;
-+
-+	if (!all_cpus) {
-+		__gov_queue_work(smp_processor_id(), dbs_data, delay);
-+	} else {
-+		for_each_cpu(i, policy->cpus)
-+			__gov_queue_work(i, dbs_data, delay);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(gov_queue_work);
-+
-+static inline void gov_cancel_work(struct dbs_data *dbs_data,
-+		struct cpufreq_policy *policy)
-+{
-+	struct cpu_dbs_common_info *cdbs;
-+	int i;
- 
--	cancel_delayed_work_sync(&cdbs->work);
-+	for_each_cpu(i, policy->cpus) {
-+		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
-+		cancel_delayed_work_sync(&cdbs->work);
-+	}
- }
- 
- /* Will return if we need to evaluate cpu load again or not */
-@@ -330,16 +348,15 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		/* Initiate timer time stamp */
- 		cpu_cdbs->time_stamp = ktime_get();
- 
--		for_each_cpu(j, policy->cpus)
--			dbs_timer_init(dbs_data, j, sampling_rate);
-+		gov_queue_work(dbs_data, policy,
-+				delay_for_sampling_rate(sampling_rate), true);
- 		break;
- 
- 	case CPUFREQ_GOV_STOP:
- 		if (dbs_data->cdata->governor == GOV_CONSERVATIVE)
- 			cs_dbs_info->enable = 0;
- 
--		for_each_cpu(j, policy->cpus)
--			dbs_timer_exit(dbs_data, j);
-+		gov_cancel_work(dbs_data, policy);
- 
- 		mutex_lock(&dbs_data->mutex);
- 		mutex_destroy(&cpu_cdbs->timer_mutex);
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 6301790..9e3d310 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -192,4 +192,6 @@ bool need_load_eval(struct cpu_dbs_common_info *cdbs,
- 		unsigned int sampling_rate);
- int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		struct common_dbs_data *cdata, unsigned int event);
-+void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-+		unsigned int delay, bool all_cpus);
- #endif /* _CPUFREQ_GOVERNER_H */
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index e76f4f8..04f81d8 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -216,7 +216,6 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
- 
- static void od_dbs_timer(struct work_struct *work)
- {
--	struct delayed_work *dw = to_delayed_work(work);
- 	struct od_cpu_dbs_info_s *dbs_info =
- 		container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
- 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
-@@ -225,10 +224,13 @@ static void od_dbs_timer(struct work_struct *work)
- 	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	int delay = 0, sample_type = core_dbs_info->sample_type;
-+	bool modify_all = true;
- 
- 	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
--	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate))
-+	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate)) {
-+		modify_all = false;
- 		goto max_delay;
-+	}
- 
- 	/* Common NORMAL_SAMPLE setup */
- 	core_dbs_info->sample_type = OD_NORMAL_SAMPLE;
-@@ -250,7 +252,7 @@ max_delay:
- 		delay = delay_for_sampling_rate(od_tuners->sampling_rate
- 				* core_dbs_info->rate_mult);
- 
--	schedule_delayed_work_on(smp_processor_id(), dw, delay);
-+	gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, modify_all);
- 	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
- }
- 
-@@ -308,8 +310,8 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
- 			cancel_delayed_work_sync(&dbs_info->cdbs.work);
- 			mutex_lock(&dbs_info->cdbs.timer_mutex);
- 
--			schedule_delayed_work_on(cpu, &dbs_info->cdbs.work,
--					usecs_to_jiffies(new_rate));
-+			gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy,
-+					usecs_to_jiffies(new_rate), true);
- 
- 		}
- 		mutex_unlock(&dbs_info->cdbs.timer_mutex);
+ondemand:
+The frequency of the related core goes up to 1400 MHz and the used cpu time of
+this core is ~50%. The application needs ~7.17 seconds to be finished.
+
+performance:
+The frequency of the related core is constantly 2700 MHz and the used cpu time
+of this core is ~25%. The application needs ~5.99 seconds to be finished.
+
+
+The difference between the used cpu time is logical since the frequency is as
+double so high. But both runs are far away from a 100% usage so theoretically
+they should be as same fast.
+
 -- 
-1.7.12.rc2.18.g61b472e
-
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
