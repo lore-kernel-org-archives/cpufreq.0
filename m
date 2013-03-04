@@ -1,69 +1,69 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V2 4/4] dts: Add cpufreq controller node for Exynos5440 SoC
-Date: Sat,  2 Mar 2013 15:04:14 +0530
-Message-ID: <1362216854-6633-4-git-send-email-amit.daniel@samsung.com>
-References: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
-Mime-Version: 1.0
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 0/4] CPUFreq: Implement per policy instances of governors
+Date: Mon,  4 Mar 2013 15:37:52 +0800
+Message-ID: <cover.1362381470.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
- h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
- :in-reply-to:references;
- bh=X+fAk2AmxEcNPXgS7hyLMlOLvgV7j0SGX9QSi7L1XCs=;
- b=U5sfVpYiPY5t5iI0Pk3DDIXuG1xRY3dHroZUN/mFp8kyx5NbnppLm/3m8R+fHkn+NY
- ePMHxaTHz/ZqJTJRe3YNf8kpMoLTvdiM0TNrJWX+UVgr1yf/FyB0Neep76TNGTCm7hdT
- 0EELI95CDzVYyt6wjfXXBySvTlWafBryoV2sr24RhB/wq7mkePhDjh6KCVZNX18PQlKa
- RzyyzhyNqLyxoEjWan2HVqwnT509tmoS97vh5u+Jk/xZkgiu4UqPF5JWuJYY3rmT20eU
- VitNX2nGvLN+YEw+81GMggQVvKG8x/igXgqv/mlyiXyUCqpgvcSaU7XK+Dk45N04Tgnz
- 6Aqw==
-In-Reply-To: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org
-Cc: kgene.kim@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Add cpufreq controller device node for Exynos5440 SoC for passing
-parameters like controller base address, interrupt and cpufreq
-table. This node is added inside cpu0 node as done in other cpufreq
-drivers.
+This is targetted for 3.10-rc1 or linux-next just after the merge window.
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
- arch/arm/boot/dts/exynos5440.dtsi |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+All patches are pushed here for others to apply:
+http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-3.10
 
-diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
-index 5f3562a..fd0c811 100644
---- a/arch/arm/boot/dts/exynos5440.dtsi
-+++ b/arch/arm/boot/dts/exynos5440.dtsi
-@@ -31,6 +31,19 @@
- 				interrupts = <1 13 0xf08>;
- 				clock-frequency = <1000000>;
- 			};
-+
-+			cpufreq@160000 {
-+				compatible = "samsung,exynos5440-cpufreq";
-+				reg = <0x160000 0x1000>;
-+				interrupts = <0 57 0>;
-+				operating-points = <
-+					/* KHZ	  uV */
-+					1200000 1025000
-+					1000000 975000
-+					800000  925000
-+					>;
-+				clocks = <&clock 2>;
-+			};
- 		};
- 		cpu@1 {
- 			compatible = "arm,cortex-a15";
+Currently, there can't be multiple instances of single governor_type. If we have
+a multi-package system, where we have multiple instances of struct policy (per
+package), we can't have multiple instances of same governor. i.e. We can't have
+multiple instances of ondemand governor for multiple packages.
+
+Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+governor-name/. Which again reflects that there can be only one instance of a
+governor_type in the system.
+
+This is a bottleneck for multicluster system, where we want different packages
+to use same governor type, but with different tunables.
+
+This patchset is inclined towards fixing this issue. Now we will create
+governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have multiple
+struct policy alive at any moment. For others the interface is kept same:
+cpu/cpufreq/<gov>.
+
+@Rafael: Clearly, I don't want to have following patch: "cpufreq: Add Kconfig
+option to enable/disable have_multiple_policies" and added it because of comment
+from Borislov against which nobody else replied :)
+
+So, please drop it if you agree over my comments with earlier version.
+
+V2->V3:
+- Fixed value of CPUFREQ_GOV_POLICY_EXIT in the correct patch
+- Drop indentation fixes from intel_pstate.c
+
+V1->V2:
+- Few patches from V1 are already picked up by Rafael for 3.9-rc1
+- Last two patches are new
+- Added dbs_data->exit() routines to free up memory used for struct tuners.
+
+Viresh Kumar (4):
+  cpufreq: Add per policy governor-init/exit infrastructure
+  cpufreq: governor: Implement per policy instances of governors
+  cpufreq: Get rid of "struct global_attr"
+  cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+
+ drivers/cpufreq/Kconfig                |   3 +
+ drivers/cpufreq/acpi-cpufreq.c         |   9 +-
+ drivers/cpufreq/cpufreq.c              |  27 +++--
+ drivers/cpufreq/cpufreq_conservative.c | 148 +++++++++++++---------
+ drivers/cpufreq/cpufreq_governor.c     | 159 ++++++++++++++----------
+ drivers/cpufreq/cpufreq_governor.h     |  43 +++++--
+ drivers/cpufreq/cpufreq_ondemand.c     | 216 +++++++++++++++++++--------------
+ drivers/cpufreq/intel_pstate.c         |  20 +--
+ include/linux/cpufreq.h                |  44 ++++---
+ 9 files changed, 397 insertions(+), 272 deletions(-)
+
 -- 
-1.7.1
+1.7.12.rc2.18.g61b472e
