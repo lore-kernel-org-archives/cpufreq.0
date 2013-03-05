@@ -1,87 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver and
- its DT glue
-Date: Wed, 6 Mar 2013 00:38:36 +0800
-Message-ID: <CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
-References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
-	<20130305105251.GL17833@n2100.arm.linux.org.uk>
+Subject: Re: Dynamic cpufreq_frequency_table?
+Date: Wed, 6 Mar 2013 01:01:34 +0800
+Message-ID: <CAOh2x==m=mco-UXL=kA3RU2MwoipFFTbtrHrHdTfSeFeRGj19A@mail.gmail.com>
+References: <CAMefCkB4LVnReZmEc65qddNiW17gzVXiTWdN=uaFm5v2aycxcQ@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130305105251.GL17833@n2100.arm.linux.org.uk>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=v5+mJKIXO37WE1aciWebf3hVeTBwtQ6If9b+mvl3NsM=;
+        b=MhwkTYJSXA87pyuC4i/2KtE0JwlDxenoIE/fZNLBPVm0u5x35Wb5Y0LRy1++OBNDqX
+         Jy2hiClheB8H/Tw47Sr6J9Eih1dj/OHqsnOg908uJbBHpm2obclT+nkCb7LRREHlvDg5
+         MdCQWvnE52+02uADXiaso/RU7pVMLPFDRCKarJDoFQT2rlHDUGMKm7W+9fUjvz7X4Od8
+         1k3O8HPKSMDYJEdDSkp7qQLgTvblShu6SDr3mF75SfNesOY/NLQJ5qcjYjR82ZoNZiIt
+         iTUF2crP1JPP2XdlvUH5psV1oSbdYovOQ5XWwmzuT+hFg+aFGFik0Bxoz+8gPJYf/y26
+         v1vg==
+In-Reply-To: <CAMefCkB4LVnReZmEc65qddNiW17gzVXiTWdN=uaFm5v2aycxcQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+To: Guru Prasad <gurupras@buffalo.edu>
+Cc: cpufreq@vger.kernel.org
 
-On 5 March 2013 18:52, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> On Tue, Mar 05, 2013 at 12:52:41PM +0800, Viresh Kumar wrote:
->> +static void put_cluster_clk_and_freq_table(u32 cluster)
->> +{
->> +     if (!atomic_dec_return(&cluster_usage[cluster])) {
->> +             clk_put(clk[cluster]);
->> +             clk[cluster] = NULL;
->
-> What's the point in setting the clk to NULL?
+Hi Guru,
 
-I couldn't find one and the same is true for freq_table[] too.
+On Wed, Mar 6, 2013 at 12:15 AM, Guru Prasad <gurupras@buffalo.edu> wrote:
+> I'm trying to run the Linux kernel with the cpufreq driver in a
+> simulation environment where the CPU frequency can be modified.
 
->> +static int get_cluster_clk_and_freq_table(u32 cluster)
->> +{
->> +     char name[9] = "cluster";
->> +     int count;
->> +
->> +     if (atomic_inc_return(&cluster_usage[cluster]) != 1)
->> +             return 0;
->> +
->> +     freq_table[cluster] = arm_bL_ops->get_freq_tbl(cluster, &count);
->> +     if (!freq_table[cluster])
->> +             goto atomic_dec;
->> +
->> +     name[7] = cluster + '0';
->> +     clk[cluster] = clk_get(NULL, name);
->> +     if (!IS_ERR_OR_NULL(clk[cluster])) {
->
-> NAK.  Two reasons.
->
-> 1. IS_ERR_OR_NULL.  You know about this, it's been on the list several
->    times.
+Okay.
 
-AAHHHHHH .. How can i mess up with this concept.. I am really feeling bad now.
+> This leaves me with two choices :
+> Either have several kernels with different static cpufreq_frequency tables or
 
-> 2. Maybe clk_get_sys() rather than clk_get() and use a sensible device
->    name ("cpu-cluster.%u" maybe) rather than a connection name with a
->    NULL device?
+So you meant have different uImages per freq_table, right?
 
-That's a good comment (rather than pointing at some stupid mistake), I will
-probably keep the same name for the device as well.
+> let the kernel create the cpufreq_frequency_table dynamically.
 
-So how does below fix look to you?
+Didn't get that completely :(
+You want the kernel to create this table dynamically, yes we can allocate memory
+for it dynamically, but we need some input from some static/dynamic code on the
+kind of values you have.
 
-----------x-----------------x-----------------
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 0d6de0e..2486b9a 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -140,9 +140,7 @@ static void put_cluster_clk_and_freq_table(u32 cluster)
- {
-        if (!atomic_dec_return(&cluster_usage[cluster])) {
-                clk_put(clk[cluster]);
--               clk[cluster] = NULL;
-                arm_bL_ops->put_freq_tbl(cluster);
--               freq_table[cluster] = NULL;
-                pr_debug("%s: cluster: %d\n", __func__, cluster);
-        }
- }
-@@ -160,8 +158,8 @@ static int get_cluster_clk_and_freq_table(u32 cluster)
-                goto atomic_dec;
+So, we need a fixed freq_table before cpufreq_driver->init is called. That's it.
 
-        name[7] = cluster + '0';
--       clk[cluster] = clk_get(NULL, name);
--       if (!IS_ERR_OR_NULL(clk[cluster])) {
-+       clk[cluster] = clk_get_sys(name, NULL);
-+       if (!IS_ERR(clk[cluster])) {
-                pr_debug("%s: clk: %p & freq table: %p, cluster: %d\n",
-                                __func__, clk[cluster], freq_table[cluster],
-                                cluster);
+What you might end up doing could be unregister/register your cpufreq driver for
+every new freq_table you want to test your system with. And so your
+cpufreq_driver->init() can return these new tables everytime.
