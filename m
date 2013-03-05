@@ -1,29 +1,75 @@
 From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH linux-next] cpufreq: conservative: Fix sampling_down_factor
+Subject: [PATCH 1/3 linux-next] cpufreq: conservative: Fix sampling_down_factor
  functionality
-Date: Tue, 05 Mar 2013 22:37:33 +0200
-Message-ID: <5136578D.3040908@semaphore.gr>
-References: <51351CC3.4010301@semaphore.gr> <CAOh2x=m0KLbjGKvLvTH7-yQb4SU5-v=-r4Ba3LSZz=NvfvO6mg@mail.gmail.com> <51358117.9060902@semaphore.gr> <5135FD01.8060306@verisign.com> <5135FF50.4020001@verisign.com>
+Date: Wed, 06 Mar 2013 00:06:29 +0200
+Message-ID: <51366C65.7070802@semaphore.gr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5135FF50.4020001@verisign.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: David C Niemi <dniemi@verisign.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Landley <rob@landley.net>
+Cc: linux-doc@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi David,
-On 03/05/2013 04:21 PM, David C Niemi wrote:
->
-> I should clarify -- I wrote the sampling_down_factor in the *ondemand* governor.  I chose the name of the parameter based on the vaguely similar parameter in the conservative governor, but the documentation that was referenced (about it only applying at top speed and the comment about skipping evaluation opportunities when it is active) was written by me in reference to the ondemand governor.  It could be that someone backported some of the ondemand sampling_down_factor's behavior to the conservative governor.
->
-> I'd like to ask -- what is the intended use of the conservative governor these days as differentiated from the ondemand governor?  At one time it seemed more oriented towards power savings, but the ondemand governor had picked up most or all of its power-saving features.
+sampling_down_factor tunable is unused since commit
+8e677ce83bf41ba9c74e5b6d9ee60b07d4e5ed93 (4 years ago).
 
-Thanks for the information.
-I would agree about the use of conservative, but I think that I'm not
-the right person to answer this question. :)
+This patch restores the original functionality and documents the
+tunable.
 
-Regards,
-Stratos
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ Documentation/cpu-freq/governors.txt   |  6 ++++++
+ drivers/cpufreq/cpufreq_conservative.c | 11 ++++++++---
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
+index c7a2eb8..4dfed30 100644
+--- a/Documentation/cpu-freq/governors.txt
++++ b/Documentation/cpu-freq/governors.txt
+@@ -191,6 +191,12 @@ governor but for the opposite direction.  For example when set to its
+ default value of '20' it means that if the CPU usage needs to be below
+ 20% between samples to have the frequency decreased.
+ 
++sampling_down_factor: similar functionality as in "ondemand" governor.
++But in "conservative", it controls the rate at which the kernel makes
++a decision on when to decrease the frequency while running in any
++speed. Load for frequency increase is still evaluated every
++sampling rate.
++
+ 3. The Governor Interface in the CPUfreq Core
+ =============================================
+ 
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 4fd0006..1e3be56 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -44,9 +44,9 @@ static struct cs_dbs_tuners cs_tuners = {
+ 
+ /*
+  * Every sampling_rate, we check, if current idle time is less than 20%
+- * (default), then we try to increase frequency Every sampling_rate *
+- * sampling_down_factor, we check, if current idle time is more than 80%, then
+- * we try to decrease frequency
++ * (default), then we try to increase frequency. Every sampling_rate *
++ * sampling_down_factor, we check, if current idle time is more than 80%
++ * (default), then we try to decrease frequency
+  *
+  * Any frequency increase takes it to the maximum frequency. Frequency reduction
+  * happens at minimum steps of 5% (default) of maximum frequency
+@@ -87,6 +87,11 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 		return;
+ 	}
+ 
++	/* if sampling_down_factor is active break out early */
++	if (++dbs_info->down_skip < cs_tuners.sampling_down_factor)
++		return;
++	dbs_info->down_skip = 0;
++
+ 	/*
+ 	 * The optimal frequency is the frequency that is the lowest that can
+ 	 * support the current CPU usage without triggering the up policy. To be
+-- 
+1.8.1.4
+
