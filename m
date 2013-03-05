@@ -1,43 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH linux-next] cpufreq: conservative: Fix sampling_down_factor
- functionality
-Date: Tue, 5 Mar 2013 15:34:20 +0800
-Message-ID: <CAKohpokvqe8860J=XO_GXqxpNtrt9XEuUeqCeR=A4PpSaAsHYg@mail.gmail.com>
-References: <51351CC3.4010301@semaphore.gr>
-	<CAOh2x=m0KLbjGKvLvTH7-yQb4SU5-v=-r4Ba3LSZz=NvfvO6mg@mail.gmail.com>
-	<51358117.9060902@semaphore.gr>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+	and its DT glue
+Date: Tue, 5 Mar 2013 10:52:51 +0000
+Message-ID: <20130305105251.GL17833@n2100.arm.linux.org.uk>
+References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51358117.9060902@semaphore.gr>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=Q2Ox1c7IBH4C54hqjpCul3jbf7MI6hWvhns53bzGVA0=;
+	b=f+wx3eyNalNfoXat+dXyF2YYreNIgSe/C6ilr1bbpyhcgRopBV3nGfkgiGUIOfWyDwsrnhStmEINObtDY4QX8seNau6objvdCgO0oRF2wNx1K8zGymuszmf9MxYJWj8tvfVHS+oKbb9mE43DsT6SooKrEL84k00kjZmH/iYotB0=;
+Content-Disposition: inline
+In-Reply-To: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On 5 March 2013 13:22, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> I had the same thoughts, but I saw the comments in the code:
->
-> /*
->  * Every sampling_rate, we check, if current idle time is less than 20%
->  * (default), then we try to increase frequency Every sampling_rate *
->  * sampling_down_factor, we check, if current idle time is more than 80%, then
->  * we try to decrease frequency
+On Tue, Mar 05, 2013 at 12:52:41PM +0800, Viresh Kumar wrote:
+> +static void put_cluster_clk_and_freq_table(u32 cluster)
+> +{
+> +	if (!atomic_dec_return(&cluster_usage[cluster])) {
+> +		clk_put(clk[cluster]);
+> +		clk[cluster] = NULL;
 
-I misread it here when i looked at this mail for the first time. :)
-I strongly believe that we need a full stop (.) before "Every sampling_rate",
-otherwise it looks like we check for down_factor while increasing freq :)
+What's the point in setting the clk to NULL?
 
->  *
->
-> Also checking the code before the commit 8e677ce83bf41ba9c74e5b6d9ee60b07d4e5ed93 you may see that sampling down factor works in this way.
-> So, I decided to keep the original functionality (also down_skip was already there unused).
+> +static int get_cluster_clk_and_freq_table(u32 cluster)
+> +{
+> +	char name[9] = "cluster";
+> +	int count;
+> +
+> +	if (atomic_inc_return(&cluster_usage[cluster]) != 1)
+> +		return 0;
+> +
+> +	freq_table[cluster] = arm_bL_ops->get_freq_tbl(cluster, &count);
+> +	if (!freq_table[cluster])
+> +		goto atomic_dec;
+> +
+> +	name[7] = cluster + '0';
+> +	clk[cluster] = clk_get(NULL, name);
+> +	if (!IS_ERR_OR_NULL(clk[cluster])) {
 
-I got that comment but i belive the code was never according to that comment
-and not even now. Check the initial patch for conservative governor:
-b9170836d1aa4ded7cc1ac1cb8fbc7867061c98c
+NAK.  Two reasons.
 
-Even now we aren't checking this 80% thing, right? And so in your patch we can
-actually fix the patch too with the right logic of code.. And
-documentation too :)
+1. IS_ERR_OR_NULL.  You know about this, it's been on the list several
+   times.
+
+2. Maybe clk_get_sys() rather than clk_get() and use a sensible device
+   name ("cpu-cluster.%u" maybe) rather than a connection name with a
+   NULL device?
