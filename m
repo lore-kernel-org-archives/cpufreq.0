@@ -1,555 +1,614 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Tue, 5 Mar 2013 09:18:57 +0800
-Message-ID: <CAKohpomHoDSNVyc21VVif8BrDKyZ=fSeCnWCZjDHL+64Bo+dgg@mail.gmail.com>
-References: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
-Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Subject: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver and its DT glue
+Date: Tue,  5 Mar 2013 12:52:41 +0800
+Message-ID: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-kernel@lists.linaro.org, mark.hambleton@broadcom.com, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-On 2 March 2013 15:04, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
-> This patch adds dvfs support for exynos5440 SOC. This soc has 4 cores and
-> they run at same frequency. The nature of exynos5440 clock controller is
-> different from previous exynos controllers so not using the common exynos
-> cpufreq framework. The major difference being interrupt notfication for
-> frequency change. Also, OPP library is used for device tree parsing to get
-> different parameters like frequency, voltage etc. Since the opp library sorts
-> the frequency table in ascending order so they are again re-arranged in
-> descending order. This will have one-to-one mapping with the clock controller
-> state management logic.
->
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> ---
-> Changes in V2:
-> * Added OPP library support to parse DT parameters.
-> * Removed a hack to handle interrupts in bootup.
-> * Added many review comments from Viresh and Inder.
+big LITTLE is ARM's new Architecture focussing power/performance needs of modern
+world. More information about big LITTLE can be found here:
 
-Added? Thanks :)
+http://www.arm.com/products/processors/technologies/biglittleprocessing.php
+http://lwn.net/Articles/481055/
 
->
-> All these patches are dependent on Thomas Abraham common clock patches.
-> http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg15860.html
->
->  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   32 ++
->  drivers/cpufreq/Kconfig.arm                        |    9 +
->  drivers/cpufreq/Makefile                           |    1 +
->  drivers/cpufreq/exynos5440-cpufreq.c               |  450 ++++++++++++++++++++
->  4 files changed, 492 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
->
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
-> new file mode 100644
-> index 0000000..caa3f8d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
-> @@ -0,0 +1,32 @@
-> +
-> +Exynos5440 cpufreq driver
-> +-------------------
-> +
-> +Exynos5440 SoC cpufreq driver for CPU frequency scaling.
-> +
-> +Required properties:
-> +- interrupts: Interrupt to know the completion of cpu frequency change.
-> +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
-> +       in the decreasing order. Frequency should be in KHZ units and voltage
-> +       should be in microvolts.
-> +- clocks: phandle of the clock from common clock binding. More description can
-> +       be found in Documentation/devicetree/bindings/clock/clock-bindings.txt.
-> +
-> +Optional properties:
-> +- clock-latency: Clock transition latency in microsecond.
-> +
-> +All the required listed above must be defined under node cpufreq.
-> +
-> +Example:
-> +--------
-> +       cpufreq@160000 {
-> +               compatible = "samsung,exynos5440-cpufreq";
-> +               reg = <0x160000 0x1000>;
-> +               interrupts = <0 57 0>;
-> +               operating-points = <
-> +                               1000000 975000
-> +                               800000  925000>;
-> +               clocks = <&clock 2>;
-> +               clock-latency = <100000>;
-> +       };
-> +
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 030ddf6..7ed9c4a 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
->           This adds the CPUFreq driver for Samsung EXYNOS5250
->           SoC.
->
-> +config ARM_EXYNOS5440_CPUFREQ
-> +       def_bool SOC_EXYNOS5440
-> +       depends on HAVE_CLK && PM_OPP && OF
-> +       help
-> +         This adds the CPUFreq driver for Samsung EXYNOS5440
-> +         SoC. The nature of exynos5440 clock controller is
-> +         different than previous exynos controllers so not using
-> +         the common exynos framework.
-> +
->  config ARM_KIRKWOOD_CPUFREQ
->         def_bool ARCH_KIRKWOOD && OF
->         help
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 863fd18..c841438 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -52,6 +52,7 @@ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)      += exynos-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
-> +obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)   += exynos5440-cpufreq.o
->  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)     += kirkwood-cpufreq.o
->  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)    += omap-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> new file mode 100644
-> index 0000000..2dc43b1
-> --- /dev/null
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> @@ -0,0 +1,450 @@
-> +/*
-> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-> + *             http://www.samsung.com
-> + *
-> + * Amit Daniel Kachhap <amit.daniel@samsung.com>
-> + *
-> + * EXYNOS5440 - CPU frequency scaling support
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> +*/
+In order to keep cpufreq support for all big LITTLE platforms simple/generic,
+this patch tries to add a generic cpufreq driver layer for all big LITTLE
+platforms.
 
-Add following here to get better prints from the driver:
+The driver is divided into two parts:
+- Core driver: Generic and shared across all big LITTLE SoC's
+- Glue drivers: Per platform drivers providing ops to the core driver
 
-#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+This patch adds in a generic glue driver which would extract information from
+Device Tree.
 
-> +
-> +#include <linux/clk.h>
-> +#include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/err.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
+Future SoC's can either reuse the DT glue or write their own depending on the
+need.
 
-Probably include of.h instead of above two?
+Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
 
-> +#include <linux/opp.h>
-> +#include <linux/slab.h>
-> +
+This is pushed here:
 
-> +struct exynos_dvfs_data {
-> +       void __iomem *base;
-> +       struct resource *mem;
-> +       int irq;
-> +       struct clk *cpu_clk;
-> +       unsigned int cur_frequency;
-> +       unsigned int latency;
-> +       struct cpufreq_frequency_table *freq_table;
-> +       unsigned int freq_count;
-> +       struct device *dev;
-> +       struct work_struct irq_work;
-> +};
-> +
-> +static struct exynos_dvfs_data *dvfs_info;
-> +static DEFINE_MUTEX(cpufreq_lock);
-> +static struct cpufreq_freqs freqs;
-> +
-> +static int init_div_table(void)
-> +{
-> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-> +       unsigned int tmp, clk_div, ema_div, freq, volt_id;
-> +       int i = 0;
-> +       struct opp *opp;
-> +
-> +       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
-> +
-> +               opp = opp_find_freq_exact(dvfs_info->dev,
-> +                                       freq_tbl[i].frequency * 1000, true);
-> +               if (IS_ERR(opp)) {
-> +                       pr_err("failed to find valid OPP for %u KHZ\n",
-> +                                       freq_tbl[i].frequency);
-> +                       return PTR_ERR(opp);
-> +               }
-> +
-> +               freq = freq_tbl[i].frequency / 1000; /*In MHZ*/
-> +               clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
-> +                                       << P0_7_CPUCLKDEV_SHIFT;
-> +               clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
-> +                                       << P0_7_ATBCLKDEV_SHIFT;
-> +               clk_div |= ((freq / CPU_DBG_FREQ_MAX) & P0_7_CSCLKDEV_MASK)
-> +                                       << P0_7_CSCLKDEV_SHIFT;
-> +
-> +               /*Calculate EMA*/
-> +               volt_id = opp_get_voltage(opp);
-> +               volt_id = (MAX_VOLTAGE - volt_id) / VOLTAGE_STEP;
-> +               if (volt_id < PMIC_HIGH_VOLT) {
-> +                       ema_div = (CPUEMA_HIGH << P0_7_CPUEMA_SHIFT) |
-> +                               (L2EMA_HIGH << P0_7_L2EMA_SHIFT);
-> +               } else if (volt_id > PMIC_LOW_VOLT) {
-> +                       ema_div = (CPUEMA_LOW << P0_7_CPUEMA_SHIFT) |
-> +                               (L2EMA_LOW << P0_7_L2EMA_SHIFT);
-> +               } else {
-> +                       ema_div = (CPUEMA_MID << P0_7_CPUEMA_SHIFT) |
-> +                               (L2EMA_MID << P0_7_L2EMA_SHIFT);
-> +               }
-> +
-> +               tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
-> +                       | ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
-> +
-> +               __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +void exynos_enable_dvfs(void)
-> +{
-> +       unsigned int tmp, i, cpu;
-> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
-> +       /*Disable DVFS*/
+http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-biglittle
 
-Please give space after /* and before */ all over your driver.
+ .../bindings/cpufreq/arm_big_little_dt.txt         |  29 +++
+ MAINTAINERS                                        |  11 +
+ drivers/cpufreq/Kconfig.arm                        |  13 +
+ drivers/cpufreq/Makefile                           |   4 +
+ drivers/cpufreq/arm_big_little.c                   | 278 +++++++++++++++++++++
+ drivers/cpufreq/arm_big_little.h                   |  40 +++
+ drivers/cpufreq/arm_big_little_dt.c                | 125 +++++++++
+ 7 files changed, 500 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+ create mode 100644 drivers/cpufreq/arm_big_little.c
+ create mode 100644 drivers/cpufreq/arm_big_little.h
+ create mode 100644 drivers/cpufreq/arm_big_little_dt.c
 
-> +       __raw_writel(0, dvfs_info->base + XMU_DVFS_CTRL);
-> +
-> +       /*Enable PSTATE Change Event*/
-> +       tmp = __raw_readl(dvfs_info->base + XMU_PMUEVTEN);
-> +       tmp |= (1 << PSTATE_CHANGED_EVTEN_SHIFT);
-> +        __raw_writel(tmp, dvfs_info->base + XMU_PMUEVTEN);
-> +
-> +       /Enable* PSTATE Change IRQ*/
-> +       tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQEN);
-> +       tmp |= (1 << PSTATE_CHANGED_IRQEN_SHIFT);
-> +        __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
-> +
-> +       /*Set initial performance index*/
-> +       for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-> +               if (freq_table[i].frequency == dvfs_info->cur_frequency)
-> +                       break;
-> +
-> +       if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
-> +               pr_crit("Boot up frequency not supported\n");
-> +               /*Assign the highest frequency*/
-> +               i = 0;
-> +               dvfs_info->cur_frequency = freq_table[i].frequency;
-> +       }
-> +
-> +       pr_info("Setting dvfs initial frequency = %u",
-> +                                               dvfs_info->cur_frequency);
-> +
-> +       for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
-> +               tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
-> +               tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
-> +               tmp |= (i << C0_3_PSTATE_NEW_SHIFT);
-> +               __raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
-> +       }
-> +
-> +       /*Enable DVFS*/
-> +       __raw_writel(1 << XMU_DVFS_CTRL_EN_SHIFT,
-> +                               dvfs_info->base + XMU_DVFS_CTRL);
-> +}
-> +
-> +static int exynos_verify_speed(struct cpufreq_policy *policy)
-> +{
-> +       return cpufreq_frequency_table_verify(policy,
-> +                                             dvfs_info->freq_table);
-> +}
-> +
-> +static unsigned int exynos_getspeed(unsigned int cpu)
-> +{
-> +       return dvfs_info->cur_frequency;
-> +}
-> +
-> +static int exynos_target(struct cpufreq_policy *policy,
-> +                         unsigned int target_freq,
-> +                         unsigned int relation)
-> +{
-> +       unsigned int index, tmp;
-> +       int ret = 0, i;
-> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
-> +
-> +       mutex_lock(&cpufreq_lock);
-> +       freqs.old = dvfs_info->cur_frequency;
-> +
-> +       if (cpufreq_frequency_table_target(policy, freq_table,
-> +                                          target_freq, relation, &index)) {
-> +               ret = -EINVAL;
-> +               goto out;
-> +       }
-> +
-> +       freqs.new = freq_table[index].frequency;
-> +       freqs.cpu = policy->cpu;
-> +
-> +       for_each_cpu(freqs.cpu, policy->cpus)
-> +               cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-> +
-> +       /*Set the target frequency in all C0_3_PSTATE register*/
-> +       for_each_cpu(i, policy->cpus) {
-> +               tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
-> +               tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
-> +               tmp |= (index << C0_3_PSTATE_NEW_SHIFT);
-> +
-> +               __raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
-> +       }
-> +out:
-> +       mutex_unlock(&cpufreq_lock);
-> +       return ret;
-> +}
-> +
-> +static void exynos_cpufreq_work(struct work_struct *work)
-> +{
-> +       unsigned int cur_pstate, index;
-> +       struct cpufreq_policy *policy = cpufreq_cpu_get(0); /* boot CPU */
-> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
-> +
-> +       if (policy == NULL)
-> +               goto skip_work;
+diff --git a/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt b/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+new file mode 100644
+index 0000000..6f534eb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+@@ -0,0 +1,29 @@
++Generic ARM big LITTLE cpufreq driver's DT glue
++-----------------------------------------------
++
++It is DT specific glue layer for generic cpufreq driver for big LITTLE systems.
++
++Both required and optional properties listed below must be defined under node
++cluster*. * can be 0 or 1.
++
++Required properties:
++- freqs: List of all supported frequencies.
++
++Optional properties:
++- clock-latency: Specify the possible maximum transition latency for clock, in
++  unit of nanoseconds.
++
++Examples:
++
++cluster0: cluster@0 {
++        ..
++
++	freqs = <500000000 600000000 700000000 800000000 900000000 1000000000 1100000000 1200000000>;
++	clock-latency = <200000>;
++
++	..
++
++        cores {
++		..
++        };
++};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 554fd30..b14b749 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2206,6 +2206,17 @@ S:	Maintained
+ F:	drivers/cpufreq/
+ F:	include/linux/cpufreq.h
+ 
++CPU FREQUENCY DRIVERS - ARM BIG LITTLE
++M:	Viresh Kumar <viresh.kumar@linaro.org>
++M:	Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
++L:	cpufreq@vger.kernel.org
++L:	linux-pm@vger.kernel.org
++W:	http://www.arm.com/products/processors/technologies/biglittleprocessing.php
++S:	Maintained
++F:	drivers/cpufreq/arm_big_little.h
++F:	drivers/cpufreq/arm_big_little.c
++F:	drivers/cpufreq/arm_big_little_dt.c
++
+ CPUID/MSR DRIVER
+ M:	"H. Peter Anvin" <hpa@zytor.com>
+ S:	Maintained
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 030ddf6..fdf54a9 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -2,6 +2,19 @@
+ # ARM CPU Frequency scaling drivers
+ #
+ 
++config ARM_BIG_LITTLE_CPUFREQ
++	tristate
++	depends on ARM_CPU_TOPOLOGY
++
++config ARM_DT_BL_CPUFREQ
++	tristate "Generic ARM big LITTLE CPUfreq driver probed via DT"
++	select ARM_BIG_LITTLE_CPUFREQ
++	depends on OF
++	default n
++	help
++	  This enables the Generic CPUfreq driver for ARM big.LITTLE platform.
++	  This gets frequency tables from DT.
++
+ config ARM_OMAP2PLUS_CPUFREQ
+ 	bool "TI OMAP2+"
+ 	depends on ARCH_OMAP2PLUS
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 863fd18..d1b0832 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -44,6 +44,10 @@ obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
+ 
+ ##################################################################################
+ # ARM SoC drivers
++obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
++# big LITTLE per platform glues. Keep DT_BL_CPUFREQ as the last entry in all big
++# LITTLE drivers, so that it is probed last.
++obj-$(CONFIG_ARM_DT_BL_CPUFREQ)	+= arm_big_little_dt.o
+ obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+new file mode 100644
+index 0000000..0d6de0e
+--- /dev/null
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -0,0 +1,278 @@
++/*
++ * ARM big.LITTLE Platforms CPUFreq support
++ *
++ * Copyright (C) 2013 ARM Ltd.
++ * Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
++ *
++ * Copyright (C) 2013 Linaro.
++ * Viresh Kumar <viresh.kumar@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/clk.h>
++#include <linux/cpufreq.h>
++#include <linux/cpumask.h>
++#include <linux/export.h>
++#include <linux/of_platform.h>
++#include <linux/slab.h>
++#include <linux/topology.h>
++#include <linux/types.h>
++
++#include "arm_big_little.h"
++
++/* Currently we support only two clusters */
++#define MAX_CLUSTERS	2
++
++static struct cpufreq_arm_bL_ops *arm_bL_ops;
++static struct clk *clk[MAX_CLUSTERS];
++static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS];
++static atomic_t cluster_usage[MAX_CLUSTERS] = {ATOMIC_INIT(0), ATOMIC_INIT(0)};
++
++static int cpu_to_cluster(int cpu)
++{
++	return topology_physical_package_id(cpu);
++}
++
++static unsigned int bL_cpufreq_get(unsigned int cpu)
++{
++	u32 cur_cluster = cpu_to_cluster(cpu);
++
++	return clk_get_rate(clk[cur_cluster]) / 1000;
++}
++
++/* Validate policy frequency range */
++static int bL_cpufreq_verify_policy(struct cpufreq_policy *policy)
++{
++	u32 cur_cluster = cpu_to_cluster(policy->cpu);
++
++	return cpufreq_frequency_table_verify(policy, freq_table[cur_cluster]);
++}
++
++/* Set clock frequency */
++static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
++		unsigned int target_freq, unsigned int relation)
++{
++	struct cpufreq_freqs freqs;
++	u32 cpu = policy->cpu, freq_tab_idx, cur_cluster;
++	int ret = 0;
++
++	cur_cluster = cpu_to_cluster(policy->cpu);
++
++	freqs.old = bL_cpufreq_get(policy->cpu);
++
++	/* Determine valid target frequency using freq_table */
++	cpufreq_frequency_table_target(policy, freq_table[cur_cluster],
++			target_freq, relation, &freq_tab_idx);
++	freqs.new = freq_table[cur_cluster][freq_tab_idx].frequency;
++
++	freqs.cpu = policy->cpu;
++
++	pr_debug("%s: cpu: %d, cluster: %d, oldfreq: %d, target freq: %d, new freq: %d\n",
++			__func__, cpu, cur_cluster, freqs.old, target_freq,
++			freqs.new);
++
++	if (freqs.old == freqs.new)
++		return 0;
++
++	for_each_cpu(freqs.cpu, policy->cpus)
++		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++
++	ret = clk_set_rate(clk[cur_cluster], freqs.new * 1000);
++	if (ret) {
++		pr_err("clk_set_rate failed: %d\n", ret);
++		return ret;
++	}
++
++	policy->cur = freqs.new;
++
++	for_each_cpu(freqs.cpu, policy->cpus)
++		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++
++	return ret;
++}
++
++/* translate the integer array into cpufreq_frequency_table entries */
++struct cpufreq_frequency_table *
++arm_bL_copy_table_from_array(unsigned int *table, int count)
++{
++	int i;
++
++	struct cpufreq_frequency_table *freq_table;
++
++	pr_debug("%s: table: %p, count: %d\n", __func__, table, count);
++
++	freq_table = kmalloc(sizeof(*freq_table) * (count + 1), GFP_KERNEL);
++	if (!freq_table)
++		return NULL;
++
++	for (i = 0; i < count; i++) {
++		pr_debug("%s: index: %d, freq: %d\n", __func__, i, table[i]);
++		freq_table[i].index = i;
++		freq_table[i].frequency = table[i]; /* in kHZ */
++	}
++
++	freq_table[i].index = count;
++	freq_table[i].frequency = CPUFREQ_TABLE_END;
++
++	return freq_table;
++}
++EXPORT_SYMBOL_GPL(arm_bL_copy_table_from_array);
++
++void arm_bL_free_freq_table(u32 cluster)
++{
++	pr_debug("%s: free freq table\n", __func__);
++
++	kfree(freq_table[cluster]);
++}
++EXPORT_SYMBOL_GPL(arm_bL_free_freq_table);
++
++static void put_cluster_clk_and_freq_table(u32 cluster)
++{
++	if (!atomic_dec_return(&cluster_usage[cluster])) {
++		clk_put(clk[cluster]);
++		clk[cluster] = NULL;
++		arm_bL_ops->put_freq_tbl(cluster);
++		freq_table[cluster] = NULL;
++		pr_debug("%s: cluster: %d\n", __func__, cluster);
++	}
++}
++
++static int get_cluster_clk_and_freq_table(u32 cluster)
++{
++	char name[9] = "cluster";
++	int count;
++
++	if (atomic_inc_return(&cluster_usage[cluster]) != 1)
++		return 0;
++
++	freq_table[cluster] = arm_bL_ops->get_freq_tbl(cluster, &count);
++	if (!freq_table[cluster])
++		goto atomic_dec;
++
++	name[7] = cluster + '0';
++	clk[cluster] = clk_get(NULL, name);
++	if (!IS_ERR_OR_NULL(clk[cluster])) {
++		pr_debug("%s: clk: %p & freq table: %p, cluster: %d\n",
++				__func__, clk[cluster], freq_table[cluster],
++				cluster);
++		return 0;
++	}
++
++	arm_bL_ops->put_freq_tbl(cluster);
++
++atomic_dec:
++	atomic_dec(&cluster_usage[cluster]);
++	pr_err("%s: Failed to get data for cluster: %d\n", __func__, cluster);
++	return -ENODATA;
++}
++
++/* Per-CPU initialization */
++static int bL_cpufreq_init(struct cpufreq_policy *policy)
++{
++	u32 cur_cluster = cpu_to_cluster(policy->cpu);
++	int result;
++
++	result = get_cluster_clk_and_freq_table(cur_cluster);
++	if (result)
++		return result;
++
++	result = cpufreq_frequency_table_cpuinfo(policy,
++			freq_table[cur_cluster]);
++	if (result) {
++		pr_err("CPU %d, cluster: %d invalid freq table\n", policy->cpu,
++				cur_cluster);
++		put_cluster_clk_and_freq_table(cur_cluster);
++		return result;
++	}
++
++	cpufreq_frequency_table_get_attr(freq_table[cur_cluster], policy->cpu);
++
++	policy->cpuinfo.transition_latency =
++		arm_bL_ops->get_transition_latency(cur_cluster);
++	policy->cur = bL_cpufreq_get(policy->cpu);
++
++	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
++
++	pr_info("CPU %d initialized\n", policy->cpu);
++	return 0;
++}
++
++static int bL_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	put_cluster_clk_and_freq_table(cpu_to_cluster(policy->cpu));
++	pr_debug("%s: Exited, cpu: %d\n", __func__, policy->cpu);
++
++	return 0;
++}
++
++/* Export freq_table to sysfs */
++static struct freq_attr *bL_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++static struct cpufreq_driver bL_cpufreq_driver = {
++	.name	= "arm-big-little",
++	.flags	= CPUFREQ_STICKY,
++	.verify	= bL_cpufreq_verify_policy,
++	.target	= bL_cpufreq_set_target,
++	.get	= bL_cpufreq_get,
++	.init	= bL_cpufreq_init,
++	.exit	= bL_cpufreq_exit,
++	.attr	= bL_cpufreq_attr,
++};
++
++int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
++{
++	int ret;
++
++	if (arm_bL_ops) {
++		pr_debug("%s: Already registered: %s, exiting\n", __func__,
++				arm_bL_ops->name);
++		return -EBUSY;
++	}
++
++	if (!ops || !strlen(ops->name) || !ops->get_freq_tbl) {
++		pr_err("%s: Invalid arm_bL_ops, exiting\n", __func__);
++		return -ENODEV;
++	}
++
++	arm_bL_ops = ops;
++
++	ret = cpufreq_register_driver(&bL_cpufreq_driver);
++	if (ret) {
++		pr_info("%s: Failed registering platform driver: %s, err: %d\n",
++				__func__, ops->name, ret);
++		arm_bL_ops = NULL;
++	} else {
++		pr_info("%s: Registered platform driver: %s\n", __func__,
++				ops->name);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(bL_cpufreq_register);
++
++void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
++{
++	if (arm_bL_ops != ops) {
++		pr_info("%s: Registered with: %s, can't unregister, exiting\n",
++				__func__, arm_bL_ops->name);
++	}
++
++	cpufreq_unregister_driver(&bL_cpufreq_driver);
++	pr_info("%s: Un-registered platform driver: %s\n", __func__,
++			arm_bL_ops->name);
++	arm_bL_ops = NULL;
++}
++EXPORT_SYMBOL_GPL(bL_cpufreq_unregister);
+diff --git a/drivers/cpufreq/arm_big_little.h b/drivers/cpufreq/arm_big_little.h
+new file mode 100644
+index 0000000..049e15d
+--- /dev/null
++++ b/drivers/cpufreq/arm_big_little.h
+@@ -0,0 +1,40 @@
++/*
++ * ARM big.LITTLE platform's CPUFreq header file
++ *
++ * Copyright (C) 2013 ARM Ltd.
++ * Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
++ *
++ * Copyright (C) 2013 Linaro.
++ * Viresh Kumar <viresh.kumar@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++#ifndef CPUFREQ_ARM_BIG_LITTLE_H
++#define CPUFREQ_ARM_BIG_LITTLE_H
++
++#include <linux/cpufreq.h>
++#include <linux/types.h>
++
++struct cpufreq_arm_bL_ops {
++	char name[CPUFREQ_NAME_LEN];
++	u32 (*get_transition_latency)(u32 cluster);
++	struct cpufreq_frequency_table *(*get_freq_tbl)(u32 cluster,
++			int *count);
++	void (*put_freq_tbl)(u32 cluster);
++};
++
++struct cpufreq_frequency_table *
++arm_bL_copy_table_from_array(unsigned int *table, int count);
++void arm_bL_free_freq_table(u32 cluster);
++
++int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops);
++void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops);
++
++#endif /* CPUFREQ_ARM_BIG_LITTLE_H */
+diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
+new file mode 100644
+index 0000000..c1eee50
+--- /dev/null
++++ b/drivers/cpufreq/arm_big_little_dt.c
+@@ -0,0 +1,125 @@
++/*
++ * Generic big.LITTLE CPUFreq Interface driver
++ *
++ * It provides necessary ops to arm_big_little cpufreq driver and gets
++ * Frequency information from Device Tree. Freq table in DT must be in KHz.
++ *
++ * Copyright (C) 2013 Linaro.
++ * Viresh Kumar <viresh.kumar@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/cpufreq.h>
++#include <linux/export.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <linux/types.h>
++#include "arm_big_little.h"
++
++static struct cpufreq_frequency_table *generic_get_freq_tbl(u32 cluster,
++		int *count)
++{
++	struct device_node *np = NULL;
++	const struct property *pp;
++	unsigned int *table = NULL;
++	int cluster_id;
++	struct cpufreq_frequency_table *cpufreq_table;
++
++	while ((np = of_find_node_by_name(np, "cluster"))) {
++		if (of_property_read_u32(np, "reg", &cluster_id))
++			continue;
++
++		if (cluster_id != cluster)
++			continue;
++
++		pp = of_find_property(np, "freqs", NULL);
++		if (!pp)
++			continue;
++
++		*count = pp->length / sizeof(u32);
++		if (!*count)
++			continue;
++
++		table = kmalloc(sizeof(*table) * (*count), GFP_KERNEL);
++		if (!table) {
++			pr_err("%s: Failed to allocate memory for table\n",
++					__func__);
++			return NULL;
++		}
++
++		of_property_read_u32_array(np, "freqs", table, *count);
++		break;
++	}
++
++	if (!table) {
++		pr_err("%s: Unable to retrieve Freq table from Device Tree",
++				__func__);
++		return NULL;
++	}
++
++	cpufreq_table = arm_bL_copy_table_from_array(table, *count);
++	kfree(table);
++
++	return cpufreq_table;
++}
++
++static void generic_put_freq_tbl(u32 cluster)
++{
++	arm_bL_free_freq_table(cluster);
++}
++
++static u32 get_transition_latency(u32 cluster)
++{
++	struct device_node *np = NULL;
++	u32 transition_latency = CPUFREQ_ETERNAL;
++	int cluster_id;
++
++	while ((np = of_find_node_by_name(np, "cluster"))) {
++		if (of_property_read_u32(np, "reg", &cluster_id))
++			continue;
++
++		if (cluster_id != cluster)
++			continue;
++
++		of_property_read_u32(np, "clock-latency", &transition_latency);
++		return transition_latency;
++	}
++
++	pr_err("%s: Unable to get clock-latency from DT, use CPUFREQ_ETERNAL",
++			__func__);
++
++	return transition_latency;
++}
++
++static struct cpufreq_arm_bL_ops generic_bL_ops = {
++	.name	= "generic-bl",
++	.get_transition_latency = get_transition_latency,
++	.get_freq_tbl = generic_get_freq_tbl,
++	.put_freq_tbl = generic_put_freq_tbl,
++};
++
++static int generic_bL_init(void)
++{
++	return bL_cpufreq_register(&generic_bL_ops);
++}
++module_init(generic_bL_init);
++
++static void generic_bL_exit(void)
++{
++	return bL_cpufreq_unregister(&generic_bL_ops);
++}
++module_exit(generic_bL_exit);
++
++MODULE_DESCRIPTION("Generic ARM big LITTLE cpufreq driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.12.rc2.18.g61b472e
 
-How can that be true? And if it can be, you will miss POSTCHANGE notifications
-too.
-
-> +       mutex_lock(&cpufreq_lock);
-> +       freqs.old = dvfs_info->cur_frequency;
-> +
-> +       cur_pstate = __raw_readl(dvfs_info->base + XMU_P_STATUS);
-> +       if (cur_pstate >> C0_3_PSTATE_VALID_SHIFT & 0x1)
-> +               index = (cur_pstate >> C0_3_PSTATE_CURR_SHIFT) & P_VALUE_MASK;
-> +       else
-> +               index = (cur_pstate >> C0_3_PSTATE_NEW_SHIFT) & P_VALUE_MASK;
-> +
-> +       if (index < dvfs_info->freq_count) {
-
-What if index is greater than count? That's a problem, isn't it?
-
-> +               freqs.new = freq_table[index].frequency;
-> +               for_each_cpu(freqs.cpu, policy->cpus)
-> +                       cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> +               dvfs_info->cur_frequency = freqs.new;
-> +       }
-> +
-> +       cpufreq_cpu_put(policy);
-> +       mutex_unlock(&cpufreq_lock);
-> +skip_work:
-> +       enable_irq(dvfs_info->irq);
-> +}
-> +
-> +static irqreturn_t exynos_cpufreq_irq(int irq, void *id)
-> +{
-> +       unsigned int tmp;
-> +
-> +       tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQ);
-> +       if (tmp >> PSTATE_CHANGED_SHIFT & 0x1) {
-> +               __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQ);
-> +               disable_irq_nosync(irq);
-> +               schedule_work(&dvfs_info->irq_work);
-> +       }
-> +       return IRQ_HANDLED;
-> +}
-> +
-> +static void exynos_sort_descend_freq_table(void)
-> +{
-> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-> +       int i = 0, index;
-> +       unsigned int tmp_freq;
-> +
-> +       /*
-> +        *Freq table is already in ascending order as it is created from
-
-You need space after * here too :)
-
-> +        *OPP library, so just swap the elements to make it descending.
-> +        */
-> +       for (i = 0; i < dvfs_info->freq_count / 2; i++) {
-> +               index = dvfs_info->freq_count - i - 1;
-> +               tmp_freq = freq_tbl[i].frequency;
-> +               freq_tbl[i].frequency = freq_tbl[index].frequency;
-> +               freq_tbl[index].frequency = tmp_freq;
-> +       }
-> +}
-> +
-> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +
-> +       policy->cur = dvfs_info->cur_frequency;
-> +       cpufreq_frequency_table_get_attr(dvfs_info->freq_table, policy->cpu);
-> +
-> +       /* set the transition latency value */
-> +       policy->cpuinfo.transition_latency = dvfs_info->latency;
-> +
-> +       cpumask_setall(policy->cpus);
-> +
-> +       return cpufreq_frequency_table_cpuinfo(policy, dvfs_info->freq_table);
-> +}
-> +
-> +static struct cpufreq_driver exynos_driver = {
-> +       .flags          = CPUFREQ_STICKY,
-> +       .verify         = exynos_verify_speed,
-> +       .target         = exynos_target,
-> +       .get            = exynos_getspeed,
-> +       .init           = exynos_cpufreq_cpu_init,
-> +       .name           = DRIVER_NAME,
-> +};
-> +
-> +static int __init exynos_cpufreq_init(void)
-
-probably calling it probe might make more sense?
-
-> +{
-> +       int ret = -EINVAL;
-> +       struct device_node *np;
-> +
-> +       np =  of_find_compatible_node(NULL, NULL, "samsung,exynos5440-cpufreq");
-> +       if (IS_ERR(np))
-
-!np ??
-
-> +               return -ENODEV;
-> +
-> +       dvfs_info = kzalloc(sizeof(struct exynos_dvfs_data), GFP_KERNEL);
-
-sizeof(*dvfs_info) ??
-
-> +       if (IS_ERR(dvfs_info)) {
-
-IS_ERR_OR_NULL? But i believe kzalloc only returns NULL to show error, so
-you may end up using if(!dvfs_info)
-
-> +               ret = -ENOMEM;
-> +               goto err_mem_data;
-> +       }
-> +
-> +       dvfs_info->base = of_iomap(np, 0);
-> +       if (IS_ERR(dvfs_info->base)) {
-
-same here too..
-
-> +               pr_err("No cpufreq memory map found\n");
-> +               ret = -ENODEV;
-> +               goto err_map;
-> +       }
-> +
-> +       dvfs_info->irq = irq_of_parse_and_map(np, 0);
-> +
-
-can remove blank line.
-
-> +       if (dvfs_info->irq == 0) {
-> +               pr_err("No cpufreq irq found\n");
-> +               ret = -ENODEV;
-> +               goto err_irq_parse;
-> +       }
-> +
-> +       dvfs_info->dev = get_cpu_device(0);
-
-What about using this dev instance to call devm_*** routines everywhere in init.
-
-> +       if (IS_ERR(dvfs_info->dev)) {
-> +               pr_err("failed to get cpu0 device\n");
-> +               ret = -ENODEV;
-> +               goto err_irq_parse;
-> +       }
-> +
-> +       dvfs_info->dev->of_node = np;
-
-So you are setting cpufreq node as node of cpu, I don't know if this is a
-good idea. In that case it would be better to create the cpu node instead
-and put the table into it.
-
-> +       ret = of_init_opp_table(dvfs_info->dev);
-> +       if (ret) {
-> +               pr_err("failed to init OPP table: %d\n", ret);
-> +               goto err_irq_parse;
-> +       }
-> +
-> +       ret = opp_init_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
-> +       if (ret) {
-> +               pr_err("failed to init cpufreq table: %d\n", ret);
-> +               goto err_irq_parse;
-> +       }
-> +       dvfs_info->freq_count = opp_get_opp_count(dvfs_info->dev);
-> +       exynos_sort_descend_freq_table();
-> +
-> +       if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
-> +               dvfs_info->latency = DEF_TRANS_LATENCY;
-> +
-> +       dvfs_info->cpu_clk = of_clk_get(np, 0);
-> +       if (IS_ERR(dvfs_info->cpu_clk)) {
-> +               pr_err("Failed to get cpu clock\n");
-> +               ret = PTR_ERR(dvfs_info->cpu_clk);
-> +               goto err_clk_get;
-> +       }
-> +
-> +       dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk);
-> +       if (!dvfs_info->cur_frequency) {
-> +               pr_err("Failed to get clock rate\n");
-> +               ret = -EINVAL;
-> +               goto err_clk_get_rate;
-> +       }
-> +       dvfs_info->cur_frequency /= 1000;
-> +
-> +       INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
-> +       if (request_irq(dvfs_info->irq, exynos_cpufreq_irq,
-> +                               IRQF_TRIGGER_NONE, DRIVER_NAME, dvfs_info)) {
-> +               pr_err("Failed to register IRQ\n");
-> +               ret = -ENODEV;
-> +               goto err_clk_get_rate;
-> +       }
-> +
-> +       ret = init_div_table();
-> +       if (ret) {
-> +               pr_err("Failed to initialise div table\n");
-
-s/initialise/initialize
-
-> +               goto err_div_table;
-> +       }
-> +
-> +       exynos_enable_dvfs();
-> +       ret = cpufreq_register_driver(&exynos_driver);
-> +       if (ret) {
-> +               pr_err("%s: failed to register cpufreq driver\n", __func__);
-> +               goto err_div_table;
-> +       }
-> +
-> +       of_node_put(np);
-> +
-> +       pr_info("exynos5440 DVFS initialised.\n");
-> +
-> +       return 0;
-> +
-> +err_div_table:
-> +       free_irq(dvfs_info->irq, dvfs_info);
-> +err_clk_get_rate:
-> +       clk_put(dvfs_info->cpu_clk);
-> +err_clk_get:
-> +       opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
-> +err_irq_parse:
-> +       iounmap(dvfs_info->base);
-> +err_map:
-> +       kfree(dvfs_info);
-> +err_mem_data:
-> +       of_node_put(np);
-> +       pr_err("%s: failed initialization\n", __func__);
-> +       return ret;
-> +}
-> +late_initcall(exynos_cpufreq_init);
-> --
-> 1.7.1
->
