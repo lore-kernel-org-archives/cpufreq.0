@@ -1,210 +1,102 @@
-From: Guru Prasad <gurupras@buffalo.edu>
-Subject: Re: Dynamic cpufreq_frequency_table?
-Date: Wed, 6 Mar 2013 10:33:46 -0500
-Message-ID: <CAMefCkBGXfyBwwBQV5xCMuTxDaTVt3ZkGV7GpJ0ntYzbfk66BA@mail.gmail.com>
-References: <CAMefCkB4LVnReZmEc65qddNiW17gzVXiTWdN=uaFm5v2aycxcQ@mail.gmail.com>
-	<CAOh2x==m=mco-UXL=kA3RU2MwoipFFTbtrHrHdTfSeFeRGj19A@mail.gmail.com>
-	<CAMefCkCr1tvP_SbWV2XuVAMiuo8SOMBWPOhNyJjVR+kWo63kuQ@mail.gmail.com>
-	<CAKohpomy57GxZDDDmLskocowwvPE5O3x6UpVY6dEYn7nUKWnHw@mail.gmail.com>
-	<CAMefCkCh=ZmBdVKrWPDzuoGZmWo+m8P_RS557qQ6ZFeOy_X7qQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3 linux-next] cpufreq: conservative: Use an inline
+ function to evaluate freq_target
+Date: Wed, 6 Mar 2013 23:58:24 +0800
+Message-ID: <CAKohponZrMyZkUBDAnMv=B+fVpqYdQ62bP2iQGsg1=uOKfyPdQ@mail.gmail.com>
+References: <51366C77.3080309@semaphore.gr>
+	<CAKohpokdG2vd5Cp4Lmcnc5ZrLsa-_4Kcy-DvLjG--6SMVsGZkg@mail.gmail.com>
+	<51374F8D.9040300@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=047d7b10d18de884e504d74350cd
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type;
-        bh=EXgMrxlzEtSYRA1JKRSwxEVWuCp0APUvEDYS40OPSOI=;
-        b=EjsMKjnJTQnUHVCQ72dV5KX5YReapiNsEfMOpsT68dVM4U5hc5aGX7m02pbd2BhsTR
-         2drbztzQyK1UDaF/QfI9yFYXRCyecZyWkMsIdJ1L8IlhmQF+ojFgj36Fv8qPyVyEMKhN
-         7BT7wCe1LhnFZO7ho4i5evS/2kErdVkmM9Nh04hVGcyyWneB36DVCcEtjXqbEbbyUTRz
-         8QRHL15z4gq5nnlyGILHa3OlQlLbr3WaCXt7Y/ccb4+gmYXtwg/CeQ0mdG9VAZPhZjfI
-         w6TBy+oGK7hMuL08uRsQcvvyWmyLqJYO8TkCFVdDsRinK4LWN7CHEV/gG7ZwTCy7t698
-         z2MA==
-In-Reply-To: <CAMefCkCh=ZmBdVKrWPDzuoGZmWo+m8P_RS557qQ6ZFeOy_X7qQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <51374F8D.9040300@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---047d7b10d18de884e504d74350cd
-Content-Type: text/plain; charset=ISO-8859-1
+On 6 March 2013 22:15, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> Use an inline function to evaluate freq_target to avoid duplicate code.
+>
+> Also, define a macro for the default frequency step.
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c | 27 +++++++++++++++------------
+>  1 file changed, 15 insertions(+), 12 deletions(-)
 
-On Wed, Mar 6, 2013 at 10:25 AM, Guru Prasad <gurupras@buffalo.edu> wrote:
-> Hi Viresh,
->
-> I think I found the problem in my code.
-> I made it a point to explicitly add CPUFREQ_TABLE_END as an entry in
-> my cpufreq_freq_table, but while calculating the steps between
-> min_freq and max_freq, I failed to allocate an extra step for the
-> CPUFREQ_TABLE_END entry.
-> This probably caused some segfault in the driver and it failed to init.
->
-> Please find my code attached.
-> Since I'm not well versed in writing kernel code, I would appreciate
-> it if you could take a quick glace and pointed out the flaws
->
-> I have followed used mach-integrator as a base to write this code.
->
-> Thank you for your help.
->
-> Regards
-> Guru
->
->
-> On Tue, Mar 5, 2013 at 7:31 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 6 March 2013 01:28, Guru Prasad <gurupras@buffalo.edu> wrote:
->>> What I mean is, every time i start the simulation with a new clock
->>> frequency, I have my cpufreq_init function do the following
->>>         int steps;
->>>         policy->cpuinfo.max_freq = my_cpufreq_get(policy->cpu); //In KHz
->>>         policy->cpuinfo.min_freq = 100  * 1000; //In KHz
->>
->> You don't have to set these, but you just need to pass the right table
->> to cpufreq core and call cpufreq_frequency_table_cpuinfo(). These would
->> be set accordingly by this routine.
->>
->>>         policy->cpuinfo.transition_latency = 10 * 1000; //In us
->>>         policy->cur = my_cpufreq_get(policy->cpu);      //(I'm assuming that
->>> the CPU frequency is always at the maximum before the driver takes
->>> control.)
->>>
->>>
->>> //      Get the number of cpufreq steps - Each step is 200MHz
->>>         steps = get_cpufreq_steps(policy->cpuinfo.max_freq,
->>> policy->cpuinfo.min_freq);
->>> //      Malloc the required space based on number of steps
->>>         dyn_cpufreq_table = kmalloc(sizeof(struct
->>> cpufreq_frequency_table) * steps, GFP_KERNEL);
->>> //      Create entries in the table
->>>         create_freq_table(dyn_cpufreq_table, policy);
->>
->> That's okay, but i didn't get how will you get different set of
->> freqs in your table when you boot up.
->>
->>> However, when I use this code, although my debug statements suggest
->>> that the table is created successfully, sysfs shows no cpufreq under
->>> /sys/devices/system/cpu/cpu0/
->>
->> Something is wrong. And for finding out what, you need to post your code
->> here, even if it is non-mainline-able.
->>
->>
->>> Am I doing something wrong? Is GFP_KERNEL the wrong flag to use for
->>> this purpose?
->>
->> That's not the culprit for sure.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
---047d7b10d18de884e504d74350cd
-Content-Type: text/x-csrc; charset=US-ASCII; name="cpufreq.c"
-Content-Disposition: attachment; filename="cpufreq.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hdynbh8q0
-
-LyoKICogIGxpbnV4L2FyY2gvYXJtL21hY2gtcmVhbHZpZXcvY3B1ZnJlcS5jCiAqCiAqICBDb3B5
-cmlnaHQgKEMpIDIwMTItMjAxMyBVbml2ZXJzaXR5IGF0IEJ1ZmZhbG8uCiAqCiAqIFRoaXMgcHJv
-Z3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9k
-aWZ5CiAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vu
-c2UgdmVyc2lvbiAyIGFzCiAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0
-aW9uLgogKgogKiBDUFVmcmVxIGRyaXZlciBmb3IgdGhlIFJlYWxWaWV3IHBsYXRmb3JtCiAqLwoj
-aW5jbHVkZSA8bGludXgvbW9kdWxlLmg+CiNpbmNsdWRlIDxsaW51eC90eXBlcy5oPgojaW5jbHVk
-ZSA8bGludXgva2VybmVsLmg+CiNpbmNsdWRlIDxsaW51eC9jcHVmcmVxLmg+CiNpbmNsdWRlIDxs
-aW51eC9zY2hlZC5oPgojaW5jbHVkZSA8bGludXgvc21wLmg+CiNpbmNsdWRlIDxsaW51eC9pbml0
-Lmg+CiNpbmNsdWRlIDxsaW51eC9pby5oPgojaW5jbHVkZSA8bGludXgvc2xhYi5oPgoKI2luY2x1
-ZGUgPG1hY2gvaGFyZHdhcmUuaD4KI2luY2x1ZGUgPG1hY2gvcGxhdGZvcm0uaD4KI2luY2x1ZGUg
-PGFzbS9tYWNoLXR5cGVzLmg+CiNpbmNsdWRlIDxhc20vaGFyZHdhcmUvcmVhbHZpZXcuaD4KCnN0
-YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9kcml2ZXIgcmVhbHZpZXdfZHJpdmVyOwoKI2RlZmluZSBSRUFM
-VklFV19JRCAgCUlPX0FERFJFU1MoUkVBTFZJRVdfU1lTX0lEKQojZGVmaW5lIFJFQUxWSUVXX0NQ
-VQlJT19BRERSRVNTKFJFQUxWSUVXX1NZU19PU0MzKQojZGVmaW5lIFJFQUxWSUVXX0xPQ0sgCUlP
-X0FERFJFU1MoUkVBTFZJRVdfU1lTX0xPQ0spCgpzdGF0aWMgc3RydWN0IGNwdWZyZXFfZnJlcXVl
-bmN5X3RhYmxlICpyZWFsdmlld19mcmVxX3RhYmxlOwovKgpzdGF0aWMgc3RydWN0IGNwdWZyZXFf
-ZnJlcXVlbmN5X3RhYmxlIHJlYWx2aWV3X2ZyZXFfdGFibGVbXSA9IHsKCXsgMCwgMTAwICAqIDEw
-MDAgIH0sCgl7IDEsIDIwMCAgKiAxMDAwICB9LAoJeyAyLCA0MDAgICogMTAwMCAgfSwKCXsgMywg
-ODAwICAqIDEwMDAgIH0sCgl7IDQsIDEwMDAgKiAxMDAwIH0sCgl7IDUsIDEyMDAgKiAxMDAwIH0s
-Cgl7IDYsIDE0MDAgKiAxMDAwIH0sCgl7IDcsIDE4MDAgKiAxMDAwIH0sCgl7IDgsIDIwMDAgKiAx
-MDAwIH0sCgl7IDksIENQVUZSRVFfVEFCTEVfRU5EIH0sCn07CiovCgovKgogKiBHZXRzIG51bWJl
-ciBvZiBzdGVwcyBiZXR3ZWVuIG1pbl9mcmVxIGFuZCBtYXhfZnJlcQogKiBFYWNoIHN0ZXAgaXMg
-MjAwTUh6CiAqIFRoaXMgaXMgdXNlZCBmb3IgcmVhbHZpZXdfaW5pdAogKi8Kc3RhdGljIGludCBn
-ZXRfY3B1ZnJlcV9zdGVwcyhzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKiBwb2xpY3kpIHsKCWludCBt
-aW5fZnJlcSA9IHBvbGljeS0+Y3B1aW5mby5taW5fZnJlcTsKCWludCBtYXhfZnJlcSA9IHBvbGlj
-eS0+Y3B1aW5mby5tYXhfZnJlcTsKCWludCBmcmVxID0gbWluX2ZyZXEsIHN0ZXBzID0gMDsKCXdo
-aWxlKGZyZXEgPD0gbWF4X2ZyZXEpIHsKCQlmcmVxICs9IDIwMCAqIDEwMDA7CgkJc3RlcHMrKzsK
-CX0KCi8qCiAqIEV4cGxpY2l0IHN0ZXBzICsgMSBmb3IKICogQ1BVRlJFUV9UQUJMRV9FTkQKICov
-CglzdGVwcyArPSAxOwoJcHJpbnRrKCJOdW1iZXIgb2Ygc3RlcHMgOiVkXG4iLCBzdGVwcyk7Cgly
-ZXR1cm4gc3RlcHM7Cn0KCi8qCiAqIENyZWF0ZXMgZnJlcXVlbmN5IHRhYmxlIHdpdGggc3RlcHMg
-b2YgMjAwTUh6CiAqLwpzdGF0aWMgdm9pZCBjcmVhdGVfZnJlcV90YWJsZShzdHJ1Y3QgY3B1ZnJl
-cV9wb2xpY3kgKnBvbGljeSkgewoJaW50IGkgPSAwOwoJaW50IGZyZXEgPSBwb2xpY3ktPmNwdWlu
-Zm8ubWluX2ZyZXE7Cgl3aGlsZShmcmVxIDw9IHBvbGljeS0+Y3B1aW5mby5tYXhfZnJlcSkgewoJ
-CXJlYWx2aWV3X2ZyZXFfdGFibGVbaV0uaW5kZXggPSBpOwoJCXJlYWx2aWV3X2ZyZXFfdGFibGVb
-aV0uZnJlcXVlbmN5ID0gZnJlcTsKCQlmcmVxICs9IDIwMCAqIDEwMDA7CgkJaSsrOwoJfQoJcmVh
-bHZpZXdfZnJlcV90YWJsZVtpXS5pbmRleCA9IGk7CglyZWFsdmlld19mcmVxX3RhYmxlW2ldLmZy
-ZXF1ZW5jeSA9IENQVUZSRVFfVEFCTEVfRU5EOwoKCWkgPSAwOwoJd2hpbGUocmVhbHZpZXdfZnJl
-cV90YWJsZVtpXS5mcmVxdWVuY3kgIT0gQ1BVRlJFUV9UQUJMRV9FTkQpIHsKCQlwcmludGsoInJl
-YWx2aWV3X2ZyZXFfdGFibGVbJWRdID0lZFxuIiwgaSwgcmVhbHZpZXdfZnJlcV90YWJsZVtpXS5m
-cmVxdWVuY3kpOwoJCWkrKzsKCX0KfQoKc3RhdGljIGludCByZWFsdmlld19jcHVmcmVxX3Zlcmlm
-eV9zcGVlZChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkKewoJaWYgKHBvbGljeS0+Y3B1
-ICE9IDApCgkJcmV0dXJuIC1FSU5WQUw7CgoJcmV0dXJuIGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxl
-X3ZlcmlmeShwb2xpY3ksIHJlYWx2aWV3X2ZyZXFfdGFibGUpOwp9CgovKgogKiBWYWxpZGF0ZSB0
-aGUgc3BlZWQgcG9saWN5LgogKi8Kc3RhdGljIGludCByZWFsdmlld192ZXJpZnlfcG9saWN5KHN0
-cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQp7CglwcmludGsoIlJlYWxWaWV3IENQVUZyZXEg
-cG9saWN5IHZlcmlmaWNhdGlvblxuIik7CgljcHVmcmVxX3ZlcmlmeV93aXRoaW5fbGltaXRzKHBv
-bGljeSwgCgkJCQkgICAgIHBvbGljeS0+Y3B1aW5mby5taW5fZnJlcSwgCgkJCQkgICAgIHBvbGlj
-eS0+Y3B1aW5mby5tYXhfZnJlcSk7CgoJcG9saWN5LT5tYXggPSAoNDAwMCAqIDEwMDApIC8gMTAw
-MDsJLy9QcmUtZGVmaW5lZCB2YWx1ZSBvZiA0IEdIei4uTGV0J3MgZmFjZSBpdC4ubm90aGluZydz
-IGdvaW5nIGZhc3RlciB0aGFuIHRoYXQgcmlnaHQgbm93CgoJcG9saWN5LT5taW4gPSAoMTAwICAq
-IDEwMDApIC8gMTAwMDsJLy9QcmUtZGVmaW5lZCB2YWx1ZSBvZiAxMDBNSHoKCgljcHVmcmVxX3Zl
-cmlmeV93aXRoaW5fbGltaXRzKHBvbGljeSwgCgkJCQkgICAgIHBvbGljeS0+Y3B1aW5mby5taW5f
-ZnJlcSwgCgkJCQkgICAgIHBvbGljeS0+Y3B1aW5mby5tYXhfZnJlcSk7CgoJcmV0dXJuIDA7Cn0K
-CgpzdGF0aWMgaW50IHJlYWx2aWV3X3NldF90YXJnZXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpw
-b2xpY3ksCgkJCQkgdW5zaWduZWQgaW50IHRhcmdldF9mcmVxLAoJCQkJIHVuc2lnbmVkIGludCBy
-ZWxhdGlvbikKewoJY3B1bWFza190IGNwdXNfYWxsb3dlZDsKCWludCBjcHUgPSBwb2xpY3ktPmNw
-dTsKCXN0cnVjdCBjcHVmcmVxX2ZyZXFzIGZyZXFzOwoJdV9pbnQgY3VycmVudF9mcmVxOwoJaW50
-IGk7CgoJaW50IHJldCA9IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlX3RhcmdldChwb2xpY3ksIHJl
-YWx2aWV3X2ZyZXFfdGFibGUsCgkJCQkJICAgICB0YXJnZXRfZnJlcSwgcmVsYXRpb24sICZpKTsK
-CglpZihyZXQgIT0gMCkKCQlyZXR1cm4gcmV0OwoKLy8JcHJpbnRrKCJyZWFsdmlld19zZXRfdGFy
-Z2V0IDoldVxuIiwgcmVhbHZpZXdfZnJlcV90YWJsZVtpXS5mcmVxdWVuY3kpOwoJLyoKCSAqIFNh
-dmUgdGhpcyB0aHJlYWRzIGNwdXNfYWxsb3dlZCBtYXNrLgoJICovCgljcHVzX2FsbG93ZWQgPSBj
-dXJyZW50LT5jcHVzX2FsbG93ZWQ7CgoJLyoKCSAqIEJpbmQgdG8gdGhlIHNwZWNpZmllZCBDUFUu
-ICBXaGVuIHRoaXMgY2FsbCByZXR1cm5zLAoJICogd2Ugc2hvdWxkIGJlIHJ1bm5pbmcgb24gdGhl
-IHJpZ2h0IENQVS4KCSAqLwoJc2V0X2NwdXNfYWxsb3dlZChjdXJyZW50LCBjcHVtYXNrX29mX2Nw
-dShjcHUpKTsKCUJVR19PTihjcHUgIT0gc21wX3Byb2Nlc3Nvcl9pZCgpKTsKCgkvKiBnZXQgY3Vy
-cmVudCBzZXR0aW5nICovCgljdXJyZW50X2ZyZXEgPSBfX3Jhd19yZWFkbChSRUFMVklFV19DUFUp
-OwoKCWZyZXFzLm9sZCA9IGN1cnJlbnRfZnJlcTsKCglmcmVxcy5uZXcgPSByZWFsdmlld19mcmVx
-X3RhYmxlW2ldLmZyZXF1ZW5jeTsKCglmcmVxcy5jcHUgPSBwb2xpY3ktPmNwdTsKCglpZiAoZnJl
-cXMub2xkID09IGZyZXFzLm5ldykgewoJCXNldF9jcHVzX2FsbG93ZWQoY3VycmVudCwgY3B1c19h
-bGxvd2VkKTsKCQlyZXR1cm4gMDsKCX0KCgljcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCZmcmVx
-cywgQ1BVRlJFUV9QUkVDSEFOR0UpOwoKCWN1cnJlbnRfZnJlcSA9IF9fcmF3X3JlYWRsKFJFQUxW
-SUVXX0NQVSk7CgoJX19yYXdfd3JpdGVsKDB4QTA1RiwgUkVBTFZJRVdfTE9DSyk7CglfX3Jhd193
-cml0ZWwocmVhbHZpZXdfZnJlcV90YWJsZVtpXS5mcmVxdWVuY3ksIFJFQUxWSUVXX0NQVSk7Cglf
-X3Jhd193cml0ZWwoMCwgUkVBTFZJRVdfTE9DSyk7CgoJLyoKCSAqIFJlc3RvcmUgdGhlIENQVXMg
-YWxsb3dlZCBtYXNrLgoJICovCglzZXRfY3B1c19hbGxvd2VkKGN1cnJlbnQsIGNwdXNfYWxsb3dl
-ZCk7CgoJY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmZnJlcXMsIENQVUZSRVFfUE9TVENIQU5H
-RSk7CgoJcmV0dXJuIDA7Cn0KCnN0YXRpYyB1bnNpZ25lZCBpbnQgcmVhbHZpZXdfZ2V0KHVuc2ln
-bmVkIGludCBjcHUpCnsKCWNwdW1hc2tfdCBjcHVzX2FsbG93ZWQ7Cgl1bnNpZ25lZCBpbnQgY3Vy
-cmVudF9mcmVxOwoKCgljcHVzX2FsbG93ZWQgPSBjdXJyZW50LT5jcHVzX2FsbG93ZWQ7CgoJc2V0
-X2NwdXNfYWxsb3dlZChjdXJyZW50LCBjcHVtYXNrX29mX2NwdShjcHUpKTsKCUJVR19PTihjcHUg
-IT0gc21wX3Byb2Nlc3Nvcl9pZCgpKTsKCgkvKiBkZXRlY3QgbWVtb3J5IGV0Yy4gKi8KCWN1cnJl
-bnRfZnJlcSA9IF9fcmF3X3JlYWRsKFJFQUxWSUVXX0NQVSk7CgoJc2V0X2NwdXNfYWxsb3dlZChj
-dXJyZW50LCBjcHVzX2FsbG93ZWQpOwoKCXJldHVybiBjdXJyZW50X2ZyZXE7Cn0KCnN0YXRpYyBp
-bnQgcmVhbHZpZXdfY3B1ZnJlcV9pbml0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQp7
-CglpbnQgc3RlcHM7CgkvKiBzZXQgZGVmYXVsdCBwb2xpY3kgYW5kIGNwdWluZm8gKi8KCXBvbGlj
-eS0+Y3B1aW5mby5tYXhfZnJlcSA9IHJlYWx2aWV3X2dldChwb2xpY3ktPmNwdSk7CS8vSW4gS0h6
-Cglwb2xpY3ktPmNwdWluZm8ubWluX2ZyZXEgPSAyMDAgICogMTAwMDsJLy9JbiBLSHoKCXBvbGlj
-eS0+Y3B1aW5mby50cmFuc2l0aW9uX2xhdGVuY3kgPSAxMDAgKiAxMDAwOyAvL0luIHVzCglwb2xp
-Y3ktPmN1ciA9IHBvbGljeS0+bWluID0gcG9saWN5LT5tYXggPSByZWFsdmlld19nZXQocG9saWN5
-LT5jcHUpOwoKCXN0ZXBzID0gZ2V0X2NwdWZyZXFfc3RlcHMocG9saWN5KTsKCXJlYWx2aWV3X2Zy
-ZXFfdGFibGUgPSBrbWFsbG9jKHNpemVvZihzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUp
-ICogc3RlcHMsIEdGUF9LRVJORUwpOwoJY3JlYXRlX2ZyZXFfdGFibGUocG9saWN5KTsKCgljcHVm
-cmVxX2ZyZXF1ZW5jeV90YWJsZV9jcHVpbmZvKHBvbGljeSwgcmVhbHZpZXdfZnJlcV90YWJsZSk7
-CglyZXR1cm4gMDsKfQoKc3RhdGljIHN0cnVjdCBjcHVmcmVxX2RyaXZlciByZWFsdmlld19kcml2
-ZXIgPSB7Cgkub3duZXIJCT0gVEhJU19NT0RVTEUsCgkuZmxhZ3MJCT0gMCwKCS52ZXJpZnkJCT0g
-cmVhbHZpZXdfY3B1ZnJlcV92ZXJpZnlfc3BlZWQsCgkudGFyZ2V0CQk9IHJlYWx2aWV3X3NldF90
-YXJnZXQsCgkuZ2V0CQk9IHJlYWx2aWV3X2dldCwKCS5pbml0CQk9IHJlYWx2aWV3X2NwdWZyZXFf
-aW5pdCwKCS5uYW1lCQk9ICJyZWFsdmlldyIsCn07CgpzdGF0aWMgaW50IF9faW5pdCByZWFsdmll
-d19jcHVfaW5pdCh2b2lkKQp7CglyZXR1cm4gY3B1ZnJlcV9yZWdpc3Rlcl9kcml2ZXIoJnJlYWx2
-aWV3X2RyaXZlcik7Cn0KCnN0YXRpYyB2b2lkIF9fZXhpdCByZWFsdmlld19jcHVfZXhpdCh2b2lk
-KQp7CgljcHVmcmVxX3VucmVnaXN0ZXJfZHJpdmVyKCZyZWFsdmlld19kcml2ZXIpOwp9CgpNT0RV
-TEVfQVVUSE9SICgiR3VydSBQcmFzYWQiKTsKTU9EVUxFX0RFU0NSSVBUSU9OICgiY3B1ZnJlcSBk
-cml2ZXIgZm9yIEFSTSBSZWFsVmlldyBDUFVzIik7Ck1PRFVMRV9MSUNFTlNFICgiR1BMIik7Cgpt
-b2R1bGVfaW5pdChyZWFsdmlld19jcHVfaW5pdCk7Cm1vZHVsZV9leGl0KHJlYWx2aWV3X2NwdV9l
-eGl0KTsK
---047d7b10d18de884e504d74350cd--
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 08be431..3fb921d 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -28,6 +28,7 @@
+>  /* Conservative governor macros */
+>  #define DEF_FREQUENCY_UP_THRESHOLD             (80)
+>  #define DEF_FREQUENCY_DOWN_THRESHOLD           (20)
+> +#define DEF_FREQUENCY_STEP                     (5)
+>  #define DEF_SAMPLING_DOWN_FACTOR               (1)
+>  #define MAX_SAMPLING_DOWN_FACTOR               (10)
+>
+> @@ -39,9 +40,20 @@ static struct cs_dbs_tuners cs_tuners = {
+>         .down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD,
+>         .sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
+>         .ignore_nice = 0,
+> -       .freq_step = 5,
+> +       .freq_step = DEF_FREQUENCY_STEP,
+>  };
+>
+> +static inline unsigned int get_freq_target(struct cpufreq_policy *policy)
+> +{
+> +       unsigned int freq_target = (cs_tuners.freq_step * policy->max) / 100;
+> +
+> +       /* max freq cannot be less than 100. But who knows... */
+> +       if (unlikely(freq_target == 0))
+> +               freq_target = DEF_FREQUENCY_STEP;
+> +
+> +       return freq_target;
+> +}
+> +
+>  /*
+>   * Every sampling_rate, we check, if current idle time is less than 20%
+>   * (default), then we try to increase frequency. Every sampling_rate *
+> @@ -55,7 +67,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
+>  {
+>         struct cs_cpu_dbs_info_s *dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
+>         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+> -       unsigned int freq_target;
+>
+>         /*
+>          * break out if we 'cannot' reduce the speed as the user might
+> @@ -72,13 +83,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
+>                 if (dbs_info->requested_freq == policy->max)
+>                         return;
+>
+> -               freq_target = (cs_tuners.freq_step * policy->max) / 100;
+> -
+> -               /* max freq cannot be less than 100. But who knows.... */
+> -               if (unlikely(freq_target == 0))
+> -                       freq_target = 5;
+> -
+> -               dbs_info->requested_freq += freq_target;
+> +               dbs_info->requested_freq += get_freq_target(policy);
+>                 if (dbs_info->requested_freq > policy->max)
+>                         dbs_info->requested_freq = policy->max;
+>
+> @@ -94,9 +99,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
+>
+>         /* Check for frequency decrease */
+>         if (load < cs_tuners.down_threshold) {
+> -               freq_target = (cs_tuners.freq_step * policy->max) / 100;
+> -
+> -               dbs_info->requested_freq -= freq_target;
+> +               dbs_info->requested_freq -= get_freq_target(policy);
+>                 if (dbs_info->requested_freq < policy->min)
+>                         dbs_info->requested_freq = policy->min;
+>
+> --
+> 1.8.1.4
+>
+>
