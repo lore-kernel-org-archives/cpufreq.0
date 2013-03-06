@@ -1,102 +1,99 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3 linux-next] cpufreq: conservative: Use an inline
- function to evaluate freq_target
-Date: Wed, 6 Mar 2013 23:58:24 +0800
-Message-ID: <CAKohponZrMyZkUBDAnMv=B+fVpqYdQ62bP2iQGsg1=uOKfyPdQ@mail.gmail.com>
-References: <51366C77.3080309@semaphore.gr>
-	<CAKohpokdG2vd5Cp4Lmcnc5ZrLsa-_4Kcy-DvLjG--6SMVsGZkg@mail.gmail.com>
-	<51374F8D.9040300@semaphore.gr>
-Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51374F8D.9040300@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+From: dirk.brandewie@gmail.com
+Subject: [PATCH 2/2] cpufreq/intel_pstate: Fix intel_pstate_init() error path
+Date: Wed,  6 Mar 2013 08:36:08 -0800
+Message-ID: <1362587768-29250-1-git-send-email-dirk.brandewie@gmail.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:from:to:cc:subject:date:message-id:x-mailer;
+        bh=tf/IGBtno2SRjiFk0XNM1EEYsT2YAeyXAWuCN7KIwtg=;
+        b=Su0WEqit7IdbF0k1boIplysDkTpablTrXneur255P++iVS8UZBfZ/OPaSbR8rBHWyP
+         1Y2PhQNgP4mUxwmLz+wqt/NTVAo+WxAY5ZpZchR2XXIFf7rpIt5ElklruhTIGca6GjlO
+         ANiyUCTHByfTLedPJUq4UgYPxmHBylsBeL/6Kn0MrFC9h1e0sD+50QeKX++3p6My2IzD
+         P2ewerblzI6FA5gf02DrHeDfGCUojGmwZ3yUfuVft5FzvZWPKp6669Jo67sR0qG42ukd
+         mxhezok06GixE5XcYz6Mx2fq/p1EOeDSwsasEsV1erGLx+YVJdWwjrch2wF2zmgkpYSU
+         n+rA==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 6 March 2013 22:15, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Use an inline function to evaluate freq_target to avoid duplicate code.
->
-> Also, define a macro for the default frequency step.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 27 +++++++++++++++------------
->  1 file changed, 15 insertions(+), 12 deletions(-)
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+If cpufreq_register_driver() fails just free memory that has been
+allocated and return. intel_pstate_exit() function is removed since we
+are built-in only now there is no reason for a module exit procedure.
 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 08be431..3fb921d 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -28,6 +28,7 @@
->  /* Conservative governor macros */
->  #define DEF_FREQUENCY_UP_THRESHOLD             (80)
->  #define DEF_FREQUENCY_DOWN_THRESHOLD           (20)
-> +#define DEF_FREQUENCY_STEP                     (5)
->  #define DEF_SAMPLING_DOWN_FACTOR               (1)
->  #define MAX_SAMPLING_DOWN_FACTOR               (10)
->
-> @@ -39,9 +40,20 @@ static struct cs_dbs_tuners cs_tuners = {
->         .down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD,
->         .sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
->         .ignore_nice = 0,
-> -       .freq_step = 5,
-> +       .freq_step = DEF_FREQUENCY_STEP,
->  };
->
-> +static inline unsigned int get_freq_target(struct cpufreq_policy *policy)
-> +{
-> +       unsigned int freq_target = (cs_tuners.freq_step * policy->max) / 100;
-> +
-> +       /* max freq cannot be less than 100. But who knows... */
-> +       if (unlikely(freq_target == 0))
-> +               freq_target = DEF_FREQUENCY_STEP;
-> +
-> +       return freq_target;
-> +}
-> +
->  /*
->   * Every sampling_rate, we check, if current idle time is less than 20%
->   * (default), then we try to increase frequency. Every sampling_rate *
-> @@ -55,7 +67,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
->  {
->         struct cs_cpu_dbs_info_s *dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
->         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
-> -       unsigned int freq_target;
->
->         /*
->          * break out if we 'cannot' reduce the speed as the user might
-> @@ -72,13 +83,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
->                 if (dbs_info->requested_freq == policy->max)
->                         return;
->
-> -               freq_target = (cs_tuners.freq_step * policy->max) / 100;
-> -
-> -               /* max freq cannot be less than 100. But who knows.... */
-> -               if (unlikely(freq_target == 0))
-> -                       freq_target = 5;
-> -
-> -               dbs_info->requested_freq += freq_target;
-> +               dbs_info->requested_freq += get_freq_target(policy);
->                 if (dbs_info->requested_freq > policy->max)
->                         dbs_info->requested_freq = policy->max;
->
-> @@ -94,9 +99,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
->
->         /* Check for frequency decrease */
->         if (load < cs_tuners.down_threshold) {
-> -               freq_target = (cs_tuners.freq_step * policy->max) / 100;
-> -
-> -               dbs_info->requested_freq -= freq_target;
-> +               dbs_info->requested_freq -= get_freq_target(policy);
->                 if (dbs_info->requested_freq < policy->min)
->                         dbs_info->requested_freq = policy->min;
->
-> --
-> 1.8.1.4
->
->
+Reported-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   39 +++++++++++----------------------------
+ 1 files changed, 11 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 2bfd083..f6dd1e7 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -750,37 +750,11 @@ static struct cpufreq_driver intel_pstate_driver = {
+ 	.owner		= THIS_MODULE,
+ };
+ 
+-static void intel_pstate_exit(void)
+-{
+-	int cpu;
+-
+-	sysfs_remove_group(intel_pstate_kobject,
+-				&intel_pstate_attr_group);
+-	debugfs_remove_recursive(debugfs_parent);
+-
+-	cpufreq_unregister_driver(&intel_pstate_driver);
+-
+-	if (!all_cpu_data)
+-		return;
+-
+-	get_online_cpus();
+-	for_each_online_cpu(cpu) {
+-		if (all_cpu_data[cpu]) {
+-			del_timer_sync(&all_cpu_data[cpu]->timer);
+-			kfree(all_cpu_data[cpu]);
+-		}
+-	}
+-
+-	put_online_cpus();
+-	vfree(all_cpu_data);
+-}
+-module_exit(intel_pstate_exit);
+-
+ static int __initdata no_load;
+ 
+ static int __init intel_pstate_init(void)
+ {
+-	int rc = 0;
++	int cpu, rc = 0;
+ 	const struct x86_cpu_id *id;
+ 
+ 	if (no_load)
+@@ -805,7 +779,16 @@ static int __init intel_pstate_init(void)
+ 	intel_pstate_sysfs_expose_params();
+ 	return rc;
+ out:
+-	intel_pstate_exit();
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
++		if (all_cpu_data[cpu]) {
++			del_timer_sync(&all_cpu_data[cpu]->timer);
++			kfree(all_cpu_data[cpu]);
++		}
++	}
++
++	put_online_cpus();
++	vfree(all_cpu_data);
+ 	return -ENODEV;
+ }
+ device_initcall(intel_pstate_init);
+-- 
+1.7.7.6
+
