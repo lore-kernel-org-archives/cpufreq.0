@@ -1,102 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq/intel_pstate: Fix intel_pstate_init() error path
-Date: Thu, 7 Mar 2013 10:31:38 +0800
-Message-ID: <CAOh2x=kGz6i8qZhGvwtXUMo_GQfMNAvUiFVmgKMwsgZzKOZusw@mail.gmail.com>
-References: <1362587768-29250-1-git-send-email-dirk.brandewie@gmail.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH V3 2/4] cpufreq: exynos: Remove error return even if no soc is found
+Date: Thu,  7 Mar 2013 09:43:45 +0530
+Message-ID: <1362629627-10012-2-git-send-email-amit.daniel@samsung.com>
+References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=UMXdtJbhX177JbC0HwsUJGbqWhmZ1I0J9BxbG4OowcQ=;
-        b=NtY0jGwlYtLUJ0dpkpxnXSqHN8Eo74+o0c0RA73naLu0b9nSz4CmIM+A7te5OLPSqG
-         nE0E9ECeMHOBc/SYv6OYrAJSCWozL3Z1NnHjoQPWk0z5Re6s0NljjJZ6C7tKsDHYgUVK
-         lhQSR6gAX/WvF1MeMc8BY+jl4kQcrjig0hkY0iAUDln7prupPRNfcGoQWbV9D4xNOAEw
-         TkPT8jOHltKbi57j8HRSJcbEqq4yTsXUyaFcG2KM2NE1UJaCA1vBdyh5/zrLtltlRZgL
-         0NP7FHUFWc+58tdO63ulhwN3RH6aaQwzxbwejlHqA6LFQjBpWGKoFiTtXY37Z0PT5bfp
-         ebsQ==
-In-Reply-To: <1362587768-29250-1-git-send-email-dirk.brandewie@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
+         :in-reply-to:references;
+        bh=0RRXFWqRZKoyDubdlp30gaBpygtYV6TqlnoWKHStDds=;
+        b=x1F0B3AOxzaW8jy2ov5gSr5LlK8p/hkjg3XH6szs4U0o6hf+iFBbmtSVCeLYnIlXL2
+         n9eAiQ+tt39kJFV9wYF8Jkt46H7hHcF888PzO6gpY6Oj9vy7+j5ezVesernOIua0b0XZ
+         6dMNjar4WqvC6zK6nv8legDj28l+HYeITv8H4KfG+SVqZZA17V6N8wK0PA6iHuaitGbj
+         MVUoR0ETOgr9lwIN0PpQG7pOalG9XaVH13NrXaQHmGNSTP4Nu0VFsQx5n2G0Tlm9Xkx1
+         RbR08FXyfKjykkI+D3QIH6Tk9NyBbHXYKYPBX8sF/mibZOtywkMq4prySSKR7DWXhjvx
+         RUvw==
+In-Reply-To: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dirk.brandewie@gmail.com
-Cc: cpufreq@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, Mar 7, 2013 at 12:36 AM,  <dirk.brandewie@gmail.com> wrote:
-> From: Dirk Brandewie <dirk.brandewie@gmail.com>
->
-> If cpufreq_register_driver() fails just free memory that has been
-> allocated and return. intel_pstate_exit() function is removed since we
-> are built-in only now there is no reason for a module exit procedure.
->
-> Reported-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |   39 +++++++++++----------------------------
->  1 files changed, 11 insertions(+), 28 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 2bfd083..f6dd1e7 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -750,37 +750,11 @@ static struct cpufreq_driver intel_pstate_driver = {
->         .owner          = THIS_MODULE,
->  };
->
-> -static void intel_pstate_exit(void)
-> -{
-> -       int cpu;
-> -
-> -       sysfs_remove_group(intel_pstate_kobject,
-> -                               &intel_pstate_attr_group);
-> -       debugfs_remove_recursive(debugfs_parent);
-> -
-> -       cpufreq_unregister_driver(&intel_pstate_driver);
-> -
-> -       if (!all_cpu_data)
-> -               return;
-> -
-> -       get_online_cpus();
-> -       for_each_online_cpu(cpu) {
-> -               if (all_cpu_data[cpu]) {
-> -                       del_timer_sync(&all_cpu_data[cpu]->timer);
-> -                       kfree(all_cpu_data[cpu]);
-> -               }
-> -       }
-> -
-> -       put_online_cpus();
-> -       vfree(all_cpu_data);
-> -}
-> -module_exit(intel_pstate_exit);
-> -
->  static int __initdata no_load;
->
->  static int __init intel_pstate_init(void)
->  {
-> -       int rc = 0;
-> +       int cpu, rc = 0;
->         const struct x86_cpu_id *id;
->
->         if (no_load)
-> @@ -805,7 +779,16 @@ static int __init intel_pstate_init(void)
->         intel_pstate_sysfs_expose_params();
->         return rc;
->  out:
-> -       intel_pstate_exit();
-> +       get_online_cpus();
-> +       for_each_online_cpu(cpu) {
-> +               if (all_cpu_data[cpu]) {
-> +                       del_timer_sync(&all_cpu_data[cpu]->timer);
-> +                       kfree(all_cpu_data[cpu]);
-> +               }
-> +       }
-> +
-> +       put_online_cpus();
-> +       vfree(all_cpu_data);
->         return -ENODEV;
->  }
->  device_initcall(intel_pstate_init);
+This patch helps to have single binary for exynos5440 and previous
+exynos soc's. This change is needed for adding exynos5440 cpufreq driver
+which does not uses exynos-cpufreq common file and adds it own driver.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 78057a3..ee75997 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -297,7 +297,7 @@ static int __init exynos_cpufreq_init(void)
+ 	else if (soc_is_exynos5250())
+ 		ret = exynos5250_cpufreq_init(exynos_info);
+ 	else
+-		pr_err("%s: CPU type not found\n", __func__);
++		return 0;
+ 
+ 	if (ret)
+ 		goto err_vdd_arm;
+-- 
+1.7.1
