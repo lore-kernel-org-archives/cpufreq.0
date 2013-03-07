@@ -1,79 +1,31 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V3 4/4] dts: Add cpufreq controller node for Exynos5440 SoC
-Date: Thu,  7 Mar 2013 09:43:47 +0530
-Message-ID: <1362629627-10012-4-git-send-email-amit.daniel@samsung.com>
-References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
-         :in-reply-to:references;
-        bh=y219Jvuihxf9SuKJYJfDmytb7+vWCRTdMruX82dVS2E=;
-        b=ItmyusaRHlPLByAha1avFVTONj3xl83/rOq40u+9yZSeAeZJbQWAbta/H7Ja/CACv7
-         fEVeuHVKGz3oQZCYZrqkw6/mrEI0rRKeRYqRWUe/SXLkPkbCvyht2qt5spWBTD9VxXBA
-         Sal2ZmHz6/VvN5kQuTPl0y1a6R+HPbQ02lEfDt9WdaJw3Dy2TjYCt+n79DSahK299bnY
-         sa6VUWSuUKV7zsPdW8zbEAtLT+0KQH7BKxZ6VClH1lviazisdvwUPMyZSVsrZXFPFagu
-         oSRRrPiSq3dzeBThtm3fabipkHGfZ+3fsjjkrmtMxH+Qmig0VMolV2U+w1Qnii78omqZ
-         EM7g==
-In-Reply-To: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 54221] ondemand cpufeq governor do not notice Node Manager
+ power limit change
+Date: Thu,  7 Mar 2013 08:36:05 +0000 (UTC)
+Message-ID: <20130307083605.B16A711F869@bugzilla.kernel.org>
+References: <bug-54221-12968@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-54221-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: cpufreq@vger.kernel.org
 
-Add cpufreq controller device node for Exynos5440 SoC for passing
-parameters like controller base address, interrupt and cpufreq
-table. This node is added outside cpu0 as this driver is now a platform
-driver and a new device structure is needed.
+https://bugzilla.kernel.org/show_bug.cgi?id=54221
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
-Changes in V3:
-* Moved the DT node outside cpu0 node as the driver is now a platform
-  driver.
 
- arch/arm/boot/dts/exynos5440.dtsi      |   12 ++++++++++++
- arch/arm/mach-exynos/mach-exynos5-dt.c |    2 ++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+Aaron Lu <aaron.lu@intel.com> changed:
 
-diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
-index 5f3562a..4b29a5a 100644
---- a/arch/arm/boot/dts/exynos5440.dtsi
-+++ b/arch/arm/boot/dts/exynos5440.dtsi
-@@ -63,6 +63,18 @@
- 
- 	};
- 
-+	cpufreq@160000 {
-+		compatible = "samsung,exynos5440-cpufreq";
-+		reg = <0x160000 0x1000>;
-+		interrupts = <0 57 0>;
-+		operating-points = <
-+				/* KHZ	  uV */
-+				1200000 1025000
-+				1000000 975000
-+				800000  925000
-+		>;
-+	};
-+
- 	serial@B0000 {
- 		compatible = "samsung,exynos4210-uart";
- 		reg = <0xB0000 0x1000>;
-diff --git a/arch/arm/mach-exynos/mach-exynos5-dt.c b/arch/arm/mach-exynos/mach-exynos5-dt.c
-index acaeb14..0a446c4 100644
---- a/arch/arm/mach-exynos/mach-exynos5-dt.c
-+++ b/arch/arm/mach-exynos/mach-exynos5-dt.c
-@@ -145,6 +145,8 @@ static const struct of_dev_auxdata exynos5250_auxdata_lookup[] __initconst = {
- static const struct of_dev_auxdata exynos5440_auxdata_lookup[] __initconst = {
- 	OF_DEV_AUXDATA("samsung,exynos4210-uart", EXYNOS5440_PA_UART0,
- 				"exynos4210-uart.0", NULL),
-+	OF_DEV_AUXDATA("samsung,exynos5440-cpufreq", 0x160000,
-+				"exynos5440-cpufreq", NULL),
- 	{},
- };
- 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+         AssignedTo|aaron.lu@intel.com          |cpufreq@vger.kernel.org
+
+
+
+
 -- 
-1.7.1
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
