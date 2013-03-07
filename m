@@ -1,44 +1,102 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver and
- its DT glue
-Date: Thu, 7 Mar 2013 10:29:54 +0800
-Message-ID: <CAKohpo=sF3nEnA4Jgr3gx-vxJTeqp6P1JmoiU=tN-bS6VJQ4Fw@mail.gmail.com>
-References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
-	<20130307014657.GA7426@quad.lixom.net>
-	<CAOesGMiOBxEHVgkr=K_4JVQ6+0Swy1uRmHaS8QwRxTJKs3J2Ow@mail.gmail.com>
+Subject: Re: [PATCH 2/2] cpufreq/intel_pstate: Fix intel_pstate_init() error path
+Date: Thu, 7 Mar 2013 10:31:38 +0800
+Message-ID: <CAOh2x=kGz6i8qZhGvwtXUMo_GQfMNAvUiFVmgKMwsgZzKOZusw@mail.gmail.com>
+References: <1362587768-29250-1-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOesGMiOBxEHVgkr=K_4JVQ6+0Swy1uRmHaS8QwRxTJKs3J2Ow@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=UMXdtJbhX177JbC0HwsUJGbqWhmZ1I0J9BxbG4OowcQ=;
+        b=NtY0jGwlYtLUJ0dpkpxnXSqHN8Eo74+o0c0RA73naLu0b9nSz4CmIM+A7te5OLPSqG
+         nE0E9ECeMHOBc/SYv6OYrAJSCWozL3Z1NnHjoQPWk0z5Re6s0NljjJZ6C7tKsDHYgUVK
+         lhQSR6gAX/WvF1MeMc8BY+jl4kQcrjig0hkY0iAUDln7prupPRNfcGoQWbV9D4xNOAEw
+         TkPT8jOHltKbi57j8HRSJcbEqq4yTsXUyaFcG2KM2NE1UJaCA1vBdyh5/zrLtltlRZgL
+         0NP7FHUFWc+58tdO63ulhwN3RH6aaQwzxbwejlHqA6LFQjBpWGKoFiTtXY37Z0PT5bfp
+         ebsQ==
+In-Reply-To: <1362587768-29250-1-git-send-email-dirk.brandewie@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olof Johansson <olof@lixom.net>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-kernel@lists.linaro.org, mark.hambleton@broadcom.com, linux-arm-kernel@lists.infradead.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+To: dirk.brandewie@gmail.com
+Cc: cpufreq@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-On 7 March 2013 09:50, Olof Johansson <olof@lixom.net> wrote:
-> On Wed, Mar 6, 2013 at 5:46 PM, Olof Johansson <olof@lixom.net> wrote:
+On Thu, Mar 7, 2013 at 12:36 AM,  <dirk.brandewie@gmail.com> wrote:
+> From: Dirk Brandewie <dirk.brandewie@gmail.com>
 >
->> This binding makes no sense to me. It needs to be substantially better
->> documented, not just a couple of sentences that people that understand
->> bit.LITTLE thoroughly can make sense of.
->>
->> It also duplicates the cpu binding. I suspect this should instead be done
->> through additions of the cpu bindings instead of duplication. So this needs to
->> be substantially reworked.
+> If cpufreq_register_driver() fails just free memory that has been
+> allocated and return. intel_pstate_exit() function is removed since we
+> are built-in only now there is no reason for a module exit procedure.
+>
+> Reported-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c |   39 +++++++++++----------------------------
+>  1 files changed, 11 insertions(+), 28 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 2bfd083..f6dd1e7 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -750,37 +750,11 @@ static struct cpufreq_driver intel_pstate_driver = {
+>         .owner          = THIS_MODULE,
+>  };
+>
+> -static void intel_pstate_exit(void)
+> -{
+> -       int cpu;
+> -
+> -       sysfs_remove_group(intel_pstate_kobject,
+> -                               &intel_pstate_attr_group);
+> -       debugfs_remove_recursive(debugfs_parent);
+> -
+> -       cpufreq_unregister_driver(&intel_pstate_driver);
+> -
+> -       if (!all_cpu_data)
+> -               return;
+> -
+> -       get_online_cpus();
+> -       for_each_online_cpu(cpu) {
+> -               if (all_cpu_data[cpu]) {
+> -                       del_timer_sync(&all_cpu_data[cpu]->timer);
+> -                       kfree(all_cpu_data[cpu]);
+> -               }
+> -       }
+> -
+> -       put_online_cpus();
+> -       vfree(all_cpu_data);
+> -}
+> -module_exit(intel_pstate_exit);
+> -
+>  static int __initdata no_load;
+>
+>  static int __init intel_pstate_init(void)
+>  {
+> -       int rc = 0;
+> +       int cpu, rc = 0;
+>         const struct x86_cpu_id *id;
+>
+>         if (no_load)
+> @@ -805,7 +779,16 @@ static int __init intel_pstate_init(void)
+>         intel_pstate_sysfs_expose_params();
+>         return rc;
+>  out:
+> -       intel_pstate_exit();
+> +       get_online_cpus();
+> +       for_each_online_cpu(cpu) {
+> +               if (all_cpu_data[cpu]) {
+> +                       del_timer_sync(&all_cpu_data[cpu]->timer);
+> +                       kfree(all_cpu_data[cpu]);
+> +               }
+> +       }
+> +
+> +       put_online_cpus();
+> +       vfree(all_cpu_data);
+>         return -ENODEV;
+>  }
+>  device_initcall(intel_pstate_init);
 
-Actually, i wasn't getting in new bindings for cpu/cluster for big
-LITTLE but was
-just trying to get bindings for getting freq-table for cpufreq driver.
-
-Lorenzo (cc'd) actually has a patch for getting the bindings in and he
-is looking
-to send them soon. I know these can change after some review and the plan was
-i will fix cpufreq bindings again once that patch is in. We don't have
-any mainlined
-hardware for it for now and so it wouldn't break anything.
-
-> Also, _ALWAYS_ cc devicetree-discuss on new bindings. get_maintainer
-> tells you to do so.
-
-I knew it and i messed up with it. Will surely take care of it next time.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
