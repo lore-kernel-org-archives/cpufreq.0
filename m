@@ -1,37 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Sat, 9 Mar 2013 11:06:55 +0800
-Message-ID: <CAKohpomVitj=mMmT3Z_QPgxzDyXkKN6xYReyJxO1Nc3ei=zCww@mail.gmail.com>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
-	<Pine.LNX.4.64.1303072248560.20470@axis700.grange>
-	<CAKohpo=-_uzTi6QR4MnXPd5yAZFTcw-3ZZL-TAVY+drV-bDjNw@mail.gmail.com>
-	<Pine.LNX.4.64.1303080706310.24111@axis700.grange>
+Subject: Re: [PATCH V3 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
+Date: Sat, 9 Mar 2013 18:47:26 +0800
+Message-ID: <CAKohpokJafWjXj8hYT6tgYMGSqgnFCc3MZmNFco2tTeNkOWDmQ@mail.gmail.com>
+References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1303080706310.24111@axis700.grange>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
 
-On 8 March 2013 14:11, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> Also in your driver you're doing
->
->                 cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
->                 ...
->                 cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
->
-> So, theoretically you could install such notifiers to adjust CPU voltages
-> (using regulators too). But adding regulator calls directly to the driver
-> would make it consistent with cpufreq-cpu0.c.
+On 7 March 2013 12:13, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> +struct exynos_dvfs_data {
+> +       void __iomem *base;
+> +       struct resource *mem;
+> +       int irq;
+> +       struct clk *cpu_clk;
+> +       unsigned int cur_frequency;
+> +       unsigned int latency;
+> +       struct cpufreq_frequency_table *freq_table;
+> +       unsigned int freq_count;
+> +       struct device *dev;
+> +       bool dvfs_enable;
 
-Yes
+s/enable/enabled?
 
->  so, if this doesn't violate
-> any concepts, I think, it would be good to add those when suitable systems
-> appear.
+> +static int exynos_cpufreq_probe(struct platform_device *pdev)
 
-That's what i thought :)
+> +       dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
+> +       if (IS_ERR_OR_NULL(dvfs_info->cpu_clk)) {
+
+s/IS_ERR_OR_NULL/IS_ERR
+
+> +       if (devm_request_irq(dvfs_info->dev, dvfs_info->irq, exynos_cpufreq_irq,
+> +                               IRQF_TRIGGER_NONE, CPUFREQ_NAME, dvfs_info)) {
+> +               pr_err("Failed to register IRQ\n");
+> +               ret = -ENODEV;
+
+use the value returned from this function rather than creating your
+own.. true for all
+other calls too, unless they return NULL on error.
+
+> +}
