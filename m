@@ -1,116 +1,102 @@
-From: Silviu Popescu <silviupopescu1990@gmail.com>
-Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
-Date: Mon, 11 Mar 2013 19:02:22 +0200
-Message-ID: <CAPWTe+KCRgLpLFH-7vN35G8Agw56vEaUua20Y1JZKg4jSogczQ@mail.gmail.com>
-References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
-	<1363013700.2291.83.camel@rzhang1-mobl4>
-	<9281321.Y04oYVrc0i@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55091] New: cpufreq governors woks crazy
+Date: Mon, 11 Mar 2013 21:58:46 +0000 (UTC)
+Message-ID: <bug-55091-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type;
-        bh=YMwsabx6b4Hmd+zhZMv27eP75VkwAt+f+5vPHcjULi4=;
-        b=G3RzfyhJShsRcdH2iwBr/GaxPdGRAnF2Y9ot5Nw0wOBAxxsjXk6q36+CUhYhUrdtDS
-         a79YoSfbPqTkxRif2OkHhN3D7Gkf+RuS1d/aGSup+mcDwV2N194gFoHOGVw3Xf6/WO1W
-         ig6eyPu7P9jfXB74W6luxwXqxoQmZgq8WOgJXeLiiXZ2wsa+kVK2FzBvfmg+tiRVnSO2
-         no4rytQaXIXPI3V8tuuS6ME9tgShEDXAObw4gNNceFmbcttULl2kgYJxeTEnQiXFjl1Q
-         ecahDSkZlO6qN1FYdlQ0wO0EDxyrn5ctXBx29jjVKBMRYdX277LW/rfmK020V7Lrm0Rv
-         QEcw==
-In-Reply-To: <9281321.Y04oYVrc0i@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Zhang Rui <rui.zhang@intel.com>, cpufreq@vger.kernel.org, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Mon, Mar 11, 2013 at 7:03 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, March 11, 2013 10:55:00 PM Zhang Rui wrote:
->> On Mon, 2013-03-11 at 09:35 +0200, Silviu-Mihai Popescu wrote:
->> > Convert all uses of devm_request_and_ioremap() to the newly introduced
->> > devm_ioremap_resource() which provides more consistent error handling.
->> >
->> > devm_ioremap_resource() provides its own error messages so all explicit
->> > error messages can be removed from the failure code paths.
->> >
->> > Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
->> > ---
->> >  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
->> >  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
->> >  drivers/thermal/kirkwood_thermal.c |    8 +++-----
->> >  3 files changed, 9 insertions(+), 13 deletions(-)
->> >
->> > diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
->> > index 0e83e3c..6052476 100644
->> > --- a/drivers/cpufreq/kirkwood-cpufreq.c
->> > +++ b/drivers/cpufreq/kirkwood-cpufreq.c
->> > @@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->> >             dev_err(&pdev->dev, "Cannot get memory resource\n");
->> >             return -ENODEV;
->> >     }
->> > -   priv.base = devm_request_and_ioremap(&pdev->dev, res);
->> > -   if (!priv.base) {
->> > -           dev_err(&pdev->dev, "Cannot ioremap\n");
->> > -           return -EADDRNOTAVAIL;
->> > -   }
->> > +   priv.base = devm_ioremap_resource(&pdev->dev, res);
->> > +   if (IS_ERR(priv.base))
->> > +           return PTR_ERR(priv.base);
->> >
->> >     np = of_find_node_by_path("/cpus/cpu@0");
->> >     if (!np)
->> > diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
->> > index 670aa1e..53aad73 100644
->> > --- a/drivers/cpuidle/cpuidle-kirkwood.c
->> > +++ b/drivers/cpuidle/cpuidle-kirkwood.c
->> > @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
->> >     if (res == NULL)
->> >             return -EINVAL;
->> >
->> > -   ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
->> > -   if (!ddr_operation_base)
->> > -           return -EADDRNOTAVAIL;
->> > +   ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
->> > +   if (IS_ERR(ddr_operation_base))
->> > +           return PTR_ERR(ddr_operation_base);
->> >
->> >     device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
->> >     device->state_count = KIRKWOOD_MAX_STATES;
->> > diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
->> > index 65cb4f0..e5500ed 100644
->> > --- a/drivers/thermal/kirkwood_thermal.c
->> > +++ b/drivers/thermal/kirkwood_thermal.c
->> > @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
->> >     if (!priv)
->> >             return -ENOMEM;
->> >
->> > -   priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
->> > -   if (!priv->sensor) {
->> > -           dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
->> > -           return -EADDRNOTAVAIL;
->> > -   }
->> > +   priv->sensor = devm_ioremap_resource(&pdev->dev, res);
->> > +   if (IS_ERR(priv->sensor))
->> > +           return PTR_ERR(priv->sensor);
->> >
->> >     thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
->> >                                            priv, &ops, NULL, 0, 0);
->>
->> there is already a fix for kirkwood_thermal.c at
->> http://marc.info/?l=linux-pm&m=136238017027514&w=2
->> and it has been applied to thermal -next.
->>
->> would you please refreshed the patch?
->
-> Are you going to take that patch into your tree, then?
+https://bugzilla.kernel.org/show_bug.cgi?id=55091
 
-Hello,
+           Summary: cpufreq governors woks crazy
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.9-rc2
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: towo@siduction.org
+        Regression: No
 
-I have sent a second version of the patch which does not modify
-kirkwood_thermal.c.
-Therefore the existing patch and the one I resent can be applied independently.
+
+Since i test kernel 3.9-rc2, cpufreq is crazy with governors ondemand and
+conservative.
+Even if the system is idling, cpufreq is on the highest or medium frequency.
+Only with powersafe i can get the cpu to the lowest frequency.
+
+This behavior i cant see in 3.8 or below.
+
+Here the output from cpufreq-info:
+
+cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0 1 2 3
+  CPUs which need to have their frequency coordinated by software: 0 1 2 3
+  maximum transition latency: 10.0 us.
+  hardware limits: 1.60 GHz - 2.66 GHz
+  available frequency steps: 2.66 GHz, 2.13 GHz, 1.60 GHz
+  available cpufreq governors: powersave, conservative, userspace, ondemand,
+performance
+  current policy: frequency should be within 1.60 GHz and 2.66 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 1.60 GHz.
+  cpufreq stats: 2.66 GHz:3.10%, 2.13 GHz:3.09%, 1.60 GHz:93.81%  (8123)
+analyzing CPU 1:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0 1 2 3
+  CPUs which need to have their frequency coordinated by software: 0 1 2 3
+  maximum transition latency: 10.0 us.
+  hardware limits: 1.60 GHz - 2.66 GHz
+  available frequency steps: 2.66 GHz, 2.13 GHz, 1.60 GHz
+  available cpufreq governors: powersave, conservative, userspace, ondemand,
+performance
+  current policy: frequency should be within 1.60 GHz and 2.66 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 1.60 GHz.
+  cpufreq stats: 2.66 GHz:3.10%, 2.13 GHz:3.09%, 1.60 GHz:93.81%  (8123)
+analyzing CPU 2:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0 1 2 3
+  CPUs which need to have their frequency coordinated by software: 0 1 2 3
+  maximum transition latency: 10.0 us.
+  hardware limits: 1.60 GHz - 2.66 GHz
+  available frequency steps: 2.66 GHz, 2.13 GHz, 1.60 GHz
+  available cpufreq governors: powersave, conservative, userspace, ondemand,
+performance
+  current policy: frequency should be within 1.60 GHz and 2.66 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 1.60 GHz.
+  cpufreq stats: 2.66 GHz:3.10%, 2.13 GHz:3.09%, 1.60 GHz:93.81%  (8123)
+analyzing CPU 3:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0 1 2 3
+  CPUs which need to have their frequency coordinated by software: 0 1 2 3
+  maximum transition latency: 10.0 us.
+  hardware limits: 1.60 GHz - 2.66 GHz
+  available frequency steps: 2.66 GHz, 2.13 GHz, 1.60 GHz
+  available cpufreq governors: powersave, conservative, userspace, ondemand,
+performance
+  current policy: frequency should be within 1.60 GHz and 2.66 GHz.
+                  The governor "powersave" may decide which speed to use
+                  within this range.
+  current CPU frequency is 1.60 GHz.
+  cpufreq stats: 2.66 GHz:3.10%, 2.13 GHz:3.09%, 1.60 GHz:93.81%  (8123)
 
 -- 
-Silviu Popescu
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
