@@ -1,83 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V3 4/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
-Date: Tue, 12 Mar 2013 00:38:57 +0100
-Message-ID: <1687194.MelaMkNoiM@vostro.rjw.lan>
-References: <cover.1362381470.git.viresh.kumar@linaro.org> <b3deff3c75a0ca1b687c92bf81061c3728346494.1362381470.git.viresh.kumar@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
+Date: Tue, 12 Mar 2013 07:58:16 +0800
+Message-ID: <1363046296.2291.91.camel@rzhang1-mobl4>
+References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
+	 <1363013700.2291.83.camel@rzhang1-mobl4>
+	 <9281321.Y04oYVrc0i@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <b3deff3c75a0ca1b687c92bf81061c3728346494.1362381470.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <9281321.Y04oYVrc0i@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>, cpufreq@vger.kernel.org, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, March 04, 2013 03:37:56 PM Viresh Kumar wrote:
-> have_multiple_policies is required by platforms having multiple clock-domains
-> for cpus, i.e. supporting multiple policies for cpus. This patch adds in a
-> Kconfig option for enabling execution of this code.
+On Mon, 2013-03-11 at 18:03 +0100, Rafael J. Wysocki wrote:
+> On Monday, March 11, 2013 10:55:00 PM Zhang Rui wrote:
+> > On Mon, 2013-03-11 at 09:35 +0200, Silviu-Mihai Popescu wrote:
+> > > Convert all uses of devm_request_and_ioremap() to the newly introduced
+> > > devm_ioremap_resource() which provides more consistent error handling.
+> > > 
+> > > devm_ioremap_resource() provides its own error messages so all explicit
+> > > error messages can be removed from the failure code paths.
+> > > 
+> > > Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+> > > ---
+> > >  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
+> > >  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
+> > >  drivers/thermal/kirkwood_thermal.c |    8 +++-----
+> > >  3 files changed, 9 insertions(+), 13 deletions(-)
+> > > 
+> > > diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> > > index 0e83e3c..6052476 100644
+> > > --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> > > +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> > > @@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+> > >  		dev_err(&pdev->dev, "Cannot get memory resource\n");
+> > >  		return -ENODEV;
+> > >  	}
+> > > -	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+> > > -	if (!priv.base) {
+> > > -		dev_err(&pdev->dev, "Cannot ioremap\n");
+> > > -		return -EADDRNOTAVAIL;
+> > > -	}
+> > > +	priv.base = devm_ioremap_resource(&pdev->dev, res);
+> > > +	if (IS_ERR(priv.base))
+> > > +		return PTR_ERR(priv.base);
+> > >  
+> > >  	np = of_find_node_by_path("/cpus/cpu@0");
+> > >  	if (!np)
+> > > diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> > > index 670aa1e..53aad73 100644
+> > > --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> > > +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> > > @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+> > >  	if (res == NULL)
+> > >  		return -EINVAL;
+> > >  
+> > > -	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
+> > > -	if (!ddr_operation_base)
+> > > -		return -EADDRNOTAVAIL;
+> > > +	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+> > > +	if (IS_ERR(ddr_operation_base))
+> > > +		return PTR_ERR(ddr_operation_base);
+> > >  
+> > >  	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+> > >  	device->state_count = KIRKWOOD_MAX_STATES;
+> > > diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+> > > index 65cb4f0..e5500ed 100644
+> > > --- a/drivers/thermal/kirkwood_thermal.c
+> > > +++ b/drivers/thermal/kirkwood_thermal.c
+> > > @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
+> > >  	if (!priv)
+> > >  		return -ENOMEM;
+> > >  
+> > > -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> > > -	if (!priv->sensor) {
+> > > -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> > > -		return -EADDRNOTAVAIL;
+> > > -	}
+> > > +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> > > +	if (IS_ERR(priv->sensor))
+> > > +		return PTR_ERR(priv->sensor);
+> > >  
+> > >  	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+> > >  					       priv, &ops, NULL, 0, 0);
+> > 
+> > there is already a fix for kirkwood_thermal.c at
+> > http://marc.info/?l=linux-pm&m=136238017027514&w=2
+> > and it has been applied to thermal -next.
+> > 
+> > would you please refreshed the patch?
 > 
-> Reported-by: Borislav Petkov <bp@alien8.de>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig | 3 +++
->  include/linux/cpufreq.h | 4 ++++
->  2 files changed, 7 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index cbcb21e..e6e6939 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -23,6 +23,9 @@ config CPU_FREQ_TABLE
->  config CPU_FREQ_GOV_COMMON
->  	bool
->  
-> +config CPU_FREQ_HAVE_MULTIPLE_POLICIES
-> +	bool
-> +
->  config CPU_FREQ_STAT
->  	tristate "CPU frequency translation statistics"
->  	select CPU_FREQ_TABLE
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 6e1abd2..a092fcb 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -107,11 +107,13 @@ struct cpufreq_policy {
->  	unsigned int		policy; /* see above */
->  	struct cpufreq_governor	*governor; /* see below */
->  	void			*governor_data;
-> +#ifdef CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES
->  	/* This should be set by init() of platforms having multiple
->  	 * clock-domains, i.e.  supporting multiple policies. With this sysfs
->  	 * directories of governor would be created in cpu/cpu<num>/cpufreq/
->  	 * directory */
->  	bool			have_multiple_policies;
-> +#endif
->  
->  	struct work_struct	update; /* if update_policy() needs to be
->  					 * called, but you're in IRQ context */
-> @@ -142,9 +144,11 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
->  static inline struct kobject *
->  get_governor_parent_kobj(struct cpufreq_policy *policy)
->  {
-> +#ifdef CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES
->  	if (policy->have_multiple_policies)
->  		return &policy->kobj;
->  	else
-> +#endif
->  		return cpufreq_global_kobject;
->  }
+> Are you going to take that patch into your tree, then?
 
-One more question before I apply it.
+I'll take the one that fixes kirkwood_thermal.c. :)
 
-Is there any architecture/platform that will set
-CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES and keep have_multiple_policies unset
-at the same time?
+thanks,
+rui
 
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
