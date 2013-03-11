@@ -1,52 +1,200 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Mon, 11 Mar 2013 08:57:49 +0800
-Message-ID: <CAKohponV8MR=J8bbNFxGF9JXQB0uadv7iDcbW9D-qr2N53U_kQ@mail.gmail.com>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
- <513CAD9B.908@gmail.com>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH V3 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
+Date: Mon, 11 Mar 2013 09:13:24 +0530
+Message-ID: <CADGdYn7yqFYxz6OENhTfpkj2_1mUBdu-HM1U=AbDft=XPbTPfQ@mail.gmail.com>
+References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
+	<5138B200.7060906@samsung.com>
 Mime-Version: 1.0
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        bh=2vjhqcp8yNor+iCbQAHUlPSmRpIwcHul2UXIi8iA5iE=;
+        b=wirrEPPmVrvWQESIAQ76pGM6f/evemKS2ReueDDztJDuAuU0g6RJiJtCarxAdaqHQ2
+         jmuhVauP4YF4De/3G/AL0z1Z5DEwtGA69wW5Z4NWf/CP/BomO7/gqQa0EWZVK4/+0mMY
+         P6ljngyYrxPjfp0fZ4MXU8gY/bV/Pu9BuqaJQBvmLPhagjQxaTaDt5nnh6dpnfJLw+s9
+         674TezLAoU5RIMYIJclZSu6XKN7xX3CRx3N6y+copHuiEnuHASzipsthLlhR/nXFgQkv
+         h7rRO497THjwk3F8AofBkw6NTjuUrWXluFgWhJUCpBOIzeCHmxfUyco4pQ48JmtYisk3
+         vCYw==
+In-Reply-To: <5138B200.7060906@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <513CAD9B.908-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Steve.Bannister-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Liviu.Dudau-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, robin.randhawa-5wv7dgnIgG8@public.gmane.org, mark.hambleton-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, charles.garcia-tobin-5wv7dgnIgG8@public.gmane.org
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 10 March 2013 23:58, Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> On 03/07/2013 06:14 PM, Viresh Kumar wrote:
->> +void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
->> +{
->> +     if (arm_bL_ops != ops) {
->> +             pr_info("%s: Registered with: %s, can't unregister, exiting\n",
->> +                             __func__, arm_bL_ops->name);
->> +     }
+Hi Sylwester,
+
+Thanks for the review. Will update with your suggestion in the next version,
+
+Thanks,
+Amit D
+
+On Thu, Mar 7, 2013 at 8:58 PM, Sylwester Nawrocki
+<s.nawrocki@samsung.com> wrote:
+> On 03/07/2013 05:13 AM, Amit Daniel Kachhap wrote:
+>> +/* Register definations */
 >
-> The code is not doing what the info message says.
-
-Yes, following is the improvement:
-
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 8b8b07e..9d449cf 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -264,8 +264,9 @@ EXPORT_SYMBOL_GPL(bL_cpufreq_register);
- void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
- {
-        if (arm_bL_ops != ops) {
--               pr_info("%s: Registered with: %s, can't unregister, exiting\n",
-+               pr_err("%s: Registered with: %s, can't unregister, exiting\n",
-                                __func__, arm_bL_ops->name);
-+               return;
-        }
+> s/definations/definitions
+ok
+>
+>> +#define XMU_DVFS_CTRL                0x0060
+>> +#define XMU_PMU_P0_7         0x0064
+>> +#define XMU_C0_3_PSTATE              0x0090
+>> +#define XMU_P_LIMIT          0x00A0
+>> +#define XMU_P_STATUS         0x00A4
+>> +#define XMU_PMUEVTEN         0x00D0
+>> +#define XMU_PMUIRQEN         0x00D4
+>> +#define XMU_PMUIRQ           0x00D8
+>
+> Keeping all hex numbers lower case might be a good idea.
+Ok
+>
+>> +
+>> +/* PMU mask and shift definations */
+>> +#define P_VALUE_MASK         0x7
+>> +
+>> +#define XMU_DVFS_CTRL_EN_SHIFT       0
+>> +
+>> +#define P0_7_CPUCLKDEV_SHIFT 21
+>> +#define P0_7_CPUCLKDEV_MASK  0x7
+>> +#define P0_7_ATBCLKDEV_SHIFT 18
+>> +#define P0_7_ATBCLKDEV_MASK  0x7
+>> +#define P0_7_CSCLKDEV_SHIFT  15
+>> +#define P0_7_CSCLKDEV_MASK   0x7
+>> +#define P0_7_CPUEMA_SHIFT    28
+>> +#define P0_7_CPUEMA_MASK     0xf
+>> +#define P0_7_L2EMA_SHIFT     24
+>> +#define P0_7_L2EMA_MASK      0xf
+> ...
+>> +static int exynos_cpufreq_probe(struct platform_device *pdev)
+>> +{
+>> +     int ret = -EINVAL;
+>> +     struct device_node *np;
+>> +     struct resource res;
+>> +
+>> +     np =  of_find_compatible_node(NULL, NULL, "samsung,exynos5440-cpufreq");
+>> +     if (!np)
+>> +             return -ENODEV;
+>> +
+>> +     dvfs_info = devm_kzalloc(&pdev->dev, sizeof(*dvfs_info), GFP_KERNEL);
+>> +     if (!dvfs_info) {
+>> +             ret = -ENOMEM;
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     dvfs_info->dev = &pdev->dev;
+>> +     dvfs_info->dev->of_node = np;
+>> +
+>> +     ret = of_address_to_resource(np, 0, &res);
+>> +     if (ret)
+>> +             goto err_put_node;
+>> +
+>> +     dvfs_info->base = devm_ioremap(dvfs_info->dev, res.start,
+>
+> There is a devm_ioremap_resource() function that has been introduced
+> recently. It could simplify this code a bit and is preferred over
+> devm_ioremap().
+yes right. I somehow missed this api.
+>
+>> +                                     resource_size(&res));
+>> +     if (!dvfs_info->base) {
+>> +             pr_err("No cpufreq memory map found\n");
+>> +             ret = -ENODEV;
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     dvfs_info->irq = irq_of_parse_and_map(np, 0);
+>> +     if (dvfs_info->irq == 0) {
+>> +             pr_err("No cpufreq irq found\n");
+>
+> Wouldn't dev_err() be more appropriate here ?
+Ok
+>
+>> +             ret = -ENODEV;
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     ret = of_init_opp_table(dvfs_info->dev);
+>> +     if (ret) {
+>> +             pr_err("failed to init OPP table: %d\n", ret);
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     ret = opp_init_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+>> +     if (ret) {
+>> +             pr_err("failed to init cpufreq table: %d\n", ret);
+>> +             goto err_put_node;
+>> +     }
+>> +     dvfs_info->freq_count = opp_get_opp_count(dvfs_info->dev);
+>> +     exynos_sort_descend_freq_table();
+>> +
+>> +     if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
+>> +             dvfs_info->latency = DEF_TRANS_LATENCY;
+>> +
+>> +     dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
+>> +     if (IS_ERR_OR_NULL(dvfs_info->cpu_clk)) {
+>
+> devm_clk_get() return value needs to be checked with IS_ERR(),
+> not IS_ERR_OR_NULL().
+ok
+>
+>> +             pr_err("Failed to get cpu clock\n");
+>> +             ret = PTR_ERR(dvfs_info->cpu_clk);
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk);
+>> +     if (!dvfs_info->cur_frequency) {
+>> +             pr_err("Failed to get clock rate\n");
+>> +             ret = -EINVAL;
+>> +             goto err_free_table;
+>> +     }
+>> +     dvfs_info->cur_frequency /= 1000;
+>> +
+>> +     INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
+>> +     if (devm_request_irq(dvfs_info->dev, dvfs_info->irq, exynos_cpufreq_irq,
+>> +                             IRQF_TRIGGER_NONE, CPUFREQ_NAME, dvfs_info)) {
+>> +             pr_err("Failed to register IRQ\n");
+>> +             ret = -ENODEV;
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     ret = init_div_table();
+>> +     if (ret) {
+>> +             pr_err("Failed to initialise div table\n");
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     exynos_enable_dvfs();
+>> +     ret = cpufreq_register_driver(&exynos_driver);
+>> +     if (ret) {
+>> +             pr_err("%s: failed to register cpufreq driver\n", __func__);
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     of_node_put(np);
+>> +     dvfs_info->dvfs_enable = true;
+>> +     pr_info("exynos5440 DVFS initialized.\n");
+>
+> dev_info() ?
+>
+>> +     return 0;
+>> +
+>> +err_free_table:
+>> +     opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+>> +err_put_node:
+>> +     of_node_put(np);
+>> +     pr_err("%s: failed initialization\n", __func__);
+>
+> Is this really needed ? This failure will be logged by the driver core
+> anyway.
+>
+>> +     return ret;
+>> +
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
