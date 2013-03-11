@@ -1,19 +1,22 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 0/2] cpufreq: cpufreq-cpu0: cleanups around DT usage
-Date: Mon, 11 Mar 2013 18:05:28 -0500
-Message-ID: <1363043130-30270-1-git-send-email-nm@ti.com>
-Return-path: <linux-omap-owner@vger.kernel.org>
+Subject: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which are not in DT yet.
+Date: Mon, 11 Mar 2013 18:05:29 -0500
+Message-ID: <1363043130-30270-2-git-send-email-nm@ti.com>
+References: <1363043130-30270-1-git-send-email-nm@ti.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer;
-        bh=AUjwr84lMKaA3eGnjl6JfeZaS090fLJLKPWC8YGSmmk=;
-        b=eprkez1ccS6YopOudjBet7gCvnfM+nGn/ByjhEJHjx1/66RTKFlzS3MSVZXF2PwdgD
-         Er0/SuONlhB5U21PZK9C06KXpr209d7+ZPqNNghMJRts+lIScSm/wsDEmDnkXiAtLfH7
-         i/BVc5xwkjRAmJ8LDZuTUcTap7BQgf2A0RTk1jJ0qlqtgzMdexoogDEWp0tJNPL6D8tJ
-         fMMF2DDaRUV+gbWYAc08Ey2/uRQ6ka9qf4i7gUM3d37kQN8acO6jgJhV0w+9IFBtbP+K
-         MfxQBxSfyRXOrubUDgAKWhqDTYAxPxxaH8I6Ujzx2nRB4+o9CLgFn9+LmYfZECJjkD7J
-         l41w==
-Sender: linux-omap-owner@vger.kernel.org
+        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
+         :in-reply-to:references;
+        bh=BkrxiesqXdsjt3HIlxQa5wACbr1M5ucOtrcW+dhHFcg=;
+        b=hrHQ7Gl/gb5y2o9LGVkDUQsl84lfywMfSCEqnwZF5SUcR7OfYTZM2XZi8LJCLPzvNn
+         R0ZKS5FCASpeO/ldYYfPYgRLZle68T3WxjJkZiLEmAuyXgF0l/8VYi55e2IkhqQQKDZ5
+         1NSxXes7RfdLbXvR4IJejMEmxM3h8WeYhDfvi7c0JKX3RoUicsxNKCB+rYr0A+KE8c2+
+         0f2ATRCnGvD+s9N/dzaB1PRxZIQE8RXlUcATuaK/H5SABy6wOGF6acfNrkPw9M8N/MHo
+         O2+JItiKjRd23KVR/sF6iH3kPZb6bff0QVodDhbc1mizbO8O1FesmL1w6fsp7L5QQ5Ym
+         FHnA==
+In-Reply-To: <1363043130-30270-1-git-send-email-nm@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,24 +24,21 @@ Content-Transfer-Encoding: 7bit
 To: cpufreq <cpufreq@vger.kernel.org>
 Cc: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-The following series arose from trying to use BeagleBoard-XM (OMAP3 variant)
-for doing CPU DVFS using cpufreq-cpu0.
-
-This is also an attempt to slowly remove the dependence on omap-cpufreq
-driver and be entirely driven off cpufreq-cpu0 driver.
-
-Somewhere in the future, when we have regulators driven off CCF and OMAP
-converted to CCF, we could remove the DT regulator requirements as well.
-
-Based on v3.9-rc2 tag
-
-Nishanth Menon (2):
-  cpufreq: cpufreq-cpu0: support for clock which are not in DT yet.
-  cpufreq: cpufreq-cpu0: provide compatibility string for DT matchup
-
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    6 ++++++
- drivers/cpufreq/cpufreq-cpu0.c                     |   12 +++++++++++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
+On certain SoCs like variants of OMAP, the clock conversion to DT
+is not complete. In short, the ability to:
+cpus {
+    cpu@0 {
+	clocks = <&cpuclk 0>;
+    };
+ };
+is not possible. However, the clock node is registered.
+Allow for clk names to be provided as string so as to be used when needed.
+Example (for OMAP3630):
+cpus {
+    cpu@0 {
+	clock-name = "cpufreq_ck";
+    };
+ };
 
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
@@ -48,17 +48,49 @@ Cc: cpufreq@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
 Cc: linux-omap@vger.kernel.org
 
-This series in addition to the following DT changes (temporary):
-http://pastebin.com/h5uysj0i
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    3 +++
+ drivers/cpufreq/cpufreq-cpu0.c                     |    6 +++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
-Screen shot of the voltage changes using cpufreq-cpu0 on Xm:
-http://goo.gl/vVEjd
-
-OMAP Caveat: AVS+ABB still wont work with just these changes.
-More to come as we progress.
-
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index 4416ccc..f180963 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -12,6 +12,9 @@ Required properties:
+   for details
+ 
+ Optional properties:
++- clock-name: If the clock is not converted to device tree, then describe
++  the clock name as a string. This may also be replaced with clocks=<&cpuclk>
++  cpu clocks has already been converted to device tree.
+ - clock-latency: Specify the possible maximum transition latency for clock,
+   in unit of nanoseconds.
+ - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 4e5b7fb..28223c9 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -180,6 +180,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np;
+ 	int ret;
++	const char *clk_name = NULL;
+ 
+ 	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
+ 		if (of_get_property(np, "operating-points", NULL))
+@@ -194,7 +195,10 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 	cpu_dev = &pdev->dev;
+ 	cpu_dev->of_node = np;
+ 
+-	cpu_clk = devm_clk_get(cpu_dev, NULL);
++	/* If clocks are not in DT yet, allow to define it part of CPU node */
++	of_property_read_string(np, "clock-name", &clk_name);
++
++	cpu_clk = devm_clk_get(cpu_dev, clk_name);
+ 	if (IS_ERR(cpu_clk)) {
+ 		ret = PTR_ERR(cpu_clk);
+ 		pr_err("failed to get cpu0 clock: %d\n", ret);
 -- 
 1.7.9.5
-
-Regards,
-Nishanth Menon
