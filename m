@@ -1,25 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 4/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
-Date: Tue, 12 Mar 2013 08:55:12 +0800
-Message-ID: <CAKohpompsA5bR6TauM7Wa6ciLxYYc7GdpN1NXdHF_WbP2ki=qA@mail.gmail.com>
-References: <cover.1362381470.git.viresh.kumar@linaro.org>
-	<b3deff3c75a0ca1b687c92bf81061c3728346494.1362381470.git.viresh.kumar@linaro.org>
-	<1687194.MelaMkNoiM@vostro.rjw.lan>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which are
+ not in DT yet.
+Date: Tue, 12 Mar 2013 10:33:00 +0530
+Message-ID: <513EB704.8030907@ti.com>
+References: <1363043130-30270-1-git-send-email-nm@ti.com> <1363043130-30270-2-git-send-email-nm@ti.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1687194.MelaMkNoiM@vostro.rjw.lan>
+In-Reply-To: <1363043130-30270-2-git-send-email-nm@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+To: Nishanth Menon <nm@ti.com>
+Cc: cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On 12 March 2013 07:38, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> One more question before I apply it.
->
-> Is there any architecture/platform that will set
-> CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES and keep have_multiple_policies unset
-> at the same time?
+On Tuesday 12 March 2013 04:35 AM, Nishanth Menon wrote:
+> On certain SoCs like variants of OMAP, the clock conversion to DT
+> is not complete. In short, the ability to:
+> cpus {
+>     cpu@0 {
+> 	clocks = <&cpuclk 0>;
+>     };
+>  };
+> is not possible. However, the clock node is registered.
+> Allow for clk names to be provided as string so as to be used when needed.
+> Example (for OMAP3630):
+> cpus {
+>     cpu@0 {
+> 	clock-name = "cpufreq_ck";
+>     };
+>  };
+> 
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> 
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+Seems a reasonable to me.
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-No, they are redundant. That's why i have been forcing to drop this patch.
