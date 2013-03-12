@@ -1,19 +1,22 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V4 0/4] cpufreq: exynos5440: support for cpufreq driver
-Date: Tue, 12 Mar 2013 15:28:15 +0530
-Message-ID: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Subject: [PATCH V4 2/4] cpufreq: exynos: Remove error return even if no soc is found
+Date: Tue, 12 Mar 2013 15:28:17 +0530
+Message-ID: <1363082299-10561-3-git-send-email-amit.daniel@samsung.com>
+References: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer;
-        bh=QUVysuEKno4Cu9sYTK0khXdfTHPauP0iiYtuFhOoYIU=;
-        b=hbkZPt/Exl4nwbH7C9FGYGaHT5wUqw2KGBNADTty9rHCF92P/mQg3oMR5rjsN4lFI+
-         js9X1pC72Z54k652LaT19oNi6/5sVDnUOpTppWswjWXzivHKfQe96K68nzG0dUsIbDM2
-         FK+E3y7XQGsm95TAxGmKRHQh/gjAWchHM92sZe4D70DAPpzR1gEzv7oIlc0BdJ/DWpCz
-         GoGr26Rr8bxjF4/cn/1QEbkYzzljSNAFKrb2iedYa5n972qbb1vDz8U+RvisptnnUeyS
-         W7s5BJIUx0zPLnqNN6dzlJY7w3e+z7rgoVUz/GSry7ryQAwttzaKcYGmx2CpR+kzGdt0
-         g9gA==
-Sender: cpufreq-owner@vger.kernel.org
+        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
+         :in-reply-to:references;
+        bh=0RRXFWqRZKoyDubdlp30gaBpygtYV6TqlnoWKHStDds=;
+        b=ir/J/YYWCB8rtsc+Fp3i+AL2x7zEd4QIEIKrzMg90PtSyqf2/PuThx9DIbhb/14kWz
+         2jRRLyYUmmLdJgYcWVIH2IqWH2fpPsUfmRvF0+riana63oagHKSkhmbuMVQDcM71cFmt
+         r8MpNgMhDTEiO4jz/lzSl7UoZft78ZxClIPZx1g69yhaAZNJNeHyTVzpGgGEINfxslpC
+         OfNHAQ8s5nGak7Gmpq+fjkeAHz/UULyrA+xTAWQGiOxS9tMf4xnAQxYM3YKe9qd5T84V
+         b4KhhGaFb//4pnI2WDlPinff8DbWqz6osLgg7Vf9pxTc5iTJKEnMWex3aP+D3LMoaeKf
+         Usvg==
+In-Reply-To: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,46 +24,27 @@ Content-Transfer-Encoding: 7bit
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-Submitting the V4 version of exynos5440 cpufreq driver. This patchset addresses
-all the coding and design concerns raised especially by Viresh.
+This patch helps to have single binary for exynos5440 and previous
+exynos soc's. This change is needed for adding exynos5440 cpufreq driver
+which does not uses exynos-cpufreq common file and adds it own driver.
 
-Changes in V4:
-* Added dev_err logs instead of pr_err.
-* Used the devm_ioremap_resource API.
-* Implemented several coding guidelines and minor error comments from Sylwester,
-  Russell and Viresh.
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Changes in V3:
-* Converted the driver to probe based as suggested by Viresh. This is also
-  beneficial for multiplatform kernel.
-* Other coding guidelines related changes.
-* Moved the DT node outside cpu0 node as the driver is now a platform
-  driver.
-
-Changes in V2:
-* Added OPP library support to parse DT parameters.
-* Removed a hack to handle interrupts in bootup.
-* Implemented other review comments from Viresh and Inder.
-
-All these patches are dependent on Thomas Abraham common clock patches.
-(http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg15860.html)
-This whole patch series is based on 3.9-rc2.
-
-Amit Daniel Kachhap (4):
-  cpufreq: exynos: Adding cpufreq driver for exynos5440
-  cpufreq: exynos: Remove error return even if no soc is found
-  arm: exynos: Enable OPP library support for exynos5440
-  dts: Add cpufreq controller node for Exynos5440 SoC
-
- .../bindings/cpufreq/cpufreq-exynos5440.txt        |   29 ++
- arch/arm/boot/dts/exynos5440.dtsi                  |   12 +
- arch/arm/mach-exynos/Kconfig                       |    2 +
- arch/arm/mach-exynos/mach-exynos5-dt.c             |    2 +
- drivers/cpufreq/Kconfig.arm                        |    9 +
- drivers/cpufreq/Makefile                           |    1 +
- drivers/cpufreq/exynos-cpufreq.c                   |    2 +-
- drivers/cpufreq/exynos5440-cpufreq.c               |  466 ++++++++++++++++++++
- 8 files changed, 522 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
- create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
-
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 78057a3..ee75997 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -297,7 +297,7 @@ static int __init exynos_cpufreq_init(void)
+ 	else if (soc_is_exynos5250())
+ 		ret = exynos5250_cpufreq_init(exynos_info);
+ 	else
+-		pr_err("%s: CPU type not found\n", __func__);
++		return 0;
+ 
+ 	if (ret)
+ 		goto err_vdd_arm;
+-- 
+1.7.1
