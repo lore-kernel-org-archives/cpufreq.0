@@ -1,75 +1,61 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55091] cpufreq governors woks crazy
-Date: Tue, 12 Mar 2013 11:15:49 +0000 (UTC)
-Message-ID: <20130312111549.B0EB811F877@bugzilla.kernel.org>
-References: <bug-55091-12968@https.bugzilla.kernel.org/>
+From: Benoit Cousson <b-cousson@ti.com>
+Subject: Re: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which are
+ not in DT yet.
+Date: Tue, 12 Mar 2013 15:24:08 +0100
+Message-ID: <513F3A88.5060903@ti.com>
+References: <1363043130-30270-1-git-send-email-nm@ti.com> <1363043130-30270-2-git-send-email-nm@ti.com> <513EB704.8030907@ti.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55091-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <513EB704.8030907@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>, Nishanth Menon <nm@ti.com>
+Cc: cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55091
+Hi Guys,
 
+On 03/12/2013 06:03 AM, Santosh Shilimkar wrote:
+> On Tuesday 12 March 2013 04:35 AM, Nishanth Menon wrote:
+>> On certain SoCs like variants of OMAP, the clock conversion to DT
+>> is not complete. In short, the ability to:
+>> cpus {
+>>     cpu@0 {
+>> 	clocks = <&cpuclk 0>;
+>>     };
+>>  };
+>> is not possible. However, the clock node is registered.
+>> Allow for clk names to be provided as string so as to be used when needed.
+>> Example (for OMAP3630):
+>> cpus {
+>>     cpu@0 {
+>> 	clock-name = "cpufreq_ck";
+>>     };
+>>  };
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Cc: Shawn Guo <shawn.guo@linaro.org>
+>> Cc: linux-kernel@vger.kernel.org
+>> Cc: cpufreq@vger.kernel.org
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-omap@vger.kernel.org
+>>
+>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>> ---
+> Seems a reasonable to me.
 
-Viresh Kumar <viresh.kumar@linaro.org> changed:
+No, it is not...
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |viresh.kumar@linaro.org
+You cannot add a temp binding just because the OMAP support is not
+there, since the real binding already exist.
 
-
-
-
---- Comment #1 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-12 11:15:49 ---
-Hi,
-
-I was the guy behind most of the cpufreq core updates in this kernel release. I
-haven't tried to reproduce the problem you got (was very busy with some other
-activity), but i am trying to analyse what may cause it. Following are the
-important updates that i can make out from: 'git diff v3.8..v3.9-rc2'
-
-- Locking Fixes
-- policy->cpus and policy->related_cpus fixups
-- simplification of cpu hotplug path in cpufreq core
-- removing redundant code between governors
-
-I don't really think any of the above can cause this problem, unless there is a
-bug somewhere.
-
-- per cpu timer for both ondemand and conservative:
-
-commit 2abfa876f1117b0ab45f191fb1f82c41b1cbc8fe
-Author: Rickard Andersson <rickard.andersson@stericsson.com>
-Date:   Thu Dec 27 14:55:38 2012 +0000
-
-    cpufreq: handle SW coordinated CPUs
-
-    This patch fixes a bug that occurred when we had load on a secondary CPU
-    and the primary CPU was sleeping. Only one sampling timer was spawned
-    and it was spawned as a deferred timer on the primary CPU, so when a
-    secondary CPU had a change in load this was not detected by the cpufreq
-    governor (both ondemand and conservative).
-
-    This patch make sure that deferred timers are run on all CPUs in the
-    case of software controlled CPUs that run on the same frequency.
+You need to register properly a clock provider to be able to reference
+it.
+If you do need a hacky temp code you could do it in OMAP code but not in
+the binding.
 
 
-
-This can be behind all the problem you are facing. Can you try reverting all
-patches including and after this patch?
-
-If any of the cpu is loaded enough, then you will see some freq used (based on
-the load). Whereas, earlier if cpu0 goes down, then we were just not
-re-evaluating load at all.
-
---
-viresh
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Regards,
+Benoit
