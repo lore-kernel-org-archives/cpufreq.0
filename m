@@ -1,39 +1,51 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which are
- not in DT yet.
-Date: Tue, 12 Mar 2013 10:51:08 -0500
-Message-ID: <20130312155108.GA22409@kahuna>
-References: <1363043130-30270-1-git-send-email-nm@ti.com>
- <1363043130-30270-2-git-send-email-nm@ti.com>
- <513EB704.8030907@ti.com>
- <513F3A88.5060903@ti.com>
- <20130312143535.GA21599@kahuna>
- <DC88CAD03C0052499C1907B327FC63229BF816@DBDE01.ent.ti.com>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: Re: [PATCH v4 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Wed, 13 Mar 2013 15:50:41 -0500
+Message-ID: <5140E6A1.20107@sgi.com>
+References: <51265E0F.6090209@sgi.com> <1361550275-5716-1-git-send-email-nzimmer@sgi.com> <3505617.pgqBjPDzlA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <DC88CAD03C0052499C1907B327FC63229BF816@DBDE01.ent.ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: "J, KEERTHY" <j-keerthy@ti.com>
-Cc: "Cousson, Benoit" <b-cousson@ti.com>, "Shilimkar, Santosh" <santosh.shilimkar@ti.com>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <3505617.pgqBjPDzlA@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10:17-20130312, J, KEERTHY wrote:
-> > OK. My intent is to remove omap-cpufreq.c. So, I guess I could do
-> > something like the following (not tested yet), but would that be the
-> > right approach?
-> 
-> Similar attempt was done for am33xx_clks in this by Shawn:
-> 
-> http://www.mail-archive.com/linux-omap@vger.kernel.org/msg84157.html
-Thanks on the same and all inputs folks. Based on the discussion, will give it
-another shot to make the patch apply for all OMAPs - Since we are
-gradually transitioning to DT, we should be able to gradually drop
-features to being enabled only in DT supported boot. This will allow us
-to remove redundant drivers from the kernel. I hope this sounds
-reasonable to all.
--- 
-Regards,
-Nishanth Menon
+On 03/11/2013 06:23 PM, Rafael J. Wysocki wrote:
+> On Friday, February 22, 2013 10:24:33 AM Nathan Zimmer wrote:
+>> I am noticing the cpufreq_driver_lock is quite hot.
+>> On an idle 512 system perf shows me most of the system time is spent on this
+>> lock.  This is quite significant as top shows 5% of time in system time.
+>> My solution was to first convert the lock to a rwlock and then to the rcu.
+>>
+>> v2: Rebase
+>>
+>> v3: Read the RCU documentation instead of skimming it.  Also I based on
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc1
+>> I assumed that was what you would prefer Rafael.
+>>
+>> v4: Removed an unnecessary syncronize_rcu().
+>>
+>>
+>> Nathan Zimmer (2):
+>>    cpufreq: Convert the cpufreq_driver_lock to a rwlock
+>>    cpufreq: Convert the cpufreq_driver_lock to use the rcu
+>>
+>>   drivers/cpufreq/cpufreq.c | 286 ++++++++++++++++++++++++++++++++++------------
+>>   1 file changed, 211 insertions(+), 75 deletions(-)
+> I'm going to take patch [1/2] for v3.10, but patch [2/2] still needs some
+> work it seems.  Is that correct?  If so, are you going to send an update?
+>
+> Rafael
+>
+
+Viresh pointed out that cpufreq_cpu_data still needs a lock.
+This means placing a vanilla spinlock back into __cpufreq_cpu_get which 
+is what I need to avoid.  I haven't had the time I should to sort that out.
+
+
+Nate
+
+
