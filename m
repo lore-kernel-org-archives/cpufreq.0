@@ -1,58 +1,46 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55261] down_threshold is missing
-Date: Fri, 15 Mar 2013 08:58:02 +0000 (UTC)
-Message-ID: <20130315085802.8A9EE11F877@bugzilla.kernel.org>
-References: <bug-55261-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq cowork with scheduler
+Date: Fri, 15 Mar 2013 14:30:44 +0530
+Message-ID: <CAOh2x=kzkdG4x=huCr8kdrstbyyqWdt6ZsWUMPsvtR8y4D16Kg@mail.gmail.com>
+References: <CADApbegvhzBC-sawW++0fmxtEr6nCx6QWtSzPAikvo3CR6_8Bg@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55261-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=MsLdPaM8vUlzq6kxbAocnRpSrl9nryEjFL3heGmbdwo=;
+        b=u7VZMhAdssaM9jPBZlW62fhqLCYZpD5AgvHDlqo+qJoxoiaFZ7g5U8Wf+yvUzf37g8
+         /mL3Gi/gZ7/bYqwOfUCZQSGJ1kv7TBq1VJ90SpeuedNintmAiVuqZasETLZXHHdHE8/Z
+         t7U/aG7Usj/T7/kswID0HHozq8jxKGVThIAlF8e3+dBBkBXZsF5hEnSRqd2wdNKhjxfn
+         gtO4CXAjNRz02FoEQCjHJ7hsqx/ohsbptGCPFZYTo1Bq5pcM+cFL2x0VRqoxckcVMF+k
+         dIrvHwSZojstyuUfiVtWqoHI97oLP+ZzKeFjsG5sflBRkz0V8DOBX2C+0izQ3J5jE8HU
+         DeAQ==
+In-Reply-To: <CADApbegvhzBC-sawW++0fmxtEr6nCx6QWtSzPAikvo3CR6_8Bg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Chao Xie <xiechao.mail@gmail.com>
+Cc: cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55261
+On Fri, Mar 15, 2013 at 11:54 AM, Chao Xie <xiechao.mail@gmail.com> wrote:
+> hi
+> It may be a old topic.
+> Now the cpufreq governors will sample for system work load. The
+> schduler knows about the current workload of each cores. So why not
+> make use of it? The sampling need take some time, so when the cpufreq
+> increase the frequency , the system has been busy for a period of
+> time. Making use of the schduler information can reduce time spending
+> at sampling.
 
+Hi Chao,
 
-Viresh Kumar <viresh.kumar@linaro.org> changed:
+I am working for Linaro Power Management Working Group and we know
+about this problem or solution. We have a dedicated blueprint towards this
+goal:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |viresh.kumar@linaro.org
+https://blueprints.launchpad.net/linaro-big-little-system/+spec/sched-cooperation-with-dvfs-and-idling
 
-
-
-
---- Comment #1 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-15 08:58:02 ---
-
-This happened a long time back for ondemand governor (it is still supported by
-conservative though).
-
-commit c29f1403098135bdef75b190a5037db514701031
-Author: Dave Jones <davej@redhat.com>
-Date:   Tue May 31 19:03:50 2005 -0700
-
-    [CPUFREQ] ondemand governor automatic downscaling
-
-    [PATCH] [4/5] ondemand governor automatic downscaling
-
-    Here is a change of policy for the ondemand governor. The modification
-    concerns the frequency downscaling. Instead of decreasing to a lower
-    frequency when the CPU usage is under 20%, this new policy automatically
-    scales to the optimal frequency. The optimal frequency being the lowest
-    frequency which provides enough power to not trigger the upscaling policy.
-
-    Signed-off-by: Eric Piel <eric.piel@tremplin-utc.net>
-    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-    Signed-off-by: Dave Jones <davej@redhat.com>
-
----
- drivers/cpufreq/cpufreq_ondemand.c | 117
-+++++++++++++++++++++++------------------------------------------------------------------------------------
- 1 file changed, 25 insertions(+), 92 deletions(-)
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+--
+viresh
