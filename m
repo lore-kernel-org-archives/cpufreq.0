@@ -1,40 +1,31 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55261] New: down_threshold is missing
-Date: Fri, 15 Mar 2013 06:14:57 +0000 (UTC)
-Message-ID: <bug-55261-12968@https.bugzilla.kernel.org/>
+From: Chao Xie <xiechao.mail@gmail.com>
+Subject: cpufreq cowork with scheduler
+Date: Fri, 15 Mar 2013 14:24:52 +0800
+Message-ID: <CADApbegvhzBC-sawW++0fmxtEr6nCx6QWtSzPAikvo3CR6_8Bg@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:date:message-id:subject:from:to
+         :content-type;
+        bh=Nu5bjbSOUb2Pk60D/KPk9+JEBk6CbMrcbAmM2c2KjTM=;
+        b=AOrPbt7BgojykVJLojrJQUeSxzIw1JLFGRP5cNATvEhHDqBv8/IFLmcDptKAKHr7Mc
+         +lEIohGpGDhKTp9wi40Y35t7Jj99m6QtbSoSsExfoN9EG3oE6sYq0TwdXnxKzYbI46ve
+         nOBe/dQHgUeg6LbL8njaVme+0Fl8JlYEQ1oGpspTeC+gG2iZYByN6FwKhkgvAMtte39Q
+         kD2QMG+h0lN2l9hqoPjjSjNHxthcqkGWbjbQxpnKp+Vvbk/lwPQSagwKh3Ok4gr6eavW
+         JOVSIC5vlp3kPMKTzBuyFu3HD1p7VCZFhE2R2j+7SY49kSrKGWMirzkHfZekgYt5I5wn
+         K7FA==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55261
-
-           Summary: down_threshold is missing
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: Ubuntu 3.8.0-12.21-generic 3.8.2
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: sworddragon2@aol.com
-        Regression: No
-
-
-On my system the file /sys/devices/system/cpu/cpufreq/ondemand/down_threshold
-doesn't exist while the file up_threshold does exist in the same directory. The
-problem is without this file the value of down_threshold seems to be
-automatically set to 10 so I'm not able to set up_threshold to a value lower
-than 11.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+hi
+It may be a old topic.
+Now the cpufreq governors will sample for system work load. The
+schduler knows about the current workload of each cores. So why not
+make use of it? The sampling need take some time, so when the cpufreq
+increase the frequency , the system has been busy for a period of
+time. Making use of the schduler information can reduce time spending
+at sampling.
