@@ -1,293 +1,139 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH V4 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Mon, 18 Mar 2013 16:28:10 +0530
-Message-ID: <CADGdYn5eghg4yyvKJVY+cs0=5KVALxvcUEWYPp=NB4=ZChdqkA@mail.gmail.com>
-References: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
-	<1363082299-10561-2-git-send-email-amit.daniel@samsung.com>
-	<CAOh2x=narPBYBNMMs5Qw_rGSgVsSNumb_jw_88C1PNGEc6sSEw@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: CPU power management bug -- CPU bound task fails to raise CPU frequency
+Date: Mon, 18 Mar 2013 12:07:21 +0100
+Message-ID: <CAKfTPtBbnTCV5cJ=2P+xiUzoKp0wvBcgfbWzE3pgcGKq2D1E3g@mail.gmail.com>
+References: <2AC155A009400B4C8B05D518E4819AEF071D2E6B@exchange10.valvesoftware.com>
+	<CAOh2x=kQqJVfFLAnW15mCUcUdrpM4nzTd75G=sAAHC7kgm5B-w@mail.gmail.com>
+	<2AC155A009400B4C8B05D518E4819AEF071D3069@exchange10.valvesoftware.com>
+	<CAKohpomLD+=YtsQm5B6PDOuvVOnBx1tpOXCUnoCY==8D-KhT-Q@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type;
-        bh=kOhqBDYTBLsADtccfxDALTE8e3alx7SEsx8zm1V5Xq4=;
-        b=Hzm5eOho9mEDrFMMWZ+YUfZwGbT8JhYOTQre+s8BAbXtIXJxKYFQ+5H3r30KNCrMXa
-         3LYKQdsWdF0QF7MtXAEe28EX/AqNV3aLHrbwPxZibrYqICB1ig/YjwNZurIujGv+/RqS
-         SdBgziwjqTBTXeVwvFKow8AKg3vHdPLZeDPYkGuOjOKIS38gAbq4tS7/6OCuRywYlsuX
-         WR4fuWb0T8CLEZyxwHwfwCFAVH4NIuptxe47X+ju92wPsYfTJx2t2s9LySpOR608W2eE
-         Vc1kM/OhUDCpwKm3aTM8o79VWSsAhtL/zSDHYGX2XLsVFmYtgYQoAVuzU0bZzQjVH+IM
-         6Kdw==
-In-Reply-To: <CAOh2x=narPBYBNMMs5Qw_rGSgVsSNumb_jw_88C1PNGEc6sSEw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Transfer-Encoding: 7BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomLD+=YtsQm5B6PDOuvVOnBx1tpOXCUnoCY==8D-KhT-Q@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Bruce Dawson <bruced@valvesoftware.com>, Dave Jones <davej@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>
 
-Hi Viresh,
+On 18 March 2013 06:04, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Let me get in the scheduler expert from Linaro (Vincent Guittot, would
+> be available
+> after few hours)
+>
+> Vincent, please start reading from this mail:
+>
+> http://permalink.gmane.org/gmane.linux.kernel.cpufreq/9675
+>
+> Now, we want to understand how to make this task perform better as scheduler
+> is using multiple cpus for it and hence all are staying at low freqs,
+> as load isn't
+> enough..
 
-On Tue, Mar 12, 2013 at 4:19 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> This is what Russell told me a long time back:
-> "Don't use Adding, Fixing, etc words as this work is not something, which is
-> already done."
->
-> So your subject should have been: "cpufreq: exynos: Add cpufreq driver
-> for exynos5440"
-ok right.
->
-> Fix it if you need another version, which i believe you do :)
-yes no escape now :)
->
-> On Tue, Mar 12, 2013 at 5:58 PM, Amit Daniel Kachhap
-> <amit.daniel@samsung.com> wrote:
->> This patch adds dvfs support for exynos5440 SOC. This soc has 4 cores and
->> they scale at same frequency. The nature of exynos5440 clock controller is
->> different from previous exynos controllers so not using the common exynos
->> cpufreq framework. The major difference being interrupt notfication for
->
-> s/notfication/notification
-ok
->
->> frequency change. Also, OPP library is used for device tree parsing to get
->> different parameters like frequency, voltage etc. Since the opp library sorts
->> the frequency table in ascending order so they are again re-arranged in
->> descending order. This will have one-to-one mapping with the clock controller
->> state management logic.
->>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   29 ++
->>  drivers/cpufreq/Kconfig.arm                        |    9 +
->>  drivers/cpufreq/Makefile                           |    1 +
->>  drivers/cpufreq/exynos5440-cpufreq.c               |  466 ++++++++++++++++++++
->>  4 files changed, 505 insertions(+), 0 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->> new file mode 100644
->> index 0000000..a0dbe0b
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->> @@ -0,0 +1,29 @@
->> +
->> +Exynos5440 cpufreq driver
->> +-------------------
->> +
->> +Exynos5440 SoC cpufreq driver for CPU frequency scaling.
->> +
->> +Required properties:
->> +- interrupts: Interrupt to know the completion of cpu frequency change.
->> +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
->> +       in the decreasing order. Frequency should be in KHZ units and voltage
->
-> s/KHZ/KHz
-ok
->
->> +       should be in microvolts.
->
-> probably s/microvolts/micro-volts ??
->
->> +
->> +Optional properties:
->> +- clock-latency: Clock monitor latency in microsecond.
->> +
->> +All the required listed above must be defined under node cpufreq.
->> +
->> +Example:
->> +--------
->> +       cpufreq@160000 {
->> +               compatible = "samsung,exynos5440-cpufreq";
->> +               reg = <0x160000 0x1000>;
->> +               interrupts = <0 57 0>;
->> +               operating-points = <
->> +                               1000000 975000
->> +                               800000  925000>;
->> +               clock-latency = <100000>;
->> +       };
->> +
->
->> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
->> +static void exynos_enable_dvfs(void)
->> +{
->
->> +       /* Set initial performance index */
->> +       for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
->> +               if (freq_table[i].frequency == dvfs_info->cur_frequency)
->> +                       break;
->> +
->> +       if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
->> +               dev_crit(dvfs_info->dev, "Boot up frequency not supported\n");
->> +               /* Assign the highest frequency */
->> +               i = 0;
->> +               dvfs_info->cur_frequency = freq_table[i].frequency;
->
-> What about:
->
-> dvfs_info->cur_frequency = freq_table[0].frequency;
->
-> as i don't see i being used again?
-No It is used below for frequency setting.
->
->> +       }
->
->> +}
->
->> +static int exynos_target(struct cpufreq_policy *policy,
->> +                         unsigned int target_freq,
->> +                         unsigned int relation)
->> +{
->
->> +       if (cpufreq_frequency_table_target(policy, freq_table,
->> +                                          target_freq, relation, &index)) {
->> +               ret = -EINVAL;
->
-> Use the error value returned by called functions, probably i gave this
-> comment last time too?
-yes my mistake.
->
->> +               goto out;
->> +       }
->
->> +}
->
->> +static void exynos_sort_descend_freq_table(void)
->> +{
->> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
->> +       int i = 0, index;
->> +       unsigned int tmp_freq;
->> +
->> +       /*
->> +        * Freq table is already in ascending order as it is created from
->> +        * OPP library, so just swap the elements to make it descending.
->
-> why??
-I explained this requirement in the patch commit. Will explain it here again.
->
->> +        */
->> +       for (i = 0; i < dvfs_info->freq_count / 2; i++) {
->> +               index = dvfs_info->freq_count - i - 1;
->> +               tmp_freq = freq_tbl[i].frequency;
->> +               freq_tbl[i].frequency = freq_tbl[index].frequency;
->> +               freq_tbl[index].frequency = tmp_freq;
->> +       }
->> +}
->> +
->
->> +static int exynos_cpufreq_probe(struct platform_device *pdev)
->> +{
->> +       int ret = -EINVAL;
->> +       struct device_node *np;
->> +       struct resource res;
->> +
->> +       np =  of_find_compatible_node(NULL, NULL, "samsung,exynos5440-cpufreq");
->> +       if (!np)
->> +               return -ENODEV;
->> +
->> +       dvfs_info = devm_kzalloc(&pdev->dev, sizeof(*dvfs_info), GFP_KERNEL);
->> +       if (!dvfs_info) {
->> +               ret = -ENOMEM;
->> +               goto err_put_node;
->> +       }
->> +
->> +       dvfs_info->dev = &pdev->dev;
->> +       dvfs_info->dev->of_node = np;
->> +
->> +       ret = of_address_to_resource(np, 0, &res);
->> +       if (ret)
->> +               goto err_put_node;
->> +
->> +       dvfs_info->base = devm_ioremap_resource(dvfs_info->dev, &res);
->> +       if (IS_ERR(dvfs_info->base)) {
->> +               ret = PTR_ERR(dvfs_info->base);
->> +               goto err_put_node;
->> +       }
->> +
->> +       dvfs_info->irq = irq_of_parse_and_map(np, 0);
->> +       if (dvfs_info->irq == 0) {
->
-> maybe, if (!dvfs_info->irq) {
-ok
+Hi,
 
-Thanks,
-Amit Daniel
+Your 1st test creates a task to evaluate each expr, and the fork
+sequence of the scheduler looks for the idlest CPU in the system.
+That's explain why your test is evenly spread on all CPUs and the
+average load of each CPU is below the threshold of cpufreq
+At the opposite, your 2nd test uses only one task which stays on one
+CPU and trig the frequency increase.
+
+I would say that the scheduler behavior is almost normal : spread to
+get best performance (even if in this use case, the threads run
+sequentially) but you have this side effect on the cpufreq thats sees
+each core individually as not loaded. This example tends to push in
+favor of a better cooperation between scheduler and cpufreq for
+sharing statistics
+
+Vincent
+
 >
->
->> +               dev_err(dvfs_info->dev, "No cpufreq irq found\n");
->> +               ret = -ENODEV;
->> +               goto err_put_node;
->> +       }
->> +
->> +       ret = of_init_opp_table(dvfs_info->dev);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev, "failed to init OPP table: %d\n", ret);
->> +               goto err_put_node;
->> +       }
->> +
->> +       ret = opp_init_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev,
->> +                       "failed to init cpufreq table: %d\n", ret);
->> +               goto err_put_node;
->> +       }
->> +       dvfs_info->freq_count = opp_get_opp_count(dvfs_info->dev);
->> +       exynos_sort_descend_freq_table();
->> +
->> +       if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
->> +               dvfs_info->latency = DEF_TRANS_LATENCY;
->> +
->> +       dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
->> +       if (IS_ERR(dvfs_info->cpu_clk)) {
->> +               dev_err(dvfs_info->dev, "Failed to get cpu clock\n");
->> +               ret = PTR_ERR(dvfs_info->cpu_clk);
->> +               goto err_free_table;
->> +       }
->> +
->> +       dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk);
->> +       if (!dvfs_info->cur_frequency) {
->> +               dev_err(dvfs_info->dev, "Failed to get clock rate\n");
->> +               ret = -EINVAL;
->> +               goto err_free_table;
->> +       }
->> +       dvfs_info->cur_frequency /= 1000;
->> +
->> +       INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
->> +       ret = devm_request_irq(dvfs_info->dev, dvfs_info->irq,
->> +                               exynos_cpufreq_irq, IRQF_TRIGGER_NONE,
->> +                               CPUFREQ_NAME, dvfs_info);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev, "Failed to register IRQ\n");
->> +               goto err_free_table;
->> +       }
->> +
->> +       ret = init_div_table();
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev, "Failed to initialise div table\n");
->> +               goto err_free_table;
->> +       }
->> +
->> +       exynos_enable_dvfs();
->> +       ret = cpufreq_register_driver(&exynos_driver);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev,
->> +                       "%s: failed to register cpufreq driver\n", __func__);
->> +               goto err_free_table;
->> +       }
->> +
->> +       of_node_put(np);
->> +       dvfs_info->dvfs_enabled = true;
->> +       return 0;
->> +
->> +err_free_table:
->> +       opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
->> +err_put_node:
->> +       of_node_put(np);
->> +       dev_err(dvfs_info->dev, "%s: failed initialization\n", __func__);
->> +       return ret;
->> +}
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> viresh
+>
+> On 18 March 2013 10:28, Bruce Dawson <bruced@valvesoftware.com> wrote:
+>> This is with the Ondemand governor.
+>>
+>> The more I ponder this the more I think that the real issue is not the frequency drivers, but the kernel scheduler. The shell script involves two processes being alive at any given time, and one process running (since bash always waits for expr to finish). Therefore the entire task should run on either one core or on two. Instead I see (from looking at thread scheduling graphed using the Zoom profiler -- http://www.rotateright.com/) that it runs on six different cores. bash alternates between two cores, and each invocation of expr is started on one core and then moves to another. Given that it seems not surprising that the CPU frequency management doesn't trigger.
+>>
+>>> So, the frequency might not be increased if there are multiple cpus running for a specific task and none of them has high enough load at that time
+>>
+>> Yep, that's what I figured. Each cpu's load is quite low -- 20% or lower -- because the work is so spread out.
+>>
+>> If I run the entire thing under "taskset 1" then everything runs on one core, the frequency elevation happens, and the entire task runs roughly three times faster.
+>>
+>> Crazy/cool.
+>>
+>> -----Original Message-----
+>> From: viresh.linux@gmail.com [mailto:viresh.linux@gmail.com] On Behalf Of Viresh Kumar
+>> Sent: Sunday, March 17, 2013 9:32 PM
+>> To: Bruce Dawson
+>> Cc: Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; linaro-kernel@lists.linaro.org
+>> Subject: Re: CPU power management bug -- CPU bound task fails to raise CPU frequency
+>>
+>> On Sun, Mar 17, 2013 at 6:37 AM, Bruce Dawson <bruced@valvesoftware.com> wrote:
+>>> Dave/others, I've come up with a simple (and real) scenario where a CPU bound task running on Ubuntu (and presumably other Linux flavors) fails to be detected as CPU bound by the Linux kernel, meaning that the CPU continues to run at low speed, meaning that this CPU bound task takes (on my machines) about three times longer to run than it should.
+>>>
+>>> I found these e-mail addresses in the MAINTAINERS list under CPU FREQUENCY DRIVERS which I'm hoping is the correct area.
+>>
+>> Yes, cpufreq mailing list is the right list for this.
+>>
+>>> The basic problem is that on a multi-core system if you run a shell script that spawns lots of sub processes then the workload ends up distributed across all of the CPUs. Therefore, since none of the CPUs are particularly busy, the Linux kernel doesn't realize that a CPU bound task is running, so it leaves the CPU frequency set to low. I have confirmed the behavior in multiple ways. Specifically, I have used "iostat 1" and "mpstat -P ALL 1" to confirm that a full core's worth of CPU work is being done. mpstat also showed that the work was distributed across multiple cores. Using the zoom profiler UI for perf showed the sub processes (and bash) being spread across multiple cores, and perf stat showed that the CPU frequency was staying low even though the task was CPU bound.
+>>
+>> There are few things which would be helpful to understand what's going on.
+>> What governor is used in your case? Probably Ondemand (My ubuntu uses this).
+>>
+>> Ideally, cpu frequency is increased only if cpu load is very high (or above threshold,
+>> 95 in my ubuntu). So, the frequency might not be increased if there are multiple cpus running for a specific task and none of them has high enough load at that time.
+>>
+>> Other stuff that i suspect here is a bug which was solved recently by below patch. If
+>> policy->cpu (that might be cpu 0 for you) is sleeping, then load is
+>> never evaluated even
+>> if all other cpus are very busy. If you can try below patch then it might be helpful. BTW, you might not be able to apply it easily as it has got lots of dependencies.. and so you might need to pick all drivers/cpufreq patches from v3.9-rc1.
+>>
+>> commit 2abfa876f1117b0ab45f191fb1f82c41b1cbc8fe
+>> Author: Rickard Andersson <rickard.andersson@stericsson.com>
+>> Date:   Thu Dec 27 14:55:38 2012 +0000
+>>
+>>     cpufreq: handle SW coordinated CPUs
+>>
+>>     This patch fixes a bug that occurred when we had load on a secondary CPU
+>>     and the primary CPU was sleeping. Only one sampling timer was spawned
+>>     and it was spawned as a deferred timer on the primary CPU, so when a
+>>     secondary CPU had a change in load this was not detected by the cpufreq
+>>     governor (both ondemand and conservative).
+>>
+>>     This patch make sure that deferred timers are run on all CPUs in the
+>>     case of software controlled CPUs that run on the same frequency.
+>>
+>>     Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+>>     Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>  drivers/cpufreq/cpufreq_conservative.c |  3 ++-
+>>  drivers/cpufreq/cpufreq_governor.c     | 44
+>> ++++++++++++++++++++++++++++++++++++++------
+>>  drivers/cpufreq/cpufreq_governor.h     |  1 +
+>>  drivers/cpufreq/cpufreq_ondemand.c     |  3 ++-
+>>  4 files changed, 43 insertions(+), 8 deletions(-)
+>>
+>>
+>>> I have only reproed this behavior on six-core/twelve-thread systems. I would assume that at least a two-core system would be needed to repro this bug, and perhaps more. The bug will not repro if the system is not relatively idle, since a background CPU hog will force the frequency up.
+>>>
+>>> The repro is exquisitely simple -- ExprCount() is a simplified version of the repro (portable looping in a shell script) and BashCount() is an optimized and less portable version that runs far faster and also avoids this power management problem -- the CPU frequency is raised appropriately. Running a busy loop in another process is another way to get the frequency up and this makes ExprCount() run ~3x faster. Here is the script:
+>>>
+>>> --------------------------------------
+>>> #!/bin/bash
+>>> function ExprCount() {
+>>>         i=$1
+>>>         while [ $i -gt 0 ]; do
+>>>                 i=$(expr $i - 1)
+>>
+>> I may be wrong but one cpu is used to run this script and other one would be used to run expr program.. So, 2 cpus should be good enough to reproduce this setup.
+>>
+>> BTW, i have tried your scripts and was able to reproduce the setup here on a 2 cpu
+>> 4 thread system.
+>>
+>> --
+>> viresh
