@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
  s2ram
-Date: Mon, 18 Mar 2013 09:26:27 +0000 (UTC)
-Message-ID: <20130318092627.CEA0411FB5D@bugzilla.kernel.org>
+Date: Mon, 18 Mar 2013 09:27:24 +0000 (UTC)
+Message-ID: <20130318092724.E076711FB81@bugzilla.kernel.org>
 References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,15 +16,15 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=55411
 
 
+Duncan <1i5t5.duncan@cox.net> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+  Attachment #95701|application/octet-stream    |text/plain
+          mime type|                            |
 
 
 
---- Comment #2 from Duncan <1i5t5.duncan@cox.net>  2013-03-18 09:26:27 ---
-Created an attachment (id=95701)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=95701)
-cpufreq-info, pre-s2ram (good)
-
-Good (pre-suspend) cpufreq-info.  Note the pairs: 0,1 2,3 4,5
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
