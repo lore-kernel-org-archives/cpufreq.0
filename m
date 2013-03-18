@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
  s2ram
-Date: Mon, 18 Mar 2013 09:21:07 +0000 (UTC)
-Message-ID: <20130318092107.9F12D11FB5D@bugzilla.kernel.org>
+Date: Mon, 18 Mar 2013 09:26:27 +0000 (UTC)
+Message-ID: <20130318092627.CEA0411FB5D@bugzilla.kernel.org>
 References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,13 +19,12 @@ https://bugzilla.kernel.org/show_bug.cgi?id=55411
 
 
 
---- Comment #1 from Duncan <1i5t5.duncan@cox.net>  2013-03-18 09:21:07 ---
-Created an attachment (id=95691)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=95691)
-dmesg after s2ram/resume cycle
+--- Comment #2 from Duncan <1i5t5.duncan@cox.net>  2013-03-18 09:26:27 ---
+Created an attachment (id=95701)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=95701)
+cpufreq-info, pre-s2ram (good)
 
-Here's dmesg after s2ram/resume.  It was a fresh boot and then suspend/resume,
-so full boot info is captured as well, then the s2ram/resume.
+Good (pre-suspend) cpufreq-info.  Note the pairs: 0,1 2,3 4,5
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
