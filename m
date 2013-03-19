@@ -1,186 +1,203 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
- after s2ram
-Date: Tue, 19 Mar 2013 14:20:06 +0530
-Message-ID: <CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com>
-References: <bug-55411-70601@https.bugzilla.kernel.org/>
-	<20130319074953.C200811FB80@bugzilla.kernel.org>
+From: Bruce Dawson <bruced@valvesoftware.com>
+Subject: RE: CPU power management bug -- CPU bound task fails to raise CPU
+ frequency
+Date: Tue, 19 Mar 2013 16:33:49 +0000
+Message-ID: <2AC155A009400B4C8B05D518E4819AEF071D3F4C@exchange10.valvesoftware.com>
+References: <2AC155A009400B4C8B05D518E4819AEF071D2E6B@exchange10.valvesoftware.com>
+	<CAOh2x=kQqJVfFLAnW15mCUcUdrpM4nzTd75G=sAAHC7kgm5B-w@mail.gmail.com>
+	<2AC155A009400B4C8B05D518E4819AEF071D3069@exchange10.valvesoftware.com>
+	<CAKohpomLD+=YtsQm5B6PDOuvVOnBx1tpOXCUnoCY==8D-KhT-Q@mail.gmail.com>
+	<CAKfTPtBbnTCV5cJ=2P+xiUzoKp0wvBcgfbWzE3pgcGKq2D1E3g@mail.gmail.com>
+	<2AC155A009400B4C8B05D518E4819AEF071D34EE@exchange10.valvesoftware.com>
+	<2AC155A009400B4C8B05D518E4819AEF071D377E@exchange10.valvesoftware.com>
+ <CAKfTPtCKu+=A9q=W27_VpdFFNSyQvp3iVG7eJCZkWnVsrrirgA@mail.gmail.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130319074953.C200811FB80@bugzilla.kernel.org>
+In-Reply-To: <CAKfTPtCKu+=A9q=W27_VpdFFNSyQvp3iVG7eJCZkWnVsrrirgA@mail.gmail.com>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, 1i5t5.duncan@cox.net
-Cc: cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: 'Vincent Guittot' <vincent.guittot@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dave Jones <davej@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>
 
-Hi Guys,
+Yeah, the migration of every single expr process is very confusing to me. My mental model of the scheduler can account for everything but that, and that was happening on every invocation of expr, hundreds in a row.
 
-We are talking here about a bug reported by Duncan here. His cpu/cpu*/cpufreq
-directory are getting corrupted with 3.9-rc3 and was working well with 3.8
+When I zoom in on that portion of the graph then I can see the migration process briefly running on whatever CPU expr starts on. Clearly that is *what* is forcing the migration, but that doesn't help understand the *why*. That is the only time that the migration process runs. If there is a bug in all this behavior (as opposed to behavior that just happens to work poorly in this one case) then it's the migration process.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
+BTW, I blogged about the issues here:
+http://randomascii.wordpress.com/2013/03/18/counting-to-ten-on-linux/
 
-On his AMD bulldozer tri-cluster/6-core system he doesn't see affected
-and related
-cpus set correctly after off-lining 1-5 and bringing them back with:
+The peculiarities I mention are that 'time' doesn't account for the process creation time (so it shows user+sys equaling ~20% of the total), and the spread out execution which means that the CPU frequency doesn't get raised. I didn't mention the migration process in the blog post because that is too much detail for the mind of the Internet to handle.
 
-for i in 1 2 3 4 5; do echo 0 > /sys/devices/system/cpu/cpu$i/online ; done
-for i in 1 2 3 4 5; do echo 1 > /sys/devices/system/cpu/cpu$i/online ; done
+BTW, another detail (probably unimportant, but who knows) is that in addition to waking up for ~80 us every half-ms or so the bash process also wakes up for ~7 us just before each expr process terminates. It's barely visible in the screenshot as a break in the idle time on CPUs 2 and 5.
 
-Before running above two, cpufreq-info gave:
-https://bugzilla.kernel.org/attachment.cgi?id=95701
+-----Original Message-----
+From: Vincent Guittot [mailto:vincent.guittot@linaro.org] 
+Sent: Tuesday, March 19, 2013 1:25 AM
+To: Bruce Dawson
+Cc: Viresh Kumar; Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; linaro-kernel@lists.linaro.org
+Subject: Re: CPU power management bug -- CPU bound task fails to raise CPU frequency
 
-And after running above it gave:
-https://bugzilla.kernel.org/attachment.cgi?id=95711
+The bash thread can wake up on a different CPU depending of which CPU has initiated the wake up. (CPU7 or CPU10 on your screenshoot). What is a bit less normal is why your expr tasks migrate in the middle of their execution.
 
-Clearly it got corrupted. Somehow cpu 3 showed up in related cpus field of
-cpu 5.
-
-I suspect following patches behind this:
-
-commit fcf8058296edbc3de43adf095824fc32b067b9f8
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Tue Jan 29 14:39:08 2013 +0000
-
-    cpufreq: Simplify cpufreq_add_dev()
-
-    Currently cpufreq_add_dev() firsts allocates policy, calls
-    driver->init() and then checks if this CPU is already managed or not.
-    And if it is already managed, its policy is freed.
-
-    We can save all this if we somehow know that CPU is managed or not in
-    advance.  policy->related_cpus contains the list of all valid sibling
-    CPUs of policy->cpu. We can check this to see if the current CPU is
-    already managed.
-
-    From now on, platforms don't really need to set related_cpus from
-    their init() routines, as the same work is done by core too.
-
-    If a platform driver needs to set the related_cpus mask with some
-    additional CPUs, other than CPUs present in policy->cpus, they are
-    free to do it, though, as we don't override anything.
-
-    [rjw: Changelog]
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Tested-by: Shawn Guo <shawn.guo@linaro.org>
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-
-AND
-
-commit 643ae6e81dd65b333a13259852405fc9f764ac76
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Sat Jan 12 05:14:38 2013 +0000
-
-    cpufreq: Manage only online cpus
-
-    cpufreq core doesn't manage offline cpus and if driver->init() has returned
-    mask including offline cpus, it may result in unwanted behavior by
-cpufreq core
-    or governors.
-
-    We need to get only online cpus in this mask. There are two places
-to fix this
-    mask, cpufreq core and cpufreq driver. It makes sense to do this
-at common place
-    and hence is done in core.
-
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-
-And this is the latest piece of documentation available:
-
-SMP systems normally have same clock source for a group of cpus. For these the
-.init() would be called only once for the first online cpu. Here the .init()
-routine must initialize policy->cpus with mask of all possible cpus (Online +
-Offline) that share the clock. Then the core would copy this mask onto
-policy->related_cpus and will reset policy->cpus to carry only online cpus.
-
-
-I saw acpi-cpufreq drivers driver->init() code and found it is not yet
-aligned to this
-theory and probably that is causing these failures.
-
-I don't have enough knowledge about this driver and how is it used for all x86
-systems and so want somebody else (who has some prior experience with it)
-to check how policy->cpus and policy->related_cpus must be set from
-driver->init().
-
---
-viresh
-
----------- Forwarded message ----------
-From:  <bugzilla-daemon@bugzilla.kernel.org>
-Date: 19 March 2013 13:19
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
-after s2ram
-To: viresh.kumar@linaro.org
-
-
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
-
---- Comment #9 from Duncan <1i5t5.duncan@cox.net>  2013-03-19 07:49:53 ---
-(In reply to comment #8)
-> (In reply to comment #0)
->> After a s2ram/resume cycle (now bad):
+On 18 March 2013 20:07, Bruce Dawson <bruced@valvesoftware.com> wrote:
+> BTW, I just uploaded a screenshot of the shell script running. You can see it here:
+>
+> http://www.cygnus-software.com/images/ZoomScreenshot_croppedbig.png
+>
+> It was made using http://www.rotateright.com/zoom/. The red blocks are the bash process, the other ones are various invocations of expr.
+>
+> -----Original Message-----
+> From: cpufreq-owner@vger.kernel.org 
+> [mailto:cpufreq-owner@vger.kernel.org] On Behalf Of Bruce Dawson
+> Sent: Monday, March 18, 2013 10:01 AM
+> To: 'Vincent Guittot'; Viresh Kumar
+> Cc: Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; 
+> linaro-kernel@lists.linaro.org
+> Subject: RE: CPU power management bug -- CPU bound task fails to raise 
+> CPU frequency
+>
+> I guess that makes sense for the scheduler to look for the idlest CPU in the system. That's good to know.
+>
+> I had guessed that the scheduler would do something like that and that my test would run on two cores. However I find that bash alternates between two cores, which seems odd. Additionally, each invocation of expr starts on one core and moves to another, which seems odd that each invocation lives for a ms or less. The net effect is that six or more different cores get involved.
+>
+> Anyway, it is a pathological case, so maybe it doesn't matter, but given the popularity of $(command) in shell scripts it may not be completely irrelevant either.
+>
+> -----Original Message-----
+> From: Vincent Guittot [mailto:vincent.guittot@linaro.org]
+> Sent: Monday, March 18, 2013 4:07 AM
+> To: Viresh Kumar
+> Cc: Bruce Dawson; Dave Jones; cpufreq@vger.kernel.org; Rafael J. 
+> Wysocki; linaro-kernel@lists.linaro.org
+> Subject: Re: CPU power management bug -- CPU bound task fails to raise 
+> CPU frequency
+>
+> On 18 March 2013 06:04, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> Let me get in the scheduler expert from Linaro (Vincent Guittot, 
+>> would be available after few hours)
 >>
->> /sys/devices/system/cpu/cpu0/cpufreq/
->> /sys/devices/system/cpu/cpu1/cpufreq -> ../cpu0/cpufreq/
->> /sys/devices/system/cpu/cpu3/cpufreq/
->> /sys/devices/system/cpu/cpu5/cpufreq/
+>> Vincent, please start reading from this mail:
+>>
+>> http://permalink.gmane.org/gmane.linux.kernel.cpufreq/9675
+>>
+>> Now, we want to understand how to make this task perform better as 
+>> scheduler is using multiple cpus for it and hence all are staying at 
+>> low freqs, as load isn't enough..
 >
-> Can you try this rather than s2r:
+> Hi,
 >
-> for i in 1 2 3 4 5; do echo 0 > /sys/devices/system/cpu/cpu$i/online ; done
-> for i in 1 2 3 4 5; do echo 1 > /sys/devices/system/cpu/cpu$i/online ; done
+> Your 1st test creates a task to evaluate each expr, and the fork sequence of the scheduler looks for the idlest CPU in the system.
+> That's explain why your test is evenly spread on all CPUs and the average load of each CPU is below the threshold of cpufreq At the opposite, your 2nd test uses only one task which stays on one CPU and trig the frequency increase.
 >
-> and check the status if things are still corrupted for you?
-
-> Above doesn't corrupt anything for me Atleast.
-
-That's a nice easy test; no rebuild and reboot needed. =:^)
-
-Tho I had to change the > to >| as I have bash noclobber set and the files
-obviously already exist...
-
-Uncorrupted before the test, corrupted after.  So just cycling the cpus off and
-then back online *DOES* corrupt cpufreq, thus a much simpler reproducer! =:^)
-Exact same ls results as the above.
-
-> And my system doesn't have S2R support for now.
-
-My old system didn't support s2ram reliably; it would work occasionally but
-mostly it didn't.  But s2disk was workable for awhile, until the fact that I
-was running mdraid and the disks didn't always return in the same sdX slots due
-to hardware wakeup issues complicated things, so eventually I didn't use that
-much either.  The new system's great with s2ram, sans this bug of course;
-s2disk didn't work at all at first, but last time I tried it /almost/ worked so
-there has been improvement.  But I don't like to take unnecessary chances with
-filesystem log replay and thankfully wall power's good enough around here that
-I can s2ram for a day and come back and wiggle the mouse and all's fine (with a
-couple pre-suspend syncs thrown into my script just in case), so I tend to use
-it a LOT, even more than I'd use s2disk due to the speed. =:^)
-
-But I'd love to have s2both working reliably; for all I know it's actually
-working now; it was pretty close.  But I prefer not to test the reiserfs log
-replay (even with pre-suspend syncs I worry, tho as I said reiserfs has
-actually been very good to me even thru faulty ram, a power supply blowing up
-on me, a mobo dying, etc, since 2.6.16 or whenever it was that it got ordered
-journaling by default) when it doesn't work, so knowing s2disk didn't work well
-when I tested it and with s2ram working SO well, I don't tend to test
-s2disk/s2both too often.
-
-
-Meanwhile, thanks for the cpuinfo_cur_freq explanation.  If that actually
-real-time touches the hardware to get the data as you say, that does explain
-the root privs.  Maybe that bit of extra info could be added to the
-documentation?  I could propose some new wording and open a new bug on
-cpu-freq/user-guide.txt for it if appropriate.
-
---
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug.
+> I would say that the scheduler behavior is almost normal : spread to 
+> get best performance (even if in this use case, the threads run
+> sequentially) but you have this side effect on the cpufreq thats sees 
+> each core individually as not loaded. This example tends to push in 
+> favor of a better cooperation between scheduler and cpufreq for 
+> sharing statistics
+>
+> Vincent
+>
+>>
+>> --
+>> viresh
+>>
+>> On 18 March 2013 10:28, Bruce Dawson <bruced@valvesoftware.com> wrote:
+>>> This is with the Ondemand governor.
+>>>
+>>> The more I ponder this the more I think that the real issue is not the frequency drivers, but the kernel scheduler. The shell script involves two processes being alive at any given time, and one process running (since bash always waits for expr to finish). Therefore the entire task should run on either one core or on two. Instead I see (from looking at thread scheduling graphed using the Zoom profiler -- http://www.rotateright.com/) that it runs on six different cores. bash alternates between two cores, and each invocation of expr is started on one core and then moves to another. Given that it seems not surprising that the CPU frequency management doesn't trigger.
+>>>
+>>>> So, the frequency might not be increased if there are multiple cpus 
+>>>> running for a specific task and none of them has high enough load 
+>>>> at that time
+>>>
+>>> Yep, that's what I figured. Each cpu's load is quite low -- 20% or lower -- because the work is so spread out.
+>>>
+>>> If I run the entire thing under "taskset 1" then everything runs on one core, the frequency elevation happens, and the entire task runs roughly three times faster.
+>>>
+>>> Crazy/cool.
+>>>
+>>> -----Original Message-----
+>>> From: viresh.linux@gmail.com [mailto:viresh.linux@gmail.com] On 
+>>> Behalf Of Viresh Kumar
+>>> Sent: Sunday, March 17, 2013 9:32 PM
+>>> To: Bruce Dawson
+>>> Cc: Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; 
+>>> linaro-kernel@lists.linaro.org
+>>> Subject: Re: CPU power management bug -- CPU bound task fails to 
+>>> raise CPU frequency
+>>>
+>>> On Sun, Mar 17, 2013 at 6:37 AM, Bruce Dawson <bruced@valvesoftware.com> wrote:
+>>>> Dave/others, I've come up with a simple (and real) scenario where a CPU bound task running on Ubuntu (and presumably other Linux flavors) fails to be detected as CPU bound by the Linux kernel, meaning that the CPU continues to run at low speed, meaning that this CPU bound task takes (on my machines) about three times longer to run than it should.
+>>>>
+>>>> I found these e-mail addresses in the MAINTAINERS list under CPU FREQUENCY DRIVERS which I'm hoping is the correct area.
+>>>
+>>> Yes, cpufreq mailing list is the right list for this.
+>>>
+>>>> The basic problem is that on a multi-core system if you run a shell script that spawns lots of sub processes then the workload ends up distributed across all of the CPUs. Therefore, since none of the CPUs are particularly busy, the Linux kernel doesn't realize that a CPU bound task is running, so it leaves the CPU frequency set to low. I have confirmed the behavior in multiple ways. Specifically, I have used "iostat 1" and "mpstat -P ALL 1" to confirm that a full core's worth of CPU work is being done. mpstat also showed that the work was distributed across multiple cores. Using the zoom profiler UI for perf showed the sub processes (and bash) being spread across multiple cores, and perf stat showed that the CPU frequency was staying low even though the task was CPU bound.
+>>>
+>>> There are few things which would be helpful to understand what's going on.
+>>> What governor is used in your case? Probably Ondemand (My ubuntu uses this).
+>>>
+>>> Ideally, cpu frequency is increased only if cpu load is very high 
+>>> (or above threshold,
+>>> 95 in my ubuntu). So, the frequency might not be increased if there are multiple cpus running for a specific task and none of them has high enough load at that time.
+>>>
+>>> Other stuff that i suspect here is a bug which was solved recently 
+>>> by below patch. If
+>>> policy->cpu (that might be cpu 0 for you) is sleeping, then load is
+>>> never evaluated even
+>>> if all other cpus are very busy. If you can try below patch then it might be helpful. BTW, you might not be able to apply it easily as it has got lots of dependencies.. and so you might need to pick all drivers/cpufreq patches from v3.9-rc1.
+>>>
+>>> commit 2abfa876f1117b0ab45f191fb1f82c41b1cbc8fe
+>>> Author: Rickard Andersson <rickard.andersson@stericsson.com>
+>>> Date:   Thu Dec 27 14:55:38 2012 +0000
+>>>
+>>>     cpufreq: handle SW coordinated CPUs
+>>>
+>>>     This patch fixes a bug that occurred when we had load on a secondary CPU
+>>>     and the primary CPU was sleeping. Only one sampling timer was spawned
+>>>     and it was spawned as a deferred timer on the primary CPU, so when a
+>>>     secondary CPU had a change in load this was not detected by the cpufreq
+>>>     governor (both ondemand and conservative).
+>>>
+>>>     This patch make sure that deferred timers are run on all CPUs in the
+>>>     case of software controlled CPUs that run on the same frequency.
+>>>
+>>>     Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+>>>     Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+>>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>  drivers/cpufreq/cpufreq_conservative.c |  3 ++-
+>>>  drivers/cpufreq/cpufreq_governor.c     | 44
+>>> ++++++++++++++++++++++++++++++++++++++------
+>>>  drivers/cpufreq/cpufreq_governor.h     |  1 +
+>>>  drivers/cpufreq/cpufreq_ondemand.c     |  3 ++-
+>>>  4 files changed, 43 insertions(+), 8 deletions(-)
+>>>
+>>>
+>>>> I have only reproed this behavior on six-core/twelve-thread systems. I would assume that at least a two-core system would be needed to repro this bug, and perhaps more. The bug will not repro if the system is not relatively idle, since a background CPU hog will force the frequency up.
+>>>>
+>>>> The repro is exquisitely simple -- ExprCount() is a simplified version of the repro (portable looping in a shell script) and BashCount() is an optimized and less portable version that runs far faster and also avoids this power management problem -- the CPU frequency is raised appropriately. Running a busy loop in another process is another way to get the frequency up and this makes ExprCount() run ~3x faster. Here is the script:
+>>>>
+>>>> --------------------------------------
+>>>> #!/bin/bash
+>>>> function ExprCount() {
+>>>>         i=$1
+>>>>         while [ $i -gt 0 ]; do
+>>>>                 i=$(expr $i - 1)
+>>>
+>>> I may be wrong but one cpu is used to run this script and other one would be used to run expr program.. So, 2 cpus should be good enough to reproduce this setup.
+>>>
+>>> BTW, i have tried your scripts and was able to reproduce the setup 
+>>> here on a 2 cpu
+>>> 4 thread system.
+>>>
+>>> --
+>>> viresh
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in 
+> the body of a message to majordomo@vger.kernel.org More majordomo info 
+> at  http://vger.kernel.org/majordomo-info.html
