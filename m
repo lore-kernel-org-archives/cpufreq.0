@@ -1,203 +1,125 @@
-From: Bruce Dawson <bruced@valvesoftware.com>
-Subject: RE: CPU power management bug -- CPU bound task fails to raise CPU
- frequency
-Date: Tue, 19 Mar 2013 16:33:49 +0000
-Message-ID: <2AC155A009400B4C8B05D518E4819AEF071D3F4C@exchange10.valvesoftware.com>
-References: <2AC155A009400B4C8B05D518E4819AEF071D2E6B@exchange10.valvesoftware.com>
-	<CAOh2x=kQqJVfFLAnW15mCUcUdrpM4nzTd75G=sAAHC7kgm5B-w@mail.gmail.com>
-	<2AC155A009400B4C8B05D518E4819AEF071D3069@exchange10.valvesoftware.com>
-	<CAKohpomLD+=YtsQm5B6PDOuvVOnBx1tpOXCUnoCY==8D-KhT-Q@mail.gmail.com>
-	<CAKfTPtBbnTCV5cJ=2P+xiUzoKp0wvBcgfbWzE3pgcGKq2D1E3g@mail.gmail.com>
-	<2AC155A009400B4C8B05D518E4819AEF071D34EE@exchange10.valvesoftware.com>
-	<2AC155A009400B4C8B05D518E4819AEF071D377E@exchange10.valvesoftware.com>
- <CAKfTPtCKu+=A9q=W27_VpdFFNSyQvp3iVG7eJCZkWnVsrrirgA@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH V2 7/8] ARM: OMAP3+: use cpu0-cpufreq driver in device tree supported boot
+Date: Tue, 19 Mar 2013 12:53:09 -0500
+Message-ID: <1363715590-5131-8-git-send-email-nm@ti.com>
+References: <1363715590-5131-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtCKu+=A9q=W27_VpdFFNSyQvp3iVG7eJCZkWnVsrrirgA@mail.gmail.com>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1363715590-5131-1-git-send-email-nm@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: 'Vincent Guittot' <vincent.guittot@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dave Jones <davej@redhat.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset="macroman"
+To: linux-omap@vger.kernel.org
+Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@deeprootsystems.com>, Jon Hunter <jon-hunter@ti.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-Yeah, the migration of every single expr process is very confusing to me. My mental model of the scheduler can account for everything but that, and that was happening on every invocation of expr, hundreds in a row.
+With OMAP3+ and AM33xx supported SoC having defined CPU device tree
+entries with operating-points defined, we can now use the SoC
+generic cpufreq-cpu0 driver by registering appropriate device.
 
-When I zoom in on that portion of the graph then I can see the migration process briefly running on whatever CPU expr starts on. Clearly that is *what* is forcing the migration, but that doesn't help understand the *why*. That is the only time that the migration process runs. If there is a bug in all this behavior (as opposed to behavior that just happens to work poorly in this one case) then it's the migration process.
+As part of this change, add dummy clock node to use cpufreq-cpu0.
+This is an suggested solution till we have OMAP clock nodes in DT.
+Once the DT conversion is complete, we can then do:
+clocks =3D <&dpll_mpu_ck>; or the SoC specific equivalent.
 
-BTW, I blogged about the issues here:
-http://randomascii.wordpress.com/2013/03/18/counting-to-ten-on-linux/
+Inspired by patch: https://patchwork.kernel.org/patch/2067841/
+now made generic.
 
-The peculiarities I mention are that 'time' doesn't account for the process creation time (so it shows user+sys equaling ~20% of the total), and the spread out execution which means that the CPU frequency doesn't get raised. I didn't mention the migration process in the blog post because that is too much detail for the mind of the Internet to handle.
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Jon Hunter <jon-hunter@ti.com>
+Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Keerthy <j-keerthy@ti.com>
+Cc: linux-omap@vger.kernel.org
+Cc: devicetree-discuss@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-BTW, another detail (probably unimportant, but who knows) is that in addition to waking up for ~80 us every half-ms or so the bash process also wakes up for ~7 us just before each expr process terminates. It's barely visible in the screenshot as a break in the idle time on CPUs 2 and 5.
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+Changes in V2:
+	- no functional changes
+V1: https://patchwork.kernel.org/patch/2273621/
 
------Original Message-----
-From: Vincent Guittot [mailto:vincent.guittot@linaro.org] 
-Sent: Tuesday, March 19, 2013 1:25 AM
-To: Bruce Dawson
-Cc: Viresh Kumar; Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; linaro-kernel@lists.linaro.org
-Subject: Re: CPU power management bug -- CPU bound task fails to raise CPU frequency
+ arch/arm/mach-omap2/board-generic.c   |    5 +++++
+ arch/arm/mach-omap2/cclock33xx_data.c |    2 +-
+ arch/arm/mach-omap2/cclock3xxx_data.c |    3 ++-
+ arch/arm/mach-omap2/cclock44xx_data.c |    3 ++-
+ 4 files changed, 10 insertions(+), 3 deletions(-)
 
-The bash thread can wake up on a different CPU depending of which CPU has initiated the wake up. (CPU7 or CPU10 on your screenshoot). What is a bit less normal is why your expr tasks migrate in the middle of their execution.
+diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/=
+board-generic.c
+index afa509a..5b147ef 100644
+--- a/arch/arm/mach-omap2/board-generic.c
++++ b/arch/arm/mach-omap2/board-generic.c
+@@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
+ 		omap4_panda_display_init_of();
+ 	else if (of_machine_is_compatible("ti,omap4-sdp"))
+ 		omap_4430sdp_display_init_of();
++
++	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
++		struct platform_device_info devinfo =3D { .name =3D "cpufreq-cpu0", =
+};
++		platform_device_register_full(&devinfo);
++	}
+ }
+=20
+ #ifdef CONFIG_SOC_OMAP2420
+diff --git a/arch/arm/mach-omap2/cclock33xx_data.c b/arch/arm/mach-omap=
+2/cclock33xx_data.c
+index 476b820..cf7e736 100644
+--- a/arch/arm/mach-omap2/cclock33xx_data.c
++++ b/arch/arm/mach-omap2/cclock33xx_data.c
+@@ -852,7 +852,7 @@ static struct omap_clk am33xx_clks[] =3D {
+ 	CLK(NULL,	"dpll_core_m5_ck",	&dpll_core_m5_ck,	CK_AM33XX),
+ 	CLK(NULL,	"dpll_core_m6_ck",	&dpll_core_m6_ck,	CK_AM33XX),
+ 	CLK(NULL,	"dpll_mpu_ck",		&dpll_mpu_ck,	CK_AM33XX),
+-	CLK("cpu0",	NULL,			&dpll_mpu_ck,	CK_AM33XX),
++	CLK("cpufreq-cpu0.0",	NULL,			&dpll_mpu_ck,	CK_AM33XX),
+ 	CLK(NULL,	"dpll_mpu_m2_ck",	&dpll_mpu_m2_ck,	CK_AM33XX),
+ 	CLK(NULL,	"dpll_ddr_ck",		&dpll_ddr_ck,	CK_AM33XX),
+ 	CLK(NULL,	"dpll_ddr_m2_ck",	&dpll_ddr_m2_ck,	CK_AM33XX),
+diff --git a/arch/arm/mach-omap2/cclock3xxx_data.c b/arch/arm/mach-omap=
+2/cclock3xxx_data.c
+index 4579c3c..5a5b471 100644
+--- a/arch/arm/mach-omap2/cclock3xxx_data.c
++++ b/arch/arm/mach-omap2/cclock3xxx_data.c
+@@ -3501,7 +3501,8 @@ static struct omap_clk omap3xxx_clks[] =3D {
+ 	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
+ 	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
+ 	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
+-	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
++	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX), /* used in non-device tr=
+ee boot */
++	CLK("cpufreq-cpu0.0",	NULL,	&dpll1_ck,	CK_3XXX), /* used in device tr=
+ee boot */
+ };
+=20
+ static const char *enable_init_clks[] =3D {
+diff --git a/arch/arm/mach-omap2/cclock44xx_data.c b/arch/arm/mach-omap=
+2/cclock44xx_data.c
+index 3d58f33..bcea785 100644
+--- a/arch/arm/mach-omap2/cclock44xx_data.c
++++ b/arch/arm/mach-omap2/cclock44xx_data.c
+@@ -1660,7 +1660,8 @@ static struct omap_clk omap44xx_clks[] =3D {
+ 	CLK("4013a000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
+ 	CLK("4013c000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
+ 	CLK("4013e000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
+-	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
++	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X), /* used in non-device=
+ tree boot */
++	CLK("cpufreq-cpu0.0",	NULL,	&dpll_mpu_ck,	CK_443X), /* used in device=
+ tree boot */
+ };
+=20
+ int __init omap4xxx_clk_init(void)
+--=20
+1.7.9.5
 
-On 18 March 2013 20:07, Bruce Dawson <bruced@valvesoftware.com> wrote:
-> BTW, I just uploaded a screenshot of the shell script running. You can see it here:
->
-> http://www.cygnus-software.com/images/ZoomScreenshot_croppedbig.png
->
-> It was made using http://www.rotateright.com/zoom/. The red blocks are the bash process, the other ones are various invocations of expr.
->
-> -----Original Message-----
-> From: cpufreq-owner@vger.kernel.org 
-> [mailto:cpufreq-owner@vger.kernel.org] On Behalf Of Bruce Dawson
-> Sent: Monday, March 18, 2013 10:01 AM
-> To: 'Vincent Guittot'; Viresh Kumar
-> Cc: Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; 
-> linaro-kernel@lists.linaro.org
-> Subject: RE: CPU power management bug -- CPU bound task fails to raise 
-> CPU frequency
->
-> I guess that makes sense for the scheduler to look for the idlest CPU in the system. That's good to know.
->
-> I had guessed that the scheduler would do something like that and that my test would run on two cores. However I find that bash alternates between two cores, which seems odd. Additionally, each invocation of expr starts on one core and moves to another, which seems odd that each invocation lives for a ms or less. The net effect is that six or more different cores get involved.
->
-> Anyway, it is a pathological case, so maybe it doesn't matter, but given the popularity of $(command) in shell scripts it may not be completely irrelevant either.
->
-> -----Original Message-----
-> From: Vincent Guittot [mailto:vincent.guittot@linaro.org]
-> Sent: Monday, March 18, 2013 4:07 AM
-> To: Viresh Kumar
-> Cc: Bruce Dawson; Dave Jones; cpufreq@vger.kernel.org; Rafael J. 
-> Wysocki; linaro-kernel@lists.linaro.org
-> Subject: Re: CPU power management bug -- CPU bound task fails to raise 
-> CPU frequency
->
-> On 18 March 2013 06:04, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> Let me get in the scheduler expert from Linaro (Vincent Guittot, 
->> would be available after few hours)
->>
->> Vincent, please start reading from this mail:
->>
->> http://permalink.gmane.org/gmane.linux.kernel.cpufreq/9675
->>
->> Now, we want to understand how to make this task perform better as 
->> scheduler is using multiple cpus for it and hence all are staying at 
->> low freqs, as load isn't enough..
->
-> Hi,
->
-> Your 1st test creates a task to evaluate each expr, and the fork sequence of the scheduler looks for the idlest CPU in the system.
-> That's explain why your test is evenly spread on all CPUs and the average load of each CPU is below the threshold of cpufreq At the opposite, your 2nd test uses only one task which stays on one CPU and trig the frequency increase.
->
-> I would say that the scheduler behavior is almost normal : spread to 
-> get best performance (even if in this use case, the threads run
-> sequentially) but you have this side effect on the cpufreq thats sees 
-> each core individually as not loaded. This example tends to push in 
-> favor of a better cooperation between scheduler and cpufreq for 
-> sharing statistics
->
-> Vincent
->
->>
->> --
->> viresh
->>
->> On 18 March 2013 10:28, Bruce Dawson <bruced@valvesoftware.com> wrote:
->>> This is with the Ondemand governor.
->>>
->>> The more I ponder this the more I think that the real issue is not the frequency drivers, but the kernel scheduler. The shell script involves two processes being alive at any given time, and one process running (since bash always waits for expr to finish). Therefore the entire task should run on either one core or on two. Instead I see (from looking at thread scheduling graphed using the Zoom profiler -- http://www.rotateright.com/) that it runs on six different cores. bash alternates between two cores, and each invocation of expr is started on one core and then moves to another. Given that it seems not surprising that the CPU frequency management doesn't trigger.
->>>
->>>> So, the frequency might not be increased if there are multiple cpus 
->>>> running for a specific task and none of them has high enough load 
->>>> at that time
->>>
->>> Yep, that's what I figured. Each cpu's load is quite low -- 20% or lower -- because the work is so spread out.
->>>
->>> If I run the entire thing under "taskset 1" then everything runs on one core, the frequency elevation happens, and the entire task runs roughly three times faster.
->>>
->>> Crazy/cool.
->>>
->>> -----Original Message-----
->>> From: viresh.linux@gmail.com [mailto:viresh.linux@gmail.com] On 
->>> Behalf Of Viresh Kumar
->>> Sent: Sunday, March 17, 2013 9:32 PM
->>> To: Bruce Dawson
->>> Cc: Dave Jones; cpufreq@vger.kernel.org; Rafael J. Wysocki; 
->>> linaro-kernel@lists.linaro.org
->>> Subject: Re: CPU power management bug -- CPU bound task fails to 
->>> raise CPU frequency
->>>
->>> On Sun, Mar 17, 2013 at 6:37 AM, Bruce Dawson <bruced@valvesoftware.com> wrote:
->>>> Dave/others, I've come up with a simple (and real) scenario where a CPU bound task running on Ubuntu (and presumably other Linux flavors) fails to be detected as CPU bound by the Linux kernel, meaning that the CPU continues to run at low speed, meaning that this CPU bound task takes (on my machines) about three times longer to run than it should.
->>>>
->>>> I found these e-mail addresses in the MAINTAINERS list under CPU FREQUENCY DRIVERS which I'm hoping is the correct area.
->>>
->>> Yes, cpufreq mailing list is the right list for this.
->>>
->>>> The basic problem is that on a multi-core system if you run a shell script that spawns lots of sub processes then the workload ends up distributed across all of the CPUs. Therefore, since none of the CPUs are particularly busy, the Linux kernel doesn't realize that a CPU bound task is running, so it leaves the CPU frequency set to low. I have confirmed the behavior in multiple ways. Specifically, I have used "iostat 1" and "mpstat -P ALL 1" to confirm that a full core's worth of CPU work is being done. mpstat also showed that the work was distributed across multiple cores. Using the zoom profiler UI for perf showed the sub processes (and bash) being spread across multiple cores, and perf stat showed that the CPU frequency was staying low even though the task was CPU bound.
->>>
->>> There are few things which would be helpful to understand what's going on.
->>> What governor is used in your case? Probably Ondemand (My ubuntu uses this).
->>>
->>> Ideally, cpu frequency is increased only if cpu load is very high 
->>> (or above threshold,
->>> 95 in my ubuntu). So, the frequency might not be increased if there are multiple cpus running for a specific task and none of them has high enough load at that time.
->>>
->>> Other stuff that i suspect here is a bug which was solved recently 
->>> by below patch. If
->>> policy->cpu (that might be cpu 0 for you) is sleeping, then load is
->>> never evaluated even
->>> if all other cpus are very busy. If you can try below patch then it might be helpful. BTW, you might not be able to apply it easily as it has got lots of dependencies.. and so you might need to pick all drivers/cpufreq patches from v3.9-rc1.
->>>
->>> commit 2abfa876f1117b0ab45f191fb1f82c41b1cbc8fe
->>> Author: Rickard Andersson <rickard.andersson@stericsson.com>
->>> Date:   Thu Dec 27 14:55:38 2012 +0000
->>>
->>>     cpufreq: handle SW coordinated CPUs
->>>
->>>     This patch fixes a bug that occurred when we had load on a secondary CPU
->>>     and the primary CPU was sleeping. Only one sampling timer was spawned
->>>     and it was spawned as a deferred timer on the primary CPU, so when a
->>>     secondary CPU had a change in load this was not detected by the cpufreq
->>>     governor (both ondemand and conservative).
->>>
->>>     This patch make sure that deferred timers are run on all CPUs in the
->>>     case of software controlled CPUs that run on the same frequency.
->>>
->>>     Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
->>>     Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
->>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>  drivers/cpufreq/cpufreq_conservative.c |  3 ++-
->>>  drivers/cpufreq/cpufreq_governor.c     | 44
->>> ++++++++++++++++++++++++++++++++++++++------
->>>  drivers/cpufreq/cpufreq_governor.h     |  1 +
->>>  drivers/cpufreq/cpufreq_ondemand.c     |  3 ++-
->>>  4 files changed, 43 insertions(+), 8 deletions(-)
->>>
->>>
->>>> I have only reproed this behavior on six-core/twelve-thread systems. I would assume that at least a two-core system would be needed to repro this bug, and perhaps more. The bug will not repro if the system is not relatively idle, since a background CPU hog will force the frequency up.
->>>>
->>>> The repro is exquisitely simple -- ExprCount() is a simplified version of the repro (portable looping in a shell script) and BashCount() is an optimized and less portable version that runs far faster and also avoids this power management problem -- the CPU frequency is raised appropriately. Running a busy loop in another process is another way to get the frequency up and this makes ExprCount() run ~3x faster. Here is the script:
->>>>
->>>> --------------------------------------
->>>> #!/bin/bash
->>>> function ExprCount() {
->>>>         i=$1
->>>>         while [ $i -gt 0 ]; do
->>>>                 i=$(expr $i - 1)
->>>
->>> I may be wrong but one cpu is used to run this script and other one would be used to run expr program.. So, 2 cpus should be good enough to reproduce this setup.
->>>
->>> BTW, i have tried your scripts and was able to reproduce the setup 
->>> here on a 2 cpu
->>> 4 thread system.
->>>
->>> --
->>> viresh
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in 
-> the body of a message to majordomo@vger.kernel.org More majordomo info 
-> at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
