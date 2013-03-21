@@ -1,49 +1,149 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v3 1/3] ARM: shmobile: sh73a0: wait for completion when
- kicking the clock
-Date: Thu, 21 Mar 2013 22:25:23 +0900
-Message-ID: <20130321132522.GA22565@verge.net.au>
-References: <1362054120-8600-1-git-send-email-g.liakhovetski@gmx.de>
- <1362054120-8600-2-git-send-email-g.liakhovetski@gmx.de>
- <20130301025222.GA32306@verge.net.au>
- <20130319034214.GB21444@verge.net.au>
- <CANqRtoSk9PQWsU2E5b_CuO9AaE69fZ7GMzSjUz7DjjCY+Xcr2g@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V3 2/4] cpufreq: governor: Implement per policy instances of governors
+Date: Fri, 22 Mar 2013 00:44:40 +0100
+Message-ID: <2565053.YP0dCLmaW9@vostro.rjw.lan>
+References: <cover.1362381470.git.viresh.kumar@linaro.org> <0823a96fea2d8284b7d83cee390dd5973fdaaa94.1362381470.git.viresh.kumar@linaro.org> <CAKohponTZ29BX6CrUvFMy9RXV==0wRFu4C-W1xd6t1RmLASTvQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CANqRtoSk9PQWsU2E5b_CuO9AaE69fZ7GMzSjUz7DjjCY+Xcr2g@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponTZ29BX6CrUvFMy9RXV==0wRFu4C-W1xd6t1RmLASTvQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 
-On Tue, Mar 19, 2013 at 02:15:29PM +0900, Magnus Damm wrote:
-> On Tue, Mar 19, 2013 at 12:42 PM, Simon Horman <horms@verge.net.au> wrote:
-> > On Fri, Mar 01, 2013 at 11:52:25AM +0900, Simon Horman wrote:
-> >> On Thu, Feb 28, 2013 at 01:21:58PM +0100, Guennadi Liakhovetski wrote:
-> >> > To reconfigure clocks, controlled by FRQCRA and FRQCRB, a kick bit has to
-> >> > be set and to make sure the setting has taken effect, it has to be read
-> >> > back repeatedly until it is cleared by the hardware. This patch adds the
-> >> > waiting part, that was missing until now.
-> >> >
-> >> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> >>
-> >> This patch seems to be ready to be applied.
-> >>
-> >> Magnus, could I get a review from you?
+On Wednesday, March 20, 2013 10:59:13 AM Viresh Kumar wrote:
+> On 4 March 2013 13:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Currently, there can't be multiple instances of single governor_type. If we have
+> > a multi-package system, where we have multiple instances of struct policy (per
+> > package), we can't have multiple instances of same governor. i.e. We can't have
+> > multiple instances of ondemand governor for multiple packages.
 > >
-> > Magnus, ping.
+> > Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+> > governor-name/. Which again reflects that there can be only one instance of a
+> > governor_type in the system.
+> >
+> > This is a bottleneck for multicluster system, where we want different packages
+> > to use same governor type, but with different tunables.
+> >
+> > This patch uses the infrastructure provided by earlier patch and implements
+> > init/exit routines for ondemand and conservative governors.
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Thanks for the ping. This patch looks good to me.
+> As discussed in other patch thread, i dropped "cpufreq: Add Kconfig option
+> to enable/disable have_multiple_policies" patch and following is the fixup
+> to this patch:
 > 
-> Acked-by: Magnus Damm <damm@opensource.se>
+> I have queued all patches i had for 3.10 here:
+> 
+> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-3.10
 
-Thanks, applied to the soc branch.
+OK, applied these to linux-pm.git/bleeding-edge.
 
-> Now if we could do the same thing for the MSTP bits too then that
-> would be excellent...
+At the moment bleeding-edge and linux-next diverged slightly on cpufreq, but
+I hope the bleeding-edge material won't cause build problems to occur, so I'll
+be able to move it to linux-next shortly.
+
+> commit f02fca9a2478088c4f7dadf82d998ae007a56285
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Wed Mar 20 10:50:33 2013 +0530
 > 
-> / magnus
+>     fixup! cpufreq: governor: Implement per policy instances of governors
+
+I'd actually prefer you to post complete updated patches instead of these
+fixups.  They are real PITA for me and probably for everybody else trying
+to follow the cpufreq development recently.
+
+Thanks,
+Rafael
+
+
+> ---
+>  drivers/cpufreq/cpufreq.c |  8 ++++++++
+>  include/linux/cpufreq.h   | 22 ++++++++--------------
+>  2 files changed, 16 insertions(+), 14 deletions(-)
 > 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index a843855..3d83b02 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -128,6 +128,14 @@ void disable_cpufreq(void)
+>  static LIST_HEAD(cpufreq_governor_list);
+>  static DEFINE_MUTEX(cpufreq_governor_mutex);
+> 
+> +struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
+> +{
+> +       if (cpufreq_driver->have_multiple_policies)
+> +               return &policy->kobj;
+> +       else
+> +               return cpufreq_global_kobject;
+> +}
+> +
+>  static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+>  {
+>         struct cpufreq_policy *data;
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 6e1abd2..805c4d3 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -107,11 +107,6 @@ struct cpufreq_policy {
+>         unsigned int            policy; /* see above */
+>         struct cpufreq_governor *governor; /* see below */
+>         void                    *governor_data;
+> -       /* This should be set by init() of platforms having multiple
+> -        * clock-domains, i.e.  supporting multiple policies. With this sysfs
+> -        * directories of governor would be created in cpu/cpu<num>/cpufreq/
+> -        * directory */
+> -       bool                    have_multiple_policies;
+> 
+>         struct work_struct      update; /* if update_policy() needs to be
+>                                          * called, but you're in IRQ context */
+> @@ -139,15 +134,6 @@ static inline bool policy_is_shared(struct
+> cpufreq_policy *policy)
+>         return cpumask_weight(policy->cpus) > 1;
+>  }
+> 
+> -static inline struct kobject *
+> -get_governor_parent_kobj(struct cpufreq_policy *policy)
+> -{
+> -       if (policy->have_multiple_policies)
+> -               return &policy->kobj;
+> -       else
+> -               return cpufreq_global_kobject;
+> -}
+> -
+>  /******************** cpufreq transition notifiers *******************/
+> 
+>  #define CPUFREQ_PRECHANGE      (0)
+> @@ -245,6 +231,13 @@ struct cpufreq_driver {
+>         struct module           *owner;
+>         char                    name[CPUFREQ_NAME_LEN];
+>         u8                      flags;
+> +       /*
+> +        * This should be set by init() of platforms having multiple
+> +        * clock-domains, i.e.  supporting multiple policies. With this sysfs
+> +        * directories of governor would be created in cpu/cpu<num>/cpufreq/
+> +        * directory
+> +        */
+> +       bool                    have_multiple_policies;
+> 
+>         /* needed by all drivers */
+>         int     (*init)         (struct cpufreq_policy *policy);
+> @@ -329,6 +322,7 @@ const char *cpufreq_get_current_driver(void);
+>   *********************************************************************/
+>  int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+>  int cpufreq_update_policy(unsigned int cpu);
+> +struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
+> 
+>  #ifdef CONFIG_CPU_FREQ
+>  /* query the current CPU frequency (in kHz). If zero, cpufreq
+> couldn't detect it */
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
