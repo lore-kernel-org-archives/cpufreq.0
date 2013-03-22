@@ -1,56 +1,101 @@
-From: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
-Subject: [PATCH] drivers: cpufreq: kirkwood: fix coccicheck warnings
-Date: Fri, 22 Mar 2013 02:10:22 +0200
-Message-ID: <1363911022-7786-1-git-send-email-silviupopescu1990@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Add function to check that all MSR's are valid
+Date: Fri, 22 Mar 2013 01:40:49 +0100
+Message-ID: <1589305.6YMuneKuPN@vostro.rjw.lan>
+References: <1363796244-6658-1-git-send-email-dirk.brandewie@gmail.com> <5149FFE1.7030706@gmail.com> <13387259.b2vHhipG0R@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:from:to:cc:subject:date:message-id:x-mailer;
-        bh=NMjJXU6ekn15Yt4DihDgiyQNhijnKxt2E4M9gGKW07o=;
-        b=0QyGTyHy4U16QsAA4IfQNHww6lGwcRIHqBKuwRhvVlsSMOe8GoCY9J1iE7qCCdTuqJ
-         d2b2ylWaQBLaQZAYHgBwGg0gzIACpqaVVMweUaQ9Tdoc5nZ3DG0Is2TLrFpgE+gIKzXA
-         pJQ3QSrE87/VJEo2wLhTRoeQE9cY/b/fLbKi/ZDt5a4aFA6vP45vVLKbDX7DAeXlOVlJ
-         v+OJ/BCj5WVKw6ovp7b0IJRgbN46DG8KOQ79y35A2RVKuPyByi7xXZAjIaH6he0/lGfv
-         NthR5FWGjZsoGk8s8Lm73nVFxREBqDyS9ywtBnSwujTwFubYt/3VP9AstKkGk87LyRBz
-         J+vw==
+In-Reply-To: <13387259.b2vHhipG0R@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Convert all uses of devm_request_and_ioremap() to the newly introduced
-devm_ioremap_resource() which provides more consistent error handling.
+On Thursday, March 21, 2013 01:08:03 AM Rafael J. Wysocki wrote:
+> On Wednesday, March 20, 2013 11:28:49 AM Dirk Brandewie wrote:
+> > On 03/20/2013 11:28 AM, Rafael J. Wysocki wrote:
+> > > On Wednesday, March 20, 2013 09:17:24 AM dirk.brandewie@gmail.com wrote:
+> > >> From: Dirk Brandewie <dirk.brandewie@gmail.com>
+> > >>
+> > >> Some VMs seem to try to implement some MSRs but not all the registers
+> > >> the driver needs.  Check to make sure all the MSR that we need are
+> > >> available. If any of the required MSRs are not available refuse to
+> > >> load.
+> > >>
+> > >> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> > >
+> > > Is this needed for v3.9?  Any pointers to bug reports etc.?
+> > >
+> > 
+> > Sorry I saw right after I sent the mail that the bug report was missing
+> > 
+> >      https://bugzilla.redhat.com/show_bug.cgi?id=922923
+> >      Reported-by: Josh Stone <jistone@redhat.com>
+> > 
+> > Would you like me to spin the patch?
+> 
+> No, thanks, this information is sufficient.
 
-devm_ioremap_resource() provides its own error messages so all explicit
-error messages can be removed from the failure code paths.
+Applied to linux-pm.git/bleeding-edge and will be moved to linux-next after
+build testing.
 
-Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
----
- drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+Thanks,
+Rafael
 
-diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-index 0e83e3c..6052476 100644
---- a/drivers/cpufreq/kirkwood-cpufreq.c
-+++ b/drivers/cpufreq/kirkwood-cpufreq.c
-@@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
- 		dev_err(&pdev->dev, "Cannot get memory resource\n");
- 		return -ENODEV;
- 	}
--	priv.base = devm_request_and_ioremap(&pdev->dev, res);
--	if (!priv.base) {
--		dev_err(&pdev->dev, "Cannot ioremap\n");
--		return -EADDRNOTAVAIL;
--	}
-+	priv.base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(priv.base))
-+		return PTR_ERR(priv.base);
- 
- 	np = of_find_node_by_path("/cpus/cpu@0");
- 	if (!np)
+
+> > >> ---
+> > >>   drivers/cpufreq/intel_pstate.c |   26 ++++++++++++++++++++++++++
+> > >>   1 files changed, 26 insertions(+), 0 deletions(-)
+> > >>
+> > >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > >> index f6dd1e7..cd9c5f4 100644
+> > >> --- a/drivers/cpufreq/intel_pstate.c
+> > >> +++ b/drivers/cpufreq/intel_pstate.c
+> > >> @@ -752,6 +752,29 @@ static struct cpufreq_driver intel_pstate_driver = {
+> > >>
+> > >>   static int __initdata no_load;
+> > >>
+> > >> +static int intel_pstate_msrs_not_valid(void)
+> > >> +{
+> > >> +	/* Check that all the msr's we are using are valid. */
+> > >> +	u64 aperf, mperf, tmp;
+> > >> +
+> > >> +	rdmsrl(MSR_IA32_APERF, aperf);
+> > >> +	rdmsrl(MSR_IA32_MPERF, mperf);
+> > >> +
+> > >> +	if (!intel_pstate_min_pstate() ||
+> > >> +		!intel_pstate_max_pstate() ||
+> > >> +		!intel_pstate_turbo_pstate())
+> > >> +		return -ENODEV;
+> > >> +
+> > >> +	rdmsrl(MSR_IA32_APERF, tmp);
+> > >> +	if (!(tmp - aperf))
+> > >> +		return -ENODEV;
+> > >> +
+> > >> +	rdmsrl(MSR_IA32_MPERF, tmp);
+> > >> +	if (!(tmp - mperf))
+> > >> +		return -ENODEV;
+> > >> +
+> > >> +	return 0;
+> > >> +}
+> > >>   static int __init intel_pstate_init(void)
+> > >>   {
+> > >>   	int cpu, rc = 0;
+> > >> @@ -764,6 +787,9 @@ static int __init intel_pstate_init(void)
+> > >>   	if (!id)
+> > >>   		return -ENODEV;
+> > >>
+> > >> +	if (intel_pstate_msrs_not_valid())
+> > >> +		return -ENODEV;
+> > >> +
+> > >>   	pr_info("Intel P-state driver initializing.\n");
+> > >>
+> > >>   	all_cpu_data = vmalloc(sizeof(void *) * num_possible_cpus());
+> > >>
+> > 
+> 
 -- 
-1.7.9.5
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
