@@ -1,46 +1,46 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Fri, 22 Mar 2013 14:06:29 +0000 (UTC)
-Message-ID: <20130322140629.1609711FB81@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Fri, 22 Mar 2013 19:40:45 +0530
+Message-ID: <CAKohpon0_aNK6-eXwdqPUg9SVAjScF7+-s+WTP0wWFNaOY-YSQ@mail.gmail.com>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+	<1479611.koCCfMhmrZ@skinner.arch.suse.de>
+	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <1694228.Eg36y3ID9W@skinner.arch.suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
-
-
-
-
-
---- Comment #24 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-22 14:06:28 ---
-On 22 March 2013 19:33, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, March 22, 2013 01:43:34 PM bugzilla-daemon@bugzilla.kernel.org wrote:
->> I have never gone into coding for any non-ARM platform and am really not
->> aware of acpi-cpufreq driver and its users. That's why i told everybody where
->> the issue is, and they just need to fix acpi-cpufreq driver with right values
->> of policy->cpus (affected_cpus) and everything else would work after that.
+On 22 March 2013 19:34, Thomas Renninger <trenn@suse.de> wrote:
+> I am pretty sure cpuidle states won't initialize and in best case you never
+> get them working on the offlined cpus.
+> Local APICs won't be set up, ...
 >
-> Which wasn't the right thing to do.
->
-> If your changes break something, *you* (and nobody else) are responsible for
-> fixing that.
+> Such a parameter will never exist for x86.
 
-Yes, i already replied in another mail on what actually happened.
+I will see if i can find what i was referring to here.
 
-> Asking for help is obviously fine, but even if no one can (or has the time to)
-> help at the moment, you are still responsible for fixing the breakage.  If you
-> aren't familiar with the code in question, it's the time for a crash course.
+> They were hugely simplified and things are not working anymore and you
+> do not know why...
 
-yes, i need to do that now.
+I know why, but don't know (for now) how to fix it for acpi-cpufreq.
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+> And powernow-k8 driver is broken.
+> The others are not tested that often, I expect they broke as well, right?
+
+acpi-cpufreq is broken and so all others who are using it. Sorry for asking
+the stupid question now but what's the hierarchy of cpufreq drivers for intel
+(I will try to go through it now), some drivers use acpi-cpufreq driver?
+
+> Sorry, I cannot look into this due to lack of time, but I remember that
+> there were reasons why cpufreq_add_dev() was complicated.
+> Or that it's really easy to mess it up and it's not easy to fix it again.
+
+Its not cpufreq_add_dev() that is broken but some changes that were part
+of the same patch, i.e. part that tried to sort out affected and related cpus.
