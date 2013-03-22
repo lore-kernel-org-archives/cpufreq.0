@@ -1,24 +1,25 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
- after s2ram
-Date: Fri, 22 Mar 2013 19:35:19 +0530
-Message-ID: <CAKohpongPUY-iQRQm+=x4CTomZ3okX9oipxrxizDBb8uR2s4ng@mail.gmail.com>
-References: <bug-55411-70601@https.bugzilla.kernel.org/>
-	<CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com>
-	<3039053.c3U9fYsQRn@vostro.rjw.lan>
-	<1479611.koCCfMhmrZ@skinner.arch.suse.de>
-	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
-	<20130322135419.GE30807@pd.tnic>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Fri, 22 Mar 2013 14:05:21 +0000 (UTC)
+Message-ID: <20130322140521.554BF11FB81@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130322135419.GE30807@pd.tnic>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>
-Cc: Thomas Renninger <trenn@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #23 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-22 14:05:21 ---
 On 22 March 2013 19:24, Borislav Petkov <bp@alien8.de> wrote:
 > No, you're breaking existing drivers with your changes - nobody will fix
 > stuff *you're* breaking.
@@ -43,3 +44,8 @@ if i can fix it.
 
 --
 viresh
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
