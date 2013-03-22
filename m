@@ -1,18 +1,25 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after s2ram
-Date: Fri, 22 Mar 2013 15:04:03 +0100
-Message-ID: <1694228.Eg36y3ID9W@skinner.arch.suse.de>
-References: <bug-55411-70601@https.bugzilla.kernel.org/> <1479611.koCCfMhmrZ@skinner.arch.suse.de> <CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Fri, 22 Mar 2013 14:04:09 +0000 (UTC)
+Message-ID: <20130322140409.C012F11FB81@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #22 from Thomas Renninger <trenn@suse.de>  2013-03-22 14:04:09 ---
 On Friday, March 22, 2013 07:13:33 PM Viresh Kumar wrote:
 > Hi guys,
 > 
@@ -57,7 +64,7 @@ do not know why...
 > related to affected_cpus and related_cpus.
 And powernow-k8 driver is broken.
 The others are not tested that often, I expect they broke as well, right?
- 
+
 > I have never gone into coding for any non-ARM platform and am really not
 > aware of acpi-cpufreq driver and its users. That's why i told everybody
 > where the issue is, and they just need to fix acpi-cpufreq driver with
@@ -69,3 +76,8 @@ there were reasons why cpufreq_add_dev() was complicated.
 Or that it's really easy to mess it up and it's not easy to fix it again.
 
      Thomas
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
