@@ -1,19 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after s2ram
-Date: Fri, 22 Mar 2013 15:03:44 +0100
-Message-ID: <2638366.c1da3MGMT5@vostro.rjw.lan>
-References: <bug-55411-12968@https.bugzilla.kernel.org/> <20130322134334.BFF2711FB81@bugzilla.kernel.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Fri, 22 Mar 2013 13:56:25 +0000 (UTC)
+Message-ID: <20130322135625.B8ACB11FB81@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130322134334.BFF2711FB81@bugzilla.kernel.org>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Friday, March 22, 2013 01:43:34 PM bugzilla-daemon@bugzilla.kernel.org wrote:
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #21 from Rafael J. Wysocki <rjw@sisk.pl>  2013-03-22 13:56:25 ---
+On Friday, March 22, 2013 01:43:34 PM bugzilla-daemon@bugzilla.kernel.org
+wrote:
 > https://bugzilla.kernel.org/show_bug.cgi?id=55411
 > 
 > --- Comment #19 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-22 13:43:34 ---
@@ -70,7 +78,7 @@ aren't familiar with the code in question, it's the time for a crash course.
 Thanks,
 Rafael
 
-
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
