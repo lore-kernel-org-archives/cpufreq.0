@@ -1,51 +1,37 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Fri, 22 Mar 2013 14:05:21 +0000 (UTC)
-Message-ID: <20130322140521.554BF11FB81@bugzilla.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Fri, 22 Mar 2013 19:36:25 +0530
+Message-ID: <CAKohpom_Nbk=eqXw5+x7cgmvRVcXYFP0mNFDsdxxq7k931XLaQ@mail.gmail.com>
 References: <bug-55411-12968@https.bugzilla.kernel.org/>
+	<20130322134334.BFF2711FB81@bugzilla.kernel.org>
+	<2638366.c1da3MGMT5@vostro.rjw.lan>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <2638366.c1da3MGMT5@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
-
-
-
-
-
---- Comment #23 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-22 14:05:21 ---
-On 22 March 2013 19:24, Borislav Petkov <bp@alien8.de> wrote:
-> No, you're breaking existing drivers with your changes - nobody will fix
-> stuff *you're* breaking.
+On 22 March 2013 19:33, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, March 22, 2013 01:43:34 PM bugzilla-daemon@bugzilla.kernel.org wrote:
+>> I have never gone into coding for any non-ARM platform and am really not
+>> aware of acpi-cpufreq driver and its users. That's why i told everybody where
+>> the issue is, and they just need to fix acpi-cpufreq driver with right values
+>> of policy->cpus (affected_cpus) and everything else would work after that.
 >
-> You need to get the hardware and test your changes on *that* hardware
-> too. Otherwise, the offending patches should be reverted until you can
-> provide a patchset which works on everything.
+> Which wasn't the right thing to do.
 >
-> Geez, the fact that I even need to explain this...
+> If your changes break something, *you* (and nobody else) are responsible for
+> fixing that.
 
-You are right in every sense and i can't defend myself on that, no excuse.
+Yes, i already replied in another mail on what actually happened.
 
-When i wrote those patches, i fixed many drivers and wasn't aware that
-acpi-cpufreq got broken. And only with the mail from Duncan i realized it.
+> Asking for help is obviously fine, but even if no one can (or has the time to)
+> help at the moment, you are still responsible for fixing the breakage.  If you
+> aren't familiar with the code in question, it's the time for a crash course.
 
-Then i tried to go thorough it & fix it and found there is some stuff in init()
-which is is sort of per user case dependent. And wasn't sure how exactly
-to fix it and so shouted for help.
-
-But yes i will give it another try to go through the driver in details and see
-if i can fix it.
-
---
-viresh
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+yes, i need to do that now.
