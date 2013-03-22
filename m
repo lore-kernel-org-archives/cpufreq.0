@@ -1,56 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 2/4] cpufreq: governor: Implement per policy instances
- of governors
-Date: Fri, 22 Mar 2013 17:21:19 +0530
-Message-ID: <CAOh2x=n8G+g8EE-9mGovbiB-oXV3pP3bWUds8noATSc3LEYJ8A@mail.gmail.com>
-References: <cover.1362381470.git.viresh.kumar@linaro.org>
-	<2565053.YP0dCLmaW9@vostro.rjw.lan>
-	<CAKohpomDK+FQvhZsy672P+Q4U1s2AGtJ2QizFTaNqjMRh19G0g@mail.gmail.com>
-	<1483775.d1txvSJx9o@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
+Date: Fri, 22 Mar 2013 12:59:42 +0100
+Message-ID: <38998218.UX7TkEXzYs@vostro.rjw.lan>
+References: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org> <CAP245DWx_C0wcW-9SCfR0ViqyyqNbAeZnWfeMiXSgRGupo9jWQ@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=7bcCgwSMPkgTDHoU7zkuC/9L09gvl9oKiuQ/JAlxQMk=;
-        b=Xv1irJMKLnlzNezinsMtEc1t/8c6/9z1Sj1/xGDWkf2gZx8cXxDfxmaarj4SDrJFjW
-         xno4wagRpI151ShPfBX42fesXKcqXppsavcW73mj+bU8/iILZFyMpMlBmyHmb38vYVRA
-         hDBue/JLSpEETn3KanCN598eM46ei5FtvO2SQXrjLjwDYGzNcv68AzIOrrOOnDocCKrf
-         K4VljK0LLag2dFMvlH+ZwBrzyTnUgG+dXFyncUkUBbcGH4378Hzje2zOHA6X5Dvwgp8D
-         0hzymw32qFo3SZg2fvYBCQtQmcc3Has+qVHLjAuLZuPaLoF7fhPfuesNER2/94svoGai
-         6XYQ==
-In-Reply-To: <1483775.d1txvSJx9o@vostro.rjw.lan>
+In-Reply-To: <CAP245DWx_C0wcW-9SCfR0ViqyyqNbAeZnWfeMiXSgRGupo9jWQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
 
-On Fri, Mar 22, 2013 at 5:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, March 22, 2013 07:50:54 AM Viresh Kumar wrote:
+On Friday, March 22, 2013 04:42:57 PM Amit Kucheria wrote:
+> On Fri, Mar 22, 2013 at 3:43 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > In cpufreq_stats_free_sysfs() we aren't balancing calls to cpufreq_cpu_get()
+> > with cpufreq_cpu_put(). This will never let us have ref count to policy->kobj as
+> > zero.
+> 
+> Rafael,
+> 
+> Since this prevents booting on our hardware (we unregister and
+> re-register the cpufreq driver to account for virtual cores), will
+> this be considered as a hotfix for 3.9?
 
->> Hmm... I always thought fixups are way easy to review (and i still
->> believe that's
->> true) as they just contain what got changed and so people don't have to review
->> whole patch again.
->
-> They won't have to if you write in the preamble what the differences from
-> previous versions are.
+Sure.  Can you please remind me what hardware is that, though?
 
-You didn't get me.. How will the reviewer check if author has done what he
-is saying in preamble and he hasn't broken anything new?
+Rafael
 
->> BUT people who are looking for complete patches to apply
->> would be annoyed by this and hence i always show them path of my repo
->> where they can find it.
->
-> The problem with this approach is that the complete patches never make it to
-> the mailing lists and people have problems with connecting commits to
-> previously posted patches.
->
-> Moreover, it is *much* more convenient to me to take patches from kernel.org
-> patchwork than from your repos, with all due respect.
 
-I understand.. I push them to repo only when they are broken, otherwise not.
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
+> 
+> > ---
+> >  drivers/cpufreq/cpufreq_stats.c | 12 ++++++++----
+> >  1 file changed, 8 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> > index 2fd779e..bfd6273 100644
+> > --- a/drivers/cpufreq/cpufreq_stats.c
+> > +++ b/drivers/cpufreq/cpufreq_stats.c
+> > @@ -180,15 +180,19 @@ static void cpufreq_stats_free_sysfs(unsigned int cpu)
+> >  {
+> >         struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> >
+> > -       if (!cpufreq_frequency_get_table(cpu))
+> > +       if (!policy)
+> >                 return;
+> >
+> > -       if (policy && !policy_is_shared(policy)) {
+> > +       if (!cpufreq_frequency_get_table(cpu))
+> > +               goto put_ref;
+> > +
+> > +       if (!policy_is_shared(policy)) {
+> >                 pr_debug("%s: Free sysfs stat\n", __func__);
+> >                 sysfs_remove_group(&policy->kobj, &stats_attr_group);
+> >         }
+> > -       if (policy)
+> > -               cpufreq_cpu_put(policy);
+> > +
+> > +put_ref:
+> > +       cpufreq_cpu_put(policy);
+> >  }
+> >
+> >  static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+> > --
+> > 1.7.12.rc2.18.g61b472e
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
