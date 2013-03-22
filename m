@@ -1,74 +1,44 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v2] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Fri, 22 Mar 2013 11:01:30 -0500
-Message-ID: <20130322160038.GA4146@kahuna>
-References: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org>
- <Pine.LNX.4.64.1303221600060.12375@axis700.grange>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: More cpufreq breakage
+Date: Fri, 22 Mar 2013 21:52:29 +0530
+Message-ID: <CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+	<20130319074953.C200811FB80@bugzilla.kernel.org>
+	<CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com>
+	<3039053.c3U9fYsQRn@vostro.rjw.lan>
+	<20130322151228.GH30807@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1303221600060.12375@axis700.grange>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130322151228.GH30807@pd.tnic>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Borislav Petkov <bp@alien8.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Renninger <trenn@suse.de>
 
--Anil as the mail id does not seem to be accepted by TI mail server
-anymore.
+On 22 March 2013 20:42, Borislav Petkov <bp@alien8.de> wrote:
+> Btw,
+>
+> while we're at it, I just discovered this in dmesg. Plain -rc3.
 
-On 16:47-20130322, Guennadi Liakhovetski wrote:
-> On Tue, 29 Jan 2013, Shawn Guo wrote:
-> 
-> > As multiplatform build is being adopted by more and more ARM platforms,
-> > initcall function should be used very carefully.  For example, when
-> > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
-> > will be called on all the platforms to initialize cpufreq-cpu0 driver.
-> > 
-> > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
-> > driver to have it instantiated as a platform_driver.  Then it will only
-> > run on platforms that create the platform_device "cpufreq-cpu0".
-> 
-> Sorry, confused. Before this used to be a generic cpufreq driver, usable 
-> on all (DT-enabled only) platforms. You just had to provide an OPP table, 
-> a clock, a regulator, similar to this
-> 
-> http://thread.gmane.org/gmane.linux.kernel.cpufreq/9510/focus=9509
-> 
-> (also see the complete thread for more information). Now this won't work 
-> obviously. Instead we now need a pseudo platform device to instantiate 
-> cpufreq-cpu0. This device cannot be put in DT, because it doesn't describe 
-> real hardware. So, we have to add register it from the board specific .c 
-> code, which we actually want to get rid of... Is this really what we want?
-> 
-> What about other cpufreq drivers? They have the same problem on 
-> multiplatform builds, right? Say, s3c2416-cpufreq.c. It also just 
-> initialises itself and starts looking for a clock, names "msysclk" with a 
-> NULL device pointer etc. Don't we need a common approach for cpufreq 
-> driver initialisation?
-> 
-> The decision which cpufreq driver to use is SoC-specific, right? We're 
-> unlikely to have several boards, using the same SoC, wishing to use 
-> different cpufreq drivers? The decision _whether_ or not to enable it and 
-> _which_ resources to use might be board-specific. So, how about adding a 
-> cpufreq call something like
-> 
-> cpufreq_driver_request("cpufreq-driver-name");
-> 
-> to be called by SoC-specific code. You can say it is not much different 
-> from adding a virtual device, but firstly I think such a use of a platform 
-> device is really an overkill. Secondly you still run a danger, that 
-> several platforms, built into a single image, register several devices for 
-> different cpufreq drivers, or even for one... With a special call you know 
-> there can be only one and you return -EBUSY to all further calls to that 
-> function.
+I am looking at it since some time, but need a bit of help.
 
-Just an note on this specific patch - I made this generic handling for
-OMAP OPP handling in my series:
-http://marc.info/?l=linux-omap&m=136371580826031&w=2
-Handling non-DT and DT enabled boots are key for us as well here.
+> [34173.893305] ------------[ cut here ]------------
+> [34173.893321] WARNING: at kernel/mutex.c:199 mutex_lock_nested+0x39c/0x3b0()
+> [34173.893328] Hardware name: To be filled by O.E.M.
+> [34173.893333] Modules linked in: nls_iso8859_15 nls_cp437 fuse tun cpufreq_powersave cpufreq_userspace cpufreq_stats cpufreq_conservative dm_crypt dm_mod ipv6 vfat fat acpi_cpufreq mperf kvm_amd kvm crc32_pclmul aesni_intel aes_x86_64 ablk_helper cryptd xts lrw gf128mul microcode radeon amd64_edac_mod edac_core k10temp fam15h_power drm_kms_helper ttm cfbfillrect cfbimgblt r8169 cfbcopyarea
+> [34173.893395] Pid: 15316, comm: kworker/0:0 Not tainted 3.9.0-rc3 #1
+> [34173.893402] Call Trace:
+> [34173.893409]  [<ffffffff8103b33f>] warn_slowpath_common+0x7f/0xc0
+> [34173.893417]  [<ffffffff8103b39a>] warn_slowpath_null+0x1a/0x20
+> [34173.893424]  [<ffffffff8159654c>] mutex_lock_nested+0x39c/0x3b0
+> [34173.893432]  [<ffffffff8144b94d>] ? cpufreq_governor_dbs+0x3bd/0x560
+> [34173.893441]  [<ffffffff8106bded>] ? __blocking_notifier_call_chain+0x7d/0xd0
+> [34173.893449]  [<ffffffff8144b94d>] ? cpufreq_governor_dbs+0x3bd/0x560
+> [34173.893457]  [<ffffffff81074ce1>] ? get_parent_ip+0x11/0x50
+> [34173.893464]  [<ffffffff81074d99>] ? sub_preempt_count+0x79/0xd0
 
--- 
-Regards,
-Nishanth Menon
+What does "?" mean before a functions name in trace? I am not able to
+figure out the exact sequence as i don't see why sub_preempt_count() and
+get_parent_ip() got called. And then this notifier call.
