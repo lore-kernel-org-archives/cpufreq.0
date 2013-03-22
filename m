@@ -1,18 +1,25 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after s2ram
-Date: Fri, 22 Mar 2013 13:17:18 +0100
-Message-ID: <3039053.c3U9fYsQRn@vostro.rjw.lan>
-References: <bug-55411-70601@https.bugzilla.kernel.org/> <20130319074953.C200811FB80@bugzilla.kernel.org> <CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Fri, 22 Mar 2013 12:10:00 +0000 (UTC)
+Message-ID: <20130322121000.C818E11FB81@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>, Thomas Renninger <trenn@suse.de>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #14 from Rafael J. Wysocki <rjw@sisk.pl>  2013-03-22 12:10:00 ---
 [Adding Boris and Thomas to the CC.]
 
 On Tuesday, March 19, 2013 02:20:06 PM Viresh Kumar wrote:
@@ -118,7 +125,7 @@ the better.
 Thanks,
 Rafael
 
-
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
