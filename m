@@ -1,51 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH linux-pm] cpufreq: governors: Fix calculation of wall time in get_cpu_idle_time
-Date: Fri, 22 Mar 2013 14:24:11 +0100
-Message-ID: <1799487.FNztk3vCxS@vostro.rjw.lan>
-References: <514C0555.1010806@semaphore.gr>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Fri, 22 Mar 2013 13:21:29 +0000 (UTC)
+Message-ID: <20130322132129.62FCC11FB81@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <514C0555.1010806@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Friday, March 22, 2013 09:16:37 AM Stratos Karafotis wrote:
-> With commit 8755a8ae31ba213db196324011a0da2a85807f25 the wall in
-> get_cpu_idle_time is not calculated, when we use ondemand with
-> io_is_busy = 1, preventing the CPU to increase to max frequency.
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #18 from Borislav Petkov <bp@alien8.de>  2013-03-22 13:21:28 ---
+On Fri, Mar 22, 2013 at 02:12:50PM +0100, Rafael J. Wysocki wrote:
+> On Friday, March 22, 2013 05:45:29 PM Viresh Kumar wrote:
+> > On 22 March 2013 17:47, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > OK, so what exactly do you need to now?
+> > 
+> > s/now/know ??
 > 
-> Properly, calculate wall time when we use io_is_busy.
-> 
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> Yes, sorry.
 
-I folded the change below into the original patch.
+Right, I heard about this breakage on Bulldozer and I can repro it here
+too :(.
 
-Thanks,
-Rafael
+Which is not good and it needs to be fixed ASAP. From looking at the
+patches in question, this should be reproducible on everything, though,
+since it is generic cpufreq code. And if so, this makes the urgency of a
+fix much more dire.
 
+Thanks.
 
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index b49d45d..41e5e56 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -53,7 +53,7 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
->  
->  u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
->  {
-> -	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-> +	u64 idle_time = get_cpu_idle_time_us(cpu, io_busy ? wall : NULL);
->  
->  	if (idle_time == -1ULL)
->  		return get_cpu_idle_time_jiffy(cpu, wall);
-> 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
