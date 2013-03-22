@@ -1,25 +1,18 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Fri, 22 Mar 2013 12:53:39 +0000 (UTC)
-Message-ID: <20130322125339.2C58111FB81@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after s2ram
+Date: Fri, 22 Mar 2013 13:53:34 +0100
+Message-ID: <1479611.koCCfMhmrZ@skinner.arch.suse.de>
+References: <bug-55411-70601@https.bugzilla.kernel.org/> <CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com> <3039053.c3U9fYsQRn@vostro.rjw.lan>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <3039053.c3U9fYsQRn@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
-
-
-
-
-
---- Comment #16 from Thomas Renninger <trenn@suse.de>  2013-03-22 12:53:38 ---
 On Friday, March 22, 2013 01:17:18 PM Rafael J. Wysocki wrote:
 > [Adding Boris and Thomas to the CC.]
 > 
@@ -55,8 +48,3 @@ initialize correctly if the CPUs got offlined before driver init.
 Obviously this is not a clever thing to do.
 
    Thomas
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
