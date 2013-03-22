@@ -1,34 +1,51 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Fri, 22 Mar 2013 13:05:30 +0000 (UTC)
-Message-ID: <20130322130530.B01EF11FB81@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
+Date: Fri, 22 Mar 2013 14:22:39 +0100
+Message-ID: <1557799.tbMLSpRn7J@vostro.rjw.lan>
+References: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org> <2999694.A2YTRdtkxt@vostro.rjw.lan> <CAKohpokYkieTyv=e9kM=zp6qJ9o5+c1D7eodsHf2ncCUig-1MA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokYkieTyv=e9kM=zp6qJ9o5+c1D7eodsHf2ncCUig-1MA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
-
-
-
-
-
---- Comment #17 from Rafael J. Wysocki <rjw@sisk.pl>  2013-03-22 13:05:30 ---
-On Friday, March 22, 2013 05:45:29 PM Viresh Kumar wrote:
-> On 22 March 2013 17:47, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > OK, so what exactly do you need to now?
+On Friday, March 22, 2013 05:40:25 PM Viresh Kumar wrote:
+> On 22 March 2013 17:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Which would be useful to write in the changelog, wouldn't it?
 > 
-> s/now/know ??
+> Hmm..
+> 
+> copy-paste with gmail is also broken, so find it attached too.
+> 
+> New change log, no change in patch and you can trust me on that :)
 
-Yes, sorry.
+OK, applied to bleeding-edge.
 
+Thanks,
+Rafael
+
+
+> ----------x-------------x--------
+> 
+> From 034e5ac4cccd09872592a46decd38d5f24047f10 Mon Sep 17 00:00:00 2001
+> Message-Id: <034e5ac4cccd09872592a46decd38d5f24047f10.1363954124.git.viresh.kumar@linaro.org>
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Fri, 22 Mar 2013 15:15:48 +0530
+> Subject: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to
+>  cpufreq_cpu_get
+> 
+> In cpufreq_stats_free_sysfs() we aren't balancing calls to cpufreq_cpu_get()
+> with cpufreq_cpu_put(). This will never let us have ref count to policy->kobj as
+> zero.
+> 
+> We will get a hang if somehow cpufreq_driver_unregister() is called. And that
+> can happen when we compile our driver as module and insmod/rmmod it.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
