@@ -1,89 +1,105 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Sat, 23 Mar 2013 14:32:17 +0800
-Message-ID: <20130323063215.GF6281@S2101-09.ap.freescale.net>
-References: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org>
- <Pine.LNX.4.64.1303221600060.12375@axis700.grange>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: More cpufreq breakage
+Date: Sat, 23 Mar 2013 14:45:42 +0100
+Message-ID: <20130323134541.GA10811@pd.tnic>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+ <20130319074953.C200811FB80@bugzilla.kernel.org>
+ <CAKohpo=dRuE0bUHTNnq14d6G3ZEcnwPw4Amk5YpXFUVpekrxTQ@mail.gmail.com>
+ <3039053.c3U9fYsQRn@vostro.rjw.lan>
+ <20130322151228.GH30807@pd.tnic>
+ <CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1364046346; bh=rOexG8jnNJ12YZTFzQp3g0f6G0nBosXnxefqJH5mZmY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=ORCcQLzpfvRog86k0v6bOaUV7kYgFuoCxcoNmz
+	PRwr/HXJjFkMqYvOpuPTCV8st1gtlFx8SWf0RLspsvWmI8h6EofwIPx/88KCQq3LdAS
+	Wegk1uTdvg/SWgVi0WWt/g3C35ybDXYjfrDYQSB9QcnD2tzfA6I+dmYCc3n/yZO5AI=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1364046345; bh=rOexG8jnNJ12YZTFzQp3g0f6G0nBosXnxefqJH5mZmY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=bfQbzzr1m1uTSZaeRYSWhlCBcedZt8cN+mjj96
+	hWwHOUC6eFimv+hWMHrR1vq1FMZwNzlpdWQrlD4XQeCTwGeIx6J6ttcXagUji7ldcce
+	GDfsXs2FrVeYVByu36ge77FmkuwWLN16+Ed7wa+VUrVzeDZKsjxtVvDJIXCBqmqGuA=
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1303221600060.12375@axis700.grange>
+In-Reply-To: <CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Magnus Damm <magnus.damm@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Renninger <trenn@suse.de>
 
-On Fri, Mar 22, 2013 at 04:47:17PM +0100, Guennadi Liakhovetski wrote:
-> Sorry, confused. Before this used to be a generic cpufreq driver, usable 
-> on all (DT-enabled only) platforms. You just had to provide an OPP table, 
-> a clock, a regulator, similar to this
-> 
-> http://thread.gmane.org/gmane.linux.kernel.cpufreq/9510/focus=9509
-> 
-> (also see the complete thread for more information). Now this won't work 
-> obviously. Instead we now need a pseudo platform device to instantiate 
-> cpufreq-cpu0. This device cannot be put in DT, because it doesn't describe 
-> real hardware. So, we have to add register it from the board specific .c 
-> code, which we actually want to get rid of... Is this really what we want?
-> 
-Yes, that's what we want.  We are moving to multiplatform build, and we
-do not want the driver get instantiated on very single platform that is
-part of multiplatform.  Some of them may not support cpufreq at all and
-others may have operating-points defined in device tree but need to work
-with platform specific cpufreq driver.
+On Fri, Mar 22, 2013 at 09:52:29PM +0530, Viresh Kumar wrote:
+> What does "?" mean before a functions name in trace?
 
-In an ideal DT world, there shouldn't be any board specific .c code but
-only SoC specific code.  Whether or not support cpufreq is a SoC
-specific decision, and it's perfectly fine to make the decision in SoC
-specific code.
+http://stackoverflow.com/questions/13113384/the-meaning-of-in-linux-kernel-panic-call-trace
 
-> What about other cpufreq drivers? They have the same problem on 
-> multiplatform builds, right? Say, s3c2416-cpufreq.c. It also just 
-> initialises itself and starts looking for a clock, names "msysclk" with a 
-> NULL device pointer etc. Don't we need a common approach for cpufreq 
-> driver initialisation?
-> 
-The s3c2416 is not part of multiplatform build yet.  And any platform
-that wants to be part of multiplatform build needs to fix those global
-initcalls.  Two approaches are being used to do that.
+Here's what's in dmesg before that (basically the machine is
+hibernating):
 
-- Call of_machine_is_compatible() to check target platform at the
-  beginning of the initcall, and return immediately if it's not the
-  target platform.  See drivers/cpufreq/highbank-cpufreq.c for example.
+Mar 20 10:14:40 pd vmunix: [34172.600018] PM: Syncing filesystems ... done.
+Mar 20 10:14:40 pd vmunix: [34172.606180] Freezing user space processes ... (elapsed 0.01 seconds) done.
+Mar 20 10:14:40 pd vmunix: [34172.620559] PM: Preallocating image memory... done (allocated 573862 pages)
+Mar 20 10:14:40 pd vmunix: [34173.370592] PM: Allocated 2295448 kbytes in 0.75 seconds (3060.59 MB/s)
+Mar 20 10:14:40 pd vmunix: [34173.370615] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Mar 20 10:14:40 pd vmunix: [34173.388082] serial 00:09: disabled
+Mar 20 10:14:40 pd vmunix: [34173.388117] serial 00:09: System wakeup disabled by ACPI
+Mar 20 10:14:40 pd vmunix: [34173.695941] PM: freeze of devices complete after 311.852 msecs
+Mar 20 10:14:40 pd vmunix: [34173.696673] PM: late freeze of devices complete after 0.722 msecs
+Mar 20 10:14:40 pd vmunix: [34173.698914] PM: noirq freeze of devices complete after 2.234 msecs
+Mar 20 10:14:40 pd vmunix: [34173.698932] Disabling non-boot CPUs ...
+Mar 20 10:14:40 pd vmunix: [34173.703351] smpboot: CPU 1 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.708298] smpboot: CPU 2 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.712056] smpboot: CPU 3 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.717512] smpboot: CPU 4 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.722044] smpboot: CPU 5 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.728418] smpboot: CPU 6 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.731577] smpboot: CPU 7 is now offline
+Mar 20 10:14:40 pd vmunix: [34173.732828] PM: Creating hibernation image:
+Mar 20 10:14:40 pd vmunix: [34174.371451] PM: Need to copy 596216 pages
+Mar 20 10:14:40 pd vmunix: [34173.879106] Enabling non-boot CPUs ...
+Mar 20 10:14:40 pd vmunix: [34173.879171] SMP alternatives: lockdep: fixing up alternatives
+Mar 20 10:14:40 pd vmunix: [34173.879182] smpboot: Booting Node 0 Processor 1 APIC 0x11
+Mar 20 10:14:40 pd vmunix: [34173.890627] LVT offset 0 assigned for vector 0x400
+Mar 20 10:14:40 pd vmunix: [34173.893305] ------------[ cut here ]------------
+Mar 20 10:14:40 pd vmunix: [34173.893321] WARNING: at kernel/mutex.c:199 mutex_lock_nested+0x39c/0x3b0()
+Mar 20 10:14:40 pd vmunix: [34173.893328] Hardware name: To be filled by O.E.M.
+Mar 20 10:14:40 pd vmunix: [34173.893333] Modules linked in: nls_iso8859_15 nls_cp437 fuse tun cpufreq_powersave cpufreq_userspace cpufreq_stats cpufreq_conservative dm_crypt dm_mod ipv6 vfat fat acpi_cpufreq mperf kvm_amd kvm crc32_pclmul aesni_intel aes_x86_64 ablk_helper cryptd xts lrw gf128mul microcode radeon amd64_edac_mod edac_core k10temp fam15h_power drm_kms_helper ttm cfbfillrect cfbimgblt r8169 cfbcopyarea
+Mar 20 10:14:40 pd vmunix: [34173.893395] Pid: 15316, comm: kworker/0:0 Not tainted 3.9.0-rc3 #1
+Mar 20 10:14:40 pd vmunix: [34173.893402] Call Trace:
+Mar 20 10:14:40 pd vmunix: [34173.893409]  [<ffffffff8103b33f>] warn_slowpath_common+0x7f/0xc0
+Mar 20 10:14:40 pd vmunix: [34173.893417]  [<ffffffff8103b39a>] warn_slowpath_null+0x1a/0x20
+Mar 20 10:14:40 pd vmunix: [34173.893424]  [<ffffffff8159654c>] mutex_lock_nested+0x39c/0x3b0
+Mar 20 10:14:40 pd vmunix: [34173.893432]  [<ffffffff8144b94d>] ? cpufreq_governor_dbs+0x3bd/0x560
+Mar 20 10:14:40 pd vmunix: [34173.893441]  [<ffffffff8106bded>] ? __blocking_notifier_call_chain+0x7d/0xd0
+Mar 20 10:14:40 pd vmunix: [34173.893449]  [<ffffffff8144b94d>] ? cpufreq_governor_dbs+0x3bd/0x560
+Mar 20 10:14:40 pd vmunix: [34173.893457]  [<ffffffff81074ce1>] ? get_parent_ip+0x11/0x50
+Mar 20 10:14:40 pd vmunix: [34173.893464]  [<ffffffff81074d99>] ? sub_preempt_count+0x79/0xd0
+Mar 20 10:14:40 pd vmunix: [34173.893472]  [<ffffffff8144b94d>] cpufreq_governor_dbs+0x3bd/0x560
+Mar 20 10:14:40 pd vmunix: [34173.893480]  [<ffffffff8144b24a>] od_cpufreq_governor_dbs+0x1a/0x20
+Mar 20 10:14:40 pd vmunix: [34173.893487]  [<ffffffff81448f13>] __cpufreq_governor+0x53/0xf0
+Mar 20 10:14:40 pd vmunix: [34173.893494]  [<ffffffff814494a5>] __cpufreq_set_policy+0x155/0x180
+Mar 20 10:14:40 pd vmunix: [34173.893502]  [<ffffffff8144a483>] cpufreq_update_policy+0xf3/0x130
+Mar 20 10:14:40 pd vmunix: [34173.893510]  [<ffffffff8144a4c0>] ? cpufreq_update_policy+0x130/0x130
+Mar 20 10:14:40 pd vmunix: [34173.893519]  [<ffffffff8144a4d1>] handle_update+0x11/0x20
+Mar 20 10:14:40 pd vmunix: [34173.893526]  [<ffffffff8105f3f7>] process_one_work+0x1f7/0x670
+Mar 20 10:14:40 pd vmunix: [34173.893533]  [<ffffffff8105f38c>] ? process_one_work+0x18c/0x670
+Mar 20 10:14:40 pd vmunix: [34173.893541]  [<ffffffff8105fbfe>] worker_thread+0x10e/0x370
+Mar 20 10:14:40 pd vmunix: [34173.893548]  [<ffffffff8105faf0>] ? rescuer_thread+0x240/0x240
+Mar 20 10:14:40 pd vmunix: [34173.893556]  [<ffffffff810654fb>] kthread+0xdb/0xe0
+Mar 20 10:14:40 pd vmunix: [34173.893563]  [<ffffffff81071ba5>] ? finish_task_switch+0x85/0x110
+Mar 20 10:14:40 pd vmunix: [34173.893572]  [<ffffffff81065420>] ? __init_kthread_worker+0x70/0x70
+Mar 20 10:14:40 pd vmunix: [34173.893579]  [<ffffffff8159a71c>] ret_from_fork+0x7c/0xb0
+Mar 20 10:14:40 pd vmunix: [34173.893587]  [<ffffffff81065420>] ? __init_kthread_worker+0x70/0x70
+Mar 20 10:14:40 pd vmunix: [34173.893594] ---[ end trace 66f5addf492b41b2 ]---
 
-- Remove global initcalls and use platform_device/driver mechanism for
-  instantiation.  See drivers/cpufreq/imx6q-cpufreq.c for example.
+HTH.
 
-I like the second one which is more scalable, and choose to use it for
-cpufreq-cpu0 driver.
+-- 
+Regards/Gruss,
+    Boris.
 
-> The decision which cpufreq driver to use is SoC-specific, right? We're 
-> unlikely to have several boards, using the same SoC, wishing to use 
-> different cpufreq drivers? The decision _whether_ or not to enable it and 
-> _which_ resources to use might be board-specific. So, how about adding a 
-> cpufreq call something like
-> 
-> cpufreq_driver_request("cpufreq-driver-name");
-> 
-> to be called by SoC-specific code. You can say it is not much different 
-> from adding a virtual device, but firstly I think such a use of a platform 
-> device is really an overkill.
-
-I do not see why this is an overkill.  It's pretty common to use the
-approach for instantiating particular driver on particular target.
-
-> Secondly you still run a danger, that 
-> several platforms, built into a single image, register several devices for 
-> different cpufreq drivers, or even for one... With a special call you know 
-> there can be only one and you return -EBUSY to all further calls to that 
-> function.
-
-I do not see how this could happen.  The cpufreq device gets added in
-target specific init function which will only be invoked when the kernel
-is running on this target.  Check arch/arm/mach-imx/mach-imx6q.c or the
-OMAP example given by Nishanth to see how this should be done.
-
-Shawn
-
+Sent from a fat crate under my desk. Formatting is fine.
+--
