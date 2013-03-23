@@ -1,85 +1,165 @@
-From: Borislav Petkov <bp@alien8.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: More cpufreq breakage
-Date: Sat, 23 Mar 2013 17:06:44 +0100
-Message-ID: <20130323160644.GC10811@pd.tnic>
+Date: Sat, 23 Mar 2013 22:34:28 +0530
+Message-ID: <CAKohpokYqU4HsC0=GY1OxvWpz-Cb-x0p6zKmTOe86JfKyiS+GQ@mail.gmail.com>
 References: <bug-55411-70601@https.bugzilla.kernel.org/>
- <CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
- <20130323134541.GA10811@pd.tnic>
- <5152799.d8sLDQMJWT@vostro.rjw.lan>
- <CAKohpomTBEu1ByjnSw1mbyBhXKTrj=Qte7fBuyaKp+TcOb8d_w@mail.gmail.com>
- <CAKohpok-75YSAwdni5O07PtmEZbSKF9YrJjpHtG+r0T-aVn6ww@mail.gmail.com>
+	<CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
+	<20130323134541.GA10811@pd.tnic>
+	<5152799.d8sLDQMJWT@vostro.rjw.lan>
+	<CAKohpomTBEu1ByjnSw1mbyBhXKTrj=Qte7fBuyaKp+TcOb8d_w@mail.gmail.com>
+	<CAKohpok-75YSAwdni5O07PtmEZbSKF9YrJjpHtG+r0T-aVn6ww@mail.gmail.com>
+	<20130323160644.GC10811@pd.tnic>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=20cf300fb05d8f9e3e04d89a90e4
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1364054807; bh=o7AKvi3Ugw5FYKuxgIOKWLZkscEfkqnX1abn26BA4u8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=SnhXhAr4Vid6a0VVVF3B0NJKM03xz/w+38uK5A
-	hgL7iGvnLYm0J6Rd7D9qGQ1odmw2ZFUxoyZ1o5w37ULb6JD0IRL2KOmYPrqZbYcNEHp
-	8Yi+PI0mkDKFeOPvMfLCATJ1mlcnaN0WE3d8mVrVlKO7ca62snMHYY2SIae+C2i2TI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1364054807; bh=o7AKvi3Ugw5FYKuxgIOKWLZkscEfkqnX1abn26BA4u8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=SnhXhAr4Vid6a0VVVF3B0NJKM03xz/w+38uK5A
-	hgL7iGvnLYm0J6Rd7D9qGQ1odmw2ZFUxoyZ1o5w37ULb6JD0IRL2KOmYPrqZbYcNEHp
-	8Yi+PI0mkDKFeOPvMfLCATJ1mlcnaN0WE3d8mVrVlKO7ca62snMHYY2SIae+C2i2TI=
-Content-Disposition: inline
-In-Reply-To: <CAKohpok-75YSAwdni5O07PtmEZbSKF9YrJjpHtG+r0T-aVn6ww@mail.gmail.com>
+In-Reply-To: <20130323160644.GC10811@pd.tnic>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Borislav Petkov <bp@alien8.de>
 Cc: 1i5t5.duncan@cox.net, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Renninger <trenn@suse.de>
 
-On Sat, Mar 23, 2013 at 08:46:00PM +0530, Viresh Kumar wrote:
-> On 23 March 2013 20:04, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > I think otherwise, Its the cpu online path but this didn't happened for
-> > first boot (probably).
-> 
-> I tried on my 4 cpu laptop and my bad, couldn't reproduce the issue
-> reported by both Borislav and Duncan :(
-> 
-> Hibernation logs (Borislav's bug):
-> https://pastebin.linaro.org/2019/
-> 
-> cpufreq-info after hibernation (same happens with suspend)  (Duncan's bug):
-> https://pastebin.linaro.org/2020/
+--20cf300fb05d8f9e3e04d89a90e4
+Content-Type: text/plain; charset=ISO-8859-1
 
-Those pastebin things want a login. Use a free one.
+On 23 March 2013 21:36, Borislav Petkov <bp@alien8.de> wrote:
+> On Sat, Mar 23, 2013 at 08:46:00PM +0530, Viresh Kumar wrote:
+> Those pastebin things want a login. Use a free one.
 
-> The main difference between our systems is number of cpu groups that
-> share clock line. On setup of both Duncan and Borislav, they had total
-> of 8 cpus and four groups 0-1, 2-3, 4-5, 6-7. And thus have four
-> policy structures. And i have only one group 0-1-2-3 and thus only one
-> policy struct.
+Attached now.
 
-So this should give you a clue - you need to repro it on a similar
-machine and your laptop is obviously not similar.
+> So this should give you a clue - you need to repro it on a similar
+> machine and your laptop is obviously not similar.
 
-> @Borislav: BTW, can you try reproducing your issue again? If that is
-> reproducible?
+I know that. I would be trying to on monday on my office desktop.
 
-I've seen it only once so far and I've suspended the machine a bunch of
-times already. So I don't think it is that easy to reproduce.
+> Unfortunately this is my desktop machine and I don't want to test stuff
+> on it because I need it to work. And I've already downgraded to 3.8.3
+> because of the other cpufreq breakage which kept a subset of the cores
+> at max freq because acpi-cpufreq wasn't loading on them.
 
-> I don't see (logically) how sub_preempt_count() can be called from
-> cpufreq_governor_dbs()? As it is mostly called from kernel/sched/ part
-> only.
+And that is already caused recently?
 
-As Rafael said, there's a notifier running which can, AFAICT, disable
-preemption on another CPU in parallel, for example.
-
-> If you still get it, try disabling cpufreq completely and see if it is
-> gone or not.
-
-Unfortunately this is my desktop machine and I don't want to test stuff
-on it because I need it to work. And I've already downgraded to 3.8.3
-because of the other cpufreq breakage which kept a subset of the cores
-at max freq because acpi-cpufreq wasn't loading on them.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
 --
+viresh
+
+--20cf300fb05d8f9e3e04d89a90e4
+Content-Type: application/octet-stream; name="cpufreqinfo.log"
+Content-Disposition: attachment; filename="cpufreqinfo.log"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hen0zhcl0
+
+CnZpcmVzaEBibHItbGludXQtMDAxOiQgY3B1ZnJlcS1pbmZvCmNwdWZyZXF1dGlscyAwMDc6IGNw
+dWZyZXEtaW5mbyAoQykgRG9taW5payBCcm9kb3dza2kgMjAwNC0yMDA5ClJlcG9ydCBlcnJvcnMg
+YW5kIGJ1Z3MgdG8gY3B1ZnJlcUB2Z2VyLmtlcm5lbC5vcmcsIHBsZWFzZS4KYW5hbHl6aW5nIENQ
+VSAwOgogIGRyaXZlcjogYWNwaS1jcHVmcmVxCiAgQ1BVcyB3aGljaCBydW4gYXQgdGhlIHNhbWUg
+aGFyZHdhcmUgZnJlcXVlbmN5OiAwIDEgMiAzCiAgQ1BVcyB3aGljaCBuZWVkIHRvIGhhdmUgdGhl
+aXIgZnJlcXVlbmN5IGNvb3JkaW5hdGVkIGJ5IHNvZnR3YXJlOiAwIDEgMiAzCiAgbWF4aW11bSB0
+cmFuc2l0aW9uIGxhdGVuY3k6IDEwLjAgdXMuCiAgaGFyZHdhcmUgbGltaXRzOiA4MDAgTUh6IC0g
+Mi44MCBHSHoKICBhdmFpbGFibGUgZnJlcXVlbmN5IHN0ZXBzOiAyLjgwIEdIeiwgMi44MCBHSHos
+IDIuNjAgR0h6LCAyLjQwIEdIeiwgMi4yMCBHSHosIDIuMDAgR0h6LCAxLjgwIEdIeiwgMS42MCBH
+SHosIDEuNDAgR0h6LCAxLjIwIEdIeiwgMTAwMCBNSHosIDgwMCBNSHoKICBhdmFpbGFibGUgY3B1
+ZnJlcSBnb3Zlcm5vcnM6IGNvbnNlcnZhdGl2ZSwgb25kZW1hbmQsIHVzZXJzcGFjZSwgcG93ZXJz
+YXZlLCBwZXJmb3JtYW5jZQogIGN1cnJlbnQgcG9saWN5OiBmcmVxdWVuY3kgc2hvdWxkIGJlIHdp
+dGhpbiA4MDAgTUh6IGFuZCAyLjgwIEdIei4KICAgICAgICAgICAgICAgICAgVGhlIGdvdmVybm9y
+ICJvbmRlbWFuZCIgbWF5IGRlY2lkZSB3aGljaCBzcGVlZCB0byB1c2UKICAgICAgICAgICAgICAg
+ICAgd2l0aGluIHRoaXMgcmFuZ2UuCiAgY3VycmVudCBDUFUgZnJlcXVlbmN5IGlzIDgwMCBNSHou
+CiAgY3B1ZnJlcSBzdGF0czogMi44MCBHSHo6OC42NCUsIDIuODAgR0h6OjAuMTYlLCAyLjYwIEdI
+ejowLjEzJSwgMi40MCBHSHo6MC4xMCUsIDIuMjAgR0h6OjAuMDglLCAyLjAwIEdIejowLjEyJSwg
+MS44MCBHSHo6MC4wOCUsIDEuNjAgR0h6OjAuMjQlLCAxLjQwIEdIejowLjEyJSwgMS4yMCBHSHo6
+MC4xNyUsIDEwMDAgTUh6OjAuMjglLCA4MDAgTUh6Ojg5Ljg3JSAgKDE5NDMpCmFuYWx5emluZyBD
+UFUgMToKICBkcml2ZXI6IGFjcGktY3B1ZnJlcQogIENQVXMgd2hpY2ggcnVuIGF0IHRoZSBzYW1l
+IGhhcmR3YXJlIGZyZXF1ZW5jeTogMCAxIDIgMwogIENQVXMgd2hpY2ggbmVlZCB0byBoYXZlIHRo
+ZWlyIGZyZXF1ZW5jeSBjb29yZGluYXRlZCBieSBzb2Z0d2FyZTogMCAxIDIgMwogIG1heGltdW0g
+dHJhbnNpdGlvbiBsYXRlbmN5OiAxMC4wIHVzLgogIGhhcmR3YXJlIGxpbWl0czogODAwIE1IeiAt
+IDIuODAgR0h6CiAgYXZhaWxhYmxlIGZyZXF1ZW5jeSBzdGVwczogMi44MCBHSHosIDIuODAgR0h6
+LCAyLjYwIEdIeiwgMi40MCBHSHosIDIuMjAgR0h6LCAyLjAwIEdIeiwgMS44MCBHSHosIDEuNjAg
+R0h6LCAxLjQwIEdIeiwgMS4yMCBHSHosIDEwMDAgTUh6LCA4MDAgTUh6CiAgYXZhaWxhYmxlIGNw
+dWZyZXEgZ292ZXJub3JzOiBjb25zZXJ2YXRpdmUsIG9uZGVtYW5kLCB1c2Vyc3BhY2UsIHBvd2Vy
+c2F2ZSwgcGVyZm9ybWFuY2UKICBjdXJyZW50IHBvbGljeTogZnJlcXVlbmN5IHNob3VsZCBiZSB3
+aXRoaW4gODAwIE1IeiBhbmQgMi44MCBHSHouCiAgICAgICAgICAgICAgICAgIFRoZSBnb3Zlcm5v
+ciAib25kZW1hbmQiIG1heSBkZWNpZGUgd2hpY2ggc3BlZWQgdG8gdXNlCiAgICAgICAgICAgICAg
+ICAgIHdpdGhpbiB0aGlzIHJhbmdlLgogIGN1cnJlbnQgQ1BVIGZyZXF1ZW5jeSBpcyA4MDAgTUh6
+LgogIGNwdWZyZXEgc3RhdHM6IDIuODAgR0h6OjguNjQlLCAyLjgwIEdIejowLjE2JSwgMi42MCBH
+SHo6MC4xMyUsIDIuNDAgR0h6OjAuMTAlLCAyLjIwIEdIejowLjA4JSwgMi4wMCBHSHo6MC4xMiUs
+IDEuODAgR0h6OjAuMDglLCAxLjYwIEdIejowLjI0JSwgMS40MCBHSHo6MC4xMiUsIDEuMjAgR0h6
+OjAuMTclLCAxMDAwIE1IejowLjI4JSwgODAwIE1Iejo4OS44NyUgICgxOTQzKQphbmFseXppbmcg
+Q1BVIDI6CiAgZHJpdmVyOiBhY3BpLWNwdWZyZXEKICBDUFVzIHdoaWNoIHJ1biBhdCB0aGUgc2Ft
+ZSBoYXJkd2FyZSBmcmVxdWVuY3k6IDAgMSAyIDMKICBDUFVzIHdoaWNoIG5lZWQgdG8gaGF2ZSB0
+aGVpciBmcmVxdWVuY3kgY29vcmRpbmF0ZWQgYnkgc29mdHdhcmU6IDAgMSAyIDMKICBtYXhpbXVt
+IHRyYW5zaXRpb24gbGF0ZW5jeTogMTAuMCB1cy4KICBoYXJkd2FyZSBsaW1pdHM6IDgwMCBNSHog
+LSAyLjgwIEdIegogIGF2YWlsYWJsZSBmcmVxdWVuY3kgc3RlcHM6IDIuODAgR0h6LCAyLjgwIEdI
+eiwgMi42MCBHSHosIDIuNDAgR0h6LCAyLjIwIEdIeiwgMi4wMCBHSHosIDEuODAgR0h6LCAxLjYw
+IEdIeiwgMS40MCBHSHosIDEuMjAgR0h6LCAxMDAwIE1IeiwgODAwIE1IegogIGF2YWlsYWJsZSBj
+cHVmcmVxIGdvdmVybm9yczogY29uc2VydmF0aXZlLCBvbmRlbWFuZCwgdXNlcnNwYWNlLCBwb3dl
+cnNhdmUsIHBlcmZvcm1hbmNlCiAgY3VycmVudCBwb2xpY3k6IGZyZXF1ZW5jeSBzaG91bGQgYmUg
+d2l0aGluIDgwMCBNSHogYW5kIDIuODAgR0h6LgogICAgICAgICAgICAgICAgICBUaGUgZ292ZXJu
+b3IgIm9uZGVtYW5kIiBtYXkgZGVjaWRlIHdoaWNoIHNwZWVkIHRvIHVzZQogICAgICAgICAgICAg
+ICAgICB3aXRoaW4gdGhpcyByYW5nZS4KICBjdXJyZW50IENQVSBmcmVxdWVuY3kgaXMgODAwIE1I
+ei4KICBjcHVmcmVxIHN0YXRzOiAyLjgwIEdIejo4LjY0JSwgMi44MCBHSHo6MC4xNiUsIDIuNjAg
+R0h6OjAuMTMlLCAyLjQwIEdIejowLjEwJSwgMi4yMCBHSHo6MC4wOCUsIDIuMDAgR0h6OjAuMTIl
+LCAxLjgwIEdIejowLjA4JSwgMS42MCBHSHo6MC4yNCUsIDEuNDAgR0h6OjAuMTIlLCAxLjIwIEdI
+ejowLjE3JSwgMTAwMCBNSHo6MC4yOCUsIDgwMCBNSHo6ODkuODclICAoMTk0MykKYW5hbHl6aW5n
+IENQVSAzOgogIGRyaXZlcjogYWNwaS1jcHVmcmVxCiAgQ1BVcyB3aGljaCBydW4gYXQgdGhlIHNh
+bWUgaGFyZHdhcmUgZnJlcXVlbmN5OiAwIDEgMiAzCiAgQ1BVcyB3aGljaCBuZWVkIHRvIGhhdmUg
+dGhlaXIgZnJlcXVlbmN5IGNvb3JkaW5hdGVkIGJ5IHNvZnR3YXJlOiAwIDEgMiAzCiAgbWF4aW11
+bSB0cmFuc2l0aW9uIGxhdGVuY3k6IDEwLjAgdXMuCiAgaGFyZHdhcmUgbGltaXRzOiA4MDAgTUh6
+IC0gMi44MCBHSHoKICBhdmFpbGFibGUgZnJlcXVlbmN5IHN0ZXBzOiAyLjgwIEdIeiwgMi44MCBH
+SHosIDIuNjAgR0h6LCAyLjQwIEdIeiwgMi4yMCBHSHosIDIuMDAgR0h6LCAxLjgwIEdIeiwgMS42
+MCBHSHosIDEuNDAgR0h6LCAxLjIwIEdIeiwgMTAwMCBNSHosIDgwMCBNSHoKICBhdmFpbGFibGUg
+Y3B1ZnJlcSBnb3Zlcm5vcnM6IGNvbnNlcnZhdGl2ZSwgb25kZW1hbmQsIHVzZXJzcGFjZSwgcG93
+ZXJzYXZlLCBwZXJmb3JtYW5jZQogIGN1cnJlbnQgcG9saWN5OiBmcmVxdWVuY3kgc2hvdWxkIGJl
+IHdpdGhpbiA4MDAgTUh6IGFuZCAyLjgwIEdIei4KICAgICAgICAgICAgICAgICAgVGhlIGdvdmVy
+bm9yICJvbmRlbWFuZCIgbWF5IGRlY2lkZSB3aGljaCBzcGVlZCB0byB1c2UKICAgICAgICAgICAg
+ICAgICAgd2l0aGluIHRoaXMgcmFuZ2UuCiAgY3VycmVudCBDUFUgZnJlcXVlbmN5IGlzIDgwMCBN
+SHouCiAgY3B1ZnJlcSBzdGF0czogMi44MCBHSHo6OC42NCUsIDIuODAgR0h6OjAuMTYlLCAyLjYw
+IEdIejowLjEzJSwgMi40MCBHSHo6MC4xMCUsIDIuMjAgR0h6OjAuMDglLCAyLjAwIEdIejowLjEy
+JSwgMS44MCBHSHo6MC4wOCUsIDEuNjAgR0h6OjAuMjQlLCAxLjQwIEdIejowLjEyJSwgMS4yMCBH
+SHo6MC4xNyUsIDEwMDAgTUh6OjAuMjglLCA4MDAgTUh6Ojg5Ljg3JSAgKDE5NDMpCg==
+--20cf300fb05d8f9e3e04d89a90e4
+Content-Type: application/octet-stream; name="hibernation.logs"
+Content-Disposition: attachment; filename="hibernation.logs"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hen0zhcx1
+
+WyAgIDg3Ljc1ODE0Nl0gRnJlZXppbmcgdXNlciBzcGFjZSBwcm9jZXNzZXMgLi4uIChlbGFwc2Vk
+IDAuMDEgc2Vjb25kcykgZG9uZS4KWyAgIDg3Ljc3NDk1M10gUE06IFByZWFsbG9jYXRpbmcgaW1h
+Z2UgbWVtb3J5Li4uIGRvbmUgKGFsbG9jYXRlZCAzNDkwMDYgcGFnZXMpClsgICA4Ny44NjkxOTNd
+IFBNOiBBbGxvY2F0ZWQgMTM5NjAyNCBrYnl0ZXMgaW4gMC4wOSBzZWNvbmRzICgxNTUxMS4zNyBN
+Qi9zKQpbICAgODcuODY5MTk0XSBGcmVlemluZyByZW1haW5pbmcgZnJlZXphYmxlIHRhc2tzIC4u
+LiAoZWxhcHNlZCAwLjAxIHNlY29uZHMpCmRvbmUuClsgICA4Ny44ODI4NzhdIFN1c3BlbmRpbmcg
+Y29uc29sZShzKSAodXNlIG5vX2NvbnNvbGVfc3VzcGVuZCB0byBkZWJ1ZykKWyAgIDg4LjM1OTYx
+M10gUE06IGZyZWV6ZSBvZiBkZXZpY2VzIGNvbXBsZXRlIGFmdGVyIDQ3Ni41OTAgbXNlY3MKWyAg
+IDg4LjM1OTcyMF0gUE06IGxhdGUgZnJlZXplIG9mIGRldmljZXMgY29tcGxldGUgYWZ0ZXIgMC4x
+MDUgbXNlY3MKWyAgIDg4LjM2MDU0OV0gUE06IG5vaXJxIGZyZWV6ZSBvZiBkZXZpY2VzIGNvbXBs
+ZXRlIGFmdGVyIDAuODI3IG1zZWNzClsgICA4OC4zNjA3NjRdIEFDUEk6IFByZXBhcmluZyB0byBl
+bnRlciBzeXN0ZW0gc2xlZXAgc3RhdGUgUzQKWyAgIDg4LjM2NjA4N10gUE06IFNhdmluZyBwbGF0
+Zm9ybSBOVlMgbWVtb3J5ClsgICA4OC4zNjcxMTVdIERpc2FibGluZyBub24tYm9vdCBDUFVzIC4u
+LgpbICAgODguMzY4MzE0XSBzbXBib290OiBDUFUgMSBpcyBub3cgb2ZmbGluZQpbICAgODguNDcw
+NzgwXSBzbXBib290OiBDUFUgMiBpcyBub3cgb2ZmbGluZQpbICAgODguNDcxMTAyXSBCcm9rZSBh
+ZmZpbml0eSBmb3IgaXJxIDkKWyAgIDg4LjQ3MjE0M10gc21wYm9vdDogQ1BVIDMgaXMgbm93IG9m
+ZmxpbmUKWyAgIDg4LjQ3MjQxM10gY3B1ZnJlcTogc3VzcGVuZGluZyBjcHUgMApbICAgODguNDcy
+NDE4XSBQTTogQ3JlYXRpbmcgaGliZXJuYXRpb24gaW1hZ2U6ClsgICA4OC41MTA1NjNdIFBNOiBO
+ZWVkIHRvIGNvcHkgMzQ3NTQ2IHBhZ2VzClsgICA4OC41MTA1NjRdIFBNOiBOb3JtYWwgcGFnZXMg
+bmVlZGVkOiAzNDc1NDYgKyAxMDI0LCBhdmFpbGFibGUgcGFnZXM6IDY3MTA1MwpbICAgODguNDcz
+MTc2XSBQTTogUmVzdG9yaW5nIHBsYXRmb3JtIE5WUyBtZW1vcnkKWyAgIDg4LjQ3MzY1M10gY3B1
+ZnJlcTogcmVzdW1pbmcgY3B1IDAKWyAgIDg4LjQ3MzY1NF0gYWNwaV9jcHVmcmVxX3Jlc3VtZQpb
+ICAgODguNDczOTU5XSBjcHVmcmVxOiBoYW5kbGVfdXBkYXRlIGZvciBjcHUgMCBjYWxsZWQKWyAg
+IDg4LjQ3Mzk2MF0gY3B1ZnJlcTogdXBkYXRpbmcgcG9saWN5IGZvciBDUFUgMApbICAgODguNDcz
+OTYxXSBnZXRfY3VyX2ZyZXFfb25fY3B1ICgwKQpbICAgODguNDczOTYyXSBnZXRfY3VyX3ZhbCA9
+IDg5NjAKWyAgIDg4LjQ3Mzk2M10gY3VyIGZyZXEgPSAyODAxMDAwClsgICA4OC40NzM5NjNdIGNw
+dWZyZXE6IHNldHRpbmcgbmV3IHBvbGljeSBmb3IgQ1BVIDA6IDgwMDAwMCAtIDI4MDEwMDAga0h6
+ClsgICA4OC40NzM5NjNdIGFjcGlfY3B1ZnJlcV92ZXJpZnkKWyAgIDg4LjQ3Mzk2NV0gYWNwaV9j
+cHVmcmVxX3ZlcmlmeQpbICAgODguNDczOTY2XSBjcHVmcmVxOiBuZXcgbWluIGFuZCBtYXggZnJl
+cXMgYXJlIDgwMDAwMCAtIDI4MDEwMDAga0h6ClsgICA4OC40NzM5NjZdIGNwdWZyZXE6IGdvdmVy
+bm9yOiBjaGFuZ2Ugb3IgdXBkYXRlIGxpbWl0cwpbICAgODguNDczOTczXSBFbmFibGluZyBub24t
+Ym9vdCBDUFVzIC4uLgpbICAgODguNDczOTk5XSBzbXBib290OiBCb290aW5nIE5vZGUgMCBQcm9j
+ZXNzb3IgMSBBUElDIDB4MQpbICAgODguNDg0OTM1XSBEaXNhYmxlZCBmYXN0IHN0cmluZyBvcGVy
+YXRpb25zClsgICA4OC40ODcxNDldIGNwdWZyZXE6IGFkZGluZyBDUFUgMQpbICAgODguNDg3MTU4
+XSBDUFUxIGlzIHVwClsgICA4OC40ODcxNzddIHNtcGJvb3Q6IEJvb3RpbmcgTm9kZSAwIFByb2Nl
+c3NvciAyIEFQSUMgMHgyClsgICA4OC40OTgyMTJdIERpc2FibGVkIGZhc3Qgc3RyaW5nIG9wZXJh
+dGlvbnMKWyAgIDg4LjUwMDQ0NF0gY3B1ZnJlcTogYWRkaW5nIENQVSAyClsgICA4OC41MDA0NTJd
+IENQVTIgaXMgdXAKWyAgIDg4LjUwMDQ2NV0gc21wYm9vdDogQm9vdGluZyBOb2RlIDAgUHJvY2Vz
+c29yIDMgQVBJQyAweDMKWyAgIDg4LjUxMTQ5OV0gRGlzYWJsZWQgZmFzdCBzdHJpbmcgb3BlcmF0
+aW9ucwpbICAgODguNTEzNzMyXSBjcHVmcmVxOiBhZGRpbmcgQ1BVIDMKWyAgIDg4LjUxMzc0MF0g
+Q1BVMyBpcyB1cAoK
+--20cf300fb05d8f9e3e04d89a90e4--
