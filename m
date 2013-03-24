@@ -1,18 +1,25 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after s2ram
-Date: Sun, 24 Mar 2013 10:05:24 +0100
-Message-ID: <2581491.irn18K9zaF@hammer82.arch.suse.de>
-References: <bug-55411-70601@https.bugzilla.kernel.org/> <CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com> <1694228.Eg36y3ID9W@skinner.arch.suse.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Sun, 24 Mar 2013 09:05:48 +0000 (UTC)
+Message-ID: <20130324090548.041CC11FB35@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1694228.Eg36y3ID9W@skinner.arch.suse.de>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #29 from Thomas Renninger <trenn@suse.de>  2013-03-24 09:05:47 ---
 On Friday, March 22, 2013 03:04:03 PM Thomas Renninger wrote:
 > On Friday, March 22, 2013 07:13:33 PM Viresh Kumar wrote:
 > > Hi guys,
@@ -58,3 +65,8 @@ look at this stuff for some time.
 
 
        Thomas
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
