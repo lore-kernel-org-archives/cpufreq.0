@@ -1,25 +1,25 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Sun, 24 Mar 2013 12:16:53 +0000 (UTC)
-Message-ID: <20130324121653.5652511FB35@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Sun, 24 Mar 2013 17:46:49 +0530
+Message-ID: <CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
+	<2581491.irn18K9zaF@hammer82.arch.suse.de>
+	<CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
+	<CAKohpoksBOpW59YETR-SMWJSGsJSWKoXktJoVM38SietN9p3Ug@mail.gmail.com>
+	<20130324044927.6a2b1588@ws>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <20130324044927.6a2b1588@ws>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>, Duncan <1i5t5.duncan@cox.net>, Andre Przywara <andre.przywara@linaro.org>, djwong@us.ibm.com
+Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
-
-
-
-
-
---- Comment #35 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-24 12:16:53 ---
 On 24 March 2013 17:19, Duncan <1i5t5.duncan@cox.net> wrote:
 > On Sun, 24 Mar 2013 15:32:39 +0530 Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
@@ -118,8 +118,3 @@ pretty clear.
 
 --
 viresh
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
