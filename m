@@ -1,25 +1,28 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Sun, 24 Mar 2013 12:23:42 +0000 (UTC)
-Message-ID: <20130324122342.CD68511FB35@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Sun, 24 Mar 2013 17:53:41 +0530
+Message-ID: <CAKohpomsrafpNii9zqAjqe5kqEGOEdP5mDpSSjTswrY1YNfhBw@mail.gmail.com>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
+	<2581491.irn18K9zaF@hammer82.arch.suse.de>
+	<CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
+	<CAKohpoksBOpW59YETR-SMWJSGsJSWKoXktJoVM38SietN9p3Ug@mail.gmail.com>
+	<20130324044927.6a2b1588@ws>
+	<CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=089e01184d743bfd4604d8aac2f1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Duncan <1i5t5.duncan@cox.net>
+Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>, Andre Przywara <andre.przywara@linaro.org>, djwong@us.ibm.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
+--089e01184d743bfd4604d8aac2f1
+Content-Type: text/plain; charset=ISO-8859-1
 
-
-
-
-
---- Comment #36 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-24 12:23:42 ---
 On 24 March 2013 17:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > Fixing Duncan's issues shouldn't be a very big deal now as i was thinking too
 > much about what was broken without my patches too. And now that part is
@@ -36,7 +39,46 @@ directories now and no symlinks.
 --
 viresh
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+--089e01184d743bfd4604d8aac2f1
+Content-Type: application/octet-stream; 
+	name="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
+Content-Disposition: attachment; 
+	filename="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_heo6f0fl0
+
+RnJvbSAwZWI2YTZjZTI1YzcxZTYwZGM2OWUxODk3ZjgwYjdjZTNiYjQxZmIyIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MGViNmE2Y2UyNWM3MWU2MGRjNjllMTg5N2Y4MGI3
+Y2UzYmI0MWZiMi4xMzY0MTI3NjY3LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAyMyBNYXIg
+MjAxMyAyMzo0Mjo0NCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGktY3B1ZnJl
+cTogRG9uJ3Qgc2V0IHBvbGljeS0+cmVsYXRlZF9jcHVzIGZyb20KIC5pbml0KCkKCldpdGggdGhl
+IGFkZGl0aW9uIG9mIGZvbGxvd2luZyBwYXRjaDoKCmZjZjgwNTggY3B1ZnJlcTogU2ltcGxpZnkg
+Y3B1ZnJlcV9hZGRfZGV2KCkKCmNwdWZyZXEgZHJpdmVyJ3MgLmluaXQoKSByb3V0aW5lIG11c3Qg
+aW5pdGlhbGl6ZSBwb2xpY3ktPmNwdXMgd2l0aCBtYXNrIG9mIGFsbApwb3NzaWJsZSBjcHVzIChP
+bmxpbmUgKyBPZmZsaW5lKSB0aGF0IHNoYXJlIHRoZSBjbG9jay4gVGhlbiB0aGUgY29yZSB3b3Vs
+ZCBjb3B5CnRoaXMgbWFzayBvbnRvIHBvbGljeS0+cmVsYXRlZF9jcHVzIGFuZCB3aWxsIHJlc2V0
+IHBvbGljeS0+Y3B1cyB0byBjYXJyeSBvbmx5Cm9ubGluZSBjcHVzLgoKYWNwaS1jcHVmcmVxIGRy
+aXZlciB3YXNuJ3QgdXBkYXRlZCB3aXRoIHRoaXMgYXNzdW1wdGlvbiBhbmQgc28gc29tZXRpbWVz
+IHdoZW4Kd2UgdHJ5IHRvIGhvdFt1bl1wbHVnIGNwdXMgYXQgcnVuIHRpbWUsIHN5c2ZzIGRpcmVj
+dG9yaWVzIGdldHMgY29ycnVwdGVkLgoKVGhpcyBwYXRjaCBmaXhlcyBhY3BpLWNwdWZyZXEgZHJp
+dmVyIGFnYWluc3QgdGhpcyBjb3JydXB0aW9uLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFy
+IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVm
+cmVxLmMgfCAyIC0tCiAxIGZpbGUgY2hhbmdlZCwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
+YS9kcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvYWNwaS1j
+cHVmcmVxLmMKaW5kZXggYWZiZWY5Yy4uMTFiOGI0YiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL2FjcGktY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYwpA
+QCAtNzIzLDcgKzcyMyw2IEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0cnVj
+dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCSAgICBwb2xpY3ktPnNoYXJlZF90eXBlID09IENQ
+VUZSRVFfU0hBUkVEX1RZUEVfQU5ZKSB7CiAJCWNwdW1hc2tfY29weShwb2xpY3ktPmNwdXMsIHBl
+cmYtPnNoYXJlZF9jcHVfbWFwKTsKIAl9Ci0JY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9j
+cHVzLCBwZXJmLT5zaGFyZWRfY3B1X21hcCk7CiAKICNpZmRlZiBDT05GSUdfU01QCiAJZG1pX2No
+ZWNrX3N5c3RlbShzd19hbnlfYnVnX2RtaV90YWJsZSk7CkBAIC03MzUsNyArNzM0LDYgQEAgc3Rh
+dGljIGludCBhY3BpX2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xp
+Y3kpCiAJaWYgKGNoZWNrX2FtZF9od3BzdGF0ZV9jcHUoY3B1KSAmJiAhYWNwaV9wc3RhdGVfc3Ry
+aWN0KSB7CiAJCWNwdW1hc2tfY2xlYXIocG9saWN5LT5jcHVzKTsKIAkJY3B1bWFza19zZXRfY3B1
+KGNwdSwgcG9saWN5LT5jcHVzKTsKLQkJY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9jcHVz
+LCBjcHVfc2libGluZ19tYXNrKGNwdSkpOwogCQlwb2xpY3ktPnNoYXJlZF90eXBlID0gQ1BVRlJF
+UV9TSEFSRURfVFlQRV9IVzsKIAkJcHJfaW5mb19vbmNlKFBGWCAib3ZlcnJpZGluZyBCSU9TIHBy
+b3ZpZGVkIF9QU0QgZGF0YVxuIik7CiAJfQotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
+--089e01184d743bfd4604d8aac2f1--
