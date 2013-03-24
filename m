@@ -1,77 +1,49 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH v2] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Sun, 24 Mar 2013 11:24:49 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.1303241121470.3325@axis700.grange>
-References: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org>
- <Pine.LNX.4.64.1303221600060.12375@axis700.grange>
- <20130323063215.GF6281@S2101-09.ap.freescale.net>
- <Pine.LNX.4.64.1303241053150.3325@axis700.grange>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Sun, 24 Mar 2013 11:31:02 +0100
+Message-ID: <20130324103102.GA18601@pd.tnic>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+ <CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+ <1694228.Eg36y3ID9W@skinner.arch.suse.de>
+ <2581491.irn18K9zaF@hammer82.arch.suse.de>
+ <CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1303241053150.3325@axis700.grange>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1364121063; bh=cQ/ixq/Dl1k22leVNt5YngDzPP8AmW9wYxuxYIsPQOw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=FYUZJVAMWEsFZho5yBWhjHC+W5fW6fOmX6rP+G
+	7MskgAOotCPxz2jUJWhGW6vA9YcmRjhI/jOmOoIIHCGmwb7M9kaOkD9RtmGJd7vK6N/
+	AtBIpBgsm80hXdJk6LHZyEnlbBdBnY7VdU96Drz9TNYi4buhXNqdYXReTaFPKIBv7M=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1364121063; bh=cQ/ixq/Dl1k22leVNt5YngDzPP8AmW9wYxuxYIsPQOw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=FYUZJVAMWEsFZho5yBWhjHC+W5fW6fOmX6rP+G
+	7MskgAOotCPxz2jUJWhGW6vA9YcmRjhI/jOmOoIIHCGmwb7M9kaOkD9RtmGJd7vK6N/
+	AtBIpBgsm80hXdJk6LHZyEnlbBdBnY7VdU96Drz9TNYi4buhXNqdYXReTaFPKIBv7M=
+Content-Disposition: inline
+In-Reply-To: <CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Magnus Damm <magnus.damm@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Renninger <trenn@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On Sun, 24 Mar 2013, Guennadi Liakhovetski wrote:
-
-> On Sat, 23 Mar 2013, Shawn Guo wrote:
+On Sun, Mar 24, 2013 at 02:40:53PM +0530, Viresh Kumar wrote:
+> > And powernow-k8 does not exist anymore..., fortunately I didn't have to
+> > look at this stuff for some time.
 > 
-> > On Fri, Mar 22, 2013 at 04:47:17PM +0100, Guennadi Liakhovetski wrote:
-> 
-> [snip]
-> 
-> > > Secondly you still run a danger, that 
-> > > several platforms, built into a single image, register several devices for 
-> > > different cpufreq drivers, or even for one... With a special call you know 
-> > > there can be only one and you return -EBUSY to all further calls to that 
-> > > function.
-> > 
-> > I do not see how this could happen.  The cpufreq device gets added in
-> > target specific init function which will only be invoked when the kernel
-> > is running on this target.  Check arch/arm/mach-imx/mach-imx6q.c or the
-> > OMAP example given by Nishanth to see how this should be done.
-> 
-> Sorry, I meant buggy implementations, where an initcall is added without 
-> checking, whether it's running on supported hardware.
-> 
-> Already before your patch for cpufreq-cpu0 to instantiate "mistakenly" on 
-> unsupported hardware you had to have an "operating-points" property in 
-> your "cpus" node, and you needed a clock attached to your cpu0 device. Do 
-> you really think this was likely?
-> 
-> Anyway, I do find this an overkill and an abuse,
+> Sure? Driver is still present in mainline.
 
-Look at this: in your now platform driver
+powernow-k8 is still there for, well, K8 only. Newer machines are
+handled by acpi-cpufreq. Thus is acpi-cpufreq's health of major
+importance especially now. :)
 
-static int cpu0_cpufreq_probe(struct platform_device *pdev)
-{
-	...
+-- 
+Regards/Gruss,
+    Boris.
 
-you get a DT node from "/cpus" with an "operating-points" property:
-
-	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
-		if (of_get_property(np, "operating-points", NULL))
-			break;
-	}
-
-and then you patch your pseudo-, virtual platform device, that you're 
-currently probing with this found DT node:
-
-	cpu_dev = &pdev->dev;
-	cpu_dev->of_node = np;
-
-huh...
-
-> but I'm not going to 
-> fight over it. If I'm the only one with this impression - no problem, just 
-> forget my ranting :)
-
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Sent from a fat crate under my desk. Formatting is fine.
+--
