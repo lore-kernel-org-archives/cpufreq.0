@@ -1,84 +1,184 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
- after s2ram
-Date: Sun, 24 Mar 2013 17:53:41 +0530
-Message-ID: <CAKohpomsrafpNii9zqAjqe5kqEGOEdP5mDpSSjTswrY1YNfhBw@mail.gmail.com>
-References: <bug-55411-70601@https.bugzilla.kernel.org/>
-	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
-	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
-	<2581491.irn18K9zaF@hammer82.arch.suse.de>
-	<CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
-	<CAKohpoksBOpW59YETR-SMWJSGsJSWKoXktJoVM38SietN9p3Ug@mail.gmail.com>
-	<20130324044927.6a2b1588@ws>
-	<CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=089e01184d743bfd4604d8aac2f1
+Subject: [PATCH 2/2] cpufreq: Don't check if cpu is online/offline for cpufreq callbacks
+Date: Sun, 24 Mar 2013 19:18:32 +0530
+Message-ID: <ebbe8178fab5739c7322745b3a7ba05955477761.1364132845.git.viresh.kumar@linaro.org>
+References: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
+In-Reply-To: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
+In-Reply-To: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
+References: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Duncan <1i5t5.duncan@cox.net>
-Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>, Andre Przywara <andre.przywara@linaro.org>, djwong@us.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-kernel@lists.linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Ralf Baechle <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>, "David S. Miller" <davem@davemloft.net>, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>, linux-mips@linux-mips.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
 
---089e01184d743bfd4604d8aac2f1
-Content-Type: text/plain; charset=ISO-8859-1
+cpufreq layer doesn't call cpufreq driver's callback for any offline cpu and so
+checking that isn't useful.
 
-On 24 March 2013 17:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Fixing Duncan's issues shouldn't be a very big deal now as i was thinking too
-> much about what was broken without my patches too. And now that part is
-> pretty clear.
+Lets get rid of it.
 
-Hi Duncan,
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Thomas Renninger <trenn@suse.de>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: linux-mips@linux-mips.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ arch/mips/kernel/cpufreq/loongson2_cpufreq.c | 6 ------
+ arch/sh/kernel/cpufreq.c                     | 6 ------
+ arch/sparc/kernel/us2e_cpufreq.c             | 6 ------
+ arch/sparc/kernel/us3_cpufreq.c              | 6 ------
+ drivers/cpufreq/p4-clockmod.c                | 3 +--
+ drivers/cpufreq/powernow-k8.c                | 3 ---
+ drivers/cpufreq/speedstep-centrino.c         | 4 ----
+ 7 files changed, 1 insertion(+), 33 deletions(-)
 
-Try attached patch and this should take back your system to where it was.
+diff --git a/arch/mips/kernel/cpufreq/loongson2_cpufreq.c b/arch/mips/kernel/cpufreq/loongson2_cpufreq.c
+index bafda70..8488957 100644
+--- a/arch/mips/kernel/cpufreq/loongson2_cpufreq.c
++++ b/arch/mips/kernel/cpufreq/loongson2_cpufreq.c
+@@ -61,9 +61,6 @@ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+ 	struct cpufreq_freqs freqs;
+ 	unsigned int freq;
+ 
+-	if (!cpu_online(cpu))
+-		return -ENODEV;
+-
+ 	cpus_allowed = current->cpus_allowed;
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+@@ -109,9 +106,6 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	unsigned long rate;
+ 	int ret;
+ 
+-	if (!cpu_online(policy->cpu))
+-		return -ENODEV;
+-
+ 	cpuclk = clk_get(NULL, "cpu_clk");
+ 	if (IS_ERR(cpuclk)) {
+ 		printk(KERN_ERR "cpufreq: couldn't get CPU clk\n");
+diff --git a/arch/sh/kernel/cpufreq.c b/arch/sh/kernel/cpufreq.c
+index 2c7bd94..0fdf64b 100644
+--- a/arch/sh/kernel/cpufreq.c
++++ b/arch/sh/kernel/cpufreq.c
+@@ -51,9 +51,6 @@ static int sh_cpufreq_target(struct cpufreq_policy *policy,
+ 	struct device *dev;
+ 	long freq;
+ 
+-	if (!cpu_online(cpu))
+-		return -ENODEV;
+-
+ 	cpus_allowed = current->cpus_allowed;
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+@@ -111,9 +108,6 @@ static int sh_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *freq_table;
+ 	struct device *dev;
+ 
+-	if (!cpu_online(cpu))
+-		return -ENODEV;
+-
+ 	dev = get_cpu_device(cpu);
+ 
+ 	cpuclk = clk_get(dev, "cpu_clk");
+diff --git a/arch/sparc/kernel/us2e_cpufreq.c b/arch/sparc/kernel/us2e_cpufreq.c
+index abe963d..306ae46 100644
+--- a/arch/sparc/kernel/us2e_cpufreq.c
++++ b/arch/sparc/kernel/us2e_cpufreq.c
+@@ -234,9 +234,6 @@ static unsigned int us2e_freq_get(unsigned int cpu)
+ 	cpumask_t cpus_allowed;
+ 	unsigned long clock_tick, estar;
+ 
+-	if (!cpu_online(cpu))
+-		return 0;
+-
+ 	cpumask_copy(&cpus_allowed, tsk_cpus_allowed(current));
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+@@ -257,9 +254,6 @@ static void us2e_set_cpu_divider_index(struct cpufreq_policy *policy,
+ 	cpumask_t cpus_allowed;
+ 	struct cpufreq_freqs freqs;
+ 
+-	if (!cpu_online(cpu))
+-		return;
+-
+ 	cpumask_copy(&cpus_allowed, tsk_cpus_allowed(current));
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+diff --git a/arch/sparc/kernel/us3_cpufreq.c b/arch/sparc/kernel/us3_cpufreq.c
+index 7ceb9c8..c71ee14 100644
+--- a/arch/sparc/kernel/us3_cpufreq.c
++++ b/arch/sparc/kernel/us3_cpufreq.c
+@@ -82,9 +82,6 @@ static unsigned int us3_freq_get(unsigned int cpu)
+ 	unsigned long reg;
+ 	unsigned int ret;
+ 
+-	if (!cpu_online(cpu))
+-		return 0;
+-
+ 	cpumask_copy(&cpus_allowed, tsk_cpus_allowed(current));
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+@@ -104,9 +101,6 @@ static void us3_set_cpu_divider_index(struct cpufreq_policy *policy,
+ 	cpumask_t cpus_allowed;
+ 	struct cpufreq_freqs freqs;
+ 
+-	if (!cpu_online(cpu))
+-		return;
+-
+ 	cpumask_copy(&cpus_allowed, tsk_cpus_allowed(current));
+ 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
+index 4b2e773..421ef37 100644
+--- a/drivers/cpufreq/p4-clockmod.c
++++ b/drivers/cpufreq/p4-clockmod.c
+@@ -58,8 +58,7 @@ static int cpufreq_p4_setdc(unsigned int cpu, unsigned int newstate)
+ {
+ 	u32 l, h;
+ 
+-	if (!cpu_online(cpu) ||
+-	    (newstate > DC_DISABLE) || (newstate == DC_RESV))
++	if ((newstate > DC_DISABLE) || (newstate == DC_RESV))
+ 		return -EINVAL;
+ 
+ 	rdmsr_on_cpu(cpu, MSR_IA32_THERM_STATUS, &l, &h);
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 52137a3..b828efe 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -1102,9 +1102,6 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 	struct init_on_cpu init_on_cpu;
+ 	int rc;
+ 
+-	if (!cpu_online(pol->cpu))
+-		return -ENODEV;
+-
+ 	smp_call_function_single(pol->cpu, check_supported_cpu, &rc, 1);
+ 	if (rc)
+ 		return -ENODEV;
+diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
+index 3dbbcc3..618e6f4 100644
+--- a/drivers/cpufreq/speedstep-centrino.c
++++ b/drivers/cpufreq/speedstep-centrino.c
+@@ -481,10 +481,6 @@ static int centrino_target (struct cpufreq_policy *policy,
+ 	for_each_cpu(j, policy->cpus) {
+ 		int good_cpu;
+ 
+-		/* cpufreq holds the hotplug lock, so we are safe here */
+-		if (!cpu_online(j))
+-			continue;
+-
+ 		/*
+ 		 * Support for SMP systems.
+ 		 * Make sure we are running on CPU that wants to change freq
+-- 
+1.7.12.rc2.18.g61b472e
 
-NOTE: With this patch your related_cpus wouldn't show any groups and
-related cpus must be same as affected cpus. All cpu*/cpufreq must be
-directories now and no symlinks.
-
---
-viresh
-
---089e01184d743bfd4604d8aac2f1
-Content-Type: application/octet-stream; 
-	name="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
-Content-Disposition: attachment; 
-	filename="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_heo6f0fl0
-
-RnJvbSAwZWI2YTZjZTI1YzcxZTYwZGM2OWUxODk3ZjgwYjdjZTNiYjQxZmIyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MGViNmE2Y2UyNWM3MWU2MGRjNjllMTg5N2Y4MGI3
-Y2UzYmI0MWZiMi4xMzY0MTI3NjY3LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAyMyBNYXIg
-MjAxMyAyMzo0Mjo0NCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGktY3B1ZnJl
-cTogRG9uJ3Qgc2V0IHBvbGljeS0+cmVsYXRlZF9jcHVzIGZyb20KIC5pbml0KCkKCldpdGggdGhl
-IGFkZGl0aW9uIG9mIGZvbGxvd2luZyBwYXRjaDoKCmZjZjgwNTggY3B1ZnJlcTogU2ltcGxpZnkg
-Y3B1ZnJlcV9hZGRfZGV2KCkKCmNwdWZyZXEgZHJpdmVyJ3MgLmluaXQoKSByb3V0aW5lIG11c3Qg
-aW5pdGlhbGl6ZSBwb2xpY3ktPmNwdXMgd2l0aCBtYXNrIG9mIGFsbApwb3NzaWJsZSBjcHVzIChP
-bmxpbmUgKyBPZmZsaW5lKSB0aGF0IHNoYXJlIHRoZSBjbG9jay4gVGhlbiB0aGUgY29yZSB3b3Vs
-ZCBjb3B5CnRoaXMgbWFzayBvbnRvIHBvbGljeS0+cmVsYXRlZF9jcHVzIGFuZCB3aWxsIHJlc2V0
-IHBvbGljeS0+Y3B1cyB0byBjYXJyeSBvbmx5Cm9ubGluZSBjcHVzLgoKYWNwaS1jcHVmcmVxIGRy
-aXZlciB3YXNuJ3QgdXBkYXRlZCB3aXRoIHRoaXMgYXNzdW1wdGlvbiBhbmQgc28gc29tZXRpbWVz
-IHdoZW4Kd2UgdHJ5IHRvIGhvdFt1bl1wbHVnIGNwdXMgYXQgcnVuIHRpbWUsIHN5c2ZzIGRpcmVj
-dG9yaWVzIGdldHMgY29ycnVwdGVkLgoKVGhpcyBwYXRjaCBmaXhlcyBhY3BpLWNwdWZyZXEgZHJp
-dmVyIGFnYWluc3QgdGhpcyBjb3JydXB0aW9uLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFy
-IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVm
-cmVxLmMgfCAyIC0tCiAxIGZpbGUgY2hhbmdlZCwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
-YS9kcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvYWNwaS1j
-cHVmcmVxLmMKaW5kZXggYWZiZWY5Yy4uMTFiOGI0YiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVm
-cmVxL2FjcGktY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYwpA
-QCAtNzIzLDcgKzcyMyw2IEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0cnVj
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCSAgICBwb2xpY3ktPnNoYXJlZF90eXBlID09IENQ
-VUZSRVFfU0hBUkVEX1RZUEVfQU5ZKSB7CiAJCWNwdW1hc2tfY29weShwb2xpY3ktPmNwdXMsIHBl
-cmYtPnNoYXJlZF9jcHVfbWFwKTsKIAl9Ci0JY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9j
-cHVzLCBwZXJmLT5zaGFyZWRfY3B1X21hcCk7CiAKICNpZmRlZiBDT05GSUdfU01QCiAJZG1pX2No
-ZWNrX3N5c3RlbShzd19hbnlfYnVnX2RtaV90YWJsZSk7CkBAIC03MzUsNyArNzM0LDYgQEAgc3Rh
-dGljIGludCBhY3BpX2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xp
-Y3kpCiAJaWYgKGNoZWNrX2FtZF9od3BzdGF0ZV9jcHUoY3B1KSAmJiAhYWNwaV9wc3RhdGVfc3Ry
-aWN0KSB7CiAJCWNwdW1hc2tfY2xlYXIocG9saWN5LT5jcHVzKTsKIAkJY3B1bWFza19zZXRfY3B1
-KGNwdSwgcG9saWN5LT5jcHVzKTsKLQkJY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9jcHVz
-LCBjcHVfc2libGluZ19tYXNrKGNwdSkpOwogCQlwb2xpY3ktPnNoYXJlZF90eXBlID0gQ1BVRlJF
-UV9TSEFSRURfVFlQRV9IVzsKIAkJcHJfaW5mb19vbmNlKFBGWCAib3ZlcnJpZGluZyBCSU9TIHBy
-b3ZpZGVkIF9QU0QgZGF0YVxuIik7CiAJfQotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
---089e01184d743bfd4604d8aac2f1--
