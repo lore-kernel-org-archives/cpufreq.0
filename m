@@ -1,108 +1,52 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Sun, 24 Mar 2013 10:02:42 +0000 (UTC)
-Message-ID: <20130324100242.E862A11FB35@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH v2] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
+Date: Sun, 24 Mar 2013 11:06:58 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.1303241053150.3325@axis700.grange>
+References: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org>
+ <Pine.LNX.4.64.1303221600060.12375@axis700.grange>
+ <20130323063215.GF6281@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <20130323063215.GF6281@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, AnilKumar Ch <anilkumar@ti.com>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Magnus Damm <magnus.damm@gmail.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
+On Sat, 23 Mar 2013, Shawn Guo wrote:
 
+> On Fri, Mar 22, 2013 at 04:47:17PM +0100, Guennadi Liakhovetski wrote:
 
+[snip]
 
+> > Secondly you still run a danger, that 
+> > several platforms, built into a single image, register several devices for 
+> > different cpufreq drivers, or even for one... With a special call you know 
+> > there can be only one and you return -EBUSY to all further calls to that 
+> > function.
+> 
+> I do not see how this could happen.  The cpufreq device gets added in
+> target specific init function which will only be invoked when the kernel
+> is running on this target.  Check arch/arm/mach-imx/mach-imx6q.c or the
+> OMAP example given by Nishanth to see how this should be done.
 
+Sorry, I meant buggy implementations, where an initcall is added without 
+checking, whether it's running on supported hardware.
 
---- Comment #32 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-24 10:02:42 ---
-Hi Duncan,
+Already before your patch for cpufreq-cpu0 to instantiate "mistakenly" on 
+unsupported hardware you had to have an "operating-points" property in 
+your "cpus" node, and you needed a clock attached to your cpu0 device. Do 
+you really think this was likely?
 
-Please reply to this mail rather than using bugzilla as all others might not
-be following bugzilla rerport.
+Anyway, I do find this an overkill and an abuse, but I'm not going to 
+fight over it. If I'm the only one with this impression - no problem, just 
+forget my ranting :)
 
-> --- Comment #31 from Duncan <1i5t5.duncan@cox.net>  2013-03-24 09:48:41 ---
-> (In reply to comment #28)
->> My weekend is already spoiled (due to my bugs :) ) and i don't want to spoil
->> yours.
->
-> Don't worry about it.  They're all days in the week, to me.  I don't really
-> have a defined "weekend".  In fact, I had been (somewhat impatiently) grumbling
-> to myself Friday that I was likely to have to wait until Monday for something
-> concrete to test, so I'm happy to be demonstrated wrong! =:^)
-
-:)
-
->> [PATCH] cpufreq: acpi-cpufreq: Set policy->cpus correctly from .init()
->
-> You appear to be on the right path as all the dirs and symlinks are there now,
-> but it looks like you'll need a v2 as the order/pairing is now very strange,
-> both as booted and after a s2ram/resume (which changes the order but it's still
-> strange):
-
-:(
-
-> Testing against 3.9-rc4 now.
->
-> Patch applied pre-suspend ls -dl as above (original pairing is 0/1, 2/3, 4/5,
-> with the first always a dir and the second always a symlink to the first, as
-> seen in comment #0):
->
-> /sys/devices/system/cpu/cpu0/cpufreq/
-> /sys/devices/system/cpu/cpu1/cpufreq -> ../cpu0/cpufreq/
-> /sys/devices/system/cpu/cpu2/cpufreq/
-> /sys/devices/system/cpu/cpu3/cpufreq/
-> /sys/devices/system/cpu/cpu4/cpufreq -> ../cpu3/cpufreq/
-> /sys/devices/system/cpu/cpu5/cpufreq -> ../cpu2/cpufreq/
-
-The way it works (in cpufreq core), the first cpu of group registered
-for cpufreq
-would get a directory and second one would get a symlink.
-
-And the above ones also doesn't look good. 2/5 and 3/4 shouldn't be the groups.
-
-acpi-cpufreq driver is getting this information from perf->shared_cpu_map and
-that seems to be wrong to me now.
-
-> Post s2ram/resume cycle:
->
-> /sys/devices/system/cpu/cpu0/cpufreq/
-> /sys/devices/system/cpu/cpu1/cpufreq -> ../cpu0/cpufreq/
-> /sys/devices/system/cpu/cpu2/cpufreq -> ../cpu4/cpufreq/
-> /sys/devices/system/cpu/cpu3/cpufreq -> ../cpu5/cpufreq/
-> /sys/devices/system/cpu/cpu4/cpufreq/
-> /sys/devices/system/cpu/cpu5/cpufreq/
-
-2/4 and 3/5 are also wrong groups.
-
-> But I don't know whether it's CPU ordering that's weird, or the cpufreq
-> ordering.  IOW, I don't know whether it /should/ be 0/1, 2/3, 4/5 or not,
-> because I don't know whether those numbers actually reflect the hardware so
-> it's the ordering above that's bad, or if the cpu numbers are just arbitrarily
-> assigned, and the ordering above reflects the actual hardware, and just looks
-> strange due to the arbitrary cpu numbering.
-
-One thing i am sure about is cpu order is fixed at boot and after boot whatever
-you do can't change that order... So order should always be 0/1, 2/3, 4/5
-
-> Either way, there's the correct number of dirs and links now, but the ordering
-> is extremely confusing and looks wrong, regardless of whether it actually
-> corresponds to the hardware or not, something I don't have the ability to
-> judge.
-
-Hmm.. Can you try one thing? Run 3.8 over your machine and give output of
-cpufreq-info and ls -ld after boot and resume..
-
-I would like to see what's the original behavior.
-
---
-viresh
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
