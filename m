@@ -1,40 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: More cpufreq breakage
-Date: Sun, 24 Mar 2013 14:35:41 +0530
-Message-ID: <CAKohpomGkY10eBakYOwAt5FVoq-UTNY4vwAUfg0YxTJVsPcU4A@mail.gmail.com>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Sun, 24 Mar 2013 14:40:53 +0530
+Message-ID: <CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
 References: <bug-55411-70601@https.bugzilla.kernel.org/>
-	<CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
-	<20130323134541.GA10811@pd.tnic>
-	<5152799.d8sLDQMJWT@vostro.rjw.lan>
-	<CAKohpomTBEu1ByjnSw1mbyBhXKTrj=Qte7fBuyaKp+TcOb8d_w@mail.gmail.com>
-	<CAKohpok-75YSAwdni5O07PtmEZbSKF9YrJjpHtG+r0T-aVn6ww@mail.gmail.com>
-	<20130323160644.GC10811@pd.tnic>
-	<CAKohpokYqU4HsC0=GY1OxvWpz-Cb-x0p6zKmTOe86JfKyiS+GQ@mail.gmail.com>
-	<20130323185045.GA4801@pd.tnic>
+	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
+	<2581491.irn18K9zaF@hammer82.arch.suse.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130323185045.GA4801@pd.tnic>
+In-Reply-To: <2581491.irn18K9zaF@hammer82.arch.suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>
-Cc: 1i5t5.duncan@cox.net, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Renninger <trenn@suse.de>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, 1i5t5.duncan@cox.net, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-[Forgot to add all in previous mail, reply-all now]
+On 24 March 2013 14:35, Thomas Renninger <trenn@suse.de> wrote:
+> I take that back.
+> CPU hot-add (even if CPU is not present at boot time) works.
+> I looked at C-states for that some time ago and it should only work if
+> the hot-add event came in via ACPI events for CPUs which were not
+> initialized at boot time. Better would be to initialize the first time it
+> gets switched online.
 
-On 24 March 2013 00:20, Borislav Petkov <bp@alien8.de> wrote:
-> On Sat, Mar 23, 2013 at 10:34:28PM +0530, Viresh Kumar wrote:
->> And that is already caused recently?
+I removed it from my TODO list, thanks :)
 
-Ahh!! s/already/also
+> Anyway, making such stuff (cpufreq/cpuidle/...) more robust,
+> is certainly a good idea.
 
-> 3.8.3 is fine and there are no cpufreq patches in v3.8..v3.8.3. Which
-> would mean, plain v3.8 is also fine. Which means, the breakage must've
-> come in during the merge window.
+Yes, that was the basic intent of my earlier patches that went into 3.9.
+It was all about simplifying it and making it robust.
 
-I didn't get a complete picture of your problem, can you elaborate a bit
-with all your observations?
+> And powernow-k8 does not exist anymore..., fortunately I didn't have to
+> look at this stuff for some time.
 
-It might be related to the problem reported by Duncan and might be solved
-by the patch i sent yesterday.
+Sure? Driver is still present in mainline.
+
+BTW, i have given an initial fix for acpi-cpufreq (which should work)
+and waiting
+for Duncan to reply back. All other drivers don't set affected/related
+cpus directly,
+so they should be alright.
+
+--
+viresh
