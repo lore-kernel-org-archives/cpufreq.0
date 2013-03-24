@@ -1,53 +1,114 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: More cpufreq breakage
-Date: Sun, 24 Mar 2013 11:35:20 +0100
-Message-ID: <20130324103520.GB18601@pd.tnic>
-References: <bug-55411-70601@https.bugzilla.kernel.org/>
- <CAKohpokjpOepnuj3dny+j0UYurVHBZci=BdFa5OxR+e7k-512w@mail.gmail.com>
- <20130323134541.GA10811@pd.tnic>
- <5152799.d8sLDQMJWT@vostro.rjw.lan>
- <CAKohpomTBEu1ByjnSw1mbyBhXKTrj=Qte7fBuyaKp+TcOb8d_w@mail.gmail.com>
- <CAKohpok-75YSAwdni5O07PtmEZbSKF9YrJjpHtG+r0T-aVn6ww@mail.gmail.com>
- <20130323160644.GC10811@pd.tnic>
- <CAKohpokYqU4HsC0=GY1OxvWpz-Cb-x0p6zKmTOe86JfKyiS+GQ@mail.gmail.com>
- <20130323185045.GA4801@pd.tnic>
- <CAKohpomGkY10eBakYOwAt5FVoq-UTNY4vwAUfg0YxTJVsPcU4A@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Sun, 24 Mar 2013 11:49:31 +0000 (UTC)
+Message-ID: <20130324114931.F01C911FB35@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1364121321; bh=YQEsqDdhWhlg0hHwLN9182TnV9Irvl6SBKX3cbb8n7s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=VZBqHzFDix7iG3bUHr8sLIWmXuyDlarm9DOLNe
-	BGAoVSu53mvqBSMWY/2YmAMBDTW4jfeXLRLvJTXn8qfmGJ6K7bYxvxFamRmYt3Lbghd
-	pK4UJtiHyRspWeYNX6tNcp8m5XBX0+rIrbwvXQ76TLtkRGHl6Mk3wv2kHfScFQmnjw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1364121321; bh=YQEsqDdhWhlg0hHwLN9182TnV9Irvl6SBKX3cbb8n7s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=VZBqHzFDix7iG3bUHr8sLIWmXuyDlarm9DOLNe
-	BGAoVSu53mvqBSMWY/2YmAMBDTW4jfeXLRLvJTXn8qfmGJ6K7bYxvxFamRmYt3Lbghd
-	pK4UJtiHyRspWeYNX6tNcp8m5XBX0+rIrbwvXQ76TLtkRGHl6Mk3wv2kHfScFQmnjw=
-Content-Disposition: inline
-In-Reply-To: <CAKohpomGkY10eBakYOwAt5FVoq-UTNY4vwAUfg0YxTJVsPcU4A@mail.gmail.com>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: 1i5t5.duncan@cox.net, "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org, Andre Przywara <andre.przywara@linaro.org>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Thomas Renninger <trenn@suse.de>
+To: cpufreq@vger.kernel.org
 
-On Sun, Mar 24, 2013 at 02:35:41PM +0530, Viresh Kumar wrote:
-> I didn't get a complete picture of your problem, can you elaborate a
-> bit with all your observations?
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
 
-It is basically the same observation. Some of the even cores are not
-handled by any cpufreq driver anymore, i.e. in the cpufreq-info output.
-And thus they remain in P0 which is max freq. And this happens because
-I'm suspending my workstation at night which takes the cores offline, so
-it is the same trigger as Duncan's.
+
+
+
+
+--- Comment #34 from Duncan <1i5t5.duncan@cox.net>  2013-03-24 11:49:30 ---
+On Sun, 24 Mar 2013 15:32:39 +0530
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
+
+> Hi Duncan,
+> 
+> Please reply to this mail rather than using bugzilla as all others
+> might not be following bugzilla rerport.
+
+Thanks.  I'm used to it being the other way 'round.
+
+> >> [PATCH] cpufreq: acpi-cpufreq: Set policy->cpus correctly
+> >> from .init()
+> >
+> > You appear to be on the right path as all the dirs and symlinks are
+> > there now, but it looks like you'll need a v2 as the order/pairing
+> > is now very strange, both as booted and after a s2ram/resume (which
+> > changes the order but it's still strange):
+
+> Hmm.. Can you try one thing? Run 3.8 over your machine and give
+> output of cpufreq-info and ls -ld after boot and resume..
+> 
+> I would like to see what's the original behavior.
+
+Good idea! =:^)  It now appears that your bug simply cascaded on a
+previously unreported bug in earlier kernels.
+
+The 3.8 ls -dl isn't too interesting as they were all dirs not symlinks
+then, and if they hadn't stuck around after a suspend/resume I'd have
+definitely noticed and reported the bug back then, but it's still
+useful to confirm.
+
+The 3.8 pre-suspend and post resume ls -dl are identical -- no missing
+dirs (and no symlinks):
+
+/sys/devices/system/cpu/cpu0/cpufreq/
+/sys/devices/system/cpu/cpu1/cpufreq/
+/sys/devices/system/cpu/cpu2/cpufreq/
+/sys/devices/system/cpu/cpu3/cpufreq/
+/sys/devices/system/cpu/cpu4/cpufreq/
+/sys/devices/system/cpu/cpu5/cpufreq/
+
+The interesting results are the 3.8 cpufreq-info.  I'll attach the full
+output, but here's the interesting bit:
+
+3.8 pre-suspend cpufreq-info excerpts (nicely paired, as are the
+pre-patch pre-suspend results for 3.9-rc):
+
+analyzing CPU 0:
+  CPUs which run at the same hardware frequency: 0 1
+  CPUs which need to have their frequency coordinated by software: 0
+analyzing CPU 1:
+  CPUs which run at the same hardware frequency: 0 1
+  CPUs which need to have their frequency coordinated by software: 1
+analyzing CPU 2:
+  CPUs which run at the same hardware frequency: 2 3
+  CPUs which need to have their frequency coordinated by software: 2
+analyzing CPU 3:
+  CPUs which run at the same hardware frequency: 2 3
+  CPUs which need to have their frequency coordinated by software: 3
+analyzing CPU 4:
+  CPUs which run at the same hardware frequency: 4 5
+  CPUs which need to have their frequency coordinated by software: 4
+analyzing CPU 5:
+  CPUs which run at the same hardware frequency: 4 5
+  CPUs which need to have their frequency coordinated by software: 5
+
+3.8 post-resume (screwed up pairing, so that bit's not a 3.9 thing, I
+just noticed it in 3.9 due to the now missing symlinks/dirs):
+
+analyzing CPU 0:
+  CPUs which run at the same hardware frequency: 0 1
+  CPUs which need to have their frequency coordinated by software: 0
+analyzing CPU 1:
+  CPUs which run at the same hardware frequency: 0 1
+  CPUs which need to have their frequency coordinated by software: 1
+analyzing CPU 2:
+  CPUs which run at the same hardware frequency: 2
+  CPUs which need to have their frequency coordinated by software: 2
+analyzing CPU 3:
+  CPUs which run at the same hardware frequency: 3
+  CPUs which need to have their frequency coordinated by software: 3
+analyzing CPU 4:
+  CPUs which run at the same hardware frequency: 2 4
+  CPUs which need to have their frequency coordinated by software: 4
+analyzing CPU 5:
+  CPUs which run at the same hardware frequency: 3 5
+  CPUs which need to have their frequency coordinated by software: 5
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
