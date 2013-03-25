@@ -1,27 +1,25 @@
-From: Duncan <1i5t5.duncan@cox.net>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
- after s2ram
-Date: Mon, 25 Mar 2013 04:15:41 -0700
-Message-ID: <20130325041541.4574f51a@ws>
-References: <bug-55411-70601@https.bugzilla.kernel.org/>
-	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
-	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
-	<2581491.irn18K9zaF@hammer82.arch.suse.de>
-	<CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
-	<CAKohpoksBOpW59YETR-SMWJSGsJSWKoXktJoVM38SietN9p3Ug@mail.gmail.com>
-	<20130324044927.6a2b1588@ws>
-	<CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
-	<CAKohpomsrafpNii9zqAjqe5kqEGOEdP5mDpSSjTswrY1YNfhBw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Mon, 25 Mar 2013 11:15:45 +0000 (UTC)
+Message-ID: <20130325111545.44FC411FB35@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomsrafpNii9zqAjqe5kqEGOEdP5mDpSSjTswrY1YNfhBw@mail.gmail.com>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>, Andre Przywara <andre.przywara@linaro.org>, djwong@us.ibm.com
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #37 from Duncan <1i5t5.duncan@cox.net>  2013-03-25 11:15:44 ---
 On Sun, 24 Mar 2013 17:53:41 +0530
 Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
@@ -79,6 +77,6 @@ well as a full cycle for testing anything else the "correct" fix might
 dredge up.
 
 -- 
-Duncan - No HTML messages please, as they are filtered as spam.
-"Every nonfree program has a lord, a master --
-and if you use the program, he is your master."  Richard Stallman
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
