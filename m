@@ -1,74 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Notify all policy->cpus in cpufreq_notify_transition()
-Date: Mon, 25 Mar 2013 10:49:05 +0530
-Message-ID: <CAKohpo=JuyVmSRFs1wpqvvmouRpL+d8ms-o4UC74OJqAgFv7Vw@mail.gmail.com>
-References: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH 2/2] cpufreq: drivers: Remove unnecessary assignments
+ of policy-> members
+Date: Mon, 25 Mar 2013 14:06:17 +0530
+Message-ID: <51500C81.7040307@ti.com>
+References: <2ece6d9fe8dfb6882a1c83a1cb2404bacc40b22d.1364138740.git.viresh.kumar@linaro.org> <07b96c5b68470001197445fb3d28786ad9acdbe0.1364138740.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-Id: <cpufreq.vger.kernel.org>
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-kernel@lists.linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Sekhar Nori <nsekhar@ti.com>, Sascha Hauer <kernel@pengutronix.de>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Haavard Skinnemoen <hskinnemoen@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Mike Frysinger <vapier@gentoo.org>, Mikael Starvik <starvik@axis.com>, Jesper Nilsson <jesper.nilsson@axis.com>, Tony Luck <tony.>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <07b96c5b68470001197445fb3d28786ad9acdbe0.1364138740.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Sascha Hauer <kernel@pengutronix.de>, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org, linux-omap@vger.kernel.org
 
-On 24 March 2013 19:18, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> policy->cpus contains all online cpus that have single shared clock line. And
-> their frequencies are always updated together.
->
-> Many SMP system's cpufreq drivers take care of this in individual drivers but
-> the best place for this code is in cpufreq core.
->
-> This patch modifies cpufreq_notify_transition() to notify frequency change for
-> all cpus in policy->cpus and hence updates all users of this API.
+On 3/24/2013 8:59 PM, Viresh Kumar wrote:
+> Some assignments of policy-> min/max/cur/cpuinfo.min_freq/cpuinfo.max_freq
+> aren't required as part of it is done by cpufreq driver or cpufreq core.
+> 
+> Remove them.
+> 
+> At some places we merge multiple lines together too.
+> 
+> Cc: Sekhar Nori <nsekhar@ti.com>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: linux-sh@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  Documentation/cpu-freq/cpu-drivers.txt | 5 +++--
+>  arch/arm/mach-davinci/cpufreq.c        | 4 ----
+>  arch/arm/mach-imx/cpufreq.c            | 3 ---
+>  arch/sh/kernel/cpufreq.c               | 9 +++------
+>  drivers/cpufreq/cpufreq-nforce2.c      | 6 ++----
+>  drivers/cpufreq/omap-cpufreq.c         | 4 +---
+>  6 files changed, 9 insertions(+), 22 deletions(-)
+> 
+> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
+> index 72f70b1..c94383f 100644
+> --- a/Documentation/cpu-freq/cpu-drivers.txt
+> +++ b/Documentation/cpu-freq/cpu-drivers.txt
+> @@ -108,8 +108,9 @@ policy->governor		must contain the "default policy" for
+>  				cpufreq_driver.target is called with
+>  				these values.
+>  
+> -For setting some of these values, the frequency table helpers might be
+> -helpful. See the section 2 for more information on them.
+> +For setting some of these values (cpuinfo.min[max]_freq, policy->min[max]), the
+> +frequency table helpers might be helpful. See the section 2 for more information
+> +on them.
+>  
+>  SMP systems normally have same clock source for a group of cpus. For these the
+>  .init() would be called only once for the first online cpu. Here the .init()
+> diff --git a/arch/arm/mach-davinci/cpufreq.c b/arch/arm/mach-davinci/cpufreq.c
+> index 8fb0c2a..ff46862 100644
+> --- a/arch/arm/mach-davinci/cpufreq.c
+> +++ b/arch/arm/mach-davinci/cpufreq.c
+> @@ -149,10 +149,6 @@ static int davinci_cpu_init(struct cpufreq_policy *policy)
+>  		policy->cpuinfo.max_freq = policy->max;
+>  	}
+>  
+> -	policy->min = policy->cpuinfo.min_freq;
+> -	policy->max = policy->cpuinfo.max_freq;
+> -	policy->cur = davinci_getspeed(0);
 
-Another fixup for tegra:
+There is a line in the code a little above the ones you deleted that
+also sets these same variables. I guess you were relying on that line to
+set policy->cur, but that also sets policy->{min, max} which can be
+cleaned up.
 
-diff --git a/arch/arm/mach-tegra/cpu-tegra.c b/arch/arm/mach-tegra/cpu-tegra.c
-index 3b441d6..11ca730 100644
---- a/arch/arm/mach-tegra/cpu-tegra.c
-+++ b/arch/arm/mach-tegra/cpu-tegra.c
-@@ -106,7 +106,8 @@ out:
-        return ret;
- }
-
--static int tegra_update_cpu_speed(unsigned long rate)
-+static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
-+               unsigned long rate)
- {
-        int ret = 0;
-        struct cpufreq_freqs freqs;
-@@ -179,7 +180,7 @@ static int tegra_target(struct cpufreq_policy *policy,
-
-        target_cpu_speed[policy->cpu] = freq;
-
--       ret = tegra_update_cpu_speed(tegra_cpu_highest_speed());
-+       ret = tegra_update_cpu_speed(policy, tegra_cpu_highest_speed());
-
- out:
-        mutex_unlock(&tegra_cpu_lock);
-@@ -191,10 +192,12 @@ static int tegra_pm_notify(struct notifier_block
-*nb, unsigned long event,
- {
-        mutex_lock(&tegra_cpu_lock);
-        if (event == PM_SUSPEND_PREPARE) {
-+               struct cpufreq_policy *policy = cpufreq_cpu_get(0);
-                is_suspended = true;
-                pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
-                        freq_table[0].frequency);
--               tegra_update_cpu_speed(freq_table[0].frequency);
-+               tegra_update_cpu_speed(policy, freq_table[0].frequency);
-+               cpufreq_cpu_put(policy);
-        } else if (event == PM_POST_SUSPEND) {
-                is_suspended = false;
-        }
-
+Thanks,
+Sekhar
