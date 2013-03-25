@@ -1,28 +1,25 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
- after s2ram
-Date: Mon, 25 Mar 2013 16:53:39 +0530
-Message-ID: <CAKohpo=DY6kmUVjpuHimMdYp1ubRfbNYfTjAB=mDPEkSzqumRg@mail.gmail.com>
-References: <bug-55411-70601@https.bugzilla.kernel.org/>
-	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
-	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
-	<2581491.irn18K9zaF@hammer82.arch.suse.de>
-	<CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
-	<CAKohpoksBOpW59YETR-SMWJSGsJSWKoXktJoVM38SietN9p3Ug@mail.gmail.com>
-	<20130324044927.6a2b1588@ws>
-	<CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
-	<CAKohpomsrafpNii9zqAjqe5kqEGOEdP5mDpSSjTswrY1YNfhBw@mail.gmail.com>
-	<20130325041541.4574f51a@ws>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
+ s2ram
+Date: Mon, 25 Mar 2013 11:23:41 +0000 (UTC)
+Message-ID: <20130325112341.29CCD11FB35@bugzilla.kernel.org>
+References: <bug-55411-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130325041541.4574f51a@ws>
+In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Duncan <1i5t5.duncan@cox.net>
-Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>, Andre Przywara <andre.przywara@linaro.org>, djwong@us.ibm.com
+To: cpufreq@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=55411
+
+
+
+
+
+--- Comment #38 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-25 11:23:40 ---
 On 25 March 2013 16:45, Duncan <1i5t5.duncan@cox.net> wrote:
 > FWIW, with this patch, pre-s2ram and post-resume are indeed consistent,
 > but it's not back to where it was.
@@ -99,3 +96,8 @@ Thanks for testing it.
 
 --
 viresh
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
