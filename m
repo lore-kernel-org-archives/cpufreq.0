@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand
  governor set - i7-2630QM
-Date: Sun, 24 Mar 2013 22:09:48 +0000 (UTC)
-Message-ID: <20130324220948.F234E11FB35@bugzilla.kernel.org>
+Date: Mon, 25 Mar 2013 02:56:35 +0000 (UTC)
+Message-ID: <20130325025635.0463A11FB35@bugzilla.kernel.org>
 References: <bug-50721-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,15 +16,22 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=50721
 
 
+Viresh Kumar <viresh.kumar@linaro.org> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |viresh.kumar@linaro.org
 
 
 
---- Comment #16 from rocko <rockorequin@hotmail.com>  2013-03-24 22:09:48 ---
-I just encountered this again on 3.9-rc4 but this time after a resume rather
-than a reboot. All eight cores were stuck at 2.00GHz. Suspending and resuming
-again made them drop back to the more normal 0.8GHz.
 
-This bug is marked as needinfo. What more info is required?
+--- Comment #17 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-25 02:56:34 ---
+(In reply to comment #16)
+> All eight cores were stuck at 2.00GHz.
+
+This is probably a new bug, try following patch:
+
+https://lkml.org/lkml/2013/3/24/164
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
