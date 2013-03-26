@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 55091] cpufreq governors woks crazy
-Date: Tue, 26 Mar 2013 07:44:56 +0000 (UTC)
-Message-ID: <20130326074456.D9B9311FB35@bugzilla.kernel.org>
+Date: Tue, 26 Mar 2013 07:45:47 +0000 (UTC)
+Message-ID: <20130326074547.20C6E11FB0C@bugzilla.kernel.org>
 References: <bug-55091-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,16 +19,11 @@ Aaron Lu <aaron.lu@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |aaron.lu@intel.com
-         AssignedTo|cpufreq@vger.kernel.org     |aaron.lu@intel.com
+             Status|NEW                         |NEEDINFO
+         AssignedTo|aaron.lu@intel.com          |cpufreq@vger.kernel.org
 
 
 
-
---- Comment #2 from Aaron Lu <aaron.lu@intel.com>  2013-03-26 07:44:56 ---
-Hi towo,
-
-Can you please follow Viresh's suggestion in comment #1 to test out? Thanks.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
