@@ -1,27 +1,29 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 6/9] sh: cpufreq:  move cpufreq driver to drivers/cpufreq
-Date: Tue, 26 Mar 2013 18:29:33 +0900
-Message-ID: <20130326092932.GA23796@linux-sh.org>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
- <ce8e1eec94acecba053f9c2e2b5caa48ce989777.1364229828.git.viresh.kumar@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 54761] Variable cpu frequency causes to loose performance
+Date: Tue, 26 Mar 2013 09:41:40 +0000 (UTC)
+Message-ID: <20130326094140.C5A3211FB0C@bugzilla.kernel.org>
+References: <bug-54761-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <ce8e1eec94acecba053f9c2e2b5caa48ce989777.1364229828.git.viresh.kumar@linaro.org>
+In-Reply-To: <bug-54761-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, linux-sh@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Mon, Mar 25, 2013 at 10:24:42PM +0530, Viresh Kumar wrote:
-> This patch moves cpufreq driver of SUPERH architecture to drivers/cpufreq.
-> 
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: linux-sh@vger.kernel.org
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=54761
 
-Looks ok to me.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+
+
+
+--- Comment #4 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-26 09:41:40 ---
+1400 MHz would always be slower than 2700 MHz. And ondemand can't simply switch
+to max without much load. So, you can say it that way "Ondemand sometimes have
+performance impact" :)
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
