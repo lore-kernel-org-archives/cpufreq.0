@@ -1,18 +1,18 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 54761] Variable cpu frequency causes to loose performance
-Date: Tue, 26 Mar 2013 07:43:18 +0000 (UTC)
-Message-ID: <20130326074318.9642D11FB0C@bugzilla.kernel.org>
-References: <bug-54761-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 55091] cpufreq governors woks crazy
+Date: Tue, 26 Mar 2013 07:44:56 +0000 (UTC)
+Message-ID: <20130326074456.D9B9311FB35@bugzilla.kernel.org>
+References: <bug-55091-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-54761-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-55091-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=54761
+https://bugzilla.kernel.org/show_bug.cgi?id=55091
 
 
 Aaron Lu <aaron.lu@intel.com> changed:
@@ -25,11 +25,10 @@ Aaron Lu <aaron.lu@intel.com> changed:
 
 
 
---- Comment #1 from Aaron Lu <aaron.lu@intel.com>  2013-03-26 07:43:18 ---
-Hi,
+--- Comment #2 from Aaron Lu <aaron.lu@intel.com>  2013-03-26 07:44:56 ---
+Hi towo,
 
-Does the problem occur on previous kernels? If possible, can you please
-identify from which kernel this problem starts to occur, thanks.
+Can you please follow Viresh's suggestion in comment #1 to test out? Thanks.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
