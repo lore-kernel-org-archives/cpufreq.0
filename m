@@ -1,96 +1,97 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: [PATCH V4 0/2] Implement per policy instance of governor
-Date: Wed, 27 Mar 2013 12:19:31 -0500
-Message-ID: <20130327171931.GA17070@jshin-Toonie>
-References: <cover.1364398686.git.viresh.kumar@linaro.org>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH V2 8/8] cpufreq: OMAP: donot allow to be used with device tree
+Date: Wed, 27 Mar 2013 11:39:09 -0700
+Message-ID: <87vc8c7kmq.fsf@linaro.org>
+References: <1363715590-5131-1-git-send-email-nm@ti.com>
+	<1363715590-5131-9-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1364398686.git.viresh.kumar@linaro.org>
+In-Reply-To: <1363715590-5131-9-git-send-email-nm@ti.com> (Nishanth Menon's
+	message of "Tue, 19 Mar 2013 12:53:10 -0500")
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+Content-Type: text/plain; charset="macroman"
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-omap@vger.kernel.org, Jon Hunter <jon-hunter@ti.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Mar 27, 2013 at 09:28:56PM +0530, Viresh Kumar wrote:
-> Hi Guys,
-> 
-> All patches are pushed here for others to apply (you can apply from mail to):
-> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/governor-per-policy-v4
-> 
-> Currently, there can't be multiple instances of single governor_type. If we have
-> a multi-package system, where we have multiple instances of struct policy (per
-> package), we can't have multiple instances of same governor. i.e. We can't have
-> multiple instances of ondemand governor for multiple packages.
-> 
-> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
-> governor-name/. Which again reflects that there can be only one instance of a
-> governor_type in the system.
-> 
-> This is a bottleneck for multicluster system, where we want different packages
-> to use same governor type, but with different tunables.
-> 
-> This patchset is inclined towards fixing this issue. Now we will create
-> governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have multiple
-> struct policy alive at any moment. Platform drivers requiring this feature must
-> set have_governor_per_policy variable in their instance of cpufreq_driver. For
-> others the interface is kept same: cpu/cpufreq/<gov>.
-> 
-> 
-> This is V4 of this patchset. V3 is already applied by Rafael in his linux-next
-> branch. Jacob Shin reported some regressions with this patchset and when I went
-> into testing it with his configuration I found more issues then what he
-> reported.
-> 
-> To test these over linux-next you need to revert following first:
-> db9baec cpufreq: Get rid of "struct global_attr"
-> 86bd6f0 cpufreq: governor: Implement per policy instances of governors
-> 8ae67b1 cpufreq: Add per policy governor-init/exit infrastructure
-> 
-> I have tested this for following now and believe there are no more regressions
-> with it:
-> - platform with a single policy instance or single group of cpu
-> - platform with multiple policies but which don't want per policy instance of
->   governor
-> - platform with multiple policies and which want per policy instance of governor
-> 
-> I have tried with different settings and combinations of governors.
-> 
-> @Rafael: To simplify your life I have sorted out your branch and you can simply
-> pickup the complete branch that I have pushed.
-> 
-> V3->V4:
-> - We have two instances of all show/store routines for ondemand/conservative
->   governor. One for per-policy instance of governor and other for one governor
->   instance for all policies.
-> - Dropped: db9baec cpufreq: Get rid of "struct global_attr".
-> - Fixed cpufreq_governor_dbs for multiple policies using same governor instance.
-> - Implemented few macro's in cpufreq_governor.h to make above stuff clean.
-> - Renamed have_multiple_policies to have_governor_per_policy
-> - Some more minor cleanups
-> 
-> Viresh Kumar (2):
->   cpufreq: Add per policy governor-init/exit infrastructure
->   cpufreq: governor: Implement per policy instances of governors
-> 
->  drivers/cpufreq/cpufreq.c              |  36 ++++-
->  drivers/cpufreq/cpufreq_conservative.c | 193 ++++++++++++++----------
->  drivers/cpufreq/cpufreq_governor.c     | 212 +++++++++++++++++---------
->  drivers/cpufreq/cpufreq_governor.h     | 117 +++++++++++++--
->  drivers/cpufreq/cpufreq_ondemand.c     | 263 ++++++++++++++++++++-------------
->  include/linux/cpufreq.h                |  17 ++-
->  6 files changed, 562 insertions(+), 276 deletions(-)
-> 
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
-> 
+Nishanth Menon <nm@ti.com> writes:
 
-V4 tested good on AMD machine that the regression was reported on.
+> We now use Soc generic cpufreq-cpu0 driver using DT entries.
+> However to allow cpufreq-cpu0 and omap-cpufreq drivers to co-exist,
+> we need to ensure the following using the same image:
+> 1. With device tree boot, we use cpufreq-cpu0
+> 2. With non device tree boot, we use omap-cpufreq
+>
+> In the case of (1), we will have cpu OPPs and regulator registered
+> as part of the DT, to ensure that omap-cpufreq and cpufreq-cpu0 don't
+> conflict in managing the frequency of the same cpu, we should not
+> permit init to pass in omap-cpufreq.
+>
+> In the case of (2), we will not have the cpufreq-cpu0 device, hence
+> only omap-cpufreq will be active.
+>
+> So, to acommodate both these usage conditions, we fail init of
+> omap-cpufreq when we boot with device tree.
+>
+> Cc: Kevin Hilman <khilman@deeprootsystems.com>
+> Cc: Jon Hunter <jon-hunter@ti.com>
+> Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: Keerthy <j-keerthy@ti.com>
+> Cc: linux-omap@vger.kernel.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+> Changes in V2:
+> 	- donot remove support for omap-cpufreq in non-DT boot
+> 	- little more verbose commit log
+> V1: https://patchwork.kernel.org/patch/2273641/
+>
+>  drivers/cpufreq/omap-cpufreq.c |   14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>
+> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cp=
+ufreq.c
+> index 9128c07..9382ed0 100644
+> --- a/drivers/cpufreq/omap-cpufreq.c
+> +++ b/drivers/cpufreq/omap-cpufreq.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/err.h>
+>  #include <linux/clk.h>
+>  #include <linux/io.h>
+> +#include <linux/of.h>
+>  #include <linux/opp.h>
+>  #include <linux/cpu.h>
+>  #include <linux/module.h>
+> @@ -174,6 +175,19 @@ static inline void freq_table_free(void)
+>  static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
+>  {
+>  	int result =3D 0;
+> +	struct device_node *np;
+> +
+> +	/*
+> +	 * If we have a device tree node describing OPPs,
+> +	 * we will NOT permit usage of omap-cpufreq driver.
+> +	 * use cpufreq-cpu0 driver to manage.
+> +	 */
+> +	if (of_have_populated_dt()) {
+> +		for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
+> +			if (of_get_property(np, "operating-points", NULL))
+> +				return -EPERM;
+> +		}
+> +	}
 
-Thanks,
+I think it's much cleaner to just convert this to a platform_driver lik=
+e
+was done for the generic driver[1].  Then the registration in the
+previous patch can register the omap driver when needed.
 
-Tested-by: Jacob Shin <jacob.shin@amd.com>
+Kevin
 
+[1] https://patchwork.kernel.org/patch/2067751/
