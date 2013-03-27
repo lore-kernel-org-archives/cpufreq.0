@@ -1,21 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: Add cpufreq driver for Freescale e500mc SOCs
-Date: Wed, 27 Mar 2013 14:29:36 +0530
-Message-ID: <CAKohpokL76YP6tae2TyyBmoBsEdMtX9tZfhnsPE=K57J3-sOCA@mail.gmail.com>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH 3/3] cpufreq: Add cpufreq driver for Freescale e500mc
+ SOCs
+Date: Wed, 27 Mar 2013 08:58:45 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B105118@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <D07C73A334FF604B95B3CBD2A545D07B0B105004@039-SN2MPN1-013.039d.mgd.msft.net>
-	<CAKohpo=Mj=Nu_tGekdzzLpF-k_3iaLD+gtAt00Yy1OKs9+rnWw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B105118@039-SN2MPN1-013.039d.mgd.msft.net>
+ <CAKohpo=Mj=Nu_tGekdzzLpF-k_3iaLD+gtAt00Yy1OKs9+rnWw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B105118@039-SN2MPN1-013.039d.mgd.msft.net>
+In-Reply-To: <CAKohpo=Mj=Nu_tGekdzzLpF-k_3iaLD+gtAt00Yy1OKs9+rnWw@mail.gmail.com>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tang Yuantian-B29983 <B29983@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On 27 March 2013 14:28, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
-> Are you saying the if statement is redundant?  It is sort of yes.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBWaXJlc2ggS3VtYXIgW21haWx0
+bzp2aXJlc2gua3VtYXJAbGluYXJvLm9yZ10NCj4gU2VudDogMjAxM8TqM9TCMjfI1SAxNjo0Mw0K
+PiBUbzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IGNwdWZyZXFAdmdlci5rZXJuZWwub3Jn
+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy8zXSBjcHVmcmVxOiBBZGQgY3B1ZnJlcSBkcml2ZXIg
+Zm9yIEZyZWVzY2FsZSBlNTAwbWMNCj4gU09Dcw0KPiANCj4gPj4gPiArc3RhdGljIGludCBjb3Jl
+bmV0X2NwdWZyZXFfdmVyaWZ5KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KSB7DQo+ID4+
+ID4gKyAgICAgICBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUgKnRhYmxlOw0KPiA+PiA+
+ICsNCj4gPj4gPiArICAgICAgIHRhYmxlID0gKCZwZXJfY3B1KGNwdV9kYXRhLCBwb2xpY3ktPmNw
+dSkpLT50YWJsZTsNCj4gPj4gPiArICAgICAgIGlmICghdGFibGUpDQo+ID4+ID4gKyAgICAgICAg
+ICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiA+DQo+ID4+DQo+ID4NCj4gPj4gVGhpcyBzaG91bGQg
+bmV2ZXIgYmUgdHJ1ZS4NCj4gPg0KPiA+IGRvbid0IHVuZGVyc3RhbmQgd2hhdCdzIHlvdXIgcG9p
+bnQgaGVyZS4gY291bGQgeW91IGVsYWJvcmF0ZSBpdD8NCj4gDQo+IFN1cmUuIHRhYmxlIHNob3Vs
+ZCBhbHdheXMgYmUgdmFpbGQuIEhvdyBjYW4gdGhpcyBiZSBOVUxMIGV2ZXI/DQoNCkFyZSB5b3Ug
+c2F5aW5nIHRoZSBpZiBzdGF0ZW1lbnQgaXMgcmVkdW5kYW50PyAgSXQgaXMgc29ydCBvZiB5ZXMu
+DQoNClRoYW5rcyBmb3IgeW91ciB0aW1lIGFuZCBJIHdpbGwgaW5jb3Jwb3JhdGUgeW91ciBjb21t
+ZW50cyBpbiBuZXh0IHZlcnNpb24uDQoNCi1ZdWFudGlhbg0K
 
-Yes.
