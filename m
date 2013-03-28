@@ -1,59 +1,102 @@
-From: Parag Warudkar <parag.lkml@gmail.com>
-Subject: Re: intel_pstate_timer_func divide by zero oops
-Date: Wed, 27 Mar 2013 23:13:45 -0400
-Message-ID: <CAOULuOa1O5LxwDh6peSGBRR9PyeEtXuhyiaFVvKnFNiqrb4bfQ@mail.gmail.com>
-References: <alpine.LFD.2.03.1303272103380.8412@gmail.com>
-	<5153B03E.2050201@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: check OF /cpus presence before dereferencing it
+Date: Thu, 28 Mar 2013 12:38:11 +0530
+Message-ID: <CAOh2x=nckhpbeoFMfg4qVC2LPynOCwZqVxLr-34vbiQ+QCZJ7A@mail.gmail.com>
+References: <1364398334-19662-1-git-send-email-paolo.pisati@canonical.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type;
-        bh=wHSeH0llhEcfeMhWfrsKcltGh7bTg0WvnEt+VK/OsAk=;
-        b=PxkwrccrLCgQfRZlFNccGPn4uHXbzXgsiF0c+lSvGCUFDOg1032tzv6tSzoBlyLCXQ
-         JR9+iQVF3QIUMx2c8qYX4yY/ntS8673vBLX59njoZbGO6ySr7ETP4DuQPkpNUNZLnIC1
-         w98Y9XjDJPafcnci/QMe0emjUlUf4aaskMQGo6/cUmvowc8MrA+bm/Bw+1LZLPGkkpeS
-         8UJf1c0b/lM8VjmPy7YRW5WejB5N4Wew+8FglOrNN3HDH+/VVl+TzYPVFa0bjLga2PRE
-         Sz1O6BEm1vAtdBpjZOiTfZbDRijodLqWtSI7N5QIxaseUdN91USSd987csbRkNVpaYLA
-         4+aA==
-In-Reply-To: <5153B03E.2050201@gmail.com>
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=8oCe1hUlZC/guBEKtm8Jbqs/Bk5OAzZO7pgwDuiwXWc=;
+        b=IocGC44d7PMulN4qPDr09TAvk3uAyaPH2ZWZQHCpKeCMk6mb9CRAYwb7BwHCD9d/S3
+         xBh1JlZg7oKoteMcdGK4LJQ/6xgtTWCBMDugAQ0PXBdm1FFZpLLVNgQJu1PCtg1NRHOg
+         /QSpFx386RSfebE9T3vwhPU7ajJCZiDOyigif2LUjqt3+ZTuOYknwzqm9r7HZWvaP3Qi
+         lssdZEaWojnpVIdszmGAwLaxABUBpbrNMUNPB2VrL5LiJY9vwHfk2ELN+N9eaDqiyoKD
+         hndNr4KE4i+FITAgPKbQO3l1p4o2MwSsqa1JRZjsriEgK/3roEbxC0z7NVQY38muJIJp
+         xAbA==
+In-Reply-To: <1364398334-19662-1-git-send-email-paolo.pisati@canonical.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Paolo Pisati <paolo.pisati@canonical.com>
+Cc: cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Mar 27, 2013 at 10:51 PM, Dirk Brandewie
-<dirk.brandewie@gmail.com> wrote:
+On Wed, Mar 27, 2013 at 9:02 PM, Paolo Pisati
+<paolo.pisati@canonical.com> wrote:
+> check for '/cpus' presence before blindly dereferencing it:
 >
-> Is there any way to capture the beginning of this trace?
-
-I tried but since the oops scrolls fast followed by a hard freeze, I
-wasn't able to capture it completely.
-May be I can try netconsole and see if that helps.
-
+> [    4.181793] Unable to handle kernel NULL pointer dereference at virtual address 0000001c
+> [    4.181793] pgd = c0004000
+> [    4.181823] [0000001c] *pgd=00000000
+> [    4.181823] Internal error: Oops: 5 [#1] SMP ARM
+> [    4.181823] Modules linked in:
+> [    4.181823] CPU: 1    Tainted: G        W     (3.8.0-15-generic #25~hbankD)
+> [    4.181854] PC is at of_get_next_child+0x64/0x70
+> [    4.181854] LR is at of_get_next_child+0x24/0x70
+> [    4.181854] pc : [<c04fda18>]    lr : [<c04fd9d8>]    psr: 60000113
+> [    4.181854] sp : ed891ec0  ip : ed891ec0  fp : ed891ed4
+> [    4.181884] r10: c04dafd0  r9 : c098690c  r8 : c0936208
+> [    4.181884] r7 : ed890000  r6 : c0a63d00  r5 : 00000000  r4 : 00000000
+> [    4.181884] r3 : 00000000  r2 : 00000000  r1 : 00000000  r0 : c0b2acc8
+> [    4.181884] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+> [    4.181884] Control: 10c5387d  Table: adcb804a  DAC: 00000015
+> [    4.181915] Process swapper/0 (pid: 1, stack limit = 0xed890238)
+> [    4.181915] Stack: (0xed891ec0 to 0xed892000)
+> [    4.181915] 1ec0: c09b7b70 00000007 ed891efc ed891ed8 c04daff4 c04fd9c0 00000000 c09b7b70
+> [    4.181915] 1ee0: 00000007 c0a63d00 ed890000 c0936208 ed891f54 ed891f00 c00088e0 c04dafdc
+> [    4.181945] 1f00: ed891f54 ed891f10 c006e940 00000000 00000000 00000007 00000007 c08a4914
+> [    4.181945] 1f20: 00000000 c07dbd30 c0a63d00 c09b7b70 00000007 c0a63d00 000000bc c0936208
+> [    4.181945] 1f40: c098690c c0986914 ed891f94 ed891f58 c0936a40 c00087bc 00000007 00000007
+> [    4.181976] 1f60: c0936208 be8bda20 b6eea010 c0a63d00 c064547c 00000000 00000000 00000000
+> [    4.181976] 1f80: 00000000 00000000 ed891fac ed891f98 c0645498 c09368c8 00000000 00000000
+> [    4.181976] 1fa0: 00000000 ed891fb0 c0014658 c0645488 00000000 00000000 00000000 00000000
+> [    4.182006] 1fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> [    4.182006] 1fe0: 00000000 00000000 00000000 00000000 00000013 00000000 00000000 00000000
+> [    4.182037] [<c04fda18>] (of_get_next_child+0x64/0x70) from [<c04daff4>] (cpu0_cpufreq_driver_init+0x24/0x284)
+> [    4.182067] [<c04daff4>] (cpu0_cpufreq_driver_init+0x24/0x284) from [<c00088e0>] (do_one_initcall+0x130/0x1b0)
+> [    4.182067] [<c00088e0>] (do_one_initcall+0x130/0x1b0) from [<c0936a40>] (kernel_init_freeable+0x184/0x24c)
+> [    4.182098] [<c0936a40>] (kernel_init_freeable+0x184/0x24c) from [<c0645498>] (kernel_init+0x1c/0xf4)
+> [    4.182128] [<c0645498>] (kernel_init+0x1c/0xf4) from [<c0014658>] (ret_from_fork+0x14/0x20)
+> [    4.182128] Code: f57ff04f e320f004 e89da830 e89da830 (e595001c)
+> [    4.182128] ---[ end trace 634903a22e8609cb ]---
+> [    4.182189] Kernel panic - not syncing: Attempted to kill init!  exitcode=0x0000000b
+> [    4.182189]
+> [    4.642395] CPU0: stopping
 >
-> pid_param_set() is on the stack which means that something is changing
-> the debugfs parameters or the stack is FUBAR.
+> Signed-off-by: Paolo Pisati <paolo.pisati@canonical.com>
+> ---
+>  drivers/cpufreq/cpufreq-cpu0.c |   10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
 >
-I somehow doubt the stack is messed up as the call traces are always identical.
-(pid_param_set() seems to be in first trace as well.)
-
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index 4e5b7fb..f3e8f51 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -178,10 +178,16 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
 >
-> I don't see how duration_us can be zero unless somehow I am getting
-> back-to-back
-> timer callbacks which seems unlikely since the timer is not re-armed until
-> the timer function is about to return and the driver has done all its work
-> for the sample period
+>  static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  {
+> -       struct device_node *np;
+> +       struct device_node *np, *tmp;
+>         int ret;
+>
+> -       for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
+> +       tmp = of_find_node_by_path("/cpus");
+> +       if (!tmp) {
+> +               pr_err("failed to find OF /cpus\n");
+> +               return -ENOENT;
+> +       }
+> +
+> +       for_each_child_of_node(tmp, np) {
+>                 if (of_get_property(np, "operating-points", NULL))
+>                         break;
+>         }
 
-Do the two oops with common call stack suggest back to back callbacks?
+Just do: s/tmp/parent
 
-I will add some debugging checks tomorrow to see what is going on. But
-sounds like a minimal fix would be to guard against callbacks in quick
-succession?
-i.e. return from sample if ktime_us_delta(now, cpu->prev_sample) is zero?
+and add
 
-Thanks,
-Parag
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
