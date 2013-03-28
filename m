@@ -1,33 +1,67 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: use the exact frequency for
- clk_set_rate()
-Date: Thu, 28 Mar 2013 10:07:34 +0800
-Message-ID: <20130328020732.GF5429@S2101-09.ap.freescale.net>
-References: <Pine.LNX.4.64.1302251820431.3030@axis700.grange>
- <Pine.LNX.4.64.1303272345260.9558@axis700.grange>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: intel_pstate_timer_func divide by zero oops
+Date: Wed, 27 Mar 2013 19:51:42 -0700
+Message-ID: <5153B03E.2050201@gmail.com>
+References: <alpine.LFD.2.03.1303272103380.8412@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1303272345260.9558@axis700.grange>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=EfNbXf9+EzAFvBIhdP/nCyE8EcIuujVS6BBNmhf/3x8=;
+        b=UDMKuyQHMZYFsS7cNAdQomHpsPj7/9aNo8wC3YnskBkjYEyZhizB13d5qA4+JYjNry
+         Mwb+FRmENkYv8imsY/mnND3n/k1HBsghzAZWYjM7QHyZdkuVjXkDEWkNb4ExdpzC3B7Y
+         NrQeiouSgKrApRIg3EspEXetdLzjd3OGfkPBk+9153nJYEz+/dN2HGcbjjfPM4Aovvrk
+         L6KpJTUn6oLMElP9vVwMFgujrfZqP5vLQKC0DIYgUDjmxmtLvnSM3TQFVZUrubXauhBo
+         i0fdHUHrrgK6uX3nXut2lgMrPedXWW6K4vqct9aQqE0Od/IiEYx2XnRfNrAwJX4QrJcn
+         2sbw==
+In-Reply-To: <alpine.LFD.2.03.1303272103380.8412@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Parag Warudkar <parag.lkml@gmail.com>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, dirk.brandewie@gmail.com
 
-On Wed, Mar 27, 2013 at 11:46:38PM +0100, Guennadi Liakhovetski wrote:
-> Hi Shawn
-> 
-> On Mon, 25 Feb 2013, Guennadi Liakhovetski wrote:
-> 
-> > clk_set_rate() isn't supposed to accept approximate frequencies, instead
-> > a supported frequency should be obtained from clk_round_rate() and then
-> > used to set the clock.
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> 
-> Can I have your ack for this one, please?
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Is there any way to capture the beginning of this trace?
+
+pid_param_set() is on the stack which means that something is changing
+the debugfs parameters or the stack is FUBAR.
+
+On 03/27/2013 06:49 PM, Parag Warudkar wrote:
+> I get this same oops occassionally - the machine freezes and there doesn't
+> seem to be any record of the oops on disk.
+>
+
+>
+> That  is -
+> 	sample->pstate_pct_busy = 100 - div64_u64(
+> 					sample->idletime_us * 100,
+> 					sample->duration_us);
+>
+
+I don't see how duration_us can be zero unless somehow I am getting back-to-back
+timer callbacks which seems unlikely since the timer is not re-armed until
+the timer function is about to return and the driver has done all its work
+for the sample period
+
+--Dirk
+
+> So looks like sample->duration_us is 0? If so, that implies that
+> ktime_us_delta(now, cpu->prev_sample) is zero. I am not entirely sure how
+> to handle this case - return if sampling too early, or if there is some
+> other bug making the delta calculation go poof.
+>
+>
+> Thanks,
+>
+> Parag
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
