@@ -1,40 +1,56 @@
-From: Benoit Cousson <b-cousson@ti.com>
-Subject: Re: [PATCH V2 0/8] ARM: OMAP3+: support cpufreq-cpu0 for device tree
- boot
-Date: Thu, 28 Mar 2013 16:49:20 +0100
-Message-ID: <51546680.5080107@ti.com>
-References: <1363715590-5131-1-git-send-email-nm@ti.com> <51542390.1020300@ti.com> <CAGo_u6rn=GHVfJiz_7gkse2e-e3BZicEqJBQWomftpi-nCvfng@mail.gmail.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: [PATCH V2 0/2] cpufreq: ondemand: add AMD specific powersave bias
+Date: Thu, 28 Mar 2013 13:24:15 -0500
+Message-ID: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6rn=GHVfJiz_7gkse2e-e3BZicEqJBQWomftpi-nCvfng@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Nishanth Menon <nm@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, Jon Hunter <jon-hunter@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Jacob Shin <jacob.shin@amd.com>
 
-On 03/28/2013 02:43 PM, Nishanth Menon wrote:
-> Hi Benoit,
-> 
-> On Thu, Mar 28, 2013 at 6:03 AM, Benoit Cousson <b-cousson@ti.com> wrote:
->> The patches 1 to 6 looks good to me. Beside the pretty long Cc list,
->> that should not necessarily contain all the mailing list.
-> Arrgh.. my bad. I will keep it in mind for the future.
-> 
->>
->> Since you are changing / renaming some DTS files, and to avoid any merge
->> conflict I will apply only these 6 patches.
->> DTS and driver changes are in theory orthogonal enough to allow merging
->> them separately and in any order.
->>
->> I'll update my branch with these patches ASAP.
-> Thanks. I will post a v3 of remaining patches later today.
+This patchset adds AMD specific powersave bias function to the ondemand
+governor; which can be used to help ondemand governor make more power conscious
+frequency change decisions based on feedback from hardware (availble on AMD
+Family 16h and above).
 
-Patches after changelog cleanup are available in the following branch:
+Hardware feedback tells software how "sensitive" to frequency changes the
+workloads are. CPU-bound workloads will be more sensitive -- they will
+perform better as frequency increases. Memory/IO-bound workloads will be less
+sensitive -- they will not necessarily perform better as frequnecy increases.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/bcousson/linux-omap-dt.git for_3.10/dts
+This patchset was compared against ondemand governor without powersave bias
+and did not show any performance degradation on CPU-bound workloads such as
+kernbench and unixbench. While saving power on Memory-bound workloads such as
+stream.
 
-Regards,
-Benoit
+This applies to linux-pm's linux-next branch, on top of Viresh's 'Implement
+per policy instance of governor' V4 patchset:
+
+https://lkml.org/lkml/2013/3/27/348
+
+V2:
+* Added proper include files to amd_freq_sensitivity.c
+* Only register powersave_bias_target function pointer and not the entire
+  od_ops.
+
+Jacob Shin (2):
+  cpufreq: ondemand: allow custom powersave_bias_target function to be
+    registered
+  cpufreq: AMD "frequency sensitivity feedback" powersave bias for
+    ondemand governor
+
+ arch/x86/include/uapi/asm/msr-index.h  |    1 +
+ drivers/cpufreq/Kconfig.x86            |   10 +++
+ drivers/cpufreq/Makefile               |    1 +
+ drivers/cpufreq/amd_freq_sensitivity.c |  147 ++++++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq_governor.h     |    3 +
+ drivers/cpufreq/cpufreq_ondemand.c     |   22 ++++-
+ 6 files changed, 181 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
+
+-- 
+1.7.9.5
 
