@@ -1,61 +1,58 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V5 4/4] arm: dts: Add cpufreq controller node for Exynos5440 SoC
-Date: Thu, 28 Mar 2013 13:35:22 +0530
-Message-ID: <1364457923-8499-5-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V5 2/4] cpufreq: exynos: Remove error return even if no soc is
+ found
+Date: Thu, 28 Mar 2013 13:35:20 +0530
+Message-ID: <1364457923-8499-3-git-send-email-amit.daniel@samsung.com>
 References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
-         :in-reply-to:references;
-        bh=ljEpPIQdLN2UVQfLMt0MqlZsFH/tr8hIsCdIE98E3GA=;
-        b=PWNu4inuzICzIiDzSFkvxGsvqR0MV9EGIcDaQDbEw4+Shlit1o4/yKeSM6NaV/b7DX
-         7bRRk/aXYQUiZrAlJ5bJg9o6A9em9niu2ee4gBNKhFvJfsFw9c3bxh9FU7UVqxLkb7sU
-         Uo1vdUojE6lWxQwgq9t+f+sH5YXZLLoTrFXAkilPHLuf2HzHL0d+/+8ihGfWQuJKz9tl
-         ai9WXm4tU91tBNF/un4hxDwgaFzLxwD9aGaiKfNvGN30Lt+He9YJggjwYzTTR/yuLBIp
-         H2h0Td8A/WvG4eIkw3LidTSCBjWRW9DGWo0yNpMU2gJqp5i4eqaQBSa5+r8YIVpkYHLF
-         qjag==
-In-Reply-To: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
+ h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
+ :in-reply-to:references;
+ bh=0RRXFWqRZKoyDubdlp30gaBpygtYV6TqlnoWKHStDds=;
+ b=FYKHU+losgiHF9FCgBP0wFc17okXJ8dAus+8jp15BZIb6x6AIkS9pRTLrfT9IkH+P3
+ +XlEh7cIMB+enzE+fSh/ZG0NNvo4SPdmKg/OgWsUOSteVb3A6YrZlWcRbtJNELQHirDt
+ W7LTOtKapWQRDG5/0iOpmY2xwBuPlsyGaWf5TwJMOlLndDr7pKPUYaX6LBOBSljzlTsb
+ lpqwfp6scHD4YSk0WT6pQSk2n+dzWnT4PIuDQjRHOdvtk793UhYd+z9kP5nx8xMZPrcb
+ rCP+Y58zJB3GpyMWWYdoX3hGICrmPQqBVXz0g1+Dl/8zQXfgMW8X0oe7OssA/ulo+97i
+ ktHQ==
+In-Reply-To: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel@lists.infradead.org
 
-Add cpufreq controller device node for Exynos5440 SoC for passing
-parameters like controller base address, interrupt and cpufreq
-table. This node is added outside cpu0 as this driver is now a platform
-driver and a new device structure is needed.
+This patch helps to have single binary for exynos5440 and previous
+exynos soc's. This change is needed for adding exynos5440 cpufreq driver
+which does not uses exynos-cpufreq common file and adds it own driver.
 
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- arch/arm/boot/dts/exynos5440.dtsi |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/cpufreq/exynos-cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
-index 9a99755..94074ea 100644
---- a/arch/arm/boot/dts/exynos5440.dtsi
-+++ b/arch/arm/boot/dts/exynos5440.dtsi
-@@ -63,6 +63,18 @@
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 78057a3..ee75997 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -297,7 +297,7 @@ static int __init exynos_cpufreq_init(void)
+ 	else if (soc_is_exynos5250())
+ 		ret = exynos5250_cpufreq_init(exynos_info);
+ 	else
+-		pr_err("%s: CPU type not found\n", __func__);
++		return 0;
  
- 	};
- 
-+	cpufreq@160000 {
-+		compatible = "samsung,exynos5440-cpufreq";
-+		reg = <0x160000 0x1000>;
-+		interrupts = <0 57 0>;
-+		operating-points = <
-+				/* KHz	  uV */
-+				1200000 1025000
-+				1000000 975000
-+				800000  925000
-+		>;
-+	};
-+
- 	serial@B0000 {
- 		compatible = "samsung,exynos4210-uart";
- 		reg = <0xB0000 0x1000>;
+ 	if (ret)
+ 		goto err_vdd_arm;
 -- 
 1.7.1
