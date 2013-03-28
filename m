@@ -1,35 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 1/4] cpufreq: exynos: Add cpufreq driver for exynos5440
-Date: Thu, 28 Mar 2013 18:12:31 +0530
-Message-ID: <CAKohpon5BYW0Ypx8SbBsSUuugUnmYU=rBCMizz-CxuHjCzObpQ@mail.gmail.com>
-References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
-	<1364457923-8499-2-git-send-email-amit.daniel@samsung.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V2 0/8] ARM: OMAP3+: support cpufreq-cpu0 for device tree boot
+Date: Thu, 28 Mar 2013 08:43:18 -0500
+Message-ID: <CAGo_u6rn=GHVfJiz_7gkse2e-e3BZicEqJBQWomftpi-nCvfng@mail.gmail.com>
+References: <1363715590-5131-1-git-send-email-nm@ti.com>
+	<51542390.1020300@ti.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1364457923-8499-2-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=Fk1xx1GitX0L06Je37dlJ2P7X2jrApNgqiyS038YhSs=;
+        b=dt3GkLqrsDNsmo7Rb3bFIj1cZhhw0XkURAEMoTvAHOxJHnNUkvoJKx9neDfHGST4EF
+         4WMZoBqpHX2xPOEnME2XnQWXKEmxKw1rJKN1WbIIcq8KeKpgJ58DQubLKtBOmqh8dTa+
+         QNoTuSerEO95kdY67ZtycaWP4p9C3o9mAZMrnPaNhlmJj0qAjQymTTl0FdSLVUcIP+D+
+         65E20Rng3oBlWg+2aBvP/GLxkwDv0Mtf5d4xuo1xqoQce0xFqJ4Ig+lTvfzl0SeJ8gWE
+         fYwcwBQ7TKVl/zWHyOr1KrWMyI/HGm/RHvZvQtQW7qVaRZFmJkAQDouBcVTPV5GlSDwe
+         2z+w==
+In-Reply-To: <51542390.1020300@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Benoit Cousson <b-cousson@ti.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, Jon Hunter <jon-hunter@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 28 March 2013 13:35, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +       policy->cur = dvfs_info->cur_frequency;
-> +       cpufreq_frequency_table_get_attr(dvfs_info->freq_table, policy->cpu);
-> +
-> +       /* set the transition latency value */
-> +       policy->cpuinfo.transition_latency = dvfs_info->latency;
-> +
-> +       cpumask_setall(policy->cpus);
-> +
-> +       return cpufreq_frequency_table_cpuinfo(policy, dvfs_info->freq_table);
+Hi Benoit,
 
-I missed this earlier and saw this mistake in yet another driver.
-You need to call cpufreq_frequency_table_get_attr() only when
-cpufreq_frequency_table_cpuinfo() has passed.
+On Thu, Mar 28, 2013 at 6:03 AM, Benoit Cousson <b-cousson@ti.com> wrote:
+> The patches 1 to 6 looks good to me. Beside the pretty long Cc list,
+> that should not necessarily contain all the mailing list.
+Arrgh.. my bad. I will keep it in mind for the future.
 
-> +}
+>
+> Since you are changing / renaming some DTS files, and to avoid any merge
+> conflict I will apply only these 6 patches.
+> DTS and driver changes are in theory orthogonal enough to allow merging
+> them separately and in any order.
+>
+> I'll update my branch with these patches ASAP.
+Thanks. I will post a v3 of remaining patches later today.
+
+Regards,
+Nishanth Menon
