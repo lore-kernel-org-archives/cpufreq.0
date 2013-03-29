@@ -1,42 +1,56 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up after
- s2ram
-Date: Fri, 29 Mar 2013 14:14:37 +0000 (UTC)
-Message-ID: <20130329141437.A91BF11FB3C@bugzilla.kernel.org>
-References: <bug-55411-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-55411-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] tools: cpufreq: Fix cpufreq-info print messages for affected[related]_cpus
+Date: Fri, 29 Mar 2013 19:56:39 +0530
+Message-ID: <8c5305cdbe0fb20730e6b28f79a71d36a472a817.1364567091.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: rjw@sisk.pl, Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=55411
+Earlier definitions of affected and related cpus were:
+Related_cpus: CPUs which run at the same hardware frequency.
+Affected_cpus: CPUs which need to have their frequency coordinated by software.
 
+These definitions were very confusing as they don't communicate the real
+difference between them.
 
+Following are the new definitions of these variables:
+Related_cpus: All (Online & Offline) CPUs that run at the same hardware frequency.
+Affected_cpus: Online CPUs that run at the same hardware frequency.
 
+Above definitions are more consistent with latest cpufreq core code.
 
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ tools/power/cpupower/utils/cpufreq-info.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- Comment #40 from Viresh Kumar <viresh.kumar@linaro.org>  2013-03-29 14:14:36 ---
-On 25 March 2013 16:53, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> There is no other user of relatead_cpus earlier in cpufreq core and that's why
-> i wonder why it was added earlier.
->
-> But a grep of relatead_cpus for 3.8 showed some interesting users in:
-> tools/power/cpupower/
->
-> I will try to check what they are doing with it, but for the kernel it
-> was almost unused.
-
-I checked tools and they aren't doing anything tricky with it. Just reading
-groups of cpus from sysfs.
-
-Now i believe even tools should be patched a bit to give correct meanings
-of affected or related cpus. Let me try it.
-
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index 28953c9..a81d4ec 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -247,7 +247,7 @@ static void debug_output_one(unsigned int cpu)
+ 
+ 	cpus = cpufreq_get_related_cpus(cpu);
+ 	if (cpus) {
+-		printf(_("  CPUs which run at the same hardware frequency: "));
++		printf(_("  All (Online & Offline) CPUs that run at the same hardware frequency: "));
+ 		while (cpus->next) {
+ 			printf("%d ", cpus->cpu);
+ 			cpus = cpus->next;
+@@ -258,7 +258,7 @@ static void debug_output_one(unsigned int cpu)
+ 
+ 	cpus = cpufreq_get_affected_cpus(cpu);
+ 	if (cpus) {
+-		printf(_("  CPUs which need to have their frequency coordinated by software: "));
++		printf(_("  Online CPUs that run at the same hardware frequency: "));
+ 		while (cpus->next) {
+ 			printf("%d ", cpus->cpu);
+ 			cpus = cpus->next;
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+1.7.12.rc2.18.g61b472e
+
