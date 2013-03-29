@@ -1,55 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Fehler bei cpufreq-info
-Date: Fri, 29 Mar 2013 19:17:03 +0530
-Message-ID: <CAOh2x=kg5jT4eux6fP6_kNP0CwWQO9uNrZCQ1f0qoQF+rKeUZw@mail.gmail.com>
-References: <51558EDC.2040503@gmx.de>
+Subject: Re: [Bug 55411] sysfs per-cpu cpufreq subdirs/symlinks screwed up
+ after s2ram
+Date: Fri, 29 Mar 2013 19:44:33 +0530
+Message-ID: <CAKohpomjG2ZTVy_BZMW0Ah_JxbUEvw-pDPzMpqggyW_08p_v+w@mail.gmail.com>
+References: <bug-55411-70601@https.bugzilla.kernel.org/>
+	<CAKohponFbCpBGtRRkzbzHEE4ez7FJieiQJQJSwbhUJP_dee_9g@mail.gmail.com>
+	<1694228.Eg36y3ID9W@skinner.arch.suse.de>
+	<2581491.irn18K9zaF@hammer82.arch.suse.de>
+	<CAKohponb3gvzQMPZH=vfBGpzG8NMYZRCx_Ym==xDH0BwgzN+Nw@mail.gmail.com>
+	<CAKohpoksBOpW59YETR-SMWJSGsJSWKoXktJoVM38SietN9p3Ug@mail.gmail.com>
+	<20130324044927.6a2b1588@ws>
+	<CAKohpokknnU7jn0UuNsoRoho5MSmzT-Ub3sVwR030uJqMjSH7g@mail.gmail.com>
+	<CAKohpomsrafpNii9zqAjqe5kqEGOEdP5mDpSSjTswrY1YNfhBw@mail.gmail.com>
+	<20130325041541.4574f51a@ws>
+	<CAKohpo=DY6kmUVjpuHimMdYp1ubRfbNYfTjAB=mDPEkSzqumRg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        bh=OOiFJMMKDDrGOks9ggvly5ku466OCJbygu9FphX8d00=;
-        b=Zg3P9zFs+awhQopZMkgW1/jHor6JC6WUW0qdZcQY1/udKPzTFoMnrjVGPZEnNiPCjA
-         bdFoJZu7Vnm6xaDh7nGcuWzw25+J5Xdg6LDPhuGKebCuNjP9DObY8EJ9YLlSgYTeydSo
-         RbRt9cywjcv3hNIADL5tMpAjjtamXx0BtMF/VZh3mGk54jaFWPTVGZObDaNJTaUOiI1b
-         mAUarsXLjQldLKjv8To0zdvJIP1fc1R7AauPBkPkfPhcW0rNdPj+hmB1MQy92+jGLvF9
-         JvlU3ip96sRNOhDIaaweszU/paSAZgXkXrStPDXCnxZRi/WY6ZyXWjFbpNKzFJMY+1/j
-         1sqw==
-In-Reply-To: <51558EDC.2040503@gmx.de>
+In-Reply-To: <CAKohpo=DY6kmUVjpuHimMdYp1ubRfbNYfTjAB=mDPEkSzqumRg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Rainer Maier <RaMaier@gmx.de>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: bugzilla-daemon@bugzilla.kernel.org, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Borislav Petkov <bp@alien8.de>, Thomas Renninger <trenn@suse.de>, Andre Przywara <andre.przywara@linaro.org>, djwong@us.ibm.com, Duncan <1i5t5.duncan@cox.net>
 
-2013/3/29 Rainer Maier <RaMaier@gmx.de>:
-> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-> Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
-> analysiere CPU 0:
->   Treiber: p4-clockmod
->   Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0
->   Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0
->   Maximale Dauer eines Taktfrequenzwechsels: 10.00 ms.
->   Hardwarebedingte Grenzen der Taktfrequenz: 317 MHz - 2.53 GHz
->   m=F6gliche Taktfrequenzen: 317 MHz, 633 MHz, 950 MHz, 1.27 GHz, 1.5=
-8 GHz,
-> 1.90 GHz, 2.22 GHz, 2.53 GHz
->   m=F6gliche Regler: userspace, powersave, conservative, ondemand, pe=
-rformance
->   momentane Taktik: die Frequenz soll innerhalb 317 MHz und 2.53 GHz.
->                     liegen. Der Regler "performance" kann frei entsch=
-eiden,
->                     welche Taktfrequenz innerhalb dieser Grenze verwe=
-ndet
-> wird.
->   momentane Taktfrequenz ist 2.53 GHz  (verifiziert durch Nachfrage b=
-ei der
-> Hardware).
->   Statistik:317 MHz:0,00%, 633 MHz:0,00%, 950 MHz:0,00%, 1.27 GHz:0,0=
-0%,
-> 1.58 GHz:0,00%, 1.90 GHz:0,00%, 2.22 GHz:0,00%, 2.53 GHz:100,00%
+On 25 March 2013 16:53, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> There is no other user of relatead_cpus earlier in cpufreq core and that's why
+> i wonder why it was added earlier.
+>
+> But a grep of relatead_cpus for 3.8 showed some interesting users in:
+> tools/power/cpupower/
+>
+> I will try to check what they are doing with it, but for the kernel it
+> was almost unused.
 
-What's the context of this mail? And why is it written in German?
+I checked tools and they aren't doing anything tricky with it. Just reading
+groups of cpus from sysfs.
+
+Now i believe even tools should be patched a bit to give correct meanings
+of affected or related cpus. Let me try it.
