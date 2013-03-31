@@ -1,54 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Intel Core2 Duo E6600 reports max-frequency of just 900 MHz
- instead of 2.4 GHz
-Date: Sun, 31 Mar 2013 19:16:54 +0530
-Message-ID: <CAKohpomKuPXhRayR61v6JU_rV4-if+mtW+kze49ibPMfZ9Oy+Q@mail.gmail.com>
-References: <20130331012053.220de31f@intellistation.kalteis>
-	<CAOh2x==5_UXqSjMT9bjrKNLC4xrFCw7jeahkAoo6UHSdz3KE7w@mail.gmail.com>
-	<20130331141055.2e9cc773@intellistation.kalteis>
+From: "Xuetao Guan" <gxt@mprc.pku.edu.cn>
+Subject: Re: [PATCH 7/9] unicore2: cpufreq: move cpufreq driver to 
+     drivers/cpufreq
+Date: Sun, 31 Mar 2013 22:18:53 +0800 (CST)
+Message-ID: <60902.128.237.120.215.1364739533.squirrel@mprc.pku.edu.cn>
+References: <cover.1364229828.git.viresh.kumar@linaro.org>
+    <27c30dd79c668dc3471d37fce2c83a4504d8b18c.1364229828.git.viresh.kumar@linaro.org>
+    <CAKohpo=MCn4qBMg9ZsSzmDvg0-7eE063u6g=btuCgC6G8x2rmQ@mail.gmail.com>
+Reply-To: gxt@mprc.pku.edu.cn
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130331141055.2e9cc773@intellistation.kalteis>
+In-Reply-To: <CAKohpo=MCn4qBMg9ZsSzmDvg0-7eE063u6g=btuCgC6G8x2rmQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Simon Kalteis <skalteis@kernelspace.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Borislav Petkov <bp@alien8.de>, Thomas Renninger <trenn@suse.de>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>, arvind.chauhan@arm.com, robin.randhawa@arm.com, steve.bannister@arm.com, liviu.dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 31 March 2013 17:40, Simon Kalteis <skalteis@kernelspace.de> wrote:
-> cpufreq-info:
+> On 25 March 2013 22:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> This patch moves cpufreq driver of UNICORE-2 architecture to
+>> drivers/cpufreq.
+>>
+>> Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  arch/unicore32/kernel/Makefile
+>> | 1 -
+>>  drivers/cpufreq/Makefile
+>> | 1 +
+>>  arch/unicore32/kernel/cpu-ucv2.c => drivers/cpufreq/unicore2-cpufreq.c
+>> | 2 +-
+>>  3 files changed, 2 insertions(+), 2 deletions(-)
+>>  rename arch/unicore32/kernel/cpu-ucv2.c =>
+>> drivers/cpufreq/unicore2-cpufreq.c (96%)
 >
-> cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
-> Report errors and bugs to cpufreq@vger.kernel.org, please.
-> analyzing CPU 0:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 0
->   CPUs which need to have their frequency coordinated by software: 0
->   maximum transition latency: 10.0 us.
->   hardware limits: 600 MHz - 900 MHz
->   available frequency steps: 900 MHz, 600 MHz
->   available cpufreq governors: userspace, conservative, powersave,
-> ondemand, performance current policy: frequency should be within 600
-> MHz and 900 MHz. The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 900 MHz (asserted by call to hardware).
->   cpufreq stats: 900 MHz:49.48%, 600 MHz:50.52%  (204)
-> analyzing CPU 1:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 1
->   CPUs which need to have their frequency coordinated by software: 1
->   maximum transition latency: 10.0 us.
->   hardware limits: 600 MHz - 900 MHz
->   available frequency steps: 900 MHz, 600 MHz
->   available cpufreq governors: userspace, conservative, powersave,
-> ondemand, performance current policy: frequency should be within 600
-> MHz and 900 MHz. The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 900 MHz (asserted by call to hardware).
->   cpufreq stats: 900 MHz:22.56%, 600 MHz:77.44%  (377)
+> Guan,
+>
+> Can i have your ack for this?
+>
+Sure. Sorry for my delay.
 
-So your hardware has communicated only two frequencies to cpufreq-core:
-600 and 900 MHz.. Don't know what that could be on a x86..
+Acked-by: Guan Xuetao <gxt@mprc.pku.edu.cn>
 
-Lets see if others added in Cc can help you.
