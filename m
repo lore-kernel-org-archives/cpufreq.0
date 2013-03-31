@@ -1,35 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Intel Core2 Duo E6600 reports max-frequency of just 900 MHz
- instead of 2.4 GHz
-Date: Sun, 31 Mar 2013 09:37:16 +0530
-Message-ID: <CAOh2x==5_UXqSjMT9bjrKNLC4xrFCw7jeahkAoo6UHSdz3KE7w@mail.gmail.com>
-References: <20130331012053.220de31f@intellistation.kalteis>
+From: Eric Miao <eric.y.miao@gmail.com>
+Subject: Re: [PATCH 6/9] cpufreq: pxa3xx: move cpufreq driver to drivers/cpufreq
+Date: Sun, 31 Mar 2013 13:24:06 +0800
+Message-ID: <CAMPhdO9WbCdJq8NdoOjW2Jreka2dSRrNyit_7xrAbX_haEqNGQ@mail.gmail.com>
+References: <cover.1364205812.git.viresh.kumar@linaro.org> <2aa937c3d81776f01c2c1d6fcfcb08ba74163b53.1364205812.git.viresh.kumar@linaro.org>
+ <CAKohpokq+JJF2Ec3=_QF5dk_w9tMuKZ0trtcgXbC1if=HXEBRg@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=JQVnA3ivrAxYQM5wVGhYVPW5stM7+47cL3HWklPMlb4=;
-        b=t3gKoXNmC77PJapJQBzReuQ2PesDVBdfGGYCAJ1whHPGWfRVMbTxVFEEfhPV3KXXmh
-         srjG0P49PilLPVQw67KioViH+1IwwL83Ndd30LVLxpwOlt0dXQT0ixU7JF49DUsbPkNa
-         K2uDkslSPrY50WQfRDKmaafAo5fdOcRAyzZmt4XQcebKHwJzhM21rWaeYbVQ3pz8b6l9
-         PXBex+7n50iPArUwo0xvJ3VsOu4cfMX9dcspB//bkax5kAwFzaVJR7HdrJ8DqWNcLu09
-         fZkx/tFizQICippvI7G67FJy0OOJERZEFJy8PAUsAAR7wqzTVeqZZafNSVMLs3Y7oI3S
-         zC7g==
-In-Reply-To: <20130331012053.220de31f@intellistation.kalteis>
-Sender: cpufreq-owner@vger.kernel.org
+        h=x-received:mime-version:in-reply-to:references:from:date:message-id
+         :subject:to:cc:content-type;
+        bh=pvNWNlOtU8YRLn2KQp3NmBEuU7Kk546PCnyi6zD5FfY=;
+        b=oE6sUi5SGt2d01iXoO63ASjL+yaRQF7x8gZMvTX+Qq25sm9eb6jSk/kO0aGSB0t/OK
+         55SGckirEGlOJQrMJ6Fh8EQ7DP7le8mG5sITXGEtzE4MefTGGgP/zKWmVzimAQtSZgtu
+         LCdq5GqmslHQKI/33rodmas3aNNXY2/FOKeXtAc6H7+OyvZNNoLhy9ZUeDPRNILK80Sd
+         07tq3Mubf7YJBeHNwMNLNSVTleZ9BdetZFlLnsfxHBhwBsLOtm8ZZp2C0wyS7N60omMt
+         ZFrq/A9C5ssNBWOEmDF77y+2AoLEM9z6y5lMnJJ1A3BCDM2Od5ZIuTU1x2v/DKiGk3Ou
+         aeHg==
+In-Reply-To: <CAKohpokq+JJF2Ec3=_QF5dk_w9tMuKZ0trtcgXbC1if=HXEBRg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Simon Kalteis <skalteis@kernelspace.de>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Haojian Zhuang <haojian.zhuang@gmail.com>, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd.bergmann@linaro.org>, Russell King <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Sun, Mar 31, 2013 at 5:50 AM, Simon Kalteis <skalteis@kernelspace.de> wrote:
-> Hello!
+On Sun, Mar 31, 2013 at 11:52 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Eric/Haojian,
 >
-> I discovered that my IBM Intellistation M Pro 9229Y with its Intel
-> Core2 Duo E6600 is reported to clock only at a max frequency of 900.000
-> MHz instead of 2.4 GHz.
+> On 25 March 2013 15:41, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> This patch moves cpufreq driver of ARM based pxa3xx platform to drivers/cpufreq.
+>>
+>> Cc: Eric Miao <eric.y.miao@gmail.com>
 
-Can we have output of cpufreq-info util?
+Acked-by: Eric Miao <eric.y.miao@gmail.com>
+
+>> Cc: Haojian Zhuang <haojian.zhuang@gmail.com>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  arch/arm/mach-pxa/Makefile                                           | 1 -
+>>  arch/arm/mach-pxa/include/mach/generic.h                             | 1 +
+>>  drivers/cpufreq/Makefile                                             | 1 +
+>>  .../mach-pxa/cpufreq-pxa3xx.c => drivers/cpufreq/pxa3xx-cpufreq.c    | 5 +----
+>>  4 files changed, 3 insertions(+), 5 deletions(-)
+>>  create mode 100644 arch/arm/mach-pxa/include/mach/generic.h
+>>  rename arch/arm/mach-pxa/cpufreq-pxa3xx.c => drivers/cpufreq/pxa3xx-cpufreq.c (98%)
+>
+> Can i have your Ack or views about 6/9 and 7/9 Patch?
