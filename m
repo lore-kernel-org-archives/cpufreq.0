@@ -1,51 +1,149 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V4 0/2] Implement per policy instance of governor
-Date: Sat, 30 Mar 2013 23:08:56 +0100
-Message-ID: <1656173.qmCdUDP7Pu@vostro.rjw.lan>
-References: <cover.1364398686.git.viresh.kumar@linaro.org> <2566297.LngxUqUYMZ@vostro.rjw.lan> <CAKohpon_C3LYe++cOb_9fgtz=DfQV_vWRNuH=UVXcKOO14GUhQ@mail.gmail.com>
+From: Simon Kalteis <skalteis@kernelspace.de>
+Subject: Intel Core2 Duo E6600 reports max-frequency of just 900 MHz instead
+ of 2.4 GHz
+Date: Sun, 31 Mar 2013 01:20:53 +0100
+Message-ID: <20130331012053.220de31f@intellistation.kalteis>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon_C3LYe++cOb_9fgtz=DfQV_vWRNuH=UVXcKOO14GUhQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, jacob.shin@amd.com
+To: cpufreq@vger.kernel.org
 
-On Saturday, March 30, 2013 09:06:37 AM Viresh Kumar wrote:
-> On 30 March 2013 07:47, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, March 27, 2013 09:28:56 PM Viresh Kumar wrote:
-> 
-> >> To test these over linux-next you need to revert following first:
-> >> db9baec cpufreq: Get rid of "struct global_attr"
-> >> 86bd6f0 cpufreq: governor: Implement per policy instances of governors
-> >> 8ae67b1 cpufreq: Add per policy governor-init/exit infrastructure
-> 
-> > I've applied these two patches and re-applied the queue on top of them.
-> >
-> > All is in my linux-next branch now.
-> 
-> You were supposed to remove below patch too, which you missed :)
-> 
-> c7baa5e cpufreq: Get rid of "struct global_attr"
+Hello!
 
-OK, I'll remove it.
-
-And by the way, I'm no longer amused with the mess going on in the cpufreq land.
-
-Please send me *patches*.  I'm not interested in git pointers.
-
-Moreover, please send those patches in a way allowing me to figure out the
-ordering without looking into your git tree.
-
-If you have a number of outstanding cpufreq patches for me to apply, please
-create a patch series out of them and send it.
-
-Thanks,
-Rafael
+I discovered that my IBM Intellistation M Pro 9229Y with its Intel
+Core2 Duo E6600 is reported to clock only at a max frequency of 900.000
+MHz instead of 2.4 GHz.
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+There is an old bug report on cpufreq@vger.kernel.org dating 29 Mar
+2011 from Patrick McLean here
+http://www.spinics.net/lists/cpufreq/msg02172.html
+with followup from Thomas Renninger
+http://www.spinics.net/lists/cpufreq/msg02172.html
+
+but no apparent solution for the problem.
+
+
+System information:
+=======================
+uname -a:
+
+Linux intellistation 3.8.5 #2 SMP PREEMPT Fri Mar 29 23:22:57 CET 2013
+i686 GNU/Linux
+
+
+/proc/cpuinfo:
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
+stepping        : 6
+microcode       : 0xd0
+cpu MHz         : 900.000
+cache size      : 4096 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
+lm constant_tsc arch_perfmon pebs bts aperfmperf pni dtes64 monitor
+ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm dtherm tpr_shadow
+bogomips        : 4787.62 
+clflush size    : 64 
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual 
+power management:
+
+[output for processor 1 i.e. second core omitted]
+
+
+microcode version:
+
+microcode: CPU0 sig=0x6f6, pf=0x1, revision=0xc6
+microcode: CPU0 updated to revision 0xd0, date = 2010-09-30
+microcode: CPU1 sig=0x6f6, pf=0x1, revision=0xc6
+microcode: CPU1 updated to revision 0xd0, date = 2010-09-30
+microcode: Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+
+
+dmidecode [output shortened]:
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+        Vendor: IBM
+        Version: IBM BIOS Version 1.35-[GVE135AUS-1.35]-
+        Release Date: 02/19/2008
+        Address: 0xE4E70
+        Runtime Size: 110992 bytes
+        ROM Size: 1024 kB
+        Characteristics:
+                PCI is supported
+                PNP is supported
+                APM is supported
+                BIOS is upgradeable
+                BIOS shadowing is allowed
+                ESCD support is available
+                Boot from CD is supported
+                Selectable boot is supported
+                BIOS ROM is socketed
+                EDD is supported
+                3.5"/720 kB floppy services are supported (int 13h)
+                3.5"/2.88 MB floppy services are supported (int 13h)
+                Print screen service is supported (int 5h)
+                8042 keyboard services are supported (int 9h)
+                Serial services are supported (int 14h)
+                Printer services are supported (int 17h)
+                CGA/mono video services are supported (int 10h)
+                ACPI is supported
+                USB legacy is supported
+                LS-120 boot is supported
+                ATAPI Zip drive boot is supported
+                IEEE 1394 boot is supported
+                BIOS boot specification is supported
+                Function key-initiated network boot is supported
+                Targeted content distribution is supported
+        BIOS Revision: 1.35
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: IBM
+        Product Name: IBM IntelliStation M Pro -[9229Y18]-
+        Version: Revision A 
+        Serial Number: 99C5054
+        UUID: 4066AA45-FE58-B601-069E-00145E64AEC0
+        Wake-up Type: APM Timer
+        SKU Number: Not Specified
+        Family: Not Specified
+
+Handle 0x0002, DMI type 2, 8 bytes
+Base Board Information
+        Manufacturer: IBM
+        Product Name: M50
+        Version: REV : 1.01
+        Serial Number: 79N15Z
+
+
+
+
+Thank you very much in advance!
+
+Kind regards,
+
+Simon Kalteis
+
