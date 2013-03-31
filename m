@@ -1,44 +1,49 @@
-From: "Xuetao Guan" <gxt@mprc.pku.edu.cn>
-Subject: Re: [PATCH 7/9] unicore2: cpufreq: move cpufreq driver to 
-     drivers/cpufreq
-Date: Sun, 31 Mar 2013 22:18:53 +0800 (CST)
-Message-ID: <60902.128.237.120.215.1364739533.squirrel@mprc.pku.edu.cn>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
-    <27c30dd79c668dc3471d37fce2c83a4504d8b18c.1364229828.git.viresh.kumar@linaro.org>
-    <CAKohpo=MCn4qBMg9ZsSzmDvg0-7eE063u6g=btuCgC6G8x2rmQ@mail.gmail.com>
-Reply-To: gxt@mprc.pku.edu.cn
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 8/9] spark: cpufreq: move cpufreq driver to
+ drivers/cpufreq
+Date: Sun, 31 Mar 2013 12:40:40 -0400 (EDT)
+Message-ID: <20130331.124040.1451284849991873230.davem@davemloft.net>
+References: <CAKohpomnOaVG1xktDL=YGz6yM2vFoYVF2Un-9_zL7owiJVG6gw@mail.gmail.com>
+	<CAKohponJJKDcFXK-Zs-eCS2=v3=-CrkEqF1FaHz64D-kq888BA@mail.gmail.com>
+	<CAKohpokGRPJGPh8e_NjpZQRTWOxk=SGzhcNbjkHWAKE-Gfig9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=MCn4qBMg9ZsSzmDvg0-7eE063u6g=btuCgC6G8x2rmQ@mail.gmail.com>
+In-Reply-To: <CAKohpokGRPJGPh8e_NjpZQRTWOxk=SGzhcNbjkHWAKE-Gfig9g@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>, arvind.chauhan@arm.com, robin.randhawa@arm.com, steve.bannister@arm.com, liviu.dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: Text/Plain; charset="us-ascii"
+To: viresh.kumar@linaro.org
+Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, sparclinux@vger.kernel.org
 
-> On 25 March 2013 22:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> This patch moves cpufreq driver of UNICORE-2 architecture to
->> drivers/cpufreq.
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Sun, 31 Mar 2013 13:00:21 +0530
+
+> On 26 March 2013 09:55, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> From: Viresh Kumar <viresh.kumar@linaro.org>
+>> Date: Mon, 25 Mar 2013 11:20:23 +0530
+>> Subject: [PATCH] sparc: cpufreq:  move cpufreq driver to drivers/cpufreq
 >>
->> Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
+>> This patch moves cpufreq driver of SPARC architecture to drivers/cpufreq.
+>>
+>> Cc: David S. Miller <davem@davemloft.net>
+>> Cc: sparclinux@vger.kernel.org
 >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 >> ---
->>  arch/unicore32/kernel/Makefile
->> | 1 -
->>  drivers/cpufreq/Makefile
->> | 1 +
->>  arch/unicore32/kernel/cpu-ucv2.c => drivers/cpufreq/unicore2-cpufreq.c
->> | 2 +-
->>  3 files changed, 2 insertions(+), 2 deletions(-)
->>  rename arch/unicore32/kernel/cpu-ucv2.c =>
->> drivers/cpufreq/unicore2-cpufreq.c (96%)
->
-> Guan,
->
-> Can i have your ack for this?
->
-Sure. Sorry for my delay.
+>>  arch/sparc/Kconfig                                 | 23 ----------------------
+>>  arch/sparc/kernel/Makefile                         |  3 ---
+>>  drivers/cpufreq/Kconfig                            | 23 ++++++++++++++++++++++
+>>  drivers/cpufreq/Makefile                           |  2 ++
+>>  .../cpufreq/sparc-us2e-cpufreq.c                   |  0
+>>  .../cpufreq/sparc-us3-cpufreq.c                    |  0
+>>  6 files changed, 25 insertions(+), 26 deletions(-)
+>>  rename arch/sparc/kernel/us2e_cpufreq.c =>
+>> drivers/cpufreq/sparc-us2e-cpufreq.c (100%)
+>>  rename arch/sparc/kernel/us3_cpufreq.c =>
+>> drivers/cpufreq/sparc-us3-cpufreq.c (100%)
+> 
+> Hi David,
+> 
+> Does this one look fine to you?
 
-Acked-by: Guan Xuetao <gxt@mprc.pku.edu.cn>
-
+Subject line still has the "spark" typo.
