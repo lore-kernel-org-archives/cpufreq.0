@@ -1,23 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] cpufreq: Raname index as data in cpufreq_frequency_table
-Date: Sun, 31 Mar 2013 07:03:04 +0530
-Message-ID: <CAKohpo=vorTDONBR2czcZpP64sCfv1Qa-u8zGkHys9miwQrURw@mail.gmail.com>
-References: <03ca6f17860d290cfc67e51969062612f0ab26ab.1364643234.git.viresh.kumar@linaro.org>
-	<2835305.o7Hvg1cesG@vostro.rjw.lan>
+Date: Sun, 31 Mar 2013 03:46:02 +0200
+Message-ID: <6766028.RBJyPM3lJj@vostro.rjw.lan>
+References: <03ca6f17860d290cfc67e51969062612f0ab26ab.1364643234.git.viresh.kumar@linaro.org> <2835305.o7Hvg1cesG@vostro.rjw.lan> <CAKohpo=vorTDONBR2czcZpP64sCfv1Qa-u8zGkHys9miwQrURw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2835305.o7Hvg1cesG@vostro.rjw.lan>
+In-Reply-To: <CAKohpo=vorTDONBR2czcZpP64sCfv1Qa-u8zGkHys9miwQrURw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Sekhar Nori <nsekhar@ti.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Stephen Warren <swarren@wwwdotorg.org>, Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
 
-On 31 March 2013 03:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Sorry, I won't apply this.  It changes too much stuff at a time and I'm not
-> really sure if the change being made is necessary.
+On Sunday, March 31, 2013 07:03:04 AM Viresh Kumar wrote:
+> On 31 March 2013 03:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Sorry, I won't apply this.  It changes too much stuff at a time and I'm not
+> > really sure if the change being made is necessary.
+> 
+> Hmm.. I thought it is important  as it puts the real meaning of "index" in the
+> code.
 
-Hmm.. I thought it is important  as it puts the real meaning of "index" in the
-code. It is big as it fixes all the users of cpufreq_frequency_table, if i don't
-do it this way it will break git bisect.
+And what does that change, really?  What about documenting the meaning of
+"index" instead?
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
