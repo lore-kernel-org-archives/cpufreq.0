@@ -1,49 +1,40 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 8/9] spark: cpufreq: move cpufreq driver to
- drivers/cpufreq
-Date: Sun, 31 Mar 2013 12:40:40 -0400 (EDT)
-Message-ID: <20130331.124040.1451284849991873230.davem@davemloft.net>
-References: <CAKohpomnOaVG1xktDL=YGz6yM2vFoYVF2Un-9_zL7owiJVG6gw@mail.gmail.com>
-	<CAKohponJJKDcFXK-Zs-eCS2=v3=-CrkEqF1FaHz64D-kq888BA@mail.gmail.com>
-	<CAKohpokGRPJGPh8e_NjpZQRTWOxk=SGzhcNbjkHWAKE-Gfig9g@mail.gmail.com>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
+Date: Mon, 1 Apr 2013 02:16:55 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B122EF7@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+ <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokGRPJGPh8e_NjpZQRTWOxk=SGzhcNbjkHWAKE-Gfig9g@mail.gmail.com>
+In-Reply-To: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
-To: viresh.kumar@linaro.org
-Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, sparclinux@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Li Yang-R58472 <r58472@freescale.com>
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Sun, 31 Mar 2013 13:00:21 +0530
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdl
+ci5rZXJuZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9u
+IEJlaGFsZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqM9TCMzDI1SAyMTo1Mg0KPiBU
+bzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpOyBjcHVmcmVx
+QHZnZXIua2VybmVsLm9yZzsgTGludXggUE0gbGlzdDsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5v
+emxhYnMub3JnOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzXSBjcHVm
+cmVxOiBBZGQgY3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZSBlNTAwbWMNCj4gU29Dcw0KPiAN
+Cj4gT24gRnJpLCBNYXIgMjksIDIwMTMgYXQgMTE6MjIgQU0sICA8WXVhbnRpYW4uVGFuZ0BmcmVl
+c2NhbGUuY29tPiB3cm90ZToNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3BwYy1j
+b3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZy
+ZXEuYw0KPiANCj4gPiArc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0
+IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpIHsNCj4gDQo+ID4gKyAgICAgICBmb3IgKGkgPSAwOyBp
+IDwgY291bnQ7IGkrKykgew0KPiA+ICsgICAgICAgICAgICAgICB0YWJsZVtpXS5pbmRleCA9IGk7
+DQo+IA0KPiBPbmUgbW9yZSB0aGluZywgeW91IGRvbid0IG5lZWQgdG8gc2V0IGluZGV4IGF0IGFs
+bCBhcyB5b3UgYXJlbid0IHVzaW5nIGl0Lg0KPiBBbmQgY3B1ZnJlcSBjb3JlIG5ldmVyIHVzZXMg
+aXQuDQo+IA0KT0ssIG5vIHByb2JsZW0uDQoNClRoYW5rcywNCll1YW50aWFuDQoNCj4gPiArICAg
+ICAgICAgICAgICAgY2xrID0gb2ZfY2xrX2dldChkYXRhLT5wYXJlbnQsIGkpOw0KPiA+ICsgICAg
+ICAgICAgICAgICB0YWJsZVtpXS5mcmVxdWVuY3kgPSBjbGtfZ2V0X3JhdGUoY2xrKSAvIDEwMDA7
+DQo+ID4gKyAgICAgICB9DQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBz
+ZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBvZiBhIG1l
+c3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0
+DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
 
-> On 26 March 2013 09:55, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> From: Viresh Kumar <viresh.kumar@linaro.org>
->> Date: Mon, 25 Mar 2013 11:20:23 +0530
->> Subject: [PATCH] sparc: cpufreq:  move cpufreq driver to drivers/cpufreq
->>
->> This patch moves cpufreq driver of SPARC architecture to drivers/cpufreq.
->>
->> Cc: David S. Miller <davem@davemloft.net>
->> Cc: sparclinux@vger.kernel.org
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  arch/sparc/Kconfig                                 | 23 ----------------------
->>  arch/sparc/kernel/Makefile                         |  3 ---
->>  drivers/cpufreq/Kconfig                            | 23 ++++++++++++++++++++++
->>  drivers/cpufreq/Makefile                           |  2 ++
->>  .../cpufreq/sparc-us2e-cpufreq.c                   |  0
->>  .../cpufreq/sparc-us3-cpufreq.c                    |  0
->>  6 files changed, 25 insertions(+), 26 deletions(-)
->>  rename arch/sparc/kernel/us2e_cpufreq.c =>
->> drivers/cpufreq/sparc-us2e-cpufreq.c (100%)
->>  rename arch/sparc/kernel/us3_cpufreq.c =>
->> drivers/cpufreq/sparc-us3-cpufreq.c (100%)
-> 
-> Hi David,
-> 
-> Does this one look fine to you?
-
-Subject line still has the "spark" typo.
