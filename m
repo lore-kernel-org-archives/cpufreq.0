@@ -1,48 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Unit of cpuinfo.transition_latency
-Date: Tue, 2 Apr 2013 21:07:10 +0530
-Message-ID: <CAOh2x=k5Uo26kOjvGaCZ9rWgQVpwtrDwTNF3EKjr5kByFhDKFQ@mail.gmail.com>
-References: <CAMefCkA3zy8-+DA2zQYirkvNyZcwYUDAsWBYhR_4TEF3b9DZQA@mail.gmail.com>
-	<CAMefCkCkSzrKUHD4QK_akr9Lc2sqW6uwxeHFHVk82uK5oz4yfA@mail.gmail.com>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: Re: [PATCH v6 1/2] cpufreq: split the cpufreq_driver_lock and use
+	the rcu
+Date: Tue, 2 Apr 2013 10:40:22 -0500
+Message-ID: <20130402154021.GA521@gulag1.americas.sgi.com>
+References: <5159C147.70800@sgi.com> <1364847069-2887-1-git-send-email-nzimmer@sgi.com> <1364847069-2887-2-git-send-email-nzimmer@sgi.com> <CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com> <20130402145536.GA31757@gulag1.americas.sgi.com> <CAKohpokXbeRp-pHaJRAOjnF+R+wy8R9We67Yr2C2nyoVXyJd6w@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=RkUHCLXwhxjlsCmM1vyMYi5BknXfFRcgGllxztOLvjY=;
-        b=qlzEtOpflgtkm6JrcPIzljqyxnaX20pKQbY/G1wVnV1j4LECyd7odYubcdfL4ntBYM
-         jxfuP02gyBQy/UeN6annkWE3PD/D2HnfD3rbAPgkncU37fGYgv+XUv0LaT9PfQuWc91k
-         e3MMeNRtjaWf+KVCbmZgl4hpEUPq85nYgv3yYMWTR8Av1R+WCSVA3njRDvERmhn/7KXJ
-         AAMs9F08YkXWtvMJ1nM43Nj21QVKjV29R/mHBbUhUWANLvLxUH22FHeX91aBlIarw/xy
-         8slNZNJR4zKM3XDop7Uw8nkwaktbfuIBG5WBPZJ+i42LfXTscOVqmZJC1ZjT0rb9iVMW
-         gheg==
-In-Reply-To: <CAMefCkCkSzrKUHD4QK_akr9Lc2sqW6uwxeHFHVk82uK5oz4yfA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpokXbeRp-pHaJRAOjnF+R+wy8R9We67Yr2C2nyoVXyJd6w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guru Prasad <gurupras@buffalo.edu>
-Cc: cpufreq@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nathan Zimmer <nzimmer@sgi.com>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Apr 2, 2013 at 8:37 PM, Guru Prasad <gurupras@buffalo.edu> wrote:
-> I've been working with kernel versions 2.6.35.8 and 3.3.0 particularly
-> with the ARM architecture and I'm quite confused with the units of
-> transition_latency..
->
-> mach-integrator/cpu.c:    policy->cpuinfo.transition_latency =
-> 1000000; /* 1 ms, assumed */
-> mach-pxa/cpufreq-pxa2xx.c:    policy->cpuinfo.transition_latency =
-> 1000; /* FIXME: 1 ms, assumed */
-> mach-pxa/cpufreq-pxa3xx.c:    policy->cpuinfo.transition_latency =
-> 1000; /* FIXME: 1 ms, assumed */
->
-> These seem to be contradicting each other..
-> The first line seems to suggest that the base unit is nanoseconds..
-> The second and third lines suggest that the unit is microseconds..
->
-> Could someone please shed some light on this?
+On Tue, Apr 02, 2013 at 08:29:12PM +0530, Viresh Kumar wrote:
+> On 2 April 2013 20:25, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> > The lock is unneeded if we expect register and unregister driver to not be
+> > called from muliple threads at once.  I didn't make that assumption.
+> 
+> Hmm.. But doesn't rcu part take care of that too?? Two writers
+> updating stuff simultaneously?
 
-include/linux/cpufreq.h
+My concern is in the cpufreq_register_driver.  Since we are only to set the
+pointer when it is null we have have to hold the lock over both operations.
 
- * Maximum transition latency is in nanoseconds
+int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+{
+...
+        spin_lock_irqsave(&cpufreq_driver_lock, flags);
+        if (rcu_access_pointer(cpufreq_driver)) {
+                spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+                return -EBUSY;
+        }
+        rcu_assign_pointer(cpufreq_driver, driver_data);
+        spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+        synchronize_rcu();
+...
+}
+
+
