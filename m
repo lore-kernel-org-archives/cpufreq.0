@@ -1,83 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC PATCH 1/2] cpuidle: Add idle enter/exit time stamp for notifying
- current idle state.
-Date: Tue, 02 Apr 2013 09:34:57 +0200
-Message-ID: <515A8A21.6070509@linaro.org>
-References: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com> <1364804657-16590-2-git-send-email-jonghwa3.lee@samsung.com> <515A65DB.8070803@linaro.org> <515A77FC.70008@samsung.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 56071] Ondemand doesn't set correct low frequency
+Date: Tue,  2 Apr 2013 07:53:35 +0000 (UTC)
+Message-ID: <20130402075335.7A2B111FB5B@bugzilla.kernel.org>
+References: <bug-56071-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <515A77FC.70008@samsung.com>
+In-Reply-To: <bug-56071-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: jonghwa3.lee@samsung.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, sw0312.kim@samsung.com, m.szyprowski@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On 04/02/2013 08:17 AM, jonghwa3.lee@samsung.com wrote:
-> On 2013=EB=85=84 04=EC=9B=94 02=EC=9D=BC 14:00, Daniel Lezcano wrote:
->=20
->> On 04/01/2013 10:24 AM, Jonghwa Lee wrote:
->>> This patch adds idle state time stamp to cpuidle device structure t=
-o
->>> notify its current idle state. If last enter time is newer than las=
-t
->>> exit time, then it means that the core is in idle now.
->>>
->>> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
->>> ---
->>
->> The patch description does not explain what problem you want to solv=
-e,
->> how to solve it and the patch itself shows nothing.
->>
->> Could you elaborate ?
->=20
->=20
-> I'm sorry for lacking description. I supplement more.
->=20
-> This patch does add time-stamp for idle enter/exit only nothing more.
-> The reason why I needed them is that I wanted to know current cpu idl=
-e
-> state. It is hard to know whether cpu is in idle or not now.
+https://bugzilla.kernel.org/show_bug.cgi?id=56071
 
-Did you looked at:
 
-include/linux/sched.h:extern int idle_cpu(int cpu);
+Thomas Renninger <trenn@suse.de> changed:
 
-?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+                 CC|                            |trenn@suse.de
+         Resolution|                            |DOCUMENTED
 
-> When I check the cpuidle state usage, sometimes the information is wr=
-ong.
-> Because it is updated only when the cpu exits the idle state. So whil=
-e the
-> cpu is idling, the cpuidle state usage holds past one. Therefore I pu=
-t
-> the time-stamp for cpuidle enter/exit for checking current idling and
-> calculating idle state usage correctly.
->=20
-> I just make this patch temporary for my cpufreq governor work. So, it=
- just
-> use time-stamp for all idle state together. After RFC working, I have=
- a plan
-> to update this patch to use timestamp for each idle state.
 
-I suggest you look at the enter_idle / exit_idle function and make your
-governor to subscribe to the IDLE_START/EXIT notifiers.
 
-arch/x86/kernel/process.c
 
-These are defined for the x86 architecture, maybe worth to add it to
-another architecture.
+--- Comment #5 from Thomas Renninger <trenn@suse.de>  2013-04-02 07:53:34 ---
+> limiti hardware: 1.30 GHz - 2.10 GHz
+This should not be possible.
+The interface to limit frequency is a number.
+For example 0 means no limitation, 1 means the highest frequency is limited.
 
-Thanks
-  -- Daniel
+Ah wait, I think I know what happens.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+This is read out from the HW (and applies to CPU specs):
+    Boost States: 2
+    Total States: 7
+    Pstate-Pb0: 2600MHz (boost state)
+    Pstate-Pb1: 2300MHz (boost state)
+    Pstate-P0:  2100MHz
+    Pstate-P1:  1800MHz
+    Pstate-P2:  1500MHz
+    Pstate-P3:  1300MHz
+    Pstate-P4:  900MHz
+This is done to be able to show available boost states and is normally hidden,
+also the kernel does not know about this!
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+The kernel gets the supported CPU frequency table from the BIOS via ACPI.
+And your BIOS vendor decided to hide the 900MHz.
 
+That's ok, because on latest CPUs (and your one probably is a rather new
+platform, because it supports boost states and therefore also suppports C-, CPU
+sleep states) the kernel will enter deep sleeps states when idle which is even
+more efficient than 900MHz CPU frequency.
+
+I already close this one documented.
+Everything works as designed.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
