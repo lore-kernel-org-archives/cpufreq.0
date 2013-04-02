@@ -1,48 +1,41 @@
-From: Rainer Maier <RaMaier@gmx.de>
-Subject: Re: Fehler bei cpufreq-info
-Date: Tue, 02 Apr 2013 23:29:23 +0200
-Message-ID: <515B4DB3.9040507@gmx.de>
-References: <51558EDC.2040503@gmx.de> <3485704.XfQbseOPt4@skinner.arch.suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of CPU load to early increase frequency
+Date: Wed, 03 Apr 2013 00:55:51 +0200
+Message-ID: <31773720.6bVyeZQsYt@vostro.rjw.lan>
+References: <51253715.7080600@semaphore.gr> <1544183.cq3KaqH8x3@vostro.rjw.lan> <515AFDFA.8090108@semaphore.gr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3485704.XfQbseOPt4@skinner.arch.suse.de>
+In-Reply-To: <515AFDFA.8090108@semaphore.gr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Thomas Renninger <trenn@suse.de>
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Thomas,
-thanks for your info.
-I removed cpufrequtils, but when I tried to install cpupower by aptitude it didn't know the package.
-I searched for it, but couldn't find one.
-Would you perhaps know which packet to install ?
+On Tuesday, April 02, 2013 06:49:14 PM Stratos Karafotis wrote:
+> On 04/02/2013 04:50 PM, Rafael J. Wysocki wrote:
+> > Do you have any numbers indicating that this actually makes things better?
+> > 
+> > Rafael
+> 
+> No, I don't.
+> The expected behaviour after this patch is to "force" max frequency few sampling periods earlier.
+> The idea was to increase system responsiveness especially on 'small' embedded systems (phones for example).
+> 
+> Actually, I thought to provide some numbers but I had no idea how to measure this.
+> 
+> Would it be enough to provide the number of times that the CPU increases frequency 
+> because of early_demand versus the total number of increments?
 
-Thanks
-Rainer
+I think it would be better to check if your approach leads to a better behavior
+as far as energy savings are concerned.  If it actually is worse, then I don't
+see a reason to apply it.
 
-Am 02.04.2013 10:42, schrieb Thomas Renninger:
-> Hi,
->
-> On Friday, March 29, 2013 01:53:48 PM Rainer Maier wrote:
->> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-> cpufrequtils is outdated.
-> Please use cpupower which is the successor.
->
->> Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
->> analysiere CPU 0:
->>     Treiber: p4-clockmod
-> P4-clockmod is evil and does not save much/any power.
-> If you have trouble with it (lagging applications/performance), best
-> blacklist p4-clockmod driver.
->
->         Thomas
->
+Thanks,
+Rafael
+
 
 -- 
-Rainer Maier
-Fabriciusstr. 46
-65933 Frankfurt
-T: +49 69 3904 7935
-M: +49 176 3472 4262
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
