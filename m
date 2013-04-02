@@ -1,30 +1,33 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: Fehler bei cpufreq-info
-Date: Tue, 02 Apr 2013 10:42:30 +0200
-Message-ID: <3485704.XfQbseOPt4@skinner.arch.suse.de>
-References: <51558EDC.2040503@gmx.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 56071] Ondemand doesn't set correct low frequency
+Date: Tue,  2 Apr 2013 08:57:56 +0000 (UTC)
+Message-ID: <20130402085756.ED29411FB5B@bugzilla.kernel.org>
+References: <bug-56071-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51558EDC.2040503@gmx.de>
+In-Reply-To: <bug-56071-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Rainer Maier <RaMaier@gmx.de>
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-Hi,
+https://bugzilla.kernel.org/show_bug.cgi?id=56071
 
-On Friday, March 29, 2013 01:53:48 PM Rainer Maier wrote:
-> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-cpufrequtils is outdated.
-Please use cpupower which is the successor.
 
-> Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
-> analysiere CPU 0:
->    Treiber: p4-clockmod
-P4-clockmod is evil and does not save much/any power.
-If you have trouble with it (lagging applications/performance), best
-blacklist p4-clockmod driver.
 
-       Thomas
+
+
+--- Comment #6 from Francescodario Cuzzocrea <bosconovic@gmail.com>  2013-04-02 08:57:56 ---
+Thank you for the reply and for clarifying to me how the kernel work ! 
+
+Buth what about the global decreasing of performances when AC is plugged in ?
+Is this also related to cpufreq ? 
+
+Here is a video of what I'm talking about :
+https://www.youtube.com/watch?v=tg2Jpuw_F_o
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
