@@ -1,45 +1,349 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6 1/2] cpufreq: split the cpufreq_driver_lock and use the rcu
-Date: Tue, 2 Apr 2013 21:22:15 +0530
-Message-ID: <CAKohpo=6xeESG2DqET4WQFciHN6sX5Z7Jz9JbE6RC00BsV3bdA@mail.gmail.com>
-References: <5159C147.70800@sgi.com>
-	<1364847069-2887-1-git-send-email-nzimmer@sgi.com>
-	<1364847069-2887-2-git-send-email-nzimmer@sgi.com>
-	<CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com>
-	<20130402145536.GA31757@gulag1.americas.sgi.com>
-	<CAKohpokXbeRp-pHaJRAOjnF+R+wy8R9We67Yr2C2nyoVXyJd6w@mail.gmail.com>
-	<20130402154021.GA521@gulag1.americas.sgi.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: [PATCH V2 2/2] cpufreq: AMD "frequency sensitivity feedback"
+ powersave bias for ondemand governor
+Date: Tue, 2 Apr 2013 12:18:50 -0500
+Message-ID: <20130402171850.GA29239@jshin-Toonie>
+References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
+ <1364495057-14939-3-git-send-email-jacob.shin@amd.com>
+ <20130402134255.GD5488@pd.tnic>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130402154021.GA521@gulag1.americas.sgi.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130402134255.GD5488@pd.tnic>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 2 April 2013 21:10, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> My concern is in the cpufreq_register_driver.  Since we are only to set the
-> pointer when it is null we have have to hold the lock over both operations.
->
-> int cpufreq_register_driver(struct cpufreq_driver *driver_data)
-> {
-> ...
->         spin_lock_irqsave(&cpufreq_driver_lock, flags);
->         if (rcu_access_pointer(cpufreq_driver)) {
->                 spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
->                 return -EBUSY;
->         }
->         rcu_assign_pointer(cpufreq_driver, driver_data);
->         spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
->         synchronize_rcu();
-> ...
-> }
+On Tue, Apr 02, 2013 at 03:42:55PM +0200, Borislav Petkov wrote:
+> On Thu, Mar 28, 2013 at 01:24:17PM -0500, Jacob Shin wrote:
+> > Future AMD processors, starting with Family 16h, can provide software
+> > with feedback on how the workload may respond to frequency change --
+> > memory-bound workloads will not benefit from higher frequency, where
+> > as compute-bound workloads will. This patch enables this "frequency
+> > sensitivity feedback" to aid the ondemand governor to make better
+> > frequency change decisions by hooking into the powersave bias.
+> > 
+> > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+> > ---
+> >  arch/x86/include/uapi/asm/msr-index.h  |    1 +
+> >  drivers/cpufreq/Kconfig.x86            |   10 +++
+> >  drivers/cpufreq/Makefile               |    1 +
+> >  drivers/cpufreq/amd_freq_sensitivity.c |  147 ++++++++++++++++++++++++++++++++
+> >  4 files changed, 159 insertions(+)
+> >  create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
+> > 
+> > diff --git a/arch/x86/include/uapi/asm/msr-index.h b/arch/x86/include/uapi/asm/msr-index.h
+> > index 7a060f4..b2e6c49 100644
+> > --- a/arch/x86/include/uapi/asm/msr-index.h
+> > +++ b/arch/x86/include/uapi/asm/msr-index.h
+> > @@ -173,6 +173,7 @@
+> >  #define MSR_AMD64_TSC_RATIO		0xc0000104
+> >  #define MSR_AMD64_NB_CFG		0xc001001f
+> >  #define MSR_AMD64_PATCH_LOADER		0xc0010020
+> > +#define MSR_AMD64_FREQ_SENSITIVITY	0xc0010080
+> >  #define MSR_AMD64_OSVW_ID_LENGTH	0xc0010140
+> >  #define MSR_AMD64_OSVW_STATUS		0xc0010141
+> >  #define MSR_AMD64_DC_CFG		0xc0011022
+> 
+> My guess is, this MSR won't be used outside of cpufreq so you probably
+> want to define it there, in amd_freq_sensitivity.c
+> 
+> > diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+> > index d7dc0ed..6c714b0 100644
+> > --- a/drivers/cpufreq/Kconfig.x86
+> > +++ b/drivers/cpufreq/Kconfig.x86
+> > @@ -129,6 +129,16 @@ config X86_POWERNOW_K8
+> >  
+> >  	  For details, take a look at <file:Documentation/cpu-freq/>.
+> >  
+> > +config X86_AMD_FREQ_SENSITIVITY
+> > +	tristate "AMD 'frequency sensitivity feedback' powersave bias"
+> 
+> Why in ' '? Isn't that the final name?
 
-How will the lock help you here?? Lock is useful only when somebody
-else who want to access it is waiting on the lock and we are updating
-the pointer.
+You are right,
 
-Because all other accesses to cpufreq_driver don't have any lock, this
-lock is just a waste of time.
+It does not need to be in quotes. I had first written this as its
+own governor, and I was mimicking Kconfig entries of 'ondemand',
+'performance' .. and so on.
+
+> 
+> > +	depends on CPU_FREQ_GOV_ONDEMAND && X86_ACPI_CPUFREQ
+> 
+> depends on CPU_SUP_AMD
+> 
+> > +	help
+> > +	  This adds support for 'frequency sensitivity feedback' feature on
+> > +	  supported AMD processors, which hooks into the ondemand governor's
+> > +	  powersave bias to influence frequency change decisions.
+> 
+> Your description about the feature in the 0/2 message is much better
+> than this one here. How about adding it here too?
+> 
+> > +
+> > +	  If in doubt, say N.
+> > +
+> >  config X86_GX_SUSPMOD
+> >  	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
+> >  	depends on X86_32 && PCI
+> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> > index 863fd18..01dfdaf 100644
+> > --- a/drivers/cpufreq/Makefile
+> > +++ b/drivers/cpufreq/Makefile
+> > @@ -41,6 +41,7 @@ obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
+> >  obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
+> >  obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
+> >  obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
+> > +obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
+> >  
+> >  ##################################################################################
+> >  # ARM SoC drivers
+> > diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+> > new file mode 100644
+> > index 0000000..997feb0
+> > --- /dev/null
+> > +++ b/drivers/cpufreq/amd_freq_sensitivity.c
+> > @@ -0,0 +1,147 @@
+> > +/*
+> > + * amd_freq_sensitivity.c: AMD "frequency sensitivity feedback" powersave bias
+> > + *                         for ondemand governor.
+> > + *
+> > + * Copyright (C) 2013 Advanced Micro Devices, Inc.
+> 
+> You probably want to leave an email address in here for contacting you
+> when it is b0rked. :-)
+> 
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + */
+> > +
+> > +#include <linux/module.h>
+> > +#include <linux/types.h>
+> > +#include <linux/percpu-defs.h>
+> > +#include <linux/init.h>
+> > +
+> > +#include "cpufreq_governor.h"
+> > +
+> > +#define PROC_FEEDBACK_INTERFACE_SHIFT		11
+> 
+> Yeah, that's a bit cumbersome. Just define a normal x86 feature bit in
+> cpufeature.h and then you can use static_cpu_has below:
+> 
+> 	if (!static_cpu_has(AMD_PROC_FEEDBACK_INTERFACE))
+> 		return -ENODEV;
+> 
+> 
+> > +#define CLASS_CODE_SHIFT			56
+> > +#define CLASS_CODE_MASK				0xff
+> > +#define CLASS_CODE_CORE_FREQUENCY_SENSITIVITY	0x01
+> > +
+> > +static u32 msr_addr;
+> > +
+> > +struct cpu_data_t {
+> > +	u64 actual;
+> > +	u64 reference;
+> > +	unsigned int freq_prev;
+> > +};
+> > +
+> > +static DEFINE_PER_CPU(struct cpu_data_t, cpu_data);
+> > +
+> > +static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
+> > +		unsigned int freq_next, unsigned int relation)
+> 
+> arg alignment.
+> 
+> > +{
+> > +	int sensitivity;
+> > +	long d_actual, d_reference;
+> > +	struct msr actual, reference;
+> > +	struct cpu_data_t *data = &per_cpu(cpu_data, policy->cpu);
+> > +	struct dbs_data *od_data = policy->governor_data;
+> > +	struct od_dbs_tuners *od_tuners = od_data->tuners;
+> > +	struct od_cpu_dbs_info_s *od_info =
+> > +		od_data->cdata->get_cpu_dbs_info_s(policy->cpu);
+> > +
+> > +	rdmsr_on_cpu(policy->cpu, msr_addr, &actual.l, &actual.h);
+> > +	rdmsr_on_cpu(policy->cpu, msr_addr + 1, &reference.l, &reference.h);
+> > +	actual.h &= 0x00ffffff;
+> > +	reference.h &= 0x00ffffff;
+> > +
+> > +	if (!od_info->freq_table)
+> > +		goto out;
+> 
+> Ok, this check is definitely misplaced. So if we don't have
+> ->freq_table, we can save us the MSR accesses above and simply return
+> freq_next, right? So basically you want to push the check before the MSR
+> accesses and do:
+> 
+> 	if (!od_info->freq_table)
+> 		return freq_next;
+
+Yup, you are right, my oversight.
+
+> 
+> Or am I missing something?
+> 
+> > +
+> > +	/* counter wrapped around, so push until next check */
+> > +	if (actual.q < data->actual || reference.q < data->reference) {
+> > +		freq_next = policy->cur;
+> > +		goto out;
+> > +	}
+> > +
+> > +	d_actual = actual.q - data->actual;
+> > +	d_reference = reference.q - data->reference;
+> > +
+> > +	/* divide by 0, so push as well */
+> 
+> What do you mean by "push as well"? No change, right?
+
+Right, stay at the current frequency. I'll change the comments to be
+more clear.
+
+> 
+> > +	if (d_reference == 0) {
+> > +		freq_next = policy->cur;
+> > +		goto out;
+> > +	}
+> > +
+> > +	sensitivity = 1000 - (1000 * (d_reference - d_actual) / d_reference);
+> 
+> Ok, now this naked 1000 could very well use a define here like you do
+> for your other values you're using :-).
+> 
+> > +	if (sensitivity > 1000)
+> > +		sensitivity = 1000;
+> > +	else if (sensitivity < 0)
+> > +		sensitivity = 0;
+> 
+> 	clamp(sensitivity, 0, 1000);
+> 
+> > +
+> > +	/* this workload is not CPU bound, so choose a lower freq */
+> > +	if (sensitivity < od_tuners->powersave_bias) {
+> 
+> Yeah, this ->powersave_bias usage needs more discussion, as Thomas said
+> earlier.
+> 
+> > +		if (data->freq_prev == policy->cur)
+> > +			freq_next = policy->cur;
+> > +
+> > +		if (freq_next > policy->cur)
+> > +			freq_next = policy->cur;
+> > +		else if (freq_next < policy->cur)
+> > +			freq_next = policy->min;
+> > +		else {
+> > +			unsigned int index = 0;
+> > +
+> > +			cpufreq_frequency_table_target(policy,
+> > +				od_info->freq_table, policy->cur - 1,
+> > +				CPUFREQ_RELATION_H, &index);
+> > +			freq_next = od_info->freq_table[index].frequency;
+> > +		}
+> > +
+> > +		data->freq_prev = freq_next;
+> > +	} else
+> > +		data->freq_prev = 0;
+> > +
+> > +out:
+> > +	data->actual = actual.q;
+> > +	data->reference = reference.q;
+> > +	return freq_next;
+> > +}
+> > +
+> > +static int __init amd_freq_sensitivity_init(void)
+> > +{
+> > +	int i;
+> > +	u32 eax, edx, dummy;
+> > +
+> > +	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
+> > +		return -ENODEV;
+> > +
+> > +	cpuid(0x80000007, &eax, &dummy, &dummy, &edx);
+> > +
+> > +	if (!(edx & (1 << PROC_FEEDBACK_INTERFACE_SHIFT)))
+> > +		return -ENODEV;
+> > +
+> > +	for (i = 0; i < (eax & 0xf); i++) {
+> > +		u64 val;
+> > +		u32 addr = MSR_AMD64_FREQ_SENSITIVITY + (i * 2);
+> > +
+> > +		rdmsrl(addr, val);
+> 
+> Pls use rdmsrl_safe variant for virtualization's sake and check its
+> retval befor using it below.
+> 
+> > +
+> > +		if (((val >> CLASS_CODE_SHIFT) & CLASS_CODE_MASK)
+> > +			== CLASS_CODE_CORE_FREQUENCY_SENSITIVITY) {
+> > +			msr_addr = addr;
+> > +			break;
+> > +		}
+> > +	}
+> 
+> What is this thing doing? There's a whole range of MSRs which can give
+> you freq feedback? Or only the two as it is done above for actual and
+> reference?
+
+Only the two that has to do with frequency sensitivity.
+
+My initial reading of the manual was like this:
+
+* CPUID feature bit says it supports "Processor Feedback Interface"
+* Another CPUID field says how many "Number of Monitors" -- actual and
+  reference MSR register pairs.
+* Finally, software can look at all the monitors and see what its
+  "Class Code" is and 0x01 is the frequency sensitivity.
+
+So I was trying to future proof .. by looking at all possible monitors
+and finding the frequency sensitivity.
+
+But I think we can just simplify things and just assume frequency
+sensitivity will always live at the defined MSR address. So I'll get
+rid of the entire for loop.
+
+> 
+> Also, you can simplify the check provided that bits [63:56] denote
+> support is present if they're not 0:
+> 
+> 	if (val >> CLASS_CODE_SHIFT)
+> 		msr_addr = addr;
+> 
+> > +
+> > +	if (!msr_addr)
+> > +		return -ENODEV;
+> > +
+> > +	od_register_powersave_bias_function(amd_powersave_bias_target);
+> > +	return 0;
+> > +}
+> > +module_init(amd_freq_sensitivity_init);
+> > +
+> > +static void __exit amd_freq_sensitivity_exit(void)
+> > +{
+> > +	od_unregister_powersave_bias_function();
+> > +}
+> > +module_exit(amd_freq_sensitivity_exit);
+> > +
+> > +MODULE_AUTHOR("Jacob Shin <jacob.shin@amd.com>");
+> > +MODULE_DESCRIPTION("AMD 'frequency sensitivity feedback' powersave bias for "
+> > +		"the ondemand governor.");
+> > +MODULE_LICENSE("GPL");
+> 
+> Thanks.
+
+Thanks for taking a look, I'll send out V3 soon with all your
+suggested fixups.
+
+> 
+> -- 
+> Regards/Gruss,
+>     Boris.
+> 
+> Sent from a fat crate under my desk. Formatting is fine.
+> --
+> 
+
