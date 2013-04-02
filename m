@@ -1,52 +1,48 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V3 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Tue, 2 Apr 2013 23:01:24 +0200
-Message-ID: <20130402210124.GI17675@pd.tnic>
-References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
- <20130402192352.GC17675@pd.tnic>
- <20130402200337.GA17919@jshin-Toonie>
- <2932884.BNCEuERbdR@skinner.arch.suse.de>
+From: Rainer Maier <RaMaier@gmx.de>
+Subject: Re: Fehler bei cpufreq-info
+Date: Tue, 02 Apr 2013 23:29:23 +0200
+Message-ID: <515B4DB3.9040507@gmx.de>
+References: <51558EDC.2040503@gmx.de> <3485704.XfQbseOPt4@skinner.arch.suse.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1364936487; bh=B+PbWyHYvDVZAhy2ISvhYKzw44np/Vcva/s5U5fLTVE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=qaqkNjqaM+Bcg0EAdQyBLrQxyL+bhODTgZSn32
-	HsVGE/1wlIc38KyFavEtSNRmLYaGeRZZu2Hwk0bcjlDVOfS19Xwsj7m47OvrT3PFPaC
-	nqq1guMvyOR5WzYFfO/BddT+bDpqyomwhc3JyOFRrvp62na9TWBw+UFehZv9pGrw44=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1364936486; bh=B+PbWyHYvDVZAhy2ISvhYKzw44np/Vcva/s5U5fLTVE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=WFR9sPeEbRAOTsJtoRkoOfoAzD8OaUaf+FxjxP
-	lLBDZrLi1UsTUTVHIrDUuocaMmqnq28xA3AWjpLfclMpMOR5GIa2c53oexZSVi4S5OV
-	OMI345t06kJj0OiSixluPMJVHYjOV9el2j37cQgMpab6v29pUXbCzAXAdBfVAWMhYc=
-Content-Disposition: inline
-In-Reply-To: <2932884.BNCEuERbdR@skinner.arch.suse.de>
+In-Reply-To: <3485704.XfQbseOPt4@skinner.arch.suse.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Thomas Renninger <trenn@suse.de>
-Cc: Jacob Shin <jacob.shin@amd.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org
 
-On Tue, Apr 02, 2013 at 10:51:51PM +0200, Thomas Renninger wrote:
-> Yep, if you want anyone to make use of this, it should better get
-> embedded in more general, at least general ondemand code.
+Hi Thomas,
+thanks for your info.
+I removed cpufrequtils, but when I tried to install cpupower by aptitude it didn't know the package.
+I searched for it, but couldn't find one.
+Would you perhaps know which packet to install ?
 
-Yeah, it all sounds like we want to enable this by default on systems
-which support it. Maybe with an off-switch for people who want plain
-ondemand decisions.
+Thanks
+Rainer
 
-The remaining systems with ripped out powersave_bias would get plain
-ondemand governor decisions. Provided, of course, nobody uses
-powersave_bias and the functionality doesn't make any sense anyway.
-
-Thanks.
+Am 02.04.2013 10:42, schrieb Thomas Renninger:
+> Hi,
+>
+> On Friday, March 29, 2013 01:53:48 PM Rainer Maier wrote:
+>> cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+> cpufrequtils is outdated.
+> Please use cpupower which is the successor.
+>
+>> Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+>> analysiere CPU 0:
+>>     Treiber: p4-clockmod
+> P4-clockmod is evil and does not save much/any power.
+> If you have trouble with it (lagging applications/performance), best
+> blacklist p4-clockmod driver.
+>
+>         Thomas
+>
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Rainer Maier
+Fabriciusstr. 46
+65933 Frankfurt
+T: +49 69 3904 7935
+M: +49 176 3472 4262
