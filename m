@@ -1,53 +1,59 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] tools: cpufreq: Fix cpufreq-info print messages for affected[related]_cpus
-Date: Tue, 2 Apr 2013 18:38:56 +0530
-Message-ID: <CAKohpomMdBDHPVEeHsCf5o1ABmc4CboeXsZfvf2_E3deVTdVKg@mail.gmail.com>
-References: <8c5305cdbe0fb20730e6b28f79a71d36a472a817.1364567091.git.viresh.kumar@linaro.org>
-	<1637142.c6PaEcqfQ4@vostro.rjw.lan>
-	<3284856.AI9dTDMm0S@skinner.arch.suse.de>
+Subject: Re: [PATCH] cpufreq: Correct header guards typo
+Date: Tue, 2 Apr 2013 18:41:20 +0530
+Message-ID: <CAOh2x=nJTcaEAe5eS4JzHLY_vUx0HJo9pDD7exoq0OffMqzJDQ@mail.gmail.com>
+References: <1364905575-10234-1-git-send-email-bp@alien8.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3284856.AI9dTDMm0S@skinner.arch.suse.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=xBcD1UJssoLMJu3SlYP6CFwGHjdU9zeGi883jsr1UzQ=;
+        b=wAExNn0Xal73EKSJZ+p0dTpAqVoSfyqZCM1G/Iz8l2iJgjJGjoK6oTfu/hBbm5zzeB
+         RWeUlAyH2frmC4/6JenEppcrymnrtVnutFeaUjwJ3ED/PqT9e1Y0uJ8IzWFx91KYXiE9
+         kuN1m6sQrujbJN9mpaIOKBkjrAjuRqvAUQ9f2Mn4XtfM88zaHNOkX0nSkymd7efp7R9m
+         nYQ/7Br+BAZTHcyRjsCe8ZSi6Na8FfxBfyZt5iMUFNBPrV8cdz1oQnyVsWSmiptJ4RJe
+         odwbqrxGaGCtfX9cNjatnLgQmwmWwpP6kSBK8w/Vn+473z0PVZJPfEj8wZMToxQVr1iP
+         GcyA==
+In-Reply-To: <1364905575-10234-1-git-send-email-bp@alien8.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+To: Borislav Petkov <bp@alien8.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>
 
-On 2 April 2013 17:34, Thomas Renninger <trenn@suse.de> wrote:
-> On Friday, March 29, 2013 10:40:38 PM Rafael J. Wysocki wrote:
->> On Friday, March 29, 2013 07:56:39 PM Viresh Kumar wrote:
->> > -           printf(_("  CPUs which run at the same hardware frequency: "));
->> > +           printf(_("  All (Online & Offline) CPUs that run at the same hardware frequency: "));
-> This one is not worth changing IMO, in the end it tells the user more or less the same and
-> as this stuff is translated, I'd not change it.
+On Tue, Apr 2, 2013 at 5:56 PM, Borislav Petkov <bp@alien8.de> wrote:
+> From: Borislav Petkov <bp@suse.de>
+>
+> It should be "governor".
+>
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> ---
+>  drivers/cpufreq/cpufreq_governor.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index 513cc8234e5e..65937697cab3 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -14,8 +14,8 @@
+>   * published by the Free Software Foundation.
+>   */
+>
+> -#ifndef _CPUFREQ_GOVERNER_H
+> -#define _CPUFREQ_GOVERNER_H
+> +#ifndef _CPUFREQ_GOVERNOR_H
+> +#define _CPUFREQ_GOVERNOR_H
+>
+>  #include <linux/cpufreq.h>
+>  #include <linux/kobject.h>
+> @@ -263,4 +263,4 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>                 struct common_dbs_data *cdata, unsigned int event);
+>  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>                 unsigned int delay, bool all_cpus);
+> -#endif /* _CPUFREQ_GOVERNER_H */
+> +#endif /* _CPUFREQ_GOVERNOR_H */
 
-Okay.
-
->> > -           printf(_("  CPUs which need to have their frequency coordinated by software: "));
->> > +           printf(_("  Online CPUs that run at the same hardware frequency: "));
->> >             while (cpus->next) {
-> I agree that this message is more developer than user oriented,
-> but cpupower is more for the end-user. So this message is not perfect.
-
-> From what I can see of current code with patch aa77a52764a92216b61a6c8079b5c01937c046cd
-> all related_cpus users are gone and related-cpus does not have any meaning at all
-> anymore?
-
-No, that's wrong. We need to set policy->cpus correctly (with online +
-offline cpus) and cpufreq core will take care of setting related_cpus
-with everything
-from policy->cpus and policy->cpus will be modified to keep only online cpus.
-
-> I haven't gone through your latest changes, but will at least give them a test on
-> a AMD K10 multi socket machine which iirc where using related_cpus.
-> I try to catch up with latest cpufreq changes as well, but wow... no idea when this
-> will happen.
-
-:)
-
-> For now I would just leave it (cpupower messages/manpage) as it is, there is
-> nothing critical which must get fixed immediately.
-
-Yes its not really critical but it must be fixed to reflect the right stuff.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
