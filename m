@@ -1,25 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6 1/2] cpufreq: split the cpufreq_driver_lock and use the rcu
-Date: Tue, 2 Apr 2013 20:29:12 +0530
-Message-ID: <CAKohpokXbeRp-pHaJRAOjnF+R+wy8R9We67Yr2C2nyoVXyJd6w@mail.gmail.com>
-References: <5159C147.70800@sgi.com>
-	<1364847069-2887-1-git-send-email-nzimmer@sgi.com>
-	<1364847069-2887-2-git-send-email-nzimmer@sgi.com>
-	<CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com>
-	<20130402145536.GA31757@gulag1.americas.sgi.com>
+From: Guru Prasad <gurupras@buffalo.edu>
+Subject: Re: Unit of cpuinfo.transition_latency
+Date: Tue, 2 Apr 2013 11:07:34 -0400
+Message-ID: <CAMefCkCkSzrKUHD4QK_akr9Lc2sqW6uwxeHFHVk82uK5oz4yfA@mail.gmail.com>
+References: <CAMefCkA3zy8-+DA2zQYirkvNyZcwYUDAsWBYhR_4TEF3b9DZQA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130402145536.GA31757@gulag1.americas.sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type;
+        bh=jj+kZ5zxNgRwhXVCQ7yLzdwVPTQQld2iWym51IA8IdI=;
+        b=CHP7f7lYtb8LhLICuVfZTwXixrcS2/jQqbVDzOQK+IPPKj3j1qAP8fzfkiTvRIve+9
+         pqlSlRMV41T3hqMdv3DUGPV5TavEkXkC41CkgLLJ7fasPU819xdF7t4I+NYuObxD93Ag
+         msqSLpm1U68963vM1+bFSCP08K8xu5dkjbpKjBSzG4RC2I4jb62/jqwmxz0Y4oaxwdul
+         lGyDsqO+X89TJGGN/8pKUQvYWzCwpW4Gg+DoiANm1G5gW2tUhzuuK1yCd7I08PZIvRuV
+         1sYwjz9ifX27Zf9+QJczlKcoQniKnZmpHb4Otv+L380NGev0WsasizPkbG0Xbaxb2WjW
+         WJhQ==
+In-Reply-To: <CAMefCkA3zy8-+DA2zQYirkvNyZcwYUDAsWBYhR_4TEF3b9DZQA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On 2 April 2013 20:25, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> The lock is unneeded if we expect register and unregister driver to not be
-> called from muliple threads at once.  I didn't make that assumption.
+Hi,
 
-Hmm.. But doesn't rcu part take care of that too?? Two writers
-updating stuff simultaneously?
+I've been working with kernel versions 2.6.35.8 and 3.3.0 particularly
+with the ARM architecture and I'm quite confused with the units of
+transition_latency..
+
+mach-integrator/cpu.c:    policy->cpuinfo.transition_latency =
+1000000; /* 1 ms, assumed */
+mach-pxa/cpufreq-pxa2xx.c:    policy->cpuinfo.transition_latency =
+1000; /* FIXME: 1 ms, assumed */
+mach-pxa/cpufreq-pxa3xx.c:    policy->cpuinfo.transition_latency =
+1000; /* FIXME: 1 ms, assumed */
+
+These seem to be contradicting each other..
+The first line seems to suggest that the base unit is nanoseconds..
+The second and third lines suggest that the unit is microseconds..
+
+Could someone please shed some light on this?
