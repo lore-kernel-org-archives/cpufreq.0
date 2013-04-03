@@ -1,34 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/9] AVR32: cpufreq: move cpufreq driver to drivers/cpufreq
-Date: Wed, 3 Apr 2013 16:06:07 +0530
-Message-ID: <CAKohpomPmKrEAWVVTfqD767MEHCcV9tUqK24F9neg0P9OKRf5g@mail.gmail.com>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
-	<60261de9edc02fa85ef16fb07abc4dfc49c8b333.1364229828.git.viresh.kumar@linaro.org>
-	<CAKohpokSWXVCSfWoL1rwHGyBrB=gHPJRO4-D3ofbrP2V7sjidw@mail.gmail.com>
-	<CAKohpokSHFkodWSQ9j_pYOCfdFtiJ8bYxDNC9wRQ=Xw02TZeQg@mail.gmail.com>
-	<CAKohponGrtXWSaGeRxKpVMNZGDNCqK3-hc0tZGHXM78Jh5od9w@mail.gmail.com>
-	<20130403094245.GA4953@samfundet.no>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of CPU load to early increase frequency
+Date: Wed, 03 Apr 2013 13:14:39 +0200
+Message-ID: <3060957.HxB12olH3c@vostro.rjw.lan>
+References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130403094245.GA4953@samfundet.no>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, hans-christian.egtvedt@atmel.com, Haavard Skinnemoen <hskinnemoen@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, stratosk <stratosk@semaphore.gr>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 3 April 2013 15:12, Hans-Christian Egtvedt <egtvedt@samfundet.no> wrote:
-> Around Wed 03 Apr 2013 14:58:29 +0530 or thereabout, Viresh Kumar wrote:
->> Ping!!
->
-> If it still builds, then
->
-> Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
->
-> It only uses global header files, so should be fine. Thanks.
+On Wednesday, April 03, 2013 12:13:56 PM Viresh Kumar wrote:
+> On 3 April 2013 12:01, stratosk <stratosk@semaphore.gr> wrote:
+> > I'm sorry, I don't understand.
+> > The goal of this patch is not energy saving.
+> 
+> He probably misunderstood it...
+> 
+> > The goal is to detect CPU load as soon as possible to increase frequency.
+> >
+> > Could you please clarify this?
+> 
+> But he is looking for some numbers to prove your patch. Some numbers
+> that shows performance is better with your changes...
 
-Ahh!! I have removed others from my last Ping!! mail (didn't wanted to spam
-their inbox), but yes they are aware of your Ack now.
+Yes.  If the goal of the patch is to improve performance, it would be good to
+know that it does meet the goal. IOW, *something* is supposed to be better with
+the patch and if so, numbers in support of this should be provided.
 
-Thanks.
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
