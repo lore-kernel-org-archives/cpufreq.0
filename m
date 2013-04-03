@@ -1,56 +1,35 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V3 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Wed, 3 Apr 2013 19:30:28 +0200
-Message-ID: <20130403173028.GB4716@pd.tnic>
-References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
- <20130402192352.GC17675@pd.tnic>
- <20130402200337.GA17919@jshin-Toonie>
- <2932884.BNCEuERbdR@skinner.arch.suse.de>
- <20130402210124.GI17675@pd.tnic>
- <20130403165324.GB17919@jshin-Toonie>
- <20130403170456.GA4723@pd.tnic>
- <20130403171738.GC17919@jshin-Toonie>
+From: Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH 4/9] ia64: cpufreq: move cpufreq driver to drivers/cpufreq
+Date: Wed, 3 Apr 2013 10:35:06 -0700
+Message-ID: <CA+8MBb+S+NF1Dq98CVmO54F+bT_MS2ni3KLRo5S13J1KGuFkeg@mail.gmail.com>
+References: <cover.1364229828.git.viresh.kumar@linaro.org>
+	<afc636963b63becccf34d092203c53369bd1b735.1364229828.git.viresh.kumar@linaro.org>
+	<CAKohponax2iDZeA-WG_L2XVHU5GGJB2nSPWVoVxbZUoez1ZpDw@mail.gmail.com>
+	<CAKohpokkyQK+650aPLtdXJ0wHWupR=-bcTM_eCoZRDy3N47HJQ@mail.gmail.com>
+	<CA+8MBbLwxiPPvyKyQNEDSbNKthpAmooKVe7b+pg-NCETOkSLPA@mail.gmail.com>
+	<CAKohpompxOpwi7fsy1m5UBxymR=dsVra3wvMcvziu7jd9iq8Ow@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1365010229; bh=1Xi7J8JhTxjO9ik+zUtvZlwzAD/rTLm4vkNAgJADcTw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=KwML0PMu6zkcgqoJJ4dUEBEvx1G94HsF+S9MDx
-	NRDepkKvdab+NJMVpudKfiUjKixE1gZJU6OkUiMLMPm6is9p5++2BC67w1xbF2SJUso
-	9SpoVMy7zj9+UUvG2DT/FtIrbv2V1NNRrE11rCpRqV2tpZvi5vo86/PvnQR59kd5gA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1365010229; bh=1Xi7J8JhTxjO9ik+zUtvZlwzAD/rTLm4vkNAgJADcTw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=KwML0PMu6zkcgqoJJ4dUEBEvx1G94HsF+S9MDx
-	NRDepkKvdab+NJMVpudKfiUjKixE1gZJU6OkUiMLMPm6is9p5++2BC67w1xbF2SJUso
-	9SpoVMy7zj9+UUvG2DT/FtIrbv2V1NNRrE11rCpRqV2tpZvi5vo86/PvnQR59kd5gA=
-Content-Disposition: inline
-In-Reply-To: <20130403171738.GC17919@jshin-Toonie>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type;
+        bh=L2oIXpMjmRvX3hMAR2L+ywofdt+BJ5VuoWOawDgjULc=;
+        b=q5RiRXK0+pKMcrHdIxhUuytaMge4kRVLPEQXaUTsZ3M7cypxaqYPUfoSDuOl+oKvnz
+         LIg3gzPz75ugiHpCKrOVCuYtkMBi9xOn635cBKFAEOBY8OTKCb3Pgx7ayh4WNZdhd3uz
+         JpqX+KqcDbs7gY8OPlYqhxlPMZrvwi9qKbxHHItKOPJPwEZLf7N0EkL+MxtxdjFjtGz8
+         4pVR1WUp6BYiztG2PTXhURU8OH20pczxgerR26vmeQxevzxUGIhSb9Lc5jGhXzVHsiAe
+         AbbRleb4I6+n8ds0eYVkI46GZOZjZ+KyEY0OyLNsOfehGnupGF1WPqqj0e8uQql00UCa
+         qDEQ==
+In-Reply-To: <CAKohpompxOpwi7fsy1m5UBxymR=dsVra3wvMcvziu7jd9iq8Ow@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: Thomas Renninger <trenn@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, arvind.chauhan@arm.com, Robin Randhawa <robin.randhawa@arm.com>, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>, cpufreq@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd.bergmann@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Wed, Apr 03, 2013 at 12:17:38PM -0500, Jacob Shin wrote:
-> Writing 0 to powersave_bias or unloading the AMD driver could do that.
->
-> When the AMD driver loads, it will give a sane default value to
-> powersave_bias to enable it, when it unloads, it will put it back to
-> 0.
+On Mon, Apr 1, 2013 at 5:49 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> For now, your Ack will work :)
 
-... and on systems without hw feedback, it will keep powersave_bias to 0
-by default, retaining the old behavior.
-
-Yeah, sounds like a plan.
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Acked-by: Tony Luck <tony.luck@intel.com>
