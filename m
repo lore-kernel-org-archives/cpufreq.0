@@ -1,35 +1,144 @@
-From: Tony Luck <tony.luck@gmail.com>
-Subject: Re: [PATCH 4/9] ia64: cpufreq: move cpufreq driver to drivers/cpufreq
-Date: Wed, 3 Apr 2013 10:35:06 -0700
-Message-ID: <CA+8MBb+S+NF1Dq98CVmO54F+bT_MS2ni3KLRo5S13J1KGuFkeg@mail.gmail.com>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
-	<afc636963b63becccf34d092203c53369bd1b735.1364229828.git.viresh.kumar@linaro.org>
-	<CAKohponax2iDZeA-WG_L2XVHU5GGJB2nSPWVoVxbZUoez1ZpDw@mail.gmail.com>
-	<CAKohpokkyQK+650aPLtdXJ0wHWupR=-bcTM_eCoZRDy3N47HJQ@mail.gmail.com>
-	<CA+8MBbLwxiPPvyKyQNEDSbNKthpAmooKVe7b+pg-NCETOkSLPA@mail.gmail.com>
-	<CAKohpompxOpwi7fsy1m5UBxymR=dsVra3wvMcvziu7jd9iq8Ow@mail.gmail.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH V3 0/2] ARM: OMAP3+: support cpufreq-cpu0 for device tree boot
+Date: Wed, 03 Apr 2013 10:47:39 -0700
+Message-ID: <87y5czzetg.fsf@linaro.org>
+References: <1364507576-19345-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type;
-        bh=L2oIXpMjmRvX3hMAR2L+ywofdt+BJ5VuoWOawDgjULc=;
-        b=q5RiRXK0+pKMcrHdIxhUuytaMge4kRVLPEQXaUTsZ3M7cypxaqYPUfoSDuOl+oKvnz
-         LIg3gzPz75ugiHpCKrOVCuYtkMBi9xOn635cBKFAEOBY8OTKCb3Pgx7ayh4WNZdhd3uz
-         JpqX+KqcDbs7gY8OPlYqhxlPMZrvwi9qKbxHHItKOPJPwEZLf7N0EkL+MxtxdjFjtGz8
-         4pVR1WUp6BYiztG2PTXhURU8OH20pczxgerR26vmeQxevzxUGIhSb9Lc5jGhXzVHsiAe
-         AbbRleb4I6+n8ds0eYVkI46GZOZjZ+KyEY0OyLNsOfehGnupGF1WPqqj0e8uQql00UCa
-         qDEQ==
-In-Reply-To: <CAKohpompxOpwi7fsy1m5UBxymR=dsVra3wvMcvziu7jd9iq8Ow@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1364507576-19345-1-git-send-email-nm@ti.com> (Nishanth Menon's
+	message of "Thu, 28 Mar 2013 16:52:54 -0500")
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, arvind.chauhan@arm.com, Robin Randhawa <robin.randhawa@arm.com>, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>, cpufreq@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd.bergmann@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On Mon, Apr 1, 2013 at 5:49 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> For now, your Ack will work :)
+Nishanth Menon <nm@ti.com> writes:
 
-Acked-by: Tony Luck <tony.luck@intel.com>
+> The following version 3 of the series arose from trying to use BeagleBoard-XM
+> (OMAP3 variant) for doing CPU DVFS using cpufreq-cpu0. This series enables the
+> generic cpufreq-cpu0 driver to be used in device tree enabled boot while
+> maintaining support of the legacy omap-cpufreq driver when used in non device
+> tree enabled boot.
+>
+> However, in order to enable complete SoC entitlement for OMAP platforms, with
+> this series, key features are still pending on device tree adaptation for OMAP:
+> A) clock framework data transition to DT - this should happen soon, so this
+> series hacks the clock node for the time being as suggested in review of
+> original series[1].
+> B) On processors that use voltage controller, voltage processor (VC/VP hardware
+> loop using I2C_SR path) - we have started work on transitioning them to
+> regulator framework driven by DT.
+> C) Adaptive Body Bias and SmartReflex AVS conversion to DT. [2]
+>
+> Note: At this point in time, we do not have DT entries for clock on OMAP
+> platforms. Common Clock Framework(CCF) could also control regulators[3].
+> Once these conversions are complete, there might be minimal cleanup work to
+> switch to the new data structure changes.
+>
+> Key benefit of the series is to allow all relevant TI platforms now to use a
+> single cpufreq driver and equivalent frameworks in addition be part of the
+> transition to device tree.
+> NOTE: As a result of this series:
+> 1. omap-cpufreq will be used only in non device tree boot scenario. we should
+>    delete this driver once the 100% DT conversion is complete.
+> 2. Generic cpufreq-cpu0 will be used only in device tree boot scenario.
+>    boot systems.
+
+Yes, I like this direction better.  Thanks for reworking and thanks for
+the thorough changelog.
+
+> Key changes in version 3:
+> 	- series now rebased on Device tree patches queued for OMAP 3.10
+> 	- DT patches introducing OPPs are now merged, so pending patches alone
+> 	  are part of the new series.
+> 	- omap-cpufreq is now converted to platform_device to address:
+> 		http://marc.info/?t=136434901900001&r=1&w=2
+>
+> version 2 of the series:
+> 	http://marc.info/?t=136371570200003&r=1&w=2
+> 	available at:
+> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v2
+>
+> version 1 of the series:
+> 	http://marc.info/?t=136329485400005&r=1&w=2
+> 	available at:
+> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v1
+>
+> [1] Original discussion thread which triggered this series:
+> 	http://marc.info/?l=linux-pm&m=136304313700602&w=2
+> 	https://patchwork.kernel.org/patch/2251841/
+> 	https://patchwork.kernel.org/patch/2251851/
+> [2] ABB RFC: http://marc.info/?l=linux-omap&m=136449099409794&w=2 
+> [3] CCF DVFS patches:
+> https://patchwork.kernel.org/patch/2195431/
+> https://patchwork.kernel.org/patch/2195421/
+> https://patchwork.kernel.org/patch/2195451/
+> https://patchwork.kernel.org/patch/2195441/
+> https://patchwork.kernel.org/patch/2195461/
+>
+> Version 3 is now based on for-3.10/dts branch from Benoit:
+> 	http://git.kernel.org/cgit/linux/kernel/git/bcousson/linux-omap-dt.git/log/?h=for_3.10/dts
+> 	d114294 ARM: dts: AM33XX: Corrects typo in interrupt field in SPI node
+>
+> Version 3 is also available at:
+> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v3
+> 	git link: git://github.com/nmenon/linux-2.6-playground.git
+> 	branch: cpufreq-cpu0-omap-all-v3
+>
+> Test coverage:
+> 	test script: http://pastebin.com/zrr8ptge
+> Platforms verified:
+> 	beaglebone(rev A6a) - AM33xx compatible - http://pastebin.com/GVP2wDVr
+> 	beagleboard (rev C1D) - OMAP3430 compatible
+> 		- DT enabled boot: http://pastebin.com/2AY1F5Qa
+> 		- No DT enabled boot: http://pastebin.com/hDk0gbpU
+> 	omap3-beagle-xm -OMAP3630 compatible - http://pastebin.com/5tHAQcLZ
+> 	Pandaboard -(OMAP4430 ES2.2) - http://pastebin.com/6D9aDPXT
+> 	Pandaboard-ES -(OMAP4460 ES1.1) - http://pastebin.com/ExrBEczr
+
+And thanks also for the broad testing.
+
+One nit about the test report/coverage is I don't see any
+test/verification that the voltage is still being scaled based on the DT
+based OPPs.  It's easy to verify at least from the regulator PoV that
+the voltage is scaled also.
+
+My dumb DVFS test script (below) should work on any busybox rootfs 
+
+Care to give that (or something like it) a try as well?  
+
+With that extra confirmation of testing, I will queue up this series.
+
+Thanks,
+
+Kevin
+
+[1]
+#!/bin/sh
+
+REG=`find /sys/class/regulator -follow -maxdepth 2 -name name -exec grep -l mpu {} \;`
+mpu_reg=`echo $REG | cut -d'/' -f5`
+echo MPU regulator: $mpu_reg
+
+if [ ! -d /sys/devices/system/cpu/cpu0/cpufreq ]; then
+  echo "CPUfreq not enabled in kernel."
+  exit 0
+fi
+
+cd /sys/devices/system/cpu/cpu0/cpufreq
+echo -n "Available frequencies: "
+cat scaling_available_frequencies
+echo -n "Current frequency: "
+cat scaling_cur_freq
+echo userspace > scaling_governor
+
+for freq in `cat scaling_available_frequencies`; do
+  echo ${freq} > scaling_setspeed
+  echo -n "current freq: "
+  cat scaling_cur_freq
+  echo -n "current voltage: "
+  cat /sys/class/regulator/${mpu_reg}/microvolts
+  sleep 2
+done
