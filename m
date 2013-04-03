@@ -1,30 +1,35 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/2] cpufreq: ondemand: allow custom
- powersave_bias_target handler to be registered
-Date: Wed, 3 Apr 2013 10:42:51 +0530
-Message-ID: <CAKohpomQN2endmNtvVS3JrqqPbyQpaZuVbiJ_hpM5SFLfDNRww@mail.gmail.com>
-References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
-	<1364926304-1799-2-git-send-email-jacob.shin@amd.com>
+Subject: Re: [PATCH v6 1/2] cpufreq: split the cpufreq_driver_lock and use the rcu
+Date: Wed, 3 Apr 2013 10:55:54 +0530
+Message-ID: <CAKohpo=Um9LGhGtMB0z9C2jxmS3oHwV7i_Gmsq5rR80ZcGYyLw@mail.gmail.com>
+References: <5159C147.70800@sgi.com>
+	<20130402145536.GA31757@gulag1.americas.sgi.com>
+	<CAKohpokXbeRp-pHaJRAOjnF+R+wy8R9We67Yr2C2nyoVXyJd6w@mail.gmail.com>
+	<8456428.Vj8uefv4LI@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1364926304-1799-2-git-send-email-jacob.shin@amd.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <8456428.Vj8uefv4LI@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nathan Zimmer <nzimmer@sgi.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2 April 2013 23:41, Jacob Shin <jacob.shin@amd.com> wrote:
-> This allows for another [arch specific] driver to hook into existing
-> powersave bias function of the ondemand governor. i.e. This allows AMD
-> specific powersave bias function (in a separate AMD specific driver)
-> to aid ondemand governor's frequency transition deicisions.
+On 3 April 2013 04:27, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, April 02, 2013 08:29:12 PM Viresh Kumar wrote:
+>> On 2 April 2013 20:25, Nathan Zimmer <nzimmer@sgi.com> wrote:
+>> > The lock is unneeded if we expect register and unregister driver to not be
+>> > called from muliple threads at once.  I didn't make that assumption.
+>>
+>> Hmm.. But doesn't rcu part take care of that too?? Two writers
+>> updating stuff simultaneously?
 >
-> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> ---
->  drivers/cpufreq/cpufreq_governor.h |    3 +++
->  drivers/cpufreq/cpufreq_ondemand.c |   32 ++++++++++++++++++++++++--------
->  2 files changed, 27 insertions(+), 8 deletions(-)
+> RCU doesn't cover that in general.  Additional locking is needed to provide
+> synchronization between writers.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hmm.. I read the same from rcu documentation now...
+
+Nathan, What about using a single spinlock (instead of two) that will take care
+of all locking requirements of cpufreq.c ... i.e. both cpufreq_cpu_data and
+cpufreq_driver_{register|unregister}... We don't need two locks actually.
