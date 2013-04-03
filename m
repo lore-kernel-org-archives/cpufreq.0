@@ -1,85 +1,67 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: Re: [PATCH] cpufreq: convert the cpufreq_driver to use the rcu
-Date: Wed, 3 Apr 2013 11:37:10 -0500
-Message-ID: <515C5AB6.5090109@sgi.com>
-References: <AKohpo=Um9LGhGtMB0z9C2jxmS3oHwV7i_Gmsq5rR80ZcGYyLw@mail.gmail.com> <1365001386-29970-1-git-send-email-nzimmer@sgi.com> <CAKohpon1QiCfJhWBi_f7U1EU410JMGHq+QnpEPJ+rdiUjsKsQA@mail.gmail.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: [PATCH V3 2/2] cpufreq: AMD "frequency sensitivity feedback"
+ powersave bias for ondemand governor
+Date: Wed, 3 Apr 2013 11:53:24 -0500
+Message-ID: <20130403165324.GB17919@jshin-Toonie>
+References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
+ <20130402192352.GC17675@pd.tnic>
+ <20130402200337.GA17919@jshin-Toonie>
+ <2932884.BNCEuERbdR@skinner.arch.suse.de>
+ <20130402210124.GI17675@pd.tnic>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon1QiCfJhWBi_f7U1EU410JMGHq+QnpEPJ+rdiUjsKsQA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130402210124.GI17675@pd.tnic>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Borislav Petkov <bp@alien8.de>, Thomas Renninger <trenn@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 04/03/2013 10:32 AM, Viresh Kumar wrote:
-> Please always mention Version number and history. Not everybody
-> remembers what changed after last version.
-Your right.  I was rushing and forgot.
-I need to develop the habit of adding some history to my git commits 
-when I amend them.
+On Tue, Apr 02, 2013 at 11:01:24PM +0200, Borislav Petkov wrote:
+> On Tue, Apr 02, 2013 at 10:51:51PM +0200, Thomas Renninger wrote:
+> > powersave_bias is undocumented in Documentation/cpu-freq/...
+> > I guess its use-case is for people who want to get some percent more
+> > power savings out of their laptop and do not care of the one or other
+> > percent performance.
+> > In fact I would like to get rid of this extra code and I expect nobody would 
+> > miss it.
+> > I might miss a configuration tool where someone went through the code,
+> > documented things and allows users to set powersave_bias values through
+> > some /etc/* config files.
+> > Yep, if you want anyone to make use of this, it should better get
+> > embedded in more general, at least general ondemand code.
+> 
+> Yeah, it all sounds like we want to enable this by default on systems
+> which support it. Maybe with an off-switch for people who want plain
+> ondemand decisions.
+> 
+> The remaining systems with ripped out powersave_bias would get plain
+> ondemand governor decisions. Provided, of course, nobody uses
+> powersave_bias and the functionality doesn't make any sense anyway.
 
->
-> On 3 April 2013 20:33, Nathan Zimmer <nzimmer@sgi.com> wrote:
->> We eventually would like to remove the rwlock cpufreq_driver_lock or convert
->> it back to a spinlock and protect the read sections with RCU.  The first step in
-> Why do we want to convert it back to spinlock?
-Documentation/spinlocks.txt:84
-I am not sure why but there is the directive I am following.
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>   bool have_governor_per_policy(void)
->>   {
->> -       return cpufreq_driver->have_governor_per_policy;
->> +       bool have_governor;
-> Name it have_governor_per_policy, it looks wrong otherwise.
->
->> +       rcu_read_lock();
->> +       have_governor = rcu_dereference(cpufreq_driver)->have_governor_per_policy;
->> +       rcu_read_unlock();
->> +       return have_governor;
->>   }
-Will do.
->>   static ssize_t show_scaling_driver(struct cpufreq_policy *policy, char *buf)
->>   {
->> -       return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", cpufreq_driver->name);
->> +       char *name;
->> +       rcu_read_lock();
->> +       name = rcu_dereference(cpufreq_driver)->name;
->> +       rcu_read_unlock();
->> +       return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", name);
->>   }
-> This is the definition of struct cpufreq_driver:
->
-> struct cpufreq_driver {
-> 	struct module           *owner;
-> 	char			name[CPUFREQ_NAME_LEN];
->
->         ...
-> };
->
-> Purpose of rcu read_lock/unlock are to define the rcu critical section
-> after which rcu layer is free to free the memory allocated to earlier
-> instance of cpufreq_driver.
->
-> So, after the unlock() call you _should_not_ use the memory allocated to
-> cpufreq_driver instance. And here, you are using memory allocated to name[]
-> after the unlock() call.
-Ok I'll fix this spot.
+Rafael, any thoughts on removing powersave_bias altogether ?
 
-> Which looks to be wrong... I left other parts of driver upto you to fix for this
-> "rule of thumb".
-In places like show_bios_limit and cpufreq_add_dev_interface we know 
-that the memory will still
-be there since the cpufreq_driver->owner is held.
+If we remove it, then is it acceptable to add an alternate callback/
+handler registration to ondemand governor to account for hardware
+feedback ?
 
-> Sorry for not pointing this earlier but rcu is as new to me as it is
-> to you. I know
-> you must be frustrated with so many versions of this patch, and everytime we
-> get a new problem to you... Don't get disheartened with it.. Keep the good work
-> going :)
-Making a learners mistake isn't really discouraging to me, even when I 
-do it twice.
+Or, if we don't want to remove powersave_bias,
 
+Then Thomas, Boris, would it be acceptable if enable the frequency
+feedback feature by default with a sane powersave_bias tunable value ?
+And also add proper documentation for both vanila powersave_bias and
+powersave_bias with AMD frequency sensitivity loaded to
+Documentation/cpu-freq/ondemand ?
+
+> 
+> Thanks.
+> 
+> -- 
+> Regards/Gruss,
+>     Boris.
+> 
+> Sent from a fat crate under my desk. Formatting is fine.
 > --
-> viresh
+> 
+
