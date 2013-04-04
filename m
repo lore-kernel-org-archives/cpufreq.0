@@ -1,49 +1,58 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: [PATCH V4 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Thu, 4 Apr 2013 15:29:47 -0500
-Message-ID: <20130404202947.GB24479@jshin-Toonie>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH V4 1/2] cpufreq: ondemand: allow custom
+ powersave_bias_target handler to be registered
+Date: Thu, 4 Apr 2013 23:32:20 +0200
+Message-ID: <20130404213220.GK32271@pd.tnic>
 References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
- <1365092344-11310-3-git-send-email-jacob.shin@amd.com>
- <20130404192323.GI32271@pd.tnic>
+ <1365092344-11310-2-git-send-email-jacob.shin@amd.com>
+ <CAKohpom6BSJZc_ohgnjRTV2EBUAPy8TKVphtoRaNSt1wFP70uA@mail.gmail.com>
+ <20130404171804.GA4696@jshin-Toonie>
+ <20130404191225.GH32271@pd.tnic>
+ <20130404202813.GA24479@jshin-Toonie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1365111143; bh=uegYRPjh04ZhGJVup6hbBtkdeXzRpmH3AL5Dcf7GPSk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=rYzlvIpE6Yniddtg9/i8OigDATASFEadYiSPHH
+	fjGVFADGqrr1vGiILHQBjPThyd9DwalxqRs3pd+8b+aDFbNi0DEPpecC0j4zr/bUNx6
+	9+G6dZ1SK+lZrPFEDtSgAxkK3ODiHXHjD4f2LkoUU9sDQvZX0OFpDxEl+szxShCjdc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
+	t=1365111143; bh=uegYRPjh04ZhGJVup6hbBtkdeXzRpmH3AL5Dcf7GPSk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:In-Reply-To; b=rYzlvIpE6Yniddtg9/i8OigDATASFEadYiSPHH
+	fjGVFADGqrr1vGiILHQBjPThyd9DwalxqRs3pd+8b+aDFbNi0DEPpecC0j4zr/bUNx6
+	9+G6dZ1SK+lZrPFEDtSgAxkK3ODiHXHjD4f2LkoUU9sDQvZX0OFpDxEl+szxShCjdc=
 Content-Disposition: inline
-In-Reply-To: <20130404192323.GI32271@pd.tnic>
+In-Reply-To: <20130404202813.GA24479@jshin-Toonie>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Renninger <trenn@suse.de>
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
 
-On Thu, Apr 04, 2013 at 09:23:23PM +0200, Borislav Petkov wrote:
-> On Thu, Apr 04, 2013 at 11:19:04AM -0500, Jacob Shin wrote:
-> > Future AMD processors, starting with Family 16h, can provide software
-> > with feedback on how the workload may respond to frequency change --
-> > memory-bound workloads will not benefit from higher frequency, where
-> > as compute-bound workloads will. This patch enables this "frequency
-> > sensitivity feedback" to aid the ondemand governor to make better
-> > frequency change decisions by hooking into the powersave bias.
-> > 
-> > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+On Thu, Apr 04, 2013 at 03:28:13PM -0500, Jacob Shin wrote:
+> Ah, okay .. here is the fixup:
 > 
-> Looks good to me.
+> From 7236287faa1a499686c9aac1d3f3f224516a7bbf Mon Sep 17 00:00:00 2001
+> From: Jacob Shin <jacob.shin@amd.com>
+> Date: Tue, 2 Apr 2013 09:56:56 -0500
+> Subject: [PATCH 1/2] cpufreq: ondemand: allow custom powersave_bias_target
+>  handler to be registered
 > 
-> Acked-by: Borislav Petkov <bp@suse.de>
-
-Rafael, got acks from both Boris and Thomas. Please commit to
-linux-next when you get the chance.
-
-Thanks,
-
--Jacob
-
+> This allows for another [arch specific] driver to hook into existing
+> powersave bias function of the ondemand governor. i.e. This allows AMD
+> specific powersave bias function (in a separate AMD specific driver)
+> to aid ondemand governor's frequency transition decisions.
 > 
-> -- 
-> Regards/Gruss,
->     Boris.
-> 
-> Sent from a fat crate under my desk. Formatting is fine.
-> --
-> 
+> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
 
+Acked-by: Borislav Petkov <bp@suse.de>
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
