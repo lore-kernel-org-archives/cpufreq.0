@@ -1,15 +1,13 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH v5 3/3] ARM: shmobile: sh73a0: add CPUFreq support
-Date: Fri, 5 Apr 2013 20:04:10 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1304051959500.997@axis700.grange>
-References: <1365156038-12467-1-git-send-email-g.liakhovetski@gmx.de>
- <1365156038-12467-4-git-send-email-g.liakhovetski@gmx.de>
- <515EF6C6.6050006@cogentembedded.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V5 0/4] cpufreq: exynos5440: support for cpufreq driver
+Date: Fri, 05 Apr 2013 14:38:26 +0200
+Message-ID: <2949363.nNl2A6XIoS@vostro.rjw.lan>
+References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <515EF6C6.6050006@cogentembedded.com>
+In-Reply-To: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
 List-Id: <cpufreq.vger.kernel.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -20,58 +18,65 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Cc: linux-sh@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel@lists.infradead.org
 
-Hi Sergei
+On Thursday, March 28, 2013 01:35:18 PM Amit Daniel Kachhap wrote:
+> Submitting the V5 version of exynos5440 cpufreq driver. This patchset addresses
+> all the coding and design concerns raised especially by Viresh.
+> 
+> Changes in V5:
+> * Removed the unnecessary DT look up entry from mach-exynos5-dt.c.
+> * Fixed all coding and comments issue raised by Viresh.
+> 
+> Changes in V4:
+> * Added dev_err logs instead of pr_err.
+> * Used the devm_ioremap_resource API.
+> * Implemented several coding guidelines and minor error comments from Sylwester,
+>   Russell and Viresh.
+> 
+> Changes in V3:
+> * Converted the driver to probe based as suggested by Viresh. This is also
+>   beneficial for multiplatform kernel.
+> * Other coding guidelines related changes.
+> * Moved the DT node outside cpu0 node as the driver is now a platform
+>   driver.
+> 
+> Changes in V2:
+> * Added OPP library support to parse DT parameters.
+> * Removed a hack to handle interrupts in bootup.
+> * Implemented other review comments from Viresh and Inder.
+> 
+> All these patches are dependent on Thomas Abraham common clock patches.
+> (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg15860.html)
+> This whole patch series is based on 3.9-rc4.
+> 
+> Amit Daniel Kachhap (4):
+>   cpufreq: exynos: Add cpufreq driver for exynos5440
+>   cpufreq: exynos: Remove error return even if no soc is found
+>   arm: exynos: Enable OPP library support for exynos5440
+>   arm: dts: Add cpufreq controller node for Exynos5440 SoC
+> 
+>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   28 ++
+>  arch/arm/boot/dts/exynos5440.dtsi                  |   12 +
+>  arch/arm/mach-exynos/Kconfig                       |    2 +
+>  drivers/cpufreq/Kconfig.arm                        |    9 +
+>  drivers/cpufreq/Makefile                           |    1 +
+>  drivers/cpufreq/exynos-cpufreq.c                   |    2 +-
+>  drivers/cpufreq/exynos5440-cpufreq.c               |  474 ++++++++++++++++++++
+>  7 files changed, 527 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
+>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
 
-On Fri, 5 Apr 2013, Sergei Shtylyov wrote:
+Is this for me or the Samsung tree?
 
-> On 05-04-2013 14:00, Guennadi Liakhovetski wrote:
-> 
-> > This patch enables the use of the generic cpufreq-cpu0 driver on sh73a0.
-> > Providing a regulator, a list of OPPs in DT, combined with a virtual
-> > cpufreq-cpu0 platform device and a clock, attached to it is everything,
-> > the cpufreq-cpu0 driver needs. The first sh73a0 platform, implementing
-> > such CPUFreq support is kzm9g-reference.
-> 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-> > ---
-> 
-> > v5: remove sh73a0-kzm9g-reference.dts hunk, it's now merged into patch 2/3
-> 
-> >   arch/arm/mach-shmobile/Kconfig        |    2 ++
-> >   arch/arm/mach-shmobile/setup-sh73a0.c |    5 +++++
-> >   2 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> > diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-> > index 1a517e2..4ac5bf9 100644
-> > --- a/arch/arm/mach-shmobile/Kconfig
-> > +++ b/arch/arm/mach-shmobile/Kconfig
-> [...]
-> > diff --git a/arch/arm/mach-shmobile/setup-sh73a0.c
-> > b/arch/arm/mach-shmobile/setup-sh73a0.c
-> > index d10ded0..9a522f9 100644
-> > --- a/arch/arm/mach-shmobile/setup-sh73a0.c
-> > +++ b/arch/arm/mach-shmobile/setup-sh73a0.c
-> > @@ -1003,6 +1003,8 @@ static const struct of_dev_auxdata
-> > sh73a0_auxdata_lookup[] __initconst = {
-> > 
-> >   void __init sh73a0_add_standard_devices_dt(void)
-> >   {
-> > +	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", .id =
-> > -1, };
-> 
->    With NULL .parent? Shouldn't it be 'platform_bus'?
+If it's for me, I need ACKs from the Samsung tree maintainers.  Also, please
+address the Viresh's comments.
 
-Look at platform_device_add():
+Thanks,
+Rafael
 
-	if (!pdev->dev.parent)
-		pdev->dev.parent = &platform_bus;
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
