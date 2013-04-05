@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 56101] Intel Core2 Duo E6600 reports max-frequency of just 900
  MHz instead of 2.4 GHz
-Date: Fri,  5 Apr 2013 15:17:33 +0000 (UTC)
-Message-ID: <20130405151733.60D0011FB79@bugzilla.kernel.org>
+Date: Fri,  5 Apr 2013 14:10:07 +0000 (UTC)
+Message-ID: <20130405141007.2B14E11FB79@bugzilla.kernel.org>
 References: <bug-56101-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,24 +16,13 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=56101
 
 
-S. Kalteis <spam@kernelspace.de> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |CLOSED
-         Resolution|                            |INVALID
 
 
 
-
---- Comment #14 from S. Kalteis <spam@kernelspace.de>  2013-04-05 15:17:33 ---
-Ah, ok, I read the -i option as output update interval (like top -d <secs>).
-
-Stressing one core indeed shows a frequency of 2.4 GHz. So it *is* a BIOS bug.
-
-I guess IBM won't release a new BIOS revision for a machine that old. :-)
-
-Thank you for your time & effort, case closed.
+--- Comment #10 from S. Kalteis <spam@kernelspace.de>  2013-04-05 14:10:06 ---
+Created an attachment (id=97481)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=97481)
+Contents of /sys/firmware/acpi/tables/dynamic/SSDT3
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
