@@ -1,50 +1,31 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v4 3/3] ARM: shmobile: kzm9g-reference: add CPUFreq
- support
-Date: Fri, 5 Apr 2013 09:40:20 +0900
-Message-ID: <20130405004020.GM29203@verge.net.au>
-References: <1364153255-20664-1-git-send-email-g.liakhovetski@gmx.de>
- <1364153255-20664-4-git-send-email-g.liakhovetski@gmx.de>
- <20130404043746.GD28297@verge.net.au>
- <Pine.LNX.4.64.1304042352180.21548@axis700.grange>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/18] For-3.10: CPUFreq: Move drivers to drivers/cpufreq
+Date: Fri, 5 Apr 2013 06:47:03 +0530
+Message-ID: <CAKohpom8=jn+i2VUEFwgRQDAwaxBT7rB-nHcY1rSE_BxW+VBmA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+	<2724059.EMM6yAeBck@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.1304042352180.21548@axis700.grange>
-Sender: linux-sh-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2724059.EMM6yAeBck@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-On Thu, Apr 04, 2013 at 11:54:20PM +0200, Guennadi Liakhovetski wrote:
-> Hi Simon
-> 
-> Thanks for the review
-> 
-> On Thu, 4 Apr 2013, Simon Horman wrote:
-> 
-> > On Sun, Mar 24, 2013 at 08:27:35PM +0100, Guennadi Liakhovetski wrote:
-> > > This patch enables the use of the generic cpufreq-cpu0 driver on kzm9g.
-> > > Providing a regulator, a list of OPPs in DT, combined with a virtual
-> > > cpufreq-cpu0 platform device and a clock, attached to it is everything,
-> > > the cpufreq-cpu0 driver needs.
-> > 
-> > I wonder if it would be possible to re-arange this patch a little.
-> > 
-> > 1) vdd_dvfs is added in this patch but it appears to be used in the
-> >    previous patch in the series. I wonder if this can be resolved
-> >    by re-ordering the patches.
-> 
-> Right, I'll change that.
-> 
-> > 2) It includes both kzm9g board and sh73a0 SoC changes.
-> >    I would prefer if the sh73a0 SoC portion (setup-sh73a0.c)
-> >    was moved into a separate patch. The arm-soc people
-> >    like to have separate board and SoC branches.
-> 
-> Yes, I'll probably just merge the sh73a0-kzm9g-reference.dts hunk into the 
-> previous patch.
+On 5 April 2013 04:06, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, April 04, 2013 06:24:08 PM Viresh Kumar wrote:
+>> Hi Rafael,
+>>
+>> These are all the remaining patches i have for 3.10. All of them have received
+>> Acks from their maintainers leaving powerpc ones. I have got an additional patch
+>> for powerpc (18) this time, it was the only driver left out of drivers/cpufreq.
+>>
+>> Please consider them for applying to your bleeding-edge or linux-next.
+>
+> Patches [1-16/18] plus the fixed-up [18/18] (slightly modified due to the
+> ordering change) applied to bleeding-edge.  For [17/18] I need an ACK from the
+> powerpc side.
 
-Thanks, I think that approach should work well.
+Thanks.
