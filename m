@@ -1,46 +1,60 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 56101] Intel Core2 Duo E6600 reports max-frequency of just 900
- MHz instead of 2.4 GHz
-Date: Fri,  5 Apr 2013 12:54:46 +0000 (UTC)
-Message-ID: <20130405125446.BAA3411FB5C@bugzilla.kernel.org>
-References: <bug-56101-12968@https.bugzilla.kernel.org/>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
+ tree supported boot
+Date: Fri, 5 Apr 2013 15:17:55 -0700
+Message-ID: <20130405221755.GI10155@atomide.com>
+References: <20130405161338.GB10155@atomide.com>
+ <20130405163254.GA7259@kahuna>
+ <20130405170527.GC10155@atomide.com>
+ <20130405171750.GA7398@kahuna>
+ <20130405192829.GE10155@atomide.com>
+ <20130405200201.GA7804@kahuna>
+ <20130405211003.GK6182@atomide.com>
+ <20130405213250.GA8534@kahuna>
+ <20130405214051.GG10155@atomide.com>
+ <20130405221041.GA8648@kahuna>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-56101-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <20130405221041.GA8648@kahuna>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=56101
+* Nishanth Menon <nm@ti.com> [130405 15:15]:
+> How does the following look?
+> Option a) not have a dummy node if CPUFREQ_CPU0 is not configured:
+> static inline void omap_init_cpufreq(void)
+> {
+> 	struct platform_device_info devinfo = { };
+> 
+> 	if (!of_have_populated_dt())
+> 		devinfo.name = "omap-cpufreq";
+> 	else if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0))
+> 		devinfo.name = "cpufreq-cpu0"
+> 	
+> 	if (devinfo.name)
+> 		platform_device_register_full(&devinfo);
+> }
+> 
+> Option b) leave a dummy node registered
+> static inline void omap_init_cpufreq(void)
+> {
+> 	struct platform_device_info devinfo = { };
+> 
+> 	if (!of_have_populated_dt())
+> 		devinfo.name = "omap-cpufreq";
+> 	else
+> 		devinfo.name = "cpufreq-cpu0"
+> 	
+> 	platform_device_register_full(&devinfo);
+> }
+> 
+> If there are no objections to (b), I dont mind it either.
 
+To me option (b) looks better as it's if else :)
 
-
-
-
---- Comment #7 from S. Kalteis <spam@kernelspace.de>  2013-04-05 12:54:46 ---
-Hmm... this really might be related to only *reporting* wrong frequencies but
-not actually *clocking* at 900 MHz.
-
-I did a couple of tests using UnixBench 5.1.3 on kernel 3.8.5 with acpi-cpufreq
-loaded (reporting a max of 900 MHz) and with Enhanced SpeedStep switched off in
-BIOS settings (thus supposedly running at full clock speed of 2.4 GHz).
-
-In both cases reported benchmark numbers are relatively close at about 830 to
-880 (SpeedStep off = faster) points for single-threaded passes and 1430 to 1490
-(SpeedStep on = faster) for two parallel tests.
-I guess if the Core2 Duo really were throttled at 900 MHz, the numbers with the
-cpufreq-driver loaded should be dramatically lower (though this is speculation
-on my part).
-
-Maybe this helps clear up things...
-
-Thanks,
-
-Simon
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Tony
