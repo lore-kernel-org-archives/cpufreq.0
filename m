@@ -1,93 +1,90 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 56101] Intel Core2 Duo E6600 reports max-frequency of just 900
- MHz instead of 2.4 GHz
-Date: Fri,  5 Apr 2013 14:48:44 +0000 (UTC)
-Message-ID: <20130405144844.BDBBA11F94D@bugzilla.kernel.org>
-References: <bug-56101-12968@https.bugzilla.kernel.org/>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
+ tree supported boot
+Date: Fri, 5 Apr 2013 16:32:51 -0500
+Message-ID: <20130405213250.GA8534@kahuna>
+References: <20130404190053.GA4371@kahuna>
+ <515E9E79.8010300@ti.com>
+ <CAGo_u6r+JdNaCmVh+dHLppJ7eaYh4W5aL1aAg8xQfAju6PyZdQ@mail.gmail.com>
+ <20130405161338.GB10155@atomide.com>
+ <20130405163254.GA7259@kahuna>
+ <20130405170527.GC10155@atomide.com>
+ <20130405171750.GA7398@kahuna>
+ <20130405192829.GE10155@atomide.com>
+ <20130405200201.GA7804@kahuna>
+ <20130405211003.GK6182@atomide.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-56101-12968@https.bugzilla.kernel.org/>
+Content-Disposition: inline
+In-Reply-To: <20130405211003.GK6182@atomide.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=56101
-
-
-
-
-
---- Comment #13 from Thomas Renninger <trenn@suse.de>  2013-04-05 14:48:44 ---
-In SSDT2 the P-states show up your BIOS tells the OS which are supported
-through _PSS ACPI function:
-       Name (_PSS, Package (0x02)  // _PSS: Performance Supported States
-        {
-            Package (0x06)
-            {
-                0x00000384,
-                0x00006978,
-                0x0000000A,
-                0x0000000A,
-                0x0000092A,
-                0x0000092A
-            },
-
-            Package (0x06)
-            {
-                0x00000258,
-                0x000032C8,
-                0x0000000A,
-                0x0000000A,
-                0x0000061B,
-                0x0000061B
-            }
-        })
-
-In ACPI spec chapter 8.4.4.2 is stated this info means:
-CoreFreq, // DWordConst
-Power, // DWordConst
-TransitionLatency, // DWordConst
-BusMasterLatency, // DWordConst
-Control, // DWordConst
-Status // DWordConst
-
-Taking the first one (CoreFreq):
-0x384 -> 900
-0x258 -> 600
-the kernel is doing everything correct (and I would have been surprised if not,
-this stuff works for years).
-This clearly is a BIOS bug not much can be done about (beside searching for a
-related BIOS option or BIOS upgrade).
-
-> cpupower monitor still exits after one second.
-This is normal behavior, it only can monitor frequency over time, default 1
-second.
-C0 means core is actively processing something
-Cx means the core is idle (depending which C-states are supported in deeper
-                           ones)
-Later CPUs cpupower monitor can detect in which C-states the CPU really was
-(even the kernel thinks it triggered other states).
-
-If properly packaged:
-cpupower <subcommand> --help
-should invoke the correct manpage:
-man cpupower-<subcommand>(8)
-in this case.
-You could pass -i seconds parameter to let cpupower monitor scan the frequency
-for longer.
-
-You can do:
-cat /dev/zero >/dev/null &
-to utilize one core.
-then try again:
-cpupower monitor
-if the frequency is ramped up, you are fine and the only defect is wrongly
-shown CPU frequency info (through the BIOS and therefore through the kernel and
-therefore with userspace tools as well).
-
+On 14:10-20130405, Tony Lindgren wrote:
+> * Nishanth Menon <nm@ti.com> [130405 13:06]:
+> > On 12:28-20130405, Tony Lindgren wrote:
+[...]
+> > > How about just set it up in omap2_common_pm_init instead
+> > > of the board-generic?
+> > umm.. We want to eventually want to get rid of mach-omap2/pm.c (all
+> > those create processor devices etc should go away with proper
+> > representation of devices as nodes in DT if possible.
+> > But, I think you mean something like in the "else" condition of
+> > https://patchwork.kernel.org/patch/2359711/ ? - I'd again have the same
+> > request of not having anything to do with pm.c and keeping as little as
+> > possible for all TI processors in mach-omap2.
+> > 
+> > Could you enlighten me about why you'd not like it in board-generic.c?
+> > will creating an function ti_generic_cpufreq_init() in board-generic.c
+> > and calling it from omap_generic_init help?
+> 
+> I'd like to keep board-generic.c down to minimum. Can't you
+> set it up in omap_init_cpufreq() in your second patch of this
+> series?
+Thanks. That seems to be a better compromise. Will do. I can sequence patch
+[2] above the current patch[1] if there is a need to fix multi-arch builds
+for 3.9: in that case I will probably leave the current [2] patch as
+is, and once our clock representation discussion is done, the rev 4 of
+the patch [1], I can do the following:
+diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+index 8d15f9a..b250689 100644
+--- a/arch/arm/mach-omap2/pm.c
++++ b/arch/arm/mach-omap2/pm.c
+@@ -267,8 +267,14 @@ static void __init omap4_init_voltages(void)
+ 
+ static inline void omap_init_cpufreq(void)
+ {
+-	struct platform_device_info devinfo = { .name = "omap-cpufreq", };
+-	platform_device_register_full(&devinfo);
++	struct platform_device_info devinfo = { .name = "omap-cpufreq", }
++
++	if (!of_have_populated_dt()) {
++		platform_device_register_full(&devinfo);
++	} else if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
++		devinfo.name = "cpufreq-cpu0"
++		platform_device_register_full(&devinfo);
++	}
+ }
+ 
+ static int __init omap2_common_pm_init(void)
+@@ -301,9 +307,9 @@ int __init omap2_common_pm_late_init(void)
+ 		/* Smartreflex device init */
+ 		omap_devinit_smartreflex();
+ 
+-		/* cpufreq dummy device instantiation */
+-		omap_init_cpufreq();
+ 	}
++	/* cpufreq dummy device instantiation */
++	omap_init_cpufreq();
+ 
+ #ifdef CONFIG_SUSPEND
+ 	suspend_set_ops(&omap_pm_ops);
+[1] https://patchwork.kernel.org/patch/2399201/
+[2] https://patchwork.kernel.org/patch/2359711/
 -- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Regards,
+Nishanth Menon
