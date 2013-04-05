@@ -1,39 +1,67 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH v5 0/3] CPUFreq for sh73a0 / kzm9g, using cpufreq-cpu0
-Date: Fri,  5 Apr 2013 12:00:35 +0200
-Message-ID: <1365156038-12467-1-git-send-email-g.liakhovetski@gmx.de>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Subject: Re: [PATCH v5 3/3] ARM: shmobile: sh73a0: add CPUFreq support
+Date: Fri, 05 Apr 2013 22:16:34 +0400
+Message-ID: <515F1502.3080301@cogentembedded.com>
+References: <1365156038-12467-1-git-send-email-g.liakhovetski@gmx.de>
+ <1365156038-12467-4-git-send-email-g.liakhovetski@gmx.de>
+ <515EF6C6.6050006@cogentembedded.com>
+ <Pine.LNX.4.64.1304051959500.997@axis700.grange>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: linux-sh@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <Pine.LNX.4.64.1304051959500.997@axis700.grange>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-sh@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org
 
-v5: essentially identical to v4, one hunk has been moved from one patch
-over to another one, patch #1 no longer depends on a different patch-
-series, which will have to be updated.
+On 04/05/2013 10:04 PM, Guennadi Liakhovetski wrote:
 
-Cc: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+>>> This patch enables the use of the generic cpufreq-cpu0 driver on sh73a0.
+>>> Providing a regulator, a list of OPPs in DT, combined with a virtual
+>>> cpufreq-cpu0 platform device and a clock, attached to it is everything,
+>>> the cpufreq-cpu0 driver needs. The first sh73a0 platform, implementing
+>>> such CPUFreq support is kzm9g-reference.
+>>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+>>> ---
+>>> v5: remove sh73a0-kzm9g-reference.dts hunk, it's now merged into patch 2/3
+>>>    arch/arm/mach-shmobile/Kconfig        |    2 ++
+>>>    arch/arm/mach-shmobile/setup-sh73a0.c |    5 +++++
+>>>    2 files changed, 7 insertions(+), 0 deletions(-)
+>>> diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+>>> index 1a517e2..4ac5bf9 100644
+>>> --- a/arch/arm/mach-shmobile/Kconfig
+>>> +++ b/arch/arm/mach-shmobile/Kconfig
+>> [...]
+>>> diff --git a/arch/arm/mach-shmobile/setup-sh73a0.c
+>>> b/arch/arm/mach-shmobile/setup-sh73a0.c
+>>> index d10ded0..9a522f9 100644
+>>> --- a/arch/arm/mach-shmobile/setup-sh73a0.c
+>>> +++ b/arch/arm/mach-shmobile/setup-sh73a0.c
+>>> @@ -1003,6 +1003,8 @@ static const struct of_dev_auxdata
+>>> sh73a0_auxdata_lookup[] __initconst = {
+>>>
+>>>    void __init sh73a0_add_standard_devices_dt(void)
+>>>    {
+>>> +	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", .id =
+>>> -1, };
+>>     With NULL .parent? Shouldn't it be 'platform_bus'?
+> Look at platform_device_add():
+>
+> 	if (!pdev->dev.parent)
+> 		pdev->dev.parent = &platform_bus;
 
-Guennadi Liakhovetski (3):
-  ARM: shmobile: sh73a0: add support for adjusting CPU frequency
-  ARM: shmobile: kzm9g-reference: add AS3711 and CPUFreq DT bindings
-  ARM: shmobile: sh73a0: add CPUFreq support
+    Ah, thanks for pointing that out -- I didn't follow the call chain.
+I could have passed NULL to platform_device_register_resndata()
+too then... Well, now it's too late, and it doesn't matter much anyway.
 
- arch/arm/boot/dts/sh73a0-kzm9g-reference.dts |   86 +++++++++++++++++++++++
- arch/arm/mach-shmobile/Kconfig               |    2 +
- arch/arm/mach-shmobile/clock-sh73a0.c        |   95 +++++++++++++++++++++++++-
- arch/arm/mach-shmobile/setup-sh73a0.c        |    5 ++
- 4 files changed, 186 insertions(+), 2 deletions(-)
-
--- 
-1.7.2.5
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+WBR, Sergei
