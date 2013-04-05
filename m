@@ -1,60 +1,61 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
- tree supported boot
-Date: Fri, 5 Apr 2013 15:17:55 -0700
-Message-ID: <20130405221755.GI10155@atomide.com>
-References: <20130405161338.GB10155@atomide.com>
- <20130405163254.GA7259@kahuna>
- <20130405170527.GC10155@atomide.com>
- <20130405171750.GA7398@kahuna>
- <20130405192829.GE10155@atomide.com>
- <20130405200201.GA7804@kahuna>
- <20130405211003.GK6182@atomide.com>
- <20130405213250.GA8534@kahuna>
- <20130405214051.GG10155@atomide.com>
- <20130405221041.GA8648@kahuna>
+From: Parag Warudkar <parag.lkml@gmail.com>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Set timer timeout correctly
+Date: Fri, 5 Apr 2013 19:46:04 -0400 (EDT)
+Message-ID: <alpine.LFD.2.03.1304051943270.3817@gmail.com>
+References: <1365096935-16730-1-git-send-email-dirk.brandewie@gmail.com> <CAOh2x=mzQBSnBB3-10yGMdGfxMWeMcvE_t2Mvnz+fvdHv0-uaA@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130405221041.GA8648@kahuna>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:date:from:x-x-sender:to:cc:subject:in-reply-to
+         :message-id:references:user-agent:mime-version:content-type;
+        bh=zHeD2qeI6+PigA+HlausLfSn2o58iMrwBq8S1CRV3Xo=;
+        b=t9vO6mPkutxsMXpLnE/m4a6lqfYx1HLEvITAJtD3SeZk6xmiUXu3LDNWvmAzsiwPcj
+         1lUZ9pW/JsszVrmY8K6zbTf8CWGdKhFM8FYx4/OBUDYwGQJToNxodt+/ddOPRouCzdE+
+         JMPnteZzIE822lJjQmEWzt8OG9yMkZKQUUPf2UwPk/tHR2uZu1hjpGHEoWnJOoam6qNc
+         XfMxS/696gR9cJjLk1qvFSItDlDzMHF6mk8N6peFDzCeTXgM9oiR70UpqZ2WQ//GMoM/
+         lZEL6k9z+9pLvfr4pzV63uwV6XVCEyGUb9hQduRWm1CQ+x56GG8G6HOVXzucZbTjQSRf
+         js/g==
+In-Reply-To: <CAOh2x=mzQBSnBB3-10yGMdGfxMWeMcvE_t2Mvnz+fvdHv0-uaA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nishanth Menon <nm@ti.com>
-Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: dirk.brandewie@gmail.com, Adam Williamson <awilliam@redhat.com>, Parag Warudkar <parag.lkml@gmail.com>, rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
 
-* Nishanth Menon <nm@ti.com> [130405 15:15]:
-> How does the following look?
-> Option a) not have a dummy node if CPUFREQ_CPU0 is not configured:
-> static inline void omap_init_cpufreq(void)
-> {
-> 	struct platform_device_info devinfo = { };
-> 
-> 	if (!of_have_populated_dt())
-> 		devinfo.name = "omap-cpufreq";
-> 	else if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0))
-> 		devinfo.name = "cpufreq-cpu0"
-> 	
-> 	if (devinfo.name)
-> 		platform_device_register_full(&devinfo);
-> }
-> 
-> Option b) leave a dummy node registered
-> static inline void omap_init_cpufreq(void)
-> {
-> 	struct platform_device_info devinfo = { };
-> 
-> 	if (!of_have_populated_dt())
-> 		devinfo.name = "omap-cpufreq";
-> 	else
-> 		devinfo.name = "cpufreq-cpu0"
-> 	
-> 	platform_device_register_full(&devinfo);
-> }
-> 
-> If there are no objections to (b), I dont mind it either.
 
-To me option (b) looks better as it's if else :)
 
-Tony
+On Fri, 5 Apr 2013, Viresh Kumar wrote:
+
+> On Thu, Apr 4, 2013 at 11:05 PM,  <dirk.brandewie@gmail.com> wrote:
+> > From: Dirk Brandewie <dirk.brandewie@gmail.com>
+> >
+> > The current calculation of the delay time is wrong and a cut and paste
+> > error from a previous experimental driver.  This can result in the
+> > timeout being set to jiffies + 1 which setup the driver to race with
+> > it's self if the apic timer interrupt happen at just the right time.
+> >
+> >
+> > https://bugzilla.redhat.com/show_bug.cgi?id=920289
+> >
+> > Reported-by: Adam Williamson <awilliam@redhat.com>
+> > Reported-by: Parag Warudkar <parag.lkml@gmail.com>
+> >
+> > Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
+> > ---
+> >  drivers/cpufreq/intel_pstate.c |    1 -
+> >  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> Looks fine, but I would like to see a Tested-by from Adam/Parag
+> as they haven't said anything about this patch (even in bugzilla).
+> 
+
+I am running with the patch since yesterday - everything looks good.
+
+The issue hasn't been reproducible on demand but some code reading and 
+Dirk's explanation says the patch should fix the issue.
+
+So - Tested-by: Parag Warudkar <parag.lkml@gmail.com>
+
+Parag
