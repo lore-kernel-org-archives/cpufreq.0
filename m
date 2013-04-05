@@ -1,141 +1,136 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
- tree supported boot
-Date: Fri, 5 Apr 2013 06:26:48 -0500
-Message-ID: <CAGo_u6r+JdNaCmVh+dHLppJ7eaYh4W5aL1aAg8xQfAju6PyZdQ@mail.gmail.com>
-References: <1364507576-19345-1-git-send-email-nm@ti.com>
-	<1364507576-19345-2-git-send-email-nm@ti.com>
-	<87ppybxxi0.fsf@linaro.org>
-	<20130404025211.GA2456@snafu>
-	<515D0BF1.7060802@ti.com>
-	<20130404190053.GA4371@kahuna>
-	<515E9E79.8010300@ti.com>
-Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=pJrL45FpWF8NoQlp5x8DZir2x18+XKlG+AMprKopaw8=;
-        b=BTIt81cBJTyCxYGWscmJe4khpR1SuhnwcCuiQZAspQcwS+OJ4sbD4TSHFEh2oLDdqi
-         qWoPOO3EmfpgBC/Ruhs9qySyZp6XpUcVFRI9P4Huy2WgeGR8UI8zJmsYv70j87W6J5i4
-         Tx3Z17P0jf6GvGFD+FRhzgJC61xdn9HEU3/9+ef+tV8L1eIpNe/OTVSRQRUASNtEc3kc
-         EyXAa/f5m/neI/h8uSK3imawTRRtLEQtUVWVB98DP49WAJeVCrUK1JcUXdfPgq9C6hG5
-         qkumpA5sJHcQt5s3UrKtma8xNIyTn3FGU1HxqHYg99WvFesIw8cJHZ7mze8dhwrjsivI
-         5nWA==
-In-Reply-To: <515E9E79.8010300@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH v5 2/3] ARM: shmobile: kzm9g-reference: add AS3711 and CPUFreq DT bindings
+Date: Fri,  5 Apr 2013 12:00:37 +0200
+Message-ID: <1365156038-12467-3-git-send-email-g.liakhovetski@gmx.de>
+References: <1365156038-12467-1-git-send-email-g.liakhovetski@gmx.de>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1365156038-12467-1-git-send-email-g.liakhovetski@gmx.de>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rajendra Nayak <rnayak@ti.com>
-Cc: Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?ISO-8859-1?Q?Beno=EEt_Cousson?= <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+To: linux-sh@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
 
-On Fri, Apr 5, 2013 at 4:50 AM, Rajendra Nayak <rnayak@ti.com> wrote:
-> On Friday 05 April 2013 12:30 AM, Nishanth Menon wrote:
->> On 10:43-20130404, Rajendra Nayak wrote:
->>> On Thursday 04 April 2013 08:22 AM, Nishanth Menon wrote:
->>>> On 11:47-20130403, Kevin Hilman wrote:
->>>>> Nishanth Menon <nm@ti.com> writes:
->>>>>
->>>> [...]
->>>>>> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
->>>>>> index afa509a..5b147ef 100644
->>>>>> --- a/arch/arm/mach-omap2/board-generic.c
->>>>>> +++ b/arch/arm/mach-omap2/board-generic.c
->>>>>> @@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
->>>>>>           omap4_panda_display_init_of();
->>>>>>   else if (of_machine_is_compatible("ti,omap4-sdp"))
->>>>>>           omap_4430sdp_display_init_of();
->>>>>> +
->>>>>> + if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
->>>>>> +         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
->>>>>> +         platform_device_register_full(&devinfo);
->>>>>> + }
->>>>>
->>>>> Rather than adding new clkdev nodes below, how about using clk add_alias
->>>>> here?
->>>> Thanks for pointing this out, I spend some time implementing such a
->>>> scheme and following is my opinion:
->>>>
->>>> Summary:
->>>> There is one major problem which forces us to introduce this "clock
->>>> hack" - clock nodes are not in device tree yet. Yes, clock add alias
->>>
->>> There's already a patch floating around for this..
->>> https://lkml.org/lkml/2013/4/2/84
->> Not really. Try on OMAP4 PandaBoard:
->> Based on
->> git://git.kernel.org/pub/scm/linux/kernel/git/bcousson/linux-omap-dt.git
->> for_3.10/dts  d114294 ARM: dts: AM33XX: Corrects typo in interrupt field in SPI node
->> + the patch https://patchwork.kernel.org/patch/2335671/ applied
->> Pandaboard 4 Log: http://pastebin.com/qsdsbv7p
->> The Patch does not even work, unless there is un-documented patch
->> dependencies!
->
-> I guess Roger responded to that.
-yep, I am beyond that now :)
->
->>
->> Secondly, even if it did work, it would still continue to need yet another
->> hack[1]
->
-> Why do you think thats a hack? Besides I don't know if you are
-> doing it right.
-traditionally, we state the following:
-DT will represent actual hardware data.
-what we are doing is the following:
-DT has virtual clk nodes and kernel contains the actual data.
+This adds DT bindings for an AS3711 PMIC, used for supplying power to the
+CPU, some peripherals and the backlight, as well as extends the cpu0 DT
+node with OPPs and a reference to the PMIC to support the CPUFreq and
+CPU DVFS functions.
 
-This is counter intuitive to the original idea of DT containing
-hardware data - hence the notion, IMHO, of a hack.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+---
 
->
-> - I am agree with Tony in his discussion in
->> http://marc.info/?t=136370325600009&r=1&w=2
->>
->> *if* we are moving clock to DT, we should move the data to DT as well -
->
-> I don't think Tony said 'move all clock data into DT'. He was suggesting
-> a combination of DT and /lib/firmware
->
->> similar to what other platforms do - highbank as far as i can quickly
->> see. (drivers/clk/clk-highbank.c and arch/arm/boot/dts/ecx-common.dtsi
->
-> Well, you chose to look at highbank (which has 8 clock nodes in DT, as
-> opposed to OMAP5 which has around 250 in kernel) why don't you also look at imx?
-> drivers/clk/mxs/clk-imx28.c and Documentation/devicetree/bindings/clock/imx28-clock.txt
-> for examples.
-> They have around 65 nodes (still way lesser than OMAP) and see what
-> they do. Thats exactly what Roger does in his patch.
->
+v5: make the sd1 regulator immediately suitable for CPUFreq instead of
+postponing it to an incremental patch.
 
-Precisely - thanks for highlighting my view - all the more reason for
-us to move clock data out of kernel image :).
-$ c_count arch/arm/mach-omap2/cclock*_data.c|tail -1
-8110
-$ wc -l arch/arm/mach-omap2/cclock*_data.c|tail -1
-10310 total
+ arch/arm/boot/dts/sh73a0-kzm9g-reference.dts |   86 ++++++++++++++++++++++++++
+ 1 files changed, 86 insertions(+), 0 deletions(-)
 
-that much code sitting in kernel makes it heavier for us(and others
-working on clock framework code) -
-we do also foresee that eventually dt data might move out to it's own
-repository.
+diff --git a/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts b/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
+index 5972abb..b6f759e 100644
+--- a/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
++++ b/arch/arm/boot/dts/sh73a0-kzm9g-reference.dts
+@@ -18,6 +18,19 @@
+ 	model = "KZM-A9-GT";
+ 	compatible = "renesas,kzm9g-reference", "renesas,sh73a0";
+ 
++	cpus {
++		cpu@0 {
++			cpu0-supply = <&vdd_dvfs>;
++			operating-points = <
++				/* kHz  uV */
++				1196000 1315000
++				 598000 1175000
++				 398667 1065000
++			>;
++			voltage-tolerance = <1>; /* 1% */
++		};
++	};
++
+ 	chosen {
+ 		bootargs = "console=tty0 console=ttySC4,115200 root=/dev/nfs ip=dhcp ignore_loglevel earlyprintk=sh-sci.4,115200";
+ 	};
+@@ -59,6 +72,79 @@
+ 	};
+ };
+ 
++&i2c0 {
++	as3711@40 {
++		compatible = "ams,as3711";
++		reg = <0x40>;
++
++		regulators {
++			vdd_dvfs: sd1 {
++				regulator-name = "1.315V CPU";
++				regulator-min-microvolt = <1050000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			sd2 {
++				regulator-name = "1.8V";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			sd4 {
++				regulator-name = "1.215V";
++				regulator-min-microvolt = <1215000>;
++				regulator-max-microvolt = <1235000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo2 {
++				regulator-name = "2.8V CPU";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo3 {
++				regulator-name = "3.0V CPU";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3000000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo4 {
++				regulator-name = "2.8V";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo5 {
++				regulator-name = "2.8V #2";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo7 {
++				regulator-name = "1.15V CPU";
++				regulator-min-microvolt = <1150000>;
++				regulator-max-microvolt = <1150000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++			ldo8 {
++				regulator-name = "1.15V CPU #2";
++				regulator-min-microvolt = <1150000>;
++				regulator-max-microvolt = <1150000>;
++				regulator-always-on;
++				regulator-boot-on;
++			};
++		};
++	};
++};
++
+ &mmcif {
+ 	bus-width = <8>;
+ 	vmmc-supply = <&reg_1p8v>;
+-- 
+1.7.2.5
 
-Further, maintaining dts vs kernel code compatibility aside, consider
-adding new platforms - more code containing clock data that we have to
-carry on in kernel - If we have !
-
-I love the idea that Roger's patch does, as a *step #1* of
-transitioning clock data out-of-kernel image and enabling drivers to
-entitle DT based boot.
-
-if this is the only step we will ever take, then it will be a
-disappointing decision. whether the final data goes to /lib/firmware
-or arch/arm/boot/dts - even though, I prefer it in dts, I have no
-strong feelings about it.
-However, we need to be prepared (at the earliest possible time) to
-move that data out of kernel image as *step #2*.
-
-Regards,
-Nishanth Menon
