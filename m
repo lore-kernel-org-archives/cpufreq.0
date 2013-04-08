@@ -1,57 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Mon, 8 Apr 2013 10:24:38 +0530
-Message-ID: <CAKohpomgqWi9jfpqtW8cxu7BeJQCEySqbdDNVK=4Fh1ji1FyMg@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<927100d30bf40d4fec477cc7d8d464669a22d167.1365079581.git.viresh.kumar@linaro.org>
-	<2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
-	<CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
-Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH V6 4/4] arm: dts: Add cpufreq controller node for Exynos5440 SoC
+Date: Mon,  8 Apr 2013 13:47:38 +0530
+Message-ID: <1365409058-32643-5-git-send-email-amit.daniel@samsung.com>
+References: <1365409058-32643-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:sender:from:to:cc:subject:date:message-id:x-mailer
+         :in-reply-to:references;
+        bh=YTEgPAMiVVapJwTbF62TL80LTSqHoec5FZRekLfsS28=;
+        b=AfBBeolaNDVrU/PhMbfPls3WQ1AMUCWuJg1XS8rb/ZStjdALAIFPnVUq3v4qypN0+U
+         EM5mAWL4DFdX3NoEpjSPuwBXXZYvqpKzP5Nk6YunQBEtuCxp5RODUkxqNJ6oLaE5PmDC
+         k71QY5wvAQ1tu5qN7iUp/XRHGg+rgutm+twFfOcUXWgFJ7IHnpQASaUHVCDPIYpQFcpJ
+         v4lr9ELNGsForlEjtjTW84/dQRhWchKuBoyG7hD0+72VMb2jmPHhE523IsrgMFEBFoat
+         mJiMDWDS/gSrgINElU2+ykIOigFHjb96mEqbCFISZ827poMZTcmGYNxHkxccrlkRxVdR
+         rFLA==
+In-Reply-To: <1365409058-32643-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Ben Dooks <ben-linux@fluff.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-On 5 April 2013 12:36, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 5 April 2013 12:18, Kukjin Kim <kgene.kim@samsung.com> wrote:
->> Basically, this moving looks good to me, but should be re-worked based on
->> for-next of samsung tree because this touches too many samsung stuff so this
->> should be sent to upstream via samsung tree.
->
-> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
-> it can't be
-> moved to your tree if there is a issue.
->
-> What tree/branch? I used:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git for-next
->
->> Applying: cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
->> error: patch failed: arch/arm/Kconfig:2166
->> error: arch/arm/Kconfig: patch does not apply
->
-> above two are obvious as you haven't applied other patches in this series.
->
->> error: patch failed: arch/arm/mach-s3c24xx/Kconfig:28
->> error: arch/arm/mach-s3c24xx/Kconfig: patch does not apply
->> error: patch failed: arch/arm/mach-s3c24xx/Makefile:17
->> error: arch/arm/mach-s3c24xx/Makefile: patch does not apply
->> error: patch failed: drivers/cpufreq/Makefile:63
->> error: drivers/cpufreq/Makefile: patch does not apply
->
-> Same here.
->
->> error: drivers/cpufreq/s3c2412-cpufreq.c: does not exist in index
->
-> I can still see it in for-next.
->
-> Attached is my patch based of your for-next
+Add cpufreq controller device node for Exynos5440 SoC for passing
+parameters like controller base address, interrupt and cpufreq
+table. This node is added outside cpu0 as this driver is now a platform
+driver and a new device structure is needed.
 
-Kukjin,
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ arch/arm/boot/dts/exynos5440.dtsi |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-As Rafael has already dropped it, can you apply it at your end and make sure
-it doesn't miss the merge cycle?
+diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+index 9a99755..94074ea 100644
+--- a/arch/arm/boot/dts/exynos5440.dtsi
++++ b/arch/arm/boot/dts/exynos5440.dtsi
+@@ -63,6 +63,18 @@
+ 
+ 	};
+ 
++	cpufreq@160000 {
++		compatible = "samsung,exynos5440-cpufreq";
++		reg = <0x160000 0x1000>;
++		interrupts = <0 57 0>;
++		operating-points = <
++				/* KHz	  uV */
++				1200000 1025000
++				1000000 975000
++				800000  925000
++		>;
++	};
++
+ 	serial@B0000 {
+ 		compatible = "samsung,exynos4210-uart";
+ 		reg = <0xB0000 0x1000>;
+-- 
+1.7.1
+
