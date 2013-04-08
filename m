@@ -1,51 +1,57 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
- tree supported boot
-Date: Fri, 5 Apr 2013 17:23:24 -0500
-Message-ID: <20130405222324.GA8732@kahuna>
-References: <20130405163254.GA7259@kahuna>
- <20130405170527.GC10155@atomide.com>
- <20130405171750.GA7398@kahuna>
- <20130405192829.GE10155@atomide.com>
- <20130405200201.GA7804@kahuna>
- <20130405211003.GK6182@atomide.com>
- <20130405213250.GA8534@kahuna>
- <20130405214051.GG10155@atomide.com>
- <20130405221041.GA8648@kahuna>
- <20130405221755.GI10155@atomide.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+Date: Mon, 8 Apr 2013 10:24:38 +0530
+Message-ID: <CAKohpomgqWi9jfpqtW8cxu7BeJQCEySqbdDNVK=4Fh1ji1FyMg@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+	<927100d30bf40d4fec477cc7d8d464669a22d167.1365079581.git.viresh.kumar@linaro.org>
+	<2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
+	<CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130405221755.GI10155@atomide.com>
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Ben Dooks <ben-linux@fluff.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 15:17-20130405, Tony Lindgren wrote:
-> * Nishanth Menon <nm@ti.com> [130405 15:15]:
-> > Option b) leave a dummy node registered
-> > static inline void omap_init_cpufreq(void)
-> > {
-> > 	struct platform_device_info devinfo = { };
-> > 
-> > 	if (!of_have_populated_dt())
-> > 		devinfo.name = "omap-cpufreq";
-> > 	else
-> > 		devinfo.name = "cpufreq-cpu0"
-> > 	
-> > 	platform_device_register_full(&devinfo);
-> > }
-> > 
-> > If there are no objections to (b), I dont mind it either.
-> 
-> To me option (b) looks better as it's if else :)
-Alrity.. Going once...twice...sold! All Nay-sayers will now be branded with
-if-else braces ;)
+On 5 April 2013 12:36, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 5 April 2013 12:18, Kukjin Kim <kgene.kim@samsung.com> wrote:
+>> Basically, this moving looks good to me, but should be re-worked based on
+>> for-next of samsung tree because this touches too many samsung stuff so this
+>> should be sent to upstream via samsung tree.
+>
+> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
+> it can't be
+> moved to your tree if there is a issue.
+>
+> What tree/branch? I used:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git for-next
+>
+>> Applying: cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+>> error: patch failed: arch/arm/Kconfig:2166
+>> error: arch/arm/Kconfig: patch does not apply
+>
+> above two are obvious as you haven't applied other patches in this series.
+>
+>> error: patch failed: arch/arm/mach-s3c24xx/Kconfig:28
+>> error: arch/arm/mach-s3c24xx/Kconfig: patch does not apply
+>> error: patch failed: arch/arm/mach-s3c24xx/Makefile:17
+>> error: arch/arm/mach-s3c24xx/Makefile: patch does not apply
+>> error: patch failed: drivers/cpufreq/Makefile:63
+>> error: drivers/cpufreq/Makefile: patch does not apply
+>
+> Same here.
+>
+>> error: drivers/cpufreq/s3c2412-cpufreq.c: does not exist in index
+>
+> I can still see it in for-next.
+>
+> Attached is my patch based of your for-next
 
-I will now wait for conclusion of  https://lkml.org/lkml/2013/4/2/84
--- 
-Regards,
-Nishanth Menon
+Kukjin,
+
+As Rafael has already dropped it, can you apply it at your end and make sure
+it doesn't miss the merge cycle?
