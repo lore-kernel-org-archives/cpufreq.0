@@ -1,31 +1,26 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 14/18] cpufreq: sh: move cpufreq driver to drivers/cpufreq
-Date: Tue, 9 Apr 2013 19:42:51 +0530
-Message-ID: <CAKohpomqfVqiw1PJxBRRA8=A6hV_63AW4nRpM8TfZPA5bypcKQ@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<3167220d1e262ff22078993a5beec55e82dfd951.1365079581.git.viresh.kumar@linaro.org>
-	<20130409125509.GH15412@verge.net.au>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Tue, 9 Apr 2013 20:26:42 +0530
+Message-ID: <CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
+	<31778276.CDMUtaAAnc@vostro.rjw.lan>
+	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130409125509.GH15412@verge.net.au>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Simon Horman <horms@verge.net.au>
-Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
+To: sedat.dilek@gmail.com
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 9 April 2013 18:25, Simon Horman <horms@verge.net.au> wrote:
-> On Thu, Apr 04, 2013 at 06:24:22PM +0530, Viresh Kumar wrote:
->> This patch moves cpufreq driver of SUPERH architecture to drivers/cpufreq.
->
-> Why?
->
-> I am missing the cover email where I assume the explanation lies.
+On 9 April 2013 19:34, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+> I have seen it on reboots.
+> How to online/offline from sysfs?
 
-Hi Simon,
+offline a cpu "x" with:
 
-The idea was to keep all cpufreq drivers at a common and most suitable
-place, so that future consolidation work can be done easily and efficiently.
+echo 0 > /sys/devices/system/cpu/cpux/online
 
-So, functionally this patch shouldn't change anything.
+and online with echo 1 > to same location.
