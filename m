@@ -1,27 +1,27 @@
 From: Sedat Dilek <sedat.dilek@gmail.com>
 Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Tue, 9 Apr 2013 16:59:20 +0200
-Message-ID: <CA+icZUV219yQ2Bw=81C8e_cfNERjCENNOvokehQ=bzc66-+L2w@mail.gmail.com>
+Date: Tue, 9 Apr 2013 18:08:46 +0200
+Message-ID: <CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
 References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
 	<31778276.CDMUtaAAnc@vostro.rjw.lan>
 	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
 	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
 Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:reply-to:in-reply-to:references:date
          :message-id:subject:from:to:cc:content-type;
-        bh=HrzHtnCoNK398zGNW38VQQzRThJ2bFOXaKIEr+sH/WM=;
-        b=XFueGZVNNS56ox8ihONPn/9g8KNS40hY17nqf2CksX5DHM4/o4T+ZRmMdlk0cKN7UF
-         rQua65t5PbQd0AgrM5m1IRENjr057lYgptmF8fSi7CFM1Hf8n60k4fEHM8tAAbNmN/xm
-         ECbbJRXOJdpmmcfYebIIlG9uzTDOYnN1BdV5CIJoxRckE3DucPUn8A7hlKS5E3AfpLro
-         CAH+fXV6HqLxGwCyXmF1YlddFHdt3RvOwUeq/UlgAM+khMmYyDXFRwIysPyRb1Scv7cI
-         J/lQwnDff5OBUtcblcdObZDJ4UCgjSHg2T1BobyxNdb65a5wU0tVAYZtpcRY/qIe/HO6
-         XRBg==
+        bh=8374C5mKKTSiPLlxGPugGKcfccL6gygLVKFYmiXNw+I=;
+        b=bXyMAqwQXazQziKo0jcBpsVWQ+JzHge3hGxC1biY30SmL8Q0REo5LHG00jE1igtlbg
+         yy/z/kRtH9G+LI4p3ZjKgkO2N4HtNkQ3MNgaeNI510LfytJvEBJhonahX8GpZxbq5oUi
+         Pkc6tODNDk3XCxNVCYkPWKxFAmsw0Wnk5Xj4MRYE3FJP/zHnzXQxl6sTBe0VT92swYLk
+         U8Ew4ujjL2hObO9h7GP9653TJdLdQ6l1bvfPKommTzLD9pSnUEFgBe5XNtXZekO1zYoT
+         xJAPwRC7GSxyV4HeIQ22sbxB09C1HWhguMbVYF042euqXp6Xx5jeg3Ri5jQwRdwP1A0L
+         SXaA==
 In-Reply-To: <CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -39,11 +39,11 @@ On Tue, Apr 9, 2013 at 4:56 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
 > and online with echo 1 > to same location.
 
-Eh, yeah I re-remember it now :-).
-I will try with next-20130328 which boots fine here and hope the
-hanging on reboot and in running system is OK.
+With x=3 the system gets in an unuseable state.
 
-next-20130409 is broken due to vfs-next issues (see Linux-Next ML).
-Will try that first...
+     root# echo 0 > /sys/devices/system/cpu/cpu3/online
+
+I could not write my reply and had to do a hard/cold reboot.
+The dmesg log I saw looked similiar to my digicam-shot.
 
 - Sedat -
