@@ -1,109 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V5 0/4] cpufreq: exynos5440: support for cpufreq driver
-Date: Mon, 08 Apr 2013 21:49:33 +0200
-Message-ID: <1403255.89Vcuzrghk@vostro.rjw.lan>
-References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com> <CADGdYn7ZRCSymU7k3Sn4mbS6B=dxy1N+vhQuyiFnhOQLLzrTbw@mail.gmail.com> <2d0501ce3450$fac4e9c0$f04ebd40$%kim@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
+Date: Tue, 9 Apr 2013 14:05:00 +0530
+Message-ID: <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+	<027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+	<CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2d0501ce3450$fac4e9c0$f04ebd40$%kim@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: 'amit daniel kachhap' <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 'Thomas Abraham' <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, 'Inderpal Singh' <inderpal.singh@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Russell King - ARM Linux' <linux@arm.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, deepthi@linux.vnet.ibm.com
+Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 
-On Monday, April 08, 2013 09:02:44 PM Kukjin Kim wrote:
-> amit daniel kachhap wrote:
-> > 
-> > On Fri, Apr 5, 2013 at 6:08 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Thursday, March 28, 2013 01:35:18 PM Amit Daniel Kachhap wrote:
-> > >> Submitting the V5 version of exynos5440 cpufreq driver. This patchset
-> > addresses
-> > >> all the coding and design concerns raised especially by Viresh.
-> > >>
-> > >> Changes in V5:
-> > >> * Removed the unnecessary DT look up entry from mach-exynos5-dt.c.
-> > >> * Fixed all coding and comments issue raised by Viresh.
-> > >>
-> > >> Changes in V4:
-> > >> * Added dev_err logs instead of pr_err.
-> > >> * Used the devm_ioremap_resource API.
-> > >> * Implemented several coding guidelines and minor error comments from
-> > Sylwester,
-> > >>   Russell and Viresh.
-> > >>
-> > >> Changes in V3:
-> > >> * Converted the driver to probe based as suggested by Viresh. This is
-> > also
-> > >>   beneficial for multiplatform kernel.
-> > >> * Other coding guidelines related changes.
-> > >> * Moved the DT node outside cpu0 node as the driver is now a platform
-> > >>   driver.
-> > >>
-> > >> Changes in V2:
-> > >> * Added OPP library support to parse DT parameters.
-> > >> * Removed a hack to handle interrupts in bootup.
-> > >> * Implemented other review comments from Viresh and Inder.
-> > >>
-> > >> All these patches are dependent on Thomas Abraham common clock patches.
-> > >> (http://www.mail-archive.com/linux-samsung-
-> > soc@vger.kernel.org/msg15860.html)
-> > >> This whole patch series is based on 3.9-rc4.
-> > >>
-> > >> Amit Daniel Kachhap (4):
-> > >>   cpufreq: exynos: Add cpufreq driver for exynos5440
-> > >>   cpufreq: exynos: Remove error return even if no soc is found
-> > >>   arm: exynos: Enable OPP library support for exynos5440
-> > >>   arm: dts: Add cpufreq controller node for Exynos5440 SoC
-> > >>
-> > >>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   28 ++
-> > >>  arch/arm/boot/dts/exynos5440.dtsi                  |   12 +
-> > >>  arch/arm/mach-exynos/Kconfig                       |    2 +
-> > >>  drivers/cpufreq/Kconfig.arm                        |    9 +
-> > >>  drivers/cpufreq/Makefile                           |    1 +
-> > >>  drivers/cpufreq/exynos-cpufreq.c                   |    2 +-
-> > >>  drivers/cpufreq/exynos5440-cpufreq.c               |  474
-> > ++++++++++++++++++++
-> > >>  7 files changed, 527 insertions(+), 1 deletions(-)
-> > >>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-
-> > exynos5440.txt
-> > >>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
-> > >
-> > > Is this for me or the Samsung tree?
-> > >
-> > > If it's for me, I need ACKs from the Samsung tree maintainers.  Also,
-> > please
-> > > address the Viresh's comments.
-> > >
-> > > Thanks,
-> > > Rafael
-> > >
-> > Hi Rafael,
-> > 
-> > I submitted the V6 version with all comments from Viresh addressed.
-> > 
-> > Hi Kukjin Kim,
-> > 
-> > Any suggestion on how this patch should be merged. In my opinion it
-> > should go via Rafael's tree as this patch uses some fixes present in
-> > Rafael's tree like modified cpufreq_notify_transition API.
-> > 
-> Yes, I agree. The v6 series including resending 1/4 patch looks good to me.
-> But the patch V6 4/4 would be sent to upstream via samsung tree to avoid
-> useless merge conflicts and I think, it's possible.
-> 
-> So Rafael, please take 1/4 ~ 3/4 patches in your tree with my ack.
-> 
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> 
-> If any problems, please let me know.
+On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Olof Johansson <olof@lixom.net>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>> Compile Tested only.
+>>
+>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>  drivers/cpufreq/Makefile                           |  3 +++
+>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>
+> Hi Deepthi,
+>
+> Can you help testing this please?
 
-I will, thank you!
-
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Ping!!
