@@ -1,53 +1,55 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH 0/2] cpufreq: Introduce LAB cpufreq governor.
-Date: Wed, 10 Apr 2013 11:14:01 +0100
-Message-ID: <20130410101400.GA4981@e102568-lin.cambridge.arm.com>
-References: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com>
- <CAOh2x=nPJa0GReiN=OHLG=m4Gq51F=4VppdaQL20xi-aUa8x2Q@mail.gmail.com>
- <20130409123719.7399d5ad@amdc308.digital.local>
- <CAKohpomL-mdx6DdFiGwJzDSeWr6Gw-_F4T-D-Jz9TNH5MSgjbw@mail.gmail.com>
- <20130409184440.4cd87c1b@amdc308.digital.local>
- <CAKfTPtD6MK9ogq7mOijSxLSsH0n65Xra48XfRSB3DFs35GT=2g@mail.gmail.com>
- <20130410104452.661902af@amdc308.digital.local>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: linux-next: Tree for Apr 10
+Date: Wed, 10 Apr 2013 12:40:32 +0200
+Message-ID: <CA+icZUWYHv5h26Q6xr30=UxavD52ZX6W1vfTKj8n6gyuCz0q3g@mail.gmail.com>
+References: <20130410184852.92a3a02bbe5c3a040be76365@canb.auug.org.au>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130410104452.661902af@amdc308.digital.local>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-next-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:reply-to:in-reply-to:references:date
+         :message-id:subject:from:to:cc:content-type;
+        bh=M5Jptv2FcPb5gy8BhDS+JQhREHkae9L3QxI55cZfqfA=;
+        b=BAXIqIEYrsXrcDC8ygGph1wHcdHPEZ0Nr6zVXKUDUUcKsrj/LcxrA5UcyBHP8rSIuu
+         6GAeC0JaLp+JUcPjQlbZve/aDj9xi/OzPFVKM/a1yOGHJ6wWYqWje35PTcu5NtW0av9m
+         skZ0PwXMCg8nzmJNdD2HlOr+b9kD+OmqyOVY7/ICz7ZRDYppO9D0Iz92nHlzxhxpTd37
+         R4eJVjTEF4tt6ERIhErEBX0eadayN10cKMncpLqIQZg979RzZi9MlZObAXaYD/8UoBjB
+         NyoK2nRzE+Y8RMVsxm/YuZxQHguBCrcuHattVj9djCqhjNeFut4CoFkAcj8TsrGMeK24
+         PjAA==
+In-Reply-To: <20130410184852.92a3a02bbe5c3a040be76365@canb.auug.org.au>
+Sender: linux-next-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "sw0312.kim@samsung.com" <sw0312.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, cpufreq@vger.kernel.org
 
-On Wed, Apr 10, 2013 at 09:44:52AM +0100, Lukasz Majewski wrote:
+On Wed, Apr 10, 2013 at 10:48 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi all,
+>
+> Changes since 20130409:
+>
+> The vfs tree lost its build failure.
+>
 
-[...]
+Beyond build-failures in vfs-next [0] and [1], it was not bootable
+(see [2] till [4])!
+This is now all fixed, thanks to all involved people!
 
-> > Have you also looked at the power clamp driver that have similar
-> > target ?
-> 
-> I might be wrong here, but in my opinion the power clamp driver is a bit
-> different:
-> 
-> 1. It is dedicated to Intel SoCs, which provide special set of
-> registers (i.e. MSR_PKG_Cx_RESIDENCY [*]), which forces a processor to
-> enter certain C state for a given duration. Idle duration is calculated
-> by per CPU set of high priority kthreads (which also program [*]
-> registers). 
-> 
+$ cat /proc/version
+Linux version 3.9.0-rc6-next20130410-1-iniza-small
+(sedat.dilek@gmail.com@fambox) (gcc version 4.6.3 (Ubuntu/Linaro
+4.6.3-1ubuntu5) ) #1 SMP Wed Apr 10 11:55:58 CEST 2013
 
-Those registers are used for compensation (ie user asked a given idle
-ratio but HW stats show a mismatch) and they are not "programmed"
-they are just read. That code is Intel specific but it can be easily ported
-to ARM, I did that and most of the code is common with zero dependency
-on the architecture.
+NOTE: There still exists the NULL-pointer-deref in cpufreq for me on
+Intel SandyBridge CPU (see [5]) on reboot and when CPUs get offline.
 
-> 2. ARM SoCs don't have such infrastructure, so we depend on SW here.
+- Sedat -
 
-Well, it is true that most of the SoCs I am working on do not have
-a programming interface to monitor C-state residency, granted, this is
-a problem. If those stats can be retrieved somehow (I did that on our TC2
-platform) then power clamp can be used on ARM with minor modifications.
-
-Lorenzo
+[0] https://lkml.org/lkml/2013/4/7/229
+[1] http://marc.info/?l=linux-next&m=136552249527170&w=2
+[2] http://marc.info/?t=136545773000008&r=1&w=2
+[3] http://marc.info/?t=136545603700003&r=1&w=2
+[4] http://marc.info/?l=linux-next&m=136552718229123&w=2
+[5] http://marc.info/?t=136551588400003&r=1&w=2
