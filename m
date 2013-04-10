@@ -1,79 +1,128 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Wed, 10 Apr 2013 08:14:06 +0200
-Message-ID: <CA+icZUW2LQmWMdaVjf5oE8y3zCq8Y2829WM9dwDKxA42N5tVDQ@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<31778276.CDMUtaAAnc@vostro.rjw.lan>
-	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
-	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
-	<CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
-	<CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
-	<CA+icZUW12caZHDfgCV6E-1T4ExBPmu5bBNSqCzDwjUeidfRUPA@mail.gmail.com>
-	<CA+icZUUEExm5Mktxoj6=UdzBe5HUzskktKWdHNOKaFXVHaySBg@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 0/2] cpufreq: Introduce LAB cpufreq governor.
+Date: Wed, 10 Apr 2013 08:56:31 +0200
+Message-ID: <CAKfTPtBvcUfyMTFC3tNb=MyfEODXjo8MTOrqi2MjUmFnnPZCow@mail.gmail.com>
+References: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com>
+	<CAOh2x=nPJa0GReiN=OHLG=m4Gq51F=4VppdaQL20xi-aUa8x2Q@mail.gmail.com>
+	<20130409123719.7399d5ad@amdc308.digital.local>
+	<CAKohpomL-mdx6DdFiGwJzDSeWr6Gw-_F4T-D-Jz9TNH5MSgjbw@mail.gmail.com>
+	<20130409184440.4cd87c1b@amdc308.digital.local>
+	<CAKfTPtD6MK9ogq7mOijSxLSsH0n65Xra48XfRSB3DFs35GT=2g@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:reply-to:in-reply-to:references:date
-         :message-id:subject:from:to:cc:content-type;
-        bh=bLv4q/zAHsfJ8XjvYU8i58N6C4k455bli0d4rzCzgcw=;
-        b=pRBx1/RUs1wkMLC3PWyMkcsTFnC6EsxLT8ymi7M4vP6vgpwaMAETu0A8+b/frDRv6r
-         TXBqwL4vhFuvMVH8VoILEDqasNoWrpGvTCWvcuaIIkA9G1k49yW3Yz4NuA2nzQjL+vse
-         bDwQ2KSVe+F0xqTnMLHQi5vgmPKNsLTrhireNi0w/Xkc6oall66jEItxtnj0nIULnEKM
-         QTX5b+L59Wyf/1gODmBnkNd3tMP23RhaH9nm/GflTxYRYEdKahQyFlF1GXqPHlUpIIOH
-         SLbvcjqgJdAG/71385pOpplVvKuV5szuHZH2yV9Fa5M1Y6F5P/IFUKIonp043wNI8G3R
-         +wDg==
-In-Reply-To: <CA+icZUUEExm5Mktxoj6=UdzBe5HUzskktKWdHNOKaFXVHaySBg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKfTPtD6MK9ogq7mOijSxLSsH0n65Xra48XfRSB3DFs35GT=2g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "sw0312.kim@samsung.com" <sw0312.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Wed, Apr 10, 2013 at 7:53 AM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
-> On Wed, Apr 10, 2013 at 7:41 AM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->> On Tue, Apr 9, 2013 at 6:51 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 9 April 2013 21:38, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->>>> With x=3 the system gets in an unuseable state.
->>>>
->>>>      root# echo 0 > /sys/devices/system/cpu/cpu3/online
->>>>
->>>> I could not write my reply and had to do a hard/cold reboot.
->>>> The dmesg log I saw looked similiar to my digicam-shot.
->>>
->>> Few things i need from you. First is output of cpufreq-info. Then
->>> all the steps you did to reproduce above? Removed any other cpus?
->>>
+On 9 April 2013 20:52, Vincent Guittot <vincent.guittot@linaro.org> wrote:
+>
+>
+> On Tuesday, 9 April 2013, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> Hi Viresh and Vincent,
 >>
->> Here is the output of cpufreq-info of the stable distro-kernel I am using.
->> If you need the one from the "BROKEN" kernel, please let me know.
+>>> On 9 April 2013 16:07, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>>> >> On Mon, Apr 1, 2013 at 1:54 PM, Jonghwa Lee
+>>> > Our approach is a bit different than cpufreq_ondemand one. Ondemand
+>>> > takes the per CPU idle time, then on that basis calculates per cpu
+>>> > load. The next step is to choose the highest load and then use this
+>>> > value to properly scale frequency.
+>>> >
+>>> > On the other hand LAB tries to model different behavior:
+>>> >
+>>> > As a first step we applied Vincent Guittot's "pack small tasks" [*]
+>>> > patch to improve "race to idle" behavior:
+>>> >
+>>> > http://article.gmane.org/gmane.linux.kernel/1371435/match=sched+pack+small+tasks
+>>>
+>>> Luckily he is part of my team :)
+>>>
+>>> http://www.linaro.org/linux-on-arm/meet-the-team/power-management
+>>>
+>>> BTW, he is using ondemand governor for all his work.
+>>>
+>>> > Afterwards, we decided to investigate different approach for power
+>>> > governing:
+>>> >
+>>> > Use the number of sleeping CPUs (not the maximal per-CPU load) to
+>>> > change frequency. We thereof depend on [*] to "pack" as many tasks
+>>> > to CPU as possible and allow other to sleep.
+>>>
+>>> He packs only small tasks.
 >>
->> - Sedat -
+>> What's about packing not only small tasks? I will investigate the
+>> possibility to aggressively pack (even with a cost of performance
+>> degradation) as many tasks as possible to a single CPU.
 >
-> Hmm, I see that the kernel-sources itself ships a...
+> Hi Lukasz,
 >
-> ./tools/power/cpupower/utils/cpufreq-info.c
+> I've got same comment on my current patch and I'm preparing a new version
+> that can pack tasks more agressively based on the same buddy mecanism. This
+> will be done at the cost of performance of course.
 >
-> IIRC current 'make deb-pkg' does not build the tools, but I have seen
-> a patch on linux-kbuild ML.
-
-I found this "[RFC PATCH] kbuild: Build linux-tools package with 'make
-deb-pkg'" from February 2012.
-Can't say what happened to it...
-
-- Sedat -
-
-[1] http://lists.debian.org/debian-kernel/2012/02/msg01009.html
-
-> Can I build cpufreq-info.c afterwards? Do I need a already-compiled build-dir?
 >
-> Thanks in advance for answering my questions.
 >
-> BTW, I have found a nice article on LWN "cpupowerutils - cpufrequtils
-> extended with quite some features" (see [1]).
+>>
+>> It seems a good idea for a power consumption reduction.
 >
-> - Sedat -
+> In fact, it's not always true and depends several inputs like the number of
+> tasks that run simultaneously
 >
-> [1] http://lwn.net/Articles/433002/
+>
+>>
+>>> And if there are many small tasks we are
+>>> packing, then load must be high and so ondemand gov will increase
+>>> freq.
+>>
+>> This is of course true for "packing" all tasks to a single CPU. If we
+>> stay at the power consumption envelope, we can even overclock the
+>> frequency.
+>>
+>> But what if other - lets say 3 CPUs - are under heavy workload?
+>> Ondemand will switch frequency to maximum, and as Jonghwa pointed out
+>> this can cause dangerous temperature increase.
+>
+> IIUC, your main concern is to stay in a power consumption budget to not over
+> heat and have to face the side effect of high temperature like a decrease of
+> power efficiency. So your governor modifies the max frequency based on the
+> number of running/idle CPU to have an almost stable power consumtpion ?
+>
+> Have you also looked at the power clamp driver that have similar target ?
+>
+>
+> Vincent
+>
+>
+>>
+>>>
+>>> > Contrary, when all cores are heavily loaded, we decided to reduce
+>>> > frequency by around 30%. With this approach user experience
+>>> > recution is still acceptable (with much less power consumption).
+>>>
+>>> Don't know.. running many cpus at lower freq for long duration will
+>>> probably take more power than running them at high freq for short
+>>> duration and making system idle again.
+>>>
+>>> > We have posted this "RFC" patch mainly for discussion, and I think
+>>> > it fits its purpose :-).
+>>>
+>>> Yes, no issues with your RFC idea.. its perfect..
+>>>
+>>> @Vincent: Can you please follow this thread a bit and tell us what
+>>> your views are?
+>>>
+>>> --
+>>> viresh
+>>
+>>
+>>
+>> --
+>> Best regards,
+>>
+>> Lukasz Majewski
+>>
+>> Samsung R&D Poland (SRPOL) | Linux Platform Group
+>>
