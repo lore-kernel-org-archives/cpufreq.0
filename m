@@ -1,77 +1,38 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq / intel_pstate: Optimize intel_pstate_set_policy
-Date: Tue,  9 Apr 2013 15:38:18 -0700
-Message-ID: <1365547098-23847-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 14/18] cpufreq: sh: move cpufreq driver to drivers/cpufreq
+Date: Wed, 10 Apr 2013 11:12:36 +0900
+Message-ID: <20130410021236.GK11105@verge.net.au>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <3167220d1e262ff22078993a5beec55e82dfd951.1365079581.git.viresh.kumar@linaro.org>
+ <20130409125509.GH15412@verge.net.au>
+ <CAKohpomqfVqiw1PJxBRRA8=A6hV_63AW4nRpM8TfZPA5bypcKQ@mail.gmail.com>
+Mime-Version: 1.0
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpomqfVqiw1PJxBRRA8=A6hV_63AW4nRpM8TfZPA5bypcKQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
 
-This function is called quite often from other subsystems.
-Removed unused call to intel_pstate_get_min_max().
-Also when "policy->policy == CPUFREQ_POLICY_PERFORMANCE", then
-no need to do calculations as the limits will be forced anyway.
-Also corrected filename in the header.
+On Tue, Apr 09, 2013 at 07:42:51PM +0530, Viresh Kumar wrote:
+> On 9 April 2013 18:25, Simon Horman <horms@verge.net.au> wrote:
+> > On Thu, Apr 04, 2013 at 06:24:22PM +0530, Viresh Kumar wrote:
+> >> This patch moves cpufreq driver of SUPERH architecture to drivers/cpufreq.
+> >
+> > Why?
+> >
+> > I am missing the cover email where I assume the explanation lies.
+> 
+> Hi Simon,
+> 
+> The idea was to keep all cpufreq drivers at a common and most suitable
+> place, so that future consolidation work can be done easily and efficiently.
+> 
+> So, functionally this patch shouldn't change anything.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+Thanks, I understand.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index f6dd1e7..f3729d4 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1,5 +1,5 @@
- /*
-- * cpufreq_snb.c: Native P state management for Intel processors
-+ * intel_pstate.c: Native P state management for Intel processors
-  *
-  * (C) Copyright 2012 Intel Corporation
-  * Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
-@@ -658,30 +658,27 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu;
--	int min, max;
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
- 	if (!policy->cpuinfo.max_freq)
- 		return -ENODEV;
- 
--	intel_pstate_get_min_max(cpu, &min, &max);
--
--	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
--	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
--	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
--
--	limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
--	limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
--	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
--
- 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		limits.min_perf_pct = 100;
- 		limits.min_perf = int_tofp(1);
- 		limits.max_perf_pct = 100;
- 		limits.max_perf = int_tofp(1);
- 		limits.no_turbo = 0;
-+		return 0;
- 	}
-+	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
-+	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
-+	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
-+
-+	limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
-+	limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
-+	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
- 
- 	return 0;
- }
--- 
-1.7.11.7
-
+I have no objections to this, but Paul should probably review it.
