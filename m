@@ -1,95 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq / intel_pstate: Optimize intel_pstate_set_policy
-Date: Wed, 10 Apr 2013 14:21 +0200
-Message-ID: <2340768.RAJMjzLfNx@vostro.rjw.lan>
-References: <1365547098-23847-1-git-send-email-srinivas.pandruvada@linux.intel.com> <CAOh2x=mYfWyaziR+L7sR2LPKiOLWd4kM1NUR9QLnJk5k0SKxuw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Subject: [PATCH] cpufreq: dbx500: Round to closest available freq
+Date: Wed, 10 Apr 2013 15:06:15 +0200
+Message-ID: <1365599175-22361-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=mYfWyaziR+L7sR2LPKiOLWd4kM1NUR9QLnJk5k0SKxuw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Mats Fagerstrom <mats.fagerstrom@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Wednesday, April 10, 2013 08:33:46 AM Viresh Kumar wrote:
-> On Wed, Apr 10, 2013 at 4:08 AM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > This function is called quite often from other subsystems.
-> > Removed unused call to intel_pstate_get_min_max().
-> > Also when "policy->policy == CPUFREQ_POLICY_PERFORMANCE", then
-> > no need to do calculations as the limits will be forced anyway.
-> 
-> > Also corrected filename in the header.
-> 
-> Probably separate this out in a different patch.
-> 
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  drivers/cpufreq/intel_pstate.c | 21 +++++++++------------
-> >  1 file changed, 9 insertions(+), 12 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index f6dd1e7..f3729d4 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -1,5 +1,5 @@
-> >  /*
-> > - * cpufreq_snb.c: Native P state management for Intel processors
-> > + * intel_pstate.c: Native P state management for Intel processors
-> >   *
-> >   * (C) Copyright 2012 Intel Corporation
-> >   * Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> > @@ -658,30 +658,27 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
-> >  static int intel_pstate_set_policy(struct cpufreq_policy *policy)
-> >  {
-> >         struct cpudata *cpu;
-> > -       int min, max;
-> >
-> >         cpu = all_cpu_data[policy->cpu];
-> >
-> >         if (!policy->cpuinfo.max_freq)
-> >                 return -ENODEV;
-> >
-> > -       intel_pstate_get_min_max(cpu, &min, &max);
-> > -
-> > -       limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
-> > -       limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
-> > -       limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
-> > -
-> > -       limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
-> > -       limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
-> > -       limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
-> > -
-> >         if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
-> >                 limits.min_perf_pct = 100;
-> >                 limits.min_perf = int_tofp(1);
-> >                 limits.max_perf_pct = 100;
-> >                 limits.max_perf = int_tofp(1);
-> >                 limits.no_turbo = 0;
-> > +               return 0;
-> >         }
-> > +       limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
-> > +       limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
-> > +       limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
-> > +
-> > +       limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
-> > +       limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
-> > +       limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
-> 
-> Otherwise it looks fine:
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+From: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
 
-Thanks!
+When reading the cpu speed, round it to the closest available
+frequency from the table.
 
-Applied to my bleeding-edge branch and will go to linux-next after build testing.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
+---
+ drivers/cpufreq/dbx500-cpufreq.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Thanks,
-Rafael
-
-
+diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
+index 15ed367..6ec6539 100644
+--- a/drivers/cpufreq/dbx500-cpufreq.c
++++ b/drivers/cpufreq/dbx500-cpufreq.c
+@@ -71,15 +71,15 @@ static unsigned int dbx500_cpufreq_getspeed(unsigned int cpu)
+ 	int i = 0;
+ 	unsigned long freq = clk_get_rate(armss_clk) / 1000;
+ 
+-	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+-		if (freq <= freq_table[i].frequency)
++	/* The value is rounded to closest frequency in the defined table. */
++	while (freq_table[i + 1].frequency != CPUFREQ_TABLE_END) {
++		if (freq < freq_table[i].frequency +
++		   (freq_table[i + 1].frequency - freq_table[i].frequency) / 2)
+ 			return freq_table[i].frequency;
+ 		i++;
+ 	}
+ 
+-	/* We could not find a corresponding frequency. */
+-	pr_err("dbx500-cpufreq: Failed to find cpufreq speed\n");
+-	return 0;
++	return freq_table[i].frequency;
+ }
+ 
+ static int __cpuinit dbx500_cpufreq_init(struct cpufreq_policy *policy)
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.10
+
