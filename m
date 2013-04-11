@@ -1,48 +1,65 @@
-From: Troy Kisky <troy.kisky@boundarydevices.com>
-Subject: Re: [PATCH] cpufreq: dbx500: Round to closest available freq
-Date: Thu, 11 Apr 2013 14:52:39 -0700
-Message-ID: <516730A7.60206@boundarydevices.com>
-References: <1365599175-22361-1-git-send-email-ulf.hansson@stericsson.com> <CACRpkdb75wPjXEYdkqE6BOCsuFA_ZBc6GAz1m-5vHWSrSGKyUA@mail.gmail.com> <1512269.3ZuqNVLx3s@vostro.rjw.lan>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RESEND PATCH V6 1/4] cpufreq: exynos: Add cpufreq driver for exynos5440
+Date: Thu, 11 Apr 2013 18:23:52 -0500
+Message-ID: <CAGo_u6oZM0K8XDMtmXKFyoGy2qf+-HSPvU0EMangM5Jj_prKsA@mail.gmail.com>
+References: <CAKohpo=t_YTCTRCfnwQ+GPF=frsTGDigT3RZHJuVQ+R+YZU7Hg@mail.gmail.com>
+	<1365415054-30771-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1512269.3ZuqNVLx3s@vostro.rjw.lan>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=UK3PsB+jdzkLTFUFl86EGIt6D0HlXBBFDkovW+HsEF8=;
+        b=MR+jM0hMWvae9XmPtMQUn/X7NAEAwC1XOx1sk3QSNG0feVfjmxDsE1ZarKusStLx7D
+         Z9gE92XMnZ9aSL7ILAdm5R/1YQpMWdqmxem05SPkyRLxp1e08UW+mpLnurhL23squekd
+         Z4Az8g2Xqh2LHqy/QtLOYnkA1wumebIODv9pa1EVsnJF5ZoY6GDgVEbTCFSzl4dKm952
+         B71YONIdL54kEGUuA2i2vUo/YroEcay3Lq2Zu1zk7TMRDsI8TpDwe3cMxQ17kDRYiEuz
+         QYf4nJxPB2TBYtDjNSF31vEN2sah1jfJ3mUDEwSBNfbdZ0XTH3AbjtqlBsRj8Vw8erft
+         yekw==
+In-Reply-To: <1365415054-30771-1-git-send-email-amit.daniel@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Mats Fagerstrom <mats.fagerstrom@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Ulf Hansson <ulf.hansson@stericsson.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 4/11/2013 2:33 PM, Rafael J. Wysocki wrote:
-> On Thursday, April 11, 2013 10:33:07 PM Linus Walleij wrote:
->> On Wed, Apr 10, 2013 at 3:06 PM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
->>
->>> From: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
->>>
->>> When reading the cpu speed, round it to the closest available
->>> frequency from the table.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> Signed-off-by: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
->> (...)
->>> +       /* The value is rounded to closest frequency in the defined table. */
->>> +       while (freq_table[i + 1].frequency != CPUFREQ_TABLE_END) {
->>> +               if (freq < freq_table[i].frequency +
->>> +                  (freq_table[i + 1].frequency - freq_table[i].frequency) / 2)
+Hi,
+On Mon, Apr 8, 2013 at 4:57 AM, Amit Daniel Kachhap
+<amit.daniel@samsung.com> wrote:
+> +
+> +static int init_div_table(void)
+> +{
+> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
+> +       unsigned int tmp, clk_div, ema_div, freq, volt_id;
+> +       int i = 0;
+> +       struct opp *opp;
+> +
+> +       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +
+> +               opp = opp_find_freq_exact(dvfs_info->dev,
+> +                                       freq_tbl[i].frequency * 1000, true);
+> +               if (IS_ERR(opp)) {
+> +                       dev_err(dvfs_info->dev,
+> +                               "failed to find valid OPP for %u KHZ\n",
+> +                               freq_tbl[i].frequency);
+> +                       return PTR_ERR(opp);
+> +               }
+please use RCU read locks.
 
-if (freq < (freq_table[i].frequency + freq_table[i + 1].frequency) / 2)
+> +
+> +               freq = freq_tbl[i].frequency / 1000; /* In MHZ */
+> +               clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
+> +                                       << P0_7_CPUCLKDEV_SHIFT;
+> +               clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
+> +                                       << P0_7_ATBCLKDEV_SHIFT;
+> +               clk_div |= ((freq / CPU_DBG_FREQ_MAX) & P0_7_CSCLKDEV_MASK)
+> +                                       << P0_7_CSCLKDEV_SHIFT;
+> +
+> +               /* Calculate EMA */
+> +               volt_id = opp_get_voltage(opp);
+Please use RCU read locks as documented for OPP library.
 
-is easier to read.
-
-
-
->>>                          return freq_table[i].frequency;
->> Oh that works, clever.
->>
->> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> Thanks, applied.
->
-> Rafael
->
->
-
+Regards,
+Nishanth Menon
