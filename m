@@ -1,52 +1,53 @@
-From: Ulf Hansson <ulf.hansson@stericsson.com>
-Subject: [PATCH] cpufreq: dbx500: Round to closest available freq
-Date: Wed, 10 Apr 2013 15:06:15 +0200
-Message-ID: <1365599175-22361-1-git-send-email-ulf.hansson@stericsson.com>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 9/9] powerpc: cpufreq: move cpufreq driver to
+ drivers/cpufreq
+Date: Wed, 10 Apr 2013 23:59:57 -0700
+Message-ID: <20130411065957.GB31465@quad.lixom.net>
+References: <cover.1364229828.git.viresh.kumar@linaro.org>
+ <4180fd5b43906421fc155126e8b7bea5fb3ff375.1364229828.git.viresh.kumar@linaro.org>
+ <CAKohpo=LOJ3DfaGzCm6a6ev2+dNUgEpJd+04pGMhdSpkyZNR9A@mail.gmail.com>
+ <CAKohpomRMkKouiy+iJUiheTcPGCDVLbxppL5f4oc-WMu2E5T8g@mail.gmail.com>
+ <1364985034.16520.12.camel@pasglop>
+ <CAKohpo=EPbGocbNaZcNtGuZy4Tst5jH4rPviQ6L=YuZceDnKMw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=EPbGocbNaZcNtGuZy4Tst5jH4rPviQ6L=YuZceDnKMw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Mats Fagerstrom <mats.fagerstrom@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, arvind.chauhan@arm.com, Arnd Bergmann <arnd.bergmann@linaro.org>, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-From: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
+On Thu, Apr 04, 2013 at 11:55:56AM +0530, Viresh Kumar wrote:
+> On 3 April 2013 16:00, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > On Wed, 2013-04-03 at 15:00 +0530, Viresh Kumar wrote:
+> >> On 31 March 2013 09:33, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> 
+> >> > Benjamin/Paul/Olof,
+> >> >
+> >> > Any comments on this?
+> >>
+> >> Ping!!
+> >
+> > I'm on vacation until end of April. No objection to the patch but
+> > somebody needs to test it.
+> 
+> Hi,
+> 
+> Can somebody else from powerpc world give it a try?
+> 
+> OR
+> 
+> @Rafael: Can we get this pushed in linux-next as is and then people would
+> be forced to test it and in case there are any complains, i will fix them or
+> you can revert it?
 
-When reading the cpu speed, round it to the closest available
-frequency from the table.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
----
- drivers/cpufreq/dbx500-cpufreq.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+That's not very nice this late in the staging cycle. Give the powerpc
+guys a little more time than a single day to come back with test results,
+please.
 
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index 15ed367..6ec6539 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -71,15 +71,15 @@ static unsigned int dbx500_cpufreq_getspeed(unsigned int cpu)
- 	int i = 0;
- 	unsigned long freq = clk_get_rate(armss_clk) / 1000;
- 
--	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
--		if (freq <= freq_table[i].frequency)
-+	/* The value is rounded to closest frequency in the defined table. */
-+	while (freq_table[i + 1].frequency != CPUFREQ_TABLE_END) {
-+		if (freq < freq_table[i].frequency +
-+		   (freq_table[i + 1].frequency - freq_table[i].frequency) / 2)
- 			return freq_table[i].frequency;
- 		i++;
- 	}
- 
--	/* We could not find a corresponding frequency. */
--	pr_err("dbx500-cpufreq: Failed to find cpufreq speed\n");
--	return 0;
-+	return freq_table[i].frequency;
- }
- 
- static int __cpuinit dbx500_cpufreq_init(struct cpufreq_policy *policy)
--- 
-1.7.10
 
+-Olof
