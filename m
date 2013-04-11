@@ -1,48 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 9/9] powerpc: cpufreq: move cpufreq driver to
- drivers/cpufreq
-Date: Thu, 11 Apr 2013 22:33:50 +0200
-Message-ID: <3219488.Pmor8goo2e@vostro.rjw.lan>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
- <20130411065957.GB31465@quad.lixom.net>
- <CAKohpomHFgMBAHax=jC_LNd8Gay9aWja+64An7QxnNpaPuuSQQ@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] cpufreq: dbx500: Round to closest available freq
+Date: Thu, 11 Apr 2013 22:33:07 +0200
+Message-ID: <CACRpkdb75wPjXEYdkqE6BOCsuFA_ZBc6GAz1m-5vHWSrSGKyUA@mail.gmail.com>
+References: <1365599175-22361-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <CAKohpomHFgMBAHax=jC_LNd8Gay9aWja+64An7QxnNpaPuuSQQ@mail.gmail.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1365599175-22361-1-git-send-email-ulf.hansson@stericsson.com>
 List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: robin.randhawa@arm.com, linux-pm@vger.kernel.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve.Bannister@arm.com, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, arvind.chauhan@arm.com, linuxppc-dev@lists.ozlabs.org, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@stericsson.com>
+Cc: Mats Fagerstrom <mats.fagerstrom@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thursday, April 11, 2013 12:32:50 PM Viresh Kumar wrote:
-> On 11 April 2013 12:29, Olof Johansson <olof@lixom.net> wrote:
-> > That's not very nice this late in the staging cycle. Give the powerpc
-> > guys a little more time than a single day to come back with test results,
-> > please.
-> 
-> Yes we are waiting indefinitely for an Ack from powerpc guys.. If we can
-> get a Ack soon, we will get it in 3.10 otherwise next cycle.
+On Wed, Apr 10, 2013 at 3:06 PM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
 
-Well, I'll be traveling from Saturday morning onwards until the end of the
-next week and my window for taking stuff into v3.10 closes in 16 hours.
-Whatever is not ready (i.e. ACKed in this particular case) before that time,
-won't be taken.
+> From: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
+>
+> When reading the cpu speed, round it to the closest available
+> frequency from the table.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Mats Fagerstrom <mats.fagerstrom@stericsson.com>
 
-Thanks,
-Rafael
+(...)
+> +       /* The value is rounded to closest frequency in the defined table. */
+> +       while (freq_table[i + 1].frequency != CPUFREQ_TABLE_END) {
+> +               if (freq < freq_table[i].frequency +
+> +                  (freq_table[i + 1].frequency - freq_table[i].frequency) / 2)
+>                         return freq_table[i].frequency;
 
+Oh that works, clever.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij
