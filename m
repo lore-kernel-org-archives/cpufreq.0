@@ -1,61 +1,88 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: amit daniel kachhap <amit.daniel@samsung.com>
 Subject: Re: [RESEND PATCH V6 1/4] cpufreq: exynos: Add cpufreq driver for exynos5440
-Date: Fri, 12 Apr 2013 13:19:28 +0200
-Message-ID: <1586707.acL064pYmb@vostro.rjw.lan>
-References: <CAKohpo=t_YTCTRCfnwQ+GPF=frsTGDigT3RZHJuVQ+R+YZU7Hg@mail.gmail.com> <1365415054-30771-1-git-send-email-amit.daniel@samsung.com> <CAGo_u6oZM0K8XDMtmXKFyoGy2qf+-HSPvU0EMangM5Jj_prKsA@mail.gmail.com>
+Date: Fri, 12 Apr 2013 17:21:40 +0530
+Message-ID: <CADGdYn4qJRuLz8=PoXNRRwaNpKO92UshuiQTaK6W6Jj4p79T1A@mail.gmail.com>
+References: <CAKohpo=t_YTCTRCfnwQ+GPF=frsTGDigT3RZHJuVQ+R+YZU7Hg@mail.gmail.com>
+	<1365415054-30771-1-git-send-email-amit.daniel@samsung.com>
+	<CAGo_u6oZM0K8XDMtmXKFyoGy2qf+-HSPvU0EMangM5Jj_prKsA@mail.gmail.com>
+	<1586707.acL064pYmb@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6oZM0K8XDMtmXKFyoGy2qf+-HSPvU0EMangM5Jj_prKsA@mail.gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=DC44sv+g6/UomboKsFficVwp+vHqUyFj3D9XoNSvGmc=;
+        b=S3DfIPdUTtua1KxbfyXP9VCSRMDZIyiwh9TLOLypeoVid5rY4TojguIhrY0wd5FxBi
+         X4qJkDDnAHaireqoN+K3V+DUDtAfUfbL0HIoX9UqJEAREd92Zse28UShCPk1KLFeN092
+         okQ67o/yhsmLXm+0xfuRBEYcfKQU3JHrSaYpswH2i5lKndF7X8l0Y5LiWsuDimBdAlKO
+         PlMc86JfBqCqQO/v1zFtlGGmEOIpfitqI16xGTOD4lMni/DVTS58QLwN/JlJ28WafpXL
+         4ua+d7Dr9kv8PgTjUSedlL4XJqs6rXkJelnHQuCBRY7fxPwZnBmKeW0Meg4EqI2/2pVF
+         sf0A==
+In-Reply-To: <1586707.acL064pYmb@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Nishanth Menon <nm@ti.com>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nishanth Menon <nm@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Inderpal Singh <inderpal.singh@linaro.org>
 
-On Thursday, April 11, 2013 06:23:52 PM Nishanth Menon wrote:
-> Hi,
-> On Mon, Apr 8, 2013 at 4:57 AM, Amit Daniel Kachhap
-> <amit.daniel@samsung.com> wrote:
-> > +
-> > +static int init_div_table(void)
-> > +{
-> > +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-> > +       unsigned int tmp, clk_div, ema_div, freq, volt_id;
-> > +       int i = 0;
-> > +       struct opp *opp;
-> > +
-> > +       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
-> > +
-> > +               opp = opp_find_freq_exact(dvfs_info->dev,
-> > +                                       freq_tbl[i].frequency * 1000, true);
-> > +               if (IS_ERR(opp)) {
-> > +                       dev_err(dvfs_info->dev,
-> > +                               "failed to find valid OPP for %u KHZ\n",
-> > +                               freq_tbl[i].frequency);
-> > +                       return PTR_ERR(opp);
-> > +               }
-> please use RCU read locks.
-> 
-> > +
-> > +               freq = freq_tbl[i].frequency / 1000; /* In MHZ */
-> > +               clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
-> > +                                       << P0_7_CPUCLKDEV_SHIFT;
-> > +               clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
-> > +                                       << P0_7_ATBCLKDEV_SHIFT;
-> > +               clk_div |= ((freq / CPU_DBG_FREQ_MAX) & P0_7_CSCLKDEV_MASK)
-> > +                                       << P0_7_CSCLKDEV_SHIFT;
-> > +
-> > +               /* Calculate EMA */
-> > +               volt_id = opp_get_voltage(opp);
-> Please use RCU read locks as documented for OPP library.
+Hi Rafael,
 
-Argh.  I overlooked that and the series has been applied already.  Care to send
-a fix against linux-pm.git/linux-next?
+On Fri, Apr 12, 2013 at 4:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, April 11, 2013 06:23:52 PM Nishanth Menon wrote:
+>> Hi,
+>> On Mon, Apr 8, 2013 at 4:57 AM, Amit Daniel Kachhap
+>> <amit.daniel@samsung.com> wrote:
+>> > +
+>> > +static int init_div_table(void)
+>> > +{
+>> > +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
+>> > +       unsigned int tmp, clk_div, ema_div, freq, volt_id;
+>> > +       int i = 0;
+>> > +       struct opp *opp;
+>> > +
+>> > +       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
+>> > +
+>> > +               opp = opp_find_freq_exact(dvfs_info->dev,
+>> > +                                       freq_tbl[i].frequency * 1000, true);
+>> > +               if (IS_ERR(opp)) {
+>> > +                       dev_err(dvfs_info->dev,
+>> > +                               "failed to find valid OPP for %u KHZ\n",
+>> > +                               freq_tbl[i].frequency);
+>> > +                       return PTR_ERR(opp);
+>> > +               }
+>> please use RCU read locks.
+>>
+>> > +
+>> > +               freq = freq_tbl[i].frequency / 1000; /* In MHZ */
+>> > +               clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
+>> > +                                       << P0_7_CPUCLKDEV_SHIFT;
+>> > +               clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
+>> > +                                       << P0_7_ATBCLKDEV_SHIFT;
+>> > +               clk_div |= ((freq / CPU_DBG_FREQ_MAX) & P0_7_CSCLKDEV_MASK)
+>> > +                                       << P0_7_CSCLKDEV_SHIFT;
+>> > +
+>> > +               /* Calculate EMA */
+>> > +               volt_id = opp_get_voltage(opp);
+>> Please use RCU read locks as documented for OPP library.
+>
+> Argh.  I overlooked that and the series has been applied already.  Care to send
+> a fix against linux-pm.git/linux-next?
 
-Rafael
+Will submit a patch with RCU lock changes.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+Amit Daniel
+>
+> Rafael
+>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
