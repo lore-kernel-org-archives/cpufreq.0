@@ -1,88 +1,79 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [RESEND PATCH V6 1/4] cpufreq: exynos: Add cpufreq driver for exynos5440
-Date: Fri, 12 Apr 2013 17:21:40 +0530
-Message-ID: <CADGdYn4qJRuLz8=PoXNRRwaNpKO92UshuiQTaK6W6Jj4p79T1A@mail.gmail.com>
-References: <CAKohpo=t_YTCTRCfnwQ+GPF=frsTGDigT3RZHJuVQ+R+YZU7Hg@mail.gmail.com>
-	<1365415054-30771-1-git-send-email-amit.daniel@samsung.com>
-	<CAGo_u6oZM0K8XDMtmXKFyoGy2qf+-HSPvU0EMangM5Jj_prKsA@mail.gmail.com>
-	<1586707.acL064pYmb@vostro.rjw.lan>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Fri, 12 Apr 2013 16:24:19 +0200
+Message-ID: <CA+icZUULhGR61V=wCXYctzBaM7Dei0-zGXApmfqQyiByzd5-cw@mail.gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
+	<31778276.CDMUtaAAnc@vostro.rjw.lan>
+	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
+	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
+	<CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
+	<CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
+	<CA+icZUW12caZHDfgCV6E-1T4ExBPmu5bBNSqCzDwjUeidfRUPA@mail.gmail.com>
+	<CA+icZUUEExm5Mktxoj6=UdzBe5HUzskktKWdHNOKaFXVHaySBg@mail.gmail.com>
+	<CA+icZUW2LQmWMdaVjf5oE8y3zCq8Y2829WM9dwDKxA42N5tVDQ@mail.gmail.com>
+	<CAKohpom7Mn8aQZTUx-_fQF+9KWste0uYsZcaQ5rcM6ab45-0+g@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-next-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=DC44sv+g6/UomboKsFficVwp+vHqUyFj3D9XoNSvGmc=;
-        b=S3DfIPdUTtua1KxbfyXP9VCSRMDZIyiwh9TLOLypeoVid5rY4TojguIhrY0wd5FxBi
-         X4qJkDDnAHaireqoN+K3V+DUDtAfUfbL0HIoX9UqJEAREd92Zse28UShCPk1KLFeN092
-         okQ67o/yhsmLXm+0xfuRBEYcfKQU3JHrSaYpswH2i5lKndF7X8l0Y5LiWsuDimBdAlKO
-         PlMc86JfBqCqQO/v1zFtlGGmEOIpfitqI16xGTOD4lMni/DVTS58QLwN/JlJ28WafpXL
-         4ua+d7Dr9kv8PgTjUSedlL4XJqs6rXkJelnHQuCBRY7fxPwZnBmKeW0Meg4EqI2/2pVF
-         sf0A==
-In-Reply-To: <1586707.acL064pYmb@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+        h=mime-version:x-received:reply-to:in-reply-to:references:date
+         :message-id:subject:from:to:cc:content-type;
+        bh=Cr5n6pl2pcRI1GdHNxLoiXimkfT7I8sHgXUv0kQC07c=;
+        b=r2/+CEDDkUmOKpM8a8tikPkldlBQdXhSRxbpMDJa+d+qAd4zruiX9ULkbnvy5s7qEz
+         WAM3/PQR7y+oOxUYxfHtJzAmD9eqM8ZAyqHf4g/dpJcynbr9jNQNRhS+oMnFMUFSiNoZ
+         XSUwnVlKfY2HxH1lsGmYNCCdvrytYwDtyZ8/8LQkOTL2QAgu2jfWdimqkGmPZS5kFexc
+         qBUnDups/vyYfclCqAxx/6o5nfVCodx3UBQaQOnAAnUoxE4VJjiq7m3uuyfTCBfLvpPD
+         vIRf6bP/+EKjht0sB+CKjkSsqAqA264ZirBF+BdkAr53JnbkdtJsZSBYMlMcVo01podP
+         ZvYQ==
+In-Reply-To: <CAKohpom7Mn8aQZTUx-_fQF+9KWste0uYsZcaQ5rcM6ab45-0+g@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nishanth Menon <nm@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Inderpal Singh <inderpal.singh@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-Hi Rafael,
+On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+>> I found this "[RFC PATCH] kbuild: Build linux-tools package with 'make
+>> deb-pkg'" from February 2012.
+>> Can't say what happened to it...
+>
+> Sedat,
+>
+> Sorry for being late. I am down with Fever and throat infection since few days.
+> Still struggling with it..
+>
+> There are few things i tried. Firstly the tag: next-20130326 is bad as there are
+> some bad commits in cpufreq core in it.
+>
+> I then tried latest linux-next/master on my Thinkpad (model name        : Intel(R)
+> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ubuntu
+> just hanged.
+>
+> Then i tried Rafael's linux-next branch
+>
+> 079576f Merge branch 'pm-cpufreq-next' into linux-next
+>
+> And couldn't find any issues with it. I am easily able to remove/add cpus at
+> runtime..
+>
+> Can you give this branch a try?
+>
 
-On Fri, Apr 12, 2013 at 4:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, April 11, 2013 06:23:52 PM Nishanth Menon wrote:
->> Hi,
->> On Mon, Apr 8, 2013 at 4:57 AM, Amit Daniel Kachhap
->> <amit.daniel@samsung.com> wrote:
->> > +
->> > +static int init_div_table(void)
->> > +{
->> > +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
->> > +       unsigned int tmp, clk_div, ema_div, freq, volt_id;
->> > +       int i = 0;
->> > +       struct opp *opp;
->> > +
->> > +       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
->> > +
->> > +               opp = opp_find_freq_exact(dvfs_info->dev,
->> > +                                       freq_tbl[i].frequency * 1000, true);
->> > +               if (IS_ERR(opp)) {
->> > +                       dev_err(dvfs_info->dev,
->> > +                               "failed to find valid OPP for %u KHZ\n",
->> > +                               freq_tbl[i].frequency);
->> > +                       return PTR_ERR(opp);
->> > +               }
->> please use RCU read locks.
->>
->> > +
->> > +               freq = freq_tbl[i].frequency / 1000; /* In MHZ */
->> > +               clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
->> > +                                       << P0_7_CPUCLKDEV_SHIFT;
->> > +               clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
->> > +                                       << P0_7_ATBCLKDEV_SHIFT;
->> > +               clk_div |= ((freq / CPU_DBG_FREQ_MAX) & P0_7_CSCLKDEV_MASK)
->> > +                                       << P0_7_CSCLKDEV_SHIFT;
->> > +
->> > +               /* Calculate EMA */
->> > +               volt_id = opp_get_voltage(opp);
->> Please use RCU read locks as documented for OPP library.
->
-> Argh.  I overlooked that and the series has been applied already.  Care to send
-> a fix against linux-pm.git/linux-next?
+OK, you seem to be well again, nice to hear.
 
-Will submit a patch with RCU lock changes.
+I was doing the whole week spring-cleaning in the apartment of my parents.
+Now, I have some minutes for a compilation run.
 
-Thanks,
-Amit Daniel
->
-> Rafael
->
->
+I guess "cpufreq: Call __cpufreq_governor() with correct policy->cpus
+mask" could be the correct fix, but will try the GIT branch you have
+mentioned.
+
+- Sedat -
+
+[1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=e4969ebac83fdea78d89c779331396728a4e6199
+
 > --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> viresh
