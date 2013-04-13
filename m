@@ -1,18 +1,19 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 48341] BUG: using smp_processor_id in preemptible powernow_k8
-Date: Sat, 13 Apr 2013 17:41:42 +0000 (UTC)
-Message-ID: <20130413174142.2764811FF3E@bugzilla.kernel.org>
-References: <bug-48341-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 50721] CPU freqs stay stuck at max after reboot with on-demand
+ governor set - i7-2630QM
+Date: Sat, 13 Apr 2013 17:43:15 +0000 (UTC)
+Message-ID: <20130413174315.8EE1A11FF38@bugzilla.kernel.org>
+References: <bug-50721-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-48341-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-50721-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=48341
+https://bugzilla.kernel.org/show_bug.cgi?id=50721
 
 
 Zhang Rui <rui.zhang@intel.com> changed:
