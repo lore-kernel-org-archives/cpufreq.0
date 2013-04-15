@@ -1,38 +1,31 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
 Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Mon, 15 Apr 2013 19:57:17 +0200
-Message-ID: <CA+icZUVbv-e8tY1+zZE+z0377yvrFUZvPkZ5qi9nHzfmEYNbTQ@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
-	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
-	<1923819.6Nb81T2TR8@vostro.rjw.lan>
-	<CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
-	<516C25AE.4050503@intel.com>
-	<CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
-	<CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+Date: Mon, 15 Apr 2013 11:01:26 -0700
+Message-ID: <516C4076.7070605@gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com> <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com> <1923819.6Nb81T2TR8@vostro.rjw.lan> <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com> <516C25AE.4050503@intel.com> <CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com> <CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:reply-to:in-reply-to:references:date
-         :message-id:subject:from:to:cc:content-type;
-        bh=rFqdnVo/hynI3Hw2RayvP+84JZrS4oA+uxI8sXSlY4U=;
-        b=G6bj0qRHETVQVN+k3X5peW8xn26gNeNJMt5Pj1afoKeMhILY60Gvqm20Hlc0+Fci8a
-         Of56Uj3kJHwxWnSTa/Y+NujTttC/0tY1PzatZ7UrbZLkkIlemrlMmtP48m0cer9WCEIo
-         PPfy+bqc22HwO1rxR+adPhPyr2GtnrqL6fKrGO0zH/Ijki7gcpvyUjwNvMmlpuJd5xNi
-         aS0VqTt2meGUYgNWbBHW9lhj8FIHxPoNlnoEqRtcQ0sKlb8i3wD7eyRg22+xJqNPSxhz
-         pxrOA3hhi0A8KrQio/3hB1uE9wVDrxqtmvKsk5LwLckz/7Syl6a1bEb7eycASJU0AzIO
-         3/Ng==
+        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=OrZ1XzeF/lod0Rma+cJ0VZaqjWQoNdrBiPYNnOX+3nE=;
+        b=iM73cgH1L30zX/hCXxK+cub33Ulp2rav4rdFK2RZvNTkDCcD7KhlOMSwf+aFb3bHzH
+         61eO5Zxw/pVY5ei4RA1ty+EpAXUGiuXWL2cW/XqZ7Y5ONzDBdDo9TzCfurk72HILidq2
+         yFkFk2lGUhN8KMmzUdjLEk1xeI7cf8OZd8StOz1wZW0DK9XQXbzvqkgMyUP2/qnReBce
+         jNkXs9Eyp69JO1jUfC5Sgnf/v7tSCVvKFrmKUKyUKAwb+Y5vp7VeIdE55LIxDHSNPGG0
+         7kGeLsLvVYSEX2ntagNx6VLaApzBaXKBHbnLngQYAlSx87aldywsF2Goi0J/ZHs47bEQ
+         hoIQ==
 In-Reply-To: <CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-next-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: sedat.dilek@gmail.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 
-On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+On 04/15/2013 10:51 AM, Sedat Dilek wrote:
 > On Mon, Apr 15, 2013 at 7:22 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >> On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
 >>> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
@@ -44,7 +37,7 @@ On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
 >> No it isn't.
 >>
 >>> +       if (has_target)
->>>                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+>>>                  __cpufreq_governor(data, CPUFREQ_GOV_STOP);
 >>
 >> As it has taken care of this limitation.
 >>
@@ -64,7 +57,7 @@ On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
 >
 > Tested against...
 >
->  "BROKEN" Linux-Next (next-20130411) with attached patchset (incl.
+>   "BROKEN" Linux-Next (next-20130411) with attached patchset (incl.
 > your cpufreq-next-fixes).
 >
 > Test-Case...
@@ -80,18 +73,22 @@ On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
 > ( Dirk promised to test as well... )
 >
 
-Might be interesting as an extra-confirmation:
+Tested with:
+  while true
+  do
+  echo 0 > online
+  echo 1 > online
+  done
+For several minutes and rebooting several times seems to have fixed the
+issue.
 
-root# echo 1 > /sys/devices/system/cpu/cpu3/online
+Nathan, Sorry for calling out your patch erroneously I should have paid closer
+attention.
 
-[ dmesg ]
+Viresh you can add my Tested-by:
 
-[  556.101961] smpboot: Booting Node 0 Processor 3 APIC 0x3
-[  556.113158] Disabled fast string operations
-[  556.116621] Intel pstate controlling: cpu 3
-
-- Sedat -
-
+Thanks
+--Dirk
 > - Sedat -
 >
 >> @Rafael: I will probably be down for one more week and so not doing any
@@ -102,7 +99,7 @@ root# echo 1 > /sys/devices/system/cpu/cpu3/online
 >> From: Viresh Kumar <viresh.kumar@linaro.org>
 >> Date: Mon, 15 Apr 2013 22:43:57 +0530
 >> Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
->>  target()
+>>   target()
 >>
 >> Some cpufreq drivers implement their own governor and so don't need us to call
 >> generic governors interface via __cpufreq_governor(). Few recent commits haven't
@@ -112,8 +109,8 @@ root# echo 1 > /sys/devices/system/cpu/cpu3/online
 >>
 >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 >> ---
->>  drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
->>  1 file changed, 13 insertions(+), 5 deletions(-)
+>>   drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
+>>   1 file changed, 13 insertions(+), 5 deletions(-)
 >>
 >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 >> index 3564947..a6f6595 100644
@@ -121,15 +118,15 @@ root# echo 1 > /sys/devices/system/cpu/cpu3/online
 >> +++ b/drivers/cpufreq/cpufreq.c
 >> @@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
 >> cpu, unsigned int sibling,
->>                                   struct device *dev)
->>  {
->>         struct cpufreq_policy *policy;
+>>                                    struct device *dev)
+>>   {
+>>          struct cpufreq_policy *policy;
 >> -       int ret = 0;
 >> +       int ret = 0, has_target = 0;
->>         unsigned long flags;
+>>          unsigned long flags;
 >>
->>         policy = cpufreq_cpu_get(sibling);
->>         WARN_ON(!policy);
+>>          policy = cpufreq_cpu_get(sibling);
+>>          WARN_ON(!policy);
 >>
 >> -       __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
 >> +       rcu_read_lock();
@@ -139,12 +136,12 @@ root# echo 1 > /sys/devices/system/cpu/cpu3/online
 >> +       if (has_target)
 >> +               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
 >>
->>         lock_policy_rwsem_write(sibling);
+>>          lock_policy_rwsem_write(sibling);
 >>
 >> @@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
 >> cpu, unsigned int sibling,
 >>
->>         unlock_policy_rwsem_write(sibling);
+>>          unlock_policy_rwsem_write(sibling);
 >>
 >> -       __cpufreq_governor(policy, CPUFREQ_GOV_START);
 >> -       __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
@@ -153,16 +150,16 @@ root# echo 1 > /sys/devices/system/cpu/cpu3/online
 >> +               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
 >> +       }
 >>
->>         ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
->>         if (ret) {
+>>          ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+>>          if (ret) {
 >> @@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
 >> *dev, struct subsys_interface *sif
 >>
->>         /* If cpu is last user of policy, free policy */
->>         if (cpus == 1) {
+>>          /* If cpu is last user of policy, free policy */
+>>          if (cpus == 1) {
 >> -               __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
 >> +               if (has_target)
 >> +                       __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
 >>
->>                 lock_policy_rwsem_read(cpu);
->>                 kobj = &data->kobj;
+>>                  lock_policy_rwsem_read(cpu);
+>>                  kobj = &data->kobj;
