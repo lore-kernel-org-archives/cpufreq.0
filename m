@@ -1,36 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: cpu0: Put cpu parent node after using it
-Date: Mon, 15 Apr 2013 12:39:37 +0530
-Message-ID: <377acb684be024176e1c64f7ca5b1937c3a23878.1366009701.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH] cpufreq: exynos5440: Protect opp search calls with rcu lock
+Date: Mon, 15 Apr 2013 09:10:40 -0500
+Message-ID: <CAGo_u6qD5hO7x0fYwe+cZ5GHRA6tRG+vmhnf4GFjt9G0inQ0xA@mail.gmail.com>
+References: <1366007087-12090-1-git-send-email-amit.daniel@samsung.com>
+Mime-Version: 1.0
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=JYJkoUK6SOQE8YyGdo0JjPuoxwlfJp3Pu7lZqzaf584=;
+        b=GJxL1PrBh2MhKnbitS4XR2MlU9T+xuLsFhLTMZtxr5k1a2TLI5Te12I0C12S9jLgL0
+         lGf1CmzcPqL0H5XTJVZ1poE4S6qtt1XntMIa76m/u8Anaa+qRTf9/ACqx18+9NCm8N78
+         wNqhivBW57ROYNDCGed+St/rYdOedVDiNs+Pv1qZpSmODstSCdM2O3u1pY2YB9FM8ijK
+         sOhYMSkQjnpwqZTGgowA72eTXMfJhepu2BRkHfUP0aA4oXideLkIk9qmXJpwQG3r9aL+
+         1Fp20A05Yzb/cajUpHuFNzaXfG45yCnz/b+tSIUC+eX+orDL328boXooxwhQkXvOXi96
+         zOGQ==
+In-Reply-To: <1366007087-12090-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl, shawn.guo@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Parent node must be put after using it to balance its usage count. This was
-missing in cpufreq-cpu0 driver. Fix it.
+Daniel,
+On Mon, Apr 15, 2013 at 1:24 AM, Amit Daniel Kachhap
+<amit.daniel@samsung.com> wrote:
+> As per the OPP library documentation(Documentation/power/opp.txt) all
+> opp find/get calls should be protected by rcu locks.
+>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>
+> This patch is created against linux-next tree and is suggested by
+> Nishanth Menon. (https://lkml.org/lkml/2013/4/12/119)
+>
+>  drivers/cpufreq/exynos5440-cpufreq.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index ead7ed4..0c74018 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -120,11 +120,13 @@ static int init_div_table(void)
+>         int i = 0;
+>         struct opp *opp;
+>
+> +       rcu_read_lock();
+>         for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
+>
+>                 opp = opp_find_freq_exact(dvfs_info->dev,
+>                                         freq_tbl[i].frequency * 1000, true);
+>                 if (IS_ERR(opp)) {
+> +                       rcu_read_unlock();
+>                         dev_err(dvfs_info->dev,
+>                                 "failed to find valid OPP for %u KHZ\n",
+>                                 freq_tbl[i].frequency);
+> @@ -159,6 +161,7 @@ static int init_div_table(void)
+>                 __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
+>         }
+>
+> +       rcu_read_unlock();
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-cpu0.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 31282fc..3ab8294 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -257,6 +257,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	of_node_put(np);
-+	of_node_put(parent);
- 	return 0;
- 
- out_free_table:
--- 
-1.7.12.rc2.18.g61b472e
-
+Is it not possible to reduce the amount of code protected by RCU lock?
+something like this:
++               rcu_read_lock();
+                opp = opp_find_freq_exact(dvfs_info->dev,
+                                        freq_tbl[i].frequency * 1000, true);
+                if (IS_ERR(opp)) {
++                       rcu_read_unlock();
+                        dev_err(dvfs_info->dev,
+                                "failed to find valid OPP for %u KHZ\n",
+                                freq_tbl[i].frequency);
+                        return PTR_ERR(opp);
+                }
++               volt_id = opp_get_voltage(opp);
++               rcu_unlock();
