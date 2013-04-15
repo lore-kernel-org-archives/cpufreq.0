@@ -1,79 +1,200 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: exynos5440: Protect opp search calls with rcu lock
-Date: Mon, 15 Apr 2013 09:10:40 -0500
-Message-ID: <CAGo_u6qD5hO7x0fYwe+cZ5GHRA6tRG+vmhnf4GFjt9G0inQ0xA@mail.gmail.com>
-References: <1366007087-12090-1-git-send-email-amit.daniel@samsung.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Mon, 15 Apr 2013 09:07:10 -0700
+Message-ID: <516C25AE.4050503@intel.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com> <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com> <1923819.6Nb81T2TR8@vostro.rjw.lan> <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-next-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=JYJkoUK6SOQE8YyGdo0JjPuoxwlfJp3Pu7lZqzaf584=;
-        b=GJxL1PrBh2MhKnbitS4XR2MlU9T+xuLsFhLTMZtxr5k1a2TLI5Te12I0C12S9jLgL0
-         lGf1CmzcPqL0H5XTJVZ1poE4S6qtt1XntMIa76m/u8Anaa+qRTf9/ACqx18+9NCm8N78
-         wNqhivBW57ROYNDCGed+St/rYdOedVDiNs+Pv1qZpSmODstSCdM2O3u1pY2YB9FM8ijK
-         sOhYMSkQjnpwqZTGgowA72eTXMfJhepu2BRkHfUP0aA4oXideLkIk9qmXJpwQG3r9aL+
-         1Fp20A05Yzb/cajUpHuFNzaXfG45yCnz/b+tSIUC+eX+orDL328boXooxwhQkXvOXi96
-         zOGQ==
-In-Reply-To: <1366007087-12090-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=TdmBFV/KiVmkAtTRhWkdsq1fhf7mRinazCwgsxOd8xw=;
+        b=O7kxmc6lV+GKMXEaclhxMsCXXcFQVX/IlSmpmhadq+gZqjX1mMzmgOIyDANjtySAIl
+         ZdOFp8fdVLu737Qx5TPNuBAG3hondLIbEa8bBX2Busy1OHAIL4+d1Npj64hJCTuS96DQ
+         Y1snb0pxRsvbPYg+TrJ6P12CQUCjvmpl70onKEAJ5mO8k3N6eNECn7uCYh/IHNggBvKV
+         k5YO3M8vXoiKT+GG0izSw4rOt1Pz1IkueghfvrMEhgEfTnx5xUb+tNcUHQ5jmJGrXfY4
+         AvTtgl7IXo9/SyRURvMU9skKYf26sJZ4xkiskgypGU1PbMF5jqxPGmY+6iP7Wzw5VNiM
+         FIrg==
+In-Reply-To: <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+To: sedat.dilek@gmail.com
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 
-Daniel,
-On Mon, Apr 15, 2013 at 1:24 AM, Amit Daniel Kachhap
-<amit.daniel@samsung.com> wrote:
-> As per the OPP library documentation(Documentation/power/opp.txt) all
-> opp find/get calls should be protected by rcu locks.
->
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> ---
->
-> This patch is created against linux-next tree and is suggested by
-> Nishanth Menon. (https://lkml.org/lkml/2013/4/12/119)
->
->  drivers/cpufreq/exynos5440-cpufreq.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> index ead7ed4..0c74018 100644
-> --- a/drivers/cpufreq/exynos5440-cpufreq.c
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> @@ -120,11 +120,13 @@ static int init_div_table(void)
->         int i = 0;
->         struct opp *opp;
->
-> +       rcu_read_lock();
->         for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
->
->                 opp = opp_find_freq_exact(dvfs_info->dev,
->                                         freq_tbl[i].frequency * 1000, true);
->                 if (IS_ERR(opp)) {
-> +                       rcu_read_unlock();
->                         dev_err(dvfs_info->dev,
->                                 "failed to find valid OPP for %u KHZ\n",
->                                 freq_tbl[i].frequency);
-> @@ -159,6 +161,7 @@ static int init_div_table(void)
->                 __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
->         }
->
-> +       rcu_read_unlock();
+On 04/13/2013 02:55 AM, Sedat Dilek wrote:
+> On Sat, Apr 13, 2013 at 12:51 AM, Rafael J. Wysocki <rjw@sisk.pl> wro=
+te:
+>> On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
+>>> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek <sedat.dilek@gmail.com=
+> wrote:
+>>>> On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek <sedat.dilek@gmail.co=
+m> wrote:
+>>>>> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek <sedat.dilek@gmail.c=
+om> wrote:
+>>>>>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@lin=
+aro.org> wrote:
+>>>>>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wro=
+te:
+>>>>>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package wi=
+th 'make
+>>>>>>>> deb-pkg'" from February 2012.
+>>>>>>>> Can't say what happened to it...
+>>>>>>>
+>>>>>>> Sedat,
+>>>>>>>
+>>>>>>> Sorry for being late. I am down with Fever and throat infection=
+ since few days.
+>>>>>>> Still struggling with it..
+>>>>>>>
+>>>>>>> There are few things i tried. Firstly the tag: next-20130326 is=
+ bad as there are
+>>>>>>> some bad commits in cpufreq core in it.
+>>>>>>>
+>>>>>>> I then tried latest linux-next/master on my Thinkpad (model nam=
+e        : Intel(R)
+>>>>>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ub=
+untu
+>>>>>>> just hanged.
+>>>>>>>
+>>>>>>> Then i tried Rafael's linux-next branch
+>>>>>>>
+>>>>>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
+>>>>>>>
+>>>>>>> And couldn't find any issues with it. I am easily able to remov=
+e/add cpus at
+>>>>>>> runtime..
+>>>>>>>
+>>>>>>> Can you give this branch a try?
+>>>>>>>
+>>>>>>
+>>>>>> OK, you seem to be well again, nice to hear.
+>>>>>>
+>>>>>> I was doing the whole week spring-cleaning in the apartment of m=
+y parents.
+>>>>>> Now, I have some minutes for a compilation run.
+>>>>>>
+>>>>>> I guess "cpufreq: Call __cpufreq_governor() with correct policy-=
+>cpus
+>>>>>> mask" could be the correct fix, but will try the GIT branch you =
+have
+>>>>>> mentioned.
+>>>>>>
+>>>>>> - Sedat -
+>>>>>>
+>>>>>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.=
+git/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e619=
+9
+>>>>>>
+>>>>>
+>>>>> Both BROKEN here, specific pm-next commitid and pulling
+>>>>> pm.git#linux-next into next-20130411 (see attached files).
+>>>>>
+>>>>> Is "cpufreq: convert cpufreq_driver to using RCU" the root cause =
+of this all?
+>>>>>
+>>>>
+>>>> [ CC Nathan ]
+>>>>
+>>>> NO, wrong assumption.
+>>>>
+>>>> 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Revert
+>>>> "cpufreq: convert cpufreq_driver to using RCU"
+>>>> 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
+>>>> __cpufreq_governor() with correct policy->cpus mask"
+>>>> 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-next-0=
+79576f] Merge branch
+>>>> 'pm-cpufreq-next' into linux-next
+>>>>
+>>>> - Sedat -
+>>>>
+>>>>
+>>>>> - Sedat -
+>>>>>
+>>>>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.g=
+it/commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b
+>>>>>
+>>>>>>> --
+>>>>>>> viresh
+>>>
+>>> [ TO Dirk (Author of Intel pstate driver) ]
+>>>
+>>> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-trac=
+e!
+>>>
+>>> My kernel-config and dmesg are attached.
+>>
+>> You're seeing a trouble with a new driver, then, so that's not a reg=
+ression.
+>>
 
-Is it not possible to reduce the amount of code protected by RCU lock?
-something like this:
-+               rcu_read_lock();
-                opp = opp_find_freq_exact(dvfs_info->dev,
-                                        freq_tbl[i].frequency * 1000, true);
-                if (IS_ERR(opp)) {
-+                       rcu_read_unlock();
-                        dev_err(dvfs_info->dev,
-                                "failed to find valid OPP for %u KHZ\n",
-                                freq_tbl[i].frequency);
-                        return PTR_ERR(opp);
-                }
-+               volt_id = opp_get_voltage(opp);
-+               rcu_unlock();
+This IS a regression.
+
+If the intel_pstate driver is being used __cpufreq_governor() should NO=
+T be
+called intel_pstate does not implement the target() callback.
+
+Nathan's commit 5800043b2 changed the fence around the call to
+__cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hun=
+k.
+
+@@ -1007,9 +1068,12 @@ static int __cpufreq_remove_dev(struct device *d=
+ev,=20
+struct subsys_interface *sif
+  	unsigned int cpu =3D dev->id, ret, cpus;
+  	unsigned long flags;
+  	struct cpufreq_policy *data;
++	struct cpufreq_driver *driver;
+  	struct kobject *kobj;
+  	struct completion *cmp;
+  	struct device *cpu_dev;
++	bool has_target;
++	int (*exit)(struct cpufreq_policy *policy);
+
+  	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+
+@@ -1025,14 +1089,19 @@ static int __cpufreq_remove_dev(struct device *=
+dev,=20
+struct subsys_interface *sif
+  		return -EINVAL;
+  	}
+
+-	if (cpufreq_driver->target)
++	rcu_read_lock();
++	driver =3D rcu_dereference(cpufreq_driver);
++	has_target =3D driver->target ? true : false;
++	exit =3D driver->exit;
++	if (has_target)
+  		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+
+  #ifdef CONFIG_HOTPLUG_CPU
+-	if (!cpufreq_driver->setpolicy)
++	if (!driver->setpolicy)
+  		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
+  			data->governor->name, CPUFREQ_NAME_LEN);
+  #endif
++	rcu_read_unlock();
+
+  	WARN_ON(lock_policy_rwsem_write(cpu));
+  	cpus =3D cpumask_weight(data->cpus);
+
+
+
+>
+> What do you mean by this?
+>
+> What are the next steps to get this fixed?
+>
+> - Sedat -
+>
+>> Thanks for taking the time to debug this!
+>>
+>> Rafael
+>>
+>>
+>> --
+>> I speak only for myself.
+>> Rafael J. Wysocki, Intel Open Source Technology Center.
