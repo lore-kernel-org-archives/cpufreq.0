@@ -1,43 +1,53 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpu0: Put cpu parent node after using it
-Date: Tue, 16 Apr 2013 16:40:15 +0800
-Message-ID: <20130416084013.GB11245@S2101-09.ap.freescale.net>
-References: <377acb684be024176e1c64f7ca5b1937c3a23878.1366009701.git.viresh.kumar@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 56691] New: Using Intel Pstates driver causes panics during
+ high loads
+Date: Tue, 16 Apr 2013 17:31:07 +0000 (UTC)
+Message-ID: <bug-56691-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <377acb684be024176e1c64f7ca5b1937c3a23878.1366009701.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org
+To: cpufreq@vger.kernel.org
 
-On Mon, Apr 15, 2013 at 12:39:37PM +0530, Viresh Kumar wrote:
-> Parent node must be put after using it to balance its usage count. This was
-> missing in cpufreq-cpu0 driver. Fix it.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=56691
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+           Summary: Using Intel Pstates driver causes panics during high
+                    loads
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.9-rc
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: mike@fireburn.co.uk
+                CC: rui.zhang@intel.com
+        Regression: No
 
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 31282fc..3ab8294 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -257,6 +257,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  	}
->  
->  	of_node_put(np);
-> +	of_node_put(parent);
->  	return 0;
->  
->  out_free_table:
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
+
+I've already had a conversation via email with Zhang about this
+
+The driver has been broken throughout the 3.9 rc series
+
+As the issue only manifests during high loads after long periods of time I've
+been able to bisect the issue
+
+I've taken screenshots of the panics
+
+Disabling the pstates driver stops the panics
+
+The first snapshots date back to the 7th March but the issue was noticed before
+this
+
+I update from Linus' tree nightly
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
