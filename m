@@ -1,73 +1,32 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH V2 1/2] regulator: core: return err value for regulator_get if there is no DT binding
-Date: Tue, 16 Apr 2013 16:45:16 -0500
-Message-ID: <1366148717-12586-1-git-send-email-nm@ti.com>
-References: <20130405101754.GD6597@opensource.wolfsonmicro.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 56691] Using Intel Pstates driver causes panics during high
+ loads
+Date: Wed, 17 Apr 2013 02:04:08 +0000 (UTC)
+Message-ID: <20130417020408.9A2D811FA14@bugzilla.kernel.org>
+References: <bug-56691-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130405101754.GD6597@opensource.wolfsonmicro.com>
+In-Reply-To: <bug-56691-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: broonie@opensource.wolfsonmicro.com
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, Nishanth Menon <nm@ti.com>
+To: cpufreq@vger.kernel.org
 
-commit 6d191a5fc7a969d972f1681e1c23781aecb06a61
-(regulator: core: Don't defer probe if there's no DT binding for a supply)
+https://bugzilla.kernel.org/show_bug.cgi?id=56691
 
-Attempted to differentiate between regulator_get() with an actual
-DT binding for the supply and when there is none to avoid unnecessary
-deferal.
-However, ret value supplied by regulator_dev_lookup() is being
-ignored by regulator_get(). So, exit with the appropriate return value.
 
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
-based on v3.9-rc7
-Changes in v2 (review comments update):
-	- simplified commit log
-	- error handling inline with rest of function
-Available at: https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-regulator-fixing-v2
-V1:
-https://patchwork.kernel.org/patch/2396571/
-(original depending cpufreq patch: https://patchwork.kernel.org/patch/2396541/
-  - no change expected- so not reposting unless requested)
+Lan Tianyu <tianyu.lan@intel.com> changed:
 
- drivers/regulator/core.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |tianyu.lan@intel.com
+         AssignedTo|cpufreq@vger.kernel.org     |tianyu.lan@intel.com
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index e3661c2..cfe8b84 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -1229,7 +1229,7 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
- 	struct regulator_dev *rdev;
- 	struct regulator *regulator = ERR_PTR(-EPROBE_DEFER);
- 	const char *devname = NULL;
--	int ret;
-+	int ret = 0;
- 
- 	if (id == NULL) {
- 		pr_err("get() with no identifier\n");
-@@ -1245,6 +1245,15 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
- 	if (rdev)
- 		goto found;
- 
-+	/*
-+	 * If we have return value from dev_lookup fail, we do not expect to
-+	 * succeed, so, quit with appropriate error value
-+	 */
-+	if (ret) {
-+		regulator = ERR_PTR(ret);
-+		goto out;
-+	}
-+
- 	if (board_wants_dummy_regulator) {
- 		rdev = dummy_regulator_rdev;
- 		goto found;
+
+
+
 -- 
-1.7.9.5
-
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
