@@ -1,64 +1,56 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 0/2] cpufreq/regulator: Limit minimum voltage only
-Date: Fri, 19 Apr 2013 11:21:53 -0500
-Message-ID: <20130419162153.GA24066@kahuna>
-References: <1366372554-20866-1-git-send-email-taras@ti.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH] cpufreq: exynos: allow disabling cpufreq drivers
+Date: Fri, 19 Apr 2013 18:51:47 +0200
+Message-ID: <51717623.2060709@samsung.com>
+References: <201304191554.29679.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1366372554-20866-1-git-send-email-taras@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Taras Kondratiuk <taras@ti.com>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <201304191554.29679.arnd@arndb.de>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Arnd Bergmann <arnd@arndb.de>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Cc: cpufreq@vger.kernel.org, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, 'linux-arm-kernel' <linux-arm-kernel@lists.infradead.org>
 
-On 14:55-20130419, Taras Kondratiuk wrote:
-> Using a "voltage tolerance" for doing DVFS is not a proper way.
-> It leads to a few issues:
-> - voltage is limited to a narrow range near OPP voltage,
->   so other consumers of the same regulator can't set their own constraints
->   if they don't overlap with this narrow range. No ganged rails :(
-> - usually OPP voltage is an absolute minimum voltage
->   necessary for correct work (not taking into account AVS).
->   Applying plus/minus tolerance can lead to an unstable device.
->   For example omap-cpufreq has 4% tolerance configured,
->   so for OMAP4430 MPU OPP50 we get 0.984V instead of 1.025V. 
-there is a reason for this - board level IRDROP and the real PMIC
-accuracy compared to the SoC assumption about the PMIC accuracy.
+On 04/19/2013 03:54 PM, Arnd Bergmann wrote:
+> Commit 6e6aac7590 "ARM: EXYNOS: Migrate clock support to common
+> clock framework" broke support for the exynos cpufreq drivers.
+> While we're waiting for a fix for this, let's get back to a state
+> where the kernel builds again with the cpufreq subsystem enabled
+> but ARM_EXYNOS_CPUFREQ disabled. I assume that this was the intention
+> behind this Kconfig symbol anyway.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Cc: Tomasz Figa <t.figa@samsung.com>
+> Cc: Thomas Abraham <thomas.abraham@linaro.org>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Cc: cpufreq@vger.kernel.org
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> Rafael, I'm putting this patch into the arm-soc tree now to avoid
+> a bug based on a patch that I got from Kukjin. If you have any
+> objections, please let me know so I can revert it again.
+> 
+> Everyone else: Why does 6e6aac7590 have your "Tested-by" and
+> "Signed-off-by" tags on it when it's obviously broken? Who is
+> fixing this? Having no working exynos cpufreq support in 3.10
+> would be a serious regression.
 
-That said, I had been always been a little confused with the usage
-in AM335x. For that matter, I dont even think this is constrainted to
-TI SoC usage, other SoCs also probably have the same pain.
+Not sure what happened here, but my and Tomasz's Tested-by were given 
+for v5 of the patch series including 6e6aac7590, while it seems v6 
+has been applied. And the patch is not same in both series.
 
-How does it actually work?
+There could be some differences in the base tree I used when testing 
+this [1] series, as it was hard to determine against what tag it was 
+created exactly. Also I didn't test in on all platforms, only 
+Exynos4412.
 
-Lets say ntarget/Vnom has PMIC tolerance of 5% (SoC tolerance assumed
-for OPP voltage documented in data manual for the SoC), say the
-OPP voltage is 1.2V - that translates to an voltage of 1.14V on a perfect
-PMIC (with 0 drop or perfect accuracy) for the SoC.
-Now, the real world is never perfect. So, lets take the following cases:
-a) PMIC with 2% variance
-b) PMIC with 5% variance (usually the reference PMIC we put on SoC
-   vendor platform)
-c) PMIC with 10% variance.
+And the cpufreq really needs to get fixed, as it now modifies registers
+which belong to the clock driver...
 
-How does this translate to dts definition? As you stated, with 5%
-variance(b), the call will become min_uV=1.14V max_uV=1.26V when
-the tolerance translation is done. with (a) and (c) tolernace value
-chooses a different value.
+[1] http://www.spinics.net/lists/arm-kernel/msg214149.html
 
-In short,
-a) we need to be able to describe in some form the assumption for
-board variances in the OPP voltage in the SoC data manual.
-b) we need some way for board/PMIC definitions to be able to influence
-and adjust for assumption.
-
-This is what I believe is achieved using voltage_tolerance.
-
-regulator_set_voltage_min is not really the way to do it IMHO.
-
--- 
-Regards,
-Nishanth Menon
+Thanks,
+Sylwester
