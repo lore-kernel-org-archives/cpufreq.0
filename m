@@ -1,95 +1,62 @@
-From: Taras Kondratiuk <taras@ti.com>
-Subject: [RFC PATCH 2/2] cpufreq: cpufreq-cpu0: Limit minimum voltage only
-Date: Fri, 19 Apr 2013 14:55:54 +0300
-Message-ID: <1366372554-20866-3-git-send-email-taras@ti.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpufreq: exynos: allow disabling cpufreq drivers
+Date: Fri, 19 Apr 2013 15:54:29 +0200
+Message-ID: <201304191554.29679.arnd@arndb.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1366372554-20866-1-git-send-email-taras@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lgirdwood@gmail.com, broonie@kernel.org, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Taras Kondratiuk <taras@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: Text/Plain; charset="us-ascii"
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <t.figa@samsung.com>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-cpufreq-cpu0 uses regulator_set_voltage_tol() API
-to set CPU regulator voltage to some narrow range around OPP voltage.
-It creates an issue if CPU regulator device has other consumers,
-because their request doesn't overlap with cpufreq's one.
-Normally cpufreq should constrain only lower voltage limit,
-so other consumers have a chance to set their own constraints.
+Commit 6e6aac7590 "ARM: EXYNOS: Migrate clock support to common
+clock framework" broke support for the exynos cpufreq drivers.
+While we're waiting for a fix for this, let's get back to a state
+where the kernel builds again with the cpufreq subsystem enabled
+but ARM_EXYNOS_CPUFREQ disabled. I assume that this was the intention
+behind this Kconfig symbol anyway.
 
-Use regulator_set_voltage_min() API to limit minimum voltage.
-Remove a voltage tolerance parameter as redundant.
-
-Signed-off-by: Taras Kondratiuk <taras@ti.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Tomasz Figa <t.figa@samsung.com>
+Cc: Thomas Abraham <thomas.abraham@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: cpufreq@vger.kernel.org
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/cpufreq/cpufreq-cpu0.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+Rafael, I'm putting this patch into the arm-soc tree now to avoid
+a bug based on a patch that I got from Kukjin. If you have any
+objections, please let me know so I can revert it again.
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 37d23a0..e494a97 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -22,7 +22,6 @@
- #include <linux/slab.h>
+Everyone else: Why does 6e6aac7590 have your "Tested-by" and
+"Signed-off-by" tags on it when it's obviously broken? Who is
+fixing this? Having no working exynos cpufreq support in 3.10
+would be a serious regression.
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 030ddf6..2b8862d 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -61,18 +61,21 @@ config ARM_EXYNOS_CPUFREQ
  
- static unsigned int transition_latency;
--static unsigned int voltage_tolerance; /* in percentage */
+ config ARM_EXYNOS4210_CPUFREQ
+ 	def_bool CPU_EXYNOS4210
++	depends on ARM_EXYNOS_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS4210
+ 	  SoC (S5PV310 or S5PC210).
  
- static struct device *cpu_dev;
- static struct clk *cpu_clk;
-@@ -44,7 +43,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- {
- 	struct cpufreq_freqs freqs;
- 	struct opp *opp;
--	unsigned long freq_Hz, volt = 0, volt_old = 0, tol = 0;
-+	unsigned long freq_Hz, volt = 0, volt_old = 0;
- 	unsigned int index, cpu;
- 	int ret;
+ config ARM_EXYNOS4X12_CPUFREQ
+ 	def_bool (SOC_EXYNOS4212 || SOC_EXYNOS4412)
++	depends on ARM_EXYNOS_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS4X12
+ 	  SoC (EXYNOS4212 or EXYNOS4412).
  
-@@ -80,7 +79,6 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 		}
- 		volt = opp_get_voltage(opp);
- 		rcu_read_unlock();
--		tol = volt * voltage_tolerance / 100;
- 		volt_old = regulator_get_voltage(cpu_reg);
- 	}
- 
-@@ -90,7 +88,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 
- 	/* scaling up?  scale voltage before frequency */
- 	if (cpu_reg && freqs.new > freqs.old) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-+		ret = regulator_set_voltage_min(cpu_reg, volt);
- 		if (ret) {
- 			pr_err("failed to scale voltage up: %d\n", ret);
- 			freqs.new = freqs.old;
-@@ -102,13 +100,13 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 	if (ret) {
- 		pr_err("failed to set clock rate: %d\n", ret);
- 		if (cpu_reg)
--			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
-+			regulator_set_voltage_min(cpu_reg, volt_old);
- 		return ret;
- 	}
- 
- 	/* scaling down?  scale voltage after frequency */
- 	if (cpu_reg && freqs.new < freqs.old) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-+		ret = regulator_set_voltage_min(cpu_reg, volt);
- 		if (ret) {
- 			pr_err("failed to scale voltage down: %d\n", ret);
- 			clk_set_rate(cpu_clk, freqs.old * 1000);
-@@ -225,8 +223,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_put_node;
- 	}
- 
--	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
--
- 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
- 		transition_latency = CPUFREQ_ETERNAL;
- 
--- 
-1.7.9.5
+ config ARM_EXYNOS5250_CPUFREQ
+ 	def_bool SOC_EXYNOS5250
++	depends on ARM_EXYNOS_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver for Samsung EXYNOS5250
+ 	  SoC.
