@@ -1,46 +1,61 @@
-From: John Blackwood <john.blackwood@ccur.com>
-Subject: Re: [PATCH] cpufreq_conservative: initialize the cpu_dbs_info_s cpu
- field
-Date: Tue, 23 Apr 2013 10:27:22 -0500
-Message-ID: <5176A85A.7090609@ccur.com>
-References: <51769DB3.7030404@ccur.com> <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
+From: Taras Kondratiuk <taras@ti.com>
+Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
+Date: Tue, 23 Apr 2013 21:45:09 +0300
+Message-ID: <5176D6B5.3070305@ti.com>
+References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com> <51756A21.3020405@ti.com> <20130423084838.GB5019@opensource.wolfsonmicro.com> <5176743A.9070201@ti.com> <20130423134512.GL5019@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20130423134512.GL5019@opensource.wolfsonmicro.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>, "grygorii.strashko" <grygorii.strashko@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
 
-On 04/23/2013 10:19 AM, Viresh Kumar wrote:
-> On Tue, Apr 23, 2013 at 8:11 PM, John Blackwood <john.blackwood@ccur.com> wrote:
->> In the cpufreq conservative module, the cpu field in the cpu_dbs_info_s
->> structure was not being initialized, and thus all cpus were scheduling
->> their do_dbs_timer() delayed work processing on cpu 0.
->>
->> Signed-off-by: John Blackwood <john.blackwood@ccur.com>
->> Index: b/drivers/cpufreq/cpufreq_conservative.c
->> ===================================================================
->> --- a/drivers/cpufreq/cpufreq_conservative.c
->> +++ b/drivers/cpufreq/cpufreq_conservative.c
->> @@ -506,6 +506,7 @@ static int cpufreq_governor_dbs(struct c
->>                  }
->>                  this_dbs_info->down_skip = 0;
->>                  this_dbs_info->requested_freq = policy->cur;
->> +               this_dbs_info->cpu = cpu;
->>
->>                  mutex_init(&this_dbs_info->timer_mutex);
->>                  dbs_enable++;
+On 04/23/2013 04:45 PM, Mark Brown wrote:
+> On Tue, Apr 23, 2013 at 02:44:58PM +0300, Taras Kondratiuk wrote:
 >
-> What have you rebased this on? I don't think its the latest code and is probably
-> a bit old.
+>> GPU voltage is regulated by some devfreq driver.
+>> CPU voltage is regulated by generic cpufreq-cpu0 driver.
+>> Both drivers know only about their operational points.
+>> They don't know anything about chip limits.
+> Clearly at least the lower bound is known to the drivers...
+Do you mean a voltage of the lowest operation point?
+
 >
+>> I see two options here:
+>> 1. Pass somehow chip limits to drivers so they can limit their request.
+>>     Pros: No need for regulator_set_voltage_min()
+>>     Cons: a) Need to pass info about chip limits to driver. New API?
+> Why on earth would this need a new API?
+I think I'm missing something.
+How can I pass chip limits to a driver in some generic way?
+>
+>>           b) CPU and GPU may have different limits,
+>>              so after very first request voltage may violate
+>>              CPU or GPU range.
+> If the CPU and GPU drivers are trying to select incompatible
+> configurations then we really ought to be detecting that, ignoring it
+> seems like an obvious failure.  There's a bootstrapping problem but
+> that's also an issue with specifying only the minimum voltage...
+>
+>> 2. Define chip limits in Reg X constraints.
+>>     Pros: Limits will be applied to driver's request transparently.
+>>           No need to pass info about limits to driver.
+>>           Limits are set before the first request, so no violation.
+>>     Cons: regulator_set_voltage_min() is needed.
+>> IMHO option #2 is better.
+>> Do you see other ways?
+> Above you clearly say that this is all modelling operating points.  If
+> you're doing that then I would expect the drivers to be talking
+> operating points to an operating point abstraction.
+I went through several SoC datasheets and found that min approach
+won't work for some of them (like AM335x).
+The only safe way is to send max OPP voltage as a max_uV.
+So please skip this series.
 
-Hi Viresh,
-
-Yes, you are right.
-This has been fixed in a different way in the newer kernel source.
-My apologies.
+-- 
+BR
+Taras Kondratiuk | GlobalLogic
 
