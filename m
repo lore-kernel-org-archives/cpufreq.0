@@ -1,47 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq_conservative: initialize the cpu_dbs_info_s cpu field
-Date: Tue, 23 Apr 2013 20:49:13 +0530
-Message-ID: <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
-References: <51769DB3.7030404@ccur.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
+ drivers/cpufreq
+Date: Wed, 24 Apr 2013 00:25:59 +0900
+Message-ID: <5176A807.2090005@samsung.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
+ <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
+ <1769336.FkfMpuXqqb@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=vBB2McTFNvpafG3qj18kQxUk+U6tg4n2oztM5i7Hd3Y=;
-        b=0aDuDwSGQL+YQY4PjRjJOPE1Fj7vd5mNV34gejwjB/DNJyayrni/ew8qrxsMGtW2EZ
-         MYLSv43ts3xzlHqlfTtnPPltJcvSdPWkNlJYxRF/0STCfEG4kJT+1wBuqkfg0esboMWF
-         yJRsOi12LyieRj+w2voSzVSvXPT4ykHjr+gCrQkwrYKvmxAsP0Lgv0OKFdEeQRByuaTv
-         rAhjl+iSV1/Va+K29EIO9JAcDz+ALu3eobvzq6YTEfZStBauym8QmofoSdWhL8OMcQzV
-         16ApF51Ixuvbhq1Q+pDYbRZz8N8p6t9Ho2Qknyt55CJAeqa75uPeqjAq9E8+OGwjrY5Q
-         R0Zw==
-In-Reply-To: <51769DB3.7030404@ccur.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Blackwood <john.blackwood@ccur.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20120113;
+ h=x-received:sender:message-id:date:from:user-agent:mime-version:to
+ :cc:subject:references:in-reply-to:content-type
+ :content-transfer-encoding;
+ bh=PqRWnp4qPO3tYxxlpowML7YH+cccm4yaZZRhTGi92tw=;
+ b=odnai4fqz2oQ/y4wSLwp35EeDjCh9c3MkLZujk3ioBY2GD9hirisdtYtIxPjNI+qTK
+ XI4Z2UYZiWe+KArRyjeSvq8dPiOlpONlr4eOPLUiy1GBiAgDf7SAs9G2VFyY4AL4hHC5
+ 92wv4VseQixaZ3Kvf4cu7MBSFKoUfTPEyTMOhaSyUqrPc+P+dI3LWPwv53jrcXwS1Dr3
+ 10KsC1b8VysZn8cYE6axHXkqYoJil4L4br6t5JU6KpaIDMaF8NHncVwzYt9YTzUMReoH
+ h0msls/jFzgy/a7mEoQb9jotGl43PlhZ+RKteeCgef+7CJyqm2w8DumAGLiUCy5O6bfJ
+ vKkA==
+In-Reply-To: <1769336.FkfMpuXqqb@vostro.rjw.lan>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: robin.randhawa@arm.com, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Steve.Bannister@arm.com, Kukjin Kim <kgene.kim@samsung.com>, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com
 
-On Tue, Apr 23, 2013 at 8:11 PM, John Blackwood <john.blackwood@ccur.com> wrote:
-> In the cpufreq conservative module, the cpu field in the cpu_dbs_info_s
-> structure was not being initialized, and thus all cpus were scheduling
-> their do_dbs_timer() delayed work processing on cpu 0.
+On 04/05/13 20:36, Rafael J. Wysocki wrote:
+> On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
+>> On 5 April 2013 12:18, Kukjin Kim<kgene.kim@samsung.com>  wrote:
+>>> Basically, this moving looks good to me, but should be re-worked based on
+>>> for-next of samsung tree because this touches too many samsung stuff so this
+>>> should be sent to upstream via samsung tree.
+>>
+>> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
+>> it can't be
+>> moved to your tree if there is a issue.
 >
-> Signed-off-by: John Blackwood <john.blackwood@ccur.com>
-> Index: b/drivers/cpufreq/cpufreq_conservative.c
-> ===================================================================
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -506,6 +506,7 @@ static int cpufreq_governor_dbs(struct c
->                 }
->                 this_dbs_info->down_skip = 0;
->                 this_dbs_info->requested_freq = policy->cur;
-> +               this_dbs_info->cpu = cpu;
+> Well, I'm dropping it.  Please merge via the Samsung tree.
 >
->                 mutex_init(&this_dbs_info->timer_mutex);
->                 dbs_enable++;
 
-What have you rebased this on? I don't think its the latest code and is probably
-a bit old.
+Oops, I missed, maybe I have no more chance to send this to upstream for 
+upcoming merge window :-(
+
+Rafael, please take this patch with my ack in your tree, sorry for noise.
+
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+
+If any problems, please kindly let me know.
+
+Thanks.
+
+- Kukjin
