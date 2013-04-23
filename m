@@ -1,61 +1,48 @@
-From: Taras Kondratiuk <taras@ti.com>
-Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
-Date: Tue, 23 Apr 2013 21:45:09 +0300
-Message-ID: <5176D6B5.3070305@ti.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com> <51756A21.3020405@ti.com> <20130423084838.GB5019@opensource.wolfsonmicro.com> <5176743A.9070201@ti.com> <20130423134512.GL5019@opensource.wolfsonmicro.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+Date: Wed, 24 Apr 2013 00:59:26 +0200
+Message-ID: <2264237.NUtkmvZG3W@vostro.rjw.lan>
+References: <cover.1365079581.git.viresh.kumar@linaro.org> <1769336.FkfMpuXqqb@vostro.rjw.lan> <5176A807.2090005@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130423134512.GL5019@opensource.wolfsonmicro.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5176A807.2090005@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Mark Brown <broonie@kernel.org>
-Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>, "grygorii.strashko" <grygorii.strashko@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On 04/23/2013 04:45 PM, Mark Brown wrote:
-> On Tue, Apr 23, 2013 at 02:44:58PM +0300, Taras Kondratiuk wrote:
->
->> GPU voltage is regulated by some devfreq driver.
->> CPU voltage is regulated by generic cpufreq-cpu0 driver.
->> Both drivers know only about their operational points.
->> They don't know anything about chip limits.
-> Clearly at least the lower bound is known to the drivers...
-Do you mean a voltage of the lowest operation point?
+On Wednesday, April 24, 2013 12:25:59 AM Kukjin Kim wrote:
+> On 04/05/13 20:36, Rafael J. Wysocki wrote:
+> > On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
+> >> On 5 April 2013 12:18, Kukjin Kim<kgene.kim@samsung.com>  wrote:
+> >>> Basically, this moving looks good to me, but should be re-worked based on
+> >>> for-next of samsung tree because this touches too many samsung stuff so this
+> >>> should be sent to upstream via samsung tree.
+> >>
+> >> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
+> >> it can't be
+> >> moved to your tree if there is a issue.
+> >
+> > Well, I'm dropping it.  Please merge via the Samsung tree.
+> >
+> 
+> Oops, I missed, maybe I have no more chance to send this to upstream for 
+> upcoming merge window :-(
+> 
+> Rafael, please take this patch with my ack in your tree, sorry for noise.
+> 
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> 
+> If any problems, please kindly let me know.
 
->
->> I see two options here:
->> 1. Pass somehow chip limits to drivers so they can limit their request.
->>     Pros: No need for regulator_set_voltage_min()
->>     Cons: a) Need to pass info about chip limits to driver. New API?
-> Why on earth would this need a new API?
-I think I'm missing something.
-How can I pass chip limits to a driver in some generic way?
->
->>           b) CPU and GPU may have different limits,
->>              so after very first request voltage may violate
->>              CPU or GPU range.
-> If the CPU and GPU drivers are trying to select incompatible
-> configurations then we really ought to be detecting that, ignoring it
-> seems like an obvious failure.  There's a bootstrapping problem but
-> that's also an issue with specifying only the minimum voltage...
->
->> 2. Define chip limits in Reg X constraints.
->>     Pros: Limits will be applied to driver's request transparently.
->>           No need to pass info about limits to driver.
->>           Limits are set before the first request, so no violation.
->>     Cons: regulator_set_voltage_min() is needed.
->> IMHO option #2 is better.
->> Do you see other ways?
-> Above you clearly say that this is all modelling operating points.  If
-> you're doing that then I would expect the drivers to be talking
-> operating points to an operating point abstraction.
-I went through several SoC datasheets and found that min approach
-won't work for some of them (like AM335x).
-The only safe way is to send max OPP voltage as a max_uV.
-So please skip this series.
+Well, I suppose I can take the original patch, but then it will conflict with
+your tree during merge.  Is that not a problem?
+
+Rafael
+
 
 -- 
-BR
-Taras Kondratiuk | GlobalLogic
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
