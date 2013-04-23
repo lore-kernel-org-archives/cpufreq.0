@@ -1,62 +1,43 @@
-From: Taras Kondratiuk <taras@ti.com>
-Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
-Date: Mon, 22 Apr 2013 19:49:37 +0300
-Message-ID: <51756A21.3020405@ti.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [RFC PATCH 0/2] cpufreq: Introduce LAB cpufreq governor.
+Date: Tue, 23 Apr 2013 09:28:24 +0200
+Message-ID: <20130423092824.66a6e8d2@amdc308.digital.local>
+References: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com>
+ <CAOh2x=nPJa0GReiN=OHLG=m4Gq51F=4VppdaQL20xi-aUa8x2Q@mail.gmail.com>
+ <20130409123719.7399d5ad@amdc308.digital.local>
+ <CAKohpomL-mdx6DdFiGwJzDSeWr6Gw-_F4T-D-Jz9TNH5MSgjbw@mail.gmail.com>
+ <20130409184440.4cd87c1b@amdc308.digital.local>
+ <CAKfTPtD6MK9ogq7mOijSxLSsH0n65Xra48XfRSB3DFs35GT=2g@mail.gmail.com>
+ <20130410104452.661902af@amdc308.digital.local>
+ <CAKfTPtDOG94CU=y9oohuJA-bqGpNFehTnebcvTcnQf5iYjwJTA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130422131904.GL30351@opensource.wolfsonmicro.com>
+In-reply-to: <CAKfTPtDOG94CU=y9oohuJA-bqGpNFehTnebcvTcnQf5iYjwJTA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Mark Brown <broonie@kernel.org>
-Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On 04/22/2013 04:19 PM, Mark Brown wrote:
-> On Fri, Apr 19, 2013 at 02:55:53PM +0300, Taras Kondratiuk wrote:
->> Sometimes it is a need to constrain only a minimum voltage
->> and let system constraints to limit maximum.
->> Add a new function regulator_set_voltage_min() for this.
-> I don't believe you on this one.  It is going to be a very unusual
-> system which has a maximum supply voltage specified at over 4kV (or
-> more) which is what INT_MAX will come out as - there will be some
-> electrical specs for what voltages can be tolerated sustainably.
-Yeah. Sure 4kV is not a real request, but
-max will be limited by system constrains.
-According to regulator_set_voltage() documentation
-system constraints should be set before calling this function,
-so I assume I can rely on them. No?
+Hi Vincent,
 
-Another possible implementation is below, but prefer initial one.
+> >> Hi Lukasz,
+> >>
+> >> I've got same comment on my current patch and I'm preparing a new
+> >> version that can pack tasks more agressively based on the same
+> >> buddy mecanism. This will be done at the cost of performance of
+> >> course.  
+> >
+> > Can you share your development tree?  
+> 
+> The dev is not finished yet but i will share it as soon as possible
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index e3661c2..28c1be3 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -2355,6 +2355,19 @@ out2:
-  }
-  EXPORT_SYMBOL_GPL(regulator_set_voltage);
-
-+int regulator_set_voltage_min(struct regulator *regulator, int min_uV)
-+{
-+       struct regulator_dev *rdev = regulator->rdev;
-+       int max_uV;
-+
-+       mutex_lock(&rdev->mutex);
-+       max_uV = rdev->constraints->max_uV;
-+       mutex_unlock(&rdev->mutex);
-+       return regulator_set_voltage(regulator, min_uV, max_uV);
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_voltage_min);
-+
-+
-  /**
-   * regulator_set_voltage_time - get raise/fall time
-   * @regulator: regulator source
-
+May I ask how the work with "more aggressive tasks packing" is going?
 
 -- 
-BR
-Taras Kondratiuk | GlobalLogic
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Poland (SRPOL) | Linux Platform Group
