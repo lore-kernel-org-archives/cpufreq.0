@@ -1,48 +1,95 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Wed, 24 Apr 2013 00:59:26 +0200
-Message-ID: <2264237.NUtkmvZG3W@vostro.rjw.lan>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <1769336.FkfMpuXqqb@vostro.rjw.lan> <5176A807.2090005@samsung.com>
+From: <Yuantian.Tang@freescale.com>
+Subject: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Wed, 24 Apr 2013 16:28:12 +0800
+Message-ID: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5176A807.2090005@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, Tang Yuantian <yuantian.tang@freescale.com>, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-On Wednesday, April 24, 2013 12:25:59 AM Kukjin Kim wrote:
-> On 04/05/13 20:36, Rafael J. Wysocki wrote:
-> > On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
-> >> On 5 April 2013 12:18, Kukjin Kim<kgene.kim@samsung.com>  wrote:
-> >>> Basically, this moving looks good to me, but should be re-worked based on
-> >>> for-next of samsung tree because this touches too many samsung stuff so this
-> >>> should be sent to upstream via samsung tree.
-> >>
-> >> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
-> >> it can't be
-> >> moved to your tree if there is a issue.
-> >
-> > Well, I'm dropping it.  Please merge via the Samsung tree.
-> >
-> 
-> Oops, I missed, maybe I have no more chance to send this to upstream for 
-> upcoming merge window :-(
-> 
-> Rafael, please take this patch with my ack in your tree, sorry for noise.
-> 
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> 
-> If any problems, please kindly let me know.
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Well, I suppose I can take the original patch, but then it will conflict with
-your tree during merge.  Is that not a problem?
+The driver compiled as a module can not be unloaded if there
+are more than one cpu in policy->cpus. That's caused by
+cpufreq_cpu_get() in cpufreq_add_dev_symlink(); It keep increasing
+the module reference count.
+This patch splites the module and policy reference count. It keeps
+the module reference count unchanged and uses the policy reference
+count to track the resource.
 
-Rafael
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+---
+ drivers/cpufreq/cpufreq.c | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a6f6595..86abee5 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -154,26 +154,22 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+ 	if (!driver)
+ 		goto err_out_unlock;
+ 
+-	if (!try_module_get(driver->owner))
+-		goto err_out_unlock;
+-
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+ 
+ 	/* get the CPU */
+ 	data = per_cpu(cpufreq_cpu_data, cpu);
+ 
+ 	if (!data)
+-		goto err_out_put_module;
++		goto err_out_read_unlock;
+ 
+ 	if (!sysfs && !kobject_get(&data->kobj))
+-		goto err_out_put_module;
++		goto err_out_read_unlock;
+ 
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 	rcu_read_unlock();
+ 	return data;
+ 
+-err_out_put_module:
+-	module_put(driver->owner);
++err_out_read_unlock:
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ err_out_unlock:
+ 	rcu_read_unlock();
+@@ -199,9 +195,6 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+ {
+ 	if (!sysfs)
+ 		kobject_put(&data->kobj);
+-	rcu_read_lock();
+-	module_put(rcu_dereference(cpufreq_driver)->owner);
+-	rcu_read_unlock();
+ }
+ 
+ void cpufreq_cpu_put(struct cpufreq_policy *data)
+@@ -1076,7 +1069,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 	unsigned long flags;
+ 	struct cpufreq_policy *data;
+ 	struct cpufreq_driver *driver;
+-	struct kobject *kobj;
+ 	struct completion *cmp;
+ 	struct device *cpu_dev;
+ 	bool has_target;
+@@ -1157,10 +1149,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+ 			__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+ 
+ 		lock_policy_rwsem_read(cpu);
+-		kobj = &data->kobj;
+ 		cmp = &data->kobj_unregister;
+ 		unlock_policy_rwsem_read(cpu);
+-		kobject_put(kobj);
+ 
+ 		/* we need to make sure that the underlying kobj is actually
+ 		 * not referenced anymore by anybody before we proceed with
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.0
+
+
