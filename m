@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 53051] Conservative governor get's sometimes stuck at highest
- frequency
-Date: Thu, 25 Apr 2013 02:17:30 +0000 (UTC)
-Message-ID: <20130425021730.D011711FA35@bugzilla.kernel.org>
+ frequency - HP Pavilion dv6 CORE i5
+Date: Thu, 25 Apr 2013 02:17:55 +0000 (UTC)
+Message-ID: <20130425021755.6C76711FA35@bugzilla.kernel.org>
 References: <bug-53051-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -20,13 +20,13 @@ Zhang Rui <rui.zhang@intel.com> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-                 CC|                            |rui.zhang@intel.com
+            Summary|Conservative governor get's |Conservative governor get's
+                   |sometimes stuck at highest  |sometimes stuck at highest
+                   |frequency                   |frequency - HP Pavilion dv6
+                   |                            |CORE i5
 
 
 
-
---- Comment #5 from Zhang Rui <rui.zhang@intel.com>  2013-04-25 02:17:30 ---
-Cem, is there any update on this?
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
