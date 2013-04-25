@@ -1,47 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Thu, 25 Apr 2013 13:16:49 +0530
-Message-ID: <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Thu, 25 Apr 2013 10:38:00 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
 	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
 	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+ <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+In-Reply-To: <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tang Yuantian-B29983 <B29983@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 25 April 2013 08:16, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
-> It happened when policy->cpus contains *MORE THEN ONE CPU*.
-> Taking my board T4240 for example, it has 3 cluster, 8 CPUs for each cluster.
-> The log is:
-> # insmod ppc-corenet-cpufreq.ko
-> ppc_corenet_cpufreq: Freescale PowerPC corenet CPU frequency scaling driver
-> # rmmod ppc-corenet-cpufreq.ko
-> ERROR: Module ppc_corenet_cpufreq is in use
-> # lsmod
-> Module                  Size  Used by
-> ppc_corenet_cpufreq     6542  9
-> # uname -a
-> Linux T4240 3.9.0-rc1-11081-g34642bb-dirty #44 SMP Thu Apr 25 08:58:26 CST 2013 ppc64 unknown
->
-> I am not using the newest kernel (since new t4240 board has not included yet),
-> but the issue is still there.
-> The reason is just like what I said in patch.
+VGhhdCdzIHdpcmVkLiBJIHdpbGwgaGF2ZSBtb3JlIHRlc3RzIG9uIHRoaXMuIFRoYW5rcy4NCg0K
+SSBmb3VuZCBhbm90aGVyIGJ1ZyB5b3UgY2FuIHRyeS4NCkl0IGlzIGFsc28gZm91bmQgb24gbXVs
+dGlwbGUgY3B1cyBwZXIgY2x1c3Rlci4NClRlc3Qgc3RlcDoNCjEuIGNvbXBpbGUgdGhlIGRyaXZl
+ciBhcyBtb2R1bGUuDQoyLiBob3QtdW5wbHVnIG9uZSBjcHUoIGFueSBvbmUgaXMgT0spDQozLiBp
+bnNtb2QgbW9kdWxlDQo0LiBob3QtcGx1ZyB0aGUgY3B1IC0tLS0+IHdpbGwgY2F1c2UgZXJyb3Iu
+DQoNCk9yIHRlc3Qgc3RlcCBhbHNvIGNhbiBiZToNCjEuIGhvdC11bnBsdWcgYWxsIHRoZSBjcHVz
+IGluIG9uZSBjbHVzdGVyDQoyLiBob3QtcGx1ZyB0aGUgY3B1cyBpbiB0aGlzIGNsdXN0ZXIuIFdo
+ZW4gdGhlIHNlY29uZCBjcHUgZ2V0cyBob3QtcGx1Z2VkLCBlcnJvciB3aWxsIG9jY3VyLg0KDQpU
+aGF0J3MgYmVjYXVzZSB0aGUgc2Vjb25kIGNwdSB3aWxsIGNhbGwgdGhlIGNwdWZyZXFfYWRkX2Rl
+dl9zeW1saW5rKCkgdG8gDQpDcmVhdGUgdGhlIGZpcnN0IGNwdSdzICJjcHVmcmVxIGxpbmsiIHdo
+aWNoIGlzIGFscmVhZHkgY3JlYXRlZC4NClRoYXQgbmVlZHMgbW9yZSB3b3JrIHRvIG1ha2UgYSBw
+YXRjaCwgaG9wZSB5b3UgY2FuIGZpeCBpdC4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KDQo+IC0t
+LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdlci5rZXJu
+ZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9uIEJlaGFs
+ZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqNNTCMjXI1SAxNTo0Nw0KPiBUbzogVGFu
+ZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0BzaXNrLnBsOyBjcHVmcmVxQHZnZXIua2VybmVs
+Lm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaXN0cw0KPiBsaW5hcm8ta2VybmVsDQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IEZpeCB0aGUgZHJpdmVyIGNhbiBub3QgYmUg
+dW5sb2FkZWQgaXNzdWUNCj4gDQo+IE9uIDI1IEFwcmlsIDIwMTMgMDg6MTYsIFRhbmcgWXVhbnRp
+YW4tQjI5OTgzIDxCMjk5ODNAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+ID4gSXQgaGFwcGVuZWQg
+d2hlbiBwb2xpY3ktPmNwdXMgY29udGFpbnMgKk1PUkUgVEhFTiBPTkUgQ1BVKi4NCj4gPiBUYWtp
+bmcgbXkgYm9hcmQgVDQyNDAgZm9yIGV4YW1wbGUsIGl0IGhhcyAzIGNsdXN0ZXIsIDggQ1BVcyBm
+b3IgZWFjaA0KPiBjbHVzdGVyLg0KPiA+IFRoZSBsb2cgaXM6DQo+ID4gIyBpbnNtb2QgcHBjLWNv
+cmVuZXQtY3B1ZnJlcS5rbw0KPiA+IHBwY19jb3JlbmV0X2NwdWZyZXE6IEZyZWVzY2FsZSBQb3dl
+clBDIGNvcmVuZXQgQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nDQo+ID4gZHJpdmVyICMgcm1tb2QgcHBj
+LWNvcmVuZXQtY3B1ZnJlcS5rbw0KPiA+IEVSUk9SOiBNb2R1bGUgcHBjX2NvcmVuZXRfY3B1ZnJl
+cSBpcyBpbiB1c2UgIyBsc21vZA0KPiA+IE1vZHVsZSAgICAgICAgICAgICAgICAgIFNpemUgIFVz
+ZWQgYnkNCj4gPiBwcGNfY29yZW5ldF9jcHVmcmVxICAgICA2NTQyICA5DQo+ID4gIyB1bmFtZSAt
+YQ0KPiA+IExpbnV4IFQ0MjQwIDMuOS4wLXJjMS0xMTA4MS1nMzQ2NDJiYi1kaXJ0eSAjNDQgU01Q
+IFRodSBBcHIgMjUgMDg6NTg6MjYNCj4gPiBDU1QgMjAxMyBwcGM2NCB1bmtub3duDQo+ID4NCj4g
+PiBJIGFtIG5vdCB1c2luZyB0aGUgbmV3ZXN0IGtlcm5lbCAoc2luY2UgbmV3IHQ0MjQwIGJvYXJk
+IGhhcyBub3QNCj4gPiBpbmNsdWRlZCB5ZXQpLCBidXQgdGhlIGlzc3VlIGlzIHN0aWxsIHRoZXJl
+Lg0KPiA+IFRoZSByZWFzb24gaXMganVzdCBsaWtlIHdoYXQgSSBzYWlkIGluIHBhdGNoLg0KPiAN
+Cj4gSSBiZWxpZXZlZCB3aGF0IHlvdSBzYWlkIGlzIGNvcnJlY3QgYW5kIHdlbnQgb24gdGVzdGlu
+ZyB0aGlzIG9uIG15DQo+IHBsYXRmb3JtLg0KPiAyIGNsdXN0ZXJzIHdpdGggMiBhbmQgMyBjcHVz
+Li4uIEFuZCBzbyBpIGhhdmUgbXVsdGlwbGUgY3B1cyBwZXIgY2x1c3Rlcg0KPiBvciBwb2xpY3kg
+c3RydWN0dXJlLg0KPiANCj4gaW5zbW9kL3JtbW9kIHdvcmtlZCBhcyBleHBlY3RlZCB3aXRob3V0
+IGFueSBpc3N1ZXMuDQo+IA0KPiBTbywgZm9yIG1lIHRoZXJlIGFyZSBubyBzdWNoIGlzc3Vlcy4g
+QlRXLCBpIHRlc3RlZCB0aGlzIG9uIGxhdGVzdCByYyBmcm9tDQo+IExpbnVzIGFuZCBhbHNvIG9u
+IGxhdGVzdCBjb2RlIGZyb20gbGludXgtbmV4dC4NCj4gDQo+IEkgYW0gc3VyZSB0aGUgY291bnRz
+IGFyZSB2ZXJ5IHdlbGwgYmFsYW5jZWQgYW5kIHRoZXJlIGFyZSBubyBpc3N1ZXMgaW4NCj4gdGhl
+IGxhdGVzdCBjb2RlIEF0bGVhc3QuDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
+aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBv
+ZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBp
+bmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
 
-I believed what you said is correct and went on testing this on my platform.
-2 clusters with 2 and 3 cpus... And so i have multiple cpus per
-cluster or policy
-structure.
-
-insmod/rmmod worked as expected without any issues.
-
-So, for me there are no such issues. BTW, i tested this on latest rc from Linus
-and also on latest code from linux-next.
-
-I am sure the counts are very well balanced and there are no issues in the
-latest code Atleast.
