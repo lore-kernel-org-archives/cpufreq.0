@@ -1,46 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Thu, 25 Apr 2013 16:56:53 +0530
-Message-ID: <CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
-References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
-	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+Date: Fri, 26 Apr 2013 01:48:19 +0900
+Message-ID: <51795E53.5030908@samsung.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org> <1769336.FkfMpuXqqb@vostro.rjw.lan> <5176A807.2090005@samsung.com> <2264237.NUtkmvZG3W@vostro.rjw.lan>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:sender:message-id:date:from:user-agent:mime-version:to
+         :cc:subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=+3cDhP4YWm2cM94TP9LsinkULBwfxENRxDFnPAYFSYw=;
+        b=AzbOfo4sQZOR4xbZYTkOuMQZ7pElbMxKEZxuePldQ2aQxdx1T1rzXWGapgX1XCkiCm
+         ymJxW1/D/lhqB13nniDN+faWhQoCJ4q5ybVn88f9bDoJ79tBqdl8hyGluVKhPlzvNpJf
+         4oe47+TdldwOdvNaQ/C8r0lXc02eySIyAGoxVu9teW0I3FJZQbcNxzFVpXP06Lu1AbFL
+         2+E81mb3Nw27Eh3abmMLvDNa0x2FgoXXSaHfphTDKp4ovyOeCQeTwRhA2bIfdAZtixMk
+         HRxmOUGiBkcjpW6rBfwrCChbG8m+jyq0UPK1iJcK3UMaQOB9ag+HpMwO1te2stV+NCXs
+         vAUw==
+In-Reply-To: <2264237.NUtkmvZG3W@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On 25 April 2013 16:08, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
-> That's wired. I will have more tests on this. Thanks.
->
-> I found another bug you can try.
-> It is also found on multiple cpus per cluster.
-> Test step:
-> 1. compile the driver as module.
-> 2. hot-unplug one cpu( any one is OK)
-> 3. insmod module
-> 4. hot-plug the cpu ----> will cause error.
->
-> Or test step also can be:
-> 1. hot-unplug all the cpus in one cluster
-> 2. hot-plug the cpus in this cluster. When the second cpu gets hot-pluged, error will occur.
->
-> That's because the second cpu will call the cpufreq_add_dev_symlink() to
-> Create the first cpu's "cpufreq link" which is already created.
-> That needs more work to make a patch, hope you can fix it.
+On 04/24/13 07:59, Rafael J. Wysocki wrote:
 
-Haven't tested it now but i know why that can happen. It will happen only if
-driver->init() isn't setting policy->cpus correctly. You need to set
-both online &
-offline cpus, but in your setup it looks you are setting only online cpus and
-so cpufreq core isn't able to use the earlier policy struct for offline cpus.
+[...]
 
-And so it created a new struct cpufreq_policy for second cpu and trying to
-add links for all other cpus too... (which share this policy)..
+>> Rafael, please take this patch with my ack in your tree, sorry for noise.
+>>
+>> Acked-by: Kukjin Kim<kgene.kim@samsung.com>
+>>
+>> If any problems, please kindly let me know.
+>
+> Well, I suppose I can take the original patch, but then it will conflict with
+> your tree during merge.  Is that not a problem?
+>
+I think, some conflicts can be occurred but if so, we can fix it before 
+merge window.
+
+- Kukjin
