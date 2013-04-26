@@ -1,43 +1,39 @@
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Fri, 26 Apr 2013 06:44:01 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B16585B@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
-	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B1656F0@039-SN2MPN1-011.039d.mgd.msft.net>
- <CAKohpon2PHFj4WuGd1wwBLnSC8Fc_VOvWmVoc04278gPKZWsrg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: MAINTAINERS: Add co-maintainer
+Date: Fri, 26 Apr 2013 18:06:00 +0530
+Message-ID: <19a42d164b0e68a3ac16cd8865f0587ce383f5bf.1366979508.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon2PHFj4WuGd1wwBLnSC8Fc_VOvWmVoc04278gPKZWsrg@mail.gmail.com>
-Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogY3B1ZnJlcS1vd25lckB2
-Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpjcHVmcmVxLW93bmVyQHZnZXIua2VybmVsLm9yZ10NCj4g
-T24gQmVoYWxmIE9mIFZpcmVzaCBLdW1hcg0KPiBTZW50OiAyMDEzxOo01MIyNsjVIDEyOjQxDQo+
-IFRvOiBUYW5nIFl1YW50aWFuLUIyOTk4Mw0KPiBDYzogcmp3QHNpc2sucGw7IGNwdWZyZXFAdmdl
-ci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExpc3RzDQo+IGxpbmFyby1r
-ZXJuZWwNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1ZnJlcTogRml4IHRoZSBkcml2ZXIgY2Fu
-IG5vdCBiZSB1bmxvYWRlZCBpc3N1ZQ0KPiANCj4gT24gMjYgQXByaWwgMjAxMyAwNzowOSwgVGFu
-ZyBZdWFudGlhbi1CMjk5ODMgPEIyOTk4M0BmcmVlc2NhbGUuY29tPiB3cm90ZToNCj4gPiBFeGFj
-dGx5Lg0KPiA+IEN1cnJlbnRseSwgd2UgZG9uJ3QgY29uc2lkZXIgdGhlIG9mZmxpbmUgY3B1cyB3
-aGVuIHNldHRpbmcgcG9saWN5LT5jcHVzLg0KPiA+IFByb2JhYmx5IG90aGVyIHBsYXRmb3JtcyBk
-byB0aGUgc2FtZSB0aGluZy4NCj4gDQo+IEJ1dCB0aGlzIGlzIGEgcmVxdWlyZW1lbnQgb2YgY3B1
-ZnJlcSBmcmFtZXdvcmsgYW5kIGRyaXZlcnMgbXVzdCBhZGFwdCB0bw0KPiBpdC4NCj4gTGV0IG1l
-IGtub3cgd2hpY2ggZHJpdmVycyBkb24ndCBtZWV0IHRoaXMgcmVxdWlyZW1lbnQgYW5kIGkgd2ls
-bCBnZXQgdGhlbQ0KPiBmaXhlZC4NCk9LLCBJIHdpbGwgdGFrZSBjYXJlIG9mIHRoaXMgaW4gbXkg
-ZHJpdmVyLg0KSSBoYXZlIG5vIGlkZWEgYWJvdXQgb3RoZXIgZHJpdmVycy4NCg0KUmVnYXJkcywN
-Cll1YW50aWFuDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRo
-ZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBvZiBhIG1lc3NhZ2Ug
-dG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0
-dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
+With prior discussions (Over private emails) with current Maintainer of cpufreq
+framework (Rafael), I am adding myself as a co-maintainer of cpufreq framework.
+
+This would mostly be for cpufreq core and ARM drivers but not restricted to
+them.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 68d376e..bcef513 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2211,6 +2211,7 @@ F:	drivers/net/ethernet/ti/cpmac.c
+ 
+ CPU FREQUENCY DRIVERS
+ M:	Rafael J. Wysocki <rjw@sisk.pl>
++M:	Viresh Kumar <viresh.kumar@linaro.org>
+ L:	cpufreq@vger.kernel.org
+ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+-- 
+1.7.12.rc2.18.g61b472e
 
