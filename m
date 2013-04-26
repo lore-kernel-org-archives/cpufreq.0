@@ -1,50 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
- drivers/cpufreq
-Date: Thu, 25 Apr 2013 20:12:29 +0200
-Message-ID: <1615834.7iOsapYTqY@vostro.rjw.lan>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <2264237.NUtkmvZG3W@vostro.rjw.lan> <51795E53.5030908@samsung.com>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Fri, 26 Apr 2013 01:39:05 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B1656F0@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
+	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
+	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+ <CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <51795E53.5030908@samsung.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: robin.randhawa@arm.com, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On Friday, April 26, 2013 01:48:19 AM Kukjin Kim wrote:
-> On 04/24/13 07:59, Rafael J. Wysocki wrote:
-> 
-> [...]
-> 
-> >> Rafael, please take this patch with my ack in your tree, sorry for noise.
-> >>
-> >> Acked-by: Kukjin Kim<kgene.kim@samsung.com>
-> >>
-> >> If any problems, please kindly let me know.
-> >
-> > Well, I suppose I can take the original patch, but then it will conflict with
-> > your tree during merge.  Is that not a problem?
-> >
-> I think, some conflicts can be occurred but if so, we can fix it before 
-> merge window.
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdl
+ci5rZXJuZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9u
+IEJlaGFsZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqNNTCMjXI1SAxOToyNw0KPiBU
+bzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0BzaXNrLnBsOyBjcHVmcmVxQHZnZXIu
+a2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaXN0cw0KPiBsaW5hcm8ta2Vy
+bmVsDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IEZpeCB0aGUgZHJpdmVyIGNhbiBu
+b3QgYmUgdW5sb2FkZWQgaXNzdWUNCj4gDQo+IE9uIDI1IEFwcmlsIDIwMTMgMTY6MDgsIFRhbmcg
+WXVhbnRpYW4tQjI5OTgzIDxCMjk5ODNAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+ID4gVGhhdCdz
+IHdpcmVkLiBJIHdpbGwgaGF2ZSBtb3JlIHRlc3RzIG9uIHRoaXMuIFRoYW5rcy4NCj4gPg0KPiA+
+IEkgZm91bmQgYW5vdGhlciBidWcgeW91IGNhbiB0cnkuDQo+ID4gSXQgaXMgYWxzbyBmb3VuZCBv
+biBtdWx0aXBsZSBjcHVzIHBlciBjbHVzdGVyLg0KPiA+IFRlc3Qgc3RlcDoNCj4gPiAxLiBjb21w
+aWxlIHRoZSBkcml2ZXIgYXMgbW9kdWxlLg0KPiA+IDIuIGhvdC11bnBsdWcgb25lIGNwdSggYW55
+IG9uZSBpcyBPSykNCj4gPiAzLiBpbnNtb2QgbW9kdWxlDQo+ID4gNC4gaG90LXBsdWcgdGhlIGNw
+dSAtLS0tPiB3aWxsIGNhdXNlIGVycm9yLg0KPiA+DQo+ID4gT3IgdGVzdCBzdGVwIGFsc28gY2Fu
+IGJlOg0KPiA+IDEuIGhvdC11bnBsdWcgYWxsIHRoZSBjcHVzIGluIG9uZSBjbHVzdGVyIDIuIGhv
+dC1wbHVnIHRoZSBjcHVzIGluIHRoaXMNCj4gPiBjbHVzdGVyLiBXaGVuIHRoZSBzZWNvbmQgY3B1
+IGdldHMgaG90LXBsdWdlZCwgZXJyb3Igd2lsbCBvY2N1ci4NCj4gPg0KPiA+IFRoYXQncyBiZWNh
+dXNlIHRoZSBzZWNvbmQgY3B1IHdpbGwgY2FsbCB0aGUgY3B1ZnJlcV9hZGRfZGV2X3N5bWxpbmso
+KQ0KPiA+IHRvIENyZWF0ZSB0aGUgZmlyc3QgY3B1J3MgImNwdWZyZXEgbGluayIgd2hpY2ggaXMg
+YWxyZWFkeSBjcmVhdGVkLg0KPiA+IFRoYXQgbmVlZHMgbW9yZSB3b3JrIHRvIG1ha2UgYSBwYXRj
+aCwgaG9wZSB5b3UgY2FuIGZpeCBpdC4NCj4gDQo+IEhhdmVuJ3QgdGVzdGVkIGl0IG5vdyBidXQg
+aSBrbm93IHdoeSB0aGF0IGNhbiBoYXBwZW4uIEl0IHdpbGwgaGFwcGVuIG9ubHkNCj4gaWYNCj4g
+ZHJpdmVyLT5pbml0KCkgaXNuJ3Qgc2V0dGluZyBwb2xpY3ktPmNwdXMgY29ycmVjdGx5LiBZb3Ug
+bmVlZCB0byBzZXQNCj4gYm90aCBvbmxpbmUgJg0KPiBvZmZsaW5lIGNwdXMsIGJ1dCBpbiB5b3Vy
+IHNldHVwIGl0IGxvb2tzIHlvdSBhcmUgc2V0dGluZyBvbmx5IG9ubGluZSBjcHVzDQo+IGFuZCBz
+byBjcHVmcmVxIGNvcmUgaXNuJ3QgYWJsZSB0byB1c2UgdGhlIGVhcmxpZXIgcG9saWN5IHN0cnVj
+dCBmb3INCj4gb2ZmbGluZSBjcHVzLg0KPiANCj4gQW5kIHNvIGl0IGNyZWF0ZWQgYSBuZXcgc3Ry
+dWN0IGNwdWZyZXFfcG9saWN5IGZvciBzZWNvbmQgY3B1IGFuZCB0cnlpbmcNCj4gdG8gYWRkIGxp
+bmtzIGZvciBhbGwgb3RoZXIgY3B1cyB0b28uLi4gKHdoaWNoIHNoYXJlIHRoaXMgcG9saWN5KS4u
+DQpFeGFjdGx5Lg0KQ3VycmVudGx5LCB3ZSBkb24ndCBjb25zaWRlciB0aGUgb2ZmbGluZSBjcHVz
+IHdoZW4gc2V0dGluZyBwb2xpY3ktPmNwdXMuDQpQcm9iYWJseSBvdGhlciBwbGF0Zm9ybXMgZG8g
+dGhlIHNhbWUgdGhpbmcuDQoNClRoYW5rcywNCll1YW50aWFuDQo+IC0tDQo+IFRvIHVuc3Vic2Ny
+aWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBp
+biB0aGUNCj4gYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBN
+b3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21v
+LWluZm8uaHRtbA0KDQo=
 
-Well, how exactly would you like to address them?
-
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
