@@ -1,71 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2] cpufreq: MAINTAINERS: Add co-maintainer
-Date: Fri, 26 Apr 2013 22:50:41 +0200
-Message-ID: <5352368.J64jSG7Arj@vostro.rjw.lan>
-References: <d62f23f626eaf334236cb9694c83ee4619460b76.1366980696.git.viresh.kumar@linaro.org> <87k3npz0yb.fsf@linaro.org>
+From: "Artem S. Tashkinov" <t.artem@lycos.com>
+Subject: CONFIG_X86_INTEL_PSTATE disables CPU frequency transition stats,
+ many governors and other standard features
+Date: Sat, 27 Apr 2013 04:58:53 +0000 (UTC)
+Message-ID: <475427035.74642.1367038733183.JavaMail.mail@webmail08>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87k3npz0yb.fsf@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Kevin Hilman <khilman@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, arnd.bergmann@linaro.org, olof@lixom.net
+To: linux-kernel@vger.kernel.org
+Cc: dirk.j.brandewie@intel.com, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, April 26, 2013 09:55:08 AM Kevin Hilman wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
-> 
-> > With prior discussions (Over private emails) with current Maintainer of cpufreq
-> > framework (Rafael), I am adding myself as a co-maintainer of cpufreq framework.
-> >
-> > This would mostly be for cpufreq core and ARM drivers but not restricted to
-> > them.
-> >
-> > This also adds path of the git tree where cpufreq patches are pulled in.
-> >
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> As long as you continue to make an effort to ensure that the
-> platform-specific drivers have proper acks from platform-specific folks.
-> For ARM, this means not the arm-soc maintainers but the ARM subarch
-> maintianers.
-> 
-> Acked-by: Kevin Hilman <khilman@linaro.org>
+Hello,
 
-OK, applied.
+Just wanted to let everyone know that CONFIG_X86_INTEL_PSTATE wreaks
+havoc with the CPU frequency subsystem in the Linux kernel.
 
-Thanks,
-Rafael
+With this option enabled:
 
+1) All governors except performance and powersave are gone, ondemand
+userspace, conservative
 
-> > ---
-> > V1->V2:
-> > - Added path of git tree too.
-> > - Cc'd ARM SoC Maintainers.
-> >
-> >  MAINTAINERS | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 68d376e..cbed63c 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -2211,9 +2211,11 @@ F:	drivers/net/ethernet/ti/cpmac.c
-> >  
-> >  CPU FREQUENCY DRIVERS
-> >  M:	Rafael J. Wysocki <rjw@sisk.pl>
-> > +M:	Viresh Kumar <viresh.kumar@linaro.org>
-> >  L:	cpufreq@vger.kernel.org
-> >  L:	linux-pm@vger.kernel.org
-> >  S:	Maintained
-> > +T:	git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-> >  F:	drivers/cpufreq/
-> >  F:	include/linux/cpufreq.h
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+2) scaling_cur_freq is gone, thus user space utilities monitoring the CPU
+frequency have stopped working
+
+3) CPU frequency transition stats are gone, there's no "stats" directory
+anywhere
+
+4) scaling_available_frequencies is gone, so I cannot set the desired constant
+CPU frequency (the userspace governor is not available anyway)
+
+Is this an intended behavior? I shrivel to think that's the case.
+
+The bug report is filed here: https://bugzilla.kernel.org/show_bug.cgi?id=57141
+
+Best regards,
+
+Artem
