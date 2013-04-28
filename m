@@ -1,54 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: CONFIG_X86_INTEL_PSTATE disables CPU frequency transition stats, many governors and other standard features
-Date: Sat, 27 Apr 2013 16:35:59 +0200
-Message-ID: <1843018.F0kGJi5K1v@vostro.rjw.lan>
-References: <475427035.74642.1367038733183.JavaMail.mail@webmail08>
+Subject: Re: [PATCH linux-next v8] cpufreq: convert the cpufreq_driver to use the rcu
+Date: Mon, 29 Apr 2013 00:22:32 +0200
+Message-ID: <3218775.0Qs2EbHdzR@vostro.rjw.lan>
+References: <515C5AB6.5090109@sgi.com> <1365087205-8708-1-git-send-email-nzimmer@sgi.com> <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <475427035.74642.1367038733183.JavaMail.mail@webmail08>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Artem S. Tashkinov" <t.artem@lycos.com>
-Cc: linux-kernel@vger.kernel.org, dirk.j.brandewie@intel.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.brandewie@gmail.com
+To: Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, April 27, 2013 04:58:53 AM Artem S. Tashkinov wrote:
-> Hello,
+On Thursday, April 04, 2013 09:57:19 PM Viresh Kumar wrote:
+> On 4 April 2013 20:23, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> > We eventually would like to remove the rwlock cpufreq_driver_lock or convert
+> > it back to a spinlock and protect the read sections with RCU.  The first step in
+> > that is moving the cpufreq_driver to use the rcu.
+> > I don't see an easy wasy to protect the cpufreq_cpu_data structure with the
+> > RCU, so I am leaving it with the rwlock for now since under certain configs
+> > __cpufreq_cpu_get is hot spot with 256+ cores.
+> >
+> > v5: Go a different way and split up the lock and use the rcu
+> > v6: use bools instead of checking function pointers
+> >     covert the cpufreq_data_lock to a rwlock
+> > v7: Rebase to use the already accepted half
+> > v8: Correct have_governor_per_policy
+> >     Reviewed location of rcu_read_(un)lock in several spots
 > 
-> Just wanted to let everyone know that CONFIG_X86_INTEL_PSTATE wreaks
-> havoc with the CPU frequency subsystem in the Linux kernel.
+> Sorry for long delay or too many versions of this patch :)
 > 
-> With this option enabled:
-> 
-> 1) All governors except performance and powersave are gone, ondemand
-> userspace, conservative
-> 
-> 2) scaling_cur_freq is gone, thus user space utilities monitoring the CPU
-> frequency have stopped working
-> 
-> 3) CPU frequency transition stats are gone, there's no "stats" directory
-> anywhere
-> 
-> 4) scaling_available_frequencies is gone, so I cannot set the desired constant
-> CPU frequency (the userspace governor is not available anyway)
-> 
-> Is this an intended behavior? I shrivel to think that's the case.
-> 
-> The bug report is filed here: https://bugzilla.kernel.org/show_bug.cgi?id=57141
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-intel_pstate is not a usual cpufreq driver and from the cpufreq's perspective
-it contains its own governor.  That's the reason why the other scaling governors
-aren't available with it.
-
-The sysfs attributes mentioned above are missing simply because they don't make
-sense with intel_pstate.
-
-I'm only wondering which user space doesn't work correctly with intel_pstate as
-you said in the bug entry above.
-
-If you don't want to use intel_pstate (in which case the ACPI driver will be
-used instead), please append intel_pstate=disable to the kernel command line.
+Unfortunately, I had to revert this one, because it is obviously buggy.  Why?
+Because it adds rcu_read_lock()/rcu_read_unlock() around sysfs_create_file()
+which may sleep due to a GFP_KERNEL memory allocation.  Sorry for failing to
+notice that earlier.
 
 Thanks,
 Rafael
