@@ -1,47 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH linux-next v8] cpufreq: convert the cpufreq_driver to use the rcu
-Date: Mon, 29 Apr 2013 00:22:32 +0200
-Message-ID: <3218775.0Qs2EbHdzR@vostro.rjw.lan>
-References: <515C5AB6.5090109@sgi.com> <1365087205-8708-1-git-send-email-nzimmer@sgi.com> <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/5] CPUFreq: ARM big LITTLE Fixes
+Date: Mon, 29 Apr 2013 18:54:43 +0530
+Message-ID: <cover.1367241503.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thursday, April 04, 2013 09:57:19 PM Viresh Kumar wrote:
-> On 4 April 2013 20:23, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> > We eventually would like to remove the rwlock cpufreq_driver_lock or convert
-> > it back to a spinlock and protect the read sections with RCU.  The first step in
-> > that is moving the cpufreq_driver to use the rcu.
-> > I don't see an easy wasy to protect the cpufreq_cpu_data structure with the
-> > RCU, so I am leaving it with the rwlock for now since under certain configs
-> > __cpufreq_cpu_get is hot spot with 256+ cores.
-> >
-> > v5: Go a different way and split up the lock and use the rcu
-> > v6: use bools instead of checking function pointers
-> >     covert the cpufreq_data_lock to a rwlock
-> > v7: Rebase to use the already accepted half
-> > v8: Correct have_governor_per_policy
-> >     Reviewed location of rcu_read_(un)lock in several spots
-> 
-> Sorry for long delay or too many versions of this patch :)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi Rafael,
 
-Unfortunately, I had to revert this one, because it is obviously buggy.  Why?
-Because it adds rcu_read_lock()/rcu_read_unlock() around sysfs_create_file()
-which may sleep due to a GFP_KERNEL memory allocation.  Sorry for failing to
-notice that earlier.
+I know I am late for this merge window and you have already closed the gates :)
+If you can still take them, its good, otherwise we will push this for v3.10-rc2.
 
-Thanks,
-Rafael
+These are minor fixes for ARM big LITTLE cpufreq driver. It doesn't impact any
+other driver or cpufreq core and are fairly independent.
 
+Viresh Kumar (5):
+  cpufreq: ARM big LITTLE: Select PM_OPP
+  cpufreq: ARM big LITTLE DT: Return correct transition latency
+  cpufreq: ARM big LITTLE DT: Return CPUFREQ_ETERNAL if clock-latency
+    isn't found
+  cpufreq: ARM big LITTLE: Move cpu_to_cluster() to arm_big_little.h
+  cpufreq: ARM big LITTLE: Improve print message
+
+ drivers/cpufreq/Kconfig.arm         | 1 +
+ drivers/cpufreq/arm_big_little.c    | 7 +------
+ drivers/cpufreq/arm_big_little.h    | 5 +++++
+ drivers/cpufreq/arm_big_little_dt.c | 9 +++++----
+ 4 files changed, 12 insertions(+), 10 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
