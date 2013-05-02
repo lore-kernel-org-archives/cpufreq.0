@@ -1,82 +1,107 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: cpu0: Free parent node for error cases
-Date: Thu, 02 May 2013 13:58:09 +0200
-Message-ID: <2882677.ddYllFuZlK@vostro.rjw.lan>
-References: <ad5f8a25684dbdd6fcb385fb420da0b4709e7392.1367384647.git.viresh.kumar@linaro.org> <20130502024849.GF3442@S2101-09.ap.freescale.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130502024849.GF3442@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH, RFC 00/22] ARM randconfig bugs
+Date: Thu,  2 May 2013 17:16:04 +0200
+Message-ID: <1367507786-505303-1-git-send-email-arnd@arndb.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, nm@ti.com
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Alan Stern <stern@rowland.harvard.edu>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dave Airlie <airlied@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans Verkuil <hverkuil@xs4all.nl>, Herbert Xu <herbert@gondor.hengli.com.au>, "John W. Linville" <linville@tuxdriver.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Oliver Hartkopp <socketcan@hartkopp.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Robert Richter <rric@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, Shawn Guo <shawn.guo@linaro.org>, Thierry Reding <thierry.reding@avionic-design.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, cpufreq@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-can@vger.ke
 
-On Thursday, May 02, 2013 10:48:50 AM Shawn Guo wrote:
-> On Wed, May 01, 2013 at 10:34:43AM +0530, Viresh Kumar wrote:
-> > We are freeing parent node in success cases but not in failure cases. Lets do
-> > it.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq-cpu0.c | 13 ++++++++-----
-> >  1 file changed, 8 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> > index 3ab8294..c025714 100644
-> > --- a/drivers/cpufreq/cpufreq-cpu0.c
-> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> > @@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-> >  
-> >  	if (!np) {
-> >  		pr_err("failed to find cpu0 node\n");
-> > -		return -ENOENT;
-> > +		ret = -ENOENT;
-> > +		goto out_put_parent;
-> >  	}
-> >  
-> >  	cpu_dev = &pdev->dev;
-> > @@ -199,7 +200,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-> >  	if (IS_ERR(cpu_clk)) {
-> >  		ret = PTR_ERR(cpu_clk);
-> >  		pr_err("failed to get cpu0 clock: %d\n", ret);
-> > -		goto out_put_node;
-> > +		goto out_put_np;
-> >  	}
-> >  
-> >  	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
-> > @@ -211,13 +212,13 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-> >  	ret = of_init_opp_table(cpu_dev);
-> >  	if (ret) {
-> >  		pr_err("failed to init OPP table: %d\n", ret);
-> > -		goto out_put_node;
-> > +		goto out_put_np;
-> >  	}
-> >  
-> >  	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
-> >  	if (ret) {
-> >  		pr_err("failed to init cpufreq table: %d\n", ret);
-> > -		goto out_put_node;
-> > +		goto out_put_np;
-> >  	}
-> >  
-> >  	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
-> > @@ -262,8 +263,10 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-> >  
-> >  out_free_table:
-> >  	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> > -out_put_node:
-> > +out_put_np:
-> 
-> Unnecessary renaming brings unnecessary diffstat?
+Hi subsystem maintainers,
 
-Yeah, I'd prefer only changes that are essential here.
+This is a set of patches to to fix build errors I hit while trying to
+build lots of randconfig kernels on linux-next.
 
-Thanks,
-Rafael
+Most of them are simple missing dependencies in Kconfig, but some are
+more substantial. I would like to see at least the obvious patches
+get merged for 3.10. If you are happy with the patches, feel free
+to apply them directly, otherwise please provide feedback.
 
+No single patch out of these is very important though, most of them
+only concern corner cases and don't matter in practice.
+
+	Arnd
+
+Arnd Bergmann (22):
+  can: move CONFIG_HAVE_CAN_FLEXCAN out of CAN_DEV
+  cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
+  cpuidle: calxeda: select ARM_CPU_SUSPEND
+  staging/drm: imx: add missing dependencies
+  drm: always provide debugfs function prototypes
+  gpu/drm: host1x: add dependency on Tegra
+  drm/tilcd: select BACKLIGHT_LCD_SUPPORT
+  OMAPDSS: DPI needs DSI
+  crypto: lz4: don't build on ARM
+  mfd: ab8500: debugfs code depends on gpadc
+  iwlegacy: il_pm_ops is only provided for PM_SLEEP
+  thermal: cpu_cooling: fix stub function
+  staging/logger: use kuid_t internally
+  oprofile: always enable IRQ_WORK
+  USB: EHCI: remove bogus #error
+  USB: UHCI: clarify Kconfig dependencies
+  USB: OHCI: clarify Kconfig dependencies
+  Xen: SWIOTLB is only used on x86
+  staging/solo6x10: depend on CONFIG_FONTS
+  media: coda: select GENERIC_ALLOCATOR
+  davinci: vpfe_capture needs i2c
+  radio-si4713: depend on SND_SOC
+
+ arch/Kconfig                           |  1 +
+ crypto/Kconfig                         |  2 ++
+ drivers/cpufreq/Kconfig.arm            |  1 +
+ drivers/cpuidle/Kconfig                |  1 +
+ drivers/gpu/drm/tilcdc/Kconfig         |  1 +
+ drivers/gpu/host1x/drm/Kconfig         |  1 +
+ drivers/media/platform/Kconfig         |  1 +
+ drivers/media/platform/davinci/Kconfig |  3 ++
+ drivers/media/radio/Kconfig            |  1 +
+ drivers/mfd/Kconfig                    |  2 +-
+ drivers/net/can/Kconfig                |  6 ++--
+ drivers/net/wireless/iwlegacy/common.h |  2 +-
+ drivers/staging/android/logger.c       |  4 +--
+ drivers/staging/android/logger.h       |  2 +-
+ drivers/staging/imx-drm/Kconfig        |  4 +++
+ drivers/staging/media/solo6x10/Kconfig |  1 +
+ drivers/usb/host/Kconfig               | 65 +++++++++++++++++++++++++++++-----
+ drivers/usb/host/Makefile              |  4 +--
+ drivers/usb/host/ehci-hcd.c            | 17 ---------
+ drivers/usb/host/ohci-hcd.c            | 19 ----------
+ drivers/usb/host/uhci-hcd.c            |  4 +--
+ drivers/video/console/Makefile         |  2 ++
+ drivers/video/omap2/dss/Kconfig        |  1 +
+ drivers/xen/Kconfig                    |  2 +-
+ include/drm/drmP.h                     |  3 +-
+ include/linux/cpu_cooling.h            |  2 +-
+ 26 files changed, 91 insertions(+), 61 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.1.2
+
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Herbert Xu <herbert@gondor.hengli.com.au>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Oliver Hartkopp <socketcan@hartkopp.net>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Robert Richter <rric@kernel.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: cpufreq@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-can@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: oprofile-list@lists.sf.net
