@@ -1,96 +1,115 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH, RFC 00/22] ARM randconfig bugs
-Date: Thu, 02 May 2013 20:53:44 +0200
-Message-ID: <2710056.LHQ0Ee0x8t@vostro.rjw.lan>
-References: <1367507786-505303-1-git-send-email-arnd@arndb.de>
+Subject: Re: [PATCH V3] cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
+Date: Thu, 02 May 2013 23:17:46 +0200
+Message-ID: <5719082.lcBc7IQZVf@vostro.rjw.lan>
+References: <1367415492-20956-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1367415492-20956-1-git-send-email-nm@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org>
-In-Reply-To: <1367507786-505303-1-git-send-email-arnd@arndb.de>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Sender: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-Errors-To: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, dri-devel@lists.freedesktop.org, oprofile-list@lists.sf.net, Samuel Ortiz <sameo@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, cpufreq@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Dave Airlie <airlied@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-media@vger.kernel.org, Robert Richter <rric@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "John W. Linville" <linville@tuxdriver.com>, linux-can@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.hengli.com.au>, Oliver Hartkopp <socketcan@hartkopp.net>
+To: Nishanth Menon <nm@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, May 02, 2013 05:16:04 PM Arnd Bergmann wrote:
-> Hi subsystem maintainers,
+On Wednesday, May 01, 2013 08:38:12 AM Nishanth Menon wrote:
+> With commit 1e4b545, regulator_get will now return -EPROBE_DEFER
+> when the cpu0-supply node is present, but the regulator is not yet
+> registered.
 > 
-> This is a set of patches to to fix build errors I hit while trying to
-> build lots of randconfig kernels on linux-next.
+> It is possible for this to occur when the regulator registration
+> by itself might be defered due to some dependent interface not yet
+> instantiated. For example: an regulator which uses I2C and GPIO might
+> need both systems available before proceeding, in this case, the
+> regulator might defer it's registration.
 > 
-> Most of them are simple missing dependencies in Kconfig, but some are
-> more substantial. I would like to see at least the obvious patches
-> get merged for 3.10. If you are happy with the patches, feel free
-> to apply them directly, otherwise please provide feedback.
+> However, the cpufreq-cpu0 driver assumes that any un-successful return
+> result is equivalent of failure.
 > 
-> No single patch out of these is very important though, most of them
-> only concern corner cases and don't matter in practice.
+> When the regulator_get returns failure other than -EPROBE_DEFER, it
+> makes sense to assume that supply node is not present and proceed with
+> the assumption that only clock control is necessary in the platform.
+> 
+> With this change, we can now handle the following conditions:
+> a) cpu0-supply binding is not present, regulator_get will return
+> appropriate error result, resulting in cpufreq-cpu0 driver controlling
+> just the clock.
+> b) cpu0-supply binding is present, regulator_get returns
+> -EPROBE_DEFER, we retry resulting in cpufreq-cpu0 driver registering
+> later once the regulator is available.
+> c) cpu0-supply binding is present, regulator_get returns
+> -EPROBE_DEFER, however, regulator never registers, we retry until
+> cpufreq-cpu0 driver fails to register pointing at device tree
+> information bug. However, in this case, the fact that cpufreq-cpu0
+> operates with clock only when the DT binding clearly indicates need of
+> a supply is a bug of it's own.
+> d) cpu0-supply gets an regulator at probe - cpufreq-cpu0 driver
+> controls both the clock and regulator
+> 
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
 
-For cpufreq and cpuidle:
+I've queued this up for the v3.10-rc2 push.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Thanks,
+Rafael
 
-> Arnd Bergmann (22):
->   can: move CONFIG_HAVE_CAN_FLEXCAN out of CAN_DEV
->   cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
->   cpuidle: calxeda: select ARM_CPU_SUSPEND
->   staging/drm: imx: add missing dependencies
->   drm: always provide debugfs function prototypes
->   gpu/drm: host1x: add dependency on Tegra
->   drm/tilcd: select BACKLIGHT_LCD_SUPPORT
->   OMAPDSS: DPI needs DSI
->   crypto: lz4: don't build on ARM
->   mfd: ab8500: debugfs code depends on gpadc
->   iwlegacy: il_pm_ops is only provided for PM_SLEEP
->   thermal: cpu_cooling: fix stub function
->   staging/logger: use kuid_t internally
->   oprofile: always enable IRQ_WORK
->   USB: EHCI: remove bogus #error
->   USB: UHCI: clarify Kconfig dependencies
->   USB: OHCI: clarify Kconfig dependencies
->   Xen: SWIOTLB is only used on x86
->   staging/solo6x10: depend on CONFIG_FONTS
->   media: coda: select GENERIC_ALLOCATOR
->   davinci: vpfe_capture needs i2c
->   radio-si4713: depend on SND_SOC
+
+> ---
+> V3: Changes since V1 (for 3.10-rc2?)
+> 	review comment updates (and dropped Viresh's original ack ;) ).
+>    	Now that regulator patch https://patchwork.kernel.org/patch/2451211/
+> 	has been merged to master
+> 	based on git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.10-rc1
 > 
->  arch/Kconfig                           |  1 +
->  crypto/Kconfig                         |  2 ++
->  drivers/cpufreq/Kconfig.arm            |  1 +
->  drivers/cpuidle/Kconfig                |  1 +
->  drivers/gpu/drm/tilcdc/Kconfig         |  1 +
->  drivers/gpu/host1x/drm/Kconfig         |  1 +
->  drivers/media/platform/Kconfig         |  1 +
->  drivers/media/platform/davinci/Kconfig |  3 ++
->  drivers/media/radio/Kconfig            |  1 +
->  drivers/mfd/Kconfig                    |  2 +-
->  drivers/net/can/Kconfig                |  6 ++--
->  drivers/net/wireless/iwlegacy/common.h |  2 +-
->  drivers/staging/android/logger.c       |  4 +--
->  drivers/staging/android/logger.h       |  2 +-
->  drivers/staging/imx-drm/Kconfig        |  4 +++
->  drivers/staging/media/solo6x10/Kconfig |  1 +
->  drivers/usb/host/Kconfig               | 65 +++++++++++++++++++++++++++++-----
->  drivers/usb/host/Makefile              |  4 +--
->  drivers/usb/host/ehci-hcd.c            | 17 ---------
->  drivers/usb/host/ohci-hcd.c            | 19 ----------
->  drivers/usb/host/uhci-hcd.c            |  4 +--
->  drivers/video/console/Makefile         |  2 ++
->  drivers/video/omap2/dss/Kconfig        |  1 +
->  drivers/xen/Kconfig                    |  2 +-
->  include/drm/drmP.h                     |  3 +-
->  include/linux/cpu_cooling.h            |  2 +-
->  26 files changed, 91 insertions(+), 61 deletions(-)
+> V2: https://patchwork.kernel.org/patch/2505311/
+> V1: https://patchwork.kernel.org/patch/2396541/
 > 
+>  drivers/cpufreq/cpufreq-cpu0.c |   22 ++++++++++++++++------
+>  1 file changed, 16 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index 3ab8294..ecd8af9 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -195,6 +195,22 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  	cpu_dev = &pdev->dev;
+>  	cpu_dev->of_node = np;
+>  
+> +	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
+> +	if (IS_ERR(cpu_reg)) {
+> +		/*
+> +		 * If cpu0 regulator supply node is present, but regulator is
+> +		 * not yet registered, we should try defering probe.
+> +		 */
+> +		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
+> +			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
+> +			ret = -EPROBE_DEFER;
+> +			goto out_put_node;
+> +		}
+> +		pr_warn("failed to get cpu0 regulator: %ld\n",
+> +			PTR_ERR(cpu_reg));
+> +		cpu_reg = NULL;
+> +	}
+> +
+>  	cpu_clk = devm_clk_get(cpu_dev, NULL);
+>  	if (IS_ERR(cpu_clk)) {
+>  		ret = PTR_ERR(cpu_clk);
+> @@ -202,12 +218,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  		goto out_put_node;
+>  	}
+>  
+> -	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
+> -	if (IS_ERR(cpu_reg)) {
+> -		pr_warn("failed to get cpu0 regulator\n");
+> -		cpu_reg = NULL;
+> -	}
+> -
+>  	ret = of_init_opp_table(cpu_dev);
+>  	if (ret) {
+>  		pr_err("failed to init OPP table: %d\n", ret);
 > 
 -- 
 I speak only for myself.
