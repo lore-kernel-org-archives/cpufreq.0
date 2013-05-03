@@ -1,47 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/5] CPUFreq: ARM big LITTLE Fixes
-Date: Thu, 02 May 2013 23:19:53 +0200
-Message-ID: <5220775.R7TYxWOgo3@vostro.rjw.lan>
-References: <cover.1367241503.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <cover.1367241503.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: cpu0: Free parent node for error cases
+Date: Fri,  3 May 2013 10:14:25 +0530
+Message-ID: <03c6b0e0f41238c1b4346b4186040ff69e369b4a.1367556239.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, shawn.guo@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Monday, April 29, 2013 06:54:43 PM Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> I know I am late for this merge window and you have already closed the gates :)
-> If you can still take them, its good, otherwise we will push this for v3.10-rc2.
-> 
-> These are minor fixes for ARM big LITTLE cpufreq driver. It doesn't impact any
-> other driver or cpufreq core and are fairly independent.
-> 
-> Viresh Kumar (5):
->   cpufreq: ARM big LITTLE: Select PM_OPP
->   cpufreq: ARM big LITTLE DT: Return correct transition latency
->   cpufreq: ARM big LITTLE DT: Return CPUFREQ_ETERNAL if clock-latency
->     isn't found
->   cpufreq: ARM big LITTLE: Move cpu_to_cluster() to arm_big_little.h
->   cpufreq: ARM big LITTLE: Improve print message
-> 
->  drivers/cpufreq/Kconfig.arm         | 1 +
->  drivers/cpufreq/arm_big_little.c    | 7 +------
->  drivers/cpufreq/arm_big_little.h    | 5 +++++
->  drivers/cpufreq/arm_big_little_dt.c | 9 +++++----
->  4 files changed, 12 insertions(+), 10 deletions(-)
+We are freeing parent node in success cases but not in failure cases. Lets do
+it.
 
-All 5 queued up for the v3.10-rc2 push.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-cpu0.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Thanks,
-Rafael
-
-
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 3ab8294..8565d41 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 
+ 	if (!np) {
+ 		pr_err("failed to find cpu0 node\n");
+-		return -ENOENT;
++		ret = -ENOENT;
++		goto out_put_parent;
+ 	}
+ 
+ 	cpu_dev = &pdev->dev;
+@@ -264,6 +265,8 @@ out_free_table:
+ 	opp_free_cpufreq_table(cpu_dev, &freq_table);
+ out_put_node:
+ 	of_node_put(np);
++out_put_parent:
++	of_node_put(parent);
+ 	return ret;
+ }
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.rc2.18.g61b472e
+
