@@ -1,65 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2] cpufreq: cpu0: Free parent node for error cases
-Date: Fri, 03 May 2013 14:47:58 +0200
-Message-ID: <455891364.DU1qQaFqNq@vostro.rjw.lan>
-References: <03c6b0e0f41238c1b4346b4186040ff69e369b4a.1367556239.git.viresh.kumar@linaro.org> <20130503060327.GA19902@S2101-09.ap.freescale.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH, RFC 02/22] cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
+Date: Fri, 3 May 2013 18:31:52 +0530
+Message-ID: <CAKohpon9qmowJ4PmL-nvnoaCzJSC-ZSPv8EUOyoFcTdRqNRwnw@mail.gmail.com>
+References: <1367507786-505303-1-git-send-email-arnd@arndb.de>
+	<1367507786-505303-3-git-send-email-arnd@arndb.de>
+	<CAKohpomBKuaxk+sSF63cu6JKut1uV7J7Sj2o85c3wQ=fodx+Ow@mail.gmail.com>
+	<5563691.6kxbXZTjH5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130503060327.GA19902@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <5563691.6kxbXZTjH5@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, May 03, 2013 02:03:29 PM Shawn Guo wrote:
-> On Fri, May 03, 2013 at 10:14:25AM +0530, Viresh Kumar wrote:
-> > We are freeing parent node in success cases but not in failure cases. Lets do
-> > it.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+On 3 May 2013 17:45, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> In this particular case I think it is OK to make both ARM_DT_BL_CPUFREQ and
+> ARM_BIG_LITTLE_CPUFREQ depend on ARM_CPU_TOPOLOGY, because (in theory?) the
+> latter may be set without the former (unless you want to make ARM_DT_BL_CPUFREQ
+> depend on ARM_BIG_LITTLE_CPUFREQ, but then it may be kind of confusing to
+> users).
 
-OK, queued up for the v3.10-rc2 push.
+ARM_BIG_LITTLE_CPUFREQ is the core cpufreq code for big LITTLE SoC's and every
+other driver will be a glue providing ops to it. So, ARM_DT_BL_CPUFREQ
+does depend
+on ARM_BIG_LITTLE_CPUFREQ and that's why i added depends on
+ARM_CPU_TOPOLOGY in ARM_BIG_LITTLE_CPUFREQ only and depends on
+ARM_BIG_LITTLE_CPUFREQ in ARM_DT_BL_CPUFREQ.
 
-Thanks,
-Rafael
-
-
-> > ---
-> >  drivers/cpufreq/cpufreq-cpu0.c | 5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> > index 3ab8294..8565d41 100644
-> > --- a/drivers/cpufreq/cpufreq-cpu0.c
-> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> > @@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
-> >  
-> >  	if (!np) {
-> >  		pr_err("failed to find cpu0 node\n");
-> > -		return -ENOENT;
-> > +		ret = -ENOENT;
-> > +		goto out_put_parent;
-> >  	}
-> >  
-> >  	cpu_dev = &pdev->dev;
-> > @@ -264,6 +265,8 @@ out_free_table:
-> >  	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> >  out_put_node:
-> >  	of_node_put(np);
-> > +out_put_parent:
-> > +	of_node_put(parent);
-> >  	return ret;
-> >  }
-> >  
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+But the problem is if ARM_DT_BL_CPUFREQ isn't selected then we still get
+ARM_DT_BL_CPUFREQ enabled in menuconfig but a warning just before compilation.
+Which Arnd pointed to..
