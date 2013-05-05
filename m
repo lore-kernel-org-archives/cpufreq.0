@@ -1,128 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH, RFC 02/22] cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
-Date: Sat, 4 May 2013 12:09:40 +0530
-Message-ID: <CAKohponuYRm+D-FU5_7Ny1PPmwUhFLm9DkAR9iHURur+GFq_kA@mail.gmail.com>
-References: <1367507786-505303-1-git-send-email-arnd@arndb.de>
-	<1367507786-505303-3-git-send-email-arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=089e012297626b60a904dbdebbbe
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1367507786-505303-3-git-send-email-arnd@arndb.de>
-Sender: cpufreq-owner@vger.kernel.org
+From: Alexander Shiyan <shc_work@mail.ru>
+Subject: [PATCH] Cpufreq: Fix incorrect dependecies for ARM SA11xx drivers
+Date: Sun,  5 May 2013 16:18:08 +0400
+Message-ID: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru; s=mail2;
+	h=Message-Id:Date:Subject:Cc:To:From; bh=RJ03ulJt30vnqWODcbPXfnRfTLlOV5VgLt7n8HCdrI8=;
+	b=NcEXI5Gcx+elKpynwP5DDz3BRTByih9nUcL+NQwK0prNtrI3vFzA3zhtwPti1OYzAGGecQSjjDxFeY4n8b3PGXCLQ0TIpnjmlDUrXoqpzAxEvlLwhpNvzm3CrftUKzRa94qxp+OD1c3mC4p+JPpcQX+np5pNuBrBEXoWMBT8Z/8=;
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Alexander Shiyan <shc_work@mail.ru>
 
---089e012297626b60a904dbdebbbe
-Content-Type: text/plain; charset=ISO-8859-1
 
-On 2 May 2013 20:46, Arnd Bergmann <arnd@arndb.de> wrote:
-> The big.LITTLE cpufreq driver uses the CPU topology API, which
-> needs to be reflected in Kconfig to prevent broken configurations.
->
-> warning: (ARM_DT_BL_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which
-> has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && ARM && ARM_CPU_TOPOLOGY)
->
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/cpufreq/Kconfig.arm | 1 +
->  1 file changed, 1 insertion(+)
-
-With all the discussions we had, please see if you can replace your
-patch with this one (Attached too for applying, copy/paste in gmail
-will break it):
-
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Sat, 4 May 2013 12:03:54 +0530
-Subject: [PATCH] cpufreq: ARM big LITTLE: Fix Kconfig entries
-
-This fixes usage of "depends on" and "select" options in Kconfig for ARM big
-LITTLE cpufreq driver. Otherwise we get these warnings:
-
-warning: (ARM_DT_BL_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which
-has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && ARM &&
-ARM_CPU_TOPOLOGY)
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 ---
- drivers/cpufreq/Kconfig.arm | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/cpufreq/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 634e992..a924408 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -3,17 +3,17 @@
- #
-
- config ARM_BIG_LITTLE_CPUFREQ
--	tristate
--	depends on ARM_CPU_TOPOLOGY
--	select PM_OPP
-+	tristate "Generic ARM big LITTLE CPUfreq driver"
-+	depends on ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
-+	help
-+	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
-
- config ARM_DT_BL_CPUFREQ
--	tristate "Generic ARM big LITTLE CPUfreq driver probed via DT"
--	select ARM_BIG_LITTLE_CPUFREQ
--	depends on OF && HAVE_CLK
-+	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && OF
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index a1488f5..534fcb8 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -47,7 +47,7 @@ config CPU_FREQ_STAT_DETAILS
+ 
+ choice
+ 	prompt "Default CPUFreq governor"
+-	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
++	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+ 	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
  	help
--	  This enables the Generic CPUfreq driver for ARM big.LITTLE platform.
--	  This gets frequency tables from DT.
-+	  This enables probing via DT for Generic CPUfreq driver for ARM
-+	  big.LITTLE platform. This gets frequency tables from DT.
+ 	  This option sets which CPUFreq governor shall be loaded at
+-- 
+1.8.1.5
 
- config ARM_EXYNOS_CPUFREQ
- 	bool "SAMSUNG EXYNOS SoCs"
-
---089e012297626b60a904dbdebbbe
-Content-Type: application/octet-stream; 
-	name="0001-cpufreq-ARM-big-LITTLE-Fix-Kconfig-entries.patch"
-Content-Disposition: attachment; 
-	filename="0001-cpufreq-ARM-big-LITTLE-Fix-Kconfig-entries.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hgaf8es90
-
-RnJvbSBiMzFkNDBhZWYxOGRhOTFjNWY5MzNkYjZkNjhmOGIzMmIyMDAzM2EyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8YjMxZDQwYWVmMThkYTkxYzVmOTMzZGI2ZDY4Zjhi
-MzJiMjAwMzNhMi4xMzY3NjQ5NDczLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCA0IE1heSAy
-MDEzIDEyOjAzOjU0ICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogQVJNIGJpZyBMSVRU
-TEU6IEZpeCBLY29uZmlnIGVudHJpZXMKClRoaXMgZml4ZXMgdXNhZ2Ugb2YgImRlcGVuZHMgb24i
-IGFuZCAic2VsZWN0IiBvcHRpb25zIGluIEtjb25maWcgZm9yIEFSTSBiaWcKTElUVExFIGNwdWZy
-ZXEgZHJpdmVyLiBPdGhlcndpc2Ugd2UgZ2V0IHRoZXNlIHdhcm5pbmdzOgoKd2FybmluZzogKEFS
-TV9EVF9CTF9DUFVGUkVRKSBzZWxlY3RzIEFSTV9CSUdfTElUVExFX0NQVUZSRVEgd2hpY2gKaGFz
-IHVubWV0IGRpcmVjdCBkZXBlbmRlbmNpZXMgKEFSQ0hfSEFTX0NQVUZSRVEgJiYgQ1BVX0ZSRVEg
-JiYgQVJNICYmIEFSTV9DUFVfVE9QT0xPR1kpCgpTaWduZWQtb2ZmLWJ5OiBBcm5kIEJlcmdtYW5u
-IDxhcm5kQGFybmRiLmRlPgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1h
-ckBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLmFybSB8IDE2ICsrKysr
-KysrLS0tLS0tLS0KIDEgZmlsZSBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyksIDggZGVsZXRpb25z
-KC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL0tjb25maWcuYXJtIGIvZHJpdmVycy9j
-cHVmcmVxL0tjb25maWcuYXJtCmluZGV4IDYzNGU5OTIuLmE5MjQ0MDggMTAwNjQ0Ci0tLSBhL2Ry
-aXZlcnMvY3B1ZnJlcS9LY29uZmlnLmFybQorKysgYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5h
-cm0KQEAgLTMsMTcgKzMsMTcgQEAKICMKIAogY29uZmlnIEFSTV9CSUdfTElUVExFX0NQVUZSRVEK
-LQl0cmlzdGF0ZQotCWRlcGVuZHMgb24gQVJNX0NQVV9UT1BPTE9HWQotCXNlbGVjdCBQTV9PUFAK
-Kwl0cmlzdGF0ZSAiR2VuZXJpYyBBUk0gYmlnIExJVFRMRSBDUFVmcmVxIGRyaXZlciIKKwlkZXBl
-bmRzIG9uIEFSTV9DUFVfVE9QT0xPR1kgJiYgUE1fT1BQICYmIEhBVkVfQ0xLCisJaGVscAorCSAg
-VGhpcyBlbmFibGVzIHRoZSBHZW5lcmljIENQVWZyZXEgZHJpdmVyIGZvciBBUk0gYmlnLkxJVFRM
-RSBwbGF0Zm9ybXMuCiAKIGNvbmZpZyBBUk1fRFRfQkxfQ1BVRlJFUQotCXRyaXN0YXRlICJHZW5l
-cmljIEFSTSBiaWcgTElUVExFIENQVWZyZXEgZHJpdmVyIHByb2JlZCB2aWEgRFQiCi0Jc2VsZWN0
-IEFSTV9CSUdfTElUVExFX0NQVUZSRVEKLQlkZXBlbmRzIG9uIE9GICYmIEhBVkVfQ0xLCisJdHJp
-c3RhdGUgIkdlbmVyaWMgcHJvYmluZyB2aWEgRFQgZm9yIEFSTSBiaWcgTElUVExFIENQVWZyZXEg
-ZHJpdmVyIgorCWRlcGVuZHMgb24gQVJNX0JJR19MSVRUTEVfQ1BVRlJFUSAmJiBPRgogCWhlbHAK
-LQkgIFRoaXMgZW5hYmxlcyB0aGUgR2VuZXJpYyBDUFVmcmVxIGRyaXZlciBmb3IgQVJNIGJpZy5M
-SVRUTEUgcGxhdGZvcm0uCi0JICBUaGlzIGdldHMgZnJlcXVlbmN5IHRhYmxlcyBmcm9tIERULgor
-CSAgVGhpcyBlbmFibGVzIHByb2JpbmcgdmlhIERUIGZvciBHZW5lcmljIENQVWZyZXEgZHJpdmVy
-IGZvciBBUk0KKwkgIGJpZy5MSVRUTEUgcGxhdGZvcm0uIFRoaXMgZ2V0cyBmcmVxdWVuY3kgdGFi
-bGVzIGZyb20gRFQuCiAKIGNvbmZpZyBBUk1fRVhZTk9TX0NQVUZSRVEKIAlib29sICJTQU1TVU5H
-IEVYWU5PUyBTb0NzIgotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
---089e012297626b60a904dbdebbbe--
