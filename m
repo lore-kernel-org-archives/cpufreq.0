@@ -1,20 +1,20 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 4/6] cpufreq/intel_pstate: Remove idle mode PID
-Date: Tue,  7 May 2013 08:20:28 -0700
-Message-ID: <1367940030-19311-5-git-send-email-dirk.j.brandewie@gmail.com>
+Subject: [PATCH 2/6] cpufreq/intel_pstate: use lowest requested max performance
+Date: Tue,  7 May 2013 08:20:26 -0700
+Message-ID: <1367940030-19311-3-git-send-email-dirk.j.brandewie@gmail.com>
 References: <1367940030-19311-1-git-send-email-dirk.j.brandewie@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=NaPXmuyxlclaEGLHxaDjNnuEdcL9YfhwyLFcDflpgKU=;
-        b=cnkOiX11UkvLaVhyCvL9rvQu3uJVXaMcxbkj4v8bH2Jjo17w3QQsDMD7pE9TlJQJP3
-         aOEmTarRumfYlv5UrK0Gj+SZg4lmV+RXZfELhqkk7MOhVr8AJWhyoU+/tzROKWYLFmvs
-         G9ZrkREsCLr6quYHF8WAmIbyXLRbFDFsKRbSd0gY1Nk7xD4uCtOM3mgScHuRvFWBzcWJ
-         Tu3QSJ+lbXLVEk2lNxU/h3aibc5esDOiraEZiZmEcCyh2gXASRZISF5M1rHRCkpifz4x
-         cCJ+WAqbVLNNUdJspvJe6C0U9DgnG8sgeLvyB0sKzm+wWdlNjhuwtFYqKtPt6aeT54Fy
-         UjMw==
+        bh=IFe3u9UgZye5TB5lSEoBSt0hkR7zIudCM+OX+F6UW7k=;
+        b=BaJQQM0YqTQFDpTAe7DAyF1uNuVwd28D8onsC/wc70w9VdFk2j+SIy1HjyxUl9/lOc
+         yekz8t3IOBhUmbOK7fLSgsSlHBJYg9Vel54xORgwmieXf5AKs9QrMBIMUPY8x8+2TsIN
+         sodJv1yiKCAJQAbk/SUeb3F/WrRTzfJba7qIi28W9/vhQzODqDrw5VvjSbkVlAr4e/f8
+         kfO+lHxRXKuXi5yZxNKks1jhxZ9+gUVH29AIyyD4vRU2FOu/MIXh6W+iWH5sOsrxQ8PQ
+         5sAPKjf6VcoyRILfhKtmasqr0z7YErZanFc971bHi9KaRRrnO0sOeQsDLqEd3PRBf4PA
+         s4qA==
 In-Reply-To: <1367940030-19311-1-git-send-email-dirk.j.brandewie@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -22,106 +22,69 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Remove dead code from the driver.
+There are two ways that the maximum p-state can be clamped, via a
+policy change and via the sysfs file.
 
+The acpi-thermal driver adjusts the p-state policy in response to
+thermal events.  These changes override the users settings ATM.
+
+Use the lowest of the two requested values this ensures that we will
+not exceed the requested pstate from either mechanism.
+
+Reported-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: stable@vger.kernel.org
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   49 ----------------------------------------
- 1 files changed, 0 insertions(+), 49 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 97fbac2..fc9b187 100644
+index 5370b8d..c0c98c2 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -81,10 +81,8 @@ struct cpudata {
- 	struct pstate_adjust_policy *pstate_policy;
- 	struct pstate_data pstate;
- 	struct _pid pid;
--	struct _pid idle_pid;
+@@ -117,6 +117,8 @@ struct perf_limits {
+ 	int min_perf_pct;
+ 	int32_t max_perf;
+ 	int32_t min_perf;
++	int max_policy_pct;
++	int max_sysfs_pct;
+ };
  
- 	int min_pstate_count;
--	int idle_mode;
+ static struct perf_limits limits = {
+@@ -125,6 +127,8 @@ static struct perf_limits limits = {
+ 	.max_perf = int_tofp(1),
+ 	.min_perf_pct = 0,
+ 	.min_perf = 0,
++	.max_policy_pct = 100,
++	.max_sysfs_pct = 100,
+ };
  
- 	u64	prev_aperf;
- 	u64	prev_mperf;
-@@ -199,19 +197,6 @@ static inline void intel_pstate_busy_pid_reset(struct cpudata *cpu)
- 		0);
+ static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+@@ -295,7 +299,8 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+-	limits.max_perf_pct = clamp_t(int, input, 0 , 100);
++	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
++	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+ 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+ 	return count;
  }
+@@ -642,8 +647,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
+ 	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
  
--static inline void intel_pstate_idle_pid_reset(struct cpudata *cpu)
--{
--	pid_p_gain_set(&cpu->idle_pid, cpu->pstate_policy->p_gain_pct);
--	pid_d_gain_set(&cpu->idle_pid, cpu->pstate_policy->d_gain_pct);
--	pid_i_gain_set(&cpu->idle_pid, cpu->pstate_policy->i_gain_pct);
--
--	pid_reset(&cpu->idle_pid,
--		75,
--		50,
--		cpu->pstate_policy->deadband,
--		0);
--}
--
- static inline void intel_pstate_reset_all_pid(void)
- {
- 	unsigned int cpu;
-@@ -481,16 +466,6 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- 	mod_timer_pinned(&cpu->timer, jiffies + delay);
- }
+-	limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
+-	limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
++	limits.max_policy_pct = policy->max * 100 / policy->cpuinfo.max_freq;
++	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
++	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+ 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
  
--static inline void intel_pstate_idle_mode(struct cpudata *cpu)
--{
--	cpu->idle_mode = 1;
--}
--
--static inline void intel_pstate_normal_mode(struct cpudata *cpu)
--{
--	cpu->idle_mode = 0;
--}
--
- static inline int intel_pstate_get_scaled_busy(struct cpudata *cpu)
- {
- 	int32_t busy_scaled;
-@@ -523,29 +498,6 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- 		intel_pstate_pstate_decrease(cpu, steps);
- }
- 
--static inline void intel_pstate_adjust_idle_pstate(struct cpudata *cpu)
--{
--	int busy_scaled;
--	struct _pid *pid;
--	int ctl = 0;
--	int steps;
--
--	pid = &cpu->idle_pid;
--
--	busy_scaled = intel_pstate_get_scaled_busy(cpu);
--
--	ctl = pid_calc(pid, 100 - busy_scaled);
--
--	steps = abs(ctl);
--	if (ctl < 0)
--		intel_pstate_pstate_decrease(cpu, steps);
--	else
--		intel_pstate_pstate_increase(cpu, steps);
--
--	if (cpu->pstate.current_pstate == cpu->pstate.min_pstate)
--		intel_pstate_normal_mode(cpu);
--}
--
- static void intel_pstate_timer_func(unsigned long __data)
- {
- 	struct cpudata *cpu = (struct cpudata *) __data;
-@@ -602,7 +554,6 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
- 		(unsigned long)cpu;
- 	cpu->timer.expires = jiffies + HZ/100;
- 	intel_pstate_busy_pid_reset(cpu);
--	intel_pstate_idle_pid_reset(cpu);
- 	intel_pstate_sample(cpu);
- 	intel_pstate_set_pstate(cpu, cpu->pstate.max_pstate);
- 
+ 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
 -- 
 1.7.7.6
