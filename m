@@ -1,20 +1,20 @@
 From: dirk.brandewie@gmail.com
-Subject: [PATCH 1/6] cpufreq/intel_pstate: remove idle time and duration from sample and calculations
-Date: Tue,  7 May 2013 08:20:25 -0700
-Message-ID: <1367940030-19311-2-git-send-email-dirk.j.brandewie@gmail.com>
+Subject: [PATCH 5/6] cpufreq/intel_pstate: Remove unused code
+Date: Tue,  7 May 2013 08:20:29 -0700
+Message-ID: <1367940030-19311-6-git-send-email-dirk.j.brandewie@gmail.com>
 References: <1367940030-19311-1-git-send-email-dirk.j.brandewie@gmail.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        bh=Yf3ITDeaZ58/GpRkSvJjz9n7kAYX4nEKBAQewxiZHOE=;
-        b=YkvxEygkCMRxol8WsRcG2NVwQdkxxpyaIit1/Derb5j2dC0Trd7OdVRMC8ZfNHf5OW
-         CqsJKSfeHhIrsMF6NfCv0ygccyNb97+dzT3H0l9PJUtsbGnnL5dd6k+0joyU8daqil49
-         ocl88ZymbYIpM7eNSOk7xuiMBXvfwjHOfr85K6Vi8yUtgDzRXWJrB0wiyCreScO2NU3G
-         Y40q9n4lh07hImZ7I5s02O897lzktABhFG4rt0NWXBhtV7G1+lfq71LgrUUkgpgGUrE0
-         Gkt0pwmY+eF562vGJYbGL7vO8uJewRF50mNbfAcnUUdDb6V7NiRQwp5I5LYEzrWtVf4n
-         FHdA==
+        bh=WtXYcCsFgnGYnUxpxmGKbmcr5N8epOZ0OlLGOaR6CSc=;
+        b=m9ovFXgVTfdjRPWfMsOmC8P+mvMYxRCbBmT/fim8tyDmzLh0ONqJxvMt2ZnGACLHMa
+         cW0F2+l2fDZnptWcLRgm7zRxKqGIrTYDEyFWos+J49dy0cKAhmZeKMZ3tdl2KRjbaHDw
+         Ikp47ZWU3wxFtf6ppap3UjvJQpi3my0fSno5bh8gZzohKX/JZ65HDJKdKpK0l+L+aZuF
+         glUgZu4YXWi5byelr4Di83P0RBPh2uRqM4QQJa2ID9lO6/qvgm3pcgqIWLQPrkg5ua+i
+         e8LvdbmyxJRGj1AHZIZZrv09OriLvVXtIwuLUO9OE6MrulQOYSPPzC8iBnM+LLOs69rF
+         8Z0A==
 In-Reply-To: <1367940030-19311-1-git-send-email-dirk.j.brandewie@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
@@ -22,109 +22,38 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, stable@vger.kernel.org
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
 From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-Idle time is taken into account in the APERF/MPERF ratio calculation
-there is no reason for the driver to track it seperately.  This
-reduces the work in the driver and makes the code more readable.
+Remove call to intel_pstate_get_min_max() the values returned are not
+used.
 
-Removal of the tracking of sample duration removes the possibility of
-the divide by zero exception when the duration is sub 1us
-
-https://bugzilla.kernel.org/show_bug.cgi?id=56691
-
-Reported-by: Mike Lothian <mike@fireburn.co.uk>
-Cc: stable@vger.kernel.org
 Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   45 +++++++--------------------------------
- 1 files changed, 8 insertions(+), 37 deletions(-)
+ drivers/cpufreq/intel_pstate.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 4d6b988..5370b8d 100644
+index fc9b187..c7bd91f 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -48,12 +48,7 @@ static inline int32_t div_fp(int32_t x, int32_t y)
- }
- 
- struct sample {
--	ktime_t start_time;
--	ktime_t end_time;
- 	int core_pct_busy;
--	int pstate_pct_busy;
--	u64 duration_us;
--	u64 idletime_us;
- 	u64 aperf;
- 	u64 mperf;
- 	int freq;
-@@ -91,8 +86,6 @@ struct cpudata {
- 	int min_pstate_count;
- 	int idle_mode;
- 
--	ktime_t prev_sample;
--	u64	prev_idle_time_us;
- 	u64	prev_aperf;
- 	u64	prev_mperf;
- 	int	sample_ptr;
-@@ -450,48 +443,26 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu,
- 					struct sample *sample)
+@@ -579,15 +579,12 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
  {
- 	u64 core_pct;
--	sample->pstate_pct_busy = 100 - div64_u64(
--					sample->idletime_us * 100,
--					sample->duration_us);
- 	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
- 	sample->freq = cpu->pstate.max_pstate * core_pct * 1000;
+ 	struct cpudata *cpu;
+-	int min, max;
  
--	sample->core_pct_busy = div_s64((sample->pstate_pct_busy * core_pct),
--					100);
-+	sample->core_pct_busy = core_pct;
- }
+ 	cpu = all_cpu_data[policy->cpu];
  
- static inline void intel_pstate_sample(struct cpudata *cpu)
- {
--	ktime_t now;
--	u64 idle_time_us;
- 	u64 aperf, mperf;
+ 	if (!policy->cpuinfo.max_freq)
+ 		return -ENODEV;
  
--	now = ktime_get();
--	idle_time_us = get_cpu_idle_time_us(cpu->cpu, NULL);
+-	intel_pstate_get_min_max(cpu, &min, &max);
 -
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
--	/* for the first sample, don't actually record a sample, just
--	 * set the baseline */
--	if (cpu->prev_idle_time_us > 0) {
--		cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
--		cpu->samples[cpu->sample_ptr].start_time = cpu->prev_sample;
--		cpu->samples[cpu->sample_ptr].end_time = now;
--		cpu->samples[cpu->sample_ptr].duration_us =
--			ktime_us_delta(now, cpu->prev_sample);
--		cpu->samples[cpu->sample_ptr].idletime_us =
--			idle_time_us - cpu->prev_idle_time_us;
--
--		cpu->samples[cpu->sample_ptr].aperf = aperf;
--		cpu->samples[cpu->sample_ptr].mperf = mperf;
--		cpu->samples[cpu->sample_ptr].aperf -= cpu->prev_aperf;
--		cpu->samples[cpu->sample_ptr].mperf -= cpu->prev_mperf;
--
--		intel_pstate_calc_busy(cpu, &cpu->samples[cpu->sample_ptr]);
--	}
-+	cpu->sample_ptr = (cpu->sample_ptr + 1) % SAMPLE_COUNT;
-+	cpu->samples[cpu->sample_ptr].aperf = aperf;
-+	cpu->samples[cpu->sample_ptr].mperf = mperf;
-+	cpu->samples[cpu->sample_ptr].aperf -= cpu->prev_aperf;
-+	cpu->samples[cpu->sample_ptr].mperf -= cpu->prev_mperf;
-+
-+	intel_pstate_calc_busy(cpu, &cpu->samples[cpu->sample_ptr]);
- 
--	cpu->prev_sample = now;
--	cpu->prev_idle_time_us = idle_time_us;
- 	cpu->prev_aperf = aperf;
- 	cpu->prev_mperf = mperf;
- }
+ 	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+ 	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
+ 	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
 -- 
 1.7.7.6
 
