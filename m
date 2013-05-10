@@ -1,50 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 03/42] drivers/cpufreq: don't check resource with devm_ioremap_resource
-Date: Fri, 10 May 2013 13:09:53 +0200
-Message-ID: <1832747.3cSvLxeIN8@vostro.rjw.lan>
-References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de> <1368173847-5661-4-git-send-email-wsa@the-dreams.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 57941] New: Cpufreq stats are not shown in sysfs
+Date: Fri, 10 May 2013 12:07:01 +0000 (UTC)
+Message-ID: <bug-57941-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1368173847-5661-4-git-send-email-wsa@the-dreams.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Friday, May 10, 2013 10:16:48 AM Wolfram Sang wrote:
-> devm_ioremap_resource does sanity checks on the given resource. No need to
-> duplicate this in the driver.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+https://bugzilla.kernel.org/show_bug.cgi?id=57941
 
-Queued up for a post-3.10-rc1 push.
+           Summary: Cpufreq stats are not shown in sysfs
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.9
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: jlec@gentoo.org
+        Regression: Yes
 
-Thanks,
-Rafael
 
+Created an attachment (id=101061)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=101061)
+config.gz
 
-> ---
->  drivers/cpufreq/kirkwood-cpufreq.c |    4 ----
->  1 file changed, 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> index d36ea8d..b2644af 100644
-> --- a/drivers/cpufreq/kirkwood-cpufreq.c
-> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
-> @@ -171,10 +171,6 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  	priv.dev = &pdev->dev;
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "Cannot get memory resource\n");
-> -		return -ENODEV;
-> -	}
->  	priv.base = devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(priv.base))
->  		return PTR_ERR(priv.base);
-> 
+I am missing /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state after
+switching from 3.8 to 3.9.
+
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_GOV_COMMON=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
+CONFIG_X86_PCC_CPUFREQ=y
+CONFIG_X86_ACPI_CPUFREQ=y
+# CONFIG_X86_ACPI_CPUFREQ_CPB is not set
+#
+# x86 CPU frequency scaling drivers
+#
+CONFIG_X86_INTEL_PSTATE=y
+CONFIG_X86_PCC_CPUFREQ=y
+CONFIG_X86_ACPI_CPUFREQ=y
+# CONFIG_X86_ACPI_CPUFREQ_CPB is not set
+# CONFIG_X86_POWERNOW_K8 is not set
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
