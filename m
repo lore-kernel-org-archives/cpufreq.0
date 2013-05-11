@@ -1,57 +1,48 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: 3.9-linux-next-20130501: OOPS in intel_pstate_sample
-Date: Fri, 10 May 2013 14:20:41 -0600
-Message-ID: <CAErSpo4x4Y3sJdvaYyTXT1pPAehrnD5ExA+qzpgkbNiqiU2yVA@mail.gmail.com>
-References: <51818334.7020201@fold.natur.cuni.cz>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 58001] New: "ondemand" CPU governor never raises frequency
+ (Dell XPS 12)
+Date: Sat, 11 May 2013 09:32:23 +0000 (UTC)
+Message-ID: <bug-58001-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20120113;
-        h=x-received:mime-version:in-reply-to:references:from:date:message-id
-         :subject:to:cc:content-type;
-        bh=m15OswYdDF1yIkVaMW1jvDLPvXuqpPVpVTKOyrn53YY=;
-        b=kZyNDmv93VP74MOHxJ7BqJ61MSH9Psb83F/Jy0d3CdGEmMPPViUPtpiUKCVh7eZ3sI
-         3gYtiOxYSqn307ctbz/kyK/W+tGxcNdhvNf0bs7LkfSqT2gNPy9XfaxSZNUOacEknoTT
-         cGS4u4bwtNVE0Wr8ijCM3jxnr7XJtsPEeSmXY5yNXsm7kb2gzwu2fWK2BF9MrtaYhex7
-         BGRhdhxtCL4VM07JebxM0yUsqVmN1+ZahaGTHa/cWeYg8XSFR7HDKrtbBpFhJ2o4QGRB
-         vqUQWzg+3xGvIlcpnr3tM9v9skEUvUir0QQtY+754BPli+cEVSn9O4cdHn77kMsp8WLy
-         fyyQ==
-In-Reply-To: <51818334.7020201@fold.natur.cuni.cz>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Toshi Kani <toshi.kani@hp.com>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>
+To: cpufreq@vger.kernel.org
 
-[+cc Viresh, Srinivas, Dirk, cpufreq list]
+https://bugzilla.kernel.org/show_bug.cgi?id=58001
 
-On Wed, May 1, 2013 at 3:03 PM, Martin Mokrejs
-<mmokrejs@fold.natur.cuni.cz> wrote:
-> Hi,
->   I opened yet another bug https://bugzilla.kernel.org/show_bug.cgi?id=57411 .
->
-> This is maybe a dupe of bug https://bugzilla.kernel.org/show_bug.cgi?id=57401
-> (which is vanilla 3.9) but happened on linux-next-20130501 after I did "dmesg | less".
->
-> ? pid_param_set
-> intel_pstate_timer_func
-> call_timer_fn
-> ? __internal_add_timer
-> ? pid_param_set
-> run_timer_softirq
-> __do_softirq
-> irq_exit
-> smp_apic_timer_interrupt
-> apic_timer_interrupt
-> ? sysret_check
->
-> A camera picture of the stacktrace is attached to the bug https://bugzilla.kernel.org/show_bug.cgi?id=57411
-> Please forward this to the appropriate person.
-> Thanks,
-> Martin
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+           Summary: "ondemand" CPU governor never raises frequency (Dell
+                    XPS 12)
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.8.11-200.fc18.x86_64
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: jylefort@gmail.com
+        Regression: No
+
+
+On a Dell XPS 12 (Intel Core i7-3537U), I experience exactly the same symptoms
+as in bug #14771, except it has nothing to do with the power supply: I'm using
+the stock power supply, and the problematic behavior is observed both on
+battery and on AC power.
+
+If I keep the default settings, the CPU frequency never goes beyond the 800 MHz
+minimum, regardless of the CPU load.
+
+If I decrease /sys/devices/system/cpu/cpufreq/ondemand/up_threshold from the
+default value of 95 to 75, then the processors dynamically switch back and
+forth from 800 MHz to 2 GHz according to CPU load.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
