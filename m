@@ -1,48 +1,48 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 58001] New: "ondemand" CPU governor never raises frequency
- (Dell XPS 12)
-Date: Sat, 11 May 2013 09:32:23 +0000 (UTC)
-Message-ID: <bug-58001-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] Cpufreq: Fix incorrect dependecies for ARM SA11xx drivers
+Date: Sun, 12 May 2013 20:34:56 +0530
+Message-ID: <CAOh2x=mL-_fm8pxUCJCM1MWQxca2ygJWpDS_OTnOfcLS4ZHC1g@mail.gmail.com>
+References: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=sat07eia19l4DyiVLYbWQsBaKC2O57FBP4hsl5dZjEs=;
+        b=PllT5AGXntd+3ler4svqUnYdHqQm+FURe0bNxMpRXUX0ycshkcPCxMYnfAif1DUptV
+         ZtO+FFECAysr304T7gVmrBDm6o1X2TqzX7uBsPYW29gjjOTvVc0EUml+1c5/oi7O6b8W
+         pyx3bRVjsb5o1WCtU95lw97qcO8t12/fY2jzaer1CIQYzibtknt00nvEq4nkj8tA5vxp
+         jVOt1YYTPUMFGWcJfSrY/Ixo7dTxlzHSpx+vBvqqArmxbZnA70f03JuUxfcpMzCfsEFA
+         OYDGrnhoOqbjPHK+kZrECDRKEFaGq4kwVf6FsGIvfc0lK0KVNLCVOnCC15kGKclWm+n+
+         zkqA==
+In-Reply-To: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Alexander Shiyan <shc_work@mail.ru>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=58001
+On Sun, May 5, 2013 at 5:48 PM, Alexander Shiyan <shc_work@mail.ru> wrote:
+>
+> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+> ---
+>  drivers/cpufreq/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index a1488f5..534fcb8 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -47,7 +47,7 @@ config CPU_FREQ_STAT_DETAILS
+>
+>  choice
+>         prompt "Default CPUFreq governor"
+> -       default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
+> +       default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+>         default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+>         help
+>           This option sets which CPUFreq governor shall be loaded at
 
-           Summary: "ondemand" CPU governor never raises frequency (Dell
-                    XPS 12)
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.8.11-200.fc18.x86_64
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-        AssignedTo: cpufreq@vger.kernel.org
-        ReportedBy: jylefort@gmail.com
-        Regression: No
-
-
-On a Dell XPS 12 (Intel Core i7-3537U), I experience exactly the same symptoms
-as in bug #14771, except it has nothing to do with the power supply: I'm using
-the stock power supply, and the problematic behavior is observed both on
-battery and on AC power.
-
-If I keep the default settings, the CPU frequency never goes beyond the 800 MHz
-minimum, regardless of the CPU load.
-
-If I decrease /sys/devices/system/cpu/cpufreq/ondemand/up_threshold from the
-default value of 95 to 75, then the processors dynamically switch back and
-forth from 800 MHz to 2 GHz according to CPU load.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
