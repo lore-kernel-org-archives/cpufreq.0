@@ -1,48 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Cpufreq: Fix incorrect dependecies for ARM SA11xx drivers
-Date: Sun, 12 May 2013 20:34:56 +0530
-Message-ID: <CAOh2x=mL-_fm8pxUCJCM1MWQxca2ygJWpDS_OTnOfcLS4ZHC1g@mail.gmail.com>
-References: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
+Subject: Re: [PATCH] cpufreq, ondemand: Remove leftover debug line
+Date: Sun, 12 May 2013 20:46:34 +0530
+Message-ID: <CAOh2x=kLJ3NVN177KTWjZikkZb8Q8RQjye4qrUT=PCdCj2jSgg@mail.gmail.com>
+References: <1368041688-29986-1-git-send-email-bp@alien8.de>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
         h=mime-version:x-received:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=sat07eia19l4DyiVLYbWQsBaKC2O57FBP4hsl5dZjEs=;
-        b=PllT5AGXntd+3ler4svqUnYdHqQm+FURe0bNxMpRXUX0ycshkcPCxMYnfAif1DUptV
-         ZtO+FFECAysr304T7gVmrBDm6o1X2TqzX7uBsPYW29gjjOTvVc0EUml+1c5/oi7O6b8W
-         pyx3bRVjsb5o1WCtU95lw97qcO8t12/fY2jzaer1CIQYzibtknt00nvEq4nkj8tA5vxp
-         jVOt1YYTPUMFGWcJfSrY/Ixo7dTxlzHSpx+vBvqqArmxbZnA70f03JuUxfcpMzCfsEFA
-         OYDGrnhoOqbjPHK+kZrECDRKEFaGq4kwVf6FsGIvfc0lK0KVNLCVOnCC15kGKclWm+n+
-         zkqA==
-In-Reply-To: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
+        bh=2YTzX9aeN9yhp4TW7ebvHqZjfkkBH0aA8lm7N3BQP9k=;
+        b=bvl9OGEFy+b957VjIm055UPYilD4tKRBE7CXQT4+uwA5YaCfgmITocVfdDThViZmtf
+         LHu6xMpsHaz6ifCasc93cTwvSYdeo82nhfmK8v1tVELH9clqVNy9s4Wgg0q5ojeo1NkH
+         yOu9JiiqfqsA90BzgOZT/dx8HLqsAvavyIirXyON5NsyUDlbkJIEf49ItjfdGIdkhvWf
+         7+1I6T6EH3Fq3SaZKqNPD6ox34aYB193cXtNf/wmRa0CEFYF5Jex+Vk/hcXX0L0dtI3m
+         4ivOvH4omtp9e1Vbd1gEu197jzpO+JQ/P27bwfJ+gWCXUdjenE5YeGC/pnWNpAJf0+mn
+         nwIg==
+In-Reply-To: <1368041688-29986-1-git-send-email-bp@alien8.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>
 
-On Sun, May 5, 2013 at 5:48 PM, Alexander Shiyan <shc_work@mail.ru> wrote:
+On Thu, May 9, 2013 at 1:04 AM, Borislav Petkov <bp@alien8.de> wrote:
+> From: Borislav Petkov <bp@suse.de>
 >
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+> I don't see how the virtual address of the tuners pointer would be of
+> any help to anyone so remove it.
+>
+> Signed-off-by: Borislav Petkov <bp@suse.de>
 > ---
->  drivers/cpufreq/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/cpufreq/cpufreq_ondemand.c | 1 -
+>  1 file changed, 1 deletion(-)
 >
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index a1488f5..534fcb8 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -47,7 +47,7 @@ config CPU_FREQ_STAT_DETAILS
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index b0ffef96bf77..4b9bb5def6f1 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -547,7 +547,6 @@ static int od_init(struct dbs_data *dbs_data)
+>         tuners->io_is_busy = should_io_be_busy();
 >
->  choice
->         prompt "Default CPUFreq governor"
-> -       default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
-> +       default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
->         default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
->         help
->           This option sets which CPUFreq governor shall be loaded at
+>         dbs_data->tuners = tuners;
+> -       pr_info("%s: tuners %p\n", __func__, tuners);
+>         mutex_init(&dbs_data->mutex);
+>         return 0;
+>  }
+
+Sorry for this message :(
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
