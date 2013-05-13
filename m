@@ -1,19 +1,18 @@
 From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 57871] Cpu frequency scaling not working after waking up from
- suspend.
-Date: Mon, 13 May 2013 02:00:29 +0000 (UTC)
-Message-ID: <20130513020029.29B0311FA4C@bugzilla.kernel.org>
-References: <bug-57871-12968@https.bugzilla.kernel.org/>
+Subject: [Bug 57941] Cpufreq stats are not shown in sysfs
+Date: Mon, 13 May 2013 02:00:48 +0000 (UTC)
+Message-ID: <20130513020048.29A8F11FA4C@bugzilla.kernel.org>
+References: <bug-57941-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-57871-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-57941-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=57871
+https://bugzilla.kernel.org/show_bug.cgi?id=57941
 
 
 Zhang Rui <rui.zhang@intel.com> changed:
