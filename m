@@ -1,51 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Mon, 13 May 2013 11:35:22 +0530
-Message-ID: <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
-	<CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
-	<1769336.FkfMpuXqqb@vostro.rjw.lan>
-	<5176A807.2090005@samsung.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH] cpufreq / intel_pstate: use vzalloc() instead of vmalloc()/memset(0)
+Date: Mon, 13 May 2013 16:03:43 +0800
+Message-ID: <CAPgLHd9Z99KvdBghVqr++9G5eBx5hKA13LmPUpc=K_X3N+uhiQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <5176A807.2090005@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:date:message-id:subject:from:to:cc
+         :content-type;
+        bh=vNT0K9rVn2sdGl9Cfe42Da2kQo0yMAV/ZZ/UkUmGbLw=;
+        b=qIJ+PYNa0GlljypFz8blL+A3M390/Z59JK/pKi74Auaok53wCYeM4MMyB+RhWWTVT/
+         aDVYhR5hsz7LUEdl4wm38gQl5gZLXfFAXUvPNIOBQ+7FHT3H5IgLw3HLSC78TgdCSlzB
+         ITodTX6cL4k+N3QWqUyOg6Ko5p7Ad6U6W3uSAz8KkgM+qitBhwjeFLsNw6OxsWVSJQd1
+         lTW94e6mWsavZSokYN8coF3pMvQ4EarJilWYJ7NKlVGWpvQHzsP2M84K8kOFMA6SQme/
+         dd0T9IrESPTDAqmC8u0722le2bq/cq9Rp0xhZLPYkaLZoTS85H1pS3pwsX1erXERPu6N
+         hKUw==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+To: rjw@sisk.pl, viresh.kumar@linaro.org
+Cc: yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 23 April 2013 20:55, Kukjin Kim <kgene.kim@samsung.com> wrote:
-> On 04/05/13 20:36, Rafael J. Wysocki wrote:
->>
->> On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
->>>
->>> On 5 April 2013 12:18, Kukjin Kim<kgene.kim@samsung.com>  wrote:
->>>>
->>>> Basically, this moving looks good to me, but should be re-worked based
->>>> on
->>>> for-next of samsung tree because this touches too many samsung stuff so
->>>> this
->>>> should be sent to upstream via samsung tree.
->>>
->>>
->>> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
->>> it can't be
->>> moved to your tree if there is a issue.
->>
->>
->> Well, I'm dropping it.  Please merge via the Samsung tree.
->>
->
-> Oops, I missed, maybe I have no more chance to send this to upstream for
-> upcoming merge window :-(
->
-> Rafael, please take this patch with my ack in your tree, sorry for noise.
->
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->
-> If any problems, please kindly let me know.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Who is going to pick this patch now for next merge window?
+Use vzalloc() instead of vmalloc() and memset(0).
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ drivers/cpufreq/intel_pstate.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index cc3a8e6..f59aecb 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -788,10 +788,9 @@ static int __init intel_pstate_init(void)
+ 
+ 	pr_info("Intel P-state driver initializing.\n");
+ 
+-	all_cpu_data = vmalloc(sizeof(void *) * num_possible_cpus());
++	all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
+ 	if (!all_cpu_data)
+ 		return -ENOMEM;
+-	memset(all_cpu_data, 0, sizeof(void *) * num_possible_cpus());
+ 
+ 	rc = cpufreq_register_driver(&intel_pstate_driver);
+ 	if (rc)
+
