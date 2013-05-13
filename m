@@ -1,27 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: rename references to CPU_FREQ_SA11x0
-Date: Mon, 13 May 2013 13:52:52 +0200
-Message-ID: <1793382.NnHvlOcUkD@vostro.rjw.lan>
-References: <1368437025.1350.35.camel@x61.thuisdomein> <CAKohpo=WKr_+1E6KvrsNyy8xPJHVVt-panTrt409k9wP27u8Gg@mail.gmail.com> <1368437542.1350.37.camel@x61.thuisdomein>
+Subject: Re: [PATCH] cpufreq, ondemand: Remove leftover debug line
+Date: Mon, 13 May 2013 14:14:04 +0200
+Message-ID: <3026061.6K3iqZoMUx@vostro.rjw.lan>
+References: <1368041688-29986-1-git-send-email-bp@alien8.de> <CAOh2x=kLJ3NVN177KTWjZikkZb8Q8RQjye4qrUT=PCdCj2jSgg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1368437542.1350.37.camel@x61.thuisdomein>
+In-Reply-To: <CAOh2x=kLJ3NVN177KTWjZikkZb8Q8RQjye4qrUT=PCdCj2jSgg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Paul Bolle <pebolle@tiscali.nl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Borislav Petkov <bp@alien8.de>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>
 
-On Monday, May 13, 2013 11:32:22 AM Paul Bolle wrote:
-> On Mon, 2013-05-13 at 14:58 +0530, Viresh Kumar wrote:
-> > Already Acked.
-> > 
-> > http://www.spinics.net/lists/arm-kernel/msg242828.html
+On Sunday, May 12, 2013 08:46:34 PM Viresh Kumar wrote:
+> On Thu, May 9, 2013 at 1:04 AM, Borislav Petkov <bp@alien8.de> wrote:
+> > From: Borislav Petkov <bp@suse.de>
+> >
+> > I don't see how the virtual address of the tuners pointer would be of
+> > any help to anyone so remove it.
+> >
+> > Signed-off-by: Borislav Petkov <bp@suse.de>
+> > ---
+> >  drivers/cpufreq/cpufreq_ondemand.c | 1 -
+> >  1 file changed, 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> > index b0ffef96bf77..4b9bb5def6f1 100644
+> > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > @@ -547,7 +547,6 @@ static int od_init(struct dbs_data *dbs_data)
+> >         tuners->io_is_busy = should_io_be_busy();
+> >
+> >         dbs_data->tuners = tuners;
+> > -       pr_info("%s: tuners %p\n", __func__, tuners);
+> >         mutex_init(&dbs_data->mutex);
+> >         return 0;
+> >  }
 > 
-> I see. Thanks!
+> Sorry for this message :(
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-And applied too (see current linux-next).
+Applied to the linux-next branch.
 
 Thanks,
 Rafael
