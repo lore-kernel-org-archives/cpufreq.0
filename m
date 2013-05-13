@@ -1,128 +1,81 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 58001] "ondemand" CPU governor never raises frequency (Dell XPS
- 12)
-Date: Mon, 13 May 2013 03:48:37 +0000 (UTC)
-Message-ID: <20130513034837.6252811FB3B@bugzilla.kernel.org>
-References: <bug-58001-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Cpufreq governor start/stop race condition
+Date: Mon, 13 May 2013 09:56:24 +0530
+Message-ID: <CAOh2x=nrMRxkpwF6aXS4VjQR7u+KvnUnPyzsHe4BDa1vBiHCUw@mail.gmail.com>
+References: <CAFgnuDeuhhLa1dnia1hpj+OuwKcmNVdNTVMw99=8QAXf8tqM7w@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-58001-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=2v2Dugzw9ntgAnx7ErK3aNCxQjoJVgovgB/3pGip9Jw=;
+        b=uBWugI1HKd/VQUXJObC00Ucju0rUVFarzv3oF+x1HKW15LVBtfqSU8moAQ43GpE7d+
+         zoGVaTJaBRdTWW59Rd5YafNF0FEdgYf+oZWr7GZOygv9dg19hhKPSBTckN/LWCwYJsnG
+         tXf88zgdasgvu/tw+g/ovLcpQEEvB6gu0kWX4XXOiVMiSKpvywwiCsqY5QnYa8f1NH1y
+         wFG+CMPUYTIBe0XQvuPxs7wrmca9L28bD+1nQOsOlCNfzmg1YiEsgTWnipGmT0Cll0tW
+         suBJLkNfFngv3nmZn8cIhdTzeaanUtomB3T6IXwG+05Qa6JSCm2WTnoGIcEZJQnud6BX
+         ywRQ==
+In-Reply-To: <CAFgnuDeuhhLa1dnia1hpj+OuwKcmNVdNTVMw99=8QAXf8tqM7w@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=58001
-
-
-
-
-
---- Comment #3 from Viresh Kumar <viresh.kumar@linaro.org>  2013-05-13 03:48:37 ---
-On Sun, May 12, 2013 at 10:25 PM,  <bugzilla-daemon@bugzilla.kernel.org> wrote:
-> https://bugzilla.kernel.org/show_bug.cgi?id=58001
+On Mon, May 13, 2013 at 8:19 AM, Xiaoguang Chen
+<chenxg.marvell@gmail.com> wrote:
+> Hi, Cpufreq Guys
+>
+> We meet one race condition for cpufreq governor start/stop during
+> hotplug and manually governor change.
+>
+> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+> the normal sequence is as below:
+>
+> 1) Current governor is userspace, one application tries to set
+> governor to ondemand. it will call __cpufreq_set_policy in which it
+> will stop userspace governor and then start ondemand governor.
+>
+> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+> call cpufreq_add_policy_cpu. on which it first stop governor
+> userspace, and then start governor userspace.
 >
 >
+> Now if the sequence of abover two cases interleaves, it becames below sequence:
+>
+> 1) application stops userspace governor
+>                                                               2)
+> hotplug stops userspace governor
+> 3) application starts ondemand governor
+>                                                               4)
+> hotplug starts a governor
+>
+> in step 4, hotplug is supposed to start userspace governor, but now
+> the governor has been changed by application to ondemand, so hotplug
+> starts ondemand governor again !!!!
+>
+> there are some consequences for this issue:
+> ondemand governor will be started for multi-times which causes its
+> timer be inialized multitimes, if we use object debug to trace this,
+> we get a waring that the timer object is alive but it is initialized
+> again.
 >
 >
+> The issue happens because we use one same cpufreq policy for all cpus,
+> once the policy is changed, all cpus will be affected. I tried to add
+> a mutex lock before governor stop and after governor start. but it
+> cannot solve the problem completely as there maybe some other places
+> that changes the cpufreq policy, if it doesn't use the same mutex
+> lock, policy may still be changed during stop/start sequence. the
+> final governor may still not the expected one.
 >
-> --- Comment #2 from Jean-Yves Lefort <jylefort@gmail.com>  2013-05-12 16:55:08 ---
-> There is no such tool on my system (Fedora 18), I assume this is the same:
->
-> $ cpupower -c all frequency-info
-> analyzing CPU 0:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 0 1 2 3
->   CPUs which need to have their frequency coordinated by software: 0
->   maximum transition latency: 10.0 us.
->   hardware limits: 800 MHz - 2.00 GHz
->   available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-> 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-> 800 MHz
->   available cpufreq governors: conservative, userspace, powersave, ondemand,
-> performance
->   current policy: frequency should be within 800 MHz and 2.00 GHz.
->                   The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 800 MHz.
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
-> analyzing CPU 1:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 0 1 2 3
->   CPUs which need to have their frequency coordinated by software: 1
->   maximum transition latency: 10.0 us.
->   hardware limits: 800 MHz - 2.00 GHz
->   available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-> 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-> 800 MHz
->   available cpufreq governors: conservative, userspace, powersave, ondemand,
-> performance
->   current policy: frequency should be within 800 MHz and 2.00 GHz.
->                   The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 800 MHz.
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
-> analyzing CPU 2:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 0 1 2 3
->   CPUs which need to have their frequency coordinated by software: 2
->   maximum transition latency: 10.0 us.
->   hardware limits: 800 MHz - 2.00 GHz
->   available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-> 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-> 800 MHz
->   available cpufreq governors: conservative, userspace, powersave, ondemand,
-> performance
->   current policy: frequency should be within 800 MHz and 2.00 GHz.
->                   The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 800 MHz.
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
-> analyzing CPU 3:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 0 1 2 3
->   CPUs which need to have their frequency coordinated by software: 3
->   maximum transition latency: 10.0 us.
->   hardware limits: 800 MHz - 2.00 GHz
->   available frequency steps: 2.00 GHz, 2.00 GHz, 1.90 GHz, 1.80 GHz, 1.70 GHz,
-> 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz, 1.10 GHz, 1000 MHz, 900 MHz,
-> 800 MHz
->   available cpufreq governors: conservative, userspace, powersave, ondemand,
-> performance
->   current policy: frequency should be within 800 MHz and 2.00 GHz.
->                   The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 800 MHz.
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
+> Do we have some discussion for this issue before ? any suggestions for this?
 
-Can you give a try with 3.9 kernel?
+We never had a discussion on this earlier and on the face of it, it looks like
+a locking issue which must be fixed. I am not sure if i would be able to devote
+some time on it right now as i just came back from 15 days leave and have a
+lot of stuff to finish.
 
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+If you can provide a patch, i can surely review it quickly. :)
