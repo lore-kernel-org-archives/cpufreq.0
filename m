@@ -1,31 +1,70 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 57941] Cpufreq stats are not shown in sysfs
-Date: Mon, 13 May 2013 02:00:48 +0000 (UTC)
-Message-ID: <20130513020048.29A8F11FA4C@bugzilla.kernel.org>
-References: <bug-57941-12968@https.bugzilla.kernel.org/>
+From: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Subject: Cpufreq governor start/stop race condition
+Date: Mon, 13 May 2013 10:49:51 +0800
+Message-ID: <CAFgnuDeuhhLa1dnia1hpj+OuwKcmNVdNTVMw99=8QAXf8tqM7w@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-57941-12968@https.bugzilla.kernel.org/>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:date:message-id:subject:from:to:cc
+         :content-type;
+        bh=7kB0vERB36xPj4QsGa1UF8AQkMK9yug+/ufhQERceYs=;
+        b=gJffbp4+9bx6lImbM9VqkhVNK+iRpzHfPG5shcAneevG3eSgeYS2oY//IZvkChCj4B
+         1zdKfwA0Zgg5N+eRTfhwcsftUYju1MpA9qhn3cXXMAEKHXwpuly1vcHcHopm7O24TQXe
+         dIOmuKv7unO00WmdxHeF6SN3PoBu0CZqFnyrUenz8B8E5F4qOK3ac/Mkr7IFjcxI1Zsu
+         jzkfJpxnm7ME73ZR+ouoGO+5KLPSpy6Ydm0AOiaHnbJOEuS9Ryqr9R4T/NsGhffWGT0A
+         mNrgAXp94I8ZdjtMcqIpr07sp8eZVmwUnJVFqAUXVAoTlXlO4PD0o1rAly5vzakrZhLx
+         WrfQ==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=57941
+Hi, Cpufreq Guys
+
+We meet one race condition for cpufreq governor start/stop during
+hotplug and manually governor change.
+
+we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+the normal sequence is as below:
+
+1) Current governor is userspace, one application tries to set
+governor to ondemand. it will call __cpufreq_set_policy in which it
+will stop userspace governor and then start ondemand governor.
+
+2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+call cpufreq_add_policy_cpu. on which it first stop governor
+userspace, and then start governor userspace.
 
 
-Zhang Rui <rui.zhang@intel.com> changed:
+Now if the sequence of abover two cases interleaves, it becames below sequence:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |rui.zhang@intel.com
-         AssignedTo|cpufreq@vger.kernel.org     |rjw@sisk.pl
+1) application stops userspace governor
+                                                              2)
+hotplug stops userspace governor
+3) application starts ondemand governor
+                                                              4)
+hotplug starts a governor
+
+in step 4, hotplug is supposed to start userspace governor, but now
+the governor has been changed by application to ondemand, so hotplug
+starts ondemand governor again !!!!
+
+there are some consequences for this issue:
+ondemand governor will be started for multi-times which causes its
+timer be inialized multitimes, if we use object debug to trace this,
+we get a waring that the timer object is alive but it is initialized
+again.
 
 
+The issue happens because we use one same cpufreq policy for all cpus,
+once the policy is changed, all cpus will be affected. I tried to add
+a mutex lock before governor stop and after governor start. but it
+cannot solve the problem completely as there maybe some other places
+that changes the cpufreq policy, if it doesn't use the same mutex
+lock, policy may still be changed during stop/start sequence. the
+final governor may still not the expected one.
 
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Do we have some discussion for this issue before ? any suggestions for this?
