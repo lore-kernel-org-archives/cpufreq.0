@@ -1,63 +1,39 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] cpufreq / intel_pstate: use vzalloc() instead of vmalloc()/memset(0)
-Date: Mon, 13 May 2013 07:44:49 -0700
-Message-ID: <5190FC61.8090709@gmail.com>
-References: <CAPgLHd9Z99KvdBghVqr++9G5eBx5hKA13LmPUpc=K_X3N+uhiQ@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V1 resend] cpufreq: Raname index as data in cpufreq_frequency_table
+Date: Mon, 13 May 2013 10:27:58 -0600
+Message-ID: <5191148E.7050205@wwwdotorg.org>
+References: <7e12acada8adcba5f4eb72f6c49e38aaf00a294f.1368434974.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        bh=i6sgYPAHFamSU1NwkD6wHWs2s/YM+snBHIueVrKNggc=;
-        b=j+bAfUKLe68WIgaFVzij4FBnohJ4lKPXq1gL02ecnobTj8fyUpCJy8ndJURxRxWUEy
-         aQ7dq/FXl+GxaKB23TVfwPqVaWLguStI6GCpR0czYDN8utyFyxJ3fpogmfeF1DjtP3+2
-         8TTsQY4mup5n6WBwOlMmJ1yWMEPszIG6pdZYv3ZzfEiq0E96Tfa24SPgzCwaIqgRInld
-         WpOA8X6T3ME5R/MhyL+Rvk6BXaRR+xHYCaFXaD0mi45FLtEsrwX4bWP8bN+pBQdizEBs
-         wwVLLy9GLDridgWXMRXHABDu9+CeH6fMNjuRz71mrDrPDDXSMbezkL3dQgaONqjbHH+F
-         0fBA==
-In-Reply-To: <CAPgLHd9Z99KvdBghVqr++9G5eBx5hKA13LmPUpc=K_X3N+uhiQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <7e12acada8adcba5f4eb72f6c49e38aaf00a294f.1368434974.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: rjw@sisk.pl, viresh.kumar@linaro.org, yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.brandewie@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Sekhar Nori <nsekhar@ti.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
 
-On 05/13/2013 01:03 AM, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->
-> Use vzalloc() instead of vmalloc() and memset(0).
->
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On 05/13/2013 06:57 AM, Viresh Kumar wrote:
+> "Index" field of struct cpufreq_frequency_table was never index and isn't used
+> at all by cpufreq core. And is only useful for cpufreq drivers for their
+> personal use.
+> 
+> Many people now a days blindly set it in ascending order with the assumption
+> that core is using it for some work.
+> 
+> This patch renames it to "data" as that's what its purpose it. All users of the
+> same are fixed too.
 
-Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 
-> ---
->   drivers/cpufreq/intel_pstate.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index cc3a8e6..f59aecb 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -788,10 +788,9 @@ static int __init intel_pstate_init(void)
->
->   	pr_info("Intel P-state driver initializing.\n");
->
-> -	all_cpu_data = vmalloc(sizeof(void *) * num_possible_cpus());
-> +	all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
->   	if (!all_cpu_data)
->   		return -ENOMEM;
-> -	memset(all_cpu_data, 0, sizeof(void *) * num_possible_cpus());
->
->   	rc = cpufreq_register_driver(&intel_pstate_driver);
->   	if (rc)
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> -/* Frequency table index must be sequential starting at 0 */
+> +/* Frequency table data must be sequential starting at 0 */
+
+I assume that comment is due to the assumption you're trying to remove.
+Should the comment be removed/corrected now? Perhaps the .data field
+isn't even needed any more in this driver?
+
+>  static struct cpufreq_frequency_table freq_table[] = {
+>  	{ 0, 216000 },
+>  	{ 1, 312000 },
 
