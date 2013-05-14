@@ -1,38 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: rename references to CPU_FREQ_SA11x0
-Date: Tue, 14 May 2013 01:13:03 +0200
-Message-ID: <10084299.rMWh055Dgn@vostro.rjw.lan>
-References: <1368437025.1350.35.camel@x61.thuisdomein> <1793382.NnHvlOcUkD@vostro.rjw.lan> <CAKohpomOMS-Zq4EBO2yhw+FO0FntS94S+WJmskheQh1uqc-1AQ@mail.gmail.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
+ drivers/cpufreq
+Date: Tue, 14 May 2013 21:36:42 +0900
+Message-ID: <093901ce509f$afe92f40$0fbb8dc0$%kim@samsung.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <5176A807.2090005@samsung.com>
+ <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com>
+ <105283277.osOpfTKkgk@vostro.rjw.lan>
+ <CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomOMS-Zq4EBO2yhw+FO0FntS94S+WJmskheQh1uqc-1AQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>
+Content-language: ko
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Paul Bolle <pebolle@tiscali.nl>, Arnd Bergmann <arnd@arndb.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@sisk.pl>
+Cc: robin.randhawa@arm.com, 'Ben Dooks' <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On Monday, May 13, 2013 10:12:06 PM Viresh Kumar wrote:
-> On 13 May 2013 17:22, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, May 13, 2013 11:32:22 AM Paul Bolle wrote:
-> >> On Mon, 2013-05-13 at 14:58 +0530, Viresh Kumar wrote:
-> >> > Already Acked.
-> >> >
-> >> > http://www.spinics.net/lists/arm-kernel/msg242828.html
-> >>
-> >> I see. Thanks!
-> >
-> > And applied too (see current linux-next).
+Viresh Kumar wrote:
 > 
-> I don't know for what you queued it up? But it must go in rc2.
+> On 13 May 2013 16:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > That doesn't matter I suppose.  I can take it, but please rebase it on
+> top
+> > of current linux-next.
+> 
+> I have already done that (attached). But i wasn't sure what Kukjin wants
+> as
+> he may report conflicts again and i will ask the same question for 3.12 :)
+> 
+Since this missed last time, this would be sent to upstream via samsung tree
+again. It means the conflicts should be handled by myself.
 
-Well, "must" it's probably a bit overstated, but that's the plan.
+Rafael, if you don't mind, let me take this into Samsung tree for v3.11.
 
-Thanks,
-Rafael
+- Kukjin
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
