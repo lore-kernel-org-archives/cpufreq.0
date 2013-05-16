@@ -1,32 +1,41 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 00/33] devm improvement series, part 1, take 2
-Date: Thu, 16 May 2013 12:29:19 -0600
-Message-ID: <5195257F.3060309@wwwdotorg.org>
-References: <1368702961-4325-1-git-send-email-wsa@the-dreams.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
+Date: Thu, 16 May 2013 22:51:25 +0200
+Message-ID: <4482296.g7Mb85DDVP@vostro.rjw.lan>
+References: <cover.1368679353.git.viresh.kumar@linaro.org> <6691801.RqjZrI7EgH@vostro.rjw.lan> <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devel-bounces@linuxdriverproject.org>
-In-Reply-To: <1368702961-4325-1-git-send-email-wsa@the-dreams.de>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/devel>, 
- <mailto:devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/devel/>
-List-Post: <mailto:devel@linuxdriverproject.org>
-List-Help: <mailto:devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/devel>, 
- <mailto:devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: devel-bounces@linuxdriverproject.org
-Sender: "devel" <devel-bounces@linuxdriverproject.org>
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-usb@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Matt Mackall <mpm@selenic.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, linux-ide@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>, Wan ZongShun <mcuos.com@gmail.com>, ac100@lists.launchpad.net, devel@driverdev.osuosl.org, Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>, Herbert Xu <herbert@gondor.apana.org.au>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Eduardo Valentin <eduardo.v>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 
-On 05/16/2013 05:15 AM, Wolfram Sang wrote:
-> Lately, I have been experimenting how to improve the devm interface to make
-> writing device drivers easier and less error prone while also getting rid of
-> its subtle issues. I think it has more potential but still needs work and
-> definately conistency, especiall in its usage.
-...
+On Thursday, May 16, 2013 02:09:46 PM Viresh Kumar wrote:
+> On 16 May 2013 14:16, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday, May 16, 2013 10:39:55 AM Viresh Kumar wrote:
+> >> Hi Rafael,
+> >
+> > Hi,
+> >
+> >> Here are few more fixes for 3.10-rc2.
+> >
+> > I'm actually going to sent the for-rc2 request today, so these are for -rc3.
+> 
+> Okay. No issues.
 
-The Tegra parts in patches 4, 5, 8, 15, 16, 17, 29 all,
-Acked-by: Stephen Warren <swarren@nvidia.com>
+While I kind of understand why you want [3/3] to go into 3.10, I'm wondering
+about the other two patches.  Why exactly are they needed now?
+
+And speaking of patch [3/3], if you paste kernel logs into changelogs, please
+remove the time stamps (unless they are relevant to the problem being fixed).
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
