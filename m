@@ -1,51 +1,48 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] cpufreq/intel_pstate: Add additional supported CPU ID
-Date: Fri, 17 May 2013 09:10:24 -0700
-Message-ID: <1368807024-15251-1-git-send-email-dirk.j.brandewie@gmail.com>
-References: <1368801497-13072-1-git-send-email-dirk.j.brandewie@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
+Date: Sat, 18 May 2013 01:40:27 +0200
+Message-ID: <3949011.nZfu3g41l4@vostro.rjw.lan>
+References: <cover.1368679353.git.viresh.kumar@linaro.org> <10164364.7LZaY8si4T@vostro.rjw.lan> <CAKohpo=bNzYw5ire+6XnM+cv6fnPBDN-CX0DRonc5qhpKC01yA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=x-received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        bh=Ml9XJcmkCzgUPRsOoEn1BDfLbT0BU7Sjz9O3DUWahxw=;
-        b=K5asTNhuTZsvNPStHSrq2+a4JcU3AhVs1nIv+JjbTbNdZ6bo1WZT9pY1AewRp+XTOG
-         kbi0wL58LUn7Yc9wRlU93F1wToqgHdjoFfqi+q6XYKPqPbfJWLy3fVJ1v695JQ3LrFPt
-         8DLcxDAVo69dmndTYuf2XNW5yclcbqZqpJkaynAdS4TZImz6r2cYVl20vfgZmE+8NQPb
-         mvNZp0fqSOVqmSj7bI8Ku/e8yX1+IP1ZTC1mTEEbFsupSVeDY3VA9EzX4EnaT7qMirr8
-         jFNoKzKGLIBdwHqaQJQ1roiXxvPVeBwhIXGeeRJ5P75eGKP68/G/CS4VXW5E5MC0/SWI
-         +clw==
-In-Reply-To: <1368801497-13072-1-git-send-email-dirk.j.brandewie@gmail.com>
+In-Reply-To: <CAKohpo=bNzYw5ire+6XnM+cv6fnPBDN-CX0DRonc5qhpKC01yA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-pm@vger.kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, torvalds@linux-foundation.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Friday, May 17, 2013 07:22:05 PM Viresh Kumar wrote:
+> On 17 May 2013 17:46, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday, May 17, 2013 10:13:37 AM Viresh Kumar wrote:
+> >> On 17 May 2013 02:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > While I kind of understand why you want [3/3] to go into 3.10, I'm wondering
+> >> > about the other two patches.  Why exactly are they needed now?
+> >>
+> >> First one:
+> >>
+> >>   cpufreq: Add EXPORT_SYMBOL_GPL for have_governor_per_policy
+> >>
+> >> is required so that governors can be compiled as module. Otherwise they
+> >> may break.. I haven't tried that but I believe that is the case.
+> >
+> > Did you try to build them as modules?
+> 
+> That's what: "I haven't tried that but I believe that is the case."..
+> Modules need variables to be exported with EXPORT_SYMBOL_GPL
+> to be used by them.. And I thought this is pretty straight forward.
 
-Add CPU ID for Ivybrigde processor.
+Well, I actually meant "can you please verify your belief?". :-)
 
-Cc: torvalds@linux-foundation.org
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
- drivers/cpufreq/intel_pstate.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+And that's because I'm wondering why the zero-day build testing doesn't
+catch this problem.  Apparently, it doesn't build .configs with cpufreq
+governors configured as modules, although I believe it does test
+"make allmodconfig" for a couple of architectures at least.  What gives?
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 1813311..d1e36fe 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -521,6 +521,7 @@ static void intel_pstate_timer_func(unsigned long __data)
- static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(0x2a, default_policy),
- 	ICPU(0x2d, default_policy),
-+	ICPU(0x3a, default_policy),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+Rafael
+
+
 -- 
-1.7.7.6
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
