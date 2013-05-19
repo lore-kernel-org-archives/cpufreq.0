@@ -1,33 +1,87 @@
-From: Theodore Ts'o <tytso@mit.edu>
-Subject: Re: [PATCH] cpufreq/intel_pstate: Add additional supported CPU ID
-Date: Sat, 18 May 2013 10:09:58 -0400
-Message-ID: <20130518140958.GA17314@thunk.org>
-References: <1368801497-13072-1-git-send-email-dirk.j.brandewie@gmail.com>
- <1368807024-15251-1-git-send-email-dirk.j.brandewie@gmail.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH 2/2] cpufreq: Don't create empty /sys/devices/system/cpu/cpufreq
+ directory
+Date: Sun, 19 May 2013 20:43:31 +0200
+Message-ID: <51991D53.7020806@gmail.com>
+References: <8bf03cb4a42864802800188fde78adf9b498455f.1368789952.git.viresh.kumar@linaro.org> <1b08f7e4657818e4a00ea7ebb137998223834dd5.1368789952.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1368807024-15251-1-git-send-email-dirk.j.brandewie@gmail.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=x-received:message-id:date:from:user-agent:mime-version:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        bh=sLNBWGKTDq06NHT4s1rsAllfx7u8JeNq5Nx9zsvU8Pg=;
+        b=LWGfYJ9TN/xJsD7Pcwj5ucfli9uOLSWIHeJKgwiIKkypPYw53CCQvS7WFe4coHJI1e
+         lrtU4XqjcI2SaOKzMpkgVb/S7eJerW87rT/48GG57bB+juV+8UK7U+z2HsMhG4YqKvTl
+         9jUASpnONZEgHv9HJpfQ3s/0Gx7qIlAjwV0JV3yp8xKsW6WD5D6rN37wGbwRp1Sy3mLh
+         a81eDn6HTbStf8tb3KGTxVKYbiUdzVuAPDvL0uYy7+47ZXOrWigWHdbDOBmoyf7rE1WC
+         upuHYxCUTd8voLe5B9ayEk/z6GPpH7Wsm1sKx4mxKX03FZM61BoCr97XCajHN3snmca5
+         pWlQ==
+In-Reply-To: <1b08f7e4657818e4a00ea7ebb137998223834dd5.1368789952.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dirk.brandewie@gmail.com
-Cc: linux-pm@vger.kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Dirk Brandewie <dirk.j.brandewie@intel.com>, torvalds@linux-foundation.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, charles.garcia-tobin@arm.com
 
-On Fri, May 17, 2013 at 09:10:24AM -0700, dirk.brandewie@gmail.com wrote:
-> From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Hi,
+
+On 05/17/2013 01:26 PM, Viresh Kumar wrote:
+> When we don't have any file in cpu/cpufreq directory we shouldn't create it.
+> Specially with the introduction of per-policy governor instance patchset, even
+> governors are moved to cpu/cpu*/cpufreq/governor-name directory and so this
+> directory is just not required.
 > 
-> Add CPU ID for Ivybrigde processor.
+> Lets have it only when required.
 > 
-> Cc: torvalds@linux-foundation.org
-> Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+[...]
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e3d7112..2e18b3d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -678,9 +678,6 @@ static struct attribute *default_attrs[] = {
+>  	NULL
+>  };
+>  
+> -struct kobject *cpufreq_global_kobject;
+> -EXPORT_SYMBOL(cpufreq_global_kobject);
+> -
+>  #define to_policy(k) container_of(k, struct cpufreq_policy, kobj)
+>  #define to_attr(a) container_of(a, struct freq_attr, attr)
+>  
+> @@ -751,6 +748,49 @@ static struct kobj_type ktype_cpufreq = {
+>  	.release	= cpufreq_sysfs_release,
+>  };
+>  
+> +struct kobject *cpufreq_global_kobject;
+> +EXPORT_SYMBOL(cpufreq_global_kobject);
+> +
+> +static int cpufreq_global_kobject_usage;
+> +
+> +int get_cpufreq_global_kobject(void)
+> +{
+> +	if (!cpufreq_global_kobject_usage++)
+> +		return kobject_add(cpufreq_global_kobject,
+> +				&cpu_subsys.dev_root->kobj, "%s", "cpufreq");
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(get_cpufreq_global_kobject);
+> +
+> +void put_cpufreq_global_kobject(void)
+> +{
+> +	if (!--cpufreq_global_kobject_usage)
+> +		kobject_del(cpufreq_global_kobject);
+> +}
+> +EXPORT_SYMBOL(put_cpufreq_global_kobject);
 
-BTW, there are some good comments about this by Arjan in this G+ post
+Global symbol names should begin with a sensible prefix; in this case,
+it looks like cpufreq_get_global_kobject and cpufreq_put_global_kobject
+would be more appropriate names.
 
-https://plus.google.com/117091380454742934025/posts/2vEekAsG2QT
-
-I've tested a patch identical to this on my Thinkpad T430s and it
-seems to work quite well for me.
-
-				- Ted
+Regards,
+Francesco
