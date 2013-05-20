@@ -1,49 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Ross Lagerwall <rosslagerwall@gmail.com>
 Subject: Re: NULL pointer dereference
-Date: Mon, 20 May 2013 15:16:56 +0530
-Message-ID: <CAOh2x=ms1j1j=qV2zkd_KQiwLGirPvwQkV=7b=gnbBR34TxKng@mail.gmail.com>
+Date: Mon, 20 May 2013 13:04:48 +0100
+Message-ID: <20130520120448.GA1176@hobo.wolfson.cam.ac.uk>
 References: <20130520070350.GA741@hobo.wolfson.cam.ac.uk>
+ <CAOh2x=ms1j1j=qV2zkd_KQiwLGirPvwQkV=7b=gnbBR34TxKng@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=mime-version:x-received:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=O2xEcdDhsMAycuZZgJlh6p0UZHYjNofA3FvVi9gO1AU=;
-        b=cOvdvXz88YH+eNiFl9WlncbY8BuQUEd2vbMeLAKDxHwOTl9BerJtPr+wIZhRoMWFmO
-         B7A16nRetY/aUd/iZzxgt7M1FPMeiEW+qOSuLPRCJ6qhfvE1VEIE0Ycmx5uLHKmVbDjP
-         kCoF6II1tJM08C08eFkRcH3QvlmKT7Sq6n4A8cSWoF4mg8pvY0vVXzE0QRzUvC4MtiyS
-         afB7X0aH9RAXtR4yUTzEInb6V3QoVaOCvgDrZ2dJ7InGUr5dBcSpwxcu0S7c44vn3aEz
-         11kzDWxioyQW69JAzQPxbj4uu9K8WXENE14SBED7eACQyIdiVwomEYGhQ49VnoxvrCkM
-         kIIw==
-In-Reply-To: <20130520070350.GA741@hobo.wolfson.cam.ac.uk>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=yBz8ugxUMCdi+9SBTN3wuBl3pHGZ2LXrAx+WMUQq/k4=;
+        b=XcDSZdsp+b74YuXA0NT/R+rbpExdF9sPCN4y5PPffCc3lW62Qfml7pTg59B88gBRKl
+         eSaeeRjZB3XUkd8Ty+aU01dZ7g7R1YDLEcKp1k5GlZcyV3OnoLHsd5XT0pqBTA/HjkoJ
+         ARnSotGDKrRhYro18/QeFRUZ+HExUgBXM4D1ym7c1JeDDyW7H9c1pJ4EtZmy9wiHaeO1
+         zUj0mggnHP4XcLWNfaRHJcqaAYDQk7Jj6rNOuP3G+1TxgI8R5C0+5eSykhphU74ugl8k
+         CjUDkFWhm4z7QOk6ZX4V8HhaY0F9vvZUD1DvKECgJ6EX6/thvd5yEM5Yc6rjQ3r+zJSA
+         697A==
+Content-Disposition: inline
+In-Reply-To: <CAOh2x=ms1j1j=qV2zkd_KQiwLGirPvwQkV=7b=gnbBR34TxKng@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ross Lagerwall <rosslagerwall@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: cpufreq@vger.kernel.org
 
-On Mon, May 20, 2013 at 12:33 PM, Ross Lagerwall
-<rosslagerwall@gmail.com> wrote:
-> Booting 3.10-rc1, I got a warning, then a stack dump then a NULL pointer
-> dereference all apparently in cpufreq code:
-> WARNING: at drivers/cpufreq/cpufreq_governor.c:251
-> cpufreq_governor_dbs+0x61e/0x680()
-> ...
->
-> It seems to have happened during the initialization of udev.
-> This has only happened once out of several boots.
->
-> I have attached the boot log for completeness. I'm not sure if any other
-> information is needed.
+On Mon, May 20, 2013 at 03:16:56PM +0530, Viresh Kumar wrote:
+> Some known bugs are fixed during 3.10-rc2. Can you please check that to
+> see if it works for you?
+> 
+> They should already be there in linus's master branch.
+> 
 
-Hi Ross,
+OK, I'll update and report back if it comes up again.
 
-Some known bugs are fixed during 3.10-rc2. Can you please check that to
-see if it works for you?
-
-They should already be there in linus's master branch.
-
---
-viresh
+Thanks
+-- 
+Ross Lagerwall
