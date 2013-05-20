@@ -1,61 +1,56 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123
- native_smp_send_reschedule, round 2
-Date: Mon, 20 May 2013 17:08:09 +0200
-Message-ID: <20130520150809.GG12690@pd.tnic>
-References: <20130520064727.GD12690@pd.tnic>
- <5199C990.3020602@linux.vnet.ibm.com>
- <5199CB59.1020309@linux.vnet.ibm.com>
- <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com>
- <5199CFD0.9030101@linux.vnet.ibm.com>
- <5199E54D.7030407@linux.vnet.ibm.com>
- <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com>
- <5199EBB5.7060209@linux.vnet.ibm.com>
- <20130520132355.GF12690@pd.tnic>
- <CAKohpokEdnmR4wsAqZgxnLOd5MAn6RNEFYwJQ8Xv1EdRbX1tkQ@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 58541] [pandaboard] cpu frequency limitation
+Date: Mon, 20 May 2013 19:48:17 +0000 (UTC)
+Message-ID: <20130520194817.06CCF11FA61@bugzilla.kernel.org>
+References: <bug-58541-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1369062491; bh=axbiKIKAC43JuNn9RuHk6xoOuivyjtM8xoCT8GlkIpQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=SIfI1VisZFEEPOqOUZgiVHIkvgIL/kOzuvf2mG
-	5MwKzTCSytLfpOJplsmu7PCtkrSVjtYJmS5z++HGOpbYN/dX8VFbRAB2euNtqhFD6FR
-	PscS0AKDkyXn6Dq9VWU2Dxvxb5EWgGXC9x85cm1Ld6HzB/NOfsN/iyR+hQ5WqEZml0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1369062491; bh=axbiKIKAC43JuNn9RuHk6xoOuivyjtM8xoCT8GlkIpQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=SIfI1VisZFEEPOqOUZgiVHIkvgIL/kOzuvf2mG
-	5MwKzTCSytLfpOJplsmu7PCtkrSVjtYJmS5z++HGOpbYN/dX8VFbRAB2euNtqhFD6FR
-	PscS0AKDkyXn6Dq9VWU2Dxvxb5EWgGXC9x85cm1Ld6HzB/NOfsN/iyR+hQ5WqEZml0=
-Content-Disposition: inline
-In-Reply-To: <CAKohpokEdnmR4wsAqZgxnLOd5MAn6RNEFYwJQ8Xv1EdRbX1tkQ@mail.gmail.com>
+In-Reply-To: <bug-58541-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Michael Wang <wangyun@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Mon, May 20, 2013 at 07:13:08PM +0530, Viresh Kumar wrote:
-> Hmm, so for sure there is some locking issue there. ave you tried my
-> Hpatch?
+https://bugzilla.kernel.org/show_bug.cgi?id=58541
 
-No, not yet. Pretty busy ATM. Btw, you could try reproducing it too, in
-the meantime - simply enable
 
-CONFIG_NO_HZ_COMMON=y
-# CONFIG_NO_HZ_IDLE is not set
-CONFIG_NO_HZ_FULL=y
-CONFIG_NO_HZ_FULL_ALL=y
-CONFIG_NO_HZ=y
-CONFIG_RCU_FAST_NO_HZ=y
+Nishanth Menon <nm@ti.com> changed:
 
-and halt the box. I don't know whether !x86 boxen support NO_HZ_FULL yet
-though.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |nm@ti.com
+
+
+
+
+--- Comment #2 from Nishanth Menon <nm@ti.com>  2013-05-20 19:48:16 ---
+This is correct - *ONLY* 920MHz will be supported by default without AVS Class
+1.5, Adaptive Body Bias(ABB) support enabled. ABB and AVS class 1.5 is
+mandatory for frequencies 1.2GHz and 1.5GHz to be enabled.
+
+For PandaBoard ES, we also have additional constraint. MPU voltage is supplied
+by TPS62391 PMIC chip which can only be controlled from I2C_SR.
+
+we DONOT have any form of support for pmic control over i2c_sr.
+
+Current status:
+a) ABB support - currently blocked due to lack of clock node support in OF.
+   i) ABB driver support and DTS conversion:
+http://marc.info/?l=linux-omap&m=136751559523901&w=2
+   ii) Clock node support preventing this from being merged in:
+http://marc.info/?t=136804008400001&r=1&w=2
+b) TPS62361 support and hence voltage control over i2c_sr -> to be posted in
+linux-omap mailing list this week -
+https://github.com/nmenon/linux-2.6-playground/commits/devel/vc-vp-regulator
+has the prelim patches undergoing TI internal review.
+
+In short - this was never a feature that k.org had support till date.
+
+For full conversion, see the overview steps I posted here:
+https://plus.google.com/u/0/112464029509057661457/posts/gvyZQcNieoq
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
