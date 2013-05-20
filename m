@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 58541] [pandaboard] cpu frequency limitation
-Date: Mon, 20 May 2013 19:49:59 +0000 (UTC)
-Message-ID: <20130520194959.189DA11FA61@bugzilla.kernel.org>
+Date: Mon, 20 May 2013 20:58:16 +0000 (UTC)
+Message-ID: <20130520205816.CDC2011FA60@bugzilla.kernel.org>
 References: <bug-58541-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -18,8 +18,8 @@ https://bugzilla.kernel.org/show_bug.cgi?id=58541
 
 
 
---- Comment #3 from Nishanth Menon <nm@ti.com>  2013-05-20 19:49:58 ---
-I think this should be assigned to linux-omap instead of cpufreq btw.
+--- Comment #4 from Tobias Jakobi <liquid.acid@gmx.net>  2013-05-20 20:58:16 ---
+Thanks for the update. It's good to know that you guys are working on it!
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
