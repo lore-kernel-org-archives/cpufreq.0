@@ -1,53 +1,28 @@
-From: Rafal Bilski <rafalbilski@interia.pl>
-Subject: [PATCH] e_powersaver: Fix linker error when ACPI processor is a module
-Date: Sun, 19 May 2013 20:27:55 +0100
-Message-ID: <1368991675-1711-1-git-send-email-rafalbilski@interia.pl>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: Don't create empty /sys/devices/system/cpu/cpufreq
+ directory
+Date: Mon, 20 May 2013 09:47:23 +0530
+Message-ID: <CAKohponu_0j6GiWOrbHJScbwXDWoOWzeySPDdRBRowq2bGJ2Ug@mail.gmail.com>
+References: <8bf03cb4a42864802800188fde78adf9b498455f.1368789952.git.viresh.kumar@linaro.org>
+	<1b08f7e4657818e4a00ea7ebb137998223834dd5.1368789952.git.viresh.kumar@linaro.org>
+	<51991D53.7020806@gmail.com>
+Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=interia.pl;
-	s=biztos; t=1368991688;
-	bh=CmtFERhS/J51ca1lUBaiu8fLl1cpts9Wc4l5eQPi1Qg=;
-	h=Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 X-Interia-Antivirus:X-IPL-SAS-SPAS;
-	b=Z+qwHPnhPZPbtxVp5IvH43K1j/zXMraerreOANVruys2FEj493GzMTVcwJc8aInW9
-	 EjaTEzqslpz+cNjmuugCdRQJetBZz0fP5rNCNhPOzbN+lHUd6mbTgaWapMPAC8xMBV
-	 setkmpj+yAL/YF8wMII6LLK75yMtpI+47MsJloYo=
+In-Reply-To: <51991D53.7020806@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rafal Bilski <rafalbilski@interia.pl>
+To: Francesco Lavra <francescolavra.fl@gmail.com>
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, charles.garcia-tobin@arm.com
 
-on i386:
-CONFIG_ACPI_PROCESSOR=m
-CONFIG_X86_E_POWERSAVER=y
+On 20 May 2013 00:13, Francesco Lavra <francescolavra.fl@gmail.com> wrote:
+> On 05/17/2013 01:26 PM, Viresh Kumar wrote:
+>> +EXPORT_SYMBOL(get_cpufreq_global_kobject);
+>> +EXPORT_SYMBOL(put_cpufreq_global_kobject);
+>
+> Global symbol names should begin with a sensible prefix; in this case,
+> it looks like cpufreq_get_global_kobject and cpufreq_put_global_kobject
+> would be more appropriate names.
 
-drivers/built-in.o: In function `eps_cpu_init.part.8':
-e_powersaver.c:(.text.unlikely+0x2243): undefined reference to `acpi_processor_register_performance'
-e_powersaver.c:(.text.unlikely+0x22a2): undefined reference to `acpi_processor_unregister_performance'
-e_powersaver.c:(.text.unlikely+0x246b): undefined reference to `acpi_processor_get_bios_limit'
-
-X86_E_POWERSAVER should also depend on ACPI_PROCESSOR.
-
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- drivers/cpufreq/Kconfig.x86 | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 2b8a8c3..6bd63d6 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -272,7 +272,7 @@ config X86_LONGHAUL
- config X86_E_POWERSAVER
- 	tristate "VIA C7 Enhanced PowerSaver (DANGEROUS)"
- 	select CPU_FREQ_TABLE
--	depends on X86_32
-+	depends on X86_32 && ACPI_PROCESSOR
- 	help
- 	  This adds the CPUFreq driver for VIA C7 processors.  However, this driver
- 	  does not have any safeguards to prevent operating the CPU out of spec
--- 
-1.8.2.3
-
+Sure. Thanks.
