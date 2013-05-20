@@ -1,81 +1,49 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123 native_smp_send_reschedule,
- round 2
-Date: Mon, 20 May 2013 17:24:05 +0800
-Message-ID: <5199EBB5.7060209@linux.vnet.ibm.com>
-References: <alpine.LNX.2.00.1305091423460.23038@pobox.suse.cz> <20130509125040.GF27333@pd.tnic>	<20130509125859.GG27333@pd.tnic> <20130515184528.GO4442@linux.vnet.ibm.com>	<20130515224358.GF11783@pd.tnic> <20130515235512.GT4442@linux.vnet.ibm.com>	<20130517135641.GF23035@pd.tnic> <51999591.8030401@linux.vnet.ibm.com>	<20130520045023.GA12690@pd.tnic> <5199C169.7060504@linux.vnet.ibm.com>	<20130520064727.GD12690@pd.tnic> <5199C990.3020602@linux.vnet.ibm.com>	<5199CB59.1020309@linux.vnet.ibm.com> <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com> <5199CFD0.9030101@linux.vnet.ibm.com>	<5199E54D.7030407@linux.vnet.ibm.com> <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: NULL pointer dereference
+Date: Mon, 20 May 2013 15:16:56 +0530
+Message-ID: <CAOh2x=ms1j1j=qV2zkd_KQiwLGirPvwQkV=7b=gnbBR34TxKng@mail.gmail.com>
+References: <20130520070350.GA741@hobo.wolfson.cam.ac.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:x-received:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=O2xEcdDhsMAycuZZgJlh6p0UZHYjNofA3FvVi9gO1AU=;
+        b=cOvdvXz88YH+eNiFl9WlncbY8BuQUEd2vbMeLAKDxHwOTl9BerJtPr+wIZhRoMWFmO
+         B7A16nRetY/aUd/iZzxgt7M1FPMeiEW+qOSuLPRCJ6qhfvE1VEIE0Ycmx5uLHKmVbDjP
+         kCoF6II1tJM08C08eFkRcH3QvlmKT7Sq6n4A8cSWoF4mg8pvY0vVXzE0QRzUvC4MtiyS
+         afB7X0aH9RAXtR4yUTzEInb6V3QoVaOCvgDrZ2dJ7InGUr5dBcSpwxcu0S7c44vn3aEz
+         11kzDWxioyQW69JAzQPxbj4uu9K8WXENE14SBED7eACQyIdiVwomEYGhQ49VnoxvrCkM
+         kIIw==
+In-Reply-To: <20130520070350.GA741@hobo.wolfson.cam.ac.uk>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Borislav Petkov <bp@alien8.de>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Ross Lagerwall <rosslagerwall@gmail.com>
+Cc: cpufreq@vger.kernel.org
 
-On 05/20/2013 05:09 PM, Viresh Kumar wrote:
-> On 20 May 2013 14:26, Michael Wang <wangyun@linux.vnet.ibm.com> wrote:
->> On 05/20/2013 03:25 PM, Michael Wang wrote:
->>> Yeah, that's right, I guess the issue is, although the policy->cpus is
->>> correct at a given time, after get cpu from it, it's possible to be
->>> changed, unless we disabled preempt or irq, or hotplug before we use it...
->>>
->>> Like such issue cases:
->>>                               get x from policy->cpus
->>>       DOWN notifier
->>>       change policy->cpus
->>>       do offline x
->>>                               send ipi to x
->>>
->>> Will that happen?
-> 
-> Sorry I am not sure. :(
-> 
-> I can see mutex being used in cpufreq_governor.c which should take care
-> of race conditions...
-> 
->> May be we could do some test to confirm it?
->>
->> diff --git a/drivers/cpufreq/cpufreq_governor.c
->> b/drivers/cpufreq/cpufreq_governor.c
->> index 443442d..449be88 100644
->> --- a/drivers/cpufreq/cpufreq_governor.c
->> +++ b/drivers/cpufreq/cpufreq_governor.c
->> @@ -26,6 +26,7 @@
->>  #include <linux/tick.h>
->>  #include <linux/types.h>
->>  #include <linux/workqueue.h>
->> +#include <linux/cpu.h>
->>
->>  #include "cpufreq_governor.h"
->>
->> @@ -180,8 +181,10 @@ void gov_queue_work(struct dbs_data *dbs_data,
->> struct cpufreq_policy *policy,
->>         if (!all_cpus) {
->>                 __gov_queue_work(smp_processor_id(), dbs_data, delay);
->>         } else {
->> +               get_online_cpus();
->>                 for_each_cpu(i, policy->cpus)
->>                         __gov_queue_work(i, dbs_data, delay);
->> +               put_online_cpus();
->>         }
->>  }
->>  EXPORT_SYMBOL_GPL(gov_queue_work);
->>
->> This is supposed to make WARN disappear, if it works, then BINGO :)
-> 
-> Let people test it and then we can talk :)
+On Mon, May 20, 2013 at 12:33 PM, Ross Lagerwall
+<rosslagerwall@gmail.com> wrote:
+> Booting 3.10-rc1, I got a warning, then a stack dump then a NULL pointer
+> dereference all apparently in cpufreq code:
+> WARNING: at drivers/cpufreq/cpufreq_governor.c:251
+> cpufreq_governor_dbs+0x61e/0x680()
+> ...
+>
+> It seems to have happened during the initialization of udev.
+> This has only happened once out of several boots.
+>
+> I have attached the boot log for completeness. I'm not sure if any other
+> information is needed.
 
-Agree :)
+Hi Ross,
 
-Borislav, would you like to take a try?
+Some known bugs are fixed during 3.10-rc2. Can you please check that to
+see if it works for you?
 
-If this fix cause other troubles, you could try get_cpu() or disable irq
-also.
+They should already be there in linus's master branch.
 
-Regards,
-Michael Wang
-
-> 
-
+--
+viresh
