@@ -1,74 +1,67 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123
- native_smp_send_reschedule, round 2
-Date: Tue, 21 May 2013 09:21:40 +0200
-Message-ID: <20130521072140.GA4866@pd.tnic>
-References: <20130520064727.GD12690@pd.tnic>
- <5199C990.3020602@linux.vnet.ibm.com>
- <5199CB59.1020309@linux.vnet.ibm.com>
- <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com>
- <5199CFD0.9030101@linux.vnet.ibm.com>
- <5199E54D.7030407@linux.vnet.ibm.com>
- <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com>
- <5199EBB5.7060209@linux.vnet.ibm.com>
- <20130520132355.GF12690@pd.tnic>
- <519ADA03.5060206@linux.vnet.ibm.com>
+From: Michael Wang <wangyun@linux.vnet.ibm.com>
+Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123 native_smp_send_reschedule,
+ round 2
+Date: Tue, 21 May 2013 15:58:39 +0800
+Message-ID: <519B292F.5020603@linux.vnet.ibm.com>
+References: <20130520064727.GD12690@pd.tnic> <5199C990.3020602@linux.vnet.ibm.com> <5199CB59.1020309@linux.vnet.ibm.com> <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com> <5199CFD0.9030101@linux.vnet.ibm.com> <5199E54D.7030407@linux.vnet.ibm.com> <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com> <5199EBB5.7060209@linux.vnet.ibm.com> <20130520132355.GF12690@pd.tnic> <519ADA03.5060206@linux.vnet.ibm.com> <20130521072140.GA4866@pd.tnic>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1369120901; bh=fvhmUSpsFv4najBu8QscEhp9laHq5e0BgG3+mYJJTuY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=tFkW1Sguf/ELbOWB6MTBJAtIBKxUlksLzGIpMD
-	fXuzSEYEn/QrXzXzk2gZl4OJOfkO1gacQCGDzJHavnvU1i7Zq+caw//yJSigyMaJlbH
-	LKlsbHiCiHUO2uVuuKqJ3EMJ50zIOGetEmrpeLx4SnAotBeg2CgGFK6z6wg6iI+ajM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alien8.de; s=alien8;
-	t=1369120901; bh=fvhmUSpsFv4najBu8QscEhp9laHq5e0BgG3+mYJJTuY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To; b=tFkW1Sguf/ELbOWB6MTBJAtIBKxUlksLzGIpMD
-	fXuzSEYEn/QrXzXzk2gZl4OJOfkO1gacQCGDzJHavnvU1i7Zq+caw//yJSigyMaJlbH
-	LKlsbHiCiHUO2uVuuKqJ3EMJ50zIOGetEmrpeLx4SnAotBeg2CgGFK6z6wg6iI+ajM=
-Content-Disposition: inline
-In-Reply-To: <519ADA03.5060206@linux.vnet.ibm.com>
+In-Reply-To: <20130521072140.GA4866@pd.tnic>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Michael Wang <wangyun@linux.vnet.ibm.com>
+To: Borislav Petkov <bp@alien8.de>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, May 21, 2013 at 10:20:51AM +0800, Michael Wang wrote:
-> This is not enough to prove that policy->cpus is wrong, the cpu could
-> be online when get from policy->cpus, but offline when checked here,
-> since hotplug is able to happen during the period.
-
-Strictly speaking you're correct but I don't do any hotplug besides the
-one-time thing which is part of halting the box.
-
-> I don't get it...
+On 05/21/2013 03:21 PM, Borislav Petkov wrote:
+> On Tue, May 21, 2013 at 10:20:51AM +0800, Michael Wang wrote:
+>> This is not enough to prove that policy->cpus is wrong, the cpu could
+>> be online when get from policy->cpus, but offline when checked here,
+>> since hotplug is able to happen during the period.
 > 
-> get_online_cpus() is just stop hotplug happen after it was invoked, so
-> unless policy->cpus is really wrong, otherwise all the cpu it masked
-> won't go offline any more.
+> Strictly speaking you're correct but I don't do any hotplug besides the
+> one-time thing which is part of halting the box.
 
-Yes, that's my impression too - at the point we do gov_queue_work,
-policy->cpus already contains offline cpus.
+Well, they share the same cpu_down() I suppose...
 
-> This protect nothing...before we go here, the cpu could already
-> offline, nothing changed...
+> 
+>> I don't get it...
+>>
+>> get_online_cpus() is just stop hotplug happen after it was invoked, so
+>> unless policy->cpus is really wrong, otherwise all the cpu it masked
+>> won't go offline any more.
+> 
+> Yes, that's my impression too - at the point we do gov_queue_work,
+> policy->cpus already contains offline cpus.
+> 
+>> This protect nothing...before we go here, the cpu could already
+>> offline, nothing changed...
+> 
+> Yes, but I don't want to schedule work on an offlined cpu and that is
+> ensured here.
 
-Yes, but I don't want to schedule work on an offlined cpu and that is
-ensured here.
+IMHO, the problem seems mostly like the wrong usage of policy->cpus,
+it's providing the right info, but just at that time, we don't need
+worry about work on offlined cpu if we don't allow cpu disappear.
 
-> If you really want to confirm the policy->cpus was wrong, the way
-> should be apply the fix I suggested, than check online in here.
+Your approach could be good respect to performance, but if we could
+prove that policy->cpus is correct firstly, than we could fix the
+problem without any concern, don't we?
 
-Sure, feel free to get a box, enable NO_HZ_FULL and do all the
-experimentations you desire. I surely cannot be the only one who
-triggers this.
+> 
+>> If you really want to confirm the policy->cpus was wrong, the way
+>> should be apply the fix I suggested, than check online in here.
+> 
+> Sure, feel free to get a box, enable NO_HZ_FULL and do all the
+> experimentations you desire. I surely cannot be the only one who
+> triggers this.
 
--- 
-Regards/Gruss,
-    Boris.
+I'm fine if the problem get solved, that means your box doesn't show
+WARN any more :)
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+Regards,
+Michael Wang
+
+> 
+
