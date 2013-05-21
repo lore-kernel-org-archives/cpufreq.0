@@ -1,67 +1,42 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123 native_smp_send_reschedule,
- round 2
-Date: Tue, 21 May 2013 15:58:39 +0800
-Message-ID: <519B292F.5020603@linux.vnet.ibm.com>
-References: <20130520064727.GD12690@pd.tnic> <5199C990.3020602@linux.vnet.ibm.com> <5199CB59.1020309@linux.vnet.ibm.com> <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com> <5199CFD0.9030101@linux.vnet.ibm.com> <5199E54D.7030407@linux.vnet.ibm.com> <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com> <5199EBB5.7060209@linux.vnet.ibm.com> <20130520132355.GF12690@pd.tnic> <519ADA03.5060206@linux.vnet.ibm.com> <20130521072140.GA4866@pd.tnic>
+From: karthik vm <meetvm@gmail.com>
+Subject: Clarification on the DVFS capabilities
+Date: Tue, 21 May 2013 12:18:40 -0400
+Message-ID: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130521072140.GA4866@pd.tnic>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        bh=bVdAzmluq9i/mAllfy90UHtGiVPubrPAsFJ5O3dFwcs=;
+        b=t2JEdCYUxG1RR2M3ZZXFaWM5B+eiXJOfvMJ+/WTsTdVPnlN1HGwhgfdSFAfsBKF+Wg
+         FtasjByGF36jBsjm7yIWnDrlQI41YZz+yh+Siq7nlrfK+CrcweF06wvnm9zMpSTz6J1Z
+         qeyUCw0TROWbHU2aTfwCBgK7tdTdhJFNB8ESc2iaT/b0++aS/smjp5PkLcikoUpjK5+N
+         jxyv67dudv0d42nKhmCnaxpGk9qD0srln2PceafJKyQPZZHxaWsCLbcqj56grVgaj/rr
+         62JCFkKdyoNvOZAC7QjfhuAPJ3nHfgb+9+WRy8xlmuLaO/SLTniHsst4u7dxGAMd8VT1
+         kzlg==
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Borislav Petkov <bp@alien8.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: cpufreq <cpufreq@vger.kernel.org>
 
-On 05/21/2013 03:21 PM, Borislav Petkov wrote:
-> On Tue, May 21, 2013 at 10:20:51AM +0800, Michael Wang wrote:
->> This is not enough to prove that policy->cpus is wrong, the cpu could
->> be online when get from policy->cpus, but offline when checked here,
->> since hotplug is able to happen during the period.
-> 
-> Strictly speaking you're correct but I don't do any hotplug besides the
-> one-time thing which is part of halting the box.
+Hi,
 
-Well, they share the same cpu_down() I suppose...
+I have few doubts on the DVFS capabilities of my intel Core2Duo
+processor (T5750) which has 2 cores (no hyperthreading) and has
+Enhanced Intel Speed Step Technology (EIST). When I run the
+"cpufreq-info" command in Ubuntu Linux I get the result that: "CPUs
+which run at the same hardware frequency: 0 1". Hence I assumed that
+both the CPUs will increase and decrease the frequency in a
+synchronous fashion.
 
-> 
->> I don't get it...
->>
->> get_online_cpus() is just stop hotplug happen after it was invoked, so
->> unless policy->cpus is really wrong, otherwise all the cpu it masked
->> won't go offline any more.
-> 
-> Yes, that's my impression too - at the point we do gov_queue_work,
-> policy->cpus already contains offline cpus.
-> 
->> This protect nothing...before we go here, the cpu could already
->> offline, nothing changed...
-> 
-> Yes, but I don't want to schedule work on an offlined cpu and that is
-> ensured here.
+But when I tried to verify it by using the below command:
 
-IMHO, the problem seems mostly like the wrong usage of policy->cpus,
-it's providing the right info, but just at that time, we don't need
-worry about work on offlined cpu if we don't allow cpu disappear.
+$ watch -n 0.1 grep \"cpu MHz\" /proc/cpuinfo
 
-Your approach could be good respect to performance, but if we could
-prove that policy->cpus is correct firstly, than we could fix the
-problem without any concern, don't we?
-
-> 
->> If you really want to confirm the policy->cpus was wrong, the way
->> should be apply the fix I suggested, than check online in here.
-> 
-> Sure, feel free to get a box, enable NO_HZ_FULL and do all the
-> experimentations you desire. I surely cannot be the only one who
-> triggers this.
-
-I'm fine if the problem get solved, that means your box doesn't show
-WARN any more :)
+Here I see that each core is varying the frequency individually
+contrary to the cpufreq-info commands output that both run at the same
+hardware frequency. Hence can anyone comment on this behavior?
 
 Regards,
-Michael Wang
-
-> 
-
+karthik
