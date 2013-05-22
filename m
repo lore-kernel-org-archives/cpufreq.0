@@ -1,50 +1,81 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Clarification on the DVFS capabilities
-Date: Wed, 22 May 2013 09:38:57 +0530
-Message-ID: <CAOh2x=nMpMhYAYjhW8vxrHaY=Y8gQP+T0T1PL_FVD-u5LMiacg@mail.gmail.com>
-References: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: fix governor start/stop race condition
+Date: Wed, 22 May 2013 14:16:24 +0530
+Message-ID: <CAKohpokR0igX3Z4P9eyoJikmBwnG90eN003wAaJW-Ynu7zU7Aw@mail.gmail.com>
+References: <1368442050-16548-1-git-send-email-chenxg@marvell.com>
+	<51947935.50607@marvell.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=fvJflipxG5AJH+ge3DPZ+W+3KHta4Zini9HhU4RskVM=;
-        b=DR9AhiKb66WHL4yxDGMI1z5jtkcuMGpn8KBXAE/LlxcrAa8d3GdjsN+TJfPmdsrvW0
-         jr1TrqVw0TM/+LbJxai0jMzMtgLhnuKk5jhfMr2cpT2YlUsBCl/jw6Ba29Rzvum3S013
-         uPnN7WPtQoe1Wc5ta6OdllIbOtHuPaY5ZQ/gJfCKMecHZ15rg2DS1J6e3mMAeGVKOaGx
-         UL1DGp3xZL+1+MPzOkZUvnUlyDUl8mRv+5bDTwUcNhX0xe0Gm1voXh9OBDqTKY6DxMnk
-         XkoBvq4QS+khiWfr83qxj+4SVEkQVQgO74rnL4VKC2WD8UWNMdfU+MShyKELGjmYI6eF
-         QwGA==
-In-Reply-To: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com>
+In-Reply-To: <51947935.50607@marvell.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: karthik vm <meetvm@gmail.com>
-Cc: cpufreq <cpufreq@vger.kernel.org>
+To: Xiaoguang Chen <chenxg@marvell.com>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Yilu Mao <ylmao@marvell.com>, Zhoujie Wu <zjwu@marvell.com>
 
-On Tue, May 21, 2013 at 9:48 PM, karthik vm <meetvm@gmail.com> wrote:
-> I have few doubts on the DVFS capabilities of my intel Core2Duo
-> processor (T5750) which has 2 cores (no hyperthreading) and has
-> Enhanced Intel Speed Step Technology (EIST). When I run the
-> "cpufreq-info" command in Ubuntu Linux I get the result that: "CPUs
-> which run at the same hardware frequency: 0 1". Hence I assumed that
-> both the CPUs will increase and decrease the frequency in a
-> synchronous fashion.
->
-> But when I tried to verify it by using the below command:
->
-> $ watch -n 0.1 grep \"cpu MHz\" /proc/cpuinfo
->
-> Here I see that each core is varying the frequency individually
-> contrary to the cpufreq-info commands output that both run at the same
-> hardware frequency. Hence can anyone comment on this behavior?
+Sorry for being late buddy..
 
-Which kernel version are you using? Can you paste output of cpufreq-info.
-You need to look at: "CPUs which need to have their frequency
-coordinated by software:"
-to get the right group of cpus..
+On 16 May 2013 11:44, Xiaoguang Chen <chenxg@marvell.com> wrote:
+> On 05/13/2013 06:47 PM, Xiaoguang Chen wrote:
+>>
 
-The other group (pointed by you) had misleading values, which are
-recently fixed in 3.9.
+Why is the mail came this way.. You forwarded it?
+
+>> cpufreq governor stop and start should be kept in sequence.
+>> If not, there will be unexpected behavior, for example:
+>>
+>> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+>> the normal sequence is as below:
+>>
+>> 1) Current governor is userspace, one application tries to set
+>> governor to ondemand. it will call __cpufreq_set_policy in which it
+>> will stop userspace governor and then start ondemand governor.
+>>
+>> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+>> call cpufreq_add_policy_cpu. on which it first stops userspace
+>> governor, and then starts userspace governor.
+>>
+>> Now if the sequence of above two cases interleaves, it becames
+>> below sequence:
+>>
+>> 1) application stops userspace governor
+>> 2)                                      hotplug stops userspace governor
+>> 3) application starts ondemand governor
+>> 4)                                      hotplug starts a governor
+>>
+>> in step 4, hotplug is supposed to start userspace governor, but now
+>> the governor has been changed by application to ondemand, so hotplug
+>> starts ondemand governor again !!!!
+>>
+>> The solution is as below:
+>> cpufreq policy has a rwsem to protect the read and write of policy.
+>> make the scope of the rwsem to contain cpufreq governor stop/start
+>> sequence, so that after the stop governor has started, other threads
+>> will not stop governor, they have to wait the current thread starts
+>> the governor and then do their job.
+>>
+>> Change-Id: I054bb52789fc8abdcf80bdcc1caebd429c182bb0
+>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 19 ++++++++-----------
+>>   1 file changed, 8 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 1b8a48e..935f750 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -811,14 +811,14 @@ static int cpufreq_add_policy_cpu(unsigned int cpu,
+>> unsigned int sibling,
+>>         int ret = 0, has_target = !!cpufreq_driver->target;
+>>         unsigned long flags;
+>>   +     lock_policy_rwsem_write(sibling);
+>> +
+>>         policy = cpufreq_cpu_get(sibling);
+>>         WARN_ON(!policy);
+>>         if (has_target)
+>>                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+
+We can't have locks are GOV_STOP earlier.. And now we can't have it
+across *_EXIT.. Check latest code... As this gives some circular dependency
+to locking and it fails.
