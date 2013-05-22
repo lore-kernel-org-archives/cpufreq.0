@@ -1,20 +1,25 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3] LAB: Support for Legacy Application Booster governor
-Date: Wed, 22 May 2013 14:05:50 +0200
-Message-ID: <20130522140550.3fa3b4b3@amdc308.digital.local>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Wed, 22 May 2013 16:44:53 +0200
+Message-ID: <20130522164453.29cd3a7d@amdc308.digital.local>
 References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
  <CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
  <20130522122700.104ca5cd@amdc308.digital.local>
  <CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="MP_/1.Do/nwES91iYxHNqTqzEVd"
 Return-path: <linux-pm-owner@vger.kernel.org>
 In-reply-to: <CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+
+--MP_/1.Do/nwES91iYxHNqTqzEVd
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 Hi Viresh,
 
@@ -54,27 +59,75 @@ Hi Viresh,
 > I am not talking about the minute details here... for example I
 > didn't like the way overclocking support is implemented... It has to
 > be a bit more framework oriented then driver...
-
-Presented implementation is only RFC. As I've written, I'm open for
-suggestion.
-
 > 
 > What I am thinking right now is if it is worth to add both the
 > features you are trying. i.e. overclocking and LAB..
 > 
 > So, requested you to give some figures... of ondemand with and without
-> overclocking... 
-
-I will provide test results for ondemand with overclocking enabled and
-disabled. Thanks for clarification on this matter.
-
-> Leave LAB for now...
-
-Seems fair. One step on a time. Lets focus on overclocking.
-
+> overclocking... Leave LAB for now...
 > 
 > Then we can give LAB a try with above...
 
+Test HW Exynos4412 (4 Cores):
+Kernel 3.8.3
+
+Ondemand max freq: 1.4 GHz
+Overclock max freq: 1.5 GHz
+
+
+Ondemand improvement with and without overclocking (called by us
+TurboBoost - TB):
+
+Dhrystone has been built according to:
+http://zenit.senecac.on.ca/wiki/index.php/Dhrystone_howto
+It's Makefile is also attached.
+------------------------------------------------
+
+Dhrystone	# of Threads			
+		1	2	3	4
+ondemand	2054794	2061855	2097902	2090592
+ondemand + TB	2290076	2205882	2281368 2290076
+
+Improvement:	10%	7%	8%	9%
+-------------------------------------------------
+
+Electric charge [C]
+(Avg) [A] * [second]	# of Threads			
+		1	2	3	4
+ondemand	1,334	1,837	2,296	3,096
+ondemand + TB	1,401	2,2025	2,907	4,34976
+								
+Power cost:	5%	17%	21%	29%
+-------------------------------------------------
+
+Execution time [second]	# of Threads			
+		1	2	3	4
+ondemand	2,827	2,8	2,787	2,872
+ondemand + TB	2,622	2,694	2,667	2,76
+				
+				
+Speedup:	-7%	-4%	-4%	-4%
+
+-------------------------------------------------
+
+"Real life" example:
+time tar -czf linux-3.9.1.tar.gz linux-3.9.1/
+
+		Avg current[mA]		Time[s]
+Ondemand:	460			153	
+Ondemand + TB:	512			144
+
+Result:		+10%			-6%
+
+
+
+Conclusion: 
+
+The main use case for TB is to speed up execution of tasks packed to
+one core. Other cores are then in IDLE state.
+
+For a single core we can safely overclock, since we will not exceed its
+power consumption and thermal limits.
 
 
 -- 
@@ -83,3 +136,50 @@ Best regards,
 Lukasz Majewski
 
 Samsung R&D Poland (SRPOL) | Linux Platform Group
+
+--MP_/1.Do/nwES91iYxHNqTqzEVd
+Content-Type: application/octet-stream; name=Makefile
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=Makefile
+
+IwojCUFkanVzdCBmb3IgeW91ciBzeXN0ZW0hCiMKIwlDb21tb24gb3B0aW9ucyBmb3IgZ2VuZXJp
+YyBVTklYIGFuZCBNaWNyb3NvZnQgQyAodW5kZXIgRE9TKQojCWFyZSBsaXN0ZWQgaGVyZS4gIFlv
+dSBjYW4gY2hhbmdlIHRoZW0gYnkgc3dpdGNoaW5nIHRoZSBvcmRlciwKIwlwbGFjaW5nIHRoZSBv
+bmVzIHlvdSB3YW50IGxhc3QuICBQYXkgcGFydGljdWxhciBhdHRlbnRpb24gdG8KIwl0aGUgSFog
+cGFyYW1ldGVyLCB3aGljaCBtYXkgb3IgbWF5IG5vdCBiZSBsaXN0ZWQgaW4gc29tZQojCWhlYWRl
+ciBmaWxlIG9uIHlvdXIgc3lzdGVtLCBzdWNoIGFzIDxzeXMvcGFyYW0uaD4gb3IgPGxpbWl0cy5o
+PgojCShhcyBDTEtfVENLKS4gIEV2ZW4gaWYgaXQgaXMgbGlzdGVkLCBpdCBtYXkgYmUgaW5jb3Jy
+ZWN0LgojCUFsc28sIHNvbWUgb3BlcmF0aW5nIHN5c3RlbXMgKG5vdGFibHkgc29tZSAoYWxsPykg
+dmVyc2lvbnMKIwlvZiBNaWNyb3BvcnQgVU5JWCkgbGllIGFib3V0IHRoZSB0aW1lLiAgU2FuaXR5
+IGNoZWNrIHdpdGggYQojCXN0b3B3YXRjaC4KIwojCUZvciBNaWNyb3NvZnQgQyB1bmRlciBET1Ms
+IHlvdSBuZWVkIGEgcmVhbCBtYWtlLCBub3QgTVNDIG1ha2UsCiMJdG8gcnVuIHRoaXMgTWFrZWZp
+bGUuICBUaGUgcHVibGljIGRvbWFpbiAibmRtYWtlIiB3aWxsIHN1ZmZpY2UuCiMKQ0M9CQljbAkJ
+CSMgQyBjb21waWxlciBuYW1lIGdvZXMgaGVyZSAoTVNDKQpDQz0JCWNjCQkJIyBDIGNvbXBpbGVy
+IG5hbWUgZ29lcyBoZXJlIChVTklYKQpHQ0M9CQlhcm0tZ2NjCgpQUk9HUz0JCXVuaXgJCQkjIFBy
+b2dyYW1zIHRvIGJ1aWxkIChVTklYKQoKI1RJTUVfRlVOQz0JLURNU0NfQ0xPQ0sJCSMgVXNlIE1p
+Y3Jvc29mdCBjbG9jaygpIGZvciBtZWFzdXJlbWVudAojVElNRV9GVU5DPQktRFRJTUUJCQkjIFVz
+ZSB0aW1lKDIpIGZvciBtZWFzdXJlbWVudApUSU1FX0ZVTkM9CS1EVElNRVMJCQkjIFVzZSB0aW1l
+cygyKSBmb3IgbWVhc3VyZW1lbnQKI0haPQkJNTAJCQkjIEZyZXF1ZW5jeSBvZiB0aW1lcygyKSBj
+bG9jayB0aWNrcwpIWj0JCTYwCQkJIyBGcmVxdWVuY3kgb2YgdGltZXMoMikgY2xvY2sgdGlja3MK
+I0haPQkJMTAwCQkJIyBGcmVxdWVuY3kgb2YgdGltZXMoMikgY2xvY2sgdGlja3MKI0haPQkJMQkJ
+CSMgR2l2ZSBib2d1cyByZXN1bHQgdW5sZXNzIGNoYW5nZWQhCgpTVFJVQ1RBU1NJR049CS1ETk9T
+VFJVQ1RBU1NJR04JIyBDb21waWxlciBjYW5ub3QgYXNzaWduIHN0cnVjdHMKU1RSVUNUQVNTSUdO
+PQkJCQkjIENvbXBpbGVyIGNhbiBhc3NpZ24gc3RydWN0cwoKRU5VTVM9CQktRE5PRU5VTVMJCSMg
+Q29tcGlsZXIgZG9lc24ndCBoYXZlIGVudW0gdHlwZQpFTlVNUz0JCQkJCSMgQ29tcGlsZXIgZG9l
+cyBoYXZlIGVudW0gdHlwZQoKT1BUSU1JWkU9CS1PeCAtRzIJCQkjIE9wdGltaXphdGlvbiBMZXZl
+bCAoTVNDLCA4MDI4NikKT1BUSU1JWkU9CS1PNAkJCSMgT3B0aW1pemF0aW9uIExldmVsIChnZW5l
+cmljIFVOSVgpCkdDQ09QVElNPSAgICAgICAtTwoKTEZMQUdTPQkJCQkJI0xvYWRlciBGbGFncwoK
+Q0ZMQUdTPQkkKE9QVElNSVpFKSAkKFRJTUVfRlVOQykgLURIWj0kKEhaKSAkKEVOVU1TKSAkKFNU
+UlVDVEFTU0lHTikgJChDRkwpCkdDQ0ZMQUdTPSAkKEdDQ09QVElNKSAkKFRJTUVfRlVOQykgLURI
+Wj0kKEhaKSAkKEVOVU1TKSAkKFNUUlVDVEFTU0lHTikgJChDRkwpCgojCiMJCVlvdSBzaG91bGRu
+J3QgbmVlZCB0byB0b3VjaCB0aGUgcmVzdAojClNSQz0JCWRocnlfMS5jIGRocnlfMi5jCkhEUj0J
+CWRocnkuaAoKVU5JWF9QUk9HUz0JZ2NjX2RyeTIgZ2NjX2RyeTJyZWcKCiMgRmlsZXMgYWRkZWQg
+YnkgcmVyOgpGSUxFUzE9CQlSRUFETUUuUkVSIGNsYXJpZnkuZG9jIE1ha2VmaWxlIHN1Ym1pdC5m
+cm0gcHVyZTJfMS5kaWYgXAoJCWRocnlfYy5kaWYKIyBSZWluaG9sZCdzIGZpbGVzOgpGSUxFUzI9
+CQlSRUFETUUgUkFUSU9OQUxFICQoSERSKSAkKFNSQykKRklMRVMzPQkJZGhyeS5wCgphbGw6CSQo
+UFJPR1MpCgp1bml4OgkkKFVOSVhfUFJPR1MpCgpnY2NfZHJ5MjoJCSQoU1JDKSAkKEhEUikKCQkk
+KEdDQykgJChHQ0NGTEFHUykgJChTUkMpICQoTEZMQUdTKSAtbyAkQAoKZ2NjX2RyeTJyZWc6CSQo
+U1JDKSAkKEhEUikKCQkkKEdDQykgJChHQ0NGTEFHUykgLURSRUc9cmVnaXN0ZXIgJChTUkMpICQo
+TEZMQUdTKSAtbyAkQAo=
+
+--MP_/1.Do/nwES91iYxHNqTqzEVd--
