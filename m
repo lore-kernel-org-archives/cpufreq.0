@@ -1,185 +1,103 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Wed, 22 May 2013 16:44:53 +0200
-Message-ID: <20130522164453.29cd3a7d@amdc308.digital.local>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
- <20130522122700.104ca5cd@amdc308.digital.local>
- <CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
+From: karthik vm <meetvm@gmail.com>
+Subject: Re: Clarification on the DVFS capabilities
+Date: Wed, 22 May 2013 12:28:52 -0400
+Message-ID: <CAOuKo4kr_=AOeiBjsr-7VBNJOsZvrKEtfo45JooZgsgm9gvZ_A@mail.gmail.com>
+References: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com>
+ <CAOh2x=nMpMhYAYjhW8vxrHaY=Y8gQP+T0T1PL_FVD-u5LMiacg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/1.Do/nwES91iYxHNqTqzEVd"
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        bh=U0nm2jYB/A27+2W4LgE0TX57uzih2UNP4zLSb5T/m8Q=;
+        b=Hdv5YuRlGW0pvAQpVgpIqxTKA8G1T2CTxGd2WfNfEcqXFVEnYyG4iaOx7ml34ah3n1
+         n9UR92E/GMWSMRGar2nrdTKEgf/AhbGiV3JfiClHCORU76Q+eQ67eDh0GeHk7Baj78Ol
+         7pfomF3M1SI08L9nXM3w9yKTUO9YEbdolW/ngHgBshh/t1Urtjf84OvLVJEAyIxCriWE
+         HlTyWkZYt0DeHXzfx+6U4rgnEFubaFNHmnKTHV7vXGhDDdVZFJX2fltH/QfBOhhn8RfZ
+         WI5KDHBI/iq8U+iSa6nHO2FwFhoOLeVjkHMVw4qn7VGYHGXY0i3fIiHMcl6ZFQC+nyBp
+         qOXQ==
+In-Reply-To: <CAOh2x=nMpMhYAYjhW8vxrHaY=Y8gQP+T0T1PL_FVD-u5LMiacg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
-
---MP_/1.Do/nwES91iYxHNqTqzEVd
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq <cpufreq@vger.kernel.org>
 
 Hi Viresh,
 
-> On 22 May 2013 15:57, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> >> On 3 May 2013 19:37, Jonghwa Lee <jonghwa3.lee@samsung.com> wrote:
-> 
-> > I think, that overclocking support is crucial here. As you pointed
-> > out
-> > - ondemand and conservative benefit from it. Therefore, I would urge
-> >   for its mainline acceptance.
-> >
-> > (code for reference)
-> > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> >
-> > In this RFC (patch 1/3), I've decided to put the burden of
-> > overclocking support to platform code (cpufreq/exynos-cpufreq.c and
-> > cpufreq/exynos4x12-cpufreq.c).
-> >
-> > Those changes aren't intrusive for other boards/archs. Moreover
-> > overclocking is closely related to processor clocking/power
-> > dissipation capabilities, so SoC specific code is a good place for
-> > it.
-> >
-> >
-> > What DO need a broad acceptance is the overclocking API proposed at:
-> > include/linux/cpufreq.h
-> >
-> > This introduces interface to which others will be bind. It
-> > shouldn't be difficult to implement overclocking at other SoCs (as
-> > it was proposed for Exynos).
-> >
-> > Feedback is welcome, since I might have overlooked oddities present
-> > at other SoCs.
-> 
-> Hi..
-> 
-> I am not talking about the minute details here... for example I
-> didn't like the way overclocking support is implemented... It has to
-> be a bit more framework oriented then driver...
-> 
-> What I am thinking right now is if it is worth to add both the
-> features you are trying. i.e. overclocking and LAB..
-> 
-> So, requested you to give some figures... of ondemand with and without
-> overclocking... Leave LAB for now...
-> 
-> Then we can give LAB a try with above...
+Thanks for your quick reply. The output of cpufreq-info command is as below:
+--------------------------------------------------------------------
+$ cpufreq-info
+cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+Report errors and bugs to cpufreq@vger.kernel.org, please.
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0 1
+  CPUs which need to have their frequency coordinated by software: 0
+  maximum transition latency: 10.0 us.
+  hardware limits: 1000 MHz - 2.00 GHz
+  available frequency steps: 2.00 GHz, 1.67 GHz, 1.33 GHz, 1000 MHz
+  available cpufreq governors: conservative, ondemand, userspace,
+powersave, performance
+  current policy: frequency should be within 1000 MHz and 2.00 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.00 GHz.
+  cpufreq stats: 2.00 GHz:7.39%, 1.67 GHz:0.66%, 1.33 GHz:1.23%, 1000
+MHz:90.72%  (48956)
+analyzing CPU 1:
+  driver: acpi-cpufreq
+  CPUs which run at the same hardware frequency: 0 1
+  CPUs which need to have their frequency coordinated by software: 1
+  maximum transition latency: 10.0 us.
+  hardware limits: 1000 MHz - 2.00 GHz
+  available frequency steps: 2.00 GHz, 1.67 GHz, 1.33 GHz, 1000 MHz
+  available cpufreq governors: conservative, ondemand, userspace,
+powersave, performance
+  current policy: frequency should be within 1000 MHz and 2.00 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.00 GHz.
+  cpufreq stats: 2.00 GHz:5.87%, 1.67 GHz:0.22%, 1.33 GHz:0.35%, 1000
+MHz:93.55%  (10792)
+----------------------------------------------------------------------------------
 
-Test HW Exynos4412 (4 Cores):
-Kernel 3.8.3
+Also my current Linux version is 3.2.0-43-generic. May be thats why
+there are misleading values for "CPUs which run at the same hardware
+frequency".
 
-Ondemand max freq: 1.4 GHz
-Overclock max freq: 1.5 GHz
+Hence I guess that in my case "CPUs which run at the same hardware
+frequency" & "CPUs which need to have their frequency coordinated by
+software" should have the same value. If so this means that the CPU
+has per-core DVFS. Please correct me if I am wrong.
 
+Regards,
+karthik
 
-Ondemand improvement with and without overclocking (called by us
-TurboBoost - TB):
-
-Dhrystone has been built according to:
-http://zenit.senecac.on.ca/wiki/index.php/Dhrystone_howto
-It's Makefile is also attached.
-------------------------------------------------
-
-Dhrystone	# of Threads			
-		1	2	3	4
-ondemand	2054794	2061855	2097902	2090592
-ondemand + TB	2290076	2205882	2281368 2290076
-
-Improvement:	10%	7%	8%	9%
--------------------------------------------------
-
-Electric charge [C]
-(Avg) [A] * [second]	# of Threads			
-		1	2	3	4
-ondemand	1,334	1,837	2,296	3,096
-ondemand + TB	1,401	2,2025	2,907	4,34976
-								
-Power cost:	5%	17%	21%	29%
--------------------------------------------------
-
-Execution time [second]	# of Threads			
-		1	2	3	4
-ondemand	2,827	2,8	2,787	2,872
-ondemand + TB	2,622	2,694	2,667	2,76
-				
-				
-Speedup:	-7%	-4%	-4%	-4%
-
--------------------------------------------------
-
-"Real life" example:
-time tar -czf linux-3.9.1.tar.gz linux-3.9.1/
-
-		Avg current[mA]		Time[s]
-Ondemand:	460			153	
-Ondemand + TB:	512			144
-
-Result:		+10%			-6%
-
-
-
-Conclusion: 
-
-The main use case for TB is to speed up execution of tasks packed to
-one core. Other cores are then in IDLE state.
-
-For a single core we can safely overclock, since we will not exceed its
-power consumption and thermal limits.
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Poland (SRPOL) | Linux Platform Group
-
---MP_/1.Do/nwES91iYxHNqTqzEVd
-Content-Type: application/octet-stream; name=Makefile
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename=Makefile
-
-IwojCUFkanVzdCBmb3IgeW91ciBzeXN0ZW0hCiMKIwlDb21tb24gb3B0aW9ucyBmb3IgZ2VuZXJp
-YyBVTklYIGFuZCBNaWNyb3NvZnQgQyAodW5kZXIgRE9TKQojCWFyZSBsaXN0ZWQgaGVyZS4gIFlv
-dSBjYW4gY2hhbmdlIHRoZW0gYnkgc3dpdGNoaW5nIHRoZSBvcmRlciwKIwlwbGFjaW5nIHRoZSBv
-bmVzIHlvdSB3YW50IGxhc3QuICBQYXkgcGFydGljdWxhciBhdHRlbnRpb24gdG8KIwl0aGUgSFog
-cGFyYW1ldGVyLCB3aGljaCBtYXkgb3IgbWF5IG5vdCBiZSBsaXN0ZWQgaW4gc29tZQojCWhlYWRl
-ciBmaWxlIG9uIHlvdXIgc3lzdGVtLCBzdWNoIGFzIDxzeXMvcGFyYW0uaD4gb3IgPGxpbWl0cy5o
-PgojCShhcyBDTEtfVENLKS4gIEV2ZW4gaWYgaXQgaXMgbGlzdGVkLCBpdCBtYXkgYmUgaW5jb3Jy
-ZWN0LgojCUFsc28sIHNvbWUgb3BlcmF0aW5nIHN5c3RlbXMgKG5vdGFibHkgc29tZSAoYWxsPykg
-dmVyc2lvbnMKIwlvZiBNaWNyb3BvcnQgVU5JWCkgbGllIGFib3V0IHRoZSB0aW1lLiAgU2FuaXR5
-IGNoZWNrIHdpdGggYQojCXN0b3B3YXRjaC4KIwojCUZvciBNaWNyb3NvZnQgQyB1bmRlciBET1Ms
-IHlvdSBuZWVkIGEgcmVhbCBtYWtlLCBub3QgTVNDIG1ha2UsCiMJdG8gcnVuIHRoaXMgTWFrZWZp
-bGUuICBUaGUgcHVibGljIGRvbWFpbiAibmRtYWtlIiB3aWxsIHN1ZmZpY2UuCiMKQ0M9CQljbAkJ
-CSMgQyBjb21waWxlciBuYW1lIGdvZXMgaGVyZSAoTVNDKQpDQz0JCWNjCQkJIyBDIGNvbXBpbGVy
-IG5hbWUgZ29lcyBoZXJlIChVTklYKQpHQ0M9CQlhcm0tZ2NjCgpQUk9HUz0JCXVuaXgJCQkjIFBy
-b2dyYW1zIHRvIGJ1aWxkIChVTklYKQoKI1RJTUVfRlVOQz0JLURNU0NfQ0xPQ0sJCSMgVXNlIE1p
-Y3Jvc29mdCBjbG9jaygpIGZvciBtZWFzdXJlbWVudAojVElNRV9GVU5DPQktRFRJTUUJCQkjIFVz
-ZSB0aW1lKDIpIGZvciBtZWFzdXJlbWVudApUSU1FX0ZVTkM9CS1EVElNRVMJCQkjIFVzZSB0aW1l
-cygyKSBmb3IgbWVhc3VyZW1lbnQKI0haPQkJNTAJCQkjIEZyZXF1ZW5jeSBvZiB0aW1lcygyKSBj
-bG9jayB0aWNrcwpIWj0JCTYwCQkJIyBGcmVxdWVuY3kgb2YgdGltZXMoMikgY2xvY2sgdGlja3MK
-I0haPQkJMTAwCQkJIyBGcmVxdWVuY3kgb2YgdGltZXMoMikgY2xvY2sgdGlja3MKI0haPQkJMQkJ
-CSMgR2l2ZSBib2d1cyByZXN1bHQgdW5sZXNzIGNoYW5nZWQhCgpTVFJVQ1RBU1NJR049CS1ETk9T
-VFJVQ1RBU1NJR04JIyBDb21waWxlciBjYW5ub3QgYXNzaWduIHN0cnVjdHMKU1RSVUNUQVNTSUdO
-PQkJCQkjIENvbXBpbGVyIGNhbiBhc3NpZ24gc3RydWN0cwoKRU5VTVM9CQktRE5PRU5VTVMJCSMg
-Q29tcGlsZXIgZG9lc24ndCBoYXZlIGVudW0gdHlwZQpFTlVNUz0JCQkJCSMgQ29tcGlsZXIgZG9l
-cyBoYXZlIGVudW0gdHlwZQoKT1BUSU1JWkU9CS1PeCAtRzIJCQkjIE9wdGltaXphdGlvbiBMZXZl
-bCAoTVNDLCA4MDI4NikKT1BUSU1JWkU9CS1PNAkJCSMgT3B0aW1pemF0aW9uIExldmVsIChnZW5l
-cmljIFVOSVgpCkdDQ09QVElNPSAgICAgICAtTwoKTEZMQUdTPQkJCQkJI0xvYWRlciBGbGFncwoK
-Q0ZMQUdTPQkkKE9QVElNSVpFKSAkKFRJTUVfRlVOQykgLURIWj0kKEhaKSAkKEVOVU1TKSAkKFNU
-UlVDVEFTU0lHTikgJChDRkwpCkdDQ0ZMQUdTPSAkKEdDQ09QVElNKSAkKFRJTUVfRlVOQykgLURI
-Wj0kKEhaKSAkKEVOVU1TKSAkKFNUUlVDVEFTU0lHTikgJChDRkwpCgojCiMJCVlvdSBzaG91bGRu
-J3QgbmVlZCB0byB0b3VjaCB0aGUgcmVzdAojClNSQz0JCWRocnlfMS5jIGRocnlfMi5jCkhEUj0J
-CWRocnkuaAoKVU5JWF9QUk9HUz0JZ2NjX2RyeTIgZ2NjX2RyeTJyZWcKCiMgRmlsZXMgYWRkZWQg
-YnkgcmVyOgpGSUxFUzE9CQlSRUFETUUuUkVSIGNsYXJpZnkuZG9jIE1ha2VmaWxlIHN1Ym1pdC5m
-cm0gcHVyZTJfMS5kaWYgXAoJCWRocnlfYy5kaWYKIyBSZWluaG9sZCdzIGZpbGVzOgpGSUxFUzI9
-CQlSRUFETUUgUkFUSU9OQUxFICQoSERSKSAkKFNSQykKRklMRVMzPQkJZGhyeS5wCgphbGw6CSQo
-UFJPR1MpCgp1bml4OgkkKFVOSVhfUFJPR1MpCgpnY2NfZHJ5MjoJCSQoU1JDKSAkKEhEUikKCQkk
-KEdDQykgJChHQ0NGTEFHUykgJChTUkMpICQoTEZMQUdTKSAtbyAkQAoKZ2NjX2RyeTJyZWc6CSQo
-U1JDKSAkKEhEUikKCQkkKEdDQykgJChHQ0NGTEFHUykgLURSRUc9cmVnaXN0ZXIgJChTUkMpICQo
-TEZMQUdTKSAtbyAkQAo=
-
---MP_/1.Do/nwES91iYxHNqTqzEVd--
+On Wed, May 22, 2013 at 12:08 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On Tue, May 21, 2013 at 9:48 PM, karthik vm <meetvm@gmail.com> wrote:
+>> I have few doubts on the DVFS capabilities of my intel Core2Duo
+>> processor (T5750) which has 2 cores (no hyperthreading) and has
+>> Enhanced Intel Speed Step Technology (EIST). When I run the
+>> "cpufreq-info" command in Ubuntu Linux I get the result that: "CPUs
+>> which run at the same hardware frequency: 0 1". Hence I assumed that
+>> both the CPUs will increase and decrease the frequency in a
+>> synchronous fashion.
+>>
+>> But when I tried to verify it by using the below command:
+>>
+>> $ watch -n 0.1 grep \"cpu MHz\" /proc/cpuinfo
+>>
+>> Here I see that each core is varying the frequency individually
+>> contrary to the cpufreq-info commands output that both run at the same
+>> hardware frequency. Hence can anyone comment on this behavior?
+>
+> Which kernel version are you using? Can you paste output of cpufreq-info.
+> You need to look at: "CPUs which need to have their frequency
+> coordinated by software:"
+> to get the right group of cpus..
+>
+> The other group (pointed by you) had misleading values, which are
+> recently fixed in 3.9.
