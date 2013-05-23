@@ -1,57 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: use the exact frequency for clk_set_rate()
-Date: Wed, 22 May 2013 21:31:22 +0200
-Message-ID: <16318112.i755nOUCKx@vostro.rjw.lan>
-References: <Pine.LNX.4.64.1302251820431.3030@axis700.grange> <20130328020732.GF5429@S2101-09.ap.freescale.net> <Pine.LNX.4.64.1305222000510.12715@axis700.grange>
+From: Xiaoguang Chen <chenxg@marvell.com>
+Subject: Re: [PATCH] cpufreq: fix governor start/stop race condition
+Date: Thu, 23 May 2013 10:44:23 +0800
+Message-ID: <519D8287.5020004@marvell.com>
+References: <1368442050-16548-1-git-send-email-chenxg@marvell.com> <51947935.50607@marvell.com> <CAKohpokR0igX3Z4P9eyoJikmBwnG90eN003wAaJW-Ynu7zU7Aw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1305222000510.12715@axis700.grange>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpokR0igX3Z4P9eyoJikmBwnG90eN003wAaJW-Ynu7zU7Aw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Yilu Mao <ylmao@marvell.com>, Zhoujie Wu <zjwu@marvell.com>
 
-On Wednesday, May 22, 2013 08:12:22 PM Guennadi Liakhovetski wrote:
-> Hi Rafael
-> 
-> I don't see this patch in your cpufreq branch nor in next or Linus' trees, 
-> has it been pulled yet?
+On 05/22/2013 04:46 PM, Viresh Kumar wrote:
+> Sorry for being late buddy..
+>
+> On 16 May 2013 11:44, Xiaoguang Chen <chenxg@marvell.com> wrote:
+>> On 05/13/2013 06:47 PM, Xiaoguang Chen wrote:
+> Why is the mail came this way.. You forwarded it?
+I didn't see your reponse, So I once replied this mail once.:)
+>
+>>> cpufreq governor stop and start should be kept in sequence.
+>>> If not, there will be unexpected behavior, for example:
+>>>
+>>> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+>>> the normal sequence is as below:
+>>>
+>>> 1) Current governor is userspace, one application tries to set
+>>> governor to ondemand. it will call __cpufreq_set_policy in which it
+>>> will stop userspace governor and then start ondemand governor.
+>>>
+>>> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+>>> call cpufreq_add_policy_cpu. on which it first stops userspace
+>>> governor, and then starts userspace governor.
+>>>
+>>> Now if the sequence of above two cases interleaves, it becames
+>>> below sequence:
+>>>
+>>> 1) application stops userspace governor
+>>> 2)                                      hotplug stops userspace governor
+>>> 3) application starts ondemand governor
+>>> 4)                                      hotplug starts a governor
+>>>
+>>> in step 4, hotplug is supposed to start userspace governor, but now
+>>> the governor has been changed by application to ondemand, so hotplug
+>>> starts ondemand governor again !!!!
+>>>
+>>> The solution is as below:
+>>> cpufreq policy has a rwsem to protect the read and write of policy.
+>>> make the scope of the rwsem to contain cpufreq governor stop/start
+>>> sequence, so that after the stop governor has started, other threads
+>>> will not stop governor, they have to wait the current thread starts
+>>> the governor and then do their job.
+>>>
+>>> Change-Id: I054bb52789fc8abdcf80bdcc1caebd429c182bb0
+>>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+>>> ---
+>>>    drivers/cpufreq/cpufreq.c | 19 ++++++++-----------
+>>>    1 file changed, 8 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>> index 1b8a48e..935f750 100644
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -811,14 +811,14 @@ static int cpufreq_add_policy_cpu(unsigned int cpu,
+>>> unsigned int sibling,
+>>>          int ret = 0, has_target = !!cpufreq_driver->target;
+>>>          unsigned long flags;
+>>>    +     lock_policy_rwsem_write(sibling);
+>>> +
+>>>          policy = cpufreq_cpu_get(sibling);
+>>>          WARN_ON(!policy);
+>>>          if (has_target)
+>>>                  __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+> We can't have locks are GOV_STOP earlier.. And now we can't have it
+> across *_EXIT.. Check latest code... As this gives some circular dependency
+> to locking and it fails.
+Do you mean my patch will cause deadlock? I once tried to add another lock
+to protect the GOV_STOP/START sequence instead of using the rwsem in 
+this patch.
+But I saw deadlock indeed.
+In cpufreq_add_policy_cpu, the lock has to be added before the rwsem 
+since GOV_STOP is
+before lock_policy_rwsem_write, but in cpufreq_update_policy, it will 
+first get the rwsem, and then
+call __cpufreq_set_policy which will contain GOV_STOP again, if we add 
+the new lock before this GOV_STOP,
+then we may get deadlock in below sequence:
+1) hotplug in one cpu by calling cpufreq_add_policy_cpu in which new 
+lock is locked first then rwsem is locked.
+2) governor change in cpufreq_update_policy in which rwsem is locked 
+first then new lock is locked.
+this is a deadlock issue if above two steps interleaves
 
-No, I haven't applied it yet, not sure why exactly.
-
-In the future it's better to CC cpufreq patches to linux-pm@vger.kernel.org so
-that the kernel.org Patchwork can pick them up.  I'm much less likely to
-overlook them then.
-
-This is a fix, so do we need it in 3.10-rc?
-
-Rafael
 
 
-> On Thu, 28 Mar 2013, Shawn Guo wrote:
-> 
-> > On Wed, Mar 27, 2013 at 11:46:38PM +0100, Guennadi Liakhovetski wrote:
-> > > Hi Shawn
-> > > 
-> > > On Mon, 25 Feb 2013, Guennadi Liakhovetski wrote:
-> > > 
-> > > > clk_set_rate() isn't supposed to accept approximate frequencies, instead
-> > > > a supported frequency should be obtained from clk_round_rate() and then
-> > > > used to set the clock.
-> > > > 
-> > > > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > > 
-> > > Can I have your ack for this one, please?
-> > 
-> > Acked-by: Shawn Guo <shawn.guo@linaro.org>
-> > 
-> 
-> ---
-> Guennadi Liakhovetski, Ph.D.
-> Freelance Open-Source Software Developer
-> http://www.open-technology.de/
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks
+Xiaoguang
+
