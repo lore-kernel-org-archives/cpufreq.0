@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 58801] intel_pstate/powersave - cpu frequency remains at high
  level if if system is idle
-Date: Sat, 25 May 2013 09:39:03 +0000 (UTC)
-Message-ID: <20130525093903.3768711F965@bugzilla.kernel.org>
+Date: Sat, 25 May 2013 14:57:22 +0000 (UTC)
+Message-ID: <20130525145722.39D3E11F976@bugzilla.kernel.org>
 References: <bug-58801-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,20 +19,26 @@ https://bugzilla.kernel.org/show_bug.cgi?id=58801
 
 
 
---- Comment #2 from Christoph Loehr <c.h.l@web.de>  2013-05-25 09:39:02 ---
-At first I have to add that also kernel 3.9.2 worked. According to the
-changelog of kernel 3.9.3 between 3.9.2 and 3.9.3 three commitments concerning
-intel_pstate (b540137a810d0267051c538e68d4348e43a1edf3,
-2aa491f8bdcac932006548b1a2b655b29c942e08 and
-1abc4b20b85b42e8573957e54b193385cf48b0d6) have been added to the kernel. I
-guess that one of them might be the culprit. 
+--- Comment #3 from Christoph Loehr <c.h.l@web.de>  2013-05-25 14:57:21 ---
+In the meantime I have made a git bisect between kernel 3.9.2 and 3.9.3 with
+the following result:
 
-As I am rather a user it's only possible for me to describe the symptoms. 
+5aacc8bcf0b23e20cbb205ac6fdc3ce797e1cae2 is the first bad commit
+commit 5aacc8bcf0b23e20cbb205ac6fdc3ce797e1cae2
+Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Date:   Tue May 7 08:20:25 2013 -0700
 
-With kernel 3.9.2, when the system is idle according to cpufreg-info the
-frequency of all cpu's is between 775 and 800 MHz, which is the minimum. With
-kernel 3.9.3 and 3.9.4 it never goes below 2.85 GHz. In both cases intel_pstate
-is the driver and powersave the governor.
+cpufreq / intel_pstate: remove idle time and duration from sample and
+calculations
+
+commit 1abc4b20b85b42e8573957e54b193385cf48b0d6 upstream.
+
+
+In order to confirm this is the relevant commit I have compiled a 3.9.3 kernel
+where I had reverted the changes provided by this commit. With this kernel
+booted the frequency switching works again. 
+
+I hope that helps.
 
 Christoph
 
