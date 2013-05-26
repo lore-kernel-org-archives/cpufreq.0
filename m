@@ -1,44 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Clarification on the DVFS capabilities
-Date: Sun, 26 May 2013 12:31:30 +0530
-Message-ID: <CAKohponxigN=DqZiKfd6E+2i+Jot3tQUR=z0cU8d0xxATnxkMw@mail.gmail.com>
-References: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com>
-	<CAOh2x=nMpMhYAYjhW8vxrHaY=Y8gQP+T0T1PL_FVD-u5LMiacg@mail.gmail.com>
-	<CAOuKo4kr_=AOeiBjsr-7VBNJOsZvrKEtfo45JooZgsgm9gvZ_A@mail.gmail.com>
-	<CAKohpoma0Z_OQxEAOuKHXq+HBwPc830yx83ZVfORM3er335F1A@mail.gmail.com>
-	<CAOuKo4=3kchjS1b+EQQgskUWfZ0A9Mmizpsbk+cdWnT_k0zW-Q@mail.gmail.com>
-	<CAKohpomwm8Qv6_pmbegM0kpPwYzceHBc_16gzSoULA_OzocVyA@mail.gmail.com>
-	<CAOuKo4mgOcMUvqohWNOXr1J=rJ9SLG3=r9z+5qxd6zm4CuAkow@mail.gmail.com>
+From: Jason Cooper <jason@lakedaemon.net>
+Subject: Re: [PATCH v3 2/3] arm: kirkwood: Instantiate cpufreq driver
+Date: Sun, 26 May 2013 13:59:57 -0400
+Message-ID: <20130526175957.GD31290@titan.lakedaemon.net>
+References: <1359281244-31455-1-git-send-email-andrew@lunn.ch>
+ <1359281244-31455-3-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOuKo4mgOcMUvqohWNOXr1J=rJ9SLG3=r9z+5qxd6zm4CuAkow@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: karthik vm <meetvm@gmail.com>
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, cpufreq <cpufreq@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1359281244-31455-3-git-send-email-andrew@lunn.ch>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: rjw@sisk.pl, jacmet@sunsite.dk, cpufreq@vger.kernel.org, linux ARM <linux-arm-kernel@lists.infradead.org>, viresh.kumar@linaro.org
 
-On 26 May 2013 05:30, karthik vm <meetvm@gmail.com> wrote:
-> Thanks for your insights Viresh. I really appreciate it!!
->
-> Basically I wanted to know the DVFS granularity of a multi-core chip.
-> i.e I want to know whether every core can separately increase or
-> decrease its frequency or all the cores increase or decrease
-> simultaneously. I think cpufreq-info command's output "CPUs which need
-> to have their frequency coordinated by software" gives the answer. For
-> my core2duo processor it says either core 0 or core 1. Hence frequency
-> of each of my cores can be changed individually. Experimental results
-> also supports it. Please correct me if there is any fallacy in my
-> inference.
+On Sun, Jan 27, 2013 at 11:07:23AM +0100, Andrew Lunn wrote:
+> Register a platform driver structure for the cpufreq driver.
+> 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> ---
+>  arch/arm/Kconfig                                  |    1 +
+>  arch/arm/mach-kirkwood/board-dt.c                 |    3 ++-
+>  arch/arm/mach-kirkwood/common.c                   |   23 +++++++++++++++++++++
+>  arch/arm/mach-kirkwood/common.h                   |    2 ++
+>  arch/arm/mach-kirkwood/include/mach/bridge-regs.h |    2 ++
+>  5 files changed, 30 insertions(+), 1 deletion(-)
 
-Whether cores can have separate control of clks or not is decided by
-hardware implementation. On ARM normally all cores within a cluster
-have common control of clk lines.. On Intel, I am not sure.
+Thanks again to Andrew for digging this one up.  Applied to mvebu/soc
 
-Now, the hardware can have interesting capabilities where they can
-manage separate clk lines themselves and software doesn't need to
-do anything special for them. And so that's what Dirk pointed out
-earlier.
+thx,
 
-Your observation looks correct though.
+Jason.
