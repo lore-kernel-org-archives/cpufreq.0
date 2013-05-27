@@ -1,42 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Clarification on the DVFS capabilities
-Date: Mon, 27 May 2013 09:37:12 +0530
-Message-ID: <CAKohponVm1O228ck5Qr4khoa+bFUjHacs=i9njDrG7DpjXJo=Q@mail.gmail.com>
-References: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com>
-	<CAOh2x=nMpMhYAYjhW8vxrHaY=Y8gQP+T0T1PL_FVD-u5LMiacg@mail.gmail.com>
-	<CAOuKo4kr_=AOeiBjsr-7VBNJOsZvrKEtfo45JooZgsgm9gvZ_A@mail.gmail.com>
-	<CAKohpoma0Z_OQxEAOuKHXq+HBwPc830yx83ZVfORM3er335F1A@mail.gmail.com>
-	<CAOuKo4=3kchjS1b+EQQgskUWfZ0A9Mmizpsbk+cdWnT_k0zW-Q@mail.gmail.com>
-	<CAKohpomwm8Qv6_pmbegM0kpPwYzceHBc_16gzSoULA_OzocVyA@mail.gmail.com>
-	<CAOuKo4mgOcMUvqohWNOXr1J=rJ9SLG3=r9z+5qxd6zm4CuAkow@mail.gmail.com>
-	<CAKohponxigN=DqZiKfd6E+2i+Jot3tQUR=z0cU8d0xxATnxkMw@mail.gmail.com>
-	<CAOuKo4k+LNz4Ff5N+VJ8k-_TtRwV+9nWXwXz-Jsi00sUEvhA0A@mail.gmail.com>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Mon, 27 May 2013 11:03:38 +0530
+Message-ID: <CAKohpo=Kw4RsDJL8BdH1uE7Aj-X=K5A7af5NRqJXyjRUNvv5ag@mail.gmail.com>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+	<CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
+	<20130522122700.104ca5cd@amdc308.digital.local>
+	<CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
+	<20130522164453.29cd3a7d@amdc308.digital.local>
+	<20130524075640.0a5b80ff@amdc308.digital.local>
+	<CAKohpoksymD76rDvg_+PwU7r3JXp1oydHBbJE4-y6TBHOomZHg@mail.gmail.com>
+	<20130524103007.7bb206ee@amdc308.digital.local>
+	<CAKohponbX7u_k9ZYQ7KyBeyKh93Qu+niGZj60t9c1n+AmaA6pg@mail.gmail.com>
+	<20130524132036.7e7d5ffe@amdc308.digital.local>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOuKo4k+LNz4Ff5N+VJ8k-_TtRwV+9nWXwXz-Jsi00sUEvhA0A@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20130524132036.7e7d5ffe@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: karthik vm <meetvm@gmail.com>
-Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, cpufreq <cpufreq@vger.kernel.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 
-On 27 May 2013 05:50, karthik vm <meetvm@gmail.com> wrote:
-> Thanks for your insights Viresh & Dirk. I really appreciate it.
+On 24 May 2013 16:50, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> On 24 May 2013 14:00, Lukasz Majewski <l.majewski@samsung.com> wrote:
+
+> This is not safe IMHO to add permanently overclocked frequency to the
+> freq table. Since, for example, thermal framework also asks for
+> reference to this table.
+
+Yes, its wrong. Even adding it permanently this way would be a problem
+if governor is changed to performance. :)
+
+> The idea beneath overclocking is to add "dangerous" frequency to the
+> frequency table only when necessary (and remove it when not needed).
+
+Hmm.. probably the idea beneath is to use dangerous frequency only
+when we are assured that we will not break system.. It doesn't have
+anything to do with cpufreq table entries :)
+
+> In this way, the thermal framework (as it is done at our platform) will
+> decrease the frequency (according to thermal governor :-) ) to safe
+> level.
 >
-> I read from the net that the p-state (Voltage/Frequency) pairs in
-> Intel processors(e.g Nehalem) cannot be set for individual cores
-> (http://web.archive.org/web/20130527001342/http://people.cs.pitt.edu/~kirk/cs3150spring2010/ShiminChen.pptx).
+> Overclocking is disabled in 2 ways (at our setup):
+> - thermal framework is here to help us
+> - lab governor disables the overclocking when favorable conditions are
+>   gone.
 
-I don't really know how much we can trust this one..
+I don't want to discuss OR think about LAB for now.. Want to get
+overclocking feature in first.
 
-> As Dirk pointed out, each core may request a p-state but ultimately
-> all the whole processor's p-state is set to the minimum of the
-> requested p-states. But in my Core2Duo processor, I see that two cores
-> are in different frequencies(p-state) and it did not fit into the
-> explanation above :-(. I think I am missing something.
+> One more remark - enabling tb_en_over_clk at sysfs (echo 1
+>> /sys/devices/system/cpu/cpu0/cpufreq/tb_en_over_clk)
+> adds overclock frequency to frequency table and updates policy.
 
-How do you see that? cpufreq-info? That can be tricky as the cpufreq
-driver might not have exposed this to core.. So, core thinks  cores can
-run at separate frequencies but code in driver is taking care to pass
-on the minimum of all cores to h/w.
+What if it is enabled and governor is changed to performance
+without disabling it... Who will take care of disabling dangerous
+frequencies?
+
+One thing I am certain about is to make overclocking a generic and
+core feature, rather than platform specific...
+
+What about adding overdrive frequencies in freq table permanently
+but with .index field as: CPUFREQ_ENTRY_OVERDRIVE ??
+
+This way we will use frequencies marked with
+CPUFREQ_ENTRY_OVERDRIVE only when we have overclocking
+enabled. And not at other times?
