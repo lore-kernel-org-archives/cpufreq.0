@@ -1,123 +1,76 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Tue, 28 May 2013 15:26:25 +0200
-Message-ID: <20130528152625.1b7833e5@amdc308.digital.local>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <20130528084035.13afa583@amdc308.digital.local>
- <CAKohpo=6Tk3NmcJw_fqnePu_skHKNB0rFBOUzEsCDyeLqxg4xA@mail.gmail.com>
- <2272781.tC3OqoQmKI@vostro.rjw.lan>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: Clarification on the DVFS capabilities
+Date: Tue, 28 May 2013 08:09:15 -0700
+Message-ID: <51A4C89B.8090502@intel.com>
+References: <CAOuKo4=r5Npk=O9PVOLQ2wG3ST1ic=JW2c-GRHFy1z9anAKa0Q@mail.gmail.com> <CAOh2x=nMpMhYAYjhW8vxrHaY=Y8gQP+T0T1PL_FVD-u5LMiacg@mail.gmail.com> <CAOuKo4kr_=AOeiBjsr-7VBNJOsZvrKEtfo45JooZgsgm9gvZ_A@mail.gmail.com> <CAKohpoma0Z_OQxEAOuKHXq+HBwPc830yx83ZVfORM3er335F1A@mail.gmail.com> <CAOuKo4=3kchjS1b+EQQgskUWfZ0A9Mmizpsbk+cdWnT_k0zW-Q@mail.gmail.com> <CAKohpomwm8Qv6_pmbegM0kpPwYzceHBc_16gzSoULA_OzocVyA@mail.gmail.com> <CAOuKo4mgOcMUvqohWNOXr1J=rJ9SLG3=r9z+5qxd6zm4CuAkow@mail.gmail.com> <CAKohponxigN=DqZiKfd6E+2i+Jot3tQUR=z0cU8d0xxATnxkMw@mail.gmail.com> <CAOuKo4k+LNz4Ff5N+VJ8k-_TtRwV+9nWXwXz-Jsi00sUEvhA0A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <2272781.tC3OqoQmKI@vostro.rjw.lan>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=TSlL1T+UAxmGec+Z3hwDEgqBP0LgLMms98mSnb1FkIo=;
+        b=f5rmHUgpbdee4w/yuBvQ2t3S5IdLJJnQuKTO4Dj+O7UoB1GFhQR8faQx3kvO0BzhQF
+         mFRHX8Ciki4qg30GvnUPaD9Y/4UHZhuL4m1+5gOFr9saPq9/MwqKzIpRayRr9FXddF9O
+         MPhleypfG6BYiRVPjxYc4jEdBEUnNmSYDQP3UCf+TZ8hxKEbJU0c224ZQjqaCeaBEHwy
+         QrUfn0NNiuF/PmFX2Z2fn1anHTH8Qit12d4sv0J5wyu3daTd/sWLsfO/AVHhsVWoL7Ss
+         tjnK1PQiWdj2T9yh+wiPMwy+907VisgtZtbaYrgH5nK+pTs+oB8ooHoDR2bb1hS8ijI/
+         JeUQ==
+In-Reply-To: <CAOuKo4k+LNz4Ff5N+VJ8k-_TtRwV+9nWXwXz-Jsi00sUEvhA0A@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: karthik vm <meetvm@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq <cpufreq@vger.kernel.org>
 
-Hi Viresh, Rafael,
+On 05/26/2013 05:20 PM, karthik vm wrote:
+> Thanks for your insights Viresh & Dirk. I really appreciate it.
+>
+> I read from the net that the p-state (Voltage/Frequency) pairs in
+> Intel processors(e.g Nehalem) cannot be set for individual cores
+> (http://web.archive.org/web/20130527001342/http://people.cs.pitt.edu/~kirk/cs3150spring2010/ShiminChen.pptx).
+>
+> As Dirk pointed out, each core may request a p-state but ultimately
+> all the whole processor's p-state is set to the minimum of the
+> requested p-states. But in my Core2Duo processor, I see that two cores
+> are in different frequencies(p-state) and it did not fit into the
+> explanation above :-(. I think I am missing something.
 
-> On Tuesday, May 28, 2013 03:14:26 PM Viresh Kumar wrote:
-> > On 28 May 2013 12:10, Lukasz Majewski <l.majewski@samsung.com>
-> > wrote:
-> > > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > <manually added by viresh>
-> > >> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
-> > >> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >> I was talking about /sys/devices/system/cpu/cpufreq/boost that
-> > >> appears to have been added by commit 615b730 (acpi-cpufreq: Add
-> > >> support for disabling dynamic overclocking).
-> > >>
-> > >> That's in acpi-cpufreq, but since that setting seems to be
-> > >> generally useful, it may be a good idea to move it to the core
-> > >> somehow.
-> > 
-> > Problem is in breaking existing cpufreq userspace for this driver.
-> > Is this allowed?
-> > 
-> > > I think that Viresh wanted to add "boost" option to
-> > > /sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
-> > > at separate cores (policies).
-> > >
-> > > The localization, which you have proposed:
-> > > /sys/devices/system/cpu/cpufreq/boost
-> > >
-> > > implies, that boost is a global feature (enabled for all cores
-> > > and for all available policies).
-> > >
-> > > Which approach shall be used then?
-> > 
-> > We can use: get_governor_parent_kobj() to get the best location
-> > for boost. But I had some other issues in mind:
-> > - boost is governor dependent.. i.e. It is only required for
-> > ondemand governor (And LAB if it makes it to mainline :) ).. Other
-> > governors doesn't need it. So, it would be better to add it in
-> > governor's directory.
-> 
+The requested p-state is being reported which is individually controllable
+AFAIK there is no way to get the instantaneous operation frequncy of the package.
+
+You can look at the APERF/MPERF to tell what effective frequency the core ran
+at over a sample time but that is the closet you can get to the actual
+frequency the core "is" runing at.
 
 
-> I'm not sure about that.  On x86 boost will be used with all
-> governors if enabled (as currently defined in acpi-cpufreq).
+>
+> Regards,
+> karthik
+>
+> On Sun, May 26, 2013 at 3:01 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 26 May 2013 05:30, karthik vm <meetvm@gmail.com> wrote:
+>>> Thanks for your insights Viresh. I really appreciate it!!
+>>>
+>>> Basically I wanted to know the DVFS granularity of a multi-core chip.
+>>> i.e I want to know whether every core can separately increase or
+>>> decrease its frequency or all the cores increase or decrease
+>>> simultaneously. I think cpufreq-info command's output "CPUs which need
+>>> to have their frequency coordinated by software" gives the answer. For
+>>> my core2duo processor it says either core 0 or core 1. Hence frequency
+>>> of each of my cores can be changed individually. Experimental results
+>>> also supports it. Please correct me if there is any fallacy in my
+>>> inference.
+>>
+>> Whether cores can have separate control of clks or not is decided by
+>> hardware implementation. On ARM normally all cores within a cluster
+>> have common control of clk lines.. On Intel, I am not sure.
+>>
+>> Now, the hardware can have interesting capabilities where they can
+>> manage separate clk lines themselves and software doesn't need to
+>> do anything special for them. And so that's what Dirk pointed out
+>> earlier.
+>>
+>> Your observation looks correct though.
 
-All governors can benefit from the overclocking code.
-
-
-> 
-> Also it looks like this depends on the driver too, because if the
-> driver doesn't have "turbo" frequencies, the governor won't be able
-> use "turbo" anyway.
-> 
-
-Rafael is correct here. The overclocking framework depends on
-cpufreq_driver (exynos-cpufreq in my case) to switch to overclocked
-frequency.
-
-
-> > - This will break existing users of acpi-cpufreq driver.
-> > 
-> > @Rafael: Please suggest what to do here.
-> 
-> So first, it would make sense to use a per-driver "boost" attribute
-> indicating whether or not the given driver should present any "turbo"
-> frequencies to the governor.
-
-Now I'm using a device tree's cpufreq section (defined at
-exynos4412-redwood.dts) with overclocking = "okay" attribute defined.
-Then, on this basis, we could decide at cpufreq init time if we will
-export any overclocking related sysfs entries (or init overclocking at
-all). It would assure clearer code.
-
-
->  That'd work along the lines of the
-> acpi-cpufreq "boost", but I don't think that the global_boost
-> attribute should be created by the driver (it'd be better if the
-> driver provided methods to the core for handling that).
-
-I think that global cpufreq device tree attribute shall be defined. The
-overclocking will be an integral part of the cpufreq framework.
-
-> 
-> Second, I'm not sure if an additional knob for the governor is
-> necessary.  It may just use the turbo frequencies if available (and
-> if the governor cannot use them, it simply won't use them).
-
-I cannot agree. It is welcome to be able to enable/disable the feature
-when needed. Turbo frequencies shall not be "available" for use all the
-time. For me this situation is far more dangerous.
-
-> 
-> Thanks,
-> Rafael
-> 
-> 
-
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Poland (SRPOL) | Linux Platform Group
