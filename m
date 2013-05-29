@@ -1,85 +1,64 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Wed, 29 May 2013 15:45:23 +0200
-Message-ID: <20130529154523.60a3cb5b@amdc308.digital.local>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <2272781.tC3OqoQmKI@vostro.rjw.lan>
- <20130528152625.1b7833e5@amdc308.digital.local>
- <76114024.UaPHgm94jK@vostro.rjw.lan>
- <CAKohpon8CScv_GgXL4eTvKqPo1oC67TujMH4WdOQCit7jz+FeQ@mail.gmail.com>
- <20130529090902.66c29c26@amdc308.digital.local>
- <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value
+ proportional to load
+Date: Wed, 29 May 2013 18:15:56 +0300
+Message-ID: <51A61BAC.2050203@semaphore.gr>
+References: <51A3C6CF.6080104@semaphore.gr> <1733890.jTHBU7EacK@vostro.rjw.lan> <51A4E357.5020509@semaphore.gr> <1567913.u8NiyqJmvF@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
+In-Reply-To: <1567913.u8NiyqJmvF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Viresh,
-
-> On 29 May 2013 12:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > I also agree. Moreover, I think that there should be only one set of
-> > "boost" sysfs entries either it is supported by HW (Intel) or SW
-> > (ARM).
+On 05/28/2013 11:54 PM, Rafael J. Wysocki wrote:
+> On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
+>> I mean any value of freq table. Please let me know if you want me to rephrase
+>> it in description.
 > 
-> Yes, you need to change acpi-cpufreq driver too to use this common
-> infrastructure.
+> Yes, it would be nice to be more precise.
 
-Ok, thanks for pointing out.
+OK sure, I will add a more precise description.
 
-> 
-> > I can think of two "basic" one:
-> > - max_turbo_freq (ro)
-> 
-> This is surely per policy as two separate clusters can have separate
-> values. And probably a better one would be scaling_boost_frequencies,
-> that will list all boost frequencies.
 
-Ok,
+> Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
+> may be removed (but the patch doesn't do that and I wonder why?), but surely
+> the developer who added it wouldn't agree.
+> 
+> So, please explain: why can we drop __cpufreq_driver_getavg()?
+> 
 
-> 
-> > - turbo_mode/boost (rw)
-> 
-> I am confused with these two names: boost and turbo.. Probably we
-> should use a single name everywhere. Because acpi-cpufreq is already
-> using boost, we might shift to that.
-> 
-> > - /sys/devices/system/cpu/cpufreq/boost
-> 
-> Obviously this one.
-> 
-> > On the other hand first option would be used with systems, where
-> > per-core (or core sets) frequency setting is possible (b.L,
-> > Snapdragon S4)
-> 
-> For now this feature would be enabled on all clusters and controlled
-> by cpu/cpufreq/boost.
+With the new proposed method the next frequency is not dependent from current
+or average frequency. The next frequency is dependent only from load.
+So, we don't need support for freq feedback from hardware anymore.
+Even if, due to underlying hardware coordination mechanism, CPU runs in different 
+frequency than the actual, the calculation of load and of target frequency will
+remain the unaffected, with this patch.
 
-This will simplify considerably the driver code.
+With full respect to ondemand coauthor, and if the new method is acceptable,
+I could send a patch to revert the original one about the IA32_APERF and
+IA32_MPERF MSR support.
 
+
+>> Thus, in the comparison with up_threshold to increase frequency we actually
+>> do this (in cases that getavg is not implemented):
+>> if (load > up_theshold)
+>> 	increase to max
+>>
+>> So, after the patch we keep the same comparison to decide about the max frequency.
+>> I thought, that below up_threshold is 'fair' to decide about the next
+>> frequency with formula that frequency is proportional to load.
+>> For example in a CPU with min freq 100MHz and max 1000MHz with a
+>> load 50 target frequency should be 500MHz.
 > 
-> > To sum up - the idea is as follow:
-> >
-> > 1. cpufreq_driver exports turbo_mode=1 when it supports overclocking
-> > (this support can be hardcoded or read from device tree)
-> >
-> > 2. Then proper entries are exported to sysfs.
-> >
-> > 3. User via sysfs (at [*]) can enable/disable the feature on demand
-> 
-> Bingo!!
+> Well, that sounds reasonable, but the patch actually does more than that.
 
-Thanks for suggestions. I'm now working on a prototype code. I plan to
-post it at the beginning of next week.
+I'm sorry, but I didn't understand your last point.
 
--- 
-Best regards,
 
-Lukasz Majewski
+Thanks for your comments,
+Stratos
 
-Samsung R&D Poland (SRPOL) | Linux Platform Group
