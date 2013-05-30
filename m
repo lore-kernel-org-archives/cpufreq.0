@@ -1,209 +1,395 @@
-From: Ross Lagerwall <rosslagerwall@gmail.com>
-Subject: Re: cpufreq turbo regression
-Date: Thu, 30 May 2013 21:55:47 +0100
-Message-ID: <20130530205547.GA612@hobo.wolfson.cam.ac.uk>
-References: <20130530135246.GA2177@hobo.wolfson.cam.ac.uk>
- <CAKohponjio66Okm+jWk_w0jN8RJdQyUEk3Y9sbZ7MWzOpamBmQ@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
+Date: Fri, 31 May 2013 00:07:50 +0300
+Message-ID: <51A7BFA6.3070800@semaphore.gr>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        bh=e8g0i9YFfpbuRvjvszDeNLaiGP+ZI/NRVHRxeAaVMls=;
-        b=KzTOo73hrqKV1QvWbQjYqPJNwBu4zog1Q33AVCsL8nbtbUTKudvAzAB+CLE81pUXu/
-         eQHQb+hu3Rp+q+v+vRJb1VgIJbLmUcrvUoVhgqOZgZWxYOwCNnz3G0zY6bcAIxIqLs72
-         cPpR8tW0YFtxbNK2RzAWCfDL+XVgE6oBfgR3A1k7C6dudUCzFJdvsXYFxR53oSCvFQlG
-         EuhyrIDYWLUSyKBlo5hsi5J18teDnHBF2cOW3En4u+1vle44LExI3MD6Psqx3ogxeyyu
-         2ZJmXeHNkFIC3M1IPLeRSzr5wiEC3RYXAtBIkVDKczWyWCgh3N8nZdDO5hjLvuszFTsA
-         M0Dg==
-Content-Disposition: inline
-In-Reply-To: <CAKohponjio66Okm+jWk_w0jN8RJdQyUEk3Y9sbZ7MWzOpamBmQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, May 30, 2013 at 09:11:12PM +0530, Viresh Kumar wrote:
-> This patch was pretty much sensible and all drivers now depend on it
-> now.
-> 
-> @Dirk: Can you please help us in understanding why this might be
-> happening. I believe it has to do with some bad design of acpi-cpufreq
-> driver (I tried to look into target routine but couldn't understand why
-> this might be happening).
-> 
+Ondemand calculates load in terms of frequency and increases it only
+if the load_freq is greater than up_threshold multiplied by current
+or average frequency. This seems to produce oscillations of frequency
+between min and max because, for example, a relatively small load can
+easily saturate minimum frequency and lead the CPU to max. Then, the
+CPU will decrease back to min due to a small load_freq.
 
-Here is some more relevant info:
-It seems like turbo is correctly set up on core 0.
-If I run "taskset -c 0 stress -c 1", the frequency of core 0 jumps to
-~3.8GHz.  Repeating with core 1, 2 or 3 leaves the frequency of the
-respective core at 3.4GHz (no turbo).
+This patch changes the calculation method of load and target frequency
+considering 2 points:
+- Load computation should be independent from current or average
+measured frequency. For example an absolute load 80% at 100MHz is not
+necessarily equivalent to 8% at 1000MHz in the next sampling interval.
+- Target frequency should be increased to any value of frequency table
+proportional to absolute load, instead to only the max.
 
-I turned on logging and got:
-[    0.570749] acpi_cpufreq_init
-[    0.570750] acpi_cpufreq_early_init
-[    0.570828] cpufreq: trying to register driver acpi-cpufreq
-[    0.570829] cpufreq: adding CPU 0
-[    0.570830] acpi_cpufreq_cpu_init
-[    0.570869] HARDWARE addr space
-[    0.570870] get_cur_freq_on_cpu (0)
-[    0.570872] get_cur_val = 8704
-[    0.570872] cur freq = 3400000
-[    0.570873] CPU0 - ACPI performance management activated.
-[    0.570874]      *P0: 3401 MHz, 77000 mW, 10 uS
-[    0.570875]       P1: 3400 MHz, 77000 mW, 10 uS
-[    0.570876]       P2: 3300 MHz, 73840 mW, 10 uS
-[    0.570877]       P3: 3100 MHz, 67694 mW, 10 uS
-[    0.570878]       P4: 3000 MHz, 64705 mW, 10 uS
-[    0.570879]       P5: 2900 MHz, 61772 mW, 10 uS
-[    0.570879]       P6: 2800 MHz, 58907 mW, 10 uS
-[    0.570880]       P7: 2600 MHz, 53315 mW, 10 uS
-[    0.570881]       P8: 2500 MHz, 50601 mW, 10 uS
-[    0.570882]       P9: 2400 MHz, 47940 mW, 10 uS
-[    0.570883]       P10: 2200 MHz, 42787 mW, 10 uS
-[    0.570884]       P11: 2100 MHz, 40284 mW, 10 uS
-[    0.570885]       P12: 2000 MHz, 37833 mW, 10 uS
-[    0.570885]       P13: 1900 MHz, 35433 mW, 10 uS
-[    0.570886]       P14: 1700 MHz, 31421 mW, 10 uS
-[    0.570887]       P15: 1600 MHz, 29164 mW, 10 uS
-[    0.570896] cpufreq: setting new policy for CPU 0: 1600000 - 3401000 kHz
-[    0.570897] acpi_cpufreq_verify
-[    0.570898] acpi_cpufreq_verify
-[    0.570899] cpufreq: new min and max freqs are 1600000 - 3401000 kHz
-[    0.570899] cpufreq: governor switch
-[    0.570900] cpufreq: __cpufreq_governor for CPU 0, event 4
-[    0.570901] cpufreq: __cpufreq_governor for CPU 0, event 1
-[    0.570902] target for CPU 0: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.570903] acpi_cpufreq_target 3401000 (0)
-[    0.570904] Called after resume, resetting to P0
-[    0.570905] cpufreq: notification 0 of frequency transition to 3401000 kHz
-[    0.570907] cpufreq: notification 1 of frequency transition to 3401000 kHz
-[    0.570908] cpufreq: FREQ: 3401000 - CPU: 0
-[    0.570909] cpufreq: governor: change or update limits
-[    0.570909] cpufreq: __cpufreq_governor for CPU 0, event 3
-[    0.570910] target for CPU 0: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.570911] cpufreq: initialization complete
-[    0.570912] cpufreq: adding CPU 1
-[    0.570913] acpi_cpufreq_cpu_init
-[    0.570986] HARDWARE addr space
-[    0.570999] get_cur_freq_on_cpu (1)
-[    0.571001] get_cur_val = 9728
-[    0.571001] cur freq = 3401000
-[    0.571002] CPU1 - ACPI performance management activated.
-[    0.571003]      *P0: 3401 MHz, 77000 mW, 10 uS
-[    0.571003]       P1: 3400 MHz, 77000 mW, 10 uS
-[    0.571004]       P2: 3300 MHz, 73840 mW, 10 uS
-[    0.571005]       P3: 3100 MHz, 67694 mW, 10 uS
-[    0.571006]       P4: 3000 MHz, 64705 mW, 10 uS
-[    0.571006]       P5: 2900 MHz, 61772 mW, 10 uS
-[    0.571007]       P6: 2800 MHz, 58907 mW, 10 uS
-[    0.571008]       P7: 2600 MHz, 53315 mW, 10 uS
-[    0.571009]       P8: 2500 MHz, 50601 mW, 10 uS
-[    0.571009]       P9: 2400 MHz, 47940 mW, 10 uS
-[    0.571010]       P10: 2200 MHz, 42787 mW, 10 uS
-[    0.571011]       P11: 2100 MHz, 40284 mW, 10 uS
-[    0.571012]       P12: 2000 MHz, 37833 mW, 10 uS
-[    0.571013]       P13: 1900 MHz, 35433 mW, 10 uS
-[    0.571013]       P14: 1700 MHz, 31421 mW, 10 uS
-[    0.571014]       P15: 1600 MHz, 29164 mW, 10 uS
-[    0.571019] cpufreq: setting new policy for CPU 1: 1600000 - 3401000 kHz
-[    0.571020] acpi_cpufreq_verify
-[    0.571020] acpi_cpufreq_verify
-[    0.571021] cpufreq: new min and max freqs are 1600000 - 3401000 kHz
-[    0.571022] cpufreq: governor switch
-[    0.571022] cpufreq: __cpufreq_governor for CPU 1, event 4
-[    0.571023] cpufreq: __cpufreq_governor for CPU 1, event 1
-[    0.571024] target for CPU 1: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.571024] cpufreq: governor: change or update limits
-[    0.571025] cpufreq: __cpufreq_governor for CPU 1, event 3
-[    0.571025] target for CPU 1: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.571026] cpufreq: initialization complete
-[    0.571027] cpufreq: adding CPU 2
-[    0.571027] acpi_cpufreq_cpu_init
-[    0.571069] HARDWARE addr space
-[    0.571070] get_cur_freq_on_cpu (2)
-[    0.571107] get_cur_val = 9728
-[    0.571108] cur freq = 3401000
-[    0.571108] CPU2 - ACPI performance management activated.
-[    0.571109]      *P0: 3401 MHz, 77000 mW, 10 uS
-[    0.571110]       P1: 3400 MHz, 77000 mW, 10 uS
-[    0.571111]       P2: 3300 MHz, 73840 mW, 10 uS
-[    0.571111]       P3: 3100 MHz, 67694 mW, 10 uS
-[    0.571112]       P4: 3000 MHz, 64705 mW, 10 uS
-[    0.571113]       P5: 2900 MHz, 61772 mW, 10 uS
-[    0.571114]       P6: 2800 MHz, 58907 mW, 10 uS
-[    0.571114]       P7: 2600 MHz, 53315 mW, 10 uS
-[    0.571115]       P8: 2500 MHz, 50601 mW, 10 uS
-[    0.571116]       P9: 2400 MHz, 47940 mW, 10 uS
-[    0.571117]       P10: 2200 MHz, 42787 mW, 10 uS
-[    0.571117]       P11: 2100 MHz, 40284 mW, 10 uS
-[    0.571118]       P12: 2000 MHz, 37833 mW, 10 uS
-[    0.571119]       P13: 1900 MHz, 35433 mW, 10 uS
-[    0.571120]       P14: 1700 MHz, 31421 mW, 10 uS
-[    0.571121]       P15: 1600 MHz, 29164 mW, 10 uS
-[    0.571126] cpufreq: setting new policy for CPU 2: 1600000 - 3401000 kHz
-[    0.571127] acpi_cpufreq_verify
-[    0.571128] acpi_cpufreq_verify
-[    0.571128] cpufreq: new min and max freqs are 1600000 - 3401000 kHz
-[    0.571129] cpufreq: governor switch
-[    0.571129] cpufreq: __cpufreq_governor for CPU 2, event 4
-[    0.571130] cpufreq: __cpufreq_governor for CPU 2, event 1
-[    0.571131] target for CPU 2: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.571131] cpufreq: governor: change or update limits
-[    0.571132] cpufreq: __cpufreq_governor for CPU 2, event 3
-[    0.571133] target for CPU 2: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.571133] cpufreq: initialization complete
-[    0.571134] cpufreq: adding CPU 3
-[    0.571135] acpi_cpufreq_cpu_init
-[    0.571176] HARDWARE addr space
-[    0.571177] get_cur_freq_on_cpu (3)
-[    0.571227] get_cur_val = 9472
-[    0.571227] cur freq = 3401000
-[    0.571228] CPU3 - ACPI performance management activated.
-[    0.571229]      *P0: 3401 MHz, 77000 mW, 10 uS
-[    0.571229]       P1: 3400 MHz, 77000 mW, 10 uS
-[    0.571230]       P2: 3300 MHz, 73840 mW, 10 uS
-[    0.571231]       P3: 3100 MHz, 67694 mW, 10 uS
-[    0.571232]       P4: 3000 MHz, 64705 mW, 10 uS
-[    0.571233]       P5: 2900 MHz, 61772 mW, 10 uS
-[    0.571233]       P6: 2800 MHz, 58907 mW, 10 uS
-[    0.571234]       P7: 2600 MHz, 53315 mW, 10 uS
-[    0.571235]       P8: 2500 MHz, 50601 mW, 10 uS
-[    0.571236]       P9: 2400 MHz, 47940 mW, 10 uS
-[    0.571236]       P10: 2200 MHz, 42787 mW, 10 uS
-[    0.571237]       P11: 2100 MHz, 40284 mW, 10 uS
-[    0.571238]       P12: 2000 MHz, 37833 mW, 10 uS
-[    0.571251]       P13: 1900 MHz, 35433 mW, 10 uS
-[    0.571252]       P14: 1700 MHz, 31421 mW, 10 uS
-[    0.571253]       P15: 1600 MHz, 29164 mW, 10 uS
-[    0.571258] cpufreq: setting new policy for CPU 3: 1600000 - 3401000 kHz
-[    0.571258] acpi_cpufreq_verify
-[    0.571259] acpi_cpufreq_verify
-[    0.571260] cpufreq: new min and max freqs are 1600000 - 3401000 kHz
-[    0.571260] cpufreq: governor switch
-[    0.571261] cpufreq: __cpufreq_governor for CPU 3, event 4
-[    0.571261] cpufreq: __cpufreq_governor for CPU 3, event 1
-[    0.571262] target for CPU 3: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.571263] cpufreq: governor: change or update limits
-[    0.571263] cpufreq: __cpufreq_governor for CPU 3, event 3
-[    0.571264] target for CPU 3: 3401000 kHz, relation 1, requested 3401000 kHz
-[    0.571264] cpufreq: initialization complete
-[    0.571266] cpufreq: driver acpi-cpufreq up and running
+The patch also removes the unused code as a result of the above changes.
 
-Core 0 reports its frequency to be 3400000, the highest non-turbo
-frequency and is correctly set to 3401000.
-The log seems to indicate that CPU 1, 2 and 3 are already at 3401000
-(the turbo frequency enabler) but this must be incorrect because they do
-not scale to 3.8GHz when stressed.
-Presumably reverting the previously discussed patch makes it work
-because it sets it to 3401000 regardless of what the previous frequency
-claims to be.
+Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
+Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
+that middle frequencies are used more, with this patch. Highest
+and lowest frequencies were used less by ~9%
 
-Hmmm, now to find out why those values are reported incorrectly...
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ arch/x86/include/asm/processor.h   | 29 ----------------------
+ drivers/cpufreq/Makefile           |  2 +-
+ drivers/cpufreq/acpi-cpufreq.c     |  5 ----
+ drivers/cpufreq/cpufreq.c          | 21 ----------------
+ drivers/cpufreq/cpufreq_governor.c | 10 +-------
+ drivers/cpufreq/cpufreq_governor.h |  1 -
+ drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
+ drivers/cpufreq/mperf.c            | 51 --------------------------------------
+ drivers/cpufreq/mperf.h            |  9 -------
+ include/linux/cpufreq.h            |  6 -----
+ 10 files changed, 9 insertions(+), 164 deletions(-)
+ delete mode 100644 drivers/cpufreq/mperf.c
+ delete mode 100644 drivers/cpufreq/mperf.h
 
-Thanks for the help,
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 22224b3..2874a3b 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -941,35 +941,6 @@ extern int set_tsc_mode(unsigned int val);
+ 
+ extern u16 amd_get_nb_id(int cpu);
+ 
+-struct aperfmperf {
+-	u64 aperf, mperf;
+-};
+-
+-static inline void get_aperfmperf(struct aperfmperf *am)
+-{
+-	WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_APERFMPERF));
+-
+-	rdmsrl(MSR_IA32_APERF, am->aperf);
+-	rdmsrl(MSR_IA32_MPERF, am->mperf);
+-}
+-
+-#define APERFMPERF_SHIFT 10
+-
+-static inline
+-unsigned long calc_aperfmperf_ratio(struct aperfmperf *old,
+-				    struct aperfmperf *new)
+-{
+-	u64 aperf = new->aperf - old->aperf;
+-	u64 mperf = new->mperf - old->mperf;
+-	unsigned long ratio = aperf;
+-
+-	mperf >>= APERFMPERF_SHIFT;
+-	if (mperf)
+-		ratio = div64_u64(aperf, mperf);
+-
+-	return ratio;
+-}
+-
+ extern unsigned long arch_align_stack(unsigned long sp);
+ extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
+ 
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 315b923..4519fb1 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -23,7 +23,7 @@ obj-$(CONFIG_GENERIC_CPUFREQ_CPU0)	+= cpufreq-cpu0.o
+ # powernow-k8 can load then. ACPI is preferred to all other hardware-specific drivers.
+ # speedstep-* is preferred over p4-clockmod.
+ 
+-obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o mperf.o
++obj-$(CONFIG_X86_ACPI_CPUFREQ)		+= acpi-cpufreq.o
+ obj-$(CONFIG_X86_POWERNOW_K8)		+= powernow-k8.o
+ obj-$(CONFIG_X86_PCC_CPUFREQ)		+= pcc-cpufreq.o
+ obj-$(CONFIG_X86_POWERNOW_K6)		+= powernow-k6.o
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 11b8b4b..0025cdd 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -45,7 +45,6 @@
+ #include <asm/msr.h>
+ #include <asm/processor.h>
+ #include <asm/cpufeature.h>
+-#include "mperf.h"
+ 
+ MODULE_AUTHOR("Paul Diefenbaugh, Dominik Brodowski");
+ MODULE_DESCRIPTION("ACPI Processor P-States Driver");
+@@ -842,10 +841,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	/* notify BIOS that we exist */
+ 	acpi_processor_notify_smm(THIS_MODULE);
+ 
+-	/* Check for APERF/MPERF support in hardware */
+-	if (boot_cpu_has(X86_FEATURE_APERFMPERF))
+-		acpi_cpufreq_driver.getavg = cpufreq_get_measured_perf;
+-
+ 	pr_debug("CPU%u - ACPI performance management activated.\n", cpu);
+ 	for (i = 0; i < perf->state_count; i++)
+ 		pr_debug("     %cP%d: %d MHz, %d mW, %d uS\n",
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 2d53f47..04ceddc 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1502,27 +1502,6 @@ no_policy:
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
+ 
+-int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
+-{
+-	int ret = 0;
+-
+-	if (cpufreq_disabled())
+-		return ret;
+-
+-	if (!cpufreq_driver->getavg)
+-		return 0;
+-
+-	policy = cpufreq_cpu_get(policy->cpu);
+-	if (!policy)
+-		return -EINVAL;
+-
+-	ret = cpufreq_driver->getavg(policy, cpu);
+-
+-	cpufreq_cpu_put(policy);
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(__cpufreq_driver_getavg);
+-
+ /*
+  * when "event" is CPUFREQ_GOV_LIMITS
+  */
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 5af40ad..eeab30a 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -97,7 +97,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 
+ 	policy = cdbs->cur_policy;
+ 
+-	/* Get Absolute Load (in terms of freq for ondemand gov) */
++	/* Get Absolute Load */
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_common_info *j_cdbs;
+ 		u64 cur_wall_time, cur_idle_time;
+@@ -148,14 +148,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 
+ 		load = 100 * (wall_time - idle_time) / wall_time;
+ 
+-		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+-			int freq_avg = __cpufreq_driver_getavg(policy, j);
+-			if (freq_avg <= 0)
+-				freq_avg = policy->cur;
+-
+-			load *= freq_avg;
+-		}
+-
+ 		if (load > max_load)
+ 			max_load = load;
+ 	}
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index e16a961..e899c11 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -169,7 +169,6 @@ struct od_dbs_tuners {
+ 	unsigned int sampling_rate;
+ 	unsigned int sampling_down_factor;
+ 	unsigned int up_threshold;
+-	unsigned int adj_up_threshold;
+ 	unsigned int powersave_bias;
+ 	unsigned int io_is_busy;
+ };
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 4b9bb5d..c1e6d3e 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -29,11 +29,9 @@
+ #include "cpufreq_governor.h"
+ 
+ /* On-demand governor macros */
+-#define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
+ #define DEF_SAMPLING_DOWN_FACTOR		(1)
+ #define MAX_SAMPLING_DOWN_FACTOR		(100000)
+-#define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
+ #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+ #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
+ #define MIN_FREQUENCY_UP_THRESHOLD		(11)
+@@ -159,14 +157,10 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
+ 
+ /*
+  * Every sampling_rate, we check, if current idle time is less than 20%
+- * (default), then we try to increase frequency. Every sampling_rate, we look
+- * for the lowest frequency which can sustain the load while keeping idle time
+- * over 30%. If such a frequency exist, we try to decrease to this frequency.
+- *
+- * Any frequency increase takes it to the maximum frequency. Frequency reduction
+- * happens at minimum steps of 5% (default) of current frequency
++ * (default), then we try to increase frequency. Else, we adjust the frequency
++ * proportional to load.
+  */
+-static void od_check_cpu(int cpu, unsigned int load_freq)
++static void od_check_cpu(int cpu, unsigned int load)
+ {
+ 	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+ 	struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+@@ -176,29 +170,17 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+ 	dbs_info->freq_lo = 0;
+ 
+ 	/* Check for frequency increase */
+-	if (load_freq > od_tuners->up_threshold * policy->cur) {
++	if (load > od_tuners->up_threshold) {
+ 		/* If switching to max speed, apply sampling_down_factor */
+ 		if (policy->cur < policy->max)
+ 			dbs_info->rate_mult =
+ 				od_tuners->sampling_down_factor;
+ 		dbs_freq_increase(policy, policy->max);
+ 		return;
+-	}
+-
+-	/* Check for frequency decrease */
+-	/* if we cannot reduce the frequency anymore, break out early */
+-	if (policy->cur == policy->min)
+-		return;
+-
+-	/*
+-	 * The optimal frequency is the frequency that is the lowest that can
+-	 * support the current CPU usage without triggering the up policy. To be
+-	 * safe, we focus 10 points under the threshold.
+-	 */
+-	if (load_freq < od_tuners->adj_up_threshold
+-			* policy->cur) {
++	} else {
++		/* Calculate the next frequency proportional to load */
+ 		unsigned int freq_next;
+-		freq_next = load_freq / od_tuners->adj_up_threshold;
++		freq_next = load * policy->max / 100;
+ 
+ 		/* No longer fully busy, reset rate_mult */
+ 		dbs_info->rate_mult = 1;
+@@ -372,9 +354,6 @@ static ssize_t store_up_threshold(struct dbs_data *dbs_data, const char *buf,
+ 			input < MIN_FREQUENCY_UP_THRESHOLD) {
+ 		return -EINVAL;
+ 	}
+-	/* Calculate the new adj_up_threshold */
+-	od_tuners->adj_up_threshold += input;
+-	od_tuners->adj_up_threshold -= od_tuners->up_threshold;
+ 
+ 	od_tuners->up_threshold = input;
+ 	return count;
+@@ -523,8 +502,6 @@ static int od_init(struct dbs_data *dbs_data)
+ 	if (idle_time != -1ULL) {
+ 		/* Idle micro accounting is supported. Use finer thresholds */
+ 		tuners->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+-		tuners->adj_up_threshold = MICRO_FREQUENCY_UP_THRESHOLD -
+-			MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
+ 		/*
+ 		 * In nohz/micro accounting case we set the minimum frequency
+ 		 * not depending on HZ, but fixed (very low). The deferred
+@@ -533,8 +510,6 @@ static int od_init(struct dbs_data *dbs_data)
+ 		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
+ 	} else {
+ 		tuners->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
+-		tuners->adj_up_threshold = DEF_FREQUENCY_UP_THRESHOLD -
+-			DEF_FREQUENCY_DOWN_DIFFERENTIAL;
+ 
+ 		/* For correct statistics, we need 10 ticks for each measure */
+ 		dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
+diff --git a/drivers/cpufreq/mperf.c b/drivers/cpufreq/mperf.c
+deleted file mode 100644
+index 911e193..0000000
+--- a/drivers/cpufreq/mperf.c
++++ /dev/null
+@@ -1,51 +0,0 @@
+-#include <linux/kernel.h>
+-#include <linux/smp.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/cpufreq.h>
+-#include <linux/slab.h>
+-
+-#include "mperf.h"
+-
+-static DEFINE_PER_CPU(struct aperfmperf, acfreq_old_perf);
+-
+-/* Called via smp_call_function_single(), on the target CPU */
+-static void read_measured_perf_ctrs(void *_cur)
+-{
+-	struct aperfmperf *am = _cur;
+-
+-	get_aperfmperf(am);
+-}
+-
+-/*
+- * Return the measured active (C0) frequency on this CPU since last call
+- * to this function.
+- * Input: cpu number
+- * Return: Average CPU frequency in terms of max frequency (zero on error)
+- *
+- * We use IA32_MPERF and IA32_APERF MSRs to get the measured performance
+- * over a period of time, while CPU is in C0 state.
+- * IA32_MPERF counts at the rate of max advertised frequency
+- * IA32_APERF counts at the rate of actual CPU frequency
+- * Only IA32_APERF/IA32_MPERF ratio is architecturally defined and
+- * no meaning should be associated with absolute values of these MSRs.
+- */
+-unsigned int cpufreq_get_measured_perf(struct cpufreq_policy *policy,
+-					unsigned int cpu)
+-{
+-	struct aperfmperf perf;
+-	unsigned long ratio;
+-	unsigned int retval;
+-
+-	if (smp_call_function_single(cpu, read_measured_perf_ctrs, &perf, 1))
+-		return 0;
+-
+-	ratio = calc_aperfmperf_ratio(&per_cpu(acfreq_old_perf, cpu), &perf);
+-	per_cpu(acfreq_old_perf, cpu) = perf;
+-
+-	retval = (policy->cpuinfo.max_freq * ratio) >> APERFMPERF_SHIFT;
+-
+-	return retval;
+-}
+-EXPORT_SYMBOL_GPL(cpufreq_get_measured_perf);
+-MODULE_LICENSE("GPL");
+diff --git a/drivers/cpufreq/mperf.h b/drivers/cpufreq/mperf.h
+deleted file mode 100644
+index 5dbf295..0000000
+--- a/drivers/cpufreq/mperf.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/*
+- *  (c) 2010 Advanced Micro Devices, Inc.
+- *  Your use of this code is subject to the terms and conditions of the
+- *  GNU general public license version 2. See "COPYING" or
+- *  http://www.gnu.org/licenses/gpl.html
+- */
+-
+-unsigned int cpufreq_get_measured_perf(struct cpufreq_policy *policy,
+-					unsigned int cpu);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 037d36a..60fcb42 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -211,10 +211,6 @@ extern int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 				   unsigned int target_freq,
+ 				   unsigned int relation);
+ 
+-
+-extern int __cpufreq_driver_getavg(struct cpufreq_policy *policy,
+-				   unsigned int cpu);
+-
+ int cpufreq_register_governor(struct cpufreq_governor *governor);
+ void cpufreq_unregister_governor(struct cpufreq_governor *governor);
+ 
+@@ -254,8 +250,6 @@ struct cpufreq_driver {
+ 	unsigned int	(*get)	(unsigned int cpu);
+ 
+ 	/* optional */
+-	unsigned int (*getavg)	(struct cpufreq_policy *policy,
+-				 unsigned int cpu);
+ 	int	(*bios_limit)	(int cpu, unsigned int *limit);
+ 
+ 	int	(*exit)		(struct cpufreq_policy *policy);
 -- 
-Ross Lagerwall
+1.8.1.4
+
