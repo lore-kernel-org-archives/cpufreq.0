@@ -1,84 +1,145 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value proportional to load
-Date: Thu, 30 May 2013 00:29:49 +0200
-Message-ID: <3000308.Hi6zX8my0D@vostro.rjw.lan>
-References: <51A3C6CF.6080104@semaphore.gr> <1567913.u8NiyqJmvF@vostro.rjw.lan> <51A61BAC.2050203@semaphore.gr>
+From: "wconbs-driver@yahoo.de" <wconbs-driver@yahoo.de>
+Subject: Z53T, Asus Notebook, ubuntu 12.04, kernel 3.2.0-44, cpufreq nur PERFORMANE
+Date: Thu, 30 May 2013 09:43:36 +0100 (BST)
+Message-ID: <1369903416.73004.YahooMailNeo@web172501.mail.ir2.yahoo.com>
+References: <1369811251.58881.YahooMailNeo@web172501.mail.ir2.yahoo.com> <1369903258.92082.YahooMailNeo@web172506.mail.ir2.yahoo.com>
+Reply-To: "wconbs-driver@yahoo.de" <wconbs-driver@yahoo.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51A61BAC.2050203@semaphore.gr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.de; s=s1024; t=1369903416; bh=8yKKp24kniD90iTHYsmOHCmGwC6ZANROfiVy7shDEIs=; h=X-YMail-OSG:Received:X-Rocket-MIMEInfo:X-Mailer:References:Message-ID:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding; b=a+McmMIXgzLksXFysRH5ZNG6Avxo5kJYKGBzmJ+BgO4fvR3NaCA02c8nTnty3jNj1T0QkXV7gROQ3e+ZzAFaY6nziW4AWwqkv9NVW0tvVLDKu9/o4VoJvySVJA2jlH0IvD+jNA6JkLYyWHYOdECvWb/zrNsX7buAqkp4g1bI21o=
+In-Reply-To: <1369903258.92082.YahooMailNeo@web172506.mail.ir2.yahoo.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Wednesday, May 29, 2013 06:15:56 PM Stratos Karafotis wrote:
-> On 05/28/2013 11:54 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
-> >> I mean any value of freq table. Please let me know if you want me to rephrase
-> >> it in description.
-> > 
-> > Yes, it would be nice to be more precise.
-> 
-> OK sure, I will add a more precise description.
-> 
-> 
-> > Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
-> > may be removed (but the patch doesn't do that and I wonder why?), but surely
-> > the developer who added it wouldn't agree.
-> > 
-> > So, please explain: why can we drop __cpufreq_driver_getavg()?
-> > 
-> 
-> With the new proposed method the next frequency is not dependent from current
-> or average frequency. The next frequency is dependent only from load.
-> So, we don't need support for freq feedback from hardware anymore.
-
-OK, but that's a more significant change than the changelog suggests.
-The changelog should tell the whole story and explain the rationale. :-)
-
-So, please explain that in fact it is not necessary to use the current or
-average frequency to compute the target and why that is the case.
-
-Also the patch should remove __cpufreq_driver_getavg() and the callback used by
-it, since that code will be dead after applying it anyway.
-
-> Even if, due to underlying hardware coordination mechanism, CPU runs in different 
-> frequency than the actual, the calculation of load and of target frequency will
-> remain the unaffected, with this patch.
-> 
-> With full respect to ondemand coauthor, and if the new method is acceptable,
-> I could send a patch to revert the original one about the IA32_APERF and
-> IA32_MPERF MSR support.
-
-I'm not sure what you mean by "revert", but please do as I said above.
-
-> >> Thus, in the comparison with up_threshold to increase frequency we actually
-> >> do this (in cases that getavg is not implemented):
-> >> if (load > up_theshold)
-> >> 	increase to max
-> >>
-> >> So, after the patch we keep the same comparison to decide about the max frequency.
-> >> I thought, that below up_threshold is 'fair' to decide about the next
-> >> frequency with formula that frequency is proportional to load.
-> >> For example in a CPU with min freq 100MHz and max 1000MHz with a
-> >> load 50 target frequency should be 500MHz.
-> > 
-> > Well, that sounds reasonable, but the patch actually does more than that.
-> 
-> I'm sorry, but I didn't understand your last point.
-
-Please see above.
-
-The changelog doesn't even mention that the code is being switched from using
-measured past frequencies to not using them, because you think that there's a
-better way of computing the target (which by the way I can agree with :-)).
-
-Thanks,
-Rafael
+Betreff: Z53T, Asus Notebook, ubuntu 12.04, kernel 3.2.0-44, cpufreq nu=
+r PERFORMANE
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
+
+Hallo,
+
+habe 3 Asus z53t und mehrere PCs mit Amd64(x2) und auf allen das Proble=
+m, die laufen immer "auf vollen Touren" - Performance - mit maximal lau=
+tem L=FCfter und maximalem Stromverbrauch, das nervt! Ein Zeit lang gin=
+g es mit 11.10 und auch 12.04 teilweise, das Stepping, seit den letzten=
+ zwei Kernelupdates, glaube ich, ist es total vorbei, keine Einstellung=
+ m=F6glich, sei es automatisch oder =FCber manuelle Eingabe! Habe schon=
+ cpufreq de- und reinstalliert und einige kleinere Dinge ausprobiert!
+
+
+Sorry, so macht es keinen Spa=DF! Ubuntu Team hilft nicht weiter, mache=
+ alles au=DFer Kernel selbst kompilieren, dann leider Win7!
+
+Gibt es eine praktikable L=F6sung (nur einfache, wenn ich das bei jedem=
+ Kernelupdate wiederholen muss).
+
+
+System:
+
+ubuntu Version 12.04 (precise) (64-Bit)
+
+=A0Kernel Linux 3.2.0-44-generic
+
+GNOME 3.4.2
+
+AMD Turion(tm) 64 X2 Mobile
+Technology TL-56 =D7 2=20
+
+cpufreq-info aus Terminal siehe unten
+
+MFG
+
+
+J=FCrgen Wippler
+
+
+Handy: 0049(0)175-7854253
+
+-----------------------------------------------------------------------=
+-----------------------------------------------------------
+
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+=A0 Treiber: powernow-k8
+=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
+1
+=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
+=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
+=A0 m=F6gliche Regler: conservative, ondemand, userspace, powersave, pe=
+rformance
+=A0 momentane Taktik: die Frequenz soll
+innerhalb 1.80 GHz und 1.80 GHz.
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
+egler "performance" kann frei entscheiden,
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
+equenz innerhalb dieser Grenze verwendet wird.
+=A0 momentane Taktfrequenz ist 1.80 GHz.
+=A0 Statistik:1.80 GHz:70,01%, 1.60 GHz:29,96%, 800 MHz:0,03%=A0 (2309)
+analysiere CPU 1:
+=A0 Treiber: powernow-k8
+=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
+1
+=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
+=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
+=A0 m=F6gliche Regler: conservative, ondemand,
+userspace, powersave, performance
+=A0 momentane Taktik: die Frequenz soll innerhalb 1.80 GHz und 1.80 GHz=
+=2E
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
+egler "performance" kann frei entscheiden,
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
+equenz innerhalb dieser Grenze verwendet wird.
+=A0 momentane Taktfrequenz ist 1.80 GHz.
+=A0 Statistik:1.80 GHz:70,01%, 1.60 GHz:29,96%, 800 MHz:0,03%=A0 (2309)
+wipcon@wipcon-laptop:~$ sudo modprobe powernow-k8
+[sudo] password for wipcon:=20
+wipcon@wipcon-laptop:~$ cpufreq-info
+cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
+Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
+analysiere CPU 0:
+=A0 Treiber: powernow-k8
+=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0
+1
+=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
+1
+=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
+=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
+=A0 m=F6gliche Regler: conservative, ondemand, userspace, powersave, pe=
+rformance
+=A0 momentane Taktik: die Frequenz soll innerhalb 1.60 GHz und 1.60 GHz=
+=2E
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
+egler "performance" kann frei entscheiden,
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
+equenz innerhalb dieser Grenze verwendet wird.
+=A0 momentane Taktfrequenz ist 1.60 GHz.
+=A0 Statistik:1.80 GHz:70,05%, 1.60 GHz:29,92%, 800 MHz:0,03%=A0 (2320)
+analysiere CPU 1:
+=A0 Treiber:
+powernow-k8
+=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
+=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
+1
+=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
+=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
+=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
+=A0 m=F6gliche Regler: conservative, ondemand, userspace, powersave, pe=
+rformance
+=A0 momentane Taktik: die Frequenz soll innerhalb 1.60 GHz und 1.60 GHz=
+=2E
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
+egler "performance" kann frei entscheiden,
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
+equenz innerhalb dieser Grenze verwendet wird.
+=A0 momentane Taktfrequenz ist 1.60 GHz.
+=A0 Statistik:1.80 GHz:70,05%,
+1.60 GHz:29,92%, 800 MHz:0,03%=A0 (2320)=A0=20
