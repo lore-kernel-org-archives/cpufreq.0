@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 58761] related_cpus truncated with acpi-cpufreq driver on
  kernel 3.9.3
-Date: Thu, 30 May 2013 15:05:19 +0000 (UTC)
-Message-ID: <20130530150519.F225A11FACF@bugzilla.kernel.org>
+Date: Thu, 30 May 2013 15:09:05 +0000 (UTC)
+Message-ID: <20130530150905.F076911FA52@bugzilla.kernel.org>
 References: <bug-58761-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,17 +19,14 @@ https://bugzilla.kernel.org/show_bug.cgi?id=58761
 
 
 
---- Comment #6 from Viresh Kumar <viresh.kumar@linaro.org>  2013-05-30 15:05:19 ---
-(In reply to comment #5)
-> I am not entirely understand why the change was made (not required :-) but is
-> more accurate from my point of view.
+--- Comment #7 from Jean-Philippe Halimi <jean-philippe.halimi@exascale-computing.eu>  2013-05-30 15:09:05 ---
+@Dirk Brandewie Having the physical connection allows to understand how the
+underlying hardware works. Having a file in cpuN that contains N only is
+useless.
 
-I didn't understood what was the use of related_cpus in kernel at all earlier..
-Sent many mails across lists and didn't got a satisfactory answer.. Searched
-kernel source and nobody seemed to be using it (including cpufreq core)..
-
-And when I cleaned up the core finally it made more sense to use it in a
-separate way: i.e. have both online and offline cpus in it.
+@Viresh Kumar Yes but on my Intel Core i7 processor, all the offline+online
+cores are sharing the same frequency domain, which means they should all appear
+in the related_cpu files.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
