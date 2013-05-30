@@ -1,145 +1,59 @@
-From: "wconbs-driver@yahoo.de" <wconbs-driver@yahoo.de>
-Subject: Z53T, Asus Notebook, ubuntu 12.04, kernel 3.2.0-44, cpufreq nur PERFORMANE
-Date: Thu, 30 May 2013 09:43:36 +0100 (BST)
-Message-ID: <1369903416.73004.YahooMailNeo@web172501.mail.ir2.yahoo.com>
-References: <1369811251.58881.YahooMailNeo@web172501.mail.ir2.yahoo.com> <1369903258.92082.YahooMailNeo@web172506.mail.ir2.yahoo.com>
-Reply-To: "wconbs-driver@yahoo.de" <wconbs-driver@yahoo.de>
+From: Ross Lagerwall <rosslagerwall@gmail.com>
+Subject: cpufreq turbo regression
+Date: Thu, 30 May 2013 14:52:46 +0100
+Message-ID: <20130530135246.GA2177@hobo.wolfson.cam.ac.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.de; s=s1024; t=1369903416; bh=8yKKp24kniD90iTHYsmOHCmGwC6ZANROfiVy7shDEIs=; h=X-YMail-OSG:Received:X-Rocket-MIMEInfo:X-Mailer:References:Message-ID:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding; b=a+McmMIXgzLksXFysRH5ZNG6Avxo5kJYKGBzmJ+BgO4fvR3NaCA02c8nTnty3jNj1T0QkXV7gROQ3e+ZzAFaY6nziW4AWwqkv9NVW0tvVLDKu9/o4VoJvySVJA2jlH0IvD+jNA6JkLYyWHYOdECvWb/zrNsX7buAqkp4g1bI21o=
-In-Reply-To: <1369903258.92082.YahooMailNeo@web172506.mail.ir2.yahoo.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        bh=xnnzsXsICTKeKU7kvlroiNh0HOtkmres30NilxQYrtk=;
+        b=IQhJNN89sqmIOJ/PxhhncNeHNxdeGQuwAEcQUjf3A6TubaKwaDWS8b1GHiSdiBGpQY
+         vlfxkBVHhUakZkrv6hRJnOu7wiKDexrIs62EHlOC4Sl5SXETYbVM+VKgFJPWnncqOJau
+         dyHuBIExVpOs2vebmEm7AoqjiCidVNOTOHBI3nX5beOgZ3OFQWC/1r39JxISxLdB5w2o
+         WsAM4ZjEZZbrHxGdBb6p+F7egqzC8r/3/5G8ImXs/aJm8Gqy3U6dweKgAl5SaJcScnJW
+         VmPg/95jXHSYBnsFaSALFZU1MbvzL+N8hIXAX9D/UXSPnTL66CFhvWf2qNRPnUtMVTYz
+         hT6Q==
+Content-Disposition: inline
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 
-Betreff: Z53T, Asus Notebook, ubuntu 12.04, kernel 3.2.0-44, cpufreq nu=
-r PERFORMANE
+Hi,
 
+I have an Intel 3570K and would like to run it in performance mode from
+startup so I set the default governor to performance.
 
+I noticed that when I do this, turbo mode does not seem to be activated
+on the processor (turbostat shows frequencies of about 3.4GHz rather
+than 3.7GHz).  If I then while it is running switch to ondemand and then back
+to performance, turbo is activated properly and the cpu frequency hits 3.7GHz.
 
+I did a git bisect and traced it to the following commit:
+5a1c022850ea5d64c2997bf9b89f5ae112d5ee4d is the first bad commit
+commit 5a1c022850ea5d64c2997bf9b89f5ae112d5ee4d
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Wed Oct 31 01:28:15 2012 +0100
 
-Hallo,
+    cpufreq: Avoid calling cpufreq driver's target() routine if target_freq == policy->cur
+    
+    Avoid calling cpufreq driver's target() routine if new frequency is same as
+    policies current frequency.
+    
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-habe 3 Asus z53t und mehrere PCs mit Amd64(x2) und auf allen das Proble=
-m, die laufen immer "auf vollen Touren" - Performance - mit maximal lau=
-tem L=FCfter und maximalem Stromverbrauch, das nervt! Ein Zeit lang gin=
-g es mit 11.10 und auch 12.04 teilweise, das Stepping, seit den letzten=
- zwei Kernelupdates, glaube ich, ist es total vorbei, keine Einstellung=
- m=F6glich, sei es automatisch oder =FCber manuelle Eingabe! Habe schon=
- cpufreq de- und reinstalliert und einige kleinere Dinge ausprobiert!
+:040000 040000 4e0d340c501120d61e5bb9553420c142037a0beb f4ed149e8563bebd6e2d1e4c56523ff9aed4314b M  drivers
 
+Reverting this commit from v3.10-rc3 fixed the problem.
 
-Sorry, so macht es keinen Spa=DF! Ubuntu Team hilft nicht weiter, mache=
- alles au=DFer Kernel selbst kompilieren, dann leider Win7!
+This is using the acpi-cpufreq driver -- there doesn't seem to be any way to
+set the Intel P-state driver to performance by default.
 
-Gibt es eine praktikable L=F6sung (nur einfache, wenn ich das bei jedem=
- Kernelupdate wiederholen muss).
-
-
-System:
-
-ubuntu Version 12.04 (precise) (64-Bit)
-
-=A0Kernel Linux 3.2.0-44-generic
-
-GNOME 3.4.2
-
-AMD Turion(tm) 64 X2 Mobile
-Technology TL-56 =D7 2=20
-
-cpufreq-info aus Terminal siehe unten
-
-MFG
-
-
-J=FCrgen Wippler
-
-
-Handy: 0049(0)175-7854253
-
------------------------------------------------------------------------=
------------------------------------------------------------
-
-Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
-analysiere CPU 0:
-=A0 Treiber: powernow-k8
-=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
-=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
-1
-=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
-=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
-=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
-=A0 m=F6gliche Regler: conservative, ondemand, userspace, powersave, pe=
-rformance
-=A0 momentane Taktik: die Frequenz soll
-innerhalb 1.80 GHz und 1.80 GHz.
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
-egler "performance" kann frei entscheiden,
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
-equenz innerhalb dieser Grenze verwendet wird.
-=A0 momentane Taktfrequenz ist 1.80 GHz.
-=A0 Statistik:1.80 GHz:70,01%, 1.60 GHz:29,96%, 800 MHz:0,03%=A0 (2309)
-analysiere CPU 1:
-=A0 Treiber: powernow-k8
-=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
-=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
-1
-=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
-=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
-=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
-=A0 m=F6gliche Regler: conservative, ondemand,
-userspace, powersave, performance
-=A0 momentane Taktik: die Frequenz soll innerhalb 1.80 GHz und 1.80 GHz=
-=2E
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
-egler "performance" kann frei entscheiden,
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
-equenz innerhalb dieser Grenze verwendet wird.
-=A0 momentane Taktfrequenz ist 1.80 GHz.
-=A0 Statistik:1.80 GHz:70,01%, 1.60 GHz:29,96%, 800 MHz:0,03%=A0 (2309)
-wipcon@wipcon-laptop:~$ sudo modprobe powernow-k8
-[sudo] password for wipcon:=20
-wipcon@wipcon-laptop:~$ cpufreq-info
-cpufrequtils 007: cpufreq-info (C) Dominik Brodowski 2004-2009
-Bitte melden Sie Fehler an cpufreq@vger.kernel.org.
-analysiere CPU 0:
-=A0 Treiber: powernow-k8
-=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0
-1
-=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
-1
-=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
-=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
-=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
-=A0 m=F6gliche Regler: conservative, ondemand, userspace, powersave, pe=
-rformance
-=A0 momentane Taktik: die Frequenz soll innerhalb 1.60 GHz und 1.60 GHz=
-=2E
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
-egler "performance" kann frei entscheiden,
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
-equenz innerhalb dieser Grenze verwendet wird.
-=A0 momentane Taktfrequenz ist 1.60 GHz.
-=A0 Statistik:1.80 GHz:70,05%, 1.60 GHz:29,92%, 800 MHz:0,03%=A0 (2320)
-analysiere CPU 1:
-=A0 Treiber:
-powernow-k8
-=A0 Folgende CPUs laufen mit der gleichen Hardware-Taktfrequenz: 0 1
-=A0 Die Taktfrequenz folgender CPUs werden per Software koordiniert: 0 =
-1
-=A0 Maximale Dauer eines Taktfrequenzwechsels: 109 us.
-=A0 Hardwarebedingte Grenzen der Taktfrequenz: 800 MHz - 1.80 GHz
-=A0 m=F6gliche Taktfrequenzen: 1.80 GHz, 1.60 GHz, 800 MHz
-=A0 m=F6gliche Regler: conservative, ondemand, userspace, powersave, pe=
-rformance
-=A0 momentane Taktik: die Frequenz soll innerhalb 1.60 GHz und 1.60 GHz=
-=2E
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 liegen. Der R=
-egler "performance" kann frei entscheiden,
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 welche Taktfr=
-equenz innerhalb dieser Grenze verwendet wird.
-=A0 momentane Taktfrequenz ist 1.60 GHz.
-=A0 Statistik:1.80 GHz:70,05%,
-1.60 GHz:29,92%, 800 MHz:0,03%=A0 (2320)=A0=20
+Regards
+-- 
+Ross Lagerwall
