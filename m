@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 58761] related_cpus truncated with acpi-cpufreq driver on
  kernel 3.9.3
-Date: Thu, 30 May 2013 15:53:55 +0000 (UTC)
-Message-ID: <20130530155355.9C4A411FACF@bugzilla.kernel.org>
+Date: Thu, 30 May 2013 16:00:09 +0000 (UTC)
+Message-ID: <20130530160009.DB82F11F976@bugzilla.kernel.org>
 References: <bug-58761-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,43 +19,23 @@ https://bugzilla.kernel.org/show_bug.cgi?id=58761
 
 
 
---- Comment #10 from Viresh Kumar <viresh.kumar@linaro.org>  2013-05-30 15:53:55 ---
-(In reply to comment #9)
-> I am not arguing for or against the difference between affected_cpus and
-> related_cpus.
+--- Comment #11 from Jean-Philippe Halimi <jean-philippe.halimi@exascale-computing.eu>  2013-05-30 16:00:09 ---
 
-I understand.
-
-> For me so far, the difference between the two was:
-> - affected_cpus was a "list of CPUs that require software coordination of
-> frequency"
-> - related_cpus was a "List of CPUs that need some sort of frequency
-> coordination, whether software or hardware."
+> You need to check the latest ones:
 > 
-> This is at least what the official cpufreq Kernel documentation states (see
-> https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt)
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/cpu-freq/user-guide.txt?id=refs/tags/v3.9
 
-You need to check the latest ones:
+Thanks for the link, I didn't know the other one was outdated
 
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/cpu-freq/user-guide.txt?id=refs/tags/v3.9
+> Why I removed it was: "Nobody is making use of this information and was turning
+> out to be more misleading".. As "hardware" for kernel is whatever is present
+> below kernel layer.. So, if the layers below linux don't want to hide that
+> information, let it be.
 
-> There definitely is hardware coordination between the 8 cores of my machine.
-> Plus we can easily think about future architectures where a single processor
-> can have distinct frequency domains. So the "frequency domain" notion is not a
-> trivial question (all the cores of a single processor, or some cores of the
-> processor), and has been an information Linux has been giving in previous
-> releases of the kernel (before 3.9). If I get it right, your point is that
-> losing this information is "more logical", and I am saying that losing this
-> information is a loss of information. :)
-
-Why I removed it was: "Nobody is making use of this information and was turning
-out to be more misleading".. As "hardware" for kernel is whatever is present
-below kernel layer.. So, if the layers below linux don't want to hide that
-information, let it be.
-
-But yes, if we have broken something with that change it must be fixed. But
-that is not the case. It is just that you saw different values in it with
-latest kernels and got worried about if something went wrong.
+I have actually been using these files for while for a project related with
+energy in order to decide which cores have a physical correlation with respect
+to frequency transition. So if I get it right, it is not possible to have such
+information anymore.
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
