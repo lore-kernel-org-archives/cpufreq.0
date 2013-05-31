@@ -1,110 +1,62 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Fri, 31 May 2013 19:33:06 +0300
-Message-ID: <51A8D0C2.1080801@semaphore.gr>
-References: <51A7BFA6.3070800@semaphore.gr> <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------050906090203090406020800"
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ross Lagerwall <rosslagerwall@gmail.com>
+Subject: [PATCH] acpi-cpufreq: set current frequency based on target P-State
+Date: Fri, 31 May 2013 20:45:17 +0100
+Message-ID: <1370029517-10423-1-git-send-email-rosslagerwall@gmail.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        bh=IgohNJtQb4h01Ze+j8iitLP5kRzWkOop7k3TNpRachI=;
+        b=0Ffak6Qh2v3RdOT20Jf/+x+VnhrvhQv58U6yhBAre0hZfVCJ8Ny9ZaEVVwugYiYSKm
+         TxuaBQhO4pSDN/SRlgbAYtWZJhOLmftUi58rNlqdVkVa/ZDUIjJIsMLujrhC4glgCD9v
+         kOFg5BQGkt2edOg70YpwNtn3mEmdZYttx7vftdvc8N3eorIwrfG0LWIo9evUzNTAqGQh
+         XWvecHOrBLt4F3T3hx5NBWff8KtfifmyJ5c58/bY2B7ov9vC1Ev5fuaCytgUwMokewQu
+         9H2qh6mmb9GMop+Y3QUsly9sMWtThd3ttxed+6dz2T7efoO2GwHKzUl+g8ZyQqqZ/Bq0
+         6jqQ==
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-
-This is a multi-part message in MIME format.
---------------050906090203090406020800
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
+Cc: Andre Przywara <andre.przywara@amd.com>, Matthew Garrett <mjg@redhat.com>, Ross Lagerwall <rosslagerwall@gmail.com>
 
-On 05/31/2013 11:51 AM, Viresh Kumar wrote:
->> ---
->>   arch/x86/include/asm/processor.h   | 29 ----------------------
->>   drivers/cpufreq/Makefile           |  2 +-
->>   drivers/cpufreq/acpi-cpufreq.c     |  5 ----
->>   drivers/cpufreq/cpufreq.c          | 21 ----------------
->>   drivers/cpufreq/cpufreq_governor.c | 10 +-------
->>   drivers/cpufreq/cpufreq_governor.h |  1 -
->>   drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
->>   drivers/cpufreq/mperf.c            | 51 --------------------------------------
->>   drivers/cpufreq/mperf.h            |  9 -------
->>   include/linux/cpufreq.h            |  6 -----
->>   10 files changed, 9 insertions(+), 164 deletions(-)
->>   delete mode 100644 drivers/cpufreq/mperf.c
->>   delete mode 100644 drivers/cpufreq/mperf.h
-> 
-> I believe you should have removed other users of getavg() in a separate
-> patch and also cc'd relevant people so that you can some review comments
-> from  them.
+4b31e774 fixed bug #4634 and caused the driver to always set the
+target P-State at least once since the initial P-State may not be the
+desired one.  5a1c0228 caused a regression in this behavior.
 
-I will split the patch in two. If it's OK, I will keep the removal of 
-__cpufreq_driver_getavg in the original patch and move the clean up of
-APERF/MPERF support in a second patch. I will also cc relevant people.
+This fixes the regression by setting policy->cur based on the CPU's
+target frequency rather than the CPU's current reported frequency
+(which may be different).  This means the P-State will be set initially
+if the CPU's target frequency is different from the governor's target
+frequency.
 
+This fixes an issue where setting the default governor to performance
+wouldn't correctly enable turbo mode on all cores.
 
->>          /* Check for frequency increase */
->> -       if (load_freq > od_tuners->up_threshold * policy->cur) {
->> +       if (load > od_tuners->up_threshold) {
-> 
-> Chances of this getting hit are minimal now.. I don't know if keeping
-> this will change anything now :)
+Signed-off-by: Ross Lagerwall <rosslagerwall@gmail.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Actually, no. This getting hit pretty often.
-Please find attached the cpufreq statistics - trans_table during build
-of 3.4 kernel. With default up_threshold (95), the transition to max
-happened many times because of load was greater than up_threshold.
-I also thought to keep this code to leave up_threshold functionality unaffected.
- 
-On 05/31/2013 03:42 PM, Rafael J. Wysocki wrote:
-> On Friday, May 31, 2013 02:24:59 PM Viresh Kumar wrote:
->>> +       } else {
->>> +               /* Calculate the next frequency proportional to load */
->>>                  unsigned int freq_next;
->>> -               freq_next = load_freq / od_tuners->adj_up_threshold;
->>> +               freq_next = load * policy->max / 100;
->>
->> Rafael asked why you believe this is the right formula and I really couldn't
->> find an appropriate answer to that, sorry :(
-> 
-> Right, it would be good to explain that.
-> 
-> "Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
-> 
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 11b8b4b..edc089e 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -347,11 +347,11 @@ static u32 get_cur_val(const struct cpumask *mask)
+ 	switch (per_cpu(acfreq_data, cpumask_first(mask))->cpu_feature) {
+ 	case SYSTEM_INTEL_MSR_CAPABLE:
+ 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_IA32_PERF_STATUS;
++		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
+ 		break;
+ 	case SYSTEM_AMD_MSR_CAPABLE:
+ 		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_AMD_PERF_STATUS;
++		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
+ 		break;
+ 	case SYSTEM_IO_CAPABLE:
+ 		cmd.type = SYSTEM_IO_CAPABLE;
+-- 
+1.8.3
 
-I think, finally(?) I see your point. The right C should be "policy->cpuinfo.max_freq / 100".
-This way the target frequency will be proportional to load and the calculation will
-"map" the load to CPU freq table.
-
-I will update the patch according to your observations and suggestions.
-
-Thanks,
-Stratos
-
---------------050906090203090406020800
-Content-Type: text/plain; charset=UTF-8;
- name="trans_table.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="trans_table.txt"
-
-   From  :    To
-         :   3401000   3400000   3300000   3100000   3000000   2900000   2800000   2600000   2500000   2400000   2200000   2100000   2000000   1900000   1700000   1600000 
-  3401000:         0         0         4         2         4         2         3         0         2         1         1         1         1         4         0        29 
-  3400000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0 
-  3300000:         4         0         0         0         1         0         0         0         0         0         0         1         0         0         0         7 
-  3100000:         2         0         0         0         1         0         0         0         0         0         0         0         0         0         0         0 
-  3000000:         4         0         0         0         0         0         0         0         0         1         0         0         0         0         0         4 
-  2900000:         1         0         0         0         1         0         0         0         0         0         0         0         0         0         0         7 
-  2800000:         3         0         0         0         0         1         0         0         0         1         0         0         0         0         0         3 
-  2600000:         0         0         0         0         0         1         0         0         0         1         0         0         0         0         0         4 
-  2500000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         4 
-  2400000:         3         0         0         0         0         0         1         0         0         0         0         0         0         0         0         7 
-  2200000:         1         0         0         0         0         0         0         0         0         1         0         0         0         0         0         3 
-  2100000:         1         0         0         0         0         0         0         1         0         0         0         0         0         1         0         4 
-  2000000:         1         0         0         0         0         0         0         0         0         0         0         0         0         0         0         1 
-  1900000:         0         0         2         0         0         0         0         0         0         1         0         0         0         0         0         8 
-  1700000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         2 
-  1600000:        33         0         7         1         2         5         4         5         2         5         4         5         1         6         2         0 
-
---------------050906090203090406020800--
