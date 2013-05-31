@@ -1,62 +1,65 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Fri, 31 May 2013 14:24:59 +0530
-Message-ID: <CAKohpo=yFV05ON3Dth=6gLMHEVRNVb2J5+8OeLNv2G8VmSXkkQ@mail.gmail.com>
-References: <51A7BFA6.3070800@semaphore.gr>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
+Date: Fri, 31 May 2013 16:20:33 +0530
+Message-ID: <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+	<027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+	<CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+	<CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+	<CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+	<CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+	<CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51A7BFA6.3070800@semaphore.gr>
+In-Reply-To: <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 
-On 31 May 2013 02:37, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-
-Ahh.. earlier mail got sent without me doing complete review :(
-
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> +static void od_check_cpu(int cpu, unsigned int load)
->  {
->         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
->         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
-> @@ -176,29 +170,17 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
->         dbs_info->freq_lo = 0;
+On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>>>>
+>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>>>> Cc: Olof Johansson <olof@lixom.net>
+>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>>> ---
+>>>>>> Compile Tested only.
+>>>>>>
+>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>>>>
+>>>>> Hi Deepthi,
+>>>>>
+>>>>> Can you help testing this please?
+>>>>
+>>>> Ping!!
+>>>
+>>> Ping!!
+>>
+>> Hi Benjamin,
+>>
+>> Hope you are back from your vacations. Can you give it a try now?
 >
->         /* Check for frequency increase */
-> -       if (load_freq > od_tuners->up_threshold * policy->cur) {
-> +       if (load > od_tuners->up_threshold) {
+> Ping!!
 
-Chances of this getting hit are minimal now.. I don't know if keeping
-this will change anything now :)
-
->                 /* If switching to max speed, apply sampling_down_factor */
->                 if (policy->cur < policy->max)
->                         dbs_info->rate_mult =
->                                 od_tuners->sampling_down_factor;
->                 dbs_freq_increase(policy, policy->max);
->                 return;
-> -       }
-> -
-> -       /* Check for frequency decrease */
-> -       /* if we cannot reduce the frequency anymore, break out early */
-> -       if (policy->cur == policy->min)
-> -               return;
-> -
-> -       /*
-> -        * The optimal frequency is the frequency that is the lowest that can
-> -        * support the current CPU usage without triggering the up policy. To be
-> -        * safe, we focus 10 points under the threshold.
-> -        */
-> -       if (load_freq < od_tuners->adj_up_threshold
-> -                       * policy->cur) {
-> +       } else {
-> +               /* Calculate the next frequency proportional to load */
->                 unsigned int freq_next;
-> -               freq_next = load_freq / od_tuners->adj_up_threshold;
-> +               freq_next = load * policy->max / 100;
-
-Rafael asked why you believe this is the right formula and I really couldn't
-find an appropriate answer to that, sorry :(
+Ping!!
