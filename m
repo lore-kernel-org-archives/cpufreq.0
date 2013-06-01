@@ -1,48 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] acpi-cpufreq: set current frequency based on target P-State
-Date: Sat, 1 Jun 2013 15:18:12 +0530
-Message-ID: <CAOh2x=kk9w7Gg1GTezu7Mz-L+VtuHnMoH9JheuCbkNiM7e-JgQ@mail.gmail.com>
-References: <1370029517-10423-1-git-send-email-rosslagerwall@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
+Date: Sat, 01 Jun 2013 14:27:12 +0200
+Message-ID: <4850488.DDEIRKBtQx@vostro.rjw.lan>
+References: <51A7BFA6.3070800@semaphore.gr> <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com> <51A8D0C2.1080801@semaphore.gr>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=tQtRp5TDL1QZZ+pdVBDWgl7oX4FseNydOlyOsuoC5/A=;
-        b=IOWJOffaBHo+tSUaELL2eKNhIqeOxZZQcuK+cEdhn+qkR/a1J59GQDZN/Uu8awq0vK
-         yOU7T/RY7QmIT5Q2keg2gGyWl8VcrqlyUIAUiXzZlh2y+T3yipuUdbd9aKiLetcf/cMn
-         SPelRDntdKzWUXX0LrND00fLx48PSnlY5wR5zWhI8U13BMzNMhZS8vEvwN2qx9uK1U8o
-         MZKyEbY9keg6hQfumHlYG7gGg+JXFdP//2jZyAJX68Lxb5G387+Le/tGwSVPbZMUB/5K
-         1SGQZblBaPZTKRXDOT2i8LRYfYox+bwYmeBSEn6EQaikdPiifqv2gjLTBXqqKmb5la+L
-         b61Q==
-In-Reply-To: <1370029517-10423-1-git-send-email-rosslagerwall@gmail.com>
+In-Reply-To: <51A8D0C2.1080801@semaphore.gr>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ross Lagerwall <rosslagerwall@gmail.com>
-Cc: cpufreq@vger.kernel.org, Andre Przywara <andre.przywara@amd.com>, Matthew Garrett <mjg@redhat.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat, Jun 1, 2013 at 1:15 AM, Ross Lagerwall <rosslagerwall@gmail.com> wrote:
-> 4b31e774 fixed bug #4634 and caused the driver to always set the
-> target P-State at least once since the initial P-State may not be the
-> desired one.  5a1c0228 caused a regression in this behavior.
->
-> This fixes the regression by setting policy->cur based on the CPU's
-> target frequency rather than the CPU's current reported frequency
-> (which may be different).  This means the P-State will be set initially
-> if the CPU's target frequency is different from the governor's target
-> frequency.
->
-> This fixes an issue where setting the default governor to performance
-> wouldn't correctly enable turbo mode on all cores.
->
-> Signed-off-by: Ross Lagerwall <rosslagerwall@gmail.com>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+On Friday, May 31, 2013 07:33:06 PM Stratos Karafotis wrote:
+> On 05/31/2013 11:51 AM, Viresh Kumar wrote:
+> >> ---
+> >>   arch/x86/include/asm/processor.h   | 29 ----------------------
+> >>   drivers/cpufreq/Makefile           |  2 +-
+> >>   drivers/cpufreq/acpi-cpufreq.c     |  5 ----
+> >>   drivers/cpufreq/cpufreq.c          | 21 ----------------
+> >>   drivers/cpufreq/cpufreq_governor.c | 10 +-------
+> >>   drivers/cpufreq/cpufreq_governor.h |  1 -
+> >>   drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
+> >>   drivers/cpufreq/mperf.c            | 51 --------------------------------------
+> >>   drivers/cpufreq/mperf.h            |  9 -------
+> >>   include/linux/cpufreq.h            |  6 -----
+> >>   10 files changed, 9 insertions(+), 164 deletions(-)
+> >>   delete mode 100644 drivers/cpufreq/mperf.c
+> >>   delete mode 100644 drivers/cpufreq/mperf.h
+> > 
+> > I believe you should have removed other users of getavg() in a separate
+> > patch and also cc'd relevant people so that you can some review comments
+> > from  them.
+> 
+> I will split the patch in two. If it's OK, I will keep the removal of 
+> __cpufreq_driver_getavg in the original patch and move the clean up of
+> APERF/MPERF support in a second patch. I will also cc relevant people.
+> 
+> 
+> >>          /* Check for frequency increase */
+> >> -       if (load_freq > od_tuners->up_threshold * policy->cur) {
+> >> +       if (load > od_tuners->up_threshold) {
+> > 
+> > Chances of this getting hit are minimal now.. I don't know if keeping
+> > this will change anything now :)
+> 
+> Actually, no. This getting hit pretty often.
+> Please find attached the cpufreq statistics - trans_table during build
+> of 3.4 kernel. With default up_threshold (95), the transition to max
+> happened many times because of load was greater than up_threshold.
+> I also thought to keep this code to leave up_threshold functionality unaffected.
+>  
+> On 05/31/2013 03:42 PM, Rafael J. Wysocki wrote:
+> > On Friday, May 31, 2013 02:24:59 PM Viresh Kumar wrote:
+> >>> +       } else {
+> >>> +               /* Calculate the next frequency proportional to load */
+> >>>                  unsigned int freq_next;
+> >>> -               freq_next = load_freq / od_tuners->adj_up_threshold;
+> >>> +               freq_next = load * policy->max / 100;
+> >>
+> >> Rafael asked why you believe this is the right formula and I really couldn't
+> >> find an appropriate answer to that, sorry :(
+> > 
+> > Right, it would be good to explain that.
+> > 
+> > "Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
+> > 
+> 
+> I think, finally(?) I see your point. The right C should be "policy->cpuinfo.max_freq / 100".
+> This way the target frequency will be proportional to load and the calculation will
+> "map" the load to CPU freq table.
 
-Thanks for your patch.
+That seems to mean "take the percentage of policy->cpuinfo.max_freq proportional
+to the current load and use the available frequency closest to that".  Is that
+correct?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
