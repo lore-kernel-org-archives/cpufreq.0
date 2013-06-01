@@ -1,54 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/15] cpufreq: spear needs cpufreq table
-Date: Sat, 1 Jun 2013 15:15:26 +0530
-Message-ID: <CAKohponkPNBA2kWnpPyNmmJw2t03x63uUSbZkiDfUZzpqqxSKw@mail.gmail.com>
-References: <1370038972-2318779-1-git-send-email-arnd@arndb.de>
-	<1370038972-2318779-8-git-send-email-arnd@arndb.de>
-	<CAKohpomzoGsOoQ__fd0V651bjWt2=JTC10wGSQzX2yyTcWZmvA@mail.gmail.com>
-	<2104181.OHBofkq3lH@wuerfel>
+Subject: Re: [PATCH] acpi-cpufreq: set current frequency based on target P-State
+Date: Sat, 1 Jun 2013 15:18:12 +0530
+Message-ID: <CAOh2x=kk9w7Gg1GTezu7Mz-L+VtuHnMoH9JheuCbkNiM7e-JgQ@mail.gmail.com>
+References: <1370029517-10423-1-git-send-email-rosslagerwall@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2104181.OHBofkq3lH@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=tQtRp5TDL1QZZ+pdVBDWgl7oX4FseNydOlyOsuoC5/A=;
+        b=IOWJOffaBHo+tSUaELL2eKNhIqeOxZZQcuK+cEdhn+qkR/a1J59GQDZN/Uu8awq0vK
+         yOU7T/RY7QmIT5Q2keg2gGyWl8VcrqlyUIAUiXzZlh2y+T3yipuUdbd9aKiLetcf/cMn
+         SPelRDntdKzWUXX0LrND00fLx48PSnlY5wR5zWhI8U13BMzNMhZS8vEvwN2qx9uK1U8o
+         MZKyEbY9keg6hQfumHlYG7gGg+JXFdP//2jZyAJX68Lxb5G387+Le/tGwSVPbZMUB/5K
+         1SGQZblBaPZTKRXDOT2i8LRYfYox+bwYmeBSEn6EQaikdPiifqv2gjLTBXqqKmb5la+L
+         b61Q==
+In-Reply-To: <1370029517-10423-1-git-send-email-rosslagerwall@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, patches@lists.linaro.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Ross Lagerwall <rosslagerwall@gmail.com>
+Cc: cpufreq@vger.kernel.org, Andre Przywara <andre.przywara@amd.com>, Matthew Garrett <mjg@redhat.com>
 
-On 1 June 2013 14:33, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Saturday 01 June 2013 07:28:01 Viresh Kumar wrote:
->> On 1 June 2013 03:52, Arnd Bergmann <arnd@arndb.de> wrote:
->> > Like a lot of the other cpufreq drivers, this one needs to
->> > select CONFIG_CPU_FREQ_TABLE to avoid a build error like
->> >
->> > drivers/built-in.o: In function `spear_cpufreq_exit':
->> > spear-cpufreq.c:198: undefined reference to `cpufreq_frequency_table_put_attr'
->> > drivers/built-in.o: In function `spear_cpufreq_verify':
->> > spear-cpufreq.c:35: undefined reference to `cpufreq_frequency_table_verify'
->> > drivers/built-in.o: In function `spear_cpufreq_init':
->> > spear-cpufreq.c:181: undefined reference to `cpufreq_frequency_table_cpuinfo'
->> > spear-cpufreq.c:187: undefined reference to `cpufreq_frequency_table_get_attr'
->> > drivers/built-in.o: In function `spear_cpufreq_target':
->> > spear-cpufreq.c:120: undefined reference to `cpufreq_frequency_table_target'
->> > drivers/built-in.o:(.data+0x5e63c): undefined reference to `cpufreq_freq_attr_scaling_available_freqs'
->> >
->> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
->> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> > Cc: cpufreq@vger.kernel.org
->> > Cc: linux-pm@vger.kernel.org
->> > ---
->> >  drivers/cpufreq/Kconfig.arm | 1 +
->> >  1 file changed, 1 insertion(+)
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
->> BTW, you want me to apply this one or take it through arm-soc tree?
+On Sat, Jun 1, 2013 at 1:15 AM, Ross Lagerwall <rosslagerwall@gmail.com> wrote:
+> 4b31e774 fixed bug #4634 and caused the driver to always set the
+> target P-State at least once since the initial P-State may not be the
+> desired one.  5a1c0228 caused a regression in this behavior.
 >
-> As I said in the introductory mail, I would prefer it if you
-> can pick it up. Thanks!
+> This fixes the regression by setting policy->cur based on the CPU's
+> target frequency rather than the CPU's current reported frequency
+> (which may be different).  This means the P-State will be set initially
+> if the CPU's target frequency is different from the governor's target
+> frequency.
+>
+> This fixes an issue where setting the default governor to performance
+> wouldn't correctly enable turbo mode on all cores.
+>
+> Signed-off-by: Ross Lagerwall <rosslagerwall@gmail.com>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-I saw that mail later :(
+Thanks for your patch.
 
-Applied to cpufreq-next. Thanks.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
