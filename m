@@ -1,141 +1,62 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v3 3/3] cpufreq: Remove unused APERF/MPERF support
-Date: Mon, 03 Jun 2013 22:48:06 +0300
-Message-ID: <51ACF2F6.70605@semaphore.gr>
+From: David C Niemi <dniemi@verisign.com>
+Subject: Re: [PATCH v2 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Mon, 03 Jun 2013 16:38:22 -0400
+Message-ID: <51ACFEBE.1050801@verisign.com>
+References: <51ACF2EA.70001@semaphore.gr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <51ACF2EA.70001@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Calculation of frequency target in ondemand governor changed and it is
-independent from measured average frequency.
 
-Remove unused APERF/MPERF support.
+Interesting analysis; I just got back from vacation and have not had a chance to comment until now.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- arch/x86/include/asm/processor.h | 29 -----------------------
- drivers/cpufreq/mperf.c          | 51 ----------------------------------------
- drivers/cpufreq/mperf.h          |  9 -------
- 3 files changed, 89 deletions(-)
- delete mode 100644 drivers/cpufreq/mperf.c
- delete mode 100644 drivers/cpufreq/mperf.h
+I like Stratos' general idea of making the decision to upshift or downshift independent of current frequency, as it makes thinks simpler and potentially more stable.  But I believe it will be important to measure performance and power consumption in a wider range of use cases to know whether it is an overall win (or whether it can at least be tuned to match the status quo for various use cases).
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 22224b3..2874a3b 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -941,35 +941,6 @@ extern int set_tsc_mode(unsigned int val);
- 
- extern u16 amd_get_nb_id(int cpu);
- 
--struct aperfmperf {
--	u64 aperf, mperf;
--};
--
--static inline void get_aperfmperf(struct aperfmperf *am)
--{
--	WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_APERFMPERF));
--
--	rdmsrl(MSR_IA32_APERF, am->aperf);
--	rdmsrl(MSR_IA32_MPERF, am->mperf);
--}
--
--#define APERFMPERF_SHIFT 10
--
--static inline
--unsigned long calc_aperfmperf_ratio(struct aperfmperf *old,
--				    struct aperfmperf *new)
--{
--	u64 aperf = new->aperf - old->aperf;
--	u64 mperf = new->mperf - old->mperf;
--	unsigned long ratio = aperf;
--
--	mperf >>= APERFMPERF_SHIFT;
--	if (mperf)
--		ratio = div64_u64(aperf, mperf);
--
--	return ratio;
--}
--
- extern unsigned long arch_align_stack(unsigned long sp);
- extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
- 
-diff --git a/drivers/cpufreq/mperf.c b/drivers/cpufreq/mperf.c
-deleted file mode 100644
-index 911e193..0000000
---- a/drivers/cpufreq/mperf.c
-+++ /dev/null
-@@ -1,51 +0,0 @@
--#include <linux/kernel.h>
--#include <linux/smp.h>
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/cpufreq.h>
--#include <linux/slab.h>
--
--#include "mperf.h"
--
--static DEFINE_PER_CPU(struct aperfmperf, acfreq_old_perf);
--
--/* Called via smp_call_function_single(), on the target CPU */
--static void read_measured_perf_ctrs(void *_cur)
--{
--	struct aperfmperf *am = _cur;
--
--	get_aperfmperf(am);
--}
--
--/*
-- * Return the measured active (C0) frequency on this CPU since last call
-- * to this function.
-- * Input: cpu number
-- * Return: Average CPU frequency in terms of max frequency (zero on error)
-- *
-- * We use IA32_MPERF and IA32_APERF MSRs to get the measured performance
-- * over a period of time, while CPU is in C0 state.
-- * IA32_MPERF counts at the rate of max advertised frequency
-- * IA32_APERF counts at the rate of actual CPU frequency
-- * Only IA32_APERF/IA32_MPERF ratio is architecturally defined and
-- * no meaning should be associated with absolute values of these MSRs.
-- */
--unsigned int cpufreq_get_measured_perf(struct cpufreq_policy *policy,
--					unsigned int cpu)
--{
--	struct aperfmperf perf;
--	unsigned long ratio;
--	unsigned int retval;
--
--	if (smp_call_function_single(cpu, read_measured_perf_ctrs, &perf, 1))
--		return 0;
--
--	ratio = calc_aperfmperf_ratio(&per_cpu(acfreq_old_perf, cpu), &perf);
--	per_cpu(acfreq_old_perf, cpu) = perf;
--
--	retval = (policy->cpuinfo.max_freq * ratio) >> APERFMPERF_SHIFT;
--
--	return retval;
--}
--EXPORT_SYMBOL_GPL(cpufreq_get_measured_perf);
--MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/mperf.h b/drivers/cpufreq/mperf.h
-deleted file mode 100644
-index 5dbf295..0000000
---- a/drivers/cpufreq/mperf.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--/*
-- *  (c) 2010 Advanced Micro Devices, Inc.
-- *  Your use of this code is subject to the terms and conditions of the
-- *  GNU general public license version 2. See "COPYING" or
-- *  http://www.gnu.org/licenses/gpl.html
-- */
--
--unsigned int cpufreq_get_measured_perf(struct cpufreq_policy *policy,
--					unsigned int cpu);
--- 
-1.8.1.4
+In my main use case (network servers), I don't think using more middle frequencies is a good thing at all; as soon as a load gets heavy even briefly I want the CPU doing all it can until the load has clearly abated.  The main competition in this use case is between using ondemand (tuned for performance at the cost of some extra power consumption) or the "performance" governor (which cannot be tuned at all, and where C-states are the only hope for moderating power consumption).
+
+A couple of additional points -- it is possible to get excellent overall performance and avoid oscillation using ondemand right now by using a low up_threshold and a sampling_down_factor of around 100; in this case you spend most of your time at either the lowest or highest possible frequency and you spend very little time thinking about slowing down.  The main downside of this is an increase in power consumption, so it is not a battery-friendly approach, but someone will need to also measure power consumption if we want to justify a change from the status quo on that basis.  There are dozens of ways to save power at the expense of performance or vice versa, so any major change like this needs to be analyzed for both, in case your patch just results in running at higher average frequencies
+  and gets its performance boost from that.
+
+David C Niemi
+
+On 06/03/13 15:47, Stratos Karafotis wrote:
+> Ondemand calculates load in terms of frequency and increases it only
+> if the load_freq is greater than up_threshold multiplied by current
+> or average frequency. This seems to produce oscillations of frequency
+> between min and max because, for example, a relatively small load can
+> easily saturate minimum frequency and lead the CPU to max. Then, the
+> CPU will decrease back to min due to a small load_freq.
+>
+> This patch changes the calculation method of load and target frequency
+> considering 2 points:
+> - Load computation should be independent from current or average
+> measured frequency. For example an absolute load 80% at 100MHz is not
+> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
+> - Target frequency should be increased to any value of frequency table
+> proportional to absolute load, instead to only the max. Thus:
+>
+> Target frequency = C * load
+>
+> where C = policy->cpuinfo.max_freq / 100
+>
+> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
+> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
+> that middle frequencies are used more, with this patch. Highest
+> and lowest frequencies were used less by ~9%
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 10 +---------
+>  drivers/cpufreq/cpufreq_governor.h |  1 -
+>  drivers/cpufreq/cpufreq_ondemand.c | 39 +++++++-------------------------------
+>  3 files changed, 8 insertions(+), 42 deletions(-)
+>
+...
