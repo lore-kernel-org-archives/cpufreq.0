@@ -1,68 +1,82 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Mon, 3 Jun 2013 11:41:25 +0530
-Message-ID: <CAKohpom3AA3xCHqZ-TeWgOgwM-=CQxd0XSAmKp85mR-p6txmcg@mail.gmail.com>
+Date: Mon, 3 Jun 2013 12:21:47 +0530
+Message-ID: <CAKohpokGDFvtaBMKxLTJCkx_WN+HN4eZ7LZ2upBLsXAsmcq7kA@mail.gmail.com>
 References: <51A7BFA6.3070800@semaphore.gr>
-	<CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
 	<51A8D0C2.1080801@semaphore.gr>
 	<CAKohpokmn-Rf-1w2aQHMMMkMbJqxokWXm5ye3DNuc-yzzk=7pQ@mail.gmail.com>
-	<51AA1BFF.20803@semaphore.gr>
+	<3146671.7pOpkCChrO@vostro.rjw.lan>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51AA1BFF.20803@semaphore.gr>
+In-Reply-To: <3146671.7pOpkCChrO@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 1 June 2013 21:36, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> On 06/01/2013 05:56 PM, Viresh Kumar wrote:
+On 2 June 2013 01:07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday, June 01, 2013 08:26:47 PM Viresh Kumar wrote:
 
 >> Even removal of __cpufreq_driver_getavg() should be done in a separate
 >> patch, so that it can be reverted easily if required later.
 >
-> Thanks, Viresh. I will do the removal of that function in a seperate patch.
-> Should I use a third patch for it? Or should I include it in the patch which
-> will remove APERF/MPERF support?
+> Why would you want to revert it separately?
 
-Maybe a third patch would be more cleaner.
+We might not need to revert all the changes that Stratos is doing.
+Only a revert of getavg() and its users + a small fix in governor would
+be enough. Stratos patch isn't only about removing getavg() but how
+ondemand works and so breaking stuff might be more useful.
 
+>> >> "Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
+>> >
+>> > I think, finally(?) I see your point. The right C should be "policy->cpuinfo.max_freq / 100".
+>>
 >> Why are you changing it to cpuinfo.max_freq?? This is fixed once a driver is
 >> initialized.. but user may request a lower max freq for a governor or policy.
 >> Which is actually reflected in policy->max I believe.
 >
-> My initial thought is to have a linear function to calculate the target freq
-> proportional to load: (I will use 'C' as the function's slope as Rafael used it)
->
-> freq_target = C * load
->
-> For simplicity, let's assume that load is between 0 and 1 as initially is calculated
-> in governor.
-> Ideally,  for a load = 0, we should have freq_target = 0 and for load = 1,
-> freq_target = cpuinfo.max
->
-> So, the slope C = cpuinfo.max
->
-> I think, it's matter of definition about what policy->min and policy->max can do.
-> Should they change the slope C? Or only limit freq_target?
-> I don't think that the policy->max (or min) should affect HOW (slope C) governor
-> calculates freq_target but only limit the calculated result.
->
-> Maybe, we could have separate tunables to a affect the slope C.
->
-> If I'm wrong about the definition of policy->min, policy->max, I would change
-> the code accordingly.
+> Which doesn't matter.  The formula should provide the same results regardless
+> of the user settings except that the selected frequency should be capped by
+> policy->max (instead of being proportional to it).  I think using
+> cpuinfo.max_freq here is correct.
 
-Lets discuss that in reply to Rafael's mail.
+I am confused now about what to use.. This is how I read it:
 
+Assumption: CPU supports following freq range.. 500 MHz, 600 MHz, 700 MHz,
+800 MHz, 900 MHz, 1 GHz
+
+cpuinfo.max_freq = 1 GHz
+policy->max is set to 600 MHz
+
+Case 1: Use policy->max:
+
+We need load to be over 500/600 (i.e. .834) to move to 600 MHz.
+
+Case 2: Use cpuinfo.max_freq..
+
+We need load to be over 500/1000 (i.e. .5) to move to 600 MHz.
+
+So, obviously the calculations aren't the same..
+
+Now, this is how I understood these two different variables:
+- cpuinfo.max_freq:
+
+>> Over that why keeping following check is useful anymore?
+>>
+>> if (load_freq > od_tuners->up_threshold)
+>>     goto max.
+>>
 >> As, if load is over 95, then even policy->max * 95 / 100 will even give almost
 >> the same freq.
->>
 >
-> I thought that too. But maybe user selects a lower value for up_threshold.
-> (For example, up_threshold = 60). In my opinion, we have to keep up_theshold,
-> to give the possibility to user to have max freq with small loads.
-
-Yes... good point.
+> Yes, in the majority of cases.
+>
+> Thanks,
+> Rafael
+>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
