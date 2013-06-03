@@ -1,55 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Mon, 03 Jun 2013 12:57:47 +0200
-Message-ID: <2413427.Abjbfkms0Z@vostro.rjw.lan>
-References: <51A7BFA6.3070800@semaphore.gr> <CAKohpokGDFvtaBMKxLTJCkx_WN+HN4eZ7LZ2upBLsXAsmcq7kA@mail.gmail.com> <CAKohpo=EyudEW+EX=b7=Wp-7ceqjVksDTwwSJf77_LNFaaNL3w@mail.gmail.com>
+Date: Mon, 3 Jun 2013 16:54:08 +0530
+Message-ID: <CAKohpomLkogSHD+5Wobb34qHPnb7_vWE1Xz4K5MD=Q50kOpfuA@mail.gmail.com>
+References: <51A7BFA6.3070800@semaphore.gr>
+	<CAKohpokGDFvtaBMKxLTJCkx_WN+HN4eZ7LZ2upBLsXAsmcq7kA@mail.gmail.com>
+	<CAKohpo=EyudEW+EX=b7=Wp-7ceqjVksDTwwSJf77_LNFaaNL3w@mail.gmail.com>
+	<2413427.Abjbfkms0Z@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=EyudEW+EX=b7=Wp-7ceqjVksDTwwSJf77_LNFaaNL3w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2413427.Abjbfkms0Z@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Stratos Karafotis <stratosk@semaphore.gr>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, June 03, 2013 12:25:02 PM Viresh Kumar wrote:
-> Sent half written mail.. sorry.. will continue from where I left.
-> 
-> On 3 June 2013 12:21, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > So, obviously the calculations aren't the same..
-> 
-> Now, this is how I understood these two different variables:
-> - cpuinfo.max_freq: maximum frequency (in kHz) which is
-> supported by this CPU
-> - policy->max: Maximum frequency forced by user or governor
-> 
-> When somebody sets policy->max, he expects cpufreq core to
-> use the range between min and max as the slope cpufreq core
-> has and adjust its frequencies accordingly..
-> 
-> Don't know if I am right or wrong :(
+On 3 June 2013 16:27, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> The question is if we want policy->max to re-scale them effectively (i.e. to
+> change weights so that the maximum load maps to the highest frequency available
+> at the moment) or if we want policy->max to work as a cap (i.e. to map all
+> loads above certain value to the maximum frequency available at the moment, so
+> that the criteria for selecting the lower frequencies don't change).  In my
+> opinion the second option is better, because it means "OK, we can't use some
+> high frequencies, but let's not hurt performance for the loads that wouldn't
+> require them anyway".  Otherwise, we'll effectively throttle all loads and
+> that not only causes performance to drop, but also causes more energy to be
+> used overall.
 
-The reality is that the set of frequencies to use is constant and changing
-policy->max doesn't change that set.  There are just fewer frequencies the
-governor can choose from if policy->max is below cpuinfo.max_freq.
+I wouldn't say that I don't agree with you as I do to some extent.
 
-The question is if we want policy->max to re-scale them effectively (i.e. to
-change weights so that the maximum load maps to the highest frequency available
-at the moment) or if we want policy->max to work as a cap (i.e. to map all
-loads above certain value to the maximum frequency available at the moment, so
-that the criteria for selecting the lower frequencies don't change).  In my
-opinion the second option is better, because it means "OK, we can't use some
-high frequencies, but let's not hurt performance for the loads that wouldn't
-require them anyway".  Otherwise, we'll effectively throttle all loads and
-that not only causes performance to drop, but also causes more energy to be
-used overall.
+But the question that comes to my mind now is: Why is policy->max reduced
+in the first place? User doesn't have control over which freqs to expose, so
+available_frequencies will stay the same. The only thing he is capable
+of doing is: reduce policy->max.. Which in a way means that.. "I don't want to
+use higher frequencies (power, thermal reasons) and I know performance will
+go down with it and I don't care for it now."
 
-Thanks,
-Rafael
+And this way I feel policy->max isn't a bad choice either.
 
+BUT as you said: policy->max isn't there to say don't be so aggressive now in
+increasing frequencies but just only to say, don't go over this frequency..
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+So, probably we can use cpuinfo.max_freq :)
