@@ -1,72 +1,98 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Joe Jin <joe.jin@oracle.com>
 Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
-Date: Wed, 05 Jun 2013 22:40:11 +0200
-Message-ID: <31897041.QcNuTieHbo@vostro.rjw.lan>
-References: <51AE8BE4.8050409@oracle.com>
+Date: Thu, 06 Jun 2013 08:27:08 +0800
+Message-ID: <51AFD75C.3030705@oracle.com>
+References: <51AE8BE4.8050409@oracle.com> <31897041.QcNuTieHbo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51AE8BE4.8050409@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <31897041.QcNuTieHbo@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Joe Jin <joe.jin@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
-> When _PPC changed dynamically the user_policy.max will not be updated,
-> this prevent CPU run on the highest frequency.
-
-Why should the user setting be always related to the current maximum available
-frequency?  What if the user sets the limit for power capping purposes?
-
-Rafael
-
-
-> Signed-off-by: Joe Jin <joe.jin@oracle.com>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
->  1 file changed, 16 insertions(+), 1 deletion(-)
+On 06/06/13 04:40, Rafael J. Wysocki wrote:
+> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
+>> When _PPC changed dynamically the user_policy.max will not be updated,
+>> this prevent CPU run on the highest frequency.
 > 
-> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> index e854582..e01aa7d 100644
-> --- a/drivers/acpi/processor_perflib.c
-> +++ b/drivers/acpi/processor_perflib.c
-> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
->  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->  {
->  	int ret;
-> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
->  
->  	if (ignore_ppc) {
->  		/*
-> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->  	}
->  	if (ret < 0)
->  		return (ret);
-> -	else
-> +	else {
-> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
-> +
-> +		if (saved != ppc) {
-> +			struct cpufreq_policy *policy;
-> +
-> +			policy = cpufreq_cpu_get(pr->id);
-> +			if (likely(policy))
-> +				policy->user_policy.max =
-> +					pr->performance->states[ppc].
-> +					core_frequency * 1000;
-> +			cpufreq_cpu_put(policy);
-> +		}
-> +
->  		return cpufreq_update_policy(pr->id);
-> +	}
->  }
->  
->  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+> Why should the user setting be always related to the current maximum available
+> frequency?  What if the user sets the limit for power capping purposes?
+
+cpufreq_update_policy() get policy->max from user_policy.max:
+
+1782 int cpufreq_update_policy(unsigned int cpu)
+1783 {
+[...]
+1800         policy.min = data->user_policy.min;
+1801         policy.max = data->user_policy.max;
+1802         policy.policy = data->user_policy.policy;
+1803         policy.governor = data->user_policy.governor;
+[...]
+1819         ret = __cpufreq_set_policy(data, &policy);
+[...]
+
+/sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
+and user_policy->max, when update it, so I think _PPC changes also need
+to update these two?
+
+Thanks,
+Joe
+ 
 > 
+> Rafael
+> 
+> 
+>> Signed-off-by: Joe Jin <joe.jin@oracle.com>
+>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
+>>  1 file changed, 16 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+>> index e854582..e01aa7d 100644
+>> --- a/drivers/acpi/processor_perflib.c
+>> +++ b/drivers/acpi/processor_perflib.c
+>> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
+>>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>>  {
+>>  	int ret;
+>> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
+>>  
+>>  	if (ignore_ppc) {
+>>  		/*
+>> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>>  	}
+>>  	if (ret < 0)
+>>  		return (ret);
+>> -	else
+>> +	else {
+>> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
+>> +
+>> +		if (saved != ppc) {
+>> +			struct cpufreq_policy *policy;
+>> +
+>> +			policy = cpufreq_cpu_get(pr->id);
+>> +			if (likely(policy))
+>> +				policy->user_policy.max =
+>> +					pr->performance->states[ppc].
+>> +					core_frequency * 1000;
+>> +			cpufreq_cpu_put(policy);
+>> +		}
+>> +
+>>  		return cpufreq_update_policy(pr->id);
+>> +	}
+>>  }
+>>  
+>>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+>>
+
+
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Oracle <http://www.oracle.com>
+Joe Jin | Software Development Senior Manager | +8610.6106.5624
+ORACLE | Linux and Virtualization
+No. 24 Zhongguancun Software Park, Haidian District | 100193 Beijing 
