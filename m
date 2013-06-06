@@ -1,111 +1,46 @@
-From: Joe Jin <joe.jin@oracle.com>
-Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
-Date: Thu, 06 Jun 2013 21:29:27 +0800
-Message-ID: <51B08EB7.8080702@oracle.com>
-References: <51AE8BE4.8050409@oracle.com> <31897041.QcNuTieHbo@vostro.rjw.lan> <51AFD75C.3030705@oracle.com> <42861210.QMFsUVH8RU@vostro.rjw.lan>
+From: David C Niemi <dniemi@verisign.com>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Thu, 06 Jun 2013 09:50:17 -0400
+Message-ID: <51B09399.1060301@verisign.com>
+References: <51AF60D5.3080605@semaphore.gr> <20130605161703.GA29958@pd.tnic> <51AF6E39.2080307@verisign.com> <20130606095526.GB21181@pd.tnic>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <42861210.QMFsUVH8RU@vostro.rjw.lan>
+In-Reply-To: <20130606095526.GB21181@pd.tnic>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Borislav Petkov <bp@suse.de>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 06/06/13 19:06, Rafael J. Wysocki wrote:
-> On Thursday, June 06, 2013 08:27:08 AM Joe Jin wrote:
->> On 06/06/13 04:40, Rafael J. Wysocki wrote:
->>> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
->>>> When _PPC changed dynamically the user_policy.max will not be updated,
->>>> this prevent CPU run on the highest frequency.
->>>
->>> Why should the user setting be always related to the current maximum available
->>> frequency?  What if the user sets the limit for power capping purposes?
+On 06/06/13 05:55, Borislav Petkov wrote:
+> Please do not top-post.
+>
+> On Wed, Jun 05, 2013 at 12:58:33PM -0400, David C Niemi wrote:
+>> When you are doing a locally-originated truly CPU-bound task, "race to
+>> idle" does make some sense. But I can think of a couple of caveats.
 >>
->> cpufreq_update_policy() get policy->max from user_policy.max:
+>> 1) If you care about power consumption, you want to avoid
+>> super-power-hungry turbo states, as you get less done per watt-hour
+>> than in some of the middle states.
 >>
->> 1782 int cpufreq_update_policy(unsigned int cpu)
->> 1783 {
->> [...]
->> 1800         policy.min = data->user_policy.min;
->> 1801         policy.max = data->user_policy.max;
->> 1802         policy.policy = data->user_policy.policy;
->> 1803         policy.governor = data->user_policy.governor;
->> [...]
->> 1819         ret = __cpufreq_set_policy(data, &policy);
->> [...]
->>
->> /sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
->> and user_policy->max, when update it, so I think _PPC changes also need
->> to update these two?
-> 
-> Yes, if policy.max happens to be greater that the maximum available frequency,
-> then (and only then) it probably should be updated.  It should never be bumped
-> up, though.
+>> 2) CPU usage that is related to I/O (network, disk, video) doesn't
+>> necessarily let you go to idle sooner if at all. In this case if you
+>> want to minimize power consumption you may want to use middle states a
+>> lot. But if you care more about responsiveness or latency than power
+>> consumption, you might want to go to a high state anyway; that is why
+>> we have tunables -- so we can configure based on the actual priorities
+>> for the machine.
+> No, users don't always know about tunables - this should Just Work(tm).
+It should "Just Work" for the common mass-market case.  Tunables are not for the average end-user -- they are for either the userland part of the operating system to manage, or for people like me who have specific requirements to meet on thoroughly managed machines.  Without tunables you will be lumping servers, desktops, laptops, and embedded devices together and they simply do not have the same high-level priorities.
+>
+> The correct "fix" for this whole deal is coupling cpufreq with
+> the scheduler, as it has been said so many times before. You need
+> "something" which can tell you whether raising the freq. is worth it or
+> not (i.e. the process is waiting on IO or is executing instructions).
+I'll grant you this in the case of regular userland processes that have medium to large chunks of work to do.  For handling huge amounts of I/O, you have different needs -- think about cases where you need to peg many of your cores at once just handling I/O.  That has to work well too.  That's not saying the scheduler can't help, but the governor needs to know about all CPU consumed, including doing I/O and in all parts of the kernel.
 
-Does this means if I enabled hardcap before kernel boot up, and later system brought
-up and I disabled hardcap, I has to enlarge the max frequency manually?
-
-Thanks,
-Joe
-
-> 
-> Thanks,
-> Rafael
-> 
-> 
->>>> Signed-off-by: Joe Jin <joe.jin@oracle.com>
->>>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
->>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>>> ---
->>>>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
->>>>  1 file changed, 16 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
->>>> index e854582..e01aa7d 100644
->>>> --- a/drivers/acpi/processor_perflib.c
->>>> +++ b/drivers/acpi/processor_perflib.c
->>>> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
->>>>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->>>>  {
->>>>  	int ret;
->>>> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
->>>>  
->>>>  	if (ignore_ppc) {
->>>>  		/*
->>>> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->>>>  	}
->>>>  	if (ret < 0)
->>>>  		return (ret);
->>>> -	else
->>>> +	else {
->>>> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
->>>> +
->>>> +		if (saved != ppc) {
->>>> +			struct cpufreq_policy *policy;
->>>> +
->>>> +			policy = cpufreq_cpu_get(pr->id);
->>>> +			if (likely(policy))
->>>> +				policy->user_policy.max =
->>>> +					pr->performance->states[ppc].
->>>> +					core_frequency * 1000;
->>>> +			cpufreq_cpu_put(policy);
->>>> +		}
->>>> +
->>>>  		return cpufreq_update_policy(pr->id);
->>>> +	}
->>>>  }
->>>>  
->>>>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
->>>>
->>
->>
->>
-
-
--- 
-Oracle <http://www.oracle.com>
-Joe Jin | Software Development Senior Manager | +8610.6106.5624
-ORACLE | Linux and Virtualization
-No. 24 Zhongguancun Software Park, Haidian District | 100193 Beijing 
+Another part of this picture is the p-state governor.  That is even more scheduler-relevant than the c-state governor.
+...
+DCN
