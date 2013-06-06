@@ -1,46 +1,34 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
- frequency
-Date: Thu, 06 Jun 2013 09:50:17 -0400
-Message-ID: <51B09399.1060301@verisign.com>
-References: <51AF60D5.3080605@semaphore.gr> <20130605161703.GA29958@pd.tnic> <51AF6E39.2080307@verisign.com> <20130606095526.GB21181@pd.tnic>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 5/5] cpufreq:boost:Kconfig: Enable boost support at
+ Kconfig
+Date: Thu, 6 Jun 2013 10:49:10 -0400
+Message-ID: <20130606144910.GA1194@redhat.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370502472-7249-6-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130606095526.GB21181@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1370502472-7249-6-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Borislav Petkov <bp@suse.de>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 06/06/13 05:55, Borislav Petkov wrote:
-> Please do not top-post.
->
-> On Wed, Jun 05, 2013 at 12:58:33PM -0400, David C Niemi wrote:
->> When you are doing a locally-originated truly CPU-bound task, "race to
->> idle" does make some sense. But I can think of a couple of caveats.
->>
->> 1) If you care about power consumption, you want to avoid
->> super-power-hungry turbo states, as you get less done per watt-hour
->> than in some of the middle states.
->>
->> 2) CPU usage that is related to I/O (network, disk, video) doesn't
->> necessarily let you go to idle sooner if at all. In this case if you
->> want to minimize power consumption you may want to use middle states a
->> lot. But if you care more about responsiveness or latency than power
->> consumption, you might want to go to a high state anyway; that is why
->> we have tunables -- so we can configure based on the actual priorities
->> for the machine.
-> No, users don't always know about tunables - this should Just Work(tm).
-It should "Just Work" for the common mass-market case.  Tunables are not for the average end-user -- they are for either the userland part of the operating system to manage, or for people like me who have specific requirements to meet on thoroughly managed machines.  Without tunables you will be lumping servers, desktops, laptops, and embedded devices together and they simply do not have the same high-level priorities.
->
-> The correct "fix" for this whole deal is coupling cpufreq with
-> the scheduler, as it has been said so many times before. You need
-> "something" which can tell you whether raising the freq. is worth it or
-> not (i.e. the process is waiting on IO or is executing instructions).
-I'll grant you this in the case of regular userland processes that have medium to large chunks of work to do.  For handling huge amounts of I/O, you have different needs -- think about cases where you need to peg many of your cores at once just handling I/O.  That has to work well too.  That's not saying the scheduler can't help, but the governor needs to know about all CPU consumed, including doing I/O and in all parts of the kernel.
+On Thu, Jun 06, 2013 at 09:07:52AM +0200, Lukasz Majewski wrote:
 
-Another part of this picture is the p-state governor.  That is even more scheduler-relevant than the c-state governor.
-...
-DCN
+ > +config CPU_FREQ_BOOST
+ > +	bool "CPU frequency boost support"
+ > +	help
+ > +	  Switch to enable support for frequency boost
+ > +
+ > +	  If in doubt, say N.
+ > +
+
+This help text is devoid of any useful information.
+
+On what platforms ? What's the upside/downside ? Why is it an option ?
+
+	Dave
+
