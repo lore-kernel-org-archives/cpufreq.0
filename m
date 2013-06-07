@@ -1,85 +1,208 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
-Date: Fri, 07 Jun 2013 13:58:05 +0200
-Message-ID: <36081985.E8ct76IG4n@vostro.rjw.lan>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com> <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 2/5] cpufreq:boost: Add support for software based CPU
+ frequency boost
+Date: Fri, 07 Jun 2013 15:27:18 +0200
+Message-ID: <20130607152718.4b458087@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370502472-7249-3-git-send-email-l.majewski@samsung.com>
+ <CAKohpok3KTfSWDU6PdDd4_VW4Pp+6J80yn5cLrYr5RuBNH-agA@mail.gmail.com>
+ <20130606134903.5f69b8fb@amdc308.digital.local>
+ <CAKohpo=jCuLwhB+3pC0NLRBDmfPpGr=hRgxTT4rXzSwM4BndaQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-reply-to: <CAKohpo=jCuLwhB+3pC0NLRBDmfPpGr=hRgxTT4rXzSwM4BndaQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Robin Randhawa <robin.randhawa@arm.com>, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On Friday, June 07, 2013 10:48:21 AM Viresh Kumar wrote:
-> On 31 May 2013 16:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
-> >>>>>>>
-> >>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>>>>>> Cc: Paul Mackerras <paulus@samba.org>
-> >>>>>>> Cc: Olof Johansson <olof@lixom.net>
-> >>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
-> >>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >>>>>>> ---
-> >>>>>>> Compile Tested only.
-> >>>>>>>
-> >>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
-> >>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
-> >>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
-> >>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
-> >>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
-> >>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
-> >>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
-> >>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
-> >>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
-> >>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
-> >>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
-> >>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
-> >>>>>>
-> >>>>>> Hi Deepthi,
-> >>>>>>
-> >>>>>> Can you help testing this please?
-> >>>>>
-> >>>>> Ping!!
-> >>>>
-> >>>> Ping!!
-> >>>
-> >>> Hi Benjamin,
-> >>>
-> >>> Hope you are back from your vacations. Can you give it a try now?
+Hi Viresh,
+
+> On 6 June 2013 17:19, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> >> On 6 June 2013 12:37, Lukasz Majewski <l.majewski@samsung.com>
+> >> wrote:
+> 
+> >> > cpufreq_driver->boost->attr))
 > >>
-> >> Ping!!
+> >> Why is this required? Why do we want platforms to add some files
+> >> in sysfs?
 > >
-> > Ping!!
+> > There are two kinds of attributes, which are exported by boost:
+> >
+> > 1. global boost (/sys/devices/system/cpu/cpufreq/boost)
+> >
+> > 2. attributes describing cpufreq abilities when boost is available
+> > (/sys/devices/syste/cpu/cpu0/cpufreq/):
+> >         - scaling_boost_frequencies - which will show over clocked
+> >           frequencies
+> >         - the scaling_available_frequencies will also display
+> > boosted frequency (when boost enabled)
+> >
+> > Information from 2. is cpufreq_driver dependent. And that
+> > information shouldn't been displayed when boost is not available
 > 
-> Hi Rafael,
+> This is not how I wanted this to be coded. Lets keep things simple:
+> - Implement it in the way cpufreq_freq_attr_scaling_available_freqs
+>   is implemented. And then drivers which need to see boost freqs
+>   can add it in their attr.
 > 
-> Its been more than 2 months now that this patch was first posted.
-> And the response from Maintainers isn't so great, irrespective of
-> how many times I pinged them.
+> >> > +       policy->boost = cpufreq_boost = cpufreq_driver->boost;
+> >>
+> >> Why are we copying same pointer to policy->boost? Driver is
+> >> passing pointer to a single memory location, just save it globally.
+> >
+> > This needs some explanation.
+> >
+> > The sysfs entry presented at [1] doesn't bring any useful
+> > information to reuse (like *policy). For this reason the global
+> > cpufreq_boost pointer is needed.
+> >
+> > However to efficiently manage the boost, it is necessary to keep per
+> > policy pointer to the only struct cpufreq_boost instance (defined at
+> > cpufreq_driver code).
 > 
-> This is what I think:
-> - It looked functionally correct to Benjamin but he wanted somebody
-> to actually test it.
-> - Arnd gave his Ack (So it looked functionally correct to him too)
-> - We can probably push this into linux-next now and see if somebody
-> complains of any breakage it has done. If not we can get it pushed for
-> 3.11.
+> No we don't need to screw struct cpufreq_policy with it.
+> Just need two variables here:
+> - cpufreq_driver->boost: If driver supports boost or not.
+> - If above is true then a global bool variable that will say boost is
+>   enabled from sysfs or not.
+> 
+> >> > +       /* disable boost for newly created policy - as we e.g.
+> >> > change
+> >> > +          governor */
+> >> > +       policy->boost->status = CPUFREQ_BOOST_DIS;
+> >>
+> >> Drivers supporting boost may want boost to be enabled by default,
+> >> maybe without any sysfs calls.
+> >
+> > This can be done by setting the struct cpufreq_boost status field to
+> > CPUFREQ_BOOST_EN at cpufreq driver code (when boost structure is
+> > defined)
+> 
+> This really isn't driver dependent.. But user dependent. Maybe lets
+> keep it disabled and people can enable it from sysfs.
+> 
+> >> Why do we need to maintain a list of boost here? notifiers?
+> >> complex :(
+> >
+> > Notifier is needed to disable boost when policy is changed (for
+> > example when we change from ondemand/lab to performance governor).
+> >
+> > I wanted to avoid the situation when boost stays enabled across
+> > different governors.
+> >
+> > The list of in system available policies is defined to allow boost
+> > enable/disable for all policies available (by changing for example
+> > policy->max field).
+> >
+> > If we decide, that we will support only one policy (as it is now at
+> > e.g. Exynos), the list is unnecessary here.
+> 
+> What we discussed last in your earlier patchset was:
+> - Keep boost feature separate from governors.
+> - If it is enabled, then any governor can use it (if they want).
+> - Lets not disable it if governor is changed. user must do it
+> explicitly.
+> 
+> >> > +static int cpufreq_frequency_table_skip_boost(struct
+> >> > cpufreq_policy *policy,
+> >> > +                                             unsigned int index)
+> >> > +{
+> >> > +       if (index == CPUFREQ_BOOST)
+> >> > +               if (!policy->boost ||
+> >>
+> >> This shouldn't be true. If index has got CPUFREQ_BOOST, then driver
+> >> has to support boost.
+> >
+> > Correct me if I'm wrong here, but in my understanding the boost
+> > shall be only supported when both CPUFREQ_BOOST index is defined in
+> > a freq_table and boost.state = CPUFREQ_BOOST_EN is set.
+> >
+> > Setting of CPUFREQ_BOOST shouldn't by default allow to use over
+> > clocking frequency.
+> 
+> For cpufreq core boost is enabled as soon as cpufreq_driver->boost is
+> true. We can have additional checks to see if there is atleast one
+> boost frequency but can skip this too.
+> 
+> >> why do we need this?
+> >
+> > To evaluate the maximal boost frequency from the frequency table.
+> > It is then used as a delimiter (when LAB cooperates with thermal
+> > framework).
+> 
+> Introduce this with LAB then.. Lets keep it as simple as possible for
+> now. One step at a time.
+> 
+> >> > +struct cpufreq_boost {
+> >> > +       unsigned int            max_boost_freq; /* maximum value
+> >> > of
+> >> > +                                                * boosted freq
+> >> > */
+> >> > +       unsigned int            max_normal_freq; /* non boost max
+> >> > freq */
+> >> > +       int                     status; /* status of boost */
+> >> > +
+> >> > +       /* boost sysfs attributies */
+> >> > +       struct freq_attr        **attr;
+> >> > +
+> >> > +       /* low-level trigger for boost */
+> >> > +       int (*low_level_boost) (struct cpufreq_policy *policy,
+> >> > int state); +
+> >> > +       struct list_head        policies;
+> >> > +};
+> >>
+> >> We don't need it. Just add two more fields to cpufreq_driver:
+> >> - have_boost_freqs and low_level_boost (maybe a better name.
+> >> What's its use?)
+> >
+> > The separate struct cpufreq_boost was created to explicitly separate
+> > boost fields from cpufreq_driver structure.
+> >
+> > If in your opinion this structure is redundant, I can remove it and
+> > extend cpufreq_driver structure.
+> 
+> I am not against a structure (as putting related stuff in a struct is
+> always better), but against so many fields in it to make things
+> complicated.
+> 
+> I will only keep have_boost_freqs and low_level_boost. Remove
+> everything else.
 
-I agree, applied to bleeding-edge.
+I would prefer to have following fields in the cpufreq_boost structure:
+struct cpufreq_boost {
+	unsigned int	max_boost_freq; /*boost max freq*/
+	unsigned int 	max_normal_freq; /*max normal freq
+	int (*low_level_boost) (int state);
+	bool boost_en;  /* indicate if boost is enabled */
+}
 
-Thanks,
-Rafael
+The max_{boost|normal}_freq fields will be filed at 
+ret = cpufreq_driver->init(policy);
+
+Thanks to them I will avoid calling many times routine, which extracts
+from freq_table maximal boost and normal frequencies.
+
+I could define those variables in the exynos-cpufreq.c driver, but I
+think, that they are more suitable to be embedded at cpufreq_boost
+structure.
+
+
+> 
+> > *boost pointer is necessary when one wants to enable/disable boost
+> > from e.g governor code (which operates mostly on struct
+> > cpufreq_policy *policy pointers).
+> 
+> We don't need to do this. boost can only be disabled from userspace by
+> user. No intervention from governor.
+
 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
