@@ -1,109 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Joe Jin <joe.jin@oracle.com>
 Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
-Date: Thu, 06 Jun 2013 21:54:02 +0200
-Message-ID: <2674436.upogMLa2Oh@vostro.rjw.lan>
-References: <51AE8BE4.8050409@oracle.com> <42861210.QMFsUVH8RU@vostro.rjw.lan> <51B08EB7.8080702@oracle.com>
+Date: Fri, 07 Jun 2013 09:48:36 +0800
+Message-ID: <51B13BF4.7090706@oracle.com>
+References: <51AE8BE4.8050409@oracle.com> <42861210.QMFsUVH8RU@vostro.rjw.lan> <51B08EB7.8080702@oracle.com> <2674436.upogMLa2Oh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51B08EB7.8080702@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2674436.upogMLa2Oh@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Joe Jin <joe.jin@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Thursday, June 06, 2013 09:29:27 PM Joe Jin wrote:
-> On 06/06/13 19:06, Rafael J. Wysocki wrote:
-> > On Thursday, June 06, 2013 08:27:08 AM Joe Jin wrote:
-> >> On 06/06/13 04:40, Rafael J. Wysocki wrote:
-> >>> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
-> >>>> When _PPC changed dynamically the user_policy.max will not be updated,
-> >>>> this prevent CPU run on the highest frequency.
-> >>>
-> >>> Why should the user setting be always related to the current maximum available
-> >>> frequency?  What if the user sets the limit for power capping purposes?
-> >>
-> >> cpufreq_update_policy() get policy->max from user_policy.max:
-> >>
-> >> 1782 int cpufreq_update_policy(unsigned int cpu)
-> >> 1783 {
-> >> [...]
-> >> 1800         policy.min = data->user_policy.min;
-> >> 1801         policy.max = data->user_policy.max;
-> >> 1802         policy.policy = data->user_policy.policy;
-> >> 1803         policy.governor = data->user_policy.governor;
-> >> [...]
-> >> 1819         ret = __cpufreq_set_policy(data, &policy);
-> >> [...]
-> >>
-> >> /sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
-> >> and user_policy->max, when update it, so I think _PPC changes also need
-> >> to update these two?
-> > 
-> > Yes, if policy.max happens to be greater that the maximum available frequency,
-> > then (and only then) it probably should be updated.  It should never be bumped
-> > up, though.
-> 
-> Does this means if I enabled hardcap before kernel boot up, and later system brought
-> up and I disabled hardcap, I has to enlarge the max frequency manually?
+On 06/07/13 03:54, Rafael J. Wysocki wrote:
+> Do you mean you set a limit in the BIOS setup and the kernel changed that limit
+> on boot?
 
-Do you mean you set a limit in the BIOS setup and the kernel changed that limit
-on boot?
+Sorry for the confusing.
 
-Rafael
+The issue is when we disable hardcap before kernel boot up, after kernel bring
+up, any changes of _PPC will update scaling_max_freq properly.
 
+If we enable hardcap before kernel boot up, after kernel bring up, even we 
+disable it, scaling_max_freq does not be updated to max frequency, the max 
+frequency just up to the value when bring up.
 
-> >>>> Signed-off-by: Joe Jin <joe.jin@oracle.com>
-> >>>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> >>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> >>>> ---
-> >>>>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
-> >>>>  1 file changed, 16 insertions(+), 1 deletion(-)
-> >>>>
-> >>>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> >>>> index e854582..e01aa7d 100644
-> >>>> --- a/drivers/acpi/processor_perflib.c
-> >>>> +++ b/drivers/acpi/processor_perflib.c
-> >>>> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
-> >>>>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
-> >>>>  {
-> >>>>  	int ret;
-> >>>> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
-> >>>>  
-> >>>>  	if (ignore_ppc) {
-> >>>>  		/*
-> >>>> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
-> >>>>  	}
-> >>>>  	if (ret < 0)
-> >>>>  		return (ret);
-> >>>> -	else
-> >>>> +	else {
-> >>>> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
-> >>>> +
-> >>>> +		if (saved != ppc) {
-> >>>> +			struct cpufreq_policy *policy;
-> >>>> +
-> >>>> +			policy = cpufreq_cpu_get(pr->id);
-> >>>> +			if (likely(policy))
-> >>>> +				policy->user_policy.max =
-> >>>> +					pr->performance->states[ppc].
-> >>>> +					core_frequency * 1000;
-> >>>> +			cpufreq_cpu_put(policy);
-> >>>> +		}
-> >>>> +
-> >>>>  		return cpufreq_update_policy(pr->id);
-> >>>> +	}
-> >>>>  }
-> >>>>  
-> >>>>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
-> >>>>
-> >>
-> >>
-> >>
-> 
-> 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Review related codes I found the limit came from user_policy.max, means when
+we set user_policy.max to 1000MHZ when boot up, then any changes of _PPC could
+not enlarge the scaling_max_freq, I think this is not as expected? please advise.
+
+Thanks,
+Joe
