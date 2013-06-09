@@ -1,99 +1,112 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: [PATCH v2] cpufreq: fix governor start/stop race condition
-Date: Sun, 9 Jun 2013 15:50:05 +0800
-Message-ID: <1370764205-3933-1-git-send-email-chenxg@marvell.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
+ target frequency
+Date: Sun, 9 Jun 2013 18:26:53 +0200
+Message-ID: <20130609162653.GA5004@pd.tnic>
+References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com>
+ <1731097.2elXaGsAyC@vostro.rjw.lan>
+ <51B394A9.3020005@semaphore.gr>
+ <2892497.M93vsSKx5I@vostro.rjw.lan>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2892497.M93vsSKx5I@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: viresh.kumar@linaro.org, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com, chenxg.marvell@gmail.com, Xiaoguang Chen <chenxg@marvell.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-cpufreq governor stop and start should be kept in sequence.
-If not, there will be unexpected behavior, for example:
+On Sun, Jun 09, 2013 at 12:18:09AM +0200, Rafael J. Wysocki wrote:
+> The average power drawn by the package is slightly higher with the
+> patchset applied (27.66 W vs 27.25 W), but since the time needed to
+> complete the workload with the patchset applied was shorter by about
+> 2.3 sec, the total energy used was less in the latter case (by about
+> 25.7 J if I'm not mistaken, or 1% relative). This means that in the
+> absence of a power limit between 27.25 W and 27.66 W it's better to
+> use the kernel with the patchset applied for that particular workload
+> from the performance and energy usage perspective.
+>
+> Good, hopefully that's going to be confirmed on other systems and/or
+> with other workloads. :-)
 
-we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
-the normal sequence is as below:
+Yep, I see similar results on my AMD F15h.
 
-1) Current governor is userspace, one application tries to set
-governor to ondemand. it will call __cpufreq_set_policy in which it
-will stop userspace governor and then start ondemand governor.
+So there's a register which tells you what the current energy
+consumption in Watts is and support for it is integrated in lm_sensors.
+I did one read per second, for the duration of the kernel build (10-r5 +
+tip), with and without the patch, and averaged out the results:
 
-2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
-call cpufreq_add_policy_cpu. on which it first stops userspace
-governor, and then starts userspace governor.
+without
+=======
 
-Now if the sequence of above two cases interleaves, it becames
-below sequence:
+1. 158 samples, avg Watts: 116.915
+2. 158 samples, avg Watts: 116.855
+3. 158 samples, avg Watts: 116.737
+4. 158 samples, avg Watts: 116.792
 
-1) application stops userspace governor
-2)                                      hotplug stops userspace governor
-3) application starts ondemand governor
-4)                                      hotplug starts a governor
+=> 116.82475 avg Watts.
 
-in step 4, hotplug is supposed to start userspace governor, but now
-the governor has been changed by application to ondemand, so hotplug
-starts ondemand governor again !!!!
+with
+====
 
-The solution is: do not allow stop governor multi-times
-Governor stop should only do once, after it is stopped,
-no other governor stop should be executed.
+1. 157 samples, avg Watts: 116.496
+2. 156 samples, avg Watts: 117.535
+3. 156 samples, avg Watts: 118.174
+4. 157 samples, avg Watts: 117.95
 
-Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
----
- drivers/cpufreq/cpufreq.c | 10 +++++++++-
- include/linux/cpufreq.h   |  1 +
- 2 files changed, 10 insertions(+), 1 deletion(-)
+=> 117.53875 avg Watts.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2d53f47..c8d7cb2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1562,6 +1562,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 
- 	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
- 						policy->cpu, event);
-+
-+	if ((!policy->governor->enabled && (event == CPUFREQ_GOV_STOP)) ||
-+	    (policy->governor->enabled && (event == CPUFREQ_GOV_START)))
-+		return 0;
-+
- 	ret = policy->governor->governor(policy, event);
- 
- 	if (!ret) {
-@@ -1569,6 +1574,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized++;
- 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
- 			policy->governor->initialized--;
-+		else if (event == CPUFREQ_GOV_STOP)
-+			policy->governor->enabled = 0;
-+		else if (event == CPUFREQ_GOV_START)
-+			policy->governor->enabled = 1;
- 	}
- 
- 	/* we keep one module reference alive for
-@@ -1581,7 +1590,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 	return ret;
- }
- 
--
- int cpufreq_register_governor(struct cpufreq_governor *governor)
- {
- 	int err;
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 037d36a..16c5b70 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -199,6 +199,7 @@ struct cpufreq_governor {
- 			will fallback to performance governor */
- 	struct list_head	governor_list;
- 	struct module		*owner;
-+	int enabled;
- };
- 
- /*
+So there's a slight raise in the average power consumption but the
+samples count drops by 1 or 2, which is consistent with the observed
+kernel build speedup of 1 or 2 seconds.
+
+perf doesn't show any significant difference with and without the patch
+but those are single runs only.
+
+without
+=======
+
+ Performance counter stats for 'make -j9':
+
+    1167856.647713 task-clock                #    7.272 CPUs utilized
+         1,071,177 context-switches          #    0.917 K/sec
+            52,844 cpu-migrations            #    0.045 K/sec
+        43,600,721 page-faults               #    0.037 M/sec
+ 4,712,068,048,465 cycles                    #    4.035 GHz
+ 1,181,730,064,794 stalled-cycles-frontend   #   25.08% frontend cycles idle
+   243,576,229,438 stalled-cycles-backend    #    5.17% backend  cycles idle
+ 2,966,369,010,209 instructions              #    0.63  insns per cycle
+                                             #    0.40  stalled cycles per insn
+   651,136,706,156 branches                  #  557.548 M/sec
+    34,582,447,788 branch-misses             #    5.31% of all branches
+
+     160.599796045 seconds time elapsed
+
+with
+====
+
+ Performance counter stats for 'make -j9':
+
+    1169278.095561 task-clock                #    7.271 CPUs utilized
+         1,076,528 context-switches          #    0.921 K/sec
+            53,284 cpu-migrations            #    0.046 K/sec
+        43,598,610 page-faults               #    0.037 M/sec
+ 4,721,747,687,668 cycles                    #    4.038 GHz
+ 1,182,301,583,422 stalled-cycles-frontend   #   25.04% frontend cycles idle
+   248,675,448,161 stalled-cycles-backend    #    5.27% backend  cycles idle
+ 2,967,419,684,598 instructions              #    0.63  insns per cycle
+                                             #    0.40  stalled cycles per insn
+   651,527,448,140 branches                  #  557.205 M/sec
+    34,560,656,638 branch-misses             #    5.30% of all branches
+
+     160.811815170 seconds time elapsed
+
+
 -- 
-1.8.0
+Regards/Gruss,
+    Boris.
 
+Sent from a fat crate under my desk. Formatting is fine.
+--
