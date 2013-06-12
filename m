@@ -1,30 +1,51 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 00/11] CPUFreq Kconfig fixes
-Date: Wed, 12 Jun 2013 14:46:59 +0200
-Message-ID: <201306121447.00139.arnd@arndb.de>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: [PATCH 11/11] cpufreq: X86_AMD_FREQ_SENSITIVITY: select
+ CPU_FREQ_TABLE
+Date: Wed, 12 Jun 2013 09:23:43 -0500
+Message-ID: <20130612142343.GA15934@jshin-Toonie>
 References: <cover.1371022830.git.viresh.kumar@linaro.org>
+ <3f143e3112c038c805ea4e66ea91d12c5800acdf.1371022830.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3f143e3112c038c805ea4e66ea91d12c5800acdf.1371022830.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de
 
-On Wednesday 12 June 2013, Viresh Kumar wrote:
-> Recently Arnd sent few fixes where drivers were using APIs from freq_table.c but
-> haven't selected CPU_FREQ_TABLE. Based on that, I just crossed checked all the
-> places where it should be selected and where it shouldn't be. These are fixes
-> around that.
+On Wed, Jun 12, 2013 at 01:45:18PM +0530, Viresh Kumar wrote:
+> This CPUFreq driver uses APIs from freq_table.c and so must select
+> CPU_FREQ_TABLE.
 > 
-> I have applied these in my cpufreq-kconfig-fixes branch. Will send you a pull
-> request separately once I get some Acks (will wait for few days).
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Ah, thanks for cathcing this!
 
-I don't see a patch for big.LITTLE in either linux-next or this series. Did you
-miss that or has it just not made into linux-next yet?
+> Cc: Jacob Shin <jacob.shin@amd.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-	Arnd
+Acked-by: Jacob Shin <jacob.shin@amd.com>
+
+> ---
+>  drivers/cpufreq/Kconfig.x86 | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+> index 6bd63d6..e2b6eab 100644
+> --- a/drivers/cpufreq/Kconfig.x86
+> +++ b/drivers/cpufreq/Kconfig.x86
+> @@ -132,6 +132,7 @@ config X86_POWERNOW_K8
+>  config X86_AMD_FREQ_SENSITIVITY
+>  	tristate "AMD frequency sensitivity feedback powersave bias"
+>  	depends on CPU_FREQ_GOV_ONDEMAND && X86_ACPI_CPUFREQ && CPU_SUP_AMD
+> +	select CPU_FREQ_TABLE
+>  	help
+>  	  This adds AMD-specific powersave bias function to the ondemand
+>  	  governor, which allows it to make more power-conscious frequency
+> -- 
+> 1.7.12.rc2.18.g61b472e
+> 
+> 
+
