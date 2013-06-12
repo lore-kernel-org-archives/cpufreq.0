@@ -1,39 +1,40 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 00/11] CPUFreq Kconfig fixes
-Date: Wed, 12 Jun 2013 16:49:41 +0200
-Message-ID: <201306121649.41656.arnd@arndb.de>
-References: <cover.1371022830.git.viresh.kumar@linaro.org> <201306121447.00139.arnd@arndb.de> <CAKohpont-8ZNDWx0n1G8ks=evfoJi3kQ5idjmeguyT8BWgTY4w@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 10/11] cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
+Date: Wed, 12 Jun 2013 09:50:14 -0600
+Message-ID: <51B898B6.8070103@wwwdotorg.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org> <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpont-8ZNDWx0n1G8ks=evfoJi3kQ5idjmeguyT8BWgTY4w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: Text/Plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Stephen Warren <swarren@nvidia.com>
 
-On Wednesday 12 June 2013, Viresh Kumar wrote:
+On 06/12/2013 02:15 AM, Viresh Kumar wrote:
+> ARCH_TEGRA selects ARCH_HAS_CPUFREQ, so CPUFREQ will be enabled for all variants
+> of TEGRA. CPUFreq driver for tegra is enabled if ARCH_TEGRA is selected. Driver
+> uses APIs from freq_table.c and so we must select CPU_FREQ_TABLE for ARCH_TEGRA.
 > 
-> On 12 June 2013 18:16, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Wednesday 12 June 2013, Viresh Kumar wrote:
-> >> Recently Arnd sent few fixes where drivers were using APIs from freq_table.c but
-> >> haven't selected CPU_FREQ_TABLE. Based on that, I just crossed checked all the
-> >> places where it should be selected and where it shouldn't be. These are fixes
-> >> around that.
-> >>
-> >> I have applied these in my cpufreq-kconfig-fixes branch. Will send you a pull
-> >> request separately once I get some Acks (will wait for few days).
-> >
-> > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> >
-> > I don't see a patch for big.LITTLE in either linux-next or this series. Did you
-> > miss that or has it just not made into linux-next yet?
-> 
-> My ARM branch was pulled in by Rafael, 2 days back. Don't know why didn't
-> you saw that.
+> This also removes select CPU_FREQ_TABLE from individual tegra variants.
 
+I guess the real issue here is that drivers/cpufreq/tegra-cpufreq.c gets
+built based on ARCH_TEGRA, which doesn't depend on nor select CPU_FREQ
+itself, so:
 
-Ah, it seems we haven't had a new linux-next since friday.
+	select CPU_FREQ_TABLE if CPU_FREQ
 
-	Arnd
+... isn't guaranteed to fire.
+
+The correct solution seems to be:
+
+* Add CONFIG_ARM_TEGRA_CPUFREQ to drivers/cpufreq/Kconfig.arm.
+* Make that Kconfig option selct CPU_FREQ_TABLE.
+* Make that Kconfig option be def_bool ARCH_TEGRA.
+* Modify drivers/cpufreq/Makefile to build tegra-cpufreq.c based on that.
+* Remove all the cpufreq-related stuff from arch/arm/mach-tegra/Kconfig.
+
+That way, tegra-cpufreq.c can't be built if !CPU_FREQ, and Tegra's
+cpufreq works the same way as all the other cpufreq drivers.
