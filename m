@@ -1,52 +1,108 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RESEND][PATCH] cpufreq: stats: Add 'load_table' sysfs file to show accumulated data of CPU
-Date: Wed, 12 Jun 2013 13:05:09 +0200
-Message-ID: <2801243.ZfLEluCnpU@vostro.rjw.lan>
-References: <1370419882-16831-1-git-send-email-cw00.choi@samsung.com> <11735265.3zXb8Z81XT@vostro.rjw.lan> <CAKohpomwDonECPOPoSZvrOS+mRyNARX4Sk1XoEAGLXrOQQjYjA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] cpufreq:boost: CPU frequency boost code unification for software and hardware solutions
+Date: Wed, 12 Jun 2013 13:23:20 +0200
+Message-ID: <2535901.EBhXeQ6J8O@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <CAKohpomD1ru3_nqQkUq8EmMjJzR7hrtRNAY=UNPWCDHuVxZfBA@mail.gmail.com> <20130612093938.1cf73c9a@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomwDonECPOPoSZvrOS+mRyNARX4Sk1XoEAGLXrOQQjYjA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130612093938.1cf73c9a@amdc308.digital.local>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-On Wednesday, June 12, 2013 09:32:16 AM Viresh Kumar wrote:
-> On 12 June 2013 03:44, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, June 05, 2013 05:11:22 PM Chanwoo Choi wrote:
-> >> This patch add new sysfs file to show previous accumulated data of CPU load
-> >> as following path. This sysfs file is used to judge the correct system state
-> >> or determine suitable system resource on user-space.
-> >> - /sys/devices/system/cpu/cpu0/cpufreq/stats/load_table
-> >>
-> >> This sysfs file include following data:
-> >> - Measurement point of time
-> >> - CPU frequency
-> >> - Per-CPU load
-> >>
-> >> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> >> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> >> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> >
-> > Well, first of all, there is the "one value per file" rule for sysfs attributes
-> > which is evidently violated by this code.
+On Wednesday, June 12, 2013 09:39:38 AM Lukasz Majewski wrote:
+> Hi Viresh,
 > 
-> Even this was enclosed in CONFIG_CPU_FREQ_STAT_DETAILS,
-> so even sysfs isn't that bad as we already had something similar here.
-
-Yes, we did, and yes, it was a mistake.  It should have been in debugfs from
-the very beginning.
-
-> > Second, this looks like a feature needed to handle one particular platform, so
-> > why do you want to add it to the cpufreq core?
+> > Hi,
+> > 
+> > Change subject to: "cpufreq: Add boost frequency support in core"
 > 
-> I really felt this would be useful to others. They can track the load on
-> all cores for some time and that will really be useful. People can
-> understand their loads and system more easily with this patch in.
+> Ok.
+> 
+> > 
+> > On 11 June 2013 14:33, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > > This commit adds support for software based frequency boosting.
+> > 
+> > No. It adds support for both software and hardware boosting. So just
+> > write: This commit adds boost frequency support in cpufreq core
+> > (Hardware & Software).
+> 
+> Ok.
+> > 
+> > > Some SoC (like Exynos4 - e.g. 4x12) allow setting frequency above
+> > > its normal condition limits. Such a change shall be only done for a
+> > > short
+> > 
+> > s/condition/operation
+> > s/change/mode
+> > s/done/used
+> > 
+> 
+> Ok.
+> 
+> > > time.
+> > >
+> > > Overclocking (boost) support is essentially provided by platform
+> > > dependent cpufreq driver.
+> > >
+> > > This commit unifies support for SW and HW (Intel) over clocking
+> > > solutions in the core cpufreq driver. Previously the "boost" sysfs
+> > > attribute was defined at acpi driver code.
+> > > By default boost is disabled. One global attribute is available at:
+> > > /sys/devices/system/cpu/cpufreq/boost.
+> > 
+> > Enter a blank line here.
+> 
+> Ok
+> 
+> > 
+> > > It only shows up when cpufreq driver supports overclocking.
+> > > Under the hood frequencies dedicated for boosting are marked with a
+> > > special flag (CPUFREQ_BOOST_FREQ) at driver's frequency table.
+> > > It is the user's concern to enable/disable overclocking with proper
+> > > call to sysfs.
+> > 
+> > Good.
+> > 
+> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> > >
+> > > --- 
+>     ^^^^
+> [*] this --- was added manually by me.
+> 
+> > > Changes for v2:
+> > > - Removal of cpufreq_boost structure and move its fields to
+> > > cpufreq_driver structure
+> > > - Flag to indicate if global boost attribute is already defined
+> > > - Extent the pr_{err|debbug} functions to show current function
+> > > names ---
+> > 
+> > You don't have to manually add "---" here. Just keep a blank line
+> > instead.
+> 
+> One "---" is added by git automatically. The [*] was added to distinct
+> the changelog from rest of the commit. At least older versions of GIT
+> required this to not include changelog to commit messages.
 
-If it were in debugfs, I'd have no objections.
+Which doesn't matter anyway.  None of them will show up in git log, so don't
+worry. :-)
+
+[...]
+
+> 
+> > And so we must have used
+> > boost_en here.
+> 
+> boost_en has two meanings:
+> 0 - either boost disabled or not supported (when low_level_boost=NULL).
+> 1 - boost is enabled.
+
+Gosh, please don't do that.  Use *two* flags, one meaning "supported" and the
+second meaning "enabled".
 
 Thanks,
 Rafael
