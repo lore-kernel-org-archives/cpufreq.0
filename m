@@ -1,62 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 10/11] cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
-Date: Thu, 13 Jun 2013 21:16:05 +0530
-Message-ID: <CAKohpokNPR5aZ=WnOeZZD9RCY98_eS1-=dohzVBwyoAwP4ackg@mail.gmail.com>
-References: <cover.1371022830.git.viresh.kumar@linaro.org>
-	<881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org>
-	<51B898B6.8070103@wwwdotorg.org>
-	<CAKohponC5pKABTi=t64ZXrHxi-Y6cbvAXtjY=_aMkka4s-MCiQ@mail.gmail.com>
-	<51B9E8BB.9020104@wwwdotorg.org>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Fri, 14 Jun 2013 00:22:18 +0300
+Message-ID: <51BA380A.1040009@semaphore.gr>
+References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com> <7661669.NhG4BEI8zO@vostro.rjw.lan> <51B64BC6.6040400@semaphore.gr> <16929930.1G36b4NkSe@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51B9E8BB.9020104@wwwdotorg.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <16929930.1G36b4NkSe@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Stephen Warren <swarren@nvidia.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 13 June 2013 21:13, Stephen Warren <swarren@wwwdotorg.org> wrote:
-> On 06/12/2013 10:24 PM, Viresh Kumar wrote:
->> On 12 June 2013 21:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
->>> On 06/12/2013 02:15 AM, Viresh Kumar wrote:
->>>> ARCH_TEGRA selects ARCH_HAS_CPUFREQ, so CPUFREQ will be enabled for all variants
->>>> of TEGRA. CPUFreq driver for tegra is enabled if ARCH_TEGRA is selected. Driver
->>>> uses APIs from freq_table.c and so we must select CPU_FREQ_TABLE for ARCH_TEGRA.
->>>>
->>>> This also removes select CPU_FREQ_TABLE from individual tegra variants.
+Hi Rafael,
+
+On 06/11/2013 02:24 AM, Rafael J. Wysocki wrote:
+> On Tuesday, June 11, 2013 12:57:26 AM Stratos Karafotis wrote:
+>> On 06/09/2013 11:58 PM, Rafael J. Wysocki wrote:
+>>> Well, this means that your changes may hurt performance if the load comes and
+>>> goes in spikes, which is not so good.  The fact that they cause less energy to
+>>> be used at the same time kind of balance that, though.  [After all, we're
+>>> talking about the ondemand governor which should be used if the user wants to
+>>> sacrifice some performance for energy savings.]
 >>>
->>> I guess the real issue here is that drivers/cpufreq/tegra-cpufreq.c gets
->>> built based on ARCH_TEGRA, which doesn't depend on nor select CPU_FREQ
->>> itself, so:
+>>> It would be interesting to see if the picture changes for different time
+>>> intervals in your test program (e.g. loop duration that is not a multiple of
+>>> sampling_rate and sleep times different from 5000 us) to rule out any random
+>>> coincidences.
 >>>
->>>         select CPU_FREQ_TABLE if CPU_FREQ
->>>
->>> ... isn't guaranteed to fire.
->>>
->>> The correct solution seems to be:
->>>
->>> * Add CONFIG_ARM_TEGRA_CPUFREQ to drivers/cpufreq/Kconfig.arm.
->>> * Make that Kconfig option selct CPU_FREQ_TABLE.
->>> * Make that Kconfig option be def_bool ARCH_TEGRA.
->>> * Modify drivers/cpufreq/Makefile to build tegra-cpufreq.c based on that.
->>> * Remove all the cpufreq-related stuff from arch/arm/mach-tegra/Kconfig.
->>>
->>> That way, tegra-cpufreq.c can't be built if !CPU_FREQ, and Tegra's
->>> cpufreq works the same way as all the other cpufreq drivers.
+>>> Can you possibly prepare a graph showing both the execution time and energy
+>>> consumption for several different loop durations in your program (let's keep
+>>> the 5000 us sleep for now), including multiples of sampling_rate as well as
+>>> some other durations?
 >>
->> Hmmm. check this out (attached too for you to test):
->
-> This certainly generates the correct .config when I "make
-> tegra_defconfig" after applying it, and a build after disabling CPU_FREQ
-> links OK, so,
+>> Hi,
+>>
+>> I tested different loop durations with my program from 1,000us to 1,000,000us.
+>> The logic is almost the same with the previous test:
+>>
+>> 1) Use a 'for' loop to a period T (~ 1000-1000000us)
+>> 2) sleep for 5000us
+>> 3) Repeat steps 1-2, 50 times.
+>> 4) sleep for 1s
+>> 5) Repeat 1-4, 5 times.
+>>
+>> The results:
+>> https://docs.google.com/spreadsheet/ccc?key=0AnMfNYUV1k0ddE13ZUtYdGs2dUVRdG00bVRVT3JScWc&usp=sharing
+>>
+>> Sheet1 (ProcessX1) includes the results from the test program running
+>> as single copy. The second one (ProcessX4) includes the results from the test
+>> program running it in 4 copies in parallel (using a bash script that waits
+>> the end of execution).
+>>
+>> Graphs show the difference(%) in total execution time and total energy without
+>> and with the patch.
+>> Negative values mean that the test *with* the patch had better performance or
+>> used less energy.
+>>
+>> Test shows that below sampling rate (10000us in my config), ondemand with this
+>> patch behaves better (both in performance and consumption).
+>> Though, in this test, for loads with 10000us < duration <= 200000us ondemand
+>> behaves better without the patch.
+> 
+> Thanks for these results!
+> 
+> Well, I'd say that this doesn't look rosy any more, so the jury is still out.
+> 
+> We need more testing with different workloads and on different hardware.  I'll
+> try to arrange something to that end.
 
-Yeah, I also compile tested it.
+Please let me share some more test results using aim9 benchmark suite:
+https://docs.google.com/spreadsheet/ccc?key=0AnMfNYUV1k0ddDdGdlJyUHpqT2xGY1lBOEt2UEVnNlE&usp=sharing
 
-> Tested-by: Stephen Warren <swarren@nvidia.com>
-> Acked-by: Stephen Warren <swarren@nvidia.com>
->
-> (I assume this patch would go through the cpufreq tree?)
+Each test was running for 10sec. 
+Total execution time with and without the patch was almost identical, which is
+expected since the tests in aim9 run for a specific period.
+The energy during the test run was increased by 0.43% with the patch.
+The performance was increased by 1.25% (average) with this patch.
 
-Yes. Via my ARM cpufreq tree.
+Thanks,
+Stratos
