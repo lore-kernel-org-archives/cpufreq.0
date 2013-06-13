@@ -1,75 +1,54 @@
-From: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Thu, 13 Jun 2013 18:03:12 +0800
-Message-ID: <CAFgnuDe-Noa7sn2fjMEqY-tVV2FMXeZBm07m8e-0LRQvqAWbeA@mail.gmail.com>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com>
-	<CAKohpomDXmQ_DWpHgm1mD5WWUvBTjWXBPDp1KOWb1mff4UdX=g@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 10/11] cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
+Date: Thu, 13 Jun 2013 09:43:55 -0600
+Message-ID: <51B9E8BB.9020104@wwwdotorg.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org> <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org> <51B898B6.8070103@wwwdotorg.org> <CAKohponC5pKABTi=t64ZXrHxi-Y6cbvAXtjY=_aMkka4s-MCiQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=8JFjlYN+haFrvCHaS4V4HvcKB9J/pZESYu7V1VdbtuI=;
-        b=UvVII8ATLH71p2xzpg7M/wR+EzqAtiKj9LKSnRsl6Dn23n3JeOn0SlNjfJtKtHPCfW
-         aTid5vmf7mRptUU6l/96AqaK2IhVZmc6MDVORX4eS2nqljhjYVQuZWi76AXCdRzA5u8B
-         C2IszUSZ3TbNnP1sf+z+2qUJfdvgx/bzRJs2UoiCRYZ/kQRA3gXnGBq4tK/gUpKUnhAx
-         TLRAFRox4uPDDdxN/ts3aOqu44TQsUQ1QD/ShkBgircrWH4va7duTwmfCJ3wc98EkIQt
-         y09NHH31yepHwNCKvKhbcTMZ2Z4/M4cU48JzjmlZZxPu7jQTvwa78X+QEkP8ZCiMp8yZ
-         mR+Q==
-In-Reply-To: <CAKohpomDXmQ_DWpHgm1mD5WWUvBTjWXBPDp1KOWb1mff4UdX=g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohponC5pKABTi=t64ZXrHxi-Y6cbvAXtjY=_aMkka4s-MCiQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Stephen Warren <swarren@nvidia.com>
 
-2013/6/13 Viresh Kumar <viresh.kumar@linaro.org>:
-> On 13 June 2013 14:31, Xiaoguang Chen <chenxg@marvell.com> wrote:
->> cpufreq governor stop and start should be kept in sequence.
->> If not, there will be unexpected behavior, for example:
+On 06/12/2013 10:24 PM, Viresh Kumar wrote:
+> On 12 June 2013 21:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> On 06/12/2013 02:15 AM, Viresh Kumar wrote:
+>>> ARCH_TEGRA selects ARCH_HAS_CPUFREQ, so CPUFREQ will be enabled for all variants
+>>> of TEGRA. CPUFreq driver for tegra is enabled if ARCH_TEGRA is selected. Driver
+>>> uses APIs from freq_table.c and so we must select CPU_FREQ_TABLE for ARCH_TEGRA.
+>>>
+>>> This also removes select CPU_FREQ_TABLE from individual tegra variants.
 >>
->> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
->> the normal sequence is as below:
+>> I guess the real issue here is that drivers/cpufreq/tegra-cpufreq.c gets
+>> built based on ARCH_TEGRA, which doesn't depend on nor select CPU_FREQ
+>> itself, so:
 >>
->> 1) Current governor is userspace, one application tries to set
->> governor to ondemand. it will call __cpufreq_set_policy in which it
->> will stop userspace governor and then start ondemand governor.
+>>         select CPU_FREQ_TABLE if CPU_FREQ
 >>
->> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
->> call cpufreq_add_policy_cpu. on which it first stops userspace
->> governor, and then starts userspace governor.
+>> ... isn't guaranteed to fire.
 >>
->> Now if the sequence of above two cases interleaves, it becames
->> below sequence:
+>> The correct solution seems to be:
 >>
->> 1) application stops userspace governor
->> 2)                                      hotplug stops userspace governor
->> 3) application starts ondemand governor
->> 4)                                      hotplug starts a governor
+>> * Add CONFIG_ARM_TEGRA_CPUFREQ to drivers/cpufreq/Kconfig.arm.
+>> * Make that Kconfig option selct CPU_FREQ_TABLE.
+>> * Make that Kconfig option be def_bool ARCH_TEGRA.
+>> * Modify drivers/cpufreq/Makefile to build tegra-cpufreq.c based on that.
+>> * Remove all the cpufreq-related stuff from arch/arm/mach-tegra/Kconfig.
 >>
->> in step 4, hotplug is supposed to start userspace governor, but now
->> the governor has been changed by application to ondemand, so hotplug
->> starts ondemand governor again !!!!
->>
->> The solution is: do not allow stop one policy's governor multi-times
->> Governor stop should only do once for one policy, after it is stopped,
->> no other governor stop should be executed. also add one mutext to
->> protect __cpufreq_governor so governor operation can be kept in sequence.
->>
->> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
->> ---
->>  drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
->>  include/linux/cpufreq.h   |  1 +
->>  2 files changed, 25 insertions(+)
->
-> I forgot to tell you earlier but please update changelog everytime you
-> send a new version.
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> That way, tegra-cpufreq.c can't be built if !CPU_FREQ, and Tegra's
+>> cpufreq works the same way as all the other cpufreq drivers.
+> 
+> Hmmm. check this out (attached too for you to test):
 
-Thanks
-I'll pay attention next time :)
+This certainly generates the correct .config when I "make
+tegra_defconfig" after applying it, and a build after disabling CPU_FREQ
+links OK, so,
 
-Xiaoguang
+Tested-by: Stephen Warren <swarren@nvidia.com>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+
+(I assume this patch would go through the cpufreq tree?)
+
