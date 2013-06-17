@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 59821] Dell M4600 CPU cores locked at 800MHz
-Date: Mon, 17 Jun 2013 12:44:38 +0000 (UTC)
-Message-ID: <20130617124438.4646911FB56@bugzilla.kernel.org>
+Date: Mon, 17 Jun 2013 12:52:25 +0000 (UTC)
+Message-ID: <20130617125225.38E1B11FB35@bugzilla.kernel.org>
 References: <bug-59821-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -15,25 +15,20 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=59821
 
 
-Lan Tianyu <tianyu.lan@intel.com> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
-                 CC|                            |tianyu.lan@intel.com
-          Component|Config-Processors           |cpufreq
-         AssignedTo|acpi_config-processors@kern |cpufreq@vger.kernel.org
-                   |el-bugs.osdl.org            |
-            Product|ACPI                        |Power Management
 
 
 
+--- Comment #3 from George B. <list1@gir.me.uk>  2013-06-17 12:52:24 ---
+(In reply to comment #2)
+> Could you try intel_pstate driver?
 
---- Comment #2 from Lan Tianyu <tianyu.lan@intel.com>  2013-06-17 12:44:37 ---
-This should be a cpufreq bug and reassign to the correct category. Could you
-try intel_pstate driver?
+Not sure how to do this - can you please provide steps?
 
-Please provide the output of acpidump. Thanks.
+> Please provide the output of acpidump. Thanks.
+
+root@deli:~ # acpidump
+Linux version not implemented yet
+Could not get ACPI tables, AE_SUPPORT
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
