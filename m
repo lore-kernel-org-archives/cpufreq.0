@@ -1,30 +1,65 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 59781] intel_pstate synchronizes frequencies on wake from
- suspend
-Date: Sun, 16 Jun 2013 16:12:40 +0000 (UTC)
-Message-ID: <20130616161240.8509911FB51@bugzilla.kernel.org>
-References: <bug-59781-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 0/3] cpufreq:boost: CPU Boost mode support
+Date: Mon, 17 Jun 2013 08:50:30 +0530
+Message-ID: <CAKohpo=N2U8u_kQVoWLbL-OeufFFBs8e--Unq29Tv+HC5ERaFg@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1371195540-2991-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-59781-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=59781
+On 14 June 2013 13:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>  arch/arm/mach-s3c24xx/cpufreq.c              |    2 +-
+>  arch/powerpc/platforms/pasemi/cpufreq.c      |    2 +-
+>  arch/powerpc/platforms/powermac/cpufreq_32.c |    2 +-
+>  arch/powerpc/platforms/powermac/cpufreq_64.c |    2 +-
+>  drivers/cpufreq/acpi-cpufreq.c               |   62 +++++++-----------
+>  drivers/cpufreq/arm_big_little.c             |    3 +-
+>  drivers/cpufreq/blackfin-cpufreq.c           |    2 +-
+>  drivers/cpufreq/cpufreq-cpu0.c               |    2 +-
+>  drivers/cpufreq/cpufreq.c                    |   87 ++++++++++++++++++++++++++
+>  drivers/cpufreq/cris-artpec3-cpufreq.c       |    2 +-
+>  drivers/cpufreq/cris-etraxfs-cpufreq.c       |    2 +-
+>  drivers/cpufreq/davinci-cpufreq.c            |    2 +-
+>  drivers/cpufreq/dbx500-cpufreq.c             |    2 +-
+>  drivers/cpufreq/e_powersaver.c               |    3 +-
+>  drivers/cpufreq/elanfreq.c                   |    2 +-
+>  drivers/cpufreq/exynos-cpufreq.c             |    7 ++-
+>  drivers/cpufreq/exynos5440-cpufreq.c         |    2 +-
+>  drivers/cpufreq/freq_table.c                 |   44 ++++++++++---
+>  drivers/cpufreq/ia64-acpi-cpufreq.c          |    2 +-
+>  drivers/cpufreq/imx6q-cpufreq.c              |    2 +-
+>  drivers/cpufreq/kirkwood-cpufreq.c           |    3 +-
+>  drivers/cpufreq/longhaul.c                   |    2 +-
+>  drivers/cpufreq/loongson2_cpufreq.c          |    2 +-
+>  drivers/cpufreq/maple-cpufreq.c              |    2 +-
+>  drivers/cpufreq/omap-cpufreq.c               |    2 +-
+>  drivers/cpufreq/p4-clockmod.c                |    2 +-
+>  drivers/cpufreq/powernow-k6.c                |    2 +-
+>  drivers/cpufreq/powernow-k7.c                |    2 +-
+>  drivers/cpufreq/powernow-k8.c                |    2 +-
+>  drivers/cpufreq/ppc_cbe_cpufreq.c            |    2 +-
+>  drivers/cpufreq/pxa2xx-cpufreq.c             |    4 +-
+>  drivers/cpufreq/pxa3xx-cpufreq.c             |    2 +-
+>  drivers/cpufreq/s3c2416-cpufreq.c            |    2 +-
+>  drivers/cpufreq/s3c64xx-cpufreq.c            |    2 +-
+>  drivers/cpufreq/s5pv210-cpufreq.c            |    2 +-
+>  drivers/cpufreq/sc520_freq.c                 |    2 +-
+>  drivers/cpufreq/sh-cpufreq.c                 |    2 +-
+>  drivers/cpufreq/sparc-us2e-cpufreq.c         |    2 +-
+>  drivers/cpufreq/sparc-us3-cpufreq.c          |    2 +-
+>  drivers/cpufreq/spear-cpufreq.c              |    3 +-
+>  drivers/cpufreq/speedstep-centrino.c         |    2 +-
+>  drivers/cpufreq/speedstep-ich.c              |    2 +-
+>  drivers/cpufreq/speedstep-smi.c              |    2 +-
+>  drivers/cpufreq/tegra-cpufreq.c              |    4 +-
+>  include/linux/cpufreq.h                      |   18 +++++-
+>  45 files changed, 211 insertions(+), 95 deletions(-)
 
-
-
-
-
---- Comment #1 from pqwoerituytrueiwoq@gmail.com  2013-06-16 16:12:40 ---
-Created an attachment (id=104851)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=104851)
-Behavior after suspend
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Wow!! I am shocked to see these many files getting updated :)
