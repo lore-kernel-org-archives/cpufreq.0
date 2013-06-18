@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 59781] intel_pstate synchronizes frequencies on wake from
  suspend
-Date: Mon, 17 Jun 2013 17:15:25 +0000 (UTC)
-Message-ID: <20130617171525.6248211FB35@bugzilla.kernel.org>
+Date: Tue, 18 Jun 2013 01:19:43 +0000 (UTC)
+Message-ID: <20130618011943.1A3F611FB35@bugzilla.kernel.org>
 References: <bug-59781-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -16,24 +16,19 @@ To: cpufreq@vger.kernel.org
 https://bugzilla.kernel.org/show_bug.cgi?id=59781
 
 
-Dirk Brandewie <dirk.brandewie@gmail.com> changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |dirk.brandewie@gmail.com
 
 
 
+--- Comment #6 from pqwoerituytrueiwoq@gmail.com  2013-06-18 01:19:42 ---
+Strange when using acpi-cpufreq's ondemand setting cpuinfo_cur_freq is
+synchronized, but scaling_cur_freq is not
+That is under the 3.9.0 kernel
 
---- Comment #5 from Dirk Brandewie <dirk.brandewie@gmail.com>  2013-06-17 17:15:25 ---
-Could you use turbostat to collect data on the good and bad state please.
+~$ turbostat 
+turbostat_3.9.0-030900 not found
+You may need to install linux-tools-3.9.0-030900
 
-Does this happen all the time?  There are a number of bugs open where both
-intel_pstate and ondemand are doing weird things after coming out of
-suspend.  I the other bugs the situation would clear sometimes after a number
-of suspend/resume cycles.
-
-If you could see if this happens without intel_pstate it would be helpful
+there is no such package...
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
