@@ -1,30 +1,37 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 59781] intel_pstate synchronizes frequencies on wake from
- suspend
-Date: Tue, 18 Jun 2013 02:42:14 +0000 (UTC)
-Message-ID: <20130618024214.7984A11FA54@bugzilla.kernel.org>
-References: <bug-59781-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: userspace: Simplify governor
+Date: Tue, 18 Jun 2013 10:20:33 +0530
+Message-ID: <CAKohpokwbLyCiL88i+6hKaLiKciZ0mZhOqenSzOJ7oBfgsCpZg@mail.gmail.com>
+References: <68ae523282b494da0e8f67536af1df874c326675.1370422554.git.viresh.kumar@linaro.org>
+	<1855098.3p2j9hWHoD@vostro.rjw.lan>
+	<CAKohpon3Tc+dSycv-QeLg9vwjXijaZrtjzw0-tHVAqX6moBUjA@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-59781-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon3Tc+dSycv-QeLg9vwjXijaZrtjzw0-tHVAqX6moBUjA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, chenxg.marvell@gmail.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=59781
+On 5 June 2013 18:38, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> To be honest with the amount of experience I have now, my log was
+> poor :(
+>
+> I have used following log in the attached patch:
+>
+> Subject: [PATCH] cpufreq: userspace: Simplify governor
+>
+> Userspace governor has got more code than what it needs for its functioning.
+> Lets simplify it. Portions of code removed are:
+> - Extra header files which aren't required anymore (rearranged them as well)
+> - cpu_{max|min|cur|set}_freq, as they are always same as policy->{max|min|cur}
+> - userspace_cpufreq_notifier_block as we don't need to set cpu_cur_freq anymore
+> - cpus_using_userspace_governor as it was for notifier code
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
+Hi Rafael,
 
-
-
-
---- Comment #7 from Lan Tianyu <tianyu.lan@intel.com>  2013-06-18 02:42:14 ---
-Please go to (kernel source)/tools/power/x86/turbostat/
-run "make && make install"
-And then try again.
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+Are you happy with the log & description of this patch now?
