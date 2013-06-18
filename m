@@ -1,8 +1,8 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 59781] intel_pstate synchronizes frequencies on wake from
  suspend
-Date: Tue, 18 Jun 2013 16:23:52 +0000 (UTC)
-Message-ID: <20130618162352.72FD311FB35@bugzilla.kernel.org>
+Date: Tue, 18 Jun 2013 16:29:45 +0000 (UTC)
+Message-ID: <20130618162945.9DE4D11FBC3@bugzilla.kernel.org>
 References: <bug-59781-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
@@ -19,9 +19,9 @@ https://bugzilla.kernel.org/show_bug.cgi?id=59781
 
 
 
---- Comment #9 from pqwoerituytrueiwoq@gmail.com  2013-06-18 16:23:52 ---
-After suspend:
-http://pastebin.com/raw.php?i=JbZmBNrS
+--- Comment #10 from pqwoerituytrueiwoq@gmail.com  2013-06-18 16:29:45 ---
+Before suspend:
+http://pastebin.com/raw.php?i=75bvfLij
 
 -- 
 Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
