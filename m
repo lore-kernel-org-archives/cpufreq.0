@@ -1,47 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Thu, 20 Jun 2013 00:50:44 +0200
-Message-ID: <10398431.HfgFiK9AG8@vostro.rjw.lan>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com> <CAKohpokN_iJ5in0t3Mo68Tost0u2WT65PQtynQ7-wxGZr0LDQQ@mail.gmail.com> <CAFgnuDdN6CoLCvH6-d9YB=-jm-ESC1s__si970pa10mC3wsCdw@mail.gmail.com>
+Subject: Re: [GIT PULL] CPUFreq Kconfig Fixes: Select CPU_FREQ_TABLE
+Date: Thu, 20 Jun 2013 01:30:39 +0200
+Message-ID: <12947320.k0k5zs2Mi0@vostro.rjw.lan>
+References: <CAKohponB-sR_CBbaootrAZMORs6Q-63N7_PuUneZL9G1GU3cYA@mail.gmail.com> <CAKohpom6wyHRZMrcOD1tweWLPdcY4ro3iySNMrwd0JNiVzf0_Q@mail.gmail.com> <CAKohpok5QvdJ58ytTLMPdwniczzFzJ1C6Uu46MaBMfD96TFESw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAFgnuDdN6CoLCvH6-d9YB=-jm-ESC1s__si970pa10mC3wsCdw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok5QvdJ58ytTLMPdwniczzFzJ1C6Uu46MaBMfD96TFESw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-On Wednesday, June 19, 2013 11:26:13 AM Xiaoguang Chen wrote:
-> 2013/6/19 Viresh Kumar <viresh.kumar@linaro.org>:
-> > On 19 June 2013 08:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> On 19 June 2013 06:50, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
-> >>> 2013/6/19 Rafael J. Wysocki <rjw@sisk.pl>:
-> >>
-> >>>>> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
-> >>>>
-> >>>> Can you please tell me what the above is supposed to mean?  Is it supposed to
-> >>>> mean "the online of cpu3 is being run on cpu0" or something different?  If
-> >>>> something different, then what?
+On Tuesday, June 18, 2013 07:06:28 PM Viresh Kumar wrote:
+> ** I am sending it again as I sent it from my phone earlier, that
+> happened in html and was rejected by few lists :( **
 > 
-> Sorry I missed this question, Let me explain it in detail
-> Suppose we are in such condtition, current cpufreq goveror is
-> userspace governor. cpu3 is offline.
-> and two things happen as above two cases, first thing is application
-> tries to change current governor to ondemand governor,
-> second thing is cpu0 tries to make cpu3 online which is off line
-> before. both of these two cases will try to stop current governor and
-> start a governor. if above two things interleave, unexpected behavior
-> will happen.
+> Hi Rafael,
+> 
+> The following changes since commit 7d132055814ef17a6c7b69f342244c410a5e000f:
+> 
+> Linux 3.10-rc6 (2013-06-15 11:51:07 -1000)
+> 
+> are available in the git repository at:
+> 
+> git://git.linaro.org/people/vireshk/linux.git cpufreq-kconfig-fixes
+> 
+> for you to fetch changes up to dbcc9f845efc604564f34a5fa62f939c2bebfff6:
+> 
 
-Now it's clear, thanks for the explanation.  [Well, I'll still need to fix up
-the changelog.  Sigh.]
+Pulled, thanks!
 
-Thanks,
 Rafael
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
