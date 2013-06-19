@@ -1,62 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
-Date: Thu, 20 Jun 2013 00:26:42 +0200
-Message-ID: <1875673.7IATFCnWBQ@vostro.rjw.lan>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <51C1F1E3.9010902@gmail.com> <20130619225832.5ed70d4d@jawa>
+Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
+Date: Thu, 20 Jun 2013 00:49:09 +0200
+Message-ID: <2925371.ZJMOdCiC6f@vostro.rjw.lan>
+References: <1371114118-19488-1-git-send-email-chenxg@marvell.com> <CAFgnuDe1bUub92uE1H9Fc9U7AJCYL=WKdyDe2bg00yEr=kMEbQ@mail.gmail.com> <CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130619225832.5ed70d4d@jawa>
+In-Reply-To: <CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Lukasz Majewski <majess1982@gmail.com>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, l.majewski@majess.pl
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiaoguang Chen <chenxg.marvell@gmail.com>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
 
-On Wednesday, June 19, 2013 10:58:32 PM Lukasz Majewski wrote:
-> On Wed, 19 Jun 2013 11:01:07 -0700
-> Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+On Wednesday, June 19, 2013 08:30:11 AM Viresh Kumar wrote:
+> On 19 June 2013 06:50, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
+> > 2013/6/19 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> On Thursday, June 13, 2013 05:01:58 PM Xiaoguang Chen wrote:
+> >>> cpufreq governor stop and start should be kept in sequence.
+> >>> If not, there will be unexpected behavior, for example:
+> >>>
+> >>> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+> >>
+> >> Please spell cpus as "CPUs".  And please start sequences from capitals.
+> >
+> > Ok, thanks for the remind
+> >
+> >>
+> >> [Yes, it *really* is a problem.]
 > 
-> > On 06/19/2013 10:12 AM, Lukasz Majewski wrote:
-> > > In the core governor code, per cpu load value is calculated. This
-> > > patch uses it to mark processor as a "busy" one, when load value is
-> > > higher than 90%.
-> > >
-> > > New cpufreq sysfs attribute is created (busy_cpus). It is read only
-> > > and provides information about number of actually busy CPU.
-> > >
-> > 
-> > What is the intended use of this interface?
-> 
-> The kernel API would be handy with boost managed by software (like it is
-> done with exynos) and with LAB governor.
-> 
-> The intention is to have two save valves for boost:
-> 
-> 1. Enable SW controlled boost only when we have just one busy CPU.
-> 
-> 2. Use the Thermal subsystem to switch off SW managed boost when it
-> detects that SoC is overheating.
-> 
-> The problem with 2 is that, the boost code is compiled in to the cpufreq
-> core (no CONFIG_BOOST flag). Thereof we cannot guarantee, that thermal
-> would be always enabled (the KConfig select option). 
-> I think that thermal subsystem is a suitable place to disable SW boost
-> at emergency. However in my opinion this is not enough and precaution
-> defined at 1 is needed. 
-> 
-> I can remove exporting the "busy_cpu" sysfs attribute if you think, that
-> it would confuse userspace. Its purpose is mainly informational.
-> 
-> > 
-> > For drivers that have internal governors it will be misleading/wrong
-> 
-> Would you be so kind and give me an example of such an internal
-> governor?
-> 
-> Maybe I've overlooked some important information/usecase.
+> Just wanted to know the reasoning behind it so that I can remind
+> others about it and then argue :)
 
-Please look at intel_pstate.c.
+Well, sentences that don't start from upper-case letters don't look like
+separate sentences and when I see "cpus" written like this I tend to read
+it as "cups" with a typo.
+
+Generally speaking, don't make changelogs harder to read than they have to be.
+
+They usually are hard enough to read anyway.
 
 Thanks,
 Rafael
