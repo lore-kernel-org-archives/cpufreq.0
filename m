@@ -1,44 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Thu, 20 Jun 2013 00:49:09 +0200
-Message-ID: <2925371.ZJMOdCiC6f@vostro.rjw.lan>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com> <CAFgnuDe1bUub92uE1H9Fc9U7AJCYL=WKdyDe2bg00yEr=kMEbQ@mail.gmail.com> <CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
+Date: Thu, 20 Jun 2013 00:50:44 +0200
+Message-ID: <10398431.HfgFiK9AG8@vostro.rjw.lan>
+References: <1371114118-19488-1-git-send-email-chenxg@marvell.com> <CAKohpokN_iJ5in0t3Mo68Tost0u2WT65PQtynQ7-wxGZr0LDQQ@mail.gmail.com> <CAFgnuDdN6CoLCvH6-d9YB=-jm-ESC1s__si970pa10mC3wsCdw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
+In-Reply-To: <CAFgnuDdN6CoLCvH6-d9YB=-jm-ESC1s__si970pa10mC3wsCdw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Xiaoguang Chen <chenxg.marvell@gmail.com>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
+To: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
 
-On Wednesday, June 19, 2013 08:30:11 AM Viresh Kumar wrote:
-> On 19 June 2013 06:50, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
-> > 2013/6/19 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> On Thursday, June 13, 2013 05:01:58 PM Xiaoguang Chen wrote:
-> >>> cpufreq governor stop and start should be kept in sequence.
-> >>> If not, there will be unexpected behavior, for example:
-> >>>
-> >>> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+On Wednesday, June 19, 2013 11:26:13 AM Xiaoguang Chen wrote:
+> 2013/6/19 Viresh Kumar <viresh.kumar@linaro.org>:
+> > On 19 June 2013 08:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> On 19 June 2013 06:50, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
+> >>> 2013/6/19 Rafael J. Wysocki <rjw@sisk.pl>:
 > >>
-> >> Please spell cpus as "CPUs".  And please start sequences from capitals.
-> >
-> > Ok, thanks for the remind
-> >
-> >>
-> >> [Yes, it *really* is a problem.]
+> >>>>> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+> >>>>
+> >>>> Can you please tell me what the above is supposed to mean?  Is it supposed to
+> >>>> mean "the online of cpu3 is being run on cpu0" or something different?  If
+> >>>> something different, then what?
 > 
-> Just wanted to know the reasoning behind it so that I can remind
-> others about it and then argue :)
+> Sorry I missed this question, Let me explain it in detail
+> Suppose we are in such condtition, current cpufreq goveror is
+> userspace governor. cpu3 is offline.
+> and two things happen as above two cases, first thing is application
+> tries to change current governor to ondemand governor,
+> second thing is cpu0 tries to make cpu3 online which is off line
+> before. both of these two cases will try to stop current governor and
+> start a governor. if above two things interleave, unexpected behavior
+> will happen.
 
-Well, sentences that don't start from upper-case letters don't look like
-separate sentences and when I see "cpus" written like this I tend to read
-it as "cups" with a typo.
-
-Generally speaking, don't make changelogs harder to read than they have to be.
-
-They usually are hard enough to read anyway.
+Now it's clear, thanks for the explanation.  [Well, I'll still need to fix up
+the changelog.  Sigh.]
 
 Thanks,
 Rafael
