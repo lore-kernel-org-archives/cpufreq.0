@@ -1,19 +1,19 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 09/13] cpufreq: pcc: call CPUFREQ_POSTCHANGE notfier in error cases
-Date: Wed, 19 Jun 2013 14:23:03 +0530
-Message-ID: <6c9bea6acc4b36e4bee42b973b0c5f66e5d12b1f.1371630975.git.viresh.kumar@linaro.org>
+Subject: [PATCH 10/13] cpufreq: powernow-k8: call CPUFREQ_POSTCHANGE notfier in error cases
+Date: Wed, 19 Jun 2013 14:23:04 +0530
+Message-ID: <07d316c551e66b387254f0f544e18e415b9c181d.1371630975.git.viresh.kumar@linaro.org>
 References: <cover.1371630975.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
 References: <cover.1371630975.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Dave Jones <davej@redhat.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
 PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
 should be called or both shouldn't be.
@@ -24,24 +24,28 @@ calling notifiers is complete.
 
 This patch fixes it.
 
-Cc: Dave Jones <davej@redhat.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pcc-cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/cpufreq/powernow-k8.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 0de0008..1581fcc4 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -243,6 +243,8 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- 	return 0;
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index b828efe..c916320 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -967,9 +967,9 @@ static int transition_frequency_fidvid(struct powernow_k8_data *data,
  
- cmd_incomplete:
-+	freqs.new = freqs.old;
-+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 	iowrite16(0, &pcch_hdr->status);
- 	spin_unlock(&pcc_lock);
- 	return -EINVAL;
+ 	res = transition_fid_vid(data, fid, vid);
+ 	if (res)
+-		return res;
+-
+-	freqs.new = find_khz_freq_from_fid(data->currfid);
++		freqs.new = freqs.old;
++	else
++		freqs.new = find_khz_freq_from_fid(data->currfid);
+ 
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 	return res;
 -- 
 1.7.12.rc2.18.g61b472e
+
