@@ -1,82 +1,204 @@
-From: Lukasz Majewski <l.majewski@majess.pl>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Wed, 19 Jun 2013 22:31:02 +0200
-Message-ID: <20130619223102.70c2e359@jawa>
+From: Lukasz Majewski <majess1982@gmail.com>
+Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
+Date: Wed, 19 Jun 2013 22:58:32 +0200
+Message-ID: <20130619225832.5ed70d4d@jawa>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
-	<1371661969-7660-3-git-send-email-l.majewski@samsung.com>
-	<51C1EF05.90402@gmail.com>
+ <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+ <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
+ <51C1F1E3.9010902@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51C1EF05.90402@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        bh=vMjXQHuC3INsoCU1VAAaQYfK1009gH+FZYPwnUHTmBk=;
+        b=JtnyNFAfUL2JR0YGP/JRasJa5Zh2xCDOSNw2ptOFWd76KQGs4pU1erbjatDkZTMFcW
+         HcLtMaK+gaMFNmN2geMUOizz1lqqzs39Lt35u/rbCThMaV9wH5aAkKZPgnYEJLkyFhC8
+         xJudhQDfTEzN1d8z2y8NooxWn+2bEG/3VVq5cOH0epiR9aUmSCdXR9l6I+xO4EOII2eM
+         rXFtR5AhXHg1nIikOH8eDXEHS4Jk1bGIic9OVSN5uPHP0wx+DUy72Tl1cWkCVYJtPeiI
+         S7eajuY1jg4D8u5RZdLEgsvfMKFye+2BwG5eQ9pxWLwTRIjPu6goioEzgtzN+j8HGRJV
+         FmrA==
+In-Reply-To: <51C1F1E3.9010902@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, l.majewski@majess.pl
 
-On Wed, 19 Jun 2013 10:48:53 -0700
+On Wed, 19 Jun 2013 11:01:07 -0700
 Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
 
 > On 06/19/2013 10:12 AM, Lukasz Majewski wrote:
-> > This commit adds boost frequency support in cpufreq core (Hardware &
+> > In the core governor code, per cpu load value is calculated. This
+> > patch uses it to mark processor as a "busy" one, when load value is
+> > higher than 90%.
+> >
+> > New cpufreq sysfs attribute is created (busy_cpus). It is read only
+> > and provides information about number of actually busy CPU.
+> >
 > 
-> > +/*********************************************************************
+> What is the intended use of this interface?
+
+The kernel API would be handy with boost managed by software (like it is
+done with exynos) and with LAB governor.
+
+The intention is to have two save valves for boost:
+
+1. Enable SW controlled boost only when we have just one busy CPU.
+
+2. Use the Thermal subsystem to switch off SW managed boost when it
+detects that SoC is overheating.
+
+The problem with 2 is that, the boost code is compiled in to the cpufreq
+core (no CONFIG_BOOST flag). Thereof we cannot guarantee, that thermal
+would be always enabled (the KConfig select option). 
+I think that thermal subsystem is a suitable place to disable SW boost
+at emergency. However in my opinion this is not enough and precaution
+defined at 1 is needed. 
+
+I can remove exporting the "busy_cpu" sysfs attribute if you think, that
+it would confuse userspace. Its purpose is mainly informational.
+
+> 
+> For drivers that have internal governors it will be misleading/wrong
+
+Would you be so kind and give me an example of such an internal
+governor?
+
+Maybe I've overlooked some important information/usecase.
+
+> 
+> --Dirk
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> >
+> > Changes for v4:
+> > - New patch
+> > ---
+> >   drivers/cpufreq/cpufreq.c          |   31
+> > ++++++++++++++++++++++++++++++- drivers/cpufreq/cpufreq_governor.c
+> > |    1 + include/linux/cpufreq.h            |    3 +++
+> >   3 files changed, 34 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 9141d33..f785273 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -48,6 +48,7 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN],
+> > cpufreq_cpu_governor); #endif
+> >   static DEFINE_RWLOCK(cpufreq_driver_lock);
+> >   static LIST_HEAD(cpufreq_policy_list);
+> > +static cpumask_t cpufreq_busy_cpus;
+> >
+> >   /*
+> >    * cpu_policy_rwsem is a per CPU reader-writer semaphore designed
+> > to cure @@ -317,6 +318,13 @@
+> > EXPORT_SYMBOL_GPL(cpufreq_notify_transition); /*********************************************************************
+> >    *                          SYSFS
+> > INTERFACE                          *
+> > *********************************************************************/
+> > +ssize_t show_busy_cpus(struct kobject *kobj,
+> > +				 struct attribute *attr, char *buf)
+> > +{
+> > +	return sprintf(buf, "%d\n", cpufreq_num_busy_cpu());
+> > +}
+> > +define_one_global_ro(busy_cpus);
+> > +
+> >   ssize_t show_boost(struct kobject *kobj,
+> >   				 struct attribute *attr, char
+> > *buf) {
+> > @@ -1980,6 +1988,17 @@ int cpufreq_boost_enabled(void)
+> >   	return boost_enabled;
+> >   }
+> >
+> > +int cpufreq_num_busy_cpu(void)
+> > +{
+> > +	return cpumask_weight(&cpufreq_busy_cpus);
+> > +}
+> > +
+> > +void cpufreq_set_busy_cpu(int cpu, int val)
+> > +{
+> > +	val ? cpumask_set_cpu(cpu, &cpufreq_busy_cpus) :
+> > +		cpumask_clear_cpu(cpu, &cpufreq_busy_cpus);
+> > +}
+> > +
+> >   /*********************************************************************
 > >    *               REGISTER / UNREGISTER CPUFREQ
 > > DRIVER                *
 > > *********************************************************************/
-> >
-> > @@ -1936,6 +2019,16 @@ int cpufreq_register_driver(struct
+> > @@ -2019,6 +2038,13 @@ int cpufreq_register_driver(struct
 > > cpufreq_driver *driver_data) cpufreq_driver = driver_data;
-> >   	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> > write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 > >
-> > +	if (!cpufreq_driver->boost_supported)
-> > +		boost.attr.mode = 0444;
-> > +
-> > +	ret = cpufreq_sysfs_create_file(&(boost.attr));
+> > +	ret = cpufreq_sysfs_create_file(&(busy_cpus.attr));
 > > +	if (ret) {
-> > +		pr_err("%s: cannot register global boost sysfs
+> > +		pr_err("%s: cannot register global busy_cpus sysfs
 > > file\n",
 > > +		       __func__);
 > > +		goto err_null_driver;
 > > +	}
 > > +
-> 
-> I do not think the boost sysfs should be created at all if boost is
-> not supported.
-
-This was my first thought. But unfortunately this "boost" attribute is
-always exported at acpi-cpufreq.c and in my opinion is part of a
-legacy API.
-
-I totally agree with the idea of exporting boost only when supported,
-but I would like to know the community opinion about this (especially
-Viresh and Rafael shall speak up).
-
-> 
-> For intel_pstate the read-only boost would be there for no reason and
-> would cause confusion on the part of the user IMHO
-
-You are probably right here. However I don't know what was the
-original rationale behind exporting this attribute as read only. 
-
-> 
+> >   	if (!cpufreq_driver->boost_supported)
+> >   		boost.attr.mode = 0444;
+> >
+> > @@ -2026,7 +2052,7 @@ int cpufreq_register_driver(struct
+> > cpufreq_driver *driver_data) if (ret) {
+> >   		pr_err("%s: cannot register global boost sysfs
+> > file\n", __func__);
+> > -		goto err_null_driver;
+> > +		goto err_busy_idle_unreg;
+> >   	}
+> >
 > >   	ret = subsys_interface_register(&cpufreq_interface);
-> >   	if (ret)
-> >   		goto err_null_driver;
-> > @@ -1992,6 +2085,8 @@ int cpufreq_unregister_driver(struct
-> > cpufreq_driver *driver) pr_debug("unregistering driver %s\n",
-> > driver->name);
+> > @@ -2058,6 +2084,8 @@ int cpufreq_register_driver(struct
+> > cpufreq_driver *driver_data) return 0;
+> >   err_if_unreg:
+> >   	subsys_interface_unregister(&cpufreq_interface);
+> > +err_busy_idle_unreg:
+> > +	cpufreq_sysfs_remove_file(&(busy_cpus.attr));
+> >   err_null_driver:
+> >   	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> >   	cpufreq_driver = NULL;
+> > @@ -2086,6 +2114,7 @@ int cpufreq_unregister_driver(struct
+> > cpufreq_driver *driver)
 > >
 > >   	subsys_interface_unregister(&cpufreq_interface);
-> > +
-> > +	cpufreq_sysfs_remove_file(&(boost.attr));
+> >
+> > +	cpufreq_sysfs_remove_file(&(busy_cpus.attr));
+> >   	cpufreq_sysfs_remove_file(&(boost.attr));
 > >   	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
 > >
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c
+> > b/drivers/cpufreq/cpufreq_governor.c index 077cea7..3402533 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.c
+> > +++ b/drivers/cpufreq/cpufreq_governor.c
+> > @@ -148,6 +148,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data,
+> > int cpu) continue;
+> >
+> >   		load = 100 * (wall_time - idle_time) / wall_time;
+> > +		cpufreq_set_busy_cpu(j, load > 90 ? 1 : 0);
+> >
+> >   		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+> >   			int freq_avg =
+> > __cpufreq_driver_getavg(policy, j); diff --git
+> > a/include/linux/cpufreq.h b/include/linux/cpufreq.h index
+> > 4783c4c..536abfc 100644 --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -436,6 +436,9 @@ int cpufreq_frequency_table_target(struct
+> > cpufreq_policy *policy, int cpufreq_boost_trigger_state(int state);
+> >   int cpufreq_boost_supported(void);
+> >   int cpufreq_boost_enabled(void);
+> > +
+> > +void cpufreq_set_busy_cpu(int cpu, int val);
+> > +int cpufreq_num_busy_cpu(void);
+> >   /* the following 3 funtions are for cpufreq core use only */
+> >   struct cpufreq_frequency_table
+> > *cpufreq_frequency_get_table(unsigned int cpu);
+> >
+> >
 > 
-
 Best regards,
 
 Lukasz Majewski
-
