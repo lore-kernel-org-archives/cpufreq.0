@@ -1,80 +1,30 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
-Date: Thu, 20 Jun 2013 08:41:08 +0200
-Message-ID: <20130620084108.39b188aa@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <20130617155156.4c729b5a@amdc308.digital.local>
- <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
- <3258927.Qds4G9CTyG@vostro.rjw.lan>
- <20130618154456.56d99e18@amdc308.digital.local>
- <20130619091612.60e4d69d@amdc308.digital.local>
- <CAKohponTEb_XQnGTpDVC78jknCuwumnckCKZk6cObq45RmWpFA@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 59821] Dell M4600 CPU cores locked at 800MHz
+Date: Thu, 20 Jun 2013 06:48:44 +0000 (UTC)
+Message-ID: <20130620064844.7247111FB51@bugzilla.kernel.org>
+References: <bug-59821-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <CAKohponTEb_XQnGTpDVC78jknCuwumnckCKZk6cObq45RmWpFA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-59821-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Thu, 20 Jun 2013 10:41:41 +0530, Viresh Kumar wrote:
-> On 19 June 2013 12:46, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > I would like to clarify the above issue.
-> >
-> > When I've discussed with Viresh previous version of this patch, we
-> > have agreed, that "boost" sysfs attribute [*]:
-> > /sys/devices/system/cpu/cpufreq/boost
-> >
-> > would be only visible when boost_supported flag is set at cpufreq
-> > driver.
-> 
-> Yes.
-> 
-> > When acpi-cpufreq driver doesn't support boost, the attribute [*]
-> > won't be exported at all. This contradicts the documentation and
-> > legacy acpi-cpufreq behaviour.
-> 
-> No they aren't contradictory. What the documentation meant was:
-> acpi-cpufreq driver is used by lots of different x86 processors. Now
-> all processors might not support boost inside x86 also. And for them
-> we will keep 'boost' file readonly. This is done by following
-> statement
+https://bugzilla.kernel.org/show_bug.cgi?id=59821
 
-Thanks for explanation.
 
-> 
-> 	if (boot_cpu_has(X86_FEATURE_CPB) ||
-> boot_cpu_has(X86_FEATURE_IDA)) { boost_supported = true;
->                 ....
-> 	} else
-> 		global_boost.attr.mode = 0444;
 
-Grrr.... So simple and obvious solution [1]. 
 
-> 
-> Documentation file doesn't talk about any other cpufreq driver, for
-> them there is no concept like boost.
-> 
-> You need to preserve this functionality.
 
-Yes the idea [1], solves problem with legacy API.
-
-> 
-> > Since I'm affraid to break API (with all its consequences :-) ), I
-> > would like to be sure that this is OK, and thereof I'm allowed to
-> > rewrite documentation accordingly.
-> >
-> > I simply need explicit permission from both maintainers :-).
-> 
-> For me its okay to rewrite documentation.
-
-I will extent documentation about the SW managed boost.
+--- Comment #7 from Lan Tianyu <tianyu.lan@intel.com>  2013-06-20 06:48:44 ---
+ Could you provide what powertop and htop show during CPU cores are stuck at
+800Mhz.?
+(including these powertop's tabs, Overview   Idle stats   Frequency stats,  
+Device stats, Tunables).
 
 -- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
