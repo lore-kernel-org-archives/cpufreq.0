@@ -1,36 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL] CPUFreq Kconfig Fixes: Select CPU_FREQ_TABLE
-Date: Thu, 20 Jun 2013 01:30:39 +0200
-Message-ID: <12947320.k0k5zs2Mi0@vostro.rjw.lan>
-References: <CAKohponB-sR_CBbaootrAZMORs6Q-63N7_PuUneZL9G1GU3cYA@mail.gmail.com> <CAKohpom6wyHRZMrcOD1tweWLPdcY4ro3iySNMrwd0JNiVzf0_Q@mail.gmail.com> <CAKohpok5QvdJ58ytTLMPdwniczzFzJ1C6Uu46MaBMfD96TFESw@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 07/13] cpufreq: imx6q: call CPUFREQ_POSTCHANGE notfier in
+ error cases
+Date: Thu, 20 Jun 2013 10:52:28 +0800
+Message-ID: <20130620025227.GC19896@S2101-09.ap.freescale.net>
+References: <cover.1371630975.git.viresh.kumar@linaro.org>
+ <ca85a6fad679b2e305a21893811474f5802f837e.1371630975.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok5QvdJ58ytTLMPdwniczzFzJ1C6Uu46MaBMfD96TFESw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <ca85a6fad679b2e305a21893811474f5802f837e.1371630975.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 
-On Tuesday, June 18, 2013 07:06:28 PM Viresh Kumar wrote:
-> ** I am sending it again as I sent it from my phone earlier, that
-> happened in html and was rejected by few lists :( **
+On Wed, Jun 19, 2013 at 02:23:01PM +0530, Viresh Kumar wrote:
+> PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
+> should be called or both shouldn't be.
 > 
-> Hi Rafael,
+> In case we have started PRECHANGE notifier and found an error, we must call
+> POSTCHANGE notifier with freqs.new = freqs.old to guarantee that sequence of
+> calling notifiers is complete.
 > 
-> The following changes since commit 7d132055814ef17a6c7b69f342244c410a5e000f:
+> This patch fixes it.
 > 
-> Linux 3.10-rc6 (2013-06-15 11:51:07 -1000)
+> This also moves PRECHANGE notifier down so that we call it just before starting
+> frequency transition.
 > 
-> are available in the git repository at:
-> 
-> git://git.linaro.org/people/vireshk/linux.git cpufreq-kconfig-fixes
-> 
-> for you to fetch changes up to dbcc9f845efc604564f34a5fa62f939c2bebfff6:
-> 
+> Cc: Shawn Guo <shawn.guo@linaro.org>
 
-Pulled, thanks!
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-Rafael
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
