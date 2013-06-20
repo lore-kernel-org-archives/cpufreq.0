@@ -1,88 +1,37 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH] regulator: core: allow consumers to request to
- closes step voltage
-Date: Thu, 20 Jun 2013 07:45:42 -0500
-Message-ID: <20130620124542.GA28320@kahuna>
-References: <1371669474-24473-1-git-send-email-nm@ti.com>
- <20130619223828.GK1403@sirena.org.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+Date: Thu, 20 Jun 2013 22:03:45 +0200
+Message-ID: <5038475.Kzi1Kavss7@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1371661969-7660-3-git-send-email-l.majewski@samsung.com> <CAKohpo=5ZJp6JBVVA0NinTMO5FUwtfy3QAabcTwVOW6TmEfs9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130619223828.GK1403@sirena.org.uk>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=5ZJp6JBVVA0NinTMO5FUwtfy3QAabcTwVOW6TmEfs9g@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, viresh.kumar@linaro.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 23:38-20130619, Mark Brown wrote:
-> On Wed, Jun 19, 2013 at 02:17:54PM -0500, Nishanth Menon wrote:
+On Thursday, June 20, 2013 10:43:08 AM Viresh Kumar wrote:
+> On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
 > 
-> > Account for step size accuracy when exact voltage requests are send for
-> > step based regulators.
+> > Boost sysfs attribute is always exported (to support legacy API). By
+> > default boost is exported as read only. One global attribute is available at:
+> > /sys/devices/system/cpu/cpufreq/boost.
 > 
-> If the consumer can tolerate a different voltage why not just request
-> the range that can be tolerated?  Your problem here is specifying an
-> exact voltage.
-I think you mean using regulator_get_linear_step
+> You asked me and Rafael a question and posted your next version without
+> even waiting for our replies? That will waste your time and ours too
+> reviewing it.
 
-> 
-> > The specific example I faced was using cpufreq-cpu0 driver with voltages
-> > for OPPs for MPU rail and attempting the common definitions against voltages
-> > that are non-exact multiples of stepsize of PMIC.
-> 
-> > The alternative would be implement custom set_voltage (as againsta simpler
-> > set_voltage_sel and using linear map/list functions) for the regulator which
-> > will account for the same.
-> 
-> > Yet another alternative might be to introduce yet another custom function similar
-> > to regulator_set_voltage_tol which accounts for this. something like:
-> > regulator_set_voltage_floor(regulator, voltage, tol) or something to that effect.
-> 
-> Or as I keep telling you guys the consumer can just do that directly
-> using the existing API; the whole point in specifying the voltage as a
-> range is to allow the consumer to cope with arbatrary regulators by
-> giving a range of voltages that it can accept.
-> 
-> The API is deliberately very conservative in these matters since there
-> is a danger of physical damage if things really go wrong in some
-> applications, it makes sure that both the drivers and the system
-> integration are involved.
-I agree. The intent of this series was to start a conversation to see if
-we can make it simpler.
+I believe I replied to that (in a different branch of the thread).
 
-Searching for the users of regulator_get_linear_step in 3.10-rc6
-shows none.
+And the reply was: Do not expose if not supported.
 
-For a generic driver which needs to handle platforms which
-have tolerance, they'd use regulator_set_voltage_tol. But the
-implementation would allow for uV - tol to uV + tol as range, which in
-the case I mentioned(min voltage =uV) wont work.
+Thanks,
+Rafael
 
-If the consumer wants to be aware of linear step regulator, they'd have to do:
-step_uV = regulator_get_linear_step(...);
-regulator_set_voltage(uV, uV + step_uV);
 
-Then this wont handle tolerance. So the solution seems to be (for the
-consumer):
-step_uV = regulator_get_linear_step(...);
-..
-if (tol)
-	regulator_set_voltage_tol(uV, tol);
-else
-	regulator_set_voltage(uV, uV + step_uV);
-(with the required error checks for regulator being a linear regulator
- etc..).
-
-At least to me, there is no sane manner to handle "tolerance" and linear step
-accuracy for a defined voltage (Should tolerance be rounded off to
-step_uV? what about the border cases etc.)
-
-Would you agree?
 -- 
-Regards,
-Nishanth Menon
-
-PS: Since I just looped in cpufreq list, discussion thread:
-http://marc.info/?t=137166954900005&r=1&w=2
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
