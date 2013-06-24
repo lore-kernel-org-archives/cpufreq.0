@@ -1,29 +1,52 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 59821] Dell M4600 CPU cores locked at 800MHz
-Date: Mon, 24 Jun 2013 09:46:55 +0000 (UTC)
-Message-ID: <20130624094655.D31FF11FA6B@bugzilla.kernel.org>
-References: <bug-59821-12968@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] CPUFreq ARM Fixes for 3.11
+Date: Mon, 24 Jun 2013 12:46:29 +0200
+Message-ID: <1389572.pO2YzmOyGa@vostro.rjw.lan>
+References: <CAKohpong-+4vu4Ky7u_7mPanOZr-jxHKSJRur1cRPaZuaFUBUQ@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-59821-12968@https.bugzilla.kernel.org/>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpong-+4vu4Ky7u_7mPanOZr-jxHKSJRur1cRPaZuaFUBUQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=59821
+On Monday, June 24, 2013 11:23:52 AM Viresh Kumar wrote:
+> Hi Rafael,
+>=20
+> The following changes since commit 9e895ace5d82df8929b16f58e9f515f6d5=
+4ab82d:
+>=20
+>   Linux 3.10-rc7 (2013-06-22 09:47:31 -1000)
+>=20
+> are available in the git repository at:
+>=20
+>   git://git.linaro.org/people/vireshk/linux.git cpufreq-next
+>=20
+> for you to fetch changes up to 166b9addd83aaf6eb22d9db7dc015f81913c9a=
+0e:
+>=20
+>   cpufreq: s3c2416: fix forgotten driver_data conversions (2013-06-24
+> 11:22:33 +0530)
+
+Pulled, thanks Viresh!
+
+Rafael
 
 
-
-
-
---- Comment #9 from George B. <list1@gir.me.uk>  2013-06-24 09:46:55 ---
-Created an attachment (id=105831)
- --> (https://bugzilla.kernel.org/attachment.cgi?id=105831)
-powertop output
-
--- 
-Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are the assignee for the bug.
+> ----------------------------------------------------------------
+> Heiko St=C3=BCbner (1):
+>       cpufreq: s3c2416: fix forgotten driver_data conversions
+>=20
+>  drivers/cpufreq/s3c2416-cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
