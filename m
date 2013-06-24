@@ -1,83 +1,29 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v9] Cpufreq: Fix governor start/stop race condition
-Date: Mon, 24 Jun 2013 11:41:15 +0200
-Message-ID: <80721807.qapsadYhBd@vostro.rjw.lan>
-References: <1371625207-26702-1-git-send-email-chenxg@marvell.com> <51C16B97.3040304@marvell.com> <CAFgnuDdzjyUQnXZGMCnwP2mXr7eQ9n-ZxOxxG4KWdgPMKOjEfw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 59821] Dell M4600 CPU cores locked at 800MHz
+Date: Mon, 24 Jun 2013 09:46:28 +0000 (UTC)
+Message-ID: <20130624094628.4BEDF11FA6B@bugzilla.kernel.org>
+References: <bug-59821-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAFgnuDdzjyUQnXZGMCnwP2mXr7eQ9n-ZxOxxG4KWdgPMKOjEfw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-59821-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Zhoujie Wu <zjwu@marvell.com>, Yilu Mao <ylmao@marvell.com>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On Monday, June 24, 2013 02:04:50 PM Xiaoguang Chen wrote:
-> Hi, Rafael
-> When can this patch be merged?
-
-Well, it's in my bleeding-edge branch.  If it doesn't break builds, it will
-go to linux-next for 3.11.
-
-Thanks,
-Rafael
+https://bugzilla.kernel.org/show_bug.cgi?id=59821
 
 
-> 2013/6/19 Xiaoguang Chen <chenxg@marvell.com>:
-> > On 06/19/2013 03:55 PM, Viresh Kumar wrote:
-> >>
-> >> On 19 June 2013 12:30, Xiaoguang Chen <chenxg@marvell.com> wrote:
-> >>>
-> >>> Cpufreq governor's stop and start operation should be kept in sequence.
-> >>> If not, there will be unexpected behavior, for example:
-> >>>
-> >>> There are 4 CPUs and policy->cpu=CPU0, CPU1/2/3 are linked to CPU0.
-> >>> The normal sequence is as below:
-> >>>
-> >>> 1) Current governor is userspace, One application tries to set
-> >>> governor to ondemand. It will call __cpufreq_set_policy in which it
-> >>> will stop userspace governor and then start ondemand governor.
-> >>>
-> >>> 2) Current governor is userspace, Now CPU0 hotplugs in CPU3 (put CPU3
-> >>> online),
-> >>> It will call cpufreq_add_policy_cpu in which it first stops userspace
-> >>> governor, and then starts userspace governor.
-> >>>
-> >>> Now if the sequence of above two cases interleaves, It becomes like
-> >>> below:
-> >>>
-> >>> 1) Application stops userspace governor
-> >>> 2)                                      Hotplug stops userspace governor
-> >>> 3) Application starts ondemand governor
-> >>> 4)                                      Hotplug starts a governor
-> >>>
-> >>> In step 4, Hotplug is supposed to start userspace governor, But now
-> >>> the governor has been changed by application to ondemand, So hotplug
-> >>> starts ondemand governor again !!!!
-> >>>
-> >>> The solution is: Do not allow stop policy's governor multi-times.
-> >>> Governor should only be stopped once for one policy, After it is stopped,
-> >>> No other governor stop operation should be executed. also add one mutex
-> >>> to
-> >>> protect __cpufreq_governor so governor operation can be kept in sequence.
-> >>>
-> >>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-> >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >>> ---
-> >>>   drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
-> >>>   include/linux/cpufreq.h   |  1 +
-> >>>   2 files changed, 25 insertions(+)
-> >>
-> >> All good now. Sorry for the noise :)
-> >
-> > Thank you for the professional instructions. It makes the code more
-> > beautiful. :)
-> >
-> > --
-> > Thanks
-> > Xiaoguang
-> >
+
+
+
+--- Comment #8 from George B. <list1@gir.me.uk>  2013-06-24 09:46:27 ---
+Created an attachment (id=105821)
+ --> (https://bugzilla.kernel.org/attachment.cgi?id=105821)
+htop screenshot (couln't find a way of getting text out)
+
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
