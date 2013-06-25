@@ -1,42 +1,59 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH 1/2] ACPI/Processor: Clear unuseful variable count in
- the acpi_processor_preregister_performance()
-Date: Tue, 25 Jun 2013 16:42:09 +0800
-Message-ID: <51C957E1.7080808@intel.com>
-References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com> <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH 25/32] cpufreq: delete __cpuinit usage from all cpufreq
+ files
+Date: Tue, 25 Jun 2013 10:30:42 -0400
+Message-ID: <51C9A992.7010209@windriver.com>
+References: <1372102237-8757-1-git-send-email-paul.gortmaker@windriver.com> <1372102237-8757-26-git-send-email-paul.gortmaker@windriver.com> <CAKohponpsJBqbj_8u8MUiu7sCEpeg5bcztWJAZdn9uxL5taVZQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponpsJBqbj_8u8MUiu7sCEpeg5bcztWJAZdn9uxL5taVZQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 2013=E5=B9=B406=E6=9C=8825=E6=97=A5 15:45, Viresh Kumar wrote:
-> On 25 June 2013 07:36, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> The variable count in the acpi_processor_preregister_performance() i=
-s only initalized
->> as one for one cpu and increased by one when find another cpu that s=
-hare same dependency
->> domain. Otherwise, it isn't referenced somewhere else.
+On 13-06-24 11:31 PM, Viresh Kumar wrote:
+> On 25 June 2013 01:00, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> 
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index f8c2860..5687d28 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -1900,8 +1900,8 @@ no_policy:
+>>  }
+>>  EXPORT_SYMBOL(cpufreq_update_policy);
 >>
->> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
->> ---
->>  drivers/acpi/processor_perflib.c |    4 +---
->>  1 file changed, 1 insertion(+), 3 deletions(-)
->=20
+>> -static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+>> -                                       unsigned long action, void *hcpu)
+>> +static int cpufreq_cpu_callback(struct notifier_block *nfb,
+>> +                               unsigned long action, void *hcpu)
+> 
+> You were not required to change second line here and also don't
+> change its indentation level. Check this everywhere.
+> 
+
+[...]
+
+Since you've explicitly requested it, I've left all second lines
+of args untouched in v2, now pushed to the patch queue:
+
+http://git.kernel.org/cgit/linux/kernel/git/paulg/cpuinit-delete.git
+
+> 
+> Fix these and add my
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->=20
-Thanks.
+> 
+> Probably this can go through Rafael's pm tree. So, you can take it
+> out of this series if you want.
 
+I'd encourage people to not take the patches into their specific
+trees unless they really feel a specific need to do so.  It will
+keep the majority of them clumped together in git history that way.
 
---=20
-Best regards
-Tianyu Lan
+Thanks,
+Paul.
 --
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+> 
