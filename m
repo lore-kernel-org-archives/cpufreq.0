@@ -1,50 +1,53 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Wed, 26 Jun 2013 12:57:22 -0500
-Message-ID: <20130626175722.GA20226@jshin-Toonie>
-References: <51C87ADC.4070409@canonical.com>
- <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
- <20130625161935.GA10208@jshin-Toonie>
- <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
- <20130626142852.GA2326@jshin-Toonie>
- <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Wed, 26 Jun 2013 20:36:18 +0200
+Message-ID: <51CB34A2.7090404@gmx.de>
+References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1778593.ufLkNuJuaY@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org
 
-On Wed, Jun 26, 2013 at 08:02:29PM +0530, Viresh Kumar wrote:
-> On 26 June 2013 19:58, Jacob Shin <jacob.shin@amd.com> wrote:
-> > On Wed, Jun 26, 2013 at 12:18:27PM +0530, Viresh Kumar wrote:
-> 
-> >> I am not sure if this is enough. What if we had ondemand as the
-> >> governor initially, then we changed it to something else. Now also
-> >> cur_policy contains a address and isn't zero.
+On 06/19/2013 12:05 AM, Rafael J. Wysocki wrote:
+> Hmm.  This looks like something unrelated to the previous reports.
 
-I just tested this case with this patch applied, and did not have any
-problems.
+yes
 
-> >>
-> >> >                 cpumask_or(&done, &done, policy->cpus);
-> >> > +
-> >> > +               if (policy->governor != &cpufreq_gov_ondemand)
-> >> > +                       continue;
-> >
-> > This should catch that case no ?
-> 
-> Policy might be freed and reallocated by then. And so doing
-> policy->governor is dangerous.
+> How do you check the frequencies?
 
-Are you worried that after we have passed the above if check, and
-before we access ->tuner governor change might occur?
+much more significant is the temperature :
 
-Is there something synonymous to get/put_online_cpus() for cpufreq to
-prevent governor change while we update ->tuner values?
+$> cat /sys/devices/system/cpu/cpu\?/thermal_throttle/package_power_lim=
+it_count /proc/acpi/ibm/fan /sys/class/hwmon/hwmon\?/device/temp\?_inpu=
+t'
 
-Otherwise, should just spinlock?
+- it is around 49=C2=B0 if just 4 BOINC childs are running at nice leve=
+l -19, but it is above 65=C2=B0C if the issue exists. And in hat case I=
+ just do run=20
+
+$> for g in performance ondemand; do for i in 0 1 2 3; do echo $g > /sy=
+s/devices/system/cpu/cpu$i/cpufreq/scaling_governor; done; done; echo 1=
+ > /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice
+
+and the system is back to normal.
+
+> Does that happen every time?  If so, any chance to bisect driver/cpuf=
+req
+> changes between 3.9 and now?
+
+first bisect attempts failed. I realized that the issue only occurs if =
+the power is plugged in. If the system is running on battery the issue =
+doesn't occurred (I checked it more than once)
+
+> Does it work without ignore_nice?
+Seems not to be related to that.
+
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
