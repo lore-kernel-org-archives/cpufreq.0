@@ -1,61 +1,72 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
-Date: Wed, 26 Jun 2013 21:12:41 +0200
-Message-ID: <1475885.FjB577tJj8@vostro.rjw.lan>
-References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan> <51CB34A2.7090404@gmx.de>
+Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 26 Jun 2013 23:57:51 +0200
+Message-ID: <2081161.dnl1xTqcUT@vostro.rjw.lan>
+References: <cover.1371630975.git.viresh.kumar@linaro.org> <2165396.dF1lQyPRVT@vostro.rjw.lan> <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51CB34A2.7090404@gmx.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 
-On Wednesday, June 26, 2013 08:36:18 PM Toralf F=C3=B6rster wrote:
-> On 06/19/2013 12:05 AM, Rafael J. Wysocki wrote:
-> > Hmm.  This looks like something unrelated to the previous reports.
->=20
-> yes
->=20
-> > How do you check the frequencies?
->=20
-> much more significant is the temperature :
->=20
-> $> cat /sys/devices/system/cpu/cpu\?/thermal_throttle/package_power_l=
-imit_count /proc/acpi/ibm/fan /sys/class/hwmon/hwmon\?/device/temp\?_in=
-put'
->=20
-> - it is around 49=C2=B0 if just 4 BOINC childs are running at nice le=
-vel -19, but it is above 65=C2=B0C if the issue exists. And in hat case=
- I just do run=20
->=20
-> $> for g in performance ondemand; do for i in 0 1 2 3; do echo $g > /=
-sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor; done; done; echo=
- 1 > /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice
->=20
-> and the system is back to normal.
->=20
-> > Does that happen every time?  If so, any chance to bisect driver/cp=
-ufreq
-> > changes between 3.9 and now?
->=20
-> first bisect attempts failed. I realized that the issue only occurs i=
-f the power is plugged in. If the system is running on battery the issu=
-e doesn't occurred (I checked it more than once)
->=20
-> > Does it work without ignore_nice?
-> Seems not to be related to that.
+On Monday, June 24, 2013 07:01:59 PM Viresh Kumar wrote:
+> On 24 June 2013 19:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Looks OK, but since transition_ongoing is either 0 or 1 now, as far as I can
+> > say, it would be better to make it a bool and use = true/false instead of
+> > ++/-- I suppose.
+> 
+> Another fixup:
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 6ca7eac..49d942a 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -108,7 +108,7 @@ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+>  static struct srcu_notifier_head cpufreq_transition_notifier_list;
+> 
+>  /* Tracks status of transition */
+> -static int transition_ongoing;
+> +static bool transition_ongoing;
+> 
+>  static bool init_cpufreq_transition_notifier_list_called;
+>  static int __init init_cpufreq_transition_notifier_list(void)
+> @@ -271,7 +271,7 @@ void __cpufreq_notify_transition(struct
+> cpufreq_policy *policy,
+>                                 "In middle of another frequency transition\n"))
+>                         return;
+> 
+> -               transition_ongoing++;
+> +               transition_ongoing = true;
+> 
+>                 /* detect if the driver reported a value as "old frequency"
+>                  * which is not equal to what the cpufreq core thinks is
+> @@ -296,7 +296,7 @@ void __cpufreq_notify_transition(struct
+> cpufreq_policy *policy,
+>                                 "No frequency transition in progress\n"))
+>                         return;
+> 
+> -               transition_ongoing--;
+> +               transition_ongoing = false;
+> 
+>                 adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+>                 pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
 
-Well, I'm not aware of any recent changes in cpufreq that would make th=
-ings
-work differently depending on whether or not AC power is used.
+Well, now, seeing that the locking around this seems to be kind of haphazard,
+I'm wondering what prevents two different threads from doing CPUFREQ_PRECHANGE
+concurrently in such a way that thread A will check transition_ongoing
+and thread B will check transition_ongoing and then both will set it if it
+was 'false' before.  And then one of them will trigger the WARN() in
+CPUFREQ_POSTCHANGE.
 
-Thanks,
+Is there any protection in place and if so then how does it work?
+
 Rafael
 
 
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
