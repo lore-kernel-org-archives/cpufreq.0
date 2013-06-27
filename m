@@ -1,71 +1,31 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: Porting cpufreq module for memory frequency scaling 'memfreq'
-Date: Thu, 27 Jun 2013 10:11:06 +0200
-Message-ID: <CAKfTPtDtVsVFAZu0XjMrDQXemGOYD24qyVr9JiC6vQga-7nKHQ@mail.gmail.com>
-References: <CAMefCkCXyM4EV92Q==zScae7FzgD2VjmyGx2nTf_u2LK6b6hvQ@mail.gmail.com>
-	<CAMefCkAwdGGeOrJWnkTdbFH8L453LC1Cvo7mh_Ntx0LBSwQv+g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2 V3] CPUFreq: Add new sysfs attribute freqdomain_cpus
+ for acpi-freq driver
+Date: Thu, 27 Jun 2013 13:55:47 +0530
+Message-ID: <CAKohponGDfjP6bFtXohb=h+_csmT49UJ=Dko_e4mUrkDBVN02g@mail.gmail.com>
+References: <1372316934-27225-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAMefCkAwdGGeOrJWnkTdbFH8L453LC1Cvo7mh_Ntx0LBSwQv+g@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1372316934-27225-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guru Prasad <gurupras@buffalo.edu>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: rjw@sisk.pl, lenb@kernel.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-On 26 June 2013 17:58, Guru Prasad <gurupras@buffalo.edu> wrote:
-> Hi,
+On 27 June 2013 12:38, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> Commit aa77a52 and fcf8058 changes the content of "related_cpus" and user
+> space can't get cpus which are in the same hardware coordination cpu domain
+> (These info are provided by ACPI AML method _PSD) via "related_cpus". This
+> change affects some users of original "related_cpus".
 >
-> I'm working with a hardware simulator - Gem5 (http://gem5.org). I have
-> added some functionality to this simulator to modify memory frequency.
+> This patch is to add a new sysfs attribute "freqdomian_cpus" for acpi-cpufreq
+> driver which exposes all cpus in the same domain regardless of hardware or
+> software coordination to make up the info loss of previous change.
 >
-> I would like to add kernel support to manage memory frequency similar
-> to how cpu frequency is currently maintained so that I can study the
-> cost-benefit of memory frequency scaling.
+> Reference:https://bugzilla.kernel.org/show_bug.cgi?id=58761
+> Reported-by: Jean-Philippe Halimi <jean-philippe.halimi@exascale-computing.eu>
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 
-Have you looked at devfreq framework ? It should match with what you
-are looking for.
-
-devfreq is used to manage the frequency scaling of devices other than
-cpu like the gpu or the memory
-
-Vincent
-
-
->
-> I copied all the generic cpufreq sources to a separate folder
-> kernel_source/drivers/memfreq and setup the drivers/Makefile. I have
-> also done the preliminary Kconfig modifications.
->
-> A few things I don't follow are
->
-> Where does the kernel actually implement the delay resulting from
-> cpuinfo.transition_latency?
-> Does the kernel stall for the duration of the delay?
->
-> the per_cpu macro        - I don't understand what this does..How can
-> I implement the same for memory - which I'm considering as a shared
-> resource rather than per_cpu.
->
-> the subsys interface      - What does it do and how do I reproduce
-> this for memory? Can I use the existing bus_type memory_subsys?
-> (drivers/base/memory.c)
->
-> callback                       - This seems to be specific for
-> CONFIG_HOTPLUG_CPU..do I need to implement this at all for memfreq?
->
-> sysfs interface              - Is there any place I can look to
-> implement a nice sysfs interface similar to cpufreq?
->
->
-> Please let me know if there is anything I've missed out that might
-> complicate the process.
->
->
-> Regards
-> Guru
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
