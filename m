@@ -1,45 +1,48 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH 2/2 V3] CPUFreq: Add new sysfs attribute freqdomain_cpus
- for acpi-freq driver
-Date: Thu, 27 Jun 2013 16:20:44 +0800
-Message-ID: <51CBF5DC.5020806@intel.com>
-References: <1372316934-27225-1-git-send-email-tianyu.lan@intel.com> <CAKohponGDfjP6bFtXohb=h+_csmT49UJ=Dko_e4mUrkDBVN02g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 4/7] cpufreq:exynos:Extend Exynos cpufreq driver to
+ support boost framework
+Date: Thu, 27 Jun 2013 14:28:11 +0530
+Message-ID: <CAKohpokf8TZkP5Nzpp+m5KaUK8zJ6mwiuiW-td7boHQ7NtB-DQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-1-git-send-email-l.majewski@samsung.com>
+	<1371661969-7660-5-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohponGDfjP6bFtXohb=h+_csmT49UJ=Dko_e4mUrkDBVN02g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1371661969-7660-5-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, lenb@kernel.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 2013=E5=B9=B406=E6=9C=8827=E6=97=A5 16:25, Viresh Kumar wrote:
-> On 27 June 2013 12:38, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> Commit aa77a52 and fcf8058 changes the content of "related_cpus" and=
- user
->> space can't get cpus which are in the same hardware coordination cpu=
- domain
->> (These info are provided by ACPI AML method _PSD) via "related_cpus"=
-=2E This
->> change affects some users of original "related_cpus".
->>
->> This patch is to add a new sysfs attribute "freqdomian_cpus" for acp=
-i-cpufreq
->> driver which exposes all cpus in the same domain regardless of hardw=
-are or
->> software coordination to make up the info loss of previous change.
->>
->> Reference:https://bugzilla.kernel.org/show_bug.cgi?id=3D58761
->> Reported-by: Jean-Philippe Halimi <jean-philippe.halimi@exascale-com=
-puting.eu>
->> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
->=20
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->=20
+On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> The struct cpufreq_driver has been extended to embrace the information
+> related to boost support.
+>
+> When "boost_mode" device tree attribute is defined for a platform, the
+> boost_supported flag is set. Moreover boost related attributes were
+> exported.
+>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+>
+> Changes for v4:
+> - None
+>
+> Changes for v3:
+> - Remove low level boost code
+> - Move boost management code to cpufreq core code
+> - Use boost_supported flag to indicate if driver supports over clocking
+>
+> Changes for v2:
+> - Removal of struct cpufreq_boost
+> - Removal of the CONFIG_CPU_FREQ_BOOST flag
+> - low_level_boost with valid address when boost is supported
+> ---
+>  drivers/cpufreq/exynos-cpufreq.c |    4 ++++
+>  1 file changed, 4 insertions(+)
 
-Thanks.
+Yes, this looks fine..
 
---=20
-Best regards
-Tianyu Lan
+I will Ack the whole series in the end, so no individual acks :)
