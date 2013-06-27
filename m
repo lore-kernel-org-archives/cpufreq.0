@@ -1,107 +1,167 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 5/7] cpufreq: Calculate number of busy CPUs
-Date: Thu, 27 Jun 2013 16:42:04 +0200
-Message-ID: <20130627164204.370dc4a6@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-1-git-send-email-l.majewski@samsung.com>
- <1371661969-7660-6-git-send-email-l.majewski@samsung.com>
- <CAKohpo=EwapTp8epok30=_ZYLPeCR8_LhpBF5H724dE=+SwMLg@mail.gmail.com>
- <20130627125819.5c90da30@amdc308.digital.local>
- <CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: od_set_powersave_bias: NULL pointer dereference
+Date: Thu, 27 Jun 2013 09:55:05 -0500
+Message-ID: <20130627145505.GA3076@jshin-Toonie>
+References: <51C87ADC.4070409@canonical.com>
+ <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
+ <20130625161935.GA10208@jshin-Toonie>
+ <CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
+ <20130626142852.GA2326@jshin-Toonie>
+ <CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
+ <20130626175722.GA20226@jshin-Toonie>
+ <CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=JKg17YWjTrOh25hHW=sXn8-TW=D8rhrovonwZBDarBg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, 27 Jun 2013 16:46:44 +0530, Viresh Kumar wrote:
-> @Rafael: We need you to jump into this discussion now, I don't
-> have a good idea about what we should do :)
-> 
-> On 27 June 2013 16:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > Do you have any idea of how to precisely set the load threshold?
-> 
-> I thought we are talking about cpu being in idle state.
-
-If we _drop_ the idea with thermal subsystem to disable the boost,
-the logic as far as I've understood shall here be as follow:
-
-Only enable BOOST when one CPU load > THRESHOLD_MAX and other CPUs <
-THRESHOLD_MIN
-
-THRESHOLD_MIN & THRESHOLD_MAX are SoC specific. 
-
-In my opinion the above constrain imposes policy to the cpufreq driver.
-
-> 
-> > As a side note:
+On Thu, Jun 27, 2013 at 12:32:36PM +0530, Viresh Kumar wrote:
+> On 26 June 2013 23:27, Jacob Shin <jacob.shin@amd.com> wrote:
+> > On Wed, Jun 26, 2013 at 08:02:29PM +0530, Viresh Kumar wrote:
+> >> On 26 June 2013 19:58, Jacob Shin <jacob.shin@amd.com> wrote:
+> >> > On Wed, Jun 26, 2013 at 12:18:27PM +0530, Viresh Kumar wrote:
+> >>
+> >> >> I am not sure if this is enough. What if we had ondemand as the
+> >> >> governor initially, then we changed it to something else. Now also
+> >> >> cur_policy contains a address and isn't zero.
 > >
-> > I've thought about this patch for some time and for me it looks
-> > like we are mixing policy (number of busy CPUs) with abilities,
-> > which shall be provided by the driver (boost).
-> > Additionally, we can only roughly "estimate" [*] when boost shall
-> > run and when it shall be turned off.
+> > I just tested this case with this patch applied, and did not have any
+> > problems.
 > 
-> This is another problem in the patch you sent. User would simply
-> enable or disable boost feature from userspace only once.
+> Try this:
+> - you need a system with multiple policy groups to test it
+> - Suppose we have two groups of CPUs: 0 and 1
+> - Set ondemand as governor for both
+> - change governor of group 1 to something else (we still have valid policy
+> struct in Ondemand)
+> - offline all CPUs from group 1. this will free struct cpufreq_policy
+> - Online these CPUs back, this will reallocate policy
+> - Now run this function, the earlier policy struct is already freed and
+> you are accessing it here.
 
-The above statement is definitely true for Intel. There HW manage the
-frequency.
-
-> 
-> Now, if you disable it at high temperatures then its responsibility
-> to enable it again. Which you are missing.
-
-So thermal or "other solution" [*] shall disable boost when overheated
-and enable it back when things cool down.
-
-[*] @ Viresh & Rafael do you have any idea about the "other solution"
-here?
-
+Ah, I understand now.
 
 > 
-> > I think that, we shall leave this management [*] to the thermal
-> > framework. This framework is designed exactly to protect from over
-> > heating (it uses the same freq_table for passive CPU cooling) with
-> > several trip points -> e.g. 40 deg (disable boost), 75 deg (impose
-> > max freq as 1.0 GHz to cool down, 90 deg (shutdown immediately).
-> > Please refer to PATH v4 7/7.
+> >> >> >                 cpumask_or(&done, &done, policy->cpus);
+> >> >> > +
+> >> >> > +               if (policy->governor != &cpufreq_gov_ondemand)
+> >> >> > +                       continue;
+> >> >
+> >> > This should catch that case no ?
+> >>
+> >> Policy might be freed and reallocated by then. And so doing
+> >> policy->governor is dangerous.
+> >
+> > Are you worried that after we have passed the above if check, and
+> > before we access ->tuner governor change might occur?
+> >
+> > Is there something synonymous to get/put_online_cpus() for cpufreq to
+> > prevent governor change while we update ->tuner values?
+> >
+> > Otherwise, should just spinlock?
 > 
-> There might be platforms where overheating isn't a issue with boost,
-> if it is only enabled while only one cpu is in use.
-
-Could you elaborate more on this?
-
-I thought, that with multi core one needs to keep itself inside
-power/thermal dissipation envelope. 
-
+> No, i wasn't worrying about this but a sequence of events that I told to
+> you earlier.
 > 
-> > Unfortunately, since we dropped Kconfig flag for BOOST we cannot
-> > impose "select THERMAL_FRAMEWORK", when flag for BOOST is enabled at
-> > Kconfig.
+> Replying to your other mail:
+> > Hm . any hints on how to check for if ondemand is running on this CPU
+> > or not ? I'm not sure what the best way to handle this is ..
 > 
-> Not a big deal, we can get that in if required.
-> 
-> > Ideally kernel shall not even build when CONFIG_CPUFREQ_BOOST
-> > Kconfig flag is set and thermal for target architecture is not
-> > correctly configured (including proper trip points).
+> Make cur_policy zero in cpufreq_governor_dbs() for
+> CPUFREQ_GOV_STOP notification. This will make sure we use correct
+> policy pointer.
 
-This would prevent situation when somebody made a mistake and
-had enabled boost, but for some reason had forgotten to
-configure/enable thermal subsystem.
+Thanks for the tip :-)
 
-Moreover Kconfig's CONFIG_CPUFREQ_BOOST flag would indicate that user
-enabled boost for some reason and he/she (presumably) knows what is
-doing.
+Here is V2:
 
+---8<---
 
+From d99ee318c0f9c415a60e6b0b79605232edbb749c Mon Sep 17 00:00:00 2001
+From: Jacob Shin <jacob.shin@amd.com>
+Date: Thu, 27 Jun 2013 09:39:48 -0500
+Subject: [PATCH V2 1/1] cpufreq: fix NULL pointer deference at
+ od_set_powersave_bias()
+
+When initializing the default powersave_bias value, we need to first
+make sure that this policy is running the ondemand governor.
+
+Reported-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+---
+ drivers/cpufreq/cpufreq_governor.c |    1 +
+ drivers/cpufreq/cpufreq_ondemand.c |   17 +++++++++++++----
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index dc9b72e..834ad86 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -403,6 +403,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		gov_cancel_work(dbs_data, policy);
+ 
+ 		mutex_lock(&dbs_data->mutex);
++		cpu_cdbs->cur_policy = NULL;
+ 		mutex_destroy(&cpu_cdbs->timer_mutex);
+ 
+ 		mutex_unlock(&dbs_data->mutex);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 4b9bb5d..93eb5cb 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -47,6 +47,8 @@ static struct od_ops od_ops;
+ static struct cpufreq_governor cpufreq_gov_ondemand;
+ #endif
+ 
++static unsigned int default_powersave_bias;
++
+ static void ondemand_powersave_bias_init_cpu(int cpu)
+ {
+ 	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+@@ -543,7 +545,7 @@ static int od_init(struct dbs_data *dbs_data)
+ 
+ 	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
+ 	tuners->ignore_nice = 0;
+-	tuners->powersave_bias = 0;
++	tuners->powersave_bias = default_powersave_bias;
+ 	tuners->io_is_busy = should_io_be_busy();
+ 
+ 	dbs_data->tuners = tuners;
+@@ -585,6 +587,7 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
+ 	unsigned int cpu;
+ 	cpumask_t done;
+ 
++	default_powersave_bias = powersave_bias;
+ 	cpumask_clear(&done);
+ 
+ 	get_online_cpus();
+@@ -593,11 +596,17 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
+ 			continue;
+ 
+ 		policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
+-		dbs_data = policy->governor_data;
+-		od_tuners = dbs_data->tuners;
+-		od_tuners->powersave_bias = powersave_bias;
++		if (!policy)
++			continue;
+ 
+ 		cpumask_or(&done, &done, policy->cpus);
++
++		if (policy->governor != &cpufreq_gov_ondemand)
++			continue;
++
++		dbs_data = policy->governor_data;
++		od_tuners = dbs_data->tuners;
++		od_tuners->powersave_bias = default_powersave_bias;
+ 	}
+ 	put_online_cpus();
+ }
 -- 
-Best regards,
+1.7.10.4
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
