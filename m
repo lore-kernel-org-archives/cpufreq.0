@@ -1,44 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: od_set_powersave_bias: NULL pointer dereference
-Date: Thu, 27 Jun 2013 21:53:15 +0530
-Message-ID: <CAKohpon6m0vX6_ZDrwUD-OBuD5WAysooJgYHSEXKstud3bh7Kw@mail.gmail.com>
-References: <CAKohponCrC93D88Fgg_3LKsLG0KMeCVKsTEoy-N3jsdUQdgWvA@mail.gmail.com>
-	<20130625161935.GA10208@jshin-Toonie>
-	<CAKohpomSa0FRviZHkkJOeUUxubbzueVb3yyP5G8ASwpRB6wANQ@mail.gmail.com>
-	<20130626142852.GA2326@jshin-Toonie>
-	<CAKohpom_jHQeR2FKFS3-RkxpPrJvekw8pDb-qnApnzu-VqreBQ@mail.gmail.com>
-	<20130626175722.GA20226@jshin-Toonie>
-	<CAKohpo=UTmpLmyQs5+xLNnCLMCeZHNQT3USjmK1NTaFJLNQg-Q@mail.gmail.com>
-	<20130627145505.GA3076@jshin-Toonie>
-	<CAKohpomSNGn1wTzbCxpHN5fu2L6mJ1fnhvt2uLBWLgQE8fS6Rg@mail.gmail.com>
-	<CAKohpokQcL0iq6Oyt3zLGGTh4k_PoCpCzHFrgqWUmpUA3-2O3w@mail.gmail.com>
-	<20130627162203.GB5324@jshin-Toonie>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Thu, 27 Jun 2013 20:00:18 +0200
+Message-ID: <51CC7DB2.3020502@gmx.de>
+References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan> <51CB34A2.7090404@gmx.de> <1475885.FjB577tJj8@vostro.rjw.lan> <CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130627162203.GB5324@jshin-Toonie>
+In-Reply-To: <CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: Tim Gardner <tim.gardner@canonical.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 27 June 2013 21:52, Jacob Shin <jacob.shin@amd.com> wrote:
-> From 133f670aa1dc450fd37ba39081d046bf238c507b Mon Sep 17 00:00:00 2001
-> From: Jacob Shin <jacob.shin@amd.com>
-> Date: Thu, 27 Jun 2013 10:44:42 -0500
-> Subject: [PATCH 1/1] cpufreq: don't leave stale policy pointer in
->  cdbs->cur_policy
->
-> Set ->cur_policy to NULL when stopping a governor. Otherwise, the
-> ->cur_policy pointer may be stale on systems that
-> have_governor_per_policy when a new policy is allocated due to CPU
-> hotplug offline/online.
->
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> ---
->  drivers/cpufreq/cpufreq_governor.c |    1 +
->  1 file changed, 1 insertion(+)
+On 06/27/2013 06:10 AM, Viresh Kumar wrote:
+> On 27 June 2013 00:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> Well, I'm not aware of any recent changes in cpufreq that would make=
+ things
+>> work differently depending on whether or not AC power is used.
+>=20
+> Toralf,
+>=20
+> It would be helpful if you can do git bisect and let us know which pa=
+tch
+> created this problem. Otherwise its very difficult to trace it.
+>=20
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yep, but 14 commits to bisect and about 20-30 min for each - will see,
+when I find a time slot.
+
+Just FWIW thie following is now a good indicator for the issue - that's
+the picture after wakeup, where I'd expect always 800 MHz:
+
+$ sudo cat /sys/devices/system/cpu/cpu?/cpufreq/cpuinfo_cur_freq
+800000
+2601000
+2601000
+2601000
+
+
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
