@@ -1,127 +1,100 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
-Date: Thu, 27 Jun 2013 14:15:35 +0200
-Message-ID: <6169955.66kyyKnUeH@vostro.rjw.lan>
-References: <cover.1371630975.git.viresh.kumar@linaro.org> <2081161.dnl1xTqcUT@vostro.rjw.lan> <CAKohpomGNSA4Pyg6Pn2SiawXPe=wMU7hx0Y7phjfNDV8J+JrLw@mail.gmail.com>
+From: Guru Prasad <gurupras@buffalo.edu>
+Subject: Re: Porting cpufreq module for memory frequency scaling 'memfreq'
+Date: Thu, 27 Jun 2013 09:06:18 -0400
+Message-ID: <CAMefCkBFu6m4jqPgrjPvhn1=d6Hgo=eGfk8JVxsCGQQ_qMjK9Q@mail.gmail.com>
+References: <CAMefCkCXyM4EV92Q==zScae7FzgD2VjmyGx2nTf_u2LK6b6hvQ@mail.gmail.com>
+	<CAMefCkAwdGGeOrJWnkTdbFH8L453LC1Cvo7mh_Ntx0LBSwQv+g@mail.gmail.com>
+	<CAKfTPtDtVsVFAZu0XjMrDQXemGOYD24qyVr9JiC6vQga-7nKHQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomGNSA4Pyg6Pn2SiawXPe=wMU7hx0Y7phjfNDV8J+JrLw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=nVrMABFEtuNXn4JtDJ31v+th69a/7Egi4Rk7c2M5rJA=;
+        b=AWuCJTRET1SiJL9AhoYuuFhPmtnosQxRJAxivUnsewp3WvzslEWaoSm5shf8OWWsRF
+         SSNKn0stHg7d7YE40zcMEgVy0ZnHjyiLM4KNcprnFJw8hkGblpsrBjtC/jEdMBPvpqvs
+         +R96lbVtr5DStd96klECx1loHthoZ1n7vxvevF9ppZV1g5x244IXo/mlrZs4D5aucxxF
+         PeKeme1ao3jQaXm5/gxy170uWvWQ68fQ8K3KwAbMJqMnF1q+Ps/U/L85J8MYMglAbcIj
+         KNqI1jFN371cAL879WQCzmc2vEBRnZ6QRGRxrwkyth6O37Wgg0N2L1n+zQdNzueRo1fo
+         vDew==
+In-Reply-To: <CAKfTPtDtVsVFAZu0XjMrDQXemGOYD24qyVr9JiC6vQga-7nKHQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
+Content-Transfer-Encoding: 7bit
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Thursday, June 27, 2013 10:26:27 AM Viresh Kumar wrote:
-> On 27 June 2013 03:27, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Well, now, seeing that the locking around this seems to be kind of haphazard,
-> > I'm wondering what prevents two different threads from doing CPUFREQ_PRECHANGE
-> > concurrently in such a way that thread A will check transition_ongoing
-> > and thread B will check transition_ongoing and then both will set it if it
-> > was 'false' before.  And then one of them will trigger the WARN() in
-> > CPUFREQ_POSTCHANGE.
-> >
-> > Is there any protection in place and if so then how does it work?
-> 
-> cpufreq_notify_transition() is called from driver->target() which is
-> called from __cpufreq_driver_target(). __cpufreq_driver_target()
-> is called directly by governors and cpufreq_driver_target() otherwise.
-> 
-> cpufreq_driver_target() implements proper locking and so it is fine.
-> __cpufreq_driver_target() is called from governors. From governors
-> it is is serialized in the sense two threads wouldn't call it at the same
-> time.
-> 
-> And so I thought this will work. But I just found a mistake in my code.
-> For multi-socket platforms with clock domains for sockets/clusters,
-> a single instance of transition_ongoing isn't enough and so this must
-> be embedded in struct cpufreq_policy.
-> 
-> Below patch must get this fixed (Attached).
-> 
-> -------------x---------------------x-----------------
-> 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Wed, 19 Jun 2013 10:16:55 +0530
-> Subject: [PATCH] cpufreq: make sure frequency transitions are serialized
-> 
-> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-> shouldn't be called twice contiguously.
-> 
-> This can happen due to bugs in users of __cpufreq_driver_target() or actual
-> cpufreq drivers who are sending these notifiers.
-> 
-> This patch adds some protection against this. Now, we keep track of the last
-> transaction and see if something went wrong.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+@Viresh Kumar:
+Thank you for taking time out to resolve my questions.
 
-OK, queued up for 3.11.
-
-Thanks,
-Rafael
+@Vincent Guittot:
+I have not looked into the devfreq framework. Thank you for pointing
+me towards it. I will try to use this framework to implement the
+proposed memory frequency scaling.
+I have only been working on the Linux kernel a few months, but it
+seems to me that Linux has thought of everything already!
 
 
-> ---
->  drivers/cpufreq/cpufreq.c | 14 ++++++++++++++
->  include/linux/cpufreq.h   |  1 +
->  2 files changed, 15 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2d53f47..75715f1 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -264,6 +264,12 @@ void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->  	switch (state) {
-> 
->  	case CPUFREQ_PRECHANGE:
-> +		if (WARN(policy->transition_ongoing,
-> +				"In middle of another frequency transition\n"))
-> +			return;
-> +
-> +		policy->transition_ongoing = true;
-> +
->  		/* detect if the driver reported a value as "old frequency"
->  		 * which is not equal to what the cpufreq core thinks is
->  		 * "old frequency".
-> @@ -283,6 +289,12 @@ void __cpufreq_notify_transition(struct
-> cpufreq_policy *policy,
->  		break;
-> 
->  	case CPUFREQ_POSTCHANGE:
-> +		if (WARN(!policy->transition_ongoing,
-> +				"No frequency transition in progress\n"))
-> +			return;
-> +
-> +		policy->transition_ongoing = false;
-> +
->  		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
->  		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
->  			(unsigned long)freqs->cpu);
-> @@ -1458,6 +1470,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
-> 
->  	if (cpufreq_disabled())
->  		return -ENODEV;
-> +	if (policy->transition_ongoing)
-> +		return -EBUSY;
-> 
->  	/* Make sure that target_freq is within supported range */
->  	if (target_freq > policy->max)
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 037d36a..8c13a45 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -115,6 +115,7 @@ struct cpufreq_policy {
-> 
->  	struct kobject		kobj;
->  	struct completion	kobj_unregister;
-> +	bool			transition_ongoing; /* Tracks transition status */
->  };
-> 
->  #define CPUFREQ_ADJUST			(0)
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards
+Guru
+
+
+On Thu, Jun 27, 2013 at 4:11 AM, Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+> On 26 June 2013 17:58, Guru Prasad <gurupras@buffalo.edu> wrote:
+>> Hi,
+>>
+>> I'm working with a hardware simulator - Gem5 (http://gem5.org). I have
+>> added some functionality to this simulator to modify memory frequency.
+>>
+>> I would like to add kernel support to manage memory frequency similar
+>> to how cpu frequency is currently maintained so that I can study the
+>> cost-benefit of memory frequency scaling.
+>
+> Have you looked at devfreq framework ? It should match with what you
+> are looking for.
+>
+> devfreq is used to manage the frequency scaling of devices other than
+> cpu like the gpu or the memory
+>
+> Vincent
+>
+>
+>>
+>> I copied all the generic cpufreq sources to a separate folder
+>> kernel_source/drivers/memfreq and setup the drivers/Makefile. I have
+>> also done the preliminary Kconfig modifications.
+>>
+>> A few things I don't follow are
+>>
+>> Where does the kernel actually implement the delay resulting from
+>> cpuinfo.transition_latency?
+>> Does the kernel stall for the duration of the delay?
+>>
+>> the per_cpu macro        - I don't understand what this does..How can
+>> I implement the same for memory - which I'm considering as a shared
+>> resource rather than per_cpu.
+>>
+>> the subsys interface      - What does it do and how do I reproduce
+>> this for memory? Can I use the existing bus_type memory_subsys?
+>> (drivers/base/memory.c)
+>>
+>> callback                       - This seems to be specific for
+>> CONFIG_HOTPLUG_CPU..do I need to implement this at all for memfreq?
+>>
+>> sysfs interface              - Is there any place I can look to
+>> implement a nice sysfs interface similar to cpufreq?
+>>
+>>
+>> Please let me know if there is anything I've missed out that might
+>> complicate the process.
+>>
+>>
+>> Regards
+>> Guru
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
