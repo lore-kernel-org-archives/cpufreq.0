@@ -1,45 +1,41 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
-Date: Thu, 27 Jun 2013 20:00:18 +0200
-Message-ID: <51CC7DB2.3020502@gmx.de>
-References: <51C08370.4050906@gmx.de> <1778593.ufLkNuJuaY@vostro.rjw.lan> <51CB34A2.7090404@gmx.de> <1475885.FjB577tJj8@vostro.rjw.lan> <CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 60211] New: intel_pstate driver missing ids for some supported
+ CPUs
+Date: Fri, 28 Jun 2013 01:13:07 +0000 (UTC)
+Message-ID: <bug-60211-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokbQS8Bb5D2B_UaN-eyVnAbQYKDKh5pm_QzEDMoABwcOw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On 06/27/2013 06:10 AM, Viresh Kumar wrote:
-> On 27 June 2013 00:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> Well, I'm not aware of any recent changes in cpufreq that would make=
- things
->> work differently depending on whether or not AC power is used.
->=20
-> Toralf,
->=20
-> It would be helpful if you can do git bisect and let us know which pa=
-tch
-> created this problem. Otherwise its very difficult to trace it.
->=20
+https://bugzilla.kernel.org/show_bug.cgi?id=60211
 
-Yep, but 14 commits to bisect and about 20-30 min for each - will see,
-when I find a time slot.
-
-Just FWIW thie following is now a good indicator for the issue - that's
-the picture after wakeup, where I'd expect always 800 MHz:
-
-$ sudo cat /sys/devices/system/cpu/cpu?/cpufreq/cpuinfo_cur_freq
-800000
-2601000
-2601000
-2601000
+           Summary: intel_pstate driver missing ids for some supported
+                    CPUs
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.10rc7
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+        AssignedTo: cpufreq@vger.kernel.org
+        ReportedBy: chizu@spicious.com
+                CC: dirk.brandewie@gmail.com
+        Regression: No
 
 
---=20
-MfG/Sincerely
-Toralf F=C3=B6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+Running 3.10-rc7 on an i5-4200U, with either intel_pstate or the older cpufreq
+drivers the CPU was stuck at 800MHz. I added the model, 0x45, to
+intel_pstate_cpu_ids and frequency scaling seems to be working as intended now.
+
+-- 
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
