@@ -1,40 +1,103 @@
-From: Nell Hardcastle <nell@spicious.com>
-Subject: [PATCH] intel_pstate: Add Haswell CPU models
-Date: Fri, 28 Jun 2013 05:24:39 -0700
-Message-ID: <51CD8087.7030303@spicious.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH] cpu hotplug: rework cpu_hotplug locking (was [LOCKDEP]
+ cpufreq: possible circular locking dependency detected)
+Date: Fri, 28 Jun 2013 19:43:46 +0530
+Message-ID: <51CD9A1A.1060908@linux.vnet.ibm.com>
+References: <20130625211544.GA2270@swordfish> <CAKohpo=ij+LTB80FtVFQZa_4uh-fceG80GBhGnhbxKio7N-Zuw@mail.gmail.com> <20130628074403.GA2201@swordfish>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130628074403.GA2201@swordfish>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
-Cc: dirk.j.brandewie@intel.com
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Michael Wang <wangyun@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-Enable the intel_pstate driver for Haswell CPUs and one Ivy Bridge model not already included (0x3E). I've been testing this change on the Core i5-4200u (model 0x45) and I referenced the list of models in tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit to determine the others.
+On 06/28/2013 01:14 PM, Sergey Senozhatsky wrote:
+> Hello,
+> Yes, this helps, of course, but at the same time it returns the previous
+> problem -- preventing cpu_hotplug in some places.
+> 
+> 
+> I have a bit different (perhaps naive) RFC patch and would like to hear
+> comments.
+> 
+> 
+> 
+> The idead is to brake existing lock dependency chain by not holding
+> cpu_hotplug lock mutex across the calls. In order to detect active
+> refcount readers or active writer, refcount now may have the following
+> values:
+> 
+> -1: active writer -- only one writer may be active, readers are blocked
+>  0: no readers/writer
+>> 0: active readers -- many readers may be active, writer is blocked
+> 
+> "blocked" reader or writer goes to wait_queue. as soon as writer finishes
+> (refcount becomes 0), it wakeups all existing processes in a wait_queue.
+> reader perform wakeup call only when it sees that pending writer is present
+> (active_writer is not NULL).
+> 
+> cpu_hotplug lock now only required to protect refcount cmp, inc, dec
+> operations so it can be changed to spinlock.
+> 
 
-Fixes https://bugzilla.kernel.org/show_bug.cgi?id=60211
+Hmm, now that I actually looked at your patch, I see that it is completely
+wrong! I'm sure you intended to fix the *bug*, but instead you ended
+up merely silencing the *warning* (and also left lockdep blind), leaving
+the actual bug as it is!
 
-Signed-off-by: Nell Hardcastle <nell@spicious.com>
----
- drivers/cpufreq/intel_pstate.c | 5 +++++
- 1 file changed, 5 insertions(+)
+So let me summarize what the actual bug is and what is it that actually
+needs fixing:
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 07f2840..dbd1032 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -522,6 +522,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(0x2a, default_policy),
- 	ICPU(0x2d, default_policy),
- 	ICPU(0x3a, default_policy),
-+	ICPU(0x3c, default_policy),
-+	ICPU(0x3e, default_policy),
-+	ICPU(0x3f, default_policy),
-+	ICPU(0x45, default_policy),
-+	ICPU(0x46, default_policy),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
--- 
-1.8.3.1
+Basically you have 2 things -
+1. A worker item (cs_dbs_timer in this case) that can re-arm itself
+   using gov_queue_work(). And gov_queue_work() uses get/put_online_cpus().
+
+2. In the cpu_down() path, you want to cancel the worker item and destroy
+   and cleanup its resources (the timer_mutex).
+
+So the problem is that you can deadlock like this:
+
+    CPU 3                                  CPU 4
+
+   cpu_down()
+   -> acquire hotplug.lock
+
+				      cs_dbs_timer()
+				        -> get_online_cpus()
+					   //wait on hotplug.lock
+
+
+   try to cancel cs_dbs_timer()
+   synchronously.
+
+That leads to a deadlock, because, cs_dbs_timer() is waiting to
+get the hotplug lock which CPU 3 is holding, whereas CPU 3 is
+waiting for cs_dbs_timer() to finish. So they can end up mutually
+waiting for each other, forever. (Yeah, the lockdep splat might have
+been a bit cryptic to decode this, but here it is).
+
+So to fix the *bug*, you need to avoid waiting synchronously while
+holding the hotplug lock. Possibly by using cancel_delayed_work_sync()
+under CPU_POST_DEAD or something like that. That would remove the deadlock
+possibility.
+
+Your patch, on the other hand, doesn't remove the deadlock possibility:
+just because you don't hold the lock throughout the hotplug operation
+doesn't mean that the task calling get_online_cpus() can sneak in and
+finish its work in-between a hotplug operation (because the refcount
+won't allow it to). Also, it should *not* be allowed to sneak in like
+that, since that constitutes *racing* with CPU hotplug, which it was
+meant to avoid!.
+
+Also, as a side effect of not holding the lock throughout the hotplug
+operation, lockdep goes blind, and doesn't complain, even though the
+actual bug is still there! Effectively, this is nothing but papering
+over the bug and silencing the warning, which we should never do.
+
+So, please, fix the _cpufreq_ code to resolve the deadlock.
+
+Regards,
+Srivatsa S. Bhat
