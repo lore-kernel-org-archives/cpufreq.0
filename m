@@ -1,42 +1,37 @@
-From: Nell Hardcastle <nell@spicious.com>
-Subject: [PATCH V2] intel_pstate: Add Haswell CPU models
-Date: Sun, 30 Jun 2013 15:58:57 -0700
-Message-ID: <51D0B831.3000707@spicious.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 60211] intel_pstate driver missing ids for some supported CPUs
+Date: Mon,  1 Jul 2013 02:23:30 +0000 (UTC)
+Message-ID: <20130701022330.C377211FB0C@bugzilla.kernel.org>
+References: <bug-60211-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-60211-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com
 
-Enable the intel_pstate driver for Haswell CPUs. One missing Ivy Bridge
-model (0x3E) is also included. Models referenced from
-tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit
+https://bugzilla.kernel.org/show_bug.cgi?id=60211
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Nell Hardcastle <nell@spicious.com>
----
- drivers/cpufreq/intel_pstate.c | 5 +++++
- 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 07f2840..dbd1032 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -522,6 +522,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(0x2a, default_policy),
- 	ICPU(0x2d, default_policy),
- 	ICPU(0x3a, default_policy),
-+	ICPU(0x3c, default_policy),
-+	ICPU(0x3e, default_policy),
-+	ICPU(0x3f, default_policy),
-+	ICPU(0x45, default_policy),
-+	ICPU(0x46, default_policy),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+Aaron Lu <aaron.lu@intel.com> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+                 CC|                            |aaron.lu@intel.com
+         Resolution|                            |CODE_FIX
+
+
+
+
+--- Comment #2 from Aaron Lu <aaron.lu@intel.com>  2013-07-01 02:23:30 ---
+Patch sent to mailing list:
+
+https://patchwork.kernel.org/patch/2804671/
+
 -- 
-1.8.3.1
-
+Configure bugmail: https://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are the assignee for the bug.
