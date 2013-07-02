@@ -1,130 +1,139 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix runtime warnings on systems with shared core clocks
-Date: Tue, 2 Jul 2013 10:45:02 +0530
-Message-ID: <CAKohponeEC=CGzJhgCY+Cvwna6YkkRBkANjYSAqP9jf8qfJ2yA@mail.gmail.com>
-References: <1372724227-17209-1-git-send-email-broonie@kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v4] cpufreq: stats: Add 'load_table' debugfs file to show
+ accumulated data of CPUs
+Date: Tue, 02 Jul 2013 15:44:51 +0900
+Message-ID: <51D276E3.9030206@samsung.com>
+References: <1372405697-13556-1-git-send-email-cw00.choi@samsung.com>
+ <CAKohpon6AaSRQKvffPG+J=NUU+5JdVhFo-_uMm=2H3u-yT5h0A@mail.gmail.com>
+ <51CD55E2.5060205@samsung.com>
+ <CAKohpokY+GEt9UaU5inWaiooLq8sX7jy63sok+FFvs_KyQpcKg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001a11c21b0467e3e604e0806d6c
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1372724227-17209-1-git-send-email-broonie@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <CAKohpokY+GEt9UaU5inWaiooLq8sX7jy63sok+FFvs_KyQpcKg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Mark Brown <broonie@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
---001a11c21b0467e3e604e0806d6c
-Content-Type: text/plain; charset=ISO-8859-1
+On 06/28/2013 07:13 PM, Viresh Kumar wrote:
+> On 28 June 2013 14:52, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> On 06/28/2013 05:18 PM, Viresh Kumar wrote:
+>>> On 28 June 2013 13:18, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> 
+>>> Can you describe a bit about the layout this will create in debugfs?
+>>> I thought you will have a load_table file per policy->cpu ??
+>>>
+>>
+>> The debugfs_cpufreq is debugfs root directory (/sys/kernel/debug/cpufreq)
+> 
+> Which you are creating anyway in your patch.
+> 
+>> and debugfs_cpufreq has many child directory for Per-CPU debugfs according to NR_CPUS number (/sys/kernel/debug/cpufreq/cpuX).
+> 
+> Even you are creating this only for policy->cpu
+> 
+>> Finally, Per-CPU debugfs create load_table debugfs file (/sys/kernel/debug/cpufreq/cpuX/load_table).
+>>
+>> For example, only CPU0 create sysfs directory and file (/sys/devices/system/cpu/cpu0/cpufreq)
+>> and then other CPUx create link of created sysfs directory by CPU0 in cpufreq_add_dev_symlink().
+> 
+> This isn't how its happening now. You aren't creating any links.
 
-On 2 July 2013 05:47, Mark Brown <broonie@kernel.org> wrote:
-> I'll try to have a look at doing the code motion fix tomorrow if that's
-> more suitable, the check seems like a good idea and looking at the code
-> it's probably sensible to factor out more of the changes.
+You're right. This patch didn't create link for CPU1/2/3.
 
-So sorry for this, The time I tried it, was booting it with only one cpu
-per cluster for some reason :(
+> 
+>> So, I'm considering whether to create link of CPUx's debugfs file except for CPU0 as sysfs file.
+>> - /sys/kernel/debug/cpufreq/cpu1/
+>> - /sys/kernel/debug/cpufreq/cpu2/
+>> - /sys/kernel/debug/cpufreq/cpu3/
+> 
+> Yes please.
 
-Please see if below fixes it for you. Use attached patch for testing it.
+OK. I'll create link for CPU1,2,3 if all CPUs is included in one cluster.
 
-------x------------------x-------------
+I explain the sequence for creating sysfs file of CPU0/1/2/3.
+There are difference about sysfs file. Only, CPU0 creates sysfs file
+and then CPU1/2/3 create a link to CPU0 sysfs file. If we want to create
+debugfs link for CPU1/2/3, I should have to debugfs file for CPU0 /
+debugfs link for CPU1/2/3 when cpufreq_register_driver() is operated.
+This proposal won't always remove debugfs file for cpufreq when user change
+cpufreq governor from ondemand/conservative to performance/powersave.
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 2 Jul 2013 10:41:54 +0530
-Subject: [PATCH] cpufreq: Fix serialization of frequency transitions
+So, I suggest that cpufreq core executes dbs_check_cpu() to calculate
+CPUx load when cpufreq governor is performance/powersave. While maintaing
+same cpu frequency on performance/powersave governor, there are different
+power-consumption according to CPUx load. I think we need to check CPUs load
+on peformance/powersave governor.
 
-Commit 7c30ed ("cpufreq: make sure frequency transitions are serialized")
-interacts poorly with systems that have a single core freqency for all
-cores.  On such systems we have a single policy for all cores with
-several CPUs.  When we do a frequency transition the governor calls the
-pre and post change notifiers which causes cpufreq_notify_transition()
-per CPU.  Since the policy is the same for all of them all CPUs after
-the first and the warnings added are generated by checking a per-policy
-flag the warnings will be triggered for all cores after the first.
+[Flow sequence for CPU0]
+cpufreq_register_driver()
+->subsys_interface_register()
+-->sif->add_dev()
+---> cpufreq_add_dev()
+----> cpufreq_add_policy_cpu()
+-----> sysfs_create_link(&dev->kboj, &policy->kobj, "cpufreq");	: Create sysfs file (/sys/devices/system/cpu/cpu0/cpufreq)
 
-Fix this by allowing notifier to be called for n times. Where n is the number of
-cpus in policy->cpus.
+[Flow sequence for CPU1/2/3]
+cpufreq_register_driver()
+->subsys_interface_register()
+-->sif->add_dev()
+---> cpufreq_add_dev()
+----> cpufreq_add_policy_cpu()
+-----> cpufreq_add_dev_interface(cpu, ...)
+------> cpufreq_add_dev_symlink(cpu, ...) : Create sysfs link about CPU0 sysfs file(/sys/devices/system/cpu/cpu0/cpufreq)
 
-Reported-by: Mark Brown <broonie@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+> 
+>> - A number of online CPU is 4
+>> Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU1 CPU2 CPU3
+>> 23165      200000       200000       2    0    0    0
+>> 23370      200000       200000       2    0    0    0
+>> 23575      200000       200000       2    0    1    0
+>> 23640      200000       200000       5    1    1    0
+>> 23780      200000       200000       3    0    1    0
+>> 23830      200000       200000       7    1    0    0
+>> 23985      200000       200000       1    0    0    0
+>> 24190      200000       200000       2    0    1    1
+>> 24385      200000       200000       2    0    0    0
+>> 24485      200000       200000       6    0    1    0
+>>
+>> - A number of online CPU is 2
+>> Time(ms)   Old Freq(Hz) New Freq(Hz) CPU0 CPU3
+>> 37615      200000       200000       0    0
+>> 37792      200000       200000       0    5
+>> 38015      200000       200000       21   8
+>> 38215      200000       200000       0    0
+>> 38275      200000       200000       5    0
+>> 38415      200000       200000       15   3
+>> 38615      200000       200000       0    0
+>> 38730      200000       200000       1    0
+>> 38945      200000       200000       0    0
+>> 39155      200000       200000       1    1
+> 
+> If you do the loop over for_each_cpu(cpu, policy->cpus),
+> this problem will be resolved. You will see only online cpus.
+> 
+>> I'm considering whether to check the kind of cpufreq governor for creating load_table
+>> in cpufreq_stats or execute dbs_check_cpu() on performance/powersave governor to check
+>> CPUx load. If you have opinion about this, I'd like to listen it.
+> 
+> Maybe create these directories and do this stuff only when
+> the first CPUFREQ_LOADCHECK notification is received inside
+> cpufreq_stats.c
+> 
+> Also don't create debug/cpufreq directory unless you have any
+> stuff to be created within this directory. Like, don't create it
+> if we are using performance governor for all cpus.
+> 
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 75715f1..438dcee 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -264,11 +264,12 @@ void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
- 	switch (state) {
+If core create debugfs/cpufreq directory when first CPUFREQ_LOADCHECK
+notification is received inside cpufreq_stats.c, CPU1/2/3 don't send
+CPUFREQ_LOADCHECK notification. In result, cpufreq_stats.c couldn't
+create link for /sys/kernel/debug/cpufreq/cpu[1-3].
 
- 	case CPUFREQ_PRECHANGE:
--		if (WARN(policy->transition_ongoing,
-+		if (WARN(policy->transition_ongoing ==
-+					cpumask_weight(policy->cpus),
- 				"In middle of another frequency transition\n"))
- 			return;
+Best Regards,
+Chanwoo Choi
 
--		policy->transition_ongoing = true;
-+		policy->transition_ongoing++;
 
- 		/* detect if the driver reported a value as "old frequency"
- 		 * which is not equal to what the cpufreq core thinks is
-@@ -293,7 +294,7 @@ void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
- 				"No frequency transition in progress\n"))
- 			return;
 
--		policy->transition_ongoing = false;
-+		policy->transition_ongoing--;
-
- 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
- 		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
-
---001a11c21b0467e3e604e0806d6c
-Content-Type: application/octet-stream; 
-	name="0001-cpufreq-Fix-serialization-of-frequency-transitions.patch"
-Content-Disposition: attachment; 
-	filename="0001-cpufreq-Fix-serialization-of-frequency-transitions.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_himn78sx0
-
-RnJvbSA0NDIzYmMyZmFkZTNhN2RlODA3YTk5ZDhiODg5NGE1MzFjYWU0YjgxIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NDQyM2JjMmZhZGUzYTdkZTgwN2E5OWQ4Yjg4OTRh
-NTMxY2FlNGI4MS4xMzcyNzQyMDM1LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVHVlLCAyIEp1bCAy
-MDEzIDEwOjQxOjU0ICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogRml4IHNlcmlhbGl6
-YXRpb24gb2YgZnJlcXVlbmN5IHRyYW5zaXRpb25zCgpDb21taXQgN2MzMGVkICgiY3B1ZnJlcTog
-bWFrZSBzdXJlIGZyZXF1ZW5jeSB0cmFuc2l0aW9ucyBhcmUgc2VyaWFsaXplZCIpCmludGVyYWN0
-cyBwb29ybHkgd2l0aCBzeXN0ZW1zIHRoYXQgaGF2ZSBhIHNpbmdsZSBjb3JlIGZyZXFlbmN5IGZv
-ciBhbGwKY29yZXMuICBPbiBzdWNoIHN5c3RlbXMgd2UgaGF2ZSBhIHNpbmdsZSBwb2xpY3kgZm9y
-IGFsbCBjb3JlcyB3aXRoCnNldmVyYWwgQ1BVcy4gIFdoZW4gd2UgZG8gYSBmcmVxdWVuY3kgdHJh
-bnNpdGlvbiB0aGUgZ292ZXJub3IgY2FsbHMgdGhlCnByZSBhbmQgcG9zdCBjaGFuZ2Ugbm90aWZp
-ZXJzIHdoaWNoIGNhdXNlcyBjcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCkKcGVyIENQVS4gIFNp
-bmNlIHRoZSBwb2xpY3kgaXMgdGhlIHNhbWUgZm9yIGFsbCBvZiB0aGVtIGFsbCBDUFVzIGFmdGVy
-CnRoZSBmaXJzdCBhbmQgdGhlIHdhcm5pbmdzIGFkZGVkIGFyZSBnZW5lcmF0ZWQgYnkgY2hlY2tp
-bmcgYSBwZXItcG9saWN5CmZsYWcgdGhlIHdhcm5pbmdzIHdpbGwgYmUgdHJpZ2dlcmVkIGZvciBh
-bGwgY29yZXMgYWZ0ZXIgdGhlIGZpcnN0LgoKRml4IHRoaXMgYnkgYWxsb3dpbmcgbm90aWZpZXIg
-dG8gYmUgY2FsbGVkIGZvciBuIHRpbWVzLiBXaGVyZSBuIGlzIHRoZSBudW1iZXIgb2YKY3B1cyBp
-biBwb2xpY3ktPmNwdXMuCgpSZXBvcnRlZC1ieTogTWFyayBCcm93biA8YnJvb25pZUBsaW5hcm8u
-b3JnPgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3Jn
-PgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA3ICsrKystLS0KIDEgZmlsZSBjaGFu
-Z2VkLCA0IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy9jcHVmcmVxL2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKaW5kZXggNzU3
-MTVmMS4uNDM4ZGNlZSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYworKysg
-Yi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCkBAIC0yNjQsMTEgKzI2NCwxMiBAQCB2b2lkIF9f
-Y3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbihzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwK
-IAlzd2l0Y2ggKHN0YXRlKSB7CiAKIAljYXNlIENQVUZSRVFfUFJFQ0hBTkdFOgotCQlpZiAoV0FS
-Tihwb2xpY3ktPnRyYW5zaXRpb25fb25nb2luZywKKwkJaWYgKFdBUk4ocG9saWN5LT50cmFuc2l0
-aW9uX29uZ29pbmcgPT0KKwkJCQkJY3B1bWFza193ZWlnaHQocG9saWN5LT5jcHVzKSwKIAkJCQki
-SW4gbWlkZGxlIG9mIGFub3RoZXIgZnJlcXVlbmN5IHRyYW5zaXRpb25cbiIpKQogCQkJcmV0dXJu
-OwogCi0JCXBvbGljeS0+dHJhbnNpdGlvbl9vbmdvaW5nID0gdHJ1ZTsKKwkJcG9saWN5LT50cmFu
-c2l0aW9uX29uZ29pbmcrKzsKIAogCQkvKiBkZXRlY3QgaWYgdGhlIGRyaXZlciByZXBvcnRlZCBh
-IHZhbHVlIGFzICJvbGQgZnJlcXVlbmN5IgogCQkgKiB3aGljaCBpcyBub3QgZXF1YWwgdG8gd2hh
-dCB0aGUgY3B1ZnJlcSBjb3JlIHRoaW5rcyBpcwpAQCAtMjkzLDcgKzI5NCw3IEBAIHZvaWQgX19j
-cHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LAog
-CQkJCSJObyBmcmVxdWVuY3kgdHJhbnNpdGlvbiBpbiBwcm9ncmVzc1xuIikpCiAJCQlyZXR1cm47
-CiAKLQkJcG9saWN5LT50cmFuc2l0aW9uX29uZ29pbmcgPSBmYWxzZTsKKwkJcG9saWN5LT50cmFu
-c2l0aW9uX29uZ29pbmctLTsKIAogCQlhZGp1c3RfamlmZmllcyhDUFVGUkVRX1BPU1RDSEFOR0Us
-IGZyZXFzKTsKIAkJcHJfZGVidWcoIkZSRVE6ICVsdSAtIENQVTogJWx1IiwgKHVuc2lnbmVkIGxv
-bmcpZnJlcXMtPm5ldywKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---001a11c21b0467e3e604e0806d6c--
