@@ -1,30 +1,60 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix runtime warnings on systems with shared core clocks
-Date: Tue, 2 Jul 2013 17:58:09 +0530
-Message-ID: <CAKohpo=HFBGTd=QDRBuVWKV3v8XdB_mcbiYy0KBtEwpNVZzfqg@mail.gmail.com>
-References: <1372724227-17209-1-git-send-email-broonie@kernel.org>
-	<CAKohponeEC=CGzJhgCY+Cvwna6YkkRBkANjYSAqP9jf8qfJ2yA@mail.gmail.com>
-	<20130702094831.GA27646@sirena.org.uk>
-	<CAKohpom0NOymffysneOcygFHT9QTMgPA+BVKmoZTMg9bUpaedw@mail.gmail.com>
-	<20130702102910.GG27646@sirena.org.uk>
-	<CAKohponf+bQ3KowmbBhAq9+MGMa8C_6RQvvDvkOiSHkir+jO_g@mail.gmail.com>
-	<20130702111530.GK27646@sirena.org.uk>
+Subject: Re: [PATCH v4] cpufreq: stats: Add 'load_table' debugfs file to show
+ accumulated data of CPUs
+Date: Wed, 3 Jul 2013 12:11:14 +0530
+Message-ID: <CAKohpokZP=zJFoMGmQ7RY7OrttmbG+o2Hf+6ybJdx9PFqKmNPg@mail.gmail.com>
+References: <1372405697-13556-1-git-send-email-cw00.choi@samsung.com>
+	<CAKohpon6AaSRQKvffPG+J=NUU+5JdVhFo-_uMm=2H3u-yT5h0A@mail.gmail.com>
+	<51CD55E2.5060205@samsung.com>
+	<CAKohpokY+GEt9UaU5inWaiooLq8sX7jy63sok+FFvs_KyQpcKg@mail.gmail.com>
+	<51D2B03A.3010806@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130702111530.GK27646@sirena.org.uk>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51D2B03A.3010806@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-On 2 July 2013 16:45, Mark Brown <broonie@kernel.org> wrote:
-> If your patch is sent as a text/plain attachment most mail clients will
-> tend to do the right thing with replies, at least the good ones.  Or
-> just figure out a VPN or something to get round the firewall issues,
-> mobile broadband is often a good technique if there's no carry
-> restrictions (usually phones are allowed...).
+On 2 July 2013 16:19, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> Previously, I sent two reply about your reply. But, Please ignore previous reply.
+> Those have wrong function flow about creating sysfs file and poor wrong opinion.
+>
+> I'm so sorry if you're confused.
 
-I used mobile only for sending the last patch to Rafael.. But running
-thunderbird over it is a bit heavy :)
+Its okay.
+
+> OK. I'll create link for CPU[1-3] if multiple core use one cpufreq policy.
+> In result, we can check below directory structure.
+>
+> sh-4.1# ls -al /sys/kernel/debug/cpufreq/
+> total 0
+> drwxr-xr-x  3 root root 0 Jan  1 09:00 .
+> drwx------ 26 root root 0 Jan  1 09:00 ..
+> drwxr-xr-x  2 root root 0 Jan  1 09:00 cpu0
+> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu1 -> ./cpu0
+> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu2 -> ./cpu0
+> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu3 -> ./cpu0
+>
+> And then I will create load_table debugfs file below of /sys/kernel/debug/cpufreq/cpu0
+> in cpufreq_stats.c
+
+Looks good.
+
+> I understand your opinion. But I have a suggestion for using load_table debugfs file
+> if cpufreq governor is performance/powersave.
+>
+> So, I suggest that performance/powersave governor may need to executes dbs_check_cpu()
+> to calculate CPUx load. Sometimes, we need CPUs load on performance/powersave
+> govenor because we could get different power-consumption according to CPUs load
+> on same cpu frequency when we estimate power-consumption on specific test case.
+
+How will these two call dbs_check_cpu()? We don't have a timer for
+those two governors :)
+
+Okay do one thing. Create debugfs and debug/cpufreq/cpuX directory always.
+Let load_table contain zero when we have irrelevant governors set for it.
+
+We will see if we want some smart code in place for this or not.
