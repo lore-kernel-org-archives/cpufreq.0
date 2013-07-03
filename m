@@ -1,60 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4] cpufreq: stats: Add 'load_table' debugfs file to show
- accumulated data of CPUs
-Date: Wed, 3 Jul 2013 12:11:14 +0530
-Message-ID: <CAKohpokZP=zJFoMGmQ7RY7OrttmbG+o2Hf+6ybJdx9PFqKmNPg@mail.gmail.com>
-References: <1372405697-13556-1-git-send-email-cw00.choi@samsung.com>
-	<CAKohpon6AaSRQKvffPG+J=NUU+5JdVhFo-_uMm=2H3u-yT5h0A@mail.gmail.com>
-	<51CD55E2.5060205@samsung.com>
-	<CAKohpokY+GEt9UaU5inWaiooLq8sX7jy63sok+FFvs_KyQpcKg@mail.gmail.com>
-	<51D2B03A.3010806@samsung.com>
+From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
+Subject: Re: 3.10-rcX: cpu governor ondemand doesn't scale well after s2ram
+Date: Wed, 03 Jul 2013 21:46:56 +0200
+Message-ID: <51D47FB0.5090604@gmx.de>
+References: <51C08370.4050906@gmx.de> <CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com> <51CF1E53.6060902@gmx.de> <8029836.CFiJCXmRQ0@vostro.rjw.lan> <51D05DF4.50704@linux.vnet.ibm.com> <51D06556.7080204@gmx.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51D2B03A.3010806@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <51D06556.7080204@gmx.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+Content-Type: text/plain; charset="utf-8"
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 2 July 2013 16:19, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> Previously, I sent two reply about your reply. But, Please ignore previous reply.
-> Those have wrong function flow about creating sysfs file and poor wrong opinion.
->
-> I'm so sorry if you're confused.
+On 06/30/2013 07:05 PM, Toralf F=C3=B6rster wrote:
+> On 06/30/2013 06:33 PM, Srivatsa S. Bhat wrote:
+>> Toralf, can you please
+>> try out the below patch and see if it improves anything? (Don't reve=
+rt anything,
+>> just apply the below diff on a problematic kernel and see if it solv=
+es your
+>> issue).
+>=20
+> applied on top of a66b2e5 - issue went away (either fixed or hidden n=
+ow)
+>=20
+> Thx
+>=20
+But if I do apply that patch on top of kernel 3.10 then it has no effec=
+t
+- 3.10 shows the same issue.
 
-Its okay.
 
-> OK. I'll create link for CPU[1-3] if multiple core use one cpufreq policy.
-> In result, we can check below directory structure.
->
-> sh-4.1# ls -al /sys/kernel/debug/cpufreq/
-> total 0
-> drwxr-xr-x  3 root root 0 Jan  1 09:00 .
-> drwx------ 26 root root 0 Jan  1 09:00 ..
-> drwxr-xr-x  2 root root 0 Jan  1 09:00 cpu0
-> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu1 -> ./cpu0
-> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu2 -> ./cpu0
-> lrwxrwxrwx  1 root root 0 Jan  1 09:00 cpu3 -> ./cpu0
->
-> And then I will create load_table debugfs file below of /sys/kernel/debug/cpufreq/cpu0
-> in cpufreq_stats.c
-
-Looks good.
-
-> I understand your opinion. But I have a suggestion for using load_table debugfs file
-> if cpufreq governor is performance/powersave.
->
-> So, I suggest that performance/powersave governor may need to executes dbs_check_cpu()
-> to calculate CPUx load. Sometimes, we need CPUs load on performance/powersave
-> govenor because we could get different power-consumption according to CPUs load
-> on same cpu frequency when we estimate power-consumption on specific test case.
-
-How will these two call dbs_check_cpu()? We don't have a timer for
-those two governors :)
-
-Okay do one thing. Create debugfs and debug/cpufreq/cpuX directory always.
-Let load_table contain zero when we have irrelevant governors set for it.
-
-We will see if we want some smart code in place for this or not.
+--=20
+MfG/Sincerely
+Toralf F=C3=B6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
