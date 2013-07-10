@@ -1,67 +1,201 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [PATCH] intel_pstate: Add Haswell CPU models
-Date: Tue, 09 Jul 2013 07:54:04 -0700
-Message-ID: <51DC240C.3090404@intel.com>
-References: <51CD8087.7030303@spicious.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 1/6] cpufreq: Add debugfs directory for cpufreq
+Date: Wed, 10 Jul 2013 17:30:46 +0900
+Message-ID: <51DD1BB6.3080304@samsung.com>
+References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
+ <1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
+ <CAKohpomriPXmK3TRFqinyEEuG39O1ppKmPuW0gvs3iRLnsoPrg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=CmEC2nPP4qBuUevfKAAw19Gl0eU9sjpVTpM1agkVdaM=;
-        b=NHADYiP6FywzO6IzCIeNnXE4iEu/dA3RI2K9SCAvJF8B0M4OxAW4V3oxgxovrE2mRC
-         3b+YE9ijClPD/n37hbqCBiVkI7oRPHwbwuWqxunNqQcH+3p269R7vlPBlr2tJrEh/SE/
-         JQTJIZRkvVRQmswTdxqxUXPM0CY0B9SijheX5C4KLxCV0foCJycDAVqwWCH1TtHHIDZF
-         f4l+OlpqEElJ3Yj/rVnxoouoLXc7GNGY2XsRlNXZVsBfwuovsbl2aw6sLbykVWqwxVyo
-         nCIQ3Fuct2+dxDdwBZwAbhM7f5+kg2VdDrA5yC4MeM3RsUvcYLzIxXQToywhCD6MhO61
-         RCYA==
-In-Reply-To: <51CD8087.7030303@spicious.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohpomriPXmK3TRFqinyEEuG39O1ppKmPuW0gvs3iRLnsoPrg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Nell Hardcastle <nell@spicious.com>
-Cc: cpufreq@vger.kernel.org, dirk.j.brandewie@intel.com
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-On 06/28/2013 05:24 AM, Nell Hardcastle wrote:
-> Enable the intel_pstate driver for Haswell CPUs and one Ivy Bridge model not already included (0x3E). I've been testing this change on the Core i5-4200u (model 0x45) and I referenced the list of models in tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit to determine the others.
->
-> Fixes https://bugzilla.kernel.org/show_bug.cgi?id=60211
->
-> Signed-off-by: Nell Hardcastle <nell@spicious.com>
-> ---
->   drivers/cpufreq/intel_pstate.c | 5 +++++
->   1 file changed, 5 insertions(+)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 07f2840..dbd1032 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -522,6 +522,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
->   	ICPU(0x2a, default_policy),
->   	ICPU(0x2d, default_policy),
->   	ICPU(0x3a, default_policy),
-> +	ICPU(0x3c, default_policy),
-> +	ICPU(0x3e, default_policy),
-> +	ICPU(0x3f, default_policy),
-> +	ICPU(0x45, default_policy),
-> +	ICPU(0x46, default_policy),
+Hi Viresh,
 
-Nak for now.
+On 07/09/2013 06:23 PM, Viresh Kumar wrote:
+> On 5 July 2013 14:16, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> 
+>> +/* The cpufreq_debugfs is used to create debugfs root directory for CPUFreq. */
+>> +#define MAX_DEBUGFS_NAME_LEN   CPUFREQ_NAME_LEN
+> 
+> Why declare MAX_DEBUGFS_NAME_LEN if it is going to be equal to
+> CPUFREQ_NAME_LEN. Simply use CPUFREQ_NAME_LEN everywhere.
 
-We have not completed our testing on these CPUs. I would like to
-get my testing done before I start seeing issues from the field come
-in.
+OK, I'll use CPUFREQ_NAME_LEN instead of defining CPUFREQ_NAME_LEN.
 
-If this patch were to hangout in testing for a while it would not
-hurt my feelings there it could only hurt those that knew what
-they were getting into :-)
+> 
+>> +static struct dentry *cpufreq_debugfs;
+> 
+> Probably make this dependent on CONFIG_CPU_FREQ_STAT?
 
+I thought that '/sys/kernel/debug/cpufreq' is always created in the same as sysfs file
+when added cpufreq driver. Only the debugfs file(/sys/kernel/debug/cpufreq/load_table)
+has the dependency on CONFIG_CPU_FREQ_STAT.
 
---Dirk
->   	{}
->   };
->   MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
->
+If *cpufreq_debugfs has the dependency on CONFIG_CPU_FREQ_STAT,
+I should add checking statement with '#ifdef CONFIG_CPU_FREQ_STAT' keyword in cpufreq.c.
 
+What is your opinion to add the dependency of CONFIG_CPU_FREQ_STAT
+in cpufreq.c?
+
+> 
+>>  /*
+>>   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
+>>   * all cpufreq/hotplug/workqueue/etc related lock issues.
+>> @@ -726,6 +731,20 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
+>>                         cpufreq_cpu_put(managed_policy);
+>>                         return ret;
+>>                 }
+>> +
+>> +               if (cpufreq_debugfs) {
+>> +                       char symlink_name[MAX_DEBUGFS_NAME_LEN];
+>> +                       char target_name[MAX_DEBUGFS_NAME_LEN];
+>> +
+>> +                       sprintf(symlink_name, "cpu%d", j);
+>> +                       sprintf(target_name, "./cpu%d", cpu);
+>> +                       managed_policy->cpu_debugfs[j] = debugfs_create_symlink(
+>> +                                                       symlink_name,
+>> +                                                       cpufreq_debugfs,
+>> +                                                       target_name);
+>> +                       if (!managed_policy->cpu_debugfs[j])
+>> +                               pr_debug("creating debugfs symlink failed\n");
+> 
+> pr_err?
+
+I'll fix it.
+
+> 
+>> +               }
+>>         }
+>>         return ret;
+>>  }
+>> @@ -746,6 +765,22 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+>>         if (ret)
+>>                 return ret;
+>>
+>> +       /* prepare interface data for debugfs */
+>> +       if (cpufreq_debugfs) {
+>> +               char name[MAX_DEBUGFS_NAME_LEN];
+>> +               int size, i;
+>> +
+>> +               sprintf(name, "cpu%d", policy->cpu);
+>> +               size = sizeof(struct dentry*) * NR_CPUS;
+> 
+> NR_CPUS? You only need to take care of cpus that belong to this
+> policy, isn't it? policy->related_cpus should be good enough for you.
+
+You're right. I'll fix it.
+I didn't think using policy->related_cpus instead of NR_CPUS.
+
+> 
+>> +               i = cpu;
+>> +
+>> +               policy->cpu_debugfs = devm_kzalloc(dev, size, GFP_KERNEL);
+>> +               policy->cpu_debugfs[i] = debugfs_create_dir(name,
+>> +                                                           cpufreq_debugfs);
+>> +               if (!policy->cpu_debugfs[i])
+>> +                       pr_debug("creating debugfs directory failed\n");
+>> +       }
+> 
+> pr_err?
+
+I'll fix it.
+
+> 
+> And move this code just before the call to cpufreq_add_dev_symlink().
+
+OK, I'll move it.
+
+> 
+>>         /* set up files for this cpu device */
+>>         drv_attr = cpufreq_driver->attr;
+>>         while ((drv_attr) && (*drv_attr)) {
+>> @@ -839,6 +874,20 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
+>>                 return ret;
+>>         }
+>>
+>> +       if (cpufreq_debugfs) {
+>> +               char symlink_name[MAX_DEBUGFS_NAME_LEN];
+>> +               char target_name[MAX_DEBUGFS_NAME_LEN];
+>> +
+>> +               sprintf(symlink_name, "cpu%d", cpu);
+>> +               sprintf(target_name, "./cpu%d", sibling);
+>> +               policy->cpu_debugfs[cpu] = debugfs_create_symlink(
+>> +                                               symlink_name,
+>> +                                               cpufreq_debugfs,
+>> +                                               target_name);
+>> +               if (!policy->cpu_debugfs[cpu])
+>> +                       pr_debug("creating debugfs symlink failed\n");
+>> +       }
+> 
+> This is purely replication of same code. Create a routine to
+> hold these lines and call it from wherever it is required.
+
+OK, I'll create a routine which create symbolic link of debugfs directory.
+
+> 
+>>         return 0;
+>>  }
+>>  #endif
+>> @@ -1046,6 +1095,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>>
+>>         if (cpu != data->cpu) {
+>>                 sysfs_remove_link(&dev->kobj, "cpufreq");
+>> +               debugfs_remove(data->cpu_debugfs[cpu]);
+>>         } else if (cpus > 1) {
+>>                 /* first sibling now owns the new sysfs dir */
+>>                 cpu_dev = get_cpu_device(cpumask_first(data->cpus));
+>> @@ -1068,6 +1118,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>>                         return -EINVAL;
+>>                 }
+>>
+>> +               debugfs_remove_recursive(data->cpu_debugfs[cpu]);
+> 
+> So you removed load_table here? What about other cpus that were
+> there in policy->cpus?
+
+You're right. This code is wrong. I'll consider other way to resolve this case.
+
+> 
+>> +               debugfs_remove(cpufreq_debugfs);
+> 
+> Who will create this again? Also, there might be multiple policy struct's
+> in a system and here we have reached to removal of all cpus of
+> a policy. Other policies are still alive.
+
+OK, I'll control 'debugfs' directory in cpufreq_register/unregister_driver().
+
+> 
+>>                 WARN_ON(lock_policy_rwsem_write(cpu));
+>>                 update_policy_cpu(data, cpu_dev->id);
+>>                 unlock_policy_rwsem_write(cpu);
+>> @@ -1976,6 +2029,10 @@ static int __init cpufreq_core_init(void)
+>>         BUG_ON(!cpufreq_global_kobject);
+>>         register_syscore_ops(&cpufreq_syscore_ops);
+>>
+>> +       cpufreq_debugfs = debugfs_create_dir("cpufreq", NULL);
+>> +       if (!cpufreq_debugfs)
+>> +               pr_debug("creating debugfs root failed\n");
+> 
+> So, you just added this directory once.. So you must not
+> remove it.
+
+I'll add 'debugfs' directory in cpufreq_register_driver()
+and remove it in cpufreq_unregister_driver().
+
+> 
+>>         return 0;
+>>  }
+>>  core_initcall(cpufreq_core_init);
+> 
+
+Thanks for your comment.
+
+Best Regards,
+Chanwoo Choi
