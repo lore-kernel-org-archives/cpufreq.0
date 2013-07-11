@@ -1,235 +1,382 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: [LOCKDEP] cpufreq: possible circular locking dependency detected
-Date: Thu, 11 Jul 2013 10:43:45 +0800
-Message-ID: <51DE1BE1.3090707@linux.vnet.ibm.com>
-References: <20130625211544.GA2270@swordfish> <51D10899.1080501@linux.vnet.ibm.com> <20130710231305.GA4046@swordfish>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
+Date: Thu, 11 Jul 2013 13:40:59 +0800
+Message-ID: <CAOLK0pwr03reaMWAEeaUs-6H2URoisFEJ3J4r83Rm1eTs1hU5w@mail.gmail.com>
+References: <51C08370.4050906@gmx.de>
+	<CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com>
+	<51CF1E53.6060902@gmx.de>
+	<8029836.CFiJCXmRQ0@vostro.rjw.lan>
+	<51D05DF4.50704@linux.vnet.ibm.com>
+	<51D06556.7080204@gmx.de>
+	<51D07E7F.2030709@linux.vnet.ibm.com>
+	<51DDC8FA.4020609@gmx.de>
+	<51DDE067.2020106@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130710231305.GA4046@swordfish>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        bh=ujvqblq+JqadyEjOB/rZ7QAFRZdo97yGJEBvoctaIE4=;
+        b=NQiGb7dkZjw5OIOefW/c5b/4gJW7e+xYa0OY5Yj8Gil895SLpp+usT4AUOBP/obfrJ
+         AfXzaX24QADMYJC8MYo9dIZjlFam9R/N0yAnwAGsamcghh/NRy4FdTLvYuYmS7tzPCYl
+         W7T284kJBNMeYqd2Ah5jLcIW4Fmz7TaWjuaoRMbEFulsgsnuWRkGn7semsoOasA9EXT9
+         ET3/+eq4JPOYanWapzSbADPyINOpk+GmFTyTBeKz8cOcNxM62AqPnhSt6cpLyTbMpXWy
+         GU0hDbtnIlLfHTvz6xUv7XkY63V4tq0+pxvSm5eD1B/CRFJxV20shy2PDJsd6ceKHwZk
+         Ek1g==
+In-Reply-To: <51DDE067.2020106@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi, Sergey
-
-On 07/11/2013 07:13 AM, Sergey Senozhatsky wrote:
-[snip]
-> 
-> 
-> Please kindly review the following patch.
-> 
-> 
-> 
-> Remove cpu device only upon succesful cpu down on CPU_POST_DEAD event,
-> so we can kill off CPU_DOWN_FAILED case and eliminate potential extra
-> remove/add path:
-> 	
-> 	hotplug lock
-> 		CPU_DOWN_PREPARE: __cpufreq_remove_dev
-> 		CPU_DOWN_FAILED: cpufreq_add_dev
-> 	hotplug unlock
-> 
-> Since cpu still present on CPU_DEAD event, cpu stats table should be
-> kept longer and removed later on CPU_POST_DEAD as well.
-> 
-> Because CPU_POST_DEAD action performed with hotplug lock released, CPU_DOWN
-> might block existing gov_queue_work() user (blocked on get_online_cpus())
-> and unblock it with one of policy->cpus offlined, thus cpu_is_offline()
-> check is performed in __gov_queue_work().
-> 
-> Besides, existing gov_queue_work() hotplug guard extended to protect all
-> __gov_queue_work() calls: for both all_cpus and !all_cpus cases.
-> 
-> CPUFREQ_GOV_START performs direct __gov_queue_work() call because hotplug
-> lock already held there, opposing to previous gov_queue_work() and nested
-> get/put_online_cpus().
-
-Nice to know you have some idea on solving the issue ;-)
-
-I'm not sure whether I catch the idea, but seems like you are trying
-to re-organize the timing of add/remove device.
-
-I'm sure that we have more than one way to solve the issues, but what
-we need is the cure of root...
-
-As Srivatsa discovered, the root issue may be:
-	gov_cancel_work() failed to stop all the work after it's return.
-
-And Viresh also confirmed that this is not by-designed.
-
-Which means gov_queue_work() invoked by od_dbs_timer() is supposed to
-never happen after CPUFREQ_GOV_STOP notify, the whole policy should
-stop working at that time.
-
-But it failed to, and the work concurrent with cpu dying caused the
-first problem.
-
-Thus I think we should focus on this and suggested below fix, I'd like
-to know your opinions :)
-
-Regards,
-Michael Wang
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index dc9b72e..a64b544 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -178,13 +178,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- {
- 	int i;
- 
-+	if (dbs_data->queue_stop)
-+		return;
-+
- 	if (!all_cpus) {
- 		__gov_queue_work(smp_processor_id(), dbs_data, delay);
- 	} else {
--		get_online_cpus();
- 		for_each_cpu(i, policy->cpus)
- 			__gov_queue_work(i, dbs_data, delay);
--		put_online_cpus();
- 	}
- }
- EXPORT_SYMBOL_GPL(gov_queue_work);
-@@ -193,12 +194,27 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
- 		struct cpufreq_policy *policy)
- {
- 	struct cpu_dbs_common_info *cdbs;
--	int i;
-+	int i, round = 2;
- 
-+	dbs_data->queue_stop = 1;
-+redo:
-+	round--;
- 	for_each_cpu(i, policy->cpus) {
- 		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
- 		cancel_delayed_work_sync(&cdbs->work);
- 	}
-+
-+	/*
-+	 * Since there is no lock to prvent re-queue the
-+	 * cancelled work, some early cancelled work might
-+	 * have been queued again by later cancelled work.
-+	 *
-+	 * Flush the work again with dbs_data->queue_stop
-+	 * enabled, this time there will be no survivors.
-+	 */
-+	if (round)
-+		goto redo;
-+	dbs_data->queue_stop = 0;
- }
- 
- /* Will return if we need to evaluate cpu load again or not */
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index e16a961..9116135 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -213,6 +213,7 @@ struct dbs_data {
- 	unsigned int min_sampling_rate;
- 	int usage_count;
- 	void *tuners;
-+	int queue_stop;
- 
- 	/* dbs_mutex protects dbs_enable in governor start/stop */
- 	struct mutex mutex;
-
-> 
-> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> 
+2013/7/11 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>:
+> Hi Toralf,
+>
+> On 07/11/2013 02:20 AM, Toralf F=F6rster wrote:
+>> I tested the patch several times on top of a66b2e5 - the origin issu=
+e is
+>> fixed but - erratically another issue now appears : all 4 cores are =
+runs
+>> after wakeup at 2.6 GHz.
+>> The temporary hot fix is to switch between governor performance and
+>> ondemand for all 4 cores.
+>>
+>>
+>
+> Thanks for all your testing efforts. The commit a66b2e5 took a shortc=
+ut to
+> achieve its goals but failed subtly in many aspects. Below is a patch=
+ (only
+> compile-tested) which tries to achieve the goal (preserve sysfs files=
+) in
+> the proper way, by separating out the cpufreq-core bits from the sysf=
+s bits.
+> You might want to give it a try on current mainline and see if it imp=
+roves
+> anything.
+>
+> Regards,
+> Srivatsa S. Bhat
+>
+>
+> (Applies on current mainline)
 > ---
-> 
->  drivers/cpufreq/cpufreq.c          |  5 +----
->  drivers/cpufreq/cpufreq_governor.c | 17 +++++++++++------
->  drivers/cpufreq/cpufreq_stats.c    |  2 +-
->  3 files changed, 13 insertions(+), 11 deletions(-)
-> 
+>
+>  drivers/cpufreq/cpufreq.c |  144 ++++++++++++++++++++++++++---------=
+----------
+>  1 file changed, 82 insertions(+), 62 deletions(-)
+>
+>
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 6a015ad..f8aacf1 100644
+> index 6a015ad..28c690f 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1943,13 +1943,10 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
->  		case CPU_ONLINE:
->  			cpufreq_add_dev(dev, NULL);
->  			break;
-> -		case CPU_DOWN_PREPARE:
-> +		case CPU_POST_DEAD:
->  		case CPU_UP_CANCELED_FROZEN:
->  			__cpufreq_remove_dev(dev, NULL);
->  			break;
-> -		case CPU_DOWN_FAILED:
-> -			cpufreq_add_dev(dev, NULL);
-> -			break;
->  		}
->  	}
->  	return NOTIFY_OK;
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 4645876..681d5d6 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -125,7 +125,11 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
->  		unsigned int delay)
+> @@ -834,11 +834,8 @@ static int cpufreq_add_dev_interface(unsigned in=
+t cpu,
+>                                      struct cpufreq_policy *policy,
+>                                      struct device *dev)
 >  {
->  	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+> -       struct cpufreq_policy new_policy;
+>         struct freq_attr **drv_attr;
+> -       unsigned long flags;
+>         int ret =3D 0;
+> -       unsigned int j;
+>
+>         /* prepare interface data */
+>         ret =3D kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+> @@ -870,31 +867,10 @@ static int cpufreq_add_dev_interface(unsigned i=
+nt cpu,
+>                         goto err_out_kobj_put;
+>         }
+>
+> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -       for_each_cpu(j, policy->cpus) {
+> -               per_cpu(cpufreq_cpu_data, j) =3D policy;
+> -               per_cpu(cpufreq_policy_cpu, j) =3D policy->cpu;
+> -       }
+> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 > -
-> +	/* cpu offline might block existing gov_queue_work() user,
-> +	 * unblocking it after CPU_DEAD and before CPU_POST_DEAD.
-> +	 * thus potentially we can hit offlined CPU */
-> +	if (unlikely(cpu_is_offline(cpu)))
-> +		return;
->  	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
->  }
-> 
-> @@ -133,15 +137,14 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
->  		unsigned int delay, bool all_cpus)
+>         ret =3D cpufreq_add_dev_symlink(cpu, policy);
+>         if (ret)
+>                 goto err_out_kobj_put;
+>
+> -       memcpy(&new_policy, policy, sizeof(struct cpufreq_policy));
+> -       /* assure that the starting sequence is run in __cpufreq_set_=
+policy */
+> -       policy->governor =3D NULL;
+> -
+> -       /* set default policy */
+> -       ret =3D __cpufreq_set_policy(policy, &new_policy);
+> -       policy->user_policy.policy =3D policy->policy;
+> -       policy->user_policy.governor =3D policy->governor;
+> -
+> -       if (ret) {
+> -               pr_debug("setting policy failed\n");
+> -               if (cpufreq_driver->exit)
+> -                       cpufreq_driver->exit(policy);
+> -       }
+>         return ret;
+>
+>  err_out_kobj_put:
+> @@ -905,7 +881,7 @@ err_out_kobj_put:
+>
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sib=
+ling,
+> -                                 struct device *dev)
+> +                                 struct device *dev, bool init_sysfs=
+)
 >  {
->  	int i;
-> -
-> +	get_online_cpus();
->  	if (!all_cpus) {
->  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
->  	} else {
-> -		get_online_cpus();
->  		for_each_cpu(i, policy->cpus)
->  			__gov_queue_work(i, dbs_data, delay);
-> -		put_online_cpus();
->  	}
-> +	put_online_cpus();
+>         struct cpufreq_policy *policy;
+>         int ret =3D 0, has_target =3D !!cpufreq_driver->target;
+> @@ -933,30 +909,25 @@ static int cpufreq_add_policy_cpu(unsigned int =
+cpu, unsigned int sibling,
+>                 __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>         }
+>
+> -       ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq=
+");
+> -       if (ret) {
+> -               cpufreq_cpu_put(policy);
+> -               return ret;
+> +       if (init_sysfs) {
+> +               ret =3D sysfs_create_link(&dev->kobj, &policy->kobj, =
+"cpufreq");
+> +               if (ret) {
+> +                       cpufreq_cpu_put(policy);
+> +                       return ret;
+> +               }
+>         }
+>
+>         return 0;
 >  }
->  EXPORT_SYMBOL_GPL(gov_queue_work);
-> 
-> @@ -354,8 +357,10 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		/* Initiate timer time stamp */
->  		cpu_cdbs->time_stamp = ktime_get();
-> 
-> -		gov_queue_work(dbs_data, policy,
-> -				delay_for_sampling_rate(sampling_rate), true);
-> +		/* hotplug lock already held */
-> +		for_each_cpu(j, policy->cpus)
-> +			__gov_queue_work(j, dbs_data,
-> +				delay_for_sampling_rate(sampling_rate));
->  		break;
-> 
->  	case CPUFREQ_GOV_STOP:
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index cd9e817..833816e 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -355,7 +355,7 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
->  	case CPU_DOWN_PREPARE:
->  		cpufreq_stats_free_sysfs(cpu);
->  		break;
-> -	case CPU_DEAD:
-> +	case CPU_POST_DEAD:
->  		cpufreq_stats_free_table(cpu);
->  		break;
->  	case CPU_UP_CANCELED_FROZEN:
+>  #endif
+>
+> -/**
+> - * cpufreq_add_dev - add a CPU device
+> - *
+> - * Adds the cpufreq interface for a CPU device.
+> - *
+> - * The Oracle says: try running cpufreq registration/unregistration =
+concurrently
+> - * with with cpu hotplugging and all hell will break loose. Tried to=
+ clean this
+> - * mess up, but more thorough testing is needed. - Mathieu
+> - */
+> -static int cpufreq_add_dev(struct device *dev, struct subsys_interfa=
+ce *sif)
+> +static int __cpufreq_add_dev(struct device *dev, struct subsys_inter=
+face *sif,
+> +                            bool init_sysfs)
+>  {
+>         unsigned int j, cpu =3D dev->id;
+>         int ret =3D -ENOMEM;
+>         struct cpufreq_policy *policy;
+> +       struct cpufreq_policy new_policy;
+>         unsigned long flags;
+>  #ifdef CONFIG_HOTPLUG_CPU
+>         struct cpufreq_governor *gov;
+> @@ -984,7 +955,8 @@ static int cpufreq_add_dev(struct device *dev, st=
+ruct subsys_interface *sif)
+>                 struct cpufreq_policy *cp =3D per_cpu(cpufreq_cpu_dat=
+a, sibling);
+>                 if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
+>                         read_unlock_irqrestore(&cpufreq_driver_lock, =
+flags);
+> -                       return cpufreq_add_policy_cpu(cpu, sibling, d=
+ev);
+> +                       return cpufreq_add_policy_cpu(cpu, sibling, d=
+ev,
+> +                                                     init_sysfs);
+>                 }
+>         }
+>         read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> @@ -1049,9 +1021,33 @@ static int cpufreq_add_dev(struct device *dev,=
+ struct subsys_interface *sif)
+>         }
+>  #endif
+>
+> -       ret =3D cpufreq_add_dev_interface(cpu, policy, dev);
+> -       if (ret)
+> -               goto err_out_unregister;
+> +       write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +       for_each_cpu(j, policy->cpus) {
+> +               per_cpu(cpufreq_cpu_data, j) =3D policy;
+> +               per_cpu(cpufreq_policy_cpu, j) =3D policy->cpu;
+> +       }
+> +       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +       if (init_sysfs) {
+> +               ret =3D cpufreq_add_dev_interface(cpu, policy, dev);
+> +               if (ret)
+> +                       goto err_out_unregister;
+> +       }
+> +
+> +       memcpy(&new_policy, policy, sizeof(struct cpufreq_policy));
+> +       /* assure that the starting sequence is run in __cpufreq_set_=
+policy */
+> +       policy->governor =3D NULL;
+> +
+> +       /* set default policy */
+> +       ret =3D __cpufreq_set_policy(policy, &new_policy);
+> +       policy->user_policy.policy =3D policy->policy;
+> +       policy->user_policy.governor =3D policy->governor;
+> +
+> +       if (ret) {
+> +               pr_debug("setting policy failed\n");
+> +               if (cpufreq_driver->exit)
+> +                       cpufreq_driver->exit(policy);
+> +       }
+>
+>         kobject_uevent(&policy->kobj, KOBJ_ADD);
+>         module_put(cpufreq_driver->owner);
+> @@ -1081,6 +1077,20 @@ module_out:
+>         return ret;
+>  }
+>
+> +/**
+> + * cpufreq_add_dev - add a CPU device
+> + *
+> + * Adds the cpufreq interface for a CPU device.
+> + *
+> + * The Oracle says: try running cpufreq registration/unregistration =
+concurrently
+> + * with with cpu hotplugging and all hell will break loose. Tried to=
+ clean this
+> + * mess up, but more thorough testing is needed. - Mathieu
+> + */
+> +static int cpufreq_add_dev(struct device *dev, struct subsys_interfa=
+ce *sif)
+> +{
+> +       return __cpufreq_add_dev(dev, sif, true);
+> +}
+> +
+>  static void update_policy_cpu(struct cpufreq_policy *policy, unsigne=
+d int cpu)
+>  {
+>         int j;
+> @@ -1106,7 +1116,7 @@ static void update_policy_cpu(struct cpufreq_po=
+licy *policy, unsigned int cpu)
+>   * This routine frees the rwsem before returning.
+>   */
+>  static int __cpufreq_remove_dev(struct device *dev,
+> -               struct subsys_interface *sif)
+> +                               struct subsys_interface *sif, bool re=
+move_sysfs)
+>  {
+>         unsigned int cpu =3D dev->id, ret, cpus;
+>         unsigned long flags;
+> @@ -1145,9 +1155,9 @@ static int __cpufreq_remove_dev(struct device *=
+dev,
+>                 cpumask_clear_cpu(cpu, data->cpus);
+>         unlock_policy_rwsem_write(cpu);
+>
+> -       if (cpu !=3D data->cpu) {
+> +       if (cpu !=3D data->cpu && remove_sysfs) {
+>                 sysfs_remove_link(&dev->kobj, "cpufreq");
+> -       } else if (cpus > 1) {
+> +       } else if (cpus > 1 && remove_sysfs) {
+>                 /* first sibling now owns the new sysfs dir */
+>                 cpu_dev =3D get_cpu_device(cpumask_first(data->cpus))=
+;
+>                 sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+> @@ -1184,26 +1194,25 @@ static int __cpufreq_remove_dev(struct device=
+ *dev,
+>
+>         /* If cpu is last user of policy, free policy */
+>         if (cpus =3D=3D 1) {
+> -               lock_policy_rwsem_read(cpu);
+> -               kobj =3D &data->kobj;
+> -               cmp =3D &data->kobj_unregister;
+> -               unlock_policy_rwsem_read(cpu);
+> -               kobject_put(kobj);
+> -
+> -               /* we need to make sure that the underlying kobj is a=
+ctually
+> -                * not referenced anymore by anybody before we procee=
+d with
+> -                * unloading.
+> -                */
+> -               pr_debug("waiting for dropping of refcount\n");
+> -               wait_for_completion(cmp);
+> -               pr_debug("wait complete\n");
+> -
+>                 if (cpufreq_driver->exit)
+>                         cpufreq_driver->exit(data);
+>
+>                 free_cpumask_var(data->related_cpus);
+>                 free_cpumask_var(data->cpus);
+>                 kfree(data);
+> +
+> +               if (remove_sysfs) {
+> +                       lock_policy_rwsem_read(cpu);
+> +                       kobj =3D &data->kobj;
+> +                       cmp =3D &data->kobj_unregister;
+
+This looks no right.  "data" has already been freed but data-> kobj sti=
+ll is
+referenced.
+
+> +                       unlock_policy_rwsem_read(cpu);
+> +                       kobject_put(kobj);
+> +
+> +                       pr_debug("waiting for dropping of refcount\n"=
+);
+> +                       wait_for_completion(cmp);
+> +                       pr_debug("wait complete\n");
+> +               }
+> +
+>         } else if (cpufreq_driver->target) {
+>                 __cpufreq_governor(data, CPUFREQ_GOV_START);
+>                 __cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
+> @@ -1221,7 +1230,7 @@ static int cpufreq_remove_dev(struct device *de=
+v, struct subsys_interface *sif)
+>         if (cpu_is_offline(cpu))
+>                 return 0;
+>
+> -       retval =3D __cpufreq_remove_dev(dev, sif);
+> +       retval =3D __cpufreq_remove_dev(dev, sif, true);
+>         return retval;
+>  }
+>
+> @@ -1943,13 +1952,24 @@ static int __cpuinit cpufreq_cpu_callback(str=
+uct notifier_block *nfb,
+>                 case CPU_ONLINE:
+>                         cpufreq_add_dev(dev, NULL);
+>                         break;
+> +               case CPU_ONLINE_FROZEN:
+> +                       __cpufreq_add_dev(dev, NULL, false);
+> +                       break;
+> +
+>                 case CPU_DOWN_PREPARE:
+>                 case CPU_UP_CANCELED_FROZEN:
+> -                       __cpufreq_remove_dev(dev, NULL);
+> +                       __cpufreq_remove_dev(dev, NULL, true);
+> +                       break;
+> +               case CPU_DOWN_PREPARE_FROZEN:
+> +                       __cpufreq_remove_dev(dev, NULL, false);
+>                         break;
+> +
+>                 case CPU_DOWN_FAILED:
+>                         cpufreq_add_dev(dev, NULL);
+>                         break;
+> +               case CPU_DOWN_FAILED_FROZEN:
+> +                       __cpufreq_add_dev(dev, NULL, false);
+> +                       break;
+>                 }
+>         }
+>         return NOTIFY_OK;
+>
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
+
+
+--=20
+Best regards
+Tianyu Lan
