@@ -1,75 +1,68 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
-Date: Thu, 11 Jul 2013 20:08:54 +0530
-Message-ID: <51DEC37E.2070500@linux.vnet.ibm.com>
-References: <Pine.LNX.4.44L0.1307111010180.1276-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1307111010180.1276-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: [PATCH] MIPS: loongson2: cpufreq: fix broken cpufreq
+Date: Thu, 11 Jul 2013 22:34:41 +0300
+Message-ID: <1373571281-4457-1-git-send-email-aaro.koskinen@iki.fi>
+Return-path: <linux-mips-bounce@linux-mips.org>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-Id: <cpufreq.vger.kernel.org>
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Lan Tianyu <lantianyu1986@gmail.com>, =?ISO-8859-1?Q?Toralf_F=F6rst?= =?ISO-8859-1?Q?er?= <toralf.foerster@gmx.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, Dirk Brandewie <dirk.brandewie@gmail.com>, tianyu.lan@intel.com
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Ralf Baechle <ralf@linux-mips.org>, cpufreq@vger.kernel.org, Julia Lawall <Julia.Lawall@lip6.fr>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, stable@vger.kernel.org
 
-On 07/11/2013 07:53 PM, Alan Stern wrote:
-> On Thu, 11 Jul 2013, Srivatsa S. Bhat wrote:
-> 
->> Oops! You are right. Hmm, this looks quite difficult to get right :(
->> There are multiple challenges here:
->>
->> 1. The sysfs files must not be removed during cpu_down, and not initialized
->>
->>    during cpu_up. That would help us preserve the file permissions.
->> 2. But we should ensure that we really do the cpufreq-core parts of the cpu
->>    initialization during cpu_up. If we fail to free some of the data-structures
->>    during cpu_down, the cpu_up callback will think that a full-init is not
->>    required and not do its job. That will make cpufreq behave erratically after
->>    suspend/resume and take us back to square one.
->>
->> 3. A full re-init in the cpu_up callback also involves memory allocations.
->>    So if we don't release the memory in the cpu_down callback, we'll end up
->>    in a memory leak.
->>
->> I tried to address all these in this patch, but you found yet another serious
->> loop-hole. I guess I'm out of ideas now... if anybody has any thoughts on how
->> to get this right, then I'm all ears. Else, we'll just revert the original
->> commit like Rafael suggested and leave it upto userspace to save and restore
->> the permissions across suspend/resume if it wants ;-(
-> 
-> Asking as a naive outsider who is completely unfamiliar with the code,
-> why are any of these things at all troublesome?
-> 
-> 	Can't cpu_up tell the difference between activating a brand-new
-> 	CPU and reactivating one that was present before but was
-> 	temporarily disabled?
-> 
-> 	Doesn't cpu_up know which data structures get freed when an
-> 	active CPU is temporarily deactivated?
-> 
-> 	Doesn't cpu_down know what memory gets allocated in cpu_up?
-> 	Can't it deallocate just the right parts for the type of
-> 	transition it is doing?
-> 
-> It sounds like you're really asking how to make sure that cpu_up and 
-> cpu_down both know what the other is doing, so that each can do the 
-> opposite of the other.  That doesn't sound hard.
->
+Commit 42913c799 (MIPS: Loongson2: Use clk API instead of direct
+dereferences) broke the cpufreq functionality on Loongson2 boards:
+clk_set_rate() is called before the CPU frequency table is initialized,
+and therefore will always fail.
 
-It would not have been hard if the code had been already structured that
-way. Currently, the code is quite a bit entangled, and it doesn't distinguish
-the "temporarily deactivated" and the "fully torn-down" cases. To add to the
-mess, the code is generously sprinkled with notifiers that are invoked every
-now and then (which depend on previous init steps etc).
+Fix by moving the clk_set_rate() after the table initialization.
+Tested on Lemote FuLoong mini-PC.
 
-But the bottomline is that this is purely a code-reorganization issue,
-nothing more than that. And hopefully we'll be able to separate out the
-"temporarily deactivated" and the "fully down" cases reasonably well, such
-that we can preserve the sysfs file permissions easily across suspend/resume.
-That's the code reorganization I'm working on at the moment; I'll post it
-out as soon as I'm done.
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: stable@vger.kernel.org
+---
+ drivers/cpufreq/loongson2_cpufreq.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Regards,
-Srivatsa S. Bhat
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+index d539127..f92b02a 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -118,11 +118,6 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		clk_put(cpuclk);
+ 		return -EINVAL;
+ 	}
+-	ret = clk_set_rate(cpuclk, rate);
+-	if (ret) {
+-		clk_put(cpuclk);
+-		return ret;
+-	}
+ 
+ 	/* clock table init */
+ 	for (i = 2;
+@@ -130,6 +125,12 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	     i++)
+ 		loongson2_clockmod_table[i].frequency = (rate * i) / 8;
+ 
++	ret = clk_set_rate(cpuclk, rate);
++	if (ret) {
++		clk_put(cpuclk);
++		return ret;
++	}
++
+ 	policy->cur = loongson2_cpufreq_get(policy->cpu);
+ 
+ 	cpufreq_frequency_table_get_attr(&loongson2_clockmod_table[0],
+-- 
+1.8.3.1
+
 
