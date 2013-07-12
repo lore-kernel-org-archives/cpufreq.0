@@ -1,42 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] MIPS: loongson2: cpufreq: fix broken cpufreq
-Date: Fri, 12 Jul 2013 11:35:05 +0530
-Message-ID: <CAOh2x==snAt8UfdG+d_FvA6m9Pqnp_BmonOB=u7UX1MLH8O89A@mail.gmail.com>
-References: <1373571281-4457-1-git-send-email-aaro.koskinen@iki.fi>
+From: kernel kernel <kernel@kenobrien.org>
+Subject: /sys/ file access
+Date: Fri, 12 Jul 2013 09:55:46 +0100
+Message-ID: <CAG=jzgD=bKTAbGtTG81XRhyBzNHtr-p-Uyh-2A5eQe0ruKkqsw@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=ZWn18pqkOq4g5qF9/TC6EvJ/G6TRlxEWcGTkw/EB3Y0=;
-        b=Cty3svmtcpUeO+KECMECX7Euql331grpSVu6wIxtW1oVBRfR9DedkbFRSbWd8R6Kn/
-         aDBmbmiVuJMNPFh73hSaBrlDaMq0mCULKrkYH8eK9LUaBnPFG/t2FFWTKG1EVJXtI9Xo
-         tqCg5irjvnuk8g5vXzm1bgOOx/45SGcK3zCWCPczZi1xaCrQiUahv/CkD/3OXGqnJ2X2
-         vWihKLj1Z3q28dJQ4kTcMaFcJh/JTBWek2bwKhKkow1y9/uWXvL8/S+j/NfX9jSlmv92
-         tNuu8qVQ9OhAVFlaX6V1tdS8O6aOlfYMVGjn/b+M7h3D+2Pohik8EQEihO3vEC1wlwdN
-         dDeQ==
-In-Reply-To: <1373571281-4457-1-git-send-email-aaro.koskinen@iki.fi>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ralf Baechle <ralf@linux-mips.org>, cpufreq@vger.kernel.org, Julia Lawall <Julia.Lawall@lip6.fr>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Fri, Jul 12, 2013 at 1:04 AM, Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
-> Commit 42913c799 (MIPS: Loongson2: Use clk API instead of direct
-> dereferences) broke the cpufreq functionality on Loongson2 boards:
-> clk_set_rate() is called before the CPU frequency table is initialized,
-> and therefore will always fail.
->
-> Fix by moving the clk_set_rate() after the table initialization.
-> Tested on Lemote FuLoong mini-PC.
->
-> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-> Cc: stable@vger.kernel.org
-> ---
->  drivers/cpufreq/loongson2_cpufreq.c | 11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
+I wish to read the file "/sys/devices/system/cpu/cpu0/cpufreq" as an
+unprivileged user. The default permissions on this file are:
 
-Ackec-by: Viresh Kumar <viresh.kumar@linaro.org>
+-r-------- 1 root root
+
+What is the rationale behind this? All other files in this directory
+are world readable.
+
+Best Regards,
+
+Ken
+
+--
+Ken O'Brien
+PhD Researcher
+Simulation Science and Extreme Events Cluster,
+3B1, UCD CASL,
+8 Belfield Business Park,
+Dublin 4,
+Ireland.
