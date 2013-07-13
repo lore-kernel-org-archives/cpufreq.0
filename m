@@ -1,32 +1,62 @@
-From: kernel kernel <kernel@kenobrien.org>
-Subject: /sys/ file access
-Date: Fri, 12 Jul 2013 09:55:46 +0100
-Message-ID: <CAG=jzgD=bKTAbGtTG81XRhyBzNHtr-p-Uyh-2A5eQe0ruKkqsw@mail.gmail.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH] cpufreq: Fix cpufreq regression after suspend/resume
+Date: Sat, 13 Jul 2013 12:16:36 +0200
+Message-ID: <1373710596.1352.26.camel@x61.thuisdomein>
+References: <51C08370.4050906@gmx.de>
+	 <CAKohpok1gThXL925Yz5UgC54vTVQgymBA1cLGER_g-dgZu0JLA@mail.gmail.com>
+	 <51CF1E53.6060902@gmx.de> <8029836.CFiJCXmRQ0@vostro.rjw.lan>
+	 <51D05DF4.50704@linux.vnet.ibm.com> <51D06556.7080204@gmx.de>
+	 <51D07E7F.2030709@linux.vnet.ibm.com> <51DDC8FA.4020609@gmx.de>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51DDC8FA.4020609@gmx.de>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-I wish to read the file "/sys/devices/system/cpu/cpu0/cpufreq" as an
-unprivileged user. The default permissions on this file are:
+On Wed, 2013-07-10 at 22:50 +0200, Toralf F=C3=B6rster wrote:
+> I tested the patch several times on top of a66b2e5 - the origin issue=
+ is
+> fixed
 
--r-------- 1 root root
+Srivatsa's patch became commit f51e1eb63d ("cpufreq: Fix cpufreq
+regression after suspend/resume").
 
-What is the rationale behind this? All other files in this directory
-are world readable.
+>  but - erratically another issue now appears : all 4 cores are runs
+> after wakeup at 2.6 GHz.
 
-Best Regards,
+Well, a laptop I use seems to run into something related: the second of
+its two cores can get stuck at a fixed frequency after resume. Often
+it's its maximum frequency. That makes the CPU run hot, without actuall=
+y
+doing much work. But it can also get stuck at its lowest frequency.
 
-Ken
+Please note that commit f51e1eb63d, which is part of v3.10.1-rc1,
+doesn't seem to cause this behavior. This issue can already be seen whe=
+n
+running v3.10.0. So perhaps that commit just made this issue more
+noticeable to Toralf. But it's not clear to me what Toralf's origin(al?=
+)
+issue actually was.
 
---
-Ken O'Brien
-PhD Researcher
-Simulation Science and Extreme Events Cluster,
-3B1, UCD CASL,
-8 Belfield Business Park,
-Dublin 4,
-Ireland.
+Anyhow, I suspect that the stuck frequency is a regression introduced i=
+n
+v3.10.0. But I have been unable to pinpoint it to a commit added in the
+v3.10 cycle through bisecting. I must have marked a commit good that wa=
+s
+actually bad, just because a few suspend and resume cycles didn't
+trigger this issue. To be continued...
+=20
+> The temporary hot fix is to switch between governor performance and
+> ondemand for all 4 cores.
+
+That workaround works here too. I switch the core that is stuck at a
+particular frequency to some other governor and then back to ondemand.
+
+Thanks,
+
+
+Paul Bolle
