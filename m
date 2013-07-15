@@ -1,39 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: /sys/ file access
-Date: Mon, 15 Jul 2013 15:04:45 +0530
-Message-ID: <CAOh2x=kOtD88pjAVjE-mJnvcvNi6-EG6hLFeRTLa2VAS1CSpvQ@mail.gmail.com>
-References: <CAG=jzgD=bKTAbGtTG81XRhyBzNHtr-p-Uyh-2A5eQe0ruKkqsw@mail.gmail.com>
+Subject: Re: [PATCH 1/6] cpufreq: Add debugfs directory for cpufreq
+Date: Mon, 15 Jul 2013 15:32:08 +0530
+Message-ID: <CAKohpo=jZeF=Gjg3CfsRoAUwyMkSTUTVcmD=ygFYMbM2s6YwPw@mail.gmail.com>
+References: <1373014001-17746-1-git-send-email-cw00.choi@samsung.com>
+	<1373014001-17746-2-git-send-email-cw00.choi@samsung.com>
+	<CAKohpomriPXmK3TRFqinyEEuG39O1ppKmPuW0gvs3iRLnsoPrg@mail.gmail.com>
+	<51DD1BB6.3080304@samsung.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        bh=Br/SEipcXRXNH7dIkIrGLL4+OVwceCBG+272LHtZPMU=;
-        b=Ge7QaVnV09RC5WmjT3UEMLlq+pvraM189soieNu0lzBCtZIFtf2tIV/5iKEIAodEwE
-         BrM/nAuaSJyyZ1Ka8aSntHjBbtm2aCojxxXoOpuyPJCY4jfkQHe7AI7BBRJBzTWC2158
-         XJvkEIWwoOT71AtFZ3uOmLUu0myoK+1+CZ2PKY5CgRa6s32qXF4p1ReWUm7ketRi7+Pf
-         bBokXuzF1pz5spAh5R6lu4TxoUzDPDHrJObuEUdynqnovOsV0uOQv+abHhMXTcoLKmx6
-         P2MpB7bPN13t51pxqW/3oGRjKJpCJxmRuJePMD0fgAZaAIL5YeNAuHEjELa+hBWVINTf
-         Neog==
-In-Reply-To: <CAG=jzgD=bKTAbGtTG81XRhyBzNHtr-p-Uyh-2A5eQe0ruKkqsw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <51DD1BB6.3080304@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kernel kernel <kernel@kenobrien.org>
-Cc: cpufreq@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
 
-On Fri, Jul 12, 2013 at 2:25 PM, kernel kernel <kernel@kenobrien.org> wrote:
-> I wish to read the file "/sys/devices/system/cpu/cpu0/cpufreq" as an
-> unprivileged user. The default permissions on this file are:
+On 10 July 2013 14:00, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> On 07/09/2013 06:23 PM, Viresh Kumar wrote:
+>> On 5 July 2013 14:16, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+
+>>> +static struct dentry *cpufreq_debugfs;
+>>
+>> Probably make this dependent on CONFIG_CPU_FREQ_STAT?
 >
-> -r-------- 1 root root
+> I thought that '/sys/kernel/debug/cpufreq' is always created in the same as sysfs file
+> when added cpufreq driver. Only the debugfs file(/sys/kernel/debug/cpufreq/load_table)
+> has the dependency on CONFIG_CPU_FREQ_STAT.
 >
-> What is the rationale behind this? All other files in this directory
-> are world readable.
+> If *cpufreq_debugfs has the dependency on CONFIG_CPU_FREQ_STAT,
+> I should add checking statement with '#ifdef CONFIG_CPU_FREQ_STAT' keyword in cpufreq.c.
+>
+> What is your opinion to add the dependency of CONFIG_CPU_FREQ_STAT
+> in cpufreq.c?
 
-Permissions as shown on my Thinkpad with ubuntu 12.04
-
-viresh@blr-linut-001:$ ll /sys/devices/system/cpu/cpu0/
-drwxr-xr-x 3 root root    0 Jul 11 17:53 cpufreq/
+I thought this is yet another piece of stats that we may or maynot use. And
+it should be configurable if user wants it or not. So, probably you need
+to have dependency on CONFIG_CPU_FREQ_STAT
