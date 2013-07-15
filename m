@@ -1,152 +1,41 @@
-From: Peter Wu <lekensteyn@gmail.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Subject: Re: [LOCKDEP] cpufreq: possible circular locking dependency detected
-Date: Mon, 15 Jul 2013 22:49:38 +0200
-Message-ID: <3163965.oDB9vd9ImG@al>
-References: <20130625211544.GA2270@swordfish> <20130715082918.GA2435@swordfish> <51E3F6EB.2050807@linux.vnet.ibm.com>
+Date: Tue, 16 Jul 2013 02:20:57 +0300
+Message-ID: <20130715232057.GA2486@swordfish>
+References: <20130625211544.GA2270@swordfish>
+ <51D10899.1080501@linux.vnet.ibm.com>
+ <20130710231305.GA4046@swordfish>
+ <51DE1BE1.3090707@linux.vnet.ibm.com>
+ <20130714114721.GB2178@swordfish>
+ <20130714120629.GA4067@swordfish>
+ <51E37194.1080103@linux.vnet.ibm.com>
+ <51E3AA3B.9090003@linux.vnet.ibm.com>
+ <20130715082918.GA2435@swordfish>
+ <51E3F6EB.2050807@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20120113;
-        h=from:to:cc:subject:date:message-id:user-agent:in-reply-to
-         :references:mime-version:content-transfer-encoding:content-type;
-        bh=iJlAhlpCQfj1BrTcOVpYohwszNJZgNuJCMQycHhC1u0=;
-        b=X4b7Q1rAaFtkCeMYT1SXANPElgf0++AbRIV58YVfnDn3DNgzWdIUorIdQQiAHW4OOw
-         1+DEXA/guGBl7DWeuC8EKYkK4AmavJVH5Mjy6Gvu/SdJmi6w9EvHJ6CesJrPTvHhvAjY
-         JxUMe12sv4bUnthDPMBQKlgnmmHaE7ghxL2bxrzfIuqYxA3WU7qMIpGDuVcEDwYDOltv
-         jS6oB84nx4u9T4xDJz4zMYCqau6n2ppLLJoIuElH2aMox3uaiMDolnqmUPNp2/EKSpf0
-         pBE2t5LLGDMHMEuNCkCecHT8JLTt2fR7pQrw5GK1grGO/+AU55Uzib2ZFiwtJ+QSvhji
-         o4HA==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=DrSf06/fcULR1BJzZEZjtfILxGDzpIti5EYF7WwlSj0=;
+        b=eUYT67htyJc5C5ZY1TUfwpnOm3vkIw6R2JPrjgJQFzkGRF4UVdcSV5P0gKzkz9/gu4
+         QeJTRIpHiv7GC7g3HbAL4aoAJ8ItSZPPQtwcN+seBjwu12tAY5lNyNfJftdZXxg60BBx
+         Qzl6hFEVpjz++aomC0cGPxZVWXrDqgHpo78DD57OGTzMuj4Pu8caO8gxWChIVTwr1/zQ
+         uvb/NFyWgA1uQ6jr4LotTfDbBkbGga6QN5BeMm2Kwie+GxckSV+/Y3h1bU0RboyjgrW7
+         uwpZyMJvtvJh4iibqypYtSQxVGsKHh3jsitYiVQFW/jI+xescjAIqtDa24zDZug44Q+q
+         35Vw==
+Content-Disposition: inline
 In-Reply-To: <51E3F6EB.2050807@linux.vnet.ibm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Michael Wang <wangyun@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hi,
-
-I think I also encountered this similar issue after resume (and possibly a
-real deadlock yesterday before/during suspend?). One message:
-
-[   71.204848] ======================================================
-[   71.204850] [ INFO: possible circular locking dependency detected ]
-[   71.204852] 3.11.0-rc1cold-00008-g47188d3 #1 Tainted: G        W   
-[   71.204854] -------------------------------------------------------
-[   71.204855] ondemand/2034 is trying to acquire lock:
-[   71.204857]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff8104ba31>] get_online_cpus+0x41/0x60
-[   71.204869] 
-[   71.204869] but task is already holding lock:
-[   71.204870]  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<ffffffff8151fba9>] lock_policy_rwsem_write+0x39/0x40
-[   71.204879] 
-[   71.204879] which lock already depends on the new lock.
-[   71.204879] 
-[   71.204881] 
-[   71.204881] the existing dependency chain (in reverse order) is:
-[   71.204884] 
--> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
-[   71.204889]        [<ffffffff810ac130>] lock_acquire+0x90/0x140
-[   71.204894]        [<ffffffff81660fe9>] down_write+0x49/0x6b
-[   71.204898]        [<ffffffff8151fba9>] lock_policy_rwsem_write+0x39/0x40
-[   71.204901]        [<ffffffff815213e0>] cpufreq_update_policy+0x40/0x130
-[   71.204904]        [<ffffffff81522327>] cpufreq_stat_cpu_callback+0x27/0x70
-[   71.204907]        [<ffffffff81668acd>] notifier_call_chain+0x4d/0x70
-[   71.204911]        [<ffffffff8107730e>] __raw_notifier_call_chain+0xe/0x10
-[   71.204915]        [<ffffffff8104b780>] __cpu_notify+0x20/0x40
-[   71.204918]        [<ffffffff8104b916>] _cpu_up+0x116/0x170
-[   71.204921]        [<ffffffff8164d540>] enable_nonboot_cpus+0x90/0xe0
-[   71.204926]        [<ffffffff81098bd1>] suspend_devices_and_enter+0x301/0x420
-[   71.204930]        [<ffffffff81098ec0>] pm_suspend+0x1d0/0x230
-[   71.205000]        [<ffffffff81097b2a>] state_store+0x8a/0x100
-[   71.205005]        [<ffffffff8131559f>] kobj_attr_store+0xf/0x30
-[   71.205009]        [<ffffffff811fac36>] sysfs_write_file+0xe6/0x170
-[   71.205014]        [<ffffffff81183c5e>] vfs_write+0xce/0x200
-[   71.205018]        [<ffffffff81184165>] SyS_write+0x55/0xa0
-[   71.205022]        [<ffffffff8166d3c2>] system_call_fastpath+0x16/0x1b
-[   71.205025] 
--> #0 (cpu_hotplug.lock){+.+.+.}:
-[   71.205093]        [<ffffffff810ab35c>] __lock_acquire+0x174c/0x1ed0
-[   71.205096]        [<ffffffff810ac130>] lock_acquire+0x90/0x140
-[   71.205099]        [<ffffffff8165f7b0>] mutex_lock_nested+0x70/0x380
-[   71.205102]        [<ffffffff8104ba31>] get_online_cpus+0x41/0x60
-[   71.205217]        [<ffffffff815247f8>] gov_queue_work+0x28/0xc0
-[   71.205221]        [<ffffffff81524d97>] cpufreq_governor_dbs+0x507/0x710
-[   71.205224]        [<ffffffff81522a17>] od_cpufreq_governor_dbs+0x17/0x20
-[   71.205226]        [<ffffffff8151fec7>] __cpufreq_governor+0x87/0x1c0
-[   71.205230]        [<ffffffff81520445>] __cpufreq_set_policy+0x1b5/0x1e0
-[   71.205232]        [<ffffffff8152055a>] store_scaling_governor+0xea/0x1f0
-[   71.205235]        [<ffffffff8151fcbd>] store+0x6d/0xc0
-[   71.205238]        [<ffffffff811fac36>] sysfs_write_file+0xe6/0x170
-[   71.205305]        [<ffffffff81183c5e>] vfs_write+0xce/0x200
-[   71.205308]        [<ffffffff81184165>] SyS_write+0x55/0xa0
-[   71.205311]        [<ffffffff8166d3c2>] system_call_fastpath+0x16/0x1b
-[   71.205313] 
-[   71.205313] other info that might help us debug this:
-[   71.205313] 
-[   71.205315]  Possible unsafe locking scenario:
-[   71.205315] 
-[   71.205317]        CPU0                    CPU1
-[   71.205318]        ----                    ----
-[   71.205383]   lock(&per_cpu(cpu_policy_rwsem, cpu));
-[   71.205386]                                lock(cpu_hotplug.lock);
-[   71.205389]                                lock(&per_cpu(cpu_policy_rwsem, cpu));
-[   71.205392]   lock(cpu_hotplug.lock);
-[   71.205509] 
-[   71.205509]  *** DEADLOCK ***
-[   71.205509] 
-[   71.205511] 4 locks held by ondemand/2034:
-[   71.205512]  #0:  (sb_writers#6){.+.+.+}, at: [<ffffffff81183d63>] vfs_write+0x1d3/0x200
-[   71.205520]  #1:  (&buffer->mutex){+.+.+.}, at: [<ffffffff811fab94>] sysfs_write_file+0x44/0x170
-[   71.205640]  #2:  (s_active#178){.+.+.+}, at: [<ffffffff811fac1d>] sysfs_write_file+0xcd/0x170
-[   71.205648]  #3:  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<ffffffff8151fba9>] lock_policy_rwsem_write+0x39/0x40
-[   71.205655] 
-[   71.205655] stack backtrace:
-[   71.205658] CPU: 1 PID: 2034 Comm: ondemand Tainted: G        W    3.11.0-rc1cold-00008-g47188d3 #1
-[   71.205660] Hardware name: Gigabyte Technology Co., Ltd. To be filled by O.E.M./Z68X-UD3H-B3, BIOS U1l 03/08/2013
-[   71.205773]  ffffffff8218fd20 ffff8805fc5d38e8 ffffffff8165b74d 0000000000000000
-[   71.205778]  ffffffff8211f130 ffff8805fc5d3938 ffffffff81657cef ffffffff8218fd20
-[   71.205783]  ffff8805fc5d39c0 ffff8805fc5d3938 ffff880603726678 ffff880603725f10
-[   71.205900] Call Trace:
-[   71.205903]  [<ffffffff8165b74d>] dump_stack+0x55/0x76
-[   71.205907]  [<ffffffff81657cef>] print_circular_bug+0x1fb/0x20c
-[   71.205910]  [<ffffffff810ab35c>] __lock_acquire+0x174c/0x1ed0
-[   71.205913]  [<ffffffff810aa00c>] ? __lock_acquire+0x3fc/0x1ed0
-[   71.205916]  [<ffffffff8104ba31>] ? get_online_cpus+0x41/0x60
-[   71.205919]  [<ffffffff810ac130>] lock_acquire+0x90/0x140
-[   71.205921]  [<ffffffff8104ba31>] ? get_online_cpus+0x41/0x60
-[   71.205924]  [<ffffffff8165f7b0>] mutex_lock_nested+0x70/0x380
-[   71.205927]  [<ffffffff8104ba31>] ? get_online_cpus+0x41/0x60
-[   71.205930]  [<ffffffff810a89ee>] ? mark_held_locks+0x7e/0x150
-[   71.205933]  [<ffffffff81660b9e>] ? mutex_unlock+0xe/0x10
-[   71.205936]  [<ffffffff8165fb91>] ? __mutex_unlock_slowpath+0xd1/0x180
-[   71.205938]  [<ffffffff8104ba31>] get_online_cpus+0x41/0x60
-[   71.205941]  [<ffffffff815247f8>] gov_queue_work+0x28/0xc0
-[   71.205944]  [<ffffffff81524d97>] cpufreq_governor_dbs+0x507/0x710
-[   71.205947]  [<ffffffff81522a17>] od_cpufreq_governor_dbs+0x17/0x20
-[   71.205950]  [<ffffffff8151fec7>] __cpufreq_governor+0x87/0x1c0
-[   71.206009]  [<ffffffff81520445>] __cpufreq_set_policy+0x1b5/0x1e0
-[   71.206012]  [<ffffffff8152055a>] store_scaling_governor+0xea/0x1f0
-[   71.206014]  [<ffffffff815214d0>] ? cpufreq_update_policy+0x130/0x130
-[   71.206018]  [<ffffffff8151fba9>] ? lock_policy_rwsem_write+0x39/0x40
-[   71.206021]  [<ffffffff8151fcbd>] store+0x6d/0xc0
-[   71.206024]  [<ffffffff811fac36>] sysfs_write_file+0xe6/0x170
-[   71.206026]  [<ffffffff81183c5e>] vfs_write+0xce/0x200
-[   71.206029]  [<ffffffff81184165>] SyS_write+0x55/0xa0
-[   71.206032]  [<ffffffff8166d3c2>] system_call_fastpath+0x16/0x1b
-
-(the other was with the locks acquired lock reversed, i.e. cpu_hotplug.lock
-was held on CPU0 and CPU1 tries to lock &per_cpu(...)). This one is tagged
-"ondemand", the other one "pm-suspend" (reproducable with a high probability).
-
-On Monday 15 July 2013 18:49:39 Srivatsa S. Bhat wrote:
-> I think I finally found out what exactly is going wrong! :-)
-> 
-> I tried reproducing the problem on my machine, and found that the problem
-> (warning about IPIs to offline CPUs) happens *only* while doing
-> suspend/resume and not during halt/shutdown/reboot or regular CPU hotplug
-> via sysfs files. That got me thinking and I finally figured out that commit
-> a66b2e5 is again the culprit.
-> 
+On (07/15/13 18:49), Srivatsa S. Bhat wrote:
+[..]
 > So here is the solution:
 > 
 > On 3.11-rc1, apply these patches in the order mentioned below, and check
@@ -160,20 +49,42 @@ On Monday 15 July 2013 18:49:39 Srivatsa S. Bhat wrote:
 > 
 > ---------------------------------------------------------------------------
 > 
+
+Hello Srivatsa,
+Thanks, I'll test a bit later -- in the morning. (laptop stopped resuming from
+suspend, probably radeon dmp).
+
+
+
+Shouldn't we also kick the console lock?
+
+
+ kernel/printk.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/kernel/printk.c b/kernel/printk.c
+index d37d45c..3e20233 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1926,8 +1926,11 @@ static int __cpuinit console_cpu_notify(struct notifier_block *self,
+ {
+ 	switch (action) {
+ 	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
+ 	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
+ 	case CPU_DOWN_FAILED:
++	case CPU_DOWN_FAILED_FROZEN:
+ 	case CPU_UP_CANCELED:
+ 		console_lock();
+ 		console_unlock();
+
+
+
 > 
 > From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> Subject: [PATCH] cpufreq: Revert commit 2f7021a to fix CPU hotplug
-> regression
-
-Please use '2f7021a8', without the '8' the commit hash is ambiguous.
-(git describe says: v3.10-rc4-2-g2f7021a8)
-
-I ran six times `pm-suspend` without any lockdep warnings. I reverted a66b2e5
-and 2f7021a8 on top of current master (47188d3).
-
-Regards,
-Peter
-
+> Subject: [PATCH] cpufreq: Revert commit 2f7021a to fix CPU hotplug regression
+> 
 > commit 2f7021a (cpufreq: protect 'policy->cpus' from offlining during
 > __gov_queue_work()) caused a regression in CPU hotplug, because it lead
 > to a deadlock between cpufreq governor worker thread and the CPU hotplug
@@ -186,11 +97,10 @@ Peter
 > [   60.277407] 3.10.0-rc7-dbg-01385-g241fd04-dirty #1744 Not tainted
 > [   60.277411] -------------------------------------------------------
 > [   60.277417] bash/2225 is trying to acquire lock:
-> [   60.277422]  ((&(&j_cdbs->work)->work)){+.+...}, at: [<ffffffff810621b5>]
-> flush_work+0x5/0x280 [   60.277444] but task is already holding lock:
-> [   60.277449]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81042d8b>]
-> cpu_hotplug_begin+0x2b/0x60 [   60.277465] which lock already depends on
-> the new lock.
+> [   60.277422]  ((&(&j_cdbs->work)->work)){+.+...}, at: [<ffffffff810621b5>] flush_work+0x5/0x280
+> [   60.277444] but task is already holding lock:
+> [   60.277449]  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81042d8b>] cpu_hotplug_begin+0x2b/0x60
+> [   60.277465] which lock already depends on the new lock.
 > 
 > [   60.277472] the existing dependency chain (in reverse order) is:
 > [   60.277477] -> #2 (cpu_hotplug.lock){+.+.+.}:
@@ -216,16 +126,15 @@ Peter
 > [   60.277669]        [<ffffffff810ac6d4>] lock_acquire+0xa4/0x200
 > [   60.277677]        [<ffffffff810621ed>] flush_work+0x3d/0x280
 > [   60.277685]        [<ffffffff81062d8a>] __cancel_work_timer+0x8a/0x120
-> [   60.277693]        [<ffffffff81062e53>]
-> cancel_delayed_work_sync+0x13/0x20 [   60.277701]       
-> [<ffffffff814b89d9>] cpufreq_governor_dbs+0x529/0x6f0 [   60.277709]       
-> [<ffffffff814b76a7>] cs_cpufreq_governor_dbs+0x17/0x20 [   60.277719]      
->  [<ffffffff814b5df8>] __cpufreq_governor+0x48/0x100 [   60.277728]       
-> [<ffffffff814b6b80>] __cpufreq_remove_dev.isra.14+0x80/0x3c0 [   60.277737]
->        [<ffffffff815adc0d>] cpufreq_cpu_callback+0x38/0x4c [   60.277747]  
->      [<ffffffff81071a4d>] notifier_call_chain+0x5d/0x110 [   60.277759]    
->    [<ffffffff81071b0e>] __raw_notifier_call_chain+0xe/0x10 [   60.277768]  
->      [<ffffffff815a0a68>] _cpu_down+0x88/0x330
+> [   60.277693]        [<ffffffff81062e53>] cancel_delayed_work_sync+0x13/0x20
+> [   60.277701]        [<ffffffff814b89d9>] cpufreq_governor_dbs+0x529/0x6f0
+> [   60.277709]        [<ffffffff814b76a7>] cs_cpufreq_governor_dbs+0x17/0x20
+> [   60.277719]        [<ffffffff814b5df8>] __cpufreq_governor+0x48/0x100
+> [   60.277728]        [<ffffffff814b6b80>] __cpufreq_remove_dev.isra.14+0x80/0x3c0
+> [   60.277737]        [<ffffffff815adc0d>] cpufreq_cpu_callback+0x38/0x4c
+> [   60.277747]        [<ffffffff81071a4d>] notifier_call_chain+0x5d/0x110
+> [   60.277759]        [<ffffffff81071b0e>] __raw_notifier_call_chain+0xe/0x10
+> [   60.277768]        [<ffffffff815a0a68>] _cpu_down+0x88/0x330
 > [   60.277779]        [<ffffffff815a0d46>] cpu_down+0x36/0x50
 > [   60.277788]        [<ffffffff815a2748>] store_online+0x98/0xd0
 > [   60.277796]        [<ffffffff81452a28>] dev_attr_store+0x18/0x30
@@ -249,23 +158,19 @@ Peter
 > [   60.277907]  *** DEADLOCK ***
 > 
 > [   60.277915] 6 locks held by bash/2225:
-> [   60.277919]  #0:  (sb_writers#6){.+.+.+}, at: [<ffffffff81168173>]
-> vfs_write+0x1c3/0x1f0 [   60.277937]  #1:  (&buffer->mutex){+.+.+.}, at:
-> [<ffffffff811d9e3c>] sysfs_write_file+0x3c/0x150 [   60.277954]  #2: 
-> (s_active#61){.+.+.+}, at: [<ffffffff811d9ec3>] sysfs_write_file+0xc3/0x150
-> [   60.277972]  #3:  (x86_cpu_hotplug_driver_mutex){+.+...}, at:
-> [<ffffffff81024cf7>] cpu_hotplug_driver_lock+0x17/0x20 [   60.277990]  #4: 
-> (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff815a0d32>] cpu_down+0x22/0x50
-> [   60.278007]  #5:  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81042d8b>]
-> cpu_hotplug_begin+0x2b/0x60 [   60.278023] stack backtrace:
-> [   60.278031] CPU: 3 PID: 2225 Comm: bash Not tainted
-> 3.10.0-rc7-dbg-01385-g241fd04-dirty #1744 [   60.278037] Hardware name:
-> Acer             Aspire 5741G    /Aspire 5741G    , BIOS V1.20 02/08/2011 [
->   60.278042]  ffffffff8204e110 ffff88014df6b9f8 ffffffff815b3d90
-> ffff88014df6ba38 [   60.278055]  ffffffff815b0a8d ffff880150ed3f60
-> ffff880150ed4770 3871c4002c8980b2 [   60.278068]  ffff880150ed4748
-> ffff880150ed4770 ffff880150ed3f60 ffff88014df6bb00 [   60.278081] Call
-> Trace:
+> [   60.277919]  #0:  (sb_writers#6){.+.+.+}, at: [<ffffffff81168173>] vfs_write+0x1c3/0x1f0
+> [   60.277937]  #1:  (&buffer->mutex){+.+.+.}, at: [<ffffffff811d9e3c>] sysfs_write_file+0x3c/0x150
+> [   60.277954]  #2:  (s_active#61){.+.+.+}, at: [<ffffffff811d9ec3>] sysfs_write_file+0xc3/0x150
+> [   60.277972]  #3:  (x86_cpu_hotplug_driver_mutex){+.+...}, at: [<ffffffff81024cf7>] cpu_hotplug_driver_lock+0x17/0x20
+> [   60.277990]  #4:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff815a0d32>] cpu_down+0x22/0x50
+> [   60.278007]  #5:  (cpu_hotplug.lock){+.+.+.}, at: [<ffffffff81042d8b>] cpu_hotplug_begin+0x2b/0x60
+> [   60.278023] stack backtrace:
+> [   60.278031] CPU: 3 PID: 2225 Comm: bash Not tainted 3.10.0-rc7-dbg-01385-g241fd04-dirty #1744
+> [   60.278037] Hardware name: Acer             Aspire 5741G    /Aspire 5741G    , BIOS V1.20 02/08/2011
+> [   60.278042]  ffffffff8204e110 ffff88014df6b9f8 ffffffff815b3d90 ffff88014df6ba38
+> [   60.278055]  ffffffff815b0a8d ffff880150ed3f60 ffff880150ed4770 3871c4002c8980b2
+> [   60.278068]  ffff880150ed4748 ffff880150ed4770 ffff880150ed3f60 ffff88014df6bb00
+> [   60.278081] Call Trace:
 > [   60.278091]  [<ffffffff815b3d90>] dump_stack+0x19/0x1b
 > [   60.278101]  [<ffffffff815b0a8d>] print_circular_bug+0x2b6/0x2c5
 > [   60.278111]  [<ffffffff810ab826>] __lock_acquire+0x1766/0x1d30
@@ -283,10 +188,10 @@ Peter
 > [   60.278225]  [<ffffffff814b76a7>] cs_cpufreq_governor_dbs+0x17/0x20
 > [   60.278234]  [<ffffffff814b5df8>] __cpufreq_governor+0x48/0x100
 > [   60.278244]  [<ffffffff814b6b80>] __cpufreq_remove_dev.isra.14+0x80/0x3c0
-> [   60.278255]  [<ffffffff815adc0d>] cpufreq_cpu_callback+0x38/0x4c [  
-> 60.278265]  [<ffffffff81071a4d>] notifier_call_chain+0x5d/0x110 [  
-> 60.278275]  [<ffffffff81071b0e>] __raw_notifier_call_chain+0xe/0x10 [  
-> 60.278284]  [<ffffffff815a0a68>] _cpu_down+0x88/0x330
+> [   60.278255]  [<ffffffff815adc0d>] cpufreq_cpu_callback+0x38/0x4c
+> [   60.278265]  [<ffffffff81071a4d>] notifier_call_chain+0x5d/0x110
+> [   60.278275]  [<ffffffff81071b0e>] __raw_notifier_call_chain+0xe/0x10
+> [   60.278284]  [<ffffffff815a0a68>] _cpu_down+0x88/0x330
 > [   60.278292]  [<ffffffff81024cf7>] ? cpu_hotplug_driver_lock+0x17/0x20
 > [   60.278302]  [<ffffffff815a0d46>] cpu_down+0x36/0x50
 > [   60.278311]  [<ffffffff815a2748>] store_online+0x98/0xd0
@@ -313,9 +218,9 @@ Peter
 > 
 > The reason for _that_ in turn, it turns out is that, earlier halt/shutdown
 > was being done by disabling non-boot CPUs while tasks were frozen, just like
-> suspend/resume....  but commit cf7df378a (reboot: rigrate shutdown/reboot
-> to boot cpu) which came somewhere along that very same time changed that
-> logic: shutdown/halt no longer takes CPUs offline.
+> suspend/resume....  but commit cf7df378a (reboot: rigrate shutdown/reboot to
+> boot cpu) which came somewhere along that very same time changed that logic:
+> shutdown/halt no longer takes CPUs offline.
 > Thus, the test-cases for reproducing the bug were vastly different and thus
 > we went totally off the trail.
 > 
@@ -333,8 +238,8 @@ Peter
 >  drivers/cpufreq/cpufreq_governor.c |    3 ---
 >  1 file changed, 3 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c
-> b/drivers/cpufreq/cpufreq_governor.c index 4645876..7b839a8 100644
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 4645876..7b839a8 100644
 > --- a/drivers/cpufreq/cpufreq_governor.c
 > +++ b/drivers/cpufreq/cpufreq_governor.c
 > @@ -25,7 +25,6 @@
@@ -342,11 +247,11 @@ Peter
 >  #include <linux/types.h>
 >  #include <linux/workqueue.h>
 > -#include <linux/cpu.h>
-> 
+>  
 >  #include "cpufreq_governor.h"
-> 
-> @@ -137,10 +136,8 @@ void gov_queue_work(struct dbs_data *dbs_data, struct
-> cpufreq_policy *policy, if (!all_cpus) {
+>  
+> @@ -137,10 +136,8 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>  	if (!all_cpus) {
 >  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
 >  	} else {
 > -		get_online_cpus();
@@ -356,5 +261,4 @@ Peter
 >  	}
 >  }
 >  EXPORT_SYMBOL_GPL(gov_queue_work);
-
-
+> 
