@@ -1,82 +1,80 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [LOCKDEP] cpufreq: possible circular locking dependency detected
-Date: Mon, 15 Jul 2013 19:02:09 +0530
-Message-ID: <51E3F9D9.8060403@linux.vnet.ibm.com>
-References: <20130625211544.GA2270@swordfish> <51D10899.1080501@linux.vnet.ibm.com> <20130710231305.GA4046@swordfish> <51DE1BE1.3090707@linux.vnet.ibm.com> <20130714114721.GB2178@swordfish> <20130714120629.GA4067@swordfish> <51E37194.1080103@linux.vnet.ibm.com> <51E3AA3B.9090003@linux.vnet.ibm.com> <20130715082918.GA2435@swordfish> <51E3F6EB.2050807@linux.vnet.ibm.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [RFC PATCH 02/11] ARM: DT/kernel: define ARM specific arch_of_get_cpu_node
+Date: Mon, 15 Jul 2013 14:10:59 -0500
+Message-ID: <51E44943.7000600@gmail.com>
+References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51E3F6EB.2050807@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=5o0RltoBVy3FW0hEYFJP15qPY+vwPQ1bb2q1Xz52zmg=;
+        b=CdjRPRlVhTX4ymX5amPxokIxUFsdc34w0b3SbN3g7yv3Zhtu4gA33qFhP15iKRXbKy
+         DzWCusO8f++S0d4RnDr+/ybX7wxtqr8ebeip6UXxPJ3RvrJmKhlsHUsFGhUgiEaw8NNs
+         3jzzxKRlpGqfbQZvCXOogi4gaXGXGZKEby8w6QsTfqIaFXxUEQbfc70LK4byI2WyRkdt
+         UciErSr0SHjs1+lS5yccG6eeD6qN7wB+WIoewdNV4MJK7jBFsNb73LDD8lJj2pKu2fRv
+         d0XgG/FyYK8Eoq2iDmQf9y1nCZAc70U99xNeW9yNOa7Zi7Qd9a/haCMIBlfchbJ6GbMp
+         JB7w==
+In-Reply-To: <1373883732-26303-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Michael Wang <wangyun@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Sudeep.KarkadaNagesha@arm.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, linux@arm.linux.org.uk, arnd@arndb.de, viresh.kumar@linaro.org, rob.herring@calxeda.com, rjw@sisk.pl, grant.likely@linaro.org, cpufreq@vger.kernel.org, kernel@pengutronix.de, gregkh@linuxfoundation.org, olof@lixom.net, gregory.clement@free-electrons.com, shawn.guo@linaro.org
 
-On 07/15/2013 06:49 PM, Srivatsa S. Bhat wrote:
-[...] 
-> The intent of this commit was to avoid warnings during CPU hotplug, which
-> indicated that offline CPUs were getting IPIs from the cpufreq governor's
-> work items. But the real root-cause of that problem was commit a66b2e5
-> (cpufreq: Preserve sysfs files across suspend/resume) because it totally
-> skipped all the cpufreq callbacks during CPU hotplug in the suspend/resume
-> path, and hence it never actually shut down the cpufreq governor's worker
-> threads during CPU offline in the suspend/resume path.
+On 07/15/2013 05:22 AM, Sudeep.KarkadaNagesha@arm.com wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> Reflecting back, the reason why we never suspected that commit as the
-> root-cause earlier, was that the original issue was reported with just the
-> halt command and nobody had brought in suspend/resume to the equation.
+> CPU subsystem now provides architecture specific hook to retrieve the
+> of_node. Most of the cpu DT node parsing and initialisation is contained
+> in devtree.c. It's better to contain all CPU device node parsing there.
 > 
-> The reason for _that_ in turn, it turns out is that, earlier halt/shutdown
-> was being done by disabling non-boot CPUs while tasks were frozen, just like
-> suspend/resume....  but commit cf7df378a (reboot: rigrate shutdown/reboot to
-> boot cpu) which came somewhere along that very same time changed that logic:
-> shutdown/halt no longer takes CPUs offline.
-> Thus, the test-cases for reproducing the bug were vastly different and thus
-> we went totally off the trail.
+> arch_of_get_cpu_node is mainly used to assign cpu->of_node when CPUs get
+> registered. This patch overrides the defination of the same. It can also
+> act as the helper function in pre-SMP/early initialisation stages to
+> retrieve CPU device node pointers in logical ordering.
 > 
-> Overall, it was one hell of a confusion with so many commits affecting
-> each other and also affecting the symptoms of the problems in subtle
-> ways. Finally, now since the original problematic commit (a66b2e5) has been
-> completely reverted, revert this intermediate fix too (2f7021a), to fix the
-> CPU hotplug deadlock. Phew!
+> This mainly helps to avoid replication of the code doing CPU node parsing
+> and physical(MPIDR) to logical mapping.
 > 
-> Reported-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> Reported-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Forgot to add: If this solves the issues people are facing, IMHO this should
-also be CC'ed to stable just like the full-revert of a66b2e5, .
+[snip]
 
-Regards,
-Srivatsa S. Bhat
+> +struct device_node * __init arch_of_get_cpu_node(int cpu)
+> +{
+> +	struct device_node *cpun, *cpus;
+> +	const u32 *cell;
+> +	u64 hwid;
+> +	int ac;
+> +
+> +	cpus = of_find_node_by_path("/cpus");
+> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+> +		return NULL;
+> +
+> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
+> +		ac = of_n_addr_cells(cpus);
+> +
+> +	for_each_child_of_node(cpus, cpun) {
+> +		if (of_node_cmp(cpun->type, "cpu"))
+> +			continue;
+> +		cell = of_get_property(cpun, "reg", NULL);
+> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
+> +			continue;
+> +
+> +		hwid = of_read_number(cell, ac);
+> +		if ((hwid & MPIDR_HWID_BITMASK) == cpu_logical_map(cpu))
 
-> ---
-> 
->  drivers/cpufreq/cpufreq_governor.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 4645876..7b839a8 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -25,7 +25,6 @@
->  #include <linux/slab.h>
->  #include <linux/types.h>
->  #include <linux/workqueue.h>
-> -#include <linux/cpu.h>
->  
->  #include "cpufreq_governor.h"
->  
-> @@ -137,10 +136,8 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
->  	if (!all_cpus) {
->  		__gov_queue_work(smp_processor_id(), dbs_data, delay);
->  	} else {
-> -		get_online_cpus();
->  		for_each_cpu(i, policy->cpus)
->  			__gov_queue_work(i, dbs_data, delay);
-> -		put_online_cpus();
->  	}
->  }
->  EXPORT_SYMBOL_GPL(gov_queue_work);
-> 
+Most of this function is not ARM specific, so it would be nice if we
+could shrink the arch specific part down to just this match. A default
+match of reg == logical cpu number might be useful.
+
+The powermac cpufreq driver could probably also be converted
+(arch/powerpc/platforms/powermac/cpufreq_64.c).
+
+Other than that, this series looks good to me.
+
+Rob
+
