@@ -1,12 +1,12 @@
 From: Sudeep.KarkadaNagesha@arm.com
-Subject: [RFC PATCH 09/11] cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
-Date: Mon, 15 Jul 2013 11:22:10 +0100
-Message-ID: <1373883732-26303-10-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [RFC PATCH 08/11] cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+Date: Mon, 15 Jul 2013 11:22:09 +0100
+Message-ID: <1373883732-26303-9-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <1373883732-26303-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,44 +22,45 @@ This patch removes all DT parsing and uses cpu->of_node instead.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- drivers/cpufreq/spear-cpufreq.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/cpufreq/highbank-cpufreq.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufre=
-q.c
-index c3efa7f..eb73c47 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -14,6 +14,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-=20
- #include <linux/clk.h>
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/err.h>
- #include <linux/init.h>
-@@ -218,12 +219,19 @@ static struct cpufreq_driver spear_cpufreq_driver =3D=
- {
- static int spear_cpufreq_driver_init(void)
- {
- =09struct device_node *np;
-+=09struct device *cpu_dev;
- =09const struct property *prop;
- =09struct cpufreq_frequency_table *freq_tbl;
- =09const __be32 *val;
- =09int cnt, i, ret;
-=20
--=09np =3D of_find_node_by_path("/cpus/cpu@0");
-+=09cpu_dev =3D get_cpu_device(0);
-+=09if (!cpu_dev) {
-+=09=09pr_err("failed to get cpu device\n");
-+=09=09return -ENODEV;
-+=09}
-+
-+=09np =3D of_node_get(cpu_dev->of_node);
- =09if (!np) {
- =09=09pr_err("No cpu node found");
+diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-=
+cpufreq.c
+index b61b5a3..794123f 100644
+--- a/drivers/cpufreq/highbank-cpufreq.c
++++ b/drivers/cpufreq/highbank-cpufreq.c
+@@ -69,23 +69,17 @@ static int hb_cpufreq_driver_init(void)
+ =09if (!of_machine_is_compatible("calxeda,highbank"))
  =09=09return -ENODEV;
+=20
+-=09for_each_child_of_node(of_find_node_by_path("/cpus"), np)
+-=09=09if (of_get_property(np, "operating-points", NULL))
+-=09=09=09break;
+-
+-=09if (!np) {
+-=09=09pr_err("failed to find highbank cpufreq node\n");
+-=09=09return -ENOENT;
+-=09}
+-
+ =09cpu_dev =3D get_cpu_device(0);
+ =09if (!cpu_dev) {
+ =09=09pr_err("failed to get highbank cpufreq device\n");
+-=09=09ret =3D -ENODEV;
+-=09=09goto out_put_node;
++=09=09return -ENODEV;
+ =09}
+=20
+-=09cpu_dev->of_node =3D np;
++=09np =3D of_node_get(cpu_dev->of_node);
++=09if (!np) {
++=09=09pr_err("failed to find highbank cpufreq node\n");
++=09=09return -ENOENT;
++=09}
+=20
+ =09cpu_clk =3D clk_get(cpu_dev, NULL);
+ =09if (IS_ERR(cpu_clk)) {
 --=20
 1.8.1.2
+
 
