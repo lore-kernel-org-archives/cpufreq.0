@@ -1,34 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 0/7] cpufreq:boost: CPU Boost mode support
-Date: Tue, 16 Jul 2013 14:16:47 +0530
-Message-ID: <CAKohpoksZjXGbHj3tx3hZJ8V8h12b-yYQGVa_PHEgNXv3ZQu2g@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-	<20130709090243.7d492f82@amdc308.digital.local>
-	<20130716092647.67dd1aff@amdc308.digital.local>
+From: Andy Green <andy.green@linaro.org>
+Subject: Re: Arndale power management
+Date: Tue, 16 Jul 2013 09:48:53 +0100
+Message-ID: <CAAfg0W4uD=ke6zWnC0bAauAJ=xg5L76oOcnUM8VRypxC7==S3A@mail.gmail.com>
+References: <611CFE9D6FBBDC4B97935A5287A11345014441@XSERVER21B.campus.tue.nl>
+	<CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130716092647.67dd1aff@amdc308.digital.local>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Comaschi, F." <fcomaschi@tue.nl>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Chander Kashyap <chander.kashyap@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-On 16 July 2013 12:56, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Dear Viresh, Rafael,
+Hi -
+
+On 16 July 2013 07:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Adding few more lists so that others can also help..
 >
->> On Thu, 04 Jul 2013 10:50:23 +0200, Lukasz Majewski wrote:
->>
->> Dear Viresh, Rafael
->>
->> Do you have any comments/feedback for me regarding those patches?
->>
+> On 15 July 2013 20:00, Comaschi, F. <fcomaschi@tue.nl> wrote:
+
+>> 2) Recently I have read Andy Green=E2=80=99s presentation =E2=80=9CH=
+ow to measure SoC power=E2=80=9D. However, by measuring power on the PM=
+IC input side through the ARM Energy Probe, probably I won't be able to=
+ see the effect of DVFS. Do you have any suggestions on how to measure =
+the effect of DVFS, even through hardware measurements?
 >
-> Will you find time to review version 5 of cpufreq boost patch series?
+> You need probes on the voltage regulator which is feed the cores...
+> But again, that is very much hardware specific. And I haven't worked
+> on Exynos at all :)
 
-This is a request or an order ?? :)
+Arndale has a lot of shunts on the board already, I counted 14 last
+time I looked.
 
-Yes, I have still kept these mails in my todo list.. Don't worry they wouldn't
-be missed.
+You will be able to see the power benefit of DVFS extremely clearly at
+the input side of the regulator, but you won't see the voltage you
+have set reported.
+
+Since the AEP creates trouble on low voltage / high current rails with
+its fullscale 165mV drop (you may only have 900mV on Vcore) measuring
+current needs to be done on regulator input side.  Since you're
+interested in power, you need to measure voltage also at the regulator
+input to allow it to be calculated.
+
+However nothing stops you sticking a second AEP channel on the output
+side of the regulator just for monitoring its voltage.  You just need
+to stick both wires of the pair on the output side for it to report
+the voltage separately.  Because you're not using a shunt there, you
+don't introduce any voltage drop.
+
+Then you'll see power (+ regulator efficiency loss) one one channel
+and actual DVFS voltage (and 0 for current) on the other.
+
+-Andy
