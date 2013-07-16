@@ -1,56 +1,33 @@
-From: Andy Green <andy.green@linaro.org>
-Subject: Re: Arndale power management
-Date: Tue, 16 Jul 2013 09:48:53 +0100
-Message-ID: <CAAfg0W4uD=ke6zWnC0bAauAJ=xg5L76oOcnUM8VRypxC7==S3A@mail.gmail.com>
-References: <611CFE9D6FBBDC4B97935A5287A11345014441@XSERVER21B.campus.tue.nl>
-	<CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 1/7] cpufreq: Store cpufreq policies in a list
+Date: Tue, 16 Jul 2013 14:21:27 +0530
+Message-ID: <CAKohponOEcwq4eAjwxHMM6puuqGmtJ4GpqqRHyEqvhXM+Yt6wQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+	<1372927830-2949-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
+In-Reply-To: <1372927830-2949-2-git-send-email-l.majewski@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Comaschi, F." <fcomaschi@tue.nl>, cpufreq@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Chander Kashyap <chander.kashyap@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-Hi -
+On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 
-On 16 July 2013 07:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Adding few more lists so that others can also help..
+> @@ -2056,6 +2058,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+>         subsys_interface_unregister(&cpufreq_interface);
+>         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
 >
-> On 15 July 2013 20:00, Comaschi, F. <fcomaschi@tue.nl> wrote:
+> +       list_del(&cpufreq_policy_list);
 
->> 2) Recently I have read Andy Green=E2=80=99s presentation =E2=80=9CH=
-ow to measure SoC power=E2=80=9D. However, by measuring power on the PM=
-IC input side through the ARM Energy Probe, probably I won't be able to=
- see the effect of DVFS. Do you have any suggestions on how to measure =
-the effect of DVFS, even through hardware measurements?
->
-> You need probes on the voltage regulator which is feed the cores...
-> But again, that is very much hardware specific. And I haven't worked
-> on Exynos at all :)
+You can't delete the list this way... You must have passed the list
+entry you wanted to delete. More precisely link from the struct
+cpufreq_policy.
 
-Arndale has a lot of shunts on the board already, I counted 14 last
-time I looked.
-
-You will be able to see the power benefit of DVFS extremely clearly at
-the input side of the regulator, but you won't see the voltage you
-have set reported.
-
-Since the AEP creates trouble on low voltage / high current rails with
-its fullscale 165mV drop (you may only have 900mV on Vcore) measuring
-current needs to be done on regulator input side.  Since you're
-interested in power, you need to measure voltage also at the regulator
-input to allow it to be calculated.
-
-However nothing stops you sticking a second AEP channel on the output
-side of the regulator just for monitoring its voltage.  You just need
-to stick both wires of the pair on the output side for it to report
-the voltage separately.  Because you're not using a shunt there, you
-don't introduce any voltage drop.
-
-Then you'll see power (+ regulator efficiency loss) one one channel
-and actual DVFS voltage (and 0 for current) on the other.
-
--Andy
+Over that, it shouldn't be done at the time of unregistering cpufreq
+driver but as and when cpus are removed and _cpu_remove_dev
+is called.
