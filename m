@@ -1,47 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 6/7] cpufreq:boost:Kconfig: Enable software managed
- BOOST support at Kconfig
-Date: Wed, 17 Jul 2013 10:54:55 +0530
-Message-ID: <CAKohpo=XbUtYBVQ_y4_R18wpag_HAVvXrxfSfmaNSqq=wLpciQ@mail.gmail.com>
+Subject: Re: [PATCH v5 2/7] cpufreq: Add boost frequency support in core
+Date: Wed, 17 Jul 2013 10:58:40 +0530
+Message-ID: <CAKohpokni=zPob9yz2-ak_g_xhwFaLBhk6wNGV5EGSfxx-eGZA@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
 	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
-	<1372927830-2949-7-git-send-email-l.majewski@samsung.com>
-	<CAKohpokR=jrcLQQ7VAD+vr7GWgSFBfuqbOhWHwA3FCgk__EJ3Q@mail.gmail.com>
-	<20130716135022.64a102f8@amdc308.digital.local>
+	<1372927830-2949-3-git-send-email-l.majewski@samsung.com>
+	<CAKohpomfWKiRjznXeYsg32xAAWPTBQ4Gd0D_pftbA5=zMDiH4Q@mail.gmail.com>
+	<20130716140632.70fb2838@amdc308.digital.local>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130716135022.64a102f8@amdc308.digital.local>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20130716140632.70fb2838@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Lukasz Majewski <l.majewski@samsung.com>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-On 16 July 2013 17:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> On Tue, 16 Jul 2013 15:28:40 +0530 Viresh Kumar viresh.kumar@linaro.org
+On 16 July 2013 17:36, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Tue, 16 Jul 2013 15:11:54 +0530 Viresh Kumar viresh.kumar@linaro.org
 > wrote,
 >> On 4 July 2013 14:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
->>
->> > +config CPU_FREQ_BOOST_SW
->> > +       bool "CPU frequency overclocking (BOOST)"
->>
->> Name it "CPU Frequency Overclocking - Software"
->
-> Thanks, I had a puzzle to came up with a good short name :-).
+
+>> > +void cpufreq_set_boost_enabled(int state)
+>           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
 >
 >>
->> > +       depends on ARM_EXYNOS_CPUFREQ && EXYNOS_THERMAL
->                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [*]
->>
->> Remote Exynos from here. If you want to enable it for your platform by
->> default, then select it from EXYNOS.
+>> Maybe cpufreq_block_boost? As suggested by Rafael.
+>
+> What do you mean by cpufreq_block_boost()? This name would reverse the
+> logic.
+>
+> Function [*] is used to change boost_enabled static flag (defined at
+> cpufreq.c file) state according to acpi-cpufreq.c boost support status.
 
-I misread it a bit. I wanted to say make it dependent only on THERMAL and
-not on Exynos.
+I misread it again :(
 
-> The purpose of the condition [*] here is to prevent from enabling
-> boost when thermal for Exynos is not supported.
-
-Why? Can't others use it? Its not exynos specific :)
+So, what about adding another field in struct cpufreq_driver: boost_enabled?
+And get rid of the global boost_enabled we have used? Similar to how
+boost_supported is used, then we don't need this routine.
