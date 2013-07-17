@@ -1,147 +1,50 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC PATCH v2 01/15] of: add support for retrieving cpu node
- for a given logical cpu index
-Date: Wed, 17 Jul 2013 09:50:49 -0500
-Message-ID: <51E6AF49.20403@gmail.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+Date: Wed, 17 Jul 2013 16:59:43 +0200
+Message-ID: <20130717165943.7f06acd9@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <6633375.dICiDrHJgK@vostro.rjw.lan>
+ <CAKohpokw-bSWEgKvx0jd2QZ0RCz5dORHM9z+VYbTdKoCmKFvsg@mail.gmail.com>
+ <2509113.ybUsa2l9tg@vostro.rjw.lan>
+ <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=RpI29eCZtVAoR3oxDRLnFay5sJA50OpmI2NsP/t9KQI=;
-        b=vrr5Sgr+LiULHkr2CcSnM4/EECDu/uAltu8gjPf8P59UYdAe2uNoVPPBDzndHjZzFS
-         4/2cfjXzdafpg7BEGGOeQkoyF78TWxraQzcBAE3s2DZxvOdPW53d5RmmuDaWgMOmUUa8
-         uT1LXaMLIQY9KWeNOMpcUKiF4WnkwKPJEqpomZP/1oHjeLBdi3A1vAqsp+6j2dUG8nPJ
-         Th7WuvIwX9lv90UZUdHQ/58kF35uSurRrhHVxJdDnX2k57N/4akBUV/bayiShtSYGXpb
-         XJ+iz5gHwpzxYelcxGYdZF0KEPOLE2OyUC6xMQYbgkOGP+3ZBjrdlp4m5Nf+l13EHOX5
-         ZYlw==
-In-Reply-To: <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sudeep.KarkadaNagesha@arm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lukasz Majewski <l.majewski@majess.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On 07/17/2013 09:06 AM, Sudeep.KarkadaNagesha@arm.com wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On Wed, 17 Jul 2013 18:31:19 +0530 Viresh Kumar viresh.kumar@linaro.org
+wrote,
+> On 17 July 2013 17:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > First off, I'm not sure how many applications actually use it and I
+> > think, if any, they should be able cope with the attribute not
+> > being present.
+> >
+> > Of course, if it turns out that yes, there are applications using
+> > it and no, they cannot cope with the missing attribute, we'll need
+> > to address this. That said such applications wouldn't work with
+> > earlier kernels in which that attribute wasn't present at all, so I
+> > suppose this is really unlikely.
+> >
+> > So, do whichever makes more sense to you: Design things to preserve
+> > the old behavior (which is sightly confusing) or design them to
+> > expose the attribute if the feature is actually supported and be
+> > prepared to address the (unlikely) case when some hypothetical
+> > applications break because of that.
 > 
-> Currently different drivers requiring to access cpu device node are
-> parsing the device tree themselves. Since the ordering in the DT need
-> not match the logical cpu ordering, the parsing logic needs to consider
-> that. However, this has resulted in lots of code duplication and in some
-> cases even incorrect logic.
-> 
-> It's better to consolidate them by adding support for getting cpu
-> device node for a given logical cpu index in DT core library. However
-> logical to physical index mapping can be architecture specific.
-> 
-> This patch adds of_get_cpu_node to retrieve a cpu device node for a
-> given logical cpu index. The default matching of the physical id to the
-> logical cpu index can be overridden by architecture specific code.
-> 
-> It is recommended to use these helper function only in pre-SMP/early
-> initialisation stages to retrieve CPU device node pointers in logical
-> ordering. Once the cpu devices are registered, it can be retrieved easily
-> from cpu device of_node which avoids unnecessary parsing and matching.
-> 
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Okay. Its better to keep it the way Lukasz designed it in his last
+> patchset.
 
-One comment below, but otherwise for patches 1-4, 8 and 9:
+To be 100% sure - we export boost only when supported (as proposed at v5).
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
 
-Also, patch 3 needs to come before patch 2 or the matching will be wrong
-if patch 3 is not applied.
+-- 
+Best regards,
 
-> ---
->  drivers/of/base.c  | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/of.h |  5 +++++
->  2 files changed, 71 insertions(+)
-> 
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 5c54279..363b8f9 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -230,6 +230,72 @@ const void *of_get_property(const struct device_node *np, const char *name,
->  }
->  EXPORT_SYMBOL(of_get_property);
->  
-> +/*
-> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
-> + *
-> + * @cpu: logical index of a cpu
-> + * @phys_id: physical identifier of a cpu
-> + *
-> + * CPU logical to physical index mapping is architecure specific.
-> + * However this __weak function provides a default match of physical
-> + * id to logical cpu index.
-> + *
-> + * Returns 1 if the physical identifier and the logical index correspond
-> + * to the same cpu, 0 otherwise.
-> + */
-> +int __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
-> +{
-> +	return (u32)phys_id == cpu;
-> +}
-> +
-> +/**
-> + * of_get_cpu_node - Get device node associated with the given logical CPU
-> + *
-> + * @cpu: CPU number(logical index) for which device node is required
-> + *
-> + * The main purpose of this function is to retrieve the device node for the
-> + * given logical CPU index. It should be used to intialise the of_node in
-> + * cpu device. Once of_node in cpu device is populated, all the further
-> + * references can use that instead.
-> + *
-> + * CPU logical to physical index mapping is architecure specific and is built
-> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
-> + * which can be overridden by architecture specific implementation.
-> + *
-> + * Returns a node pointer for the logical cpu if found, else NULL.
-> + */
-> +struct device_node *of_get_cpu_node(int cpu)
-> +{
-> +	struct device_node *cpun, *cpus;
-> +	const u32 *cell;
-> +	u64 hwid;
-> +	int ac, prop_len;
-> +
-> +	cpus = of_find_node_by_path("/cpus");
-> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+Lukasz Majewski
 
-What happens on a system with no /cpus nodes? Seems like this is another
-case of adding new warnings to existing working systems.
-
-I'd replace all the WARN's with a single pr_warn on any errors below.
-For missing /cpus, I would just silently return.
-
-Rob
-
-> +		return NULL;
-> +
-> +	if (WARN_ON(of_property_read_u32(cpus, "#address-cells", &ac)))
-> +		ac = of_n_addr_cells(cpus);
-> +
-> +	for_each_child_of_node(cpus, cpun) {
-> +		if (of_node_cmp(cpun->type, "cpu"))
-> +			continue;
-> +		cell = of_get_property(cpun, "reg", &prop_len);
-> +		if (WARN(!cell, "%s: missing reg property\n", cpun->full_name))
-> +			continue;
-> +
-> +		while (prop_len) {
-> +			hwid = of_read_number(cell, ac);
-> +			prop_len -= ac;
-> +			if (arch_match_cpu_phys_id(cpu, hwid))
-> +				return cpun;
-> +		}
-> +	}
-> +
-> +	return NULL;
-> +}
-
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
