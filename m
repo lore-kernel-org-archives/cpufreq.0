@@ -1,33 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Wed, 17 Jul 2013 18:31:19 +0530
-Message-ID: <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<6633375.dICiDrHJgK@vostro.rjw.lan>
-	<CAKohpokw-bSWEgKvx0jd2QZ0RCz5dORHM9z+VYbTdKoCmKFvsg@mail.gmail.com>
-	<2509113.ybUsa2l9tg@vostro.rjw.lan>
-Mime-Version: 1.0
+From: Sudeep.KarkadaNagesha@arm.com
+Subject: [RFC PATCH v2 00/15] DT/core: update cpu device of_node
+Date: Wed, 17 Jul 2013 15:06:09 +0100
+Message-ID: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Content-Transfer-Encoding: quoted-printable
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2509113.ybUsa2l9tg@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lukasz Majewski <l.majewski@majess.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Cc: Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-On 17 July 2013 17:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> First off, I'm not sure how many applications actually use it and I think,
-> if any, they should be able cope with the attribute not being present.
->
-> Of course, if it turns out that yes, there are applications using it and no,
-> they cannot cope with the missing attribute, we'll need to address this.
-> That said such applications wouldn't work with earlier kernels in which that
-> attribute wasn't present at all, so I suppose this is really unlikely.
->
-> So, do whichever makes more sense to you: Design things to preserve the old
-> behavior (which is sightly confusing) or design them to expose the attribute
-> if the feature is actually supported and be prepared to address the (unlikely)
-> case when some hypothetical applications break because of that.
+From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Okay. Its better to keep it the way Lukasz designed it in his last patchset.
+As more and more information is getting added into the cpu node, the number
+of drivers needing to parse the device tree for CPU nodes are increasing.
+Most of the time, the information needed from the cpu node is preferred
+in the logical CPU order. Hence many drivers first parse and search the
+CPU node, match them to logical index if needed and then search for the
+required property inside a particular cpu node. Some of them assume the
+logical and physical CPU ordering to be same which is incorrect.
+
+This patch series initialises the of_node in all the cpu devices when
+registering the CPU device.
+1. This avoids different drivers having to parse the cpu nodes to obtain
+   different attributes like operating points, latency,...etc.
+2. This handles different physical and logical cpu ordering which is not
+   the case in current code.
+3. Also all the cpu nodes will have their of_node initialised correctly.
+   Currently different drivers assign them partially and incorrectly.
+4. Removes all the reduntant parsing in various drivers.
+
+Changes v1->v2:
+1. Moved most of arch_of_get_cpu_node to OF/DT core as of_get_cpu_node
+   adding a provision for architecture specific hooks for matching
+   logical and physical ids.
+2. Extended removal of DT cpu node parsing to PPC cpufreq drivers
+3. Added Acks from Viresh and Shawn
+
+Regards,
+Sudeep
+
+Sudeep KarkadaNagesha (15):
+  of: add support for retrieving cpu node for a given logical cpu index
+  driver/core: cpu: initialize of_node in cpu's device struture
+  ARM: DT/kernel: define ARM specific arch_match_cpu_phys_id
+  ARM: topology: remove hwid/MPIDR dependency from cpu_capacity
+  ARM: mvebu: remove device tree parsing for cpu nodes
+  drivers/bus: arm-cci: avoid parsing DT for cpu device nodes
+  cpufreq: imx6q-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: cpufreq-cpu0: remove device tree parsing for cpu nodes
+  cpufreq: highbank-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: spear-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: kirkwood-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: arm_big_little: remove device tree parsing for cpu nodes
+  cpufreq: maple-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: pmac64-cpufreq: remove device tree parsing for cpu nodes
+  cpufreq: pmac32-cpufreq: remove device tree parsing for cpu nodes
+
+ arch/arm/kernel/devtree.c           |  5 +++
+ arch/arm/kernel/topology.c          | 61 +++++++++++----------------------=
+-
+ arch/arm/mach-imx/mach-imx6q.c      |  3 +-
+ arch/arm/mach-mvebu/platsmp.c       | 52 ++++++++++++++---------------
+ drivers/base/cpu.c                  |  2 ++
+ drivers/bus/arm-cci.c               | 28 ++++------------
+ drivers/cpufreq/arm_big_little_dt.c | 39 ++++++++++------------
+ drivers/cpufreq/cpufreq-cpu0.c      | 23 +++----------
+ drivers/cpufreq/highbank-cpufreq.c  | 18 ++++------
+ drivers/cpufreq/imx6q-cpufreq.c     |  4 +--
+ drivers/cpufreq/kirkwood-cpufreq.c  | 14 ++++++--
+ drivers/cpufreq/maple-cpufreq.c     | 23 ++++---------
+ drivers/cpufreq/pmac32-cpufreq.c    | 11 ++++++-
+ drivers/cpufreq/pmac64-cpufreq.c    | 54 ++++++++++--------------------
+ drivers/cpufreq/spear-cpufreq.c     | 10 +++++-
+ drivers/of/base.c                   | 66 +++++++++++++++++++++++++++++++++=
+++++
+ include/linux/of.h                  |  5 +++
+ 17 files changed, 213 insertions(+), 205 deletions(-)
+
+--=20
+1.8.1.2
+
+
