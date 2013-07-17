@@ -1,50 +1,150 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
-Date: Wed, 17 Jul 2013 16:59:43 +0200
-Message-ID: <20130717165943.7f06acd9@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <6633375.dICiDrHJgK@vostro.rjw.lan>
- <CAKohpokw-bSWEgKvx0jd2QZ0RCz5dORHM9z+VYbTdKoCmKFvsg@mail.gmail.com>
- <2509113.ybUsa2l9tg@vostro.rjw.lan>
- <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 3/8] cpufreq: cpufreq-cpu0: add dt node parsing on cooling need
+Date: Wed, 17 Jul 2013 11:02:42 -0400
+Message-ID: <1374073374-30946-7-git-send-email-eduardo.valentin@ti.com>
+References: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=1Qov8p3f2xZkfOqaFRNJPJN60KeK4SOXcL9Hw82MkAg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lukasz Majewski <l.majewski@majess.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Content-Transfer-Encoding: 7bit
+To: devicetree-discuss@lists.ozlabs.org
+Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
 
-On Wed, 17 Jul 2013 18:31:19 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 17 July 2013 17:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > First off, I'm not sure how many applications actually use it and I
-> > think, if any, they should be able cope with the attribute not
-> > being present.
-> >
-> > Of course, if it turns out that yes, there are applications using
-> > it and no, they cannot cope with the missing attribute, we'll need
-> > to address this. That said such applications wouldn't work with
-> > earlier kernels in which that attribute wasn't present at all, so I
-> > suppose this is really unlikely.
-> >
-> > So, do whichever makes more sense to you: Design things to preserve
-> > the old behavior (which is sightly confusing) or design them to
-> > expose the attribute if the feature is actually supported and be
-> > prepared to address the (unlikely) case when some hypothetical
-> > applications break because of that.
-> 
-> Okay. Its better to keep it the way Lukasz designed it in his last
-> patchset.
+This patch changes the cpufreq-cpu0 driver to consider if
+a cpu needs cooling (with cpufreq). In case the cooling is needed,
+it can be flagged at the cpu0 device tree node, with the boolean
+property 'needs-cooling'.
 
-To be 100% sure - we export boost only when supported (as proposed at v5).
+In case this boolean is present, the driver will
+load a cpufreq cooling device in the system. The cpufreq-cpu0
+driver is not capable of determining how the system should
+be using the cooling device. This can be described using device
+tree, to determine what needs to be done with the loaded
+cpufreq cooling device, in case the system temperature is detected
+to be high, with help of temperature sensors (check
+Documentation/devicetree/bindings/thermal/thermal.txt).
 
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: devicetree-discuss@lists.ozlabs.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |  3 ++
+ .../devicetree/bindings/thermal/thermal.txt        | 34 ++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-cpu0.c                     |  8 +++++
+ 3 files changed, 45 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index 051f764..e8ff916 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -15,6 +15,8 @@ Optional properties:
+ - clock-latency: Specify the possible maximum transition latency for clock,
+   in unit of nanoseconds.
+ - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
++- needs-cooling: The generic cpu cooling (freq clipping) is loaded by the
++generic cpufreq-cpu0 driver in case the device tree node has this boolean.
+ 
+ Examples:
+ 
+@@ -33,6 +35,7 @@ cpus {
+ 			198000  850000
+ 		>;
+ 		clock-latency = <61036>; /* two CLK32 periods */
++		needs-cooling;
+ 	};
+ 
+ 	cpu@1 {
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index 03751bb..ac0c7b9 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -97,3 +97,37 @@ thermal_zone {
+                     };
+             };
+ };
++
++***************
++cpufreq-cooling
++***************
++
++The generic cpu cooling (freq clipping) can be loaded by the
++generic cpufreq-cpu0 driver in case the device tree node informs
++this need.
++
++In order to load the cpufreq cooling device, it is possible to
++inform that the cpu needs cooling by adding the boolean flag
++'needs-cooling' at the cpu0 phandle.
++
++Example:
++	cpus {
++		cpu@0 {
++			operating-points = <
++				/* kHz    uV */
++				800000  1313000
++				1008000 1375000
++			>;
++			needs-cooling; /* make sure we have cpufreq-cooling */
++		};
++	...
++	};
++
++The above will cause the cpufreq-cpu0 driver to understand that
++the cpu will need passive cooling and while probing that node it will
++also load the cpufreq cpu cooling device in that system.
++
++However, be advised that this flag will not describe what needs to
++be done or how the cpufreq cooling device will be used. In order to
++accomplish this, one needs to write a phandle for a thermal zone, as
++described in the section 'thermal_zone'.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index ad1fde2..4a8747a 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -20,6 +20,9 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
++#include <linux/thermal.h>
++#include <linux/cpu_cooling.h>
++#include <linux/cpumask.h>
+ 
+ static unsigned int transition_latency;
+ static unsigned int voltage_tolerance; /* in percentage */
+@@ -28,6 +31,7 @@ static struct device *cpu_dev;
+ static struct clk *cpu_clk;
+ static struct regulator *cpu_reg;
+ static struct cpufreq_frequency_table *freq_table;
++static struct thermal_cooling_device *cdev;
+ 
+ static int cpu0_verify_speed(struct cpufreq_policy *policy)
+ {
+@@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_free_table;
+ 	}
+ 
++	if (of_property_read_bool(np, "needs-cooling"))
++		cdev = cpufreq_cooling_register(cpu_present_mask);
++
+ 	of_node_put(np);
+ 	of_node_put(parent);
+ 	return 0;
+@@ -283,6 +290,7 @@ out_put_parent:
+ 
+ static int cpu0_cpufreq_remove(struct platform_device *pdev)
+ {
++	cpufreq_cooling_unregister(cdev);
+ 	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+ 	opp_free_cpufreq_table(cpu_dev, &freq_table);
+ 
 -- 
-Best regards,
+1.8.2.1.342.gfa7285d
 
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
