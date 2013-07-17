@@ -1,32 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: /sys/ file access
-Date: Wed, 17 Jul 2013 10:19:46 +0530
-Message-ID: <CAKohpo=-SpoEMQ31CPu4jwFJHtBWqRLVFb2np5jdZs1f_jzyAw@mail.gmail.com>
-References: <CAG=jzgD=bKTAbGtTG81XRhyBzNHtr-p-Uyh-2A5eQe0ruKkqsw@mail.gmail.com>
-	<CAOh2x=kOtD88pjAVjE-mJnvcvNi6-EG6hLFeRTLa2VAS1CSpvQ@mail.gmail.com>
-	<CAG=jzgBvvK747yFrwHbn6=5C4J03b-OG3+GOmYx=vpqB3QKBcQ@mail.gmail.com>
+Subject: Re: [PATCH v5 7/7] Documentation:cpufreq:boost: Update BOOST documentation
+Date: Wed, 17 Jul 2013 10:52:18 +0530
+Message-ID: <CAKohponeZ15ruJA9__V70u1Ztr4F9aT+zBinMT5Ewyew53rbyQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1372927830-2949-1-git-send-email-l.majewski@samsung.com>
+	<1372927830-2949-8-git-send-email-l.majewski@samsung.com>
+	<CAKohpo=oB_4gGtNn6jvxSCp665pOq6oqeTCCyGzmN_eWqt0Lhg@mail.gmail.com>
+	<20130716133319.49ed0838@amdc308.digital.local>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAG=jzgBvvK747yFrwHbn6=5C4J03b-OG3+GOmYx=vpqB3QKBcQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <20130716133319.49ed0838@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kernel kernel <kernel@kenobrien.org>
-Cc: cpufreq@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, l.majewski@majess.pl, linux-kernel <linux-kernel@vger.kernel.org>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-On 17 July 2013 03:44, kernel kernel <kernel@kenobrien.org> wrote:
-> Apologies,
+On 16 July 2013 17:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> As fair as I've understood our previous discussion (at [*]) we have
+> agreed about this. We only export boost attribute when it is supported
+> by cpufreq_driver. Rafael was very clear about exporting boost
+> attribute:
 >
-> I gave the wrong filename. I'm attempting to read
+> "Simple: Export it only when supported."
 >
-> -r-------- 1 root root 4096 Jul 16 21:03 cpuinfo_cur_freq
->
-> as an unprivileged user. Why is this not world readable by default?
+> [*]: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
 
-This one actually reads the values directly from the hardware underneath
-and so doesn't have permissions for everyone to do it.
+I don't want to search in the Archives but I am sure what we decided
+earlier.
 
-Whereas /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq gets
-the value which cpufreq core believes is currently set and so is readable
-by everybody.
+Rafael Said:
+"Simple: Export it only when supported."
+
+AND
+
+"Don't change behavior of acpi-cpufreq driver"
+
+If you see acpi-cpufreq driver carefully, it always creates "boost"
+sysfs entry. If its not supported then it creates a read only entry.
+
+So, please preserve that.
