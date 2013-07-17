@@ -1,107 +1,119 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 1/9] cpufreq: cpufreq-cpu0: add dt node parsing for 'needs-cooling'
-Date: Wed, 17 Jul 2013 11:02:37 -0400
-Message-ID: <1374073374-30946-2-git-send-email-eduardo.valentin@ti.com>
-References: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH v2 01/15] of: add support for retrieving cpu node
+ for a given logical cpu index
+Date: Wed, 17 Jul 2013 16:18:17 +0100
+Message-ID: <51E6B5B9.4090506@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374069984-20567-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51E6AF49.20403@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1374073374-30946-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51E6AF49.20403@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devicetree-discuss@lists.ozlabs.org
-Cc: wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 
-This patch changes the cpufreq-cpu0 driver to consider if
-a cpu needs cooling (with cpufreq). In case the cooling is needed,
-it can be flagged at the cpu0 device tree node, with the boolean
-property 'needs-cooling'.
+On 17/07/13 15:50, Rob Herring wrote:
+> On 07/17/2013 09:06 AM, Sudeep.KarkadaNagesha@arm.com wrote:
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Currently different drivers requiring to access cpu device node are
+>> parsing the device tree themselves. Since the ordering in the DT need
+>> not match the logical cpu ordering, the parsing logic needs to consider
+>> that. However, this has resulted in lots of code duplication and in some
+>> cases even incorrect logic.
+>>
+>> It's better to consolidate them by adding support for getting cpu
+>> device node for a given logical cpu index in DT core library. However
+>> logical to physical index mapping can be architecture specific.
+>>
+>> This patch adds of_get_cpu_node to retrieve a cpu device node for a
+>> given logical cpu index. The default matching of the physical id to the
+>> logical cpu index can be overridden by architecture specific code.
+>>
+>> It is recommended to use these helper function only in pre-SMP/early
+>> initialisation stages to retrieve CPU device node pointers in logical
+>> ordering. Once the cpu devices are registered, it can be retrieved easily
+>> from cpu device of_node which avoids unnecessary parsing and matching.
+>>
+>> Cc: Rob Herring <rob.herring@calxeda.com>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> One comment below, but otherwise for patches 1-4, 8 and 9:
+> 
+> Acked-by: Rob Herring <rob.herring@calxeda.com>
+> 
+> Also, patch 3 needs to come before patch 2 or the matching will be wrong
+> if patch 3 is not applied.
+Ah, correct will fix it in next version.
 
-In case this boolean is present, the driver will
-load a cpufreq cooling device in the system. The cpufreq-cpu0
-driver is not interested in determining how the system should
-be using the cooling device. The driver is responsible
-only of loading the cooling device.
+> 
+>> ---
+>>  drivers/of/base.c  | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/of.h |  5 +++++
+>>  2 files changed, 71 insertions(+)
+>>
+>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+>> index 5c54279..363b8f9 100644
+>> --- a/drivers/of/base.c
+>> +++ b/drivers/of/base.c
+>> @@ -230,6 +230,72 @@ const void *of_get_property(const struct device_node *np, const char *name,
+>>  }
+>>  EXPORT_SYMBOL(of_get_property);
+>>  
+>> +/*
+>> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
+>> + *
+>> + * @cpu: logical index of a cpu
+>> + * @phys_id: physical identifier of a cpu
+>> + *
+>> + * CPU logical to physical index mapping is architecure specific.
+>> + * However this __weak function provides a default match of physical
+>> + * id to logical cpu index.
+>> + *
+>> + * Returns 1 if the physical identifier and the logical index correspond
+>> + * to the same cpu, 0 otherwise.
+>> + */
+>> +int __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
+>> +{
+>> +	return (u32)phys_id == cpu;
+>> +}
+>> +
+>> +/**
+>> + * of_get_cpu_node - Get device node associated with the given logical CPU
+>> + *
+>> + * @cpu: CPU number(logical index) for which device node is required
+>> + *
+>> + * The main purpose of this function is to retrieve the device node for the
+>> + * given logical CPU index. It should be used to intialise the of_node in
+>> + * cpu device. Once of_node in cpu device is populated, all the further
+>> + * references can use that instead.
+>> + *
+>> + * CPU logical to physical index mapping is architecure specific and is built
+>> + * before booting secondary cores. This function uses arch_match_cpu_phys_id
+>> + * which can be overridden by architecture specific implementation.
+>> + *
+>> + * Returns a node pointer for the logical cpu if found, else NULL.
+>> + */
+>> +struct device_node *of_get_cpu_node(int cpu)
+>> +{
+>> +	struct device_node *cpun, *cpus;
+>> +	const u32 *cell;
+>> +	u64 hwid;
+>> +	int ac, prop_len;
+>> +
+>> +	cpus = of_find_node_by_path("/cpus");
+>> +	if (WARN(!cpus, "Missing cpus node, bailing out\n"))
+> 
+> What happens on a system with no /cpus nodes? Seems like this is another
+> case of adding new warnings to existing working systems.
+> 
+> I'd replace all the WARN's with a single pr_warn on any errors below.
+> For missing /cpus, I would just silently return.
 
-Describing how the cooling device will be used can be
-accomplished by setting up a thermal zone that references
-and is composed by the cpufreq cooling device.
+Ah, forgot recent discussions on this, will fix it.
 
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Grant Likely <grant.likely@linaro.org>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: devicetree-discuss@lists.ozlabs.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 3 +++
- drivers/cpufreq/cpufreq-cpu0.c                             | 8 ++++++++
- 2 files changed, 11 insertions(+)
+Regards,
+Sudeep
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-index 051f764..e8ff916 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-@@ -15,6 +15,8 @@ Optional properties:
- - clock-latency: Specify the possible maximum transition latency for clock,
-   in unit of nanoseconds.
- - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-+- needs-cooling: The generic cpu cooling (freq clipping) is loaded by the
-+generic cpufreq-cpu0 driver in case the device tree node has this boolean.
- 
- Examples:
- 
-@@ -33,6 +35,7 @@ cpus {
- 			198000  850000
- 		>;
- 		clock-latency = <61036>; /* two CLK32 periods */
-+		needs-cooling;
- 	};
- 
- 	cpu@1 {
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index ad1fde2..4a8747a 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -20,6 +20,9 @@
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
- #include <linux/slab.h>
-+#include <linux/thermal.h>
-+#include <linux/cpu_cooling.h>
-+#include <linux/cpumask.h>
- 
- static unsigned int transition_latency;
- static unsigned int voltage_tolerance; /* in percentage */
-@@ -28,6 +31,7 @@ static struct device *cpu_dev;
- static struct clk *cpu_clk;
- static struct regulator *cpu_reg;
- static struct cpufreq_frequency_table *freq_table;
-+static struct thermal_cooling_device *cdev;
- 
- static int cpu0_verify_speed(struct cpufreq_policy *policy)
- {
-@@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_free_table;
- 	}
- 
-+	if (of_property_read_bool(np, "needs-cooling"))
-+		cdev = cpufreq_cooling_register(cpu_present_mask);
-+
- 	of_node_put(np);
- 	of_node_put(parent);
- 	return 0;
-@@ -283,6 +290,7 @@ out_put_parent:
- 
- static int cpu0_cpufreq_remove(struct platform_device *pdev)
- {
-+	cpufreq_cooling_unregister(cdev);
- 	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
- 	opp_free_cpufreq_table(cpu_dev, &freq_table);
- 
--- 
-1.8.2.1.342.gfa7285d
