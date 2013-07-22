@@ -1,71 +1,34 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [RFC PATCH v2 11/15] cpufreq: kirkwood-cpufreq: remove device
- tree parsing for cpu nodes
-Date: Thu, 18 Jul 2013 13:30:55 -0500
-Message-ID: <51E8345F.30608@gmail.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374069984-20567-12-git-send-email-Sudeep.KarkadaNagesha@arm.com> <20130717144355.GE1026@lunn.ch> <51E7A63F.7020207@arm.com> <51E7BFFA.8010101@arm.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 60587] Only two p-states visible on AMD FX-8350
+Date: Mon, 22 Jul 2013 02:39:25 +0000
+Message-ID: <bug-60587-12968-AL7IAnducU@https.bugzilla.kernel.org/>
+References: <bug-60587-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        bh=ZJLwPf4zCqrn4oA8KuHez/HyacvfVOGcZdLmF4DORpE=;
-        b=vTfQIQRgFoR3Ox+ED6S5VseHE/zgBFe3TooihFzjTnbNsLWgPDrJ/EnTHQhkTNV5Vv
-         2xjP1qDqOup4J1eZVjiaaCKC/SFnBrpb1gyQVNDlm6yhVW+epDBI7BGqSlUNrHNePpcd
-         TEZdsmuyszFS7raB4ozBZpL2m8jF9wsgLl/zABHE5Vc3X/iya/uz24htx8dGUPNgu2kH
-         nRGGPqAYb6e2AE3nQ/wTLoUeCUPq2ftcS0VKWGB5FvCchPjw9Rg+7Nh4xfacFvK4sbqH
-         GsfwuoCoxFSNwI1T+I/00oXqzkglRRaO5zWlxRirhrMk8ZFJwt/SJURRnEUALYJ1d8Zr
-         KhXQ==
-In-Reply-To: <51E7BFFA.8010101@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-60587-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: cpufreq@vger.kernel.org
 
-On 07/18/2013 05:14 AM, Sudeep KarkadaNagesha wrote:
-> On 18/07/13 09:24, Sudeep KarkadaNagesha wrote:
->> On 17/07/13 15:43, Andrew Lunn wrote:
->>> On Wed, Jul 17, 2013 at 03:06:20PM +0100, Sudeep.KarkadaNagesha@arm.com wrote:
->>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>
-> [...]
+https://bugzilla.kernel.org/show_bug.cgi?id=60587
 
->>> Are we not going a bit backwards here? You are replacing two lines
->>> with 10 lines.
->>>
->>> How about putting these 10 lines into some helper,
->>> of_get_cpu_device()?  It would be useful for spear, kirkwood and
->>> imx6q, and maybe others.
->>>
->> Yes I realised that after making changes to this and pmac32 drivers. I
->> have already made those changes in v3. I am waiting for more response
->> before posting them.
->>
-> I thought of placing this helper in include/linux/of_device.h but I see:
-> #include <linux/of_platform.h> /* temporary until merge */
-> 
-> Does this mean of_platform.h and of_device.h will be merged ?
+Aaron Lu <aaron.lu@intel.com> changed:
 
-No, I think that was probably to avoid adding includes of of_platform.h
-for 100's of files. Maybe things are cleaned up enough to remove this line.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |NEEDINFO
+                 CC|                            |aaron.lu@intel.com
+          Component|Power-Processor             |cpufreq
+           Assignee|acpi_power-processor@kernel |cpufreq@vger.kernel.org
+                   |-bugs.osdl.org              |
+            Product|ACPI                        |Power Management
 
-> If so, which will be the final merged one ? I would like to avoid
-> changing all the header file inclusions later in users of this new helper.
+--- Comment #1 from Aaron Lu <aaron.lu@intel.com> ---
+Please attach acpidump:
+# acpidump > acpidump.out
 
-of_device.h is the right place.
-
-Rob
-
-> 
-> Regards,
-> Sudeep
-> 
-> 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
-> 
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
