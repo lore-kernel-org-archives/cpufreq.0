@@ -1,91 +1,72 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v3 01/16] of: add support for retrieving cpu node for
- a given logical cpu index
-Date: Mon, 22 Jul 2013 16:07:05 +0100
-Message-ID: <51ED4A99.3030403@arm.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <alpine.LFD.2.03.1307221007160.15022@syhkavp.arg>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH v3 12/16] cpufreq: kirkwood-cpufreq: remove device tree
+ parsing for cpu nodes
+Date: Tue, 23 Jul 2013 11:25:16 +0200
+Message-ID: <20130723092516.GC6846@lunn.ch>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374492747-13879-13-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.03.1307221007160.15022@syhkavp.arg>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1374492747-13879-13-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
+Content-Transfer-Encoding: 7bit
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
 
-Hi Nico,
+On Mon, Jul 22, 2013 at 12:32:23PM +0100, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Now that the cpu device registration initialises the of_node(if available)
+> appropriately for all the cpus, parsing here is redundant.
+> 
+> This patch removes all DT parsing and uses cpu->of_node instead.
+> 
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> ---
+>  drivers/cpufreq/kirkwood-cpufreq.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> index c233ea6..25ac2cb 100644
+> --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> @@ -14,7 +14,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/clk-provider.h>
+>  #include <linux/cpufreq.h>
+> -#include <linux/of.h>
+> +#include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/io.h>
+>  #include <asm/proc-fns.h>
+> @@ -175,9 +175,11 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+>  	if (IS_ERR(priv.base))
+>  		return PTR_ERR(priv.base);
+>  
+> -	np = of_find_node_by_path("/cpus/cpu@0");
+> -	if (!np)
+> +	np = of_cpu_device_node_get(0);
+> +	if (!np) {
+> +		dev_err(&pdev->dev, "failed to get cpu device node\n");
+>  		return -ENODEV;
+> +	}
+>  
+>  	priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
+>  	if (IS_ERR(priv.cpu_clk)) {
+> -- 
+> 1.8.1.2
 
-On 22/07/13 15:14, Nicolas Pitre wrote:
-> On Mon, 22 Jul 2013, Sudeep KarkadaNagesha wrote:
-> 
->> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>
->> Currently different drivers requiring to access cpu device node are
->> parsing the device tree themselves. Since the ordering in the DT need
->> not match the logical cpu ordering, the parsing logic needs to consider
->> that. However, this has resulted in lots of code duplication and in some
->> cases even incorrect logic.
->>
->> It's better to consolidate them by adding support for getting cpu
->> device node for a given logical cpu index in DT core library. However
->> logical to physical index mapping can be architecture specific.
->>
->> This patch adds of_get_cpu_node to retrieve a cpu device node for a
->> given logical cpu index. The default matching of the physical id to the
->> logical cpu index can be overridden by architecture specific code.
->>
->> It is recommended to use these helper function only in pre-SMP/early
->> initialisation stages to retrieve CPU device node pointers in logical
->> ordering. Once the cpu devices are registered, it can be retrieved easily
->> from cpu device of_node which avoids unnecessary parsing and matching.
->>
->> Acked-by: Rob Herring <rob.herring@calxeda.com>
->> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> Minor nits below.  Otherwise...
-> 
-> Acked-by: Nicolas Pitre <nico@linaro.org>
-> 
-Thanks for all the Acks.
+Hi Sudeep
 
->> ---
->>  drivers/of/base.c  | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->>  include/linux/of.h |  6 +++++
->>  2 files changed, 78 insertions(+)
->>
->> diff --git a/drivers/of/base.c b/drivers/of/base.c
->> index 5c54279..1e690bf 100644
->> --- a/drivers/of/base.c
->> +++ b/drivers/of/base.c
->> @@ -230,6 +230,78 @@ const void *of_get_property(const struct device_node *np, const char *name,
->>  }
->>  EXPORT_SYMBOL(of_get_property);
->>  
->> +/*
->> + * arch_match_cpu_phys_id - Match the given logical CPU and physical id
->> + *
->> + * @cpu: logical index of a cpu
->> + * @phys_id: physical identifier of a cpu
->> + *
->> + * CPU logical to physical index mapping is architecture specific.
->> + * However this __weak function provides a default match of physical
->> + * id to logical cpu index.
->> + *
->> + * Returns true if the physical identifier and the logical index correspond
->> + * to the same cpu, false otherwise.
->> + */
->> +bool __weak arch_match_cpu_phys_id(int cpu, u64 phys_id)
-> 
-> Maybe a prototype declaration for this function should be added to 
-> include/linux/of.h to avoid mismatch with architecture provided 
-> versions.
-> 
-Agreed, but include/linux/of.h doesn't seem to be right choice for me as
-this function is not really related to OF/DT. I can't choose any better
-place either. I don't have a strong opinion on that, just a thought.
+I've not had chance to test it, but it looks O.K.
 
-Regards,
-Sudeep
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 
-
+	  Andrew
