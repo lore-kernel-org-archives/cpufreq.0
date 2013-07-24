@@ -1,122 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
 Subject: Re: [PATCH 1/3 v6] cpufreq: Add debugfs directory for cpufreq
-Date: Wed, 24 Jul 2013 10:35:54 +0530
-Message-ID: <CAKohpok7B6DaqFPWZcODEgK5GRSoAQYZ27-h2=AQ1HBBP4gH8Q@mail.gmail.com>
+Date: Wed, 24 Jul 2013 15:14:12 +0900
+Message-ID: <51EF70B4.2010806@samsung.com>
 References: <1374146275-5758-1-git-send-email-cw00.choi@samsung.com>
-	<1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
-	<CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
-	<51EF2D06.7000704@samsung.com>
+ <1374146275-5758-2-git-send-email-cw00.choi@samsung.com>
+ <CAKohpo=oTsEjzi_51UaZ8ww8UEfZ6hwKAnu9rFgGBkt=TfHi8A@mail.gmail.com>
+ <51EF2D06.7000704@samsung.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51EF2D06.7000704@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <51EF2D06.7000704@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Chanwoo Choi <cw00.choi@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 24 July 2013 06:55, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> On 07/22/2013 07:11 PM, Viresh Kumar wrote:
->> On 18 July 2013 16:47, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+Hi Viresh,
 
->>> +static void cpufreq_remove_debugfs_dir(struct cpufreq_policy *policy,
->>> +                                      unsigned int cpu)
->>> +{
->>> +       unsigned int idx = cpumask_weight(policy->cpus) > 1 ? cpu : 0;
->>> +
->>> +       if (!policy->cpu_debugfs[idx])
->>> +               return;
->>> +
->>> +       debugfs_remove_recursive(policy->cpu_debugfs[idx]);
->>
->> Whey do we need recursive here? And what exactly does recursive will
->> do?
->>
->
-> If cpu is last user of policy, __cpufreq_remove_dev() have to remove debugfs directory
-> and child file/directory of root debugfs directory. So, I used debugfs_remove_recursive() function.
-
-You are calling this routine even when we aren't at the last cpu of a policy.
-And so, eventually you are calling this routine for a link you have created.
-
-Have you actually tested your code? What kind of platform? What is cpu
-topology ?? And what exactly you tested..
-
-We are already on v6 and this patch still looks like the v1.. It still has lots
-of basic mistakes, which I don't expect so later in the series..
-
-Its very difficult for me to review the same patchset again and again.. So,
-normally people might not review it well after v3-v4 and just trust the sender..
-But I am nowhere close to getting that.. And so discouraged to review it..
-
-Please review/test it well on multiple kind of systems if possible. Test on
-your intel laptop and see if it has multiple policy structures with
-multiple cpus
-in it.. cpuX/cpufreq/related_cpus gives you all cpus that share policy
-structure.
-
->>> +}
->>> +
->>
->> same problem here too.
->>> +static void cpufreq_move_debugfs_dir(struct cpufreq_policy *policy,
->>> +                                    unsigned int new_cpu)
->>> +{
->>> +       struct dentry *old_entry, *new_entry;
->>> +       char new_dir_name[CPUFREQ_NAME_LEN];
->>> +       unsigned int j, old_cpu = policy->cpu;
->>> +
->>> +       if (!policy->cpu_debugfs[new_cpu])
->>> +               return;
->>> +
->>> +       /*
->>> +        * Remove symbolic link of debugfs directory except for debugfs
->>> +        * directory of old_cpu.
->>> +        */
->>> +       for_each_present_cpu(j) {
->>> +               if (old_cpu == j)
->>> +                       continue;
->>> +
->>> +               debugfs_remove(policy->cpu_debugfs[j]);
->>
->> Why you need this? We aren't removing the earlier dentry at all here.
-
-haven't answered this.
-
->>> +       if (!new_entry) {
->>> +               pr_err("changing debugfs directory name failed\n");
->>> +               goto err_rename;
+>>> +       if (!policy->cpu_debugfs[idx]) {
+>>> +               pr_err("creating debugfs directory failed\n");
+>>> +               return -ENODEV;
 >>> +       }
 >>> +
->>> +       policy->cpu_debugfs[new_cpu] = new_entry;
->>> +       policy->cpu_debugfs[old_cpu] = NULL;
+>>> +       return 0;
+>>> +}
 >>> +
->>> +       /* Create again symbolic link of debugfs directory */
->>> +       for_each_present_cpu(j) {
+>>> +static int cpufreq_create_debugfs_symlink(struct cpufreq_policy *policy,
+>>> +                                          unsigned int src_cpu,
+>>> +                                          unsigned int dest_cpu)
 >>
->> present_cpu?? We discussed this before.. You will break multi cluster
->> systems.
->
-> My mistake. I'll use for_each_cpu() macro instead of for_each_present_cpu().
-
-Go through earlier comments about this.. you are still wrong.. You need to
-run over cpus that are in this policy.. i.e. policy->cpus.
-
->>> +               if (new_cpu == j)
->>> +                       continue;
->>> +
-
->>> @@ -1894,6 +2065,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->>>         cpufreq_driver = driver_data;
->>>         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->>>
->>> +       cpufreq_create_debugfs();
+>> Only use policy and cpu for which symlink has to be created as param
+>> to this routine. And create link to policy->cpu.
 >>
->> Why you moved this to register_driver? It was fine at cpufreq_core_init()
->
-> If we moved this to cpufreq_core_int(), I have to create cpufreq_core_exit().
-> Do you agree about creating cpufreq_core_exit()(?
+> 
+> OK, I'll simplify function prototype(cpufreq_create_debugfs_symlink) by removing
+> unnecessary parameter.
+> 
 
-No you don't need that routine. Or in other words there isn't any exit
-for cpufreq core and so this directory must not be removed.
+I considered the parameter type of cpufreq_create_debugfs_symlink() and then
+I need following function declaration because this function didn't always need to
+create symbolic link to policy->cpu. This function declaration is capable of creating
+symbolic link as 'dest_cpu -> src_cpu'
+
+	+static int cpufreq_create_debugfs_symlink(unsigned int src_cpu,
+	+                                          unsigned int dest_cpu)
+
+Thanks,
+Chanwoo Choi
+
+
