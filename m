@@ -1,99 +1,92 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: Arndale power management
-Date: Wed, 24 Jul 2013 18:58:42 -0700
-Message-ID: <20130725015842.7598.97143@quantum>
-References: <611CFE9D6FBBDC4B97935A5287A11345014441@XSERVER21B.campus.tue.nl>
- <CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v6 0/8] cpufreq:boost: CPU Boost mode support
+Date: Thu, 25 Jul 2013 18:33:23 +0200
+Message-ID: <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Comaschi, F." <fcomaschi@tue.nl>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, cpufreq@vger.kernel.org, Chander Kashyap <chander.kashyap@linaro.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 
-Quoting Viresh Kumar (2013-07-15 23:43:03)
-> Adding few more lists so that others can also help..
->=20
-> On 15 July 2013 20:00, Comaschi, F. <fcomaschi@tue.nl> wrote:
-> > Dear Viresh,
-> >
-> > I am Francesco Comaschi, a researcher at Eindhoven University of Te=
-chnology. My research group is interested in implementing custom power =
-management policies on ARM-based platform (at the moment we are using a=
-n Arndale 5250 board featuring Exynos5 dual). We would like  to make us=
-e of DVFS and to be able to measure power consumption on the board.
->=20
-> Ok.
->=20
-> > First of all, congratulations for the work that you and the other g=
-uys form the power management team are doing within the Linaro communit=
-y, I always follow your progress, and so far you have been the only rel=
-iable source of information for everything I have been doing on the boa=
-rd.
->=20
-> Thanks :)
->=20
-> > If you do not mind, I would like to ask you a few questions:
-> > 1) Is there a way to measure the board power consumption via softwa=
-re? I have read here: http://blogs.arm.com/software-enablement/925-linu=
-x-hwmon-power-management-and-arm-ds-5-streamline/ that it is possible w=
-ith the ARM Versatile boards, through the hwmon framework and lm_sensor=
-s. However, when I run lm_sensors on the Arndale board, no sensors were=
- found. Do you know about any other possible ways to measure power in s=
-oftware? Maybe it is possible to communicate with the on-board PMIC? Ma=
-ybe there are some registers where information about the power/voltage =
-provided to the processor and the other components is available?
->=20
-> On ARM Versatile express boards and the coretiles that come with it,
-> we have sensors which are probed through hwmon framework in
-> Linux. So, we have hardware IPs present on board which let us
-> get some power figures per cluster for big LITTLE.
->=20
-> I am not sure if Exynos have any such things on it.
->=20
-> @Chander: Are you aware of any such features?
->=20
-> > 2) Recently I have read Andy Green=E2=80=99s presentation =E2=80=9C=
-How to measure SoC power=E2=80=9D. However, by measuring power on the P=
-MIC input side through the ARM Energy Probe, probably I won't be able t=
-o see the effect of DVFS. Do you have any suggestions on how to measure=
- the effect of DVFS, even through hardware measurements?
->=20
-> You need probes on the voltage regulator which is feed the cores...
-> But again, that is very much hardware specific. And I haven't worked
-> on Exynos at all :)
->=20
-> > 3) More in general, I do not know which is the best way to implemen=
-t custom policies of DVFS.
->=20
-> I didn't get you here. Are you talking about tuning of governors here=
-?
->=20
-> > Is it possible, maybe through appropriate API's, to access the cpu_=
-idle and the cpu_freq framework from inside my application? Shall I wor=
-k directly with the drivers of the PMIC? Is it possible to set the volt=
-age directly from inside my application?
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
-Are you trying to create a DVFS policy from a userspace application?
-Lots of people hack together something using the CPUfreq "userspace"
-governor and writing to:
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-This is not something that should be shipped on a product but is useful
-for learning and prototyping. It only affects the CPU and will not help
-you craft DVFS policies on other peripherals/devices.
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
 
-Regards,
-Mike
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and 
+  disabled by default. The cpufreq_driver is responsibile for setting 
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag - 
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
 
->=20
-> Something on the board must provide this to kernel. Kernel can't
-> get it by itself.
->=20
-> _______________________________________________
-> linaro-kernel mailing list
-> linaro-kernel@lists.linaro.org
-> http://lists.linaro.org/mailman/listinfo/linaro-kernel
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
+
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
+
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
+
+- All available policies are now stored in a list.
+
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
+
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. Then it starts 
+  monitoring target temperature to evaluate if boost can be enabled 
+  again. This emulates behaviour similar to HW managed boost (like x86)
+
+New patches for v6:
+cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+
+Tested at HW:
+       Exynos 4412 3.11-rc1 Linux
+       Intel Core i7-3770 3.11-rc1 Linux
+
+
+Lukasz Majewski (8):
+  cpufreq: Store cpufreq policies in a list
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  thermal:boost: Automatic enable/disable of BOOST feature
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+
+ Documentation/cpu-freq/boost.txt     |   26 +++----
+ drivers/cpufreq/Kconfig              |    3 +
+ drivers/cpufreq/Kconfig.arm          |   16 +++++
+ drivers/cpufreq/acpi-cpufreq.c       |   87 ++++++++----------------
+ drivers/cpufreq/cpufreq.c            |  124 +++++++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c     |    6 ++
+ drivers/cpufreq/exynos4x12-cpufreq.c |    2 +-
+ drivers/cpufreq/freq_table.c         |   53 +++++++++++++--
+ drivers/thermal/thermal_core.c       |   55 +++++++++++++++
+ include/linux/cpufreq.h              |   26 +++++++
+ include/linux/thermal.h              |    2 +
+ 11 files changed, 321 insertions(+), 79 deletions(-)
+
+-- 
+1.7.10.4
+
