@@ -1,114 +1,156 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RESEND PATCH V1 1/9] cpufreq: cpufreq-cpu0: add dt node parsing for 'needs-cooling'
-Date: Fri, 26 Jul 2013 01:28:36 +0200
-Message-ID: <36180776.zbN9qNcjis@vostro.rjw.lan>
-References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <1374074248-31690-2-git-send-email-eduardo.valentin@ti.com>
+From: "Comaschi, F." <fcomaschi@tue.nl>
+Subject: RE: Arndale power management
+Date: Fri, 26 Jul 2013 06:06:16 +0000
+Message-ID: <611CFE9D6FBBDC4B97935A5287A1134501FFB7@XSERVER21B.campus.tue.nl>
+References: <611CFE9D6FBBDC4B97935A5287A11345014441@XSERVER21B.campus.tue.nl>
+ <CAKohpok=WAJs9FBQxEuo=nh4=b184hHyzpLAwEjVYMUZVnB+2g@mail.gmail.com>
+ <20130725015842.7598.97143@quantum>
+ <611CFE9D6FBBDC4B97935A5287A1134501BB6D@XSERVER21B.campus.tue.nl>,<CAPtuhTg3YdTGy58UT9gVmp9EZNBwxaqv69A8nv_Gackyc5qc5Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1374074248-31690-2-git-send-email-eduardo.valentin@ti.com>
+In-Reply-To: <CAPtuhTg3YdTGy58UT9gVmp9EZNBwxaqv69A8nv_Gackyc5qc5Q@mail.gmail.com>
+Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+To: Mike Turquette <mturquette@linaro.org>
+Cc: "l.majewski@samsung.com" <l.majewski@samsung.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "chander.kashyap@linaro.org" <chander.kashyap@linaro.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Wednesday, July 17, 2013 11:17:20 AM Eduardo Valentin wrote:
-> This patch changes the cpufreq-cpu0 driver to consider if
-> a cpu needs cooling (with cpufreq). In case the cooling is needed,
-> it can be flagged at the cpu0 device tree node, with the boolean
-> property 'needs-cooling'.
-> 
-> In case this boolean is present, the driver will
-> load a cpufreq cooling device in the system. The cpufreq-cpu0
-> driver is not interested in determining how the system should
-> be using the cooling device. The driver is responsible
-> only of loading the cooling device.
-> 
-> Describing how the cooling device will be used can be
-> accomplished by setting up a thermal zone that references
-> and is composed by the cpufreq cooling device.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Yes of course!
 
-FWIW, this change is fine by me, but I guess it should be handled along with
-the entire series.
+Sorry for that ;)
 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: cpufreq@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: devicetree-discuss@lists.ozlabs.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 3 +++
->  drivers/cpufreq/cpufreq-cpu0.c                             | 8 ++++++++
->  2 files changed, 11 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> index 051f764..e8ff916 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-> @@ -15,6 +15,8 @@ Optional properties:
->  - clock-latency: Specify the possible maximum transition latency for clock,
->    in unit of nanoseconds.
->  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.
-> +- needs-cooling: The generic cpu cooling (freq clipping) is loaded by the
-> +generic cpufreq-cpu0 driver in case the device tree node has this boolean.
->  
->  Examples:
->  
-> @@ -33,6 +35,7 @@ cpus {
->  			198000  850000
->  		>;
->  		clock-latency = <61036>; /* two CLK32 periods */
-> +		needs-cooling;
->  	};
->  
->  	cpu@1 {
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index ad1fde2..4a8747a 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -20,6 +20,9 @@
->  #include <linux/platform_device.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/slab.h>
-> +#include <linux/thermal.h>
-> +#include <linux/cpu_cooling.h>
-> +#include <linux/cpumask.h>
->  
->  static unsigned int transition_latency;
->  static unsigned int voltage_tolerance; /* in percentage */
-> @@ -28,6 +31,7 @@ static struct device *cpu_dev;
->  static struct clk *cpu_clk;
->  static struct regulator *cpu_reg;
->  static struct cpufreq_frequency_table *freq_table;
-> +static struct thermal_cooling_device *cdev;
->  
->  static int cpu0_verify_speed(struct cpufreq_policy *policy)
->  {
-> @@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  		goto out_free_table;
->  	}
->  
-> +	if (of_property_read_bool(np, "needs-cooling"))
-> +		cdev = cpufreq_cooling_register(cpu_present_mask);
-> +
->  	of_node_put(np);
->  	of_node_put(parent);
->  	return 0;
-> @@ -283,6 +290,7 @@ out_put_parent:
->  
->  static int cpu0_cpufreq_remove(struct platform_device *pdev)
->  {
-> +	cpufreq_cooling_unregister(cdev);
->  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
->  	opp_free_cpufreq_table(cpu_dev, &freq_table);
->  
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Best,
+
+=46rancesco
+________________________________________
+=46rom: Mike Turquette [mturquette@linaro.org]
+Sent: Thursday, July 25, 2013 7:36 PM
+To: Comaschi, F.
+Subject: Re: Arndale power management
+
+=46rancesco,
+
+Can you reply to the list with your response? Please do not remove the
+list when responding.
+
+Regards,
+Mike
+
+On Wed, Jul 24, 2013 at 11:11 PM, Comaschi, F. <fcomaschi@tue.nl> wrote=
+:
+> Dear Mike,
+>
+> thank you very much for your reply!
+>
+> the hack that you suggest is indeed what I have done so far just for =
+testing. However, I was thinking, if we have some knowledge about the s=
+pecific application that we are running, from a functional point of vie=
+w (e.g., we are scanning a scene through a camera and we see that there=
+'s no movement, therefore we decide to lower the frequency), wouldn't i=
+t be useful to exploit this knowledge in order to implement our own DVF=
+S policy in a more proactive way, rather than recurring to the availabl=
+e governors which I think are working in a more reactive way?
+> In that case, how would you suggest to interface with the OS from ins=
+ide my application? Shall I make some "calls" to specific API's, or may=
+be writing my own governor?
+>
+> Thanks in advance for your attention!
+>
+> Best,
+>
+> Francesco
+> ________________________________________
+> From: Mike Turquette [mturquette@linaro.org]
+> Sent: Thursday, July 25, 2013 3:58 AM
+> To: Viresh Kumar; Comaschi, F.
+> Cc: Lukasz Majewski; Lists linaro-kernel; cpufreq@vger.kernel.org; Ch=
+ander Kashyap; Linux PM List
+> Subject: Re: Arndale power management
+>
+> Quoting Viresh Kumar (2013-07-15 23:43:03)
+>> Adding few more lists so that others can also help..
+>>
+>> On 15 July 2013 20:00, Comaschi, F. <fcomaschi@tue.nl> wrote:
+>> > Dear Viresh,
+>> >
+>> > I am Francesco Comaschi, a researcher at Eindhoven University of T=
+echnology. My research group is interested in implementing custom power=
+ management policies on ARM-based platform (at the moment we are using =
+an Arndale 5250 board featuring Exynos5 dual). We would like  to make u=
+se of DVFS and to be able to measure power consumption on the board.
+>>
+>> Ok.
+>>
+>> > First of all, congratulations for the work that you and the other =
+guys form the power management team are doing within the Linaro communi=
+ty, I always follow your progress, and so far you have been the only re=
+liable source of information for everything I have been doing on the bo=
+ard.
+>>
+>> Thanks :)
+>>
+>> > If you do not mind, I would like to ask you a few questions:
+>> > 1) Is there a way to measure the board power consumption via softw=
+are? I have read here: http://blogs.arm.com/software-enablement/925-lin=
+ux-hwmon-power-management-and-arm-ds-5-streamline/ that it is possible =
+with the ARM Versatile boards, through the hwmon framework and lm_senso=
+rs. However, when I run lm_sensors on the Arndale board, no sensors wer=
+e found. Do you know about any other possible ways to measure power in =
+software? Maybe it is possible to communicate with the on-board PMIC? M=
+aybe there are some registers where information about the power/voltage=
+ provided to the processor and the other components is available?
+>>
+>> On ARM Versatile express boards and the coretiles that come with it,
+>> we have sensors which are probed through hwmon framework in
+>> Linux. So, we have hardware IPs present on board which let us
+>> get some power figures per cluster for big LITTLE.
+>>
+>> I am not sure if Exynos have any such things on it.
+>>
+>> @Chander: Are you aware of any such features?
+>>
+>> > 2) Recently I have read Andy Green=92s presentation =93How to meas=
+ure SoC power=94. However, by measuring power on the PMIC input side th=
+rough the ARM Energy Probe, probably I won't be able to see the effect =
+of DVFS. Do you have any suggestions on how to measure the effect of DV=
+=46S, even through hardware measurements?
+>>
+>> You need probes on the voltage regulator which is feed the cores...
+>> But again, that is very much hardware specific. And I haven't worked
+>> on Exynos at all :)
+>>
+>> > 3) More in general, I do not know which is the best way to impleme=
+nt custom policies of DVFS.
+>>
+>> I didn't get you here. Are you talking about tuning of governors her=
+e?
+>>
+>> > Is it possible, maybe through appropriate API's, to access the cpu=
+_idle and the cpu_freq framework from inside my application? Shall I wo=
+rk directly with the drivers of the PMIC? Is it possible to set the vol=
+tage directly from inside my application?
+>
+> Are you trying to create a DVFS policy from a userspace application?
+> Lots of people hack together something using the CPUfreq "userspace"
+> governor and writing to:
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+>
+> This is not something that should be shipped on a product but is usef=
+ul
+> for learning and prototyping. It only affects the CPU and will not he=
+lp
+> you craft DVFS policies on other peripherals/devices.
+>
+> Regards,
+> Mike
+>
+>>
+>> Something on the board must provide this to kernel. Kernel can't
+>> get it by itself.
+>>
+>> _______________________________________________
+>> linaro-kernel mailing list
+>> linaro-kernel@lists.linaro.org
+>> http://lists.linaro.org/mailman/listinfo/linaro-kernel
