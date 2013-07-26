@@ -1,116 +1,157 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq-cpu0: support Device Tree initialisation
-Date: Fri, 26 Jul 2013 08:14:28 -0500
-Message-ID: <51F27634.7040007@ti.com>
-References: <Pine.LNX.4.64.1307261214430.22137@axis700.grange> <51F2698A.5020904@ti.com> <Pine.LNX.4.64.1307261431510.22137@axis700.grange>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RESEND PATCH V1 1/9] cpufreq: cpufreq-cpu0: add dt node parsing
+ for 'needs-cooling'
+Date: Fri, 26 Jul 2013 09:27:10 -0400
+Message-ID: <51F2792E.2060301@ti.com>
+References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <1374074248-31690-2-git-send-email-eduardo.valentin@ti.com> <36180776.zbN9qNcjis@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1307261431510.22137@axis700.grange>
-Sender: linux-sh-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <36180776.zbN9qNcjis@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
 
-On 07/26/2013 07:43 AM, Guennadi Liakhovetski wrote:
-> Hi Nishanth
->
-> On Fri, 26 Jul 2013, Nishanth Menon wrote:
->
->> On 07/26/2013 05:19 AM, Guennadi Liakhovetski wrote:
->>> Currently the cpufreq-cpu0 driver doesn't support Device Tree probing. To
->>> support it we add an OF match table to it. In principle this alone is
->>> enough to get the driver working with DT devices, but then the driver
->>> rewrites the .of_node field of the probed device with a different one,
->>> which isn't clean. To avoid this we use the cpu0 system device for clock
->>> and OPP handling, similar to what the arm_big_little CPUFreq driver does.
->>> This is also less intrusive, since the cpu0 device's .of_node field is
->>> initially NULL, since this isn't a DT device.
->>>
->>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
->>> ---
->>>    drivers/cpufreq/cpufreq-cpu0.c |   14 +++++++++++---
->>>    1 files changed, 11 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
->>> index ad1fde2..d2ad7b8 100644
->>> --- a/drivers/cpufreq/cpufreq-cpu0.c
->>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
->>> @@ -12,6 +12,7 @@
->>>    #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
->>>
->>>    #include <linux/clk.h>
->>> +#include <linux/cpu.h>
->>>    #include <linux/cpufreq.h>
->>>    #include <linux/err.h>
->>>    #include <linux/module.h>
->>> @@ -194,7 +195,7 @@ static int cpu0_cpufreq_probe(struct platform_device
->>> *pdev)
->>>    		goto out_put_parent;
->>>    	}
->>>
->>> -	cpu_dev = &pdev->dev;
->>> +	cpu_dev = get_cpu_device(0);
->>>    	cpu_dev->of_node = np;
->>>
->>>    	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
->>> @@ -289,10 +290,17 @@ static int cpu0_cpufreq_remove(struct platform_device
->>> *pdev)
->>>    	return 0;
->>>    }
->>>
->>> +static const struct of_device_id cpu0_cpufreq_of_match[] = {
->>> +	{.compatible = "cpufreq-cpu0"},
->>> +	{}
->>> +};
->>> +MODULE_DEVICE_TABLE(of, cpu0_cpufreq_of_match);
->>> +
->>>    static struct platform_driver cpu0_cpufreq_platdrv = {
->>>    	.driver = {
->>> -		.name	= "cpufreq-cpu0",
->>> -		.owner	= THIS_MODULE,
->>> +		.name		= "cpufreq-cpu0",
->>> +		.of_match_table	= cpu0_cpufreq_of_match,
->>> +		.owner		= THIS_MODULE,
->>>    	},
->>>    	.probe		= cpu0_cpufreq_probe,
->>>    	.remove		= cpu0_cpufreq_remove,
->>>
->> Did we not go down this approach[1] previously? Could you explain why this
->> path is different now?
->
-> Yes, you're right, I forgot about that discussion, sorry. But my
-> motivation was the following: yes, I'm aware, that the DT should only
-> describe real hardware _devices_ and hardware _properties_. But this patch
-> - just like your original patch - don't add a pseudo _device_ or
-> _property_, but a compatibility string. So, to me it was like "a class of
-> all systems, where the CPU performance can be scaled using one power
-> supply and one clock. Isn't this a hardware feature? We already have CPU
+--e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The definition of the hardware (CPU) behavior - which is performance 
-indicator, would be an operating performance point (OPP), no? we have 
-already modelled that in dts - in fact Mike has a better approach that 
-is maturing.
+On 25-07-2013 19:28, Rafael J. Wysocki wrote:
+> On Wednesday, July 17, 2013 11:17:20 AM Eduardo Valentin wrote:
+>> This patch changes the cpufreq-cpu0 driver to consider if
+>> a cpu needs cooling (with cpufreq). In case the cooling is needed,
+>> it can be flagged at the cpu0 device tree node, with the boolean
+>> property 'needs-cooling'.
+>>
+>> In case this boolean is present, the driver will
+>> load a cpufreq cooling device in the system. The cpufreq-cpu0
+>> driver is not interested in determining how the system should
+>> be using the cooling device. The driver is responsible
+>> only of loading the cooling device.
+>>
+>> Describing how the cooling device will be used can be
+>> accomplished by setting up a thermal zone that references
+>> and is composed by the cpufreq cooling device.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>=20
+> FWIW, this change is fine by me, but I guess it should be handled along=
+ with
+> the entire series.
 
-As far as I am concerned, a generic device(including processing) which 
-does not have the deep linkage to kernel behavior should be managed by 
-devfreq, cpufreq has linkage to core scheduler and PM behavior, and 
-could be arguably stand alone on its own - though it could be argued 
-that devfreq could be made as a superset of which cpufreq functionality 
-is just one part of it.
+Raphael, thanks for your review.
 
-> nodes in DT, this would be just (an additional) compatibility string to
-> them? I'll be happy to drop this patch and revive yours, if we manage to
-> agree upon the scope.
+Yeah, this change must be handled along with the other changes in this
+series. There is still ongoing discussion in DT mailing list with
+respect to thermal bindings. Thus, for now, this patch is on hold.
 
-As far as I am concerned, the original argument Shawn made[1] is 
-convincing enough for me.
+>=20
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: Grant Likely <grant.likely@linaro.org>
+>> Cc: Rob Herring <rob.herring@calxeda.com>
+>> Cc: cpufreq@vger.kernel.org
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Cc: devicetree-discuss@lists.ozlabs.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 3 +++
+>>  drivers/cpufreq/cpufreq-cpu0.c                             | 8 ++++++=
+++
+>>  2 files changed, 11 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.tx=
+t b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>> index 051f764..e8ff916 100644
+>> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+>> @@ -15,6 +15,8 @@ Optional properties:
+>>  - clock-latency: Specify the possible maximum transition latency for =
+clock,
+>>    in unit of nanoseconds.
+>>  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.=
 
-Will probably look at Viresh and others to see if there is a change in 
-opinion.
+>> +- needs-cooling: The generic cpu cooling (freq clipping) is loaded by=
+ the
+>> +generic cpufreq-cpu0 driver in case the device tree node has this boo=
+lean.
+>> =20
+>>  Examples:
+>> =20
+>> @@ -33,6 +35,7 @@ cpus {
+>>  			198000  850000
+>>  		>;
+>>  		clock-latency =3D <61036>; /* two CLK32 periods */
+>> +		needs-cooling;
+>>  	};
+>> =20
+>>  	cpu@1 {
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-=
+cpu0.c
+>> index ad1fde2..4a8747a 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -20,6 +20,9 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/regulator/consumer.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/thermal.h>
+>> +#include <linux/cpu_cooling.h>
+>> +#include <linux/cpumask.h>
+>> =20
+>>  static unsigned int transition_latency;
+>>  static unsigned int voltage_tolerance; /* in percentage */
+>> @@ -28,6 +31,7 @@ static struct device *cpu_dev;
+>>  static struct clk *cpu_clk;
+>>  static struct regulator *cpu_reg;
+>>  static struct cpufreq_frequency_table *freq_table;
+>> +static struct thermal_cooling_device *cdev;
+>> =20
+>>  static int cpu0_verify_speed(struct cpufreq_policy *policy)
+>>  {
+>> @@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_devi=
+ce *pdev)
+>>  		goto out_free_table;
+>>  	}
+>> =20
+>> +	if (of_property_read_bool(np, "needs-cooling"))
+>> +		cdev =3D cpufreq_cooling_register(cpu_present_mask);
+>> +
+>>  	of_node_put(np);
+>>  	of_node_put(parent);
+>>  	return 0;
+>> @@ -283,6 +290,7 @@ out_put_parent:
+>> =20
+>>  static int cpu0_cpufreq_remove(struct platform_device *pdev)
+>>  {
+>> +	cpufreq_cooling_unregister(cdev);
+>>  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+>>  	opp_free_cpufreq_table(cpu_dev, &freq_table);
+>> =20
+>>
 
-[1] http://marc.info/?l=devicetree&m=137435418742097&w=2
--- 
-Regards,
-Nishanth Menon
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHyeTEACgkQCXcVR3XQvP2YKwD8D8GXupOvyy+jcynhYLxoYaBx
+FIXrgeG5Dfxug/t9nI4BAOB6ErkWo5qIKUzOebHmcPLGPeDcU4JUHkMxvRdkxEBN
+=nW/X
+-----END PGP SIGNATURE-----
+
+--e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX--
