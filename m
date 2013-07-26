@@ -1,157 +1,92 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RESEND PATCH V1 1/9] cpufreq: cpufreq-cpu0: add dt node parsing
- for 'needs-cooling'
-Date: Fri, 26 Jul 2013 09:27:10 -0400
-Message-ID: <51F2792E.2060301@ti.com>
-References: <1374074248-31690-1-git-send-email-eduardo.valentin@ti.com> <1374074248-31690-2-git-send-email-eduardo.valentin@ti.com> <36180776.zbN9qNcjis@vostro.rjw.lan>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v3 07/16] of/device: add helper to get cpu device node
+ from logical cpu index
+Date: Fri, 26 Jul 2013 18:01:37 +0100
+Message-ID: <51F2AB71.3070102@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1374492747-13879-8-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX"
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <36180776.zbN9qNcjis@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, devicetree-discuss@lists.ozlabs.org, wni@nvidia.com, l.stach@pengutronix.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Viresh Kumar <viresh.kumar@linaro.org>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1374492747-13879-8-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "rob.herring@calxeda.com" <rob.herring@calxeda.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Olof Johansson <olof@lixom.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Gregory Clement <gregory.clement@free-electrons.com>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
---e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Rob,
 
-On 25-07-2013 19:28, Rafael J. Wysocki wrote:
-> On Wednesday, July 17, 2013 11:17:20 AM Eduardo Valentin wrote:
->> This patch changes the cpufreq-cpu0 driver to consider if
->> a cpu needs cooling (with cpufreq). In case the cooling is needed,
->> it can be flagged at the cpu0 device tree node, with the boolean
->> property 'needs-cooling'.
->>
->> In case this boolean is present, the driver will
->> load a cpufreq cooling device in the system. The cpufreq-cpu0
->> driver is not interested in determining how the system should
->> be using the cooling device. The driver is responsible
->> only of loading the cooling device.
->>
->> Describing how the cooling device will be used can be
->> accomplished by setting up a thermal zone that references
->> and is composed by the cpufreq cooling device.
->>
->> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->=20
-> FWIW, this change is fine by me, but I guess it should be handled along=
- with
-> the entire series.
+On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>
+> Multiple drivers need to get the cpu device node from the cpu logical
+> index and then access the of_node.
+>
+> This patch adds helper function to fetch the device node directly.
+>
+> Cc: Rob Herring <rob.herring@calxeda.com>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Raphael, thanks for your review.
+If you have no objections with this patch, can I add your ACK ?
 
-Yeah, this change must be handled along with the other changes in this
-series. There is still ongoing discussion in DT mailing list with
-respect to thermal bindings. Thus, for now, this patch is on hold.
+Regards,
+Sudeep
 
->=20
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: Grant Likely <grant.likely@linaro.org>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Cc: cpufreq@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Cc: devicetree-discuss@lists.ozlabs.org
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>  Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 3 +++
->>  drivers/cpufreq/cpufreq-cpu0.c                             | 8 ++++++=
-++
->>  2 files changed, 11 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.tx=
-t b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> index 051f764..e8ff916 100644
->> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
->> @@ -15,6 +15,8 @@ Optional properties:
->>  - clock-latency: Specify the possible maximum transition latency for =
-clock,
->>    in unit of nanoseconds.
->>  - voltage-tolerance: Specify the CPU voltage tolerance in percentage.=
-
->> +- needs-cooling: The generic cpu cooling (freq clipping) is loaded by=
- the
->> +generic cpufreq-cpu0 driver in case the device tree node has this boo=
-lean.
->> =20
->>  Examples:
->> =20
->> @@ -33,6 +35,7 @@ cpus {
->>  			198000  850000
->>  		>;
->>  		clock-latency =3D <61036>; /* two CLK32 periods */
->> +		needs-cooling;
->>  	};
->> =20
->>  	cpu@1 {
->> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-=
-cpu0.c
->> index ad1fde2..4a8747a 100644
->> --- a/drivers/cpufreq/cpufreq-cpu0.c
->> +++ b/drivers/cpufreq/cpufreq-cpu0.c
->> @@ -20,6 +20,9 @@
->>  #include <linux/platform_device.h>
->>  #include <linux/regulator/consumer.h>
->>  #include <linux/slab.h>
->> +#include <linux/thermal.h>
->> +#include <linux/cpu_cooling.h>
->> +#include <linux/cpumask.h>
->> =20
->>  static unsigned int transition_latency;
->>  static unsigned int voltage_tolerance; /* in percentage */
->> @@ -28,6 +31,7 @@ static struct device *cpu_dev;
->>  static struct clk *cpu_clk;
->>  static struct regulator *cpu_reg;
->>  static struct cpufreq_frequency_table *freq_table;
->> +static struct thermal_cooling_device *cdev;
->> =20
->>  static int cpu0_verify_speed(struct cpufreq_policy *policy)
->>  {
->> @@ -268,6 +272,9 @@ static int cpu0_cpufreq_probe(struct platform_devi=
-ce *pdev)
->>  		goto out_free_table;
->>  	}
->> =20
->> +	if (of_property_read_bool(np, "needs-cooling"))
->> +		cdev =3D cpufreq_cooling_register(cpu_present_mask);
->> +
->>  	of_node_put(np);
->>  	of_node_put(parent);
->>  	return 0;
->> @@ -283,6 +290,7 @@ out_put_parent:
->> =20
->>  static int cpu0_cpufreq_remove(struct platform_device *pdev)
->>  {
->> +	cpufreq_cooling_unregister(cdev);
->>  	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
->>  	opp_free_cpufreq_table(cpu_dev, &freq_table);
->> =20
->>
+> ---
+>  include/linux/of_device.h | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+> index 9d27475..82ce324 100644
+> --- a/include/linux/of_device.h
+> +++ b/include/linux/of_device.h
+> @@ -1,6 +1,7 @@
+>  #ifndef _LINUX_OF_DEVICE_H
+>  #define _LINUX_OF_DEVICE_H
+>
+> +#include <linux/cpu.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/of_platform.h> /* temporary until merge */
+>
+> @@ -43,6 +44,15 @@ static inline void of_device_node_put(struct device *dev)
+>       of_node_put(dev->of_node);
+>  }
+>
+> +static inline struct device_node *of_cpu_device_node_get(int cpu)
+> +{
+> +     struct device *cpu_dev;
+> +     cpu_dev = get_cpu_device(cpu);
+> +     if (!cpu_dev)
+> +             return NULL;
+> +     return of_node_get(cpu_dev->of_node);
+> +}
+> +
+>  #else /* CONFIG_OF */
+>
+>  static inline int of_driver_match_device(struct device *dev,
+> @@ -67,6 +77,11 @@ static inline const struct of_device_id *of_match_device(
+>  {
+>       return NULL;
+>  }
+> +
+> +static inline struct device_node *of_cpu_device_node_get(int cpu)
+> +{
+> +     return NULL;
+> +}
+>  #endif /* CONFIG_OF */
+>
+>  #endif /* _LINUX_OF_DEVICE_H */
+>
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
---e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHyeTEACgkQCXcVR3XQvP2YKwD8D8GXupOvyy+jcynhYLxoYaBx
-FIXrgeG5Dfxug/t9nI4BAOB6ErkWo5qIKUzOebHmcPLGPeDcU4JUHkMxvRdkxEBN
-=nW/X
------END PGP SIGNATURE-----
-
---e5RuxGNAJE5XqC7EoHja7LRJ5mviribGX--
+-- IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium.  Thank you.
