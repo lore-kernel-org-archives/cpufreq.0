@@ -1,133 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: stable 3-10-3: strange output of  "lsmod | grep ^acpi_cpufreq"
-Date: Mon, 29 Jul 2013 01:20:41 +0200
-Message-ID: <2368277.VjYrsHUseA@vostro.rjw.lan>
-References: <51F40612.2050403@gmx.de> <2111514.pxW5saG1J3@vostro.rjw.lan> <18359786.D7glpto546@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 5/8] cpufreq:boost:Kconfig: Provide support for
+ software managed BOOST
+Date: Mon, 29 Jul 2013 12:28:02 +0530
+Message-ID: <CAKohponvOXuHSS+-+m5PR9tPkAqkrYtjA3FJaNh9NJXrhQ9wmw@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+	<1374770011-22171-6-git-send-email-l.majewski@samsung.com>
+	<CAKohpokL57mXSQooX=4LZKtjMxJoXAB4uuzj13fgr3Gs7Wcf0A@mail.gmail.com>
+	<20130726132120.5b9cf32f@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <18359786.D7glpto546@vostro.rjw.lan>
+In-Reply-To: <20130726132120.5b9cf32f@amdc308.digital.local>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, durgadoss.r@intel.com
 
-On Monday, July 29, 2013 12:43:59 AM Rafael J. Wysocki wrote:
-> On Monday, July 29, 2013 12:11:18 AM Rafael J. Wysocki wrote:
-> > On Sunday, July 28, 2013 12:21:22 PM Toralf F=C3=B6rster wrote:
-> > > On 07/28/2013 01:39 AM, Rafael J. Wysocki wrote:
-> > > > On Saturday, July 27, 2013 07:40:34 PM Toralf F=C3=B6rster wrot=
-e:
-> > > >> it gives at a ThinkPad T420:
-> > > >>
-> > > >> tfoerste@n22 ~/tmp $ lsmod | grep ^acpi_cpufreq
-> > > >> acpi_cpufreq           12902  2147483647
-> > > >=20
-> > > > That is -1, which indicates some module refcount woes.
-> > >=20
-> > > yes, ofc.
-> > >=20
-> > > The issue apears after 1 s2ram/resume cycle, before s2ram the ref=
-count is 1.
-> > >=20
-> > > > I definitely can't see that with the mainline on my machines.
-> > >=20
-> > > It is in mainline too.
-> >=20
-> > Does the appended patch help?
->=20
-> Actually, something as simple as this also should help:
->=20
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Fix cpufreq driver module refcount balance after su=
-spend/resume
->=20
-> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
-> driver module refcount, __cpufreq_remove_dev() causes that refcount
-> to become negative after a suspend/resume cycle, for example.
->=20
-> To prevent this from happening make __cpufreq_remove_dev() put
-> the policy kobject only instead of calling cpufreq_cpu_put().
+On 26 July 2013 16:51, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Fri, 26 Jul 2013 15:54:56 +0530 Viresh Kumar wrote,
+>> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
 
-Having a deeper look at it, though, I see that in fact the whole
-cpufreq_cpu_put() is needed if the CPU is not the last one for the give=
-n
-policy and is not needed at all otherwise (as described in the changelo=
-g
-of the patch below).
+>> > +config CPU_FREQ_BOOST_SW
+>> > +       bool
+>>
+>> Invisible is fine but this must be disabled by default and must
+>> depend on thermal, rather than moving dependency on platform's
+>> config.
+>
+> The CPU_FREQ_BOOST_SW [1] is a generic flag (invisible).
+>
+> I will add "default n" to it.
 
-Srivatsa, does this make sense to you?
+Leave it.. We don't need it now.. that's how these kind of config options
+are defined as they are disabled by default.
 
-Rafael
+> Depending only on [3], results at situation where SW BOOST can be
+> enabled at x86 or ARM target with only generic THERMAL support (which
+> doesn't protect from overheating).
 
+I had a similar concern.. Currently also we aren't stopping anybody to
+enable boost. By selecting thermal from CPU_FREQ_BOOST_SW, atleast
+we are communicating this very well to developers that they need
+something else as well. And currently we only have thermal as a source
+for telling when to block boost but it can be something else too..
 
----
-=46rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: cpufreq: Fix cpufreq driver module refcount balance after susp=
-end/resume
-
-Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
-driver module refcount, __cpufreq_remove_dev() causes that refcount
-to become negative for the acpi-cpufreq driver after a suspend/resume
-cycle.
-
-This is not the only bad thing that happens there, however, because
-kobject_put() should only be called for the policy kobject at this
-point if the CPU is not the last one for that policy.
-
-Namely, if the given CPU is the last one for that policy, the
-policy kobject's refcount should be 1 at this point, as set by
-cpufreq_add_dev_interface(), and only needs to be dropped once for
-the kobject to go away.  This actually happens under the cpu =3D=3D 1
-check, so it need not be done before by cpufreq_cpu_put().
-
-On the other hand, if the given CPU is not the last one for that
-policy, this means that cpufreq_add_policy_cpu() has been called
-at least once for that policy and cpufreq_cpu_get() has been
-called for it too.  To balance that cpufreq_cpu_get(), we need to
-call pufreq_cpu_put() in that case.
-
-Thus, to fix the described problem and keep the reference
-counters balanced in both cases, move the cpufreq_cpu_get() call
-in __cpufreq_remove_dev() to the code path executed only for
-CPUs that share the policy with other CPUs.
-
-Reported-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1181,7 +1181,6 @@ static int __cpufreq_remove_dev(struct d
- 		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
-=20
- 	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
--	cpufreq_cpu_put(data);
-=20
- 	/* If cpu is last user of policy, free policy */
- 	if (cpus =3D=3D 1) {
-@@ -1205,9 +1204,12 @@ static int __cpufreq_remove_dev(struct d
- 		free_cpumask_var(data->related_cpus);
- 		free_cpumask_var(data->cpus);
- 		kfree(data);
--	} else if (cpufreq_driver->target) {
--		__cpufreq_governor(data, CPUFREQ_GOV_START);
--		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
-+	} else {
-+		cpufreq_cpu_put(data);
-+		if (cpufreq_driver->target) {
-+			__cpufreq_governor(data, CPUFREQ_GOV_START);
-+			__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
-+		}
- 	}
-=20
- 	per_cpu(cpufreq_policy_cpu, cpu) =3D -1;
-
+I never said, don't use EXYNOS_THERMAL, its good to have a
+dependency on it in the Exynos specific config for boost, but I wanted
+normal sw boost also to depend on thermal..
