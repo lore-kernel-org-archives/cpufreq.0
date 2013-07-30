@@ -1,58 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: stable 3-10-3: strange output of "lsmod | grep ^acpi_cpufreq"
-Date: Tue, 30 Jul 2013 10:53:57 +0530
-Message-ID: <CAKohpo=QwTyMnXmzzk1yE6swVuhQHwyMWDiLCgQ1A=9Cy5bp9Q@mail.gmail.com>
-References: <51F40612.2050403@gmx.de>
-	<51F638D9.7050904@linux.vnet.ibm.com>
-	<CAOh2x=nQL+8DNaSFOnvq9eVMse8-gDvW1gPqFtu+CT52JsG15A@mail.gmail.com>
-	<1462209.u176D8q1Fr@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1462209.u176D8q1Fr@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [PATCH 1/2] cpufreq: Remove extra variables
+Date: Tue, 30 Jul 2013 19:06:33 +0530
+Message-ID: <2095cb9de80d87867dbfa42f8433f766891c93ab.1375191318.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 29 July 2013 17:24, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: cpufreq: Fix cpufreq driver module refcount balance after su=
-spend/resume
->
-> Since cpufreq_cpu_put() called by __cpufreq_remove_dev() drops the
-> driver module refcount, __cpufreq_remove_dev() causes that refcount
-> to become negative for the cpufreq driver after a suspend/resume
-> cycle.
->
-> This is not the only bad thing that happens there, however, because
-> kobject_put() should only be called for the policy kobject at this
-> point if the CPU is not the last one for that policy.
->
-> Namely, if the given CPU is the last one for that policy, the
-> policy kobject's refcount should be 1 at this point, as set by
-> cpufreq_add_dev_interface(), and only needs to be dropped once for
-> the kobject to go away.  This actually happens under the cpu =3D=3D 1
-> check, so it need not be done before by cpufreq_cpu_put().
->
-> On the other hand, if the given CPU is not the last one for that
-> policy, this means that cpufreq_add_policy_cpu() has been called
-> at least once for that policy and cpufreq_cpu_get() has been
-> called for it too.  To balance that cpufreq_cpu_get(), we need to
-> call cpufreq_cpu_put() in that case.
->
-> Thus, to fix the described problem and keep the reference
-> counters balanced in both cases, move the cpufreq_cpu_get() call
-> in __cpufreq_remove_dev() to the code path executed only for
-> CPUs that share the policy with other CPUs.
->
-> Reported-by: Toralf F=F6rster <toralf.foerster@gmx.de>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |   19 ++++++++++---------
->  1 file changed, 10 insertions(+), 9 deletions(-)
+We call cpufreq_cpu_get() in cpufreq_add_dev_symlink() to increase usage
+refcount of policy and not to get policy for a cpu. So, we don't really need to
+capture the return value of this routine and call put for it later for failure
+cases. We can simply use policy passed as an argument to this routine.
 
-Looks fine.
+Moreover debug print is rewritten to make it more clear.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 170d344..35e1a03 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -813,19 +813,18 @@ static int cpufreq_add_dev_symlink(unsigned int cpu,
+ 	int ret = 0;
+ 
+ 	for_each_cpu(j, policy->cpus) {
+-		struct cpufreq_policy *managed_policy;
+ 		struct device *cpu_dev;
+ 
+ 		if (j == cpu)
+ 			continue;
+ 
+-		pr_debug("CPU %u already managed, adding link\n", j);
+-		managed_policy = cpufreq_cpu_get(cpu);
++		pr_debug("Adding link for CPU: %u\n", j);
++		cpufreq_cpu_get(cpu);
+ 		cpu_dev = get_cpu_device(j);
+ 		ret = sysfs_create_link(&cpu_dev->kobj, &policy->kobj,
+ 					"cpufreq");
+ 		if (ret) {
+-			cpufreq_cpu_put(managed_policy);
++			cpufreq_cpu_put(policy);
+ 			return ret;
+ 		}
+ 	}
+-- 
+1.7.12.rc2.18.g61b472e
+
