@@ -1,106 +1,29 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 31 Jul 2013 17:40:28 +0100
-Message-ID: <51F93DFC.7070904@arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <51F92D3B.3070103@arm.com> <51F93303.7010609@ti.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 14/15] cpufreq: Tegra: initialize .owner field with THIS_MODULE
+Date: Wed, 31 Jul 2013 13:13:09 -0600
+Message-ID: <51F961C5.7070302@wwwdotorg.org>
+References: <cover.1375279948.git.viresh.kumar@linaro.org> <7e832fd210488da0675b6c70fc9a3947eec7899d.1375279948.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51F93303.7010609@ti.com>
+In-Reply-To: <7e832fd210488da0675b6c70fc9a3947eec7899d.1375279948.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Nishanth Menon <nm@ti.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, Stephen Warren <swarren@nvidia.com>
 
-On 31/07/13 16:53, Nishanth Menon wrote:
-> On 07/31/2013 10:28 AM, Sudeep KarkadaNagesha wrote:
->> On 31/07/13 15:46, Nishanth Menon wrote:
->>> On 07/31/2013 06:14 AM, Sudeep KarkadaNagesha wrote:
->>>> On 30/07/13 21:48, Nishanth Menon wrote:
->> [...]
->>>>> This should setup stage for many of the work we have been trying to
->>>>> figure out on AM/OMAP and few other processors which has to depend on
->>>>> few sets of OPPs which may not be supported on various platforms.
->>>>>
->>>> I still don't get the point why you would publish some OPP in the DT
->>>> when the hardware which it describes doesn't support it.
->>>>
->>>> This may be already discussed when DT support was added to OPP library,
->>>> IMO if for some reason the firmware/boot entity disables some of the
->>>> OPPs, then it can append OPPs in DT with the state(enabled/disabled).
->>>> But this needs extension of current binding.
->>>
->>> you could also have reduced OPP set which needs to be invoked, appending
->>> wont really work if cpufreq table is built as part of probe - it kind of
->>> creates all kind of races which I would really like to avoid.
->>>
->> IIUC opp_set_availability(opp_enable/opp_disable) is designed for such
->> use-case ? Currently there are no users of this API but I see it fits
->> your use case.
->>
->> Even with multiple OPP sets listed in DT as you described, you need to
->> read those fuses and chose the right set of OPPs. Instead you can use
->> opp_en(/dis)able methods to do that ?
->>
-> yes when the efuse data is present, but look at the other case I had 
-> also pointed at:
+On 07/31/2013 08:19 AM, Viresh Kumar wrote:
+> CPUFreq core does following at multiple places:
+> module_{get|put}(cpufreq_driver->owner)).
 > 
-> Lets take an example: SoC X has OPPs 1,2,3,4
+> This is done to make sure module doesn't get unloaded if it is currently in use.
+> This will work only if the .owner field of cpufreq driver is initialized with a
+> valid pointer.
 > 
-> Same SoC is used on Board A and B.
-> Board A meets with all SoC vendor requirements for routing, IR drop 
-> limits etc
-> Board B *does not* meet with all SoC vendor requirements for routing, IR 
-> drop limits etc
-> 
-> we no longer have board files, board will have to have a mechanism to 
-> "state it is not optimal configuration".
-> 
-But we still have DTS per board(I assume each board will at-least
-different in IRQ/GPIO assignments or even different pin-mux configuration)
+> This field wasn't initialized for this driver, lets initialize it with
+> THIS_MODULE.
 
-> A real life example is BeagleBoard Xm and another product board(which I 
-> cannot mention) -both use OMAP3630 1GHz part. 1GHz requirements are met 
-> on BeagleBoard Xm, but on the product board it is not. Chip used is 
-> exactly the same, we dont have "dts property" to mention "yes, this 
-> board meets SoC data manual and associated documentation requirement" - 
-> instead what we do have is what is the chip capable of doing.
-> 
-If SoC gives configuration w.r.t OPPs, then its board property like
-pin-mux. Why is it not possible to have 1GHz only in BeagleBoard Xm and
-not in product board X ?
+Acked-by: Stephen Warren <swarren@nvidia.com>
 
-> opp_enable/disable wont work here unless there is board specific 
-> "properties" we introduce. However, board file could choose "low 
-> performance" option of OPPs.
-> 
-Again board file choice of selecting OPPs is policy and DT must describe
-all the features board supports.
-
-> the opp_enable/disable wont scale there. Further, opp_add is done 
-> enmasse by cpufreq-cpu0 and and cpufreq table is built off it, there is 
-> no option of SoC specific modification to the table (opportunity to do 
-> opp_enable/disable) there - not something that cannot be fixed, and 
-> eventually will be, but not there right now.
-> 
-Freescale iMX6 seems to be using it, not use if its SoC level or board
-level.(imx6q_opp_check_1p2ghz in arch/arm/mach-imx/mach-imx6q.c)
-
-
-I just had a look @arch/arm/boot/dts/omap36xx.dtsi and
-omap3-beagle-xm.dts. This is my opinion(if you can't handle this
-dynamically):
-
-Now you have omap36xx SoC on 2 products X and BeagleBoard Xm.
-omap36xx can support up to 1GHz but depends on actual products.
-So its better not to publish OPPs in omap36xx.dtsi but leave to product
-X and BeagleBoard Xm to describe what that hardware supports.
-
-Regards,
-Sudeep
-
-
-
-
+I assume this is all part of a series you'll take through the cpufreq tree.
