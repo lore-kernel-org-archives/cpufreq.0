@@ -1,145 +1,126 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH] cpufreq: Do not hold driver module references for
- additional policy CPUs
-Date: Thu, 01 Aug 2013 13:41:04 +0530
-Message-ID: <51FA1818.2050203@linux.vnet.ibm.com>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
+ nodes
+Date: Thu, 01 Aug 2013 10:54:44 +0100
+Message-ID: <51FA3064.9080502@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2362640.pUofnXyzOi@vostro.rjw.lan>
+In-Reply-To: <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Gregory Clement <gregory.clement@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 
-On 08/01/2013 05:38 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> The cpufreq core is a little inconsistent in the way it uses the
-> driver module refcount.
+> Currently set_secondary_cpus_clock assume the CPU logical ordering
+> and the MPDIR in DT are same, which is incorrect.
 > 
-> Namely, if __cpufreq_add_dev() is called for a CPU without siblings
-> or generally a CPU for which a new policy object has to be created,
-> it grabs a reference to the driver module to start with, but drops
-> that reference before returning.  As a result, the driver module
-> refcount is then equal to 0 after __cpufreq_add_dev() has returned.
+> Since the CPU device nodes can be retrieved in the logical ordering
+> using the DT helper, we can remove the devices tree parsing.
 > 
-> On the other hand, if the given CPU is a sibling of some other
-> CPU already having a policy, cpufreq_add_policy_cpu() is called
-> to link the new CPU to the existing policy.  In that case,
-> cpufreq_cpu_get() is called to obtain that policy and grabs a
-> reference to the driver module, but that reference is not
-> released and the module refcount will be different from 0 after
-> __cpufreq_add_dev() returns (unless there is an error).  That
-> prevents the driver module from being unloaded until
-> __cpufreq_remove_dev() is called for all the CPUs that
-> cpufreq_add_policy_cpu() was called for previously.
+> This patch removes DT parsing by making use of of_get_cpu_node.
 > 
-> To remove that inconsistency make cpufreq_add_policy_cpu() execute
-> cpufreq_cpu_put() for the given policy before returning, which
-> decrements the driver module refcount so that it will be 0 after
-> __cpufreq_add_dev() returns,
+> Cc: Gregory Clement <gregory.clement@free-electrons.com>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Removing the inconsistency is a good thing, but I think we should
-make it consistent the other way around - make a CPU-online increment
-the driver module refcount and decrement it only on CPU-offline.
+Hi Gregory/Andrew/Jason,
 
-The reason is, one should not be able to unload the back-end cpufreq
-driver module when some CPUs are still being managed. Nasty things
-will result if we allow that. For example, if we unload the module,
-and then try to do a CPU offline, then the cpufreq hotplug notifier
-won't even be called (because cpufreq_unregister_driver also
-unregisters the hotplug notifier). And that might be troublesome.
-
-Even worse, if we unload a cpufreq driver module and load a new
-one and *then* try to offline the CPU, then the cpufreq_driver->exit()
-function that we call during CPU offline will end up calling the
-corresponding function of an entirely different driver! So the
-->init() and ->exit() calls won't match.
-
-These complications won't exist if we simply prevent unloading the
-driver module as long as they are used in managing atleast one CPU.
-So I think it would be good to make the code consistent that way.
+Does this change look fine for mvebu?
+If yes, can I have your ACKs ?
 
 Regards,
-Srivatsa S. Bhat
-
-> but also make it take a reference to
-> the policy itself using kobject_get() and do not release that
-> reference (unless there's an error or system resume is under way),
-> which again is consistent with the "raw" __cpufreq_add_dev()
-> behavior.
-> 
-> Accordingly, modify __cpufreq_remove_dev() to use kobject_put() to
-> drop policy references taken by cpufreq_add_policy_cpu().
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Sudeep
 > ---
+>  arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
+>  1 file changed, 24 insertions(+), 28 deletions(-)
 > 
-> On top of current linux-pm.git/linux-next.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  drivers/cpufreq/cpufreq.c |   24 +++++++++++++++---------
->  1 file changed, 15 insertions(+), 9 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -908,8 +908,10 @@ static int cpufreq_add_policy_cpu(unsign
->  	unsigned long flags;
-> 
->  	policy = cpufreq_cpu_get(sibling);
-> -	WARN_ON(!policy);
-> +	if (WARN_ON_ONCE(!policy))
-> +		return -ENODATA;
-> 
-> +	kobject_get(&policy->kobj);
->  	if (has_target)
->  		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> 
-> @@ -932,14 +934,14 @@ static int cpufreq_add_policy_cpu(unsign
->  	/* Don't touch sysfs links during light-weight init */
->  	if (frozen) {
->  		/* Drop the extra refcount that we took above */
-> -		cpufreq_cpu_put(policy);
-> -		return 0;
-> +		kobject_put(&policy->kobj);
-> +	} else {
-> +		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> +		if (ret)
-> +			kobject_put(&policy->kobj);
+> diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+> index ce81d30..001dd42 100644
+> --- a/arch/arm/mach-mvebu/platsmp.c
+> +++ b/arch/arm/mach-mvebu/platsmp.c
+> @@ -23,51 +23,47 @@
+>  #include <linux/of.h>
+>  #include <linux/mbus.h>
+>  #include <asm/cacheflush.h>
+> +#include <asm/prom.h>
+>  #include <asm/smp_plat.h>
+>  #include "common.h"
+>  #include "armada-370-xp.h"
+>  #include "pmsu.h"
+>  #include "coherency.h"
+>  
+> +static struct clk *__init get_cpu_clk(int cpu)
+> +{
+> +	struct clk *cpu_clk;
+> +	struct device_node *np = of_get_cpu_node(cpu);
+> +
+> +	if (WARN(!np, "missing cpu node\n"))
+> +		return NULL;
+> +	cpu_clk = of_clk_get(np, 0);
+> +	if (WARN_ON(IS_ERR(cpu_clk)))
+> +		return NULL;
+> +	return cpu_clk;
+> +}
+> +
+>  void __init set_secondary_cpus_clock(void)
+>  {
+> -	int thiscpu;
+> +	int thiscpu, cpu;
+>  	unsigned long rate;
+> -	struct clk *cpu_clk = NULL;
+> -	struct device_node *np = NULL;
+> +	struct clk *cpu_clk;
+>  
+>  	thiscpu = smp_processor_id();
+> -	for_each_node_by_type(np, "cpu") {
+> -		int err;
+> -		int cpu;
+> -
+> -		err = of_property_read_u32(np, "reg", &cpu);
+> -		if (WARN_ON(err))
+> -			return;
+> -
+> -		if (cpu == thiscpu) {
+> -			cpu_clk = of_clk_get(np, 0);
+> -			break;
+> -		}
+> -	}
+> -	if (WARN_ON(IS_ERR(cpu_clk)))
+> +	cpu_clk = get_cpu_clk(thiscpu);
+> +	if (!cpu_clk)
+>  		return;
+>  	clk_prepare_enable(cpu_clk);
+>  	rate = clk_get_rate(cpu_clk);
+>  
+>  	/* set all the other CPU clk to the same rate than the boot CPU */
+> -	for_each_node_by_type(np, "cpu") {
+> -		int err;
+> -		int cpu;
+> -
+> -		err = of_property_read_u32(np, "reg", &cpu);
+> -		if (WARN_ON(err))
+> +	for_each_possible_cpu(cpu) {
+> +		if (cpu == thiscpu)
+> +			continue;
+> +		cpu_clk = get_cpu_clk(cpu);
+> +		if (!cpu_clk)
+>  			return;
+> -
+> -		if (cpu != thiscpu) {
+> -			cpu_clk = of_clk_get(np, 0);
+> -			clk_set_rate(cpu_clk, rate);
+> -		}
+> +		clk_set_rate(cpu_clk, rate);
 >  	}
-> 
-> -	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> -	if (ret)
-> -		cpufreq_cpu_put(policy);
-> -
-> +	cpufreq_cpu_put(policy);
->  	return ret;
 >  }
->  #endif
-> @@ -1298,10 +1300,14 @@ static int __cpufreq_remove_dev(struct d
->  		if (!frozen)
->  			cpufreq_policy_free(data);
->  	} else {
-> -
-> +		/*
-> +		 * There are more CPUs using the same policy, so only drop the
-> +		 * reference taken by cpufreq_add_policy_cpu() (unless the
-> +		 * system is suspending).
-> +		 */
->  		if (!frozen) {
->  			pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
-> -			cpufreq_cpu_put(data);
-> +			kobject_put(&data->kobj);
->  		}
+>  
 > 
->  		if (cpufreq_driver->target) {
-> 
+
 
