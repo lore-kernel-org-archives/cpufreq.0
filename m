@@ -1,72 +1,114 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 31 Jul 2013 15:59:50 -0600
-Message-ID: <51F988D6.6090104@wwwdotorg.org>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] cpufreq: Do not hold driver module references for additional policy CPUs
+Date: Thu, 01 Aug 2013 02:08:15 +0200
+Message-ID: <2362640.pUofnXyzOi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Nishanth Menon <nm@ti.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
 
-On 07/31/2013 10:11 AM, Mark Rutland wrote:
-> On Wed, Jul 31, 2013 at 04:58:22PM +0100, Nishanth Menon wrote:
->> On 07/31/2013 10:29 AM, Mark Rutland wrote:
->>> On Wed, Jul 31, 2013 at 03:46:34PM +0100, Nishanth Menon wrote:
-...
->>>> Let me try to explain since SoCs such as OMAP/AM family dont make life
->>>> trivial :)..
->>>>
->>>> An legacy example[1][2]
->>>>
->>>> SoC DM explains that the chip is capable of X opps:
->>>> opp1, 2 - for all devices
->>>> opp1,2, 3 - if efuse bit X@y is set
->>>> opp1,2,3,4 - if efuse bit X@y is set AND Board design meets SoC vendors
->>>> requirements (including additional features A, B is enabled).
->>>>
->>>> So, the same chip family has a hardware feature - not just as a pm
->>>> policy of selecting among a set of OPPs which opp to work on, but the
->>>> actual set of OPPs are actually options in themselves that is selected
->>>> based on board's SoC selection.
->>>
->>> This sounds like we're describing a set of features not applicable to
->>> the device, then removing them, rather than only describing those
->>> features applicable to the device. If you have to probe to figure out
->>> which values in the dt are applicable, I'm not sure I see the benefit of
->>> describing said values in dt.
->>
->> Device has *options* of operating points sets it can operate at. It is 
->> not like "these are not applicable" for the device.
-> 
-> I don't follow.
-> 
-> In the example above, if efuse bit X@y is not set, opp3 is not
-> applicable, but we're describing it in dt. It's not an option for the
-> particular device, yet it appears in the device's dt.
-> 
-> For opp4, it's even worse, as you're suggesting we describe an option
-> for the device that requires the driver to use some additional platform
-> knowledge to come to the conclusion that it cannot use. That sounds like
-> device knowledge internal to a driver, not how you describe an instance
-> of a device to an OS.
-> 
-> Have I misunderstood something here?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-From the kernel's perspective here, a simple approach would be to say
-the the DT passed to the kernel must contain exactly the set of OPPs
-that the kernel should use. If this requires probing HW (fuses, board
-knowledge, etc.), then the bootloader/... must do that and fix up the DT
-to correctly represent the board at boot time (or choose the correct DT
-from a set of options in flash) or whoever flashed the board must have
-simply put the correct DT onto the board.
+The cpufreq core is a little inconsistent in the way it uses the
+driver module refcount.
 
-Of course, that simply pushes back the issue onto the flashing utility
-or bootloader. Perhaps pushing stuff back there isn't a good holistic
-solution, since we only get a clean kernel by making life suck for
-someone else, and we'd perhaps better optimize the entire SW stack.
+Namely, if __cpufreq_add_dev() is called for a CPU without siblings
+or generally a CPU for which a new policy object has to be created,
+it grabs a reference to the driver module to start with, but drops
+that reference before returning.  As a result, the driver module
+refcount is then equal to 0 after __cpufreq_add_dev() has returned.
+
+On the other hand, if the given CPU is a sibling of some other
+CPU already having a policy, cpufreq_add_policy_cpu() is called
+to link the new CPU to the existing policy.  In that case,
+cpufreq_cpu_get() is called to obtain that policy and grabs a
+reference to the driver module, but that reference is not
+released and the module refcount will be different from 0 after
+__cpufreq_add_dev() returns (unless there is an error).  That
+prevents the driver module from being unloaded until
+__cpufreq_remove_dev() is called for all the CPUs that
+cpufreq_add_policy_cpu() was called for previously.
+
+To remove that inconsistency make cpufreq_add_policy_cpu() execute
+cpufreq_cpu_put() for the given policy before returning, which
+decrements the driver module refcount so that it will be 0 after
+__cpufreq_add_dev() returns, but also make it take a reference to
+the policy itself using kobject_get() and do not release that
+reference (unless there's an error or system resume is under way),
+which again is consistent with the "raw" __cpufreq_add_dev()
+behavior.
+
+Accordingly, modify __cpufreq_remove_dev() to use kobject_put() to
+drop policy references taken by cpufreq_add_policy_cpu().
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+On top of current linux-pm.git/linux-next.
+
+Thanks,
+Rafael
+
+---
+ drivers/cpufreq/cpufreq.c |   24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -908,8 +908,10 @@ static int cpufreq_add_policy_cpu(unsign
+ 	unsigned long flags;
+ 
+ 	policy = cpufreq_cpu_get(sibling);
+-	WARN_ON(!policy);
++	if (WARN_ON_ONCE(!policy))
++		return -ENODATA;
+ 
++	kobject_get(&policy->kobj);
+ 	if (has_target)
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 
+@@ -932,14 +934,14 @@ static int cpufreq_add_policy_cpu(unsign
+ 	/* Don't touch sysfs links during light-weight init */
+ 	if (frozen) {
+ 		/* Drop the extra refcount that we took above */
+-		cpufreq_cpu_put(policy);
+-		return 0;
++		kobject_put(&policy->kobj);
++	} else {
++		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
++		if (ret)
++			kobject_put(&policy->kobj);
+ 	}
+ 
+-	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+-	if (ret)
+-		cpufreq_cpu_put(policy);
+-
++	cpufreq_cpu_put(policy);
+ 	return ret;
+ }
+ #endif
+@@ -1298,10 +1300,14 @@ static int __cpufreq_remove_dev(struct d
+ 		if (!frozen)
+ 			cpufreq_policy_free(data);
+ 	} else {
+-
++		/*
++		 * There are more CPUs using the same policy, so only drop the
++		 * reference taken by cpufreq_add_policy_cpu() (unless the
++		 * system is suspending).
++		 */
+ 		if (!frozen) {
+ 			pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+-			cpufreq_cpu_put(data);
++			kobject_put(&data->kobj);
+ 		}
+ 
+ 		if (cpufreq_driver->target) {
+
