@@ -1,48 +1,39 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references
- for additional policy CPUs
-Date: Fri, 02 Aug 2013 20:16:01 +0530
-Message-ID: <51FBC629.9080908@linux.vnet.ibm.com>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan> <CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com> <CAKohpon7jyJWhf+j-M6Nuqy-AaY73YUpBpt-1uh12e_SYRv2bQ@mail.gmail.com> <5361062.ChI1FUI32W@vostro.rjw.lan> <CAKohpo=KhzFiiihCPfZ9kAm4rx1ZUfgWDJPQkhCgM5u2Gj3+uA@mail.gmail.com>
+From: Andreas Schwab <schwab@linux-m68k.org>
+Subject: [PATCH] cpufreq-stats: fix time_in_state statistics
+Date: Fri, 02 Aug 2013 20:31:16 +0200
+Message-ID: <87vc3o3pxn.fsf@igel.home>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=KhzFiiihCPfZ9kAm4rx1ZUfgWDJPQkhCgM5u2Gj3+uA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Transfer-Encoding: 7bit
+To: cpufreq@vger.kernel.org
 
-On 08/02/2013 08:08 PM, Viresh Kumar wrote:
-> On 2 August 2013 19:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> Care to add a changelog?
->>
->> I'll apply this on top of my $subject patch, then.
-> 
-> I thought you will merge this one with your patch, but there is no
-> harm in getting one more on my name :)
-> 
-> Changelog is (patch attached):
-> 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Fri, 2 Aug 2013 16:17:33 +0530
-> Subject: [PATCH] cpufreq: Pass policy to cpufreq_add_policy_cpu()
-> 
-> Caller of cpufreq_add_policy_cpu() already has pointer to policy structure and
-> so there is no need to find it again in cpufreq_add_policy_cpu(). Lets pass it
-> directly.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+The time_in_state numbers are in units of jiffies, not cputime.
 
-The patch looks good.
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ drivers/cpufreq/cpufreq_stats.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index d37568c..10e6138 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -81,7 +81,7 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+ 	for (i = 0; i < stat->state_num; i++) {
+ 		len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
+ 			(unsigned long long)
+-			cputime64_to_clock_t(stat->time_in_state[i]));
++			jiffies_64_to_clock_t(stat->time_in_state[i]));
+ 	}
+ 	return len;
+ }
+-- 
+1.8.3.4
 
-Regards,
-Srivatsa S. Bhat
-
->  drivers/cpufreq/cpufreq.c | 18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
-> 
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
