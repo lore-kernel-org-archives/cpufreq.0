@@ -1,47 +1,100 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Fri, 02 Aug 2013 14:43:36 +0100
-Message-ID: <51FBB788.7040209@arm.com>
-References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA917D.4060408@wwwdotorg.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references for
+ additional policy CPUs
+Date: Fri, 2 Aug 2013 20:08:56 +0530
+Message-ID: <CAKohpo=KhzFiiihCPfZ9kAm4rx1ZUfgWDJPQkhCgM5u2Gj3+uA@mail.gmail.com>
+References: <2362640.pUofnXyzOi@vostro.rjw.lan>
+	<CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com>
+	<CAKohpon7jyJWhf+j-M6Nuqy-AaY73YUpBpt-1uh12e_SYRv2bQ@mail.gmail.com>
+	<5361062.ChI1FUI32W@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary=089e0149d17a2cb8a804e2f7eb01
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <51FA917D.4060408@wwwdotorg.org>
+In-Reply-To: <5361062.ChI1FUI32W@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Nishanth Menon <nm@ti.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 01/08/13 17:49, Stephen Warren wrote:
-> On 08/01/2013 07:54 AM, Mark Rutland wrote:
-> ...
->> We seem to be going over two cases, which both feel wrong to me:
->>
->> * One SoC used in multiple boards, where on some boards an OPP cannot be
->>   used because some requirement is not met. In this case, the board's
->>   dts (by including the SoC's dtsi) describes something that's not
->>   necessarily usable, and we seem to have no way to describe in the OPP
->>   table that the OPP is not usable for that board.
-> 
-> There are probably a lot of examples of this already. For example, for
-> pinctrl, people often want the SoC .dtsi file to include "pin
-> configuration nodes" (see
-> Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt) for many
-> common pinmux configurations in the SoC .dtsi file, so that board files
-> can simply refer to the already-existing nodes rather than having to
-> write everything from scratch. Obviously, not all common configurations
-> are used by every board.
-> 
-> ...
-Agreed, but I am not convinced with the comparison(pinmux and OPPs).
-The main concern I have is that if some developer wants to experiment
-with various configurations provided by SoC(e.g. I have seen some SoC
-where the pinmux have multiple functions and you can chose one of them)
-But that's not true with OPPs, if someone experiments with wrong OPP
-profile, then it might damage the board permanently.
+--089e0149d17a2cb8a804e2f7eb01
+Content-Type: text/plain; charset=ISO-8859-1
 
-Regards,
-Sudeep
+On 2 August 2013 19:01, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Care to add a changelog?
+>
+> I'll apply this on top of my $subject patch, then.
 
+I thought you will merge this one with your patch, but there is no
+harm in getting one more on my name :)
+
+Changelog is (patch attached):
+
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Fri, 2 Aug 2013 16:17:33 +0530
+Subject: [PATCH] cpufreq: Pass policy to cpufreq_add_policy_cpu()
+
+Caller of cpufreq_add_policy_cpu() already has pointer to policy structure and
+so there is no need to find it again in cpufreq_add_policy_cpu(). Lets pass it
+directly.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
+
+--089e0149d17a2cb8a804e2f7eb01
+Content-Type: application/octet-stream; 
+	name="0001-cpufreq-Pass-policy-to-cpufreq_add_policy_cpu.patch"
+Content-Disposition: attachment; 
+	filename="0001-cpufreq-Pass-policy-to-cpufreq_add_policy_cpu.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hjvhzr4n0
+
+RnJvbSBlNDJmY2VkNTA3NzJjZDI4OTNjY2NjNDg5OTBkZTEyM2U4MmZhOWJhIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZTQyZmNlZDUwNzcyY2QyODkzY2NjYzQ4OTkwZGUx
+MjNlODJmYTliYS4xMzc1NDU0Mjk4LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogRnJpLCAyIEF1ZyAy
+MDEzIDE2OjE3OjMzICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogUGFzcyBwb2xpY3kg
+dG8gY3B1ZnJlcV9hZGRfcG9saWN5X2NwdSgpCgpDYWxsZXIgb2YgY3B1ZnJlcV9hZGRfcG9saWN5
+X2NwdSgpIGFscmVhZHkgaGFzIHBvaW50ZXIgdG8gcG9saWN5IHN0cnVjdHVyZSBhbmQKc28gdGhl
+cmUgaXMgbm8gbmVlZCB0byBmaW5kIGl0IGFnYWluIGluIGNwdWZyZXFfYWRkX3BvbGljeV9jcHUo
+KS4gTGV0cyBwYXNzIGl0CmRpcmVjdGx5LgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2
+aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwg
+MTggKysrKysrLS0tLS0tLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgNiBpbnNlcnRpb25zKCspLCAx
+MiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIGIv
+ZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwppbmRleCA0NmU3MGFlLi40N2YyYTZlIDEwMDY0NAot
+LS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVm
+cmVxLmMKQEAgLTg4OSwyMSArODg5LDE3IEBAIHN0YXRpYyB2b2lkIGNwdWZyZXFfaW5pdF9wb2xp
+Y3koc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpCiB9CiAKICNpZmRlZiBDT05GSUdfSE9U
+UExVR19DUFUKLXN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfcG9saWN5X2NwdSh1bnNpZ25lZCBpbnQg
+Y3B1LCB1bnNpZ25lZCBpbnQgc2libGluZywKLQkJCQkgIHN0cnVjdCBkZXZpY2UgKmRldiwgYm9v
+bCBmcm96ZW4pCitzdGF0aWMgaW50IGNwdWZyZXFfYWRkX3BvbGljeV9jcHUoc3RydWN0IGNwdWZy
+ZXFfcG9saWN5ICpwb2xpY3ksCisJCQkJICB1bnNpZ25lZCBpbnQgY3B1LCBzdHJ1Y3QgZGV2aWNl
+ICpkZXYsCisJCQkJICBib29sIGZyb3plbikKIHsKLQlzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBv
+bGljeTsKIAlpbnQgcmV0ID0gMCwgaGFzX3RhcmdldCA9ICEhY3B1ZnJlcV9kcml2ZXItPnRhcmdl
+dDsKIAl1bnNpZ25lZCBsb25nIGZsYWdzOwogCi0JcG9saWN5ID0gY3B1ZnJlcV9jcHVfZ2V0KHNp
+YmxpbmcpOwotCWlmIChXQVJOX09OX09OQ0UoIXBvbGljeSkpCi0JCXJldHVybiAtRU5PREFUQTsK
+LQogCWlmIChoYXNfdGFyZ2V0KQogCQlfX2NwdWZyZXFfZ292ZXJub3IocG9saWN5LCBDUFVGUkVR
+X0dPVl9TVE9QKTsKIAotCWxvY2tfcG9saWN5X3J3c2VtX3dyaXRlKHNpYmxpbmcpOworCWxvY2tf
+cG9saWN5X3J3c2VtX3dyaXRlKHBvbGljeS0+Y3B1KTsKIAogCXdyaXRlX2xvY2tfaXJxc2F2ZSgm
+Y3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOwogCkBAIC05MTIsNyArOTA4LDcgQEAgc3RhdGlj
+IGludCBjcHVmcmVxX2FkZF9wb2xpY3lfY3B1KHVuc2lnbmVkIGludCBjcHUsIHVuc2lnbmVkIGlu
+dCBzaWJsaW5nLAogCXBlcl9jcHUoY3B1ZnJlcV9jcHVfZGF0YSwgY3B1KSA9IHBvbGljeTsKIAl3
+cml0ZV91bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOwogCi0J
+dW5sb2NrX3BvbGljeV9yd3NlbV93cml0ZShzaWJsaW5nKTsKKwl1bmxvY2tfcG9saWN5X3J3c2Vt
+X3dyaXRlKHBvbGljeS0+Y3B1KTsKIAogCWlmIChoYXNfdGFyZ2V0KSB7CiAJCV9fY3B1ZnJlcV9n
+b3Zlcm5vcihwb2xpY3ksIENQVUZSRVFfR09WX1NUQVJUKTsKQEAgLTkyMyw3ICs5MTksNiBAQCBz
+dGF0aWMgaW50IGNwdWZyZXFfYWRkX3BvbGljeV9jcHUodW5zaWduZWQgaW50IGNwdSwgdW5zaWdu
+ZWQgaW50IHNpYmxpbmcsCiAJaWYgKCFmcm96ZW4pCiAJCXJldCA9IHN5c2ZzX2NyZWF0ZV9saW5r
+KCZkZXYtPmtvYmosICZwb2xpY3ktPmtvYmosICJjcHVmcmVxIik7CiAKLQljcHVmcmVxX2NwdV9w
+dXQocG9saWN5KTsKIAlyZXR1cm4gcmV0OwogfQogI2VuZGlmCkBAIC0xMDA2LDggKzEwMDEsNyBA
+QCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9hZGRfZGV2KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0
+IHN1YnN5c19pbnRlcmZhY2UgKnNpZiwKIAkJc3RydWN0IGNwdWZyZXFfcG9saWN5ICpjcCA9IHBl
+cl9jcHUoY3B1ZnJlcV9jcHVfZGF0YSwgc2libGluZyk7CiAJCWlmIChjcCAmJiBjcHVtYXNrX3Rl
+c3RfY3B1KGNwdSwgY3AtPnJlbGF0ZWRfY3B1cykpIHsKIAkJCXJlYWRfdW5sb2NrX2lycXJlc3Rv
+cmUoJmNwdWZyZXFfZHJpdmVyX2xvY2ssIGZsYWdzKTsKLQkJCXJldHVybiBjcHVmcmVxX2FkZF9w
+b2xpY3lfY3B1KGNwdSwgc2libGluZywgZGV2LAotCQkJCQkJICAgICAgZnJvemVuKTsKKwkJCXJl
+dHVybiBjcHVmcmVxX2FkZF9wb2xpY3lfY3B1KGNwLCBjcHUsIGRldiwgZnJvemVuKTsKIAkJfQog
+CX0KIAlyZWFkX3VubG9ja19pcnFyZXN0b3JlKCZjcHVmcmVxX2RyaXZlcl9sb2NrLCBmbGFncyk7
+Ci0tIAoxLjcuMTIucmMyLjE4Lmc2MWI0NzJlCgo=
+--089e0149d17a2cb8a804e2f7eb01--
