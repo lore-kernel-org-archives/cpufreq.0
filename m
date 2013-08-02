@@ -1,105 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH] cpufreq: Do not hold driver module references for additional policy CPUs
-Date: Fri, 02 Aug 2013 15:31:35 +0200
-Message-ID: <5361062.ChI1FUI32W@vostro.rjw.lan>
-References: <2362640.pUofnXyzOi@vostro.rjw.lan> <CAKohponru8Z1fod43dVtAODmYuMTGX70+73b8wk4wuGN=Vuh-w@mail.gmail.com> <CAKohpon7jyJWhf+j-M6Nuqy-AaY73YUpBpt-1uh12e_SYRv2bQ@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Fri, 02 Aug 2013 14:43:36 +0100
+Message-ID: <51FBB788.7040209@arm.com>
+References: <1375207217-4433-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1375207217-4433-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51F80750.8030701@wwwdotorg.org> <51F826A0.2000109@ti.com> <51F8F17B.1020304@arm.com> <51F9234A.6010501@ti.com> <20130731152925.GP29859@e106331-lin.cambridge.arm.com> <51F9341E.60102@ti.com> <20130731161103.GS29859@e106331-lin.cambridge.arm.com> <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA917D.4060408@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon7jyJWhf+j-M6Nuqy-AaY73YUpBpt-1uh12e_SYRv2bQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <51FA917D.4060408@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, cpufreq@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Nishanth Menon <nm@ti.com>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Friday, August 02, 2013 04:25:58 PM Viresh Kumar wrote:
-> On 2 August 2013 10:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> @@ -908,7 +905,8 @@ static int cpufreq_add_policy_cpu(unsign
-> >>         unsigned long flags;
-> >>
-> >>         policy = cpufreq_cpu_get(sibling);
-> >
-> > This can be skipped completely at this place. Caller of
-> > cpufreq_add_policy_cpu() has got the policy pointer with it and so
-> > can be passed. I haven't done it earlier as the impression was we need
-> > to call cpufreq_cpu_get()..
+On 01/08/13 17:49, Stephen Warren wrote:
+> On 08/01/2013 07:54 AM, Mark Rutland wrote:
+> ...
+>> We seem to be going over two cases, which both feel wrong to me:
+>>
+>> * One SoC used in multiple boards, where on some boards an OPP cannot be
+>>   used because some requirement is not met. In this case, the board's
+>>   dts (by including the SoC's dtsi) describes something that's not
+>>   necessarily usable, and we seem to have no way to describe in the OPP
+>>   table that the OPP is not usable for that board.
 > 
-> And here is the fixup to do this (attached too):
+> There are probably a lot of examples of this already. For example, for
+> pinctrl, people often want the SoC .dtsi file to include "pin
+> configuration nodes" (see
+> Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt) for many
+> common pinmux configurations in the SoC .dtsi file, so that board files
+> can simply refer to the already-existing nodes rather than having to
+> write everything from scratch. Obviously, not all common configurations
+> are used by every board.
+> 
+> ...
+Agreed, but I am not convinced with the comparison(pinmux and OPPs).
+The main concern I have is that if some developer wants to experiment
+with various configurations provided by SoC(e.g. I have seen some SoC
+where the pinmux have multiple functions and you can chose one of them)
+But that's not true with OPPs, if someone experiments with wrong OPP
+profile, then it might damage the board permanently.
 
-Care to add a changelog?
+Regards,
+Sudeep
 
-I'll apply this on top of my $subject patch, then.
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/cpufreq/cpufreq.c | 18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 46e70ae..47f2a6e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -889,21 +889,17 @@ static void cpufreq_init_policy(struct
-> cpufreq_policy *policy)
->  }
-> 
->  #ifdef CONFIG_HOTPLUG_CPU
-> -static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
-> -				  struct device *dev, bool frozen)
-> +static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
-> +				  unsigned int cpu, struct device *dev,
-> +				  bool frozen)
->  {
-> -	struct cpufreq_policy *policy;
->  	int ret = 0, has_target = !!cpufreq_driver->target;
->  	unsigned long flags;
-> 
-> -	policy = cpufreq_cpu_get(sibling);
-> -	if (WARN_ON_ONCE(!policy))
-> -		return -ENODATA;
-> -
->  	if (has_target)
->  		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> 
-> -	lock_policy_rwsem_write(sibling);
-> +	lock_policy_rwsem_write(policy->cpu);
-> 
->  	write_lock_irqsave(&cpufreq_driver_lock, flags);
-> 
-> @@ -912,7 +908,7 @@ static int cpufreq_add_policy_cpu(unsigned int
-> cpu, unsigned int sibling,
->  	per_cpu(cpufreq_cpu_data, cpu) = policy;
->  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
-> -	unlock_policy_rwsem_write(sibling);
-> +	unlock_policy_rwsem_write(policy->cpu);
-> 
->  	if (has_target) {
->  		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-> @@ -923,7 +919,6 @@ static int cpufreq_add_policy_cpu(unsigned int
-> cpu, unsigned int sibling,
->  	if (!frozen)
->  		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> 
-> -	cpufreq_cpu_put(policy);
->  	return ret;
->  }
->  #endif
-> @@ -1006,8 +1001,7 @@ static int __cpufreq_add_dev(struct device *dev,
-> struct subsys_interface *sif,
->  		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
->  		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
->  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> -			return cpufreq_add_policy_cpu(cpu, sibling, dev,
-> -						      frozen);
-> +			return cpufreq_add_policy_cpu(cp, cpu, dev, frozen);
->  		}
->  	}
->  	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
