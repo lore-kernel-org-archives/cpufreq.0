@@ -1,47 +1,104 @@
-From: Martin von Gagern <Martin.vGagern@gmx.net>
-Subject: ignore_nice vs. ignore_nice_load
-Date: Fri, 02 Aug 2013 22:40:21 +0200
-Message-ID: <51FC1935.5030702@gmx.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/10] CPUFreq: Fixes & Cleanups for 3.12
+Date: Sat,  3 Aug 2013 17:19:18 +0530
+Message-ID: <cover.1375530162.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi Rafael,
 
-Hi!
+This patchset tries to fix & cleanup many existing cpufreq core issues. First
+four patches tries to cleanup basic problems in cpufreq core. Its first patch
+was earlier sent separately but now is part of this series.
 
-I just noticed that recently (apparently since 4d5dcc4211f9def4) the
-sysfs file that used to be called ignore_nice_load is now called
-ignore_nice. I don't know why this was renamed, but what has me
-worried even more is the fact that the documentation in
-Documentation/cpu-freq/governors.txt wasn't updated accordingly: it
-still talks about ignore_nice_load. It would be beter to synchronize
-these two again.
+Fifth patch was also sent earlier as reply to your patches and was reviewed by
+Srivatsa. Sixth patch was picked from Lukasz's patchset on introducing software
+"boost" feature in core. It will be used by this patchset.
 
-Investigating this issue, I also found that the file used to be called
-ignore_nice in the past, but at that point apparently had an inverted
-meaning. The node was renamed deliberately in 001893cda2f280ab when
-the semantics changed. I can't help but wonder whether anyone might
-now get confused with this old name popping up again, after all this
-time. Either name is fine by me, but I am surprised nevertheless.
+And last four are the most significant part of this set. They try to make many
+things simple and robust.
 
-I hope I can get this message through without being subscribed to the
-list. I would be happy if you could cc me on any replies, but as long
-as someone will eventually take care of things, you may also choose to
-discuss this on the list without me. I doubt I can contribute any more.
+This is rebased of your bleeding-edge branch + two patches from you:
+18a6b03 cpufreq: Avoid double kobject_put() for the same kobject in error code path
+d0cde63 cpufreq: Do not hold driver module references for additional policy CPUs
+abe513f Merge branch 'acpi-sleep-next' into linux-next
 
-Greetings,
- Martin von Gagern
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+They are also pushed in my cpufreq-next branch
 
-iEYEARECAAYFAlH8GTUACgkQRhp6o4m9dFtKXgCcD7Kr20vJACKsPnTM7dv1Rn0s
-/I4An2uqLZaF08+RpTwxZ4hg26/WBVbX
-=mBWO
------END PGP SIGNATURE-----
+--
+viresh
+
+Lukasz Majewski (1):
+  cpufreq: Store cpufreq policies in a list
+
+Viresh Kumar (9):
+  cpufreq: Cleanup header files included in core
+  cpufreq: Re-arrange declarations in cpufreq.h
+  cpufreq: Give consistent names for struct cpufreq_policy *
+  cpufreq: Use sizeof(*ptr) form for finding size of a struct
+  cpufreq: Pass policy to cpufreq_add_policy_cpu()
+  cpufreq: Use cpufreq_policy_list for iterating over policies
+  cpufreq: Fix broken usage of governor->owner's refcount
+  cpufreq: Don't use cpufreq_driver->owner's refcount to protect
+    critical sections
+  cpufreq: Remove struct cpufreq_driver's owner field
+
+ Documentation/cpu-freq/cpu-drivers.txt |   2 -
+ drivers/cpufreq/acpi-cpufreq.c         |   5 +-
+ drivers/cpufreq/at32ap-cpufreq.c       |   1 -
+ drivers/cpufreq/blackfin-cpufreq.c     |   1 -
+ drivers/cpufreq/cpufreq-nforce2.c      |   1 -
+ drivers/cpufreq/cpufreq.c              | 389 +++++++++++++++------------------
+ drivers/cpufreq/cpufreq_conservative.c |  14 +-
+ drivers/cpufreq/cpufreq_governor.c     |   6 -
+ drivers/cpufreq/cpufreq_governor.h     |   7 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |  24 +-
+ drivers/cpufreq/cpufreq_performance.c  |   3 +-
+ drivers/cpufreq/cpufreq_powersave.c    |   3 +-
+ drivers/cpufreq/cpufreq_stats.c        |  25 +--
+ drivers/cpufreq/cris-artpec3-cpufreq.c |   1 -
+ drivers/cpufreq/cris-etraxfs-cpufreq.c |   1 -
+ drivers/cpufreq/e_powersaver.c         |   5 +-
+ drivers/cpufreq/elanfreq.c             |   1 -
+ drivers/cpufreq/exynos-cpufreq.c       |   2 +-
+ drivers/cpufreq/freq_table.c           |   4 +-
+ drivers/cpufreq/gx-suspmod.c           |   3 +-
+ drivers/cpufreq/ia64-acpi-cpufreq.c    |   5 +-
+ drivers/cpufreq/intel_pstate.c         |   1 -
+ drivers/cpufreq/kirkwood-cpufreq.c     |   1 -
+ drivers/cpufreq/longhaul.c             |   1 -
+ drivers/cpufreq/longrun.c              |   1 -
+ drivers/cpufreq/loongson2_cpufreq.c    |   1 -
+ drivers/cpufreq/maple-cpufreq.c        |   1 -
+ drivers/cpufreq/p4-clockmod.c          |   1 -
+ drivers/cpufreq/pasemi-cpufreq.c       |   1 -
+ drivers/cpufreq/pcc-cpufreq.c          |   1 -
+ drivers/cpufreq/pmac32-cpufreq.c       |   1 -
+ drivers/cpufreq/pmac64-cpufreq.c       |   6 +-
+ drivers/cpufreq/powernow-k6.c          |   1 -
+ drivers/cpufreq/powernow-k7.c          |  14 +-
+ drivers/cpufreq/powernow-k8.c          |   7 +-
+ drivers/cpufreq/ppc-corenet-cpufreq.c  |   1 -
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |   1 -
+ drivers/cpufreq/s3c2416-cpufreq.c      |   1 -
+ drivers/cpufreq/s3c24xx-cpufreq.c      |   6 +-
+ drivers/cpufreq/s3c64xx-cpufreq.c      |   1 -
+ drivers/cpufreq/sc520_freq.c           |   1 -
+ drivers/cpufreq/sh-cpufreq.c           |   1 -
+ drivers/cpufreq/sparc-us2e-cpufreq.c   |   6 +-
+ drivers/cpufreq/sparc-us3-cpufreq.c    |   6 +-
+ drivers/cpufreq/speedstep-centrino.c   |   1 -
+ drivers/cpufreq/speedstep-ich.c        |   1 -
+ drivers/cpufreq/speedstep-smi.c        |   1 -
+ include/linux/cpufreq.h                | 383 +++++++++++++++-----------------
+ 48 files changed, 409 insertions(+), 542 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
+
