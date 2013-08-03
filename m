@@ -1,94 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/10] cpufreq: Re-arrange declarations in cpufreq.h
-Date: Sat, 03 Aug 2013 23:43:27 +0200
-Message-ID: <2642814.MCfbiQte2U@vostro.rjw.lan>
-References: <cover.1375530162.git.viresh.kumar@linaro.org> <c685424014a84ad05ee55b669a6cda1c8c66723e.1375530162.git.viresh.kumar@linaro.org> <CAKohpomVKac+1c7rNseUKM_RCVaNiFsaioJuW98oLJP5atSaSg@mail.gmail.com>
+Subject: Re: [PATCH 00/10] CPUFreq: Fixes & Cleanups for 3.12
+Date: Sun, 04 Aug 2013 00:02:16 +0200
+Message-ID: <3427557.z5AT4sQqPo@vostro.rjw.lan>
+References: <cover.1375530162.git.viresh.kumar@linaro.org> <1976834.StkbCTGYhN@vostro.rjw.lan> <CAKohpok_ZYB3J0QUJMPxBbmRZ9RssYOTYm0KSwAqyH53ydZcRg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomVKac+1c7rNseUKM_RCVaNiFsaioJuW98oLJP5atSaSg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <CAKohpok_ZYB3J0QUJMPxBbmRZ9RssYOTYm0KSwAqyH53ydZcRg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com
 
-On Saturday, August 03, 2013 10:43:45 PM Viresh Kumar wrote:
-> On 3 August 2013 17:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > They are pretty much mixed up. Although generic headers are present but
-> > definitions/declarations are present outside them too..
+On Saturday, August 03, 2013 06:58:35 PM Viresh Kumar wrote:
+> On 3 August 2013 17:37, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Saturday, August 03, 2013 05:19:18 PM Viresh Kumar wrote:
+> >> Hi Rafael,
+> >>
+> >> This patchset tries to fix & cleanup many existing cpufreq core issues. First
+> >> four patches tries to cleanup basic problems in cpufreq core. Its first patch
+> >> was earlier sent separately but now is part of this series.
+> >>
+> >> Fifth patch was also sent earlier as reply to your patches and was reviewed by
+> >> Srivatsa. Sixth patch was picked from Lukasz's patchset on introducing software
+> >> "boost" feature in core. It will be used by this patchset.
+> >>
+> >> And last four are the most significant part of this set. They try to make many
+> >> things simple and robust.
+> >>
+> >> This is rebased of your bleeding-edge branch + two patches from you:
+> >> 18a6b03 cpufreq: Avoid double kobject_put() for the same kobject in error code path
+> >> d0cde63 cpufreq: Do not hold driver module references for additional policy CPUs
+> >> abe513f Merge branch 'acpi-sleep-next' into linux-next
+> >>
+> >> They are also pushed in my cpufreq-next branch
 > >
-> > This patch just moves stuff up and down to make it look better and consistent.
-> >
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  include/linux/cpufreq.h | 370 +++++++++++++++++++++++-------------------------
-> >  1 file changed, 177 insertions(+), 193 deletions(-)
+> > How much testing has that received so far?
 > 
-> Fixup due to compilation reported by Fengguang's kbuild system:
-> [Will post the series again once I receive more comments on it]
+> I planned to add this information but forgot at the last moment. It
+> was partially
+> tested. As it was mostly developed over the weekend I wasn't able to do much
+> of testing. I posted it to get early comments, and testing would complete by
+> beginning of next week.
 
-OK, thanks.  I'm waiting for the update of the whole series, then.
+OK, thanks!
 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index a6b97e2..d568f39 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -268,6 +268,19 @@ int cpufreq_unregister_notifier(struct
-> notifier_block *nb, unsigned int list);
->  void cpufreq_notify_transition(struct cpufreq_policy *policy,
->                 struct cpufreq_freqs *freqs, unsigned int state);
-> 
-> +#else /* CONFIG_CPU_FREQ */
-> +static inline int cpufreq_register_notifier(struct notifier_block *nb,
-> +                                               unsigned int list)
-> +{
-> +       return 0;
-> +}
-> +static inline int cpufreq_unregister_notifier(struct notifier_block *nb,
-> +                                               unsigned int list)
-> +{
-> +       return 0;
-> +}
-> +#endif /* !CONFIG_CPU_FREQ */
-> +
->  /**
->   * cpufreq_scale - "old * mult / div" calculation for large values (32-bit-arch
->   * safe)
-> @@ -282,32 +295,16 @@ static inline unsigned long
-> cpufreq_scale(unsigned long old, u_int div,
->                 u_int mult)
->  {
->  #if BITS_PER_LONG == 32
-> -
->         u64 result = ((u64) old) * ((u64) mult);
->         do_div(result, div);
->         return (unsigned long) result;
-> 
->  #elif BITS_PER_LONG == 64
-> -
->         unsigned long result = old * ((u64) mult);
->         result /= div;
->         return result;
-> -
->  #endif
-> -};
-> -
-> -#else /* CONFIG_CPU_FREQ */
-> -static inline int cpufreq_register_notifier(struct notifier_block *nb,
-> -                                               unsigned int list)
-> -{
-> -       return 0;
->  }
-> -static inline int cpufreq_unregister_notifier(struct notifier_block *nb,
-> -                                               unsigned int list)
-> -{
-> -       return 0;
-> -}
-> -#endif /* !CONFIG_CPU_FREQ */
-> 
->  /*********************************************************************
->   *                          CPUFREQ GOVERNORS                        *
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
