@@ -1,54 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 08/10] cpufreq: Fix broken usage of governor->owner's refcount
-Date: Sun, 04 Aug 2013 00:06:40 +0200
-Message-ID: <2637835.0QndCQ8FcY@vostro.rjw.lan>
-References: <cover.1375530162.git.viresh.kumar@linaro.org> <4846602.3FgvAM66Ta@vostro.rjw.lan> <CAKohpokdWMjeZ=GKt4SaJDaA4Dn-WODpE_Mn+VEBpxB=VNAuyw@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 02/15] cpufreq: cpufreq-cpu0: initialize .owner field
+ with THIS_MODULE
+Date: Sun, 4 Aug 2013 19:38:46 +0800
+Message-ID: <20130804113844.GE18119@S2101-09.ap.freescale.net>
+References: <cover.1375279948.git.viresh.kumar@linaro.org>
+ <8f37155d1524de4298f7b1de08b3474fe2d97241.1375279948.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokdWMjeZ=GKt4SaJDaA4Dn-WODpE_Mn+VEBpxB=VNAuyw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <8f37155d1524de4298f7b1de08b3474fe2d97241.1375279948.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, l.majewski@samsung.com
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org
 
-On Saturday, August 03, 2013 06:57:11 PM Viresh Kumar wrote:
-> On 3 August 2013 17:38, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday, August 03, 2013 05:19:26 PM Viresh Kumar wrote:
-> >> Governor's owner refcount usage was broken. We should increment refcount only
-> >> when CPUFREQ_GOV_POLICY_INIT event has come and should decrement only if
-> >> CPUFREQ_GOV_POLICY_EXIT has come.
-> >>
-> >> Lets fix it.
-> >
-> > OK, and what happens if we don't fix it?
+On Wed, Jul 31, 2013 at 07:49:11PM +0530, Viresh Kumar wrote:
+> CPUFreq core does following at multiple places:
+> module_{get|put}(cpufreq_driver->owner)).
 > 
-> What about this changelog:
+> This is done to make sure module doesn't get unloaded if it is currently in use.
+> This will work only if the .owner field of cpufreq driver is initialized with a
+> valid pointer.
 > 
-> Subject: [PATCH 08/10] cpufreq: Fix broken usage of governor->owner's
->  refcount
+> This field wasn't initialized for this driver, lets initialize it with
+> THIS_MODULE.
 > 
-> Governor's owner refcount usage was broken. We should increment refcount only
-> when CPUFREQ_GOV_POLICY_INIT event has come and should decrement only if
-> CPUFREQ_GOV_POLICY_EXIT has come.
-> 
-> Currently there can be situations where governor is in use but we have allowed
-> it to be unloaded. And that may cause in undefined behavior.
-
-"it to be unloaded which may result in undefined behavior."
-
-> 
-> Lets fix it.
-> 
+> Cc: Shawn Guo <shawn.guo@linaro.org>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Apart from the above looks good.
+For this and imx6q-cpufreq one,
 
-Thanks,
-Rafael
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
+> ---
+>  drivers/cpufreq/cpufreq-cpu0.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index ad1fde2..a087bf1 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -169,6 +169,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+>  	.init = cpu0_cpufreq_init,
+>  	.exit = cpu0_cpufreq_exit,
+>  	.name = "generic_cpu0",
+> +	.owner = THIS_MODULE,
+>  	.attr = cpu0_cpufreq_attr,
+>  };
+>  
+> -- 
+> 1.7.12.rc2.18.g61b472e
+> 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
