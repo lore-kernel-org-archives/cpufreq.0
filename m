@@ -1,56 +1,86 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 02/15] cpufreq: cpufreq-cpu0: initialize .owner field
- with THIS_MODULE
-Date: Sun, 4 Aug 2013 19:38:46 +0800
-Message-ID: <20130804113844.GE18119@S2101-09.ap.freescale.net>
-References: <cover.1375279948.git.viresh.kumar@linaro.org>
- <8f37155d1524de4298f7b1de08b3474fe2d97241.1375279948.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq-stats: fix time_in_state statistics
+Date: Mon, 5 Aug 2013 12:15:33 +0530
+Message-ID: <CAOh2x=nSvuyimdxhhjQgGdhK7EZmLfGD9Weh2bB+-werZDtGEA@mail.gmail.com>
+References: <87vc3o3pxn.fsf@igel.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8f37155d1524de4298f7b1de08b3474fe2d97241.1375279948.git.viresh.kumar@linaro.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        bh=V5HnGB4NdDgveWlKVh0f1BRlkP50xZz3zFG3zknl8Io=;
+        b=XsKWnocCqHskyeKUs0Pr0LyLRNykDyUYYiTjeZtXeiWFgt+XzbkPBvkjU6804C/eHs
+         gvGFAvnyfdML+bLvAVPSbb+nORzubJHjmDH7ov+yRn0HWmpEZew38mdby90oA+4IF3ap
+         Bh88iRV4z6wUEsk+QpTsNoHchzxB60M860bMBUnbpt3b5I1qpLXwRjANu5Q8cjHhziQG
+         caxOXjs0k5GdQMbheJA5VZ9SNc8oCXoCnd4QTHxJYZqJHBhGmOsywEJSYXAZkqCXt+fU
+         X8cgD5QtXLUpuJf7VqusLSiAygfHd8PkLrELKcSPi0LScUo4BhmP39otA/ojOkV6NKOH
+         z7xg==
+In-Reply-To: <87vc3o3pxn.fsf@igel.home>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org
+To: Andreas Schwab <schwab@linux-m68k.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, Jul 31, 2013 at 07:49:11PM +0530, Viresh Kumar wrote:
-> CPUFreq core does following at multiple places:
-> module_{get|put}(cpufreq_driver->owner)).
-> 
-> This is done to make sure module doesn't get unloaded if it is currently in use.
-> This will work only if the .owner field of cpufreq driver is initialized with a
-> valid pointer.
-> 
-> This field wasn't initialized for this driver, lets initialize it with
-> THIS_MODULE.
-> 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Please see MAINTAINERS file to get list of people/lists you need
+to send your patch to.
 
-For this and imx6q-cpufreq one,
-
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-
+On Sat, Aug 3, 2013 at 12:01 AM, Andreas Schwab <schwab@linux-m68k.org> wrote:
+> The time_in_state numbers are in units of jiffies, not cputime.
+>
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
 > ---
->  drivers/cpufreq/cpufreq-cpu0.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index ad1fde2..a087bf1 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -169,6 +169,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
->  	.init = cpu0_cpufreq_init,
->  	.exit = cpu0_cpufreq_exit,
->  	.name = "generic_cpu0",
-> +	.owner = THIS_MODULE,
->  	.attr = cpu0_cpufreq_attr,
->  };
->  
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
+>  drivers/cpufreq/cpufreq_stats.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index d37568c..10e6138 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -81,7 +81,7 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+>         for (i = 0; i < stat->state_num; i++) {
+>                 len += sprintf(buf + len, "%u %llu\n", stat->freq_table[i],
+>                         (unsigned long long)
+> -                       cputime64_to_clock_t(stat->time_in_state[i]));
+> +                       jiffies_64_to_clock_t(stat->time_in_state[i]));
 
+I tried to go to the history a bit but really couldn't make out what was
+the real intention initially:
+
+Following patches did this change:
+
+-               stat->time_in_state[stat->last_index] +=
+-                       delta_time(stat->last_time, jiffies);
+-       stat->last_time = jiffies;
++               stat->time_in_state[stat->last_index] =
++                       cputime64_add(stat->time_in_state[stat->last_index],
++                                     cputime_sub(cur_time, stat->last_time));
+
+commit 58f1df25403988b73d7129fcd2c4d4c24017f1af
+Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Date:   Wed May 25 14:46:50 2005 -0700
+
+    [PATCH] cpufreq-stats driver updates
+
+
+And it was then simplified by:
+
+commit 648616343cdbe904c585a6c12e323d3b3c72e46f
+Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Date:   Thu Dec 15 14:56:09 2011 +0100
+
+    [S390] cputime: add sparse checking and cleanup
+
+-               stat->time_in_state[stat->last_index] =
+-                       cputime64_add(stat->time_in_state[stat->last_index],
+-                                     cputime_sub(cur_time, stat->last_time));
++               stat->time_in_state[stat->last_index] +=
++                       cur_time - stat->last_time;
+
+
+And obviously cur_time is in jiffies... I am okay with your patch
+if Rafael doesn't see any issues with it...
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
