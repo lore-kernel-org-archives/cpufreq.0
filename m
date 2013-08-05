@@ -1,301 +1,140 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: ignore_nice vs. ignore_nice_load
-Date: Mon, 05 Aug 2013 15:00:31 +0200
-Message-ID: <1941712.NtnbsfnCbY@vostro.rjw.lan>
-References: <51FC1935.5030702@gmx.net> <CAOh2x=kriqCRp9x+f5f5onDVoyfxVHSPDF5HrM_sFSsQ1ucktw@mail.gmail.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
+ nodes
+Date: Mon, 05 Aug 2013 17:28:33 +0100
+Message-ID: <51FFD2B1.70509@arm.com>
+References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51FA3064.9080502@arm.com> <20130801120256.GW5882@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=kriqCRp9x+f5f5onDVoyfxVHSPDF5HrM_sFSsQ1ucktw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130801120256.GW5882@titan.lakedaemon.net>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Martin von Gagern <Martin.vGagern@gmx.net>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Jason Cooper <jason@lakedaemon.net>, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Andrew Lunn <andrew@lunn.ch>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
 
-On Monday, August 05, 2013 12:31:40 PM Viresh Kumar wrote:
-> On Sat, Aug 3, 2013 at 2:10 AM, Martin von Gagern
-> <Martin.vGagern@gmx.net> wrote:
-> > I just noticed that recently (apparently since 4d5dcc4211f9def4) the
-> > sysfs file that used to be called ignore_nice_load is now called
-> > ignore_nice. I don't know why this was renamed, but what has me
-> > worried even more is the fact that the documentation in
-> > Documentation/cpu-freq/governors.txt wasn't updated accordingly: it
-> > still talks about ignore_nice_load. It would be beter to synchronize
-> > these two again.
+On 01/08/13 13:02, Jason Cooper wrote:
+> Sudeep,
 > 
-> It was an unintentional change... And so we have a bug in our code
-> now.
+> On Thu, Aug 01, 2013 at 10:54:44AM +0100, Sudeep KarkadaNagesha wrote:
+>> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
+>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>>
+>>> Currently set_secondary_cpus_clock assume the CPU logical ordering
+>>> and the MPDIR in DT are same, which is incorrect.
+>>>
+>>> Since the CPU device nodes can be retrieved in the logical ordering
+>>> using the DT helper, we can remove the devices tree parsing.
+>>>
+>>> This patch removes DT parsing by making use of of_get_cpu_node.
+>>>
+>>> Cc: Gregory Clement <gregory.clement@free-electrons.com>
+>>> Cc: Andrew Lunn <andrew@lunn.ch>
+>>> Cc: Jason Cooper <jason@lakedaemon.net>
+>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> Hi Gregory/Andrew/Jason,
+>>
+>> Does this change look fine for mvebu?
+>> If yes, can I have your ACKs ?
 > 
-> > Investigating this issue, I also found that the file used to be called
-> > ignore_nice in the past, but at that point apparently had an inverted
-> > meaning. The node was renamed deliberately in 001893cda2f280ab when
-> > the semantics changed. I can't help but wonder whether anyone might
-> > now get confused with this old name popping up again, after all this
-> > time. Either name is fine by me, but I am surprised nevertheless.
+> Gregory is the one best suited to review/Ack this.  He'll be back on
+> Monday.
 > 
-> Please try following patch (attached for applying).
-> @Rafael: This bug got introduced recently 3.10, so we may consider it
-> as a fix for 3.11?
+Hi Gregory,
 
-Yes.
+Can you please review this patch ?
 
-Thanks,
-Rafael
+Regards,
+Sudeep
+>>> ---
+>>>  arch/arm/mach-mvebu/platsmp.c | 52 ++++++++++++++++++++-----------------------
+>>>  1 file changed, 24 insertions(+), 28 deletions(-)
+>>>
+>>> diff --git a/arch/arm/mach-mvebu/platsmp.c b/arch/arm/mach-mvebu/platsmp.c
+>>> index ce81d30..001dd42 100644
+>>> --- a/arch/arm/mach-mvebu/platsmp.c
+>>> +++ b/arch/arm/mach-mvebu/platsmp.c
+>>> @@ -23,51 +23,47 @@
+>>>  #include <linux/of.h>
+>>>  #include <linux/mbus.h>
+>>>  #include <asm/cacheflush.h>
+>>> +#include <asm/prom.h>
+>>>  #include <asm/smp_plat.h>
+>>>  #include "common.h"
+>>>  #include "armada-370-xp.h"
+>>>  #include "pmsu.h"
+>>>  #include "coherency.h"
+>>>  
+>>> +static struct clk *__init get_cpu_clk(int cpu)
+>>> +{
+>>> +	struct clk *cpu_clk;
+>>> +	struct device_node *np = of_get_cpu_node(cpu);
+>>> +
+>>> +	if (WARN(!np, "missing cpu node\n"))
+>>> +		return NULL;
+>>> +	cpu_clk = of_clk_get(np, 0);
+>>> +	if (WARN_ON(IS_ERR(cpu_clk)))
+>>> +		return NULL;
+>>> +	return cpu_clk;
+>>> +}
+>>> +
+>>>  void __init set_secondary_cpus_clock(void)
+>>>  {
+>>> -	int thiscpu;
+>>> +	int thiscpu, cpu;
+>>>  	unsigned long rate;
+>>> -	struct clk *cpu_clk = NULL;
+>>> -	struct device_node *np = NULL;
+>>> +	struct clk *cpu_clk;
+>>>  
+>>>  	thiscpu = smp_processor_id();
+>>> -	for_each_node_by_type(np, "cpu") {
+>>> -		int err;
+>>> -		int cpu;
+>>> -
+>>> -		err = of_property_read_u32(np, "reg", &cpu);
+>>> -		if (WARN_ON(err))
+>>> -			return;
+>>> -
+>>> -		if (cpu == thiscpu) {
+>>> -			cpu_clk = of_clk_get(np, 0);
+>>> -			break;
+>>> -		}
+>>> -	}
+>>> -	if (WARN_ON(IS_ERR(cpu_clk)))
+>>> +	cpu_clk = get_cpu_clk(thiscpu);
+>>> +	if (!cpu_clk)
+>>>  		return;
+>>>  	clk_prepare_enable(cpu_clk);
+>>>  	rate = clk_get_rate(cpu_clk);
+>>>  
+>>>  	/* set all the other CPU clk to the same rate than the boot CPU */
+>>> -	for_each_node_by_type(np, "cpu") {
+>>> -		int err;
+>>> -		int cpu;
+>>> -
+>>> -		err = of_property_read_u32(np, "reg", &cpu);
+>>> -		if (WARN_ON(err))
+>>> +	for_each_possible_cpu(cpu) {
+>>> +		if (cpu == thiscpu)
+>>> +			continue;
+>>> +		cpu_clk = get_cpu_clk(cpu);
+>>> +		if (!cpu_clk)
+>>>  			return;
+>>> -
+>>> -		if (cpu != thiscpu) {
+>>> -			cpu_clk = of_clk_get(np, 0);
+>>> -			clk_set_rate(cpu_clk, rate);
+>>> -		}
+>>> +		clk_set_rate(cpu_clk, rate);
+>>>  	}
+>>>  }
+>>>  
+>>>
+>>
+>>
+> 
 
 
-> ------------x----------------x---------------------
-> 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Mon, 5 Aug 2013 12:28:02 +0530
-> Subject: [PATCH] cpufreq: rename ignore_nice as ignore_nice_load
-> 
-> This sysfs file was earlier called ignore_nice_load and by mistake was changed
-> to ignore_nice during this patch:
-> 
-> commit 4d5dcc4211f9def4281eafb54b8ed483862e8135
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Wed Mar 27 15:58:58 2013 +0000
-> 
->     cpufreq: governor: Implement per policy instances of governors
-> 
-> Lets get it renamed back to its original name.
-> 
-> Reported-by: Martin von Gagern <Martin.vGagern@gmx.net>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 20 ++++++++++----------
->  drivers/cpufreq/cpufreq_governor.c     |  8 ++++----
->  drivers/cpufreq/cpufreq_governor.h     |  4 ++--
->  drivers/cpufreq/cpufreq_ondemand.c     | 20 ++++++++++----------
->  4 files changed, 26 insertions(+), 26 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c
-> b/drivers/cpufreq/cpufreq_conservative.c
-> index c400924..7f67a75 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -209,8 +209,8 @@ static ssize_t store_down_threshold(struct
-> dbs_data *dbs_data, const char *buf,
->  	return count;
->  }
-> 
-> -static ssize_t store_ignore_nice(struct dbs_data *dbs_data, const char *buf,
-> -		size_t count)
-> +static ssize_t store_ignore_nice_load(struct dbs_data *dbs_data,
-> +		const char *buf, size_t count)
->  {
->  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->  	unsigned int input, j;
-> @@ -223,10 +223,10 @@ static ssize_t store_ignore_nice(struct dbs_data
-> *dbs_data, const char *buf,
->  	if (input > 1)
->  		input = 1;
-> 
-> -	if (input == cs_tuners->ignore_nice) /* nothing to do */
-> +	if (input == cs_tuners->ignore_nice_load) /* nothing to do */
->  		return count;
-> 
-> -	cs_tuners->ignore_nice = input;
-> +	cs_tuners->ignore_nice_load = input;
-> 
->  	/* we need to re-evaluate prev_cpu_idle */
->  	for_each_online_cpu(j) {
-> @@ -234,7 +234,7 @@ static ssize_t store_ignore_nice(struct dbs_data
-> *dbs_data, const char *buf,
->  		dbs_info = &per_cpu(cs_cpu_dbs_info, j);
->  		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
->  					&dbs_info->cdbs.prev_cpu_wall, 0);
-> -		if (cs_tuners->ignore_nice)
-> +		if (cs_tuners->ignore_nice_load)
->  			dbs_info->cdbs.prev_cpu_nice =
->  				kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->  	}
-> @@ -267,7 +267,7 @@ show_store_one(cs, sampling_rate);
->  show_store_one(cs, sampling_down_factor);
->  show_store_one(cs, up_threshold);
->  show_store_one(cs, down_threshold);
-> -show_store_one(cs, ignore_nice);
-> +show_store_one(cs, ignore_nice_load);
->  show_store_one(cs, freq_step);
->  declare_show_sampling_rate_min(cs);
-> 
-> @@ -275,7 +275,7 @@ gov_sys_pol_attr_rw(sampling_rate);
->  gov_sys_pol_attr_rw(sampling_down_factor);
->  gov_sys_pol_attr_rw(up_threshold);
->  gov_sys_pol_attr_rw(down_threshold);
-> -gov_sys_pol_attr_rw(ignore_nice);
-> +gov_sys_pol_attr_rw(ignore_nice_load);
->  gov_sys_pol_attr_rw(freq_step);
->  gov_sys_pol_attr_ro(sampling_rate_min);
-> 
-> @@ -285,7 +285,7 @@ static struct attribute *dbs_attributes_gov_sys[] = {
->  	&sampling_down_factor_gov_sys.attr,
->  	&up_threshold_gov_sys.attr,
->  	&down_threshold_gov_sys.attr,
-> -	&ignore_nice_gov_sys.attr,
-> +	&ignore_nice_load_gov_sys.attr,
->  	&freq_step_gov_sys.attr,
->  	NULL
->  };
-> @@ -301,7 +301,7 @@ static struct attribute *dbs_attributes_gov_pol[] = {
->  	&sampling_down_factor_gov_pol.attr,
->  	&up_threshold_gov_pol.attr,
->  	&down_threshold_gov_pol.attr,
-> -	&ignore_nice_gov_pol.attr,
-> +	&ignore_nice_load_gov_pol.attr,
->  	&freq_step_gov_pol.attr,
->  	NULL
->  };
-> @@ -326,7 +326,7 @@ static int cs_init(struct dbs_data *dbs_data)
->  	tuners->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
->  	tuners->down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD;
->  	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
-> -	tuners->ignore_nice = 0;
-> +	tuners->ignore_nice_load = 0;
->  	tuners->freq_step = DEF_FREQUENCY_STEP;
-> 
->  	dbs_data->tuners = tuners;
-> diff --git a/drivers/cpufreq/cpufreq_governor.c
-> b/drivers/cpufreq/cpufreq_governor.c
-> index 556064e..8742736 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -41,9 +41,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  	unsigned int j;
-> 
->  	if (dbs_data->cdata->governor == GOV_ONDEMAND)
-> -		ignore_nice = od_tuners->ignore_nice;
-> +		ignore_nice = od_tuners->ignore_nice_load;
->  	else
-> -		ignore_nice = cs_tuners->ignore_nice;
-> +		ignore_nice = cs_tuners->ignore_nice_load;
-> 
->  	policy = cdbs->cur_policy;
-> 
-> @@ -284,12 +284,12 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		cs_tuners = dbs_data->tuners;
->  		cs_dbs_info = dbs_data->cdata->get_cpu_dbs_info_s(cpu);
->  		sampling_rate = cs_tuners->sampling_rate;
-> -		ignore_nice = cs_tuners->ignore_nice;
-> +		ignore_nice = cs_tuners->ignore_nice_load;
->  	} else {
->  		od_tuners = dbs_data->tuners;
->  		od_dbs_info = dbs_data->cdata->get_cpu_dbs_info_s(cpu);
->  		sampling_rate = od_tuners->sampling_rate;
-> -		ignore_nice = od_tuners->ignore_nice;
-> +		ignore_nice = od_tuners->ignore_nice_load;
->  		od_ops = dbs_data->cdata->gov_ops;
->  		io_busy = od_tuners->io_is_busy;
->  	}
-> diff --git a/drivers/cpufreq/cpufreq_governor.h
-> b/drivers/cpufreq/cpufreq_governor.h
-> index 264e509..a02d78b 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -164,7 +164,7 @@ struct cs_cpu_dbs_info_s {
-> 
->  /* Per policy Governers sysfs tunables */
->  struct od_dbs_tuners {
-> -	unsigned int ignore_nice;
-> +	unsigned int ignore_nice_load;
->  	unsigned int sampling_rate;
->  	unsigned int sampling_down_factor;
->  	unsigned int up_threshold;
-> @@ -173,7 +173,7 @@ struct od_dbs_tuners {
->  };
-> 
->  struct cs_dbs_tuners {
-> -	unsigned int ignore_nice;
-> +	unsigned int ignore_nice_load;
->  	unsigned int sampling_rate;
->  	unsigned int sampling_down_factor;
->  	unsigned int up_threshold;
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c
-> b/drivers/cpufreq/cpufreq_ondemand.c
-> index 117278a..87f3305 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -372,8 +372,8 @@ static ssize_t store_sampling_down_factor(struct
-> dbs_data *dbs_data,
->  	return count;
->  }
-> 
-> -static ssize_t store_ignore_nice(struct dbs_data *dbs_data, const char *buf,
-> -		size_t count)
-> +static ssize_t store_ignore_nice_load(struct dbs_data *dbs_data,
-> +		const char *buf, size_t count)
->  {
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
->  	unsigned int input;
-> @@ -388,10 +388,10 @@ static ssize_t store_ignore_nice(struct dbs_data
-> *dbs_data, const char *buf,
->  	if (input > 1)
->  		input = 1;
-> 
-> -	if (input == od_tuners->ignore_nice) { /* nothing to do */
-> +	if (input == od_tuners->ignore_nice_load) { /* nothing to do */
->  		return count;
->  	}
-> -	od_tuners->ignore_nice = input;
-> +	od_tuners->ignore_nice_load = input;
-> 
->  	/* we need to re-evaluate prev_cpu_idle */
->  	for_each_online_cpu(j) {
-> @@ -399,7 +399,7 @@ static ssize_t store_ignore_nice(struct dbs_data
-> *dbs_data, const char *buf,
->  		dbs_info = &per_cpu(od_cpu_dbs_info, j);
->  		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
->  			&dbs_info->cdbs.prev_cpu_wall, od_tuners->io_is_busy);
-> -		if (od_tuners->ignore_nice)
-> +		if (od_tuners->ignore_nice_load)
->  			dbs_info->cdbs.prev_cpu_nice =
->  				kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-> 
-> @@ -430,7 +430,7 @@ show_store_one(od, sampling_rate);
->  show_store_one(od, io_is_busy);
->  show_store_one(od, up_threshold);
->  show_store_one(od, sampling_down_factor);
-> -show_store_one(od, ignore_nice);
-> +show_store_one(od, ignore_nice_load);
->  show_store_one(od, powersave_bias);
->  declare_show_sampling_rate_min(od);
-> 
-> @@ -438,7 +438,7 @@ gov_sys_pol_attr_rw(sampling_rate);
->  gov_sys_pol_attr_rw(io_is_busy);
->  gov_sys_pol_attr_rw(up_threshold);
->  gov_sys_pol_attr_rw(sampling_down_factor);
-> -gov_sys_pol_attr_rw(ignore_nice);
-> +gov_sys_pol_attr_rw(ignore_nice_load);
->  gov_sys_pol_attr_rw(powersave_bias);
->  gov_sys_pol_attr_ro(sampling_rate_min);
-> 
-> @@ -447,7 +447,7 @@ static struct attribute *dbs_attributes_gov_sys[] = {
->  	&sampling_rate_gov_sys.attr,
->  	&up_threshold_gov_sys.attr,
->  	&sampling_down_factor_gov_sys.attr,
-> -	&ignore_nice_gov_sys.attr,
-> +	&ignore_nice_load_gov_sys.attr,
->  	&powersave_bias_gov_sys.attr,
->  	&io_is_busy_gov_sys.attr,
->  	NULL
-> @@ -463,7 +463,7 @@ static struct attribute *dbs_attributes_gov_pol[] = {
->  	&sampling_rate_gov_pol.attr,
->  	&up_threshold_gov_pol.attr,
->  	&sampling_down_factor_gov_pol.attr,
-> -	&ignore_nice_gov_pol.attr,
-> +	&ignore_nice_load_gov_pol.attr,
->  	&powersave_bias_gov_pol.attr,
->  	&io_is_busy_gov_pol.attr,
->  	NULL
-> @@ -509,7 +509,7 @@ static int od_init(struct dbs_data *dbs_data)
->  	}
-> 
->  	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
-> -	tuners->ignore_nice = 0;
-> +	tuners->ignore_nice_load = 0;
->  	tuners->powersave_bias = default_powersave_bias;
->  	tuners->io_is_busy = should_io_be_busy();
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
