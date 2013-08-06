@@ -1,62 +1,69 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [PATCH v3 05/16] ARM: mvebu: remove device tree parsing for cpu
- nodes
-Date: Tue, 06 Aug 2013 10:02:50 +0100
-Message-ID: <5200BBBA.7020303@arm.com>
-References: <1374069984-20567-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1374492747-13879-6-git-send-email-Sudeep.KarkadaNagesha@arm.com> <51FA3064.9080502@arm.com> <20130801120256.GW5882@titan.lakedaemon.net> <51FFD2B1.70509@arm.com> <5200B2E9.8090009@free-electrons.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
+ another node for OPP
+Date: Tue, 6 Aug 2013 08:29:57 -0500
+Message-ID: <20130806132956.GA6603@kahuna>
+References: <51F826A0.2000109@ti.com>
+ <51F8F17B.1020304@arm.com>
+ <51F9234A.6010501@ti.com>
+ <20130731152925.GP29859@e106331-lin.cambridge.arm.com>
+ <51F9341E.60102@ti.com>
+ <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+ <51F93AFB.1030104@ti.com>
+ <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+ <51FA917D.4060408@wwwdotorg.org>
+ <51FBB788.7040209@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <5200B2E9.8090009@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Andrew Lunn <andrew@lunn.ch>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Russell King <linux@arm.linux.org.uk>, Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Olof Johansson <olof@lixom.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Viresh Kumar <viresh.kumar@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <51FBB788.7040209@arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 06/08/13 09:25, Gregory CLEMENT wrote:
-> On 05/08/2013 18:28, Sudeep KarkadaNagesha wrote:
->> On 01/08/13 13:02, Jason Cooper wrote:
->>> Sudeep,
->>>
->>> On Thu, Aug 01, 2013 at 10:54:44AM +0100, Sudeep KarkadaNagesha wrote:
->>>> On 22/07/13 12:32, Sudeep KarkadaNagesha wrote:
->>>>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>>
->>>>> Currently set_secondary_cpus_clock assume the CPU logical ordering
->>>>> and the MPDIR in DT are same, which is incorrect.
->>>>>
->>>>> Since the CPU device nodes can be retrieved in the logical ordering
->>>>> using the DT helper, we can remove the devices tree parsing.
->>>>>
->>>>> This patch removes DT parsing by making use of of_get_cpu_node.
->>>>>
->>>>> Cc: Gregory Clement <gregory.clement@free-electrons.com>
->>>>> Cc: Andrew Lunn <andrew@lunn.ch>
->>>>> Cc: Jason Cooper <jason@lakedaemon.net>
->>>>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
->>>>
->>>> Hi Gregory/Andrew/Jason,
->>>>
->>>> Does this change look fine for mvebu?
->>>> If yes, can I have your ACKs ?
->>>
->>> Gregory is the one best suited to review/Ack this.  He'll be back on
->>> Monday.
->>>
->> Hi Gregory,
->>
->> Can you please review this patch ?
-> 
-> Your patch is a nice improvement, I reviewed it and I also tested it on the
-> Armada XP DB board.
-> 
-> You can add my:
-> Acked-by: Gregory Clement <gregory.clement@free-electrons.com>
+On 14:43-20130802, Sudeep KarkadaNagesha wrote:
+> On 01/08/13 17:49, Stephen Warren wrote:
+> > On 08/01/2013 07:54 AM, Mark Rutland wrote:
+> > ...
+> >> We seem to be going over two cases, which both feel wrong to me:
+> >>
+> >> * One SoC used in multiple boards, where on some boards an OPP cannot be
+> >>   used because some requirement is not met. In this case, the board's
+> >>   dts (by including the SoC's dtsi) describes something that's not
+> >>   necessarily usable, and we seem to have no way to describe in the OPP
+> >>   table that the OPP is not usable for that board.
+> > 
+> > There are probably a lot of examples of this already. For example, for
+> > pinctrl, people often want the SoC .dtsi file to include "pin
+> > configuration nodes" (see
+> > Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt) for many
+> > common pinmux configurations in the SoC .dtsi file, so that board files
+> > can simply refer to the already-existing nodes rather than having to
+> > write everything from scratch. Obviously, not all common configurations
+> > are used by every board.
+> > 
+> > ...
+> Agreed, but I am not convinced with the comparison(pinmux and OPPs).
+> The main concern I have is that if some developer wants to experiment
+> with various configurations provided by SoC(e.g. I have seen some SoC
+> where the pinmux have multiple functions and you can chose one of them)
+> But that's not true with OPPs, if someone experiments with wrong OPP
+> profile, then it might damage the board permanently.
 
-Thanks Gregory.
+Even today, nothing prevents folks from "adding custom OPPs" at their
+own personal risk here - We have seen folks do this as part of board
+files - Now, for that matter, there is nothing that prevents folks
+linking the wrong LDO or setting wrong LDO voltage and damaging the
+board either.
 
+I mean, at the level where we "describe" the hardware and it's
+operation, you cannot be idiot or experimenter-proof - If these were
+to be considered paramount and prevent us from choosing the right
+concept that is needed for as many SoCs as possible, it'd be a shame.
+
+-- 
 Regards,
-Sudeep
-
-
+Nishanth Menon
