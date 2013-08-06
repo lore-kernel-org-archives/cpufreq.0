@@ -1,59 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: sysfs support for scaling_cur_freq in intel_pstate
-Date: Tue, 06 Aug 2013 00:25:19 +0200
-Message-ID: <12076019.aizTGtbSrF@vostro.rjw.lan>
-References: <1375738663.6273.56.camel@localhost>
+From: Martin von Gagern <Martin.vGagern@gmx.net>
+Subject: Re: ignore_nice vs. ignore_nice_load
+Date: Tue, 06 Aug 2013 09:40:13 +0200
+Message-ID: <5200A85D.8000602@gmx.net>
+References: <51FC1935.5030702@gmx.net> <CAOh2x=kriqCRp9x+f5f5onDVoyfxVHSPDF5HrM_sFSsQ1ucktw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1375738663.6273.56.camel@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=kriqCRp9x+f5f5onDVoyfxVHSPDF5HrM_sFSsQ1ucktw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Radu Rendec <radu.rendec@mindbit.ro>
-Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, dirk.brandewie@gmail.com, Dirk Brandewie <dirk.j.brandewie@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-[Adding CCs to linux-pm and Dirk.]
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday, August 06, 2013 12:37:43 AM Radu Rendec wrote:
-> Hi!
-> 
-> After a recent kernel upgrade on my laptop I noticed that my cpu
-> frequency desktop applet wasn't working anymore. I quickly tracked down
-> the problem to the fact that the new scaling driver was intel_pstate,
-> and it didn't expose scaling_cur_freq in sysfs.
-> 
-> On the other hand, cpuinfo_cur_freq is available, but it's only readable
-> by root. Apparently there are good reasons for keeping it like this. I
-> found an older post about this here:
-> http://comments.gmane.org/gmane.linux.kernel.cpufreq/7005
-> 
-> However, looking at the code in intel_pstate.c, it seems that
-> intel_pstate_get() (which is the implementation for cpuinfo_cur_freq in
-> sysfs) simply extracts a value out of a larger structure. This seems
-> really harmless and very far away from the reasons why cpuinfo_cur_freq
-> was kept readable by root only.
-> 
-> Looking at cpufreq_add_dev_interface() in cpufreq.c, it seems that one
-> needs to define the "target" field in struct cpufreq_driver in order to
-> have scaling_cur_freq exposed in sysfs.
-> 
-> I think setting "target" to intel_pstate_get() in the definition of
-> intel_pstate_driver would fix my problem, since scaling_cur_freq in
-> sysfs is world readable. Is there any reason for not doing this?
-> 
-> If you reply, please cc my personal address - I'm not subscribed to the
-> list.
-> 
-> Thanks,
-> 
-> Radu Rendec
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+On 05.08.2013 09:01, Viresh Kumar wrote:
+> Please try following patch (attached for applying).
+> [0001-cpufreq-rename-ignore_nice-as-ignore_nice_load.patch]
+
+Looks good here.
+
+Thanks,
+ Martin
+
+
+--nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlIAqGQACgkQRhp6o4m9dFsgWgCdGuuD1HLpwVb7VlFiV6n1UOhk
+Y8cAoINAayYsXCn7gNCEZx0Q/BPGT6KU
+=2i4F
+-----END PGP SIGNATURE-----
+
+--nu7eOUpt4F2MBceqeDwwN6i433WtU2eB4--
