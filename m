@@ -1,33 +1,111 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v2] cpufreq: loongson2: fix broken cpufreq
-Date: Tue, 6 Aug 2013 16:40:12 +0200
-Message-ID: <20130806144012.GB17633@linux-mips.org>
-References: <1375727232-17796-1-git-send-email-aaro.koskinen@iki.fi>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1375727232-17796-1-git-send-email-aaro.koskinen@iki.fi>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 00/11] CPUFreq: Fixes & Cleanups for 3.12
+Date: Tue,  6 Aug 2013 22:53:02 +0530
+Message-ID: <cover.1375809311.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, Julia Lawall <Julia.Lawall@lip6.fr>, stable@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, Aug 05, 2013 at 09:27:12PM +0300, Aaro Koskinen wrote:
+Hi Rafael,
 
-> Commit 42913c799 (MIPS: Loongson2: Use clk API instead of direct
-> dereferences) broke the cpufreq functionality on Loongson2 boards:
-> clk_set_rate() is called before the CPU frequency table is initialized,
-> and therefore will always fail.
-> 
-> Fix by moving the clk_set_rate() after the table initialization.
-> Tested on Lemote FuLoong mini-PC.
+This is V2 of the patch series which was posted here earlier:
 
-Seems to make sense.
+http://www.gossamer-threads.com/lists/linux/kernel/1759514
 
-Rafael or Virish, this should go to Linus for 3.11.  Do you want to funnel
-this through the cpufreq tree or shall I send this to Linus with the
-next batch of MIPS stuff?
+This patchset tries to fix & cleanup many existing cpufreq core issues. First
+four patches tries to cleanup basic problems in cpufreq core. Its first patch
+was earlier sent separately but now is part of this series.
 
-  Ralf
+Fifth patch was also sent earlier as reply to your patches and was reviewed by
+Srivatsa. Sixth patch was picked from Lukasz's patchset on introducing software
+"boost" feature in core. It will be used by this patchset.
+
+And 7-10 are are the most significant part of this set. They try to make many
+things simple and robust.
+
+Last patch in the series is new and wasn't part of V1.
+
+This is rebased of your bleeding-edge branch + two patches from you:
+18a6b03 cpufreq: Avoid double kobject_put() for the same kobject in error code path
+d0cde63 cpufreq: Do not hold driver module references for additional policy CPUs
+abe513f Merge branch 'acpi-sleep-next' into linux-next
+
+They are also pushed in my cpufreq-next branch.
+
+They are tested fairly well on ARM Vexpress TC2 board (big LITTLE).
+
+Lukasz Majewski (1):
+  cpufreq: Store cpufreq policies in a list
+
+Viresh Kumar (10):
+  cpufreq: Cleanup header files included in core
+  cpufreq: Re-arrange declarations in cpufreq.h
+  cpufreq: Give consistent names for struct cpufreq_policy *
+  cpufreq: Use sizeof(*ptr) form for finding size of a struct
+  cpufreq: Pass policy to cpufreq_add_policy_cpu()
+  cpufreq: Use cpufreq_policy_list for iterating over policies
+  cpufreq: Fix broken usage of governor->owner's refcount
+  cpufreq: Don't use cpufreq_driver->owner's refcount to protect
+    critical sections
+  cpufreq: Remove struct cpufreq_driver's owner field
+  cpufreq: improve error checking on return values of
+    __cpufreq_governor()
+
+ Documentation/cpu-freq/cpu-drivers.txt |   2 -
+ drivers/cpufreq/acpi-cpufreq.c         |   5 +-
+ drivers/cpufreq/at32ap-cpufreq.c       |   1 -
+ drivers/cpufreq/blackfin-cpufreq.c     |   1 -
+ drivers/cpufreq/cpufreq-nforce2.c      |   1 -
+ drivers/cpufreq/cpufreq.c              | 426 ++++++++++++++++-----------------
+ drivers/cpufreq/cpufreq_conservative.c |  14 +-
+ drivers/cpufreq/cpufreq_governor.c     |   6 -
+ drivers/cpufreq/cpufreq_governor.h     |   7 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |  24 +-
+ drivers/cpufreq/cpufreq_performance.c  |   3 +-
+ drivers/cpufreq/cpufreq_powersave.c    |   3 +-
+ drivers/cpufreq/cpufreq_stats.c        |  23 +-
+ drivers/cpufreq/cris-artpec3-cpufreq.c |   1 -
+ drivers/cpufreq/cris-etraxfs-cpufreq.c |   1 -
+ drivers/cpufreq/e_powersaver.c         |   5 +-
+ drivers/cpufreq/elanfreq.c             |   1 -
+ drivers/cpufreq/exynos-cpufreq.c       |   2 +-
+ drivers/cpufreq/freq_table.c           |   4 +-
+ drivers/cpufreq/gx-suspmod.c           |   3 +-
+ drivers/cpufreq/ia64-acpi-cpufreq.c    |   5 +-
+ drivers/cpufreq/intel_pstate.c         |   1 -
+ drivers/cpufreq/kirkwood-cpufreq.c     |   1 -
+ drivers/cpufreq/longhaul.c             |   1 -
+ drivers/cpufreq/longrun.c              |   1 -
+ drivers/cpufreq/loongson2_cpufreq.c    |   1 -
+ drivers/cpufreq/maple-cpufreq.c        |   1 -
+ drivers/cpufreq/p4-clockmod.c          |   1 -
+ drivers/cpufreq/pasemi-cpufreq.c       |   1 -
+ drivers/cpufreq/pcc-cpufreq.c          |   1 -
+ drivers/cpufreq/pmac32-cpufreq.c       |   1 -
+ drivers/cpufreq/pmac64-cpufreq.c       |   6 +-
+ drivers/cpufreq/powernow-k6.c          |   1 -
+ drivers/cpufreq/powernow-k7.c          |  14 +-
+ drivers/cpufreq/powernow-k8.c          |   7 +-
+ drivers/cpufreq/ppc-corenet-cpufreq.c  |   1 -
+ drivers/cpufreq/ppc_cbe_cpufreq.c      |   1 -
+ drivers/cpufreq/s3c2416-cpufreq.c      |   1 -
+ drivers/cpufreq/s3c24xx-cpufreq.c      |   6 +-
+ drivers/cpufreq/s3c64xx-cpufreq.c      |   1 -
+ drivers/cpufreq/sc520_freq.c           |   1 -
+ drivers/cpufreq/sh-cpufreq.c           |   1 -
+ drivers/cpufreq/sparc-us2e-cpufreq.c   |   6 +-
+ drivers/cpufreq/sparc-us3-cpufreq.c    |   6 +-
+ drivers/cpufreq/speedstep-centrino.c   |   1 -
+ drivers/cpufreq/speedstep-ich.c        |   1 -
+ drivers/cpufreq/speedstep-smi.c        |   1 -
+ include/linux/cpufreq.h                | 386 ++++++++++++++---------------
+ 48 files changed, 442 insertions(+), 547 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
+
