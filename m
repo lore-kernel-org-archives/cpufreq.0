@@ -1,30 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: support for software direct frequency throttling?
-Date: Thu, 08 Aug 2013 01:37:07 +0200
-Message-ID: <2466745.skqnolQonv@vostro.rjw.lan>
-References: <5202A24F.6040506@calxeda.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/6] clk: Tegra: Add CPU0 clock driver
+Date: Thu, 8 Aug 2013 08:12:48 +0530
+Message-ID: <CAKohpoky9-E2XoxAQy_oQ3sMxvAv5ZfBdDQPd6zUxcSwyKmzXg@mail.gmail.com>
+References: <cover.1375886595.git.viresh.kumar@linaro.org>
+	<8d192a13cb7e088943da40689d62bc6353bd8604.1375886595.git.viresh.kumar@linaro.org>
+	<52028620.6000608@wwwdotorg.org>
+	<CAKohpokVgcMfmKmjkxc9Dr3z6mBKad23uUdB4ydN_xzGHdfedQ@mail.gmail.com>
+	<52028859.20008@wwwdotorg.org>
+	<CAKohpokK7F7tYJnisVjF=NCRb9zUjQNzrFdXs+QsPSb4oqyytA@mail.gmail.com>
+	<52029713.5070808@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5202A24F.6040506@calxeda.com>
+In-Reply-To: <52029713.5070808@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: rjw@sisk.pl, swarren@nvidia.com, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, August 07, 2013 02:38:55 PM Mark Langsdorf wrote:
-> Is there an easy way to dynamically limit the maximum or minimum
-> frequencies available to a governor? I'm trying to support frequency
-> throttling in response to a thermal event (or theoretically to allow a
-> BMC to set a minimum frequency regardless of current load).
-> 
-> I looked into doing this last year and it required some QoS patches that
-> I don't think ever made it into the kernel.
-> 
-> Is there a straightforward way to do this right now?
+On 8 August 2013 00:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> Right, and that's *exactly* what having a cpufreq driver is for; to
+> implement the details of CPU clock management.
 
-Have you looked at drivers/thermal/cpu_cooling.c ?
+cpufreq drivers used to keep such information since a long time,
+probably because there wasn't another place to keep them and
+provide generic API's (like generic clock framework).. And so this
+replication started to get in place which we are trying to get rid of
+now.
 
-Rafael
+All cpufreq drivers share a lot of common code which can go
+away and so cpufreq-cpu0 was introduced..
 
+With this patchset this replication goes away for tegra atleast at
+the cost of a platform specific clk-cpu driver.. I think that's a good
+deal, isn't it?
+
+And that's the only way you can use these generic drivers that we
+have...
