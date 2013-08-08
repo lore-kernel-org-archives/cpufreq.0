@@ -1,105 +1,22 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 34/35] cpufreq: speedstep: use cpufreq_table_validate_and_show()
-Date: Thu,  8 Aug 2013 19:18:36 +0530
-Message-ID: <e57e53e345f604399032681474124ff163daa4ab.1375964117.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/35] cpufreq: Introduce cpufreq_table_validate_and_show()
+Date: Thu, 8 Aug 2013 19:23:36 +0530
+Message-ID: <CAKohponFNLjUBaXc3vsFW+Up3PamqPeFF2gjG06+qTSYawTjhw@mail.gmail.com>
 References: <cover.1375964117.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1375964117.git.viresh.kumar@linaro.org>
-References: <cover.1375964117.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+	<12886440.vo6SHbG01c@vostro.rjw.lan>
+Mime-Version: 1.0
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <12886440.vo6SHbG01c@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Lets use cpufreq_table_validate_and_show() instead of calling
-cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
+On 8 August 2013 19:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> I'm not going to take this for 3.12, sorry.  Please resend in the 3.12-rc1 /
+> 3.12-rc2 time frame.
 
-Cc: David S. Miller <davem@davemloft.net>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/speedstep-centrino.c | 10 +---------
- drivers/cpufreq/speedstep-ich.c      |  9 +--------
- drivers/cpufreq/speedstep-smi.c      |  8 +-------
- 3 files changed, 3 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/cpufreq/speedstep-centrino.c b/drivers/cpufreq/speedstep-centrino.c
-index f897d51..f180561 100644
---- a/drivers/cpufreq/speedstep-centrino.c
-+++ b/drivers/cpufreq/speedstep-centrino.c
-@@ -345,7 +345,6 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
- 	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
- 	unsigned freq;
- 	unsigned l, h;
--	int ret;
- 	int i;
- 
- 	/* Only Intel makes Enhanced Speedstep-capable CPUs */
-@@ -402,15 +401,8 @@ static int centrino_cpu_init(struct cpufreq_policy *policy)
- 
- 	pr_debug("centrino_cpu_init: cur=%dkHz\n", policy->cur);
- 
--	ret = cpufreq_frequency_table_cpuinfo(policy,
-+	return cpufreq_table_validate_and_show(policy,
- 		per_cpu(centrino_model, policy->cpu)->op_points);
--	if (ret)
--		return (ret);
--
--	cpufreq_frequency_table_get_attr(
--		per_cpu(centrino_model, policy->cpu)->op_points, policy->cpu);
--
--	return 0;
- }
- 
- static int centrino_cpu_exit(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/speedstep-ich.c b/drivers/cpufreq/speedstep-ich.c
-index 5355abb..86a184e 100644
---- a/drivers/cpufreq/speedstep-ich.c
-+++ b/drivers/cpufreq/speedstep-ich.c
-@@ -320,7 +320,6 @@ static void get_freqs_on_cpu(void *_get_freqs)
- 
- static int speedstep_cpu_init(struct cpufreq_policy *policy)
- {
--	int result;
- 	unsigned int policy_cpu, speed;
- 	struct get_freqs gf;
- 
-@@ -349,13 +348,7 @@ static int speedstep_cpu_init(struct cpufreq_policy *policy)
- 	/* cpuinfo and default policy values */
- 	policy->cur = speed;
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, speedstep_freqs);
--	if (result)
--		return result;
--
--	cpufreq_frequency_table_get_attr(speedstep_freqs, policy->cpu);
--
--	return 0;
-+	return cpufreq_table_validate_and_show(policy, speedstep_freqs);
- }
- 
- 
-diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-index abfba4f..f4d0318 100644
---- a/drivers/cpufreq/speedstep-smi.c
-+++ b/drivers/cpufreq/speedstep-smi.c
-@@ -329,13 +329,7 @@ static int speedstep_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
- 	policy->cur = speed;
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, speedstep_freqs);
--	if (result)
--		return result;
--
--	cpufreq_frequency_table_get_attr(speedstep_freqs, policy->cpu);
--
--	return 0;
-+	return cpufreq_table_validate_and_show(policy, speedstep_freqs);
- }
- 
- static int speedstep_cpu_exit(struct cpufreq_policy *policy)
--- 
-1.7.12.rc2.18.g61b472e
+Okay.. By that time I will accumulate all reviews/Acks for it
+and the next patchset that I will send.
