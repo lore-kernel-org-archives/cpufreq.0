@@ -1,35 +1,29 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/6] ARM: Tegra: Add CPU's OPPs for using cpufreq-cpu0 driver
-Date: Thu, 8 Aug 2013 20:07:01 +0530
-Message-ID: <CAKohpo=zYBVha_L7D+FWUEO=a6byeiuGtNBmh-CRhSmfkT=QrQ@mail.gmail.com>
-References: <cover.1375886595.git.viresh.kumar@linaro.org>
-	<d4cd498d9b63d761039b025216e65278dc8e0e37.1375886595.git.viresh.kumar@linaro.org>
-	<52028719.8070908@wwwdotorg.org>
-	<CAKohpo=MpOyMGFTGeZWmoCRwmZ7+nQtP_yCGokPanEVYL0xbMw@mail.gmail.com>
-	<52029811.9080704@wwwdotorg.org>
-	<1375970318.4276.52.camel@weser.hi.pengutronix.de>
-	<CAKohpon=GGn5-8ucTrrf6TyPMn3+1Oh6Sd5bAj_ztpVDONZ3QA@mail.gmail.com>
-	<1375971749.4276.61.camel@weser.hi.pengutronix.de>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 35/35] cpufreq: tegra: use cpufreq_table_validate_and_show()
+Date: Thu, 08 Aug 2013 09:44:29 -0600
+Message-ID: <5203BCDD.40809@wwwdotorg.org>
+References: <cover.1375964117.git.viresh.kumar@linaro.org> <568f3dbd414b050bb2319d960fb5044a5aed8ee3.1375964117.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1375971749.4276.61.camel@weser.hi.pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <568f3dbd414b050bb2319d960fb5044a5aed8ee3.1375964117.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linaro-kernel@lists.linaro.org, swarren@nvidia.com, Ian Campbell <ian.campbell@citrix.com>, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, Rob Herring <rob.herring@calxeda.com>, mturquette@linaro.org, linux-arm-kernel@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Warren <swarren@nvidia.com>
 
-On 8 August 2013 19:52, Lucas Stach <l.stach@pengutronix.de> wrote:
-> You can certainly define the mapping table in DT where a specialized
-> Tegra cpufreq driver could read it in and then map frequency to voltage.
-> But that's a runtime decision, as Speedo and process ID are fuse values
-> and can not be represented in DT.
+On 08/08/2013 07:48 AM, Viresh Kumar wrote:
+> Lets use cpufreq_table_validate_and_show() instead of calling
+> cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-> The problem with this is that the hardware description now associates
-> voltages with certain frequencies and even if they are not used by the
-> Linux driver they are plain wrong.
+Assuming the new function simply does what the two removed lines do,
+this looks fine to me.
 
-Hmm. I understand.
-Then we probably need mach-tegra/opp.c to call opp_add() for all such
-OPPs.. Neither DT nor cpufreq driver are the right place for this.
+>  static int tegra_cpu_exit(struct cpufreq_policy *policy)
+>  {
+> -	cpufreq_frequency_table_cpuinfo(policy, freq_table);
+
+This doesn't seem to be mentioned in the commit description. I assume
+this is simply dead/useless code removal?
+
