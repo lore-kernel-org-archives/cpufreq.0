@@ -1,85 +1,61 @@
-From: "Alexander E. Patrakov" <patrakov@gmail.com>
-Subject: Questions on the PID controller in the intel_pstate driver
-Date: Sun, 11 Aug 2013 19:04:10 +0600
-Message-ID: <CAN_LGv2EpaX+-gNpzSFw2Q1-ZS+R2rwt5SYVeHVGfRG+M4a+0g@mail.gmail.com>
-Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        bh=7FVKZuBGC1RLMeFiQjfCnrrbuo/unRnOhMetDorgETs=;
-        b=r/RrNKdylcwqrzAuJtVKmsx9gTklobGr/33eESkTTsVLDmKnrM5BmVe2utCh3exCF2
-         a2CnIu70+63bCsciz85PUThnSxr2BdWLeAuncWq1KxCmvA8NuINMkWh1COTW3PM8bBSq
-         lGniaI8u62vMfVCTRXvZ9u/MR4yo5DHR4ml5pTnUrwCAQ6plJtA7WX/rbQhNMPgwLQK0
-         2nT0CVB96IsUMM6aXfmylUiklTYK8O2MJeAHwvfcsWGqOyaPs/YZc/z1uBOpFabKJKNQ
-         4RWfBOvx5qIbxKxLneiUdYG5BmTRW7uxTWZl/azNvXy+RRLeTzvi9cu+5zOkDdPxcrNm
-         mNrg==
-Sender: cpufreq-owner@vger.kernel.org
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using ARRAY_AND_SIZE(e) as a function argument
+Date: Sun, 11 Aug 2013 18:51:53 +0200
+Message-ID: <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
+References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dirk Brandewie <dirk.j.brandewie@intel.com>, cpufreq@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel-janitors@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello.
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-I have noticed that there is a PID controller in the intel_pstate
-driver, and thus have questions related to it. Yes, I understand that,
-by default, there is only a "proportional" term. I have only read the
-code, but have not tried to modify it to see how it breaks.
+Replace ARRAY_AND_SIZE(e) in function argument position to avoid hiding the
+arity of the called function.
 
-The goal of this e-mail is to determine whether we can explain
-https://bugzilla.kernel.org/show_bug.cgi?id=60727 and to audit the
-driver for other bugs. If I worked at Intel, I would have asked the
-same questions as a part of normal code review.
+The semantic match that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-1. Usually, the output of the PID controller is directly used to
-control the process (in our case, this, naively, would be the
-performance MSR). However, in the current driver, the output of
-pid_calc is first quantized (by fp_toint(result) at the very end of
-the function) and then used as a number of steps to increase or
-decrease the MSR value - i.e. essentially integraded. This integration
-essentially makes a non-standard integral-doubleintegral-proportional
-type of controller instead of PID (and, due to only the P term being
-present by default, the result is ian integral-only controller with
-the quantization step before the integral).
+// <smpl>
+@@
+expression e,f;
+@@
 
-Why was the decision to quantize and then integrate the PID controller
-output made, and not the other way round? Why is the explicit
-integration step outside of the controller necessary at all, instead
-of letting a normal PI controller output (with different coefficients
-- i.e. leaving only the I term would get what we have now, minus
-quantization) directly control the MSR value?
+f(...,
+- ARRAY_AND_SIZE(e)
++ e,ARRAY_SIZE(e)
+  ,...)
+// </smpl>
 
-2. In intel_pstate_get_scaled_busy(), there is this line:
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-        busy_scaled = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+---
+Not compiled.
 
-What is the physical meaning of the result - i.e. why does core_busy
-need to be upscaled by (max_pstate / current_pstate)? Why is this
-result chosen as something to stabilize (by comparing to the setpoint
-in the PID controller)?
+ drivers/cpufreq/pxa3xx-cpufreq.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-I am asking because I don't quite understand the logic. Is the goal to
-ensure (by the PID regulator choosing the P-state) that the CPU is as
-close to 97% busy as possible, under the default policy?
-
-3. Why is 97 chosen as a setpoint? What was the reasoning behind
-setting the setpoint to 109 before the change 2134ed4d6 (asking
-because 109 does not make sense as the "CPU busy percentage" setpoint
-in an integral-only controller, see question (1) why I am calling your
-controller integral-only)?
-
-4. Was any "well-established" procedure like Ziegler-Nichols tuning
-method tried to tune the coefficients of the PID controller? Were
-there any failed attempts?
-
-5. Why is a PID controller (a thing that needs tuning, testing for
-stability, requires essentially-floating-point calculations and can
-provoke "I don't understand" e-mails such as this one) used at all?
-What were the arguments for choosing it over, e.g., the simple
-heuristic similar to what is in cpufreq_conservative.c?
-
-Note: I am not subscribed to the cpufreq list. Please CC: me on replies.
-
--- 
-Alexander E. Patrakov
+diff --git a/drivers/cpufreq/pxa3xx-cpufreq.c b/drivers/cpufreq/pxa3xx-cpufreq.c
+index 9c92ef0..d26306f 100644
+--- a/drivers/cpufreq/pxa3xx-cpufreq.c
++++ b/drivers/cpufreq/pxa3xx-cpufreq.c
+@@ -213,10 +213,12 @@ static int pxa3xx_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->cur = policy->min = policy->max;
+ 
+ 	if (cpu_is_pxa300() || cpu_is_pxa310())
+-		ret = setup_freqs_table(policy, ARRAY_AND_SIZE(pxa300_freqs));
++		ret = setup_freqs_table(policy, pxa300_freqs,
++					ARRAY_SIZE(pxa300_freqs));
+ 
+ 	if (cpu_is_pxa320())
+-		ret = setup_freqs_table(policy, ARRAY_AND_SIZE(pxa320_freqs));
++		ret = setup_freqs_table(policy, pxa320_freqs,
++					ARRAY_SIZE(pxa320_freqs));
+ 
+ 	if (ret) {
+ 		pr_err("failed to setup frequency table\n");
