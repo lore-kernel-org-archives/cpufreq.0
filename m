@@ -1,73 +1,53 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 6/8] cpufreq:exynos:Extend Exynos cpufreq driver to
- support boost framework
-Date: Mon, 12 Aug 2013 11:52:05 +0200
-Message-ID: <20130812115205.6fb12667@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-7-git-send-email-l.majewski@samsung.com>
- <CAKohponC=S=3=mrTpWvPvejqSeqfndVOwb2GDkQ0jKxXXa0TOQ@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use devm_regulator_get_optional()
+Date: Mon, 12 Aug 2013 11:01:52 +0100
+Message-ID: <20130812100152.GK6427@sirena.org.uk>
+References: <1376071683-19013-1-git-send-email-broonie@kernel.org>
+ <CAKohpomtoEFD0V-GHUxC+LrbVicpjF2Sep-97ED=gXiiHWMoXQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OEp3pE+VUYV0MT2S"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohponC=S=3=mrTpWvPvejqSeqfndVOwb2GDkQ0jKxXXa0TOQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAKohpomtoEFD0V-GHUxC+LrbVicpjF2Sep-97ED=gXiiHWMoXQ@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
-
-On Fri, 26 Jul 2013 15:56:53 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> 
-> > diff --git a/drivers/cpufreq/exynos-cpufreq.c
-> > b/drivers/cpufreq/exynos-cpufreq.c index 9ae1871..175172d9 100644
-> > --- a/drivers/cpufreq/exynos-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos-cpufreq.c
-> > @@ -270,6 +270,9 @@ static int exynos_cpufreq_cpu_exit(struct
-> > cpufreq_policy *policy)
-> >
-> >  static struct freq_attr *exynos_cpufreq_attr[] = {
-> >         &cpufreq_freq_attr_scaling_available_freqs,
-> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> 
-> Use ARM_EXYNOS_CPU_FREQ_BOOST_SW instead.
-
-Ok, the ARM_EXYNOS_CPU_FREQ_BOOST_SW looks more appropriate here.
-
-> 
-> > +       &cpufreq_freq_attr_scaling_boost_freqs,
-> > +#endif
-> >         NULL,
-> >  };
-> >
-> > @@ -332,6 +335,9 @@ static int __init exynos_cpufreq_probe(struct
-> > platform_device *pdev)
-> >
-> >         locking_frequency = exynos_getspeed(0);
-> >
-> > +#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> > +       exynos_driver.boost_supported = true;
-> > +#endif
-> 
-> So, why here and not in the definition of exynos_driver?
-
-Ok, I will move the above code to struct cpufreq_driver exynos_driver
-
-> 
-> >         register_pm_notifier(&exynos_cpufreq_nb);
-> >
-> >         if (cpufreq_register_driver(&exynos_driver)) {
-> > --
-> > 1.7.10.4
-> >
+Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org
 
 
+--OEp3pE+VUYV0MT2S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
--- 
-Best regards,
+On Mon, Aug 12, 2013 at 10:52:00AM +0530, Viresh Kumar wrote:
 
-Lukasz Majewski
+> Over that it would have been useful if we could have this patch as part
+> of the series you posted for defining devm_regulator_get_optional(),
+> and so we could have seen what's that patch is doing..
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+It's in -next.  There's rather a lot of regulator users in the kernel.
+
+--OEp3pE+VUYV0MT2S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSCLKNAAoJELSic+t+oim9uLgP/2Yw/PbN/YVHMXuJ4OugPuBi
+h0rz/1vRPqUrfjsHx53dTlb05zSoTLoEg5fMo+ALY/fMTxji3n7hnOjlEIMYp9aE
+jlSEEBiIlgkHDxeCuQMxrEHN99bsAlBddtX+HoM12Vy79oALz2PLS1Ay/7Y3XUUL
+VeAmOlYi4IyyNUO7ekWtCs8MzkZKpEIBvQuillhrXZpuHoRIzlkZbR6fSplFg1eo
+tWtIOBIDcbp6JxRpmpCOlpDDV3mjcfOjarVFdTBOdrEspyj64ZDY4oehTz9MyaCQ
+vLN78i/7r0w4fODXGMecZn1WikOf1bYktnnX7UkPJr6bqGr8dFqpRGAPXXMqdtAy
+Op3ZHlXgiiNzp2TP2+zWbDDOhxfaSJHpz8PjjOgJZ6JUShdxpy4MDycrDyPkW4K7
+w+LQz77pEITcnEBPgKmTMBgh7zbuoqkGWSfEGU57byHcqzZrxlYQs3n5RLVjmvJv
+3s0SB5TE80A7do9EnNOenJr6JVLbU8iQC+moikFamFTyJ6cZhgrcgZP1vFr00DVa
+PJeYfCy8X7wlgPIG1FfjMWu9SVW/Ws17sMNyAMNuTzOny726wKph8zMBpWR0NVih
+pqYQDBHuDCHKwScPD37mfCWqoiTlbFtrHfWIFU66tuRP9BY3UpnIYlSQbAc7OYx0
+PYw75Xi4+xQ8iYyzVcuv
+=0Bbr
+-----END PGP SIGNATURE-----
+
+--OEp3pE+VUYV0MT2S--
