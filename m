@@ -1,34 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 29/44] cpufreq: pcc: Use generic cpufreq routines
-Date: Mon, 12 Aug 2013 11:38:38 +0530
-Message-ID: <CAKohponHWE9iqm8PkLGHhCionnahkJVBJh5jRJQ+B5MQ+vnPAw@mail.gmail.com>
+Subject: Re: [PATCH 03/44] cpufreq: exynos: call cpufreq_frequency_table_put_attr()
+Date: Mon, 12 Aug 2013 11:48:01 +0530
+Message-ID: <CAKohponzE-Ea7ZDAK=hUoeqi-f2Cmyo9AocM1wSC1dcHdjAYzw@mail.gmail.com>
 References: <cover.1376116344.git.viresh.kumar@linaro.org>
-	<707070e59966ed3982ee52b367991e0b175e0319.1376116345.git.viresh.kumar@linaro.org>
+	<c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <707070e59966ed3982ee52b367991e0b175e0319.1376116345.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-On 10 August 2013 12:14, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
-> and .attr. So its better if we have generic routines for them which can be used
-> by cpufreq drivers then.
+On 10 August 2013 12:13, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
+> they have called cpufreq_frequency_table_get_attr() in their init path.
 >
-> This patch uses these generic routines for this driver.
+> This driver was missing this part and is fixed with this patch.
 >
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/cpufreq/pcc-cpufreq.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
+>  drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index 1ac93e0..b9dfc91 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -336,12 +336,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 
-My patch was wrong.. It was based on the assumption that everybody who
-had implemented a .target() also implements a frequency table and exposes
-it.. And the generic routines I have exposed depend on that frequency table.
-And this cpufreq driver doesn't expose that freq table...
+s/init/exit ..
 
-And so this patch is dropped :(
+fixed in my repo..
