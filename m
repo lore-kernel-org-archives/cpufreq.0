@@ -1,41 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 03/44] cpufreq: exynos: call cpufreq_frequency_table_put_attr()
-Date: Mon, 12 Aug 2013 11:48:01 +0530
-Message-ID: <CAKohponzE-Ea7ZDAK=hUoeqi-f2Cmyo9AocM1wSC1dcHdjAYzw@mail.gmail.com>
-References: <cover.1376116344.git.viresh.kumar@linaro.org>
-	<c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
+Subject: [GIT PULL]: CPUFreq: ARM Fixes for 3.12
+Date: Mon, 12 Aug 2013 12:03:39 +0530
+Message-ID: <CAKohponyLTUn_Sonstw_oOLZ+S+x9e3UH0JaZbkLaQfX-9zmWw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-arm-kernel@lists.infradead.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On 10 August 2013 12:13, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
-> they have called cpufreq_frequency_table_get_attr() in their init path.
->
-> This driver was missing this part and is fixed with this patch.
->
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> index 1ac93e0..b9dfc91 100644
-> --- a/drivers/cpufreq/exynos5440-cpufreq.c
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> @@ -336,12 +336,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
->         return 0;
->  }
->
-> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+Hi Rafael,
 
-s/init/exit ..
+The following changes since commit d4e4ab86bcba5a72779c43dc1459f71fea3d89c8:
 
-fixed in my repo..
+  Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
+
+are available in the git repository at:
+
+  git://git.linaro.org/people/vireshk/linux.git cpufreq-fixes
+
+for you to fetch changes up to 45e12086263a53f16b489fc7f4f8f6348a688661:
+
+  cpufreq: fix EXYNOS drivers selection (2013-08-12 12:00:21 +0530)
+
+----------------------------------------------------------------
+Amit Daniel Kachhap (1):
+      cpufreq: exynos5440: Fix to skip when new frequency same as current
+
+Bartlomiej Zolnierkiewicz (1):
+      cpufreq: fix EXYNOS drivers selection
+
+ drivers/cpufreq/Kconfig.arm          | 36 ++++++++++++++++++++++++------------
+ drivers/cpufreq/exynos-cpufreq.c     |  1 -
+ drivers/cpufreq/exynos-cpufreq.h     | 21 +++++++++++++++++++++
+ drivers/cpufreq/exynos5440-cpufreq.c |  3 +++
+ 4 files changed, 48 insertions(+), 13 deletions(-)
+
+--
+viresh
