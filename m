@@ -1,76 +1,108 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 14/31] cpufreq: imx6q: Covert to light weight ->target() routine
-Date: Mon, 12 Aug 2013 23:18:50 +0530
-Message-ID: <0de81d2f94cd90c8b4c35c0d4bb2483fc35a1e87.1376329128.git.viresh.kumar@linaro.org>
-References: <cover.1376329128.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
-References: <cover.1376329128.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Subject: [PATCH] cpufreq: add frequency table to at32ap driver
+Date: Mon, 12 Aug 2013 21:10:57 +0200
+Message-ID: <1376334657-23578-1-git-send-email-egtvedt@samfundet.no>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+To: cpufreq@vger.kernel.org, viresh.kumar@linaro.org
+Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 
-This patch converts existing .target_old() to newly defined light weight
-.target() routine for this driver.
+This patch adds a dynamically calculated frequency table to the at32ap driver.
+In short the architecture can scale in power of two between a maximum and
+minimum frequency. Min, max, and the steps in between are added to the table.
 
-CPUFreq core will call cpufreq_frequency_table_target() before calling this
-routine and will pass index to it.
-
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
+ drivers/cpufreq/at32ap-cpufreq.c | 47 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index d6e3e7e..f416066 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -39,30 +39,17 @@ static unsigned int imx6q_get_speed(unsigned int cpu)
- 	return clk_get_rate(arm_clk) / 1000;
+diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
+index 6544887..dbf3f3d 100644
+--- a/drivers/cpufreq/at32ap-cpufreq.c
++++ b/drivers/cpufreq/at32ap-cpufreq.c
+@@ -19,8 +19,10 @@
+ #include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/export.h>
++#include <linux/slab.h>
+ 
+ static struct clk *cpuclk;
++static struct cpufreq_frequency_table *freq_table;
+ 
+ static int at32_verify_speed(struct cpufreq_policy *policy)
+ {
+@@ -85,13 +87,19 @@ static int at32_set_target(struct cpufreq_policy *policy,
+ 
+ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
+ {
++	unsigned int frequency;
++	int retval;
++	int steps;
++	int i;
++
+ 	if (policy->cpu != 0)
+ 		return -EINVAL;
+ 
+ 	cpuclk = clk_get(NULL, "cpu");
+ 	if (IS_ERR(cpuclk)) {
+ 		pr_debug("cpufreq: could not get CPU clk\n");
+-		return PTR_ERR(cpuclk);
++		retval = PTR_ERR(cpuclk);
++		goto out_err;
+ 	}
+ 
+ 	policy->cpuinfo.min_freq = (clk_round_rate(cpuclk, 1) + 500) / 1000;
+@@ -101,9 +109,46 @@ static int __init at32_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 	policy->min = policy->cpuinfo.min_freq;
+ 	policy->max = policy->cpuinfo.max_freq;
+ 
++	/*
++	 * AVR32 CPU frequency rate scales in power of two between maximum and
++	 * minimum, also add space for the table end marker.
++	 *
++	 * Further validate that the frequency is usable, and append it to the
++	 * frequency table.
++	 */
++	steps = fls(policy->cpuinfo.max_freq / policy->cpuinfo.min_freq) + 1;
++	freq_table = kzalloc(steps * sizeof(struct cpufreq_frequency_table),
++			GFP_KERNEL);
++	if (!freq_table) {
++		retval = -ENOMEM;
++		goto out_err_put_clk;
++	}
++
++	frequency = policy->cpuinfo.max_freq;
++	for (i = 0; i < (steps - 1); i++) {
++		unsigned int rate = clk_round_rate(cpuclk, frequency * 1000);
++		rate /= 1000;
++		if (rate != frequency)
++			freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
++		else
++			freq_table[i].frequency = frequency;
++		frequency /= 2;
++	}
++	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
++
++	retval = cpufreq_frequency_table_cpuinfo(policy, freq_table);
++	if (retval)
++		goto out_err_kfree;
++
+ 	printk("cpufreq: AT32AP CPU frequency driver\n");
+ 
+ 	return 0;
++out_err_kfree:
++	kfree(freq_table);
++out_err_put_clk:
++	clk_put(cpuclk);
++out_err:
++	return retval;
  }
  
--static int imx6q_set_target(struct cpufreq_policy *policy,
--			    unsigned int target_freq, unsigned int relation)
-+static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
- {
- 	struct cpufreq_freqs freqs;
- 	struct opp *opp;
- 	unsigned long freq_hz, volt, volt_old;
--	unsigned int index;
- 	int ret;
- 
--	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
--					     relation, &index);
--	if (ret) {
--		dev_err(cpu_dev, "failed to match target frequency %d: %d\n",
--			target_freq, ret);
--		return ret;
--	}
--
- 	freqs.new = freq_table[index].frequency;
- 	freq_hz = freqs.new * 1000;
- 	freqs.old = clk_get_rate(arm_clk) / 1000;
- 
--	if (freqs.old == freqs.new)
--		return 0;
--
- 	rcu_read_lock();
- 	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
- 	if (IS_ERR(opp)) {
-@@ -187,7 +174,7 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- 
- static struct cpufreq_driver imx6q_cpufreq_driver = {
- 	.verify = cpufreq_generic_frequency_table_verify,
--	.target_old = imx6q_set_target,
-+	.target = imx6q_set_target,
- 	.get = imx6q_get_speed,
- 	.init = imx6q_cpufreq_init,
- 	.exit = cpufreq_generic_exit,
+ static struct cpufreq_driver at32_driver = {
 -- 
-1.7.12.rc2.18.g61b472e
+1.8.1.2
+
