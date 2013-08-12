@@ -1,69 +1,32 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v6 5/8] cpufreq:boost:Kconfig: Provide support for software
- managed BOOST
-Date: Mon, 12 Aug 2013 12:50:12 +0200
-Message-ID: <20130812125012.193608da@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
- <1374770011-22171-6-git-send-email-l.majewski@samsung.com>
- <CAKohpokL57mXSQooX=4LZKtjMxJoXAB4uuzj13fgr3Gs7Wcf0A@mail.gmail.com>
- <20130726132120.5b9cf32f@amdc308.digital.local>
- <CAKohponvOXuHSS+-+m5PR9tPkAqkrYtjA3FJaNh9NJXrhQ9wmw@mail.gmail.com>
- <20130812122614.0d4d31a3@amdc308.digital.local>
- <CAKohponDoGhAdGOyK5f2Pxreq5-ZazxmkdZWfbU3OwtOMKbiHA@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 35/35] cpufreq: tegra: use cpufreq_table_validate_and_show()
+Date: Mon, 12 Aug 2013 10:33:43 -0600
+Message-ID: <52090E67.1080703@wwwdotorg.org>
+References: <cover.1375964117.git.viresh.kumar@linaro.org> <568f3dbd414b050bb2319d960fb5044a5aed8ee3.1375964117.git.viresh.kumar@linaro.org> <5203BCDD.40809@wwwdotorg.org> <CAKohpomr8kwDitAFD7FKvHo3zNWz8qT5bkd3yOVEnC_k16o=Dw@mail.gmail.com> <CAKohpo=Gy7D2LYmdFU1p+eL-nMoPE18YXWvE2M8t-fb-a5HBgg@mail.gmail.com> <5205167F.1070906@wwwdotorg.org> <CAKohponQDAqHiRD7Aw5Wk6fEE-d8H=Svg0oBRyb9SKGdqYxGhw@mail.gmail.com> <52056842.8060109@wwwdotorg.org> <CAKohpon=j=NANLQzYuBdoFVLxQzETy5JDu2vORaAgK3NuEpeAg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-reply-to: <CAKohponDoGhAdGOyK5f2Pxreq5-ZazxmkdZWfbU3OwtOMKbiHA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpon=j=NANLQzYuBdoFVLxQzETy5JDu2vORaAgK3NuEpeAg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, durgadoss.r@intel.com
+Cc: linaro-kernel@lists.linaro.org, Stephen Warren <swarren@nvidia.com>, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, linux-arm-kernel@lists.infradead.org
 
-On Mon, 12 Aug 2013 15:58:12 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 12 August 2013 15:56, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> > 1. at ./drivers/cpufreq/Kconfig:
-> >
-> > +config CPU_FREQ_BOOST_SW
-> > +       bool
-> > +       depends on THERMAL
-> >
-> > 2. at ./drivers/cpufreq/Kconfig.arm:
-> >
-> > +config ARM_EXYNOS_CPU_FREQ_BOOST_SW
-> > +       bool "EXYNOS Frequency Overclocking - Software"
-> > +       depends on ARM_EXYNOS_CPUFREQ
-> > +       select CPU_FREQ_BOOST_SW
-> > +       select EXYNOS_THERMAL
-> > +       default n
-	    ^^^^^^^^^^^^^^^^ I will also remove this line.
-
-> > +       help
-> > +         This driver supports software managed overclocking
-> > (BOOST).
-> > +         It allows usage of special frequencies for Samsung Exynos
-> > +         processors if thermal conditions are appropriate.
-> > +
-> > +         It reguires, for safe operation, thermal framework with
-> >   properly
-> > +         defined trip points.
-> > +
-> > +         If in doubt, say N.
-> > +
-> >
-> > Shall I split this patch to two (1. and 2.) or leave it as a single
-> > one?
+On 08/09/2013 08:53 PM, Viresh Kumar wrote:
+> On 10 August 2013 03:38, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> Well, I don't see any issues running this, although the cpufreq sysfs
+>> files seem to have disappeared on Tegra, even without your changes, so
+>> I'm not sure how to really verify cpufreq.
+>>
+>> Did the sysfs files go away, or do I need to investigate why/when the
+>> disappeared?
 > 
-> Looks fine.. Keep it in a single patch.
+> It wasn't enabled by default in your defconfig... So enable it first with
+> your menuconfig.
 
-Ok. 
+It's in defconfig OK; I think the driver simply isn't initializing since
+some of the clocks it requests don't exist. I'll have our clock driver
+author look into it. In the meantime, I assume that your change is
+likely fine.
 
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
