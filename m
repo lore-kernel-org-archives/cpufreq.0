@@ -1,33 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use devm_regulator_get_optional()
-Date: Mon, 12 Aug 2013 10:52:00 +0530
-Message-ID: <CAKohpomtoEFD0V-GHUxC+LrbVicpjF2Sep-97ED=gXiiHWMoXQ@mail.gmail.com>
-References: <1376071683-19013-1-git-send-email-broonie@kernel.org>
+Subject: Re: [PATCH 12/16] drivers/cpufreq/pxa3xx-cpufreq.c: Avoid using
+ ARRAY_AND_SIZE(e) as a function argument
+Date: Mon, 12 Aug 2013 10:56:21 +0530
+Message-ID: <CAKohpo=MfrUTYQKvJHP1Gns3kUfjqG6r9T8+7ZZ98-8yb0BZXw@mail.gmail.com>
+References: <1376239917-15594-1-git-send-email-Julia.Lawall@lip6.fr>
+	<1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1376071683-19013-1-git-send-email-broonie@kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <1376239917-15594-13-git-send-email-Julia.Lawall@lip6.fr>
+Sender: kernel-janitors-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@kernel.org>, Shawn Guo <shawn.guo@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, kernel-janitors@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 9 August 2013 23:38, Mark Brown <broonie@kernel.org> wrote:
-> From: Mark Brown <broonie@linaro.org>
+On 11 August 2013 22:21, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
 >
-> Since the cpufreq-cpu0 driver is capable of coping without a software
-> controllable regulator and would be confused by a dummy one it should
-> use devm_regulator_get_optional() to ensure no dummy is provided.
+> Replace ARRAY_AND_SIZE(e) in function argument position to avoid hiding the
+> arity of the called function.
+
+Makes sense.
+
+> The semantic match that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+
+What is this doing here?
+
+> // <smpl>
+> @@
+> expression e,f;
+> @@
 >
-> Signed-off-by: Mark Brown <broonie@linaro.org>
+> f(...,
+> - ARRAY_AND_SIZE(e)
+> + e,ARRAY_SIZE(e)
+>   ,...)
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+>
 > ---
+> Not compiled.
 >
-> devm_regulator_get_optional() is a new API in my tree for -next, is it
-> OK to merge this patch via that branch?
+>  drivers/cpufreq/pxa3xx-cpufreq.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 
-I don't see a issue with it, by Rafael has the authority :)
-
-Over that it would have been useful if we could have this patch as part
-of the series you posted for defining devm_regulator_get_optional(),
-and so we could have seen what's that patch is doing..
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
