@@ -1,53 +1,93 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: Use devm_regulator_get_optional()
-Date: Mon, 12 Aug 2013 11:01:52 +0100
-Message-ID: <20130812100152.GK6427@sirena.org.uk>
-References: <1376071683-19013-1-git-send-email-broonie@kernel.org>
- <CAKohpomtoEFD0V-GHUxC+LrbVicpjF2Sep-97ED=gXiiHWMoXQ@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v6 5/8] cpufreq:boost:Kconfig: Provide support for software
+ managed BOOST
+Date: Mon, 12 Aug 2013 12:26:14 +0200
+Message-ID: <20130812122614.0d4d31a3@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1374770011-22171-1-git-send-email-l.majewski@samsung.com>
+ <1374770011-22171-6-git-send-email-l.majewski@samsung.com>
+ <CAKohpokL57mXSQooX=4LZKtjMxJoXAB4uuzj13fgr3Gs7Wcf0A@mail.gmail.com>
+ <20130726132120.5b9cf32f@amdc308.digital.local>
+ <CAKohponvOXuHSS+-+m5PR9tPkAqkrYtjA3FJaNh9NJXrhQ9wmw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OEp3pE+VUYV0MT2S"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpomtoEFD0V-GHUxC+LrbVicpjF2Sep-97ED=gXiiHWMoXQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohponvOXuHSS+-+m5PR9tPkAqkrYtjA3FJaNh9NJXrhQ9wmw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, durgadoss.r@intel.com
 
+On Mon, 29 Jul 2013 12:28:02 +0530 Viresh Kumar viresh.kumar@linaro.org
+wrote,
+> On 26 July 2013 16:51, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > On Fri, 26 Jul 2013 15:54:56 +0530 Viresh Kumar wrote,
+> >> On 25 July 2013 22:03, Lukasz Majewski <l.majewski@samsung.com>
+> >> wrote:
+> 
+> >> > +config CPU_FREQ_BOOST_SW
+> >> > +       bool
+> >>
+> >> Invisible is fine but this must be disabled by default and must
+> >> depend on thermal, rather than moving dependency on platform's
+> >> config.
+> >
+> > The CPU_FREQ_BOOST_SW [1] is a generic flag (invisible).
+> >
+> > I will add "default n" to it.
+> 
+> Leave it.. We don't need it now.. that's how these kind of config
+> options are defined as they are disabled by default.
 
---OEp3pE+VUYV0MT2S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Ok. Please see below proposition.
 
-On Mon, Aug 12, 2013 at 10:52:00AM +0530, Viresh Kumar wrote:
+> 
+> > Depending only on [3], results at situation where SW BOOST can be
+> > enabled at x86 or ARM target with only generic THERMAL support
+> > (which doesn't protect from overheating).
+> 
+> I had a similar concern.. Currently also we aren't stopping anybody to
+> enable boost. By selecting thermal from CPU_FREQ_BOOST_SW, atleast
+> we are communicating this very well to developers that they need
+> something else as well. And currently we only have thermal as a source
+> for telling when to block boost but it can be something else too..
+> 
+> I never said, don't use EXYNOS_THERMAL, its good to have a
+> dependency on it in the Exynos specific config for boost, but I wanted
+> normal sw boost also to depend on thermal..
 
-> Over that it would have been useful if we could have this patch as part
-> of the series you posted for defining devm_regulator_get_optional(),
-> and so we could have seen what's that patch is doing..
+1. at ./drivers/cpufreq/Kconfig:
 
-It's in -next.  There's rather a lot of regulator users in the kernel.
++config CPU_FREQ_BOOST_SW
++	bool
++	depends on THERMAL
 
---OEp3pE+VUYV0MT2S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+2. at ./drivers/cpufreq/Kconfig.arm:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
++config ARM_EXYNOS_CPU_FREQ_BOOST_SW
++	bool "EXYNOS Frequency Overclocking - Software"
++	depends on ARM_EXYNOS_CPUFREQ
++	select CPU_FREQ_BOOST_SW
++	select EXYNOS_THERMAL
++	default n
++	help
++	  This driver supports software managed overclocking (BOOST).
++	  It allows usage of special frequencies for Samsung Exynos
++	  processors if thermal conditions are appropriate.
++
++	  It reguires, for safe operation, thermal framework with
+  properly
++	  defined trip points.
++
++	  If in doubt, say N.
++
 
-iQIcBAEBAgAGBQJSCLKNAAoJELSic+t+oim9uLgP/2Yw/PbN/YVHMXuJ4OugPuBi
-h0rz/1vRPqUrfjsHx53dTlb05zSoTLoEg5fMo+ALY/fMTxji3n7hnOjlEIMYp9aE
-jlSEEBiIlgkHDxeCuQMxrEHN99bsAlBddtX+HoM12Vy79oALz2PLS1Ay/7Y3XUUL
-VeAmOlYi4IyyNUO7ekWtCs8MzkZKpEIBvQuillhrXZpuHoRIzlkZbR6fSplFg1eo
-tWtIOBIDcbp6JxRpmpCOlpDDV3mjcfOjarVFdTBOdrEspyj64ZDY4oehTz9MyaCQ
-vLN78i/7r0w4fODXGMecZn1WikOf1bYktnnX7UkPJr6bqGr8dFqpRGAPXXMqdtAy
-Op3ZHlXgiiNzp2TP2+zWbDDOhxfaSJHpz8PjjOgJZ6JUShdxpy4MDycrDyPkW4K7
-w+LQz77pEITcnEBPgKmTMBgh7zbuoqkGWSfEGU57byHcqzZrxlYQs3n5RLVjmvJv
-3s0SB5TE80A7do9EnNOenJr6JVLbU8iQC+moikFamFTyJ6cZhgrcgZP1vFr00DVa
-PJeYfCy8X7wlgPIG1FfjMWu9SVW/Ws17sMNyAMNuTzOny726wKph8zMBpWR0NVih
-pqYQDBHuDCHKwScPD37mfCWqoiTlbFtrHfWIFU66tuRP9BY3UpnIYlSQbAc7OYx0
-PYw75Xi4+xQ8iYyzVcuv
-=0Bbr
------END PGP SIGNATURE-----
+Shall I split this patch to two (1. and 2.) or leave it as a single one?
 
---OEp3pE+VUYV0MT2S--
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
