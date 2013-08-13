@@ -1,34 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 00/35] CPUFreq: Implement light weight ->target(): for 3.13
-Date: Tue, 13 Aug 2013 19:16:00 +0530
-Message-ID: <CAKohpo=-PWt23aLiVW3MxU6gZ-_Db=QKYaaKO-f+e+u8hirpJQ@mail.gmail.com>
-References: <cover.1376392602.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] cpufreq: sa11x0: cleanups for 3.13
+Date: Tue, 13 Aug 2013 22:01:17 +0200
+Message-ID: <1437762.edDpfxPldn@vostro.rjw.lan>
+References: <cover.1376392060.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <cover.1376392602.git.viresh.kumar@linaro.org>
-Sender: sparclinux-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1376392060.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl, Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, Kukjin Kim <kgene.kim@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-cris-kernel@axis.com, Mikael Starvik <starvik@axis.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, sparclinux@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Steven Miao <realmz6@gmail.com>, Tony Luck <tony.luck@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org
 
-On 13 August 2013 19:02, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Currently prototype of cpufreq_drivers target routines is:
->
-> int target(struct cpufreq_policy *policy, unsigned int target_freq,
->         unsigned int relation);
->
-> And most of the drivers call cpufreq_frequency_table_target() to get a valid
-> index of their frequency table which is closest to the target_freq. And they
-> don't use target_freq and relation after it.
+On Tuesday, August 13, 2013 07:01:04 PM Viresh Kumar wrote:
+> Hi Rafael/Russell,
+> 
+> These patches would be part of this patchset finally, sending it separately as I
+> didn't wanted to send other patches in that series..
+> 
+> https://lkml.org/lkml/2013/8/10/48
+> 
+> (Above series was rebased over https://lkml.org/lkml/2013/8/8/263 and hence this
+> patchset too)..
+> 
+> These first exposes frequency table and then uses cpufreq generic routines
+> (which uses exposed table) instead of its own .verify() routine.
+> 
+> Later I will send another patch that would be part of this series:
+> 
+> http://lkml.org/lkml/2013/8/12/406
+> 
+> (I need to send that series again today and so not sending that patch twice,
+> once here and then in that series)..
+> 
+> All these patches are pushed here with all dependencies:
+> 
+> https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-v3.13
 
-I just came to know from a friend that I have written "covert" instead of
-"convert" in subjects of all the patches.
+Are the three patches in this series prerequisite for the big target_index
+one?  If so, I think they can go into 3.12 actually, if they are ACKed by the
+appropriate platform maintainers.
 
-Will fix it in my repo for now.
+> Viresh Kumar (3):
+>   cpufreq: sa11x0: Expose frequency table
+>   cpufreq: sa11x0: let cpufreq core initialize struct policy fields
+>   cpufreq: sa11x0: Use generic cpufreq routines
+> 
+>  arch/arm/mach-sa1100/generic.c   | 65 +++++++++++++---------------------------
+>  arch/arm/mach-sa1100/generic.h   |  2 +-
+>  drivers/cpufreq/sa1100-cpufreq.c |  9 +++---
+>  drivers/cpufreq/sa1110-cpufreq.c |  9 +++---
+>  4 files changed, 30 insertions(+), 55 deletions(-)
 
-Thanks Sudeep :)
+Thanks,
+Rafael
 
---
-viresh
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
