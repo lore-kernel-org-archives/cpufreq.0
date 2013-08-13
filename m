@@ -1,37 +1,47 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: NULL is a valid regulator
-Date: Tue, 13 Aug 2013 15:09:40 +0200
-Message-ID: <1893015.38vNDktfpT@vostro.rjw.lan>
-References: <1376071592-18930-1-git-send-email-broonie@kernel.org> <CAKohpoktDH_t0_eYigHMn8ZYm4ZT61yRymC00i1YGhWChE3ArQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] cpufreq / gx: Fix __init attribute locations
+Date: Tue, 13 Aug 2013 15:19:40 +0200
+Message-ID: <3142844.ubsh56jNy7@vostro.rjw.lan>
+References: <1376389210-11470-1-git-send-email-hanjun.guo@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpoktDH_t0_eYigHMn8ZYm4ZT61yRymC00i1YGhWChE3ArQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <1376389210-11470-1-git-send-email-hanjun.guo@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Mark Brown <broonie@linaro.org>
+To: Hanjun Guo <hanjun.guo@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linaro-acpi@lists.linaro.org
 
-On Monday, August 12, 2013 10:49:46 AM Viresh Kumar wrote:
-> On 9 August 2013 23:36, Mark Brown <broonie@kernel.org> wrote:
-> > From: Mark Brown <broonie@linaro.org>
-> >
-> > Since NULL could in theory be a valid regulator we ought to check for
-> > IS_ERR() rather than for NULL. In practice this is unlikely to be an
-> > issue but it's better for neatness.
-> >
-> > Signed-off-by: Mark Brown <broonie@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq-cpu0.c | 9 ++++-----
-> >  1 file changed, 4 insertions(+), 5 deletions(-)
+On Tuesday, August 13, 2013 06:20:08 PM Hanjun Guo wrote:
+>  __init belongs after the return type on functions, not before it.
 > 
-> Makes sense.
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Hanjun Guo <hanjun.guo@linaro.org>
 
-Queued up for 3.12.
+All 3 patches in the series queued up for 3.12.
 
 Thanks,
 Rafael
 
+
+> ---
+>  drivers/cpufreq/gx-suspmod.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/gx-suspmod.c b/drivers/cpufreq/gx-suspmod.c
+> index 3dfc99b..e30fd16 100644
+> --- a/drivers/cpufreq/gx-suspmod.c
+> +++ b/drivers/cpufreq/gx-suspmod.c
+> @@ -183,7 +183,7 @@ static void gx_write_byte(int reg, int value)
+>   * gx_detect_chipset:
+>   *
+>   **/
+> -static __init struct pci_dev *gx_detect_chipset(void)
+> +static struct pci_dev * __init gx_detect_chipset(void)
+>  {
+>  	struct pci_dev *gx_pci = NULL;
+>  
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
