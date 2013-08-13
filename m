@@ -1,48 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 00/31] CPUFreq: Implement light weight ->target(): for 3.13
-Date: Tue, 13 Aug 2013 00:47:45 +0200
-Message-ID: <1391342.M2Jbj3t5qy@vostro.rjw.lan>
-References: <cover.1376329128.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <cover.1376329128.git.viresh.kumar@linaro.org>
-Sender: sparclinux-owner@vger.kernel.org
+From: tianyu.lan@intel.com
+Subject: [PATCH] ACPI/Cpureq: Using cpufreq_freq_attr_rw macro to define CPB(Core Performance Boost) attribute
+Date: Tue, 13 Aug 2013 10:05:53 +0800
+Message-ID: <1376359553-5671-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, Kukjin Kim <kgene.kim@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-cris-kernel@axis.com, Mikael Starvik <starvik@axis.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, sparclinux@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Steven Miao <realmz6@gmail.com>, Tony Luck <tony.luck@intel.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, lenb@kernel.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Monday, August 12, 2013 11:18:36 PM Viresh Kumar wrote:
-> Currently prototype of cpufreq_drivers target routines is:
-> 
-> int target(struct cpufreq_policy *policy, unsigned int target_freq,
-> 	unsigned int relation);
-> 
-> And most of the drivers call cpufreq_frequency_table_target() to get a valid
-> index of their frequency table which is closest to the target_freq. And they
-> don't use target_freq and relation after it.
-> 
-> So, it makes sense to just do this work in cpufreq core before calling
-> cpufreq_frequency_table_target() and simply pass index instead. But this can be
-> done only with drivers which expose their frequency table with cpufreq core. For
-> others we need to stick with the old prototype of target() until those drivers
-> are converted to expose frequency tables.
-> 
-> So, in order not to break those special drivers first patch renames ->target() to
-> ->target_old() and the following patches will define the new prototype and
-> convert existing drivers one by one.
+From: Lan Tianyu <tianyu.lan@intel.com>
 
-Super-ugly.
+Standardise the defintion of attribute cpb in the acpi-cpufreq driver
+via cpufreq_freq_attr_rw macro.
 
-Please just keep the old .target() as is, add a new callback and switch the
-suitable drivers to using it.  You may call the new one .target_index() or
-something along these lines.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Rafael
-
-
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index e673670..414ee4d 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -197,7 +197,7 @@ static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
+ 	return sprintf(buf, "%u\n", boost_enabled);
+ }
+ 
+-static struct freq_attr cpb = __ATTR(cpb, 0644, show_cpb, store_cpb);
++cpufreq_freq_attr_rw(cpb);
+ #endif
+ 
+ static int check_est_cpu(unsigned int cpuid)
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.4.rc0.1.g8f6a3e5.dirty
+
