@@ -1,50 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI/Cpureq: Using cpufreq_freq_attr_rw macro to define CPB(Core Performance Boost) attribute
-Date: Tue, 13 Aug 2013 13:38:16 +0200
-Message-ID: <3406040.uy3dFkLbfM@vostro.rjw.lan>
-References: <1376359553-5671-1-git-send-email-tianyu.lan@intel.com>
+Subject: Re: [GIT PULL]: CPUFreq: ARM Fixes for 3.12
+Date: Tue, 13 Aug 2013 14:42:51 +0200
+Message-ID: <1439792.4fKVxGE7CH@vostro.rjw.lan>
+References: <CAKohponyLTUn_Sonstw_oOLZ+S+x9e3UH0JaZbkLaQfX-9zmWw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1376359553-5671-1-git-send-email-tianyu.lan@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponyLTUn_Sonstw_oOLZ+S+x9e3UH0JaZbkLaQfX-9zmWw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: tianyu.lan@intel.com
-Cc: lenb@kernel.org, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-arm-kernel@lists.infradead.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Tuesday, August 13, 2013 10:05:53 AM tianyu.lan@intel.com wrote:
-> From: Lan Tianyu <tianyu.lan@intel.com>
+On Monday, August 12, 2013 12:03:39 PM Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> Standardise the defintion of attribute cpb in the acpi-cpufreq driver
-> via cpufreq_freq_attr_rw macro.
+> The following changes since commit d4e4ab86bcba5a72779c43dc1459f71fea3d89c8:
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>   Linux 3.11-rc5 (2013-08-11 18:04:20 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.linaro.org/people/vireshk/linux.git cpufreq-fixes
+> 
+> for you to fetch changes up to 45e12086263a53f16b489fc7f4f8f6348a688661:
+> 
+>   cpufreq: fix EXYNOS drivers selection (2013-08-12 12:00:21 +0530)
+> 
+> ----------------------------------------------------------------
+> Amit Daniel Kachhap (1):
+>       cpufreq: exynos5440: Fix to skip when new frequency same as current
+> 
+> Bartlomiej Zolnierkiewicz (1):
+>       cpufreq: fix EXYNOS drivers selection
+> 
+>  drivers/cpufreq/Kconfig.arm          | 36 ++++++++++++++++++++++++------------
+>  drivers/cpufreq/exynos-cpufreq.c     |  1 -
+>  drivers/cpufreq/exynos-cpufreq.h     | 21 +++++++++++++++++++++
+>  drivers/cpufreq/exynos5440-cpufreq.c |  3 +++
+>  4 files changed, 48 insertions(+), 13 deletions(-)
 
-Queued up for 3.12.
+Pulled, thanks Viresh!
 
-Thanks,
+I assume this is 3.12 material?
+
 Rafael
 
-
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index e673670..414ee4d 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -197,7 +197,7 @@ static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
->  	return sprintf(buf, "%u\n", boost_enabled);
->  }
->  
-> -static struct freq_attr cpb = __ATTR(cpb, 0644, show_cpb, store_cpb);
-> +cpufreq_freq_attr_rw(cpb);
->  #endif
->  
->  static int check_est_cpu(unsigned int cpuid)
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
