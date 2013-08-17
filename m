@@ -1,70 +1,71 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
-Subject: Re: [PATCH 02/34] cpufreq: acpi: remove calls to cpufreq_notify_transition()
-Date: Fri, 16 Aug 2013 23:30:56 +0800
-Message-ID: <CAOLK0py25j2g+X0rCzDjxvFac1ZZcOS0y_sehTFYYwkz8FrUHg@mail.gmail.com>
-References: <cover.1376619363.git.viresh.kumar@linaro.org>
-	<333bf5868dfbfb6de474f060dc216fa6d33848e2.1376619363.git.viresh.kumar@linaro.org>
-	<CAOLK0pz7e8nQVnZY0a-j_Fd_kFOqF8ZS4tRfYw1S+25Lv8GoFQ@mail.gmail.com>
-	<CAOLK0pyVDSc6x1u8Ro6ng1dH8ELqc3P9jPHamgiXBn6sWDgm8w@mail.gmail.com>
-	<CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
+From: Ilari Stenroth <ilari.stenroth@gmail.com>
+Subject: Re: [PATCH] intel_pstate: Add Haswell CPU models
+Date: Sat, 17 Aug 2013 22:43:24 +0300
+Message-ID: <520FD25C.3050502@gmail.com>
+References: <51CD8087.7030303@spicious.com> <51DC240C.3090404@intel.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        bh=TXNuE/JEDHi+a7CB5HPTTr46R/MmCZed0vRFT5sqKeI=;
-        b=aZyb+1Fd1yE3Cljw547u4wUjwtzoownPxy9f3BnJ3Py8Tfv/pPPnukJXWyfOgrnttK
-         2gQlBPTLm9UlK5yDrfV3jrSxCaAhek9lgTCC6mAFVz1ypU1sZ3r7C//BGB8t3BsSJo2K
-         4KogZcdjhX7yYv/kyaEg0ObA3tCfAKgLjBNW++vWpLSZjbcFhVDJUU8KYNyyAbPusFJB
-         zgWsHdDVAlWADJk3yyiv2YCz5gGN/54xv/orp4XX4lhZ57WphYCfAOYyYtPTlJeEwRep
-         fyFw230E+8Ok+QGoX4Z8FcfVcDppmBILmtBBOJiqi9vVWcWx4XFfU/KaLnJSZit4zOWv
-         GzJg==
-In-Reply-To: <CAKohpom7yk3Zq5JABZ6T+Z_AcMn5G1hoswZK8T=viYv0fp0mcg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51DC240C.3090404@intel.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger kernel org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: cpufreq@vger.kernel.org
 
-2013/8/16 Viresh Kumar <viresh.kumar@linaro.org>:
-> On 16 August 2013 13:24, Lan Tianyu <lantianyu1986@gmail.com> wrote:
->> Sorry for misoperation.
->
-> No Problem...
->
->>                 One concern. Target() callback may return before changing
->> cpufreq actually due to some check failures. After this change, prechange
->> event will be triggered when these check failures take place. I am not sure
->> whether this should be took into account.
->
-> Yes, if you see the first patch of this series, it takes this into
-> account.. In case
-> target() failed and returned an error, we simply notify the POST CHANGE
-> notification with old frequencies instead of new ones. I believe that would be
-> enough..
+On 9.7.2013 17.54, Dirk Brandewie wrote:
+> On 06/28/2013 05:24 AM, Nell Hardcastle wrote:
+>> Enable the intel_pstate driver for Haswell CPUs and one Ivy Bridge
+>> model not already included (0x3E). I've been testing this change on
+>> the Core i5-4200u (model 0x45) and I referenced the list of models in
+>> tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit to
+>> determine the others.
+>>
+>> Fixes https://bugzilla.kernel.org/show_bug.cgi?id=60211
+>>
+>> Signed-off-by: Nell Hardcastle <nell@spicious.com>
+>> ---
+>>   drivers/cpufreq/intel_pstate.c | 5 +++++
+>>   1 file changed, 5 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/intel_pstate.c
+>> b/drivers/cpufreq/intel_pstate.c
+>> index 07f2840..dbd1032 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -522,6 +522,11 @@ static const struct x86_cpu_id
+>> intel_pstate_cpu_ids[] = {
+>>       ICPU(0x2a, default_policy),
+>>       ICPU(0x2d, default_policy),
+>>       ICPU(0x3a, default_policy),
+>> +    ICPU(0x3c, default_policy),
+>> +    ICPU(0x3e, default_policy),
+>> +    ICPU(0x3f, default_policy),
+>> +    ICPU(0x45, default_policy),
+>> +    ICPU(0x46, default_policy),
+> 
+> Nak for now.
+> 
+> We have not completed our testing on these CPUs. I would like to
+> get my testing done before I start seeing issues from the field come
+> in.
+> 
+> If this patch were to hangout in testing for a while it would not
+> hurt my feelings there it could only hurt those that knew what
+> they were getting into :-)
+> 
 
-Yes, I have seen it but I missed the following two patches because they
-are not in the linux-pm tree. You moved the cpufreq_frequency_table_target()
-to cpufreq core and before notifying PRE CHANGE notification. The major
-check has been done. Now I think it's ok. Thanks for explanation.
+Hi,
 
-http://www.spinics.net/lists/cpufreq/msg06970.html
-http://www.spinics.net/lists/cpufreq/msg06896.html
+I want to let you know that I've tested intel_pstate with Xeon
+E3-1265Lv3 (model 0x3c) successfully. For this CPU model the patch seems
+to be fine.
 
-Reviewed-by: Lan Tianyu <tianyu.lan@intel.com>
+Turbo mode works as intended. Core frequencies scale according to number
+of active cores.
 
->
-> This is exactly what acpi-cpufreq and others are doing currently.
->
-> Hope I answered your question well?
->
-> --
-> viresh
+Tested-by: Ilari Stenroth <ilari.stenroth@gmail.com>
+
+Regards,
+Ilari Stenroth
 
 
-
--- 
-Best regards
-Tianyu Lan
