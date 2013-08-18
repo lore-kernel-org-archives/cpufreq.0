@@ -1,71 +1,119 @@
-From: Ilari Stenroth <ilari.stenroth@gmail.com>
-Subject: Re: [PATCH] intel_pstate: Add Haswell CPU models
-Date: Sat, 17 Aug 2013 22:43:24 +0300
-Message-ID: <520FD25C.3050502@gmail.com>
-References: <51CD8087.7030303@spicious.com> <51DC240C.3090404@intel.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 03/44] cpufreq: exynos: call cpufreq_frequency_table_put_attr()
+Date: Sun, 18 Aug 2013 15:30:50 +0530
+Message-ID: <CADGdYn79B4d3joAF53E5MoeNB10RWm5fnQCs30-MbM38Jq2uhg@mail.gmail.com>
+References: <cover.1376116344.git.viresh.kumar@linaro.org>
+	<c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51DC240C.3090404@intel.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=ma6krlxGs3upCtkCsRar4Pm47aD5EpYlhfgGE6+NYzU=;
+        b=NcDW6WfMm40lsOVr46GBVwnYL9+bgVEhFf3R4B0RetBWAW5Pfvp9REiAdU4s/LY+7q
+         26H9S9shNOQb61j9dqLFO8yVxGQm/SMVLUCHviR2SAsgX1jqjyDmVJBB9B7qt34+lkDi
+         L6q9MAvAbfuQLriOhsEW9qj7s9TpDzYdwV+wBNXlXWsGG0gf5cmp5ILZHM4htH3hpGSy
+         BNc74yHjGt6BATbbk3jOAnFH+nrCdWf67g1//cybfcPPToo3AJJYA92lvq6DDnlHpD3n
+         XY4ONnmIrF8ZHHsGKytzIyoimnErItVndTf2RBUq4TZ3gb/SpS/JmPd6cRWu521zllh9
+         bpPg==
+In-Reply-To: <c2157d44d4933c5fa9cea06e0d621786a3d03671.1376116345.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linaro-kernel@lists.linaro.org, "patches@linaro.org" <patches@linaro.org>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-On 9.7.2013 17.54, Dirk Brandewie wrote:
-> On 06/28/2013 05:24 AM, Nell Hardcastle wrote:
->> Enable the intel_pstate driver for Haswell CPUs and one Ivy Bridge
->> model not already included (0x3E). I've been testing this change on
->> the Core i5-4200u (model 0x45) and I referenced the list of models in
->> tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit to
->> determine the others.
->>
->> Fixes https://bugzilla.kernel.org/show_bug.cgi?id=60211
->>
->> Signed-off-by: Nell Hardcastle <nell@spicious.com>
->> ---
->>   drivers/cpufreq/intel_pstate.c | 5 +++++
->>   1 file changed, 5 insertions(+)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c
->> b/drivers/cpufreq/intel_pstate.c
->> index 07f2840..dbd1032 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -522,6 +522,11 @@ static const struct x86_cpu_id
->> intel_pstate_cpu_ids[] = {
->>       ICPU(0x2a, default_policy),
->>       ICPU(0x2d, default_policy),
->>       ICPU(0x3a, default_policy),
->> +    ICPU(0x3c, default_policy),
->> +    ICPU(0x3e, default_policy),
->> +    ICPU(0x3f, default_policy),
->> +    ICPU(0x45, default_policy),
->> +    ICPU(0x46, default_policy),
-> 
-> Nak for now.
-> 
-> We have not completed our testing on these CPUs. I would like to
-> get my testing done before I start seeing issues from the field come
-> in.
-> 
-> If this patch were to hangout in testing for a while it would not
-> hurt my feelings there it could only hurt those that knew what
-> they were getting into :-)
-> 
+On Sat, Aug 10, 2013 at 12:13 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
+> they have called cpufreq_frequency_table_get_attr() in their init path.
+>
+> This driver was missing this part and is fixed with this patch.
+>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+The changes looks fine, please free to add
+Acked-By: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Hi,
-
-I want to let you know that I've tested intel_pstate with Xeon
-E3-1265Lv3 (model 0x3c) successfully. For this CPU model the patch seems
-to be fine.
-
-Turbo mode works as intended. Core frequencies scale according to number
-of active cores.
-
-Tested-by: Ilari Stenroth <ilari.stenroth@gmail.com>
-
-Regards,
-Ilari Stenroth
+Thanks.
+Amit Daniel
 
 
+> ---
+>  drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index 1ac93e0..b9dfc91 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -336,12 +336,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       cpufreq_frequency_table_put_attr(policy->cpu);
+> +}
+> +
+>  static struct cpufreq_driver exynos_driver = {
+>         .flags          = CPUFREQ_STICKY,
+>         .verify         = exynos_verify_speed,
+>         .target         = exynos_target,
+>         .get            = exynos_getspeed,
+>         .init           = exynos_cpufreq_cpu_init,
+> +       .exit           = exynos_cpufreq_cpu_exit,
+>         .name           = CPUFREQ_NAME,
+>  };
+>
+> --
+> 1.7.12.rc2.18.g61b472e
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+On Sat, Aug 10, 2013 at 12:13 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Drivers which have an exit path must call cpufreq_frequency_table_put_attr() if
+> they have called cpufreq_frequency_table_get_attr() in their init path.
+>
+> This driver was missing this part and is fixed with this patch.
+>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/exynos5440-cpufreq.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> index 1ac93e0..b9dfc91 100644
+> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+> @@ -336,12 +336,18 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         return 0;
+>  }
+>
+> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       cpufreq_frequency_table_put_attr(policy->cpu);
+> +}
+> +
+>  static struct cpufreq_driver exynos_driver = {
+>         .flags          = CPUFREQ_STICKY,
+>         .verify         = exynos_verify_speed,
+>         .target         = exynos_target,
+>         .get            = exynos_getspeed,
+>         .init           = exynos_cpufreq_cpu_init,
+> +       .exit           = exynos_cpufreq_cpu_exit,
+>         .name           = CPUFREQ_NAME,
+>  };
+>
+> --
+> 1.7.12.rc2.18.g61b472e
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
