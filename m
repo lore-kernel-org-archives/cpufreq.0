@@ -1,121 +1,77 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
-Date: Mon, 19 Aug 2013 08:50:37 +0200
-Message-ID: <20130819085037.11e95c06@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1376388505-30233-1-git-send-email-l.majewski@samsung.com>
- <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 07/11] cpufreq: Use cpufreq_policy_list for iterating
+ over policies
+Date: Mon, 19 Aug 2013 16:57:19 +0530
+Message-ID: <CAKohponkLac2GzZ5-PRoTzdx8EhuCWT-eafRtYhkJ6cN_WrXSA@mail.gmail.com>
+References: <cover.1375809311.git.viresh.kumar@linaro.org>
+	<e54ce908bb964d643a2bbb945ed4a8dcb3ea00bf.1375809311.git.viresh.kumar@linaro.org>
+	<1582060.zfvsylJcxu@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAKohponN=JE4KiCL7pVXJvcf__qfC+Fb59ZjBAX5_WK49eCELw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1582060.zfvsylJcxu@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar viresh.kumar@linaro.org
-wrote,
-> On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
-> wrote:
-> > This patch series introduces support for CPU overclocking technique
-> > called Boost.
-> >
-> > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > component:
-> > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> >
-> > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > software oriented one (like the one done at Exynos).
-> > For this reason cpufreq/freq_table code has been reorganized to
-> > include common code.
-> >
-> > Important design decisions:
-> > - Boost related code is compiled-in unconditionally to cpufreq core
-> > and disabled by default. The cpufreq_driver is responsibile for
-> > setting boost_supported flag and providing set_boost callback(if HW
-> > support is needed). For software managed boost, special Kconfig
-> > flag - CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be
-> > selected only when a target platform has thermal framework properly
-> > configured.
-> >
-> > - struct cpufreq_driver has been extended with boost related fields:
-> >         -- boost_supported - when driver supports boosting
-> >         -- boost_enabled - boost state
-> >         -- set_boost - callback to function, which is necessary to
-> >            enable/disable boost
-> >
-> > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is
-> > visible _only_ when cpufreq driver supports Boost.
-> >
-> > - No special spin_lock for Boost was created. The one from cpufreq
-> > core was reused.
-> >
-> > - The Boost code doesn't rely on any policy. When boost state is
-> > changed, then the policy list is iterated and proper adjustements
-> > are done.
-> >
-> > - To improve safety level, the thermal framework is also extended
-> > to disable software boosting, when thermal trip point is reached.
-> > Then it starts monitoring target temperature to evaluate if boost
-> > can be enabled again. This emulates behaviour similar to HW managed
-> > boost (like x86)
-> >
-> > Tested at HW:
-> >        Exynos 4412 3.11-rc4 Linux
-> >        Intel Core i7-3770 3.11-rc4 Linux
-> >
-> > Above patches were posted on top of linux_pm/linux-next with
-> > following patches applied:
-> >
-> > cpufreq: exynos5440: Fix to skip when new frequency same as current
-> > cpufreq: fix EXYNOS drivers selection
-> >
-> > Lukasz Majewski (7):
-> >   cpufreq: Add boost frequency support in core
-> >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> > common boost solution
-> >   thermal:boost: Automatic enable/disable of BOOST feature
-> >   cpufreq:boost:Kconfig: Provide support for software managed BOOST
-> >   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-> >     framework
-> >   Documentation:cpufreq:boost: Update BOOST documentation
-> >   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
-> 
-> Hi Lukasz,
-> 
+On 18 August 2013 19:36, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Hi Viresh,
+> I noticed that the current linux-next branch of linux-pm.git caused the
+> BUG_ON() in lock_policy_rwsem_##mode() to trigger when user space tried to
+> access cpufreq sysfs attributes before system suspend and after system
+> resume.
 
-> I haven't found time yet to go through this series.. 
+Hmm...
 
-I've just started wondering if I had send those patches correctly :-).
+> I tried to debug that and it turned out that this patch caused resume
+> to block indefinitely on one of my test machines and after reverting it the
+> BUG_ON() stopped triggering, so I've just reverted it in my tree (it is not an
+> important change).
+>
+> I don't have the time to figure out why this change breaks things
 
-> I want to do a
-> deep/careful review this time as these are almost the final patches.
+It wasn't my patch actually.. It only made it visible that's it :)
+The problem is:
+- On suspend all CPUs are removed and so governors are
+stopped.
+- On resume, handle_update() is called for the boot cpu and
+cpu_add_dev for all others.
 
-Ok.
+handle_update() doesn't start governor but only plays with
+CPUFREQ_GOV_LIMITS.. when we start adding other
+CPUs and call: cpufreq_add_policy_cpu() which fails in
+following call:
 
-> 
-> Will try to get over them by the end of this week..
+__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
 
-Ok, I understand.
+and so cpufreq_policy_cpu never gets initialized to
+policy->cpu and stays at -1, and hence the crash.
 
-> 
-> --
-> viresh
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+So, there are few problems with core at this point:
+- I don't understand how does the work done in
+cpufreq_add_dev() gets done for boot cpu during
+resume ? And so how does Srivatsa's "frozen" solution
+really works (I haven't had time to investigate, its not
+that I couldn't understand it :) )..
 
+- We need to start governor boot cpu in handle_update()
+and things would be solved...
 
+> and I would
+> appreciate it if you tested stuff like suspend/resume on an x86 laptop or
+> similar with your patches applied before posting them for merging.
 
--- 
-Best regards,
+suspend/resume is broken on my ARM board and that's why
+didn't test it..
 
-Lukasz Majewski
+Testing anything on my thinkpad (with ubuntu) is a pain.. it takes
+more than an hour to compile/test a single image... I currently follow
+below steps for doing that, don't know if something much
+simpler/faster is available :)
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+https://wiki.ubuntu.com/KernelTeam/GitKernelBuild
+
+Whole day I was able to boot test only 4-5 kernel builds.
+Its too slow :(
