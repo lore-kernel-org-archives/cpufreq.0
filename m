@@ -1,160 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v7 0/7] cpufreq:boost: CPU Boost mode support
-Date: Tue, 20 Aug 2013 14:32:20 +0200
-Message-ID: <30622208.1oE8UlHGCe@vostro.rjw.lan>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <2325996.izOUC9kIz1@vostro.rjw.lan> <20130820101147.5a7c2efa@amdc308.digital.local>
+Subject: Re: [PATCH 0/5] cpufreq: Fixes for 3.12
+Date: Tue, 20 Aug 2013 14:43:42 +0200
+Message-ID: <4207583.84U9qMI9uv@vostro.rjw.lan>
+References: <cover.1376979090.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130820101147.5a7c2efa@amdc308.digital.local>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1376979090.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, August 20, 2013 10:11:47 AM Lukasz Majewski wrote:
-> On Tue, 20 Aug 2013 01:29:20 +0200 Rafael J. Wysocki rjw@sisk.pl wrote,
-> > On Monday, August 19, 2013 08:50:37 AM Lukasz Majewski wrote:
-> > > On Mon, 19 Aug 2013 12:08:26 +0530 Viresh Kumar
-> > > viresh.kumar@linaro.org wrote,
-> > > > On 13 August 2013 15:38, Lukasz Majewski <l.majewski@samsung.com>
-> > > > wrote:
-> > > > > This patch series introduces support for CPU overclocking
-> > > > > technique called Boost.
-> > > > >
-> > > > > It is a follow up of a LAB governor proposal. Boost is a LAB
-> > > > > component:
-> > > > > http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
-> > > > >
-> > > > > Boost unifies hardware based solution (e.g. Intel Nehalem) with
-> > > > > software oriented one (like the one done at Exynos).
-> > > > > For this reason cpufreq/freq_table code has been reorganized to
-> > > > > include common code.
-> > > > >
-> > > > > Important design decisions:
-> > > > > - Boost related code is compiled-in unconditionally to cpufreq
-> > > > > core and disabled by default. The cpufreq_driver is
-> > > > > responsibile for setting boost_supported flag and providing
-> > > > > set_boost callback(if HW support is needed). For software
-> > > > > managed boost, special Kconfig flag - CONFIG_CPU_FREQ_BOOST_SW
-> > > > > has been defined. It will be selected only when a target
-> > > > > platform has thermal framework properly configured.
-> > > > >
-> > > > > - struct cpufreq_driver has been extended with boost related
-> > > > > fields: -- boost_supported - when driver supports boosting
-> > > > >         -- boost_enabled - boost state
-> > > > >         -- set_boost - callback to function, which is necessary
-> > > > > to enable/disable boost
-> > > > >
-> > > > > - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost)
-> > > > > is visible _only_ when cpufreq driver supports Boost.
-> > > > >
-> > > > > - No special spin_lock for Boost was created. The one from
-> > > > > cpufreq core was reused.
-> > > > >
-> > > > > - The Boost code doesn't rely on any policy. When boost state is
-> > > > > changed, then the policy list is iterated and proper
-> > > > > adjustements are done.
-> > > > >
-> > > > > - To improve safety level, the thermal framework is also
-> > > > > extended to disable software boosting, when thermal trip point
-> > > > > is reached. Then it starts monitoring target temperature to
-> > > > > evaluate if boost can be enabled again. This emulates behaviour
-> > > > > similar to HW managed boost (like x86)
-> > > > >
-> > > > > Tested at HW:
-> > > > >        Exynos 4412 3.11-rc4 Linux
-> > > > >        Intel Core i7-3770 3.11-rc4 Linux
-> > > > >
-> > > > > Above patches were posted on top of linux_pm/linux-next with
-> > > > > following patches applied:
-> > > > >
-> > > > > cpufreq: exynos5440: Fix to skip when new frequency same as
-> > > > > current cpufreq: fix EXYNOS drivers selection
-> > > > >
-> > > > > Lukasz Majewski (7):
-> > > > >   cpufreq: Add boost frequency support in core
-> > > > >   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with
-> > > > > common boost solution
-> > > > >   thermal:boost: Automatic enable/disable of BOOST feature
-> > > > >   cpufreq:boost:Kconfig: Provide support for software managed
-> > > > > BOOST cpufreq:exynos:Extend Exynos cpufreq driver to support
-> > > > > boost framework
-> > > > >   Documentation:cpufreq:boost: Update BOOST documentation
-> > > > >   cpufreq:exynos4x12: Change L0 driver data to
-> > > > > CPUFREQ_BOOST_FREQ
-> > > > 
-> > > > Hi Lukasz,
-> > > > 
-> > > 
-> > > Hi Viresh,
-> > > 
-> > > > I haven't found time yet to go through this series.. 
-> > > 
-> > > I've just started wondering if I had send those patches
-> > > correctly :-).
-> > > 
-> > > > I want to do a
-> > > > deep/careful review this time as these are almost the final
-> > > > patches.
-> > > 
-> > > Ok.
-> > > 
-> > > > 
-> > > > Will try to get over them by the end of this week..
-> > > 
-> > > Ok, I understand.
-> > 
-> > Do I assume correctly that this stuff has been tested on
-> > ACPI-compatible x86 with acpi-cpufreq and everything has worked
-> > correctly there?
-> > 
-> > Rafael
-> > 
-> 
+On Tuesday, August 20, 2013 12:08:21 PM Viresh Kumar wrote:
 > Hi Rafael,
 > 
-> Following test configuration/test case (x86):
+> You recently did this:
 > 
-> - DELL OptiPlex 9010 Intel Core i7-3770
-> - Linux repo: [kernel_pm_http/bleeding-edge] [kernel_pm_http/linux-next]
-> 	SHA1: a238ea5e20be7bea2b1fc951a024ecce770306b5 
-> 	with v7 applied on top
+> commit 878f6e074e9a7784a6e351512eace4ccb3542eef
+> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Date:   Sun Aug 18 15:35:59 2013 +0200
 > 
-> - Linux version: 3.11-rc4 (patches v7) and 3.11-rc1 (v6)
+>     Revert "cpufreq: Use cpufreq_policy_list for iterating over policies"
+>     
+>     Revert commit eb60852 (cpufreq: Use cpufreq_policy_list for iterating
+>     over policies), because it breaks system suspend/resume on multiple
+>     machines.
+>     
+>     It either causes resume to block indefinitely or causes the BUG_ON()
+>     in lock_policy_rwsem_##mode() to trigger on sysfs accesses to cpufreq
+>     attributes.
+>     
+> ------x------------x---------------
 > 
-> - Ubuntu 11.10 (make bzImage + make all when module was needed)
-> - config_ubuntu_3_11 (the default one for ubuntu)
-> - KConfig:
-> 	1. Disabled intel_pstate driver
-> 	2. Enabled ACPI-Prosessor P state driver
-> 	3. Legacy cpb sysfs knob support for AMD CPUs ON/OFF (which is a
-> 	part of acpi-cpufreq.c driver).
-> 	
-> - acpi-cpufreq driver was build as a module or was embedded in kernel
->   (tested with modprobe -i / -r => no dmesg error|warning output)
+> This patchset gets the reverted patch back along with few supporting patches.
+> Cause of the initial problem you observed was this:
 > 
-> - I was able to read/write (echo 0/1
->   > /sys/devices/system/cpu/cpufreq/boost) => no output at dmesg -
->   system was working stable.
+> - At suspend all CPUs are removed leaving boot cpu. At this time policies aren't
+>   freed and also aren't removed from cpufreq_policy_list. And per-cpu variable
+>   cpufreq_cpu_data is marked as NULL.
+> - At resume CPUs other than boot cpu called __cpufreq_add_dev(). The tricky
+>   change that was introduced by my patch was: We iterate over list of policies
+>   instead of CPUs, where we used to get policy structure associated with
+>   CPUs using per-cpu variable. Which used to be NULL for first CPU of a policy
+>   that turned up. For the first cpu we don't want to call
+>   cpufreq_add_policy_cpu() but want __cpufreq_add_add() to continue.
 > 
-> Toolchain: gcc version 4.6.1 (Ubuntu/Linaro 4.6.1-9ubuntu3)
+>   When we called cpufreq_add_policy_cpu() it tried to stop the governor (which
+>   was already stopped) and hence errors leading into unstable state.
 > 
-> Since I'm mostly working with ARM (exynos4412) and major work was done
-> with cpufreq core (and x86 related work was to move common code to
-> cpufreq core) tests mostly have been performed on ARM.
-> 
-> Tests on ARM:
-> - Stress tests with up to 4 scripts running to enable/disable boost
->   sysfs attribute with random time interval (gzip < /dev/urandom
->   > /dev/null). 
-> - Test to overheat the ARM target and look if boost+thermal cools down
->   the device and enables boost again.
-> - LAB governor (which was already posted to ML) to boost when power
->   envelope allows it.
+> This patchset fixes these issues and is tested with suspend-resume over my
+> thinkpad with ubuntu. Apart from minor cleanups it removes policy from
+> cpufreq_policy_list in case of suspend/resume as well and hence we will never
+> call cpufreq_add_policy_cpu() for first cpu of a policy.
 
-Great, thanks a lot for the info!
+Well, this looks good, but do we really need it in 3.12?  It doesn't look
+like 3.12 will be missing these changes a lot?
 
 Rafael
 
