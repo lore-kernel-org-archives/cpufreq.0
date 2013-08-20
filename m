@@ -1,9 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/5] cpufreq: Fixes for 3.12
-Date: Tue, 20 Aug 2013 12:08:21 +0530
-Message-ID: <cover.1376979090.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 1/5] cpufreq: align closing brace '}' of an if block
+Date: Tue, 20 Aug 2013 12:08:22 +0530
+Message-ID: <32c32e6a67ea0a10381dcd214a2d6c1475eb81fb.1376979090.git.viresh.kumar@linaro.org>
+References: <cover.1376979090.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1376979090.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1376979090.git.viresh.kumar@linaro.org>
+References: <cover.1376979090.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,60 +15,34 @@ Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Rafael,
+Following patch caused this:
 
-You recently did this:
+commit 3de9bdeb28638e164d1f0eb38dd68e3f5d2ac95c
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Tue Aug 6 22:53:13 2013 +0530
 
-commit 878f6e074e9a7784a6e351512eace4ccb3542eef
-Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Date:   Sun Aug 18 15:35:59 2013 +0200
+    cpufreq: improve error checking on return values of __cpufreq_governor()
 
-    Revert "cpufreq: Use cpufreq_policy_list for iterating over policies"
-    
-    Revert commit eb60852 (cpufreq: Use cpufreq_policy_list for iterating
-    over policies), because it breaks system suspend/resume on multiple
-    machines.
-    
-    It either causes resume to block indefinitely or causes the BUG_ON()
-    in lock_policy_rwsem_##mode() to trigger on sysfs accesses to cpufreq
-    attributes.
-    
-------x------------x---------------
+Lets fix it.
 
-This patchset gets the reverted patch back along with few supporting patches.
-Cause of the initial problem you observed was this:
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- At suspend all CPUs are removed leaving boot cpu. At this time policies aren't
-  freed and also aren't removed from cpufreq_policy_list. And per-cpu variable
-  cpufreq_cpu_data is marked as NULL.
-- At resume CPUs other than boot cpu called __cpufreq_add_dev(). The tricky
-  change that was introduced by my patch was: We iterate over list of policies
-  instead of CPUs, where we used to get policy structure associated with
-  CPUs using per-cpu variable. Which used to be NULL for first CPU of a policy
-  that turned up. For the first cpu we don't want to call
-  cpufreq_add_policy_cpu() but want __cpufreq_add_add() to continue.
-
-  When we called cpufreq_add_policy_cpu() it tried to stop the governor (which
-  was already stopped) and hence errors leading into unstable state.
-
-This patchset fixes these issues and is tested with suspend-resume over my
-thinkpad with ubuntu. Apart from minor cleanups it removes policy from
-cpufreq_policy_list in case of suspend/resume as well and hence we will never
-call cpufreq_add_policy_cpu() for first cpu of a policy.
-
---
-viresh
-
-Viresh Kumar (5):
-  cpufreq: align closing brace '}' of an if block
-  cpufreq: remove policy from cpufreq_policy_list in system suspend
-  cpufreq: remove unnecessary check in __cpufreq_governor()
-  cpufreq: remove cpufreq_policy_cpu per-cpu variable
-  cpufreq: Use cpufreq_policy_list for iterating over policies
-
- drivers/cpufreq/cpufreq.c | 77 +++++++++++++++--------------------------------
- 1 file changed, 24 insertions(+), 53 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index c0ef84d..fedc842 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1253,7 +1253,7 @@ static int __cpufreq_remove_dev(struct device *dev,
+ 						__func__);
+ 				return ret;
+ 			}
+-	}
++		}
+ 
+ 		if (!frozen) {
+ 			lock_policy_rwsem_read(cpu);
 -- 
 1.7.12.rc2.18.g61b472e
 
