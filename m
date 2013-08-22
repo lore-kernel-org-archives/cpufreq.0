@@ -1,87 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: PROBLEM: cpufreq ondemand governor problem
-Date: Thu, 22 Aug 2013 10:45:00 +0530
-Message-ID: <CAOh2x=kYKV3Eqwe-16oQ6r3tGMCqd_P=oP+n_GZqa6rSu=vJKQ@mail.gmail.com>
-References: <52010083.5020005@yahoo.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of
+ another node for OPP
+Date: Thu, 22 Aug 2013 12:59:57 +0100
+Message-ID: <20130822115957.GC9799@e106331-lin.cambridge.arm.com>
+References: <51F9341E.60102@ti.com>
+ <20130731161103.GS29859@e106331-lin.cambridge.arm.com>
+ <51F93AFB.1030104@ti.com>
+ <20130801135422.GA8095@e106331-lin.cambridge.arm.com>
+ <51FA8BE2.9000309@ti.com>
+ <20130802131541.GN2884@e106331-lin.cambridge.arm.com>
+ <20130806134534.GB6603@kahuna>
+ <20130807161722.GJ28558@e106331-lin.cambridge.arm.com>
+ <52133E26.1000801@arm.com>
+ <521543AC.4020709@wwwdotorg.org>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=cczmmZ2U5hnCminORZn5FNaCEeEaP0RDEajcKT8NjMQ=;
-        b=XsgLptvRWXiKW2PLlcyxdcenHNK7kBl5WpI4jJnOsuAHRCq7I8E2+9MqB82npsXhuC
-         fUpCrk1b9MaSduP0Zuq386WrjOR938a1AkABGFEa5hUibuNFrjcWcASS00IAd/7L5RYi
-         km1aeqPGGGKyuIGDkdkjTblBbZKyyOXa48SnBqZ6gNxkqLqKSKch8aNJDFK5KLSD5KeH
-         WSRdr/dPqfHCT8tmV9P7HnWd9OH86WoucKXKE/NvdVuRr0PxALDLP5GEzJiYWCBdn/s5
-         CDjIOBVMTTEICgrNOGLBfWTIUBizrQ5CFIh1DfBAalhfH0rT+MeeEaMDRkU2Q7vx/Uw+
-         jvZA==
-In-Reply-To: <52010083.5020005@yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <521543AC.4020709@wwwdotorg.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jim Hochschild <illini_80@yahoo.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, 1136700@bugs.launchpad.net, Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Tue, Aug 6, 2013 at 7:26 PM, Jim Hochschild <illini_80@yahoo.com> wrote:
-> [1.] One line summary of the problem:
->
-> cpufreq ondemand governor problem
+On Wed, Aug 21, 2013 at 11:48:12PM +0100, Stephen Warren wrote:
+> On 08/20/2013 04:00 AM, Sudeep KarkadaNagesha wrote:
+> ...
+> > Until we get more feedback and agreement on new proposal can we have
+> > this simple amendment in this patch to the existing binding ? Since the
+> > new proposal[1] is backward compatible(this patch adding support for
+> > option#5 to existing option#1), we will have to add support for other
+> > binding options in [1] later.
+> > 
+> > This is needed to support shared OPPs with simple/single OPP profile
+> > and also to fix the broken and unused binding
+> > @Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+> > 
+> > Regards,
+> > Sudeep
+> > 
+> > [1] http://www.spinics.net/lists/cpufreq/msg06563.html
+> 
+> Presumably the desire for cpu1's node to say "go look at cpu0's node for
+> OPP" is because they share OPPs. Don't they share OPPs because they are
+> parts of the same device - that device being the CPU complex. As such,
+> why not define the OPPs in /cpus rather than in each of /cpus/cpuN?
 
-Sorry for being too late brother.. I went through your mail when you sent it
-for the first time and thought I will look into it and then got busy, though it
-was on my todo list :)
+I'd very much like for it to be possible to factor out common properties
+into the /cpus node, but it should follow the ePAPR recommendation fo
+being treated as a fallback if not present in a particular /cpus/cpu@N
+node -- that way we can handle clusters with differing OPPs. The
+property might just be a phandle to a table node, but it should be
+possible to make it common.
 
-Finally came back to this.. I understand and accept the problem you faced.
-Yes that's a issue.
+> 
+> Of course, that doesn't help if there are separate CPU and GPU nodes
+> that just happen to have the same set of OPPs and you want to share them
+> to save DT space. Is that at all likely?
 
-I am sure you want to have a look at this:
+I suspect that the OPPs for CPUs and GPUs are likely to be quite
+distict, and they are logically separate regardless. I'm not averse to
+sharing of tables if we can handle them in a standard fashion.
 
-commit cffe4e0e7413eb29fb8bd035c8b12b33a4b8522a
-Author: Stratos Karafotis <stratosk@semaphore.gr>
-Date:   Wed Jun 5 19:01:50 2013 +0300
+> 
+> I'd suggest/bike-shed that operating-points-device is not the correct
+> property name; it somehow implies that the other device actively defines
+> the OPPs for this device, rather than just happening to have the same
+> OPPs. Perhaps "operating-points-identical-to"?
+> 
 
-    cpufreq: Remove unused function __cpufreq_driver_getavg()
+I'd rather not have properties that point elsewhere and say "treat me
+the same as this node". I'd rather we have common properties as
+described above.
 
-    The target frequency calculation method in the ondemand governor has
-    changed and it is now independent of the measured average frequency.
-    Consequently, the __cpufreq_driver_getavg() function and getavg
-    member of struct cpufreq_driver are not used any more, so drop them.
-
-    [rjw: Changelog]
-    Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
- drivers/cpufreq/cpufreq.c | 12 ------------
- 1 file changed, 12 deletions(-)
-
-commit 61c63e5ed3b9c472899d7152e961f2ffaafcf5a0
-Author: Stratos Karafotis <stratosk@semaphore.gr>
-Date:   Wed Jun 5 19:01:42 2013 +0300
-
-    cpufreq: Remove unused APERF/MPERF support
-
-    The target frequency calculation method in the ondemand governor has
-    changed and it is now independent of the measured average frequency.
-    Consequently, the APERF/MPERF support in cpufreq is not used any
-    more, so drop it.
-
-    [rjw: Changelog]
-    Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
- drivers/cpufreq/Makefile       |  2 +-
- drivers/cpufreq/acpi-cpufreq.c |  5 -----
- drivers/cpufreq/mperf.c        | 51
----------------------------------------------------
- drivers/cpufreq/mperf.h        |  9 ---------
- 4 files changed, 1 insertion(+), 66 deletions(-)
-
-
-And so your problem will go away from 3.12 (Its already queued for
-next kernel release.)..
-
-Thanks for reporting this issue.
+Thanks,
+Mark.
