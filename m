@@ -1,77 +1,47 @@
-From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Subject: Re: [RFC PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Thu, 22 Aug 2013 17:28:10 +0100
-Message-ID: <52163C1A.4040707@arm.com>
-References: <51F93AFB.1030104@ti.com> <20130801135422.GA8095@e106331-lin.cambridge.arm.com> <51FA8BE2.9000309@ti.com> <20130802131541.GN2884@e106331-lin.cambridge.arm.com> <20130806134534.GB6603@kahuna> <20130807161722.GJ28558@e106331-lin.cambridge.arm.com> <52133E26.1000801@arm.com> <521543AC.4020709@wwwdotorg.org> <20130822115957.GC9799@e106331-lin.cambridge.arm.com> <52162EFA.2070108@arm.com> <20130822155000.GF23152@e106331-lin.cambridge.arm.com>
+From: Joseph Lo <josephl@nvidia.com>
+Subject: [PATCH] cpufreq: tegra: fix the wrong clock name
+Date: Fri, 23 Aug 2013 09:43:58 +0800
+Message-ID: <1377222238-9439-1-git-send-email-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130822155000.GF23152@e106331-lin.cambridge.arm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Nishanth Menon <nm@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Pawel Moll <Pawel.Moll@arm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Transfer-Encoding: 7bit
+To: Stephen Warren <swarren@wwwdotorg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Joseph Lo <josephl@nvidia.com>
 
-On 22/08/13 16:50, Mark Rutland wrote:
-> On Thu, Aug 22, 2013 at 04:32:10PM +0100, Sudeep KarkadaNagesha wrote:
->> On 22/08/13 12:59, Mark Rutland wrote:
->>> On Wed, Aug 21, 2013 at 11:48:12PM +0100, Stephen Warren wrote:
-[...]
->>>>
->>>> I'd suggest/bike-shed that operating-points-device is not the correct
->>>> property name; it somehow implies that the other device actively defines
->>>> the OPPs for this device, rather than just happening to have the same
->>>> OPPs. Perhaps "operating-points-identical-to"?
->>>>
->>>
->>> I'd rather not have properties that point elsewhere and say "treat me
->>> the same as this node". I'd rather we have common properties as
->>> described above.
->>>
->> Agreed, but for platforms with multiple CPU clusters, since we have only
->> one /cpus node, we ned to have table node which is arguable if node has
->> represent a device(as mentioned above)
-> 
-> I agree that this seems wasteful of space, but I really don't think that
-> pointing at another device you want the OPPs of is the best way of
-> describing the linkage, and I suspect we'll get all sorts of stupid bugs
-> resulting from that style of binding.
-> 
-> Consider the following (properties trimmed for brevity): 
-> 
-> cpus {
-> 	cpu0: cpu@0 {
-> 		operating-points-identical-to = <&cpu1>;
-> 	};
-> 	cpu1: cpu@1 {
-> 		operating-points = <0 100>,
-> 				   <23 47>,
-> 				   <62 970>;
-> 	}
-> };
-> 
-> If we boot a UP kernel on the above, I assume we won't read the info for
-> cpu1, and thus we won't get operating points info for cpu0. Worse, what
-> if cpu1 has status="disabled"? Does that make its OPP table invalid?
-> What if the bootloader drops cpu1?
-> 
-Another question :), does status property dictate the validity of the
-other properties in the node(not specific to above example, in general)?
+The "cpu" and "pclk_p_cclk" was a virtual clock name that was used in
+the legacy Tegra clock framework. It was not used after converting to
+CCF. Fix it as the correct clock name that we are using.
 
-But I agree that this indirect linkage is broken as boot-loaders can
-drop the cpu node holding OPP.
+Signed-off-by: Joseph Lo <josephl@nvidia.com>
+---
+ drivers/cpufreq/tegra-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-IMO fallback method would be reasonable(and much cleaner compared to a
-separate node) if it can even accommodate multiple cpu clusters.
-
-> I really don't like indirecting linkage to a property through an
-> arbitrary node, simply because it happened to have the same property. It
-> creates an artificial depdendency that will lead to problems.
-> 
-I totally agree on this.
-
-Regards,
-Sudeep
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index cd66b85..a7b876f 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -255,7 +255,7 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
+ 
+ static int __init tegra_cpufreq_init(void)
+ {
+-	cpu_clk = clk_get_sys(NULL, "cpu");
++	cpu_clk = clk_get_sys(NULL, "cclk");
+ 	if (IS_ERR(cpu_clk))
+ 		return PTR_ERR(cpu_clk);
+ 
+@@ -263,7 +263,7 @@ static int __init tegra_cpufreq_init(void)
+ 	if (IS_ERR(pll_x_clk))
+ 		return PTR_ERR(pll_x_clk);
+ 
+-	pll_p_clk = clk_get_sys(NULL, "pll_p_cclk");
++	pll_p_clk = clk_get_sys(NULL, "pll_p");
+ 	if (IS_ERR(pll_p_clk))
+ 		return PTR_ERR(pll_p_clk);
+ 
+-- 
+1.8.3.4
 
