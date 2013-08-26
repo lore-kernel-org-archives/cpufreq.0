@@ -1,64 +1,85 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] cpufreq: imx6q: Fix clock enable balance
-Date: Mon, 26 Aug 2013 13:48:36 +0200
-Message-ID: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 01/14] cpufreq: cpufreq-cpu0: add dt node parsing
+ for 'cooling-zones'
+Date: Mon, 26 Aug 2013 08:13:26 -0400
+Message-ID: <521B4666.3050509@ti.com>
+References: <1377299755-5134-1-git-send-email-eduardo.valentin@ti.com> <1377299755-5134-2-git-send-email-eduardo.valentin@ti.com> <CAKohpomuFWyH6ss4_L-0j9WyXtsZEygWrFLYXE6Oj_AD-DJUjA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomuFWyH6ss4_L-0j9WyXtsZEygWrFLYXE6Oj_AD-DJUjA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: cpufreq@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, Sascha Hauer <s.hauer@pengutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Stephen Warren <swarren@wwwdotorg.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ian.campbell@citrix.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Guenter Roeck <linux@roeck-us.net>, Zhang Rui <rui.zhang@intel.com>, wni@nvidia.com, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, lm-sensors@lm-sensors.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
 
-For changing the cpu frequency the i.MX6q has to be switched to some
-intermediate clock during the PLL reprogramming. The driver tries
-to be clever to keep the enable count correct but gets it wrong. If
-the cpufreq is increased it calls clk_disable_unprepare twice
-on pll2_pfd2_396m. This puts all other devices which get their clock
-from pll2_pfd2_396m into a nonworking state.
+--ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Fix this by removing the clk enabling/disabling altogether since the
-clk core will do this automatically during a reparent.
+On 26-08-2013 00:42, Viresh Kumar wrote:
+> On 24 August 2013 04:45, Eduardo Valentin <eduardo.valentin@ti.com> wro=
+te:
+>> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-=
+cpu0.c
+>> index ad1fde2..ede6487 100644
+>> --- a/drivers/cpufreq/cpufreq-cpu0.c
+>> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+>> @@ -20,6 +20,9 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/regulator/consumer.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/thermal.h>
+>> +#include <linux/cpu_cooling.h>
+>> +#include <linux/cpumask.h>
+>=20
+> In alphabetical order please..
+>=20
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/cpufreq/imx6q-cpufreq.c | 17 -----------------
- 1 file changed, 17 deletions(-)
+OK.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index e37cdae..2971d12 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -117,28 +117,11 @@ static int imx6q_set_target(struct cpufreq_policy *policy,
- 	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
- 	 *  - Disable pll2_pfd2_396m_clk
- 	 */
--	clk_prepare_enable(pll2_pfd2_396m_clk);
- 	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
- 	clk_set_parent(pll1_sw_clk, step_clk);
- 	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
- 		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
--		/*
--		 * If we are leaving 396 MHz set-point, we need to enable
--		 * pll1_sys_clk and disable pll2_pfd2_396m_clk to keep
--		 * their use count correct.
--		 */
--		if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
--			clk_prepare_enable(pll1_sys_clk);
--			clk_disable_unprepare(pll2_pfd2_396m_clk);
--		}
- 		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
--		clk_disable_unprepare(pll2_pfd2_396m_clk);
--	} else {
--		/*
--		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
--		 * to provide the frequency.
--		 */
--		clk_disable_unprepare(pll1_sys_clk);
- 	}
- 
- 	/* Ensure the arm clock divider is what we expect */
--- 
-1.8.4.rc3
+>> @@ -268,6 +272,13 @@ static int cpu0_cpufreq_probe(struct platform_dev=
+ice *pdev)
+>>                 goto out_free_table;
+>>         }
+>>
+>> +       /*
+>> +        * For now, just loading the cooling device;
+>> +        * thermal DT code takes care of matching them.
+>> +        */
+>> +       if (of_find_property(np, "cooling-zones", NULL))
+>> +               cdev =3D cpufreq_cooling_register(cpu_present_mask);
+>=20
+> Should we check if it passed or failed? And if failed Atleast flag an
+> appropriate message?
+>=20
 
+Yes, we need error checking code. I will add in next version. Thanks Kuma=
+r.
+
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+--ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlIbRm0ACgkQCXcVR3XQvP2ItQD9FMwdPTChGTJS8wyntuj0OUYy
+w1BiN+rFVWkcVLtDTGEA/3Tp9oX3NNQ8QvOACJmCKPSxfLtd7xgT/kGOOJzWdjbf
+=YWgD
+-----END PGP SIGNATURE-----
+
+--ePhlHHvf9knPPA6FoBMTfiBehuXBtURD7--
