@@ -1,64 +1,88 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
-Subject: Re: [Query] CPUFreq: Why do we need policy->user_policy?
-Date: Mon, 26 Aug 2013 23:23:03 +0800
-Message-ID: <CAOLK0pzg5VwDBLbUFU8J8wujxUazPgFC-+C4+Z6AMLYv7KcOtw@mail.gmail.com>
-References: <CAKohponkO6oZrvrsUGVK0uUbAM5wse7eHd7udtWkab7y2aatGA@mail.gmail.com>
-	<20581731.mdSQ720dHi@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        bh=y76PysSbDDmPfJNBcuf3JNpZC1YSKwiLgdEyUZZsRsc=;
-        b=YYFGYku64S543mho23Rs3f7Bm0daQzjGWo606d0XfWId5n9oxo++H1iW4d4euMokZB
-         cCrvVsyVgxMJeuDZPWX4EnWGnIHP6b1KmD+qwVcuja4S5AODU7CsmYurA7/JdldIBaY/
-         5hSzHs5jrWZgvkIQBrUG+7hjaGvkim0D4x4+oLGLAnw5q8F9MjWBWOnFD4EVsnY73AB2
-         8eQQ7J4Th/E2i1lKd7bLccX5KqG7hMBmSHUoSMChoxRbQ2ztAkAmpAwVVd8HKy7TdY+2
-         Jm4yxXg9IPF1HzflwUaLlSbkj6A0HwR9Xf11rMXuf6eM6bk9m9DVQ72BWUnLwtE1nAow
-         n75g==
-In-Reply-To: <20581731.mdSQ720dHi@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH v8 0/7] cpufreq:boost: CPU Boost mode support
+Date: Mon, 26 Aug 2013 17:50:36 +0200
+Message-ID: <1377532243-17076-1-git-send-email-l.majewski@samsung.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
 
-2013/8/26 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Monday, August 26, 2013 08:00:52 PM Viresh Kumar wrote:
->> Hi Rafael,
->
-> Hi,
->
->> I am almost done with cleanup of drivers and am back at cpufreq core=
-=2E. :)
->> I got to this structure: struct cpufreq_real_policy;
->>
->> And I am not able to understand what's the need for this structure?
->> Can you let me know? Before I try to get rid of it :)
->
-> Honestly, I don't remember from the top of my head.
+This patch series introduces support for CPU overclocking technique
+called Boost.
 
-So far as I know, it stores some user's config and cpufreq_update_polic=
-y()
-bases on the data in the struct to start a new policy. Cpu thermal driv=
-er
-=A3=A8/driver/thermal/cpu_cooling.c=A3=A9also will its value to update =
-freq policy
-when receive a cpufreq policy adjust notification.
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
->
-> Thanks,
-> Rafael
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to include
+common code.
 
+Important design decisions:
+- Boost related code is compiled-in unconditionally to cpufreq core and
+  disabled by default. The cpufreq_driver is responsibile for setting
+  boost_supported flag and providing set_boost callback(if HW support
+  is needed). For software managed boost, special Kconfig flag -
+  CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+  when a target platform has thermal framework properly configured.
 
+- struct cpufreq_driver has been extended with boost related fields:
+        -- boost_supported - when driver supports boosting
+        -- boost_enabled - boost state
+        -- set_boost - callback to function, which is necessary to
+           enable/disable boost
 
---=20
-Best regards
-Tianyu Lan
+- Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+  _only_ when cpufreq driver supports Boost.
+
+- No special spin_lock for Boost was created. The one from cpufreq core
+  was reused.
+
+- The Boost code doesn't rely on any policy. When boost state is changed,
+  then the policy list is iterated and proper adjustements are done.
+
+- To improve safety level, the thermal framework is also extended to disable
+  software boosting, when thermal trip point is reached. Then it starts
+  monitoring target temperature to evaluate if boost can be enabled
+  again. This emulates behaviour similar to HW managed boost (like x86)
+
+Tested at HW:
+       Exynos 4412 3.11-rc6 Linux
+       Intel Core i7-3770 3.11-rc6 Linux
+
+Above patches were posted on top of linux_pm/linux-next 
+(SHA1: 68327ee544d74f20bb6179637971912e5e78811c)
+
+Lukasz Majewski (7):
+  cpufreq: Add boost frequency support in core
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  thermal:boost: Automatic enable/disable of BOOST feature
+  cpufreq:boost:Kconfig: Provide support for software managed BOOST
+  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+    framework
+  Documentation:cpufreq:boost: Update BOOST documentation
+  cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+
+ Documentation/cpu-freq/boost.txt     |   26 ++++----
+ drivers/cpufreq/Kconfig              |    4 ++
+ drivers/cpufreq/Kconfig.arm          |   15 +++++
+ drivers/cpufreq/acpi-cpufreq.c       |   86 +++++++++----------------
+ drivers/cpufreq/cpufreq.c            |  118 +++++++++++++++++++++++++++++++++-
+ drivers/cpufreq/exynos-cpufreq.c     |    6 ++
+ drivers/cpufreq/exynos4x12-cpufreq.c |    2 +-
+ drivers/cpufreq/freq_table.c         |   53 +++++++++++++--
+ drivers/thermal/thermal_core.c       |   55 ++++++++++++++++
+ include/linux/cpufreq.h              |   25 +++++++
+ include/linux/thermal.h              |    2 +
+ 11 files changed, 313 insertions(+), 79 deletions(-)
+
+-- 
+1.7.10.4
+
