@@ -1,55 +1,63 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v8 7/7] cpufreq:exynos4x12: Change L0 driver data to
- CPUFREQ_BOOST_FREQ
-Date: Mon, 26 Aug 2013 17:50:43 +0200
-Message-ID: <1377532243-17076-8-git-send-email-l.majewski@samsung.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1377532243-17076-1-git-send-email-l.majewski@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1377532243-17076-1-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: governors: Remove duplicate check of target freq
+ in supported range
+Date: Mon, 26 Aug 2013 21:37:28 +0300
+Message-ID: <521BA068.8030003@semaphore.gr>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, durgadoss.r@intel.com
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-Special driver data flag (CPUFREQ_BOOST_FREQ) has been added to indicate
-frequency, which can be only enabled for BOOST mode.
-This frequency shall be used only for limited time, since it might cause
-target device to overheat.
+Function __cpufreq_driver_target checks if target_freq is within
+policy->min and policy->max range. generic_powersave_bias_target also
+checks if target_freq is valid through cpufreq_frequency_table_target
+call. So, drop the unnecessary duplicate check in *_check_cpu functions.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 ---
-Changes for v8:
-- None
+ drivers/cpufreq/cpufreq_conservative.c | 4 ----
+ drivers/cpufreq/cpufreq_ondemand.c     | 3 ---
+ 2 files changed, 7 deletions(-)
 
-Changes for v7:
-- None
-
-Changes for v6:
-- New patch
-
- drivers/cpufreq/exynos4x12-cpufreq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/exynos4x12-cpufreq.c b/drivers/cpufreq/exynos4x12-cpufreq.c
-index e270b42..367f600 100644
---- a/drivers/cpufreq/exynos4x12-cpufreq.c
-+++ b/drivers/cpufreq/exynos4x12-cpufreq.c
-@@ -32,7 +32,7 @@ static unsigned int exynos4x12_volt_table[] = {
- };
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 7f67a75..f62d822 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -67,8 +67,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 			return;
  
- static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
--	{L0, CPUFREQ_ENTRY_INVALID},
-+	{CPUFREQ_BOOST_FREQ, 1500 * 1000},
- 	{L1, 1400 * 1000},
- 	{L2, 1300 * 1000},
- 	{L3, 1200 * 1000},
+ 		dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
+-		if (dbs_info->requested_freq > policy->max)
+-			dbs_info->requested_freq = policy->max;
+ 
+ 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
+ 			CPUFREQ_RELATION_H);
+@@ -89,8 +87,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 			return;
+ 
+ 		dbs_info->requested_freq -= get_freq_target(cs_tuners, policy);
+-		if (dbs_info->requested_freq < policy->min)
+-			dbs_info->requested_freq = policy->min;
+ 
+ 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
+ 				CPUFREQ_RELATION_L);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 87f3305..32f26f6 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -177,9 +177,6 @@ static void od_check_cpu(int cpu, unsigned int load)
+ 		/* No longer fully busy, reset rate_mult */
+ 		dbs_info->rate_mult = 1;
+ 
+-		if (freq_next < policy->min)
+-			freq_next = policy->min;
+-
+ 		if (!od_tuners->powersave_bias) {
+ 			__cpufreq_driver_target(policy, freq_next,
+ 					CPUFREQ_RELATION_L);
 -- 
-1.7.10.4
-
+1.8.3.1
