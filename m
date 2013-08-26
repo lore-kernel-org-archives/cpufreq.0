@@ -1,35 +1,64 @@
-From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-Subject: Re: [PATCH 03/16] cpufreq: at32ap: use cpufreq_generic_get() routine
-Date: Mon, 26 Aug 2013 09:12:25 +0200
-Message-ID: <20130826071225.GA6501@samfundet.no>
-References: <cover.1377272740.git.viresh.kumar@linaro.org>
- <25c1ed14adc7fff2b2fbac993c829997fc7eea12.1377272740.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH] cpufreq: imx6q: Fix clock enable balance
+Date: Mon, 26 Aug 2013 13:48:36 +0200
+Message-ID: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <25c1ed14adc7fff2b2fbac993c829997fc7eea12.1377272740.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, Sascha Hauer <s.hauer@pengutronix.de>
 
-Around Fri 23 Aug 2013 21:20:38 +0530 or thereabout, Viresh Kumar wrote:
-> We have common infrastructure available with us for getting a CPUs clk rate.
-> Lets use it for this driver.
-> 
-> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+For changing the cpu frequency the i.MX6q has to be switched to some
+intermediate clock during the PLL reprogramming. The driver tries
+to be clever to keep the enable count correct but gets it wrong. If
+the cpufreq is increased it calls clk_disable_unprepare twice
+on pll2_pfd2_396m. This puts all other devices which get their clock
+from pll2_pfd2_396m into a nonworking state.
 
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+Fix this by removing the clk enabling/disabling altogether since the
+clk core will do this automatically during a reparent.
 
-> ---
->  drivers/cpufreq/at32ap-cpufreq.c | 17 +++++------------
->  1 file changed, 5 insertions(+), 12 deletions(-)
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 17 -----------------
+ 1 file changed, 17 deletions(-)
 
-<snipp diff>
-
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index e37cdae..2971d12 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -117,28 +117,11 @@ static int imx6q_set_target(struct cpufreq_policy *policy,
+ 	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
+ 	 *  - Disable pll2_pfd2_396m_clk
+ 	 */
+-	clk_prepare_enable(pll2_pfd2_396m_clk);
+ 	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+ 	clk_set_parent(pll1_sw_clk, step_clk);
+ 	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
+ 		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
+-		/*
+-		 * If we are leaving 396 MHz set-point, we need to enable
+-		 * pll1_sys_clk and disable pll2_pfd2_396m_clk to keep
+-		 * their use count correct.
+-		 */
+-		if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
+-			clk_prepare_enable(pll1_sys_clk);
+-			clk_disable_unprepare(pll2_pfd2_396m_clk);
+-		}
+ 		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+-		clk_disable_unprepare(pll2_pfd2_396m_clk);
+-	} else {
+-		/*
+-		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
+-		 * to provide the frequency.
+-		 */
+-		clk_disable_unprepare(pll1_sys_clk);
+ 	}
+ 
+ 	/* Ensure the arm clock divider is what we expect */
 -- 
-mvh
-Hans-Christian Egtvedt
+1.8.4.rc3
+
