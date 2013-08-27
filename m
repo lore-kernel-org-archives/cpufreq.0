@@ -1,46 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL]: CPUFreq: ARM Fixes for 3.12
-Date: Tue, 27 Aug 2013 02:52:10 +0200
-Message-ID: <1633112.3VJ8iVoDW6@vostro.rjw.lan>
-References: <CAKohpoksNiGT+r3JTY6KFwnDFA5OYE-vQe8W_9GT-fN21UMrfQ@mail.gmail.com> <CAKohpo=2msHhAWqqe==yLCszE5U6ccSti31E82eovkb4emJd5A@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v8 0/7] cpufreq:boost: CPU Boost mode support
+Date: Tue, 27 Aug 2013 11:10:42 +0530
+Message-ID: <CAKohpom90VAMYHkp3stbJJ-7H3y3zrVoQ+1q=Vza2Q0JhG8bNw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=2msHhAWqqe==yLCszE5U6ccSti31E82eovkb4emJd5A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Joseph Lo <josephl@nvidia.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, Sascha Hauer <s.hauer@pengutronix.de>
+Content-Transfer-Encoding: 7bit
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, linux-kernel <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, "R, Durgadoss" <durgadoss.r@intel.com>
 
-On Monday, August 26, 2013 07:36:56 PM Viresh Kumar wrote:
-> On 26 August 2013 11:48, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Hi Rafael,
-> >
-> > Hopefully this is the last patch for 3.12 for ARM CPUFreq subsystem.
-> 
-> Another last minute patch from Sascha..
-> 
-> -----------x------------------x------------------
-> 
-> The following changes since commit b36f4be3de1b123d8601de062e7dbfc904f305fb:
-> 
->   Linux 3.11-rc6 (2013-08-18 14:36:53 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.linaro.org/people/vireshk/linux.git cpufreq-fixes
-> 
-> for you to fetch changes up to fae19b84724ff93c1ac59ce1eecc1411f8269d9e:
-> 
->   cpufreq: imx6q: Fix clock enable balance (2013-08-26 19:34:07 +0530)
-> 
-> ----------------------------------------------------------------
-> Joseph Lo (1):
->       cpufreq: tegra: fix the wrong clock name
-> 
-> Sascha Hauer (1):
->       cpufreq: imx6q: Fix clock enable balance
+On 26 August 2013 21:20, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> This patch series introduces support for CPU overclocking technique
+> called Boost.
+>
+> It is a follow up of a LAB governor proposal. Boost is a LAB component:
+> http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+>
+> Boost unifies hardware based solution (e.g. Intel Nehalem) with
+> software oriented one (like the one done at Exynos).
+> For this reason cpufreq/freq_table code has been reorganized to include
+> common code.
+>
+> Important design decisions:
+> - Boost related code is compiled-in unconditionally to cpufreq core and
+>   disabled by default. The cpufreq_driver is responsibile for setting
+>   boost_supported flag and providing set_boost callback(if HW support
+>   is needed). For software managed boost, special Kconfig flag -
+>   CONFIG_CPU_FREQ_BOOST_SW has been defined. It will be selected only
+>   when a target platform has thermal framework properly configured.
+>
+> - struct cpufreq_driver has been extended with boost related fields:
+>         -- boost_supported - when driver supports boosting
+>         -- boost_enabled - boost state
+>         -- set_boost - callback to function, which is necessary to
+>            enable/disable boost
+>
+> - Boost sysfs attribute (/sys/devices/system/cpu/cpufreq/boost) is visible
+>   _only_ when cpufreq driver supports Boost.
+>
+> - No special spin_lock for Boost was created. The one from cpufreq core
+>   was reused.
+>
+> - The Boost code doesn't rely on any policy. When boost state is changed,
+>   then the policy list is iterated and proper adjustements are done.
+>
+> - To improve safety level, the thermal framework is also extended to disable
+>   software boosting, when thermal trip point is reached. Then it starts
+>   monitoring target temperature to evaluate if boost can be enabled
+>   again. This emulates behaviour similar to HW managed boost (like x86)
+>
+> Tested at HW:
+>        Exynos 4412 3.11-rc6 Linux
+>        Intel Core i7-3770 3.11-rc6 Linux
+>
+> Above patches were posted on top of linux_pm/linux-next
+> (SHA1: 68327ee544d74f20bb6179637971912e5e78811c)
+>
+> Lukasz Majewski (7):
+>   cpufreq: Add boost frequency support in core
+>   cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+>     boost solution
+>   thermal:boost: Automatic enable/disable of BOOST feature
+>   cpufreq:boost:Kconfig: Provide support for software managed BOOST
+>   cpufreq:exynos:Extend Exynos cpufreq driver to support boost
+>     framework
+>   Documentation:cpufreq:boost: Update BOOST documentation
+>   cpufreq:exynos4x12: Change L0 driver data to CPUFREQ_BOOST_FREQ
+>
+>  Documentation/cpu-freq/boost.txt     |   26 ++++----
+>  drivers/cpufreq/Kconfig              |    4 ++
+>  drivers/cpufreq/Kconfig.arm          |   15 +++++
+>  drivers/cpufreq/acpi-cpufreq.c       |   86 +++++++++----------------
+>  drivers/cpufreq/cpufreq.c            |  118 +++++++++++++++++++++++++++++++++-
+>  drivers/cpufreq/exynos-cpufreq.c     |    6 ++
+>  drivers/cpufreq/exynos4x12-cpufreq.c |    2 +-
+>  drivers/cpufreq/freq_table.c         |   53 +++++++++++++--
+>  drivers/thermal/thermal_core.c       |   55 ++++++++++++++++
+>  include/linux/cpufreq.h              |   25 +++++++
+>  include/linux/thermal.h              |    2 +
+>  11 files changed, 313 insertions(+), 79 deletions(-)
 
-Pulled, thanks Viresh!
+Sorry for the long delays in getting this patchset in :)
 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
