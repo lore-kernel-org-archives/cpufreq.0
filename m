@@ -1,63 +1,31 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: governors: Remove duplicate check of target freq
- in supported range
-Date: Wed, 28 Aug 2013 11:05:19 +0530
-Message-ID: <CAKohpokg3xqKRmDgzeL+dZc07x1KUZ=hKdx_YrVoDbi572N_sg@mail.gmail.com>
-References: <521BA068.8030003@semaphore.gr>
-	<CAKohpo=xBmpEv=oN1qEnq9RKhfjtc4wZayVYyVzjWOU8BnwVJQ@mail.gmail.com>
-	<521CC9B8.2020801@semaphore.gr>
-	<CAKohpo=XhHtRfsVrUZr0DQCK5L5zU_6DB4PBOA4QrJBvvcbe0Q@mail.gmail.com>
-	<521CE317.20908@semaphore.gr>
+Subject: Re: [Query] CPUFreq: Why do we need policy->user_policy?
+Date: Wed, 28 Aug 2013 11:12:54 +0530
+Message-ID: <CAKohpokJzEMKuupBunzBSQTRJ-4D=xeLHyyH3C9E1tSLJuJBwg@mail.gmail.com>
+References: <CAKohponkO6oZrvrsUGVK0uUbAM5wse7eHd7udtWkab7y2aatGA@mail.gmail.com>
+	<CAKohpo=ZKA6ieg9BrVRCRL+_7uiPfb2tWMO0_VOYx0m=Sv4+xQ@mail.gmail.com>
+	<CAOLK0pztfCd9ov297t0CW0C5S2iOSb9FJFHq9ycqwYGRiyifmA@mail.gmail.com>
+	<1734682.b8u1f0b3XY@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <521CE317.20908@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1734682.b8u1f0b3XY@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lan Tianyu <lantianyu1986@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
- 27 August 2013 23:04, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> I'm sorry. Let me try to explain this better.
+On 28 August 2013 02:50, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, August 27, 2013 10:04:52 PM Lan Tianyu wrote:
 
-Don't be :)
+>> From my understanding.policy->min/max may be modified by some drivers
+>> but the user_policy only store user space config and should not be changed
+>> by other reason.  :)
+>
+> Yes, that was the original idea IIRC, so separate user settings from stuff that
+> may be changed internally by the kernel.
 
-> With my patch, dbs_info->requested_freq will not be capped within
-> policy->min and policy->max in cs_check_cpu.
-> So, temporarily it may have a value greater than policy->max
-> or lower that policy->min.
-> When we call __cpufreq_driver_target, the correct frequency will be selected
-> because __cpufreq_driver_target takes care to adjust the
-> target frequency within policy range.
-> But, eventually, dbs_cpufreq_notifier will adjust dbs_info->requested
-> within policy range, if needed.
->
-> If we remove
->
->         if (dbs_info->requested_freq == policy->max)
->                 return;
-> and
->
->         if (policy->cur == policy->min)
->                 return;
->
-> request_freq will keep increasing or decreasing in each iteration and
-> finally will overflow or underflow.
->
-> Consider, for example, that in a CPU with policy->max = 1000MHz
-> the current frequency is 950MHz. With a constant load above
-> up_threshold, the requested_freq in first iteration will be 1000MHz
-> and __cpufreq_driver_target will select 1000MHz freq.
->
-> In second iteration, requested_freq will be 1050MHz, and
-> __cpufreq_driver_target will select 1000MHz. dbs_cpufreq_notifier
-> will adjust requested_freq back to 1000MHz.
->
-> In next iterations, dbs_cpufreq_notifier will not be called, so we
-> need the above check (dbs_info->requested_freq == policy->max) to
-> prevent requested_freq to grow arbitrary.
->
-> I hope my explanation was better now. :)
-
-Yes, your initial patch is fine.
+Yeah, that's what I understood too now.. Anyway I am going to do some core
+cleanups now, drivers are mostly done and will see if something can be done
+to get rid of them... Otherwise will keep them as is.
