@@ -1,68 +1,80 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 04/16] cpufreq: cpu0: use cpufreq_generic_get() routine
-Date: Thu, 29 Aug 2013 21:07:27 +0800
-Message-ID: <20130829130725.GL18729@S2101-09.ap.freescale.net>
-References: <cover.1377272740.git.viresh.kumar@linaro.org>
- <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 02/10] cpufreq: OMAP: Add SMP support for OMAP4+
+Date: Thu, 29 Aug 2013 09:37:12 -0400
+Message-ID: <521F4E88.1000709@ti.com>
+References: <1316725648-26710-1-git-send-email-khilman@ti.com> <1316725648-26710-3-git-send-email-khilman@ti.com> <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <6ae0de783646c5356717d761903502f354abfe84.1377272740.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@ti.com>
 
-On Fri, Aug 23, 2013 at 09:20:39PM +0530, Viresh Kumar wrote:
-> We have common infrastructure available with us for getting a CPUs clk rate.
-> Lets use it for this driver.
+On Thursday 29 August 2013 06:02 AM, Viresh Kumar wrote:
+> On Fri, Sep 23, 2011 at 2:37 AM, Kevin Hilman <khilman@ti.com> wrote:
+>> From: Russell King <rmk+kernel@arm.linux.org.uk>
+>>
+>> On OMAP SMP configuartion, both processors share the voltage
+>> and clock. So both CPUs needs to be scaled together and hence
+>> needs software co-ordination.
+>>
+>> Also, update lpj with reference value to avoid progressive error.
+>>
+>> Adjust _both_ the per-cpu loops_per_jiffy and global lpj. Calibrate
+>> them with with reference to the initial values to avoid a
+>> progressively bigger and bigger error in the value over time.
+>>
+>> While at this, re-use the notifiers for UP/SMP since on UP machine or
+>> UP_ON_SMP policy->cpus mask would contain only the boot CPU.
+>>
+>> Based on initial SMP support by Santosh Shilimkar.
+>>
+>> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+>> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> [khilman@ti.com: due to overlap/rework, combined original Santosh patch
+>>                  and Russell's rework]
+>> Signed-off-by: Kevin Hilman <khilman@ti.com>
+>> ---
+>>  drivers/cpufreq/omap-cpufreq.c |   80 +++++++++++++++++++++++++++++++++++-----
+>>  1 files changed, 70 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
 > 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-
-Both this and imx6q one,
-
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
+>> +       /*
+>> +        * On OMAP SMP configuartion, both processors share the voltage
+>> +        * and clock. So both CPUs needs to be scaled together and hence
+>> +        * needs software co-ordination. Use cpufreq affected_cpus
+>> +        * interface to handle this scenario. Additional is_smp() check
+>> +        * is to keep SMP_ON_UP build working.
+>> +        */
+>> +       if (is_smp()) {
+>> +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+>> +               cpumask_or(cpumask, cpumask_of(policy->cpu), cpumask);
+>> +               cpumask_copy(policy->cpus, cpumask);
+>> +       }
 > 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 7273bfc..62e52e3 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -29,11 +29,6 @@ static struct clk *cpu_clk;
->  static struct regulator *cpu_reg;
->  static struct cpufreq_frequency_table *freq_table;
->  
-> -static unsigned int cpu0_get_speed(unsigned int cpu)
-> -{
-> -	return clk_get_rate(cpu_clk) / 1000;
-> -}
-> -
->  static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->  {
->  	struct opp *opp;
-> @@ -99,6 +94,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy, unsigned int index)
->  
->  static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
->  {
-> +	policy->clk = cpu_clk;
->  	return cpufreq_generic_init(policy, freq_table, transition_latency);
->  }
->  
-> @@ -106,7 +102,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
->  	.flags = CPUFREQ_STICKY,
->  	.verify = cpufreq_generic_frequency_table_verify,
->  	.target_index = cpu0_set_target,
-> -	.get = cpu0_get_speed,
-> +	.get = cpufreq_generic_get,
->  	.init = cpu0_cpufreq_init,
->  	.exit = cpufreq_generic_exit,
->  	.name = "generic_cpu0",
-> -- 
-> 1.7.12.rc2.18.g61b472e
+> Does somebody remember importance of is_smp() here??
+>
+Above code was under #ifdef CONFIG_SMP and SMP_ON_UP where config
+SMP was enabled as well above steps were not needed.
+ 
+> Current code looks like:
 > 
+> if (is_smp())
+>     cpumask_setall(policy->cpus);
+> 
+> And I was looking to remove this check if it is no more useful.. And
+> so simply do
+> 
+> cpumask_setall(policy->cpus);
+> 
+Thats should work I guess. Infact I changed this i downstream kernel
+a while back but forgot to send a patch. Just see if for some reason
+above can break UP machine since this driver is used on UP machines
+as well. Other than that, it should be fine
+
+Regards,
+Santosh
