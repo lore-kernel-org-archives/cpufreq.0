@@ -1,56 +1,80 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: mutex warning in cpufreq + RFC patch
-Date: Thu, 29 Aug 2013 14:09:37 +0530
-Message-ID: <CAKohpokyja6nGdkgNx82d0_ktKPP=tDthJ0VJBZGkfXnxGVLkQ@mail.gmail.com>
-References: <20130828025721.GA19754@codeaurora.org>
-	<CAKohpomLL0rCYngM81iaTV37TTsrYE+f3ouGuT2D6TRE5E4W5A@mail.gmail.com>
-	<521E2ADE.4070401@codeaurora.org>
-	<CAKohpoke5BHypqKcLjPK5eHHvvfRTjCz36FMQNT1OGTVnueRkw@mail.gmail.com>
+Subject: Re: [PATCH 02/10] cpufreq: OMAP: Add SMP support for OMAP4+
+Date: Thu, 29 Aug 2013 15:32:55 +0530
+Message-ID: <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com>
+References: <1316725648-26710-1-git-send-email-khilman@ti.com>
+	<1316725648-26710-3-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpoke5BHypqKcLjPK5eHHvvfRTjCz36FMQNT1OGTVnueRkw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:sender:in-reply-to:references:date:message-id:subject
+         :from:to:cc:content-type;
+        bh=GnstDIb3BeQVdgHZu4ohNCOPEH2+Sn+FWxSEoLtftm4=;
+        b=Bq0ivow9vkoZdqFwRrwkYaOHYSn9rRnEhU1nOBZXb9+raIBFHTNkEb9KHdcDki0vB8
+         LggvUNweVrnENBYJfDi7PovbNtJaxzS1SUWmN/cl1b8DClLT+dKZDH8xp6n+4cHIVm5Y
+         /o7iUGwLgq3EZX6ejX405X6BNvdKf6oRM/zBRcZA56WK+fGiLWEpuG+IG6wKwXcyjiQQ
+         nzqJvjI+jkqF8DyAfGvRHYrZ95bpzqsqepqKaGBAWxpFkxHCUF3YD/xI9MWE4Ul0DPdH
+         5W7f4sT7AgdbPzyQsm4ZvFm19yonrHHnS5W0dLuncSJbHrprIao4Z1FT4l6abkE0c+EJ
+         0hKw==
+In-Reply-To: <1316725648-26710-3-git-send-email-khilman@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
+To: Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Russell King <linux@arm.linux.org.uk>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@ti.com>
 
-On 29 August 2013 14:07, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 28 August 2013 22:22, Stephen Boyd <sboyd@codeaurora.org> wrote:
->> On 08/27/13 23:58, Viresh Kumar wrote:
->>> I haven't gone through the hack yet, but I am trying to understand the
->>> problem first.. There had been some work in the past around this
->>> kind of scenarios..
->>>
->>> commit 95731ebb114c5f0c028459388560fc2a72fe5049
->>> Author: Xiaoguang Chen <chenxg@marvell.com>
->>> Date:   Wed Jun 19 15:00:07 2013 +0800
->>>
->>>     cpufreq: Fix governor start/stop race condition
->>>
->>>
->>> The problem probably is poor error checking which is still present at
->>> few places, in __cpufreq_set_policy() routine..
->>>
->>> Can you try after fixing them? Something similar has to be done..
->>>
->>> commit 3de9bdeb28638e164d1f0eb38dd68e3f5d2ac95c
->>> Author: Viresh Kumar <viresh.kumar@linaro.org>
->>> Date:   Tue Aug 6 22:53:13 2013 +0530
->>>
->>>     cpufreq: improve error checking on return values of __cpufreq_governor()
->>
->> No the problem isn't poor error checking. The problem is between
->> gov_stop and gov_start userspace can come in and write scaling_min_freq
->> which will try to acquire the mutex (sorry the copy paste of the error
->> got messed up so I've repasted it).
+On Fri, Sep 23, 2011 at 2:37 AM, Kevin Hilman <khilman@ti.com> wrote:
+> From: Russell King <rmk+kernel@arm.linux.org.uk>
+>
+> On OMAP SMP configuartion, both processors share the voltage
+> and clock. So both CPUs needs to be scaled together and hence
+> needs software co-ordination.
+>
+> Also, update lpj with reference value to avoid progressive error.
+>
+> Adjust _both_ the per-cpu loops_per_jiffy and global lpj. Calibrate
+> them with with reference to the initial values to avoid a
+> progressively bigger and bigger error in the value over time.
+>
+> While at this, re-use the notifiers for UP/SMP since on UP machine or
+> UP_ON_SMP policy->cpus mask would contain only the boot CPU.
+>
+> Based on initial SMP support by Santosh Shilimkar.
+>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> [khilman@ti.com: due to overlap/rework, combined original Santosh patch
+>                  and Russell's rework]
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
+> ---
+>  drivers/cpufreq/omap-cpufreq.c |   80 +++++++++++++++++++++++++++++++++++-----
+>  1 files changed, 70 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
 
-I forgot to answer here :(
+> +       /*
+> +        * On OMAP SMP configuartion, both processors share the voltage
+> +        * and clock. So both CPUs needs to be scaled together and hence
+> +        * needs software co-ordination. Use cpufreq affected_cpus
+> +        * interface to handle this scenario. Additional is_smp() check
+> +        * is to keep SMP_ON_UP build working.
+> +        */
+> +       if (is_smp()) {
+> +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+> +               cpumask_or(cpumask, cpumask_of(policy->cpu), cpumask);
+> +               cpumask_copy(policy->cpus, cpumask);
+> +       }
 
-I would still say this could be a problem.. Suppose one thread tried to STOP
-governor and stopped it.. Now other one came and tried to STOP it, it failed
-but due to poor error checking, went ahead to next step.. and then they
-got into issues..
+Does somebody remember importance of is_smp() here??
 
-I still see this as an potential issue in this case..
+Current code looks like:
+
+if (is_smp())
+    cpumask_setall(policy->cpus);
+
+And I was looking to remove this check if it is no more useful.. And
+so simply do
+
+cpumask_setall(policy->cpus);
