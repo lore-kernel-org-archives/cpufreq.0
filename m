@@ -1,36 +1,91 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 02/10] cpufreq: OMAP: Add SMP support for OMAP4+
-Date: Thu, 29 Aug 2013 09:42:19 -0400
-Message-ID: <521F4FBB.3080002@ti.com>
-References: <1316725648-26710-1-git-send-email-khilman@ti.com> <1316725648-26710-3-git-send-email-khilman@ti.com> <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com> <521F4E88.1000709@ti.com> <CAKohpokqz0cQNS12hZS-YOCd8KSOtCy9_TbGdqFzCYz8NyeamQ@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH] cpufreq: imx6q: Fix clock enable balance
+Date: Thu, 29 Aug 2013 22:01:25 +0800
+Message-ID: <20130829140123.GM18729@S2101-09.ap.freescale.net>
+References: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokqz0cQNS12hZS-YOCd8KSOtCy9_TbGdqFzCYz8NyeamQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@ti.com>
+Content-Transfer-Encoding: 7bit
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
-On Thursday 29 August 2013 09:39 AM, Viresh Kumar wrote:
-> On 29 August 2013 19:07, Santosh Shilimkar <santosh.shilimkar@ti.com> wrote:
->> On Thursday 29 August 2013 06:02 AM, Viresh Kumar wrote:
-> 
->>> cpumask_setall(policy->cpus);
->>>
->> Thats should work I guess. Infact I changed this i downstream kernel
->> a while back but forgot to send a patch. Just see if for some reason
->> above can break UP machine since this driver is used on UP machines
->> as well. Other than that, it should be fine
-> 
-> Atleast I can't see why it will break on UP machines as that should set
-> masks to individual CPUs then...
-> 
-> Okay I will fix that in my longest patchset ever... 230+ patches already :)
-> 
-WoW !!
-Looks like you re-wrote most of the CPUFREQ drivers ;-)
+On Mon, Aug 26, 2013 at 01:48:36PM +0200, Sascha Hauer wrote:
+> For changing the cpu frequency the i.MX6q has to be switched to some
+> intermediate clock during the PLL reprogramming. The driver tries
+> to be clever to keep the enable count correct but gets it wrong. If
+> the cpufreq is increased it calls clk_disable_unprepare twice
+> on pll2_pfd2_396m. This puts all other devices which get their clock
+> from pll2_pfd2_396m into a nonworking state.
 
-Regards,
-Santosh
+So you're running into a problem in real?  The clk_disable_unprepare on
+pll2_pfd2_396m below will only be executed when are leaving 396MHz
+set-point.  It's there to balance the clk_prepare_enable on
+pll2_pfd2_396m when we enters 396MHz set-point.
+
+	if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
+		clk_prepare_enable(pll1_sys_clk);
+		clk_disable_unprepare(pll2_pfd2_396m_clk);
+	}
+
+> 
+> Fix this by removing the clk enabling/disabling altogether since the
+> clk core will do this automatically during a reparent.
+
+It seems clk core will only enable the parent clock during the
+clk_set_parent() call, and only in case that the child clock is
+prepared.  For example, I do not think pll2_pfd2_396m_clk and step_clk
+will be altered to ON state.  Or am I missing something?
+
+	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+	clk_set_parent(pll1_sw_clk, step_clk);
+
+Shawn
+
+> 
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 17 -----------------
+>  1 file changed, 17 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index e37cdae..2971d12 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -117,28 +117,11 @@ static int imx6q_set_target(struct cpufreq_policy *policy,
+>  	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
+>  	 *  - Disable pll2_pfd2_396m_clk
+>  	 */
+> -	clk_prepare_enable(pll2_pfd2_396m_clk);
+>  	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+>  	clk_set_parent(pll1_sw_clk, step_clk);
+>  	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
+>  		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
+> -		/*
+> -		 * If we are leaving 396 MHz set-point, we need to enable
+> -		 * pll1_sys_clk and disable pll2_pfd2_396m_clk to keep
+> -		 * their use count correct.
+> -		 */
+> -		if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
+> -			clk_prepare_enable(pll1_sys_clk);
+> -			clk_disable_unprepare(pll2_pfd2_396m_clk);
+> -		}
+>  		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> -		clk_disable_unprepare(pll2_pfd2_396m_clk);
+> -	} else {
+> -		/*
+> -		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
+> -		 * to provide the frequency.
+> -		 */
+> -		clk_disable_unprepare(pll1_sys_clk);
+>  	}
+>  
+>  	/* Ensure the arm clock divider is what we expect */
+> -- 
+> 1.8.4.rc3
+> 
+
