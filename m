@@ -1,80 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 02/10] cpufreq: OMAP: Add SMP support for OMAP4+
-Date: Thu, 29 Aug 2013 15:32:55 +0530
-Message-ID: <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com>
-References: <1316725648-26710-1-git-send-email-khilman@ti.com>
-	<1316725648-26710-3-git-send-email-khilman@ti.com>
+Subject: [Query] CPUFreq: Does these machines have separate clock domains for CPUs?
+Date: Thu, 29 Aug 2013 15:45:58 +0530
+Message-ID: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=GnstDIb3BeQVdgHZu4ohNCOPEH2+Sn+FWxSEoLtftm4=;
-        b=Bq0ivow9vkoZdqFwRrwkYaOHYSn9rRnEhU1nOBZXb9+raIBFHTNkEb9KHdcDki0vB8
-         LggvUNweVrnENBYJfDi7PovbNtJaxzS1SUWmN/cl1b8DClLT+dKZDH8xp6n+4cHIVm5Y
-         /o7iUGwLgq3EZX6ejX405X6BNvdKf6oRM/zBRcZA56WK+fGiLWEpuG+IG6wKwXcyjiQQ
-         nzqJvjI+jkqF8DyAfGvRHYrZ95bpzqsqepqKaGBAWxpFkxHCUF3YD/xI9MWE4Ul0DPdH
-         5W7f4sT7AgdbPzyQsm4ZvFm19yonrHHnS5W0dLuncSJbHrprIao4Z1FT4l6abkE0c+EJ
-         0hKw==
-In-Reply-To: <1316725648-26710-3-git-send-email-khilman@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <sparclinux-owner@vger.kernel.org>
+Sender: sparclinux-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Russell King <linux@arm.linux.org.uk>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@ti.com>
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Miller <davem@davemloft.net>, Eric Miao <eric.y.miao@gmail.com>, Jesper Nilsson <jesper.nilsson@axis.com>, John Crispin <blogic@openwrt.org>, linux-cris-kernel@axis.com, linux-sh@vger.kernel.org, Mikael Starvik <starvik@axis.com>, Paul Mundt <lethal@linux-sh.org>, Sekhar Nori <nsekhar@ti.com>, sparclinux@vger.kernel.org, Miao Steven <realmz6@gmail.com>, Dave Jones <davej@redhat.com>
 
-On Fri, Sep 23, 2011 at 2:37 AM, Kevin Hilman <khilman@ti.com> wrote:
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
->
-> On OMAP SMP configuartion, both processors share the voltage
-> and clock. So both CPUs needs to be scaled together and hence
-> needs software co-ordination.
->
-> Also, update lpj with reference value to avoid progressive error.
->
-> Adjust _both_ the per-cpu loops_per_jiffy and global lpj. Calibrate
-> them with with reference to the initial values to avoid a
-> progressively bigger and bigger error in the value over time.
->
-> While at this, re-use the notifiers for UP/SMP since on UP machine or
-> UP_ON_SMP policy->cpus mask would contain only the boot CPU.
->
-> Based on initial SMP support by Santosh Shilimkar.
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> [khilman@ti.com: due to overlap/rework, combined original Santosh patch
->                  and Russell's rework]
-> Signed-off-by: Kevin Hilman <khilman@ti.com>
-> ---
->  drivers/cpufreq/omap-cpufreq.c |   80 +++++++++++++++++++++++++++++++++++-----
->  1 files changed, 70 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+Hi,
 
-> +       /*
-> +        * On OMAP SMP configuartion, both processors share the voltage
-> +        * and clock. So both CPUs needs to be scaled together and hence
-> +        * needs software co-ordination. Use cpufreq affected_cpus
-> +        * interface to handle this scenario. Additional is_smp() check
-> +        * is to keep SMP_ON_UP build working.
-> +        */
-> +       if (is_smp()) {
-> +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-> +               cpumask_or(cpumask, cpumask_of(policy->cpu), cpumask);
-> +               cpumask_copy(policy->cpus, cpumask);
-> +       }
+I have been doing some CPUFreq cleanup work and
+wanted to know if the below mentioned machines have separate
+clock domains for their CPUs or all share the same domain?
 
-Does somebody remember importance of is_smp() here??
-
-Current code looks like:
-
-if (is_smp())
-    cpumask_setall(policy->cpus);
-
-And I was looking to remove this check if it is no more useful.. And
-so simply do
+So, that we can use some generic routines for these drivers which
+would eventually do:
 
 cpumask_setall(policy->cpus);
+
+And I wanted to make sure that this doesn't break them.. :)
+
+......
+
+The drivers are:
+
+drivers/cpufreq/at32ap-cpufreq.c
+drivers/cpufreq/blackfin-cpufreq.c
+drivers/cpufreq/cris-artpec3-cpufreq.c
+drivers/cpufreq/cris-etraxfs-cpufreq.c
+drivers/cpufreq/davinci-cpufreq.c
+drivers/cpufreq/e_powersaver.c
+drivers/cpufreq/elanfreq.c
+drivers/cpufreq/longhaul.c
+drivers/cpufreq/loongson2_cpufreq.c
+drivers/cpufreq/pmac32-cpufreq.c
+drivers/cpufreq/powernow-k6.c
+drivers/cpufreq/powernow-k7.c
+drivers/cpufreq/pxa2xx-cpufreq.c
+drivers/cpufreq/pxa3xx-cpufreq.c
+drivers/cpufreq/sc520_freq.c
+drivers/cpufreq/sh-cpufreq.c
+drivers/cpufreq/sparc-us2e-cpufreq.c
+drivers/cpufreq/sparc-us3-cpufreq.c
+
+--
+Viresh
