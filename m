@@ -1,91 +1,88 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: imx6q: Fix clock enable balance
-Date: Thu, 29 Aug 2013 22:01:25 +0800
-Message-ID: <20130829140123.GM18729@S2101-09.ap.freescale.net>
-References: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
+Date: Thu, 29 Aug 2013 14:40:59 -0400
+Message-ID: <521F95BB.2060600@tilera.com>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <520BF6EC.8070006@tilera.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: John Stultz <john.stultz@linaro.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, Aug 26, 2013 at 01:48:36PM +0200, Sascha Hauer wrote:
-> For changing the cpu frequency the i.MX6q has to be switched to some
-> intermediate clock during the PLL reprogramming. The driver tries
-> to be clever to keep the enable count correct but gets it wrong. If
-> the cpufreq is increased it calls clk_disable_unprepare twice
-> on pll2_pfd2_396m. This puts all other devices which get their clock
-> from pll2_pfd2_396m into a nonworking state.
+Ping!  I have this work queued up to push as part of the linux-tile tree for the
+merge window.  Is that acceptable to the timekeeping/clocksource folks?
+Should I hold it back pending further review?  Or does it make sense to
+push it as-is and think about further improvements, if any, for a later release?
 
-So you're running into a problem in real?  The clk_disable_unprepare on
-pll2_pfd2_396m below will only be executed when are leaving 396MHz
-set-point.  It's there to balance the clk_prepare_enable on
-pll2_pfd2_396m when we enters 396MHz set-point.
+https://lkml.org/lkml/2013/8/9/497
+https://lkml.org/lkml/2013/8/9/499
 
-	if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
-		clk_prepare_enable(pll1_sys_clk);
-		clk_disable_unprepare(pll2_pfd2_396m_clk);
-	}
+Thanks in advance!
 
-> 
-> Fix this by removing the clk enabling/disabling altogether since the
-> clk core will do this automatically during a reparent.
+On 8/14/2013 5:30 PM, Chris Metcalf wrote:
+> On 8/14/2013 2:17 PM, John Stultz wrote:
+>> So a long while back we had tried to adapt for clock frequency changes
+>> on things like the TSC, but it resulting in *terrible* timekeeping as
+>> the latency between the frequency change and the handling of the
+>> notifications caused lots of clock drift, making it impossible for NTP
+>> or other synchronization methods to work properly.
+> We've done quite a bit of testing to show that our current implementation
+> doesn't have any clock drift over time.  Basically, we take a machine
+> running some workload, sync its time via ntpdate, and then run a script
+> that changes the CPU speed up or down continually, with a delay of a couple
+> seconds in between so we run for some decent amount of time at each speed.
+> Every 5 minutes or so, the script runs ntpdate -q to see what the offset
+> from real time is.  The skew we see doing that for a couple of days is
+> identical to that seen when we _aren't_ changing the CPU frequency.
+>
+> A key part of making this work, as noted in the comments at the head of
+> timekeeping_chfreq_prep(), is the fact that we do the frequency change
+> under stop_machine() to make sure that no CPU gets an opportunity to
+> sample the clock while it's being changed.
+>
+> However, I'm wondering whether you're talking about some other sort of
+> much more local clock skew or other frequency effect that perhaps we
+> haven't tested for.  (For instance, we haven't actually run this code
+> on an NTP server.)  Can you give a bit more detail on exactly what sorts
+> of bad behavior you saw with the previous implementation, and things one
+> might do to detect them?
+>
+>
+>> So early on we made
+>> a requirement that all clocksources have a constant frequency and
+>> provided a way to disqualify any clocksources that change frequency.
+>>
+>> So I'd be very hesitant to try to add any such behavior into the
+>> timekeeping core. You may want to try to add some logic in the
+>> clocksource driver itself to allow for the variable freq clocksource
+>> to output what seems to be a fixed freq,
+> So, just to be clear, you're suggesting that we claim our clocksource
+> runs at some lower virtual speed (say, 1 MHz), and that internally to
+> our clocksource drver we divide down the real frequency to the virtual
+> one?
+>
+>
+>> and if we get some time on it
+>> to prove that it can be made to work well, then we can see about
+>> making it more generic.
+>>
+>> Does that sound ok?
+> That seems possible, although it would seem to make the whole process
+> a bit less efficient (e.g., our clocksource will have to maintain its
+> own multiplier and offset to convert from real ticks to virtual ticks,
+> and then the core code will do the same operation again to convert to
+> wall-clock time).  Obviously, we're not really anxious to re-test/re-qualify
+> a new implementation of this, but if our current version is or might be
+> incompatible with other code in the kernel perhaps that's a safer approach.
+>
+> What sort of eventual more-generic support were you thinking of?
+>
 
-It seems clk core will only enable the parent clock during the
-clk_set_parent() call, and only in case that the child clock is
-prepared.  For example, I do not think pll2_pfd2_396m_clk and step_clk
-will be altered to ON state.  Or am I missing something?
-
-	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
-	clk_set_parent(pll1_sw_clk, step_clk);
-
-Shawn
-
-> 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 17 -----------------
->  1 file changed, 17 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index e37cdae..2971d12 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -117,28 +117,11 @@ static int imx6q_set_target(struct cpufreq_policy *policy,
->  	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
->  	 *  - Disable pll2_pfd2_396m_clk
->  	 */
-> -	clk_prepare_enable(pll2_pfd2_396m_clk);
->  	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
->  	clk_set_parent(pll1_sw_clk, step_clk);
->  	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
->  		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
-> -		/*
-> -		 * If we are leaving 396 MHz set-point, we need to enable
-> -		 * pll1_sys_clk and disable pll2_pfd2_396m_clk to keep
-> -		 * their use count correct.
-> -		 */
-> -		if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
-> -			clk_prepare_enable(pll1_sys_clk);
-> -			clk_disable_unprepare(pll2_pfd2_396m_clk);
-> -		}
->  		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-> -		clk_disable_unprepare(pll2_pfd2_396m_clk);
-> -	} else {
-> -		/*
-> -		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
-> -		 * to provide the frequency.
-> -		 */
-> -		clk_disable_unprepare(pll1_sys_clk);
->  	}
->  
->  	/* Ensure the arm clock divider is what we expect */
-> -- 
-> 1.8.4.rc3
-> 
+-- 
+Chris Metcalf, Tilera Corp.
+http://www.tilera.com
 
