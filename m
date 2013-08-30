@@ -1,33 +1,44 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 02/10] cpufreq: OMAP: Add SMP support for OMAP4+
-Date: Fri, 30 Aug 2013 09:26:12 -0400
-Message-ID: <52209D74.1050308@ti.com>
-References: <1316725648-26710-1-git-send-email-khilman@ti.com> <1316725648-26710-3-git-send-email-khilman@ti.com> <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com> <521F4E88.1000709@ti.com> <CAKohpokqz0cQNS12hZS-YOCd8KSOtCy9_TbGdqFzCYz8NyeamQ@mail.gmail.com> <521F4FBB.3080002@ti.com> <CAKohpomco=TodaosVbvAhFSxrth9aZ1gh+VOHftG1w6nYWBsPg@mail.gmail.com>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
+Date: Fri, 30 Aug 2013 10:40:49 -0400
+Message-ID: <5220AEF1.7080808@tilera.com>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com> <521FA13F.5040204@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomco=TodaosVbvAhFSxrth9aZ1gh+VOHftG1w6nYWBsPg@mail.gmail.com>
+In-Reply-To: <521FA13F.5040204@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@ti.com>
+To: John Stultz <john.stultz@linaro.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
-> From: Viresh Kumar <viresh.kumar@linaro.org <mailto:viresh.kumar@linaro.org>>
-> Date: Wed, 21 Aug 2013 19:05:05 +0530
-> Subject: [PATCH] cpufreq: omap: use cpufreq_generic_init() routine
-> 
-> Use generic cpufreq_generic_init() routine instead of replicating the same code
-> here.
-> 
-> This also rearranges the code a bit to make it more sensible. Also removes some
-> unnecessary checks.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org <mailto:viresh.kumar@linaro.org>>
-> ---
->  drivers/cpufreq/omap-cpufreq.c | 41 +++++++++++------------------------------
->  1 file changed, 11 insertions(+), 30 deletions(-)
+On 8/29/2013 3:30 PM, John Stultz wrote:
+> On 08/29/2013 11:40 AM, Chris Metcalf wrote:
+>> Ping!  I have this work queued up to push as part of the linux-tile tree for the
+>> merge window.  Is that acceptable to the timekeeping/clocksource folks?
+>> Should I hold it back pending further review?  Or does it make sense to
+>> push it as-is and think about further improvements, if any, for a later release?
+>>
+>> https://lkml.org/lkml/2013/8/9/497
+>> https://lkml.org/lkml/2013/8/9/499
+> Oh right! Sorry for the slow response here! I originally replied while I
+> was on vacation and didn't flag the thread to follow up on.
 >
-I haven't tested it but looks straightforward so..
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Few comments below.
+
+Thanks for the feedback. It does sound like too much to take on before
+the 3.12 merge window opens, so we will plan to look into this as time
+permits over the next little while. I've filed a bug internally to
+track this for us.
+
+It sounds like the most straightforward thing for us to do may be to adopt
+your original approach of making our clocksource driver internally convert
+the variable frequency clocksource to a fixed frequency; the overhead
+shouldn't be too bad and it seems like it should moot all the other
+concerns you raised in your email.
+
+-- 
+Chris Metcalf, Tilera Corp.
+http://www.tilera.com
 
