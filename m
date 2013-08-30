@@ -1,56 +1,82 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
-Date: Fri, 30 Aug 2013 09:04:50 -0700
-Message-ID: <5220C2A2.1020502@linaro.org>
-References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com> <521FA13F.5040204@linaro.org> <5220AEF1.7080808@tilera.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] cpufreq: imx6q: Fix clock enable balance
+Date: Fri, 30 Aug 2013 21:00:19 +0200
+Message-ID: <20130830190019.GG30088@pengutronix.de>
+References: <1377517716-27470-1-git-send-email-s.hauer@pengutronix.de>
+ <20130829140123.GM18729@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <5220AEF1.7080808@tilera.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130829140123.GM18729@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Chris Metcalf <cmetcalf@tilera.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: 7bit
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
-On 08/30/2013 07:40 AM, Chris Metcalf wrote:
-> On 8/29/2013 3:30 PM, John Stultz wrote:
->> On 08/29/2013 11:40 AM, Chris Metcalf wrote:
->>> Ping!  I have this work queued up to push as part of the linux-tile tree for the
->>> merge window.  Is that acceptable to the timekeeping/clocksource folks?
->>> Should I hold it back pending further review?  Or does it make sense to
->>> push it as-is and think about further improvements, if any, for a later release?
->>>
->>> https://lkml.org/lkml/2013/8/9/497
->>> https://lkml.org/lkml/2013/8/9/499
->> Oh right! Sorry for the slow response here! I originally replied while I
->> was on vacation and didn't flag the thread to follow up on.
->>
->> Few comments below.
-> Thanks for the feedback. It does sound like too much to take on before
-> the 3.12 merge window opens, so we will plan to look into this as time
-> permits over the next little while. I've filed a bug internally to
-> track this for us.
->
-> It sounds like the most straightforward thing for us to do may be to adopt
-> your original approach of making our clocksource driver internally convert
-> the variable frequency clocksource to a fixed frequency; the overhead
-> shouldn't be too bad and it seems like it should moot all the other
-> concerns you raised in your email.
-Yea, so most of my concerns would also apply to having the clocksource
-driver hide the frequency changes (since there still will be latency
-error, and variable freq error), but I do prefer having it as a
-clocksource specific hack, rather then in the timekeeping core so we can
-avoid seemingly condoning wide use of freq changing clocksources. If it
-does go in the core, I'm sure a few years down the line, someone will
-notice a problem with their freq changing clocksource and demand the
-bugs be fixed!
+On Thu, Aug 29, 2013 at 10:01:25PM +0800, Shawn Guo wrote:
+> On Mon, Aug 26, 2013 at 01:48:36PM +0200, Sascha Hauer wrote:
+> > For changing the cpu frequency the i.MX6q has to be switched to some
+> > intermediate clock during the PLL reprogramming. The driver tries
+> > to be clever to keep the enable count correct but gets it wrong. If
+> > the cpufreq is increased it calls clk_disable_unprepare twice
+> > on pll2_pfd2_396m. This puts all other devices which get their clock
+> > from pll2_pfd2_396m into a nonworking state.
+> 
+> So you're running into a problem in real?  The clk_disable_unprepare on
+> pll2_pfd2_396m below will only be executed when are leaving 396MHz
+> set-point.
 
-That said, I'm still open to further discussing your current approach
-for the next cycle. Since its possible the latency and freq errors
-really are small enough to not matter, avoiding the inefficiencies of
-hiding the changes in the clocksource driver might be worth it.
+And that's when my SD card stops working. On my board the SD clock is
+derived from pll2_pfd2_396m. I used the userspace cpufreq governor
+and scaled down to 396MHz. When I scale up again the SDHC driver times
+out while waiting for interrupts. This is because the cpufreq driver
+disables the clock twice.
 
-thanks
--john
+> It's there to balance the clk_prepare_enable on
+> pll2_pfd2_396m when we enters 396MHz set-point.
+> 
+> 	if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
+> 		clk_prepare_enable(pll1_sys_clk);
+> 		clk_disable_unprepare(pll2_pfd2_396m_clk);
+> 	}
+> 
+> > 
+> > Fix this by removing the clk enabling/disabling altogether since the
+> > clk core will do this automatically during a reparent.
+> 
+> It seems clk core will only enable the parent clock during the
+> clk_set_parent() call, and only in case that the child clock is
+> prepared.  For example, I do not think pll2_pfd2_396m_clk and step_clk
+> will be altered to ON state.  Or am I missing something?
+> 
 
+It seems so, yes. Reparenting takes the prepare/enable state
+of a clock with it. See __clk_set_parent, it starts with:
+
+	if (clk->prepare_count) {
+		__clk_prepare(parent);
+		clk_enable(parent);
+		clk_enable(clk);
+	}
+
+So if the clock to be reparent is enabled then the new parent
+gets enabled aswell. And it ends with:
+
+	if (clk->prepare_count) {
+		clk_disable(clk);
+		clk_disable(old_parent);
+		__clk_unprepare(old_parent);
+	}
+
+So if the clock is enabled the old parent now decreases its enable
+count.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
