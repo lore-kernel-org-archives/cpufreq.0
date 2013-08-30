@@ -1,31 +1,33 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Query] CPUFreq: Does these machines have separate clock
- domains for CPUs?
-Date: Fri, 30 Aug 2013 18:49:24 +1000
-Message-ID: <1377852564.3978.0.camel@pasglop>
-References: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 02/10] cpufreq: OMAP: Add SMP support for OMAP4+
+Date: Fri, 30 Aug 2013 09:26:12 -0400
+Message-ID: <52209D74.1050308@ti.com>
+References: <1316725648-26710-1-git-send-email-khilman@ti.com> <1316725648-26710-3-git-send-email-khilman@ti.com> <CAOh2x=k11EivJoy5-PMXnE5JGDc=DcJKhae7qoh6tNc4L63VnA@mail.gmail.com> <521F4E88.1000709@ti.com> <CAKohpokqz0cQNS12hZS-YOCd8KSOtCy9_TbGdqFzCYz8NyeamQ@mail.gmail.com> <521F4FBB.3080002@ti.com> <CAKohpomco=TodaosVbvAhFSxrth9aZ1gh+VOHftG1w6nYWBsPg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomco=TodaosVbvAhFSxrth9aZ1gh+VOHftG1w6nYWBsPg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Miao Steven <realmz6@gmail.com>, linux-sh@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Mikael Starvik <starvik@axis.com>, Paul Mundt <lethal@linux-sh.org>, sparclinux@vger.kernel.org, Dave Jones <davej@redhat.com>, David Miller <davem@davemloft.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, John Crispin <blogic@openwrt.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@linaro.org>, Russell King <linux@arm.linux.org.uk>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Dave Jones <davej@redhat.com>, Nishanth Menon <nm@ti.com>, linux-omap@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rajendra Nayak <rnayak@ti.com>
 
-On Thu, 2013-08-29 at 15:45 +0530, Viresh Kumar wrote:
-> drivers/cpufreq/pmac32-cpufreq.c
+> From: Viresh Kumar <viresh.kumar@linaro.org <mailto:viresh.kumar@linaro.org>>
+> Date: Wed, 21 Aug 2013 19:05:05 +0530
+> Subject: [PATCH] cpufreq: omap: use cpufreq_generic_init() routine
+> 
+> Use generic cpufreq_generic_init() routine instead of replicating the same code
+> here.
+> 
+> This also rearranges the code a bit to make it more sensible. Also removes some
+> unnecessary checks.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org <mailto:viresh.kumar@linaro.org>>
+> ---
+>  drivers/cpufreq/omap-cpufreq.c | 41 +++++++++++------------------------------
+>  1 file changed, 11 insertions(+), 30 deletions(-)
+>
+I haven't tested it but looks straightforward so..
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-This is always UP.
-
-Cheers,
-Ben.
