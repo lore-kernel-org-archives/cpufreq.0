@@ -1,44 +1,56 @@
-From: Chris Metcalf <cmetcalf@tilera.com>
+From: John Stultz <john.stultz@linaro.org>
 Subject: Re: [PATCH 1/2] time: allow changing the timekeeper clock frequency
-Date: Fri, 30 Aug 2013 10:40:49 -0400
-Message-ID: <5220AEF1.7080808@tilera.com>
-References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com> <521FA13F.5040204@linaro.org>
+Date: Fri, 30 Aug 2013 09:04:50 -0700
+Message-ID: <5220C2A2.1020502@linaro.org>
+References: <201308081953.r78Jrt0Z029523@farm-0021.internal.tilera.com> <CALAqxLX8zkzofgGSdEVsP4wdnejd25iSFHyhBwp7nRVgEnqNrA@mail.gmail.com> <520BF6EC.8070006@tilera.com> <521F95BB.2060600@tilera.com> <521FA13F.5040204@linaro.org> <5220AEF1.7080808@tilera.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <521FA13F.5040204@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <5220AEF1.7080808@tilera.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: John Stultz <john.stultz@linaro.org>
+To: Chris Metcalf <cmetcalf@tilera.com>
 Cc: lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 8/29/2013 3:30 PM, John Stultz wrote:
-> On 08/29/2013 11:40 AM, Chris Metcalf wrote:
->> Ping!  I have this work queued up to push as part of the linux-tile tree for the
->> merge window.  Is that acceptable to the timekeeping/clocksource folks?
->> Should I hold it back pending further review?  Or does it make sense to
->> push it as-is and think about further improvements, if any, for a later release?
+On 08/30/2013 07:40 AM, Chris Metcalf wrote:
+> On 8/29/2013 3:30 PM, John Stultz wrote:
+>> On 08/29/2013 11:40 AM, Chris Metcalf wrote:
+>>> Ping!  I have this work queued up to push as part of the linux-tile tree for the
+>>> merge window.  Is that acceptable to the timekeeping/clocksource folks?
+>>> Should I hold it back pending further review?  Or does it make sense to
+>>> push it as-is and think about further improvements, if any, for a later release?
+>>>
+>>> https://lkml.org/lkml/2013/8/9/497
+>>> https://lkml.org/lkml/2013/8/9/499
+>> Oh right! Sorry for the slow response here! I originally replied while I
+>> was on vacation and didn't flag the thread to follow up on.
 >>
->> https://lkml.org/lkml/2013/8/9/497
->> https://lkml.org/lkml/2013/8/9/499
-> Oh right! Sorry for the slow response here! I originally replied while I
-> was on vacation and didn't flag the thread to follow up on.
+>> Few comments below.
+> Thanks for the feedback. It does sound like too much to take on before
+> the 3.12 merge window opens, so we will plan to look into this as time
+> permits over the next little while. I've filed a bug internally to
+> track this for us.
 >
-> Few comments below.
+> It sounds like the most straightforward thing for us to do may be to adopt
+> your original approach of making our clocksource driver internally convert
+> the variable frequency clocksource to a fixed frequency; the overhead
+> shouldn't be too bad and it seems like it should moot all the other
+> concerns you raised in your email.
+Yea, so most of my concerns would also apply to having the clocksource
+driver hide the frequency changes (since there still will be latency
+error, and variable freq error), but I do prefer having it as a
+clocksource specific hack, rather then in the timekeeping core so we can
+avoid seemingly condoning wide use of freq changing clocksources. If it
+does go in the core, I'm sure a few years down the line, someone will
+notice a problem with their freq changing clocksource and demand the
+bugs be fixed!
 
-Thanks for the feedback. It does sound like too much to take on before
-the 3.12 merge window opens, so we will plan to look into this as time
-permits over the next little while. I've filed a bug internally to
-track this for us.
+That said, I'm still open to further discussing your current approach
+for the next cycle. Since its possible the latency and freq errors
+really are small enough to not matter, avoiding the inefficiencies of
+hiding the changes in the clocksource driver might be worth it.
 
-It sounds like the most straightforward thing for us to do may be to adopt
-your original approach of making our clocksource driver internally convert
-the variable frequency clocksource to a fixed frequency; the overhead
-shouldn't be too bad and it seems like it should moot all the other
-concerns you raised in your email.
-
--- 
-Chris Metcalf, Tilera Corp.
-http://www.tilera.com
+thanks
+-john
 
