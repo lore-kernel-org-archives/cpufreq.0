@@ -1,9 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] cpufreq: don't allow governor limits to be changed when it is disabled
-Date: Sun,  1 Sep 2013 10:56:01 +0530
-Message-ID: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Sun,  1 Sep 2013 10:56:02 +0530
+Message-ID: <80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org>
+References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+In-Reply-To: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,45 +15,61 @@ Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl, sboyd@codeaurora.org
 Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-__cpufreq_governor() returns with -EBUSY when governor is already stopped and we
-try to stop it again, but when it is stopped we must not allow calls to
-CPUFREQ_GOV_LIMITS event as well.
+We can't take a big lock around __cpufreq_governor() as this causes recursive
+locking for some cases. But calls to this routine must be serialized for every
+policy.
 
-This patch adds this check in __cpufreq_governor().
+Lets introduce another variable which would guarantee serialization here.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-Hi Rafael,
-
-Its better if we can get these in for 3.11, otherwise we need to get them in the
-stable tree..
-
-Anyway, we will get these in 3.10 stable tree but that requires us to identify
-few more patches that will go with these. I will do that later.
-
-This must fix the issues reported by Stephen.
-
-Tested on my thinkpad over your linux-next branch.
-
- drivers/cpufreq/cpufreq.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c | 7 ++++++-
+ include/linux/cpufreq.h   | 1 +
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 5c75e31..f320a20 100644
+index f320a20..4d5723db 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1692,8 +1692,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+@@ -1692,13 +1692,15 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
  						policy->cpu, event);
  
  	mutex_lock(&cpufreq_governor_lock);
--	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
--	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
-+	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
-+		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
-+					       (event == CPUFREQ_GOV_STOP)))) {
+-	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
++	if (policy->governor_busy ||
++		(policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
+ 		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
+ 					       (event == CPUFREQ_GOV_STOP)))) {
  		mutex_unlock(&cpufreq_governor_lock);
  		return -EBUSY;
  	}
+ 
++	policy->governor_busy = true;
+ 	if (event == CPUFREQ_GOV_STOP)
+ 		policy->governor_enabled = false;
+ 	else if (event == CPUFREQ_GOV_START)
+@@ -1727,6 +1729,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+ 		module_put(policy->governor->owner);
+ 
++	mutex_lock(&cpufreq_governor_lock);
++	policy->governor_busy = false;
++	mutex_unlock(&cpufreq_governor_lock);
+ 	return ret;
+ }
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index d568f39..cca885d 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -76,6 +76,7 @@ struct cpufreq_policy {
+ 	struct cpufreq_governor	*governor; /* see below */
+ 	void			*governor_data;
+ 	bool			governor_enabled; /* governor start/stop flag */
++	bool			governor_busy;
+ 
+ 	struct work_struct	update; /* if update_policy() needs to be
+ 					 * called, but you're in IRQ context */
 -- 
 1.7.12.rc2.18.g61b472e
 
