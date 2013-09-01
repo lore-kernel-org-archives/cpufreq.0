@@ -1,326 +1,302 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: mutex warning in cpufreq + RFC patch
-Date: Sun, 1 Sep 2013 21:51:53 +0530
-Message-ID: <CAKohpon+QCW_VVKGg1MczBumSN-TVZvhOmmaMEJ6DwJ627pdnw@mail.gmail.com>
-References: <20130828025721.GA19754@codeaurora.org>
-	<20130831003641.GE19754@codeaurora.org>
-	<CAKohpon3p5rTvc+2Cowm=rFSv+QP=ns1L9_nci5piuB90eD3FA@mail.gmail.com>
-	<3616582.NWckpAF80o@vostro.rjw.lan>
+Subject: Re: cpufreq warning with kernel 3.11
+Date: Sun, 1 Sep 2013 22:40:32 +0530
+Message-ID: <CAKohpokCLKWpDOJsLTjbT8aO15aw93q57cufFCMtrXjbAi2hyg@mail.gmail.com>
+References: <52234788.1090607@gmail.com>
 Mime-Version: 1.0
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3616582.NWckpAF80o@vostro.rjw.lan>
+In-Reply-To: <52234788.1090607@gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Alessandro Bono <alessandro.bono@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On 1 September 2013 18:52, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, September 01, 2013 11:54:10 AM Viresh Kumar wrote:
->> Btw, I am facing another crash which I am not sure how to fix.. It
->> came with your script:
+On 1 September 2013 19:26, Alessandro Bono <alessandro.bono@gmail.com> wrote:
+> Hi
 >
-> This isn't a crash, but a WARN_ON_ONCE() triggering.  The comment in kref_get()
-> explains when that occurs, so we seem to have a race between
-> store_scaling_min_freq() and CPU removal.
+> With kernel 3.11 I see follow messsages
+> previously I used standard kernel from ubuntu 3.8.0 without this messages
+>
+> [29932.092075] WARNING: CPU: 0 PID: 14543 at
+> /home/apw/COD/linux/drivers/cpufreq/cpufreq.c:317
+> __cpufreq_notify_transition+0x238/0x260()
+> [29932.092080] In middle of another frequency transition
+> [29932.092084] Modules linked in: hidp ip6table_filter ip6_tables
+> ebtable_nat ebtables ipt_MASQUERADE iptable_nat nf_nat_ipv4 nf_nat
+> nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT
+> xt_CHECKSUM iptable_mangle xt_tcpudp iptable_filter ip_tables x_tables
+> bridge stp llc deflate zlib_deflate ctr twofish_generic twofish_x86_64_3way
+> twofish_x86_64 twofish_common camellia_generic camellia_x86_64
+> serpent_sse2_x86_64 serpent_generic lrw glue_helper blowfish_generic
+> blowfish_x86_64 blowfish_common cast5_generic cast_common ablk_helper cryptd
+> des_generic cmac pata_pcmcia xcbc rmd160 joydev hp_wmi sparse_keymap
+> crypto_null af_key xfrm_algo snd_seq_midi btusb snd_seq_midi_event
+> tpm_infineon snd_hda_codec_hdmi dm_multipath arc4 scsi_dh
+> snd_hda_codec_analog snd_rawmidi iwl4965 snd_hda_intel pcmcia snd_hda_codec
+> snd_hwdep iwlegacy snd_pcm snd_seq mac80211 yenta_socket pcmcia_rsrc psmouse
+> pcmcia_core serio_raw lpc_ich snd_seq_device snd_page_alloc cfg80211
+> snd_timer snd hp_accel lis3lv02d input_polldev soundcore tpm_tis parport_pc
+> ppdev bnep mac_hid rfcomm bluetooth lp parport binfmt_misc ext2 xts gf128mul
+> hid_generic usbhid hid dm_crypt firewire_ohci firewire_core sdhci_pci sdhci
+> ahci libahci crc_itu_t radeon e1000e ptp pps_core i2c_algo_bit video ttm
+> drm_kms_helper wmi drm
+> [29932.092337] CPU: 0 PID: 14543 Comm: kworker/0:1 Not tainted
+> 3.11.0-999-generic #201308280510
+> [29932.092342] Hardware name: Hewlett-Packard HP Compaq 8510p
+> (GR539AW#ABZ)/30C5, BIOS 68MVD Ver. F.20 12/01/2011
+> [29932.092353] Workqueue: kacpi_notify acpi_os_execute_deferred
+> [29932.092359]  000000000000013d ffff880133665988 ffffffff81720daa
+> 0000000000000007
+> [29932.092369]  ffff8801336659d8 ffff8801336659c8 ffffffff8106534c
+> ffffffff815b8560
+> [29932.092377]  ffff8800259eee00 ffff880133665ab8 0000000000000001
+> 0000000000000001
+> [29932.092390] Call Trace:
+> [29932.092396]  [<ffffffff81720daa>] dump_stack+0x46/0x58
+> [29932.092400]  [<ffffffff8106534c>] warn_slowpath_common+0x8c/0xc0
+> [29932.092404]  [<ffffffff815b8560>] ? acpi_cpufreq_target+0x320/0x320
+> [29932.092407]  [<ffffffff81065436>] warn_slowpath_fmt+0x46/0x50
+> [29932.092410]  [<ffffffff815b1ec8>] __cpufreq_notify_transition+0x238/0x260
+> [29932.092413]  [<ffffffff815b33be>] cpufreq_notify_transition+0x3e/0x70
+> [29932.092416]  [<ffffffff815b345d>] cpufreq_out_of_sync+0x6d/0xb0
+> [29932.092419]  [<ffffffff815b370c>] cpufreq_update_policy+0x10c/0x160
+> [29932.092422]  [<ffffffff815b3760>] ? cpufreq_update_policy+0x160/0x160
+> [29932.092426]  [<ffffffff81413813>] cpufreq_set_cur_state+0x8c/0xb5
+> [29932.092429]  [<ffffffff814138df>] processor_set_cur_state+0xa3/0xcf
+> [29932.092434]  [<ffffffff8158e13c>] thermal_cdev_update+0x9c/0xb0
+> [29932.092437]  [<ffffffff8159046a>] step_wise_throttle+0x5a/0x90
+> [29932.092440]  [<ffffffff8158e21f>] handle_thermal_trip+0x4f/0x140
+> [29932.092443]  [<ffffffff8158e377>] thermal_zone_device_update+0x57/0xa0
+> [29932.092446]  [<ffffffff81415b36>] acpi_thermal_check+0x2e/0x30
+> [29932.092449]  [<ffffffff81415ca0>] acpi_thermal_notify+0x40/0xdc
+> [29932.092452]  [<ffffffff813e7dbd>] acpi_device_notify+0x19/0x1b
+> [29932.092456]  [<ffffffff813f8241>] acpi_ev_notify_dispatch+0x41/0x5c
+> [29932.092459]  [<ffffffff813e3fbe>] acpi_os_execute_deferred+0x25/0x32
+> [29932.092463]  [<ffffffff81081060>] process_one_work+0x170/0x4a0
+> [29932.092466]  [<ffffffff81082121>] worker_thread+0x121/0x390
+> [29932.092469]  [<ffffffff81082000>] ? manage_workers.isra.20+0x170/0x170
+> [29932.092472]  [<ffffffff81088fe0>] kthread+0xc0/0xd0
+> [29932.092476]  [<ffffffff81088f20>] ? flush_kthread_worker+0xb0/0xb0
+> [29932.092479]  [<ffffffff8173582c>] ret_from_fork+0x7c/0xb0
+> [29932.092482]  [<ffffffff81088f20>] ? flush_kthread_worker+0xb0/0xb0
+> [29932.092484] ---[ end trace a5e2dde8816c52d8 ]---
+> [29932.092486] ------------[ cut here ]------------
+> [29932.092489] WARNING: CPU: 0 PID: 14543 at
+> /home/apw/COD/linux/drivers/cpufreq/cpufreq.c:342
+> __cpufreq_notify_transition+0x1f6/0x260()
+> [29932.092490] No frequency transition in progress
+> [29932.092492] Modules linked in: hidp ip6table_filter ip6_tables
+> ebtable_nat ebtables ipt_MASQUERADE iptable_nat nf_nat_ipv4 nf_nat
+> nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT
+> xt_CHECKSUM iptable_mangle xt_tcpudp iptable_filter ip_tables x_tables
+> bridge stp llc deflate zlib_deflate ctr twofish_generic twofish_x86_64_3way
+> twofish_x86_64 twofish_common camellia_generic camellia_x86_64
+> serpent_sse2_x86_64 serpent_generic lrw glue_helper blowfish_generic
+> blowfish_x86_64 blowfish_common cast5_generic cast_common ablk_helper cryptd
+> des_generic cmac pata_pcmcia xcbc rmd160 joydev hp_wmi sparse_keymap
+> crypto_null af_key xfrm_algo snd_seq_midi btusb snd_seq_midi_event
+> tpm_infineon snd_hda_codec_hdmi dm_multipath arc4 scsi_dh
+> snd_hda_codec_analog snd_rawmidi iwl4965 snd_hda_intel pcmcia snd_hda_codec
+> snd_hwdep iwlegacy snd_pcm snd_seq mac80211 yenta_socket pcmcia_rsrc psmouse
+> pcmcia_core serio_raw lpc_ich snd_seq_device snd_page_alloc cfg80211
+> snd_timer snd hp_accel lis3lv02d input_polldev soundcore tpm_tis parport_pc
+> ppdev bnep mac_hid rfcomm bluetooth lp parport binfmt_misc ext2 xts gf128mul
+> hid_generic usbhid hid dm_crypt firewire_ohci firewire_core sdhci_pci sdhci
+> ahci libahci crc_itu_t radeon e1000e ptp pps_core i2c_algo_bit video ttm
+> drm_kms_helper wmi drm
+> [29932.092564] CPU: 0 PID: 14543 Comm: kworker/0:1 Tainted: G        W
+> 3.11.0-999-generic #201308280510
+> [29932.092566] Hardware name: Hewlett-Packard HP Compaq 8510p
+> (GR539AW#ABZ)/30C5, BIOS 68MVD Ver. F.20 12/01/2011
+> [29932.092568] Workqueue: kacpi_notify acpi_os_execute_deferred
+> [29932.092569]  0000000000000156 ffff880133665988 ffffffff81720daa
+> 0000000000000007
+> [29932.092572]  ffff8801336659d8 ffff8801336659c8 ffffffff8106534c
+> ffffffff815b8560
+> [29932.092575]  ffff8800259eee00 ffff880133665ab8 0000000000000001
+> 0000000000000001
+> [29932.092578] Call Trace:
+> [29932.092581]  [<ffffffff81720daa>] dump_stack+0x46/0x58
+> [29932.092584]  [<ffffffff8106534c>] warn_slowpath_common+0x8c/0xc0
+> [29932.092587]  [<ffffffff815b8560>] ? acpi_cpufreq_target+0x320/0x320
+> [29932.092590]  [<ffffffff81065436>] warn_slowpath_fmt+0x46/0x50
+> [29932.092593]  [<ffffffff815b1e86>] __cpufreq_notify_transition+0x1f6/0x260
+> [29932.092596]  [<ffffffff815b33be>] cpufreq_notify_transition+0x3e/0x70
+> [29932.092604]  [<ffffffff815b346e>] cpufreq_out_of_sync+0x7e/0xb0
+> [29932.092607]  [<ffffffff815b370c>] cpufreq_update_policy+0x10c/0x160
+> [29932.092610]  [<ffffffff815b3760>] ? cpufreq_update_policy+0x160/0x160
+> [29932.092613]  [<ffffffff81413813>] cpufreq_set_cur_state+0x8c/0xb5
+> [29932.092615]  [<ffffffff814138df>] processor_set_cur_state+0xa3/0xcf
+> [29932.092618]  [<ffffffff8158e13c>] thermal_cdev_update+0x9c/0xb0
+> [29932.092621]  [<ffffffff8159046a>] step_wise_throttle+0x5a/0x90
+> [29932.092623]  [<ffffffff8158e21f>] handle_thermal_trip+0x4f/0x140
+> [29932.092626]  [<ffffffff8158e377>] thermal_zone_device_update+0x57/0xa0
+> [29932.092629]  [<ffffffff81415b36>] acpi_thermal_check+0x2e/0x30
+> [29932.092631]  [<ffffffff81415ca0>] acpi_thermal_notify+0x40/0xdc
+> [29932.092634]  [<ffffffff813e7dbd>] acpi_device_notify+0x19/0x1b
+> [29932.092637]  [<ffffffff813f8241>] acpi_ev_notify_dispatch+0x41/0x5c
+> [29932.092639]  [<ffffffff813e3fbe>] acpi_os_execute_deferred+0x25/0x32
+> [29932.092642]  [<ffffffff81081060>] process_one_work+0x170/0x4a0
+> [29932.092645]  [<ffffffff81082121>] worker_thread+0x121/0x390
+> [29932.092648]  [<ffffffff81082000>] ? manage_workers.isra.20+0x170/0x170
+> [29932.092650]  [<ffffffff81088fe0>] kthread+0xc0/0xd0
+> [29932.092653]  [<ffffffff81088f20>] ? flush_kthread_worker+0xb0/0xb0
+> [29932.092656]  [<ffffffff8173582c>] ret_from_fork+0x7c/0xb0
+> [29932.092658]  [<ffffffff81088f20>] ? flush_kthread_worker+0xb0/0xb0
+> [29932.092660] ---[ end trace a5e2dde8816c52d9 ]---
+>
+> kernel binary taken from this url
+> http://kernel.ubuntu.com/~kernel-ppa/mainline/daily/2013-08-28-saucy/
+>
+> cpu information
+>
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 15
+> model name      : Intel(R) Core(TM)2 Duo CPU     T7700  @ 2.40GHz
+> stepping        : 11
+> microcode       : 0xba
+> cpu MHz         : 800.000
+> cache size      : 4096 KB
+> physical id     : 0
+> siblings        : 2
+> core id         : 0
+> cpu cores       : 2
+> apicid          : 0
+> initial apicid  : 0
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 10
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
+> constant_tsc arch_perfmon pebs bts rep_good nopl aperfmperf pni dtes64
+> monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm ida dtherm
+> tpr_shadow vnmi flexpriority
+> bogomips        : 4787.95
+> clflush size    : 64
+> cache_alignment : 64
+> address sizes   : 36 bits physical, 48 bits virtual
+> power management:
+>
+> processor       : 1
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 15
+> model name      : Intel(R) Core(TM)2 Duo CPU     T7700  @ 2.40GHz
+> stepping        : 11
+> microcode       : 0xba
+> cpu MHz         : 2401.000
+> cache size      : 4096 KB
+> physical id     : 0
+> siblings        : 2
+> core id         : 1
+> cpu cores       : 2
+> apicid          : 1
+> initial apicid  : 1
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 10
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
+> constant_tsc arch_perfmon pebs bts rep_good nopl aperfmperf pni dtes64
+> monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm ida dtherm
+> tpr_shadow vnmi flexpriority
+> bogomips        : 4787.95
+> clflush size    : 64
+> cache_alignment : 64
+> address sizes   : 36 bits physical, 48 bits virtual
+> power management:
+>
+> Tell me if you need other informations
+> thank you
 
-Yeah, I meant the same thing.. I don't know how to solve it or what's
-the correct way to solve it:
+Not really.. I have added lists in cc too so that people don't miss this patch.
+Please try the attached patch and see if problem still exists:
 
-I tried this:
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Sun, 1 Sep 2013 22:19:37 +0530
+Subject: [PATCH] cpufreq: check transition status cpufreq_out_of_sync()
+
+This patch tried to serialize frequency transitions:
+commit 7c30ed532cf798a8d924562f2f44d03d7652f7a7
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Wed Jun 19 10:16:55 2013 +0530
+
+   cpufreq: make sure frequency transitions are serialized
+
+But there still are few scenarios where notifications can be done in parallel.
+These aren't originated from ->target() but from cpufreq_out_of_sync().
+
+This causes following crash sometimes:
+
+WARNING: CPU: 0 PID: 14543 at drivers/cpufreq/cpufreq.c:317
+__cpufreq_notify_transition+0x238/0x260()
+In middle of another frequency transition
+
+<snip>
+
+all Trace:
+[<ffffffff81720daa>] dump_stack+0x46/0x58
+[<ffffffff8106534c>] warn_slowpath_common+0x8c/0xc0
+[<ffffffff815b8560>] ? acpi_cpufreq_target+0x320/0x320
+[<ffffffff81065436>] warn_slowpath_fmt+0x46/0x50
+[<ffffffff815b1ec8>] __cpufreq_notify_transition+0x238/0x260
+[<ffffffff815b33be>] cpufreq_notify_transition+0x3e/0x70
+[<ffffffff815b345d>] cpufreq_out_of_sync+0x6d/0xb0
+[<ffffffff815b370c>] cpufreq_update_policy+0x10c/0x160
+[<ffffffff815b3760>] ? cpufreq_update_policy+0x160/0x160
+[<ffffffff81413813>] cpufreq_set_cur_state+0x8c/0xb5
+[<ffffffff814138df>] processor_set_cur_state+0xa3/0xcf
+[<ffffffff8158e13c>] thermal_cdev_update+0x9c/0xb0
+[<ffffffff8159046a>] step_wise_throttle+0x5a/0x90
+[<ffffffff8158e21f>] handle_thermal_trip+0x4f/0x140
+[<ffffffff8158e377>] thermal_zone_device_update+0x57/0xa0
+[<ffffffff81415b36>] acpi_thermal_check+0x2e/0x30
+[<ffffffff81415ca0>] acpi_thermal_notify+0x40/0xdc
+[<ffffffff813e7dbd>] acpi_device_notify+0x19/0x1b
+[<ffffffff813f8241>] acpi_ev_notify_dispatch+0x41/0x5c
+[<ffffffff813e3fbe>] acpi_os_execute_deferred+0x25/0x32
+[<ffffffff81081060>] process_one_work+0x170/0x4a0
+[<ffffffff81082121>] worker_thread+0x121/0x390
+[<ffffffff81082000>] ? manage_workers.isra.20+0x170/0x170
+[<ffffffff81088fe0>] kthread+0xc0/0xd0
+[<ffffffff81088f20>] ? flush_kthread_worker+0xb0/0xb0
+[<ffffffff8173582c>] ret_from_fork+0x7c/0xb0
+[<ffffffff81088f20>] ? flush_kthread_worker+0xb0/0xb0
+
+This patch modifies cpufreq_out_of_sync() and returns without sending
+notifications in case another transition is in progress. We are anyway going to
+override whatever is the current frequency of cpu, and so we can return from
+here in case another transaction is in progress.
+
+Reported-by: Alessandro Bono <alessandro.bono@gmail.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4d5723db..be2e5f4 100644
+index be2e5f4..f6378eb 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -200,8 +200,14 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
-        if (cpufreq_driver) {
-                /* get the CPU */
-                policy = per_cpu(cpufreq_cpu_data, cpu);
--               if (policy)
--                       kobject_get(&policy->kobj);
-+               if (policy) {
-+                       cpu_hotplug_disable();
-+                       if (unlikely(!cpu_online(policy->cpu)))
-+                               policy = NULL;
-+                       else
-+                               kobject_get(&policy->kobj);
-+                       cpu_hotplug_enable();
-+               }
-        }
+@@ -1326,6 +1326,14 @@ static void cpufreq_out_of_sync(unsigned int
+cpu, unsigned int old_freq,
+  policy = per_cpu(cpufreq_cpu_data, cpu);
+  read_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
-And this gave another crash:
-
-[  246.724464] INFO: task irqbalance:1052 blocked for more than 120 seconds.
-[  246.724474] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  246.724479] irqbalance      D 0000000000000000     0  1052      1 0x00000000
-[  246.724489]  ffff88002f2dfd78 0000000000000086 ffff88002e53b800
-0000000000000001
-[  246.724498]  ffff880030620000 ffff88002f2dffd8 ffff88002f2dffd8
-ffff88002f2dffd8
-[  246.724505]  ffff880030181700 ffff880030620000 ffff8800ccbfd698
-ffffffff81c981c0
-[  246.724511] Call Trace:
-[  246.724525]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  246.724532]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  246.724543]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  246.724552]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  246.724561]  [<ffffffff81416e15>] lock_device_hotplug+0x15/0x20
-[  246.724568]  [<ffffffff81416e60>] show_online+0x20/0x60
-[  246.724574]  [<ffffffff81415ab0>] dev_attr_show+0x20/0x60
-[  246.724583]  [<ffffffff81129a3e>] ? __get_free_pages+0xe/0x40
-[  246.724592]  [<ffffffff811f2c9a>] sysfs_read_file+0xaa/0x180
-[  246.724602]  [<ffffffff81182074>] vfs_read+0xb4/0x180
-[  246.724610]  [<ffffffff811822f2>] SyS_read+0x52/0xa0
-[  246.724617]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  246.724631] INFO: task preload:1731 blocked for more than 120 seconds.
-[  246.724634] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  246.724637] preload         D ffffffff8180fb60     0  1731      1 0x00000000
-[  246.724643]  ffff8800cca71d28 0000000000000086 ffff8800cca71cc8
-ffffffff8118bafd
-[  246.724650]  ffff88002e7dc500 ffff8800cca71fd8 ffff8800cca71fd8
-ffff8800cca71fd8
-[  246.724655]  ffff880119359700 ffff88002e7dc500 ffff880119408240
-ffffffff81c31b88
-[  246.724661] Call Trace:
-[  246.724669]  [<ffffffff8118bafd>] ? terminate_walk+0x3d/0x50
-[  246.724675]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  246.724681]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  246.724690]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  246.724697]  [<ffffffff8118ba72>] ? path_put+0x22/0x30
-[  246.724705]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  246.724713]  [<ffffffff8104d19c>] get_online_cpus+0x2c/0x50
-[  246.724722]  [<ffffffff8114196a>] all_vm_events+0x1a/0x120
-[  246.724730]  [<ffffffff81141b05>] vmstat_start+0x95/0xc0
-[  246.724738]  [<ffffffff811a3739>] seq_read+0x139/0x3e0
-[  246.724747]  [<ffffffff812acbb3>] ? security_file_permission+0xa3/0xc0
-[  246.724755]  [<ffffffff811e4083>] proc_reg_read+0x43/0x70
-[  246.724763]  [<ffffffff81182074>] vfs_read+0xb4/0x180
-[  246.724770]  [<ffffffff811822f2>] SyS_read+0x52/0xa0
-[  246.724776]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  246.724781] INFO: task ondemand:1867 blocked for more than 120 seconds.
-[  246.724783] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  246.724786] ondemand        D ffffffff8180fb60     0  1867      1 0x00000000
-[  246.724791]  ffff8800d66c3ba8 0000000000000082 ffff8800d66c3be8
-ffffffff811c0ba2
-[  246.724797]  ffff88002f1a0000 ffff8800d66c3fd8 ffff8800d66c3fd8
-ffff8800d66c3fd8
-[  246.724803]  ffffffff81c10440 ffff88002f1a0000 0000000000000000
-ffffffff81c31b40
-[  246.724809] Call Trace:
-[  246.724817]  [<ffffffff811c0ba2>] ? fsnotify+0x1d2/0x2b0
-[  246.724822]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  246.724828]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  246.724836]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  246.724844]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  246.724850]  [<ffffffff8104d1f5>] cpu_maps_update_begin+0x15/0x20
-[  246.724856]  [<ffffffff8104d53e>] cpu_hotplug_disable+0xe/0x20
-[  246.724866]  [<ffffffff81533aad>] cpufreq_cpu_get+0x7d/0xf0
-[  246.724874]  [<ffffffff81533c41>] cpufreq_get_policy+0x21/0x120
-[  246.724882]  [<ffffffff81533d8b>] store_scaling_governor+0x4b/0x1f0
-[  246.724890]  [<ffffffff8118d37a>] ? link_path_walk+0x23a/0x8d0
-[  246.724897]  [<ffffffff8119fae9>] ? mntput_no_expire+0x49/0x160
-[  246.724902]  [<ffffffff8119fc24>] ? mntput+0x24/0x40
-[  246.724911]  [<ffffffff81533000>] store+0x70/0xb0
-[  246.724919]  [<ffffffff811f2582>] sysfs_write_file+0xe2/0x170
-[  246.724927]  [<ffffffff81181e8e>] vfs_write+0xce/0x200
-[  246.724934]  [<ffffffff81182392>] SyS_write+0x52/0xa0
-[  246.724940]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  246.724961] INFO: task gnome-keyring-d:2989 blocked for more than
-120 seconds.
-[  246.724963] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  246.724966] gnome-keyring-d D 0000000000000000     0  2989      1 0x00000000
-[  246.724971]  ffff8800cb933e38 0000000000000086 00000000000000dc
-0000000000000004
-[  246.724977]  ffff88002e548000 ffff8800cb933fd8 ffff8800cb933fd8
-ffff8800cb933fd8
-[  246.724982]  ffff8800301fae00 ffff88002e548000 ffff88010fbb6b40
-ffffffff81c31b88
-[  246.724988] Call Trace:
-[  246.724994]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  246.724999]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  246.725007]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  246.725016]  [<ffffffff81133780>] ? __pagevec_release+0x40/0x40
-[  246.725024]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  246.725030]  [<ffffffff8104d19c>] get_online_cpus+0x2c/0x50
-[  246.725038]  [<ffffffff810693d9>] schedule_on_each_cpu+0x39/0x110
-[  246.725047]  [<ffffffff811337a5>] lru_add_drain_all+0x15/0x20
-[  246.725055]  [<ffffffff81150dd8>] SyS_mlock+0x38/0x130
-[  246.725061]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  246.725083] INFO: task sh:3952 blocked for more than 120 seconds.
-[  246.725086] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  246.725089] sh              D ffffffff8180ff20     0  3952   3947 0x00000004
-[  246.725093]  ffff8800ccd3bbd8 0000000000000082 0000000000000000
-0000000000000001
-[  246.725099]  ffff8800cb0c9700 ffff8800ccd3bfd8 ffff8800ccd3bfd8
-ffff8800ccd3bfd8
-[  246.725105]  ffff880118c5c500 ffff8800cb0c9700 ffffffff81142619
-ffffffff81c31b40
-[  246.725110] Call Trace:
-[  246.725119]  [<ffffffff81142619>] ? zone_statistics+0x99/0xc0
-[  246.725124]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  246.725129]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  246.725137]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  246.725145]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  246.725151]  [<ffffffff8104d1f5>] cpu_maps_update_begin+0x15/0x20
-[  246.725157]  [<ffffffff8104d53e>] cpu_hotplug_disable+0xe/0x20
-[  246.725165]  [<ffffffff81533aad>] cpufreq_cpu_get+0x7d/0xf0
-[  246.725172]  [<ffffffff81533c41>] cpufreq_get_policy+0x21/0x120
-[  246.725180]  [<ffffffff8153400f>] store_scaling_min_freq+0x3f/0xa0
-[  246.725190]  [<ffffffff816785e6>] ? down_write+0x16/0x40
-[  246.725197]  [<ffffffff81533000>] store+0x70/0xb0
-[  246.725205]  [<ffffffff811f2582>] sysfs_write_file+0xe2/0x170
-[  246.725212]  [<ffffffff81181e8e>] vfs_write+0xce/0x200
-[  246.725219]  [<ffffffff81182392>] SyS_write+0x52/0xa0
-[  246.725225]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  246.725229] INFO: task sh:3953 blocked for more than 120 seconds.
-[  246.725232] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  246.725234] sh              D ffffffff8180fb60     0  3953   3952 0x00000004
-[  246.725239]  ffff8800ccd9dbf8 0000000000000082 ffffffff81116bcf
-ffff880119398000
-[  246.725245]  ffff8800c9f65c00 ffff8800ccd9dfd8 ffff8800ccd9dfd8
-ffff8800ccd9dfd8
-[  246.725251]  ffff880119358000 ffff8800c9f65c00 ffff8800ccd9dcc8
-ffffffff81c31b40
-[  246.725256] Call Trace:
-[  246.725266]  [<ffffffff81116bcf>] ? update_group_times+0xf/0x40
-[  246.725272]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  246.725277]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  246.725285]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  246.725293]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  246.725298]  [<ffffffff8104d1f5>] cpu_maps_update_begin+0x15/0x20
-[  246.725304]  [<ffffffff8104d53e>] cpu_hotplug_disable+0xe/0x20
-[  246.725312]  [<ffffffff81533aad>] cpufreq_cpu_get+0x7d/0xf0
-[  246.725320]  [<ffffffff8153549d>] cpufreq_stats_free_sysfs+0x1d/0x80
-[  246.725328]  [<ffffffff8153559f>] cpufreq_stat_cpu_callback+0x2f/0x40
-[  246.725336]  [<ffffffff8167f17d>] notifier_call_chain+0x4d/0x70
-[  246.725346]  [<ffffffff8107508e>] __raw_notifier_call_chain+0xe/0x10
-[  246.725351]  [<ffffffff8104d0d0>] __cpu_notify+0x20/0x40
-[  246.725358]  [<ffffffff81667171>] _cpu_down+0x81/0x250
-[  246.725364]  [<ffffffff81667375>] cpu_down+0x35/0x50
-[  246.725370]  [<ffffffff8141b9c1>] cpu_subsys_offline+0x21/0x40
-[  246.725377]  [<ffffffff81416f45>] device_offline+0xa5/0xd0
-[  246.725384]  [<ffffffff8141704e>] store_online+0x3e/0x80
-[  246.725390]  [<ffffffff81414568>] dev_attr_store+0x18/0x30
-[  246.725397]  [<ffffffff811f2582>] sysfs_write_file+0xe2/0x170
-[  246.725404]  [<ffffffff81181e8e>] vfs_write+0xce/0x200
-[  246.725411]  [<ffffffff81182392>] SyS_write+0x52/0xa0
-[  246.725419]  [<ffffffff8167f12e>] ? do_page_fault+0xe/0x10
-[  246.725425]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  366.756425] INFO: task irqbalance:1052 blocked for more than 120 seconds.
-[  366.756435] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  366.756440] irqbalance      D 0000000000000000     0  1052      1 0x00000000
-[  366.756450]  ffff88002f2dfd78 0000000000000086 ffff88002e53b800
-0000000000000001
-[  366.756459]  ffff880030620000 ffff88002f2dffd8 ffff88002f2dffd8
-ffff88002f2dffd8
-[  366.756465]  ffff880030181700 ffff880030620000 ffff8800ccbfd698
-ffffffff81c981c0
-[  366.756472] Call Trace:
-[  366.756486]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  366.756493]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  366.756504]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  366.756513]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  366.756522]  [<ffffffff81416e15>] lock_device_hotplug+0x15/0x20
-[  366.756528]  [<ffffffff81416e60>] show_online+0x20/0x60
-[  366.756535]  [<ffffffff81415ab0>] dev_attr_show+0x20/0x60
-[  366.756544]  [<ffffffff81129a3e>] ? __get_free_pages+0xe/0x40
-[  366.756553]  [<ffffffff811f2c9a>] sysfs_read_file+0xaa/0x180
-[  366.756564]  [<ffffffff81182074>] vfs_read+0xb4/0x180
-[  366.756571]  [<ffffffff811822f2>] SyS_read+0x52/0xa0
-[  366.756579]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  366.756593] INFO: task preload:1731 blocked for more than 120 seconds.
-[  366.756596] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  366.756599] preload         D ffffffff8180fb60     0  1731      1 0x00000000
-[  366.756605]  ffff8800cca71d28 0000000000000086 ffff8800cca71cc8
-ffffffff8118bafd
-[  366.756611]  ffff88002e7dc500 ffff8800cca71fd8 ffff8800cca71fd8
-ffff8800cca71fd8
-[  366.756617]  ffff880119359700 ffff88002e7dc500 ffff880119408240
-ffffffff81c31b88
-[  366.756623] Call Trace:
-[  366.756631]  [<ffffffff8118bafd>] ? terminate_walk+0x3d/0x50
-[  366.756637]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  366.756643]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  366.756652]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  366.756659]  [<ffffffff8118ba72>] ? path_put+0x22/0x30
-[  366.756667]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  366.756674]  [<ffffffff8104d19c>] get_online_cpus+0x2c/0x50
-[  366.756684]  [<ffffffff8114196a>] all_vm_events+0x1a/0x120
-[  366.756692]  [<ffffffff81141b05>] vmstat_start+0x95/0xc0
-[  366.756700]  [<ffffffff811a3739>] seq_read+0x139/0x3e0
-[  366.756709]  [<ffffffff812acbb3>] ? security_file_permission+0xa3/0xc0
-[  366.756717]  [<ffffffff811e4083>] proc_reg_read+0x43/0x70
-[  366.756725]  [<ffffffff81182074>] vfs_read+0xb4/0x180
-[  366.756732]  [<ffffffff811822f2>] SyS_read+0x52/0xa0
-[  366.756738]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  366.756743] INFO: task ondemand:1867 blocked for more than 120 seconds.
-[  366.756745] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  366.756748] ondemand        D ffffffff8180fb60     0  1867      1 0x00000000
-[  366.756753]  ffff8800d66c3ba8 0000000000000082 ffff8800d66c3be8
-ffffffff811c0ba2
-[  366.756759]  ffff88002f1a0000 ffff8800d66c3fd8 ffff8800d66c3fd8
-ffff8800d66c3fd8
-[  366.756765]  ffffffff81c10440 ffff88002f1a0000 0000000000000000
-ffffffff81c31b40
-[  366.756771] Call Trace:
-[  366.756779]  [<ffffffff811c0ba2>] ? fsnotify+0x1d2/0x2b0
-[  366.756785]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  366.756790]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  366.756798]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  366.756806]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  366.756813]  [<ffffffff8104d1f5>] cpu_maps_update_begin+0x15/0x20
-[  366.756819]  [<ffffffff8104d53e>] cpu_hotplug_disable+0xe/0x20
-[  366.756828]  [<ffffffff81533aad>] cpufreq_cpu_get+0x7d/0xf0
-[  366.756836]  [<ffffffff81533c41>] cpufreq_get_policy+0x21/0x120
-[  366.756845]  [<ffffffff81533d8b>] store_scaling_governor+0x4b/0x1f0
-[  366.756852]  [<ffffffff8118d37a>] ? link_path_walk+0x23a/0x8d0
-[  366.756859]  [<ffffffff8119fae9>] ? mntput_no_expire+0x49/0x160
-[  366.756865]  [<ffffffff8119fc24>] ? mntput+0x24/0x40
-[  366.756874]  [<ffffffff81533000>] store+0x70/0xb0
-[  366.756882]  [<ffffffff811f2582>] sysfs_write_file+0xe2/0x170
-[  366.756889]  [<ffffffff81181e8e>] vfs_write+0xce/0x200
-[  366.756896]  [<ffffffff81182392>] SyS_write+0x52/0xa0
-[  366.756903]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-[  366.756922] INFO: task gnome-keyring-d:2989 blocked for more than
-120 seconds.
-[  366.756925] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[  366.756927] gnome-keyring-d D 0000000000000000     0  2989      1 0x00000000
-[  366.756932]  ffff8800cb933e38 0000000000000086 00000000000000dc
-0000000000000004
-[  366.756938]  ffff88002e548000 ffff8800cb933fd8 ffff8800cb933fd8
-ffff8800cb933fd8
-[  366.756944]  ffff8800301fae00 ffff88002e548000 ffff88010fbb6b40
-ffffffff81c31b88
-[  366.756949] Call Trace:
-[  366.756955]  [<ffffffff81679c39>] schedule+0x29/0x70
-[  366.756961]  [<ffffffff81679f1e>] schedule_preempt_disabled+0xe/0x10
-[  366.756969]  [<ffffffff816781d2>] __mutex_lock_slowpath+0x112/0x1b0
-[  366.756978]  [<ffffffff81133780>] ? __pagevec_release+0x40/0x40
-[  366.756986]  [<ffffffff816776ca>] mutex_lock+0x2a/0x41
-[  366.756991]  [<ffffffff8104d19c>] get_online_cpus+0x2c/0x50
-[  366.757000]  [<ffffffff810693d9>] schedule_on_each_cpu+0x39/0x110
-[  366.757008]  [<ffffffff811337a5>] lru_add_drain_all+0x15/0x20
-[  366.757016]  [<ffffffff81150dd8>] SyS_mlock+0x38/0x130
-[  366.757022]  [<ffffffff816838c2>] system_call_fastpath+0x16/0x1b
-
-
-
-And that's why I am confused about how to solve it :)
-
-I thought when a CPU is going down its /sys/devices/system/cpu/cpuX/
-directory should be locked/freezed and no other thread should be reading
-from this directory at that point..
-
-@Srivatsa: Can you share your knowledge here on this?
++ /*
++ * We are anyway going to override whatever is the current frequency of
++ * cpu, and so we can return from here in case another transaction is in
++ * progress
++ */
++ if (policy->transition_ongoing)
++ return;
++
+  cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+  cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ }
