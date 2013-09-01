@@ -1,98 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: mutex warning in cpufreq + RFC patch
-Date: Sat, 31 Aug 2013 02:59:31 +0200
-Message-ID: <41768242.uCD68eUKhK@vostro.rjw.lan>
-References: <20130828025721.GA19754@codeaurora.org> <20130831003641.GE19754@codeaurora.org> <2143062.PTWIfM6mhl@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2143062.PTWIfM6mhl@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: don't allow governor limits to be changed when it is disabled
+Date: Sun,  1 Sep 2013 10:56:01 +0530
+Message-ID: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Saturday, August 31, 2013 02:55:57 AM Rafael J. Wysocki wrote:
-> On Friday, August 30, 2013 05:36:41 PM Stephen Boyd wrote:
-> > On 08/29, Viresh Kumar wrote:
-> > > On 28 August 2013 22:22, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> > > >
-> > > > I've applied these patches on top of v3.10
-> > > >
-> > > > f51e1eb63d9c28cec188337ee656a13be6980cfd (cpufreq: Fix cpufreq regression after suspend/resume
-> > > > aae760ed21cd690fe8a6db9f3a177ad55d7e12ab (cpufreq: Revert commit a66b2e to fix suspend/resume regression)
-> > > > e8d05276f236ee6435e78411f62be9714e0b9377 (cpufreq: Revert commit 2f7021a8 to fix CPU hotplug regression)
-> > > > 2a99859932281ed6c2ecdd988855f8f6838f6743 (cpufreq: Fix cpufreq driver module refcount balance after suspend/resume)
-> > > > 419e172145cf6c51d436a8bf4afcd17511f0ff79 (cpufreq: don't leave stale policy pointer in cdbs->cur_policy)
-> > > > 95731ebb114c5f0c028459388560fc2a72fe5049 (cpufreq: Fix governor start/stop race condition)
-> > > >
-> > > > That second to last one causes a NULL pointer exception after the mutex
-> > > > warning above because the limits case does
-> > > >
-> > > >     if (policy->max < cpu_cdbs->cur_policy->cur)
-> > > >
-> > > > and that dereferences a NULL cur_policy pointer.
-> > > 
-> > > I have seen something similar and the error checking patch that
-> > > I mentioned earlier came as solution to that only..
-> > 
-> > Yes that patch may reduce the chance of the race condition but I
-> > don't believe it removes it entirely. I believe this bug still
-> > exists in linux-next. Consider the scenario where CPU1 is going
-> > down.
-> > 
-> > __cpufreq_remove_dev()
-> >  ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> >   __cpufreq_governor()
-> >    policy->governor->governor(policy, CPUFREQ_GOV_STOP);
-> >     cpufreq_governor_dbs()
-> >      case CPUFREQ_GOV_STOP:
-> >       mutex_destroy(&cpu_cdbs->timer_mutex)
-> >       cpu_cdbs->cur_policy = NULL;
-> >   <PREEMPT>
-> > store()
-> >  __cpufreq_set_policy()
-> >   ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> >    __cpufreq_governor()
-> >     policy->governor->governor(policy, CPUFREQ_GOV_LIMITS);
-> >      case CPUFREQ_GOV_LIMITS:
-> >       mutex_lock(&cpu_cdbs->timer_mutex); <-- Warning (destroyed mutex)
-> >        if (policy->max < cpu_cdbs->cur_policy->cur) <- cur_policy == NULL
-> > 
-> > Once we stop the governor I don't see how another thread can't
-> > race in and get all the way down into the GOV_LIMITS case. Even
-> > if we wanted to lock out that thread with some mutex or semaphore
-> > it will have to continue running eventually and so we really need
-> > to wait until all the sysfs files are gone before we stop the
-> > governor (in the case of the last cpu for the policy) or we need
-> > to stop and start the governor while holding the policy semaphore
-> > to prevent a race.
-> > 
-> > > 
-> > > > Are there any fixes that I'm missing? I see that some things are
-> > > > changing in linux-next but they don't look like fixes, more like
-> > > > optimizations.
-> > > 
-> > > Getting patches over 3.10 would be tricky.. You are two kernel
-> > > version back and that's not going to help much.. There are too many
-> > > patches in between linux-next and 3.10..
-> > >
-> > > 
-> > > I really can't tell you which specific ones to include, as I am lost in them :)
-> > 
-> > That's a problem. 3.10 is the next long term stable kernel and so we need to
-> > backport any fixes to 3.10 for the next two years. Hopefully these bugs I'm
-> > finding in the 3.10 stable kernel's cpufreq code aren't known issues on
-> > 3.11/next.
-> 
-> No, they aren't.
-> 
-> Well, that's the main reason why I've been pushing back against more churn in
-> the cpuidle subsystem recently.  I think we went too far with changes that
-> were not entirely understood and now we're seeing the fallout.
+__cpufreq_governor() returns with -EBUSY when governor is already stopped and we
+try to stop it again, but when it is stopped we must not allow calls to
+CPUFREQ_GOV_LIMITS event as well.
 
-s/cpuidle/cpufreq/
+This patch adds this check in __cpufreq_governor().
 
-Apparently, I'm already too tired.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
+
+Its better if we can get these in for 3.11, otherwise we need to get them in the
+stable tree..
+
+Anyway, we will get these in 3.10 stable tree but that requires us to identify
+few more patches that will go with these. I will do that later.
+
+This must fix the issues reported by Stephen.
+
+Tested on my thinkpad over your linux-next branch.
+
+ drivers/cpufreq/cpufreq.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5c75e31..f320a20 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1692,8 +1692,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 						policy->cpu, event);
+ 
+ 	mutex_lock(&cpufreq_governor_lock);
+-	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
+-	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
++	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
++		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
++					       (event == CPUFREQ_GOV_STOP)))) {
+ 		mutex_unlock(&cpufreq_governor_lock);
+ 		return -EBUSY;
+ 	}
+-- 
+1.7.12.rc2.18.g61b472e
 
