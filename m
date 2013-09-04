@@ -1,162 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Tue, 03 Sep 2013 21:40:14 +0200
-Message-ID: <5197493.kSPF7VUWqc@vostro.rjw.lan>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org> <5225E205.7080008@linux.vnet.ibm.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [Query] CPUFreq: Does these machines have separate clock domains
+ for CPUs?
+Date: Wed, 4 Sep 2013 16:27:37 +0900
+Message-ID: <CANqRtoQF8-W=EFcV+LEPGbJf=h_yfyjVg=+0F5Sif15jB8XjBg@mail.gmail.com>
+References: <CAKohponWn-RN7-6sdhghd6RGCOd357G+TKLsxHfqnSCuMD7xxw@mail.gmail.com>
+	<CANqRtoTSO2yyP35naDe4y6a7rL99=cSs4-bJAWOxR5HL2gbpuw@mail.gmail.com>
+	<CAKohpom06N4DNZxrQcey-73o1jpQkNpCce2=-Wn+mDHLG9r-3g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5225E205.7080008@linux.vnet.ibm.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        bh=8J+r4vP56KD1d9Tf6HP+qCYMx10cHe3UxWn8Lv7hA9o=;
+        b=zk71Dl0yCQybdlMpK4GbUIxTL4guzSvHo020QXAlPL4f5AL080T5qJP5mLyiahQEw7
+         0jrmms6q27IGFlYJYJdvkQHaJ+47EQ6XrhUyd9u5UNBwpDOfZb7W1TL4HCvileARSjRp
+         FlmOicS89tIID5ge2w5mxqsw6IYgoS8Q44Le3qYcaeVfrd03WUYXO/FEAu2QcAzKNEYh
+         TwsTJc0KpahAqMw/wiUBPtlkbIltw4943+zHhTx+lthVKy2jGnNNgZDWd/b3YCTVinSs
+         uKkp57PBrFha7SB7cOwM3+K2h/Zzd5Z9jrg1VRallyFht2+H2PAesKUvSGtE8LrzhdcH
+         O4Rg==
+In-Reply-To: <CAKohpom06N4DNZxrQcey-73o1jpQkNpCce2=-Wn+mDHLG9r-3g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Eric Miao <eric.y.miao@gmail.com>, linux-cris-kernel@axis.com, SH-Linux <linux-sh@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Miao Steven <realmz6@gmail.com>, Sekhar Nori <nsekhar@ti.com>, Mikael Starvik <starvik@axis.com>, Paul Mundt <lethal@linux-sh.org>, sparclinux@vger.kernel.org, Dave Jones <davej@redhat.com>, David Miller <davem@davemloft.net>, John Crispin <blogic@openwrt.org>
 
-On Tuesday, September 03, 2013 06:50:05 PM Srivatsa S. Bhat wrote:
-> On 09/01/2013 10:56 AM, Viresh Kumar wrote:
-> > We can't take a big lock around __cpufreq_governor() as this causes recursive
-> > locking for some cases. But calls to this routine must be serialized for every
-> > policy.
-> > 
-> > Lets introduce another variable which would guarantee serialization here.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 7 ++++++-
-> >  include/linux/cpufreq.h   | 1 +
-> >  2 files changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index f320a20..4d5723db 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1692,13 +1692,15 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
-> >  						policy->cpu, event);
-> > 
-> >  	mutex_lock(&cpufreq_governor_lock);
-> > -	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
-> > +	if (policy->governor_busy ||
-> > +		(policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
-> >  		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
-> >  					       (event == CPUFREQ_GOV_STOP)))) {
-> >  		mutex_unlock(&cpufreq_governor_lock);
-> >  		return -EBUSY;
-> >  	}
-> > 
-> > +	policy->governor_busy = true;
-> >  	if (event == CPUFREQ_GOV_STOP)
-> >  		policy->governor_enabled = false;
-> >  	else if (event == CPUFREQ_GOV_START)
-> > @@ -1727,6 +1729,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
-> >  			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
-> >  		module_put(policy->governor->owner);
-> > 
-> > +	mutex_lock(&cpufreq_governor_lock);
-> > +	policy->governor_busy = false;
-> > +	mutex_unlock(&cpufreq_governor_lock);
-> >  	return ret;
-> >  }
-> > 
-> 
-> This doesn't solve the problem completely: it prevents the store_*() task
-> from continuing *only* when it concurrently executes the __cpufreq_governor()
-> function along with the CPU offline task. But if the two calls don't overlap,
-> we will still have the possibility where the store_*() task tries to acquire
-> the timer mutex after the CPU offline task has just finished destroying it.
+Hi Viresh,
 
-Yeah, I overlooked that.
+On Fri, Aug 30, 2013 at 4:33 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 30 August 2013 12:18, Magnus Damm <magnus.damm@gmail.com> wrote:
+>> Hi Viresh,
+>>
+>> On Thu, Aug 29, 2013 at 7:15 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> Hi,
+>>>
+>>> I have been doing some CPUFreq cleanup work and
+>>> wanted to know if the below mentioned machines have separate
+>>> clock domains for their CPUs or all share the same domain?
+>>>
+>>> So, that we can use some generic routines for these drivers which
+>>> would eventually do:
+>>>
+>>> cpumask_setall(policy->cpus);
+>>>
+>>> And I wanted to make sure that this doesn't break them.. :)
+>>>
+>>> ......
+>>>
+>>> The drivers are:
+>> ...
+>>> drivers/cpufreq/sh-cpufreq.c
+>> ...
+>>
+>> The above SH cpufreq driver seems to be written with SMP in mind, but
+>> I would say SMP is a very rare case for SH. So I believe it can be
+>> considered as UP-only at this point. If Paul disagrees I'm quite sure
+>> he will tell us.
+>
+> Okay.. The problem isn't really SMP but different clock domains for CPUs
+> in a SMP system..
+>
+> So, even if we have a SMP SH machine, will it have same clock line for
+> all CPUs?
 
-> So, IMHO, the right fix is to synchronize with CPU hotplug. That way, the
-> store_*() thread will wait until the entire CPU offline operation is completed.
-> After that, if it continues, it will get -EBUSY, due to patch [1], since
-> policy->governor_enabled will be set to false.
-> 
-> [1]. https://patchwork.kernel.org/patch/2852463/
-> 
-> So here is the (completely untested) fix that I propose, as a replacement to
-> this patch [2/2]:
+Yeah, I understand your question but I'm afraid that I don't know the
+answer myself.
 
-That looks reasonable to me.
+> I will go with the change anyway..
 
-Viresh?
+Good plan. Thanks for cleaning up the cpufreq bits.
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 5c75e31..71c4fb2 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -440,17 +440,24 @@ static ssize_t store_##file_name					\
->  	unsigned int ret;						\
->  	struct cpufreq_policy new_policy;				\
->  									\
-> +	get_online_cpus();						\
->  	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
-> -	if (ret)							\
-> -		return -EINVAL;						\
-> +	if (ret) {							\
-> +		ret = -EINVAL;						\
-> +		goto out;						\
-> +	}								\
->  									\
->  	ret = sscanf(buf, "%u", &new_policy.object);			\
-> -	if (ret != 1)							\
-> -		return -EINVAL;						\
-> +	if (ret != 1) {							\
-> +		ret = -EINVAL;						\
-> +		goto out;						\
-> +	}								\
->  									\
->  	ret = __cpufreq_set_policy(policy, &new_policy);		\
->  	policy->user_policy.object = policy->object;			\
->  									\
-> +out:									\
-> +	put_online_cpus();						\
->  	return ret ? ret : count;					\
->  }
->  
-> @@ -494,17 +501,22 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
->  	char	str_governor[16];
->  	struct cpufreq_policy new_policy;
->  
-> +	get_online_cpus();
->  	ret = cpufreq_get_policy(&new_policy, policy->cpu);
->  	if (ret)
-> -		return ret;
-> +		goto out;
->  
->  	ret = sscanf(buf, "%15s", str_governor);
-> -	if (ret != 1)
-> -		return -EINVAL;
-> +	if (ret != 1) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
->  
->  	if (cpufreq_parse_governor(str_governor, &new_policy.policy,
-> -						&new_policy.governor))
-> -		return -EINVAL;
-> +						&new_policy.governor)) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
->  
->  	/*
->  	 * Do not use cpufreq_set_policy here or the user_policy.max
-> @@ -515,6 +527,9 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
->  	policy->user_policy.policy = policy->policy;
->  	policy->user_policy.governor = policy->governor;
->  
-> +out:
-> +	put_online_cpus();
-> +
->  	if (ret)
->  		return ret;
->  	else
-> 
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Cheers,
+
+/ magnus
