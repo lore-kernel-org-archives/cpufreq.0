@@ -1,91 +1,156 @@
-From: Josh Boyer <jwboyer@fedoraproject.org>
-Subject: Re: 3.12 merge window exynos cpufreq driver fails to build
-Date: Wed, 4 Sep 2013 11:08:15 -0400
-Message-ID: <CA+5PVA5mz-420Rnuf8KD3xoKf8zYs9gP_8r3_QNCdo7mKEsczA@mail.gmail.com>
-References: <CA+5PVA6SQ9JGBD3F=u5ysch-agp91oTK8ZbKsdQkz57yZ8OUHQ@mail.gmail.com>
-	<7035644.8Kb1gDYsCf@amdc1227>
-	<CA+5PVA7T4P9vMH0r8p78aZYUrL8gzbpY9MmW9=nV3X0tE-e4NA@mail.gmail.com>
-	<1480759.MNj1g1yX4l@amdc1227>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Thu, 05 Sep 2013 01:55:35 +0200
+Message-ID: <1706734.hVYFTCa5rJ@vostro.rjw.lan>
+References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org> <5225E205.7080008@linux.vnet.ibm.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:sender:in-reply-to:references:date:message-id:subject
-         :from:to:cc:content-type;
-        bh=PuEKbTO6CQkWQwW1a8oFjYLrDELgiZjjx55h52RVmuM=;
-        b=rvT1NyV6b7Pf95g2LTu/dhzLg/BfEGYJnw83XuHeFXPhkoJerWUbrPdgVDSYyWlhpN
-         bZGxfWUeCa9E6ZU8tjhsklMahjHVNzPPaQB/NdfVfoK/IHPL9cyRYtSy7JBFyK/pE3bL
-         xrcJ6TAn0uHdHneRVPhV8eW7sr3ad6ZeJE+PeLx6BQK3cC8PFr1k2xO4qoNcVf+uilCj
-         TtcKW0xOh0Go6/KMBfWXoMF293DnhIfwJyF22E009ttsbooGJ1Eqg7KTaO9v7VNUfRYr
-         V4LUcvt+qvuQL+aeSC2Siz0YQpGF7SaH1X2jcWWQ1YSgBmSWxv+iPK8LobRkwpHswvAE
-         IU0g==
-In-Reply-To: <1480759.MNj1g1yX4l@amdc1227>
+In-Reply-To: <5225E205.7080008@linux.vnet.ibm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Peter Robinson <pbrobinson@gmail.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, sboyd@codeaurora.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Sep 4, 2013 at 11:04 AM, Tomasz Figa <t.figa@samsung.com> wrote:
-> On Wednesday 04 of September 2013 10:41:31 Josh Boyer wrote:
->> On Wed, Sep 4, 2013 at 10:36 AM, Tomasz Figa <t.figa@samsung.com> wrote:
->> > Hi Josh,
->> >
->> > On Wednesday 04 of September 2013 10:13:16 Josh Boyer wrote:
->> >> Using Linus' tree as of this morning (v3.11-2654-g458c3f6), the
->> >> exynos-cpufreq driver doesn't build because it includes a file that
->> >> doesn't exist.
->> >>
->> >> + make -s ARCH=arm V=1 -j4 bzImage KALLSYMS_EXTRA_PASS=1
->> >> arch/arm/kernel/return_address.c:63:2: warning: #warning "TODO:
->> >> return_address should use unwind tables" [-Wcpp]
->> >>
->> >>  #warning "TODO: return_address should use unwind tables"
->> >>
->> >>   ^
->> >>
->> >> arch/arm/mm/dma-mapping.c:253:2: warning: #warning ARM Coherent DMA
->> >> allocator does not (yet) support huge TLB [-Wcpp]
->> >>
->> >>  #warning ARM Coherent DMA allocator does not (yet) support huge TLB
->> >>
->> >>   ^
->> >>
->> >> drivers/cpufreq/exynos-cpufreq.c:21:22: fatal error: plat/cpu.h: No
->> >> such file or directory
->> >>
->> >>  #include <plat/cpu.h>
->> >>
->> >>                       ^
->> >>
->> >> compilation terminated.
->> >> make[2]: *** [drivers/cpufreq/exynos-cpufreq.o] Error 1
->> >>
->> >> I'm guessing that <plat/cpu.h> file is supposed to come from
->> >> arch/arm/plat-samsung/include/plat/, but I don't see anything that
->> >> specifies a -I there.
->> >>
->> >> Thoughts?
->> >
->> > Could you attach config that could be used to trigger this? Thanks in
->> > advance.
->>
->> Attached.
->
-> Hmm, this does not look like config for kernel neither from Linus' nor
-> linux-next tree. The first thing I can see is CONFIG_ARCH_EXYNOS_MULTI
-> selected, which is not available in any mainline tree.
+On Tuesday, September 03, 2013 06:50:05 PM Srivatsa S. Bhat wrote:
+> On 09/01/2013 10:56 AM, Viresh Kumar wrote:
+> > We can't take a big lock around __cpufreq_governor() as this causes recursive
+> > locking for some cases. But calls to this routine must be serialized for every
+> > policy.
+> > 
+> > Lets introduce another variable which would guarantee serialization here.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq.c | 7 ++++++-
+> >  include/linux/cpufreq.h   | 1 +
+> >  2 files changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index f320a20..4d5723db 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -1692,13 +1692,15 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+> >  						policy->cpu, event);
+> > 
+> >  	mutex_lock(&cpufreq_governor_lock);
+> > -	if ((policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
+> > +	if (policy->governor_busy ||
+> > +		(policy->governor_enabled && (event == CPUFREQ_GOV_START)) ||
+> >  		(!policy->governor_enabled && ((event == CPUFREQ_GOV_LIMITS) ||
+> >  					       (event == CPUFREQ_GOV_STOP)))) {
+> >  		mutex_unlock(&cpufreq_governor_lock);
+> >  		return -EBUSY;
+> >  	}
+> > 
+> > +	policy->governor_busy = true;
+> >  	if (event == CPUFREQ_GOV_STOP)
+> >  		policy->governor_enabled = false;
+> >  	else if (event == CPUFREQ_GOV_START)
+> > @@ -1727,6 +1729,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+> >  			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
+> >  		module_put(policy->governor->owner);
+> > 
+> > +	mutex_lock(&cpufreq_governor_lock);
+> > +	policy->governor_busy = false;
+> > +	mutex_unlock(&cpufreq_governor_lock);
+> >  	return ret;
+> >  }
+> > 
+> 
+> This doesn't solve the problem completely: it prevents the store_*() task
+> from continuing *only* when it concurrently executes the __cpufreq_governor()
+> function along with the CPU offline task. But if the two calls don't overlap,
+> we will still have the possibility where the store_*() task tries to acquire
+> the timer mutex after the CPU offline task has just finished destroying it.
+> 
+> So, IMHO, the right fix is to synchronize with CPU hotplug. That way, the
+> store_*() thread will wait until the entire CPU offline operation is completed.
+> After that, if it continues, it will get -EBUSY, due to patch [1], since
+> policy->governor_enabled will be set to false.
+> 
+> [1]. https://patchwork.kernel.org/patch/2852463/
+> 
+> So here is the (completely untested) fix that I propose, as a replacement to
+> this patch [2/2]:
+> 
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 5c75e31..71c4fb2 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -440,17 +440,24 @@ static ssize_t store_##file_name					\
+>  	unsigned int ret;						\
+>  	struct cpufreq_policy new_policy;				\
+>  									\
+> +	get_online_cpus();						\
+>  	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
+> -	if (ret)							\
+> -		return -EINVAL;						\
+> +	if (ret) {							\
+> +		ret = -EINVAL;						\
+> +		goto out;						\
+> +	}								\
+>  									\
+>  	ret = sscanf(buf, "%u", &new_policy.object);			\
+> -	if (ret != 1)							\
+> -		return -EINVAL;						\
+> +	if (ret != 1) {							\
+> +		ret = -EINVAL;						\
+> +		goto out;						\
+> +	}								\
+>  									\
+>  	ret = __cpufreq_set_policy(policy, &new_policy);		\
+>  	policy->user_policy.object = policy->object;			\
+>  									\
+> +out:									\
+> +	put_online_cpus();						\
+>  	return ret ? ret : count;					\
+>  }
+>  
+> @@ -494,17 +501,22 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
+>  	char	str_governor[16];
+>  	struct cpufreq_policy new_policy;
+>  
+> +	get_online_cpus();
+>  	ret = cpufreq_get_policy(&new_policy, policy->cpu);
+>  	if (ret)
+> -		return ret;
+> +		goto out;
+>  
+>  	ret = sscanf(buf, "%15s", str_governor);
+> -	if (ret != 1)
+> -		return -EINVAL;
+> +	if (ret != 1) {
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+>  
+>  	if (cpufreq_parse_governor(str_governor, &new_policy.policy,
+> -						&new_policy.governor))
+> -		return -EINVAL;
+> +						&new_policy.governor)) {
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+>  
+>  	/*
+>  	 * Do not use cpufreq_set_policy here or the user_policy.max
+> @@ -515,6 +527,9 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
+>  	policy->user_policy.policy = policy->policy;
+>  	policy->user_policy.governor = policy->governor;
+>  
+> +out:
+> +	put_online_cpus();
+> +
+>  	if (ret)
+>  		return ret;
+>  	else
 
-Sigh.  Yes, I see the issue now.
+Well, I'm not sure when Viresh is going to be back.
 
-> As for the build error itself, headers from plat/ are available for drivers
-> only in single platform builds, they can't be included when multiplatform
-> is enabled. The exynos-cpufreq driver is not multiplatform-aware yet and so
-> you get the failure.
+Srivatsa, can you please resend this patch with a proper changelog?
 
-Someone added some exynos multiplatform patches to the Fedora kernel.
-That seems to have caused these build failures.  Our mistake and my
-apologies for the inconvenience.  Thank you for the quick response.
+Rafael
 
-josh
