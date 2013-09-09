@@ -1,49 +1,58 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: "cpufreq: fix serialization issues with freq change notifiers" breaks
- cpufreq too
-Date: Mon, 9 Sep 2013 17:11:10 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: [PATCH V2] intel_pstate: Add Haswell CPU models
+Date: Mon, 09 Sep 2013 09:39:27 -0700
+Message-ID: <522DF9BF.3060900@gmail.com>
+References: <51D0B831.3000707@spicious.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Id: <cpufreq.vger.kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        bh=yup+sjKBOfr1AfOUt7un4f6x8lPJ7CKLYDNuLELl0b4=;
+        b=CYwuICdjKgXforKHCKkmUTBzFDJ/8e6MkAwzMdVc7/+YXXUoQh65cY+AawrigjJO1P
+         uiJ6KDa0ZoTFsDdVGpMrSYgxmFouEEQ2ntnDN9/JEju8la4pHQV9QTnvnfAciZ48Q+Ii
+         53oQ7qBunI3080n1TgdgNkqimDgZ3h+pPaouZtrRNqa1Htkgm3dBVlf5lRhUmWolDHEG
+         OS1WfhIvxvBK9PkcFMTffDiVmuaqD4q179Xnhd01lQukj0AvYmwCHchLd+taWmhaalTB
+         Au7aWimyvPJ0X5A2T1fPiYhft0PDvDBzHrNrLK2I6lulMoEauqLF8wLRCs41sR78eq/h
+         kHpA==
+In-Reply-To: <51D0B831.3000707@spicious.com>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Nell Hardcastle <nell@spicious.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.j.brandewie@intel.com, dirk.brandewie@gmail.com
 
-Sorry guys, I'm trying my best to stop this patch from propagating to 
-stable and to get it fixed asap, so, the CC list might be a bit excessive. 
-Also trying to fix the originally spare cc list, which makes it impossible 
-for me to reply to the original thread, instead have to start a new one.
+On 06/30/2013 03:58 PM, Nell Hardcastle wrote:
+> Enable the intel_pstate driver for Haswell CPUs. One missing Ivy Bridge
+> model (0x3E) is also included. Models referenced from
+> tools/power/x86/turbostat/turbostat.c:has_nehalem_turbo_ratio_limit
+>
 
-Commit
+Acked-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-commit dceff5ce18801dddc220d6238628619c93bc3cb6
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Sun Sep 1 22:19:37 2013 +0530
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Nell Hardcastle <nell@spicious.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c | 5 +++++
+>   1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 07f2840..dbd1032 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -522,6 +522,11 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>   	ICPU(0x2a, default_policy),
+>   	ICPU(0x2d, default_policy),
+>   	ICPU(0x3a, default_policy),
+> +	ICPU(0x3c, default_policy),
+> +	ICPU(0x3e, default_policy),
+> +	ICPU(0x3f, default_policy),
+> +	ICPU(0x45, default_policy),
+> +	ICPU(0x46, default_policy),
+>   	{}
+>   };
+>   MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+>
 
-    cpufreq: fix serialization issues with freq change notifiers
-
-breaks .transition_ongoing counting. This leads to cpufreq-cpu0 not 
-working any more. In particular switching the governor from performance to 
-powersave directly after boot doesn't result in a frequency switch any 
-more. Reverting this patch fixes the problem again. Tested with today's 
--next.
-
-Please, refrain from including into "stable" until clarified!
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
