@@ -1,7 +1,7 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 61071] powernow-k8 is not autoloaded
-Date: Mon, 09 Sep 2013 21:01:04 +0000
-Message-ID: <bug-61071-12968-b7RacAcn2Y@https.bugzilla.kernel.org/>
+Date: Mon, 09 Sep 2013 21:01:14 +0000
+Message-ID: <bug-61071-12968-TlHzHUdjjA@https.bugzilla.kernel.org/>
 References: <bug-61071-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -18,9 +18,7 @@ Rafael J. Wysocki <rjw@rjwysocki.net> changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-                 CC|                            |rjw@rjwysocki.net
-         Resolution|---                         |WILL_NOT_FIX
+             Status|RESOLVED                    |CLOSED
 
 -- 
 You are receiving this mail because:
