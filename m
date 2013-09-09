@@ -1,49 +1,50 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 5/5] cpufreq: Use signed type for 'ret' variable,
- to store negative error values
-Date: Sat, 07 Sep 2013 01:24:06 +0530
-Message-ID: <20130906195404.26919.21905.stgit@srivatsabhat.in.ibm.com>
-References: <20130906195206.26919.20884.stgit@srivatsabhat.in.ibm.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 61071] New: powernow-k8 is not autoloaded
+Date: Mon, 09 Sep 2013 14:58:13 +0000
+Message-ID: <bug-61071-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <20130906195206.26919.20884.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: rjw@sisk.pl, sboyd@codeaurora.org, viresh.kumar@linaro.org
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-There are places where the variable 'ret' is declared as unsigned int
-and then used to store negative return values such as -EINVAL. Fix them
-by declaring the variable as a signed quantity.
+https://bugzilla.kernel.org/show_bug.cgi?id=61071
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+            Bug ID: 61071
+           Summary: powernow-k8 is not autoloaded
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 3.11
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: cpufreq@vger.kernel.org
+          Reporter: bjo@nord-west.org
+        Regression: No
 
- drivers/cpufreq/cpufreq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I'm running Arch Linux on a AMD Athlon 64 X2 Dual Core Processor 5000+. On
+Kernel 3.10, powernow-k8 gets loaded automatically (as expected since 3.4).
+With 3.11, it doesn't get loaded automatically, so cpupower fails at bootup.
+But it loads fine if I load it via /etc/modules-load.d/.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9909789..9cc5609 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -460,7 +460,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *policy,
- static ssize_t store_##file_name					\
- (struct cpufreq_policy *policy, const char *buf, size_t count)		\
- {									\
--	unsigned int ret;						\
-+	int ret;							\
- 	struct cpufreq_policy new_policy;				\
- 									\
- 	ret = cpufreq_get_policy(&new_policy, policy->cpu);		\
-@@ -513,7 +513,7 @@ static ssize_t show_scaling_governor(struct cpufreq_policy *policy, char *buf)
- static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
- 					const char *buf, size_t count)
- {
--	unsigned int ret;
-+	int ret;
- 	char	str_governor[16];
- 	struct cpufreq_policy new_policy;
- 
+Some information:
 
+modinfo powernow-k8:
+alias:          x86cpu:vendor:0002:family:000F:model:*:feature:*
+
+udevadmin info --export-db | grep cpu:
+DEVPATH=/devices/system/cpu/cpu0
+MODALIAS=x86cpu:vendor:0002:family:000F:model:006B:feature:,0000,0001,0002,0003,0004,0005,0006,0007,0008,0009,000B,000C,000D,000E,000F,0010,0011,0013,0017,0018,0019,001A,001C,0020,0021,0022,0023,0024,0025,0026,0027,0028,0029,002B,002C,002D,002E,002F,0030,0031,0034,0036,0037,0038,0039,003B,003D,003E,003F,0064,006A,006E,0070,0071,0074,0075,007A,0080,008D,00C0,00C1,00C2,00C3,00C4,00C8,0106
+
+Vendor and family still match, so I have no idea why the module doesn't get
+loaded.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
