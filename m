@@ -1,58 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers" breaks cpufreq too
-Date: Mon, 09 Sep 2013 23:08:25 +0200
-Message-ID: <1883706.eFcILAzoo8@vostro.rjw.lan>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Bug 61071] New: powernow-k8 is not autoloaded
+Date: Mon, 09 Sep 2013 23:11:17 +0200
+Message-ID: <1712564.WS6sGrXry7@vostro.rjw.lan>
+References: <bug-61071-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <bug-61071-12968@https.bugzilla.kernel.org/>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
+To: bugzilla-daemon@bugzilla.kernel.org
+Cc: cpufreq@vger.kernel.org
 
-Hi,
-
-On Monday, September 09, 2013 05:11:10 PM Guennadi Liakhovetski wrote:
-> Sorry guys, I'm trying my best to stop this patch from propagating to 
-> stable and to get it fixed asap, so, the CC list might be a bit excessive. 
-> Also trying to fix the originally spare cc list, which makes it impossible 
-> for me to reply to the original thread, instead have to start a new one.
-
-I'm not sure what you're talking about.  What exactly was wrong with the
-original CC list in particular?
-
-> Commit
+On Monday, September 09, 2013 02:58:13 PM bugzilla-daemon@bugzilla.kernel.org wrote:
+>
+> I'm running Arch Linux on a AMD Athlon 64 X2 Dual Core Processor 5000+. On
+> Kernel 3.10, powernow-k8 gets loaded automatically (as expected since 3.4).
+> With 3.11, it doesn't get loaded automatically, so cpupower fails at bootup.
+> But it loads fine if I load it via /etc/modules-load.d/.
 > 
-> commit dceff5ce18801dddc220d6238628619c93bc3cb6
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Sun Sep 1 22:19:37 2013 +0530
+> Some information:
 > 
->     cpufreq: fix serialization issues with freq change notifiers
+> modinfo powernow-k8:
+> alias:          x86cpu:vendor:0002:family:000F:model:*:feature:*
 > 
-> breaks .transition_ongoing counting.
-
-Do you know how exactly it breaks that?  If so, care to share that knowledge?
-
-> This leads to cpufreq-cpu0 not working any more. In particular switching the
-> governor from performance to powersave directly after boot doesn't result in
-> a frequency switch any more. Reverting this patch fixes the problem again.
-
-However, this is a regression fix, so I'd prefer to fix the problem on top of
-it instead of reverting this commit entirely.
-
-> Tested with today's 
-> -next.
+> udevadmin info --export-db | grep cpu:
+> DEVPATH=/devices/system/cpu/cpu0
+> MODALIAS=x86cpu:vendor:0002:family:000F:model:006B:feature:,0000,0001,0002,0003,0004,0005,0006,0007,0008,0009,000B,000C,000D,000E,000F,0010,0011,0013,0017,0018,0019,001A,001C,0020,0021,0022,0023,0024,0025,0026,0027,0028,0029,002B,002C,002D,002E,002F,0030,0031,0034,0036,0037,0038,0039,003B,003D,003E,003F,0064,006A,006E,0070,0071,0074,0075,007A,0080,008D,00C0,00C1,00C2,00C3,00C4,00C8,0106
 > 
-> Please, refrain from including into "stable" until clarified!
+> Vendor and family still match, so I have no idea why the module doesn't get
+> loaded.
 
-Well, dropping the commit altogether and dropping the "CC stable" tag are
-equally disruptive at this point, so I think I'll just defer all of the
-cpufreq fixes I wanted to push for 3.12 before the ending of the merge
-window.
+That is a udev problem as described in this commit message:
 
-Thanks,
-Rafael
+http://cgit.freedesktop.org/systemd/systemd/commit?id=bf7f800f2b3e93ccd1229d4717166f3a4d3af72f
 
+Please ask your distro to push that udev fix in an update.
