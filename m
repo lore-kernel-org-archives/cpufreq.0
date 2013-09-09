@@ -1,50 +1,49 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 61071] New: powernow-k8 is not autoloaded
-Date: Mon, 09 Sep 2013 14:58:13 +0000
-Message-ID: <bug-61071-12968@https.bugzilla.kernel.org/>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: "cpufreq: fix serialization issues with freq change notifiers" breaks
+ cpufreq too
+Date: Mon, 9 Sep 2013 17:11:10 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=61071
+Sorry guys, I'm trying my best to stop this patch from propagating to 
+stable and to get it fixed asap, so, the CC list might be a bit excessive. 
+Also trying to fix the originally spare cc list, which makes it impossible 
+for me to reply to the original thread, instead have to start a new one.
 
-            Bug ID: 61071
-           Summary: powernow-k8 is not autoloaded
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 3.11
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: cpufreq@vger.kernel.org
-          Reporter: bjo@nord-west.org
-        Regression: No
+Commit
 
-I'm running Arch Linux on a AMD Athlon 64 X2 Dual Core Processor 5000+. On
-Kernel 3.10, powernow-k8 gets loaded automatically (as expected since 3.4).
-With 3.11, it doesn't get loaded automatically, so cpupower fails at bootup.
-But it loads fine if I load it via /etc/modules-load.d/.
+commit dceff5ce18801dddc220d6238628619c93bc3cb6
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Sun Sep 1 22:19:37 2013 +0530
 
-Some information:
+    cpufreq: fix serialization issues with freq change notifiers
 
-modinfo powernow-k8:
-alias:          x86cpu:vendor:0002:family:000F:model:*:feature:*
+breaks .transition_ongoing counting. This leads to cpufreq-cpu0 not 
+working any more. In particular switching the governor from performance to 
+powersave directly after boot doesn't result in a frequency switch any 
+more. Reverting this patch fixes the problem again. Tested with today's 
+-next.
 
-udevadmin info --export-db | grep cpu:
-DEVPATH=/devices/system/cpu/cpu0
-MODALIAS=x86cpu:vendor:0002:family:000F:model:006B:feature:,0000,0001,0002,0003,0004,0005,0006,0007,0008,0009,000B,000C,000D,000E,000F,0010,0011,0013,0017,0018,0019,001A,001C,0020,0021,0022,0023,0024,0025,0026,0027,0028,0029,002B,002C,002D,002E,002F,0030,0031,0034,0036,0037,0038,0039,003B,003D,003E,003F,0064,006A,006E,0070,0071,0074,0075,007A,0080,008D,00C0,00C1,00C2,00C3,00C4,00C8,0106
+Please, refrain from including into "stable" until clarified!
 
-Vendor and family still match, so I have no idea why the module doesn't get
-loaded.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
