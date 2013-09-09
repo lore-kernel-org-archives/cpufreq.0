@@ -1,19 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Bug 61071] New: powernow-k8 is not autoloaded
-Date: Mon, 09 Sep 2013 23:11:17 +0200
-Message-ID: <1712564.WS6sGrXry7@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 61071] powernow-k8 is not autoloaded
+Date: Mon, 09 Sep 2013 21:00:25 +0000
+Message-ID: <bug-61071-12968-xf8q517o3k@https.bugzilla.kernel.org/>
 References: <bug-61071-12968@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <bug-61071-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: bugzilla-daemon@bugzilla.kernel.org
-Cc: cpufreq@vger.kernel.org
+To: cpufreq@vger.kernel.org
 
-On Monday, September 09, 2013 02:58:13 PM bugzilla-daemon@bugzilla.kernel.org wrote:
+https://bugzilla.kernel.org/show_bug.cgi?id=61071
+
+--- Comment #1 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+On Monday, September 09, 2013 02:58:13 PM bugzilla-daemon@bugzilla.kernel.org
+wrote:
 >
 > I'm running Arch Linux on a AMD Athlon 64 X2 Dual Core Processor 5000+. On
 > Kernel 3.10, powernow-k8 gets loaded automatically (as expected since 3.4).
@@ -37,3 +40,7 @@ That is a udev problem as described in this commit message:
 http://cgit.freedesktop.org/systemd/systemd/commit?id=bf7f800f2b3e93ccd1229d4717166f3a4d3af72f
 
 Please ask your distro to push that udev fix in an update.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
