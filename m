@@ -1,75 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: "cpufreq: fix serialization issues with freq change notifiers" breaks cpufreq too
-Date: Tue, 10 Sep 2013 03:46:35 +0200
-Message-ID: <2529974.gUYIkmlmP8@vostro.rjw.lan>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange> <Pine.LNX.4.64.1309092330560.12376@axis700.grange> <2339390.oQAxMuU2Y5@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
+Date: Tue, 10 Sep 2013 12:22:12 +0530
+Message-ID: <CAKohpom-UFkvORuuzAEUj1jVofHTEkDMhSmMUo4_0Xxfj605-g@mail.gmail.com>
+References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
+	<80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org>
+	<5225E205.7080008@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <2339390.oQAxMuU2Y5@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5225E205.7080008@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-pm@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 7bit
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, September 10, 2013 01:12:49 AM Rafael J. Wysocki wrote:
-> On Monday, September 09, 2013 11:42:41 PM Guennadi Liakhovetski wrote:
-> > Hi Rafael
-> > 
-> > On Mon, 9 Sep 2013, Rafael J. Wysocki wrote:
-> > 
-> > > Hi,
-> > > 
-> > > On Monday, September 09, 2013 05:11:10 PM Guennadi Liakhovetski wrote:
-> > > > Sorry guys, I'm trying my best to stop this patch from propagating to 
-> > > > stable and to get it fixed asap, so, the CC list might be a bit excessive. 
-> > > > Also trying to fix the originally spare cc list, which makes it impossible 
-> > > > for me to reply to the original thread, instead have to start a new one.
-> > > 
-> > > I'm not sure what you're talking about.  What exactly was wrong with the
-> > > original CC list in particular?
-> > 
-> > I think you advised once to cc cpufreq related mails to linux-pm too at 
-> > least.
-> 
-> Yes, I did.
-> 
-> > I haven't found this patch in my pm archive, have I missed it there?
-> 
-> Quite frankly, I don't remember if it was there.  ISTR having it it patchwork,
-> which would mean that it was there, but well.
-> 
-> > > > Commit
-> > > > 
-> > > > commit dceff5ce18801dddc220d6238628619c93bc3cb6
-> > > > Author: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > Date:   Sun Sep 1 22:19:37 2013 +0530
-> > > > 
-> > > >     cpufreq: fix serialization issues with freq change notifiers
-> > > > 
-> > > > breaks .transition_ongoing counting.
-> > > 
-> > > Do you know how exactly it breaks that?  If so, care to share that knowledge?
-> > 
-> > No, I don't. I only know that in __cpufreq_driver_target() the check for
-> > 
-> > 	if (policy->transition_ongoing) {
-> > 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> > 		return -EBUSY;
-> > 	}
-> > 
-> > is failing with this patch and cpufreq-cpu0.
-> 
-> OK, we need to figure out that, then.
+Back finally and I see lots of mails over cpufreq stuff.. :)
 
-But given the timing I think I'll just start to revert things and we can add
-them back later after we've sorted out all problems.
+On 3 September 2013 18:50, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> This doesn't solve the problem completely: it prevents the store_*() task
+> from continuing *only* when it concurrently executes the __cpufreq_governor()
+> function along with the CPU offline task. But if the two calls don't overlap,
+> we will still have the possibility where the store_*() task tries to acquire
+> the timer mutex after the CPU offline task has just finished destroying it.
 
-So I'm going to drop commit dceff5c from the linux-next branch and I'm going to
-revert commit 7c30ed5 along with commit 266c13d that tried to fix it and we'll
-revisit the transition serialization issue when we really know how to fix it.
+How exactly? My brain is still on vacations :)
 
-Thanks,
-Rafael
+Anyway, this was one of the problem that I tried to solve with my patch.
+But there can be other race conditions where things can go wrong and so
+that patch may still be useful.
 
+Call to __cpufreq_governor() must be serialized I believe.
