@@ -1,77 +1,46 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 60839] scaling_max_freq cannot be set to values larger than
- bios_limit
-Date: Tue, 10 Sep 2013 09:46:17 +0000
-Message-ID: <bug-60839-12968-RDStYSFNoT@https.bugzilla.kernel.org/>
-References: <bug-60839-12968@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
+ breaks cpufreq too
+Date: Tue, 10 Sep 2013 16:59:29 +0530
+Message-ID: <CAKohponZ+FnzqXYMbBzbun0-1iQMi2fS4syrEBC_MdF41vLCeA@mail.gmail.com>
+References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-60839-12968@https.bugzilla.kernel.org/>
+In-Reply-To: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D60839
+On 9 September 2013 20:41, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> Sorry guys, I'm trying my best to stop this patch from propagating to
+> stable and to get it fixed asap, so, the CC list might be a bit excessive.
+> Also trying to fix the originally spare cc list, which makes it impossible
+> for me to reply to the original thread, instead have to start a new one.
+>
+> Commit
+>
+> commit dceff5ce18801dddc220d6238628619c93bc3cb6
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Sun Sep 1 22:19:37 2013 +0530
+>
+>     cpufreq: fix serialization issues with freq change notifiers
+>
+> breaks .transition_ongoing counting. This leads to cpufreq-cpu0 not
+> working any more. In particular switching the governor from performance to
+> powersave directly after boot doesn't result in a frequency switch any
+> more. Reverting this patch fixes the problem again. Tested with today's
+> -next.
 
-Sven K=C3=B6hler <sven.koehler@gmail.com> changed:
+I have tested it again on my exynos and intel machines and couldn't see
+a single problem with this patch..
 
-           What    |Removed                     |Added
------------------------------------------------------------------------=
------
-             Status|RESOLVED                    |REOPENED
-         Resolution|INVALID                     |---
+I am afraid you need to give us some more information on how it broke
+your stuff.. :)
 
---- Comment #2 from Sven K=C3=B6hler <sven.koehler@gmail.com> ---
-(In reply to Lan Tianyu from comment #1)
-> Hi:
->      This sounds like a user space issue. Bios limit will rise after
-> plugging/unplugging AC and laptop-mode-tools also should update
-> scaling_max_freq. Cpufreq core schedules freq scope according user sp=
-ace
-> configuration. If user space tool doesn't extend the scope according =
-bios
-> limit after plugging/unplugging AC, the scope will keep low cpufreq.
+And I am also not sure cpufreq-cpu0 is different then any other driver..
 
-=46irst of all, does the kernel provide any hook to run a script every =
-time
-bios_limit changes or do you expect userspace to do polling?
-
-Second, you can't be serious that the sysfs interface should remain as
-inconsistent as it is now. Clearly, the internal state of scaling_max_f=
-req and
-bios_limit can be one, where scaling_max_freq is larger than bios_limit=
-=2E This
-is very clear since I observed that (unless userspace tries to change
-scaling_max_freq) the value of scaling_max_freq will increase as bios_l=
-imit
-increases. At time when bios_limit is low, userspace cannot even find o=
-ut about
-the true state of scaling_max_freq (which is larger than bios_limit) as=
- the
-value obtainable via sysfs is always clipped. Obviously, knowing that s=
-uch a
-state exists, it is dubious why it can't be configured.
-
-Thirdly, I'd really like know the rational behind the decision to that=20
-a) userspace should never be able to observe, that scaling_max_freq is =
-actually
-kernel internally larger than bios_limit=20
-b) userspace should never be able to set scaling_max_freq to a value la=
-rger
-than bios_limit
-
-IMHO, both (a) and (b) are wrong, in the sense that there is no good re=
-ason in
-favour of (a) and (b) and many reasons against (a) and (b). A very stro=
-ng
-reason against (a) is the very simple fact that userspace cannot tell w=
-hether
-the current maximum CPU frequency is limited by the BIOS or the value o=
-f
-scaling_max_freq.
-
---=20
-You are receiving this mail because:
-You are the assignee for the bug.
+--
+viresh
