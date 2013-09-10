@@ -1,9 +1,9 @@
 From: tianyu.lan@intel.com
-Subject: [PATCH 1/1] Cpufreq: Remove fossil comment of cpufreq_set_policy
-Date: Tue, 10 Sep 2013 10:44:47 -0400
-Message-ID: <1378824287-7696-1-git-send-email-tianyu.lan@intel.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Subject: [Update PATCH 1/1] Cpufreq: Remove fossil comment of cpufreq_set_policy
+Date: Tue, 10 Sep 2013 10:53:18 -0400
+Message-ID: <1378824798-7983-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,7 +15,11 @@ From: Lan Tianyu <tianyu.lan@intel.com>
 
 The cpufreq_set_policy() has been removed by commit 632786c. So remove
 related comment.
+
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 ---
+Update: miss signed-off due to using my new script. Sorry for nosiy. 
+
  drivers/cpufreq/cpufreq.c | 4 ----
  1 file changed, 4 deletions(-)
 
