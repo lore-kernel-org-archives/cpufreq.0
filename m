@@ -1,38 +1,39 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 60839] scaling_max_freq cannot be set to values larger than
- bios_limit
-Date: Tue, 10 Sep 2013 14:19:33 +0000
-Message-ID: <bug-60839-12968-fE5mxvINZ4@https.bugzilla.kernel.org/>
-References: <bug-60839-12968@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: tianyu.lan@intel.com
+Subject: [PATCH 1/1] Cpufreq: Remove fossil comment of cpufreq_set_policy
+Date: Tue, 10 Sep 2013 10:44:47 -0400
+Message-ID: <1378824287-7696-1-git-send-email-tianyu.lan@intel.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <bug-60839-12968@https.bugzilla.kernel.org/>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, viresh.kumar@linaro.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=60839
+From: Lan Tianyu <tianyu.lan@intel.com>
 
---- Comment #5 from Lan Tianyu <tianyu.lan@intel.com> ---
-Ok. I was confused and please try the following patch.
+The cpufreq_set_policy() has been removed by commit 632786c. So remove
+related comment.
+---
+ drivers/cpufreq/cpufreq.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 5c75e31..de9e6e4 100644
+index 5c75e31..a504313 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -449,7 +449,7 @@ static ssize_t store_##file_name                           
-        \
-                return -EINVAL;                                         \
-                                                                        \
-        ret = __cpufreq_set_policy(policy, &new_policy);                \
--       policy->user_policy.object = policy->object;                    \
-+       policy->user_policy.object = new_policy.object;                 \
-                                                                        \
-        return ret ? ret : count;                                       \
- }
-
+@@ -506,10 +506,6 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
+ 						&new_policy.governor))
+ 		return -EINVAL;
+ 
+-	/*
+-	 * Do not use cpufreq_set_policy here or the user_policy.max
+-	 * will be wrongly overridden
+-	 */
+ 	ret = __cpufreq_set_policy(policy, &new_policy);
+ 
+ 	policy->user_policy.policy = policy->policy;
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.8.2.1
+
