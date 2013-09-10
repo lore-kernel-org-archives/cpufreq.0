@@ -1,80 +1,74 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: "cpufreq: fix serialization issues with freq change notifiers" breaks cpufreq too
-Date: Tue, 10 Sep 2013 01:12:49 +0200
-Message-ID: <2339390.oQAxMuU2Y5@vostro.rjw.lan>
-References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange> <1883706.eFcILAzoo8@vostro.rjw.lan> <Pine.LNX.4.64.1309092330560.12376@axis700.grange>
+Date: Tue, 10 Sep 2013 03:46:35 +0200
+Message-ID: <2529974.gUYIkmlmP8@vostro.rjw.lan>
+References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange> <Pine.LNX.4.64.1309092330560.12376@axis700.grange> <2339390.oQAxMuU2Y5@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.1309092330560.12376@axis700.grange>
-Sender: linux-sh-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <2339390.oQAxMuU2Y5@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-On Monday, September 09, 2013 11:42:41 PM Guennadi Liakhovetski wrote:
-> Hi Rafael
-> 
-> On Mon, 9 Sep 2013, Rafael J. Wysocki wrote:
-> 
-> > Hi,
+On Tuesday, September 10, 2013 01:12:49 AM Rafael J. Wysocki wrote:
+> On Monday, September 09, 2013 11:42:41 PM Guennadi Liakhovetski wrote:
+> > Hi Rafael
 > > 
-> > On Monday, September 09, 2013 05:11:10 PM Guennadi Liakhovetski wrote:
-> > > Sorry guys, I'm trying my best to stop this patch from propagating to 
-> > > stable and to get it fixed asap, so, the CC list might be a bit excessive. 
-> > > Also trying to fix the originally spare cc list, which makes it impossible 
-> > > for me to reply to the original thread, instead have to start a new one.
+> > On Mon, 9 Sep 2013, Rafael J. Wysocki wrote:
 > > 
-> > I'm not sure what you're talking about.  What exactly was wrong with the
-> > original CC list in particular?
-> 
-> I think you advised once to cc cpufreq related mails to linux-pm too at 
-> least.
-
-Yes, I did.
-
-> I haven't found this patch in my pm archive, have I missed it there?
-
-Quite frankly, I don't remember if it was there.  ISTR having it it patchwork,
-which would mean that it was there, but well.
-
-> > > Commit
+> > > Hi,
 > > > 
-> > > commit dceff5ce18801dddc220d6238628619c93bc3cb6
-> > > Author: Viresh Kumar <viresh.kumar@linaro.org>
-> > > Date:   Sun Sep 1 22:19:37 2013 +0530
+> > > On Monday, September 09, 2013 05:11:10 PM Guennadi Liakhovetski wrote:
+> > > > Sorry guys, I'm trying my best to stop this patch from propagating to 
+> > > > stable and to get it fixed asap, so, the CC list might be a bit excessive. 
+> > > > Also trying to fix the originally spare cc list, which makes it impossible 
+> > > > for me to reply to the original thread, instead have to start a new one.
 > > > 
-> > >     cpufreq: fix serialization issues with freq change notifiers
+> > > I'm not sure what you're talking about.  What exactly was wrong with the
+> > > original CC list in particular?
+> > 
+> > I think you advised once to cc cpufreq related mails to linux-pm too at 
+> > least.
+> 
+> Yes, I did.
+> 
+> > I haven't found this patch in my pm archive, have I missed it there?
+> 
+> Quite frankly, I don't remember if it was there.  ISTR having it it patchwork,
+> which would mean that it was there, but well.
+> 
+> > > > Commit
+> > > > 
+> > > > commit dceff5ce18801dddc220d6238628619c93bc3cb6
+> > > > Author: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > Date:   Sun Sep 1 22:19:37 2013 +0530
+> > > > 
+> > > >     cpufreq: fix serialization issues with freq change notifiers
+> > > > 
+> > > > breaks .transition_ongoing counting.
 > > > 
-> > > breaks .transition_ongoing counting.
+> > > Do you know how exactly it breaks that?  If so, care to share that knowledge?
 > > 
-> > Do you know how exactly it breaks that?  If so, care to share that knowledge?
-> 
-> No, I don't. I only know that in __cpufreq_driver_target() the check for
-> 
-> 	if (policy->transition_ongoing) {
-> 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 		return -EBUSY;
-> 	}
-> 
-> is failing with this patch and cpufreq-cpu0.
-
-OK, we need to figure out that, then.
-
-> > > This leads to cpufreq-cpu0 not working any more. In particular switching the
-> > > governor from performance to powersave directly after boot doesn't result in
-> > > a frequency switch any more. Reverting this patch fixes the problem again.
+> > No, I don't. I only know that in __cpufreq_driver_target() the check for
 > > 
-> > However, this is a regression fix, so I'd prefer to fix the problem on top of
-> > it instead of reverting this commit entirely.
+> > 	if (policy->transition_ongoing) {
+> > 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> > 		return -EBUSY;
+> > 	}
+> > 
+> > is failing with this patch and cpufreq-cpu0.
 > 
-> If I understood correctly, this patch fixed some warnings, that, however, 
-> didn't disrupt functionality, is this right? Whereas the patch really 
-> seems to break working set ups.
+> OK, we need to figure out that, then.
 
-It fixed warnings that indicated problems and those problems should rather be
-avoided.
+But given the timing I think I'll just start to revert things and we can add
+them back later after we've sorted out all problems.
+
+So I'm going to drop commit dceff5c from the linux-next branch and I'm going to
+revert commit 7c30ed5 along with commit 266c13d that tried to fix it and we'll
+revisit the transition serialization issue when we really know how to fix it.
 
 Thanks,
 Rafael
