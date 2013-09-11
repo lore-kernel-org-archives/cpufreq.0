@@ -1,19 +1,19 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: Fix crash in cpufreq-stats during suspend/resume
-Date: Thu, 12 Sep 2013 01:46:27 +0530
-Message-ID: <5230CF9B.9090509@linux.vnet.ibm.com>
-References: <20130911201128.7749.61727.stgit@srivatsabhat.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/3] cpufreq: Fix crash in cpufreq-stats during suspend/resume
+Date: Thu, 12 Sep 2013 00:55:33 +0200
+Message-ID: <1728661.WtXmRBqPEX@vostro.rjw.lan>
+References: <20130911201239.7832.72612.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130911201128.7749.61727.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130911201239.7832.72612.stgit@srivatsabhat.in.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: rjw@sisk.pl, swarren@wwwdotorg.org, viresh.kumar@linaro.org
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: swarren@wwwdotorg.org, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/12/2013 01:41 AM, Srivatsa S. Bhat wrote:
+On Thursday, September 12, 2013 01:42:59 AM Srivatsa S. Bhat wrote:
 > Stephen Warren reported that the cpufreq-stats code hits a NULL pointer
 > dereference during the second attempt to suspend a system. He also
 > pin-pointed the problem to commit 5302c3f "cpufreq: Perform light-weight
@@ -46,15 +46,10 @@ On 09/12/2013 01:41 AM, Srivatsa S. Bhat wrote:
 > Reported-by: Stephen Warren <swarren@nvidia.com>
 > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 > Tested-by: Stephen Warren <swarren@nvidia.com>
+
+Applied, thanks Srivatsa!
+
 > ---
-
-Sorry, please ignore this one. I had intended to send 3 patches as a series,
-but by mistake I ended up sending just one. I have sent the full series
-(3 patches) separately, please consider that posting.
-
-Regards,
-Srivatsa S. Bhat
-
 > 
 >  drivers/cpufreq/cpufreq.c |   37 ++++++++++++++++++++++++-------------
 >  1 file changed, 24 insertions(+), 13 deletions(-)
@@ -66,7 +61,7 @@ Srivatsa S. Bhat
 > @@ -947,6 +947,18 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
 >  	kfree(policy);
 >  }
-> 
+>  
 > +static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
 > +{
 > +	policy->last_cpu = policy->cpu;
@@ -85,7 +80,7 @@ Srivatsa S. Bhat
 > @@ -1000,7 +1012,18 @@ static int __cpufreq_add_dev(struct device *dev, struct subsys_interface *sif,
 >  	if (!policy)
 >  		goto nomem_out;
-> 
+>  
 > -	policy->cpu = cpu;
 > +
 > +	/*
@@ -101,11 +96,11 @@ Srivatsa S. Bhat
 > +
 >  	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
 >  	cpumask_copy(policy->cpus, cpumask_of(cpu));
-> 
+>  
 > @@ -1092,18 +1115,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
 >  	return __cpufreq_add_dev(dev, sif, false);
 >  }
-> 
+>  
 > -static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
 > -{
 > -	policy->last_cpu = policy->cpu;
@@ -122,3 +117,10 @@ Srivatsa S. Bhat
 >  					   unsigned int old_cpu, bool frozen)
 >  {
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
