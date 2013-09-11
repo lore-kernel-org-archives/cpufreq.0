@@ -1,79 +1,45 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 4/4] ARM: shmobile: change dev_id to cpu0 while registering
- cpu clock
-Date: Wed, 11 Sep 2013 18:25:56 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1309111743130.26942@axis700.grange>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1378835989-19281-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: cpufreq_stats NULL deref on second system suspend
+Date: Wed, 11 Sep 2013 23:33:36 +0530
+Message-ID: <5230B078.3070306@linux.vnet.ibm.com>
+References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan> <522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan> <52304439.3030301@linux.vnet.ibm.com> <523094CD.3000506@wwwdotorg.org>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1378835989-19281-5-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Magnus Damm <damm@opensource.se>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <523094CD.3000506@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+List-ID: <cpufreq.vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-On Tue, 10 Sep 2013, Sudeep KarkadaNagesha wrote:
-
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+On 09/11/2013 09:35 PM, Stephen Warren wrote:
+> On 09/11/2013 04:21 AM, Srivatsa S. Bhat wrote:
+>> On 09/11/2013 04:04 AM, Rafael J. Wysocki wrote:
+>>> On Tuesday, September 10, 2013 02:53:01 PM Stephen Warren wrote:
+>>>> On 09/09/2013 05:14 PM, Rafael J. Wysocki wrote:
+>>>>> On Monday, September 09, 2013 03:29:06 PM Stephen Warren wrote:
+>>>>>> On 09/09/2013 02:24 PM, Rafael J. Wysocki wrote:
+>>>>>>> On Monday, September 09, 2013 02:01:32 PM Stephen Warren wrote:
+>>>>>>>> On 09/09/2013 02:01 PM, Rafael J. Wysocki wrote:
+>>>>>>>>> On Monday, September 09, 2013 01:22:23 PM Stephen Warren wrote:
+>>>>>>>>>> Viresh,
+>>>>>>>>>>
+>>>>>>>>>> I'm seeing the crash below when suspending my system for the second time.
+> ...
+>> Stephen, I went through the code and I think I found out what is going wrong.
+>> Can you please try the following patch?
 > 
-> Currently all clkdev registration use "cpufreq-cpu0.0" as dev_id
-> for cpu clock which refers to virtual platform device. It needs to
-> be "cpu0" instead which is actual cpu0 device id.
-> 
-> This patch changes the dev_id from "cpufreq-cpu0.0" to "cpu0".
-> 
-> Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Cc: Magnus Damm <damm@opensource.se>
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-
-Tested-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
-
-Thanks
-Guennadi
-
-> ---
->  arch/arm/mach-shmobile/clock-r8a73a4.c | 2 +-
->  arch/arm/mach-shmobile/clock-sh73a0.c  | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-shmobile/clock-r8a73a4.c b/arch/arm/mach-shmobil=
-> e/clock-r8a73a4.c
-> index 8ea5ef6..5bd2e85 100644
-> --- a/arch/arm/mach-shmobile/clock-r8a73a4.c
-> +++ b/arch/arm/mach-shmobile/clock-r8a73a4.c
-> @@ -555,7 +555,7 @@ static struct clk_lookup lookups[] =3D {
->  =09CLKDEV_CON_ID("pll2h",=09=09=09&pll2h_clk),
-> =20
->  =09/* CPU clock */
-> -=09CLKDEV_DEV_ID("cpufreq-cpu0",=09=09&z_clk),
-> +=09CLKDEV_DEV_ID("cpu0",=09=09=09&z_clk),
-> =20
->  =09/* DIV6 */
->  =09CLKDEV_CON_ID("zb",=09=09=09&div6_clks[DIV6_ZB]),
-> diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile=
-> /clock-sh73a0.c
-> index 1942eae..c92c023 100644
-> --- a/arch/arm/mach-shmobile/clock-sh73a0.c
-> +++ b/arch/arm/mach-shmobile/clock-sh73a0.c
-> @@ -616,7 +616,7 @@ static struct clk_lookup lookups[] =3D {
->  =09CLKDEV_DEV_ID("smp_twd", &twd_clk), /* smp_twd */
-> =20
->  =09/* DIV4 clocks */
-> -=09CLKDEV_DEV_ID("cpufreq-cpu0", &div4_clks[DIV4_Z]),
-> +=09CLKDEV_DEV_ID("cpu0", &div4_clks[DIV4_Z]),
-> =20
->  =09/* DIV6 clocks */
->  =09CLKDEV_CON_ID("vck1_clk", &div6_clks[DIV6_VCK1]),
-> --=20
-> 1.8.1.2
-> 
+> Unfortunately, I still see the exact same failure/backtrace with this
+> patch applied.
 > 
 
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Oh, is it? Can you please give me the map of the related cpus on your
+system? (ie., cat /sys/devices/system/cpu/cpu*/cpufreq/related_cpus for
+each CPU.)
+
+I must be missing something...
+ 
+Regards,
+Srivatsa S. Bhat
+
