@@ -1,94 +1,79 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: cpufreq_stats NULL deref on second system suspend
-Date: Wed, 11 Sep 2013 19:26:48 +0530
-Message-ID: <523076A0.3020308@linux.vnet.ibm.com>
-References: <522E1FEF.6080803@wwwdotorg.org> <1775778.MeiRhuYy7o@vostro.rjw.lan>	<522F86AD.6010603@wwwdotorg.org> <2521560.SfeNbV74nj@vostro.rjw.lan>	<52304439.3030301@linux.vnet.ibm.com> <CAKohpokTVzikxunqSdUYmLjTOkfhWFJ=N4TTa4rdbj2euCFY-g@mail.gmail.com> <CAKohpomzQ8Yzk+OU0btQM6DGm4xsY1RR9uYFrZD3ZHO-bhrwKQ@mail.gmail.com> <5230509D.6040205@linux.vnet.ibm.com> <CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
+ cpu0 device
+Date: Wed, 11 Sep 2013 17:43:07 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1309111742290.26942@axis700.grange>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=DfmNSMnyVRK0gfx7QGr=jOTbFo6uuGhEOaa2UMkeQAQ@mail.gmail.com>
+In-Reply-To: <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Warren <swarren@wwwdotorg.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 
-On 09/11/2013 05:29 PM, Viresh Kumar wrote:
-> On 11 September 2013 16:44, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Hmm? The problem is not about merely updating the policy->cpu field; the
->> main issue is that the existing code was not letting the cpufreq-stats
->> code know that we updated the policy->cpu under the hood. It is important
->> for cpufreq-stats to know this because it maintains the reference to its
->> stats structure by associating it with the policy->cpu. So if policy->cpu
->> changes under the hood, it loses track of its reference. So we need to
->> keep that code informed about changes to policy->cpu. Thus, we need to call
->> update_policy_cpu() in the CPU online path (during resume). I don't see
->> how we can skip that.
-> 
-> Okay.. There are two different ways in which cpufreq_add_dev() work
-> currently..
-> 
-> Boot cluster (i.e. policy with boot CPU)
-> ---------------
-> 
-> Here cpufreq_remove_dev() is never called for boot cpu but all others.
-> And similarly cpufreq_add_dev() is never called for boot cpu but all others.
-> 
-> Now policy->cpu contains meaningful cpu at beginning of resume and
-> we don't need to modify that at all.. For all the remaining CPUs we
-> better call cpufreq_add_policy_cpu() rather..
->
+On Tue, 10 Sep 2013, Sudeep KarkadaNagesha wrote:
 
-Yes, and the existing code already does that. And if you observe the placement
-of the call to update_policy_cpu() in my patch, you'll find that it won't
-be called in cases where we call cpufreq_add_policy_cpu(). Which is exactly
-what you want, IIUC.
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> 
+> Commit f837a9b5ab05c52a07108c6f09ca66f2e0aee757 "cpufreq: cpufreq-cpu0:
+> remove device tree parsing for cpu nodes" assumed the pdev->dev is set to
+> cpu0 device in the platform code. But it actually points to the virtual
+> cpufreq-cpu0 platform device which is not present in the device tree.
+> Most of the information needed by cpufreq is stored in cpu0 DT node.
+> So cpu_dev must point to cpu0 device.
+> 
+> This patch fixes the wrong assignment to cpu_dev.
+> 
+> Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-> Non-boot Cluster
-> ---------------------
-> 
-> All CPUs here are removed and at the end policy->cpu contains the last
-> cpu removed.. So, for a cluster with cpu 2 and 3.... it will contain 3..
-> 
-> Not at resume we will add cpu2 first and so need to update policy->cpu
-> to 2.. But for all other CPUs in this cluster we return early from
-> cpufreq_add_dev() and call cpufreq_add_policy_cpu() as policy->cpus
-> was fixed by call to ->init() for the first cpu of this cluster..
-> 
-> And so we never reach the line: policy->cpu = cpu;
-> 
-> For the first cpu of non-boot cluster we need to call update_policy_cpu()
-> and not for others..
-> 
+Tested-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
 
-Yes, and that's precisely why I added the call to update_policy_cpu() only
-near the statement 'policy->cpu = cpu'. All other cases don't need to call
-that function, and in my patch, they indeed don't call that function.
+Thanks
+Guennadi
 
-A simple way to look at this is:
-If policy->cpu is updated anywhere in the resume (cpu online) path, we need
-to call update_policy_cpu(). Otherwise, we don't need to call that function.
-This will cover both the scenarios you described above.
-
+> ---
+>  drivers/cpufreq/cpufreq-cpu0.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> But for the boot cluster if we can call ->init() somehow at resume time,
-> then things would be fairly similar in both cases..
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.=
+> c
+> index cbfffa9..78c49d8 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -12,6 +12,7 @@
+>  #define pr_fmt(fmt)=09KBUILD_MODNAME ": " fmt
+> =20
+>  #include <linux/clk.h>
+> +#include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> @@ -177,7 +178,11 @@ static int cpu0_cpufreq_probe(struct platform_device *=
+> pdev)
+>  =09struct device_node *np;
+>  =09int ret;
+> =20
+> -=09cpu_dev =3D &pdev->dev;
+> +=09cpu_dev =3D get_cpu_device(0);
+> +=09if (!cpu_dev) {
+> +=09=09pr_err("failed to get cpu0 device\n");
+> +=09=09return -ENODEV;
+> +=09}
+> =20
+>  =09np =3D of_node_get(cpu_dev->of_node);
+>  =09if (!np) {
+> --=20
+> 1.8.1.2
 > 
-> I am running of time now, as need to leave office now...
-> I hope I made the problem more clear or probably the way I see it :)
 > 
 
-Well, your explanation matches my understanding of the scenarios, and
-I had written the patch keeping those scenarios in mind; so I believe the
-patch is correct as it is. So what I didn't get is this: are you suggesting
-that something is wrong in my patch, or are you just reiterating the different
-scenarios involved so that I can recheck whether my patch is right?
-
-If it is the former, please point me to the exact problem you found in
-my patch. If it is the latter, I'm pretty sure my patch is right, I've
-already checked it :-)
-
-Regards,
-Srivatsa S. Bhat
-
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
