@@ -1,7 +1,7 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: Fix crash in cpufreq-stats during suspend/resume
-Date: Thu, 12 Sep 2013 01:41:53 +0530
-Message-ID: <20130911201128.7749.61727.stgit@srivatsabhat.in.ibm.com>
+Subject: [PATCH 1/3] cpufreq: Fix crash in cpufreq-stats during suspend/resume
+Date: Thu, 12 Sep 2013 01:42:59 +0530
+Message-ID: <20130911201239.7832.72612.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
