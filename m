@@ -1,57 +1,89 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Cpufreq: Acquire read lock in the cpufreq_policy_restore()
- rather than write lock
-Date: Wed, 11 Sep 2013 13:39:33 +0530
-Message-ID: <5230253D.6040308@linux.vnet.ibm.com>
-References: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/4] cpufreq: cpufreq-cpu0: assign cpu_dev correctly to
+ cpu0 device
+Date: Wed, 11 Sep 2013 10:15:00 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1309111005310.26942@axis700.grange>
+References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1378883105-1411-1-git-send-email-tianyu.lan@intel.com>
+In-Reply-To: <1378835989-19281-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-To: tianyu.lan@intel.com
-Cc: rjw@sisk.pl, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 
-On 09/11/2013 12:35 PM, tianyu.lan@intel.com wrote:
-> From: Lan Tianyu <tianyu.lan@intel.com>
+Hi Sudeep
+
+On Tue, 10 Sep 2013, Sudeep KarkadaNagesha wrote:
+
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> In the cpufreq_policy_restore(), policy before system suspend is read from
-> from percpu's cpufreq_cpu_data_fallback. It's read operation rather than
-> write operation. So convert write lock to read lock
+> Commit f837a9b5ab05c52a07108c6f09ca66f2e0aee757 "cpufreq: cpufreq-cpu0:
+> remove device tree parsing for cpu nodes" assumed the pdev->dev is set to
+> cpu0 device in the platform code. But it actually points to the virtual
+> cpufreq-cpu0 platform device which is not present in the device tree.
+> Most of the information needed by cpufreq is stored in cpu0 DT node.
+> So cpu_dev must point to cpu0 device.
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> This patch fixes the wrong assignment to cpu_dev.
+> 
+> Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-
-I noticed it too yesterday, while looking at something else. Thanks for
-fixing this!
+Thanks for your patches
 
 > ---
->  drivers/cpufreq/cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/cpufreq-cpu0.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 81ceea6..b762f9b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -912,11 +912,11 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
->  	struct cpufreq_policy *policy;
->  	unsigned long flags;
-> 
-> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> 
->  	policy = per_cpu(cpufreq_cpu_data_fallback, cpu);
-> 
-> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
->  	return policy;
->  }
-> 
- 
-Regards,
-Srivatsa S. Bhat
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.=
+> c
+> index cbfffa9..78c49d8 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -12,6 +12,7 @@
+>  #define pr_fmt(fmt)=09KBUILD_MODNAME ": " fmt
+> =20
 
+Noone else seems to complain, but I don't think these =20, =09 etc. codes 
+have been invented on my side and I don't think they belong here. I'm 
+handling enough mails / patches daily to believe, that my mail system 
+isn't the cause of this. Could you please verify and regenerate and 
+resend? Unless I'm mistaken this looks like a corruption on your SMTP 
+side.
+
+Thanks
+Guennadi
+
+>  #include <linux/clk.h>
+> +#include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> @@ -177,7 +178,11 @@ static int cpu0_cpufreq_probe(struct platform_device *=
+> pdev)
+>  =09struct device_node *np;
+>  =09int ret;
+> =20
+> -=09cpu_dev =3D &pdev->dev;
+> +=09cpu_dev =3D get_cpu_device(0);
+> +=09if (!cpu_dev) {
+> +=09=09pr_err("failed to get cpu0 device\n");
+> +=09=09return -ENODEV;
+> +=09}
+> =20
+>  =09np =3D of_node_get(cpu_dev->of_node);
+>  =09if (!np) {
+> --=20
+> 1.8.1.2
+> 
+> 
+
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
