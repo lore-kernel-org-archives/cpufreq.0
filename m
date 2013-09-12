@@ -1,38 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] cpufreq: fixes for v3.12
-Date: Thu, 12 Sep 2013 00:58:54 +0200
-Message-ID: <1795989.18GOYqdUtX@vostro.rjw.lan>
-References: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: "cpufreq: fix serialization issues with freq change notifiers"
+ breaks cpufreq too
+Date: Thu, 12 Sep 2013 06:09:38 +0530
+Message-ID: <CAKohpokEZcwF-zL6rTXYyC_x=SJzGFvdvxqvmvyhJHa8nPXogQ@mail.gmail.com>
+References: <Pine.LNX.4.64.1309091656200.6602@axis700.grange>
+	<2703632.ul5ekQh5oq@vostro.rjw.lan>
+	<CAKohpo=RKB-_EO=cjaOorAfN=y_cMgJg-j6=xtX71a-TwujgsA@mail.gmail.com>
+	<2013615.oHjWkmedue@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1378835989-19281-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <2013615.oHjWkmedue@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, SH-Linux <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 
-On Tuesday, September 10, 2013 06:59:45 PM Sudeep KarkadaNagesha wrote:
-> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> 
-> Hi Shawn, Guennadi,
-> 
-> These are the fixes for the issue reported by Guennadi.
-> cpu_dev should point to cpu0 device instead of cpufreq-cpu0 platform
-> devices. The dev_id is also updated while registering the cpu clocks.
-> 
-> Can you review these ? Tested-by is much appreciated as I don't
-> have hardware to check the fix.
+On 11 September 2013 18:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, September 11, 2013 02:08:44 PM Viresh Kumar wrote:
 
-I have a little problem with this series, because the last patch is based
-on the current Linus' tree rather than on my master branch which is what
-I have ready to push.  I don't think it makes sense to rebase it, however,
-because that would introduce a merge conflict for Linus unnecessarily.
+>> That looked like a straight forward issue/bug to me and so I haven't
+>> gotten deep into it..
+>
+> Which you should always do when you're going to deal with concurrency issues.
+> Even if they appear to be obvious, they often are far from that, like in this
+> case.
 
-To avoid merging stuff back and forth, I'll push this series later in the
-cycle.
+/me Nods
 
-Thanks,
-Rafael
+>> Scenario 2:
+>> --------------
+>> Governor is changing freq and has called __cpufreq_driver_target().
+>> At the same time we are changing scaling_{min|max}_freq from
+>> sysfs, which would eventually end up calling governors:
+>> CPUFREQ_GOV_LIMITS notification, that will also call:
+>> __cpufreq_driver_target()..
+>>
+>> So, we eventually have two concurrent calls to ->target() and we
+>> don't really know how hardware will behave in this case.. Most of
+>> the implementations of ->target() routines just go and change
+>> freq/voltage without checking if we are already in progress of doing
+>> that (i.e. based on expectation that this call is not re entrant)..
+>>
+>> Now anything can happen at hardware level, which I don't have
+>> all insight of :(
+>
+> That is more theoretical, however.
 
+Maybe we can get more deeper into it then :)
+Platform have something like this in their target()
+
+A. If new freq is more than old: Increase voltage
+B. Change freq
+C. If new freq is less than old: decrease voltage
+
+Now, two concurrent calls to target are X and Y, where X is trying to increase
+freq and Y is trying to decrease it..
+
+And this is the sequence that followed due to races..
+
+X.A: voltage increased for larger freq
+Y.A: nothing happened here
+Y.B: freq decreased
+Y.C: voltage decreased
+X.B: freq increased
+X.C: nothing happened..
+
+We ended up setting a freq which is not supported by the voltage we have
+set.. That will probably make clock to CPU unstable and system wouldn't
+be workable anymore...
+
+And so I think even this case must also get some space in the changelog :)
