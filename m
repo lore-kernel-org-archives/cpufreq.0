@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 057/228] cpufreq: arm_big_little: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:03 +0530
-Message-ID: <548ca171c8d04596fe22e8b98af24b28453e840d.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 056/228] cpufreq: acpi: Use generic cpufreq routines
+Date: Fri, 13 Sep 2013 18:30:02 +0530
+Message-ID: <f3afc7d5df3655fecbe4a29f7f312b0c86ca3e74.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,53 +23,38 @@ This patch uses these generic routines for this driver.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/arm_big_little.c | 18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 2c7c134..132c966 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -47,14 +47,6 @@ static unsigned int bL_cpufreq_get(unsigned int cpu)
- 	return clk_get_rate(clk[cur_cluster]) / 1000;
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 71f8e15..d67023d 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -516,15 +516,6 @@ out:
+ 	return result;
  }
  
--/* Validate policy frequency range */
--static int bL_cpufreq_verify_policy(struct cpufreq_policy *policy)
+-static int acpi_cpufreq_verify(struct cpufreq_policy *policy)
 -{
--	u32 cur_cluster = cpu_to_cluster(policy->cpu);
+-	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
 -
--	return cpufreq_frequency_table_verify(policy, freq_table[cur_cluster]);
+-	pr_debug("acpi_cpufreq_verify\n");
+-
+-	return cpufreq_frequency_table_verify(policy, data->freq_table);
 -}
 -
- /* Set clock frequency */
- static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 		unsigned int target_freq, unsigned int relation)
-@@ -205,22 +197,16 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--/* Export freq_table to sysfs */
--static struct freq_attr *bL_cpufreq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver bL_cpufreq_driver = {
- 	.name			= "arm-big-little",
- 	.flags			= CPUFREQ_STICKY |
- 					CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
--	.verify			= bL_cpufreq_verify_policy,
-+	.verify			= cpufreq_generic_frequency_table_verify,
- 	.target			= bL_cpufreq_set_target,
- 	.get			= bL_cpufreq_get,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
--	.attr			= bL_cpufreq_attr,
-+	.attr			= cpufreq_generic_attr,
+ static unsigned long
+ acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
+ {
+@@ -927,7 +918,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
  };
  
- int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
+ static struct cpufreq_driver acpi_cpufreq_driver = {
+-	.verify		= acpi_cpufreq_verify,
++	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target		= acpi_cpufreq_target,
+ 	.bios_limit	= acpi_processor_get_bios_limit,
+ 	.init		= acpi_cpufreq_cpu_init,
 -- 
 1.7.12.rc2.18.g61b472e
 
