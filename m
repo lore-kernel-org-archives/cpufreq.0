@@ -1,77 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 068/228] cpufreq: imx6q: Use generic cpufreq routines
-Date: Fri, 13 Sep 2013 18:30:14 +0530
-Message-ID: <e17b8cc8527391f00931a2c84903dba5ca80ee59.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 030/228] cpufreq: p4-clockmod: use cpufreq_table_validate_and_show()
+Date: Fri, 13 Sep 2013 18:29:36 +0530
+Message-ID: <1476114c469dd7b3b3a4e793c7c04441021fd315.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, "David S. Miller" <davem@davemloft.net>
 
-Most of the CPUFreq drivers do similar things in .exit() and .verify() routines
-and .attr. So its better if we have generic routines for them which can be used
-by cpufreq drivers then.
+Lets use cpufreq_table_validate_and_show() instead of calling
+cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-This patch uses these generic routines for this driver.
-
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/cpufreq/p4-clockmod.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index cd9489f..29767bb 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -34,11 +34,6 @@ static struct device *cpu_dev;
- static struct cpufreq_frequency_table *freq_table;
- static unsigned int transition_latency;
+diff --git a/drivers/cpufreq/p4-clockmod.c b/drivers/cpufreq/p4-clockmod.c
+index 2f0a2a6..03478bf 100644
+--- a/drivers/cpufreq/p4-clockmod.c
++++ b/drivers/cpufreq/p4-clockmod.c
+@@ -230,7 +230,6 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ 		else
+ 			p4clockmod_table[i].frequency = (stock_freq * i)/8;
+ 	}
+-	cpufreq_frequency_table_get_attr(p4clockmod_table, policy->cpu);
  
--static int imx6q_verify_speed(struct cpufreq_policy *policy)
--{
--	return cpufreq_frequency_table_verify(policy, freq_table);
--}
--
- static unsigned int imx6q_get_speed(unsigned int cpu)
- {
- 	return clk_get_rate(arm_clk) / 1000;
-@@ -173,25 +168,14 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- 	return 0;
+ 	/* cpuinfo and default policy values */
+ 
+@@ -239,7 +238,7 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = 10000001;
+ 	policy->cur = stock_freq;
+ 
+-	return cpufreq_frequency_table_cpuinfo(policy, &p4clockmod_table[0]);
++	return cpufreq_table_validate_and_show(policy, &p4clockmod_table[0]);
  }
  
--static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
--{
--	cpufreq_frequency_table_put_attr(policy->cpu);
--	return 0;
--}
--
--static struct freq_attr *imx6q_cpufreq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
--
- static struct cpufreq_driver imx6q_cpufreq_driver = {
--	.verify = imx6q_verify_speed,
-+	.verify = cpufreq_generic_frequency_table_verify,
- 	.target = imx6q_set_target,
- 	.get = imx6q_get_speed,
- 	.init = imx6q_cpufreq_init,
--	.exit = imx6q_cpufreq_exit,
-+	.exit = cpufreq_generic_exit,
- 	.name = "imx6q-cpufreq",
--	.attr = imx6q_cpufreq_attr,
-+	.attr = cpufreq_generic_attr,
- };
  
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
 -- 
 1.7.12.rc2.18.g61b472e
 
