@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 141/228] cpufreq: pmac64: use cpufreq_generic_init() routine
-Date: Fri, 13 Sep 2013 18:31:27 +0530
-Message-ID: <3c39921134990a55770b0421cf7131916384e8d5.1379063063.git.viresh.kumar@linaro.org>
+Subject: [PATCH 135/228] cpufreq: kirkwood: use cpufreq_generic_init() routine
+Date: Fri, 13 Sep 2013 18:31:21 +0530
+Message-ID: <76198830de8f8fd9f8bcbba08ac4888d15e2c88a.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379063063.git.viresh.kumar@linaro.org>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,30 +20,25 @@ here.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/pmac64-cpufreq.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/cpufreq/kirkwood-cpufreq.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 79e40c9..b977b9a 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -347,16 +347,9 @@ static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
- 
- static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index dc434c4..fff8653 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -120,10 +120,7 @@ static int kirkwood_cpufreq_target(struct cpufreq_policy *policy,
+ /* Module init and exit code */
+ static int kirkwood_cpufreq_cpu_init(struct cpufreq_policy *policy)
  {
--	policy->cpuinfo.transition_latency = transition_latency;
--	/* secondary CPUs are tied to the primary one by the
--	 * cpufreq core if in the secondary policy we tell it that
--	 * it actually must be one policy together with all others. */
--	cpumask_copy(policy->cpus, cpu_online_mask);
+-	/* cpuinfo and default policy values */
+-	policy->cpuinfo.transition_latency = 5000; /* 5uS */
 -
--	return cpufreq_table_validate_and_show(policy, g5_cpu_freqs);
-+	return cpufreq_generic_init(policy, g5_cpu_freqs, transition_latency);
+-	return cpufreq_table_validate_and_show(policy, kirkwood_freq_table);
++	return cpufreq_generic_init(policy, kirkwood_freq_table, 5000);
  }
  
--
- static struct cpufreq_driver g5_cpufreq_driver = {
- 	.name		= "powermac",
- 	.flags		= CPUFREQ_CONST_LOOPS,
+ static struct cpufreq_driver kirkwood_cpufreq_driver = {
 -- 
 1.7.12.rc2.18.g61b472e
+
