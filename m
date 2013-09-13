@@ -1,71 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Fri, 13 Sep 2013 17:14:26 +0530
-Message-ID: <CAKohpom8d89OtJOs-_eCu+RiVA+B0bt7rtgNcJn=D=y95+jdQg@mail.gmail.com>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org>
-	<80c4bd8c577e5da0aa63342671773be5cdc26a9a.1378012620.git.viresh.kumar@linaro.org>
-	<5225E205.7080008@linux.vnet.ibm.com>
-	<5197493.kSPF7VUWqc@vostro.rjw.lan>
-Mime-Version: 1.0
+Subject: [PATCH 0/2] cpufreq: fix transition_ongoing count for powernow-k8
+Date: Fri, 13 Sep 2013 18:29:37 +0530
+Message-ID: <cover.1379062834.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5197493.kSPF7VUWqc@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 4 September 2013 01:10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, September 03, 2013 06:50:05 PM Srivatsa S. Bhat wrote:
+This has been running in my mind since few days... That we have fixed cpufreq
+core and all other drivers for transition serialization but what about
+powernow-k8? It is somewhat special (even more than exynos5440).. It queues a
+work from ->target() and may or maynot send notifications at all..
 
->> This doesn't solve the problem completely: it prevents the store_*() task
->> from continuing *only* when it concurrently executes the __cpufreq_governor()
->> function along with the CPU offline task. But if the two calls don't overlap,
->> we will still have the possibility where the store_*() task tries to acquire
->> the timer mutex after the CPU offline task has just finished destroying it.
->
-> Yeah, I overlooked that.
+Finally I have got a solution now (detailed logs in the patch)..
+These must go with following patchset:
 
-As a background, I had a IRC chat with Srivatsa on this mail.. (I have marked
-this unread as there were other important topics to close)..
+https://lkml.org/lkml/2013/9/12/173
 
-And he had some other code in mind and these synchronization problems
-aren't there with my patch at all (as per him too)..
+Compile tested only..
 
-Rafael, probably both me and Srivatsa are missing something that you
-understood, can you please share what problem you see here with my patch?
+Viresh Kumar (2):
+  cpufreq: Create cpufreq_transition_complete()
+  cpufreq: powernow-k8: mark freq transition complete on error cases
 
-And yes, even with Srivatsa's patchset I found a problem:
-Two threads, one changing governor from ondemand->conservative and other
-one changing min/max freq..
+ drivers/cpufreq/cpufreq.c     | 25 ++++++++++++-----------
+ drivers/cpufreq/powernow-k8.c | 47 +++++++++++++++++++++++++++++++------------
+ include/linux/cpufreq.h       |  7 +++++++
+ 3 files changed, 54 insertions(+), 25 deletions(-)
 
-First one will try to STOP governor and other one will try to change
-limits of gov.
-Suppose 2nd one gets to ->governor() and after this first one stops
-the governor.
-Now the first one tries to access lock and crashes..
+-- 
+1.7.12.rc2.18.g61b472e
 
-On IRC, Srivatsa agreed about the problem..
-
-So, probably the first thing to do is to get this patch back, i.e.
-revert of Srivatsa's
-patch:
-
-commit 56d07db274b7b15ca38b60ea4a762d40de093000
-Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Date:   Sat Sep 7 01:23:55 2013 +0530
-
-    cpufreq: Remove temporary fix for race between CPU hotplug and sysfs-writes
-
-
-Srivatsa also asked if we can get a big lock around call to ->governor()
-which would create recursive locks on a call to EXIT event (as we have seen it
-earlier..)..
-
-But he believes he can pull it off and will try this later.. So, for
-now we can revert
-the above patch :)
-
---
-viresh
