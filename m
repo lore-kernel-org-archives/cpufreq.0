@@ -1,34 +1,27 @@
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: Re: [PATCH 097/228] cpufreq: cris: don't initialize part of policy
- that is set by core too
-Date: Fri, 13 Sep 2013 17:27:58 +0200
-Message-ID: <20130913152758.GK32443@axis.com>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
- <ba2db8dd7d87b0a284be900bf908c09444e6d979.1379063063.git.viresh.kumar@linaro.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 181/228] cpufreq: move freq change notifications to
+	cpufreq core
+Date: Fri, 13 Sep 2013 16:53:13 +0100
+Message-ID: <20130913155313.GA12758@n2100.arm.linux.org.uk>
+References: <cover.1379063063.git.viresh.kumar@linaro.org> <fd43341751c7a00d2f4eedf48d6338f866b26a52.1379063063.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=arm.linux.org.uk; s=caramon;
+	h=Sender:In-Reply-To:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date; bh=VfC54Uo4ZaqMTNAPWugKJQljDUjGNNBUSaP6u9W0114=;
+	b=oOZaHn83ci+0khXHJTXllPnx2M3DDlttY6zEstz+KEsVIIwJcrCIiEBjPx7+6bVGs43rWZN2DGN4bK4ye0fdFsU8K/xm9tGyqgy0fLjAUA3WvaE44/mG2Wone682kjAbxOaLzWXUHcd1/QpsksgZcv1qXokSHGNgXLJSN+DvQtM=;
 Content-Disposition: inline
-In-Reply-To: <ba2db8dd7d87b0a284be900bf908c09444e6d979.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <fd43341751c7a00d2f4eedf48d6338f866b26a52.1379063063.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, Sep 13, 2013 at 03:00:43PM +0200, Viresh Kumar wrote:
-> Many common initializations of struct policy are moved to core now and hence
-> this driver doesn't need to do it. This patch removes such code.
-> 
-> Most recent of those changes is to call ->get() in the core after calling
-> ->init().
+On Fri, Sep 13, 2013 at 06:32:07PM +0530, Viresh Kumar wrote:
+> +		read_lock_irqsave(&cpufreq_driver_lock, flags);
+> +		notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+> +		read_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
-
-> Cc: Mikael Starvik <starvik@axis.com>
-> Cc: linux-cris-kernel@axis.com
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+I don't think this needs to be read under a lock - if this bit changes
+dynamically, then there's something very wrong.
