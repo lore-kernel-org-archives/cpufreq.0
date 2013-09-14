@@ -1,74 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: serialize calls to __cpufreq_governor()
-Date: Sat, 14 Sep 2013 01:48:35 +0200
-Message-ID: <9715082.jFAchu7UKu@vostro.rjw.lan>
-References: <085013f4e584e3fef97187bcb349c3fa76942e19.1378012620.git.viresh.kumar@linaro.org> <5197493.kSPF7VUWqc@vostro.rjw.lan> <CAKohpom8d89OtJOs-_eCu+RiVA+B0bt7rtgNcJn=D=y95+jdQg@mail.gmail.com>
+From: Bill Huang <bilhuang@nvidia.com>
+Subject: Re: [PATCH v2 3/4] cpufreq: tegra: Re-model Tegra cpufreq driver
+Date: Fri, 13 Sep 2013 19:00:42 -0700
+Message-ID: <1379124042.2475.6.camel@bilhuang-vm1>
+References: <1378985091-9447-1-git-send-email-bilhuang@nvidia.com>
+	 <1378985091-9447-4-git-send-email-bilhuang@nvidia.com>
+	 <52339106.4020601@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom8d89OtJOs-_eCu+RiVA+B0bt7rtgNcJn=D=y95+jdQg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <52339106.4020601@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday, September 13, 2013 05:14:26 PM Viresh Kumar wrote:
-> On 4 September 2013 01:10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, September 03, 2013 06:50:05 PM Srivatsa S. Bhat wrote:
+On Sat, 2013-09-14 at 06:26 +0800, Stephen Warren wrote:
+> On 09/12/2013 05:24 AM, Bill Huang wrote:
+> > Re-model Tegra cpufreq driver to support all Tegra series of SoCs.
+> > 
+> > * Make tegra-cpufreq.c a generic Tegra cpufreq driver.
+> > * Move Tegra20 specific codes into tegra20-cpufreq.c.
+> > * Bind Tegra cpufreq dirver with a fake device so defer probe would work
+> >   when we're going to get regulator in the driver to support voltage
+> >   scaling (DVFS).
 > 
-> >> This doesn't solve the problem completely: it prevents the store_*() task
-> >> from continuing *only* when it concurrently executes the __cpufreq_governor()
-> >> function along with the CPU offline task. But if the two calls don't overlap,
-> >> we will still have the possibility where the store_*() task tries to acquire
-> >> the timer mutex after the CPU offline task has just finished destroying it.
-> >
-> > Yeah, I overlooked that.
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
 > 
-> As a background, I had a IRC chat with Srivatsa on this mail.. (I have marked
-> this unread as there were other important topics to close)..
+> > @@ -232,6 +232,12 @@ config ARM_TEGRA_CPUFREQ
+> >  	bool "TEGRA CPUFreq support"
+> >  	depends on ARCH_TEGRA
+> >  	select CPU_FREQ_TABLE
+> > +
+> > +config ARM_TEGRA20_CPUFREQ
+> > +	bool "NVIDIA TEGRA20"
+> > +	depends on ARM_TEGRA_CPUFREQ && ARCH_TEGRA_2x_SOC
+> >  	default y
+> >  	help
+> > -	  This adds the CPUFreq driver support for TEGRA SOCs.
+> > +	  This adds the CPUFreq driver for NVIDIA TEGRA20 SoC.
+> > +
+> > +	  If in doubt, say N.
 > 
-> And he had some other code in mind and these synchronization problems
-> aren't there with my patch at all (as per him too)..
+> This patch removes the following from "config ARM_TEGRA_CPUFREQ":
 > 
-> Rafael, probably both me and Srivatsa are missing something that you
-> understood, can you please share what problem you see here with my patch?
+> 	default y
+> 	help
+> 	  This adds the CPUFreq driver support for TEGRA SOCs.
 > 
-> And yes, even with Srivatsa's patchset I found a problem:
-> Two threads, one changing governor from ondemand->conservative and other
-> one changing min/max freq..
-> 
-> First one will try to STOP governor and other one will try to change
-> limits of gov.
-> Suppose 2nd one gets to ->governor() and after this first one stops
-> the governor.
-> Now the first one tries to access lock and crashes..
-> 
-> On IRC, Srivatsa agreed about the problem..
-> 
-> So, probably the first thing to do is to get this patch back, i.e.
-> revert of Srivatsa's
-> patch:
-> 
-> commit 56d07db274b7b15ca38b60ea4a762d40de093000
-> Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> Date:   Sat Sep 7 01:23:55 2013 +0530
-> 
->     cpufreq: Remove temporary fix for race between CPU hotplug and sysfs-writes
-> 
-> 
-> Srivatsa also asked if we can get a big lock around call to ->governor()
-> which would create recursive locks on a call to EXIT event (as we have seen it
-> earlier..)..
-> 
-> But he believes he can pull it off and will try this later.. So, for
-> now we can revert
-> the above patch :)
+> I think that option should be left unchanged, such that this patch
+> *just* adds the new option without changing the existing one. If you do
+> that, then you can completely drop patch 4/4.
 
-OK, I'll think about that, but not today and probably not within the next
-few days, because I'm heading to New Orleans in several hours and really
-have other stuff to take care of now.  Sorry about that.
+Thanks, I'll change and rebase in next version after Viresh's cleanup
+patch series is merged.
+> 
+> Other than that, this series looks fine.
 
-Thanks,
-Rafael
 
