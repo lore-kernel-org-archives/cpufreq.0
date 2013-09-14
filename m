@@ -1,64 +1,75 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 000/228] CPUFreq: cleanup stuff for 3.13
-Date: Sat, 14 Sep 2013 10:04:54 +0530
-Message-ID: <CAKohpokn_FS1EcNdLg9jZJ=ChLPM1kjxtR5iFCxYyNpn1dDL7A@mail.gmail.com>
+From: Vladimir Murzin <murzin.v@gmail.com>
+Subject: Re: [PATCH 211/228] cpufreq: tegra: remove calls to
+ cpufreq_notify_transition()
+Date: Sat, 14 Sep 2013 09:41:51 +0200
+Message-ID: <20130914074148.GA1862@hp530>
 References: <cover.1379063063.git.viresh.kumar@linaro.org>
-	<3040696.n8OU0605eG@vostro.rjw.lan>
+ <69073c98beae28a6a75103dd202ec2a6b8b1a674.1379063063.git.viresh.kumar@linaro.org>
+ <52339729.7030309@wwwdotorg.org>
+ <CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <3040696.n8OU0605eG@vostro.rjw.lan>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        bh=UGYrNJra87KZbrMxTrwzYFX1QXfijuQrT/ZrOjJSg2Q=;
+        b=A0ekcW1doLQ+VSWSTciQNh0eEim1feIflARbt7/T5t3YRYTohQIa4v5G8adqNffcTL
+         V02GIaWUplXLfe1WQo20IacBI933JIJ4v06B9+wHtxJBup7UTeRVDRSzaEeAuMAoAtBc
+         WhYxTJ0lxWV83lXbbqfVeiZ6ner7CCKna3EzCN1RfpBAuGHlSAyIkS6FBYTYk/gJVHIJ
+         E7PMy+s7dKczitPTOP/21U/qnQInit80lh5UzzMFvfIQHajmP4FguoJo3xI7zn/2Ha4b
+         BvBXNhYBg3222LTGIq4Ex94yuNRQe4NnCqIAfYPqgXQvr/gAUWq7j5B6/kOVGomtV45Z
+         i3fQ==
+Content-Disposition: inline
+In-Reply-To: <CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Stephen Warren <swarren@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 14 September 2013 05:08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, September 13, 2013 06:29:06 PM Viresh Kumar wrote:
->> This is my biggest patchset ever and it might not happen again in my entire
->> career. I hope I haven't screwed up here :)
->>
->> CPUFreq cleanup patches are ready to hit linux-next (I hope it doesn't turn out
->> into horror stories, where it broke all possible architectures where Linux runs
->> :))
->>
->> Most of these are build tested only, Also done by: Fengguang Wu's build bot.
->>
->> All of these were sent separately in smaller patchsets earlier and now merged
->> together as a single set. Some parts are reviewed by platform maintainers and
->> their Acks are included in the patches (Sorry if I missed any)..
->
-> I believe I asked you to send this stuff in pieces.
->
-> In any case, there's no way I'll apply this all at once and I'm not going to
-> pull it all at once either.
+On Sat, Sep 14, 2013 at 09:39:31AM +0530, Viresh Kumar wrote:
+> On 14 September 2013 04:22, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> > I wonder if this series is bisectable? Perhaps I should just go and read
+> > the rest of the series, but I presume there's a patch somewhere else
+> > that adds those two cpufreq_notify_transition() to the cpufreq core.
+> > Either that happens before this patch (in which case listeners will get
+> > two notifications each time; perhaps that is safe?), or after this patch
+> > (in which case with just this patch applied, no notifications will be
+> > sent until a later patch!
+> 
+> Hmm.. Good Catch..
+> 
+> So, yes git bisect would be compilable but not runnable.. As we are
+> already serialized notifications and so two PRE notifications will
+> generate a crash..
+> 
+> But I don't want to get all that in a single patch as that would be:
+> 
+>  40 files changed, 192 insertions(+), 623 deletions(-)
+> 
+> And that would be hard to review it..
+> 
+> Any suggestions?
+> 
 
-Exactly for this reason I had following in my cover-letter:
+It reminds me time of removing CONFIG_HOTPLUG and following __dev* attributes.
+At least stats for 48c68c4 "Drivers: video: remove __dev* attributes" is:
 
-"As suggested by Rafael earlier, he might not apply all at once and will give
-people some chance to test sets one by one.. So, first set now, next one after
-few days. So, I am marking different sets with patch numbers to make it easier
-for Rafael.
+135 files changed, 1017 insertions(+), 1129 deletions(-)
 
-- Patch 1->8: Generic cleanup of cpufreq core (First batch)
-- Patch 9->54: Mostly about cpufreq_table_validate_and_show() helper
-(First batch)
-- Patch 55->89: New generic routines for cpufreq drivers (First/Second batch)
-- Patch 90->126: About calling cpufreq_driver->get() from core
-(First/Second batch)
-- Patch 127->146: Generic init() routine (First/Second batch)
-- Patch 147->180: Light weight ->target() routine (Third batch)
-- Patch 181->211: Call notifiers from core instead of target()
-(Third/Fourth batch)
-- Patch 212->228: Generic get() (Fifth batch)
-"
+Maybe coccinelle script, which maintainers could run it on their trees, would
+help?
 
-I kept them together because it looked like multiple patchsets have confused
-people.. I have seen people reviewing first few sets and later on they haven't
-bothered to review.. Probably they got confused..
+Vladimir
 
-And so it was required to keep them together, so that people get the complete
-picture..
-
-Sorry for the noise..
+> > Aside from that, all the Tegra-specific patches in this series,
+> > Acked-by: Stephen Warren <swarren@nvidia.com>
+> 
+> Thanks..
+> 
+> _______________________________________________
+> linaro-kernel mailing list
+> linaro-kernel@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/linaro-kernel
