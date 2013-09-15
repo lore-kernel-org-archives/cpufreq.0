@@ -1,55 +1,47 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: [PATCH 136/228] cpufreq: loongson2: use cpufreq_generic_init()
- routine
-Date: Sun, 15 Sep 2013 00:48:27 +0300
-Message-ID: <20130914214827.GA30568@blackmetal.musicnaut.iki.fi>
-References: <cover.1379063063.git.viresh.kumar@linaro.org>
- <63ebf29a1bcc7b3a26f8bfc76a5677d2880f8534.1379063063.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 211/228] cpufreq: tegra: remove calls to cpufreq_notify_transition()
+Date: Sun, 15 Sep 2013 07:05:48 +0200
+Message-ID: <32077984.uYNhUh2ogt@vostro.rjw.lan>
+References: <cover.1379063063.git.viresh.kumar@linaro.org> <52339729.7030309@wwwdotorg.org> <CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <63ebf29a1bcc7b3a26f8bfc76a5677d2880f8534.1379063063.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, John Crispin <blogic@openwrt.org>, linux-mips@linux-mips.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Warren <swarren@nvidia.com>
 
-On Fri, Sep 13, 2013 at 06:31:22PM +0530, Viresh Kumar wrote:
-> Use generic cpufreq_generic_init() routine instead of replicating the same code
-> here. This driver wasn't setting transition_latency and so is getting set to 0
-> by default. Lets mark it explicitly by calling the generic routine with
-> transition_latency as 0.
+On Saturday, September 14, 2013 09:39:31 AM Viresh Kumar wrote:
+> On 14 September 2013 04:22, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> > I wonder if this series is bisectable? Perhaps I should just go and read
+> > the rest of the series, but I presume there's a patch somewhere else
+> > that adds those two cpufreq_notify_transition() to the cpufreq core.
+> > Either that happens before this patch (in which case listeners will get
+> > two notifications each time; perhaps that is safe?), or after this patch
+> > (in which case with just this patch applied, no notifications will be
+> > sent until a later patch!
 > 
-> Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-> Cc: John Crispin <blogic@openwrt.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Acked-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-
-BTW, this is not ARM but MIPS board, so adding linux-mips to CC.
-
-A.
-
-> ---
->  drivers/cpufreq/loongson2_cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+> Hmm.. Good Catch..
 > 
-> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-> index dd4f3e4..2c8ec8e 100644
-> --- a/drivers/cpufreq/loongson2_cpufreq.c
-> +++ b/drivers/cpufreq/loongson2_cpufreq.c
-> @@ -131,8 +131,7 @@ static int loongson2_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		return ret;
->  	}
->  
-> -	return cpufreq_table_validate_and_show(policy,
-> -					    &loongson2_clockmod_table[0]);
-> +	return cpufreq_generic_init(policy, &loongson2_clockmod_table[0], 0);
->  }
->  
->  static int loongson2_cpufreq_exit(struct cpufreq_policy *policy)
-> -- 
-> 1.7.12.rc2.18.g61b472e
+> So, yes git bisect would be compilable but not runnable.. As we are
+> already serialized notifications and so two PRE notifications will
+> generate a crash..
 > 
+> But I don't want to get all that in a single patch as that would be:
+> 
+>  40 files changed, 192 insertions(+), 623 deletions(-)
+> 
+> And that would be hard to review it..
+> 
+> Any suggestions?
+
+Well, I guess you can assume that everyone has a chance to review the series
+by now and send it as one patch in the next iteration.
+
+A patch that adds 192 lines of code isn't shockingly large by any measure.
+
+Thanks,
+Rafael
+
