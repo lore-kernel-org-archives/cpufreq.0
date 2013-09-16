@@ -1,84 +1,131 @@
-From: Gleb Natapov <gleb@redhat.com>
-Subject: Re: cpufreq and QEMU guests
-Date: Mon, 16 Sep 2013 18:58:40 +0300
-Message-ID: <20130916155840.GE906@redhat.com>
-References: <20130916121545.GH5105@irqsave.net>
- <8668D877-8B37-48E3-97B8-CE36DB884E54@suse.de>
- <20130916150544.GJ5105@irqsave.net>
- <20130916153239.GD906@redhat.com>
- <20130916154603.GK5105@irqsave.net>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: unlock correct rwsem while updating
+ policy->cpu
+Date: Mon, 16 Sep 2013 17:27:03 +0100
+Message-ID: <1379348823.3422.42.camel@linaro1.home>
+References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130916154603.GK5105@irqsave.net>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-To: =?utf-8?Q?Beno=C3=AEt?= Canet <benoit.canet@irqsave.net>
-Cc: Alexander Graf <agraf@suse.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "peter.maydell@linaro.org" <peter.maydell@linaro.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com
 
-On Mon, Sep 16, 2013 at 05:46:04PM +0200, Beno=C3=AEt Canet wrote:
-> Le Monday 16 Sep 2013 =C3=A0 18:32:39 (+0300), Gleb Natapov a =C3=A9c=
-rit :
-> > On Mon, Sep 16, 2013 at 05:05:45PM +0200, Beno=C3=AEt Canet wrote:
-> > > Le Monday 16 Sep 2013 =C3=A0 09:39:10 (-0500), Alexander Graf a =C3=
-=A9crit :
-> > > >=20
-> > > >=20
-> > > > Am 16.09.2013 um 07:15 schrieb Beno=C3=AEt Canet <benoit.canet@=
-irqsave.net>:
-> > > >=20
-> > > > >=20
-> > > > > Hello,
-> > > > >=20
-> > > > > I know a cloud provider worried about the fact that the /proc=
-/cpuinfo of his
-> > > > > guests give a bogus frequency to his customer.
-> > > > >=20
-> > > > > QEMU and the guests kernel currently have no way to reflect t=
-he host frequency
-> > > > > changes to the guests.
-> > > > >=20
-> > > > > The customer compute intensive application then read this inf=
-ormation and take
-> > > > > wrong decisions.
-> > > >=20
-> > > > Why do they care about the frequency? Is it for scheduling work=
-loads? The only other case I can think of would be the TSC and that sho=
-uld be fixed frequency these days.
-> > > >=20
-> > > > If it's scheduling, you could maybe expose the unavailable comp=
-ute time as steal time to the guest. Exposibg frequency in a virtual en=
-vironment feels backwards.
-> > >=20
-> > > The final customer have a compute intensive workload.
-> > > At startup the code retrieve the cpu cache topology, the cpu mode=
-l, and various
-> > > informations including the guest cpu frequency before starting th=
-e compute job.
-> > > The QEMU instance typicaly use -cpu host.
-> > >=20
-> > > The code inspects the cpu frequency has seen by the guests to cho=
-ose the number
-> > > of vms to instanciate to compute the given task.
-> > I am not sure I understand. They look at guest cpu frequency to est=
-imate
-> > guest's performance?
->=20
-> Yes they take guest cpu count, model and frequency to estimate the pe=
-rformance
-> of the guest.
-> Next they cluster enough guests to be able to compute the job in a gi=
-ven time by
-> using this estimate.
->=20
-They do it wrong. They should take guest cpu count, host cpu model and
-frequency, pcpu/vcpu over commit (if any), guest/host memory overcommit
-(if any) and estimate performance based on this. For pure computational
-performance guest core performance should be close to host core
-performance if there is not cpu/memory overcommit. With a lot of IO
-things become more complicated.
+On Mon, 2013-09-16 at 20:40 +0530, Viresh Kumar wrote:
+> Current code looks like this:
+> 
+>         WARN_ON(lock_policy_rwsem_write(cpu));
+>         update_policy_cpu(policy, new_cpu);
+>         unlock_policy_rwsem_write(cpu);
+> 
+> {lock|unlock}_policy_rwsem_write(cpu) takes/releases policy->cpu's rwsem.
+> Because cpu is changing with the call to update_policy_cpu(), the
+> unlock_policy_rwsem_write() will release the incorrect lock.
+> 
+> The right solution would be to take rwsem lock/unlock for both old and new cpu.
 
---
-			Gleb.
+I thought possibly something like that, then wondered if threads could
+take the locks in different orders at the same time, leading to
+deadlock? So as I wasn't familiar with cpufreq I thought I'd leave it to
+the experts to worry about :-)
+
+This patch contains a bug, see inline comment below. Even with that
+fixed it still doesn't work for me. I get a lockdep warning (below). I
+have verified the cpu and locks are different locks, and it's not a
+harmless false positive because I later get the message 'cpufreq:
+__cpufreq_remove_dev_prepare: Failed to stop governor'.
+
+=============================================
+[ INFO: possible recursive locking detected ]
+3.11.0+ #4 Not tainted
+---------------------------------------------
+swapper/0/1 is trying to acquire lock:
+  (&per_cpu(cpu_policy_rwsem, cpu)){+.+...}, at: [<c0293c03>] update_policy_cpu+0x53/0xa4
+
+but task is already holding lock:
+  (&per_cpu(cpu_policy_rwsem, cpu)){+.+...}, at: [<c0293bef>] update_policy_cpu+0x3f/0xa4
+other info that might help us debug this:
+  Possible unsafe locking scenario:
+        CPU0
+        ----
+   lock(&per_cpu(cpu_policy_rwsem, cpu));
+   lock(&per_cpu(cpu_policy_rwsem, cpu));
+
+*** DEADLOCK ***
+
+  May be due to missing lock nesting notation
+4 locks held by swapper/0/1:
+ #0:  (bL_switcher_activation_lock){+.+.+.}, at: [<c0019b03>] bL_switcher_enable+0x17/0x2d8
+ #1:  ((bL_activation_notifier).rwsem){.+.+.+}, at: [<c00370bd>] __blocking_notifier_call_chain+0x1d/0x40
+ #2:  (subsys mutex#6){+.+.+.}, at: [<c023279d>] subsys_interface_unregister+0x1d/0x68
+ #3:  (&per_cpu(cpu_policy_rwsem, cpu)){+.+...}, at: [<c0293bef>] update_policy_cpu+0x3f/0xa4
+
+> This patch fixes this bug by taking both locks directly instead of calling
+> lock_policy_rwsem_write().
+> 
+> Reported-by: Jon Medhurst<tixy@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi Rafael,
+> 
+> Probably we can get this patch in for 3.12? The second one can go in 3.13.
+> 
+> These are compile tested only at my end. Tixy reported these and probably can
+> give his tested-by once he is done testing them.
+> 
+>  drivers/cpufreq/cpufreq.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+If I take mainline code and just change the line above to:
+   up_write(&per_cpu(cpu_policy_rwsem, (per_cpu(cpufreq_cpu_data,
+cpu))->last_cpu));
+then the big_little cpufreq driver works for me.
+
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 43c24aa..c18bf7b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -952,9 +952,16 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+>  	if (cpu == policy->cpu)
+>  		return;
+>  
+> +	/* take direct locks as lock_policy_rwsem_write wouldn't work here */
+> +	down_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
+> +	down_write(&per_cpu(cpu_policy_rwsem, cpu));
+> +
+>  	policy->last_cpu = policy->cpu;
+>  	policy->cpu = cpu;
+>  
+> +	up_write(&per_cpu(cpu_policy_rwsem, cpu));
+> +	up_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
+
+You've just overwritten policy->cpu with cpu. I tried using
+policy->last_cpu to fix that, but it still doesn't work for me (giving
+the lockdep warning I mentioned.) If I change the code to just lock the
+original policy->cpu lock only, then all is fine.
+
+Also, this locking is now just happening around policy->cpu update,
+whereas before this change, it was locked for the whole of
+update_policy_cpu, i.e. cpufreq_frequency_table_update_policy_cpu and
+the notifier callbacks. Is that change of lock coverage OK?
+
+> +
+>  #ifdef CONFIG_CPU_FREQ_TABLE
+>  	cpufreq_frequency_table_update_policy_cpu(policy);
+>  #endif
+> @@ -1203,9 +1210,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+>  
+>  		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
+>  		if (new_cpu >= 0) {
+> -			WARN_ON(lock_policy_rwsem_write(cpu));
+>  			update_policy_cpu(policy, new_cpu);
+> -			unlock_policy_rwsem_write(cpu);
+>  
+>  			if (!frozen) {
+>  				pr_debug("%s: policy Kobject moved to cpu: %d "
+
+-- 
+Tixy
