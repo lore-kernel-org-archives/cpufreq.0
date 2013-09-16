@@ -1,103 +1,74 @@
-From: =?iso-8859-1?Q?Beno=EEt?= Canet <benoit.canet@irqsave.net>
-Subject: Re: cpufreq and QEMU guests
-Date: Mon, 16 Sep 2013 17:05:45 +0200
-Message-ID: <20130916150544.GJ5105@irqsave.net>
-References: <20130916121545.GH5105@irqsave.net>
- <8668D877-8B37-48E3-97B8-CE36DB884E54@suse.de>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8668D877-8B37-48E3-97B8-CE36DB884E54@suse.de>
-Sender: cpufreq-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: unlock correct rwsem while updating policy->cpu
+Date: Mon, 16 Sep 2013 20:40:16 +0530
+Message-ID: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Alexander Graf <agraf@suse.de>
-Cc: =?iso-8859-1?Q?Beno=EEt?= Canet <benoit.canet@irqsave.net>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "peter.maydell@linaro.org" <peter.maydell@linaro.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "gleb@redhat.com" <gleb@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: rjw@sisk.pl, tixy@linaro.org
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Le Monday 16 Sep 2013 =E0 09:39:10 (-0500), Alexander Graf a =E9crit :
->=20
->=20
-> Am 16.09.2013 um 07:15 schrieb Beno=EEt Canet <benoit.canet@irqsave.n=
-et>:
->=20
-> >=20
-> > Hello,
-> >=20
-> > I know a cloud provider worried about the fact that the /proc/cpuin=
-fo of his
-> > guests give a bogus frequency to his customer.
-> >=20
-> > QEMU and the guests kernel currently have no way to reflect the hos=
-t frequency
-> > changes to the guests.
-> >=20
-> > The customer compute intensive application then read this informati=
-on and take
-> > wrong decisions.
->=20
-> Why do they care about the frequency? Is it for scheduling workloads?=
- The only other case I can think of would be the TSC and that should be=
- fixed frequency these days.
->=20
-> If it's scheduling, you could maybe expose the unavailable compute ti=
-me as steal time to the guest. Exposibg frequency in a virtual environm=
-ent feels backwards.
+Current code looks like this:
 
-The final customer have a compute intensive workload.
-At startup the code retrieve the cpu cache topology, the cpu model, and=
- various
-informations including the guest cpu frequency before starting the comp=
-ute job.
-The QEMU instance typicaly use -cpu host.
+        WARN_ON(lock_policy_rwsem_write(cpu));
+        update_policy_cpu(policy, new_cpu);
+        unlock_policy_rwsem_write(cpu);
 
-The code inspects the cpu frequency has seen by the guests to choose th=
-e number
-of vms to instanciate to compute the given task.
-They even destroy and recreate some vms that would be underperforming t=
-o
-mitigate the high inter vm communication costs.
+{lock|unlock}_policy_rwsem_write(cpu) takes/releases policy->cpu's rwsem.
+Because cpu is changing with the call to update_policy_cpu(), the
+unlock_policy_rwsem_write() will release the incorrect lock.
 
-Do you think the steal time trick would work for this ?
+The right solution would be to take rwsem lock/unlock for both old and new cpu.
+This patch fixes this bug by taking both locks directly instead of calling
+lock_policy_rwsem_write().
 
-Best regards
+Reported-by: Jon Medhurst<tixy@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
 
-Beno=EEt
+Probably we can get this patch in for 3.12? The second one can go in 3.13.
 
+These are compile tested only at my end. Tixy reported these and probably can
+give his tested-by once he is done testing them.
 
->=20
-> Alex
->=20
-> >=20
-> > I looked at the various Linux cpufreq drivers and they all seems to=
- be table
-> > based. Is it true ?
-> >=20
-> > For example the acpi cpufreq driver have 16 differents pstates at h=
-and to lookup
-> > in the pstate table and get the frequency.
-> >=20
-> > Given that guests can migrate from one hardware to a slightly diffe=
-rent hardware
-> > the table may become wrong after live migration.
-> >=20
-> > What would be the best hardware to emulate in order to pass an arbi=
-trary
-> > frequency to the guest ?
-> >=20
-> > Would a pvfreq paravirtualized QEMU hardware and a guest driver imp=
-lementing
-> > only the callbacks needed to read the frequency be a good idea ?
-> >=20
-> > Best regards
-> >=20
-> > Beno=EEt
-> >=20
-> > ps:
-> > I CC this mail to the other QEMU arch maintainers because the probl=
-em must be
-> > the same everywhere where KVM run.
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ drivers/cpufreq/cpufreq.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 43c24aa..c18bf7b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -952,9 +952,16 @@ static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ 	if (cpu == policy->cpu)
+ 		return;
+ 
++	/* take direct locks as lock_policy_rwsem_write wouldn't work here */
++	down_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
++	down_write(&per_cpu(cpu_policy_rwsem, cpu));
++
+ 	policy->last_cpu = policy->cpu;
+ 	policy->cpu = cpu;
+ 
++	up_write(&per_cpu(cpu_policy_rwsem, cpu));
++	up_write(&per_cpu(cpu_policy_rwsem, policy->cpu));
++
+ #ifdef CONFIG_CPU_FREQ_TABLE
+ 	cpufreq_frequency_table_update_policy_cpu(policy);
+ #endif
+@@ -1203,9 +1210,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 
+ 		new_cpu = cpufreq_nominate_new_policy_cpu(policy, cpu, frozen);
+ 		if (new_cpu >= 0) {
+-			WARN_ON(lock_policy_rwsem_write(cpu));
+ 			update_policy_cpu(policy, new_cpu);
+-			unlock_policy_rwsem_write(cpu);
+ 
+ 			if (!frozen) {
+ 				pr_debug("%s: policy Kobject moved to cpu: %d "
+-- 
+1.7.12.rc2.18.g61b472e
+
