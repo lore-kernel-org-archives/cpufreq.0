@@ -1,42 +1,29 @@
-From: karthik vm <meetvm@gmail.com>
-Subject: Few clarifications on DVFS
-Date: Sun, 15 Sep 2013 20:30:51 -0400
-Message-ID: <CAOuKo4nZ5Yij3cnM=PuMR3awJ2QAbY4O+-mKi110xfc66xyWUg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 211/228] cpufreq: tegra: remove calls to cpufreq_notify_transition()
+Date: Mon, 16 Sep 2013 09:57:27 +0530
+Message-ID: <CAKohponrJerykspkd0b4wtE2YtPRMpphUW_3ZN0Lg9Q6bNdJRg@mail.gmail.com>
+References: <cover.1379063063.git.viresh.kumar@linaro.org>
+	<52339729.7030309@wwwdotorg.org>
+	<CAKohpono-J-Ohzdn=pbNK+HhXhJ2Lf-UBM7OPynTgAwxLd4F4A@mail.gmail.com>
+	<32077984.uYNhUh2ogt@vostro.rjw.lan>
 Mime-Version: 1.0
-Return-path: <cpufreq-owner@vger.kernel.org>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20120113;
-        h=mime-version:from:date:message-id:subject:to:content-type;
-        bh=iJ7a2MobgktvYQmRw8xDUmy2T7bRxxn0wLh6NmCQd5c=;
-        b=wntR1v3+/74b1myuT7hN6vmX58vU0g0nmTYu0crgpxeuOmSAfCI0C+A3jJNxyov8Gs
-         oFrF1CEC23PXPDmDtUTmnWavsDesX0ebz0AD5RfTH+gTF68U4YaE1lNH3JTA8KtfdFZr
-         uNb7cTEvua7QaJMjve3iW4fNWdCh9Qoyna+xBInCZRvURRkHy0KBQ75gIWmafW47gw7W
-         R05XabcGAec0+QG6kGcfq3qDxchfrQ4xMbnZDtghokpr9olT/HBjoCmeGjxdzwbuHu3l
-         /aZ3nyfhFj1iuKi+1Seahj74/EtupfVKtXvXkSEDn2SJizE4tUlJx3uHVASUnu9p7QMo
-         LFRA==
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+In-Reply-To: <32077984.uYNhUh2ogt@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cpufreq <cpufreq@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Patch Tracking <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Warren <swarren@nvidia.com>
 
-Hi,
+On 15 September 2013 10:35, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Well, I guess you can assume that everyone has a chance to review the series
+> by now and send it as one patch in the next iteration.
 
-I am a PhD student doing research in DVFS area. I have few questions
-for which I am looking for an answer. It would be great if some one
-could give some pointers.
+Yeah, that's what I thought..
 
-1) In my current Core2Duo laptop, "maximum transition latency" from
-cpufreq-info command is 10us. Hence I get that to change the frequency
-of my cpu it takes 10us. Also recent research papers say that the
-frequency of the processor can be changed in ns scale (eg. 10 ns -
-100ns). If that is the case, can processor frequency be still modified
-thru OS? Will OS be able to handle such a fine grained frequency
-change?
+> A patch that adds 192 lines of code isn't shockingly large by any measure.
 
-2) Currently the frequency change is handled by governors. But is it
-possible to change the frequency of a cpu directly by calling the
-CPU-driver functions from another part of the kernel?
-
-Thanks for your time,
-karthik
+It was more about removal of things and the number of files it touches..
+But yes, its good for review to send them separately but in the end they can
+be merged..
