@@ -1,13 +1,13 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 Resend 07/44] cpufreq: blackfin: use cpufreq_table_validate_and_show()
-Date: Mon, 16 Sep 2013 18:56:09 +0530
-Message-ID: <86fff8206754ca46c6820e767387aba907757449.1379309339.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 Resend 08/44] cpufreq: cpufreq-cpu0: use cpufreq_table_validate_and_show()
+Date: Mon, 16 Sep 2013 18:56:10 +0530
+Message-ID: <1f06d6872ed7448ce1fae206540620c626705978.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1379309339.git.viresh.kumar@linaro.org>
 References: <cover.1379309339.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,26 +18,34 @@ Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 Lets use cpufreq_table_validate_and_show() instead of calling
 cpufreq_frequency_table_cpuinfo() and cpufreq_frequency_table_get_attr().
 
-Cc: Steven Miao <realmz6@gmail.com>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/blackfin-cpufreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
-index ef05978..54c0a0c 100644
---- a/drivers/cpufreq/blackfin-cpufreq.c
-+++ b/drivers/cpufreq/blackfin-cpufreq.c
-@@ -210,8 +210,7 @@ static int __bfin_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = 50000; /* 50us assumed */
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index cbfffa9..ce4fa47 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -128,7 +128,7 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	int ret;
  
- 	policy->cur = cclk;
--	cpufreq_frequency_table_get_attr(bfin_freq_table, policy->cpu);
--	return cpufreq_frequency_table_cpuinfo(policy, bfin_freq_table);
-+	return cpufreq_table_validate_and_show(policy, bfin_freq_table);
+-	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
++	ret = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (ret) {
+ 		pr_err("invalid frequency table: %d\n", ret);
+ 		return ret;
+@@ -144,8 +144,6 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ 	 */
+ 	cpumask_setall(policy->cpus);
+ 
+-	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+-
+ 	return 0;
  }
  
- static struct freq_attr *bfin_freq_attr[] = {
 -- 
 1.7.12.rc2.18.g61b472e
 
