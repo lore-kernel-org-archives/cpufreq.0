@@ -1,34 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: merge maple cpufreq driver to pmac64
-Date: Mon, 16 Sep 2013 11:57:14 +0530
-Message-ID: <CAKohpomAXXHN_w_RtQC4niyP1_FVB75b-cSvmexRmnmgnNPs8w@mail.gmail.com>
-References: <1379071806-17453-1-git-send-email-dmitry_eremin@mentor.com>
+From: =?iso-8859-1?Q?Beno=EEt?= Canet <benoit.canet@irqsave.net>
+Subject: cpufreq and QEMU guests
+Date: Mon, 16 Sep 2013 14:15:46 +0200
+Message-ID: <20130916121545.GH5105@irqsave.net>
 Mime-Version: 1.0
-Return-path: <linux-pm-owner@vger.kernel.org>
-In-Reply-To: <1379071806-17453-1-git-send-email-dmitry_eremin@mentor.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-ID: <cpufreq.vger.kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org>
+Content-Disposition: inline
+List-Id: <cpufreq.vger.kernel.org>
+List-Unsubscribe: <https://lists.nongnu.org/mailman/options/qemu-devel>,
+	<mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <http://lists.nongnu.org/archive/html/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <https://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+	<mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Errors-To: qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org
+Sender: qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: cpufreq@vger.kernel.org, qemu-devel@nongnu.org
+Cc: peter.maydell@linaro.org, gleb@redhat.com, viresh.kumar@linaro.org, agraf@suse.de, rjw@sisk.pl, pbonzini@redhat.com
 
-On 13 September 2013 17:00, Dmitry Eremin-Solenikov
-<dmitry_eremin@mentor.com> wrote:
-> Maple boards use the same frequency changing mechanism, as do newer
-> PowerMacs (write to SCOM). Thus maple-cpufreq.c is a reduced version
-> of pmac64 driver. Merge it back to pmac64-cpufreq.c
->
-> Signed-off-by: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-> ---
->  drivers/cpufreq/Kconfig.powerpc  |  10 +-
->  drivers/cpufreq/Makefile         |   1 -
->  drivers/cpufreq/maple-cpufreq.c  | 308 ---------------------------------------
->  drivers/cpufreq/pmac64-cpufreq.c |  58 +++++---
->  4 files changed, 40 insertions(+), 337 deletions(-)
->  delete mode 100644 drivers/cpufreq/maple-cpufreq.c
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hello,
 
-I couldn't figure out any obvious bug in this patch, but its more for driver's
-maintainer and so probably they need to go through this patch..
+I know a cloud provider worried about the fact that the /proc/cpuinfo of =
+his
+guests give a bogus frequency to his customer.
+
+QEMU and the guests kernel currently have no way to reflect the host freq=
+uency
+changes to the guests.
+
+The customer compute intensive application then read this information and=
+ take
+wrong decisions.
+
+I looked at the various Linux cpufreq drivers and they all seems to be ta=
+ble
+based. Is it true ?
+
+For example the acpi cpufreq driver have 16 differents pstates at hand to=
+ lookup
+in the pstate table and get the frequency.
+
+Given that guests can migrate from one hardware to a slightly different h=
+ardware
+the table may become wrong after live migration.
+
+What would be the best hardware to emulate in order to pass an arbitrary
+frequency to the guest ?
+
+Would a pvfreq paravirtualized QEMU hardware and a guest driver implement=
+ing
+only the callbacks needed to read the frequency be a good idea ?
+
+Best regards
+
+Beno=EEt
+
+ps:
+I CC this mail to the other QEMU arch maintainers because the problem mus=
+t be
+the same everywhere where KVM run.
+
