@@ -1,166 +1,72 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: make return type of lock_policy_rwsem_{read|write}() as void
-Date: Mon, 16 Sep 2013 20:40:17 +0530
-Message-ID: <a257808b511a83f210ed699149ce87fef5db6236.1379344038.git.viresh.kumar@linaro.org>
-References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+From: Gleb Natapov <gleb@redhat.com>
+Subject: Re: cpufreq and QEMU guests
+Date: Mon, 16 Sep 2013 18:32:39 +0300
+Message-ID: <20130916153239.GD906@redhat.com>
+References: <20130916121545.GH5105@irqsave.net>
+ <8668D877-8B37-48E3-97B8-CE36DB884E54@suse.de>
+ <20130916150544.GJ5105@irqsave.net>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
-In-Reply-To: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
-References: <075032be4fd288074b8f699d4f4ba0179518df6f.1379344038.git.viresh.kumar@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20130916150544.GJ5105@irqsave.net>
 Sender: cpufreq-owner@vger.kernel.org
 List-ID: <cpufreq.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: rjw@sisk.pl, tixy@linaro.org
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+To: =?utf-8?Q?Beno=C3=AEt?= Canet <benoit.canet@irqsave.net>
+Cc: Alexander Graf <agraf@suse.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "qemu-devel@nongnu.org" <qemu-devel@nongnu.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "peter.maydell@linaro.org" <peter.maydell@linaro.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>
 
-lock_policy_rwsem_{read|write}() currently has return type of int but it always
-return zero and hence its return type must be void instead. This patch makes its
-return type void and fixes all users of it as well.
+On Mon, Sep 16, 2013 at 05:05:45PM +0200, Beno=C3=AEt Canet wrote:
+> Le Monday 16 Sep 2013 =C3=A0 09:39:10 (-0500), Alexander Graf a =C3=A9=
+crit :
+> >=20
+> >=20
+> > Am 16.09.2013 um 07:15 schrieb Beno=C3=AEt Canet <benoit.canet@irqs=
+ave.net>:
+> >=20
+> > >=20
+> > > Hello,
+> > >=20
+> > > I know a cloud provider worried about the fact that the /proc/cpu=
+info of his
+> > > guests give a bogus frequency to his customer.
+> > >=20
+> > > QEMU and the guests kernel currently have no way to reflect the h=
+ost frequency
+> > > changes to the guests.
+> > >=20
+> > > The customer compute intensive application then read this informa=
+tion and take
+> > > wrong decisions.
+> >=20
+> > Why do they care about the frequency? Is it for scheduling workload=
+s? The only other case I can think of would be the TSC and that should =
+be fixed frequency these days.
+> >=20
+> > If it's scheduling, you could maybe expose the unavailable compute =
+time as steal time to the guest. Exposibg frequency in a virtual enviro=
+nment feels backwards.
+>=20
+> The final customer have a compute intensive workload.
+> At startup the code retrieve the cpu cache topology, the cpu model, a=
+nd various
+> informations including the guest cpu frequency before starting the co=
+mpute job.
+> The QEMU instance typicaly use -cpu host.
+>=20
+> The code inspects the cpu frequency has seen by the guests to choose =
+the number
+> of vms to instanciate to compute the given task.
+I am not sure I understand. They look at guest cpu frequency to estimat=
+e
+guest's performance?
 
-Reported-by: Jon Medhurst<tixy@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 38 +++++++++++---------------------------
- 1 file changed, 11 insertions(+), 27 deletions(-)
+> They even destroy and recreate some vms that would be underperforming=
+ to
+> mitigate the high inter vm communication costs.
+>=20
+> Do you think the steal time trick would work for this ?
+>=20
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c18bf7b..598af5c 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -67,13 +67,11 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
- 
- #define lock_policy_rwsem(mode, cpu)					\
--static int lock_policy_rwsem_##mode(int cpu)				\
-+static void lock_policy_rwsem_##mode(int cpu)				\
- {									\
- 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);	\
- 	BUG_ON(!policy);						\
- 	down_##mode(&per_cpu(cpu_policy_rwsem, policy->cpu));		\
--									\
--	return 0;							\
- }
- 
- lock_policy_rwsem(read, cpu);
-@@ -653,13 +651,12 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
- {
- 	struct cpufreq_policy *policy = to_policy(kobj);
- 	struct freq_attr *fattr = to_attr(attr);
--	ssize_t ret = -EINVAL;
-+	ssize_t ret;
- 
- 	if (!down_read_trylock(&cpufreq_rwsem))
--		goto exit;
-+		return -EINVAL;
- 
--	if (lock_policy_rwsem_read(policy->cpu) < 0)
--		goto up_read;
-+	lock_policy_rwsem_read(policy->cpu);
- 
- 	if (fattr->show)
- 		ret = fattr->show(policy, buf);
-@@ -667,10 +664,8 @@ static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
- 		ret = -EIO;
- 
- 	unlock_policy_rwsem_read(policy->cpu);
--
--up_read:
- 	up_read(&cpufreq_rwsem);
--exit:
-+
- 	return ret;
- }
- 
-@@ -689,8 +684,7 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
- 	if (!down_read_trylock(&cpufreq_rwsem))
- 		goto unlock;
- 
--	if (lock_policy_rwsem_write(policy->cpu) < 0)
--		goto up_read;
-+	lock_policy_rwsem_write(policy->cpu);
- 
- 	if (fattr->store)
- 		ret = fattr->store(policy, buf, count);
-@@ -699,7 +693,6 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
- 
- 	unlock_policy_rwsem_write(policy->cpu);
- 
--up_read:
- 	up_read(&cpufreq_rwsem);
- unlock:
- 	put_online_cpus();
-@@ -1143,7 +1136,7 @@ static int cpufreq_nominate_new_policy_cpu(struct cpufreq_policy *policy,
- 	if (ret) {
- 		pr_err("%s: Failed to move kobj: %d", __func__, ret);
- 
--		WARN_ON(lock_policy_rwsem_write(old_cpu));
-+		lock_policy_rwsem_write(old_cpu);
- 		cpumask_set_cpu(old_cpu, policy->cpus);
- 		unlock_policy_rwsem_write(old_cpu);
- 
-@@ -1196,7 +1189,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 			policy->governor->name, CPUFREQ_NAME_LEN);
- #endif
- 
--	WARN_ON(lock_policy_rwsem_write(cpu));
-+	lock_policy_rwsem_write(cpu);
- 	cpus = cpumask_weight(policy->cpus);
- 
- 	if (cpus > 1)
-@@ -1459,14 +1452,11 @@ unsigned int cpufreq_get(unsigned int cpu)
- 	if (!down_read_trylock(&cpufreq_rwsem))
- 		return 0;
- 
--	if (unlikely(lock_policy_rwsem_read(cpu)))
--		goto out_policy;
-+	lock_policy_rwsem_read(cpu);
- 
- 	ret_freq = __cpufreq_get(cpu);
- 
- 	unlock_policy_rwsem_read(cpu);
--
--out_policy:
- 	up_read(&cpufreq_rwsem);
- 
- 	return ret_freq;
-@@ -1690,14 +1680,12 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
- {
- 	int ret = -EINVAL;
- 
--	if (unlikely(lock_policy_rwsem_write(policy->cpu)))
--		goto fail;
-+	lock_policy_rwsem_write(policy->cpu);
- 
- 	ret = __cpufreq_driver_target(policy, target_freq, relation);
- 
- 	unlock_policy_rwsem_write(policy->cpu);
- 
--fail:
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_driver_target);
-@@ -1988,10 +1976,7 @@ int cpufreq_update_policy(unsigned int cpu)
- 		goto no_policy;
- 	}
- 
--	if (unlikely(lock_policy_rwsem_write(cpu))) {
--		ret = -EINVAL;
--		goto fail;
--	}
-+	lock_policy_rwsem_write(cpu);
- 
- 	pr_debug("updating policy for CPU %u\n", cpu);
- 	memcpy(&new_policy, policy, sizeof(*policy));
-@@ -2020,7 +2005,6 @@ int cpufreq_update_policy(unsigned int cpu)
- 
- 	unlock_policy_rwsem_write(cpu);
- 
--fail:
- 	cpufreq_cpu_put(policy);
- no_policy:
- 	return ret;
--- 
-1.7.12.rc2.18.g61b472e
-
+--
+			Gleb.
